@@ -73,7 +73,7 @@
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt } from './helpers.ts';
+import { selfOf, isEnt, sacrificeTogether } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -395,6 +395,8 @@ const linkedExtinction: EffectDef = {
       g.ev('info', 'Linked Extinction: no opponent is present here — nobody sacrifices a unit.');
       return;
     }
+    // CR 713.6 / CT-414: every opponent picks first, then one death batch
+    const picks: EntityId[] = [];
     for (const seat of foes) {
       const units = g.unitsOf(seat, ctx.region);
       if (!units.length) { g.ev('info', `Linked Extinction: ${g.pname(seat)} has no unit here.`); continue; }
@@ -403,9 +405,9 @@ const linkedExtinction: EffectDef = {
         prompt: 'Linked Extinction: sacrifice a unit',
         options: units.map(u => ({ label: u.card, value: u.id, card: u.card })),
       }) as EntityId;
-      const u = g.entity(id);
-      if (u) g.destroy(u, 'is sacrificed');
+      picks.push(id);
     }
+    sacrificeTogether(g, picks);
   },
 };
 card('Linked Extinction', {
@@ -513,8 +515,16 @@ card('Perish', {
         g.ev('info', 'Perish: nobody here has a unit — nothing is sacrificed.');
         return;
       }
+      // CR 706.8c, 713.6 / CT-414: every pick is made first and the sacrifices are
+      // ONE death batch. Caleb, on this card (RQ 1442175942838718518): "Sacrifices
+      // are resolved simultaneously, so there's no window between the first and
+      // second sacrifice"; and of a sacrificed Refuse Reclaimer (RQ
+      // 1442177903952396430): "It would trigger but it would be dead before it
+      // was able to get any counters". Each pool leaves out the units already
+      // picked, so every question offers the units still to be decided.
+      const picks: EntityId[] = [];
       for (const seat of seats) {
-        const units = () => g.unitsOf(seat, ctx.region);
+        const units = () => g.unitsOf(seat, ctx.region).filter(u => !picks.includes(u.id));
         const n = quota.get(seat)!;
         for (let i = 0; i < n; i++) {
           const pool = units();
@@ -524,10 +534,10 @@ card('Perish', {
             prompt: `Perish: sacrifice a unit (${n - i} to go)`,
             options: pool.map(u => ({ label: u.card, value: u.id, card: u.card })),
           }) as EntityId;
-          const u = g.entity(id);
-          if (u) g.destroy(u, 'is sacrificed');
+          picks.push(id);
         }
       }
+      sacrificeTogether(g, picks);
     },
   },
 });

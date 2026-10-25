@@ -71,7 +71,7 @@
  */
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
 import { card, getCard, isSpellEffect, type EffectDef } from '../dsl.ts';
-import { rechooseTargets, commitRetargets, hasChangeableTarget, noChangeConfirm } from './helpers.ts';
+import { rechooseTargets, commitRetargets, hasChangeableTarget, noChangeConfirm, sacrificeTogether } from './helpers.ts';
 
 /** a card that is a SPELL for bin purposes — a spell unit is one too (playing
  * it from the bin casts the spell and then spawns the body). */
@@ -460,7 +460,8 @@ card('Flame Shield', {
 // "Each player" = the seats present in the battle region (CR 601.4d), in
 // presentSeats order (region owner first); each picks their own sacrifice
 // (mid-resolution choices, CR 704.1a model). All choices are gathered before any
-// destruction (plan-then-commit), then committed together.
+// destruction (plan-then-commit), then committed together — one death batch
+// (CR 713.6, CT-414: Caleb, "Sacrifices are resolved simultaneously").
 const smofSacrifice: EffectDef = {
   run: (g, ctx) => {
     const picks: EntityId[] = [];
@@ -475,10 +476,7 @@ const smofSacrifice: EffectDef = {
       picks.push(c as EntityId);
     }
     if (!picks.length) g.ev('info', 'General Smof: nobody here has a unit to sacrifice.');
-    for (const id of picks) {
-      const u = g.entity(id);
-      if (u) g.destroy(u, 'is sacrificed');
-    }
+    sacrificeTogether(g, picks);   // CR 713.6 / CT-414: one batch
   },
 };
 card('General Smof', {
@@ -512,10 +510,7 @@ const ghordSacrifice: EffectDef = {
       picks.push(c as EntityId);
     }
     if (!picks.length) g.ev('info', 'Ghord: no opponent here has a nontoken unit to sacrifice.');
-    for (const id of picks) {
-      const u = g.entity(id);
-      if (u) g.destroy(u, 'is sacrificed');
-    }
+    sacrificeTogether(g, picks);   // CR 713.6 / CT-414: one batch
   },
 };
 card('Ghord', {

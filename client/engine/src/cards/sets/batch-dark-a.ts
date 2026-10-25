@@ -77,7 +77,7 @@
 import type { CardName, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, isSpellEffect, unitRestrict, type EffectCtx, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, manaOf, isUnitCard } from './helpers.ts';
+import { selfOf, isEnt, manaOf, isUnitCard, sacrificeTogether } from './helpers.ts';
 // CT-245: Wake the Dead plays through the shared mid-resolution play. batch-water-a
 // is imported by index.ts BEFORE this file, so importing it here moves no
 // registration (= deck) order.
@@ -263,10 +263,7 @@ const cullSacrifices: EffectDef = {
       g.ev('info', 'Cull: nobody here has a unit to sacrifice.');
       return;
     }
-    for (const id of picks) {
-      const u = g.entity(id);
-      if (u) g.destroy(u, 'is sacrificed');
-    }
+    sacrificeTogether(g, picks);   // CR 713.6 / CT-414: one batch
   },
 };
 card('Cull', {
@@ -566,10 +563,7 @@ card('Sacrifice Dude', {
         g.payMana(ctx.controller, 2);
         g.ev('info', `Sacrifice Dude: ${g.pname(ctx.controller)} pays [2]${
           picks.length ? '' : ' — but no opponent here has a nontoken unit to sacrifice'}.`);
-        for (const id of picks) {
-          const u = g.entity(id);
-          if (u) g.destroy(u, 'is sacrificed');
-        }
+        sacrificeTogether(g, picks);   // CR 713.6 / CT-414: one batch
       },
     },
   }],

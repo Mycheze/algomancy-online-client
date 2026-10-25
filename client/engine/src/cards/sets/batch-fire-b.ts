@@ -25,7 +25,7 @@
  */
 import type { EntityId, Seat } from '../../types.ts';
 import { card, firstTarget, getCard, isSpellEffect, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, eventCardCost } from './helpers.ts';
+import { selfOf, isEnt, eventCardCost, sacrificeTogether } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -375,10 +375,7 @@ const eachPlayerSacrifices: EffectDef = {
       picks.push(id);
     }
     if (!picks.length) g.ev('info', 'Spiteful Shadow: nobody here has a unit to sacrifice.');
-    for (const id of picks) {
-      const u = g.entity(id);
-      if (u) g.destroy(u, 'is sacrificed');
-    }
+    sacrificeTogether(g, picks);   // CR 713.6 / CT-414: one batch
   },
 };
 card('Spiteful Shadow', {

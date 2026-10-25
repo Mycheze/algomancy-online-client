@@ -143,7 +143,7 @@ import {
   card, doneTargetsLabel, getCard, isAugment, isPlayedSpellKind, specForSlot, targetMinimum,
   type EffectCtx, type EffectDef, type ResolvedTarget,
 } from '../dsl.ts';
-import { selfOf, isEnt, pickUnit, perSeatRows } from './helpers.ts';
+import { selfOf, isEnt, pickUnit, perSeatRows, sacrificeTogether } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -834,10 +834,7 @@ card('Malicious Hardware', {
           g.ev('info', 'Malicious Hardware: no opponent here has a unit to sacrifice.');
           return;
         }
-        for (const id of picks) {
-          const u = g.entity(id);
-          if (u) g.destroy(u, 'is sacrificed');
-        }
+        sacrificeTogether(g, picks);   // CR 713.6 / CT-414: one batch
       },
     },
   }],
@@ -873,10 +870,7 @@ card('Maw of Damnation', {
             : 'Maw of Damnation: no units are left here to sacrifice — it stops.');
           break;
         }
-        for (const id of picks) {
-          const u = g.entity(id);
-          if (u) g.destroy(u, 'is sacrificed');
-        }
+        sacrificeTogether(g, picks);   // CR 713.6 / CT-414: one batch
         if (picks.length < 4) break;
         g.ev('info', 'Maw of Damnation: four or more units were sacrificed — it repeats.');
       }

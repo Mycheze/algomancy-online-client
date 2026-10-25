@@ -56,7 +56,7 @@
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, getCard, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets, hasChangeableTarget, noChangeConfirm } from './helpers.ts';
+import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets, hasChangeableTarget, noChangeConfirm, sacrificeTogether } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -397,10 +397,7 @@ card('Insatiable Want', {
           ? 'Insatiable Want: nobody with an even life total has a unit here to sacrifice.'
           : 'Insatiable Want: nobody here has an even life total — nothing is sacrificed.');
       }
-      for (const id of picks) {
-        const u = g.entity(id);
-        if (u) g.destroy(u, 'is sacrificed');
-      }
+      sacrificeTogether(g, picks);   // CR 713.6 / CT-414: one batch
       for (const seat of odd) g.draw(seat, 1);
     },
   },

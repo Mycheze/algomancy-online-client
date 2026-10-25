@@ -40,7 +40,7 @@
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import { card, isEntityTarget, isPlayedSpellKind, unitRestrict, type EffectDef } from '../dsl.ts';
-import { selfOf, pickUnit, eventCardCost } from './helpers.ts';
+import { selfOf, pickUnit, eventCardCost, sacrificeTogether } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -298,10 +298,7 @@ card('Death Greeter', {
           g.ev('info', `Death Greeter: nobody here has a unit costing ${cost} or less to sacrifice.`);
           return;
         }
-        for (const id of picks) {
-          const u = g.entity(id);
-          if (u) g.destroy(u, 'is sacrificed');
-        }
+        sacrificeTogether(g, picks);   // CR 713.6 / CT-414: one batch
       },
     },
   }],
@@ -433,10 +430,7 @@ card('Torrential Reclamation', {
           : 'Torrential Reclamation: no ally was recalled, so nobody sacrifices a unit.');
       }
       for (const u of recalled) g.recall(u);
-      for (const id of sacs) {
-        const u = g.entity(id);
-        if (u) g.destroy(u, 'is sacrificed');
-      }
+      sacrificeTogether(g, sacs);   // CR 713.6 / CT-414: one batch
       // "you lose 1 life for each ally recalled this way" is ONE loss of that
       // many (report 273's class): a run of 1s would let a [once] "that many"
       // listener (Life Plant) hear only the first.
@@ -560,10 +554,7 @@ card('Molten Tormentor', {
           }
         }
         if (!picks.length) g.ev('info', 'Molten Tormentor: no opponent here has a unit to sacrifice.');
-        for (const id of picks) {
-          const u = g.entity(id);
-          if (u) g.destroy(u, 'is sacrificed');
-        }
+        sacrificeTogether(g, picks);   // CR 713.6 / CT-414: one batch
       },
     },
   }],
@@ -660,10 +651,7 @@ const collapseSacrifice: EffectDef = {
       picks.push(...chosen);
     }
     if (!picks.length) g.ev('info', 'Structural Collapse: nobody here has a unit to sacrifice.');
-    for (const id of picks) {
-      const u = g.entity(id);
-      if (u) g.destroy(u, 'is sacrificed');
-    }
+    sacrificeTogether(g, picks);   // CR 713.6 / CT-414: one batch
   },
 };
 card('Structural Collapse', {
