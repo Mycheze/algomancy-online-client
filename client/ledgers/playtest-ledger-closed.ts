@@ -4916,4 +4916,40 @@ export const CLOSED: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "Took back 12 blocks with nothing sent to counterattack [376]; Karanda re-declared the blocks and sent 7 Swarmlings to counterattack. A re-plan (the counterattack forgotten); the block bar already offers Counterattack with the rest. No defect.",
   },
+  {
+    id: 282, room: "CXCY", date: "2026-10-24",
+    report: "Nyar, seat 0, agreed fix: back to before StubTailDstroyer's pass (the start of this step). \"missclicked\"",
+    status: 'agreed-fix',
+    note: "Took back Nyar's Smouldering Inferno Virus onto StubTailDstroyer's A Fast Pile of Rocks [102]; Nyar then put it on StubTailDstroyer's Morphic Mentor instead. A wrong-host misclick; no defect.",
+  },
+  {
+    id: 283, room: "WVEC", date: "2026-10-24",
+    report: "invi, seat 0 (bug, medium): \"dropslime counts only creatures being trashed rather than any card being trashed\"",
+    status: 'by-design',
+    note: "Dropslime counted what CR 801.2 calls trashed. In the turn-9 battle it dealt 5, then 6: Void Mandible (sacrificed), Murkstalker (died), Dropslime itself (DISCARDED from hand, so not only creatures dying), Seer of Empty Spaces and Prismatic Observer (sacrificed), then the second Dropslime discard. Not counted: Feed to Hooba (negated), Arc Lightning and Spell Excavation (resolved), All-Consuming Blaze (erased) and the Fireball tokens — CR 801.2b (a card that goes to a bin from the stack, resolved, negated or fizzled, is not trashed), 801.2c (erasing is not trashing), 801.2i (tokens never count). Every card that happened to count was a unit card. The report reads trashed as \"goes to the bin\"; the owner is checking that definition with invi (2026-10-25). Replay: WVEC is faithful on the engine it was played on.",
+  },
+  {
+    id: 285, room: "ZAKG", date: "2026-10-24",
+    report: "invi, seat 0, agreed fix: back to before Yagamino's choice: Done (turn 5). \"sdf\"",
+    status: 'agreed-fix',
+    note: "Took back Yagamino's Done on Tides of the Cosmos [172], which played nothing off the reveal; Yagamino then played Delver of Mysteries and Arcane Concentrator off it for free and Recall from the bin. A misclick on Done; no defect.",
+  },
+  {
+    id: 286, room: "ZAKG", date: "2026-10-24",
+    report: "invi, seat 0 (bug, medium): \"murkstalker does not trigger from spells being trashed after leaving the stack during resolving\"",
+    status: 'by-design',
+    note: "Turn 5: invi's Umbral Decay fizzled when Recall bounced its target (Bripp) and went to the bin off the stack; Murkstalker did not trigger. CR 801.2b: a card that goes to a bin from the stack, whether it resolved, was negated or failed to resolve, is not trashed (the designer's Void Scavenger reminder: \"A nontoken card entering a bin from anywhere other than the stack is trashed\"; Discord 2025-02-01: \"basically when a card enters your bin but wasn't played\"). Murkstalker did trigger in the same battle for Prismatic Observer dying. Same definition question as #283; the owner is checking it with invi (2026-10-25).",
+  },
+  {
+    id: 287, room: "ZAKG", date: "2026-10-24",
+    report: "invi, seat 0, agreed fix: back to the start of the step before (turn 7 planning). \"mana\"",
+    status: 'agreed-fix',
+    note: "Took back turn 7's planning [242]-[248], which ended with invi done planning and no recycle or resource activated; replayed, invi recycled and activated resources before finishing. Forgotten mana; no defect.",
+  },
+  {
+    id: 288, room: "HHUW", date: "2026-10-24",
+    report: "invi, seat 0, agreed fix: back to before invi's recycle (turn 2 planning). \"wrong mana\"",
+    status: 'agreed-fix',
+    note: "Took back invi's recycle of Seer of Empty Spaces for a dormant resource [20]; invi recycled it again for dark, activated it, then recycled Void Mandible for metal. The reason says the first pick was the wrong element; no defect.",
+  },
 ];

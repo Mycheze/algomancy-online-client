@@ -853,7 +853,7 @@ const OPEN: Entry[] = [
     ],
     decided: [],
     asks: [],
-    notes: '',
+    notes: 'Playtest report #284 (VRRS) is held open on this entry and closes when it ships.',
     touches: [
       'client/ui/inspect.ts',
       'client/ui/battle.ts',
