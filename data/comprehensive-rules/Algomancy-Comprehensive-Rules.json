@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:d14e1da822290b12",
+ "generated_from": "sha256:697b4a9689dde8d2",
  "rules": [
   {
    "num": "100.1",
@@ -937,7 +937,7 @@
    "sectionTitle": "Ending the Game",
    "chapterTitle": "1. Game Concepts",
    "parent": "104",
-   "text": "A player whose life total reaches 0 is eliminated.",
+   "text": "A player whose life total is 0 or less is eliminated (when that is checked: 104.1a). A life total can go below 0.",
    "see": [
     "112"
    ],
@@ -945,7 +945,7 @@
     "Haunting Memories sets a player's life total to twice the number of cards in all bins. With every bin empty that is 0, and that player loses.",
     "A player at 3 life takes combat damage from an unblocked attacker and the game is over."
    ],
-   "basis": "printed",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
@@ -963,18 +963,47 @@
    "sectionTitle": "Ending the Game",
    "chapterTitle": "1. Game Concepts",
    "parent": "104.1",
-   "text": "A life total reaching 0 ends the game at once, even in the middle of resolving an effect or paying a cost. Nothing waits for the effect to finish. A life cost that would by itself bring its payer to 0 cannot be paid at all (111).",
+   "text": "A player brought to 0 or less by an effect is not eliminated until that effect has finished: every life change one resolution of one effect makes (the unit damage is dealt in, 112.8) is applied first, and only then are the life totals checked. All the life changes of one combat damage sub-step are applied together in the same way, Lethal kills included (802.24a), and checked after all of them. Any other life change, such as rot damage, is checked the moment it happens; rot is dealt one player at a time, in initiative order, and is never simultaneous (112.13). A life cost that would by itself bring its payer to 0 cannot be paid at all (111).",
    "see": [
     "111",
-    "112"
+    "112",
+    "608"
    ],
-   "examples": [],
-   "basis": "owner",
+   "examples": [
+    "Both players are at 1 life and Penance brings each of them to 0. Neither is eliminated until the effect has finished, and then both are at 0 together (104.1b).",
+    "A player at 0 is not out until the rest of the effect has happened: the effect finishes, and then the game ends.",
+    "Both players have more rot than life as deployment begins. The initiative player's rot is dealt first and that player loses before the other player's rot is dealt."
+   ],
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
     "D-U01-14"
    ],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "104.1b",
+   "key": "concepts.ending.elimination.simultaneous",
+   "title": null,
+   "section": "104",
+   "sectionTitle": "Ending the Game",
+   "chapterTitle": "1. Game Concepts",
+   "parent": "104.1",
+   "text": "If both players are at 0 or less when the life totals are checked, the player with the higher life total wins; totals below 0 count, so a player at -1 beats a player at -3. If the totals are equal, the initiative player loses.",
+   "see": [
+    "104.1a"
+   ],
+   "examples": [
+    "An unblocked attacker and a Piercing blocker, in the same combat damage sub-step, bring both players to 0 or less. The player left on the higher total wins.",
+    "Both players are at 1 and one effect makes each lose 1. Both are at 0, the totals are equal, and the initiative player loses."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
@@ -1123,20 +1152,93 @@
    "sectionTitle": "Ending the Game",
    "chapterTitle": "1. Game Concepts",
    "parent": "104",
-   "text": "Running out of cards does not end the game. A player who has to draw from an empty deck draws as many as there are and does not lose.",
+   "text": "A player who has to draw a card when their deck and their recycle pile are both empty has run out of cards. The recycle pile is shuffled into the deck before that (408.2b), and the bin never is. The player draws the cards there are, and then the game ends as 104.5a and 104.5b say.",
    "see": [
     "401",
-    "408"
+    "408",
+    "104.1"
    ],
    "examples": [
-    "A player with an empty deck and an empty recycle pile is told to draw 3: nothing is drawn, and nobody has won."
+    "A player whose deck is empty, with recycled cards behind the mark, draws: the recycled cards are shuffled in and the draw goes on. Nobody has run out of cards.",
+    "A player with 2 cards left and an empty recycle pile has to draw 4. They draw the 2, and then the draw that finds nothing ends the game."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
     "D-U01-8"
    ],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "104.5a",
+   "key": "concepts.ending.deck-out.constructed",
+   "title": null,
+   "section": "104",
+   "sectionTitle": "Ending the Game",
+   "chapterTitle": "1. Game Concepts",
+   "parent": "104.5",
+   "text": "In constructed, the player who ran out of cards loses the game, whatever the life totals. A Single Card Duel is constructed for this rule (D8.2).",
+   "see": [
+    "D8.2"
+   ],
+   "examples": [
+    "A constructed player at 25 life has to draw with an empty deck and an empty recycle pile while the opponent is at 3. The player who had to draw loses.",
+    "The card step at the start of a turn is a draw too: from an empty deck and pile it ends the game."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "104.5b",
+   "key": "concepts.ending.deck-out.shared-deck",
+   "title": null,
+   "section": "104",
+   "sectionTitle": "Ending the Game",
+   "chapterTitle": "1. Game Concepts",
+   "parent": "104.5",
+   "text": "With a shared deck (live draft), running out of cards ends the game, and the player with the higher life total wins, even if that is the player who had to draw. If the life totals are equal, the initiative player loses.",
+   "see": [
+    "104.1b"
+   ],
+   "examples": [
+    "In a live draft the shared deck runs out when a player at 12 life has to draw against an opponent at 9. The game ends, and the player at 12 wins.",
+    "If the two players are on the same life total, the initiative player loses."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "104.5c",
+   "key": "concepts.ending.deck-out.draw-only",
+   "title": null,
+   "section": "104",
+   "sectionTitle": "Ending the Game",
+   "chapterTitle": "1. Game Concepts",
+   "parent": "104.5",
+   "text": "Only a draw runs out of cards. Milling, revealing, glimpsing or caching from an empty deck and an empty recycle pile takes nothing, and the game goes on.",
+   "see": [
+    "401.4"
+   ],
+   "examples": [
+    "A player with an empty deck and an empty recycle pile is told to mill 2, and then to cache the top card of their deck. Nothing happens, and the game goes on."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
@@ -1424,16 +1526,16 @@
    "sectionTitle": "Elements and Affinity",
    "chapterTitle": "1. Game Concepts",
    "parent": "105",
-   "text": "Each game has a set of elements. In a live draft it is the selected elements; in constructed it is all seven. An element resource a player creates, by recycling or by exchanging a Prismite, must be of one of the game's elements.",
+   "text": "Each game has a set of elements: in a live draft, the selected elements; in constructed, all seven. The game's elements limit nothing a player may create: by recycling or by exchanging a Prismite, a player may create an element resource of any of the seven elements.",
    "see": [
     "106",
     "901",
     "902"
    ],
    "examples": [
-    "In a fire-water-earth draft, wood and metal resources are refused and never offered."
+    "In a fire-water-earth draft, a player may still recycle a card for a wood or a metal resource."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
@@ -1451,10 +1553,12 @@
    "sectionTitle": "Elements and Affinity",
    "chapterTitle": "1. Game Concepts",
    "parent": "105.9",
-   "text": "In constructed, a player may create a resource of any of the seven elements, including an element their deck has no cards of.",
+   "text": "A player may create a resource of an element their deck has no cards of, in constructed and in a live draft alike.",
    "see": [],
-   "examples": [],
-   "basis": "owner",
+   "examples": [
+    "In a fire-water-earth draft a Prismite is exchanged into wood."
+   ],
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -1993,9 +2097,11 @@
    "sectionTitle": "Resources",
    "chapterTitle": "1. Game Concepts",
    "parent": "106.8",
-   "text": "A Prismite may be exchanged for any non-Prismite resource: an element resource of one of the game's elements, or a Shard. It cannot be exchanged for another Prismite.",
+   "text": "A Prismite may be exchanged for any non-Prismite resource: an element resource of any of the seven elements, or a Shard. It cannot be exchanged for another Prismite.",
    "see": [],
-   "examples": [],
+   "examples": [
+    "In a fire-water-earth draft an active Prismite is exchanged into wood, an element outside the draft."
+   ],
    "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
@@ -5634,14 +5740,15 @@
    "sectionTitle": "Life, Damage, Rot and Debt",
    "chapterTitle": "1. Game Concepts",
    "parent": "112",
-   "text": "Rot is a counter a player has. At the start of each deployment phase, each player is dealt damage equal to their rot, in initiative order.",
+   "text": "Rot is a counter a player has. At the start of each deployment phase, each player is dealt damage equal to their rot, in initiative order. Rot damage is not simultaneous: the initiative player's rot is dealt and checked first, so a player it brings to 0 loses before the other player's rot is dealt (104.1a).",
    "see": [
     "507"
    ],
    "examples": [
-    "a player with 3 rot is dealt 3 damage as deployment begins."
+    "a player with 3 rot is dealt 3 damage as deployment begins.",
+    "Both players have more rot than life. The initiative player's rot is dealt first, and that player loses before the other player's rot is dealt."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
@@ -9272,22 +9379,23 @@
    "sectionTitle": "Modifications",
    "chapterTitle": "3. Card Types",
    "parent": "305",
-   "text": "During deployment, a spell token in play may be augmented, with any augment and not only a Virus. The spell token gains only the mod's attributes, not its text.",
+   "text": "During deployment, a spell token in play may be augmented, with any augment and not only a Virus. During a battle, a Virus may also be applied to a spell token in play in the battle's region, either player's (723.2). The spell token gains only the mod's attributes, not its text.",
    "see": [
     "721"
    ],
    "examples": [
     "A Fireball augmented with a mod granting {Powerful} deals double damage when cast.",
-    "Carapace Devourer, an augment that is not a Virus, may augment a spell token during deployment."
+    "Carapace Devourer, an augment that is not a Virus, may augment a spell token during deployment.",
+    "In battle a player applies Chitin Shredder, a Virus, to a Fireball token standing in play. The Fireball gains Powerful and deals double damage when it is cast."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
     "D-U06-7",
     "D-U06-9"
    ],
-   "openQuestion": true,
+   "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
   },
@@ -9671,15 +9779,15 @@
    "sectionTitle": "Deck",
    "chapterTitle": "4. Zones",
    "parent": "401",
-   "text": "A player who must draw from an empty deck when the recycle pile is also empty draws as many cards as there are. Running out of cards does not make a player lose.",
+   "text": "A player who must draw from an empty deck when the recycle pile is also empty draws as many cards as there are, and has then run out of cards (104.5).",
    "see": [
     "408",
     "104"
    ],
    "examples": [
-    "With deck and recycle pile both empty, a draw of two draws nothing and the game goes on."
+    "With deck and recycle pile both empty, a draw of two draws nothing, and the game ends (104.5)."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -10353,9 +10461,11 @@
    "sectionTitle": "Bin",
    "chapterTitle": "4. Zones",
    "parent": "405",
-   "text": "Copies of one card in a bin cannot be told apart. A card in a bin is identified only by its name and by which copy of that name it is.",
+   "text": "A card in a bin is identified only by its name and by which copy of that name it is. An effect that has named one copy keeps naming that copy as other copies of its name leave the bin (405.6b).",
    "see": [],
-   "examples": [],
+   "examples": [
+    "Two copies of a card are in a bin and a spell targets the second. The first copy is taken in response: the target is still the card the spell aimed at, now the only copy."
+   ],
    "basis": "owner",
    "scope": "game",
    "engineDiffers": false,
@@ -10395,10 +10505,12 @@
    "sectionTitle": "Bin",
    "chapterTitle": "4. Zones",
    "parent": "405.6",
-   "text": "An effect that refers back to a card that just entered a bin (\"that card\", \"it\") means that copy. If that copy has left the bin, the effect finds nothing. It never takes a different copy of the same name.",
+   "text": "An effect that refers back to a card that just entered a bin (\"that card\", \"it\") means that copy. If that copy has left the bin, the effect finds nothing. It never takes a different copy of the same name. A card a spell or ability targets in a bin is held the same way: the target stays on the copy it named while other copies of that name leave, and if that copy itself leaves before the effect resolves, the target is gone.",
    "see": [],
    "examples": [
-    "An {Unstable} unit dies and is erased instead of staying in the bin. Biomass Devourer's \"erase it\" then finds nothing, and does not erase an older copy of the same card already in that bin."
+    "An {Unstable} unit dies and is erased instead of staying in the bin. Biomass Devourer's \"erase it\" then finds nothing, and does not erase an older copy of the same card already in that bin.",
+    "Two copies of a card are in a bin. A spell targets the second, and the second is taken in response. The spell finds nothing; it does not take the first copy instead.",
+    "A spell targets the first of two copies, and the first is taken in response. The spell does not slide onto the second copy."
    ],
    "basis": "owner",
    "scope": "game",
@@ -12141,7 +12253,7 @@
    "sectionTitle": "Resource Step",
    "chapterTitle": "5. Turn Structure",
    "parent": "502.2",
-   "text": "Exchange an active Prismite for a resource of one of the game's elements. A dormant Prismite cannot be exchanged.",
+   "text": "Exchange an active Prismite for a resource of any element, or for a Shard (106.8d). A dormant Prismite cannot be exchanged.",
    "see": [
     "106"
    ],
@@ -17664,7 +17776,7 @@
    ],
    "basis": "mixed",
    "scope": "game",
-   "engineDiffers": true,
+   "engineDiffers": false,
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
@@ -17678,14 +17790,14 @@
    "sectionTitle": "Combat Damage Step",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "608.3",
-   "text": "A sub-step in which no half-column is scheduled to strike (rule 608.3d) is not a separate step: no window opens after it. A scheduled sub-step keeps its window even if every half-column scheduled for it has since been destroyed. No window opens after the last scheduled sub-step; the after combat step begins.",
+   "text": "A sub-step in which no half-column is scheduled to strike (rule 608.3d) is not a separate step: no window opens after it. A scheduled sub-step keeps its window even if every half-column scheduled for it has since been destroyed; only the Sluggish sub-step is decided again, as 608.3d says. No window opens after the last scheduled sub-step; the after combat step begins.",
    "see": [],
    "examples": [
     "Dune Drifter (Swift) and Lithoghul attack in separate columns and are not blocked. Half-columns strike in the Swift and normal sub-steps and nothing strikes in the Sluggish sub-step, so there is exactly one window, between the Swift and normal sub-steps."
    ],
    "basis": "mixed",
    "scope": "game",
-   "engineDiffers": true,
+   "engineDiffers": false,
    "discrepancies": [
     "D-U12-10"
    ],
@@ -17701,20 +17813,22 @@
    "sectionTitle": "Combat Damage Step",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "608.3",
-   "text": "Which sub-steps are scheduled, and so are separate steps, is determined when the combat damage step begins, with one addition: if a half-column has Sluggish when the window after the Swift sub-step ends, the Sluggish sub-step is scheduled too, so a window opens before it. A unit that dies, leaves or loses an attribute during the step does not make a split step unsplit.",
+   "text": "Which sub-steps are scheduled, and so are separate steps, is determined when the combat damage step begins, with one revision: when the window after the Swift sub-step ends, the Sluggish sub-step is scheduled if, and only if, a half-column will then strike in it. So a half-column that gains Sluggish in that window gets the window before the Sluggish sub-step; and if no half-column has Sluggish when that window ends, the normal sub-step is the last scheduled one and the after combat step follows it. Without a Swift sub-step there is no such window, and the schedule is not revisited. Nothing else unsplits a split step: a unit that dies, leaves or loses an attribute during the step does not remove the Swift or the normal sub-step.",
    "see": [],
    "examples": [
-    "Dune Drifter (Swift) attacks beside Lithoghul and is blocked by another Dune Drifter. Both Swift units destroy each other in the Swift sub-step; the window before the normal sub-step still opens, and the death triggers can be answered there."
+    "Dune Drifter (Swift) attacks beside Lithoghul and is blocked by another Dune Drifter. Both Swift units destroy each other in the Swift sub-step; the window before the normal sub-step still opens.",
+    "A column is given Sluggish in the window after the Swift sub-step. The normal sub-step's triggers resolve in a window before the Sluggish sub-step, and then the column strikes.",
+    "The only Sluggish striker is gone before the window after the Swift sub-step ends. No window opens before a Sluggish sub-step; after the normal sub-step the after combat step begins."
    ],
    "basis": "mixed",
    "scope": "game",
-   "engineDiffers": true,
+   "engineDiffers": false,
    "discrepancies": [
     "D-U12-11"
    ],
    "openQuestion": false,
    "untested": false,
-   "verdict": "partial"
+   "verdict": "confirmed"
   },
   {
    "num": "608.3e",
@@ -24985,6 +25099,30 @@
    "verdict": "confirmed"
   },
   {
+   "num": "713.6b",
+   "key": "effects.state.together.delete-all",
+   "title": null,
+   "section": "713",
+   "sectionTitle": "State Checks",
+   "chapterTitle": "7. Spells, Abilities and Effects",
+   "parent": "713.6",
+   "text": "Units that one effect deletes all at once (\"delete all units …\") die together in the same way: they are one batch, and each of them still sees the others leave (706.8c).",
+   "see": [
+    "706.8c",
+    "801.5"
+   ],
+   "examples": [
+    "After combat Ruinbringer deletes a row of three units: an Ancient One between two units that have \"when I die\" abilities. The three die in one batch, so the Ancient One borrows both of its neighbours' \"when I die\" abilities."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
    "num": "713.7",
    "key": "effects.state.absent",
    "title": null,
@@ -26322,21 +26460,22 @@
    "sectionTitle": "Augment",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "721.4",
-   "text": "During deployment a player may also augment a spell token they have in play, with any augment, not only a Virus. The token gains only the augment's attributes.",
+   "text": "During deployment a player may also augment a spell token they have in play, with any augment, not only a Virus. During a battle, a Virus may also be applied to a spell token in play in the battle's region, either player's (723.2). The token gains only the augment's attributes.",
    "see": [
     "305.6",
     "507.2b"
    ],
    "examples": [
-    "An augmented token deals {Powerful} damage when cast."
+    "An augmented token deals {Powerful} damage when cast.",
+    "In battle a Virus is offered onto either player's spell token in play in the battle region."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
     "D-U06-9"
    ],
-   "openQuestion": true,
+   "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
   },
@@ -27289,12 +27428,13 @@
    "sectionTitle": "Virus",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "723",
-   "text": "During a battle, a player who has priority may apply a Virus from their hand onto any unit in the battle's region, their own or an opponent's.",
+   "text": "During a battle, a player who has priority may apply a Virus from their hand onto any unit, or any spell token in play, in the battle's region, their own or an opponent's.",
    "see": [
     "703"
    ],
    "examples": [
-    "A player applies Smouldering Inferno from hand to the opponent's attacker; the Virus goes on the stack and the host is modded when it resolves."
+    "A player applies Smouldering Inferno from hand to the opponent's attacker; the Virus goes on the stack and the host is modded when it resolves.",
+    "In battle a Virus is offered onto a spell token in play in the battle region, the player's own or the opponent's."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -27644,7 +27784,9 @@
    "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
-   "discrepancies": [],
+   "discrepancies": [
+    "D-U17-15"
+   ],
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
@@ -30288,7 +30430,7 @@
    ],
    "basis": "mixed",
    "scope": "game",
-   "engineDiffers": true,
+   "engineDiffers": false,
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
@@ -30330,10 +30472,13 @@
    "see": [
     "206.5"
    ],
-   "examples": [],
-   "basis": "designer",
+   "examples": [
+    "A unit printed 7/5 that Aberrant Statweaver makes base 3/3 is an 11/7 while it is Inverted.",
+    "Its Dark Bubb (printed 4/6, Inverted) beside Aberrant Statweaver is a 5/9, not a 3/3."
+   ],
+   "basis": "mixed",
    "scope": "game",
-   "engineDiffers": true,
+   "engineDiffers": false,
    "discrepancies": [
     "D-U19-3"
    ],
@@ -30361,7 +30506,7 @@
    ],
    "basis": "mixed",
    "scope": "game",
-   "engineDiffers": true,
+   "engineDiffers": false,
    "discrepancies": [
     "D-U19-9"
    ],
@@ -37175,13 +37320,15 @@
    "parent": "D1",
    "text": "The client holds no opinion of its own about legality. Wherever the client decides something the engine also decides, the client's answer is derived from the engine's, in one place.",
    "see": [],
-   "examples": [],
+   "examples": [
+    "In the block step the client marks a card exactly when the engine would refuse the whole plan, read off the engine's own validator; every placement of three defenders is checked against the engine."
+   ],
    "basis": "owner",
    "scope": "digital",
    "engineDiffers": false,
    "discrepancies": [],
    "openQuestion": false,
-   "untested": true,
+   "untested": false,
    "verdict": "confirmed"
   },
   {
@@ -37192,10 +37339,35 @@
    "sectionTitle": "General and Precedence",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D1.3",
-   "text": "A highlighted card, a clickable unit, a drop target or a one-click shortcut claims that the engine will take the action. The client draws one only where the engine would accept it.",
+   "text": "A highlighted card, a clickable unit, a drop target or a one-click shortcut claims that the engine will take the action. The client draws one only where the engine would accept it, with one exception: the block step (see rule D1.3b).",
    "see": [],
    "examples": [
     "A unit that cannot be sent to counterattack is not highlighted, and clicking it does nothing."
+   ],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D1.3b",
+   "key": "annexd.general.one-opinion.block-warning",
+   "title": null,
+   "section": "D1",
+   "sectionTitle": "General and Precedence",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D1.3",
+   "text": "In the block step a unit may be placed in a column where the engine would refuse the block. While it is there the card wears a red (!) mark, and the block bar names the engine's reason; the mark comes off when the unit is moved out. A card is marked only when the engine would refuse the plan.",
+   "see": [
+    "802.12",
+    "606.2e"
+   ],
+   "examples": [
+    "Bripp, a Feeble unit, is clicked into a block column: it wears the (!) before Confirm, and loses it when it is moved back out.",
+    "An unmet Alluring duty marks the lured unit, wherever it stands."
    ],
    "basis": "owner",
    "scope": "digital",
@@ -38800,11 +38972,13 @@
    "sectionTitle": "Undo",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D4.5",
-   "text": "A rewind takes the game back to one of: just before the proposing player's own last action, even when more than five actions came after it; just before any of the last five actions, counting only actions a player took (an action the game took for a player is neither counted nor a place to stop); the start of the current step; or the start of the step before. Each option names, in the proposing player's words, what it takes back. Inside a hidden step, a point within the step is offered only if it takes back none of the other player's hidden actions there (their public ones, such as finishing planning or deployment, may be taken back); the start of the step may take back the other player's hidden actions too. The actions taken back are removed from the game, as if they had not been taken.",
+   "text": "A rewind takes the game back to one of: just before the proposing player's own last action, even when more than five actions came after it; just before any of the last five actions, counting only actions a player took (an action the game took for a player is neither counted nor a place to stop); the start of the current step; or the start of the step before, which is the last earlier step in which a player took an action, and whose actions the game took for a player at its start are not taken back. Each option names, in the proposing player's words, what it takes back. Inside a hidden step, a point within the step is offered only if it takes back none of the other player's hidden actions there (their public ones, such as finishing planning or deployment, may be taken back); the start of the step may take back the other player's hidden actions too. The actions taken back are removed from the game, as if they had not been taken.",
    "see": [
     "D1.2b"
    ],
-   "examples": [],
+   "examples": [
+    "On turn 1 the step before the current one began with an action the game took for a player. \"The start of the step before\" lands after it, before the current step, and is still named \"the start of\"."
+   ],
    "basis": "owner",
    "scope": "digital",
    "engineDiffers": false,
@@ -39830,7 +40004,7 @@
    "sectionTitle": "Reveal Timing of Simultaneous Steps",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D6.6",
-   "text": "In constructed, the elements a player's deck contains are sent to both players. Whether they should be public at the start of the game is an open question for the owner (see the discrepancy report).",
+   "text": "In constructed, the view each player is sent carries the elements of both players' decks. The client reads only the player's own, to order that player's resource menu (D6.14b).",
    "see": [],
    "examples": [
     "A fire deck plays a water deck in constructed. Each player is sent that one deck is fire and the other water."
@@ -40515,13 +40689,14 @@
    "sectionTitle": "Reveal Timing of Simultaneous Steps",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D6.14",
-   "text": "In constructed, the menu for recycling a card for a resource lists the elements in the player's own deck first, then Prismite. Every other element of the game, and the Shard, are behind an expander. The menu changes nothing about what is legal: a resource of any element of the game may still be made.",
+   "text": "The menu for recycling a card for a resource lists first the elements of the player's own deck in constructed, or the draft's elements in a live draft, then Prismite. Every other element, and the Shard, are behind an expander. The menu changes nothing about what is legal: a resource of any of the seven elements may still be made.",
    "see": [
     "105.9a",
     "106.6a"
    ],
    "examples": [
-    "A mono-Fire constructed deck still has all seven elements legal for recycling; the menu just lists Fire first."
+    "A mono-Fire constructed deck still has all seven elements legal for recycling; the menu just lists Fire first.",
+    "In a fire-water-earth draft the recycle menu offers fire, water, earth and Prismite, and behind \"more elements\" wood, metal, light, dark and the Shard."
    ],
    "basis": "owner",
    "scope": "digital",
@@ -41205,6 +41380,29 @@
    "text": "The Tutorial Bot gains one Shard each turn, starting on turn 1. It casts Training Construct at the largest X it can pay, attacks with every unit it has, and never blocks. Its hand is hidden from the learner.",
    "see": [],
    "examples": [],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D8.1d",
+   "key": "annexd.modes.learn-to-play.deck-out",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8.1",
+   "text": "In a lesson deal, the deal Learn to Play and the Weekly Challenges use, running out of cards ends nothing: a player who has to draw from an empty deck and an empty recycle pile draws the cards there are and plays on. Rule 104.5 does not apply.",
+   "see": [
+    "104.5"
+   ],
+   "examples": [
+    "A Weekly Challenge deck runs out: the player draws fewer and the run goes on."
+   ],
    "basis": "owner",
    "scope": "digital",
    "engineDiffers": false,

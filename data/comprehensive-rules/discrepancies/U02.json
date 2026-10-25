@@ -47,7 +47,7 @@
     "id": "D-U02-3",
     "kind": "c-owner-call-only",
     "rule": "concepts.elements.game-elements",
-    "tier": 3,
+    "tier": 4,
     "summary": "The client limits the resources a player may create (by recycling or by exchanging a Prismite) to the game's elements: in a live draft, the three selected. The Manual and the owner ruling of 2026-08-18 (“Prismites give no affinity; active ones…”) put no such limit.",
     "sides": [
       {
@@ -63,7 +63,7 @@
         "quote": "early on a prismite), and once active may be exchanged for any element of the game."
       }
     ],
-    "resolution": "The rule states the owner ruling of 2026-09-19 (“Recycling can make a Prismite”) (\"any element of the game\"), an owner call with no printed or designer source. Question for the owner only if the Manual's \"any resource\" is meant to reach elements outside a live draft's selection (for example a fire resource in a water-wood-metal draft)."
+    "resolution": "Settled 2026-10-25 (BL-44): the owner, 2026-09-19, \"it's technically legal to make a Fire resource, even if you don't have any Fire cards in the deck\" — the Manual's \"any resource\", read literally. concepts.elements.game-elements now lets a player create any of the seven elements in every game, and the engine accepts them."
   },
   {
     "id": "D-U02-4",

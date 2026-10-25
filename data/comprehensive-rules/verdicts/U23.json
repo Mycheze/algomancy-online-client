@@ -2798,39 +2798,48 @@
   },
   {
     "key": "annexd.general.one-opinion",
-    "textHash": "e60a816c33d601fa",
+    "textHash": "49e7d6528445867f",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U23-r1",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/ui/passrelease.ts",
+        "loc": "client/ui/placewarn.ts:placementWarnings",
         "agrees": true,
-        "note": "the server asks the client's own release function; formationCandidates mirrors validFormation"
+        "note": "reads the engine validator (blockVerdict/blockDeclarationIssue)"
+      },
+      {
+        "loc": "client/ui/inspect.ts:blockPlanIssue",
+        "agrees": true,
+        "note": "reads allureViolation from the engine"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/ui/test/671-placement-warning-badge.test.ts",
+        "pattern": "CR D1.3 / 802.12 / CT-410: the badge shows exactly when the engine refuses the plan",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/223-client-legality.test.ts",
+        "pattern": "[127]",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R245",
+        "ref": "owner \"Wherever the client decides something the engine also decides, the client's\" / \"answer must be DERIVED from the engine's — by asking it, or by mirroring one\"",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
-      },
-      {
-        "ref": "R245",
-        "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**Wherever the client decides something the engine also decides, the client's"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "answer must be DERIVED from the engine's — by asking it, or by mirroring one"
+        "file": "client/ui/placewarn.ts",
+        "text": "if (v === null) return out;"
       }
     ],
     "basis_ok": true,
@@ -2838,52 +2847,107 @@
   },
   {
     "key": "annexd.general.one-opinion.affordances",
-    "textHash": "3d9f7b1bea1c7cfb",
+    "textHash": "26fd4e4bafc76947",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U23-r1",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/ui/battle.ts:formationCandidates",
+        "loc": "client/ui/battle.ts:formationCandidates / canJoinFormation",
         "agrees": true,
-        "note": ""
+        "note": "the attack affordance is exactly the units the engine would accept"
+      },
+      {
+        "loc": "client/ui/placewarn.ts (header)",
+        "agrees": true,
+        "note": "the block step is the one place a placement the engine refuses can be built"
       }
     ],
     "tests_run": [
       {
         "file": "client/ui/test/223-client-legality.test.ts",
-        "pattern": "[127] a unit the engine would refuse is not ringed and does not pick up on a click",
+        "pattern": "[127]",
         "passed": true,
-        "asserts_claim": true,
-        "note": "ran the file; all tests pass"
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R245",
+        "ref": "owner \"A ring, a clickable unit, a drop target and a one-click \\\"attack all\\\" all say\" / \"\\\"the engine will take this\\\". If the engine would refuse it, the affordance is a\"",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
-      },
-      {
-        "ref": "R245",
-        "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "the convention; the block-step exception is the owner's BL-50 choice to keep the drag"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "A ring, a clickable unit, a drop target and a one-click \"attack all\" all say"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "\"the engine will take this\". If the engine would refuse it, the affordance is a"
+        "file": "client/ui/test/223-client-legality.test.ts",
+        "text": "'[127] \"she seemed to be able to attack with the other things\" — she must not seem to');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "reworded, equivalence-checked 2026-10-11"
+    "problem": ""
+  },
+  {
+    "key": "annexd.general.one-opinion.block-warning",
+    "textHash": "908af8a1ae64b4ee",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U23-r4",
+    "engine": [
+      {
+        "loc": "client/ui/placewarn.ts:placementWarnings",
+        "agrees": true,
+        "note": "reads the engine's blockDeclarationIssue; marks the offending cards"
+      },
+      {
+        "loc": "client/ui/main.ts:placewarnline (prompt bar)",
+        "agrees": true,
+        "note": "bar names the card(s) and the engine's reason"
+      },
+      {
+        "loc": "client/ui/style.css:.placewarn",
+        "agrees": true,
+        "note": "red radial-gradient (!) badge"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/671-placement-warning-badge.test.ts",
+        "pattern": "(whole file, 7 tests)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner, BL-50 (backlog) 'blocking with feeble units isn't allowed to be submitted, but you can drag them into the column.'",
+        "supports": "yes",
+        "note": "verbatim in backlog-closed.ts BL-50 said"
+      },
+      {
+        "ref": "owner, BL-50 (backlog) 'maybe we should add a sorta (!) icon onto cards (in the same place the big die is for token spells)'",
+        "supports": "yes",
+        "note": "verbatim; the same sentence continues 'when there's a card in a formation in an illegal way (a way that the engine won't allow upon submission)', which supports the last sentence"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/backlog-closed.ts",
+        "text": "blocking with feeble units isn't allowed to be submitted, but you can drag them into the column."
+      },
+      {
+        "file": "client/ui/style.css",
+        "text": "background: radial-gradient(circle at 35% 30%, #ff6b5a, #c0271a 70%)"
+      },
+      {
+        "file": "client/ui/test/671-placement-warning-badge.test.ts",
+        "text": "'the bar names the card and the reason, where a finger can read it');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Note only: 'red' and 'the block bar names the reason' rest on the UI code and test 671, not on the owner's words (an argument for basis 'mixed'). 671's sweeps (343 placements + Alluring + Sneaky) show marks appear exactly when the engine refuses."
   },
   {
     "key": "annexd.general.player-decides",
@@ -4980,7 +5044,7 @@
   },
   {
     "key": "annexd.undo.agreed-fix.rewind",
-    "textHash": "fc03ddd6bdb74f0f",
+    "textHash": "a5b8d9d6a36e1377",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U23-r4",
@@ -4988,78 +5052,82 @@
       {
         "loc": "client/server/rooms.ts:rewindPlans",
         "agrees": true,
-        "note": "lastOwn loop has no five-action cap (searches the 80-action window); at most FIX_REWIND_MAX=5 non-forced \"before\" cuts; forced steps neither counted nor cut at; start of this step and of the step before; inside a hidden step a cut is offered only if ownOnly()"
+        "note": "last own action (not bounded by five), last five non-forced actions, start of this step, start of the step before (passing over all-forced steps and skipping its leading forced actions), ownOnly inside a hidden step"
       },
       {
-        "loc": "client/server/rewind-cuts.ts:describe / PUBLIC_IN_HIDDEN",
+        "loc": "client/server/rooms.ts:rewindOptions / rewind-cuts.ts:cutParts",
         "agrees": true,
-        "note": "donePlanning / doneDeploying / amend are not hidden, so they may be cut"
+        "note": "each option labelled in the asking seat's words with what it takes back"
       },
       {
         "loc": "client/server/rooms.ts:rewindRoom",
         "agrees": true,
-        "note": "truncates the log; the board is the prefix replayed"
+        "note": "log truncated to the cut and the room rebuilt; removed actions archived only"
       }
     ],
     "tests_run": [
       {
         "file": "client/server/test/485-agreed-fix-rooms.test.ts",
-        "pattern": "§4 rewind options",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "client/server/test/485-agreed-fix-rooms.test.ts",
-        "pattern": "§3 a rewind cuts the log",
+        "pattern": "§3 / §4",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/server/test/486-agreed-fix-over-the-wire.test.ts",
-        "pattern": "§4 a rewind",
+        "pattern": "§4 a rewind (passes in the full-file run; fails when filtered alone because it depends on earlier tests' state)",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/ui/test/523-rewind-options-name-their-cut.test.ts",
-        "pattern": "§1 every rewind option names",
+        "pattern": "§1 / §2",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/ui/test/523-rewind-options-name-their-cut.test.ts",
-        "pattern": "§2 inside a hidden step",
+        "file": "client/server/test/669-rewind-step-before-skips-forced.test.ts",
+        "pattern": "CR D4.5d",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/679-public-in-hidden-step.test.ts",
+        "pattern": "CR D4.5d",
         "passed": true,
         "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "client/server/test/zz-probe-U23-1.test.ts",
-        "test": "zz U23-1: own last action offered with more than five non-forced actions after it",
+        "file": "client/server/test/zz-probe-U23-2.test.ts",
+        "test": "probe U23-2: last-own option offered with six later actions",
         "passed": true,
-        "demonstrates": "yes: with 7-9 non-forced actions after a seat's own last one (a synthetic tail of refused actions appended to a real battle log, which tailStates skips), rewindOptions still offers exactly one \"(your last action\" option at that index, beside at most five action rewinds. Synthetic, so it shows the algorithm, within its 80-action search window."
+        "demonstrates": "yes: with six later actions by the other seat, \"Back to before your pass (your last action ...)\" is offered at the right index while plain before-cuts stay at five"
       }
     ],
     "source_checks": [
       {
-        "ref": "owner: \"Rewinding a whole step or two seems fine to me. Either say \\\"up to 5 actions\\\" or \\\"restart this step\\\"\"",
+        "ref": "owner \"Rewinding a whole step or two seems fine to me. Either say \\\"up to 5 actions\\\" or \\\"restart this step\\\"\"",
         "supports": "yes",
-        "note": "supports the five-action and step-start options; the rest is demonstrated by tests and the probe"
+        "note": "supports the five-action and step-start options; the remaining detail is the client's convention, demonstrated by the bound tests and the probe"
       }
     ],
     "quote_spans": [
       {
         "file": "client/server/rooms.ts",
-        "text": "export const FIX_REWIND_MAX = 5;"
-      },
-      {
-        "file": "client/server/rewind-cuts.ts",
-        "text": "const PUBLIC_IN_HIDDEN = new Set(['donePlanning', 'doneDeploying', 'amend']);"
+        "text": "for (let i = len - 1; i >= lo && n < FIX_REWIND_MAX; i--) {"
       },
       {
         "file": "client/server/rooms.ts",
-        "text": "// \"back to before your last action\" — first-class, however far back it is"
+        "text": "if (to <= openStart) return false;   // that is the start of the step's own option"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "while (to < end && forced(to)) to++;"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "room.actions = restore.slice(0, to);"
       }
     ],
     "basis_ok": true,

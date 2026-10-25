@@ -720,21 +720,18 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "'All players have passed priority in succession with the stack empty' is ordinary priority procedure (rule 703), not stated by a combat source. The owner ruling of 2026-09-16 (“A split damage step is several…”)’s prose says a window follows a sub-step that 'struck'; this rule follows its fixed schedule instead (D-U12-10). 2026-10-24 housework: \"scheduled when the step began\" now defers to 608.3d, which adds a Sluggish sub-step gained in the after-Swift window (owner question Q3, the designer's answer). The engine does not: F-U12-5, CT-378.",
+    "notes": "'All players have passed priority in succession with the stack empty' is ordinary priority procedure (rule 703), not stated by a combat source. The owner ruling of 2026-09-16 (“A split damage step is several…”)’s prose says a window follows a sub-step that 'struck'; this rule follows its fixed schedule instead (D-U12-10). 2026-10-24 housework: \"scheduled when the step began\" now defers to 608.3d, which adds a Sluggish sub-step gained in the after-Swift window (owner question Q3, the designer's answer). The engine does since CT-378 (2026-10-25; F-U12-5 closed).",
     "sourceHashes": {
       "RAQ 1363298910528864318#0": "3bfd6b42b0de5ecc8690c43b87713aece9c7627312eeed9ca7313163b2b4dac2",
       "RAQ 1540678747953569832#2": "c606d1a891a2c53e293717e8c62f1e2487fe5a75c188a2814b3b3bab5c88d228",
       "RQ 1363287109401710603": "4d20cc6c7cc6e48bde3511a1117682279444b38950d7b2f66095573f96516766"
-    },
-    "engineDiffers": [
-      "F-U12-5"
-    ]
+    }
   },
   {
     "key": "combat.damage.split.empty-substep",
     "parent": "combat.damage.split",
     "order": 3,
-    "text": "A sub-step in which no half-column is scheduled to strike (rule 608.3d) is not a separate step: no window opens after it. A scheduled sub-step keeps its window even if every half-column scheduled for it has since been destroyed. No window opens after the last scheduled sub-step; the after combat step begins.",
+    "text": "A sub-step in which no half-column is scheduled to strike (rule 608.3d) is not a separate step: no window opens after it. A scheduled sub-step keeps its window even if every half-column scheduled for it has since been destroyed; only the Sluggish sub-step is decided again, as 608.3d says. No window opens after the last scheduled sub-step; the after combat step begins.",
     "examples": [
       {
         "text": "Dune Drifter (Swift) and Lithoghul attack in separate columns and are not blocked. Half-columns strike in the Swift and normal sub-steps and nothing strikes in the Sluggish sub-step, so there is exactly one window, between the Swift and normal sub-steps.",
@@ -748,6 +745,10 @@
         {
           "ref": "RQ 1363288029799911664",
           "quote": "you would have to add sluggish during the \"after swift\" window"
+        },
+        {
+          "ref": "RQ 1363287984614539374",
+          "quote": "correct"
         }
       ],
       "ours": [],
@@ -774,23 +775,33 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The owner ruling of 2026-09-16 (“A split damage step is several…”)’s own condition is 'struck'; the pilot verifier measured that a window follows a scheduled sub-step whose strikers died, and that an unscheduled Sluggish sub-step still deals damage with no window before it (pilot probe P1, the illustrative example). The second and third sentences are engine-derived. See D-U12-10 and D-U12-11. 2026-10-24 housework: the sentence \"a half-column that still strikes in a later sub-step strikes without a window before it\" stated reading B of owner question Q3; the designer answered A (608.3d), so it is dropped, with the 423 example that pinned it. The engine still strikes such a column with no window: F-U12-5, CT-378.",
+    "notes": "The owner ruling of 2026-09-16 (“A split damage step is several…”)’s own condition is 'struck'; the pilot verifier measured that a window follows a scheduled sub-step whose strikers died, and that an unscheduled Sluggish sub-step still deals damage with no window before it (pilot probe P1, the illustrative example). The second and third sentences are engine-derived. See D-U12-10 and D-U12-11. 2026-10-24 housework: the sentence \"a half-column that still strikes in a later sub-step strikes without a window before it\" stated reading B of owner question Q3; the designer answered A (608.3d), so it is dropped, with the 423 example that pinned it. CT-378 (2026-10-25): the engine now re-decides the Sluggish sub-step as the after-Swift window ends (608.3d); F-U12-5 closed.",
     "sourceHashes": {
+      "RQ 1363287984614539374": "3885537bf6aae085537a1a4e64bb1bb3b4311a89af768075fba6110576bcd251",
       "RQ 1363288029799911664": "39fbc16e5b864de0e3d26da224dc7fe3bedb5f923d0f964a9f269dd9a2c217ed"
-    },
-    "engineDiffers": [
-      "F-U12-5"
-    ]
+    }
   },
   {
     "key": "combat.damage.split.schedule-fixed",
     "parent": "combat.damage.split",
     "order": 4,
-    "text": "Which sub-steps are scheduled, and so are separate steps, is determined when the combat damage step begins, with one addition: if a half-column has Sluggish when the window after the Swift sub-step ends, the Sluggish sub-step is scheduled too, so a window opens before it. A unit that dies, leaves or loses an attribute during the step does not make a split step unsplit.",
+    "text": "Which sub-steps are scheduled, and so are separate steps, is determined when the combat damage step begins, with one revision: when the window after the Swift sub-step ends, the Sluggish sub-step is scheduled if, and only if, a half-column will then strike in it. So a half-column that gains Sluggish in that window gets the window before the Sluggish sub-step; and if no half-column has Sluggish when that window ends, the normal sub-step is the last scheduled one and the after combat step follows it. Without a Swift sub-step there is no such window, and the schedule is not revisited. Nothing else unsplits a split step: a unit that dies, leaves or loses an attribute during the step does not remove the Swift or the normal sub-step.",
     "examples": [
       {
-        "text": "Dune Drifter (Swift) attacks beside Lithoghul and is blocked by another Dune Drifter. Both Swift units destroy each other in the Swift sub-step; the window before the normal sub-step still opens, and the death triggers can be answered there.",
+        "text": "Dune Drifter (Swift) attacks beside Lithoghul and is blocked by another Dune Drifter. Both Swift units destroy each other in the Swift sub-step; the window before the normal sub-step still opens.",
         "test": "297-damage-substeps-are-steps.test.ts::CR 608.3d damageSubs is fixed when the step opens"
+      },
+      {
+        "text": "A column is given Sluggish in the window after the Swift sub-step. The normal sub-step's triggers resolve in a window before the Sluggish sub-step, and then the column strikes.",
+        "test": "658-sluggish-decided-after-swift-window.test.ts::CR 608.3d / CT-378: a column given Sluggish in the after-Swift window gets the before-Sluggish window"
+      },
+      {
+        "text": "The only Sluggish striker is gone before the window after the Swift sub-step ends. No window opens before a Sluggish sub-step; after the normal sub-step the after combat step begins.",
+        "test": "658-sluggish-decided-after-swift-window.test.ts::CR 608.3d / CT-378: a Sluggish striker gone before the after-Swift window ends leaves no before-Sluggish window"
+      },
+      {
+        "text": null,
+        "test": "658-sluggish-decided-after-swift-window.test.ts::CR 608.3d / CT-378: control -- with no Swift sub-step the schedule fixed at the start of the step is not revisited"
       }
     ],
     "see": [],
@@ -808,6 +819,18 @@
         {
           "ref": "RQ 1363278470938890250",
           "quote": "Before Sluggish priority window"
+        },
+        {
+          "ref": "RQ 1363287984614539374",
+          "quote": "correct"
+        },
+        {
+          "ref": "RQ 1363281743234207999",
+          "quote": "should do regular damage in that case"
+        },
+        {
+          "ref": "RQ 1363281782749003809",
+          "quote": "and no sluggish priority window would be opened"
         }
       ],
       "ours": [],
@@ -820,21 +843,23 @@
       ],
       "engine": [],
       "tests": [
-        "297-damage-substeps-are-steps.test.ts"
+        "297-damage-substeps-are-steps.test.ts",
+        "658-sluggish-decided-after-swift-window.test.ts",
+        "423-cr-combat-damage.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Owner ruling (owner ruling of 2026-09-16, “A split damage step is several…”) with no designer source; the designer's 'presence of Swift/Sluggish' does not say when presence is judged (D-U12-11). Owner question Q3 (D-U12-11) answered by the designer, 2026-10-24 housework: reading A. Caleb's damage-step scheme puts a before-Sluggish priority window before every Sluggish strike, and a Sluggish sub-step is had by adding Sluggish in the after-Swift window (RQ 1363278470938890250, 1363287109401710603, 1363288029799911664, 2025-04-20). The owner call of 2026-09-16 still carries the not-unsplit sentence. The engine fixes the schedule when the step opens, so no window opens before a gained Sluggish strike: F-U12-5, CT-378.",
+    "notes": "Owner ruling of 2026-09-16 (\"A split damage step is several…\") for the fixed schedule and the not-unsplit sentence. The revision is the designer's (2025-04-20): a before-Sluggish priority window precedes every Sluggish strike, Sluggish is added \"during the after swift window\", \"correct\" to ionalien's \"if no sluggish unit exists … you will go from normal damage -> after combat\", and, on Sluggish removed there, \"should do regular damage in that case\" / \"and no sluggish priority window would be opened\". The round-4 verifier of 2026-10-24 left the text partial for the drop half; it is now stated. CT-378 (2026-10-25) implements both halves (rescheduleSluggish); F-U12-5 closed. Round 4 (2026-10-25): the first example said death triggers could be answered at that window, but neither unit has one; the clause is dropped.",
     "sourceHashes": {
       "RQ 1363278470938890250": "0ceb45f3acbb9e586ad28bf303bced7e6e6dee986ef91668814f9d274f940b70",
+      "RQ 1363281743234207999": "1ecf2641f32259eb53caac549df54d3708531d82adb24b270c706da4ecdbbf61",
+      "RQ 1363281782749003809": "2d3d30cf608926086455f05fb5edeebdba37a0648f9dad0b2be9983c353d3e45",
       "RQ 1363287109401710603": "4d20cc6c7cc6e48bde3511a1117682279444b38950d7b2f66095573f96516766",
+      "RQ 1363287984614539374": "3885537bf6aae085537a1a4e64bb1bb3b4311a89af768075fba6110576bcd251",
       "RQ 1363288029799911664": "39fbc16e5b864de0e3d26da224dc7fe3bedb5f923d0f964a9f269dd9a2c217ed"
-    },
-    "engineDiffers": [
-      "F-U12-5"
-    ]
+    }
   },
   {
     "key": "combat.damage.split.state-between",

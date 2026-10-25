@@ -208,40 +208,66 @@
   },
   {
     "key": "zones.bin.identity",
-    "textHash": "396ee257677635d8",
+    "textHash": "0ed9581016d5f48d",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U07-r1-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "PlayerState.bin: CardName[]",
+        "loc": "client/engine/src/types.ts:BinRef",
         "agrees": true,
-        "note": "BinRef = (name, nth)"
+        "note": "a bin ref is (seat, card, nth); the bin stores bare names (ownership of a foreign copy is a side table, a property, not the reference)"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:reindexBinRefs",
+        "agrees": true,
+        "note": "as a copy leaves, refs to later copies move down one, refs to the leaving copy go dead, refs to earlier copies stay: the ref keeps naming its copy"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/418-cr-zones.test.ts",
+        "pattern": "cr:zones.bin.identity",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/663-bin-target-copy-identity.test.ts",
+        "pattern": "CR 405.6b / CT-380",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R140",
+        "ref": "owner register@72de434 'A bin holds bare card NAMES, so identity in a bin is (name, nth occurrence)'",
         "supports": "yes",
-        "note": ""
+        "note": "sentence 1"
       },
       {
-        "ref": "R131",
+        "ref": "owner register@72de434 'indistinguishable — the card name plus which copy IS the whole identity'",
         "supports": "yes",
-        "note": ""
+        "note": "sentence 1"
+      },
+      {
+        "ref": "owner register@72de434 'It never means \"take the other copy\".'",
+        "supports": "yes",
+        "note": "sentence 2: a ref never slides to a different copy; demonstrated by 663 (all four rows)"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "A bin holds bare card NAMES, so identity in a bin is (name, nth occurrence)"
+        "file": "client/engine/src/types.ts",
+        "text": "A bin holds plain card NAMES, so two copies of one"
+      },
+      {
+        "file": "client/engine/test/663-bin-target-copy-identity.test.ts",
+        "text": "assert.deepEqual(handCopies(h, A), [A], 'A gets the copy it aimed at, its own card');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": "Note only: the engine also tracks which player owns a copy in another player's bin (CT-233 foreign table), so copies are not physically interchangeable; the reference itself is still (name, which copy), as the rule says. Example 2 matches test 663 #3 (aim copy 2, copy 1 taken, A still gets copy 2)."
   },
   {
     "key": "zones.bin.identity.another",
@@ -283,42 +309,59 @@
   },
   {
     "key": "zones.bin.identity.that-card",
-    "textHash": "c662af020b07e8b9",
+    "textHash": "ea729f1af84a9381",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards (Biomass Devourer)",
+        "loc": "client/engine/src/engine.ts:E.binIndexOf / E.removeFromBin",
         "agrees": true,
-        "note": "R140: resolves the (name, nth) copy the event named"
+        "note": "a gone copy's ref resolves to -1, no fallback to another copy"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/26-metal-a.test.ts",
-        "pattern": "R140: Biomass Devourer does NOT erase an innocent older copy",
+        "pattern": "CR 405.6: Biomass Devourer does NOT erase an innocent older copy",
         "passed": true,
-        "asserts_claim": true,
-        "passed_note": "yes: an Unstable Good Whale dies and is swept; no bargain is offered; the older Good Whale stays in the bin; no counters, no mana spent"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/663-bin-target-copy-identity.test.ts",
+        "pattern": "CR 405.6b / CT-380: the second copy targeted and taken in response",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/663-bin-target-copy-identity.test.ts",
+        "pattern": "CR 405.6b / CT-380: the first copy targeted and taken in response",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/663-bin-target-copy-identity.test.ts",
+        "pattern": "CR 405.6b / CT-380: a later copy leaving does not move the target",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R140 (its rule: a responder names the copy the event named)",
+        "ref": "owner register@72de434 'It never means \"take the other copy\".'",
         "supports": "yes",
-        "note": "only the owner's-bin premise is superseded (R250)"
+        "note": "covers 'never a different copy'; the target sentence applies the same ruling to a bin target (stay on the named copy, gone if it leaves)"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "pair, not search the bin for the name.** A pair that no longer resolves means"
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "text": "'the innocent copy is untouched — it was never the card that died');"
       },
       {
         "file": "client/engine/src/cards/printed.json",
-        "text": "\"text\": \"[Augment] Whenever a nontoken unit dies, you may pay [two] to erase it and put two +1/+1 counters on me.\""
+        "text": "Whenever a nontoken unit dies, you may pay [two] to erase it and put two +1/+1 counters on me."
       }
     ],
     "basis_ok": true,
@@ -2461,21 +2504,27 @@
   },
   {
     "key": "zones.deck.empty",
-    "textHash": "18fbd5c42114ca1c",
+    "textHash": "41c5829aa01b4d69",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U07-r2-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "engine.ts:draw / refillFromRecycled",
+        "loc": "client/engine/src/engine.ts:E.draw / E.deckedOut",
         "agrees": true,
-        "note": "pile-empty guard returns; draw loop breaks on undefined; no loss is set"
+        "note": "draws what there is, then deckedOut (except a lesson deal or a silent deal draw)"
       }
     ],
     "tests_run": [
       {
-        "file": "300-recycle-mark.test.ts",
-        "pattern": "an empty deck AND an empty pile draws fewer",
+        "file": "client/engine/test/300-recycle-mark.test.ts",
+        "pattern": "CR 401.4 an empty deck AND an empty pile draws fewer",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/656-deck-out.test.ts",
+        "pattern": "CR 104.5 / CT-385: the cards that are there are drawn first",
         "passed": true,
         "asserts_claim": true
       }
@@ -2483,19 +2532,20 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R296",
+        "ref": "RQ 1356616873655140546",
         "supports": "yes",
-        "note": "both empty: simply draws fewer; no deck-out loss"
+        "note": ""
+      },
+      {
+        "ref": "owner chat 2026-10-24 'Follow Caleb'",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (c === undefined) break;"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "**No deck-out loss.** A player whose deck *and* pile are both empty simply draws"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "In constructed you lose if you draw on an empty deck"
       }
     ],
     "basis_ok": true,

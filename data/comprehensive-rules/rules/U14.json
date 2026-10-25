@@ -816,7 +816,7 @@
       "printed": [],
       "designer": [
         {
-          "ref": "RAQ 1396955380000755795#8",
+          "ref": "RAQ 1396955380000755795#9",
           "quote": "Played units/spells will trigger things with wording 'when you play ...'"
         }
       ],
@@ -841,7 +841,7 @@
     "confidence": "high",
     "notes": "Engine aligned 2026-10-22: Wake the Dead (CT-245) and The Bonesculptor (CT-255) make real plays through the stack, and an in-place play is a whole play (CT-332, CT-143: costs paid, the wide play event fired). F-U14-3 closed.",
     "sourceHashes": {
-      "RAQ 1396955380000755795#8": "d7b245a4138b1fec7dc7f5e7d5e771ae4a62619ada3cebcf03ccd74ef2540a75"
+      "RAQ 1396955380000755795#9": "d7b245a4138b1fec7dc7f5e7d5e771ae4a62619ada3cebcf03ccd74ef2540a75"
     }
   },
   {
@@ -2979,7 +2979,7 @@
       "printed": [],
       "designer": [
         {
-          "ref": "RAQ 1396955380000755795#4",
+          "ref": "RAQ 1396955380000755795#5",
           "quote": "played cards are 2 separate effects put on the stack at the same time and you get to decide the order."
         }
       ],
@@ -2995,7 +2995,7 @@
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "RAQ 1396955380000755795#4": "325946fed1e92195a657d5818c9119358e7f48caa519f336bef429f13636c8e0"
+      "RAQ 1396955380000755795#5": "325946fed1e92195a657d5818c9119358e7f48caa519f336bef429f13636c8e0"
     }
   },
   {
@@ -3061,7 +3061,7 @@
       "printed": [],
       "designer": [
         {
-          "ref": "RAQ 1396955380000755795#4",
+          "ref": "RAQ 1396955380000755795#5",
           "quote": "5. Once Cosmos resolves, played cards are 2 separate effects put on the stack at the same time"
         }
       ],
@@ -3084,7 +3084,7 @@
     "confidence": "high",
     "notes": "Engine aligned 2026-10-22 (CT-245, CT-255): no play is made through a spawn any more; F-U14-3 closed.",
     "sourceHashes": {
-      "RAQ 1396955380000755795#4": "325946fed1e92195a657d5818c9119358e7f48caa519f336bef429f13636c8e0"
+      "RAQ 1396955380000755795#5": "325946fed1e92195a657d5818c9119358e7f48caa519f336bef429f13636c8e0"
     }
   },
   {

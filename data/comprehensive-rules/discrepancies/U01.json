@@ -87,7 +87,7 @@
         "quote": "The floor is 0 and that is **not** a narrowing: `E.loseLife` ends the game the"
       }
     ],
-    "resolution": "The rule says \"reaches 0\". The verifier should check whether the engine also treats a total below 0 as eliminated (the 02-combat win-condition test reduces a player from 3 life with one attacker)."
+    "resolution": "Settled by the designer: a life total goes below 0 (RQ 1426602231070851253, \"yeah\", 2025-10-11), and two totals at 0 or less are compared (104.1b, CT-409). concepts.ending.elimination now says so."
   },
   {
     "id": "D-U01-5",
@@ -133,9 +133,9 @@
   },
   {
     "id": "D-U01-8",
-    "kind": "c-owner-call-only",
+    "kind": "a-sources-disagree",
     "rule": "concepts.ending.no-deck-out",
-    "tier": 3,
+    "tier": 2,
     "summary": "That running out of cards does not lose the game rests on the owner ruling of 2026-09-16 (“Recycling puts a card past the…”) alone. The printed rules do not say what happens when a deck runs out.",
     "sides": [
       {
@@ -143,7 +143,7 @@
         "quote": "**No deck-out loss.** A player whose deck *and* pile are both empty simply draws"
       }
     ],
-    "resolution": "Basis owner. A judge's CR may have a deck-out rule; compare."
+    "resolution": "Settled by the designer (2026-10-25, CT-385), which outranks the owner's 2026-09-16 \"No deck-out loss\"; the owner on 2026-10-24: \"Follow Caleb\". In constructed the player who runs out of cards loses (RQ 1356616873655140546, 1402038431659593859); with a shared deck the game ends and the higher life total wins (RQ 1387479757406474313, 1402046319643856916), a tie going against the initiative player (owner 2026-10-25, \"INT player loses\"). concepts.ending.no-deck-out, concepts.ending.deck-out.constructed, concepts.ending.deck-out.shared-deck, concepts.ending.deck-out.draw-only and zones.deck.empty state it; lesson deals are exempt (annexd.modes.learn-to-play.deck-out)."
   },
   {
     "id": "D-U01-9",

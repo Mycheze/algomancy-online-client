@@ -3304,6 +3304,45 @@
     "sourceHashes": {}
   },
   {
+    "key": "effects.state.together.delete-all",
+    "parent": "effects.state.together",
+    "order": 2,
+    "text": "Units that one effect deletes all at once (\"delete all units …\") die together in the same way: they are one batch, and each of them still sees the others leave (706.8c).",
+    "examples": [
+      {
+        "text": "After combat Ruinbringer deletes a row of three units: an Ancient One between two units that have \"when I die\" abilities. The three die in one batch, so the Ancient One borrows both of its neighbours' \"when I die\" abilities.",
+        "test": "660-delete-all-is-one-batch.test.ts::CR 706.8c, 714.9 / CT-363: Ruinbringer after combat deletes an Ancient One with both neighbours in one batch"
+      }
+    ],
+    "see": [
+      "706.8c",
+      "801.5"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "engine": [
+        "destroyBatch"
+      ],
+      "owner": [
+        {
+          "quote": "A deleted unit dies.",
+          "adopted": "2026-10-11",
+          "from": "register@72de434"
+        }
+      ],
+      "tests": [
+        "660-delete-all-is-one-batch.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "medium",
+    "notes": "CT-363 (2026-10-25): Ruinbringer, Ominous Growth, Deformant, Pathogenic Enclave and Sporebloom Siren delete through E.destroyBatch, the batch checkDeaths uses. No designer or owner words say deletes of one effect are one batch; it is the engine's reading of 713.6 (\"die in the same state check die together\") for one \"delete all\" instruction, with \"A deleted unit dies\" (801.5). Engine-derived: awaits owner sign-off.",
+    "sourceHashes": {}
+  },
+  {
     "key": "effects.state.absent",
     "parent": "713",
     "order": 7,

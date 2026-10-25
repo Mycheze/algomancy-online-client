@@ -978,35 +978,31 @@
     "key": "keywords.abilities.burst.order",
     "textHash": "485e609e506560b4",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U21-r2",
+    "round": 4,
+    "verifier": "U21-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:doCastSpellToken",
+        "loc": "client/engine/src/apply.ts:doCastSpellToken / burstStep",
         "agrees": true,
-        "note": "ordered && group.length>1 routes to burstStep; the whole group is priced and committed before priority moves"
-      },
-      {
-        "loc": "client/engine/src/apply.ts:burstStep / decide burstPick",
-        "agrees": true,
-        "note": "each pick is aimed before the next is asked; the first pick ends on top"
-      },
-      {
-        "loc": "client/ui/main.ts:castSpellToken click",
-        "agrees": true,
-        "note": "the client always sends ordered:true; an unordered cast (entity-id order) survives only for old replays"
+        "note": "ordered && group.length > 1 -> burstStep, pick-and-aim in resolve order, first pick on top; the UI always sends ordered: true (client/ui/main.ts). The unordered path is kept only for replaying old logs."
       }
     ],
     "tests_run": [
       {
-        "file": "358-burst-order.test.ts",
-        "pattern": "R309: the caster picks each Fireball in RESOLVE order and aims it",
+        "file": "client/engine/test/358-burst-order.test.ts",
+        "pattern": "CR 803.5d: the caster picks each Fireball in RESOLVE order and aims it",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "358-burst-order.test.ts",
-        "pattern": "R309: a lone token is not asked to be ordered",
+        "file": "client/engine/test/358-burst-order.test.ts",
+        "pattern": "CR 803.5d: a lone token is not asked to be ordered",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/358-burst-order-ui.test.ts",
+        "pattern": "§1 clicking a Fireball asks which resolves first",
         "passed": true,
         "asserts_claim": true
       }
@@ -1014,32 +1010,23 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R309",
+        "ref": "owner register (three fragments, 2026-10-01)",
         "supports": "yes",
-        "note": "owner ruling states the group-at-once, resolve-order picking, aim-as-chosen"
+        "note": "group all at once; caster picks the first to resolve and aims it, then the second ..."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "A {Burst} group still goes on the stack all at once (R16, R81): casting one"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "What is new is the ORDER. The caster picks the token that resolves first and"
-      },
-      {
         "file": "client/engine/src/apply.ts",
-        "text": "// R309: the caster orders the burst — see burstStep"
+        "text": "if (ordered && group.length > 1) {"
       },
       {
         "file": "client/ui/main.ts",
-        "text": "act({ type: 'castSpellToken', seat: tok.controller, entityId: tok.id, ordered: true });"
+        "text": "const cast: Action = { type: 'castSpellToken', seat: tok.controller, entityId: tok.id, ordered: true };"
       }
     ],
     "basis_ok": true,
-    "problem": "None. Note: in deployment the group resolves immediately rather than sitting on a stack (then='resolve'); the ordering engine path is gated on the action's `ordered` flag, which the client always sets.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "keywords.abilities.burst.targets",

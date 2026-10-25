@@ -518,7 +518,12 @@
     "parent": "D1",
     "order": 3,
     "text": "The client holds no opinion of its own about legality. Wherever the client decides something the engine also decides, the client's answer is derived from the engine's, in one place.",
-    "examples": [],
+    "examples": [
+      {
+        "text": "In the block step the client marks a card exactly when the engine would refuse the whole plan, read off the engine's own validator; every placement of three defenders is checked against the engine.",
+        "test": "671-placement-warning-badge.test.ts::CR D1.3 / 802.12 / CT-410: the badge shows exactly when the engine refuses the plan"
+      }
+    ],
     "see": [],
     "sources": {
       "printed": [],
@@ -537,21 +542,23 @@
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "671-placement-warning-badge.test.ts",
+        "223-client-legality.test.ts"
+      ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
-    "untested": true,
     "untestableReason": "a claim about where the client code takes its legality answers from (one place, derived from the engine), not about anything a game state, view or action shows"
   },
   {
     "key": "annexd.general.one-opinion.affordances",
     "parent": "annexd.general.one-opinion",
     "order": 1,
-    "text": "A highlighted card, a clickable unit, a drop target or a one-click shortcut claims that the engine will take the action. The client draws one only where the engine would accept it.",
+    "text": "A highlighted card, a clickable unit, a drop target or a one-click shortcut claims that the engine will take the action. The client draws one only where the engine would accept it, with one exception: the block step (see rule annexd.general.one-opinion.block-warning).",
     "examples": [
       {
         "text": "A unit that cannot be sent to counterattack is not highlighted, and clicking it does nothing.",
@@ -583,7 +590,57 @@
     "basis": "owner",
     "scope": "digital",
     "confidence": "high",
-    "notes": "",
+    "notes": "BL-50 (2026-10-25): the block columns accept a unit the engine will refuse, by the owner's choice; D1.3b says how the client marks it.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.general.one-opinion.block-warning",
+    "parent": "annexd.general.one-opinion",
+    "order": 2,
+    "text": "In the block step a unit may be placed in a column where the engine would refuse the block. While it is there the card wears a red (!) mark, and the block bar names the engine's reason; the mark comes off when the unit is moved out. A card is marked only when the engine would refuse the plan.",
+    "examples": [
+      {
+        "text": "Bripp, a Feeble unit, is clicked into a block column: it wears the (!) before Confirm, and loses it when it is moved back out.",
+        "test": "671-placement-warning-badge.test.ts::CR 802.12 / CT-410: on the board, a Feeble unit clicked into a block column wears the (!) before Confirm, and loses it when moved out"
+      },
+      {
+        "text": "An unmet Alluring duty marks the lured unit, wherever it stands.",
+        "test": "671-placement-warning-badge.test.ts::CR 606.2e / CT-410: an unmet Alluring duty marks the lured unit, wherever it is"
+      },
+      {
+        "text": null,
+        "test": "671-placement-warning-badge.test.ts::CR D1.3 / 606.2e / CT-410: the badge shows exactly when the engine refuses the plan — under an Alluring duty"
+      }
+    ],
+    "see": [
+      "802.12",
+      "606.2e"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "engine": [],
+      "owner": [
+        {
+          "quote": "blocking with feeble units isn't allowed to be submitted, but you can drag them into the column.",
+          "adopted": "2026-10-25",
+          "from": "owner, BL-50 (backlog), 2026-10-25, on report 284 (Bripp in a block column)"
+        },
+        {
+          "quote": "maybe we should add a sorta (!) icon onto cards (in the same place the big die is for token spells)",
+          "adopted": "2026-10-25",
+          "from": "owner, BL-50 (backlog), 2026-10-25, on report 284 (Bripp in a block column)"
+        }
+      ],
+      "tests": [
+        "671-placement-warning-badge.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "high",
+    "notes": "BL-50 / CT-410 (2026-10-25): ui/placewarn.ts placementWarnings reads blockVerdict / blockDeclarationIssue. The owner kept the drag (\"you can drag them into the column\") and asked for the (!) mark. Round 4 (2026-10-25): \"Confirm stays available\" was dropped; it holds for a Feeble blocker but not under an unmet Alluring duty, where Confirm is disabled and the bar shows the duty line.",
     "sourceHashes": {}
   },
   {
@@ -4254,7 +4311,7 @@
     "key": "annexd.undo.agreed-fix.rewind",
     "parent": "annexd.undo.agreed-fix",
     "order": 4,
-    "text": "A rewind takes the game back to one of: just before the proposing player's own last action, even when more than five actions came after it; just before any of the last five actions, counting only actions a player took (an action the game took for a player is neither counted nor a place to stop); the start of the current step; or the start of the step before. Each option names, in the proposing player's words, what it takes back. Inside a hidden step, a point within the step is offered only if it takes back none of the other player's hidden actions there (their public ones, such as finishing planning or deployment, may be taken back); the start of the step may take back the other player's hidden actions too. The actions taken back are removed from the game, as if they had not been taken.",
+    "text": "A rewind takes the game back to one of: just before the proposing player's own last action, even when more than five actions came after it; just before any of the last five actions, counting only actions a player took (an action the game took for a player is neither counted nor a place to stop); the start of the current step; or the start of the step before, which is the last earlier step in which a player took an action, and whose actions the game took for a player at its start are not taken back. Each option names, in the proposing player's words, what it takes back. Inside a hidden step, a point within the step is offered only if it takes back none of the other player's hidden actions there (their public ones, such as finishing planning or deployment, may be taken back); the start of the step may take back the other player's hidden actions too. The actions taken back are removed from the game, as if they had not been taken.",
     "examples": [
       {
         "text": null,
@@ -4275,6 +4332,14 @@
       {
         "text": null,
         "test": "486-agreed-fix-over-the-wire.test.ts::§4 a rewind: both seats get a fresh view, and the file archives what was taken back"
+      },
+      {
+        "text": "On turn 1 the step before the current one began with an action the game took for a player. \"The start of the step before\" lands after it, before the current step, and is still named \"the start of\".",
+        "test": "669-rewind-step-before-skips-forced.test.ts::CR D4.5d / CT-376: the start of the step before skips a forced action and never collapses onto the current step"
+      },
+      {
+        "text": null,
+        "test": "679-public-in-hidden-step.test.ts::CR D4.5d / CT-377: a cut inside the hidden step may take back the other seat done planning, never their recycle"
       }
     ],
     "see": [
@@ -4295,13 +4360,15 @@
       "tests": [
         "485-agreed-fix-rooms.test.ts",
         "486-agreed-fix-over-the-wire.test.ts",
-        "523-rewind-options-name-their-cut.test.ts"
+        "523-rewind-options-name-their-cut.test.ts",
+        "669-rewind-step-before-skips-forced.test.ts",
+        "679-public-in-hidden-step.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "medium",
-    "notes": "rewindPlans / rewindOptions / rewindRoom (server/rooms.ts), describe / PUBLIC_IN_HIDDEN (server/rewind-cuts.ts); FIX_REWIND_MAX = 5. CT-340 (2026-10-24): redrafted for CT-323 (the proposer's own last action is first-class, and every option names its cut) and CT-325 (hidden-step cuts). Two round-4 verifiers: the last-action option is bounded by FIX_REWIND_WINDOW (80 logged actions), which no test shows, so the text claims only 'even when more than five actions came after it'; a cut inside a hidden step may take back the other seat's PUBLIC actions there (done planning, done deploying, an agreed fix: PUBLIC_IN_HIDDEN), which the text now says (finding F-U23-9 notes that the rooms.ts comment says otherwise). Basis stays owner: 'mixed' needs a second kind of source, and sources.engine names only client/engine/src symbols, so the server code cannot be cited there; the owner's quote covers five actions / this step / the step before, the code and tests the rest.",
+    "notes": "rewindPlans / rewindOptions / rewindRoom (server/rooms.ts), describe / PUBLIC_IN_HIDDEN (server/rewind-cuts.ts); FIX_REWIND_MAX = 5. CT-340 (2026-10-24): redrafted for CT-323 (the proposer's own last action is first-class, and every option names its cut) and CT-325 (hidden-step cuts). Two round-4 verifiers: the last-action option is bounded by FIX_REWIND_WINDOW (80 logged actions), which no test shows, so the text claims only 'even when more than five actions came after it'; a cut inside a hidden step may take back the other seat's PUBLIC actions there (done planning, done deploying, an agreed fix: PUBLIC_IN_HIDDEN), which the text now says. Basis stays owner: 'mixed' needs a second kind of source, and sources.engine names only client/engine/src symbols, so the server code cannot be cited there; the owner's quote covers five actions / this step / the step before, the code and tests the rest. CT-376 (2026-10-25): the step-before cut skips forced actions and passes over a step made only of them; F-U23-10 closed. CT-377 (2026-10-25): the rooms.ts and rewind-cuts.ts comments now say what PUBLIC_IN_HIDDEN is; F-U23-9 closed.",
     "sourceHashes": {}
   },
   {

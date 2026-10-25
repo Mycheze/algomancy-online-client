@@ -1027,7 +1027,7 @@
     "key": "annexd.reveal.public-zones.deck-elements",
     "parent": "annexd.reveal.public-zones",
     "order": 5,
-    "text": "In constructed, the elements a player's deck contains are sent to both players. Whether they should be public at the start of the game is an open question for the owner (see the discrepancy report).",
+    "text": "In constructed, the view each player is sent carries the elements of both players' decks. The client reads only the player's own, to order that player's resource menu (D6.14b).",
     "examples": [
       {
         "text": "A fire deck plays a water deck in constructed. Each player is sent that one deck is fire and the other water.",
@@ -1046,20 +1046,21 @@
           "from": "register@72de434"
         },
         {
-          "quote": "### ⚠ OPEN QUESTION FOR THE OWNER — is deck element identity PUBLIC at game start?",
-          "adopted": "2026-08-23",
-          "from": "register@72de434"
+          "quote": "Drop all",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (roadmap: four features dropped, one of them showing a constructed deck's elements to both players from turn 1)"
         }
       ],
       "engine": [],
       "tests": [
-        "435-cr-digital-2.test.ts"
+        "435-cr-digital-2.test.ts",
+        "667-draft-any-element-resource.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "digital",
-    "confidence": "low",
-    "notes": "States the shipped default only; the ruling itself leaves it open. Discrepancy D-U24-2.",
+    "confidence": "high",
+    "notes": "The owner ruling of 2026-08-23 shipped the field unredacted and left open whether a deck's elements are public at game start. On 2026-10-25 the owner dropped the roadmap item that would have shown them to both players from turn 1 (\"Drop all\"), so this states what the client does: both views carry them (server/view.ts redacts nothing here), and the UI reads deckElements only for the asking seat (ui/inspect.ts resourceMenuElements, ui/lessons.ts). D-U24-2 closed.",
     "sourceHashes": {}
   },
   {
@@ -2230,11 +2231,19 @@
     "key": "annexd.display.hand.resource-menu",
     "parent": "annexd.display.hand",
     "order": 2,
-    "text": "In constructed, the menu for recycling a card for a resource lists the elements in the player's own deck first, then Prismite. Every other element of the game, and the Shard, are behind an expander. The menu changes nothing about what is legal: a resource of any element of the game may still be made.",
+    "text": "The menu for recycling a card for a resource lists first the elements of the player's own deck in constructed, or the draft's elements in a live draft, then Prismite. Every other element, and the Shard, are behind an expander. The menu changes nothing about what is legal: a resource of any of the seven elements may still be made.",
     "examples": [
       {
         "text": "A mono-Fire constructed deck still has all seven elements legal for recycling; the menu just lists Fire first.",
         "test": "34-constructed.test.ts::deckElements: it is a PRESENTATION default — all seven stay legal"
+      },
+      {
+        "text": "In a fire-water-earth draft the recycle menu offers fire, water, earth and Prismite, and behind \"more elements\" wood, metal, light, dark and the Shard.",
+        "test": "667-draft-any-element-resource.test.ts::CR 105.9a / BL-44: the draft recycle menu leads with the trio and keeps the other four elements, then the Shard, behind more"
+      },
+      {
+        "text": null,
+        "test": "667-draft-any-element-resource.test.ts::CR 106.8d / BL-44: an active Prismite in a draft exchanges into an element outside the trio, through more"
       }
     ],
     "see": [
@@ -2265,18 +2274,24 @@
           "quote": "**only behind the expander**. The owner's layout (2026-09-19): the main menu is *\"all",
           "adopted": "2026-09-19",
           "from": "register@72de434"
+        },
+        {
+          "quote": "we should allow any color element to be made via the more menu",
+          "adopted": "2026-09-19",
+          "from": "owner, BL-44 (backlog), 2026-09-19"
         }
       ],
       "engine": [],
       "tests": [
         "34-constructed.test.ts",
-        "308-recycle-for-prismite.test.ts"
+        "308-recycle-for-prismite.test.ts",
+        "667-draft-any-element-resource.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "high",
-    "notes": "",
+    "notes": "BL-44 (2026-10-25) extends the constructed menu to a live draft: the draft's elements lead, the other four sit behind the expander (ui/inspect.ts resourceMenuElements falls back to state.elements).",
     "sourceHashes": {}
   },
   {
@@ -3351,6 +3366,42 @@
     "scope": "digital",
     "confidence": "high",
     "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.modes.learn-to-play.deck-out",
+    "parent": "annexd.modes.learn-to-play",
+    "order": 4,
+    "text": "In a lesson deal, the deal Learn to Play and the Weekly Challenges use, running out of cards ends nothing: a player who has to draw from an empty deck and an empty recycle pile draws the cards there are and plays on. Rule 104.5 does not apply.",
+    "examples": [
+      {
+        "text": "A Weekly Challenge deck runs out: the player draws fewer and the run goes on.",
+        "test": "656-deck-out.test.ts::CR 104.5 / CT-385: a lesson deal (Learn to Play, Weekly Challenges) draws fewer and plays on"
+      }
+    ],
+    "see": [
+      "104.5"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "engine": [],
+      "owner": [
+        {
+          "quote": "Constructed is lose when draw with nothing. Same woth single card. But challenges are excempt",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (CT-385: which games running out of cards ends)"
+        }
+      ],
+      "tests": [
+        "656-deck-out.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "CT-385 (2026-10-25). The owner exempts the challenges (\"But challenges are excempt\"); Learn to Play shares their lesson deal (E.deckedOut returns on state.lesson), and the owner did not object to it being exempt with them.",
     "sourceHashes": {}
   },
   {

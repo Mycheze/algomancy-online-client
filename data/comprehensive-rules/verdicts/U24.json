@@ -1386,66 +1386,74 @@
   },
   {
     "key": "annexd.display.hand.resource-menu",
-    "textHash": "403defc2990565ad",
+    "textHash": "35bdec983ccee53f",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U24-r1",
+    "round": 4,
+    "verifier": "U24-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts legalActions recycleForResource",
+        "loc": "client/ui/main.ts:openRecycle",
         "agrees": true,
-        "note": "all seven offered"
+        "note": "main menu = show (own deck elements / draft trio) + Prismite + expander; expander = hidden elements + Shard"
+      },
+      {
+        "loc": "client/ui/inspect.ts:resourceMenuElements",
+        "agrees": true,
+        "note": "presentation only; legalActions untouched"
       }
     ],
     "tests_run": [
       {
-        "file": "34-constructed.test.ts",
-        "pattern": "deckElements: it is a PRESENTATION default — all seven stay legal",
+        "file": "client/engine/test/34-constructed.test.ts",
+        "pattern": "deckElements",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/667-draft-any-element-resource.test.ts",
+        "pattern": "",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/308-recycle-for-prismite.test.ts",
+        "pattern": "",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/ui/test/zz-probe-U24-1.test.ts",
+        "test": "probe U24-1: constructed mono-fire recycle menu leads with fire, then Prismite; the rest behind more",
+        "passed": true,
+        "demonstrates": "yes: main menu [\"Recycle → fire resource\",\"Recycle → Prismite\",\"more elements… (6)\"]; expander has the other six elements, then Shard (the constructed half of example 1, which 34 asserts only for legality)"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "R99",
+        "ref": "owner register quotes (2026-08-23, 2026-09-19)",
         "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "note": "default to own deckElements, other elements behind a \"show all\" affordance, Prismite below the elements"
       },
       {
-        "ref": "R99",
+        "ref": "owner BL-44 \"we should allow any color element to be made via the more menu\"",
         "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
-      },
-      {
-        "ref": "R299",
-        "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
-      },
-      {
-        "ref": "R299",
-        "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
-      },
-      {
-        "ref": "test:308-recycle-for-prismite.test.ts",
-        "supports": "partly",
-        "note": "cited test file, no bound example from it"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "faithful to the game.\"* The client should DEFAULT the menu to `deckElements[mySeat]` and keep"
+        "file": "client/ui/main.ts",
+        "text": "[...show.map(elementItem), recycleTo('prismite', 'Recycle → Prismite'), {"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**only behind the expander**. The owner's layout (2026-09-19): the main menu is *\"all"
+        "file": "client/ui/main.ts",
+        "text": "? [...hidden.map(elementItem), recycleTo('shard', 'Recycle → Shard')]"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.display.hover-tip",
@@ -3667,6 +3675,44 @@
     "carried": "demoted-example 2026-10-11"
   },
   {
+    "key": "annexd.modes.learn-to-play.deck-out",
+    "textHash": "bafde5987c6c3a30",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:deckedOut",
+        "agrees": true,
+        "note": "returns at once when state.lesson is set (the lesson deal used by Learn to Play, ui/solo.ts, and Weekly Challenges, engine/src/challenge.ts challengeDeal)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/656-deck-out.test.ts",
+        "pattern": "",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner \"Constructed is lose when draw with nothing. Same woth single card. But challenges are excempt\"",
+        "supports": "partial",
+        "note": "covers Weekly Challenges. Learn to Play is not in the owner's words; it rests on the engine (same lesson deal), demonstrated by 656"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.s.winner !== null || this.s.lesson) return;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "annexd.modes.scenarios",
     "textHash": "fe31944fd4824a32",
     "verdict": "confirmed",
@@ -5247,40 +5293,77 @@
   },
   {
     "key": "annexd.reveal.public-zones.deck-elements",
-    "textHash": "c97ba07c3aac892c",
+    "textHash": "1d48627af829a1c6",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U24-r1",
+    "round": 4,
+    "verifier": "U24-r4",
     "engine": [
       {
         "loc": "client/server/view.ts:viewFor",
         "agrees": true,
-        "note": "no deckElements redaction present"
-      }
-    ],
-    "tests_run": [],
-    "probes": [],
-    "source_checks": [
-      {
-        "ref": "R99",
-        "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "note": "deckElements shipped unredacted to both seats"
       },
       {
-        "ref": "R99",
+        "loc": "client/ui/inspect.ts:resourceMenuElements",
+        "agrees": true,
+        "note": "reads s.deckElements?.[seat] only, for the menu order"
+      },
+      {
+        "loc": "client/ui/lessons.ts",
+        "agrees": true,
+        "note": "also reads the own seat only"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/435-cr-digital-2.test.ts",
+        "pattern": "cr:annexd.reveal.public-zones.deck-elements",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/667-draft-any-element-resource.test.ts",
+        "pattern": "",
+        "passed": true,
+        "asserts_claim": false
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/ui/test/zz-probe-U24-1.test.ts",
+        "test": "probe U24-1: constructed mono-fire recycle menu leads with fire, then Prismite; the rest behind more",
+        "passed": true,
+        "demonstrates": "yes: state.deckElements is [[\"fire\"],[\"water\"]] and the menu leads with the own deck element only"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "owner \"**Shipped unredacted**, because redaction lives in `server/view.ts` and the engine cannot\"",
         "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "note": ""
+      },
+      {
+        "ref": "owner \"Drop all\" (2026-10-25)",
+        "supports": "yes",
+        "note": "showing a constructed deck's elements to both players was dropped, so the client reads only the player's own"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "### ⚠ OPEN QUESTION FOR THE OWNER — is deck element identity PUBLIC at game start?"
+        "file": "client/engine/test/435-cr-digital-2.test.ts",
+        "text": "assert.deepEqual(viewFor(h.state, viewer, null).deckElements, [['fire'], ['water']], `seat ${viewer} is sent both`);"
+      },
+      {
+        "file": "client/ui/inspect.ts",
+        "text": "const deck: readonly string[] | undefined = s.deckElements?.[seat] ?? s.elements;"
+      },
+      {
+        "file": "client/ui/lessons.ts",
+        "text": "c.state.deckElements?.[c.seat]"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.reveal.public-zones.erased",

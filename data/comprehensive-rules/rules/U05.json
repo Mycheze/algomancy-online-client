@@ -490,7 +490,7 @@
           "quote": "Concentrator AND Tides mention 'cost' and in both cases it points printed value"
         },
         {
-          "ref": "RAQ 1396955380000755795#9",
+          "ref": "RAQ 1396955380000755795#10",
           "quote": "meaning you only look at printed cost of spells."
         }
       ],
@@ -508,7 +508,7 @@
     "notes": "Both are _passer [Solved] write-ups. The X case is the exception in 202.5: a paid X replaces the printed X.",
     "sourceHashes": {
       "RAQ 1353980184042143835#0": "571d78408552d997fc6dccfe62ce8ed362c2e803ed38050b6f78aaf40a9cf157",
-      "RAQ 1396955380000755795#9": "de10d99276d0257274713007cb2c31386ce950e93d282737522fb0f38c8dfa06"
+      "RAQ 1396955380000755795#10": "de10d99276d0257274713007cb2c31386ce950e93d282737522fb0f38c8dfa06"
     }
   },
   {
@@ -575,7 +575,7 @@
       "printed": [],
       "designer": [
         {
-          "ref": "RAQ 1396955380000755795#6",
+          "ref": "RAQ 1396955380000755795#7",
           "quote": "6. Any spells with X cost can only be played with X=0 making most of them useless"
         }
       ],
@@ -598,7 +598,7 @@
     "confidence": "medium",
     "notes": "The owner ruling of 2026-08-25 (“the three cost contexts of an…”) is the engine-shape ruling that implements the owner ruling of 2026-08-25 (“the owner's answers to the 27…”); its §3 is reversed by the owner ruling of 2026-10-09 (“Stasis Sentry raises an X spell's…”) stands. The \"unit in play\" case is the owner ruling of 2026-08-25 (“the three cost contexts of an…”)’s table row only. The owner ruling of 2026-08-25 (“the three cost contexts of an…”) still says Living Vault refuses X cards; the 39-light-b test says otherwise: D-U05-13. The owner ruling of 2026-08-25 (“the three cost contexts of an…”) is not in the U05 pack (classified 107/111/702); added from the register. Round 1: the designer quote is now the _passer source words, which state only \"X=0\"; \"cost 0 against the budget\" is the test's (396 Tides 6a), not the designer's.",
     "sourceHashes": {
-      "RAQ 1396955380000755795#6": "157742c7f3c00e6be2652e8065fd782217905a77d6f55e3a25cb893c4bc09bd8"
+      "RAQ 1396955380000755795#7": "157742c7f3c00e6be2652e8065fd782217905a77d6f55e3a25cb893c4bc09bd8"
     }
   },
   {
@@ -1636,7 +1636,7 @@
       "printed": [],
       "designer": [
         {
-          "ref": "RAQ 1396955380000755795#5",
+          "ref": "RAQ 1396955380000755795#6",
           "quote": "Any additional [cost] of the card must be paid."
         }
       ],
@@ -1652,7 +1652,7 @@
     "confidence": "high",
     "notes": "_passer [Solved] Tides write-up, point 5. The owner ruling of 2026-08-23 (“a FREE prophecy release casts an…”) says the same of a free prophecy release (\"bracketed X costs are still paid\") per its summary.",
     "sourceHashes": {
-      "RAQ 1396955380000755795#5": "d799969c1aa3749e76ad3de04cb4af26f46e0c281021e54e70d2b62c5a278f11"
+      "RAQ 1396955380000755795#6": "d799969c1aa3749e76ad3de04cb4af26f46e0c281021e54e70d2b62c5a278f11"
     }
   },
   {

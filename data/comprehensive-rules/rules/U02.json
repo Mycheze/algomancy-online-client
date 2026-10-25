@@ -560,11 +560,11 @@
     "key": "concepts.elements.game-elements",
     "parent": "105",
     "order": 9,
-    "text": "Each game has a set of elements. In a live draft it is the selected elements; in constructed it is all seven. An element resource a player creates, by recycling or by exchanging a Prismite, must be of one of the game's elements.",
+    "text": "Each game has a set of elements: in a live draft, the selected elements; in constructed, all seven. The game's elements limit nothing a player may create: by recycling or by exchanging a Prismite, a player may create an element resource of any of the seven elements.",
     "examples": [
       {
-        "text": "In a fire-water-earth draft, wood and metal resources are refused and never offered.",
-        "test": "21-fixes.test.ts::a fwe draft game refuses wood/metal resources and never offers them"
+        "text": "In a fire-water-earth draft, a player may still recycle a card for a wood or a metal resource.",
+        "test": "21-fixes.test.ts::CR 105.9a / BL-44: a fwe draft game offers its trio first and still makes a wood or metal resource"
       },
       {
         "text": null,
@@ -577,14 +577,24 @@
       "902"
     ],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "The resource step of the planning phase is when players have the ability to create and activate resources. During this step, any resource can be created from"
+        }
+      ],
       "designer": [],
       "ours": [],
       "owner": [
         {
-          "quote": "early on a prismite), and once active may be exchanged for any element of the game.",
+          "quote": "But it's technically legal to make a Fire resource, even if you don't have any Fire cards in the deck.",
           "adopted": "2026-09-19",
-          "from": "register@72de434"
+          "from": "owner, BL-44 (backlog), 2026-09-19"
+        },
+        {
+          "quote": "we should allow any color element to be made via the more menu",
+          "adopted": "2026-09-19",
+          "from": "owner, BL-44 (backlog), 2026-09-19"
         },
         {
           "quote": "mode only. Shared plays all seven; draft has already narrowed `elements` to its trio.",
@@ -600,49 +610,60 @@
         "413-cr-elements-resources.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "No printed or designer source limits the resources a player may create to the draft's elements; Manual p.18 says \"any resource\" and the owner ruling of 2026-08-18 (“Prismites give no affinity; active ones…”) \"a resource of any element\": D-U02-3. \"Shared\" is a test mode, not a format (owner ruling of 2026-08-25, “the owner's answers to the 27…”). Recycling may also make a Prismite or a Shard (the owner ruling of 2026-09-19 (“Recycling can make a Prismite”); concepts.resources.recycle.prismite-shard), and a Prismite may be exchanged for a Shard (concepts.resources.prismite.exchange.element-only); neither is of an element, so this limit does not reach them.",
+    "notes": "BL-44 (2026-10-25): the client used to refuse, in a draft, any element outside the selected three (owner 2026-09-19, register: \"may be exchanged for any element of the game\"). The owner on 2026-09-19 (BL-44): \"it's technically legal to make a Fire resource, even if you don't have any Fire cards in the deck\" — the Manual's \"any resource can be created\", read literally. D-U02-3 is settled by it. The menu that offers the other elements behind \"more\" is D6.14b. \"Shared\" is a test mode, not a format.",
     "sourceHashes": {}
   },
   {
     "key": "concepts.elements.game-elements.off-deck",
     "parent": "concepts.elements.game-elements",
     "order": 1,
-    "text": "In constructed, a player may create a resource of any of the seven elements, including an element their deck has no cards of.",
+    "text": "A player may create a resource of an element their deck has no cards of, in constructed and in a live draft alike.",
     "examples": [
       {
         "text": null,
         "test": "34-constructed.test.ts::deckElements: it is a PRESENTATION default — all seven stay legal"
+      },
+      {
+        "text": "In a fire-water-earth draft a Prismite is exchanged into wood.",
+        "test": "413-cr-elements-resources.test.ts::cr:concepts.elements.game-elements — a fire-water-earth draft exchanges a Prismite into fire, and into wood outside its trio"
       }
     ],
     "see": [],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "The resource step of the planning phase is when players have the ability to create and activate resources. During this step, any resource can be created from"
+        }
+      ],
       "designer": [],
       "ours": [],
       "owner": [
         {
-          "quote": "That restraint is not caution, it is the rule: **making an off-element resource is a legal",
-          "adopted": "2026-08-23",
-          "from": "register@72de434"
+          "quote": "But it's technically legal to make a Fire resource, even if you don't have any Fire cards in the deck.",
+          "adopted": "2026-09-19",
+          "from": "owner, BL-44 (backlog), 2026-09-19"
         },
         {
-          "quote": "play whatever the deck holds** — BL-44, the owner, 2026-09-19: *\"it's technically legal to",
+          "quote": "That restraint is not caution, it is the rule: **making an off-element resource is a legal",
           "adopted": "2026-08-23",
           "from": "register@72de434"
         }
       ],
       "engine": [],
       "tests": [
-        "34-constructed.test.ts"
+        "34-constructed.test.ts",
+        "413-cr-elements-resources.test.ts",
+        "21-fixes.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-23 (“A constructed deck's ELEMENT IDENTITY is…”)’s menu default (the client shows the deck's elements first) is a digital convention for Annex D (U24).",
+    "notes": "BL-44 (2026-10-25) extends the constructed rule to a live draft. The client's menu default (the deck's or the draft's elements first) is a digital convention, D6.14b.",
     "sourceHashes": {}
   },
   {
@@ -1677,11 +1698,15 @@
     "key": "concepts.resources.prismite.exchange.element-only",
     "parent": "concepts.resources.prismite",
     "order": 4,
-    "text": "A Prismite may be exchanged for any non-Prismite resource: an element resource of one of the game's elements, or a Shard. It cannot be exchanged for another Prismite.",
+    "text": "A Prismite may be exchanged for any non-Prismite resource: an element resource of any of the seven elements, or a Shard. It cannot be exchanged for another Prismite.",
     "examples": [
       {
         "text": null,
         "test": "308-recycle-for-prismite.test.ts::CR 106.8d / CT-237: a Prismite exchanges into any non-prismite resource, a Shard included, but never a Prismite"
+      },
+      {
+        "text": "In a fire-water-earth draft an active Prismite is exchanged into wood, an element outside the draft.",
+        "test": "413-cr-elements-resources.test.ts::cr:concepts.elements.game-elements — a fire-water-earth draft exchanges a Prismite into fire, and into wood outside its trio"
       }
     ],
     "see": [],
@@ -1708,6 +1733,11 @@
           "quote": "Exchanging a Prismite *into* a Prismite stays illegal — an exchange names an element.",
           "adopted": "2026-09-19",
           "from": "register@72de434"
+        },
+        {
+          "quote": "But it's technically legal to make a Fire resource, even if you don't have any Fire cards in the deck.",
+          "adopted": "2026-09-19",
+          "from": "owner, BL-44 (backlog), 2026-09-19"
         }
       ],
       "engine": [],
@@ -1719,7 +1749,7 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The printed Prismite (\"Create a non-prismite resource\", known from the owner ruling of 2026-08-24 (“a Prismite DOES activate its new…”)’s quote) and Manual p.18 (\"exchanged for other resources\") read literally admit a Shard; no ruling or designer source forbids one. The owner ruling of 2026-09-19 (“Recycling can make a Prismite”)’s \"an exchange names an element\" is given as the reason a Prismite cannot become a Prismite, and the Shard refusal is in a test title only. Printed text outranks an R-ruling and the permissive reading is taken: D-U02-8. Engine aligned 2026-10-22 (CT-237): the exchange accepts a Shard (308's retitled test). F-U02-3 closed. Moot at the table: a Shard is never better than an element resource.",
+    "notes": "The printed Prismite (\"Create a non-prismite resource\", known from the owner ruling of 2026-08-24 (“a Prismite DOES activate its new…”)’s quote) and Manual p.18 (\"exchanged for other resources\") read literally admit a Shard; no ruling or designer source forbids one. The owner ruling of 2026-09-19 (“Recycling can make a Prismite”)’s \"an exchange names an element\" is given as the reason a Prismite cannot become a Prismite, and the Shard refusal is in a test title only. Printed text outranks an R-ruling and the permissive reading is taken: D-U02-8. Engine aligned 2026-10-22 (CT-237): the exchange accepts a Shard (308's retitled test). F-U02-3 closed. Moot at the table: a Shard is never better than an element resource. BL-44 (2026-10-25): \"of one of the game's elements\" became \"of any of the seven elements\" (owner 2026-09-19, BL-44).",
     "sourceHashes": {}
   },
   {
@@ -2162,7 +2192,7 @@
       "printed": [],
       "designer": [
         {
-          "ref": "RAQ 1396955380000755795#6",
+          "ref": "RAQ 1396955380000755795#7",
           "quote": "Any spells with X cost can only be played with X=0 making most of them useless"
         }
       ],
@@ -2195,7 +2225,7 @@
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "RAQ 1396955380000755795#6": "157742c7f3c00e6be2652e8065fd782217905a77d6f55e3a25cb893c4bc09bd8"
+      "RAQ 1396955380000755795#7": "157742c7f3c00e6be2652e8065fd782217905a77d6f55e3a25cb893c4bc09bd8"
     }
   },
   {
@@ -2223,7 +2253,7 @@
       ],
       "designer": [
         {
-          "ref": "RAQ 1396955380000755795#7",
+          "ref": "RAQ 1396955380000755795#8",
           "quote": "it also means that you CANNOT play Frosted Denial from Tides of Cosmos."
         }
       ],
@@ -2246,7 +2276,7 @@
     "confidence": "high",
     "notes": "Only an X in the mana cost counts. Instrument of Reassignment prints \"X can't be 0\" on an activated ability and has a fixed [2] cost, so Tides of the Cosmos can play it free; the verifier's probe shows the engine allows it. D-U02-11.",
     "sourceHashes": {
-      "RAQ 1396955380000755795#7": "a172ea28d67f53f6e2a1523eb872e8052a9be332e2a014945425fc140dedc824"
+      "RAQ 1396955380000755795#8": "a172ea28d67f53f6e2a1523eb872e8052a9be332e2a014945425fc140dedc824"
     }
   },
   {

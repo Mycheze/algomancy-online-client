@@ -3197,47 +3197,76 @@
   },
   {
     "key": "concepts.rot",
-    "textHash": "3fd79f5542757f95",
+    "textHash": "db47c641c0db2301",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U04-r1",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.rotDamage",
+        "loc": "client/engine/src/engine.ts:E.rotDamage",
         "agrees": true,
-        "note": "initiative then non-initiative, n = rot, called from startDeployment"
+        "note": "loops [initiative, nit], loseLife per seat, deliberately not inside a lifeBatch, so each seat's rot is checked as it lands"
       }
     ],
     "tests_run": [
       {
-        "file": "35-rot-debt-trash.test.ts",
-        "pattern": "R38: rot deals damage equal to itself at the start of deployment, in initiative order",
+        "file": "client/engine/test/35-rot-debt-trash.test.ts",
+        "pattern": "CR 112.13: rot deals damage equal to itself at the start of deployment, in initiative order",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/654-simultaneous-loss.test.ts",
+        "pattern": "CR 104.1a / CT-409: rot is not simultaneous",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/42-dark-b.test.ts",
+        "pattern": "(whole file, 62 pass)",
+        "passed": true,
+        "asserts_claim": false
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "glossary: Rot",
-        "supports": "partly",
-        "note": "ours — not an authority"
+        "ref": "RQ 1542923825904099349",
+        "supports": "yes",
+        "note": "answers both players with more rot than life entering deployment"
       },
       {
-        "ref": "R38",
+        "ref": "RQ 1542924008620564610",
         "supports": "yes",
-        "note": "start of deployment, own rot, initiative order"
+        "note": ""
+      },
+      {
+        "ref": "glossary: Rot",
+        "supports": "n/a",
+        "note": "our glossary, not authority; every sentence is covered by the owner register and Caleb"
+      },
+      {
+        "ref": "owner register@72de434 (both quotes)",
+        "supports": "yes",
+        "note": "player-level rot (PlayerState.rot), damage equal to it at the start of deployment, in initiative order"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "damage equal to their own rot total, in initiative order. Rot never"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "initiative takes their deployment first and dies"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "But rot isn't simultaneous"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Switch1] Target player gains a rot."
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.rot.never-decays",

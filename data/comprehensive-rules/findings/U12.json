@@ -85,14 +85,11 @@
     "summary": "The rule (the designer, 2025-04-20) has a column that gains Sluggish in the window after the Swift sub-step strike in the Sluggish sub-step, with the before-Sluggish window opening first. The engine fixes the damage step's sub-steps once, when the step opens (damageSubs), so a Sluggish sub-step that was not scheduled then gets no window before the gained Sluggish strike, and triggers from normal damage wait until after combat.",
     "evidence": [
       {
-        "file": "client/engine/src/engine.ts",
-        "quote": "b.damageSubs = this.subStepsWithStrikes(b);"
-      },
-      {
-        "file": "client/ledgers/card-todo.ts",
-        "quote": "a column that gains {Sluggish} during the damage step strikes in the Sluggish sub-step with no priority window before it"
+        "file": "client/engine/test/658-sluggish-decided-after-swift-window.test.ts",
+        "quote": "CR 608.3d / CT-378: a column given Sluggish in the after-Swift window gets the before-Sluggish window"
       }
     ],
-    "ct": "CT-378"
+    "ct": "CT-378",
+    "closed": "fixed on 2026-10-25 (CT-378): when the window after the Swift sub-step ends the Sluggish sub-step is decided again, both ways (rescheduleSluggish; 658, 423)."
   }
 ]

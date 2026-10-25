@@ -168,5 +168,23 @@
       }
     ],
     "resolution": "The card's specific permission is read as an exception to the Manual's general note, and the rule says so; the engine agrees. Question for the owner only if Rook's \"as if they were [Virus]\" is meant to reach only non-Virus cards."
+  },
+  {
+    "id": "D-U17-15",
+    "kind": "a-sources-disagree",
+    "rule": "effects.virus.permission.zones",
+    "tier": 2,
+    "summary": "The RAQ write-up on Tides of the Cosmos (thread 1396955380000755795) was edited by _passer on 2026-08-14 to say \"Having Rook would allow you to use Augments\" (claim #4, recorded as outdated). Rook prints that it reaches cards \"from hand and bin\", and Tides plays cards off the top of the deck. No message by the designer says the edited line.",
+    "sides": [
+      {
+        "source": "card: Rook",
+        "quote": "You may augment cards from hand and bin during battle as if they were [Virus]."
+      },
+      {
+        "source": "RAQ 1396955380000755795#4",
+        "quote": "Having Rook would allow you to use Augments"
+      }
+    ],
+    "resolution": "The owner, 2026-10-25 (CT-390): \"No (printed text)\". The write-up's Rook line is not followed: Rook reaches the hand and the bin only, so Tides of the Cosmos applies only true Viruses, with or without Rook. effects.virus.permission.zones carries the call; the engine is unchanged."
   }
 ]

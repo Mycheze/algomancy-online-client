@@ -692,10 +692,10 @@
     "key": "zones.deck.empty",
     "parent": "401",
     "order": 4,
-    "text": "A player who must draw from an empty deck when the recycle pile is also empty draws as many cards as there are. Running out of cards does not make a player lose.",
+    "text": "A player who must draw from an empty deck when the recycle pile is also empty draws as many cards as there are, and has then run out of cards (104.5).",
     "examples": [
       {
-        "text": "With deck and recycle pile both empty, a draw of two draws nothing and the game goes on.",
+        "text": "With deck and recycle pile both empty, a draw of two draws nothing, and the game ends (104.5).",
         "test": "300-recycle-mark.test.ts::CR 401.4 an empty deck AND an empty pile draws fewer"
       }
     ],
@@ -705,25 +705,33 @@
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1356616873655140546",
+          "quote": "In constructed you lose if you draw on an empty deck"
+        }
+      ],
       "ours": [],
       "owner": [
         {
-          "quote": "A player whose deck *and* pile are both empty simply draws",
-          "adopted": "2026-09-16",
-          "from": "register@72de434"
+          "quote": "Follow Caleb",
+          "adopted": "2026-10-24",
+          "from": "owner, chat 2026-10-24 (CT-385: follow the designer on running out of cards?)"
         }
       ],
       "engine": [],
       "tests": [
-        "300-recycle-mark.test.ts"
+        "300-recycle-mark.test.ts",
+        "656-deck-out.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "When the deck runs out but the recycle pile does not, see 408 (the pile is reshuffled in).",
-    "sourceHashes": {}
+    "notes": "When the deck runs out but the recycle pile does not, see 408 (the pile is reshuffled in). CT-385 (2026-10-25): \"Running out of cards does not make a player lose\" (owner 2026-09-16) is replaced by 104.5, from the designer.",
+    "sourceHashes": {
+      "RQ 1356616873655140546": "37dcd0764727290b18383b946f8c3f942c3a12dfd2335b013351f00be49de75b"
+    }
   },
   {
     "key": "zones.hand.what",
@@ -2009,11 +2017,15 @@
     "key": "zones.bin.identity",
     "parent": "405",
     "order": 6,
-    "text": "Copies of one card in a bin cannot be told apart. A card in a bin is identified only by its name and by which copy of that name it is.",
+    "text": "A card in a bin is identified only by its name and by which copy of that name it is. An effect that has named one copy keeps naming that copy as other copies of its name leave the bin (405.6b).",
     "examples": [
       {
         "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.bin.identity — a bin holds bare card names, and two copies of one card are offered as the same name told apart only by which copy"
+      },
+      {
+        "text": "Two copies of a card are in a bin and a spell targets the second. The first copy is taken in response: the target is still the card the spell aimed at, now the only copy.",
+        "test": "663-bin-target-copy-identity.test.ts::CR 405.6b / CT-380: an earlier copy leaving does not lose the target, which is still the same card"
       }
     ],
     "see": [],
@@ -2031,17 +2043,23 @@
           "quote": "indistinguishable — the card name plus which copy IS the whole identity\"*.",
           "adopted": "2026-08-24",
           "from": "register@72de434"
+        },
+        {
+          "quote": "It never means \"take the other copy\".",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
       "tests": [
-        "418-cr-zones.test.ts"
+        "418-cr-zones.test.ts",
+        "663-bin-target-copy-identity.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The repo's own model (the owner ruling of 2026-08-21 (“A bracketed cost is paid at…”) BinRef, quoted by the owner ruling of 2026-08-24 (“\"another\" is a different ENTITY, not…”)), confirmed by the owner ruling of 2026-08-24 (“a responder that reaches back into…”); not a designer statement.",
+    "notes": "The repo's own model (BinRef, owner rulings of 2026-08-21/24); not a designer statement. CT-380 (2026-10-25): the engine now keeps a declared target on its copy as earlier copies leave (reindexBinRefs); 405.6b. Round 4 (2026-10-25) left the third sentence partial: no cited source held a named copy across removals, and \"cannot be told apart\" was loose (copies may differ by owner, CT-233). The first sentence is dropped; the owner's \"It never means take the other copy\" and test 663 now carry the last.",
     "sourceHashes": {}
   },
   {
@@ -2084,11 +2102,19 @@
     "key": "zones.bin.identity.that-card",
     "parent": "zones.bin.identity",
     "order": 2,
-    "text": "An effect that refers back to a card that just entered a bin (\"that card\", \"it\") means that copy. If that copy has left the bin, the effect finds nothing. It never takes a different copy of the same name.",
+    "text": "An effect that refers back to a card that just entered a bin (\"that card\", \"it\") means that copy. If that copy has left the bin, the effect finds nothing. It never takes a different copy of the same name. A card a spell or ability targets in a bin is held the same way: the target stays on the copy it named while other copies of that name leave, and if that copy itself leaves before the effect resolves, the target is gone.",
     "examples": [
       {
         "text": "An {Unstable} unit dies and is erased instead of staying in the bin. Biomass Devourer's \"erase it\" then finds nothing, and does not erase an older copy of the same card already in that bin.",
         "test": "26-metal-a.test.ts::CR 405.6: Biomass Devourer does NOT erase an innocent older copy when the dead one was swept"
+      },
+      {
+        "text": "Two copies of a card are in a bin. A spell targets the second, and the second is taken in response. The spell finds nothing; it does not take the first copy instead.",
+        "test": "663-bin-target-copy-identity.test.ts::CR 405.6b / CT-380: the second copy targeted and taken in response leaves the first copy alone"
+      },
+      {
+        "text": "A spell targets the first of two copies, and the first is taken in response. The spell does not slide onto the second copy.",
+        "test": "663-bin-target-copy-identity.test.ts::CR 405.6b / CT-380: the first copy targeted and taken in response does not slide onto the second"
       }
     ],
     "see": [],
@@ -2105,13 +2131,14 @@
       ],
       "engine": [],
       "tests": [
-        "26-metal-a.test.ts"
+        "26-metal-a.test.ts",
+        "663-bin-target-copy-identity.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-24 (“a responder that reaches back into…”) calls itself the owner ruling of 2026-08-24 (“\"another\" is a different ENTITY, not…”) applied, \"not an owner ruling and not a new rule of the game\".",
+    "notes": "The owner ruling of 2026-08-24 (\"a responder that reaches back into…\") calls itself the owner ruling of 2026-08-24 (\"another\" is a different ENTITY, not…) applied, \"not an owner ruling and not a new rule of the game\". CT-380 (2026-10-25) carries the same identity to declared targets in a bin: the last sentence. The event back-references (binNth on a died/trashed event) are not yet re-indexed the same way (pb-zones report, a new ticket).",
     "sourceHashes": {}
   },
   {

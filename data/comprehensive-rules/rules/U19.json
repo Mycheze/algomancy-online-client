@@ -2376,13 +2376,10 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "2026-10-24 housework: \"base\" became \"printed\" with owner question Q5 (the designer: Inverted takes the difference from the printed stats, a base rewrite included). The two agree unless a base is rewritten; there the engine inverts from the new base: F-U19-6, CT-379.",
+    "notes": "2026-10-24 housework: \"base\" became \"printed\" with owner question Q5 (the designer: Inverted takes the difference from the printed stats, a base rewrite included). The two agree unless a base is rewritten; since CT-379 (2026-10-25) the engine inverts from the printed stats there too; F-U19-6 closed.",
     "sourceHashes": {
       "RQ 1167221076447744110": "b4fc56a5b98be758e418de8e5947cd9285b66ac0380b91b169735a3fbc2594e8"
-    },
-    "engineDiffers": [
-      "F-U19-6"
-    ]
+    }
   },
   {
     "key": "attr.inverted.attributes",
@@ -2431,7 +2428,20 @@
     "parent": "attr.inverted",
     "order": 3,
     "text": "Setting a unit's base stats is a stat change that Inverted inverts: Inverted inverts the difference between the unit's printed stats and its current stats. A unit printed 7/5 that Aberrant Statweaver makes base 3/3 is an 11/7 while it is Inverted.",
-    "examples": [],
+    "examples": [
+      {
+        "text": "A unit printed 7/5 that Aberrant Statweaver makes base 3/3 is an 11/7 while it is Inverted.",
+        "test": "659-inverted-from-printed.test.ts::CR 802.8c / CT-379: the designer example -- a printed 7/5 made base 3/3 by Aberrant Statweaver is an 11/7 while Inverted"
+      },
+      {
+        "text": "Its Dark Bubb (printed 4/6, Inverted) beside Aberrant Statweaver is a 5/9, not a 3/3.",
+        "test": "659-inverted-from-printed.test.ts::CR 802.8c / CT-379: Its Dark Bubb (printed 4/6, Inverted) beside Aberrant Statweaver is a 5/9, not a 3/3"
+      },
+      {
+        "text": null,
+        "test": "659-inverted-from-printed.test.ts::CR 802.8c / CT-379: a one-shot base rewrite (an until-regroup baseSet) is inverted too, with counters in the same net change"
+      }
+    ],
     "see": [
       "206.5"
     ],
@@ -2454,27 +2464,30 @@
         {
           "ref": "RQ 1443370771647828032",
           "quote": "base stat changes are still stat changes"
+        },
+        {
+          "ref": "RQ 1167224155289174056",
+          "quote": "yeah and it lets me be more cavalier with base stat changes"
         }
       ],
       "ours": [],
       "owner": [],
       "engine": [],
       "tests": [
+        "659-inverted-from-printed.test.ts",
         "79-round17-layers.test.ts"
       ]
     },
-    "basis": "designer",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Settled by the owner on 2026-08-22 (the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) addendum) after seeing both worked examples. A _passer post in #rules-questions (not a RAQ write-up; found in the export) and the owner's own later the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) point the other way: D-U19-3. Owner question Q5 (D-U19-3) answered by the designer, 2026-10-24 housework: reading B, which replaces the owner call of 2026-08-23 (the designer outranks it). tapeworm711: \"I assume inverted does NOT interact with stat \\\"setting\\\" like Reshape\"; Caleb: \"It does because it applies in a later layer\" and \"Basically you just look at the stats printed on the card, then look at its current stats. Take the difference\" (2023-10-26); and on Aberrant Statweaver, \"base stat changes are still stat changes\" (2025-11-26). The engine inverts from the rewritten base: F-U19-6, CT-379. The 79 example asserted the old reading and is dropped.",
+    "notes": "Settled by the owner on 2026-08-22 (the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) addendum) after seeing both worked examples. A _passer post in #rules-questions (not a RAQ write-up; found in the export) and the owner's own later the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) point the other way: D-U19-3. Owner question Q5 (D-U19-3) answered by the designer, 2026-10-24 housework: reading B, which replaces the owner call of 2026-08-23 (the designer outranks it). tapeworm711: \"I assume inverted does NOT interact with stat \\\"setting\\\" like Reshape\"; Caleb: \"It does because it applies in a later layer\" and \"Basically you just look at the stats printed on the card, then look at its current stats. Take the difference\" (2023-10-26); and on Aberrant Statweaver, \"base stat changes are still stat changes\" (2025-11-26). CT-379 (2026-10-25): the engine's layer 5 now measures from printedStats; 79's base-rewrite test asserts the designer's reading; F-U19-6 closed. Basis designer -> mixed (round 4, 2026-10-25): it cites Aberrant Statweaver's printed text too.",
     "sourceHashes": {
       "RQ 1167220853726007336": "0de691dbc84b9d1ad57ddaff83bad150ab2d7d64d4dd9ab406e9120a58557bbf",
       "RQ 1167221076447744110": "b4fc56a5b98be758e418de8e5947cd9285b66ac0380b91b169735a3fbc2594e8",
+      "RQ 1167224155289174056": "fcb478083dadad09ddf0102f57e737696120b314bc0b9224128d26b227b47e2e",
       "RQ 1443370771647828032": "f51272170bc19a086ebe85d661afc31f564586659a84c632bf6c07f3af0ea57e"
-    },
-    "engineDiffers": [
-      "F-U19-6"
-    ]
+    }
   },
   {
     "key": "attr.inverted.tough",
@@ -2528,13 +2541,10 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner's words (\"always kills\") are the special case of the owner ruling of 2026-08-28 (“{Tough} + {Inverted}: the owner's own…”)’s law for a net change of zero or more; the owner ruling of 2026-08-28 (“{Tough} + {Inverted}: the owner's own…”) pins the law. See D-U19-9. 2026-10-24 housework: \"from base\" became \"from its printed defense\" with owner question Q5; the engine differs only under a base rewrite: F-U19-6, CT-379.",
+    "notes": "The owner's words (\"always kills\") are the special case of the owner ruling of 2026-08-28 (“{Tough} + {Inverted}: the owner's own…”)’s law for a net change of zero or more; the owner ruling of 2026-08-28 (“{Tough} + {Inverted}: the owner's own…”) pins the law. See D-U19-9. 2026-10-24 housework: \"from base\" became \"from its printed defense\" with owner question Q5; the engine agrees since CT-379 (2026-10-25); F-U19-6 closed.",
     "sourceHashes": {
       "RQ 1167221076447744110": "b4fc56a5b98be758e418de8e5947cd9285b66ac0380b91b169735a3fbc2594e8"
-    },
-    "engineDiffers": [
-      "F-U19-6"
-    ]
+    }
   },
   {
     "key": "attr.unaware",

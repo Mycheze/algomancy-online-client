@@ -342,69 +342,85 @@
   },
   {
     "key": "concepts.elements.game-elements",
-    "textHash": "759342b530decf2d",
+    "textHash": "6552ae6f3a1d326f",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U02-r2",
+    "round": 4,
+    "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:createGame",
+        "loc": "client/engine/src/apply.ts:createGame (elements: mode === 'draft' ? trio : [...ALL_ELEMENTS])",
         "agrees": true,
-        "note": "elements: mode === 'draft' ? trio : ALL_ELEMENTS (constructed and shared both get seven)"
+        "note": "draft = its trio, every other mode all seven"
       },
       {
-        "loc": "client/engine/src/apply.ts:doRecycle",
+        "loc": "client/engine/src/apply.ts:doRecycle / doExchangePrismite / offElements",
         "agrees": true,
-        "note": "element must be in s.elements (prismite/shard exempt)"
-      },
-      {
-        "loc": "client/engine/src/apply.ts:doExchangePrismite",
-        "agrees": true,
-        "note": "element must be in s.elements"
+        "note": "accept any of ALL_ELEMENTS whatever the game's elements; legalActions appends offElements"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/21-fixes.test.ts",
-        "pattern": "a fwe draft game refuses",
+        "pattern": "CR 105.9a / BL-44: a fwe draft game offers its trio first and still makes a wood or metal resource",
         "passed": true,
-        "asserts_claim": "yes: wood refused, wood/metal not offered (recycle only)"
+        "asserts_claim": true
       },
       {
         "file": "client/engine/test/31-trios.test.ts",
-        "pattern": "createGame honors the chosen trio",
+        "pattern": "createGame honors the chosen trio: deck, elements, and the recycle menu",
         "passed": true,
-        "asserts_claim": "yes"
-      }
-    ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U02/u02-r2-verify-probes.test.ts",
-        "title": "concepts.elements.game-elements: a fire-water-earth draft refuses a Prismite exchanged into wood, accepts fire",
-        "passed": true,
-        "demonstrates": "yes: covers the exchange half the bound tests do not"
-      }
-    ],
-    "source_checks": [
-      {
-        "ref": "R299",
-        "supports": "yes",
-        "note": "exchange for any element of the game"
+        "asserts_claim": true
       },
       {
-        "ref": "R99",
+        "file": "client/engine/test/34-constructed.test.ts",
+        "pattern": "deckElements: it is a PRESENTATION default",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/413-cr-elements-resources.test.ts",
+        "pattern": "cr:concepts.elements.game-elements",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/667-draft-any-element-resource.test.ts",
+        "pattern": "CR 105.9a / BL-44",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
         "supports": "yes",
-        "note": "shared seven, draft trio; R99 also says constructed accepts all seven"
+        "note": "any resource can be created by recycling: the game's elements limit nothing"
+      },
+      {
+        "ref": "owner BL-44 (backlog) 'technically legal to make a Fire resource'",
+        "supports": "yes",
+        "note": "verbatim in backlog-closed.ts BL-44 said"
+      },
+      {
+        "ref": "owner BL-44 'allow any color element to be made via the more menu'",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "owner register@72de434 'Shared plays all seven; draft has already narrowed `elements` to its trio'",
+        "supports": "yes",
+        "note": "the quote names shared mode; constructed = all seven rests on the engine (apply.ts createGame) and the 34-constructed test, which offers all seven"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "early on a prismite), and once active may be exchanged for any element of the game."
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "During this step, any resource can be created from"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "mode only. Shared plays all seven; draft has already narrowed `elements` to its trio."
+        "file": "client/ledgers/backlog-closed.ts",
+        "text": "But it\\'s technically legal to make a Fire resource, even if you don\\'t have "
       },
       {
         "file": "client/engine/src/apply.ts",
@@ -412,47 +428,67 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Omits the shared (non-draft, non-constructed) mode, which also has all seven; not wrong.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.elements.game-elements.off-deck",
-    "textHash": "8a9bf72efec61459",
+    "textHash": "a2841ae11b9f6c3e",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U02-r1",
+    "round": 4,
+    "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "apply.ts:legalActions planning / doRecycle",
+        "loc": "client/engine/src/apply.ts:doRecycle / doExchangePrismite",
         "agrees": true,
-        "note": "constructed elements = all seven; deckElements is only a menu hint"
+        "note": "no deck-content check; deckElements is a menu hint only"
       }
     ],
     "tests_run": [
       {
-        "file": "34-constructed.test.ts",
-        "pattern": "deckElements: it is a PRESENTATION default — all seven stay legal",
+        "file": "client/engine/test/34-constructed.test.ts",
+        "pattern": "deckElements: it is a PRESENTATION default",
         "passed": true,
-        "asserts_claim": "yes: a mono-light deck recycles for dark"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/413-cr-elements-resources.test.ts",
+        "pattern": "cr:concepts.elements.game-elements — a fire-water-earth draft exchanges a Prismite into fire, and into wood outside its trio",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/21-fixes.test.ts",
+        "pattern": "CR 105.9a / BL-44",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R99",
+        "ref": "Manual p.18",
         "supports": "yes",
-        "note": "owner BL-44"
+        "note": ""
+      },
+      {
+        "ref": "owner BL-44 'even if you don't have any Fire cards in the deck'",
+        "supports": "yes",
+        "note": "exactly the claim"
+      },
+      {
+        "ref": "owner register 'making an off-element resource is a legal'",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "That restraint is not caution, it is the rule: **making an off-element resource is a legal"
+        "file": "client/ledgers/backlog-closed.ts",
+        "text": "any Fire cards in the deck. […] note that as being technically wrong and that we should "
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.elements.hybrid",
@@ -2778,21 +2814,33 @@
   },
   {
     "key": "concepts.resources.prismite.exchange.element-only",
-    "textHash": "ba4c5a1e83bdb4d3",
+    "textHash": "26137bd13c7a54e6",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:exchangePrismite legalActions",
+        "loc": "client/engine/src/apply.ts:doExchangePrismite",
         "agrees": true,
-        "note": "offers the game's elements then shard; prismite refused"
+        "note": "accepts 'shard' or any of ALL_ELEMENTS; refuses 'prismite'"
       }
     ],
     "tests_run": [
       {
-        "file": "308-recycle-for-prismite.test.ts",
+        "file": "client/engine/test/308-recycle-for-prismite.test.ts",
         "pattern": "CR 106.8d / CT-237: a Prismite exchanges into any non-prismite resource, a Shard included, but never a Prismite",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/413-cr-elements-resources.test.ts",
+        "pattern": "cr:concepts.elements.game-elements — a fire-water-earth draft exchanges a Prismite into fire, and into wood outside its trio",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/413-cr-elements-resources.test.ts",
+        "pattern": "cr:concepts.resources.prismite.exchange.element-only",
         "passed": true,
         "asserts_claim": true
       }
@@ -2800,19 +2848,24 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "Manual p.18",
+        "ref": "Manual p.18 (two quotes)",
         "supports": "yes",
-        "note": "active Prismites may be exchanged for other resources"
+        "note": "Active Prismites may be exchanged for other resources"
       },
       {
-        "ref": "owner register \"Erase me: Create a non-prismite resource, then activate it.\"",
+        "ref": "owner register 'Erase me: Create a non-prismite resource, then activate it'",
         "supports": "yes",
-        "note": "this is the printed Prismite text (oracle Prismite card) too"
+        "note": "matches the printed Prismite card in the oracle JSON verbatim"
       },
       {
-        "ref": "owner register \"Exchanging a Prismite into a Prismite stays illegal\"",
+        "ref": "owner register 'Exchanging a Prismite *into* a Prismite stays illegal'",
         "supports": "yes",
         "note": ""
+      },
+      {
+        "ref": "owner BL-44",
+        "supports": "yes",
+        "note": "any element, in a draft too"
       }
     ],
     "quote_spans": [
@@ -2822,7 +2875,11 @@
       },
       {
         "file": "data/cards/AlgomancyCards-OracleText.json",
-        "text": "\"text\": \"Erase me: Create a non-prismite resource, then activate it."
+        "text": "Erase me: Create a non-prismite resource, then activate it."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(element === 'shard' || (ALL_ELEMENTS as string[]).includes(element),"
       }
     ],
     "basis_ok": true,
@@ -2921,21 +2978,33 @@
     "key": "concepts.resources.recycle.prismite-shard",
     "textHash": "007e90a72bcfee25",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U02-r1",
+    "round": 4,
+    "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "apply.ts:doRecycle",
+        "loc": "client/engine/src/apply.ts:doRecycle",
         "agrees": true,
-        "note": "accepts 'prismite' and 'shard' in any game"
+        "note": "element === 'prismite' || element === 'shard' accepted; resource pushed dormant"
       }
     ],
     "tests_run": [
       {
-        "file": "308-recycle-for-prismite.test.ts",
-        "pattern": "R299 every hand card offers a Prismite, then a Shard, after the elements",
+        "file": "client/engine/test/308-recycle-for-prismite.test.ts",
+        "pattern": "CR 106.6a every hand card offers a Prismite, then a Shard, after the elements",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/308-recycle-for-prismite.test.ts",
+        "pattern": "CR 106.6b a recycled Prismite behaves like a starting one",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/308-recycle-for-prismite.test.ts",
+        "pattern": "a recycled Shard is mana only",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
@@ -2943,23 +3012,26 @@
       {
         "ref": "Manual p.18",
         "supports": "yes",
-        "note": "\"any resource can be created\""
+        "note": "'any resource can be created ... by recycling a card from hand' — Prismite and Shard are resources"
       },
       {
-        "ref": "R299",
+        "ref": "owner register@72de434 'grab prismites. If you meant shards technically yes you could'",
         "supports": "yes",
-        "note": "designer: \"Yep you can grab prismites ... shards technically yes\""
+        "note": "the designer's words relayed (also quoted in 308's header, rules-questions 2025-05-09); not in the snapshot, taken as the owner's adopted call"
       }
     ],
     "quote_spans": [
       {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "outside the game by recycling a card from hand (putting it on the bottom of the"
+      },
+      {
         "file": "client/engine/src/apply.ts",
-        "text": "e.need(element === 'prismite' || element === 'shard' || (e.s.elements as string[]).includes(element),"
+        "text": "e.need(element === 'prismite' || element === 'shard' || (ALL_ELEMENTS as string[]).includes(element),"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.resources.shard",

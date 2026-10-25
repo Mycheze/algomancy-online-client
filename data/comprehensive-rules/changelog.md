@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1823 rules and 99 sections.
+- New: 1830 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -47,6 +47,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 103.3b `concepts.starting.constructed.opening-hand`
   - 104.1 `concepts.ending.elimination`
   - 104.1a `concepts.ending.elimination.immediate`
+  - 104.1b `concepts.ending.elimination.simultaneous`
   - 104.2 `concepts.ending.win`
   - 104.2a `concepts.ending.win.teams`
   - 104.3 `concepts.ending.continues`
@@ -54,6 +55,9 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 104.4 `concepts.ending.concede`
   - 104.4a `concepts.ending.concede.any-time`
   - 104.5 `concepts.ending.no-deck-out`
+  - 104.5a `concepts.ending.deck-out.constructed`
+  - 104.5b `concepts.ending.deck-out.shared-deck`
+  - 104.5c `concepts.ending.deck-out.draw-only`
   - 105.1 `concepts.elements.list`
   - 105.2 `concepts.elements.hybrid`
   - 105.3 `concepts.elements.affinity`
@@ -1086,6 +1090,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 713.5 `effects.state.tokens`
   - 713.6 `effects.state.together`
   - 713.6a `effects.state.together.limits`
+  - 713.6b `effects.state.together.delete-all`
   - 713.7 `effects.state.absent`
   - 713.7a `effects.state.absent.home`
   - 713.8 `effects.state.dying`
@@ -1621,6 +1626,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D1.2i `annexd.general.player-decides.replacement-order`
   - D1.3 `annexd.general.one-opinion`
   - D1.3a `annexd.general.one-opinion.affordances`
+  - D1.3b `annexd.general.one-opinion.block-warning`
   - D1.4 `annexd.general.hidden-segment`
   - D1.4a `annexd.general.hidden-segment.redaction`
   - D1.4b `annexd.general.hidden-segment.barrier`
@@ -1807,6 +1813,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D8.1a `annexd.modes.learn-to-play.deal`
   - D8.1b `annexd.modes.learn-to-play.bot-card`
   - D8.1c `annexd.modes.learn-to-play.bot-play`
+  - D8.1d `annexd.modes.learn-to-play.deck-out`
   - D8.2 `annexd.modes.single-card-duel`
   - D8.2a `annexd.modes.single-card-duel.draw`
   - D8.2b `annexd.modes.single-card-duel.blind`

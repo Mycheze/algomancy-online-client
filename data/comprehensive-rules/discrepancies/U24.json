@@ -21,7 +21,7 @@
     "id": "D-U24-2",
     "kind": "c-owner-call-only",
     "rule": "annexd.reveal.public-zones.deck-elements",
-    "tier": 3,
+    "tier": 4,
     "summary": "The owner ruling of 2026-08-23 (“A constructed deck's ELEMENT IDENTITY is…”) ships a constructed deck's element identity to both players, and says in its own words that whether it is public at game start is an open question for the owner.",
     "sides": [
       {
@@ -33,7 +33,7 @@
         "quote": "It decides whether `deckElements` belongs in both players' views or only the owner's."
       }
     ],
-    "resolution": "An owner-only presentation call with no printed or designer source. The owner ruling of 2026-08-23 (“A constructed deck's ELEMENT IDENTITY is…”) names it as the owner's open question: is a constructed deck's element identity public at game start? The client shows it to both players, and the rule states that default at low confidence, for sign-off."
+    "resolution": "Closed 2026-10-25: the owner dropped the roadmap item that would have shown a constructed deck's elements to both players from turn 1 (\"Drop all\"). annexd.reveal.public-zones.deck-elements now states what the client does: both views carry them, and the client reads only the player's own."
   },
   {
     "id": "D-U24-3",

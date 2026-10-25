@@ -173,27 +173,38 @@
   },
   {
     "key": "effects.augment.hosts.spell-token",
-    "textHash": "7c3fbd86ec9fa543",
+    "textHash": "d95136f47f94b507",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U17-r1",
+    "round": 4,
+    "verifier": "U17-r4",
     "engine": [
       {
-        "loc": "apply.ts:doAugment",
+        "loc": "client/engine/src/apply.ts:doAugment (tokenHost)",
         "agrees": true,
-        "note": "tokenHost: deploy phase, kind 'spellToken', controller === seat; any [Augment] card"
+        "note": "deployment: host.controller === seat (a token the player has), any augment; battle: either player's token in the battle region, Virus only"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:battleVirusHosts",
+        "agrees": true,
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "78-round17-core.test.ts",
-        "pattern": "R89: a spell token is a legal augment host during deployment",
+        "file": "client/engine/test/78-round17-core.test.ts",
+        "pattern": "CR 721.4a",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "78-round17-core.test.ts",
-        "pattern": "R89: only ATTRIBUTES transfer",
+        "file": "client/engine/test/665-battle-virus-spell-token.test.ts",
+        "pattern": "CR 721.4a",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/417-cr-card-types.test.ts",
+        "pattern": "cr:types.mods.spell-token-host",
         "passed": true,
         "asserts_claim": true
       }
@@ -201,38 +212,33 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R89",
+        "ref": "RQ 1347270455198879858",
         "supports": "yes",
-        "note": ""
+        "note": "Caleb: deployment augment of spells via spell tokens, attributes only, \"you can hit enemy spells\""
       },
       {
-        "ref": "R89",
+        "ref": "owner register quotes of Caleb + \"Virus buys you the TIMING\"",
         "supports": "yes",
-        "note": ""
+        "note": "deployment hosts are not Virus-specific"
       },
       {
-        "ref": "R89",
+        "ref": "owner \"Yes, allow it\" (2026-10-24, CT-407)",
         "supports": "yes",
-        "note": ""
+        "note": "battle Virus onto a spell token in play"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> deployment but currently that would only be possible with spell tokens. Also"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "Also you can only do this with attributes"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> you can only do this with attributes.**\" (calebgannon, rules-questions"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "That is the axis the restriction runs along: **{Virus} buys you the TIMING, not"
+        "file": "client/engine/src/apply.ts",
+        "text": "&& (((e.s.phase === 'deploy' || hasteMod) && host.controller === seat) || e.s.phase === 'battle');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.augment.procedure",
@@ -4982,21 +4988,38 @@
   },
   {
     "key": "effects.virus.battle",
-    "textHash": "08e2c248661fecfc",
+    "textHash": "a748956b578d3260",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U17-r1",
+    "round": 4,
+    "verifier": "U17-r4",
     "engine": [
       {
-        "loc": "apply.ts:doAugment",
+        "loc": "client/engine/src/apply.ts:doAugment (battle branch)",
         "agrees": true,
-        "note": "battle branch: priority, host.region === battle.region, either controller"
+        "note": "requires priority, host in the battle region, any controller; Virus goes on the stack"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:battleVirusHosts",
+        "agrees": true,
+        "note": "units in region + stack spells + spell tokens in play in region, either player (narrowed only by Gatekeeper compulsion, CR 110.12)"
       }
     ],
     "tests_run": [
       {
-        "file": "04-mods.test.ts",
-        "pattern": "virus augment during battle: on the stack, donated to an enemy, text-only transfer",
+        "file": "client/engine/test/04-mods.test.ts",
+        "pattern": "virus augment during battle",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/665-battle-virus-spell-token.test.ts",
+        "pattern": "CR 721.4a",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/370-cached-virus-in-battle.test.ts",
+        "pattern": "",
         "passed": true,
         "asserts_claim": true
       }
@@ -5006,31 +5029,27 @@
       {
         "ref": "Manual p.34",
         "supports": "yes",
-        "note": ""
+        "note": "\"Since they can be augmented during combat, viruses also are able to augment onto opposing units.\""
       },
       {
-        "ref": "Manual p.34",
+        "ref": "RQ 1347270455198879858",
         "supports": "yes",
-        "note": ""
+        "note": "\"So you can hit enemy spells\""
       },
       {
-        "ref": "R79 (its stack-host half)",
+        "ref": "owner quotes",
         "supports": "yes",
-        "note": ""
+        "note": "priority requirement; \"Yes, allow it\" for tokens in play"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "Since they can be augmented during combat, viruses"
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(e.s.priority === seat, 'you do not have priority');"
       },
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "also are able to augment onto opposing units. This is"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "modifier taxes it. The battle branch of `doAugment` already required priority"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "augmentable normally during the deployment phase"
       }
     ],
     "basis_ok": true,
@@ -5427,19 +5446,24 @@
     "key": "effects.virus.permission.zones",
     "textHash": "fd3152f9f083c570",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U17-r1",
+    "round": 4,
+    "verifier": "U17-r4",
     "engine": [
       {
-        "loc": "cards/sets/batch-hybrids-wm-a.ts:Rook",
+        "loc": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts:Rook modPermissions.augmentInBattle",
         "agrees": true,
-        "note": "augmentInBattle false for from === 'cache'"
+        "note": "returns true for hand and bin, false for cache"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:battleAugmentAllowed",
+        "agrees": true,
+        "note": "non-Virus: only through mayAugmentInBattle, i.e. the card's own permission"
       }
     ],
     "tests_run": [
       {
-        "file": "29-hybrids-wm-a.test.ts",
-        "pattern": "Rook: it prints \"hand and bin\", so the CACHE stays shut",
+        "file": "client/engine/test/29-hybrids-wm-a.test.ts",
+        "pattern": "Rook",
         "passed": true,
         "asserts_claim": true
       }
@@ -5449,27 +5473,26 @@
       {
         "ref": "card: Rook",
         "supports": "yes",
-        "note": ""
+        "note": "\"You may augment cards from hand and bin during battle as if they were [Virus].\" - names hand and bin only"
       },
       {
-        "ref": "R311",
+        "ref": "owner (2026-10-04, 2026-10-25 \"No (printed text)\")",
         "supports": "yes",
-        "note": ""
+        "note": "the RAQ edit to the contrary (thread 1396955380000755795 claim 4) is marked outdated in raq.ts, so not authority"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "You may augment cards from hand and bin during battle as if they were [Virus]."
+        "file": "client/engine/test/29-hybrids-wm-a.test.ts",
+        "text": "assert.equal(perms[0]!.augmentInBattle!(g, self, ctx('cache')), false, 'cache: not printed');"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "they were [Virus]\", still names its own zones. A non-Virus card in the cache"
+        "file": "client/engine/src/apply.ts",
+        "text": "if (c.virus && (from === 'hand' || from === 'cache')) return true;"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.virus.spell-host",

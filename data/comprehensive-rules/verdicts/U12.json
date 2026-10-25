@@ -1958,19 +1958,9 @@
     "verifier": "U12-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:pumpCombatDamage (struckNow && moreLater → openPriority('damageWindow'))",
+        "loc": "client/engine/src/engine.ts:pumpCombatDamage",
         "agrees": true,
-        "note": "for the sub-steps fixed at the start"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:advanceBattleStep ('damageWindow' → pendingSub)",
-        "agrees": true,
-        "note": "the next sub-step runs only once the stack is empty and both pass"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:advanceBattleStep (damageSubs fixed once)",
-        "agrees": false,
-        "note": "F-U12-5: a Sluggish sub-step brought in by the addition gets no window before it (423 test 1)"
+        "note": "struckNow && moreLater -> openPriority('damageWindow'); checkDeaths runs before; next sub-step only after advanceBattleStep with an empty stack"
       }
     ],
     "tests_run": [
@@ -1988,44 +1978,45 @@
       },
       {
         "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
-        "pattern": "CR 608.9c: in a SPLIT",
+        "pattern": "CR 608.3e: a unit killed in the Swift sub-step is gone at the window after it",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/05-rulings.test.ts",
-        "pattern": "CR 608.3e: formation recalc between damage sub-steps",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "client/engine/test/423-cr-combat-damage.test.ts",
-        "pattern": "cr:combat.damage.split.empty-substep — a column that gains Sluggish after the last scheduled sub-step",
+        "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+        "pattern": "CR 608.9c: in a SPLIT damage step a death trigger resolves at the boundary",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U12-1.test.ts",
+        "test": "probe U12-1: state-based changes have happened when the after-Swift window opens",
+        "passed": true,
+        "demonstrates": "yes: at the after-Swift window the dead front Reality Bender is gone, Malformed Monstrosity has moved to the front of the column, and it has lost the shared Inverted (17/16 -> 3/2)"
+      }
+    ],
     "source_checks": [
       {
         "ref": "RAQ 1540678747953569832#2",
         "supports": "yes",
-        "note": "_passer [Solved]: Swift/Sluggish 'opens new stacks which must be resolved before you move to next combat damage step'"
+        "note": "_passer [Solved]: Swift/Sluggish open new stacks resolved before the next damage step"
       },
       {
         "ref": "RAQ 1363298910528864318#0",
         "supports": "yes",
-        "note": "windows between swift-regular-sluggish, present only with Swift/Sluggish"
+        "note": "_passer [Solved]: windows between swift-regular-sluggish"
       },
       {
         "ref": "RQ 1363287109401710603",
         "supports": "yes",
-        "note": "calebgannon lists 'After swift priority' and 'Before sluggish priority' as steps between the strikes"
+        "note": "calebgannon"
       },
       {
-        "ref": "owner (2026-09-16) x2",
+        "ref": "owner register (two fragments)",
         "supports": "yes",
-        "note": "what a sub-step fired resolves with priority at the boundary; the promotion has already happened when the window opens"
+        "note": "triggers resolve with priority at the boundary; promotion already happened"
       }
     ],
     "quote_spans": [
@@ -2034,12 +2025,8 @@
         "text": "presence of Swift or/and Sluggish opens new stacks which must be resolved before you move to next combat damage step (swift->normal->sluggish)"
       },
       {
-        "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "After swift priority<- remaining columns will deal normal damage unless sluggish"
-      },
-      {
-        "file": "client/engine/test/297-damage-substeps-are-steps.test.ts",
-        "text": "assert.equal(h.state.priority, A, 'the boundary window opens with the initiative player');"
+        "file": "client/ledgers/raq.ts",
+        "text": "There *may* be additional opportunity windows between swift-regular-sluggish"
       }
     ],
     "basis_ok": true,
@@ -2047,44 +2034,33 @@
   },
   {
     "key": "combat.damage.split.empty-substep",
-    "textHash": "15406772a85c6fd2",
+    "textHash": "5057882cc7245ba7",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U12-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:pumpCombatDamage (struckNow = damageSubs.includes(sub); moreLater)",
+        "loc": "client/engine/src/engine.ts:pumpCombatDamage",
         "agrees": true,
-        "note": "no window after an unscheduled sub-step, or after the last scheduled one; a scheduled-but-emptied sub-step keeps its window"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:advanceBattleStep (damageSubs fixed once)",
-        "agrees": false,
-        "note": "F-U12-5: after the addition the engine still treats normal as the last scheduled sub-step and opens no window before Sluggish"
+        "note": "window only when subs.includes(sub) (scheduled) and a later scheduled sub-step exists; the last scheduled one hands to 'after'"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/297-damage-substeps-are-steps.test.ts",
-        "pattern": "CR 608.3c an EMPTY sub-step",
+        "pattern": "CR 608.3c an EMPTY sub-step opens no window",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/423-cr-combat-damage.test.ts",
-        "pattern": "cr:combat.damage.split.empty-substep — a scheduled sub-step keeps its window",
+        "pattern": "cr:combat.damage.split.empty-substep — a scheduled sub-step keeps its window though every striker scheduled for it died",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/423-cr-combat-damage.test.ts",
-        "pattern": "cr:combat.damage.split.empty-substep — a column that gains Sluggish after the last scheduled sub-step",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "client/engine/test/297-damage-substeps-are-steps.test.ts",
-        "pattern": "CR 608.3a the control: with no {Swift} and no {Sluggish} anywhere",
+        "pattern": "cr:combat.damage.split.empty-substep — a column that gains Sluggish",
         "passed": true,
         "asserts_claim": true
       }
@@ -2092,24 +2068,24 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "RQ 1363288029799911664",
+        "ref": "RQ 1363288029799911664 / 1363287984614539374",
         "supports": "yes",
-        "note": "its 'before' rows: ionalien 'if no sluggish unit exists ... you will go from normal damage -> after combat', calebgannon 'correct' — no window after the last scheduled sub-step, none for an empty Sluggish one"
+        "note": "calebgannon: no Sluggish -> normal damage then after combat (no further window); the before-Sluggish window is tied to Sluggish existing, not to the normal sub-step having struck (his diagram 1363278470938890250)"
       },
       {
-        "ref": "owner (2026-09-16) x2",
-        "supports": "yes",
-        "note": "window only after a sub-step that has a striker and a later one that will strike; an empty sub-step has nothing to offer a window for"
+        "ref": "owner register 'A window opens after a sub-step only when that sub-step **struck** and a **later one will strike**'",
+        "supports": "partial",
+        "note": "supports sentences 1 and 3; read literally 'struck' sits uneasily with sentence 2 (scheduled but every striker dead). The engine's own 'struckNow' is the schedule, and the record's 608.3d (owner: fixed when the step opens, never recomputed) carries sentence 2; noted, not a failure"
       }
     ],
     "quote_spans": [
       {
         "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "you will go from normal damage -> after combat"
+        "text": "And if no sluggish unit exists, you will not be able to make a swift unit hit again after a normal unit hits"
       },
       {
-        "file": "client/engine/test/423-cr-combat-damage.test.ts",
-        "text": "'the empty-but-scheduled normal sub-step still opened a window'"
+        "file": "client/engine/src/engine.ts",
+        "text": "const struckNow = subs.includes(sub);"
       }
     ],
     "basis_ok": true,
@@ -2117,20 +2093,20 @@
   },
   {
     "key": "combat.damage.split.schedule-fixed",
-    "textHash": "da7a72f53d683fb4",
-    "verdict": "partial",
+    "textHash": "7634eab850c303a3",
+    "verdict": "confirmed",
     "round": 4,
     "verifier": "U12-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:advanceBattleStep (b.damageSubs = subStepsWithStrikes(b), once)",
-        "agrees": false,
-        "note": "fixed once and never extended: a column that gains Sluggish in the after-Swift window strikes with no window before it (423 test 1) — the declared F-U12-5"
+        "loc": "client/engine/src/engine.ts:advanceBattleStep",
+        "agrees": true,
+        "note": "damageSubs = subStepsWithStrikes(b) once as the step opens; rescheduleSluggish only when the window before the normal sub-step closes"
       },
       {
-        "loc": "client/engine/src/engine.ts:pumpCombatDamage (struckNow/moreLater over the fixed damageSubs)",
+        "loc": "client/engine/src/engine.ts:rescheduleSluggish",
         "agrees": true,
-        "note": "a Swift unit dying cannot unsplit the step"
+        "note": "only Sluggish is added/dropped, by whether some half-column strikes in it now"
       }
     ],
     "tests_run": [
@@ -2141,62 +2117,76 @@
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/423-cr-combat-damage.test.ts",
-        "pattern": "cr:combat.damage.split.empty-substep — a column that gains Sluggish after the last scheduled sub-step",
+        "file": "client/engine/test/658-sluggish-decided-after-swift-window.test.ts",
+        "pattern": "CR 608.3d / CT-378",
         "passed": true,
         "asserts_claim": true
-      }
-    ],
-    "probes": [
+      },
       {
-        "file": "client/engine/test/zz-probe-U12-1.test.ts",
-        "test": "probe U12-1: a Sluggish attacker killed in the Swift sub-step still leaves a window before the (now empty) Sluggish sub-step",
+        "file": "client/engine/test/423-cr-combat-damage.test.ts",
+        "pattern": "(whole file)",
         "passed": true,
-        "demonstrates": "shows what the record's fixed schedule gives (and the engine does): a window after the normal sub-step although no Sluggish unit exists any more. Caleb's RQ 1363278470938890250 makes the Sluggish phase conditional on Sluggish existing at that point"
+        "asserts_claim": false
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "RQ 1363288029799911664",
         "supports": "yes",
-        "note": "calebgannon: 'you would have to add sluggish during the \"after swift\" window' (before: ionalien 'you will go from normal damage -> after combat' / Caleb 'correct') — supports the addition"
+        "note": "calebgannon, after ionalien's 'if no sluggish unit exists ... you will go from normal damage -> after combat': add sluggish during the after-Swift window"
       },
       {
         "ref": "RQ 1363287109401710603",
-        "supports": "partial",
-        "note": "supports that a column marked by its earlier strike keeps that mark, and that Sluggish removed IN the before-Sluggish window still strikes; says nothing about Sluggish gone before that window"
+        "supports": "yes",
+        "note": "calebgannon's scheme: after-Swift window, normal, before-Sluggish window"
       },
       {
         "ref": "RQ 1363278470938890250",
-        "supports": "partial",
-        "note": "answering 'do units have to exist in order for these phases to occur?': 'Need sluggish to exist after here---> Combat / Before Sluggish priority window / Sluggish damage'. The Sluggish phase is checked LATE, both ways. That supports the addition, but contradicts 'determined when the step begins' for a Sluggish sub-step whose Sluggish is gone by then"
+        "supports": "yes",
+        "note": "calebgannon's step diagram, 'Need sluggish to exist after here---> Combat'"
       },
       {
-        "ref": "owner (2026-09-16) 'when the damage step opens, and never recomputed'",
+        "ref": "RQ 1363287984614539374",
+        "supports": "yes",
+        "note": "'correct' to: no sluggish unit -> normal damage then after combat"
+      },
+      {
+        "ref": "RQ 1363281743234207999",
         "supports": "partial",
-        "note": "supports the Swift case; for the Sluggish sub-step it is outranked by Caleb's diagram"
+        "note": "answers 'What about mountaintop after swift damage then?'; context is thin, read as the Sluggish striker gone after Swift damage"
+      },
+      {
+        "ref": "RQ 1363281782749003809",
+        "supports": "yes",
+        "note": "'no sluggish priority window would be opened'"
+      },
+      {
+        "ref": "owner register@72de434 'when the damage step opens, and never recomputed. A Swift unit dying in the Swift'",
+        "supports": "yes",
+        "note": "fixed at the start; a Swift unit dying does not unsplit. The one revision rests on the designer, who outranks it"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "you would have to add sluggish during the \\\"after swift\\\" window"
+        "file": "client/engine/src/engine.ts",
+        "text": "if (next === 'normal' && b.damageSubs) this.rescheduleSluggish(b);"
       },
       {
         "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "Need sluggish to exist after here---> Combat"
+        "text": "you would have to add sluggish during the"
       },
       {
         "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "do units have to exist in order for these phases to occur?"
+        "text": "and no sluggish priority window would be opened"
       },
       {
-        "file": "client/engine/test/297-damage-substeps-are-steps.test.ts",
-        "text": "'and the schedule is unchanged — it was read once, before any damage');"
+        "file": "client/engine/test/658-sluggish-decided-after-swift-window.test.ts",
+        "text": "assert.equal(b().step, 'afterWindow', '\"you will go from normal damage -> after combat\"');"
       }
     ],
     "basis_ok": true,
-    "problem": "These parts hold: the addition (Sluggish gained in the after-Swift window brings in the Sluggish sub-step and its window; Caleb RQ 1363288029799911664), and that a Swift unit dying does not unsplit the step (297 'CR 608.3d', owner). The engine's divergence on the addition (F-U12-5) is real: 423 'gains Sluggish after the last scheduled sub-step' shows no window before the Sluggish strike. What fails is the one-way rule: fixed at the start, with only an addition. Asked whether units must exist for these phases to happen, Caleb's own diagram (RQ 1363278470938890250, cited by this unit) says 'Need sluggish to exist after here---> Combat / Before Sluggish priority window / Sluggish damage'. The Sluggish phase is checked at that later point in both directions, so a Sluggish sub-step whose only Sluggish unit died in the Swift sub-step (or lost Sluggish in the after-Swift window) is not still scheduled. The last sentence ('dies, leaves or loses an attribute ... does not make a split step unsplit') is too broad for the same reason: a Sluggish-only exchange whose Sluggish unit is gone has no Before-Sluggish window under Caleb. Probe zz-probe-U12-1 shows the engine and the record open that window anyway. The designer outranks the owner's 'never recomputed' here. Fix: limit 'fixed at the start' to the Swift sub-step and to removals after the point Caleb names, or put the Sluggish case to the owner as an open question."
+    "problem": "Note only: no designer source speaks to a Sluggish striker that dies DURING the normal sub-step (scheduled at the after-Swift close, so its sub-step still runs); the record does not claim otherwise and the engine is consistent with it."
   },
   {
     "key": "combat.damage.split.state-between",

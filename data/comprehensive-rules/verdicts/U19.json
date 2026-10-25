@@ -1915,18 +1915,18 @@
     "key": "attr.inverted",
     "textHash": "906c4b01ac2b21f0",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effStats",
+        "loc": "client/engine/src/engine.ts:effStats layer 5",
         "agrees": true,
-        "note": "layer 5: 2*base - current"
+        "note": "Its Dark Bubb -1/+2 reads 5/4"
       }
     ],
     "tests_run": [
       {
-        "file": "43-dark-c.test.ts",
+        "file": "client/engine/test/43-dark-c.test.ts",
         "pattern": "Its Dark Bubb: the printed reminder text, verbatim",
         "passed": true,
         "asserts_claim": true
@@ -1937,27 +1937,31 @@
       {
         "ref": "card: Its Dark Bubb",
         "supports": "yes",
-        "note": ""
+        "note": "reminder text verbatim in printed.json"
       },
       {
         "ref": "Manual p.25",
         "supports": "yes",
-        "note": ""
+        "note": "'the “Inverted” attribute, which reverses its stat changes'"
+      },
+      {
+        "ref": "glossary: Inverted",
+        "supports": "n/a",
+        "note": "ours, not authority; not relied on"
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/cards/printed.json",
-        "text": "(Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2.)"
+        "text": "Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2."
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "p = 2 * base[0]! - p;"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "attribute, which reverses its stat changes. It’s -7/-7"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.inverted.attributes",
@@ -1999,21 +2003,33 @@
   },
   {
     "key": "attr.inverted.base",
-    "textHash": "6220e454cb322bd3",
+    "textHash": "00448a0dede73c97",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effStats (layer 5: p = 2*base[0] - p)",
-        "agrees": false,
-        "note": "F-U19-6: inverts from base (layers 1-2), so a base rewrite is never inverted; a 7/5 made base 3/3 stays 3/3 when Inverted, not 11/7"
+        "loc": "client/engine/src/engine.ts:effStats layer 5 (from printed)",
+        "agrees": true,
+        "note": "base rewrite inverted against printed stats"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/79-round17-layers.test.ts",
-        "pattern": "CR 802.8c layer 5: a base REWRITE",
+        "file": "client/engine/test/659-inverted-from-printed.test.ts",
+        "pattern": "CR 802.8c / CT-379: the designer example",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/659-inverted-from-printed.test.ts",
+        "pattern": "CR 802.8c / CT-379: Its Dark Bubb (printed 4/6, Inverted) beside Aberrant Statweaver is a 5/9",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/659-inverted-from-printed.test.ts",
+        "pattern": "CR 802.8c / CT-379: a one-shot base rewrite",
         "passed": true,
         "asserts_claim": true
       }
@@ -2021,24 +2037,29 @@
     "probes": [],
     "source_checks": [
       {
+        "ref": "card: Aberrant Statweaver",
+        "supports": "yes",
+        "note": "'[Augment] Your units are base 3/3.'"
+      },
+      {
         "ref": "RQ 1167220853726007336",
         "supports": "yes",
-        "note": "calebgannon 'It does because it applies in a later layer', answering tapeworm711 'I assume inverted does NOT interact with stat \"setting\" like Reshape'"
+        "note": "calebgannon, answering 'I assume inverted does NOT interact with stat \"setting\" like Reshape': 'It does because it applies in a later layer'"
       },
       {
         "ref": "RQ 1167221076447744110",
         "supports": "yes",
-        "note": "calebgannon, same thread: printed stats vs current stats, take the difference — 7/5 vs 3/3 is -4/-2, inverted 11/7"
+        "note": "calebgannon: printed vs current, take the difference"
       },
       {
         "ref": "RQ 1443370771647828032",
         "supports": "yes",
-        "note": "calebgannon on Aberrant Statweaver vs Bubb: 'base stat changes are still stat changes'"
+        "note": "calebgannon, on Statweaver vs Bubb (Unaware): base stat changes are still stat changes"
       },
       {
-        "ref": "card: Aberrant Statweaver",
+        "ref": "RQ 1167224155289174056",
         "supports": "yes",
-        "note": "'[Augment] Your units are base 3/3.'"
+        "note": "calebgannon"
       }
     ],
     "quote_spans": [
@@ -2048,19 +2069,15 @@
       },
       {
         "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "I assume inverted does NOT interact with stat \\\"setting\\\" like Reshape"
+        "text": "Basically you just look at the stats printed on the card, then look at its current stats. Take the difference"
       },
       {
-        "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "base stat changes are still stat changes"
-      },
-      {
-        "file": "client/engine/test/79-round17-layers.test.ts",
-        "text": "'nothing changed the base, so there is no change to invert — NOT 2·3−3 off the printed 7/5');"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] Your units are base 3/3."
       }
     ],
-    "basis_ok": true,
-    "problem": ""
+    "basis_ok": false,
+    "problem": "Basis only: the record cites a printed card (Aberrant Statweaver) as well as the designer, so basis should be 'mixed', not 'designer'. The rule, the arithmetic (7/5 -> base 3/3 -> 11/7; Bubb 4/6 -> 5/9) and the tests all hold."
   },
   {
     "key": "attr.inverted.net",
@@ -2070,20 +2087,15 @@
     "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effStats (layer 5)",
+        "loc": "client/engine/src/engine.ts:effStats layer 5",
         "agrees": true,
-        "note": "negates the net delta once, not per source"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:effStats (layer 5 uses base, not printed)",
-        "agrees": false,
-        "note": "F-U19-6: differs only when a base rewrite is present"
+        "note": "net delta from printed, negated once"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/79-round17-layers.test.ts",
-        "pattern": "CR 802.8a layer 5: the owner",
+        "pattern": "CR 802.8a layer 5: the owner's Malformed Monstrosity",
         "passed": true,
         "asserts_claim": true
       },
@@ -2092,49 +2104,30 @@
         "pattern": "Its Dark Bubb: MULTI-SOURCE",
         "passed": true,
         "asserts_claim": true
-      },
-      {
-        "file": "client/engine/test/79-round17-layers.test.ts",
-        "pattern": "CR 802.8c layer 5: a base REWRITE",
-        "passed": true,
-        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "Manual p.25",
+        "ref": "Manual p.25 (two quotes)",
         "supports": "yes",
-        "note": "Malformed Monstrosity with Reality Bender: 'It's -7/-7 ability now becomes +7/+7 turning it into a 17/16.'"
-      },
-      {
-        "ref": "Manual p.25",
-        "supports": "yes",
-        "note": "same passage"
+        "note": "-7/-7 becomes +7/+7, a 17/16"
       },
       {
         "ref": "RQ 1167221076447744110",
         "supports": "yes",
-        "note": "printed vs current, take the difference — the net change from PRINTED"
+        "note": "calebgannon"
       },
       {
-        "ref": "owner (2026-08-23) x2",
+        "ref": "owner register (two)",
         "supports": "yes",
-        "note": "negate the accumulated delta; 'a mathematical operation'"
+        "note": "base − (current − base); 'a mathematical operation'"
       }
     ],
     "quote_spans": [
       {
         "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "attribute, which reverses its stat changes. It’s -7/-7"
-      },
-      {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "ability now becomes +7/+7 turning it into a 17/16."
-      },
-      {
-        "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "Basically you just look at the stats printed on the card, then look at its current stats. Take the difference"
       }
     ],
     "basis_ok": true,
@@ -2148,20 +2141,15 @@
     "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effStats (layer 4 Tough then layer 5 Inverted)",
+        "loc": "client/engine/src/engine.ts:effStats layers 4-5",
         "agrees": true,
-        "note": "final defense = 2·base − 2·(base+Δ) = −2Δ"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:effStats (layer 5 uses base, not printed)",
-        "agrees": false,
-        "note": "F-U19-6: differs only under a base rewrite"
+        "note": "final defense = -2Δ"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/79-round17-layers.test.ts",
-        "pattern": "CR 709.4d: the TWO-attribute case",
+        "pattern": "CR 709.4d: the TWO-attribute case, in either grant order",
         "passed": true,
         "asserts_claim": true
       },
@@ -2178,32 +2166,35 @@
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U19-1.test.ts",
+        "test": "probe U19-1: 1/4 given Tough then Inverted is a 1/0 and dies (and Inverted then Tough)",
+        "passed": true,
+        "demonstrates": "yes: the bound 709.4d test reads the 1/0 without settling; the probe settles and the unit dies, in both grant orders"
+      }
+    ],
     "source_checks": [
       {
         "ref": "RQ 1167221076447744110",
         "supports": "yes",
-        "note": "the printed-vs-current difference method; applied to Tough it gives −2Δ"
+        "note": "calebgannon: printed vs current difference — with Tough at layer 4 and Inverted at 5 the arithmetic gives -2Δ"
       },
       {
-        "ref": "owner (2026-08-28) 'final defense = −2Δ. The base cancels out completely.'",
+        "ref": "owner register 'final defense = −2Δ'",
         "supports": "yes",
         "note": ""
       },
       {
-        "ref": "owner (2026-08-28) Caleb's 'tough + inverted always kills the unit since +0/+X is just -0/-X'",
+        "ref": "owner register (Caleb relayed) 'tough + inverted always kills the unit'",
         "supports": "partial",
-        "note": "Caleb's shorthand for Δ ≥ 0. The record's 'unless that net change is a reduction' exception follows from his own difference method and is pinned by 79 'CR 802.8d: the special case'"
+        "note": "his paraphrase; the record correctly takes the owner's -2Δ, which carves out the reduction case"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "Basically you just look at the stats printed on the card, then look at its current stats. Take the difference"
-      },
-      {
-        "file": "client/engine/test/79-round17-layers.test.ts",
-        "text": "'final defense = −2Δ = 2, and power flips to baseP − Δp = 1 − (−1) = 2');"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "sequence. 1. Printed stats are what’s shown on the"
       }
     ],
     "basis_ok": true,

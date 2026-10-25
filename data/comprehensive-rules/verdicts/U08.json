@@ -2524,21 +2524,33 @@
   },
   {
     "key": "turn.resource.actions.exchange",
-    "textHash": "cb1c3d21ec9cc38a",
+    "textHash": "0eff7da6a855a39b",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U08-r1",
+    "round": 4,
+    "verifier": "U08-r4",
     "engine": [
       {
         "loc": "client/engine/src/apply.ts:doExchangePrismite",
         "agrees": true,
-        "note": "element must be one of the game's elements; dormant refused; new resource keeps state"
+        "note": "need r.state !== 'dormant'; shard or any element; keeps state"
       }
     ],
     "tests_run": [
       {
-        "file": "01-planning.test.ts",
-        "pattern": "R17/prismites: dormant start, no affinity, planning exchange into any element",
+        "file": "client/engine/test/01-planning.test.ts",
+        "pattern": "prismites: dormant start, no affinity, planning exchange into any element",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/308-recycle-for-prismite.test.ts",
+        "pattern": "CR 106.8d / CT-237",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/413-cr-elements-resources.test.ts",
+        "pattern": "cr:concepts.resources.prismite.exchange",
         "passed": true,
         "asserts_claim": true
       }
@@ -2546,19 +2558,24 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "Manual p.18",
+        "ref": "Manual p.18 (two quotes)",
+        "supports": "yes",
+        "note": "'Active Prismites may be exchanged for other resources' — active only; a Shard is another resource"
+      },
+      {
+        "ref": "owner register 'an **active** (face-up) Prismite may be swapped for a'",
         "supports": "yes",
         "note": ""
       },
       {
-        "ref": "R17",
+        "ref": "owner BL-44",
         "supports": "yes",
-        "note": ""
+        "note": "any element"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "typically receive the two activations for the first turn. Active Prismites may be"
       },
       {

@@ -422,21 +422,35 @@ order.
 <a id="r104"></a>
 ### 104. Ending the Game
 
-<a id="r104.1"></a>**104.1.** A player whose life total reaches 0 is eliminated. See rule 112.
+<a id="r104.1"></a>**104.1.** A player whose life total is 0 or less is eliminated (when that is checked: 104.1a). A life total can go below 0. See rule 112.
 
 > *Example: Haunting Memories sets a player's life total to twice the number of cards in all bins. With every bin empty that is 0, and that player loses.*
 
 > *Example: A player at 3 life takes combat damage from an unblocked attacker and the game is over.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.6; Rulebook 2023 p.1 · Example tests: 46-hybrids-ld-c.test.ts::Haunting Memories: empty bins set the target to 0, 02-combat.test.ts::win condition · Key: concepts.ending.elimination</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: Manual p.6; Rulebook 2023 p.1 · Designer: RQ 1426602231070851253 · Tests: 654-simultaneous-loss.test.ts · Example tests: 46-hybrids-ld-c.test.ts::Haunting Memories: empty bins set the target to 0, 02-combat.test.ts::win condition · Key: concepts.ending.elimination</sub>
 
 <sub>Discrepancies: D-U01-4 (discrepancies.md)</sub>
 
-<a id="r104.1a"></a>**104.1a** A life total reaching 0 ends the game at once, even in the middle of resolving an effect or paying a cost. Nothing waits for the effect to finish. A life cost that would by itself bring its payer to 0 cannot be paid at all (111). See rules 111, 112.
+<a id="r104.1a"></a>**104.1a** A player brought to 0 or less by an effect is not eliminated until that effect has finished: every life change one resolution of one effect makes (the unit damage is dealt in, 112.8) is applied first, and only then are the life totals checked. All the life changes of one combat damage sub-step are applied together in the same way, Lethal kills included (802.24a), and checked after all of them. Any other life change, such as rot damage, is checked the moment it happens; rot is dealt one player at a time, in initiative order, and is never simultaneous (112.13). A life cost that would by itself bring its payer to 0 cannot be paid at all (111). See rules 111, 112, 608.
 
-<sub>Basis: Owner ruling, adopted 2026-08-19, 2026-08-26 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Tests: 412-cr-general.test.ts · Demonstrated by test: 37-attrs-wight.test.ts::CR 802.22b {Blessed}: without the attribute the same shot is lethal · Key: concepts.ending.elimination.immediate</sub>
+> *Example: Both players are at 1 life and Penance brings each of them to 0. Neither is eliminated until the effect has finished, and then both are at 0 together (104.1b).*
+
+> *Example: A player at 0 is not out until the rest of the effect has happened: the effect finishes, and then the game ends.*
+
+> *Example: Both players have more rot than life as deployment begins. The initiative player's rot is dealt first and that player loses before the other player's rot is dealt.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 8 tests (a probe it wrote), all passed; 2 gate test files · Designer: RQ 1348854126699614248; RQ 1542923825904099349; RQ 1542924008620564610 · Owner call · adopted 2026-10-25; Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Tests: 654-simultaneous-loss.test.ts · Example tests: 654-simultaneous-loss.test.ts::CR 104.1a / CT-409: Penance takes both players from 1 to 0 and the initiative player loses the tie, 654-simultaneous-loss.test.ts::CR 104.1a / CT-409: with one player at 0 the other still wins, and an effect finishes before the game ends, 654-simultaneous-loss.test.ts::CR 104.1a / CT-409: rot is not simultaneous, so the initiative player whose rot takes them to 0 loses before the other player takes theirs · Demonstrated by test: 37-attrs-wight.test.ts::CR 802.22b {Blessed}: without the attribute the same shot is lethal · Key: concepts.ending.elimination.immediate</sub>
 
 <sub>Discrepancies: D-U01-14 (discrepancies.md)</sub>
+
+<a id="r104.1b"></a>**104.1b** If both players are at 0 or less when the life totals are checked, the player with the higher life total wins; totals below 0 count, so a player at -1 beats a player at -3. If the totals are equal, the initiative player loses. See rule 104.1a.
+
+> *Example: An unblocked attacker and a Piercing blocker, in the same combat damage sub-step, bring both players to 0 or less. The player left on the higher total wins.*
+
+> *Example: Both players are at 1 and one effect makes each lose 1. Both are at 0, the totals are equal, and the initiative player loses.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 1 gate test file · Designer: RQ 1348854126699614248; RQ 1294403184575647765; RQ 1366515001786892349; RQ 1426602231070851253 · Owner call · adopted 2026-10-25 · Tests: 654-simultaneous-loss.test.ts · Example tests: 654-simultaneous-loss.test.ts::CR 104.1a / CT-409: an unblocked attacker and a Piercing blocker bring both players to 0 in one combat step, and the higher total wins, 654-simultaneous-loss.test.ts::CR 104.1a / CT-409: the engine decides a double loss by total, then against the initiative player · Key: concepts.ending.elimination.simultaneous</sub>
 
 <a id="r104.2"></a>**104.2.** A player wins when all of their opponents have been eliminated. In a two-player game, when one player is eliminated the other player wins. See rule 104.1.
 
@@ -470,13 +484,37 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-21 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Example test: 58-playtest-round9.test.ts::CR 104.4a: you may concede even while a decision is pending against you · Demonstrated by test: 130-seat-aware-gate.test.ts::CR D2.1e: concede is always reachable · Key: concepts.ending.concede.any-time</sub>
 
-<a id="r104.5"></a>**104.5.** Running out of cards does not end the game. A player who has to draw from an empty deck draws as many as there are and does not lose. See rules 401, 408.
+<a id="r104.5"></a>**104.5.** A player who has to draw a card when their deck and their recycle pile are both empty has run out of cards. The recycle pile is shuffled into the deck before that (408.2b), and the bin never is. The player draws the cards there are, and then the game ends as 104.5a and 104.5b say. See rules 401, 408, 104.1.
 
-> *Example: A player with an empty deck and an empty recycle pile is told to draw 3: nothing is drawn, and nobody has won.*
+> *Example: A player whose deck is empty, with recycled cards behind the mark, draws: the recycled cards are shuffled in and the draw goes on. Nobody has run out of cards.*
 
-<sub>Basis: Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Example test: 300-recycle-mark.test.ts::CR 401.4 an empty deck AND an empty pile draws fewer · Key: concepts.ending.no-deck-out</sub>
+> *Example: A player with 2 cards left and an empty recycle pile has to draw 4. They draw the 2, and then the draw that finds nothing ends the game.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Designer: RQ 1353843048571736114; RQ 1352146353962352743 · Owner call · adopted 2026-10-24 · Tests: 656-deck-out.test.ts, 300-recycle-mark.test.ts · Example tests: 656-deck-out.test.ts::CR 104.5 / CT-385: an empty deck with recycled cards behind the mark reshuffles them in and does not lose, 656-deck-out.test.ts::CR 104.5 / CT-385: the cards that are there are drawn first, then the draw that finds nothing loses · Key: concepts.ending.no-deck-out</sub>
 
 <sub>Discrepancies: D-U01-8 (discrepancies.md)</sub>
+
+<a id="r104.5a"></a>**104.5a** In constructed, the player who ran out of cards loses the game, whatever the life totals. A Single Card Duel is constructed for this rule (D8.2). See rule D8.2.
+
+> *Example: A constructed player at 25 life has to draw with an empty deck and an empty recycle pile while the opponent is at 3. The player who had to draw loses.*
+
+> *Example: The card step at the start of a turn is a draw too: from an empty deck and pile it ends the game.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 1 gate test file · Designer: RQ 1356616873655140546; RQ 1402038431659593859; RQ 1402046171094057041 · Owner call · adopted 2026-10-24, 2026-10-25 · Tests: 656-deck-out.test.ts · Example tests: 656-deck-out.test.ts::CR 104.5 / CT-385: in constructed a draw from an empty deck and an empty recycle pile loses, whatever the life totals, 656-deck-out.test.ts::CR 104.5 / CT-385: in constructed the card step from an empty deck and pile ends the game at the start of the turn · Key: concepts.ending.deck-out.constructed</sub>
+
+<a id="r104.5b"></a>**104.5b** With a shared deck (live draft), running out of cards ends the game, and the player with the higher life total wins, even if that is the player who had to draw. If the life totals are equal, the initiative player loses. See rule 104.1b.
+
+> *Example: In a live draft the shared deck runs out when a player at 12 life has to draw against an opponent at 9. The game ends, and the player at 12 wins.*
+
+> *Example: If the two players are on the same life total, the initiative player loses.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Designer: RQ 1387479757406474313; RQ 1402046319643856916 · Owner call · adopted 2026-10-24, 2026-10-25 · Tests: 656-deck-out.test.ts · Example tests: 656-deck-out.test.ts::CR 104.5 / CT-385: with a shared deck (live draft) the game ends and the higher life total wins, even over the player who had to draw, 656-deck-out.test.ts::CR 104.5 / CT-385: a live-draft deck-out with the life totals tied goes against the initiative player · Key: concepts.ending.deck-out.shared-deck</sub>
+
+<a id="r104.5c"></a>**104.5c** Only a draw runs out of cards. Milling, revealing, glimpsing or caching from an empty deck and an empty recycle pile takes nothing, and the game goes on. See rule 401.4.
+
+> *Example: A player with an empty deck and an empty recycle pile is told to mill 2, and then to cache the top card of their deck. Nothing happens, and the game goes on.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Designer: RQ 1356616873655140546 · Owner call · adopted 2026-10-25 · Tests: 656-deck-out.test.ts, 300-recycle-mark.test.ts · Example test: 656-deck-out.test.ts::CR 104.5 / CT-385: a mill or a cache from an empty deck is not a draw and does not end the game · Key: concepts.ending.deck-out.draw-only</sub>
 
 <a id="r105"></a>
 ### 105. Elements and Affinity
@@ -553,17 +591,19 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Printed: Manual p.32 · Designer: RAQ 1537748882501668934#1; RAQ 1355115946032889914#2 · Tests: 408-raq-new-threads.test.ts, 393-raq-mods.test.ts · Demonstrated by tests: 408-raq-new-threads.test.ts::RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost, 393-raq-mods.test.ts::RAQ Graft 101 point 3: a graft comes from the bin as well as the hand, and only when its cost and affinity are met · Key: concepts.elements.mods-need-affinity</sub>
 
-<a id="r105.9"></a>**105.9.** Each game has a set of elements. In a live draft it is the selected elements; in constructed it is all seven. An element resource a player creates, by recycling or by exchanging a Prismite, must be of one of the game's elements. See rules 106, 901, 902.
+<a id="r105.9"></a>**105.9.** Each game has a set of elements: in a live draft, the selected elements; in constructed, all seven. The game's elements limit nothing a player may create: by recycling or by exchanging a Prismite, a player may create an element resource of any of the seven elements. See rules 106, 901, 902.
 
-> *Example: In a fire-water-earth draft, wood and metal resources are refused and never offered.*
+> *Example: In a fire-water-earth draft, a player may still recycle a card for a wood or a metal resource.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-23, 2026-09-19 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 4 gate test files · Tests: 21-fixes.test.ts, 31-trios.test.ts, 34-constructed.test.ts, 413-cr-elements-resources.test.ts · Example test: 21-fixes.test.ts::a fwe draft game refuses wood/metal resources and never offers them · Demonstrated by test: 31-trios.test.ts::createGame honors the chosen trio: deck, elements, and the recycle menu · Key: concepts.elements.game-elements</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 4 gate test files · Printed: Manual p.18 · Owner call · adopted 2026-09-19; Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 21-fixes.test.ts, 31-trios.test.ts, 34-constructed.test.ts, 413-cr-elements-resources.test.ts · Example test: 21-fixes.test.ts::CR 105.9a / BL-44: a fwe draft game offers its trio first and still makes a wood or metal resource · Demonstrated by test: 31-trios.test.ts::createGame honors the chosen trio: deck, elements, and the recycle menu · Key: concepts.elements.game-elements</sub>
 
 <sub>Discrepancies: D-U02-3 (discrepancies.md)</sub>
 
-<a id="r105.9a"></a>**105.9a** In constructed, a player may create a resource of any of the seven elements, including an element their deck has no cards of.
+<a id="r105.9a"></a>**105.9a** A player may create a resource of an element their deck has no cards of, in constructed and in a live draft alike.
 
-<sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 34-constructed.test.ts · Demonstrated by test: 34-constructed.test.ts::deckElements: it is a PRESENTATION default — all seven stay legal · Key: concepts.elements.game-elements.off-deck</sub>
+> *Example: In a fire-water-earth draft a Prismite is exchanged into wood.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: Manual p.18 · Owner call · adopted 2026-09-19; Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 34-constructed.test.ts, 413-cr-elements-resources.test.ts, 21-fixes.test.ts · Example test: 413-cr-elements-resources.test.ts::cr:concepts.elements.game-elements — a fire-water-earth draft exchanges a Prismite into fire, and into wood outside its trio · Demonstrated by test: 34-constructed.test.ts::deckElements: it is a PRESENTATION default — all seven stay legal · Key: concepts.elements.game-elements.off-deck</sub>
 
 <a id="r106"></a>
 ### 106. Resources
@@ -642,7 +682,7 @@ order.
 
 <a id="r106.6a"></a>**106.6a** Recycling may create a Prismite or a Shard instead of an element resource.
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.18 · Owner ruling, adopted 2026-09-19 (quoted from the retired ruling register) · Tests: 308-recycle-for-prismite.test.ts · Demonstrated by test: 308-recycle-for-prismite.test.ts::CR 106.6a every hand card offers a Prismite, then a Shard, after the elements · Key: concepts.resources.recycle.prismite-shard</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 1 gate test file · Printed: Manual p.18 · Owner ruling, adopted 2026-09-19 (quoted from the retired ruling register) · Tests: 308-recycle-for-prismite.test.ts · Demonstrated by test: 308-recycle-for-prismite.test.ts::CR 106.6a every hand card offers a Prismite, then a Shard, after the elements · Key: concepts.resources.recycle.prismite-shard</sub>
 
 <a id="r106.6b"></a>**106.6b** A Prismite made by recycling is the same as a starting Prismite: it enters dormant, takes an activation, gives no affinity, and once active may be exchanged.
 
@@ -702,9 +742,11 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Tests: 21-fixes.test.ts, 413-cr-elements-resources.test.ts · Example tests: 21-fixes.test.ts::CR 106.8: spending a Prismite into your 3rd element copy DOES grant the shard — "then activate it", 21-fixes.test.ts::CR 106.8: a Prismite spent into your SECOND copy pays nothing — the p.18 bar is three · Key: concepts.resources.prismite.exchange.activation</sub>
 
-<a id="r106.8d"></a>**106.8d** A Prismite may be exchanged for any non-Prismite resource: an element resource of one of the game's elements, or a Shard. It cannot be exchanged for another Prismite.
+<a id="r106.8d"></a>**106.8d** A Prismite may be exchanged for any non-Prismite resource: an element resource of any of the seven elements, or a Shard. It cannot be exchanged for another Prismite.
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.18; Manual p.18 · Owner ruling, adopted 2026-08-24, 2026-09-19 (quoted from the retired ruling register) · Tests: 308-recycle-for-prismite.test.ts, 413-cr-elements-resources.test.ts · Demonstrated by test: 308-recycle-for-prismite.test.ts::CR 106.8d / CT-237: a Prismite exchanges into any non-prismite resource, a Shard included, but never a Prismite · Key: concepts.resources.prismite.exchange.element-only</sub>
+> *Example: In a fire-water-earth draft an active Prismite is exchanged into wood, an element outside the draft.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Printed: Manual p.18; Manual p.18 · Owner call · adopted 2026-09-19; Owner ruling, adopted 2026-08-24, 2026-09-19 (quoted from the retired ruling register) · Tests: 308-recycle-for-prismite.test.ts, 413-cr-elements-resources.test.ts · Example test: 413-cr-elements-resources.test.ts::cr:concepts.elements.game-elements — a fire-water-earth draft exchanges a Prismite into fire, and into wood outside its trio · Demonstrated by test: 308-recycle-for-prismite.test.ts::CR 106.8d / CT-237: a Prismite exchanges into any non-prismite resource, a Shard included, but never a Prismite · Key: concepts.resources.prismite.exchange.element-only</sub>
 
 <sub>Discrepancies: D-U02-8 (discrepancies.md)</sub>
 
@@ -775,13 +817,13 @@ order.
 
 > *Example: Tides of the Cosmos counts an X spell as cost 0 and plays it at X = 0.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1396955380000755795#6 · Owner ruling, adopted 2026-08-23, 2026-10-09 (quoted from the retired ruling register) · Tests: 36-cache-prophecy.test.ts, 396-raq-timing.test.ts · Example tests: 36-cache-prophecy.test.ts::CR 803.7j: a fulfilled prophecy releases an X spell for X = 0 — no X asked, no mana paid, 396-raq-timing.test.ts::RAQ Tides 6a: an X spell counts as cost 0 against the budget and is played at X = 0 · Key: concepts.numbers.free-play</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1396955380000755795#7 · Owner ruling, adopted 2026-08-23, 2026-10-09 (quoted from the retired ruling register) · Tests: 36-cache-prophecy.test.ts, 396-raq-timing.test.ts · Example tests: 36-cache-prophecy.test.ts::CR 803.7j: a fulfilled prophecy releases an X spell for X = 0 — no X asked, no mana paid, 396-raq-timing.test.ts::RAQ Tides 6a: an X spell counts as cost 0 against the budget and is played at X = 0 · Key: concepts.numbers.free-play</sub>
 
 <a id="r107.4a"></a>**107.4a** An X spell that prints "X can't be zero" therefore cannot be played for free. An effect that plays cards for free cannot play it.
 
 > *Example: Tides of the Cosmos cannot pick Frosted Denial; an X card that may be zero is still a pick.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Frosted Denial · Designer: RAQ 1396955380000755795#7 · Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 404-raq-fix-tides.test.ts, 396-raq-timing.test.ts · Example test: 404-raq-fix-tides.test.ts::CR 107.4a: an X card that may not be zero is never a Tides pick; one that may be zero still is · Demonstrated by test: 396-raq-timing.test.ts::RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can play · Key: concepts.numbers.free-play.cant-be-zero</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Frosted Denial · Designer: RAQ 1396955380000755795#8 · Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 404-raq-fix-tides.test.ts, 396-raq-timing.test.ts · Example test: 404-raq-fix-tides.test.ts::CR 107.4a: an X card that may not be zero is never a Tides pick; one that may be zero still is · Demonstrated by test: 396-raq-timing.test.ts::RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can play · Key: concepts.numbers.free-play.cant-be-zero</sub>
 
 <a id="r107.5"></a>**107.5.** Stasis Sentry gives spells with a base cost of [three] or less a base cost of [three] during battle. On an X spell it raises the X instead of the price: X must be at least 3, and the spell costs exactly X. See rule 111.
 
@@ -1611,7 +1653,7 @@ order.
 
 > *Example: Squish, paid at [4] under Stasis Sentry and Tranquility, is read as a 2-cost spell by Arcane Concentrator.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Designer: RAQ 1353980184042143835#0; RAQ 1396955380000755795#9 · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 390-raq-stack.test.ts, 133-x-cost-semantics.test.ts, 396-raq-timing.test.ts · Example test: 390-raq-stack.test.ts::RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2 · Demonstrated by test: 133-x-cost-semantics.test.ts::CR 111.11 — a card that was never cast has no cost: an X card in hand reads 0 · Key: concepts.costs.reading-cost</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Designer: RAQ 1353980184042143835#0; RAQ 1396955380000755795#10 · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 390-raq-stack.test.ts, 133-x-cost-semantics.test.ts, 396-raq-timing.test.ts · Example test: 390-raq-stack.test.ts::RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2 · Demonstrated by test: 133-x-cost-semantics.test.ts::CR 111.11 — a card that was never cast has no cost: an X card in hand reads 0 · Key: concepts.costs.reading-cost</sub>
 
 <a id="r111.12"></a>**111.12.** Some cards print another way to play or use them, with its own cost: a Prophecy or Ambush banner, or a "Discard me" line. Such a cost is paid like any other cost: its mana is spent and its affinity requirement must be met. See rules 203, 803.
 
@@ -1629,13 +1671,13 @@ order.
 
 > *Example: Volatile Toxicity played by Tides still sacrifices a unit.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Designer: RAQ 1396955380000755795#5 · Owner ruling, adopted 2026-09-20 (quoted from the retired ruling register) · Tests: 396-raq-timing.test.ts, 404-raq-fix-tides.test.ts, 313-prophecy-affinity.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Tides 1: a free play ignores affinity — a fire unit with only water resources, 404-raq-fix-tides.test.ts::CR 702.4e: a Tides play pays its additional cost — the sacrifice happens and Volatile Toxicity resolves · Key: concepts.costs.free</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Designer: RAQ 1396955380000755795#6 · Owner ruling, adopted 2026-09-20 (quoted from the retired ruling register) · Tests: 396-raq-timing.test.ts, 404-raq-fix-tides.test.ts, 313-prophecy-affinity.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Tides 1: a free play ignores affinity — a fire unit with only water resources, 404-raq-fix-tides.test.ts::CR 702.4e: a Tides play pays its additional cost — the sacrifice happens and Volatile Toxicity resolves · Key: concepts.costs.free</sub>
 
 <a id="r111.13a"></a>**111.13a** An X spell played for free is played with X = 0. A card that says "X can't be zero" therefore cannot be played for free. See rule 107.
 
 > *Example: Tides of the Cosmos cannot play Frosted Denial.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Designer: RAQ 1396955380000755795#6 · Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 396-raq-timing.test.ts, 404-raq-fix-tides.test.ts · Example test: 396-raq-timing.test.ts::RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can play · Key: concepts.costs.free.x</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Designer: RAQ 1396955380000755795#7 · Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 396-raq-timing.test.ts, 404-raq-fix-tides.test.ts · Example test: 396-raq-timing.test.ts::RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can play · Key: concepts.costs.free.x</sub>
 
 <a id="r111.14"></a>**111.14.** When an effect is repeated by a multiplier ("trigger two copies of this graft ability"), a cost the repeated effect carries is paid once for each copy. The whole multiplied cost is paid all or nothing: if it cannot all be paid, none of it is paid and that effect does not happen. See rule 722.
 
@@ -1772,11 +1814,13 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-23, 2026-08-28 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 207-replaced-hit-was-dealt.test.ts · Example test: 207-replaced-hit-was-dealt.test.ts::CR 608.8a: "when my column deals combat damage" pays out through the replacement · Key: concepts.damage.replaced</sub>
 
-<a id="r112.13"></a>**112.13.** Rot is a counter a player has. At the start of each deployment phase, each player is dealt damage equal to their rot, in initiative order. See rule 507.
+<a id="r112.13"></a>**112.13.** Rot is a counter a player has. At the start of each deployment phase, each player is dealt damage equal to their rot, in initiative order. Rot damage is not simultaneous: the initiative player's rot is dealt and checked first, so a player it brings to 0 loses before the other player's rot is dealt (104.1a). See rule 507.
 
 > *Example: a player with 3 rot is dealt 3 damage as deployment begins.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Our glossary (not a source): Rot · Tests: 35-rot-debt-trash.test.ts, 42-dark-b.test.ts · Example test: 35-rot-debt-trash.test.ts::CR 112.13: rot deals damage equal to itself at the start of deployment, in initiative order · Key: concepts.rot</sub>
+> *Example: Both players have more rot than life. The initiative player's rot is dealt first, and that player loses before the other player's rot is dealt.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Designer: RQ 1542923825904099349; RQ 1542924008620564610 · Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Our glossary (not a source): Rot · Tests: 35-rot-debt-trash.test.ts, 42-dark-b.test.ts, 654-simultaneous-loss.test.ts · Example tests: 35-rot-debt-trash.test.ts::CR 112.13: rot deals damage equal to itself at the start of deployment, in initiative order, 654-simultaneous-loss.test.ts::CR 104.1a / CT-409: rot is not simultaneous, so the initiative player whose rot takes them to 0 loses before the other player takes theirs · Key: concepts.rot</sub>
 
 <sub>Discrepancies: D-U04-7 (discrepancies.md)</sub>
 
@@ -1972,7 +2016,7 @@ order.
 
 > *Example: Tides of the Cosmos' "total cost 8 or less" is not shrunk by Tranquility.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1353980184042143835#0; RAQ 1396955380000755795#9 · Tests: 390-raq-stack.test.ts, 396-raq-timing.test.ts · Example tests: 390-raq-stack.test.ts::RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2, 396-raq-timing.test.ts::RAQ Tides 8: the total cost of 8 or less reads printed costs — Tranquility does not shrink it · Key: card.cost-orb.printed-cost</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1353980184042143835#0; RAQ 1396955380000755795#10 · Tests: 390-raq-stack.test.ts, 396-raq-timing.test.ts · Example tests: 390-raq-stack.test.ts::RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2, 396-raq-timing.test.ts::RAQ Tides 8: the total cost of 8 or less reads printed costs — Tranquility does not shrink it · Key: card.cost-orb.printed-cost</sub>
 
 <a id="r202.5"></a>**202.5.** A cost orb may show X. While a card with X in its cost is being cast, X is the amount chosen and paid, and that amount is the card's cost. See rules 107, 111.
 
@@ -1986,7 +2030,7 @@ order.
 
 > *Example: Living Vault caches a card from hand by paying its cost: an X card in hand costs 0, so it can be cached for [0].*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1396955380000755795#6 · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 396-raq-timing.test.ts, 39-light-b.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Tides 6a: an X spell counts as cost 0 against the budget and is played at X = 0, 39-light-b.test.ts::Living Vault: an X-cost card in hand is offered at pay [0] (CR 107.3a) · Key: card.cost-orb.x-outside-cast</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1396955380000755795#7 · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 396-raq-timing.test.ts, 39-light-b.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Tides 6a: an X spell counts as cost 0 against the budget and is played at X = 0, 39-light-b.test.ts::Living Vault: an X-cost card in hand is offered at pay [0] (CR 107.3a) · Key: card.cost-orb.x-outside-cast</sub>
 
 <sub>Discrepancies: D-U05-13 (discrepancies.md)</sub>
 
@@ -2127,7 +2171,7 @@ order.
 
 > *Example: A card played by Tides of the Cosmos still pays its bracketed cost, and a unit played by the same Tides is not yet in play to pay it.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1396955380000755795#5 · Tests: 396-raq-timing.test.ts · Example test: 396-raq-timing.test.ts::RAQ Tides 5: an additional cost is still paid, and a unit from the same Tides is not in play to pay it · Key: card.text-box.brackets.paid-when-free</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1396955380000755795#6 · Tests: 396-raq-timing.test.ts · Example test: 396-raq-timing.test.ts::RAQ Tides 5: an additional cost is still paid, and a unit from the same Tides is not in play to pay it · Key: card.text-box.brackets.paid-when-free</sub>
 
 <a id="r205.4"></a>**205.4.** On a graft card the graft symbol divides an ability into a cause, before the symbol, and an effect, after it. When the card is grafted onto another, only the text after its graft symbol is added. See rule 722.
 
@@ -2809,13 +2853,15 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1355115946032889914#3 · Tests: 393-raq-mods.test.ts, 15-water-b.test.ts · Example tests: 15-water-b.test.ts::Spawntender: creates an 8/8, then its own 2/2 body spawns, 393-raq-mods.test.ts::RAQ Graft 101 point 4: a dead Leaping Lillik is a graft from the bin · Key: types.mods.spells</sub>
 
-<a id="r305.6"></a>**305.6.** During deployment, a spell token in play may be augmented, with any augment and not only a Virus. The spell token gains only the mod's attributes, not its text. See rule 721.
+<a id="r305.6"></a>**305.6.** During deployment, a spell token in play may be augmented, with any augment and not only a Virus. During a battle, a Virus may also be applied to a spell token in play in the battle's region, either player's (723.2). The spell token gains only the mod's attributes, not its text. See rule 721.
 
 > *Example: A Fireball augmented with a mod granting {Powerful} deals double damage when cast.*
 
 > *Example: Carapace Devourer, an augment that is not a Virus, may augment a spell token during deployment.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 4 tests (a probe it wrote), all passed; 2 gate test files · Tests: 78-round17-core.test.ts, 417-cr-card-types.test.ts · Example tests: 78-round17-core.test.ts::CR 721.4a: only ATTRIBUTES transfer, 417-cr-card-types.test.ts::cr:types.mods.spell-token-host — a non-Virus augment (Carapace Devourer) may augment a spell token in deployment · Demonstrated by tests: 78-round17-core.test.ts::CR 721.4a: a spell token is a legal augment host during deployment, 78-round17-core.test.ts::CR 721.4a: a text-only augment on a token grants nothing · Key: types.mods.spell-token-host</sub>
+> *Example: In battle a player applies Chitin Shredder, a Virus, to a Fireball token standing in play. The Fireball gains Powerful and deals double damage when it is cast.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Designer: RQ 1347270455198879858; RQ 1364998183226179735 · Owner call · adopted 2026-10-24; Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 78-round17-core.test.ts, 417-cr-card-types.test.ts, 665-battle-virus-spell-token.test.ts · Example tests: 78-round17-core.test.ts::CR 721.4a: only ATTRIBUTES transfer, 417-cr-card-types.test.ts::cr:types.mods.spell-token-host — a non-Virus augment (Carapace Devourer) may augment a spell token in deployment, 665-battle-virus-spell-token.test.ts::CR 721.4a / CT-407: a Virus gives a Fireball token in play Powerful mid-battle, and its cast deals double · Demonstrated by tests: 78-round17-core.test.ts::CR 721.4a: a spell token is a legal augment host during deployment, 78-round17-core.test.ts::CR 721.4a: a text-only augment on a token grants nothing · Key: types.mods.spell-token-host</sub>
 
 <sub>Discrepancies: D-U06-7, D-U06-9 (discrepancies.md)</sub>
 
@@ -2925,11 +2971,11 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.deck.the-deck — in constructed a Glimpse 1 reveals the top of the deck of the effect controller, not of the opponent · Key: zones.deck.the-deck</sub>
 
-<a id="r401.4"></a>**401.4.** A player who must draw from an empty deck when the recycle pile is also empty draws as many cards as there are. Running out of cards does not make a player lose. See rules 408, 104.
+<a id="r401.4"></a>**401.4.** A player who must draw from an empty deck when the recycle pile is also empty draws as many cards as there are, and has then run out of cards (104.5). See rules 408, 104.
 
-> *Example: With deck and recycle pile both empty, a draw of two draws nothing and the game goes on.*
+> *Example: With deck and recycle pile both empty, a draw of two draws nothing, and the game ends (104.5).*
 
-<sub>Basis: Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Tests: 300-recycle-mark.test.ts · Example test: 300-recycle-mark.test.ts::CR 401.4 an empty deck AND an empty pile draws fewer · Key: zones.deck.empty</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Designer: RQ 1356616873655140546 · Owner call · adopted 2026-10-24 · Tests: 300-recycle-mark.test.ts, 656-deck-out.test.ts · Example test: 300-recycle-mark.test.ts::CR 401.4 an empty deck AND an empty pile draws fewer · Key: zones.deck.empty</sub>
 
 <a id="r402"></a>
 ### 402. Hand
@@ -3103,9 +3149,11 @@ order.
 
 <sub>Discrepancies: D-U07-3 (discrepancies.md)</sub>
 
-<a id="r405.6"></a>**405.6.** Copies of one card in a bin cannot be told apart. A card in a bin is identified only by its name and by which copy of that name it is.
+<a id="r405.6"></a>**405.6.** A card in a bin is identified only by its name and by which copy of that name it is. An effect that has named one copy keeps naming that copy as other copies of its name leave the bin (405.6b).
 
-<sub>Basis: Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.bin.identity — a bin holds bare card names, and two copies of one card are offered as the same name told apart only by which copy · Key: zones.bin.identity</sub>
+> *Example: Two copies of a card are in a bin and a spell targets the second. The first copy is taken in response: the target is still the card the spell aimed at, now the only copy.*
+
+<sub>Basis: Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Tests: 418-cr-zones.test.ts, 663-bin-target-copy-identity.test.ts · Example test: 663-bin-target-copy-identity.test.ts::CR 405.6b / CT-380: an earlier copy leaving does not lose the target, which is still the same card · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.bin.identity — a bin holds bare card names, and two copies of one card are offered as the same name told apart only by which copy · Key: zones.bin.identity</sub>
 
 <a id="r405.6a"></a>**405.6a** "Another" said by a card in a bin excludes that one copy, not every card with its name. See rule 110.
 
@@ -3113,11 +3161,15 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 121-another-identity.test.ts · Example test: 121-another-identity.test.ts::CR 405.6a Blightwalker: a Blightwalker ALREADY in the bin is · Key: zones.bin.identity.another</sub>
 
-<a id="r405.6b"></a>**405.6b** An effect that refers back to a card that just entered a bin ("that card", "it") means that copy. If that copy has left the bin, the effect finds nothing. It never takes a different copy of the same name.
+<a id="r405.6b"></a>**405.6b** An effect that refers back to a card that just entered a bin ("that card", "it") means that copy. If that copy has left the bin, the effect finds nothing. It never takes a different copy of the same name. A card a spell or ability targets in a bin is held the same way: the target stays on the copy it named while other copies of that name leave, and if that copy itself leaves before the effect resolves, the target is gone.
 
 > *Example: An {Unstable} unit dies and is erased instead of staying in the bin. Biomass Devourer's "erase it" then finds nothing, and does not erase an older copy of the same card already in that bin.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 26-metal-a.test.ts · Example test: 26-metal-a.test.ts::CR 405.6: Biomass Devourer does NOT erase an innocent older copy when the dead one was swept · Key: zones.bin.identity.that-card</sub>
+> *Example: Two copies of a card are in a bin. A spell targets the second, and the second is taken in response. The spell finds nothing; it does not take the first copy instead.*
+
+> *Example: A spell targets the first of two copies, and the first is taken in response. The spell does not slide onto the second copy.*
+
+<sub>Basis: Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Tests: 26-metal-a.test.ts, 663-bin-target-copy-identity.test.ts · Example tests: 26-metal-a.test.ts::CR 405.6: Biomass Devourer does NOT erase an innocent older copy when the dead one was swept, 663-bin-target-copy-identity.test.ts::CR 405.6b / CT-380: the second copy targeted and taken in response leaves the first copy alone, 663-bin-target-copy-identity.test.ts::CR 405.6b / CT-380: the first copy targeted and taken in response does not slide onto the second · Key: zones.bin.identity.that-card</sub>
 
 <a id="r405.7"></a>**405.7.** A card leaves a bin whenever an effect takes it out, for any reason: recalled, played, cached, erased, recycled, prophesied, or applied as a mod. A "when I leave your bin" ability triggers on every such departure.
 
@@ -3571,11 +3623,11 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.18 · Tests: 01-planning.test.ts · Demonstrated by test: 01-planning.test.ts::setup & planning · Key: turn.resource.actions.activate</sub>
 
-<a id="r502.2c"></a>**502.2c** Exchange an active Prismite for a resource of one of the game's elements. A dormant Prismite cannot be exchanged. See rule 106.
+<a id="r502.2c"></a>**502.2c** Exchange an active Prismite for a resource of any element, or for a Shard (106.8d). A dormant Prismite cannot be exchanged. See rule 106.
 
 > *Example: Two starting Prismites are activated, then one is exchanged for a fire resource, which keeps its active state.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.18; Manual p.18 · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 01-planning.test.ts · Example test: 01-planning.test.ts::prismites: dormant start, no affinity, planning exchange into any element · Key: turn.resource.actions.exchange</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: Manual p.18; Manual p.18 · Owner call · adopted 2026-09-19; Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 01-planning.test.ts, 413-cr-elements-resources.test.ts, 308-recycle-for-prismite.test.ts · Example test: 01-planning.test.ts::prismites: dormant start, no affinity, planning exchange into any element · Key: turn.resource.actions.exchange</sub>
 
 <a id="r502.3"></a>**502.3.** The resource step ends when every player has created and activated all the resources they want. See rule 504.
 
@@ -5152,27 +5204,31 @@ order.
 
 <sub>Discrepancies: D-U12-1 (discrepancies.md)</sub>
 
-<a id="r608.3b"></a>**608.3b** In a split step, each scheduled sub-step (rule 608.3d) is a separate step. After each such sub-step except the last scheduled one, the abilities that triggered during it are put on the stack and players receive priority; the next sub-step deals no damage until that stack has resolved and all players have passed priority in succession with it empty. State-based changes (deaths, back-row units moving forward, lost shared attributes) have already happened when this window opens. See rules 703, 706. *(Engine differs, see F-U12-5.)*
+<a id="r608.3b"></a>**608.3b** In a split step, each scheduled sub-step (rule 608.3d) is a separate step. After each such sub-step except the last scheduled one, the abilities that triggered during it are put on the stack and players receive priority; the next sub-step deals no damage until that stack has resolved and all players have passed priority in succession with it empty. State-based changes (deaths, back-row units moving forward, lost shared attributes) have already happened when this window opens. See rules 703, 706.
 
 > *Example: Bripp (4 power) and Bloated Manablub (2 power) attack in normal columns, and Adversary of the Deep (2/2, Sluggish; 'Whenever a player loses life, put that many +1/+1 counters on me') attacks in a third column. None are blocked. The normal sub-step deals 6; the step stops, Adversary's trigger resolves with priority, and Adversary strikes in the Sluggish sub-step for 8.*
 
 > *Example: At the boundary, the stack holds Adversary of the Deep's trigger. Its controller has the initiative and receives priority first; the other player may respond once they pass.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 3 gate test files · Designer: RAQ 1540678747953569832#2; RAQ 1363298910528864318#0; RQ 1363287109401710603 · Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Engine: pumpCombatDamage · Tests: 297-damage-substeps-are-steps.test.ts, 239-damage-triggers-after-combat.test.ts, 21-fixes.test.ts · Example tests: 297-damage-substeps-are-steps.test.ts::CR 802.5b the report, 297-damage-substeps-are-steps.test.ts::CR 608.3b the boundary is a real priority window · Key: combat.damage.split.boundary-window</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 3 gate test files · Designer: RAQ 1540678747953569832#2; RAQ 1363298910528864318#0; RQ 1363287109401710603 · Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Engine: pumpCombatDamage · Tests: 297-damage-substeps-are-steps.test.ts, 239-damage-triggers-after-combat.test.ts, 21-fixes.test.ts · Example tests: 297-damage-substeps-are-steps.test.ts::CR 802.5b the report, 297-damage-substeps-are-steps.test.ts::CR 608.3b the boundary is a real priority window · Key: combat.damage.split.boundary-window</sub>
 
-<a id="r608.3c"></a>**608.3c** A sub-step in which no half-column is scheduled to strike (rule 608.3d) is not a separate step: no window opens after it. A scheduled sub-step keeps its window even if every half-column scheduled for it has since been destroyed. No window opens after the last scheduled sub-step; the after combat step begins. *(Engine differs, see F-U12-5.)*
+<a id="r608.3c"></a>**608.3c** A sub-step in which no half-column is scheduled to strike (rule 608.3d) is not a separate step: no window opens after it. A scheduled sub-step keeps its window even if every half-column scheduled for it has since been destroyed; only the Sluggish sub-step is decided again, as 608.3d says. No window opens after the last scheduled sub-step; the after combat step begins.
 
 > *Example: Dune Drifter (Swift) and Lithoghul attack in separate columns and are not blocked. Half-columns strike in the Swift and normal sub-steps and nothing strikes in the Sluggish sub-step, so there is exactly one window, between the Swift and normal sub-steps.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Designer: RQ 1363288029799911664 · Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Engine: pumpCombatDamage · Tests: 297-damage-substeps-are-steps.test.ts, 423-cr-combat-damage.test.ts · Example test: 297-damage-substeps-are-steps.test.ts::CR 608.3c an EMPTY sub-step opens no window · Key: combat.damage.split.empty-substep</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Designer: RQ 1363288029799911664; RQ 1363287984614539374 · Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Engine: pumpCombatDamage · Tests: 297-damage-substeps-are-steps.test.ts, 423-cr-combat-damage.test.ts · Example test: 297-damage-substeps-are-steps.test.ts::CR 608.3c an EMPTY sub-step opens no window · Key: combat.damage.split.empty-substep</sub>
 
 <sub>Discrepancies: D-U12-10 (discrepancies.md)</sub>
 
-<a id="r608.3d"></a>**608.3d** Which sub-steps are scheduled, and so are separate steps, is determined when the combat damage step begins, with one addition: if a half-column has Sluggish when the window after the Swift sub-step ends, the Sluggish sub-step is scheduled too, so a window opens before it. A unit that dies, leaves or loses an attribute during the step does not make a split step unsplit. *(Engine differs, see F-U12-5.)*
+<a id="r608.3d"></a>**608.3d** Which sub-steps are scheduled, and so are separate steps, is determined when the combat damage step begins, with one revision: when the window after the Swift sub-step ends, the Sluggish sub-step is scheduled if, and only if, a half-column will then strike in it. So a half-column that gains Sluggish in that window gets the window before the Sluggish sub-step; and if no half-column has Sluggish when that window ends, the normal sub-step is the last scheduled one and the after combat step follows it. Without a Swift sub-step there is no such window, and the schedule is not revisited. Nothing else unsplits a split step: a unit that dies, leaves or loses an attribute during the step does not remove the Swift or the normal sub-step.
 
-> *Example: Dune Drifter (Swift) attacks beside Lithoghul and is blocked by another Dune Drifter. Both Swift units destroy each other in the Swift sub-step; the window before the normal sub-step still opens, and the death triggers can be answered there.*
+> *Example: Dune Drifter (Swift) attacks beside Lithoghul and is blocked by another Dune Drifter. Both Swift units destroy each other in the Swift sub-step; the window before the normal sub-step still opens.*
 
-<sub>Basis: Mixed · Verified: partial in round 4; verifier ran 3 tests (a probe it wrote), all passed; 1 gate test file · Designer: RQ 1363288029799911664; RQ 1363287109401710603; RQ 1363278470938890250 · Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Tests: 297-damage-substeps-are-steps.test.ts · Example test: 297-damage-substeps-are-steps.test.ts::CR 608.3d damageSubs is fixed when the step opens · Key: combat.damage.split.schedule-fixed</sub>
+> *Example: A column is given Sluggish in the window after the Swift sub-step. The normal sub-step's triggers resolve in a window before the Sluggish sub-step, and then the column strikes.*
+
+> *Example: The only Sluggish striker is gone before the window after the Swift sub-step ends. No window opens before a Sluggish sub-step; after the normal sub-step the after combat step begins.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Designer: RQ 1363288029799911664; RQ 1363287109401710603; RQ 1363278470938890250; RQ 1363287984614539374; RQ 1363281743234207999; RQ 1363281782749003809 · Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Tests: 297-damage-substeps-are-steps.test.ts, 658-sluggish-decided-after-swift-window.test.ts, 423-cr-combat-damage.test.ts · Example tests: 297-damage-substeps-are-steps.test.ts::CR 608.3d damageSubs is fixed when the step opens, 658-sluggish-decided-after-swift-window.test.ts::CR 608.3d / CT-378: a column given Sluggish in the after-Swift window gets the before-Sluggish window, 658-sluggish-decided-after-swift-window.test.ts::CR 608.3d / CT-378: a Sluggish striker gone before the after-Swift window ends leaves no before-Sluggish window · Demonstrated by test: 658-sluggish-decided-after-swift-window.test.ts::CR 608.3d / CT-378: control -- with no Swift sub-step the schedule fixed at the start of the step is not revisited · Key: combat.damage.split.schedule-fixed</sub>
 
 <sub>Discrepancies: D-U12-11 (discrepancies.md)</sub>
 
@@ -5792,7 +5848,7 @@ order.
 
 > *Example: A card an effect plays where nobody can respond is still announced as played, for a unit and for a spell.*
 
-<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 4 gate test files · Designer: RAQ 1396955380000755795#8 · Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Tests: 169-mid-resolution-window.test.ts, 396-raq-timing.test.ts, 557-wake-the-dead-plays-on-the-stack.test.ts, 556-inline-play-is-a-whole-play.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Tides 7: a free play is a play, 557-wake-the-dead-plays-on-the-stack.test.ts::CR 701.4 / CT-245: a unit Wake the Dead plays can be answered, and a negated one never arrives, 556-inline-play-is-a-whole-play.test.ts::CR 108.1a / CT-143: the in-place branch fires the wide cardPlayed, for a unit and for a spell · Key: effects.playing.mid-resolution</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 4 gate test files · Designer: RAQ 1396955380000755795#9 · Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Tests: 169-mid-resolution-window.test.ts, 396-raq-timing.test.ts, 557-wake-the-dead-plays-on-the-stack.test.ts, 556-inline-play-is-a-whole-play.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Tides 7: a free play is a play, 557-wake-the-dead-plays-on-the-stack.test.ts::CR 701.4 / CT-245: a unit Wake the Dead plays can be answered, and a negated one never arrives, 556-inline-play-is-a-whole-play.test.ts::CR 108.1a / CT-143: the in-place branch fires the wide cardPlayed, for a unit and for a spell · Key: effects.playing.mid-resolution</sub>
 
 <a id="r701.4a"></a>**701.4a** A card played by an effect is played from the zone it came out of. If it came out of a hand, it is played from the hand. If it came out of the cache, a bin, the deck or anywhere else, it is not played from the hand.
 
@@ -6128,7 +6184,7 @@ order.
 
 <a id="r703.4a"></a>**703.4a** Cards played by one effect at the same time are separate effects, put on the stack at the same time in an order their controller chooses.
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1396955380000755795#4 · Tests: 169-mid-resolution-window.test.ts · Key: effects.priority.simultaneous.same-effect</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1396955380000755795#5 · Tests: 169-mid-resolution-window.test.ts · Key: effects.priority.simultaneous.same-effect</sub>
 
 <a id="r703.4b"></a>**703.4b** A Burst group of spell tokens goes on the stack all at once. Its caster chooses the order, one token at a time, and aims each; the token chosen first resolves first. The other players receive priority only when the whole group is on the stack. See rule 803.
 
@@ -6142,7 +6198,7 @@ order.
 
 > *Example: A unit Wake the Dead plays waits on the stack until Wake the Dead has finished resolving, and can be answered before it resolves.*
 
-<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1396955380000755795#4 · Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Tests: 169-mid-resolution-window.test.ts, 557-wake-the-dead-plays-on-the-stack.test.ts · Example tests: 169-mid-resolution-window.test.ts::a free play is still a play, so it can be answered on the stack, 557-wake-the-dead-plays-on-the-stack.test.ts::CR 701.4 / CT-245: a unit Wake the Dead plays can be answered, and a negated one never arrives · Key: effects.priority.mid-resolution</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1396955380000755795#5 · Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Tests: 169-mid-resolution-window.test.ts, 557-wake-the-dead-plays-on-the-stack.test.ts · Example tests: 169-mid-resolution-window.test.ts::a free play is still a play, so it can be answered on the stack, 557-wake-the-dead-plays-on-the-stack.test.ts::CR 701.4 / CT-245: a unit Wake the Dead plays can be answered, and a negated one never arrives · Key: effects.priority.mid-resolution</sub>
 
 <sub>Discrepancies: D-U14-5 (discrepancies.md)</sub>
 
@@ -7390,6 +7446,12 @@ order.
 
 <sub>Discrepancies: D-U16-12 (discrepancies.md)</sub>
 
+<a id="r713.6b"></a>**713.6b** Units that one effect deletes all at once ("delete all units …") die together in the same way: they are one batch, and each of them still sees the others leave (706.8c). See rules 706.8c, 801.5.
+
+> *Example: After combat Ruinbringer deletes a row of three units: an Ancient One between two units that have "when I die" abilities. The three die in one batch, so the Ancient One borrows both of its neighbours' "when I die" abilities.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Owner ruling, adopted 2026-10-11 (quoted from the retired ruling register) · Engine: destroyBatch · Tests: 660-delete-all-is-one-batch.test.ts · Example test: 660-delete-all-is-one-batch.test.ts::CR 706.8c, 714.9 / CT-363: Ruinbringer after combat deletes an Ancient One with both neighbours in one batch · Key: effects.state.together.delete-all</sub>
+
 <a id="r713.7"></a>**713.7.** A unit sent out to counterattack, which does not exist until round 1 ends, is not checked for death while it is away. It is checked as it comes back. See rules 505.3b, 610.
 
 > *Example: Prickly Protector, alive only through its own static, survives being declared as a counterattacker.*
@@ -7739,11 +7801,13 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.32; Manual p.32; Rulebook 2023 p.15 · Tests: 428-cr-modifications.test.ts · Example test: 428-cr-modifications.test.ts::cr:effects.augment.hosts — in deployment an augment goes only onto your own unit; in battle a Virus may go onto an opposing unit · Key: effects.augment.hosts</sub>
 
-<a id="r721.4a"></a>**721.4a** During deployment a player may also augment a spell token they have in play, with any augment, not only a Virus. The token gains only the augment's attributes. See rules 305.6, 507.2b.
+<a id="r721.4a"></a>**721.4a** During deployment a player may also augment a spell token they have in play, with any augment, not only a Virus. During a battle, a Virus may also be applied to a spell token in play in the battle's region, either player's (723.2). The token gains only the augment's attributes. See rules 305.6, 507.2b.
 
 > *Example: An augmented token deals {Powerful} damage when cast.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 78-round17-core.test.ts · Example test: 78-round17-core.test.ts::CR 721.4a: only ATTRIBUTES transfer · Demonstrated by test: 78-round17-core.test.ts::CR 721.4a: a spell token is a legal augment host during deployment · Key: effects.augment.hosts.spell-token</sub>
+> *Example: In battle a Virus is offered onto either player's spell token in play in the battle region.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Designer: RQ 1347270455198879858 · Owner call · adopted 2026-10-24; Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 78-round17-core.test.ts, 665-battle-virus-spell-token.test.ts · Example tests: 78-round17-core.test.ts::CR 721.4a: only ATTRIBUTES transfer, 665-battle-virus-spell-token.test.ts::CR 721.4a / CT-407: in battle a Virus is offered onto a spell token in play, either player token in the battle region · Demonstrated by test: 78-round17-core.test.ts::CR 721.4a: a spell token is a legal augment host during deployment · Key: effects.augment.hosts.spell-token</sub>
 
 <sub>Discrepancies: D-U06-9 (discrepancies.md)</sub>
 
@@ -8001,11 +8065,13 @@ order.
 
 <sub>Discrepancies: D-U06-7 (discrepancies.md)</sub>
 
-<a id="r723.2"></a>**723.2.** During a battle, a player who has priority may apply a Virus from their hand onto any unit in the battle's region, their own or an opponent's. See rule 703.
+<a id="r723.2"></a>**723.2.** During a battle, a player who has priority may apply a Virus from their hand onto any unit, or any spell token in play, in the battle's region, their own or an opponent's. See rule 703.
 
 > *Example: A player applies Smouldering Inferno from hand to the opponent's attacker; the Virus goes on the stack and the host is modded when it resolves.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.34; Manual p.34 · Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Tests: 04-mods.test.ts, 370-cached-virus-in-battle.test.ts · Example test: 04-mods.test.ts::virus augment during battle: on the stack, donated to an enemy, text-only transfer · Key: effects.virus.battle</sub>
+> *Example: In battle a Virus is offered onto a spell token in play in the battle region, the player's own or the opponent's.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: Manual p.34; Manual p.34 · Designer: RQ 1347270455198879858 · Owner call · adopted 2026-10-24; Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Tests: 04-mods.test.ts, 370-cached-virus-in-battle.test.ts, 665-battle-virus-spell-token.test.ts · Example tests: 04-mods.test.ts::virus augment during battle: on the stack, donated to an enemy, text-only transfer, 665-battle-virus-spell-token.test.ts::CR 721.4a / CT-407: in battle a Virus is offered onto a spell token in play, either player token in the battle region · Key: effects.virus.battle</sub>
 
 <a id="r723.2a"></a>**723.2a** A Virus may also be applied in battle from the cache, while a permission to use it is live, at the cache's price (720.4b). With no live permission it cannot. See rules 403.3b, 720.4b.
 
@@ -8089,7 +8155,9 @@ order.
 
 <a id="r723.5b"></a>**723.5b** Such a card reaches only the zones it names. Rook names the hand and the bin, so a non-Virus card in the cache cannot be augmented in battle through Rook. See rule 723.2a.
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Rook · Owner ruling, adopted 2026-10-04 (quoted from the retired ruling register) · Tests: 29-hybrids-wm-a.test.ts · Demonstrated by test: 29-hybrids-wm-a.test.ts::Rook: it prints "hand and bin", so the CACHE stays shut · Key: effects.virus.permission.zones</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: card: Rook · Owner call · adopted 2026-10-25; Owner ruling, adopted 2026-10-04 (quoted from the retired ruling register) · Tests: 29-hybrids-wm-a.test.ts · Demonstrated by test: 29-hybrids-wm-a.test.ts::Rook: it prints "hand and bin", so the CACHE stays shut · Key: effects.virus.permission.zones</sub>
+
+<sub>Discrepancies: D-U17-15 (discrepancies.md)</sub>
 
 <a id="r723.5c"></a>**723.5c** Such a permission belongs to the controller of the card that grants it (the host's controller, when it is a mod), and works only in that card's region. See rule 720.6b.
 
@@ -8821,13 +8889,13 @@ order.
 
 <a id="r802.8"></a>**802.8. Inverted.** Inverted is an attribute. Its reminder text reads "Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2."
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Its Dark Bubb; Manual p.25 · Our glossary (not a source): Inverted · Tests: 43-dark-c.test.ts · Demonstrated by test: 43-dark-c.test.ts::Its Dark Bubb: the printed reminder text, verbatim · Key: attr.inverted</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: card: Its Dark Bubb; Manual p.25 · Our glossary (not a source): Inverted · Tests: 43-dark-c.test.ts · Demonstrated by test: 43-dark-c.test.ts::Its Dark Bubb: the printed reminder text, verbatim · Key: attr.inverted</sub>
 
-<a id="r802.8a"></a>**802.8a** Inverted inverts the net change to a unit's stats from its printed stats. An Inverted unit's power is its printed power minus the net change to its power, and its defense is its printed defense minus the net change to its defense. It is worked out on the total change, not on each change separately. See rule 206.4. *(Engine differs, see F-U19-6.)*
+<a id="r802.8a"></a>**802.8a** Inverted inverts the net change to a unit's stats from its printed stats. An Inverted unit's power is its printed power minus the net change to its power, and its defense is its printed defense minus the net change to its defense. It is worked out on the total change, not on each change separately. See rule 206.4.
 
 > *Example: Malformed Monstrosity (10/9) with its -7/-7, in a column with Reality Bender, is a 17/16.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Printed: Manual p.25; Manual p.25 · Designer: RQ 1167221076447744110 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 79-round17-layers.test.ts, 43-dark-c.test.ts · Example test: 79-round17-layers.test.ts::CR 802.8a layer 5: the owner's Malformed Monstrosity · Demonstrated by test: 43-dark-c.test.ts::Its Dark Bubb: MULTI-SOURCE — layer 5 negates the NET change, not each source on its own · Key: attr.inverted.net</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.25; Manual p.25 · Designer: RQ 1167221076447744110 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 79-round17-layers.test.ts, 43-dark-c.test.ts · Example test: 79-round17-layers.test.ts::CR 802.8a layer 5: the owner's Malformed Monstrosity · Demonstrated by test: 43-dark-c.test.ts::Its Dark Bubb: MULTI-SOURCE — layer 5 negates the NET change, not each source on its own · Key: attr.inverted.net</sub>
 
 <a id="r802.8b"></a>**802.8b** The changes Inverted inverts include those that Tough and Balanced make. Inverting Tough removes the defense Tough added; it does not halve the defense. See rules 802.6, 802.7.
 
@@ -8835,13 +8903,17 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 79-round17-layers.test.ts · Example test: 79-round17-layers.test.ts::CR 802.8b layer 5: Caleb's worked example — a 1/4 Tough Balanced Inverted is a -6/0 · Key: attr.inverted.attributes</sub>
 
-<a id="r802.8c"></a>**802.8c** Setting a unit's base stats is a stat change that Inverted inverts: Inverted inverts the difference between the unit's printed stats and its current stats. A unit printed 7/5 that Aberrant Statweaver makes base 3/3 is an 11/7 while it is Inverted. See rule 206.5. *(Engine differs, see F-U19-6.)*
+<a id="r802.8c"></a>**802.8c** Setting a unit's base stats is a stat change that Inverted inverts: Inverted inverts the difference between the unit's printed stats and its current stats. A unit printed 7/5 that Aberrant Statweaver makes base 3/3 is an 11/7 while it is Inverted. See rule 206.5.
 
-<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: card: Aberrant Statweaver · Designer: RQ 1167220853726007336; RQ 1167221076447744110; RQ 1443370771647828032 · Tests: 79-round17-layers.test.ts · Key: attr.inverted.base</sub>
+> *Example: A unit printed 7/5 that Aberrant Statweaver makes base 3/3 is an 11/7 while it is Inverted.*
+
+> *Example: Its Dark Bubb (printed 4/6, Inverted) beside Aberrant Statweaver is a 5/9, not a 3/3.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Printed: card: Aberrant Statweaver · Designer: RQ 1167220853726007336; RQ 1167221076447744110; RQ 1443370771647828032; RQ 1167224155289174056 · Tests: 659-inverted-from-printed.test.ts, 79-round17-layers.test.ts · Example tests: 659-inverted-from-printed.test.ts::CR 802.8c / CT-379: the designer example -- a printed 7/5 made base 3/3 by Aberrant Statweaver is an 11/7 while Inverted, 659-inverted-from-printed.test.ts::CR 802.8c / CT-379: Its Dark Bubb (printed 4/6, Inverted) beside Aberrant Statweaver is a 5/9, not a 3/3 · Demonstrated by test: 659-inverted-from-printed.test.ts::CR 802.8c / CT-379: a one-shot base rewrite (an until-regroup baseSet) is inverted too, with counters in the same net change · Key: attr.inverted.base</sub>
 
 <sub>Discrepancies: D-U19-3 (discrepancies.md)</sub>
 
-<a id="r802.8d"></a>**802.8d** If a unit has both Tough and Inverted, its defense is minus twice the net change to its defense from its printed defense. So it has 0 or less defense, and dies, unless that net change is a reduction, in which case its defense is twice the reduction. See rules 802.6, 713. *(Engine differs, see F-U19-6.)*
+<a id="r802.8d"></a>**802.8d** If a unit has both Tough and Inverted, its defense is minus twice the net change to its defense from its printed defense. So it has 0 or less defense, and dies, unless that net change is a reduction, in which case its defense is twice the reduction. See rules 802.6, 713.
 
 > *Example: A 1/4 with Tough and Inverted is a 1/0, in either grant order, and dies.*
 
@@ -8849,7 +8921,7 @@ order.
 
 > *Example: Inverted on the front unit of a column and Tough on the back unit: both units have both attributes, and both die.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 1 gate test file · Designer: RQ 1167221076447744110 · Owner ruling, adopted 2026-08-28 (quoted from the retired ruling register) · Tests: 79-round17-layers.test.ts · Example tests: 79-round17-layers.test.ts::CR 709.4d: the TWO-attribute case, in either grant order, 79-round17-layers.test.ts::CR 802.8d: the special case his wording misses, 79-round17-layers.test.ts::CR 802.8d: the column wipe · Key: attr.inverted.tough</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 1 gate test file · Designer: RQ 1167221076447744110 · Owner ruling, adopted 2026-08-28 (quoted from the retired ruling register) · Tests: 79-round17-layers.test.ts · Example tests: 79-round17-layers.test.ts::CR 709.4d: the TWO-attribute case, in either grant order, 79-round17-layers.test.ts::CR 802.8d: the special case his wording misses, 79-round17-layers.test.ts::CR 802.8d: the column wipe · Key: attr.inverted.tough</sub>
 
 <sub>Discrepancies: D-U19-9 (discrepancies.md)</sub>
 
@@ -9926,7 +9998,7 @@ order.
 
 > *Example: The Fireball picked first ends on top of the stack.*
 
-<sub>Basis: Owner ruling, adopted 2026-10-01 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Tests: 358-burst-order.test.ts, 358-burst-order-ui.test.ts · Example test: 358-burst-order.test.ts::CR 803.5d: the caster picks each Fireball in RESOLVE order and aims it · Demonstrated by test: 358-burst-order.test.ts::CR 803.5d: a lone token is not asked to be ordered · Key: keywords.abilities.burst.order</sub>
+<sub>Basis: Owner ruling, adopted 2026-10-01 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Tests: 358-burst-order.test.ts, 358-burst-order-ui.test.ts · Example test: 358-burst-order.test.ts::CR 803.5d: the caster picks each Fireball in RESOLVE order and aims it · Demonstrated by test: 358-burst-order.test.ts::CR 803.5d: a lone token is not asked to be ordered · Key: keywords.abilities.burst.order</sub>
 
 <a id="r803.6"></a>**803.6.** Ambush is a keyword that lets a unit card be played during battle with the effect "Recall target ally, put me into their position in play." See rule 203.1.
 
@@ -10572,22 +10644,22 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1822 numbered rules.
+1829 numbered rules.
 
 | basis | rules |
 |---|---|
-| Printed | 452 |
-| Designer | 203 |
-| Owner call | 675 |
+| Printed | 451 |
+| Designer | 202 |
+| Owner call | 669 |
 | Engine only | 40 |
-| Mixed | 452 |
+| Mixed | 467 |
 
 ### Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1811 |
-| partial | 7 |
+| confirmed | 1819 |
+| partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 0 |
@@ -10757,8 +10829,8 @@ Generated from the records and the verdicts. Nothing here is a rule.
   02-combat.test.ts 'the owner ruling of 2026-08-18 (“Formation changes during combat […]”)/Swift: swift column deals damage first, no priority between sub-steps' names the owner ruling of 2026-08-18 (“Formation changes during combat […]”)’s second clause, which the owner ruling of 2026-09-16 (“A split damage step is several…”) amended: a split damage step opens a priority window between sub-steps. The pilot verifier's probe found this test's own board stops at that window (damageSubs Swift and normal, step damageWindow); its assertions are made there and prove only the Swift strike. Retitle it. Re-checked: fixed on 2026-10-24 (CT-230): retitled, and the body passes the window between the sub-steps. Re-checked (F-U12-3): fixed on 2026-10-24 (CT-230): 239 passes the window, runs the normal sub-step and then asserts the dead Swift-step unit dealt nothing; retitled.
 - <a id="F-U12-4"></a>**F-U12-4** Vroot ('when my column deals combat damage', not 'to a player') does not trigger when its column's damage is wholly redirected into Oorblak. Rule 608.8c.
   Possible divergence outside this record's claim. The engine lumps Vroot with the 'deals combat damage to a player' listeners, so a column whose hit is wholly redirected into Oorblak gives Vroot nothing. But Vroot's trigger has no 'to a player'; Oorblak's text has the damage 'dealt to me instead', and the owner (2026-10-16) said it is still combat damage. Read that way, the column did deal combat damage (to Oorblak) and Vroot should pay out that much. Worth an owner check. Re-checked: fixed on 2026-10-23 (owner "Any combat damage", asked what Vroot counts): Vroot, Flowstone Arcanite and Blightmound count the combat damage their column deals to blockers, to Oorblak and to the player, and the "to a player" family is unchanged (601).
-- <a id="F-U12-5"></a>**F-U12-5** The engine opens no window before the Sluggish strike of a column that gained Sluggish after the step began (CT-378). Rules 608.3b, 608.3c, 608.3d.
-  The rule (the designer, 2025-04-20) has a column that gains Sluggish in the window after the Swift sub-step strike in the Sluggish sub-step, with the before-Sluggish window opening first. The engine fixes the damage step's sub-steps once, when the step opens (damageSubs), so a Sluggish sub-step that was not scheduled then gets no window before the gained Sluggish strike, and triggers from normal damage wait until after combat.
+- <a id="F-U12-5"></a>**F-U12-5** The engine opens no window before the Sluggish strike of a column that gained Sluggish after the step began (CT-378). Rule 608.3d.
+  The rule (the designer, 2025-04-20) has a column that gains Sluggish in the window after the Swift sub-step strike in the Sluggish sub-step, with the before-Sluggish window opening first. The engine fixes the damage step's sub-steps once, when the step opens (damageSubs), so a Sluggish sub-step that was not scheduled then gets no window before the gained Sluggish strike, and triggers from normal damage wait until after combat. Re-checked: fixed on 2026-10-25 (CT-378): when the window after the Swift sub-step ends the Sluggish sub-step is decided again, both ways (rescheduleSluggish; 658, 423).
 - <a id="F-U13-1"></a><a id="F-U23-4"></a><a id="F-U23-7"></a><a id="F-U23-8"></a>**F-U13-1** The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) (a lone sent counterattacker auto-forms) is unmarked, but its guard was flipped to assert the opposite (CT-251). Rules 610.4e, D1.2b, D1.2c. Also found as F-U23-4, F-U23-7, F-U23-8.
   The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) says that when a round-2 counterattack pool holds exactly one unit and no ridable spell token, the only-unit formation is auto-declared as a forced action. On 2026-08-24 (a decisions-for-the-player audit) test 32 was flipped: its comment says the auto-declare branch is deleted, and it asserts forcedAction is null and that both attacking and declining are legal. No ruling records the reversal, and the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)’s heading carries no reversal mark, so the register still presents the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) as current. Register fix: write the reversing ruling (or mark the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)) and point the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)’s heading at it. Re-checked: fixed on 2026-10-16 (CT-251; owner 2026-10-16, CT-298: a sent counterattacker "MUST be put into formation"): the decline is gone, and forcedAction auto-forms a lone sent counterattacker with no ridable token again, as the owner ruling of 2026-08-18 says (32-cast-costs, 434, 479). Re-checked (F-U23-4): fixed on 2026-10-16 (CT-251; owner 2026-10-16, CT-298: a sent counterattacker "MUST be put into formation"): the decline is gone, and forcedAction auto-forms a lone sent counterattacker with no ridable token again, as the owner ruling of 2026-08-18 says (32-cast-costs, 434, 479). Re-checked (F-U23-7): fixed on 2026-10-16 (CT-251; owner 2026-10-16, CT-298: a sent counterattacker "MUST be put into formation"): the decline is gone, and forcedAction auto-forms a lone sent counterattacker with no ridable token again, as the owner ruling of 2026-08-18 says (32-cast-costs, 434, 479). Re-checked (F-U23-8): fixed on 2026-10-16 (CT-251; owner 2026-10-16, CT-298: a sent counterattacker "MUST be put into formation"): the decline is gone, and forcedAction auto-forms a lone sent counterattacker with no ridable token again, as the owner ruling of 2026-08-18 says (32-cast-costs, 434, 479).
 - <a id="F-U14-1"></a><a id="F-U17-7"></a><a id="F-U17-9"></a>**F-U14-1** A graft trigger with no legal target goes on the stack and fizzles instead of not being put on the stack (CT-252). Rules 702.8b, 722.4e. Also found as F-U17-7, F-U17-9.
@@ -10787,8 +10859,8 @@ Generated from the records and the verdicts. Nothing here is a rule.
   The owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) (and the owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”), as the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) reads it) keep the stat attributes Tough, Balanced and Inverted applying in a Pure pairing because "they are stat layers". Pure's printed reminder ignores all other attributes, and the Manual lists Tough as an attribute. Under the authority order the printed text wins (rule 802.1n; D-U19-2). Suspected engine behaviour: a Pure blocker facing a Tough unit is priced against the doubled defense. Measured by the round-1 verifier: a Pure source dealing 5 to Rampart Guardian leaves it alive as a Tough 0/8. Measured by the round-2 verifier: a Balanced 4/1 dealt 3 by a Pure source survives as a 4/4. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-260; the owner followed print): in a Pure interaction Tough, Balanced, Inverted and Unaware do not apply (555). Re-checked (F-U19-2): fixed on 2026-10-22 (CT-260; the owner followed print): in a Pure interaction Tough, Balanced, Inverted and Unaware do not apply (555).
 - <a id="F-U19-3"></a>**F-U19-3** Oorblak's combat-damage redirect doubles damage onto a Pure Vulnerable Oorblak (CT-227). Rule 802.11e.
   The pilot's round-2 probe (P5) gave Oorblak Pure and Vulnerable and redirected a non-Pure 3-power unblocked column into it: Oorblak was dealt 6 and died. The owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”) and the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) say a Pure recipient's own Vulnerable is off. The redirect is a damage commit in card code (the owner ruling of 2026-08-28 (“{Deadly} reaches every damage site, and…”) calls it "the fourth site") and appears not to read Pure. Exotic but reachable (Just a Unit is a Virus). Re-checked: fixed on 2026-10-22 (CT-227): Oorblak's redirect is attribute-blind when the column or Oorblak is Pure, so a Pure Vulnerable Oorblak is dealt the hit once (553).
-- <a id="F-U19-6"></a>**F-U19-6** The engine inverts from a rewritten base, not from the printed stats (CT-379). Rules 802.8a, 802.8c, 802.8d.
-  The rule (the designer, 2023 and 2025) has Inverted invert the difference between a unit's printed stats and its current stats, a base rewrite included. The engine's layer 5 reflects the stats around the layer-2 base (p = 2 * base - p), so a base rewrite is never inverted: a printed 7/5 made base 3/3 by Aberrant Statweaver stays 3/3 when Inverted, where the rule makes it 11/7. 79-round17-layers pins the engine's reading.
+- <a id="F-U19-6"></a>**F-U19-6** The engine inverts from a rewritten base, not from the printed stats (CT-379). Rule 802.8c.
+  The rule (the designer, 2023 and 2025) has Inverted invert the difference between a unit's printed stats and its current stats, a base rewrite included. The engine's layer 5 reflects the stats around the layer-2 base (p = 2 * base - p), so a base rewrite is never inverted: a printed 7/5 made base 3/3 by Aberrant Statweaver stays 3/3 when Inverted, where the rule makes it 11/7. 79-round17-layers pins the engine's reading. Re-checked: fixed on 2026-10-25 (CT-379): layer 5 measures from the printed stats, so a base rewrite is inverted too (659; 79 asserts the designer's reading).
 - <a id="F-U20-1"></a><a id="F-U20-5"></a>**F-U20-1** The Electric path is asked of the effect's controller, not the Electric source's controller (CT-226). Rule 802.17c. Also found as F-U20-5.
   The owner ruling of 2026-08-18 (“Electric damage pathing […]”) (and the owner ruling of 2026-10-09 (“{Electric}'s jump is optional, and excess…”)) give the choice of the Electric path to the Electric source's controller. The orchestrator's known-divergence list and the pilot verifier record that the engine asks the effect's controller. Every Electric source in the pool today is a spell or a spell effect, so the two players coincide in every test; 05-rulings asserts the source's controller only in that coinciding case. The rule states the ruling. Round-1 verifier measured it: dealEffectDamageAll raises the electricPath decision for ctx.controller, while the Piercing split beside it already uses the source unit's controller (the probe for rule 802.17c). Re-checked: fixed on 2026-10-22 (CT-226): the Electric path is asked of the Electric source's controller (552). Re-checked (F-U20-5): fixed on 2026-10-22 (CT-226): the Electric path is asked of the Electric source's controller (552).
 - <a id="F-U20-3"></a>**F-U20-3** Modular would be shared through a column if a unit ever printed it (CT-261). Rule 802.26h.
@@ -10804,9 +10876,9 @@ Generated from the records and the verdicts. Nothing here is a rule.
 - <a id="F-U23-3"></a><a id="F-U24-3"></a>**F-U23-3** The live action counter tells the opponent when you act inside every hidden simultaneous segment (CT-106). Rules D2.5e, D6.1. Also found as F-U24-3.
   A hidden simultaneous segment is meant to show nobody the other side's plays until everyone is done (owner ruling of 2026-08-18, “Haste step engine model […]”). The owner ruling of 2026-08-28 (“the haste step readies itself, and…”) measured that GameState.actionCount is served live to both seats and rises on every action, so a modified client sees when its opponent acts in the resource step, the haste step and deployment. The shipped client renders nothing from it. The owner ruling of 2026-08-28 (“the haste step readies itself, and…”) names the fix (a per-seat action counter in the engine or rooms.ts) and leaves it as the owner's call. Pinned by 205 §3d. Re-checked: already decided: CT-106 is wontfix by the owner (2026-08-29, "I am not worried about this"); no new ticket. Re-checked (F-U24-3): closed on 2026-10-24 (housework): CT-106 is wontfix by the owner ("I am not worried about this"), as F-U23-3; the actionCount half was fixed by CT-334 (615), and the id-clock leak that remains is CT-364.
 - <a id="F-U23-9"></a>**F-U23-9** Inside a hidden step a rewind cut may take back the other seat's done-planning flag. Rule D4.5d.
-  rewindPlans' ownOnly refuses a cut inside an open hidden step only for the other seat's items marked hidden; donePlanning/doneDeploying/amend are never marked hidden (PUBLIC_IN_HIDDEN), so a cut that takes back the other seat's 'done planning' is offered (probe zz-probe-U23-2b). The code comment says a cut inside the step is offered only where it takes back nothing but the asking seat's own actions. Either the comment/rule should say 'nothing the other seat did unseen', or the cut should be refused. Not a leak (the flag is public), but it does undo the other player's action without it being the step start.
+  rewindPlans' ownOnly refuses a cut inside an open hidden step only for the other seat's items marked hidden; donePlanning/doneDeploying/amend are never marked hidden (PUBLIC_IN_HIDDEN), so a cut that takes back the other seat's 'done planning' is offered (probe zz-probe-U23-2b). The code comment says a cut inside the step is offered only where it takes back nothing but the asking seat's own actions. Either the comment/rule should say 'nothing the other seat did unseen', or the cut should be refused. Not a leak (the flag is public), but it does undo the other player's action without it being the step start. Re-checked: resolved on 2026-10-25 (CT-377): the rule was right and the comments were wrong; rooms.ts and rewind-cuts.ts now say a cut inside a hidden step may take back the other seat's public actions (679).
 - <a id="F-U23-10"></a>**F-U23-10** 'Back to the start of the step before' can cut just before a forced action and land at the start of the current step. Rule D4.5d.
-  rewindPlans offers 'prev' at startOf(here - 1) without the forced-action check the 'before' cuts get. When the step before began with a forced action (seed 48593: an empty declareBlocks at index 43, step 'battle (blocks, counterattack)'), the cut lands before it, the rebuilt board owes the forced step, and main.ts's drain re-takes it (log back to 44). So the option does not reach the step before, and 485 §4's guarantee 'never a cut at a forced step' fails for this option. The real() check counts items from the cut to the end, which include the current step's actions, so it does not drop a step that was nothing but a forced action, though the 485 §4 CT-340 comment says such a step should not be offered. Shown by client/server/test/zz-probe-U23-1.test.ts 'zz-U23-4'.
+  rewindPlans offers 'prev' at startOf(here - 1) without the forced-action check the 'before' cuts get. When the step before began with a forced action (seed 48593: an empty declareBlocks at index 43, step 'battle (blocks, counterattack)'), the cut lands before it, the rebuilt board owes the forced step, and main.ts's drain re-takes it (log back to 44). So the option does not reach the step before, and 485 §4's guarantee 'never a cut at a forced step' fails for this option. The real() check counts items from the cut to the end, which include the current step's actions, so it does not drop a step that was nothing but a forced action, though the 485 §4 CT-340 comment says such a step should not be offered. Shown by client/server/test/zz-probe-U23-1.test.ts 'zz-U23-4'. Re-checked: fixed on 2026-10-25 (CT-376): the step-before cut skips forced actions at the step's start and passes over a step made only of them (669).
 - <a id="F-U24-5"></a>**F-U24-5** Looking at your own hand tells the other player nothing, not even that a hand was looked at (CT-263). Rule D6.5a.
   The rule says that when an effect lets a player look at a hand, the other players log says only that the hand was looked at. The U24 tester measured Thought Extraction aimed at the caster own hand: the other player log has no look line at all (it goes from Resolving straight to the discard). Aimed at the other player hand, that player log does say "looks at". Four look-at sites skip the public line when the looker owns the hand (if (who !== ctx.controller) g.revealHandTo(...)). Either the rule should say the line is written only when looking at another player hand, or the engine should write it for both. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-263, owner "Log both"): looking at your own hand writes the public line too, naming nothing (550).
 
@@ -11198,5 +11270,5 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1823 rules and 99 sections.
+- New: 1830 rules and 99 sections.
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)

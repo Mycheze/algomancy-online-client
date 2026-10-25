@@ -2007,7 +2007,7 @@
     "key": "effects.augment.hosts.spell-token",
     "parent": "effects.augment.hosts",
     "order": 1,
-    "text": "During deployment a player may also augment a spell token they have in play, with any augment, not only a Virus. The token gains only the augment's attributes.",
+    "text": "During deployment a player may also augment a spell token they have in play, with any augment, not only a Virus. During a battle, a Virus may also be applied to a spell token in play in the battle's region, either player's (723.2). The token gains only the augment's attributes.",
     "examples": [
       {
         "text": null,
@@ -2016,6 +2016,10 @@
       {
         "text": "An augmented token deals {Powerful} damage when cast.",
         "test": "78-round17-core.test.ts::CR 721.4a: only ATTRIBUTES transfer"
+      },
+      {
+        "text": "In battle a Virus is offered onto either player's spell token in play in the battle region.",
+        "test": "665-battle-virus-spell-token.test.ts::CR 721.4a / CT-407: in battle a Virus is offered onto a spell token in play, either player token in the battle region"
       }
     ],
     "see": [
@@ -2024,7 +2028,12 @@
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1347270455198879858",
+          "quote": "So you can hit enemy spells"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -2041,18 +2050,26 @@
           "quote": "That is the axis the restriction runs along: **{Virus} buys you the TIMING, not",
           "adopted": "2026-08-23",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Yes, allow it",
+          "adopted": "2026-10-24",
+          "from": "owner, chat 2026-10-24 (CT-407, owner question D-U06-9: during a battle, can a Virus be augmented onto a spell token that is sitting in play?)"
         }
       ],
       "engine": [],
       "tests": [
-        "78-round17-core.test.ts"
+        "78-round17-core.test.ts",
+        "665-battle-virus-spell-token.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Caleb (quoted in the owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”)) says spell tokens can be augmented in deployment, attributes only. \"Not only a Virus\" is the owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”)’s reading of a player's chat (_passer outside a [Solved] write-up): D-U17-11.",
-    "sourceHashes": {}
+    "notes": "Caleb (quoted in the owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”)) says spell tokens can be augmented in deployment, attributes only. \"Not only a Virus\" is the owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”)’s reading of a player's chat (_passer outside a [Solved] write-up): D-U17-11. D-U17-4 (kept as D-U06-9) answered by the owner 2026-10-24, \"Yes, allow it\": the battle sentence. CT-407 (2026-10-25).",
+    "sourceHashes": {
+      "RQ 1347270455198879858": "40980deafe5c245eec9971747e128a6fd3fd4c6c76fe185e7edba25bd60a3b71"
+    }
   },
   {
     "key": "effects.augment.hosts.spell",
@@ -3920,11 +3937,15 @@
     "key": "effects.virus.battle",
     "parent": "723",
     "order": 2,
-    "text": "During a battle, a player who has priority may apply a Virus from their hand onto any unit in the battle's region, their own or an opponent's.",
+    "text": "During a battle, a player who has priority may apply a Virus from their hand onto any unit, or any spell token in play, in the battle's region, their own or an opponent's.",
     "examples": [
       {
         "text": "A player applies Smouldering Inferno from hand to the opponent's attacker; the Virus goes on the stack and the host is modded when it resolves.",
         "test": "04-mods.test.ts::virus augment during battle: on the stack, donated to an enemy, text-only transfer"
+      },
+      {
+        "text": "In battle a Virus is offered onto a spell token in play in the battle region, the player's own or the opponent's.",
+        "test": "665-battle-virus-spell-token.test.ts::CR 721.4a / CT-407: in battle a Virus is offered onto a spell token in play, either player token in the battle region"
       }
     ],
     "see": [
@@ -3941,26 +3962,39 @@
           "quote": "also are able to augment onto opposing units. This is"
         }
       ],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1347270455198879858",
+          "quote": "So you can hit enemy spells"
+        }
+      ],
       "ours": [],
       "owner": [
         {
           "quote": "modifier taxes it. The battle branch of `doAugment` already required priority",
           "adopted": "2026-08-22",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Yes, allow it",
+          "adopted": "2026-10-24",
+          "from": "owner, chat 2026-10-24 (CT-407, owner question D-U06-9: during a battle, can a Virus be augmented onto a spell token that is sitting in play?)"
         }
       ],
       "engine": [],
       "tests": [
         "04-mods.test.ts",
-        "370-cached-virus-in-battle.test.ts"
+        "370-cached-virus-in-battle.test.ts",
+        "665-battle-virus-spell-token.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Print gives the opposing-unit half. The priority and battle-region conditions come only from the owner ruling of 2026-08-22 (“A Virus may be augmented onto…”)’s description of the engine (\"required priority and the battle region\") and the owner ruling of 2026-10-04 (“The cache plays like the hand…”)’s KEMX account; no printed or designer sentence states them.",
-    "sourceHashes": {}
+    "notes": "Print gives the opposing-unit half. The priority and battle-region conditions come only from the owner ruling of 2026-08-22 (“A Virus may be augmented onto…”)’s description of the engine (\"required priority and the battle region\") and the owner ruling of 2026-10-04 (“The cache plays like the hand…”)’s KEMX account; no printed or designer sentence states them. The spell-token half: owner 2026-10-24 (\"Yes, allow it\", D-U06-9), CT-407.",
+    "sourceHashes": {
+      "RQ 1347270455198879858": "40980deafe5c245eec9971747e128a6fd3fd4c6c76fe185e7edba25bd60a3b71"
+    }
   },
   {
     "key": "effects.virus.battle.cache",
@@ -4614,6 +4648,11 @@
           "quote": "they were [Virus]\", still names its own zones. A non-Virus card in the cache",
           "adopted": "2026-10-04",
           "from": "register@72de434"
+        },
+        {
+          "quote": "No (printed text)",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (CT-390: does Rook let Tides of the Cosmos apply a non-Virus augment it reveals, as the edited RAQ write-up of thread 1396955380000755795 says?)"
         }
       ],
       "engine": [],
@@ -4624,7 +4663,7 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "_passer edited the RAQ write-up of thread 1396955380000755795 (Tides of the Cosmos) on 2026-08-14 to add \"Having Rook would allow you to use Augments, but still doesn't allow for Grafts.\" No designer message says it, and Rook prints \"from hand and bin\", while Tides plays off the deck. The owner, 2026-10-25 (CT-390): \"No (printed text)\". That line of the write-up (RAQ 1396955380000755795#4, outdated in raq.ts) is not followed: D-U17-15.",
     "sourceHashes": {}
   },
   {

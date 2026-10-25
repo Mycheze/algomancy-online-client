@@ -3431,6 +3431,59 @@
     "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
+    "key": "effects.state.together.delete-all",
+    "textHash": "1177c3d742dd5ad5",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U16-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.destroyBatch",
+        "agrees": true,
+        "note": "the five delete-all sweepers (Ruinbringer, Ominous Growth, Deformant, Pathogenic Enclave, Sporebloom Siren) call destroyBatch(..., 'is deleted')"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/660-delete-all-is-one-batch.test.ts",
+        "pattern": "CR 706.8c, 714.9 / CT-363: Ruinbringer after combat deletes an Ancient One",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/660-delete-all-is-one-batch.test.ts",
+        "pattern": "CR 706.8c, 714.9 / CT-363: (the four other sweepers)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "engine destroyBatch",
+        "supports": "yes",
+        "note": "the batch half is an engine claim (code + 660)"
+      },
+      {
+        "ref": "owner register@72de434 'A deleted unit dies.'",
+        "supports": "yes",
+        "note": "supports that deleted units die (so 'die together')"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] After combat, delete all units."
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+        "text": "g.destroyBatch(doomed, 'is deleted');   // CR 706.8c / CT-363: one simultaneous batch"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "effects.state.together.limits",
     "textHash": "6f0bd791ac88a2d9",
     "verdict": "confirmed",

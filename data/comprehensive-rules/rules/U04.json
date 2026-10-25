@@ -1369,7 +1369,7 @@
           "quote": "Watchers that read \"the spell's cost\" read the PRINTED cost, not the taxed cost paid"
         },
         {
-          "ref": "RAQ 1396955380000755795#9",
+          "ref": "RAQ 1396955380000755795#10",
           "quote": "you only look at printed cost of spells."
         }
       ],
@@ -1399,7 +1399,7 @@
     "notes": "",
     "sourceHashes": {
       "RAQ 1353980184042143835#0": "571d78408552d997fc6dccfe62ce8ed362c2e803ed38050b6f78aaf40a9cf157",
-      "RAQ 1396955380000755795#9": "de10d99276d0257274713007cb2c31386ce950e93d282737522fb0f38c8dfa06"
+      "RAQ 1396955380000755795#10": "de10d99276d0257274713007cb2c31386ce950e93d282737522fb0f38c8dfa06"
     }
   },
   {
@@ -1519,7 +1519,7 @@
       "printed": [],
       "designer": [
         {
-          "ref": "RAQ 1396955380000755795#5",
+          "ref": "RAQ 1396955380000755795#6",
           "quote": "Any additional [cost] of the card must be paid."
         }
       ],
@@ -1543,7 +1543,7 @@
     "confidence": "high",
     "notes": "The Tides affinity claim (RAQ Tides 1) is cited only through its test; the claim itself is not in the U04 pack.",
     "sourceHashes": {
-      "RAQ 1396955380000755795#5": "d799969c1aa3749e76ad3de04cb4af26f46e0c281021e54e70d2b62c5a278f11"
+      "RAQ 1396955380000755795#6": "d799969c1aa3749e76ad3de04cb4af26f46e0c281021e54e70d2b62c5a278f11"
     }
   },
   {
@@ -1564,7 +1564,7 @@
       "printed": [],
       "designer": [
         {
-          "ref": "RAQ 1396955380000755795#6",
+          "ref": "RAQ 1396955380000755795#7",
           "quote": "An X spell played by Tides costs 0 against the budget and is played at X = 0."
         }
       ],
@@ -1587,7 +1587,7 @@
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "RAQ 1396955380000755795#6": "157742c7f3c00e6be2652e8065fd782217905a77d6f55e3a25cb893c4bc09bd8"
+      "RAQ 1396955380000755795#7": "157742c7f3c00e6be2652e8065fd782217905a77d6f55e3a25cb893c4bc09bd8"
     }
   },
   {
@@ -2477,11 +2477,15 @@
     "key": "concepts.rot",
     "parent": "112",
     "order": 13,
-    "text": "Rot is a counter a player has. At the start of each deployment phase, each player is dealt damage equal to their rot, in initiative order.",
+    "text": "Rot is a counter a player has. At the start of each deployment phase, each player is dealt damage equal to their rot, in initiative order. Rot damage is not simultaneous: the initiative player's rot is dealt and checked first, so a player it brings to 0 loses before the other player's rot is dealt (104.1a).",
     "examples": [
       {
         "text": "a player with 3 rot is dealt 3 damage as deployment begins.",
         "test": "35-rot-debt-trash.test.ts::CR 112.13: rot deals damage equal to itself at the start of deployment, in initiative order"
+      },
+      {
+        "text": "Both players have more rot than life. The initiative player's rot is dealt first, and that player loses before the other player's rot is dealt.",
+        "test": "654-simultaneous-loss.test.ts::CR 104.1a / CT-409: rot is not simultaneous, so the initiative player whose rot takes them to 0 loses before the other player takes theirs"
       }
     ],
     "see": [
@@ -2489,7 +2493,16 @@
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1542923825904099349",
+          "quote": "initiative takes their deployment first and dies"
+        },
+        {
+          "ref": "RQ 1542924008620564610",
+          "quote": "But rot isn't simultaneous"
+        }
+      ],
       "ours": [
         {
           "ref": "glossary: Rot",
@@ -2511,14 +2524,18 @@
       "engine": [],
       "tests": [
         "35-rot-debt-trash.test.ts",
-        "42-dark-b.test.ts"
+        "42-dark-b.test.ts",
+        "654-simultaneous-loss.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-19 (“Rot: start of deployment, damage equal…”) is designer-backed (Caleb 2024-08-20, the Rot Counter card in Caleb's library) but those quotes are not in any printed page the extract holds (D-U04-7). 35-rot-debt-trash is outside the pack.",
-    "sourceHashes": {}
+    "notes": "The owner ruling of 2026-08-19 (“Rot: start of deployment, damage equal…”) is designer-backed (Caleb 2024-08-20, the Rot Counter card in Caleb's library) but those quotes are not in any printed page the extract holds (D-U04-7). 35-rot-debt-trash is outside the pack. CT-409 (2026-10-25): the last sentence is the designer's answer (2026-08-28) to \"what happens if both players have more rot than life and enter the deployment step? Who dies first?\".",
+    "sourceHashes": {
+      "RQ 1542923825904099349": "06dcd00ff2501fd23b206df64b8102ed085aebd4047d11f6fe514c5b2b491d98",
+      "RQ 1542924008620564610": "1817b9924e12643dfdd330cccc7c4ccd21271856db113f07019ca5feb81b1522"
+    }
   },
   {
     "key": "concepts.rot.never-decays",

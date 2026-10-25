@@ -2,33 +2,11 @@
 
 Every place where the sources disagree, the register contradicts itself, or a rule rests only on the engine or on an owner call. Each quote is checked to be verbatim. Only the first tier needs a decision, and owner-questions.md lists it on its own; every other item already says which source decides and which side the document follows. An item filed by more than one drafting unit is kept once, and names the others under "Also filed as".
 
-## 1. Questions for the owner (1)
+## 1. Questions for the owner (0)
 
-### D-U06-9 · Other · rule 305.6
+None.
 
-Sources do not say whether a Virus may be applied during battle to a spell token standing in play. The owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) left it for the owner to rule. A player's remark implies it can be.
-
-*Also filed as D-U17-4 (rule 721.4a).*
-
-- owner ruling, adopted 2026-08-23: "- **Augmenting a token ENTITY during BATTLE.** `_passer`'s "not without help of"
-- owner ruling, adopted 2026-08-23: "> "But since Bubb is not a virus, you couldn't mod Fireball **during combat**"
-- owner ruling, adopted 2026-08-23: "and response-window design. Left alone deliberately; **Bena to rule** whether"
-- owner ruling, adopted 2026-08-23: "it is worth the second path."
-- Manual p.34: "Viruses have the extra ability to mod units directly from your hand during combat in addition to being playable and augmentable normally during the deployment phase."
-- owner ruling, adopted 2026-08-23: ""It's very similar to how regular viruses work. So you can hit enemy spells,"
-
-**Question:** In battle, may a Virus be augmented onto a spell token standing in play (not one being cast)?
-
-- **Reading A.** Yes: a spell token is a spell, and a Virus may "hit enemy spells" in battle (Caleb), so a token in play is a legal battle host. *At the table:* A Virus, or a Rook-enabled augment, can give a Fireball token standing on the board Deadly or Powerful mid-battle; the engine needs the second path the owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) describes.
-- **Reading B.** No: in battle a Virus reaches units in the region (the Manual's "mod units") and spells on the stack only. *At the table:* As today.
-
-**The document today:** Neither: no rule is written. The engine does B.
-
-**Recommended:** A, the permissive reading. The owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) already reads {Virus} as buying the timing, not the host.
-
-**Resolution:** Question for the owner. No rule states either reading: The owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) leaves it as "Bena to rule" and names the engine work reading A needs. The _passer remark the owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) quotes ("not without help of Rook") is from #rules-questions, not a [Solved] write-up.
-
-## 2. Record and test fixes (61)
+## 2. Record and test fixes (64)
 
 ### D-U01-10 · Other · rule 102.4
 
@@ -57,6 +35,14 @@ The Manual and Caleb say every effect is region-specific and never impacts anyth
 - owner ruling, adopted 2026-10-11: "A player's bin and cache are tied to that player."
 
 **Resolution:** Settled by the authority order, and answered by the owner on 2026-10-11 (owner ruling of 2026-10-11, “The stack, the bins and the…”): Manual p.19 and Caleb ("everything in the game is region specific") outrank the owner ruling of 2026-08-30 (“An ally includes itself, "another" is…”) and the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”), and the owner's ruling the owner ruling of 2026-10-11 (“The stack, the bins and the…”) amends both. Each region has its own stack, owned by nobody and shared by the players present in it; a player's bin and cache are tied to that player and are in a region only while that player is. The rules state this (101.6, 601.2a, 110.5a), and the engine's one battle stack and its bins open to every region are an engine divergence, F-U01-2 (CT-234, engine work now, no longer an owner decision). Document fix: 101.6 and 601.2a on 2026-10-10; 110.5a, which still stated the owner ruling of 2026-08-30 (“An ally includes itself, "another" is…”)’s premise, and 601.2a's stack sentence on 2026-10-11. Register fix: The owner ruling of 2026-10-11 (“The stack, the bins and the…”) is the mark this row asked for on the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) and the owner ruling of 2026-08-30 (“An ally includes itself, "another" is…”). Engine fix: done 2026-10-22 (CT-234; F-U01-2 closed): one stack per region, bins reached only where their player is present (578).
+
+### D-U01-8 · Sources disagree · rule 104.5
+
+That running out of cards does not lose the game rests on the owner ruling of 2026-09-16 (“Recycling puts a card past the…”) alone. The printed rules do not say what happens when a deck runs out.
+
+- owner ruling, adopted 2026-09-16: "**No deck-out loss.** A player whose deck *and* pile are both empty simply draws"
+
+**Resolution:** Settled by the designer (2026-10-25, CT-385), which outranks the owner's 2026-09-16 "No deck-out loss"; the owner on 2026-10-24: "Follow Caleb". In constructed the player who runs out of cards loses (RQ 1356616873655140546, 1402038431659593859); with a shared deck the game ends and the higher life total wins (RQ 1387479757406474313, 1402046319643856916), a tie going against the initiative player (owner 2026-10-25, "INT player loses"). rule 104.5, rule 104.5a, rule 104.5b, rule 104.5c and rule 401.4 state it; lesson deals are exempt (rule D8.1d).
 
 ### D-U02-8 · Sources disagree · rule 106.8d
 
@@ -219,6 +205,21 @@ The owner's 2026-08-25 call made a token unique by its name and X. Whether the s
 - owner ruling, adopted 2026-10-16: "Yeah, those would count as unique tokens."
 
 **Resolution:** Answered by the owner on 2026-10-16: asked "If one effect makes a 3/3 Unit Token and a 5/5 Unit Token at the same time, are they two different unique tokens for Automaton of Abundance?", he answered "Yeah, those would count as unique tokens." rule 304.14, rule 201.3 and rule 708.9 state it.
+
+### D-U06-9 · Other · rule 305.6
+
+Sources do not say whether a Virus may be applied during battle to a spell token standing in play. The owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) left it for the owner to rule. A player's remark implies it can be.
+
+*Also filed as D-U17-4 (rule 721.4a).*
+
+- owner ruling, adopted 2026-08-23: "- **Augmenting a token ENTITY during BATTLE.** `_passer`'s "not without help of"
+- owner ruling, adopted 2026-08-23: "> "But since Bubb is not a virus, you couldn't mod Fireball **during combat**"
+- owner ruling, adopted 2026-08-23: "and response-window design. Left alone deliberately; **Bena to rule** whether"
+- owner ruling, adopted 2026-08-23: "it is worth the second path."
+- Manual p.34: "Viruses have the extra ability to mod units directly from your hand during combat in addition to being playable and augmentable normally during the deployment phase."
+- owner ruling, adopted 2026-08-23: ""It's very similar to how regular viruses work. So you can hit enemy spells,"
+
+**Resolution:** Answered by the owner 2026-10-24: "Yes, allow it" (reading A), with the designer's "So you can hit enemy spells" (RQ 1347270455198879858). rule 305.6, rule 721.4a and rule 723.2 state it; the engine does it since CT-407 (2026-10-25, test 665).
 
 ### D-U07-10 · Other · rule 400.4
 
@@ -572,6 +573,15 @@ Whether a unit stripped by a continuous effect (Transmogrifant, Monke) stops app
 
 **Resolution:** Settled by printed text and the owner (2026-10-16: "Everything (besides an attribute) is an ability."): Transmogrifant's "lose all attributes and abilities" takes every ability, statics included, and rule 712.1a states it. The engine now agrees (report #214, CT-256; F-U16-3 closed, 462 and 427). The one-pass reading of the mutual case is replaced by Caleb's answer, rule 712.5 (D-U16-5).
 
+### D-U17-15 · Sources disagree · rule 723.5b
+
+The RAQ write-up on Tides of the Cosmos (thread 1396955380000755795) was edited by _passer on 2026-08-14 to say "Having Rook would allow you to use Augments" (claim #4, recorded as outdated). Rook prints that it reaches cards "from hand and bin", and Tides plays cards off the top of the deck. No message by the designer says the edited line.
+
+- card: Rook: "You may augment cards from hand and bin during battle as if they were [Virus]."
+- RAQ 1396955380000755795#4: "Having Rook would allow you to use Augments"
+
+**Resolution:** The owner, 2026-10-25 (CT-390): "No (printed text)". The write-up's Rook line is not followed: Rook reaches the hand and the bin only, so Tides of the Cosmos applies only true Viruses, with or without Rook. rule 723.5b carries the call; the engine is unchanged.
+
 ### D-U18-8 · Other · rule 801.8a
 
 403.3a and the owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”) name only two permissions that make a cached card usable: a fulfilled prophecy and a live glimpse. Murkdrop Distiller and Big Glimpse Card grant a play of the cards they cache in their own text.
@@ -725,7 +735,7 @@ The owner ruling of 2026-08-30 (“nothing may exist only in the…”) still sa
 
 **Resolution:** Mark the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s closing count as answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) in the register ("its log-only count answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”)"); CT-236 tracks the stale sentence. The rules follow the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) (rule D7.4b). rule D7.4 states the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s standard; its engine-differs marker for F-U24-4 (CT-236) has been dropped, because the toast tier gives every such announcement a surface. D-U24-9 is this item from the rule's side: its count of nineteen against the inventory test's 21 is the same stale sentence. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]
 
-## 3. Engine-only and owner-only rules (88)
+## 3. Engine-only and owner-only rules (85)
 
 ### D-U01-13 · Engine only · rule 103.3a
 
@@ -775,14 +785,6 @@ Conceding, and conceding at any time including while a decision is pending, rest
 
 **Resolution:** Basis owner.
 
-### D-U01-8 · Owner call only · rule 104.5
-
-That running out of cards does not lose the game rests on the owner ruling of 2026-09-16 (“Recycling puts a card past the…”) alone. The printed rules do not say what happens when a deck runs out.
-
-- owner ruling, adopted 2026-09-16: "**No deck-out loss.** A player whose deck *and* pile are both empty simply draws"
-
-**Resolution:** Basis owner. A judge's CR may have a deck-out rule; compare.
-
 ### D-U02-10 · Other · rule 106.3b
 
 No printed source says a dormant resource cannot be expended. Manual p.14 says all resources can be expended; the rulings say a Shard and a made Prismite pay mana once activated.
@@ -792,16 +794,6 @@ No printed source says a dormant resource cannot be expended. Manual p.14 says a
 - Manual p.18: "typically receive the two activations for the first turn. Active Prismites may be"
 
 **Resolution:** The rule states the rulings, basis owner. The Manual's two-activations limit only does anything if a resource must be activated before it is used, so print implies the rule without saying it.
-
-### D-U02-3 · Owner call only · rule 105.9
-
-The client limits the resources a player may create (by recycling or by exchanging a Prismite) to the game's elements: in a live draft, the three selected. The Manual and the owner ruling of 2026-08-18 (“Prismites give no affinity; active ones…”) put no such limit.
-
-- Manual p.18: "The resource step of the planning phase is when players have the ability to create and activate resources. During this step, any resource can be created from"
-- owner ruling, adopted 2026-08-18: "resource of any element, keeping its current state ("players essentially get to pick"
-- owner ruling, adopted 2026-09-19: "early on a prismite), and once active may be exchanged for any element of the game."
-
-**Resolution:** The rule states the owner ruling of 2026-09-19 (“Recycling can make a Prismite”) ("any element of the game"), an owner call with no printed or designer source. Question for the owner only if the Manual's "any resource" is meant to reach elements outside a live draft's selection (for example a fire resource in a water-wood-metal draft).
 
 ### D-U03-10 · Engine only · rule 109.9n
 
@@ -1545,15 +1537,6 @@ Sources silent on when the auto-pass preference passes. The owner ruling of 2026
 
 **Resolution:** The rule ships as engine-derived (Annex P).
 
-### D-U24-2 · Owner call only · rule D6.6e
-
-The owner ruling of 2026-08-23 (“A constructed deck's ELEMENT IDENTITY is…”) ships a constructed deck's element identity to both players, and says in its own words that whether it is public at game start is an open question for the owner.
-
-- owner ruling, adopted 2026-08-23: "### ⚠ OPEN QUESTION FOR THE OWNER — is deck element identity PUBLIC at game start?"
-- owner ruling, adopted 2026-08-23: "It decides whether `deckElements` belongs in both players' views or only the owner's."
-
-**Resolution:** An owner-only presentation call with no printed or designer source. The owner ruling of 2026-08-23 (“A constructed deck's ELEMENT IDENTITY is…”) names it as the owner's open question: is a constructed deck's element identity public at game start? The client shows it to both players, and the rule states that default at low confidence, for sign-off.
-
 ### D-U24-3 · Owner call only · rule D6.3
 
 The owner ruling of 2026-08-22 (“An item stays on the stack…”) left one presentation call open: the log line "X resolves." is written when resolution STARTS, so it is in the log while the controller is still choosing. The owner ruling of 2026-08-22 (“An item stays on the stack…”) asks the owner to rule.
@@ -1563,7 +1546,7 @@ The owner ruling of 2026-08-22 (“An item stays on the stack…”) left one pr
 
 **Resolution:** An owner-only presentation call. The owner ruling of 2026-08-22 (“An item stays on the stack…”) leaves "X resolves." logged when resolution starts, and asks the owner to rule. No rule states it (rule D6.3 covers only what the board shows). Sign-off: keep the line as the heading of the effect lines under it (today), or log it only once the item has resolved.
 
-## 4. Everything else (131)
+## 4. Everything else (133)
 
 ### D-GL-1 · Other · rule 304.11
 
@@ -1645,7 +1628,7 @@ Sources silent on whether a life total can go below 0. The printed rules say "br
 - Manual p.6: "opponents by bringing their life to 0."
 - owner ruling, adopted 2026-08-26: "The floor is 0 and that is **not** a narrowing: `E.loseLife` ends the game the"
 
-**Resolution:** The rule says "reaches 0". The verifier should check whether the engine also treats a total below 0 as eliminated (the 02-combat win-condition test reduces a player from 3 life with one attacker).
+**Resolution:** Settled by the designer: a life total goes below 0 (RQ 1426602231070851253, "yeah", 2025-10-11), and two totals at 0 or less are compared (104.1b, CT-409). rule 104.1 now says so.
 
 ### D-U01-9 · Other · rule 100.4
 
@@ -1685,6 +1668,16 @@ Whether a dormant (face-down) resource counts toward affinity. The engine says n
 - card: Dormant Resource: "Dormant resources provide no affinity or mana."
 
 **Resolution:** Settled by print, which the question had missed: the Dormant Resource card back, the face every resource shows until it is activated, says "Dormant resources provide no affinity or mana." The owner confirmed it on 2026-10-11. The rule now cites the card (basis printed). Caleb's "somewhere in your manabase" answered whether tapped resources count, and they do.
+
+### D-U02-3 · Owner call only · rule 105.9
+
+The client limits the resources a player may create (by recycling or by exchanging a Prismite) to the game's elements: in a live draft, the three selected. The Manual and the owner ruling of 2026-08-18 (“Prismites give no affinity; active ones…”) put no such limit.
+
+- Manual p.18: "The resource step of the planning phase is when players have the ability to create and activate resources. During this step, any resource can be created from"
+- owner ruling, adopted 2026-08-18: "resource of any element, keeping its current state ("players essentially get to pick"
+- owner ruling, adopted 2026-09-19: "early on a prismite), and once active may be exchanged for any element of the game."
+
+**Resolution:** Settled 2026-10-25 (BL-44): the owner, 2026-09-19, "it's technically legal to make a Fire resource, even if you don't have any Fire cards in the deck" — the Manual's "any resource", read literally. rule 105.9 now lets a player create any of the seven elements in every game, and the engine accepts them.
 
 ### D-U02-4 · Sources disagree · rule 106.3a
 
@@ -2799,6 +2792,15 @@ Sources silent on whether a clause that does nothing, outside the owner ruling o
 - owner ruling, adopted 2026-08-26: "not a gap to widen; it is a limit to write down, and to cover somewhere else."
 
 **Resolution:** The rule states the owner ruling of 2026-08-26 (“"each opponent" in a region that…”) for a whole effect and the owner ruling of 2026-08-26 (“a clause that delivers nothing must…”) for its stated class only, and does not generalise to every clause.
+
+### D-U24-2 · Owner call only · rule D6.6e
+
+The owner ruling of 2026-08-23 (“A constructed deck's ELEMENT IDENTITY is…”) ships a constructed deck's element identity to both players, and says in its own words that whether it is public at game start is an open question for the owner.
+
+- owner ruling, adopted 2026-08-23: "### ⚠ OPEN QUESTION FOR THE OWNER — is deck element identity PUBLIC at game start?"
+- owner ruling, adopted 2026-08-23: "It decides whether `deckElements` belongs in both players' views or only the owner's."
+
+**Resolution:** Closed 2026-10-25: the owner dropped the roadmap item that would have shown a constructed deck's elements to both players from turn 1 ("Drop all"). rule D6.6e now states what the client does: both views carry them, and the client reads only the player's own.
 
 ### D-U24-4 · Owner call only · rule D6.9a
 

@@ -166,16 +166,209 @@
     "problem": "Multiplayer-only; engine cannot show it. Could add the Rulebook's \"in a random order\"."
   },
   {
-    "key": "concepts.ending.elimination",
-    "textHash": "652daeefbf6f152a",
+    "key": "concepts.ending.deck-out.constructed",
+    "textHash": "8bc6c4399f735cfa",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U01-r1",
+    "round": 4,
+    "verifier": "U01-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:loseLife",
+        "loc": "client/engine/src/engine.ts:E.deckedOut",
         "agrees": true,
+        "note": "constructed (incl. singleCard, which is mode 'constructed'): the drawing seat loses"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/656-deck-out.test.ts",
+        "pattern": "CR 104.5 / CT-385: in constructed a draw from an empty deck and an empty recycle pile loses",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/656-deck-out.test.ts",
+        "pattern": "CR 104.5 / CT-385: in constructed the card step from an empty deck and pile ends the game",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U01-2.test.ts",
+        "test": "probe U01-2: a Single Card Duel deck-out loses for the drawing player, whatever the life totals",
+        "passed": true,
+        "demonstrates": "yes: a singleCard game (30 Gublin vs 30 Glararr), drawing seat at 40 life vs 2, loses on the empty draw"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RQ 1356616873655140546",
+        "supports": "yes",
         "note": ""
+      },
+      {
+        "ref": "RQ 1402038431659593859",
+        "supports": "yes",
+        "note": "answers 'What Happens if I cant draw, because my deck is empty?'"
+      },
+      {
+        "ref": "RQ 1402046171094057041",
+        "supports": "yes",
+        "note": "cube draft is constructed (context only)"
+      },
+      {
+        "ref": "owner chat 2026-10-25",
+        "supports": "yes",
+        "note": "'Same woth single card' covers the Single Card Duel sentence"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "in constructed you lose"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "What Happens if I cant draw, because my deck is empty?"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.ending.deck-out.draw-only",
+    "textHash": "d3d86f9177b64384",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U01-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.draw",
+        "agrees": true,
+        "note": "only draw() calls deckedOut when short (and not silent)"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:E.mill / E.cacheTopOfDeck / E.glimpse / E.revealTop / E.takeTop",
+        "agrees": true,
+        "note": "each returns fewer/[] on an empty deck and pile and never calls deckedOut"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/656-deck-out.test.ts",
+        "pattern": "CR 104.5 / CT-385: a mill or a cache from an empty deck is not a draw",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/300-recycle-mark.test.ts",
+        "pattern": "CR 401.4 an empty deck AND an empty pile draws fewer",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U01-1.test.ts",
+        "test": "probe U01-1a: constructed, empty deck and pile: glimpse, revealTop and takeTop take nothing and the game goes on",
+        "passed": true,
+        "demonstrates": "yes: in constructed with deck and pile empty, glimpse/revealTop/takeTop/mill/cacheTopOfDeck return [] and the game goes on; a draw then ends it (control)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RQ 1356616873655140546",
+        "supports": "yes",
+        "note": "calebgannon; answers 'What happens if the deck becomes empty?' with draw as the losing act"
+      },
+      {
+        "ref": "owner chat 2026-10-25 (CT-385)",
+        "supports": "yes",
+        "note": "'lose when draw with nothing' names the draw as the trigger; the mill/reveal half is by exclusion"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "In constructed you lose if you draw on an empty deck"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "(`draw` → `deckedOut`, CR 104.5 / CT-385). A mill or a reveal does not."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.ending.deck-out.shared-deck",
+    "textHash": "1b9ddf9e9b09b004",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U01-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.deckedOut",
+        "agrees": true,
+        "note": "mode !== 'constructed': lower life loses, tie -> initiative"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/656-deck-out.test.ts",
+        "pattern": "CR 104.5 / CT-385: with a shared deck (live draft) the game ends and the higher life total wins",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/656-deck-out.test.ts",
+        "pattern": "CR 104.5 / CT-385: a live-draft deck-out with the life totals tied goes against the initiative player",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RQ 1387479757406474313",
+        "supports": "yes",
+        "note": "answers what happens when a live draft's shared deck runs out"
+      },
+      {
+        "ref": "RQ 1402046319643856916",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner chat 2026-10-25 (tie)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "The game ends, highest life total wins"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "in live draft the game just ends if you run out of cards (don't make sense to make a player lose since its a shared deck)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.ending.elimination",
+    "textHash": "cda71b4163b3a81f",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U01-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.loseLife / E.checkLifeTotals",
+        "agrees": true,
+        "note": "p.life -= n with no floor; life <= 0 ends the game when checked"
       }
     ],
     "tests_run": [
@@ -188,6 +381,12 @@
       {
         "file": "client/engine/test/02-combat.test.ts",
         "pattern": "win condition",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/654-simultaneous-loss.test.ts",
+        "pattern": "CR 104.1a / CT-409: the engine decides a double loss by total",
         "passed": true,
         "asserts_claim": true
       }
@@ -203,16 +402,21 @@
         "ref": "Rulebook 2023 p.1",
         "supports": "yes",
         "note": ""
+      },
+      {
+        "ref": "RQ 1426602231070851253",
+        "supports": "yes",
+        "note": "below 0"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "opponents by bringing their life to 0."
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (p.life <= 0 && this.s.winner === null) {"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Target player's life total becomes equal to twice the number of cards in all bins."
       }
     ],
     "basis_ok": true,
@@ -220,96 +424,152 @@
   },
   {
     "key": "concepts.ending.elimination.immediate",
-    "textHash": "a5504df63ad7f3a7",
+    "textHash": "bd27da6de1a201c5",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U01-r2",
+    "round": 4,
+    "verifier": "U01-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:loseLife",
+        "loc": "client/engine/src/engine.ts:E.lifeBatch / E.loseLife / E.checkLifeTotals",
         "agrees": true,
-        "note": "sets winner and gameover and throws GameEnded the moment life <= 0. Every life-cost payment routes through loseLife (engine.ts 1309/8476/9127, apply.ts 1374). Exception: a Suspend life-lock (R104) stops the change itself"
+        "note": "one resolving part runs inside lifeBatch; combat face damage incl. Lethal (killPlayer) inside one lifeBatch; rotDamage deliberately not batched"
       },
       {
-        "loc": "client/engine/src/engine.ts:canPayLife",
+        "loc": "client/engine/src/engine.ts:E.canPayLife",
         "agrees": true,
-        "note": "life > n, so a life cost that would leave 0 is not payable"
+        "note": "life > n, so a cost equal to the life total is unpayable"
+      },
+      {
+        "loc": "client/engine/test/412-cr-general.test.ts",
+        "agrees": true,
+        "note": "The bound test 412 'cr:concepts.ending.elimination.immediate — life reaching 0 ends the game inside the effect, and the rest of the effect never runs' passes but asserts the OPPOSITE of this record; it calls def.run directly, outside the resolution path's lifeBatch, so it describes a harness path, not play (654 'an effect finishes before the game ends' shows the real path). That test's title is stale and should be renamed or removed."
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/37-attrs-wight.test.ts",
-        "pattern": "without the attribute the same shot is lethal",
+        "file": "client/engine/test/654-simultaneous-loss.test.ts",
+        "pattern": "CR 104.1a / CT-409: Penance takes both players from 1 to 0",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/47-costs-events.test.ts",
-        "pattern": "cannot SURVIVE",
+        "file": "client/engine/test/654-simultaneous-loss.test.ts",
+        "pattern": "CR 104.1a / CT-409: with one player at 0 the other still wins",
         "passed": true,
-        "asserts_claim": "yes, for the life-cost sentence"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/654-simultaneous-loss.test.ts",
+        "pattern": "CR 104.1a / CT-409: rot is not simultaneous",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/654-simultaneous-loss.test.ts",
+        "pattern": "CR 104.1a / CT-409: an unblocked attacker and a Piercing blocker",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "pattern": "CR 802.22b {Blessed}: without the attribute the same shot is lethal",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/415-cr-costs-life-timestamps.test.ts",
+        "pattern": "cr:concepts.costs.unpayable.life — with Arbiter of Vitality out, at exactly 9 life Glararr is still unpayable",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/412-cr-general.test.ts",
+        "pattern": "cr:concepts.ending.elimination.immediate — life reaching 0 ends the game inside the effect",
+        "passed": true,
+        "asserts_claim": false
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U01/u01-r2-verify-probes.test.ts",
-        "title": "concepts.ending.elimination.immediate: life reaching 0 ends the game inside the effect — the rest of the effect never runs",
+        "file": "client/engine/test/zz-probe-U01-1.test.ts",
+        "test": "probe U01-1b: a Lethal kill and a Piercing hit in one combat sub-step are batched: a 0-0 tie goes against the initiative player",
         "passed": true,
-        "demonstrates": "yes: GameEnded thrown mid-effect, second half not run, winner set"
+        "demonstrates": "yes: with the defender processed first, the attacker reaches 0 from a Piercing excess and Lethal still lands on the defender afterwards; the 0-0 tie then goes against the initiative player, so Lethal kills are inside the sub-step batch"
       }
     ],
     "source_checks": [
       {
-        "ref": "R49 (its life-cost half)",
+        "ref": "RQ 1348854126699614248",
         "supports": "yes",
-        "note": "an engine ruling: no life cost you cannot survive; loseLife ends the game"
+        "note": "same-combat-step deaths are simultaneous"
       },
       {
-        "ref": "R197 (its §1)",
+        "ref": "RQ 1542923825904099349",
         "supports": "yes",
-        "note": "'E.loseLife ends the game the moment a total reaches 0'"
+        "note": "answers both players with more rot than life"
+      },
+      {
+        "ref": "RQ 1542924008620564610",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner chat 2026-10-25 (CT-409)",
+        "supports": "yes",
+        "note": "the question premise is one effect bringing both to 0"
+      },
+      {
+        "ref": "owner register@72de434 (life cost)",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "⚠ **May a life cost be paid if it would kill you? No.** You may pay N life only"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "initiative takes their deployment first and dies"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "The floor is 0 and that is **not** a narrowing: `E.loseLife` ends the game the"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "in situations of simultaneous damage, nyar is right whoever takes more loses. But rot isn't simultaneous"
       },
       {
         "file": "client/engine/src/engine.ts",
-        "text": "    return n <= 0 || this.player(seat).life > n;"
+        "text": "return n <= 0 || this.player(seat).life > n;"
       }
     ],
     "basis_ok": true,
-    "problem": "Basis is an owner/engine ruling with no designer statement (R49 says so). 'Even while paying a cost' holds structurally: costs go through loseLife, so a life-loss multiplier could end the game mid-payment. No test shows that case.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
-    "key": "concepts.ending.no-deck-out",
-    "textHash": "beeb62c1be71b649",
+    "key": "concepts.ending.elimination.simultaneous",
+    "textHash": "f29f1d7eb6a45e92",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U01-r1",
+    "round": 4,
+    "verifier": "U01-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.draw",
+        "loc": "client/engine/src/engine.ts:E.checkLifeTotals",
         "agrees": true,
-        "note": "loop breaks when takeFromDeck returns undefined; no loss check"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:refillFromRecycled",
-        "agrees": true,
-        "note": "R296: an empty deck first reshuffles the recycle pile in"
+        "note": "a.life < b.life ? a : b.life < a.life ? b : initiative"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/300-recycle-mark.test.ts",
-        "pattern": "R296 §4 an empty deck AND an empty pile draws fewer",
+        "file": "client/engine/test/654-simultaneous-loss.test.ts",
+        "pattern": "CR 104.1a / CT-409: an unblocked attacker and a Piercing blocker",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/654-simultaneous-loss.test.ts",
+        "pattern": "CR 104.1a / CT-409: the engine decides a double loss by total",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/654-simultaneous-loss.test.ts",
+        "pattern": "CR 104.1a / CT-409: Recall takes 2 from each player",
         "passed": true,
         "asserts_claim": true
       }
@@ -317,27 +577,107 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R296",
+        "ref": "RQ 1348854126699614248",
+        "supports": "yes",
+        "note": "answers 'Does whoever has the least negative life win?'"
+      },
+      {
+        "ref": "RQ 1294403184575647765",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RQ 1366515001786892349",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RQ 1426602231070851253",
+        "supports": "yes",
+        "note": "'yeah' to 'life totals can go below 0 to find a winner'"
+      },
+      {
+        "ref": "owner chat 2026-10-25 (CT-409)",
+        "supports": "yes",
+        "note": "tie: initiative loses"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "But yes currently the rule is player with the highest life total wins"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "So life totals can go below 0 to find a winner if both players take lethal damage at the same time?"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.ending.no-deck-out",
+    "textHash": "b0880a9fcb3e36cb",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U01-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.refillFromRecycled / E.takeFromDeck / E.draw",
+        "agrees": true,
+        "note": "pile reshuffled in when the deck is short; bin untouched; cards that exist are drawn, then deckedOut"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/656-deck-out.test.ts",
+        "pattern": "CR 104.5 / CT-385: an empty deck with recycled cards behind the mark reshuffles them in",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/656-deck-out.test.ts",
+        "pattern": "CR 104.5 / CT-385: the cards that are there are drawn first",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/300-recycle-mark.test.ts",
+        "pattern": "CR 408.2b when the deck runs out the pile is shuffled in",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RQ 1352146353962352743",
+        "supports": "yes",
+        "note": "reshuffle the recycled cards when you hit the marker"
+      },
+      {
+        "ref": "RQ 1353843048571736114",
+        "supports": "yes",
+        "note": "'Correct' answers 'Just the cards under the marker card' -- only the recycled cards, so not the bin; context is thin (only one 'before' row)"
+      },
+      {
+        "ref": "owner chat 2026-10-24 'Follow Caleb'",
         "supports": "yes",
         "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**No deck-out loss.** A player whose deck *and* pile are both empty simply draws"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "you should put something on the bottom of the deck to track when you hit recycled cards and then reshuffle when you hit that"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (c === undefined) break;"
-      },
-      {
-        "file": "client/engine/test/300-recycle-mark.test.ts",
-        "text": "assert.equal(h.state.winner, null, 'and running out of cards does not end the game');"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "Just the cards under the marker card"
       }
     ],
     "basis_ok": true,
-    "problem": "Wording nit, not an error: \"draw from an empty deck\" should say the deck AND the recycle pile are empty (R296 reshuffles the pile in first); \"as many as there are\" is right."
+    "problem": ""
   },
   {
     "key": "concepts.ending.win",

@@ -1579,7 +1579,7 @@
     "key": "concepts.ending.elimination",
     "parent": "104",
     "order": 1,
-    "text": "A player whose life total reaches 0 is eliminated.",
+    "text": "A player whose life total is 0 or less is eliminated (when that is checked: 104.1a). A life total can go below 0.",
     "examples": [
       {
         "text": "Haunting Memories sets a player's life total to twice the number of cards in all bins. With every bin empty that is 0, and that player loses.",
@@ -1604,24 +1604,45 @@
           "quote": "In order to win a game of Algomancy, you must eliminate all of your opponents by reducing their life total to zero. In team"
         }
       ],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1426602231070851253",
+          "quote": "yeah"
+        }
+      ],
       "ours": [],
       "owner": [],
       "engine": [],
-      "tests": []
+      "tests": [
+        "654-simultaneous-loss.test.ts"
+      ]
     },
-    "basis": "printed",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Whether a life total can go below 0 is not stated: D-U01-4. Life loss itself is 112 (U04).",
-    "sourceHashes": {}
+    "notes": "The printed rules say \"bringing their life to 0\"; that a total goes below 0 is the designer's \"yeah\" to \"So life totals can go below 0 to find a winner if both players take lethal damage at the same time?\" (2025-10-11). D-U01-4 is settled by it.",
+    "sourceHashes": {
+      "RQ 1426602231070851253": "8230ee0bc0424d96b5d21e22185e6be00ad32c01b504923eb257454f35c25b98"
+    }
   },
   {
     "key": "concepts.ending.elimination.immediate",
     "parent": "concepts.ending.elimination",
     "order": 1,
-    "text": "A life total reaching 0 ends the game at once, even in the middle of resolving an effect or paying a cost. Nothing waits for the effect to finish. A life cost that would by itself bring its payer to 0 cannot be paid at all (111).",
+    "text": "A player brought to 0 or less by an effect is not eliminated until that effect has finished: every life change one resolution of one effect makes (the unit damage is dealt in, 112.8) is applied first, and only then are the life totals checked. All the life changes of one combat damage sub-step are applied together in the same way, Lethal kills included (802.24a), and checked after all of them. Any other life change, such as rot damage, is checked the moment it happens; rot is dealt one player at a time, in initiative order, and is never simultaneous (112.13). A life cost that would by itself bring its payer to 0 cannot be paid at all (111).",
     "examples": [
+      {
+        "text": "Both players are at 1 life and Penance brings each of them to 0. Neither is eliminated until the effect has finished, and then both are at 0 together (104.1b).",
+        "test": "654-simultaneous-loss.test.ts::CR 104.1a / CT-409: Penance takes both players from 1 to 0 and the initiative player loses the tie"
+      },
+      {
+        "text": "A player at 0 is not out until the rest of the effect has happened: the effect finishes, and then the game ends.",
+        "test": "654-simultaneous-loss.test.ts::CR 104.1a / CT-409: with one player at 0 the other still wins, and an effect finishes before the game ends"
+      },
+      {
+        "text": "Both players have more rot than life as deployment begins. The initiative player's rot is dealt first and that player loses before the other player's rot is dealt.",
+        "test": "654-simultaneous-loss.test.ts::CR 104.1a / CT-409: rot is not simultaneous, so the initiative player whose rot takes them to 0 loses before the other player takes theirs"
+      },
       {
         "text": null,
         "test": "37-attrs-wight.test.ts::CR 802.22b {Blessed}: without the attribute the same shot is lethal"
@@ -1629,39 +1650,114 @@
     ],
     "see": [
       "111",
-      "112"
+      "112",
+      "608"
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1348854126699614248",
+          "quote": "both players would need to die at the exact same time for this to happen, which is quite rare."
+        },
+        {
+          "ref": "RQ 1542923825904099349",
+          "quote": "initiative takes their deployment first and dies"
+        },
+        {
+          "ref": "RQ 1542924008620564610",
+          "quote": "But rot isn't simultaneous"
+        }
+      ],
       "ours": [],
       "owner": [
         {
-          "quote": "reaching 0 ends the game inside `loseLife`, so paying at cast would hand the",
-          "adopted": "2026-08-19",
-          "from": "register@72de434"
+          "quote": "Highest total, tie: INT loses",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (CT-409: one effect brings both players to 0 life or less)"
         },
         {
           "quote": "⚠ **May a life cost be paid if it would kill you? No.** You may pay N life only",
           "adopted": "2026-08-19",
           "from": "register@72de434"
-        },
-        {
-          "quote": "The floor is 0 and that is **not** a narrowing: `E.loseLife` ends the game the",
-          "adopted": "2026-08-26",
-          "from": "register@72de434"
         }
       ],
       "engine": [],
       "tests": [
-        "412-cr-general.test.ts"
+        "654-simultaneous-loss.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
-    "confidence": "medium",
-    "notes": "Both rulings describe the engine (they name its loseLife function) rather than a printed rule; no printed or designer source says when elimination is checked. This sentence is a two-player statement: with more than two players the game would continue (concepts.ending.continues), and no source says when a player in such a game is removed. A life COST may not be paid if it would bring you to 0 (the owner ruling of 2026-08-19 (“Non-mana costs are paid when you…”); 111, U04). Round 1: because the owner ruling of 2026-08-19 (“Non-mana costs are paid when you…”) refuses a life cost that would bring the payer to 0, the game can end mid-cost only when something makes the cost cost more life than its printed amount (a life-loss multiplier, per the verifier); whether the owner ruling of 2026-08-19 (“Non-mana costs are paid when you…”) checks the multiplied amount is D-U01-14.",
-    "sourceHashes": {}
+    "confidence": "high",
+    "notes": "CT-409 (2026-10-25). Replaces \"A life total reaching 0 ends the game at once, even in the middle of resolving an effect … Nothing waits for the effect to finish\" (owner 2026-08-19/26, register), which described the engine of the time. The owner, asked what happens when one effect brings both players to 0: \"Highest total, tie: INT loses\" — which needs every life change of the effect applied before anyone is out. The unit is one resolution of one effect (the unit 112.8 deals damage in and 708.9 creates tokens in) and one combat damage sub-step (Caleb's case: both players dying \"in the same combat step\"). Rot is excluded by the designer: \"initiative takes their deployment first and dies\" … \"But rot isn't simultaneous\" (2026-08-28). The life-cost clause keeps the owner's 2026-08-19 call (111). 412 \"cr:concepts.ending.elimination.immediate — … the rest of the effect never runs\" is no longer listed: it calls the effect outside the resolution path (no life batch), so its title states the retired rule (round-4 verifier, 2026-10-25). It needs a new title or body.",
+    "sourceHashes": {
+      "RQ 1348854126699614248": "1128ac26d0faef75a906ab34da44312c52450197dc9cd14dd0d4e8978c91c6bf",
+      "RQ 1542923825904099349": "06dcd00ff2501fd23b206df64b8102ed085aebd4047d11f6fe514c5b2b491d98",
+      "RQ 1542924008620564610": "1817b9924e12643dfdd330cccc7c4ccd21271856db113f07019ca5feb81b1522"
+    }
+  },
+  {
+    "key": "concepts.ending.elimination.simultaneous",
+    "parent": "concepts.ending.elimination",
+    "order": 2,
+    "text": "If both players are at 0 or less when the life totals are checked, the player with the higher life total wins; totals below 0 count, so a player at -1 beats a player at -3. If the totals are equal, the initiative player loses.",
+    "examples": [
+      {
+        "text": "An unblocked attacker and a Piercing blocker, in the same combat damage sub-step, bring both players to 0 or less. The player left on the higher total wins.",
+        "test": "654-simultaneous-loss.test.ts::CR 104.1a / CT-409: an unblocked attacker and a Piercing blocker bring both players to 0 in one combat step, and the higher total wins"
+      },
+      {
+        "text": "Both players are at 1 and one effect makes each lose 1. Both are at 0, the totals are equal, and the initiative player loses.",
+        "test": "654-simultaneous-loss.test.ts::CR 104.1a / CT-409: the engine decides a double loss by total, then against the initiative player"
+      }
+    ],
+    "see": [
+      "104.1a"
+    ],
+    "sources": {
+      "printed": [],
+      "ours": [],
+      "engine": [],
+      "designer": [
+        {
+          "ref": "RQ 1348854126699614248",
+          "quote": "But yes currently the rule is player with the highest life total wins"
+        },
+        {
+          "ref": "RQ 1294403184575647765",
+          "quote": "Piercing still can cause ties, although the tiebreak is the final life total in that case."
+        },
+        {
+          "ref": "RQ 1366515001786892349",
+          "quote": "right now the higher life total wins draws"
+        },
+        {
+          "ref": "RQ 1426602231070851253",
+          "quote": "yeah"
+        }
+      ],
+      "owner": [
+        {
+          "quote": "Highest total, tie: INT loses",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (CT-409: one effect brings both players to 0 life or less)"
+        }
+      ],
+      "tests": [
+        "654-simultaneous-loss.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "The designer decides by the higher final total (2024-10-11, 2025-03-11, 2025-04-28) and lets totals go below 0 (2025-10-11, \"yeah\" to \"So life totals can go below 0 to find a winner…\"). He never addresses an exact tie; the tie rule is the owner's (2026-10-25, \"Highest total, tie: INT loses\"). The game-over event carries alsoAtZero.",
+    "sourceHashes": {
+      "RQ 1294403184575647765": "947f5fd256ab57d83eb74e389a32e76c479399b75c228f4cbf25e022e9490b5e",
+      "RQ 1348854126699614248": "1128ac26d0faef75a906ab34da44312c52450197dc9cd14dd0d4e8978c91c6bf",
+      "RQ 1366515001786892349": "f3e901942d61a284b81b65e3cbaac55a5188e22caa538a8d8ca3776490ac7fc2",
+      "RQ 1426602231070851253": "8230ee0bc0424d96b5d21e22185e6be00ad32c01b504923eb257454f35c25b98"
+    }
   },
   {
     "key": "concepts.ending.win",
@@ -1885,36 +1981,219 @@
     "key": "concepts.ending.no-deck-out",
     "parent": "104",
     "order": 5,
-    "text": "Running out of cards does not end the game. A player who has to draw from an empty deck draws as many as there are and does not lose.",
+    "text": "A player who has to draw a card when their deck and their recycle pile are both empty has run out of cards. The recycle pile is shuffled into the deck before that (408.2b), and the bin never is. The player draws the cards there are, and then the game ends as 104.5a and 104.5b say.",
     "examples": [
       {
-        "text": "A player with an empty deck and an empty recycle pile is told to draw 3: nothing is drawn, and nobody has won.",
-        "test": "300-recycle-mark.test.ts::CR 401.4 an empty deck AND an empty pile draws fewer"
+        "text": "A player whose deck is empty, with recycled cards behind the mark, draws: the recycled cards are shuffled in and the draw goes on. Nobody has run out of cards.",
+        "test": "656-deck-out.test.ts::CR 104.5 / CT-385: an empty deck with recycled cards behind the mark reshuffles them in and does not lose"
+      },
+      {
+        "text": "A player with 2 cards left and an empty recycle pile has to draw 4. They draw the 2, and then the draw that finds nothing ends the game.",
+        "test": "656-deck-out.test.ts::CR 104.5 / CT-385: the cards that are there are drawn first, then the draw that finds nothing loses"
       }
     ],
     "see": [
       "401",
-      "408"
+      "408",
+      "104.1"
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1353843048571736114",
+          "quote": "Correct"
+        },
+        {
+          "ref": "RQ 1352146353962352743",
+          "quote": "you should put something on the bottom of the deck to track when you hit recycled cards and then reshuffle when you hit that"
+        }
+      ],
       "ours": [],
       "owner": [
         {
-          "quote": "**No deck-out loss.** A player whose deck *and* pile are both empty simply draws",
-          "adopted": "2026-09-16",
-          "from": "register@72de434"
+          "quote": "Follow Caleb",
+          "adopted": "2026-10-24",
+          "from": "owner, chat 2026-10-24 (CT-385: follow the designer on running out of cards?)"
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "656-deck-out.test.ts",
+        "300-recycle-mark.test.ts"
+      ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "In the client a deck that runs out is refilled from the recycle pile first (the owner ruling of 2026-09-16 (“Recycling puts a card past the…”), 401/408); only when both are empty does a player draw fewer. No printed source mentions running out: D-U01-8.",
-    "sourceHashes": {}
+    "notes": "CT-385 (2026-10-25). Replaces the owner's 2026-09-16 \"No deck-out loss\" (register), which the designer outranks; the owner, asked on 2026-10-24: \"Follow Caleb\". \"Empty\" means the deck AND the recycle pile: Caleb reshuffles the recycled cards in at the marker (2025-03-20) and says \"Correct\" to \"When you reshuffle in constructed, you don't reshuffle your bin back in right? / Just the cards under the marker card\" (2025-03-24). Caleb also said \"you can shuffle back in erased cards too if you really needed to\" (2025-06-25): a practical aside, not implemented. The key keeps its old name (keys are permanent); the rule is now the deck-out rule. Lesson deals are exempt: annexd.modes.learn-to-play.deck-out.",
+    "sourceHashes": {
+      "RQ 1352146353962352743": "9e5957d8e770f2481d92c7bbbc50bcf7845d5a5b850f4e932adec6454c4c4837",
+      "RQ 1353843048571736114": "9cb696b1c95330edf7c1fa382c064711497c34514e358a449a69a06062424c54"
+    }
+  },
+  {
+    "key": "concepts.ending.deck-out.constructed",
+    "parent": "concepts.ending.no-deck-out",
+    "order": 1,
+    "text": "In constructed, the player who ran out of cards loses the game, whatever the life totals. A Single Card Duel is constructed for this rule (D8.2).",
+    "examples": [
+      {
+        "text": "A constructed player at 25 life has to draw with an empty deck and an empty recycle pile while the opponent is at 3. The player who had to draw loses.",
+        "test": "656-deck-out.test.ts::CR 104.5 / CT-385: in constructed a draw from an empty deck and an empty recycle pile loses, whatever the life totals"
+      },
+      {
+        "text": "The card step at the start of a turn is a draw too: from an empty deck and pile it ends the game.",
+        "test": "656-deck-out.test.ts::CR 104.5 / CT-385: in constructed the card step from an empty deck and pile ends the game at the start of the turn"
+      }
+    ],
+    "see": [
+      "D8.2"
+    ],
+    "sources": {
+      "printed": [],
+      "ours": [],
+      "engine": [],
+      "designer": [
+        {
+          "ref": "RQ 1356616873655140546",
+          "quote": "In constructed you lose if you draw on an empty deck"
+        },
+        {
+          "ref": "RQ 1402038431659593859",
+          "quote": "in constructed you lose"
+        },
+        {
+          "ref": "RQ 1402046171094057041",
+          "quote": "yeah cube draft is constructed"
+        }
+      ],
+      "owner": [
+        {
+          "quote": "Follow Caleb",
+          "adopted": "2026-10-24",
+          "from": "owner, chat 2026-10-24 (CT-385: follow the designer on running out of cards?)"
+        },
+        {
+          "quote": "Constructed is lose when draw with nothing. Same woth single card. But challenges are excempt",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (CT-385: which games running out of cards ends)"
+        }
+      ],
+      "tests": [
+        "656-deck-out.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "The designer for constructed (2025-04-01, 2025-08-04); the owner for Single Card Duel (\"Same woth single card\", 2026-10-25).",
+    "sourceHashes": {
+      "RQ 1356616873655140546": "37dcd0764727290b18383b946f8c3f942c3a12dfd2335b013351f00be49de75b",
+      "RQ 1402038431659593859": "6473b7ce0a1a6290de113756afa7488745cf32d1482f13da299bfa7de3b0dfe8",
+      "RQ 1402046171094057041": "6f1ca6fe27472f1d2847511da2c05326355a4596c2ec06dd8902ad75d26bc827"
+    }
+  },
+  {
+    "key": "concepts.ending.deck-out.shared-deck",
+    "parent": "concepts.ending.no-deck-out",
+    "order": 2,
+    "text": "With a shared deck (live draft), running out of cards ends the game, and the player with the higher life total wins, even if that is the player who had to draw. If the life totals are equal, the initiative player loses.",
+    "examples": [
+      {
+        "text": "In a live draft the shared deck runs out when a player at 12 life has to draw against an opponent at 9. The game ends, and the player at 12 wins.",
+        "test": "656-deck-out.test.ts::CR 104.5 / CT-385: with a shared deck (live draft) the game ends and the higher life total wins, even over the player who had to draw"
+      },
+      {
+        "text": "If the two players are on the same life total, the initiative player loses.",
+        "test": "656-deck-out.test.ts::CR 104.5 / CT-385: a live-draft deck-out with the life totals tied goes against the initiative player"
+      }
+    ],
+    "see": [
+      "104.1b"
+    ],
+    "sources": {
+      "printed": [],
+      "ours": [],
+      "engine": [],
+      "designer": [
+        {
+          "ref": "RQ 1387479757406474313",
+          "quote": "The game ends, highest life total wins"
+        },
+        {
+          "ref": "RQ 1402046319643856916",
+          "quote": "in live draft the game just ends if you run out of cards (don't make sense to make a player lose since its a shared deck)"
+        }
+      ],
+      "owner": [
+        {
+          "quote": "Follow Caleb",
+          "adopted": "2026-10-24",
+          "from": "owner, chat 2026-10-24 (CT-385: follow the designer on running out of cards?)"
+        },
+        {
+          "quote": "INT player loses",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (CT-385: a live-draft game whose shared deck runs out with the life totals tied)"
+        }
+      ],
+      "tests": [
+        "656-deck-out.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "The designer for the result (2025-06-25, 2025-08-04). He does not address equal totals; the tie is the owner's (2026-10-25, \"INT player loses\"), the same tie rule as 104.1b. A player suggested a drawn game (2025-08-04); Caleb did not answer it, so it is not a ruling. The 656 title still says \"(provisional)\": the owner has since settled it.",
+    "sourceHashes": {
+      "RQ 1387479757406474313": "fc6dfda41930f536b34c28f8c1f743bc447164f776b31766a4ca49ffa721e1b1",
+      "RQ 1402046319643856916": "ba54cf966c1e44fc212aa317b7c5ea45d224cd144432260ab1834cabe36915c6"
+    }
+  },
+  {
+    "key": "concepts.ending.deck-out.draw-only",
+    "parent": "concepts.ending.no-deck-out",
+    "order": 3,
+    "text": "Only a draw runs out of cards. Milling, revealing, glimpsing or caching from an empty deck and an empty recycle pile takes nothing, and the game goes on.",
+    "examples": [
+      {
+        "text": "A player with an empty deck and an empty recycle pile is told to mill 2, and then to cache the top card of their deck. Nothing happens, and the game goes on.",
+        "test": "656-deck-out.test.ts::CR 104.5 / CT-385: a mill or a cache from an empty deck is not a draw and does not end the game"
+      }
+    ],
+    "see": [
+      "401.4"
+    ],
+    "sources": {
+      "printed": [],
+      "ours": [],
+      "engine": [],
+      "designer": [
+        {
+          "ref": "RQ 1356616873655140546",
+          "quote": "In constructed you lose if you draw on an empty deck"
+        }
+      ],
+      "owner": [
+        {
+          "quote": "Constructed is lose when draw with nothing. Same woth single card. But challenges are excempt",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (CT-385: which games running out of cards ends)"
+        }
+      ],
+      "tests": [
+        "656-deck-out.test.ts",
+        "300-recycle-mark.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "Every source speaks of drawing (\"draw on an empty deck\", \"draw with nothing\"); none says a mill or a reveal ends the game. The engine ends it only in draw (E.draw → deckedOut).",
+    "sourceHashes": {
+      "RQ 1356616873655140546": "37dcd0764727290b18383b946f8c3f942c3a12dfd2335b013351f00be49de75b"
+    }
   },
   {
     "key": "concepts.starting.constructed.first-draw",

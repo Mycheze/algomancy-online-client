@@ -527,70 +527,81 @@
   },
   {
     "key": "types.mods.spell-token-host",
-    "textHash": "927d7ddc9c43a88c",
+    "textHash": "045ac7092397a644",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U06-r2",
+    "round": 4,
+    "verifier": "U06-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:doAugment deploy branch / legalActions",
+        "loc": "client/engine/src/apply.ts:doAugment (tokenHost)",
         "agrees": true,
-        "note": "spell tokens offered as hosts in deployment; no c.virus gate"
+        "note": "deployment: own spell token is a host for any augment; battle: any spell token in the region via virusHostOk"
       },
       {
-        "loc": "client/engine/src/engine.ts:stackAugmentAttrs",
+        "loc": "client/engine/src/apply.ts:battleVirusHosts",
         "agrees": true,
-        "note": "attributes only"
+        "note": "appends spell tokens in play in the battle region, either player"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:battleAugmentAllowed",
+        "agrees": true,
+        "note": "only a Virus (or Rook-style permission) in battle"
       }
     ],
     "tests_run": [
       {
-        "file": "78-round17-core.test.ts",
-        "pattern": "R89: a spell token is a legal augment host during deployment",
+        "file": "client/engine/test/78-round17-core.test.ts",
+        "pattern": "CR 721.4a",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "78-round17-core.test.ts",
-        "pattern": "R89: only ATTRIBUTES transfer",
+        "file": "client/engine/test/417-cr-card-types.test.ts",
+        "pattern": "cr:types.mods.spell-token-host",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "78-round17-core.test.ts",
-        "pattern": "a text-only augment on a token grants nothing",
+        "file": "client/engine/test/665-battle-virus-spell-token.test.ts",
+        "pattern": "CR 721.4a",
         "passed": true,
-        "asserts_claim": "partly — asserts the log line"
+        "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
-        "title": "types.mods.spell-token-host: a NON-Virus augment (Carapace Devourer) may augment a spell token in deployment",
-        "passed": true,
-        "demonstrates": true
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R89",
+        "ref": "RQ 1347270455198879858",
         "supports": "yes",
-        "note": ""
+        "note": "calebgannon, answering \"does this mean i can augment my opponents spell too? ... can i augment my spells during deployment?\": \"So you can hit enemy spells\" / \"You can augment spells during deployment but currently that would only be possible with spell tokens\" / \"Also you can only do this with attributes\""
+      },
+      {
+        "ref": "RQ 1364998183226179735",
+        "supports": "partial",
+        "note": "calebgannon \"Honestly I don't see why you couldn't\"; the question in the snapshot is only \"Asking for this guy, since he is only Augmentable during Deployment (except Rook)\" (image not in snapshot) - consistent but weak alone"
+      },
+      {
+        "ref": "owner quotes (2026-08-23, 2026-10-24)",
+        "supports": "yes",
+        "note": "\"a SPELL TOKEN may be augmented during DEPLOYMENT\", \"you can only do this with attributes.\", \"It is NOT restricted to Virus cards\", \"Yes, allow it\" (battle Virus onto a token in play)"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "R79's missing half: a SPELL TOKEN may be augmented during DEPLOYMENT"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "You can augment spells during deployment but currently that would only be possible with spell tokens."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "### It is NOT restricted to Virus cards"
+        "file": "client/engine/src/apply.ts",
+        "text": "&& (((e.s.phase === 'deploy' || hasteMod) && host.controller === seat) || e.s.phase === 'battle');"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (t.kind === 'spellToken' && t.region === region && !t.absent) out.push({ unit: t.id });"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "types.mods.spells",

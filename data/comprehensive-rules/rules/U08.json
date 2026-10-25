@@ -913,7 +913,7 @@
     "key": "turn.resource.actions.exchange",
     "parent": "turn.resource.actions",
     "order": 3,
-    "text": "Exchange an active Prismite for a resource of one of the game's elements. A dormant Prismite cannot be exchanged.",
+    "text": "Exchange an active Prismite for a resource of any element, or for a Shard (106.8d). A dormant Prismite cannot be exchanged.",
     "examples": [
       {
         "text": "Two starting Prismites are activated, then one is exchanged for a fire resource, which keeps its active state.",
@@ -941,17 +941,24 @@
           "quote": "exchange: during planning, an **active** (face-up) Prismite may be swapped for a",
           "adopted": "2026-08-18",
           "from": "register@72de434"
+        },
+        {
+          "quote": "But it's technically legal to make a Fire resource, even if you don't have any Fire cards in the deck.",
+          "adopted": "2026-09-19",
+          "from": "owner, BL-44 (backlog), 2026-09-19"
         }
       ],
       "engine": [],
       "tests": [
-        "01-planning.test.ts"
+        "01-planning.test.ts",
+        "413-cr-elements-resources.test.ts",
+        "308-recycle-for-prismite.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The exchange uses no activation and can earn the affinity Shard (owner ruling of 2026-08-24, “a Prismite DOES activate its new…”): 106 (U02). Whether the Prismite card's \"Do this only during the mana step\" also allows the exchange in the haste step: D-U08-3.",
+    "notes": "The exchange uses no activation and can earn the affinity Shard (owner ruling of 2026-08-24, “a Prismite DOES activate its new…”): 106 (U02). Whether the Prismite card's \"Do this only during the mana step\" also allows the exchange in the haste step: D-U08-3. BL-44 (2026-10-25): \"of one of the game's elements\" became \"of any element\"; the Shard is 106.8d (CT-237).",
     "sourceHashes": {}
   },
   {

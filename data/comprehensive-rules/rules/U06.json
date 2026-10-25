@@ -3279,7 +3279,7 @@
     "key": "types.mods.spell-token-host",
     "parent": "305",
     "order": 6,
-    "text": "During deployment, a spell token in play may be augmented, with any augment and not only a Virus. The spell token gains only the mod's attributes, not its text.",
+    "text": "During deployment, a spell token in play may be augmented, with any augment and not only a Virus. During a battle, a Virus may also be applied to a spell token in play in the battle's region, either player's (723.2). The spell token gains only the mod's attributes, not its text.",
     "examples": [
       {
         "text": null,
@@ -3296,6 +3296,10 @@
       {
         "text": "Carapace Devourer, an augment that is not a Virus, may augment a spell token during deployment.",
         "test": "417-cr-card-types.test.ts::cr:types.mods.spell-token-host — a non-Virus augment (Carapace Devourer) may augment a spell token in deployment"
+      },
+      {
+        "text": "In battle a player applies Chitin Shredder, a Virus, to a Fireball token standing in play. The Fireball gains Powerful and deals double damage when it is cast.",
+        "test": "665-battle-virus-spell-token.test.ts::CR 721.4a / CT-407: a Virus gives a Fireball token in play Powerful mid-battle, and its cast deals double"
       }
     ],
     "see": [
@@ -3303,7 +3307,16 @@
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1347270455198879858",
+          "quote": "So you can hit enemy spells"
+        },
+        {
+          "ref": "RQ 1364998183226179735",
+          "quote": "Honestly I don't see why you couldn't"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -3320,18 +3333,27 @@
           "quote": "It is NOT restricted to Virus cards",
           "adopted": "2026-08-23",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Yes, allow it",
+          "adopted": "2026-10-24",
+          "from": "owner, chat 2026-10-24 (CT-407, owner question D-U06-9: during a battle, can a Virus be augmented onto a spell token that is sitting in play?)"
         }
       ],
       "engine": [],
       "tests": [
         "78-round17-core.test.ts",
-        "417-cr-card-types.test.ts"
+        "417-cr-card-types.test.ts",
+        "665-battle-virus-spell-token.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) quotes Caleb (rules-questions 2025-03-06, not a RAQ thread) for \"possible with spell tokens\" and \"only with attributes\"; the \"any augment\" reading is sourced to a player: D-U06-7. Whether a Virus may be applied to a spell token in play during battle is unruled: D-U06-9. The bound test uses a Virus (Chitin Shredder); the verifier's probe showed a non-Virus augment (Carapace Devourer) is accepted, which is the illustrative example.",
-    "sourceHashes": {}
+    "notes": "The owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) quotes Caleb (rules-questions 2025-03-06, not a RAQ thread) for \"possible with spell tokens\" and \"only with attributes\"; the \"any augment\" reading is sourced to a player: D-U06-7. Owner question D-U06-9 (a Virus onto a spell token in play during battle) answered 2026-10-24, \"Yes, allow it\", with the designer's \"So you can hit enemy spells\" (2025-03-06) and \"Honestly I don't see why you couldn't\" (to \"Can you Augment Fireball in play or only Fireball on stack?\", 2025-04-24). CT-407 (2026-10-25) implements it. The bound test uses a Virus (Chitin Shredder); the verifier's probe showed a non-Virus augment (Carapace Devourer) is accepted, which is the illustrative example.",
+    "sourceHashes": {
+      "RQ 1347270455198879858": "40980deafe5c245eec9971747e128a6fd3fd4c6c76fe185e7edba25bd60a3b71",
+      "RQ 1364998183226179735": "2821e18505375e0930d66d0981ba73ef0ac57ba70c29e0dc9c8244b5a4ffe715"
+    }
   }
 ]
