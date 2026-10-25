@@ -45,6 +45,7 @@ import {
   shouldAskSend, splitCounterattack,
 } from './battle.ts';
 import type * as bat from './battle.ts';
+import { placementWarnings, placeWarnHtml } from './placewarn.ts';
 import {
   buildOfPlan, clearBuild, dropIntoRow, forwardRow, halfRows, hasBuild, leftCols, leftReach, moveInBuild, openLeft,
   planOfBuild, pruneBackOnly, publishCols, rekeyBuild, rowsOf,
@@ -2848,6 +2849,16 @@ let modHostCache: ModHosts = { units: new Set(), stack: new Set() };
  * render() from the legal-action list (never re-derived), so the glow and the
  * engine cannot disagree. unitHtml draws it. */
 let actCache = new Set<EntityId>();
+/** BL-50: the cards the block plan being built would have refused, with the
+ * engine's reason — once per render(), read by unitHtml/tokenHtml */
+let placeWarnCache = new Map<EntityId, string>();
+function refreshPlaceWarnings(): void {
+  const b = h.state?.battle;
+  const mine = !!b && b.step === 'blocks' && !NET?.spectating && !replayActive() && (bothSeats() || b.defender === NET!.seat);
+  if (!mine) { placeWarnCache = new Map(); return; }
+  const { send, spellTokens } = splitCounterattack(h.state, ui.send);
+  placeWarnCache = placementWarnings(h.state, b.defender, blockPlan(), send, spellTokens);
+}
 /** the list behind it, kept so the per-unit badge can name the ability without
  * recomputing legalActions once per card on the board */
 let actLegalCache: Action[] = [];
@@ -3243,6 +3254,9 @@ function cardHtml(name: string, opts: {
   badges?: Badge[]; stats?: string; dmg?: string; data?: string;
   /** a spell token's X as a big die face across the art (dieHtml) */
   die?: number;
+  /** BL-50: the engine's reason Confirm would refuse this card where it is
+   * placed — drawn as the (!) where the die sits (ui/placewarn.ts) */
+  warn?: string;
   /** ui/motion.ts slot key — what makes this card the SAME card next render */
   anim?: string;
   /** what clicking this card does, when an open question's options differ
@@ -3279,6 +3293,7 @@ function cardHtml(name: string, opts: {
     ${opts.pickTag ? `<div class="picktag">${esc(opts.pickTag)}</div>` : ''}
     ${opts.stats ? `<div class="stats">${opts.stats}</div>` : ''}
     ${opts.die !== undefined ? dieHtml(opts.die) : ''}
+    ${opts.warn ? placeWarnHtml(opts.warn) : ''}
     ${opts.dmg ? `<div class="dmg">${opts.dmg}</div>` : ''}
     ${opts.mods ?? ''}
   </div>`;
@@ -3515,6 +3530,7 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
     playable: opts.clickable,
     activatable: canAct,
     modhost: !opts.inert && modHostCache.units.has(u.id),
+    warn: opts.inert ? undefined : placeWarnCache.get(u.id),
     // inert (B2): absent "sent" units are not targets and take no clicks
     data: opts.inert ? `data-previd="${u.id}"` : `data-act="unit" data-id="${u.id}" data-previd="${u.id}"`,
   });
@@ -3778,6 +3794,7 @@ function tokenHtml(t: Entity): string {
     anim: `e${t.id}`,
     ...fieldMods(t),
     die: t.x,
+    warn: placeWarnCache.get(t.id),
     playable: castable || tokenToggleMode(t) !== null,
     selected: riding || ui.send.includes(t.id),
     candidate: pickable(`unit:${t.id}`),
@@ -5409,7 +5426,7 @@ function sendEntHtml(id: EntityId): string {
   const en = h.state.entities[id];
   if (!en) return '';
   return en.kind === 'spellToken'
-    ? cardHtml(en.card, { die: en.x, selected: true, data: `data-act="token" data-id="${en.id}"` })
+    ? cardHtml(en.card, { die: en.x, warn: placeWarnCache.get(en.id), selected: true, data: `data-act="token" data-id="${en.id}"` })
     : unitHtml(en, { selected: true });
 }
 
@@ -5610,6 +5627,15 @@ function blockRefusalHtml(): string {
   return `<span class="blockrefusal">✗ ${esc(r.why)} — ${cleared}${must}
     <button data-btn="resetblocks" title="clear every blocker and counterattacker and start again">Reset blockers?</button>
     </span> `;
+}
+
+/** BL-50: the (!) cards' reason in the bar, where a finger can read it too —
+ * the engine's words, one line per distinct reason, the cards named */
+function placeWarnLineHtml(): string {
+  const by = new Map<string, string[]>();
+  for (const [id, why] of placeWarnCache) by.set(why, [...(by.get(why) ?? []), h.state.entities[id]?.card ?? '?']);
+  return [...by].map(([why, cards]) =>
+    `<span class="placewarnline"><b class="duty">(!) ${esc([...new Set(cards)].join(', '))}</b>: ${esc(why)}</span>`).join(' ');
 }
 
 /** the block declaration the board is holding right now, in the shape the
@@ -6484,6 +6510,8 @@ function phaseBarHtml(err: string): string {
       return `<div class="promptbar${duty || ui.blockRefusal ? ' pending' : ''}"><span class="who">${esc(s.players[b.defender]!.name)}:</span>
         ${blockRefusalHtml()}${duty
           ? `<b class="duty">${esc(duty)}</b> — that block is compulsory.`
+          : placeWarnCache.size
+            ? placeWarnLineHtml()
           : nothingToBlock
             ? `no attackers left to block${b.round === 1 ? ' — you may still send counterattackers' : ''}`
             : `assign blockers (click unit, then slot)${b.round === 1 ? ' and optionally send counterattackers' : ''}`}
@@ -7612,6 +7640,7 @@ function renderNow(): boolean {
   ensureBlockKeys();
   modHostCache = moddingHosts();   // #4: legal hosts for a mod-in-progress glow
   refreshActCache();               // UZRG: units with a legal activated ability
+  refreshPlaceWarnings();          // BL-50: the (!) on a card Confirm would refuse
   noteCardsSeen();                 // UFAB: the log links only cards in the game
   lifeHeldNow = h.state?.winner != null ? new Map() : heldLife(flashQueue, Date.now());   // #203
   // CT-124: the log itself is built by logPanelHtml(), and only when the modal
