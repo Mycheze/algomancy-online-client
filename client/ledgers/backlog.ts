@@ -836,6 +836,30 @@ const OPEN: Entry[] = [
       'client/docs/21-weekly-challenges.md',
     ],
   },
+  {
+    id: 'BL-50',
+    slug: 'illegal-placement-marker',
+    title: 'A (!) on any card placed where the engine will refuse it on submit (Feeble blocker, Alluring duty, …)',
+    area: 'client',
+    size: 'M',
+    status: 'open',
+    track: 'qol',
+    said: "Owner, 2026-10-25 (invi's report: \"bripp can be moved to a block column during declare blockers\"): \"blocking with feeble units isn't allowed to be submitted, but you can drag them into the column. So the engine isn't wrong there, but maybe we should add a sorta (!) icon onto cards (in the same place the big die is for token spells) when there's a card in a formation in an illegal way (a way that the engine won't allow upon submission). So feeble, but also alluring come to mind.\"",
+    means: "While a player is building blocks (and any other formation the engine validates on submit), every card whose current placement makes the plan illegal shows a (!) badge centred over its art, where the X die sits on a spell token (.xdie). Room VRRS, 2026-10-24: Bripp ({Feeble}) could be dragged into a block column and was only refused on Confirm. The answer must be the ENGINE's verdict, read the way blockPlanIssue already reads allureViolation (ui/inspect.ts: \"a READ of the engine's own validator, never a second opinion\"), so the badge can never disagree with what submit does: Feeble (and Pure overriding it), Alluring duties, Flying/Evasive/Sneaky. A card that is fine shows nothing; the badge names the reason on hover/tap.",
+    doneWhen: [
+      'A Feeble unit dragged into a block column shows the (!) badge before Confirm, and loses it when moved out (a Pure + Feeble unit never shows it)',
+      'An Alluring duty left unmet marks the unit(s) whose placement breaks it',
+      'The badge is driven by the engine validator, and a test proves that for every placement the badge shows exactly when submitting would be refused',
+    ],
+    decided: [],
+    asks: [],
+    notes: 'Playtest report #284 (VRRS) is held open on this entry and closes when it ships.',
+    touches: [
+      'client/ui/inspect.ts',
+      'client/ui/battle.ts',
+      'client/ui/style.css',
+    ],
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

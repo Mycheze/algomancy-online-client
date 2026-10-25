@@ -910,6 +910,7 @@
     {"num":"701.1c","key":"effects.playing.what-is-played.token-not-card","since":"First generation (draft)"},
     {"num":"701.1d","key":"effects.playing.what-is-played.token-creation","since":"First generation (draft)"},
     {"num":"701.1e","key":"effects.playing.what-is-played.includes-itself","since":"First generation (draft)"},
+    {"num":"701.1f","key":"effects.playing.what-is-played.on-play","since":"First generation (draft)"},
     {"num":"701.2","key":"effects.playing.applying","since":"First generation (draft)"},
     {"num":"701.2a","key":"effects.playing.applying.no-play-triggers","since":"First generation (draft)"},
     {"num":"701.2b","key":"effects.playing.applying.cost","since":"First generation (draft)"},

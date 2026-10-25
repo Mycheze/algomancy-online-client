@@ -4072,11 +4072,11 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 37-attrs-wight.test.ts · Demonstrated by test: 37-attrs-wight.test.ts::CR 507.4a: every start-of-deployment trigger is on the stack before any of them resolves · Key: turn.deploy.start.triggers</sub>
 
-<a id="r507.5"></a>**507.5.** Deployment uses the stack. Each player's plays and triggered abilities in deployment go on that player's own deployment stack, and that stack resolves without anyone acting: no player holds priority in deployment (rule 703.7). See rule 703.
+<a id="r507.5"></a>**507.5.** Deployment uses the stack. Each player's plays, activated abilities, spell tokens and triggered abilities in deployment go on that player's own deployment stack, and that stack resolves without anyone acting: no player holds priority in deployment (rule 703.7). See rule 703.
 
 > *Example: In deployment, a player cannot ask to keep priority: the ask is refused.*
 
-<sub>Basis: Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-09-01 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Tests: 276-deployment-stack.test.ts, 568-hold-priority.test.ts · Example test: 568-hold-priority.test.ts::CR 507.5 / CT-253: in deployment the ask is refused · Demonstrated by test: 276-deployment-stack.test.ts::CR 507.5: the play really went ON a stack · Key: turn.deploy.stack</sub>
+<sub>Basis: Owner call · adopted 2026-10-22, 2026-10-25; Owner ruling, adopted 2026-09-01 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 3 gate test files · Tests: 276-deployment-stack.test.ts, 568-hold-priority.test.ts, 650-deployment-stack-is-battle-stack.test.ts · Example test: 568-hold-priority.test.ts::CR 507.5 / CT-253: in deployment the ask is refused · Demonstrated by test: 276-deployment-stack.test.ts::CR 507.5: the play really went ON a stack · Key: turn.deploy.stack</sub>
 
 <sub>Discrepancies: D-U09-2 (discrepancies.md)</sub>
 
@@ -5742,6 +5742,14 @@ order.
 
 <sub>Discrepancies: D-U14-11 (discrepancies.md)</sub>
 
+<a id="r701.1f"></a>**701.1f** An ability that triggers when a player plays a unit triggers as the unit is played, not when it enters play. It goes on the stack above the unit and resolves before it, and it triggers even if the unit is negated and never enters play. See rule 706.
+
+> *Example: Proph is in play and its controller plays Good Whale from the cache. Proph's draw goes on the stack above Good Whale and resolves first; only then does Good Whale spawn.*
+
+> *Example: A unit played from the cache is negated before it resolves. It never enters play, but it was played, so Proph still draws.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 1 gate test file · Printed: card: Proph · Owner call · adopted 2026-10-25 · Tests: 651-play-is-not-arrival.test.ts · Example tests: 651-play-is-not-arrival.test.ts::play not arrival: Proph resolves before the unit it heard being played from a cache, 651-play-is-not-arrival.test.ts::play not arrival: a unit played from a cache and negated before it resolves still makes Proph draw · Key: effects.playing.what-is-played.on-play</sub>
+
 <a id="r701.2"></a>**701.2.** Applying a modification (an augment, a graft, or a Virus) is not playing a card. A modification is applied, whether it comes from a hand, a bin, a cache or elsewhere. Applying a modification is a special action. See rule 720.
 
 <sub>Basis: Designer · Verified: confirmed in round 1; verifier ran no tests; 3 gate test files · Printed: Manual p.32 · Designer: RAQ 1537748882501668934#0 · Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Tests: 105-semantics-playwatch.test.ts, 119-play-and-token-events.test.ts, 425-cr-casting-and-stack.test.ts · Demonstrated by test: 425-cr-casting-and-stack.test.ts::cr:effects.playing.applying — a graft from hand and a virus from the cache are applied, never played · Key: effects.playing.applying</sub>
@@ -6144,13 +6152,15 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.resolving — while Premonition is resolving it cannot be targeted, negated, augmented or responded to · Key: effects.priority.resolving</sub>
 
-<a id="r703.7"></a>**703.7.** Deployment uses the stack, but each player has a stack of their own there, which only that player sees *(Digital client)*; no other player can respond to it or is made to wait on it. No player holds priority in deployment: a player cannot keep priority there or respond to an item on their own deployment stack. A player's plays still go on that stack, and it resolves on its own. See rule 507.
+<a id="r703.7"></a>**703.7.** Deployment uses the stack, but each player has a stack of their own there, which only that player sees *(Digital client)*; no other player can respond to it or is made to wait on it. No player holds priority in deployment: a player cannot keep priority there or respond to an item on their own deployment stack. Otherwise that stack works exactly as the battle stack does: a player's plays, activated abilities and spell tokens go on it, an ability triggered by an item goes on it above that item and resolves first, and it resolves on its own, top first. See rule 507.
 
 > *Example: In deployment a player plays a deploy-timing spell at their Earthbound Replicator; the spell goes on that player's own stack, so the Replicator can copy it.*
 
 > *Example: In deployment a player asks to keep priority as they play a card. The ask is refused: nobody can hold priority there.*
 
-<sub>Basis: Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-09-01 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Tests: 138-spell-copy.test.ts, 568-hold-priority.test.ts · Example tests: 138-spell-copy.test.ts::CR 507.5/CT-176: a deploy-timing play names a REAL stack item, 568-hold-priority.test.ts::CR 507.5 / CT-253: in deployment the ask is refused · Key: effects.priority.deployment</sub>
+> *Example: In deployment a player activates Lilbot and sacrifices Seer of Empty Spaces to pay for it. Seer's death trigger goes on the stack above Lilbot's ability and resolves first, as it would in battle.*
+
+<sub>Basis: Owner call · adopted 2026-10-22, 2026-10-25; Owner ruling, adopted 2026-09-01 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 3 gate test files · Tests: 138-spell-copy.test.ts, 568-hold-priority.test.ts, 650-deployment-stack-is-battle-stack.test.ts · Example tests: 138-spell-copy.test.ts::CR 507.5/CT-176: a deploy-timing play names a REAL stack item, 568-hold-priority.test.ts::CR 507.5 / CT-253: in deployment the ask is refused, 650-deployment-stack-is-battle-stack.test.ts::CR 703.7: Lilbot sacrificing Seer of Empty Spaces resolves in the SAME order in deployment as in battle · Key: effects.priority.deployment</sub>
 
 <a id="r703.8"></a>**703.8.** There is no priority in the haste step. Haste cards are played there as special actions. See rule 504.
 
@@ -10562,7 +10572,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1821 numbered rules.
+1822 numbered rules.
 
 | basis | rules |
 |---|---|
@@ -10570,13 +10580,13 @@ Generated from the records and the verdicts. Nothing here is a rule.
 | Designer | 203 |
 | Owner call | 675 |
 | Engine only | 40 |
-| Mixed | 451 |
+| Mixed | 452 |
 
 ### Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1810 |
+| confirmed | 1811 |
 | partial | 7 |
 | contradicted | 0 |
 | unsupported | 0 |
@@ -11188,5 +11198,5 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1822 rules and 99 sections.
+- New: 1823 rules and 99 sections.
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)

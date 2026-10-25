@@ -80,10 +80,10 @@
  *  - (none left in this batch — The Everywhere was the last one, and its 'name a card' decision
  *    unparked it to the approximation described above.)
  */
-import type { EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
+import type { EngineEvent, Entity, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { allCardNames, card, CARD_PLAY_KINDS, eventAmountOf, getCard, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, eraseFromPlay, isOwnArrival } from './helpers.ts';
+import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -572,9 +572,12 @@ card('Shard Sprite', {
 // "you" = the host's controller). CR 701.2a: applying a mod is NOT playing a card, so
 // grafting or augmenting out of the cache deliberately does not feed this.
 // CR 410.6: the play events carry the source ZONE (`data.from`), so this is an
-// exact read rather than the old log scan. A unit play is heard on 'spawned'
-// (its own spawn, never a token), everything else on 'spellPlayed' — so a
-// spell unit is counted exactly once.
+// exact read rather than the old log scan. A unit play is heard on 'cardPlayed'
+// — the PLAY, not the arrival (owner 2026-10-25, of Proph: "It says 'play'
+// not 'enters'"), so it fires before the unit resolves and even when it is
+// negated; a created token never fires it — everything else on
+// 'spellPlayed', so a spell unit is counted exactly once. CR 701.1e (never
+// its own play) is the engine's on 'cardPlayed' (E.fireEvent's beingPlayed).
 //
 // ERRATA 2026-09-21 (algomancer.cc revision v2, read off the new scan): the
 // printed text gained `[once]` and narrowed "a card" to "a unit or spell". The
@@ -582,18 +585,14 @@ card('Shard Sprite', {
 // exactly "a unit or spell", so only the bound is new.
 card('Stalwart Sentinel', {
   augmentText: [{
-    type: 'triggered', events: ['spellPlayed', 'spawned'], bounded: true,   // [once]
+    type: 'triggered', events: ['spellPlayed', 'cardPlayed'], bounded: true,   // [once]
     label: 'put two +1/+1 counters on me',
-    when: (g, self, ev) => {
+    when: (_g, self, ev) => {
       if (ev.data?.['seat'] !== self.controller) return false;
       const name = ev.data?.['card'] as string | undefined;
       if (!name) return false;
-      if (ev.type === 'spawned') {
-        if (isOwnArrival(self, ev)) return false;            // CR 701.1e: never its own play (CT-277)
-        if (getCard(name).kind !== 'unit') return false;      // spellUnits are heard on 'spellPlayed'
-        const u = g.entity(ev.data?.['unit'] as EntityId);
-        if (!u || u.token) return false;                      // created tokens are not played cards
-      }
+      // spells and spell units are heard on 'spellPlayed'
+      if (ev.type === 'cardPlayed' && getCard(name).kind !== 'unit') return false;
       return playedFromElsewhere(ev);
     },
     effect: {

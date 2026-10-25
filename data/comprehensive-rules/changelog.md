@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1822 rules and 99 sections.
+- New: 1823 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -851,6 +851,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 701.1c `effects.playing.what-is-played.token-not-card`
   - 701.1d `effects.playing.what-is-played.token-creation`
   - 701.1e `effects.playing.what-is-played.includes-itself`
+  - 701.1f `effects.playing.what-is-played.on-play`
   - 701.2 `effects.playing.applying`
   - 701.2a `effects.playing.applying.no-play-triggers`
   - 701.2b `effects.playing.applying.cost`

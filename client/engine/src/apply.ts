@@ -1507,7 +1507,9 @@ function doCastSpellToken(e: E, seat: Seat, entityId: EntityId, ordered = false)
     e.need(timingAllowsDeploy(c), 'battle spell tokens can only be cast during battle');
     e.need(tok.region === e.homeRegion(seat), 'spell tokens are castable only in their region');
     region = tok.region;
-    then = 'resolve';
+    // CR 703.7 (owner 2026-10-25): the deployment stack works exactly as the
+    // battle stack does — see doActivateAbility
+    then = 'push';
   } else {
     e.illegal('spell tokens are cast during battle or deployment');
   }
@@ -1842,7 +1844,20 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
     e.need(e.deploying(seat), 'not your deployment');
     e.need(u.region === e.homeRegion(seat), 'that unit is in another region');
     e.need(ability.timing !== 'battle', 'that ability can only be activated during battle');
-    region = u.region; then = 'resolve';
+    /**
+     * CR 703.7 — `'push'`: AN ACTIVATION IN DEPLOYMENT GOES ON THE STACK, as a
+     * deployment play already does (doPlayFrom).
+     *
+     * The owner, 2026-10-25: *"The stack needs to function exactly identically
+     * to battle. The only difference is that players do not get priority to put
+     * anything new onto the stack unless its empty."* This said `'resolve'`, so
+     * the ability resolved inside the action, before anything its own cost had
+     * triggered was put on the stack: Lilbot sacrificing Seer of Empty Spaces
+     * resolved Lilbot's Glimpse 2 and only then Seer's death trigger, the reverse
+     * of battle (invi, room ZAKG, 2026-10-24). Pushed, the trigger lands on top
+     * and resolves first, and settle() drains the rest of the stack top down.
+     */
+    region = u.region; then = 'push';
   } else {
     e.illegal('abilities are activated during battle or deployment');
   }

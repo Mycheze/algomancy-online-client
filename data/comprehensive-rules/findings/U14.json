@@ -178,7 +178,7 @@
     "evidence": [
       {
         "file": "client/engine/src/cards/sets/batch-light-a.ts",
-        "quote": "type: 'triggered', events: ['spellPlayed', 'spawned'], bounded: true,   // [once]"
+        "quote": "type: 'triggered', events: ['spellPlayed', 'cardPlayed'], bounded: true,   // [once]"
       },
       {
         "file": "client/docs/digital-rules.md",

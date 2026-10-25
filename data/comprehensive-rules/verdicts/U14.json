@@ -2571,6 +2571,71 @@
     "problem": ""
   },
   {
+    "key": "effects.playing.what-is-played.on-play",
+    "textHash": "ba697db2567cfbd1",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U14-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-light-a.ts / batch-light-b.ts:Proph, Stalwart Sentinel",
+        "agrees": true,
+        "note": "unit play heard on 'cardPlayed', fired at commit time, not on 'spawned'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/651-play-is-not-arrival.test.ts",
+        "pattern": "play not arrival: Proph resolves before the unit",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/651-play-is-not-arrival.test.ts",
+        "pattern": "play not arrival: a unit played from a cache and negated",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/651-play-is-not-arrival.test.ts",
+        "pattern": "play not arrival: no card that prints a play clause hears it on a unit spawning",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/651-play-is-not-arrival.test.ts",
+        "pattern": "play not arrival: Stalwart Sentinel resolves before",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Proph",
+        "supports": "yes",
+        "note": "printed 'When you play a unit or spell from anywhere other than your hand' — the trigger is the play"
+      },
+      {
+        "ref": "owner: It says \"play\" not \"enters\"",
+        "supports": "yes",
+        "note": "of Proph, 2026-10-25: the trigger hears the play, not the arrival"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "When you play a unit or spell from anywhere other than your hand, [Switch1] Draw a card."
+      },
+      {
+        "file": "client/engine/test/651-play-is-not-arrival.test.ts",
+        "text": "`${listener}'s trigger goes on the stack above the played Whale and resolves first`"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "effects.playing.what-is-played.spell-token",
     "textHash": "3d5c8657a03bddfd",
     "verdict": "confirmed",
@@ -2753,26 +2818,36 @@
   },
   {
     "key": "effects.priority.deployment",
-    "textHash": "2becb2616680c1a7",
+    "textHash": "6ad6ef07f5c832f5",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:apply ('priority can be kept only in battle')",
+        "loc": "client/engine/src/apply.ts:playAtTiming (deploy branch)",
         "agrees": true,
-        "note": "a hold ask in deployment is refused"
+        "note": "castChain push + settle"
       },
       {
-        "loc": "client/engine/src/engine.ts:settle (CR 507.5 deployment drain, deployIsolate)",
+        "loc": "client/engine/src/apply.ts:apply (holdPriority gate)",
         "agrees": true,
-        "note": "each seat's deployment stack drains top down at the safe point, with no window; a question open for the other seat does not hold this seat back"
+        "note": "'priority can be kept only in battle'"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:settleDeploySeat",
+        "agrees": true,
+        "note": "seat-scoped drain, topmost of the acting seat first"
+      },
+      {
+        "loc": "client/server/view.ts:viewFor",
+        "agrees": true,
+        "note": "in a hidden segment the stack is filtered to the viewer's own items"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/138-spell-copy.test.ts",
-        "pattern": "CR 507.5/CT-176: a deploy-timing play names a REAL stack item",
+        "pattern": "CR 507.5/CT-176: a deploy-timing play",
         "passed": true,
         "asserts_claim": true
       },
@@ -2783,33 +2858,65 @@
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/21-fixes.test.ts",
-        "pattern": "both seats deploy at once: NIT may act and finish before IT",
+        "file": "client/engine/test/650-deployment-stack-is-battle-stack.test.ts",
+        "pattern": "CR 703.7",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/276-deployment-stack.test.ts",
+        "pattern": "CR",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U14-2.test.ts",
+        "test": "probe U14-2: deployment stack — no priority, no response by its owner, the other seat acts freely, hidden from the other seat",
+        "passed": true,
+        "demonstrates": "yes: with seat 1's triggers on its deployment stack, priority is null, seat 1 may only decide (no response), seat 0 may still act, and viewFor serves seat 1's items to seat 1 only"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "owner register@72de434",
+        "ref": "owner register@72de434 'It does get the stack. But it's an isolated stack just for the person in that'",
         "supports": "yes",
-        "note": "isolated stack per player"
+        "note": "own stack per player, isolated"
       },
       {
-        "ref": "owner, chat 2026-10-22 (CT-185)",
+        "ref": "owner 2026-10-22 'you CANNOT hold priority during Deployment.'",
         "supports": "yes",
-        "note": "cannot hold priority; no on-the-stack shenanigans; plays stay as they are (on the stack)"
+        "note": ""
+      },
+      {
+        "ref": "owner 2026-10-22 'The stack technically only exists for triggers...'",
+        "supports": "yes",
+        "note": "no 'on the stack' shenanigans = no responding; the 2026-10-25 call widens what goes on it"
+      },
+      {
+        "ref": "owner 2026-10-22 'Plays stay as they are'",
+        "supports": "yes",
+        "note": "plays stay on the stack"
+      },
+      {
+        "ref": "owner 2026-10-25 'The stack needs to function exactly identically to battle...'",
+        "supports": "yes",
+        "note": "same ordering as battle; only difference is no priority to add new items"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/138-spell-copy.test.ts",
-        "text": "'and that is not an inference — the item was pushed, and the push names the same id'"
+        "file": "client/engine/src/apply.ts",
+        "text": "if (e.s.phase !== 'battle') e.illegal('priority can be kept only in battle');"
       },
       {
-        "file": "client/engine/test/568-hold-priority.test.ts",
-        "text": "/only in battle/, 'a deployment play that asks is refused'"
+        "file": "client/server/view.ts",
+        "text": "v.stack = v.stack.filter(it => it.controller === seat);"
+      },
+      {
+        "file": "client/engine/test/650-deployment-stack-is-battle-stack.test.ts",
+        "text": "assert.deepEqual(deploy, battle, 'deployment resolves the same stack the same way');"
       }
     ],
     "basis_ok": true,

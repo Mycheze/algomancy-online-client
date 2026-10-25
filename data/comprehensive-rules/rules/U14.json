@@ -471,6 +471,51 @@
     "sourceHashes": {}
   },
   {
+    "key": "effects.playing.what-is-played.on-play",
+    "parent": "effects.playing.what-is-played",
+    "order": 6,
+    "text": "An ability that triggers when a player plays a unit triggers as the unit is played, not when it enters play. It goes on the stack above the unit and resolves before it, and it triggers even if the unit is negated and never enters play.",
+    "examples": [
+      {
+        "text": "Proph is in play and its controller plays Good Whale from the cache. Proph's draw goes on the stack above Good Whale and resolves first; only then does Good Whale spawn.",
+        "test": "651-play-is-not-arrival.test.ts::play not arrival: Proph resolves before the unit it heard being played from a cache"
+      },
+      {
+        "text": "A unit played from the cache is negated before it resolves. It never enters play, but it was played, so Proph still draws.",
+        "test": "651-play-is-not-arrival.test.ts::play not arrival: a unit played from a cache and negated before it resolves still makes Proph draw"
+      }
+    ],
+    "see": [
+      "706"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Proph",
+          "quote": "When you play a unit or spell from anywhere other than your hand"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "It says \"play\" not \"enters\"",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (of Proph)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "651-play-is-not-arrival.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "Owner 2026-10-25, of Proph: the printed trigger is the PLAY, not the arrival. Proph and Stalwart Sentinel had heard a unit's play on its 'spawned' line (the unit entering play, after resolving), so a played unit's trigger resolved after the unit and a negated unit was never heard. Both now read the play event; 651 forbids the spawned-as-play shape pool-wide.",
+    "sourceHashes": {}
+  },
+  {
     "key": "effects.playing.applying",
     "parent": "701",
     "order": 2,
@@ -3085,7 +3130,7 @@
     "key": "effects.priority.deployment",
     "parent": "703",
     "order": 7,
-    "text": "Deployment uses the stack, but each player has a stack of their own there, which only that player sees; no other player can respond to it or is made to wait on it. No player holds priority in deployment: a player cannot keep priority there or respond to an item on their own deployment stack. A player's plays still go on that stack, and it resolves on its own.",
+    "text": "Deployment uses the stack, but each player has a stack of their own there, which only that player sees; no other player can respond to it or is made to wait on it. No player holds priority in deployment: a player cannot keep priority there or respond to an item on their own deployment stack. Otherwise that stack works exactly as the battle stack does: a player's plays, activated abilities and spell tokens go on it, an ability triggered by an item goes on it above that item and resolves first, and it resolves on its own, top first.",
     "examples": [
       {
         "text": "In deployment a player plays a deploy-timing spell at their Earthbound Replicator; the spell goes on that player's own stack, so the Replicator can copy it.",
@@ -3094,6 +3139,10 @@
       {
         "text": "In deployment a player asks to keep priority as they play a card. The ask is refused: nobody can hold priority there.",
         "test": "568-hold-priority.test.ts::CR 507.5 / CT-253: in deployment the ask is refused"
+      },
+      {
+        "text": "In deployment a player activates Lilbot and sacrifices Seer of Empty Spaces to pay for it. Seer's death trigger goes on the stack above Lilbot's ability and resolves first, as it would in battle.",
+        "test": "650-deployment-stack-is-battle-stack.test.ts::CR 703.7: Lilbot sacrificing Seer of Empty Spaces resolves in the SAME order in deployment as in battle"
       }
     ],
     "see": [
@@ -3123,19 +3172,25 @@
           "quote": "Plays stay as they are",
           "adopted": "2026-10-22",
           "from": "owner, chat 2026-10-22 (CT-185)"
+        },
+        {
+          "quote": "The stack needs to function exactly identically to battle. The only difference is that players do not get priority to put anything new onto the stack unless its empty.",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (invi, room ZAKG)"
         }
       ],
       "engine": [],
       "tests": [
         "138-spell-copy.test.ts",
-        "568-hold-priority.test.ts"
+        "568-hold-priority.test.ts",
+        "650-deployment-stack-is-battle-stack.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "digitalClause": "which only that player sees",
     "confidence": "high",
-    "notes": "Owner 2026-10-22 (CT-185 closed wontfix, CT-253): \"you CANNOT hold priority during Deployment\"; the stack there exists for triggers, with no \"on the stack\" responses; plays still go through the player's own deployment stack (\"Plays stay as they are\"). The register line that gave each seat priority over its own deployment stack (2026-09-01, \"That stack belongs to one seat, and so does the priority over it\") is replaced by that call; its first half (one seat's stack) stands in the isolated-stack quote.",
+    "notes": "Owner 2026-10-22 (CT-185 closed wontfix, CT-253): \"you CANNOT hold priority during Deployment\"; the stack there exists for triggers, with no \"on the stack\" responses; plays still go through the player's own deployment stack (\"Plays stay as they are\"). The register line that gave each seat priority over its own deployment stack (2026-09-01, \"That stack belongs to one seat, and so does the priority over it\") is replaced by that call; its first half (one seat's stack) stands in the isolated-stack quote. Owner 2026-10-25 (invi's ZAKG report: Lilbot's Glimpse 2 resolved before the Seer death trigger its own cost caused): the deployment stack works exactly as the battle stack, the only difference being no priority. Activations and spell-token casts used to resolve off the stack in deployment; they now go on it.",
     "sourceHashes": {}
   },
   {

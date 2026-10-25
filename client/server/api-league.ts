@@ -26,7 +26,7 @@ import { adminFor } from './admin.ts';
 import { MIN_HOURS, sanitizeGrid, validTz, type Outcome } from './league.ts';
 import {
   acceptTime, ackOutbox, advance, allSeasons, canSee, cancelChallenge, challenge, contactOf, createSeason, currentSeason,
-  deleteSeason, joinSeason, leaveSeason, matchOpened, matchToOpen, overrideResult, pendingOutbox, previewNext,
+  deleteSeason, joinSeason, leaveSeason, matchOpened, matchToOpen, overrideResult, pendingOutbox, previewNext, repairWeek,
   seasonById, seasonView, setSkip, suggestTime, updateSeason,
   type Season,
 } from './league-store.ts';
@@ -194,6 +194,13 @@ async function adminRoute(req: IncomingMessage, res: ServerResponse, path: strin
     const who = accountByName(str(b['name'], 40));
     if (!who) { json(res, { ok: false, error: 'no such player' }); return true; }
     json(res, joinSeason(s, who, now, { byAdmin: true }));
+    return true;
+  }
+  if (path === '/api/league/admin/repair') {
+    const putBack = str(b['putBack'], 60);
+    const r = repairWeek(s, now, putBack ? { putBack } : {});
+    if (r.ok) console.log(`[league] ${me.username} re-paired ${s.id} week ${s.phase}`);
+    json(res, r);
     return true;
   }
   if (path === '/api/league/admin/result') {

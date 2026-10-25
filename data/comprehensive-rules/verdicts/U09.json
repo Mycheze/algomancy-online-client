@@ -1279,69 +1279,96 @@
   },
   {
     "key": "turn.deploy.stack",
-    "textHash": "55d329f67beb5b8d",
+    "textHash": "caca219c01a4c89d",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:settleDeploySeat",
+        "loc": "client/engine/src/apply.ts:playAtTiming (deploy branch)",
         "agrees": true,
-        "note": "per-seat deployment stack, resolved with no priority"
+        "note": "push + settle"
       },
       {
-        "loc": "client/engine/src/apply.ts:holdPriority gate",
+        "loc": "client/engine/src/apply.ts:doActivateAbility / doCastSpellToken",
         "agrees": true,
-        "note": "holdPriority refused outside battle ('only in battle')"
+        "note": "then = 'push' in deploy"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:apply (holdPriority gate)",
+        "agrees": true,
+        "note": "no hold outside battle"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:settleDeploySeat",
+        "agrees": true,
+        "note": "drains the acting seat's own items without passes"
       }
     ],
     "tests_run": [
       {
-        "file": "276-deployment-stack.test.ts",
+        "file": "client/engine/test/276-deployment-stack.test.ts",
         "pattern": "CR 507.5: the play really went ON a stack",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "276-deployment-stack.test.ts",
-        "pattern": "CR 703.7: seat 0 acting does not build, aim or resolve seat 1's held triggers",
+        "file": "client/engine/test/276-deployment-stack.test.ts",
+        "pattern": "CR",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "276-deployment-stack.test.ts",
-        "pattern": "CR 703.7: the acting seat's TOPMOST item resolves",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "568-hold-priority.test.ts",
+        "file": "client/engine/test/568-hold-priority.test.ts",
         "pattern": "CR 507.5 / CT-253: in deployment the ask is refused",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/650-deployment-stack-is-battle-stack.test.ts",
+        "pattern": "CR 703.7",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U14-2.test.ts",
+        "test": "probe U14-2: deployment stack — no priority, no response by its owner, the other seat acts freely, hidden from the other seat",
+        "passed": true,
+        "demonstrates": "yes: triggered abilities sit on their controller's own deployment stack, priority is null, no player acts to resolve it"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "owner (register) 2026-09-01",
+        "ref": "owner register@72de434 '1. A deployment play goes on a stack, like any other play'",
         "supports": "yes",
-        "note": "a deployment play goes on a stack. The 'each player's OWN stack' half is the same owner ruling ('an isolated stack just for the person in that region'), quoted in 276-deployment-stack's header but not cited in the record: add it"
+        "note": ""
       },
       {
-        "ref": "owner chat 2026-10-22 (CT-185)",
+        "ref": "owner 2026-10-22 'you CANNOT hold priority during Deployment.'",
         "supports": "yes",
-        "note": "cannot hold priority in deployment; plays stay as they are (on the stack)"
+        "note": ""
+      },
+      {
+        "ref": "owner 2026-10-22 'Plays stay as they are'",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner 2026-10-25 'The stack needs to function exactly identically to battle...'",
+        "supports": "yes",
+        "note": "covers activations and spell tokens going on it (650)"
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/test/276-deployment-stack.test.ts",
-        "text": "But it's an isolated stack just for the person in"
+        "text": "assert.ok(evs.some(e => e.type === 'resolved'), 'and then resolved, in the same action');"
       },
       {
-        "file": "client/engine/test/568-hold-priority.test.ts",
-        "text": "you CANNOT hold priority during Deployment"
+        "file": "client/engine/test/650-deployment-stack-is-battle-stack.test.ts",
+        "text": "assert.equal(h.state.stack.length, 0, 'and the deployment stack drained itself');"
       }
     ],
     "basis_ok": true,

@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:9f6cbe529d1248ea",
+ "generated_from": "sha256:d14e1da822290b12",
  "rules": [
   {
    "num": "100.1",
@@ -13981,7 +13981,7 @@
    "sectionTitle": "Deployment Phase",
    "chapterTitle": "5. Turn Structure",
    "parent": "507",
-   "text": "Deployment uses the stack. Each player's plays and triggered abilities in deployment go on that player's own deployment stack, and that stack resolves without anyone acting: no player holds priority in deployment (rule 703.7).",
+   "text": "Deployment uses the stack. Each player's plays, activated abilities, spell tokens and triggered abilities in deployment go on that player's own deployment stack, and that stack resolves without anyone acting: no player holds priority in deployment (rule 703.7).",
    "see": [
     "703"
    ],
@@ -19567,6 +19567,30 @@
    "verdict": "confirmed"
   },
   {
+   "num": "701.1f",
+   "key": "effects.playing.what-is-played.on-play",
+   "title": null,
+   "section": "701",
+   "sectionTitle": "Playing and Applying",
+   "chapterTitle": "7. Spells, Abilities and Effects",
+   "parent": "701.1",
+   "text": "An ability that triggers when a player plays a unit triggers as the unit is played, not when it enters play. It goes on the stack above the unit and resolves before it, and it triggers even if the unit is negated and never enters play.",
+   "see": [
+    "706"
+   ],
+   "examples": [
+    "Proph is in play and its controller plays Good Whale from the cache. Proph's draw goes on the stack above Good Whale and resolves first; only then does Good Whale spawn.",
+    "A unit played from the cache is negated before it resolves. It never enters play, but it was played, so Proph still draws."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
    "num": "701.2",
    "key": "effects.playing.applying",
    "title": null,
@@ -20991,13 +21015,14 @@
    "sectionTitle": "The Stack and Priority",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "703",
-   "text": "Deployment uses the stack, but each player has a stack of their own there, which only that player sees; no other player can respond to it or is made to wait on it. No player holds priority in deployment: a player cannot keep priority there or respond to an item on their own deployment stack. A player's plays still go on that stack, and it resolves on its own.",
+   "text": "Deployment uses the stack, but each player has a stack of their own there, which only that player sees; no other player can respond to it or is made to wait on it. No player holds priority in deployment: a player cannot keep priority there or respond to an item on their own deployment stack. Otherwise that stack works exactly as the battle stack does: a player's plays, activated abilities and spell tokens go on it, an ability triggered by an item goes on it above that item and resolves first, and it resolves on its own, top first.",
    "see": [
     "507"
    ],
    "examples": [
     "In deployment a player plays a deploy-timing spell at their Earthbound Replicator; the spell goes on that player's own stack, so the Replicator can copy it.",
-    "In deployment a player asks to keep priority as they play a card. The ask is refused: nobody can hold priority there."
+    "In deployment a player asks to keep priority as they play a card. The ask is refused: nobody can hold priority there.",
+    "In deployment a player activates Lilbot and sacrifices Seer of Empty Spaces to pay for it. Seer's death trigger goes on the stack above Lilbot's ability and resolves first, as it would in battle."
    ],
    "basis": "owner",
    "scope": "game",
