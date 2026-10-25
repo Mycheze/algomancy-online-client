@@ -26,7 +26,10 @@ installable-app (PWA) polish.*
   in battle when I was just trying to look at it"). A tap on a card in your hand,
   cache or bin opens the same zoom as the peek and leaves it up; the next tap
   anywhere, or Escape, puts it away and does nothing else. Playing from the
-  hand is a drag (below) or the rail's buttons. The bin has no drag, so in the bin dialog a usable
+  hand is a drag (below): the drop does what a click would, and where a click
+  would open a menu (Play, Ambush, Prophesy) the drop opens that menu. The
+  rail's card menu (`railMenuHtml`, the right-click list) has no play entry; it
+  reads and asks (details, the judge, auto-yield, propose a move). The bin has no drag, so in the bin dialog a usable
   card has a button under it (shown on touch only), and a tap on a glowing bin
   thumb in your region opens the bin (CT-381). The same for your own spell
   token and a resource whose tap would act at once (CT-408, owner 2026-10-25:
