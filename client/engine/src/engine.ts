@@ -180,7 +180,43 @@ class OrderNeeded {
 
 /** one choice in a replacement-order question: the unit it is about (a board
  * click, ui/boardpick.ts reads `unit`), and the index the asker maps back */
-interface ReplacementPick { label: string; card: CardName; unit: EntityId; pick: number }
+/** CR 708.4a: counters about to be put on a unit — the event Counter Thief redirects */
+interface CounterEv { target: Entity }
+
+interface ReplacementPick { label: string; card: CardName; unit: EntityId; pick: number; mod?: EntityId }
+
+/** CR 708.4a: one replacement effect that could apply to one event (engine-internal; see `E.replaceEvent`) */
+interface Replacer<Ev> {
+  /** the card whose text it is */
+  face: CardName;
+  /** the unit it acts from — an [Augment] mod's HOST — and so the board click */
+  anchor: Entity;
+  /** the [Augment] mod donating it, when it is one (a click on the mod's badge) */
+  mod?: Entity;
+  /** its controller: each owner orders their own, the initiative player's first */
+  seat: Seat;
+  /** replacers sharing it are interchangeable: one choice, the earliest goes */
+  same: string;
+  /** a precedence a SOURCE fixes (CR 608.8c), never asked; lower first */
+  tier: number;
+  /** the DEFAULT order where one order is never worse (CR 708.6a, 708.7); lower first */
+  rank: number;
+  /** perform it on the event as it now stands; null = its text does not match that event */
+  apply(ev: Ev): Ev | null;
+}
+
+/** CR 708.4a: how a family picks among two or more groups that could go next
+ * (see `E.replaceEvent`) */
+type ReplaceChooser<Ev> = (groups: Replacer<Ev>[], ev: Ev, at: {
+  /** the player ordering them */
+  seat: Seat;
+  /** one event's scratch, the family's own */
+  memo: Record<string, unknown>;
+  /** every replacer that has not applied yet (open or passed over) */
+  rest: Replacer<Ev>[];
+  /** the ones that have, in order */
+  applied: Replacer<Ev>[];
+}) => Replacer<Ev>[];
 
 export function other(seat: Seat): Seat { return 1 - seat; }
 
@@ -904,13 +940,13 @@ export class E {
    */
   private donorFaces(
     holders: { holder: Entity; anchor: Entity }[], key: BehaviorChannel,
-  ): { face: CardName; def: CardBehavior; anchor: Entity }[] {
-    const out: { face: CardName; def: CardBehavior; anchor: Entity }[] = [];
+  ): { face: CardName; def: CardBehavior; anchor: Entity; holder: Entity }[] {
+    const out: { face: CardName; def: CardBehavior; anchor: Entity; holder: Entity }[] = [];
     for (const { holder, anchor } of holders) {
       // CR 721.1: `def` is the half of the box this holder radiates, so the hook
       // below is invoked off the BLOCK, never off `getCard(face)` again
       for (const { face, def } of this.behaviorBlocks(holder, anchor)) {
-        if (def[key]) out.push({ face, def, anchor });
+        if (def[key]) out.push({ face, def, anchor, holder });
       }
     }
     return out;
@@ -3546,7 +3582,7 @@ export class E {
 
   /** CR 112.13d: the rot replacements `seat` holds, one entry per face, in
    * timestamp (entity id) order */
-  private rotDonors(seat: Seat): { face: CardName; def: CardBehavior; anchor: Entity }[] {
+  private rotDonors(seat: Seat): { face: CardName; def: CardBehavior; anchor: Entity; holder: Entity }[] {
     const holders = this.anchored((h, a) =>
       this.donates(h, a, 'replaceRotDamage')                    // CR 710.7: off the FACES
       && a.controller === seat
@@ -3582,28 +3618,16 @@ export class E {
    */
   private replaceRotDamage(seat: Seat, n: number): boolean {
     const donors = this.rotDonors(seat);
-    // CR 708.4a: the player orders them. Each one consumes the whole event, so
-    // the only question is which goes first.
-    let distinct = donors.filter((d, i) =>
-      donors.findIndex(o => o.face === d.face && o.anchor.id === d.anchor.id) === i);
-    // only the ones that WOULD replace it are choices — asked of a copy of the
-    // world, because a hook does what it does (counters, a queued trigger)
-    if (distinct.length >= 2) {
-      distinct = distinct.filter(d => {
-        const g = new E(structuredClone(this.s));
-        return d.def.replaceRotDamage!(g, g.entity(d.anchor.id) ?? d.anchor, seat, n);
-      });
-    }
-    let order = donors;
-    if (distinct.length >= 2) {
-      const got = this.askReplacement(seat,
-        `Your ${n} rot would deal ${n} damage to you — which card replaces it?`,
-        distinct.map(d => ({ label: this.replacerLabel(d.face, d.anchor), card: d.face,
-          unit: d.anchor.id, pick: donors.indexOf(d) })));
-      if (got !== null) order = [donors[got]!, ...donors.filter((_, i) => i !== got)];
-    }
-    for (const { face, def, anchor } of order) {
-      if (def.replaceRotDamage!(this, anchor, seat, n)) {
+    // CR 708.4 on the seam: each holder consumes the whole event, so after one
+    // has applied nothing else matches it, and the only question is which goes
+    // first. The event is "has it been replaced yet".
+    type Rot = { done: boolean };
+    const reps: Replacer<Rot>[] = donors.map(({ face, def, anchor, holder }) => ({
+      face, anchor, ...(holder.id !== anchor.id ? { mod: holder } : {}), seat: anchor.controller,
+      // two copies of one card's text on ONE unit are interchangeable
+      same: `${face}|${anchor.id}`, tier: 0, rank: 0,
+      apply: (now: Rot): Rot | null => {
+        if (now.done || !def.replaceRotDamage!(this, anchor, seat, n)) return null;
         // CR 112.13d — the replacement's log line is now a DISPATCHED event.
         //
         // It used to be a plain `ev('info', …)`. Same words, same log line —
@@ -3636,10 +3660,25 @@ export class E {
           `${face} replaces the ${n} damage ${this.pname(seat)}'s rot would deal.`,
           { seat, n, card: face, unit: anchor.id, region: anchor.region });
         this.fireEvent('rotReplaced', ev);
-        return true;
-      }
-    }
-    return false;
+        return { done: true };
+      },
+    }));
+    return this.replaceEvent(reps, { done: false }, (groups, _ev, at) => {
+      // only the ones that WOULD replace it are choices — asked of a copy of the
+      // world, because a hook does what it does (counters, a queued trigger)
+      const live = groups.filter(r => {
+        const g = new E(structuredClone(this.s));
+        const d = donors[reps.indexOf(r)]!;
+        return d.def.replaceRotDamage!(g, g.entity(d.anchor.id) ?? d.anchor, seat, n);
+      });
+      if (live.length < 2) return live;
+      const got = this.askReplacement(at.seat,
+        `Your ${n} rot would deal ${n} damage to you — which card replaces it?`,
+        live.map(r => ({ label: this.replacerLabel(r.face, r.anchor), card: r.face,
+          unit: r.anchor.id, pick: reps.indexOf(r) })));
+      const pick = live.find(r => reps.indexOf(r) === got) ?? live[0]!;
+      return [pick, ...live.filter(r => r !== pick)];
+    }).done;
   }
 
   // ── the cache, prophecy & glimpse (CR 403, 801.9, 803.7) ─────────────────────────
@@ -5190,45 +5229,47 @@ export class E {
       left = through;
       return true;
     };
-    // pass 1, the redirects — re-asked after each one, because a {Piercing}
-    // excess is a new "would be dealt to you" for the ones that have not applied
-    const declined = new Set<number>();
-    const firstPerUnit = (ids: number[]): number[] => ids.filter((i, k) =>
-      ids.findIndex(j => donors[j]!.anchor.id === donors[i]!.anchor.id) === k);
-    while (left > 0) {
-      const open = donors.map((_, i) => i).filter(i => !applied.has(i) && !declined.has(i));
-      // one choice per unit: two copies of the text on one body are one choice.
-      // Only where two units could each take some is anything dry-run at all —
-      // otherwise this is the plain CR 708.4 chain, in timestamp order.
-      const byUnit = firstPerUnit(open).length >= 2 ? firstPerUnit(open.filter(wouldTake)) : open.slice(0, 1);
-      if (!byUnit.length) break;
-      let pick = byUnit[0]!;
-      if (byUnit.length >= 2) {
-        const faces = [...new Set(byUnit.map(i => donors[i]!.face))];
-        const got = this.askReplacement(seat,
-          (faces.length === 1
-            ? `Which ${faces[0]} takes the ${left} combat damage first?`
-            : `Which takes the ${left} combat damage first — ${faces.join(' or ')}?`)
-          + (info.attrs.has('Piercing')
-            ? ' (it is Piercing: what it does not take goes on to the next one)' : ''),
-          byUnit.map(i => ({ label: this.replacerLabel(donors[i]!.face, donors[i]!.anchor),
-            card: donors[i]!.face, unit: donors[i]!.anchor.id, pick: i })));
-        if (got !== null) pick = got;
-      }
-      if (commit(pick, 'redirect')) declined.clear();
-      else declined.add(pick);    // not now — but perhaps once another has applied
-    }
-    // CR 608.8c, CT-296: what is left after the redirects is the damage that
-    // REACHES the player at all — pass 2 only changes what it is dealt as
-    if (out) out.reached = left;
-    // pass 2, damage being dealt to the player — the CR 708.4 chain, in timestamp order
-    for (let changed = true; changed && left > 0;) {
-      changed = false;
-      for (let i = 0; i < donors.length && left > 0; i++) {
-        if (applied.has(i)) continue;
-        if (commit(i, 'dealt')) { changed = true; break; }
-      }
-    }
+    // CR 608.8c: what every redirect let through — the damage that REACHES the
+    // player at all (CT-296), read as the first "as dealt" holder is offered it
+    let reached: number | null = null;
+    // the seam's event is `left` itself; each holder is offered it twice, as
+    // damage that WOULD be dealt (tier 0: Oorblak) and as damage being DEALT
+    // (tier 1: Blightsea Polyp), and a holder that applied as the first is
+    // never offered the second
+    type Hit = { left: number };
+    const reps: Replacer<Hit>[] = donors.flatMap(({ face, anchor, holder }, i) => {
+      const base = { face, anchor, ...(holder.id !== anchor.id ? { mod: holder } : {}), seat: anchor.controller, rank: 0 };
+      return [
+        // one choice per unit: two copies of the text on one body are one choice
+        { ...base, same: `u${anchor.id}`, tier: 0,
+          apply: (): Hit | null => (left > 0 && commit(i, 'redirect') ? { left } : null) },
+        { ...base, same: `d${i}`, tier: 1,
+          apply: (): Hit | null => {
+            reached ??= left;
+            return left > 0 && !applied.has(i) && commit(i, 'dealt') ? { left } : null;
+          } },
+      ];
+    });
+    this.replaceEvent(reps, { left }, (groups, _ev, at) => {
+      // the "as dealt" holders all do the same thing to the same player:
+      // timestamp order, nothing asked
+      if (groups[0]!.tier !== 0) return groups;
+      // only where two units could each take some is anything dry-run at all
+      const live = groups.filter(r => wouldTake(reps.indexOf(r) >> 1));
+      if (live.length < 2) return live;
+      const faces = [...new Set(live.map(r => r.face))];
+      const got = this.askReplacement(at.seat,
+        (faces.length === 1
+          ? `Which ${faces[0]} takes the ${left} combat damage first?`
+          : `Which takes the ${left} combat damage first — ${faces.join(' or ')}?`)
+        + (info.attrs.has('Piercing')
+          ? ' (it is Piercing: what it does not take goes on to the next one)' : ''),
+        live.map(r => ({ label: this.replacerLabel(r.face, r.anchor), card: r.face, unit: r.anchor.id,
+          pick: reps.indexOf(r) >> 1 })));
+      const pick = got === null ? live[0]! : live.find(r => reps.indexOf(r) >> 1 === got) ?? live[0]!;
+      return [pick, ...live.filter(r => r !== pick)];
+    });
+    if (out) out.reached = reached ?? left;
     return left;
   }
 
@@ -5263,20 +5304,34 @@ export class E {
    *    `${seam}#${n}`: the seam re-runs from its start, so n is the same each
    *    time, and a saved game's `decide` replays into the same question.
    */
-  private askReplacement(seat: Seat, prompt: string, picks: ReplacementPick[]): number | null {
+  private askReplacement(seat: Seat, prompt: string, picks: ReplacementPick[],
+    def?: { label: string; pick: number }): number | null {
     const dec: Omit<Decision, 'id'> & PartChoice['dec'] = {
       seat, kind: 'electricPath', prompt,
-      options: picks.map(p => ({ label: p.label, card: p.card, value: { unit: p.unit, pick: p.pick } })),
+      options: [
+        // the owner, 2026-10-25, on an order that is "just worse" the other way:
+        // "give them the option to choose … Sorta like when blocking, how it asks
+        // 'Choose your split? Or just use default?'" — so, like the block split's
+        // `value: 'default'`, the one-click default is the FIRST option and says
+        // what it gives. A button, not a board pick: it names no unit.
+        ...(def ? [{ label: def.label, value: { default: true, pick: def.pick } }] : []),
+        // CR 708.4a: an [Augment] mod's text acts from its host, so where two
+        // choices would name one unit the mod's own badge is the click (`mod`)
+        ...picks.map(p => ({ label: p.label, card: p.card,
+          value: p.mod !== undefined ? { mod: p.mod, unit: p.unit, pick: p.pick } : { unit: p.unit, pick: p.pick } })),
+      ],
     };
+    const known = (v: unknown): v is number => typeof v === 'number'
+      && (picks.some(p => p.pick === v) || def?.pick === v);
     if (this.partChoose) {
       const v = this.partChoose('replaceOrder', dec) as { pick?: unknown } | null;
-      return typeof v?.pick === 'number' && picks.some(p => p.pick === v.pick) ? v.pick : null;
+      return known(v?.pick) ? v.pick : null;
     }
     const seam = this.orderSeam;
     if (seam) {
       const key = `${seam.key}#${seam.asked++}`;
       const got = this.s.replaceOrders?.[key];
-      if (typeof got === 'number' && picks.some(p => p.pick === got)) return got;
+      if (known(got)) return got;
       throw new OrderNeeded(key, dec);
     }
     // nowhere to ask: in play every route that can raise this question runs
@@ -5378,7 +5433,7 @@ export class E {
   // first-one-consumes rule. Where the substitute is a different KIND of event
   // (rot damage → counters, a gain → a loss, a card step → a draw) no other
   // holder's condition matches it any more, so "only the first applies" falls
-  // out of the chain rather than being a rule of its own. `chainReplacements`
+  // out of the chain rather than being a rule of its own. `replaceEvent`
   // is the loop for the hooks whose substitute is still the same kind of event.
   //
   // ORDER is the player's (CR 708.4a; Caleb: "you the player control how they
@@ -5400,30 +5455,109 @@ export class E {
   // greppable and nothing becomes replaceable by accident.
 
   /**
-   * CR 708.4: run one event through a list of replacement donors as a CHAIN.
+   * CR 708.4, 708.4a — THE SEAM: run one event through every replacement
+   * effect that could apply to it.
    *
-   * `apply(donor, event)` returns the event as that donor replaces it, or
-   * null when the donor's condition does not match the event AS IT NOW STANDS
-   * (it has then not applied, and stays eligible). Repeatedly, the earliest
-   * donor in `donors` order that has not applied yet and does apply is
-   * applied — MTG 616.1f's "repeat, taking into account only the effects that
-   * would now be applicable" — until none does. `donors` arrive in the order
-   * the player chose where that was asked (`askReplacement`), else timestamp. Each donor applies at most once, so
-   * the chain always ends, and with n donors it asks at most n² questions.
+   * Every replacement family (counters put on a unit, combat damage to a
+   * player, rot damage, token creation) builds its `Replacer`s and calls this;
+   * the family keeps its own question and its own log lines, and this keeps
+   * the rule:
+   *
+   *  · ONE AT A TIME, RE-TESTED. Each replacer applies at most once, to the
+   *    event as the earlier ones left it, and only if that event still
+   *    matches its text (`apply` returns null when it does not — it has then
+   *    not applied and stays eligible, and is tried again once another has
+   *    applied). Caleb Gannon, rules-questions 2025-11-25: "the tldr is
+   *    replacement effects only apply once onto an effect"; 2023-09-14, the
+   *    re-test in both directions: "make a fireball, then turn it into a
+   *    crystal and double it". Each applies once, so the loop always ends.
+   *  · A PRECEDENCE A SOURCE FIXES goes first and is never asked (`tier`;
+   *    CR 608.8c: a redirect before "as 1 rot", the owner 2026-10-16).
+   *  · EACH OWNER ORDERS THEIR OWN, THE INITIATIVE PLAYER'S FIRST (`seat`; the
+   *    owner, 2026-10-25: "Each owner, INT first"). While any of the initiative
+   *    player's replacers is open, only theirs are offered; once none of
+   *    theirs applies, the other player's are.
+   *  · THE PLAYER ORDERS THEM (Caleb 2026-02-23: "generally as the owner of all
+   *    the replacement effects, you can choose the order you'd like to apply
+   *    them in"). Replacers sharing `same` are interchangeable — one choice,
+   *    the earliest goes. With two or more groups the family's `choose` is
+   *    handed them in DEFAULT order (`rank`, then timestamp — the order the
+   *    caller listed them in) and returns them re-ordered, the chosen one
+   *    first; a group it leaves out would not apply now and is passed over.
+   *    `choose` is where a question is asked (`askReplacement`), and only
+   *    where the order can change the outcome; without one, or where there is
+   *    nowhere to ask, the default order stands.
+   *
+   * `memo` lives for this one event and is the family's to use (one answer
+   * reused for the rest of the event).
    */
-  private chainReplacements<D, V>(donors: readonly D[], event: V, apply: (d: D, ev: V) => V | null): V {
-    const applied = new Set<number>();
+  private replaceEvent<Ev>(reps: readonly Replacer<Ev>[], event: Ev, choose?: ReplaceChooser<Ev>): Ev {
+    const applied = new Set<Replacer<Ev>>();
+    const declined = new Set<Replacer<Ev>>();
+    const memo: Record<string, unknown> = {};
     let ev = event;
     for (;;) {
-      let next: V | null = null;
-      for (let i = 0; i < donors.length && next === null; i++) {
-        if (applied.has(i)) continue;
-        next = apply(donors[i]!, ev);
-        if (next !== null) applied.add(i);
-      }
-      if (next === null) return ev;
+      const open = reps.filter(r => !applied.has(r) && !declined.has(r));
+      if (!open.length) return ev;
+      const { seat, groups } = this.replaceBand(open);
+      const ordered = groups.length >= 2 && choose
+        ? choose(groups, ev, { seat, memo, rest: reps.filter(r => !applied.has(r)), applied: [...applied] })
+        : groups;
+      for (const g of groups) if (!ordered.includes(g)) declined.add(g);
+      const pick = ordered[0];
+      if (!pick) continue;
+      const next = pick.apply(ev);
+      if (next === null) { declined.add(pick); continue; }
+      applied.add(pick);
+      declined.clear();                 // CR 708.4a: every one not yet applied is re-tested
       ev = next;
     }
+  }
+
+  /**
+   * CR 708.4a: of the replacers still open, the ones that may go next — the
+   * lowest `tier`, then the initiative player's (the owner, 2026-10-25: "Each
+   * owner, INT first"), one per `same`, in default order (`rank`, then the
+   * caller's order, which is timestamp). Shared by the seam and by the
+   * families that explore every order on paper (`exploreReplacements`), so
+   * the two can never disagree about what was open.
+   */
+  private replaceBand<Ev>(open: readonly Replacer<Ev>[]): { seat: Seat; groups: Replacer<Ev>[] } {
+    const tier = Math.min(...open.map(r => r.tier));
+    let band = open.filter(r => r.tier === tier);
+    const seat = band.some(r => r.seat === this.initiative) ? this.initiative : band[0]!.seat;
+    band = band.filter(r => r.seat === seat);
+    const groups = band.filter((r, i) => band.findIndex(o => o.same === r.same) === i);
+    // stable: equal ranks keep timestamp order
+    return { seat, groups: groups.map((r, i) => ({ r, i })).sort((a, z) => a.r.rank - z.r.rank || a.i - z.i).map(x => x.r) };
+  }
+
+  /**
+   * CR 708.4a — every way the seam could run one event, ON PAPER: for a
+   * family whose replacers can say what they WOULD make of an event without
+   * doing it (`peek`; Counter Thief only names a unit, an amount modifier is a
+   * query). Branches wherever two or more groups could go next, exactly as
+   * `replaceEvent` would offer them. Returns each complete order (the
+   * replacers in the order they applied) with the event it ends on, the
+   * DEFAULT order first. More than `cap` paths: only the default is returned,
+   * and nothing is asked.
+   */
+  private exploreReplacements<Ev>(reps: readonly Replacer<Ev>[], event: Ev,
+    peek: (r: Replacer<Ev>, ev: Ev) => Ev | null, cap = 720): { seq: Replacer<Ev>[]; end: Ev }[] {
+    const out: { seq: Replacer<Ev>[]; end: Ev }[] = [];
+    const walk = (applied: Replacer<Ev>[], declined: Set<Replacer<Ev>>, ev: Ev, defaultOnly: boolean): void => {
+      if (out.length > cap) return;
+      const open = reps.filter(r => !applied.includes(r) && !declined.has(r));
+      if (!open.length) { out.push({ seq: applied, end: ev }); return; }
+      const { groups } = this.replaceBand(open);
+      const live = groups.map(g => ({ g, next: peek(g, ev) })).filter(x => x.next !== null);
+      // none of this band applies now: passed over, and the next band is offered
+      if (!live.length) { walk(applied, new Set([...declined, ...groups]), ev, defaultOnly); return; }
+      for (const { g, next } of defaultOnly ? live.slice(0, 1) : live) walk([...applied, g], new Set(), next!, defaultOnly);
+    };
+    walk([], new Set(), event, false);
+    if (out.length > cap) { out.length = 0; walk([], new Set(), event, true); }
+    return out;
   }
 
   /**
@@ -5502,7 +5636,7 @@ export class E {
    * them. A REDIRECT and never a multiplier — the counters land on exactly one
    * unit either way, which is what "instead" means.
    *
-   * CR 708.4: the redirects CHAIN (`chainReplacements`). Counters a thief
+   * CR 708.4: the redirects CHAIN (`replaceEvent`). Counters a thief
    * redirects onto itself are still counters that "would be placed on one or
    * more units during battle", so a SECOND thief that has not applied yet
    * takes them from the first — and the first, having applied, never takes
@@ -5517,26 +5651,37 @@ export class E {
    */
   private replaceCounters(target: Entity, n: number): Entity {
     if (this.inReplaceCounters) return target;
-    let donors = this.counterDonors(target.region);
+    const donors = this.counterDonors(target.region);
     this.inReplaceCounters = true;
     this.replacementDepth++;
     try {
-      donors = this.orderCounterDonors(donors, target, n);
-      return this.chainReplacements(donors, target, ({ face, def, anchor }, now) => {
-        const to = def.replaceCounters!(this, anchor, now, n);
-        if (!to || to.id === now.id || !this.entity(to.id)) return null;
-        this.ev('info',
-          `${face}: the ${Math.abs(n)} counter(s) for ${now.card} are placed on `
-          + `${to.card} instead.`,
-          { unit: to.id, from: now.id, n, by: face });
-        return to;
-      });
+      // what thief `d` would make of the placement — it only NAMES a unit, so
+      // this is a pure read, and every order can be tried on paper
+      const peek = (d: (typeof donors)[number], now: CounterEv): CounterEv | null => {
+        const to = d.def.replaceCounters!(this, d.anchor, now.target, n);
+        return !to || to.id === now.target.id || !this.entity(to.id) ? null : { target: to };
+      };
+      const reps: Replacer<CounterEv>[] = donors.map((d, i) => ({
+        face: d.face, anchor: d.anchor, ...(d.holder.id !== d.anchor.id ? { mod: d.holder } : {}),
+        seat: d.anchor.controller, same: `${i}`, tier: 0, rank: 1,
+        apply: (now: CounterEv): CounterEv | null => {
+          const to = peek(d, now);
+          if (!to) return null;
+          this.ev('info',
+            `${d.face}: the ${Math.abs(n)} counter(s) for ${now.target.card} are placed on `
+            + `${to.target.card} instead.`,
+            { unit: to.target.id, from: now.target.id, n, by: d.face });
+          return to;
+        },
+      }));
+      return this.replaceEvent(reps, { target },
+        this.counterChooser(reps, (r, ev) => peek(donors[reps.indexOf(r)]!, ev), target, n)).target;
     } finally { this.inReplaceCounters = false; this.replacementDepth--; }
   }
 
   /** CR 708.4a: the counter redirects radiating in `region`, one per face, in
    * timestamp (entity id) order */
-  private counterDonors(region: number): { face: CardName; def: CardBehavior; anchor: Entity }[] {
+  private counterDonors(region: number): { face: CardName; def: CardBehavior; anchor: Entity; holder: Entity }[] {
     const holders = this.anchored((h, a) =>
       this.donates(h, a, 'replaceCounters')                   // CR 710.7: off the FACES
       && a.region === region
@@ -5553,48 +5698,48 @@ export class E {
    * before it left it), the counters end on whichever applies LAST — so the
    * question is put the way a player thinks of it: "which unit keeps them?".
    * A `replaceCounters` hook only NAMES a unit (it mutates nothing), so every
-   * order can be tried here without touching the board, and the player is
-   * asked only when two orders end on different units. The chosen unit's first
-   * order (in the order tried, which starts from timestamp order) is the one
-   * the chain then runs, for real, with its log lines.
+   * order the seam could take is tried on paper (`exploreReplacements`), and
+   * the player is asked only when two orders end on different units. The
+   * chosen unit's first order (in the order tried, which starts from the
+   * default order) is the one the seam then runs, for real, with its log lines.
    *
-   * WHO: the controller of the unit the counters were going to be placed on —
-   * the affected object, as in MTG 616.1. The redirects need not be theirs
-   * (Counter Thief says "one or more units", anyone's), and that is the reading
-   * this takes; it is reported as such.
-   *
-   * More than five holders: 120 orders is the cap; past it the order stays
-   * timestamp and nothing is asked (the pool has one card with this hook).
+   * WHO: the player ordering them (`replaceEvent`) — the controller of the
+   * redirects; each owner orders their own, the initiative player's first (the
+   * owner, 2026-10-25: "Each owner, INT first"). So two thieves of DIFFERENT
+   * players are never a question: the initiative player's applies first, and
+   * the other player's — applying last — keeps the counters.
    */
-  private orderCounterDonors<D extends { face: CardName; def: CardBehavior; anchor: Entity }>(
-    donors: D[], target: Entity, n: number): D[] {
-    if (donors.length < 2 || donors.length > 5) return donors;
-    const endOf = (order: D[]): Entity => this.chainReplacements(order, target, ({ def, anchor }, now) => {
-      const to = def.replaceCounters!(this, anchor, now, n);
-      return !to || to.id === now.id || !this.entity(to.id) ? null : to;
-    });
-    const ends = new Map<EntityId, D[]>();
-    const walk = (done: D[], rest: D[]): void => {
-      if (!rest.length) {
-        const end = endOf(done);
-        if (!ends.has(end.id)) ends.set(end.id, done);
-        return;
+  private counterChooser(reps: Replacer<CounterEv>[],
+    peek: (r: Replacer<CounterEv>, ev: CounterEv) => CounterEv | null, target: Entity, n: number,
+  ): ReplaceChooser<CounterEv> {
+    return (groups, ev, at) => {
+      const follow = (): Replacer<CounterEv>[] => {
+        const seq = at.memo['seq'] as Replacer<CounterEv>[];
+        const next = seq.find(r => !at.applied.includes(r));
+        const live = groups.filter(g => peek(g, ev) !== null);
+        return next && live.includes(next) ? [next, ...live.filter(g => g !== next)] : live;
+      };
+      if (at.memo['seq']) return follow();
+      const paths = this.exploreReplacements(at.rest, ev, peek);
+      const ends = new Map<EntityId, Replacer<CounterEv>[]>();
+      for (const p of paths) if (!ends.has(p.end.target.id)) ends.set(p.end.target.id, [...at.applied, ...p.seq]);
+      const keepers = [...ends.keys()];
+      let seq = ends.get(keepers[0]!) ?? [];
+      if (keepers.length >= 2) {
+        const faces = [...new Set(reps.map(r => r.face))];
+        const who = faces.length === 1 ? `${faces[0]}: which` : 'Which';
+        const got = this.askReplacement(at.seat,
+          `${who} unit keeps the ${Math.abs(n)} counter(s) meant for ${this.faceName(target)}?`,
+          keepers.map((id, k) => {
+            const u = this.entity(id)!;
+            return { label: u.id === target.id ? `${this.faceName(u)} (where they were going)` : this.faceName(u),
+              card: this.faceName(u), unit: id, pick: k };
+          }));
+        if (got !== null) seq = ends.get(keepers[got]!)!;
       }
-      rest.forEach((d, i) => walk([...done, d], rest.filter((_, j) => j !== i)));
+      at.memo['seq'] = seq;
+      return follow();
     };
-    walk([], donors);
-    if (ends.size < 2) return donors;
-    const keepers = [...ends.keys()];
-    const faces = [...new Set(donors.map(d => d.face))];
-    const who = faces.length === 1 ? `${faces[0]}: which` : 'Which';
-    const got = this.askReplacement(target.controller,
-      `${who} unit keeps the ${Math.abs(n)} counter(s) meant for ${this.faceName(target)}?`,
-      keepers.map((id, k) => {
-        const u = this.entity(id)!;
-        return { label: u.id === target.id ? `${this.faceName(u)} (where they were going)` : this.faceName(u),
-          card: this.faceName(u), unit: id, pick: k };
-      }));
-    return got === null ? donors : ends.get(keepers[got]!)!;
   }
 
   // ── CR 708.9: token creation, and the BATCH ─────────────────────────────
@@ -5673,7 +5818,7 @@ export class E {
    * Cosmic Conspirator: "If you would create a Robot, Poison, Crystal or
    * Fireball, you may instead create a token of any of these types."
    *
-   * CR 708.4: the substitutions CHAIN (`chainReplacements`). A Fireball one
+   * CR 708.4: the substitutions CHAIN (`replaceEvent`). A Fireball one
    * Conspirator made of a Robot is still a token "you would create", so a
    * second Conspirator that has not applied yet is offered THAT, and may swap
    * it again; neither is ever offered the same creation twice. A hook that
@@ -5696,15 +5841,19 @@ export class E {
     const donors = this.donorFaces(holders, 'replaceTokenCreation');
     this.replacementDepth++;
     try {
-      return this.chainReplacements(donors, req, ({ face, def, anchor }, now) => {
-        const sub = def.replaceTokenCreation!(this, anchor, now);
-        if (!sub) return null;
-        if (sub.name === now.name && sub.form === now.form) return now;   // applied, and kept it
-        this.ev('info',
-          `${face}: a ${now.name} ${now.x} is created as a ${sub.name} ${sub.x} instead.`,
-          { by: face, was: now.name, now: sub.name, x: sub.x, seat: now.seat });
-        return sub;
-      });
+      return this.replaceEvent(donors.map(({ face, def, anchor, holder }, i): Replacer<TokenRequest> => ({
+        face, anchor, ...(holder.id !== anchor.id ? { mod: holder } : {}), seat: anchor.controller,
+        same: `${i}`, tier: 0, rank: 0,
+        apply: now => {
+          const sub = def.replaceTokenCreation!(this, anchor, now);
+          if (!sub) return null;
+          if (sub.name === now.name && sub.form === now.form) return now;   // applied, and kept it
+          this.ev('info',
+            `${face}: a ${now.name} ${now.x} is created as a ${sub.name} ${sub.x} instead.`,
+            { by: face, was: now.name, now: sub.name, x: sub.x, seat: now.seat });
+          return sub;
+        },
+      })), req);
     } finally { this.replacementDepth--; }
   }
 
