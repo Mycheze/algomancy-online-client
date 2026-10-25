@@ -318,14 +318,14 @@ const playInlineMode = (
       });
       return typeof v === 'number' ? { unit: v } : v as TargetRef;
     })()) as TargetRef;
-    const ownerField = owner !== undefined && owner !== seat ? { owner } : {};
     if ('stack' in picked) {
       // CR 723.4: onto a spell on the stack, as `doAugment`'s stack branch builds it
       const target = g.s.stack.find(it => it.id === picked.stack)!;
       const item: StackItem = {
         id: g.s.nextId++, kind: 'virus', card: name,
         label: `${name} (Virus augment on ${target.label})`, controller: seat,
-        region: target.region, negated: false, parts: [], hostStack: target.id, ...ownerField,
+        region: target.region, negated: false, parts: [], hostStack: target.id,
+        ...(owner !== undefined && owner !== seat ? { owner } : {}),
       };
       const ev = g.ev('targeted', `${name} targets ${target.label} on the stack.`,
         { item: target.id, region: target.region });
@@ -338,7 +338,8 @@ const playInlineMode = (
     const item: StackItem = {
       id: g.s.nextId++, kind: 'virus', card: name,
       label: `${name} (Virus augment on ${host.card})`, controller: seat,
-      region: host.region, negated: false, parts: [], hostId: host.id, ...ownerField,
+      region: host.region, negated: false, parts: [], hostId: host.id,
+      ...(owner !== undefined && owner !== seat ? { owner } : {}),
     };
     const ev = g.ev('targeted', `${name} targets ${host.card}.`, { unit: host.id, region: host.region });
     g.fireEvent('targeted', ev);
