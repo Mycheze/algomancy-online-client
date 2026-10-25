@@ -2023,12 +2023,19 @@ export class E {
      * them"). Counters ride along by construction: "Does inverted reverse the
      * affect of +1/+1 Counters?" — "yes".
      *
-     * `base` here is layers 1-2, which is exactly right: a base REWRITE
-     * (`baseSet`, `StaticMod.baseP/baseT`) redefines what base IS rather than
-     * changing it, so it is the thing inverted FROM and is never inverted.
-     * spikeydog_40883, uncontradicted: "Its base stats aren't being inverted.
-     * Just the modifications to those stats by counters, stat-altering
-     * augments, or attributes."
+     * CR 802.8c (CT-379): the reference is the PRINTED stats (layer 1), not
+     * layers 1-2. A base REWRITE (`baseSet`, `StaticMod.baseP/baseT`) is a stat
+     * change like any other, and it is inverted with the rest. The designer,
+     * rules-questions 2023-10-26, to "I assume inverted does NOT interact with
+     * stat \"setting\" like Reshape": "It does because it applies in a later
+     * layer" / "Basically you just look at the stats printed on the card, then
+     * look at its current stats. Take the difference"; to "I guess ANY changes
+     * are changes from printed. including BASE ones.": "yeah and it lets me be
+     * more cavalier with base stat changes"; and 2025-11-26, on Bubb and
+     * Statweaver: "base stat changes are still stat changes". So a printed 7/5
+     * that Aberrant Statweaver makes base 3/3 is an 11/7 while Inverted.
+     * (Until 2026-10-25 the engine inverted from layers 1-2, on an owner
+     * reading taken before these quotes were found.)
      *
      * Applied ONCE, however many sources granted it — `statLayerAttrs` dedupes
      * on the way in, the same "an attribute is either present or not" rule
@@ -2048,8 +2055,9 @@ export class E {
      * worked example is the clean layer. Shipped clean; see CR 709.4d.
      */
     if (statAttrs.includes('Inverted')) {
-      p = 2 * base[0]! - p;
-      t = 2 * base[1]! - t;
+      const printed = this.printedStats(e);                  // CR 802.8c: layer 1, not `base`
+      p = 2 * printed[0]! - p;
+      t = 2 * printed[1]! - t;
     }
     /**
      * LAYER 6 — {Unaware} (CR 802.9a, 802.9b). PRINTED, not base: layer 1 and nothing else.
@@ -2069,12 +2077,10 @@ export class E {
      * state-based death check alike, which is what makes "survive 100 -1/-1
      * counters just fine" true without a special case anywhere.
      *
-     * Note it drops layer 2 as well, unlike {Inverted} one layer up. The Inverted
-     * ruling's (CR 802.8c)
-     * argument for keeping base rewrites there is about what {Inverted}
-     * inverts FROM; this rule is about what a card READS, and "your units are
-     * base 3/3" (Aberrant Statweaver) is not literal printed text on Bubb's
-     * card. So `baseSet` and `StaticMod.baseP`/`baseT` are ignored too, along
+     * Note it drops layer 2 as well; {Inverted} one layer up also measures
+     * from layer 1 (CR 802.8c), and here the reason is what a card READS:
+     * "your units are base 3/3" (Aberrant Statweaver) is not literal printed
+     * text on Bubb's card. So `baseSet` and `StaticMod.baseP`/`baseT` are ignored too, along
      * with counters, temp deltas, dp/dt statics, layer 4 ({Tough}/{Balanced})
      * and layer 5 ({Inverted}). Everything above layer 1 goes.
      *
@@ -6765,24 +6771,43 @@ export class E {
    * state-based action nobody can forget to run is the whole point. */
   checkDeaths(): Entity[] {
     const dead = Object.values(this.s.entities).filter(u => this.isLethal(u));
-    // CR 706.8c — THE BATCH IS SIMULTANEOUS TO ITS LISTENERS TOO. The loop below
-    // disposes one body at a time and `destroy`'s second line deletes each one
-    // from `s.entities`, which `fireEvent` scans; without `deathBatch` the
-    // first corpse out of a batch cannot hear the rest of it, and Muck
-    // Rummager missed three cards its controller trashed in one combat-damage
-    // step (report #155, room ZSPG action 218). `disposingSelf` keeps the
-    // "excludes the trigger source itself" reading (CR 713.6a): a body never hears its OWN
-    // departure through this seam, only its batch-mates'.
+    this.destroyBatch(dead, 'dies');
+    this.repairFormation();
+    return dead;
+  }
+
+  /**
+   * CR 706.8c, 713.6 — ONE SIMULTANEOUS BATCH of units leaving play, the
+   * state-based death check's and every "delete all …" effect's alike.
+   *
+   * The loop below disposes one body at a time and `destroy`'s second line
+   * deletes each one from `s.entities`, which `fireEvent` scans; without
+   * `deathBatch` the first corpse out of a batch cannot hear the rest of it,
+   * and Muck Rummager missed three cards its controller trashed in one
+   * combat-damage step (report #155, room ZSPG action 218). `disposingSelf`
+   * keeps the "excludes the trigger source itself" reading (CR 713.6a): a body
+   * never hears its OWN departure through this seam, only its batch-mates'.
+   *
+   * CT-363: the delete-all sweepers (Ruinbringer, Ominous Growth, Deformant,
+   * Pathogenic Enclave, Sporebloom Siren) used to loop `destroy` themselves,
+   * outside this batch, so their victims were never one batch: a deleted
+   * Muck Rummager stopped hearing the rest, and an Ancient One deleted after
+   * its neighbour lost that neighbour's "when I die" (CT-351's snapshot).
+   * They come through here now. A unit already out of play is skipped.
+   */
+  destroyBatch(units: readonly Entity[], verb: 'dies' | 'is deleted' | 'is sacrificed'): void {
+    const batch = units.filter(u => this.entity(u.id) === u);
+    if (!batch.length) return;
     const prevBatch = this.deathBatch, prevSelf = this.disposingSelf;
     const prevAdj = this.deathBatchAdjacent, prevMods = this.deathBatchMods;
-    this.deathBatch = dead;
+    this.deathBatch = batch;
     // CR 714.9 / CT-351: every member's neighbours, before anyone is removed
-    this.deathBatchAdjacent = new Map(dead.map(u => [u.id, this.adjacentInFormation(u.id).map(n => n.id)]));
+    this.deathBatchAdjacent = new Map(batch.map(u => [u.id, this.adjacentInFormation(u.id).map(n => n.id)]));
     this.deathBatchMods = new Map();
     try {
-      for (const u of dead) {
+      for (const u of batch) {
         this.disposingSelf = u.id;
-        this.destroy(u, 'dies');
+        this.destroy(u, verb);
       }
     } finally {
       this.deathBatch = prevBatch;
@@ -6790,8 +6815,6 @@ export class E {
       this.deathBatchAdjacent = prevAdj;
       this.deathBatchMods = prevMods;
     }
-    this.repairFormation();
-    return dead;
   }
 
   /**
@@ -13729,6 +13752,9 @@ export class E {
       // sub-step deals its damage into the board that left behind.
       const next = b.pendingSub ?? 'after';
       b.pendingSub = null;
+      // CR 608.3d (CT-378): the window after the Swift sub-step is the one
+      // whose close decides whether the Sluggish sub-step is a step
+      if (next === 'normal' && b.damageSubs) this.rescheduleSluggish(b);
       b.damageStep = next;
       this.pumpCombatDamage();
     } else if (b.step === 'afterWindow') {
@@ -13741,15 +13767,42 @@ export class E {
    * real step with priority between them. The walk is `assignCombatDamage`'s
    * own, asked of all three sub-steps instead of one, so a sub-step counts
    * here exactly when that method would deal damage in it. */
-  private subStepsWithStrikes(b: BattleState): DamageSubStep[] {
-    const ALL = ['Swift', 'normal', 'Sluggish'] as const;
+  private subStepsWithStrikes(b: BattleState,
+    among: readonly DamageSubStep[] = ['Swift', 'normal', 'Sluggish'] as const): DamageSubStep[] {
     // CR 606.4f: a blocking column strikes only with an attacker in front of it, so
     // a side-block (and a CR 608.4e hole) opens no damage window of its own
-    return ALL.filter(sub => b.columns.some((_col, ci) => {
+    return among.filter(sub => b.columns.some((_col, ci) => {
       const x = this.exchangeAt(b, ci);
       return (x.atk.length > 0 && this.strikes(b, 'atk', ci, x.atk, sub, x.pure))
         || (x.blk.length > 0 && x.atk.length > 0 && this.strikes(b, 'blk', ci, x.blk, sub, x.pure));
     }));
+  }
+
+  /**
+   * CR 608.3d (CT-378) — the ONE revision of the schedule fixed as the step
+   * opened: as the window after the Swift sub-step closes, the Sluggish
+   * sub-step is scheduled exactly when some half-column will strike in it
+   * NOW. Added, so a column given {Sluggish} in that window gets the
+   * before-Sluggish window ahead of its strike; dropped, so a Sluggish striker
+   * gone by then leaves the normal sub-step last, straight on to after combat.
+   * The designer, rules-questions 2025-04-20: "Need sluggish to exist after
+   * here---> Combat / Before Sluggish priority window / Sluggish damage"
+   * [1363278470938890250]; "Before sluggish priority <- remaining columns will
+   * deal sluggish damange here" [1363287109401710603]; to "if no sluggish unit
+   * exists ... you will go from normal damage -> after combat": "correct" /
+   * "you would have to add sluggish during the "after swift" window"
+   * [1363288029799911664]; and on Sluggish removed in that window, "should do
+   * regular damage in that case" / "and no sluggish priority window would be
+   * opened" [1363281782749003809].
+   *
+   * Only Sluggish moves, and only here. The Swift sub-step has already
+   * happened, so a Swift unit dying cannot unsplit the step (297), and the
+   * normal sub-step keeps its place however its strikers fared (CR 608.3c).
+   */
+  private rescheduleSluggish(b: BattleState): void {
+    const subs: DamageSubStep[] = b.damageSubs!.filter(s => s !== 'Sluggish');
+    if (this.subStepsWithStrikes(b, ['Sluggish']).length) subs.push('Sluggish');
+    b.damageSubs = subs;
   }
 
   // ── combat ──────────────────────────────────────────────────────────

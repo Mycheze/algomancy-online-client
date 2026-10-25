@@ -238,7 +238,11 @@ test('cr:combat.damage.dealing.regroup — damage from the first battle of the t
 
 /* ── split / sub-steps ──────────────────────────────────────────────────── */
 
-test('cr:combat.damage.split.empty-substep — a column that gains Sluggish after the last scheduled sub-step strikes with no window before it, then after combat begins', () => {
+test('cr:combat.damage.split.empty-substep — a column that gains Sluggish after the last scheduled sub-step was fixed still gets the before-Sluggish window, scheduled as the after-Swift window ends (CT-378)', () => {
+  // Until CT-378 this pinned the opposite: the schedule was fixed once as the
+  // step opened, so the gained Sluggish strike had no window before it. The
+  // designer puts one there ("you would have to add sluggish during the
+  // "after swift" window", rules-questions 2025-04-20), and CR 608.3d says so.
   const h = new Harness(91204);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -257,11 +261,15 @@ test('cr:combat.damage.split.empty-substep — a column that gains Sluggish afte
   let guard = 20;
   let lastPending: unknown = h.state.battle!.pendingSub;
   while (h.state.battle?.step === 'damageWindow' && guard-- > 0) {
-    if (h.state.battle.pendingSub !== lastPending) { windows++; lastPending = h.state.battle.pendingSub; }
+    if (h.state.battle.pendingSub !== lastPending) {
+      windows++; lastPending = h.state.battle.pendingSub;
+      assert.equal(lastPending, 'Sluggish', 'the second window is the one before the Sluggish strike');
+      assert.equal(h.state.players[D]!.life, 27, 'opened after the normal strike and before the Sluggish one');
+    }
     pass(h);
   }
-  assert.equal(windows, 0, 'no second window opened (before the Sluggish strike)');
-  assert.equal(h.state.battle?.step, 'afterWindow', 'straight on to after combat');
+  assert.equal(windows, 1, 'a second window opened, before the Sluggish strike');
+  assert.equal(h.state.battle?.step, 'afterWindow', 'then on to after combat');
   assert.equal(h.state.players[D]!.life, 30 - 2 - 1 - 2, 'the Drifter column struck again in Sluggish');
   finishBattle(h);
 });

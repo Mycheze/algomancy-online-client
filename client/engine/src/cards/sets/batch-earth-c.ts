@@ -112,7 +112,8 @@ card('Ruinbringer', {
     label: 'delete all units (after combat)',
     effect: {
       run: (g, ctx) => {
-        for (const u of g.unitsIn(ctx.region)) g.destroy(u, 'is deleted');
+        // CR 706.8c / CT-363: "delete all" is one simultaneous batch
+        g.destroyBatch(g.unitsIn(ctx.region), 'is deleted');
       },
     },
   }],

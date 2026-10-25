@@ -490,10 +490,10 @@ card('Ominous Growth', {
     label: 'delete all tokens (after combat)',
     effect: {
       run: (g, ctx) => {
-        let deleted = 0;
-        for (const u of g.unitsIn(ctx.region).slice()) {
-          if (u.token) { g.destroy(u, 'is deleted'); deleted++; }
-        }
+        // CR 706.8c / CT-363: "delete all" is one simultaneous batch
+        const doomed = g.unitsIn(ctx.region).filter(u => u.token);
+        g.destroyBatch(doomed, 'is deleted');
+        let deleted = doomed.length;
         for (const t of Object.values(g.s.entities)) {
           if (t.kind === 'spellToken' && t.region === ctx.region) {
             delete g.s.entities[t.id];
