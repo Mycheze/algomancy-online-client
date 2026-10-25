@@ -677,7 +677,13 @@ test('[CR D7.4] the derivation itself is alive: every filter it uses matches som
   // "<seat> looks at their own hand." — the public half of a look at one's own
   // hand, which names no card. Nothing on the board shows a look, so this is
   // the surface it is meant for.
-  assert.equal(sites.length, 226,`the engine and apply make ${sites.length} announcements`);
+  // 226 → 229 with round B+C (2026-10-25): two game-over lines and a battle Virus on a
+  // spell token. E.deckedOut's "the deck has run out" / "has to draw from an empty deck
+  // and loses" (CR 104.5, CT-385) and the simultaneous-loss "Both players fell to 0 or
+  // less" in the loss check (CR 104.1a, CT-409) both carry the winner, which the
+  // game-over screen shows. "<virus> augments <spell token>" (CR 721.4a, CT-407) is the
+  // battle twin of doAugment's deployment line.
+  assert.equal(sites.length, 229,`the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');
