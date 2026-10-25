@@ -1113,9 +1113,10 @@ export class E {
     const got = this.askReplacement(ctx.controller,
       `${ctx.sourceName}: ${faces.join(' and ') || 'an addition'} and {Powerful} both change its ${base} damage — which applies first?`,
       [
-        ...adders.map(a => ({ label: `${this.replacerLabel(a.face, a.anchor)} first: ${hi} damage`, card: a.face,
+        ...adders.map(a => ({ label: `${hi} damage: ${this.replacerLabel(a.face, a.anchor)} first`, card: a.face,
           unit: a.anchor.id, pick: 0, ...(a.holder.id !== a.anchor.id ? { mod: a.holder.id } : {}) })),
-        { label: `{Powerful} first: ${lo} damage`, card: src ? this.faceName(src) : ctx.sourceName,
+        { label: src ? `${lo} damage: ${this.faceName(src)} first ({Powerful})` : `${lo} damage: {Powerful} first`,
+          card: src ? this.faceName(src) : ctx.sourceName,
           ...(src ? { unit: src.id } : {}), pick: 1 },
       ],
       { label: `Default: ${hi} damage (the higher number)`, pick: 0 });
@@ -1179,9 +1180,9 @@ export class E {
         `${this.pname(seat)} would lose life from ${ctx.sourceName}'s damage: ${addRep.face} and `
         + `${[...new Set(rest.map(r => r.face))].join(' and ')} both apply — which applies first?`,
         [
-          ...adders.map(a => ({ label: `${this.replacerLabel(a.face, a.anchor)} first: ${now} life`, card: a.face,
+          ...adders.map(a => ({ label: `${now} life: ${this.replacerLabel(a.face, a.anchor)} first`, card: a.face,
             unit: a.anchor.id, pick: 0, ...(a.holder.id !== a.anchor.id ? { mod: a.holder.id } : {}) })),
-          ...rest.map(r => ({ label: `${this.replacerLabel(r.face, r.anchor)} first: ${lo} life`, card: r.face,
+          ...rest.map(r => ({ label: `${lo} life: ${this.replacerLabel(r.face, r.anchor)} first`, card: r.face,
             unit: r.anchor.id, pick: reps.indexOf(r), ...(r.mod ? { mod: r.mod.id } : {}) })),
         ],
         { label: `Default: ${now} life (the higher number)`, pick: 0 });
@@ -5972,7 +5973,8 @@ export class E {
             `${live.map(r => r.face).join(' and ')} both apply to the ${counted(ev.n)} for `
             + `${this.faceName(ev.target)} — which applies first?`,
             live.map((r, k) => ({
-              label: `${this.replacerLabel(r.face, r.anchor)} first: ${counted(firstOf[k]!.end.n)} on ${this.faceName(firstOf[k]!.end.target)}`,
+              // the result leads, so the board's pick tag says what a click gives
+              label: `${counted(firstOf[k]!.end.n)}: ${this.replacerLabel(r.face, r.anchor)} first`,
               card: r.face, unit: r.anchor.id, pick: reps.indexOf(r), ...(r.mod ? { mod: r.mod.id } : {}),
             })),
             { label: `Default: ${counted(def.end.n)} on ${on}${most ? ' (the higher number)' : ''}`, pick: reps.indexOf(live[0]!) });

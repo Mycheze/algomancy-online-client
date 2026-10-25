@@ -128,6 +128,17 @@ function objectSubject(s: GameState, dec: Decision, o: DecisionOption, v: Record
   const num = (k: string): number | null => (typeof v[k] === 'number' ? v[k] as number : null);
   // a FormationSpot ({kind:'behind', unit}) names a place, not the unit
   if ('kind' in v && dec.kind === 'formationSlot') return { at: 'slot' };
+  // CR 708.4a: a replacement-order choice made by an [Augment] MOD carries the
+  // mod (`{mod, unit, pick}`; the unit is its host, whose text it reads from).
+  // The mod's badge is the click — an Automaton of Abundance augmented onto the
+  // Cosmic Conspirator it is being ordered against would otherwise name the
+  // same unit as the Conspirator, and one click could not tell them apart.
+  // Its host still takes the click too (`boardIndex`), and asks which.
+  const repMod = num('mod');
+  if (repMod !== null) {
+    const host = s.entities[repMod]?.modOf;
+    if (host !== undefined && liveBody(s, host)) return { at: 'mod', id: repMod, host };
+  }
   for (const k of ['unit', 'recall', 'counterFrom'] as const) {
     const id = num(k);
     if (id !== null) return unitSubject(s, id, o);
@@ -266,7 +277,9 @@ export function pickVerbs(dec: Decision, s: GameState, subjects = optionSubjects
     if (v && typeof v === 'object' && 'counterFrom' in v) return;
     const label = dec.options[i]!.label;
     const at = Math.min(...subjectNames(s, sub).map(n => label.indexOf(n)).filter(k => k >= 0));
-    verbs.set(i, Number.isFinite(at) ? label.slice(0, at).trim() : '');
+    // CR 708.4a: an order question's options lead with what they give ("4
+    // damage: Conduit of Pain first"), so the separator is not part of the word
+    verbs.set(i, Number.isFinite(at) ? label.slice(0, at).trim().replace(/\s*[:—]$/, '') : '');
   });
   if (new Set(verbs.values()).size < 2) return new Map();
   for (const [i, v] of verbs) if (!v) verbs.delete(i);

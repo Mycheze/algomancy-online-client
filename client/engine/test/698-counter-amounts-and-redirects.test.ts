@@ -85,8 +85,8 @@ test('CR 708.7: Proliferating Slime and a Counter Thief of one player, the defau
   assert.equal(dec!.options[0]!.label, 'Default: 3 counters on Counter Thief (the higher number)', 'the one-click default comes first and says what it gives');
   assert.deepEqual((dec!.options[0]!.value as { default?: boolean }).default, true);
   assert.deepEqual(dec!.options.slice(1).map(o => o.label), [
-    'Proliferating Slime first: 3 counters on Counter Thief',
-    'Counter Thief first: 2 counters on Counter Thief',
+    '3 counters: Proliferating Slime first',
+    '2 counters: Counter Thief first',
   ]);
   assert.deepEqual(dec!.options.slice(1).map(o => (o.value as { unit: number }).unit), [r.a[0], r.a[1]],
     'each order is a click on the unit that applies first');

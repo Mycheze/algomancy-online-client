@@ -70,8 +70,8 @@ test('CR 708.6a: Conduit of Pain and Powerful, the default is the addition first
   assert.equal(dec!.prompt, 'Bellowing Boulder: Conduit of Pain and {Powerful} both change its 1 damage — which applies first?');
   assert.deepEqual(dec!.options.map(o => o.label), [
     'Default: 4 damage (the higher number)',
-    'Conduit of Pain first: 4 damage',
-    '{Powerful} first: 3 damage',
+    '4 damage: Conduit of Pain first',
+    '3 damage: Bellowing Boulder first ({Powerful})',
   ]);
   assert.deepEqual(dec!.options.slice(1).map(o => (o.value as { unit: number }).unit), [r.c, r.b],
     'each order is a click on its unit: the Conduit, or the Powerful source');
@@ -110,8 +110,8 @@ test('CR 708.6a: Conduit of Pain and Arbiter of Vitality of one player, the defa
   assert.match(dec!.prompt, /Conduit of Pain and Arbiter of Vitality both apply — which applies first\?$/);
   assert.deepEqual(dec!.options.map(o => o.label), [
     'Default: 6 life (the higher number)',
-    'Conduit of Pain first: 6 life',
-    'Arbiter of Vitality first: 5 life',
+    '6 life: Conduit of Pain first',
+    '5 life: Arbiter of Vitality first',
   ]);
   r.h.do({ type: 'decide', seat: r.dealer, choice: 0 });
   assert.equal(r.lost(), 6, '(2+1)x2');

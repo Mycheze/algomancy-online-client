@@ -2168,6 +2168,12 @@ export function declineButtonClass(o: DecisionOptionLike): 'commitbtn' | 'declin
  * out to be drawn last and styled as the secondary thing it is. Order within
  * each bucket is the engine's own.
  */
+/** CR 708.4a: the one-click default of a replacement-order question
+ * (engine `askReplacement`: `{ default: true, pick }`) */
+export function isReplacementDefault(v: unknown): boolean {
+  return !!v && typeof v === 'object' && (v as { default?: unknown }).default === true;
+}
+
 export function partitionOptions(options: readonly DecisionOptionLike[]): OptionSplit {
   const split: OptionSplit = { cards: [], refs: [], plain: [], decline: [] };
   options.forEach((o, i) => {
