@@ -42,6 +42,7 @@ const PAR: Record<string, RunScore> = {
   '2026-12-20-grafts': { unique: 9, extra: 1, cards: 10, elements: 2, turns: 10, raw: 200, skill: 100 },
   '2026-12-27-spree': { unique: 10, extra: 0, cards: 10, elements: 1, turns: 4, raw: 40, skill: 100 },
   '2027-01-03-stack': { unique: 8, extra: 0, cards: 8, elements: 1, turns: 7, raw: 56, skill: 100 },
+  '2027-01-10-doubleko': { unique: 7, extra: 0, cards: 7, elements: 2, turns: 5, raw: 70, skill: 100 },
 };
 
 const fileOf = (id: string): string => join(REFERENCE_RUNS_DIR, `${id}.json`);

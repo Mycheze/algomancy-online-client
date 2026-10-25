@@ -121,7 +121,9 @@ export type Goal =
   | { kind: 'graftLadder'; n: number }   // a graft composite (CR 722.4) of exactly k parts fired, for every k in 1..n
   | { kind: 'manaSpent'; n: number }     // seat 0's resources gone open → expended, cumulative
   | { kind: 'stackDepth'; n: number }    // ≥ n items on the stack after an action
-  | { kind: 'life'; n: number };         // seat 0 has ≥ n life
+  | { kind: 'life'; n: number }          // seat 0 has ≥ n life
+  // added 2026-10-25
+  | { kind: 'doubleKO' };                // the game ends with both players at 0 or less (the game-over's alsoAtZero)
 
 export interface ChallengeDef { id: string; week: string /* YYYY-MM-DD, a Sunday */; title: string;
   blurb: string; goal: Goal; seed: number; par: number /* the reference run's raw */;
@@ -281,7 +283,7 @@ different game. Owner, 2026-10-23: "Fingerprints + banner".
 - It proves the goal is achievable at its `n`, guards against drift, and requires its `raw` to
   equal the row's committed `par` (so it scores Skill 100).
 - Pars: crowd 90, tokens 104, giant 70 (raised from 60/60 to 80/80 before it opened, owner 2026-10-24), counters 81;
-  set 108, draw 234, owngoal 84, oneshot 30, health 70, grafts 200, spree 40, stack 56.
+  set 108, draw 234, owngoal 84, oneshot 30, health 70, grafts 200, spree 40, stack 56, doubleko 70.
 - **The Parade is parked** (owner, 2026-10-24, before it opened: "Just remove it from the
   rotation"): its run is `challenge-runs/parked/2026-11-22-parade.json` (par 286), which the gate
   does not replay. Back on the calendar = a new row, and the file moved back under that row's id.
@@ -301,7 +303,14 @@ units is the same thing basically. But 100 life, 100 units, 100/100 are totally 
 | 12-20 | 12 Grafts of Christmas | graftLadder 12 | 10 · 10 · 2 — `evoker-ladder`: Omniwield Evoker fired after each graft |
 | 12-27 | Spending Spree | manaSpent 50, emblem | 4 · 10 · 1 — `shifter-sink`: recycle and open everything, Celestial Shifter's [x] |
 | 01-03 | Stack Overflow | stackDepth 30 | 7 · 8 · 1 — `poison-stack`: a crowd of 30, Blight, every Poison cast in one window |
+| 01-10 | Double Knockout | doubleKO | 5 · 7 · 2 — `equal-penance`: Equilibriate after combat (you and the dummy on 64), Flesh Tithe 63/63 (you on 1), it hits the dummy to 1, Penance on both |
 
-Not built: **Double KO** ("kill the dummy and yourself with the same effect"). The engine ends the
-game at the first life total to reach 0 (`E.loseLife` throws `GameEnded`; CR 104.1a), so the
-second player's life never changes and no run can show both at 0. It waits on that rules change.
+**Double Knockout** ("Kill the dummy and yourself simultaneously (via the same effect)", owner
+2026-10-24) rests on CT-409 (CR 104.1a, owner 2026-10-25): every life change of one effect lands
+before anyone loses — one resolving effect part, or one combat-damage sub-step; rot is NOT one
+(Caleb 2026-08-28, "rot isn't simultaneous") — then the higher total wins, and a tie goes against
+the initiative player. When both players are down the game-over event carries `alsoAtZero:
+<winner>`; `foldTallies` reads it into the optional `RunAcc.bothFell`, and the goal is met on that
+action whoever won. `ended` (dummyWins/oneShot) is untouched by it. The puzzle is the arithmetic:
+the dummy must not fall first (a dead dummy ends the run) and you must not fall alone, so both
+totals have to be steered to where one effect finishes both.

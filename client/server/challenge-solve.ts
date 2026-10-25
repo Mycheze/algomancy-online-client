@@ -438,6 +438,66 @@ export const POLICIES: Record<Goal['kind'], Policy[]> = {
       },
     },
   ],
+  doubleKO: [
+    {
+      // Equilibriate pulls you and the dummy to the same 64 (its 99 and your 30,
+      // averaged), Flesh Tithe pays 63 for a 63/63 and leaves you on 1, the
+      // 63/63 hits the dummy down to 1, and after combat Penance makes "any
+      // number of target players" — both of you — lose 1: two players on 0
+      // from one effect (CR 104.1a; the tie goes against the initiative player)
+      name: 'equal-penance',
+      deck: [
+        'Hand Peeper', ...rep('Seer of Empty Spaces', 2), 'Reap the Due',
+        'Equilibriate', 'Reap the Due', ...rep('Retribution Thing', 2),
+        ...rep('Insatiable Want', 2), ...rep('Divine Foresight', 2),
+        'Penance', ...rep('Shard Sprite', 2), 'Hand Peeper',
+        'Flesh Tithe', ...rep('Prismatic Observer', 2),
+      ],
+      element: ['light', 'wood', 'light'],
+      fodder: seq(['Seer of Empty Spaces', 2], ['Reap the Due', 2], ['Retribution Thing', 2], ['Insatiable Want', 2], ['Divine Foresight', 2], ['Shard Sprite', 2], ['Prismatic Observer', 2]),
+      play: ['Hand Peeper'], keep: ['Penance', 'Flesh Tithe', 'Equilibriate'], neverRecycle: ['Penance', 'Equilibriate', 'Flesh Tithe'],
+      resolveFirst: true,
+      pick: ({ s, legal, p, cardOf }) => {
+        const dummy = s.players[DUMMY]!;
+        const card = (name: CardName) => legal.find(a => a.type === 'playCard' && cardOf(a) === name);
+        // Penance's targets: the dummy, then yourself
+        if (s.decision?.seat === PLAYER && /Penance/.test(s.decision.prompt)) {
+          const at = (seat: number) => s.decision!.options.findIndex(o => JSON.stringify(o.value) === JSON.stringify({ player: seat }));
+          const i = at(DUMMY) >= 0 ? at(DUMMY) : at(PLAYER);
+          if (i >= 0) return { type: 'decide', seat: PLAYER, choice: i };
+        }
+        if (s.decision) return undefined;
+        // Penance: once both are on 1, after combat damage
+        if (s.battle && s.stack.length === 0 && p.life === 1 && dummy.life === 1) return card('Penance');
+        // Equilibriate: after combat damage, so no later hit unevens the totals
+        if (s.battle?.step === 'afterWindow' && s.stack.length === 0 && p.life !== dummy.life) {
+          const eq = card('Equilibriate');
+          if (eq) return eq;
+        }
+        // Flesh Tithe: only once the totals are even (it pays all but 1)
+        if (!s.battle && p.life === dummy.life && p.life > 1) {
+          const t = card('Flesh Tithe');
+          if (t) return t;
+        }
+        if (legal.some(a => a.type === 'declareAttack')) {
+          const q = new E(s);
+          const pow = (id: number): number => { try { return q.effStats(s.entities[id]!)[0]; } catch { return 0; } };
+          const units = myUnits(s).filter(u => legal.some(x => x.type === 'declareAttack' && x.columns.length === 1 && x.columns[0]!.length === 1 && x.columns[0]![0] === u.id));
+          const solo = (id: number) => legal.find(x => x.type === 'declareAttack' && x.columns.length === 1 && x.columns[0]!.length === 1 && x.columns[0]![0] === id);
+          // the Tithe's unit: only when its hit leaves the dummy on your life
+          const big = units.find(u => p.life < dummy.life && dummy.life - pow(u.id) === p.life);
+          if (big) return solo(big.id);
+          // before Equilibriate: the weakest unit, for a battle with a window in it
+          if (p.life !== dummy.life && p.hand.includes('Equilibriate') && units.length) {
+            const weak = [...units].sort((a, b) => pow(a.id) - pow(b.id))[0]!;
+            if (dummy.life - pow(weak.id) > p.life) return solo(weak.id);
+          }
+          return legal.find(x => x.type === 'declareAttack' && x.columns.length === 0 && !x.spellTokens?.length);
+        }
+        return undefined;
+      },
+    },
+  ],
   graftLadder: [
     {
       // an Omniwield Evoker ("[three]: [Switch] put a +1/+1 counter on me") is
@@ -873,7 +933,7 @@ export function scoreAt(def: ChallengeDef, deck: CardName[], actions: Action[], 
 function withN(goal: Goal, n: number): Goal {
   if (goal.kind === 'unitSize') return { kind: 'unitSize', p: n, t: n };
   if (goal.kind === 'tokenSet') return { kind: 'tokenSet', tokens: Object.fromEntries(Object.keys(goal.tokens).map(k => [k, n])) };
-  if (goal.kind === 'dummyWins' || goal.kind === 'oneShot') return goal;
+  if (goal.kind === 'dummyWins' || goal.kind === 'oneShot' || goal.kind === 'doubleKO') return goal;
   return { ...goal, n };
 }
 

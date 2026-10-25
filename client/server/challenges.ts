@@ -120,6 +120,12 @@ export const CHALLENGES: ChallengeDef[] = [
     goal: { kind: 'stackDepth', n: 30 },
     seed: 20270110, par: 56,
   },
+  {
+    id: '2027-01-10-doubleko', week: '2027-01-10', title: 'Double Knockout',
+    blurb: 'Defeat the dummy and yourself with the same effect. Fall alone, or let the dummy fall first, and the run is over.',
+    goal: { kind: 'doubleKO' },
+    seed: 20270117, par: 70,
+  },
 ];
 
 const DAY = /^(\d{4})-(\d{2})-(\d{2})$/;
