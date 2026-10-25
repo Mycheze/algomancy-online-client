@@ -26,7 +26,7 @@ import { give, giveResources, spawn, toDeployment, toNextBattle } from './util.t
 
 const DECK: CardName[] = Array.from({ length: 20 }, () => 'Penance');
 const def: ChallengeDef = { id: 'e65500', week: '2027-01-10', title: 'T', blurb: '', goal: { kind: 'doubleKO' }, seed: 65500, par: 1 };
-const pass: Action = { type: 'passPriority', seat: PLAYER };
+const passAction: Action = { type: 'passPriority', seat: PLAYER };
 const ev = (type: string, data: Record<string, unknown>): EngineEvent => ({ type, msg: '', data } as unknown as EngineEvent);
 
 test('§1 CR 104.1a / CT-409: doubleKO is met by a game-over that says the winner fell too, and by nothing else', () => {
@@ -37,7 +37,7 @@ test('§1 CR 104.1a / CT-409: doubleKO is met by a game-over that says the winne
     after.players[DUMMY]!.life = lives[1];
     after.phase = 'gameover';
     after.winner = data['winner'] as number;
-    return foldRun(newRun(def.goal, DECK), before, pass, after, [ev('gameOver', data)]);
+    return foldRun(newRun(def.goal, DECK), before, passAction, after, [ev('gameOver', data)]);
   };
   const both = fold([0, 0], { winner: DUMMY, alsoAtZero: DUMMY });
   assert.equal(both.met, true);
