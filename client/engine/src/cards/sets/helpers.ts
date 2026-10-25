@@ -44,6 +44,26 @@ export const sacrificeMeOnResolve = (g: E, ctx: EffectCtx, card: string): boolea
   return true;
 };
 
+/**
+ * CR 706.8c, 713.6 / CT-414 — the units ONE "sacrifices" instruction takes die
+ * TOGETHER, as one death batch (`E.destroyBatch`), so each still hears the
+ * others leave. Caleb, rules-questions 2025-11-23, on Perish: "Sacrifices are
+ * resolved simultaneously, so there's no window between the first and second
+ * sacrifice" (RQ 1442175942838718518); and of a Refuse Reclaimer ("Whenever
+ * another unit dies, put a +1/+1 counter on me") among Perish's sacrifices:
+ * "It would trigger but it would be dead before it was able to get any
+ * counters" (RQ 1442177903952396430). The card plans every pick first, then
+ * calls this once. Ids that have left play, and repeats, are skipped.
+ */
+export const sacrificeTogether = (g: E, ids: readonly EntityId[]): void => {
+  const units: Entity[] = [];
+  for (const id of ids) {
+    const u = g.entity(id);
+    if (u && !units.includes(u)) units.push(u);
+  }
+  g.destroyBatch(units, 'is sacrificed');
+};
+
 /** Is this resolved target (or event datum) an entity? Only entities carry an
  * `id` — a player / stack / cached / bin target does not. */
 export const isEnt = (t: unknown): t is Entity =>

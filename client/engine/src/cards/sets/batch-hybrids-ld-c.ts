@@ -99,7 +99,7 @@
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, manaOf, isUnitCard, pickUnit } from './helpers.ts';
+import { selfOf, isEnt, manaOf, isUnitCard, pickUnit, sacrificeTogether } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -728,6 +728,8 @@ card('No Hand Killer', {
         if (x === 0) { g.ev('info', 'No Hand Killer: X = 0 — nothing is sacrificed.'); return; }
         const foes = opponentsIn(g, ctx.region, ctx.controller);
         if (!foes.length) { g.ev('info', 'No Hand Killer: no opponent is present here — nobody sacrifices.'); return; }
+        // CR 713.6 / CT-414: every opponent's picks first, then one death batch
+        const all: EntityId[] = [];
         for (const seat of foes) {
           const picks: EntityId[] = [];
           for (let k = 0; k < x; k++) {
@@ -737,15 +739,10 @@ card('No Hand Killer', {
             if (id === null) break;
             picks.push(id);
           }
-          if (!picks.length) {
-            g.ev('info', `No Hand Killer: ${g.pname(seat)} has no unit here to sacrifice.`);
-            continue;
-          }
-          for (const id of picks) {
-            const u = g.entity(id);
-            if (u) g.destroy(u, 'is sacrificed');
-          }
+          if (!picks.length) g.ev('info', `No Hand Killer: ${g.pname(seat)} has no unit here to sacrifice.`);
+          all.push(...picks);
         }
+        sacrificeTogether(g, all);
       },
     },
   }],

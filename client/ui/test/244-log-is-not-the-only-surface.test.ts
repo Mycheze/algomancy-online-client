@@ -690,7 +690,10 @@ test('[CR D7.4] the derivation itself is alive: every filter it uses matches som
   // the token itself, a second site), and the life loss priced in a chosen order
   // ("Arbiter of Vitality first, then Conduit of Pain: the 3 life … becomes 5", CR 708.6a,
   // which carries the seat whose life total moves).
-  assert.equal(sites.length, 232,`the engine and apply make ${sites.length} announcements`);
+  // 232 → 233 with CT-418 (owner 2026-10-25, "Check both at the end"): the game-over
+  // E.judgeDeckOutWithLife says when a deck-out inside an effect is judged with
+  // the life totals. It carries the winner, which the game-over screen shows.
+  assert.equal(sites.length, 233,`the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');

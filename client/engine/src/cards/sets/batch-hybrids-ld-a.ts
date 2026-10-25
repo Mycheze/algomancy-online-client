@@ -113,7 +113,7 @@
 import type { CardName, EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, isSpellEffect, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, manaOf, isUnitCard, pickUnit } from './helpers.ts';
+import { selfOf, isEnt, manaOf, isUnitCard, pickUnit, sacrificeTogether } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -888,14 +888,10 @@ card('Mindburn', {
           g.ev('info', 'Mindburn: nobody has a nontoken unit or a card — it stops.');
           break;
         }
-        for (const p of plan) {
-          if (p.unit !== undefined) {
-            const u = g.entity(p.unit);
-            if (u) g.destroy(u, 'is sacrificed');
-          } else if (p.hand !== undefined) {
-            g.discardFromHand(p.seat, p.hand);
-          }
-        }
+        // CR 713.6 / CT-414: the round's sacrifices are one death batch, after its
+        // discards (each discard in plan order, as before)
+        for (const p of plan) if (p.unit === undefined && p.hand !== undefined) g.discardFromHand(p.seat, p.hand);
+        sacrificeTogether(g, plan.flatMap(p => p.unit !== undefined ? [p.unit] : []));
       }
     },
   },

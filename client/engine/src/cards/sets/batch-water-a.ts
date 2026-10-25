@@ -260,17 +260,21 @@ export const inlineModes = (g: E, name: string, region: number, seat: Seat): Inl
   return out;
 };
 
-/** CR 701.2c, 723.2: the units a Virus played mid-resolution may go on — every unit in
- * the battle region, either side (a Virus may augment an enemy) — narrowed by
- * CR 110.12 exactly as a Virus from hand is (apply.ts battleVirusHosts, CT-331):
- * applying a Virus targets its host (CR 110.10a), so a Gatekeeper of Souls in
- * the battle must be the host if it can be. */
-const virusHosts = (g: E, region: number): Entity[] => {
-  const units = g.unitsIn(region).filter(u => u.kind === 'unit' && !u.absent);
-  const kept = new Set(g.compelledTargets(units.map(u => ({ unit: u.id })), region)
-    .map(r => (r as { unit: EntityId }).unit));
-  return units.filter(u => kept.has(u.id));
-};
+/** CR 701.2c, 723.2, 723.4, 721.4a: the hosts a Virus played mid-resolution may go
+ * on — EXACTLY the hosts a Virus applied from hand in the battle may go on
+ * (`E.battleVirusHosts`): every unit in the battle region, either side (a Virus
+ * may augment an enemy), then the spells on that region's stack, then the
+ * spell tokens standing in play there, narrowed by CR 110.12 (Gatekeeper of
+ * Souls, CT-331) because applying a Virus targets its host (CR 110.10a).
+ *
+ * CT-416: the stack spells and spell tokens are hosts here too. The RAQ write-up of Tides
+ * (1396955380000755795): "Tides allows you to play Ambushes/Prophecy and apply
+ * Viruses"; Caleb, asked whether Tides can put a Virus on an enemy unit: "So,
+ * I want it to be yes" (1356456406206775407). A Virus Tides plays is applied
+ * as a Virus, and nothing narrows where a Virus may go when Tides is what
+ * plays it. The item Tides resolves cannot be a host (CR 723.4d): it has left
+ * the stack. */
+const virusHosts = (g: E, region: number): TargetRef[] => g.battleVirusHosts(region);
 
 /**
  * CR 701.2c: play `name` in an alternative mode, mid-resolution, on the push path.
@@ -301,11 +305,36 @@ const playInlineMode = (
   }
   if (mode === 'virus') {
     const hosts = virusHosts(g, ctx.region);
-    const hostId = (hosts.length === 1 ? hosts[0]!.id : ctx.choose(`${key}:host`, {
-      kind: 'electricPath', seat, prompt: `${ctx.sourceName}: which unit does ${name} augment as a Virus?`,
-      options: hosts.map(u => ({ label: g.targetLabel({ unit: u.id }), value: u.id })),
-    })) as number;
-    const host = g.entity(hostId)!;
+    // a unit host keeps its old option value (the bare id); a spell on the stack
+    // is offered as its { stack } ref (CT-416)
+    const allUnits = hosts.every(r => 'unit' in r && g.entity(r.unit)?.kind === 'unit');
+    const picked = (hosts.length === 1 ? hosts[0]! : (() => {
+      const v = ctx.choose(`${key}:host`, {
+        kind: 'electricPath', seat,
+        prompt: allUnits
+          ? `${ctx.sourceName}: which unit does ${name} augment as a Virus?`
+          : `${ctx.sourceName}: what does ${name} augment as a Virus?`,
+        options: hosts.map(r => ({ label: g.targetLabel(r), value: 'unit' in r ? r.unit : r })),
+      });
+      return typeof v === 'number' ? { unit: v } : v as TargetRef;
+    })()) as TargetRef;
+    if ('stack' in picked) {
+      // CR 723.4: onto a spell on the stack, as `doAugment`'s stack branch builds it
+      const target = g.s.stack.find(it => it.id === picked.stack)!;
+      const item: StackItem = {
+        id: g.s.nextId++, kind: 'virus', card: name,
+        label: `${name} (Virus augment on ${target.label})`, controller: seat,
+        region: target.region, negated: false, parts: [], hostStack: target.id,
+        ...(owner !== undefined && owner !== seat ? { owner } : {}),
+      };
+      const ev = g.ev('targeted', `${name} targets ${target.label} on the stack.`,
+        { item: target.id, region: target.region });
+      g.fireEvent('targeted', ev);
+      g.pushItem(item);
+      return { outcome: 'stacked' };
+    }
+    // a unit, or (CR 721.4a, CT-407) a spell token in play
+    const host = g.entity((picked as { unit: EntityId }).unit)!;
     const item: StackItem = {
       id: g.s.nextId++, kind: 'virus', card: name,
       label: `${name} (Virus augment on ${host.card})`, controller: seat,

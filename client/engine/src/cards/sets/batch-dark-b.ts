@@ -140,7 +140,7 @@
 import type { EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, isSelfMod, type EffectCtx, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, manaOf, isUnitCard } from './helpers.ts';
+import { selfOf, isEnt, manaOf, isUnitCard, sacrificeTogether } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -455,10 +455,9 @@ card('Grim Bargain', {
       let draws = 0;
       for (const id of planned) {
         const u = g.entity(id);
-        if (!u) continue;
-        if (u.controller === ctx.controller && !u.token) draws++;
-        g.destroy(u, 'is sacrificed');
+        if (u && u.controller === ctx.controller && !u.token) draws++;
       }
+      sacrificeTogether(g, planned);   // CR 713.6 / CT-414: one batch
       if (draws > 0) {
         g.ev('info', `Grim Bargain: ${g.pname(ctx.controller)} draws ${draws}.`);
         g.draw(ctx.controller, draws);

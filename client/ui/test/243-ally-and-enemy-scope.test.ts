@@ -456,7 +456,9 @@ test('CR 601.4e every ally and enemy list a card builds for itself names a regio
   // gained a `when` that reads `g.unitsIn(self.region)` (a region, so the
   // assertion below still holds). 79 → 80 because Tides of the Cosmos'
   // Virus mode lists its hosts with `g.unitsIn(region)` — the battle region.
-  assert.equal(sites, 80, 'board reads in card code — the derivation must keep finding them');
+  // 80 → 79 with CT-416: that list is now `E.battleVirusHosts(region)`, the one
+  // battle Virus host list, which lives in the engine, not in card code.
+  assert.equal(sites, 79, 'board reads in card code — the derivation must keep finding them');
   assert.deepEqual(bare, [], 'a card read the board without naming a region');
 
   // ONE site walks every region, and it is not a unit set: it builds the menu

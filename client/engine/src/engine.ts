@@ -235,6 +235,40 @@ type ReplaceChooser<Ev> = (groups: Replacer<Ev>[], ev: Ev, at: {
   applied: Replacer<Ev>[];
 }) => Replacer<Ev>[];
 
+/** CR 608.7b, 713.6 / CT-413: a unit a sweep has already decided dies ({Deadly},
+ * the collapsed Unaware reading, the Pure reading), with the line that says
+ * why (`say`, emitted as the batch is disposed). Handed to `checkDeaths`, which disposes it in the same batch as the
+ * lethal-damage deaths. */
+interface Doomed { u: Entity; say: () => void }
+/**
+ * CR 723.4a: the stack-item kinds a Virus may be augmented onto.
+ *
+ * SPELLS, and only spells. Caleb 2025-04-06 asks and answers exactly this
+ * ("can you augment a spell with a virus, such as applying Chitin Shredder as
+ * an augment on Arc Lightning? Yes"), and 2025-03-06 adds spell TOKENS by
+ * name. A spell UNIT is a spell on the way to being a body, and its viruses
+ * simply arrive with it as the augment mods they already were.
+ *
+ * Deliberately NOT here, each for its own reason:
+ *  - 'triggered' / 'activated' — an ability is an effect but not a spell, and
+ *    it has no card of its own for a mod to sit under. CR 700.1 lets you NEGATE
+ *    one; that is not the same permission.
+ *  - 'virus' — a virus is itself a mod in flight, not a host.
+ *  - 'unit' — a {Battle} unit mid-cast. A virus wants to be a mod on the body
+ *    it lands on, which is the ordinary augment, available the moment it
+ *    spawns; nothing in the rules asks for the mid-cast version. CR 700.1a does NOT
+ *    reopen this: it made a unit on the stack an EFFECT (so it can be negated
+ *    and it is a "nonspell effect"), and the same sentence says a unit is not
+ *    a SPELL — which is what this set is a list of ("onto a giant fireball
+ *    you're casting").
+ *  - 'ambush' — an ambusher is a unit played face-down, not a spell, and CR 803.6h
+ *    only makes it negatable.
+ * All four exclusions are ⚠ judgement calls, not sourced answers — see
+ * CR 723.4e.
+ */
+export const STACK_VIRUS_HOSTS = new Set<StackItem['kind']>(['spell', 'spellUnit', 'spellToken']);
+
+
 export function other(seat: Seat): Seat { return 1 - seat; }
 
 /** Which hidden simultaneous segment is this state in, if any?
@@ -2425,7 +2459,7 @@ export class E {
    * every stat read inside the interaction (lethal arithmetic, column power,
    * the commit's death read, `unaware`) takes layers 1-3 without a special
    * case at any site. It is an E-instance field, never state: it exists only
-   * while an interaction is being computed, and `sweepPureDeaths` settles the
+   * while an interaction is being computed, and `pureVictims` decides the
    * deaths that reading implies before it is lifted — the state-based check
    * after it reads the unit outside any interaction again.
    */
@@ -2447,18 +2481,21 @@ export class E {
   private pureAmong(involved: readonly (Entity | undefined)[]): boolean {
     return involved.some(e => !!e && this.effAttrs(e).has('Pure'));
   }
-  /** CR 802.25e, 802.25f: kill what the Pure reading has already killed —
-   * `sweepCollapsedDeaths`'s twin, called while the blind is still on. */
-  private sweepPureDeaths(ids: Iterable<EntityId>): void {
+  /** CR 802.25e, 802.25f: who the Pure reading has already killed —
+   * `collapsedVictims`'s twin, called while the blind is still on. It only
+   * DECIDES: the deaths are disposed by `checkDeaths(doomed)`, in one batch
+   * with the rest of the interaction's deaths (CR 713.6, CT-413). */
+  private pureVictims(ids: Iterable<EntityId>): Doomed[] {
+    const out: Doomed[] = [];
     for (const id of ids) {
       const u = this.entity(id);
       if (!u) continue;
       const [p, t] = this.effStats(u);
       if (t > 0 && u.damage < t) continue;
-      this.ev('info',
-        `Pure: ${u.card} is read at ${p}/${t}, without its stat attributes — it dies.`, { unit: id });
-      this.destroy(u, 'dies');
+      out.push({ u, say: () => this.ev('info',
+        `Pure: ${u.card} is read at ${p}/${t}, without its stat attributes — it dies.`, { unit: id }) });
     }
+    return out;
   }
 
   /**
@@ -2499,7 +2536,9 @@ export class E {
     return false;
   }
   /**
-   * CR 802.9e: kill whatever the collapsed reading has already killed.
+   * CR 802.9e: who the collapsed reading has already killed. It only DECIDES:
+   * the deaths are disposed by `checkDeaths(doomed)`, in one batch with the
+   * interaction's lethal-damage deaths (CR 713.6, CT-413).
    *
    * `checkDeaths` is the state-based sweep and it reads `effStats`, so it
    * cannot see that a Robot 7 read 0 defense in the exchange it just lost, or
@@ -2508,16 +2547,17 @@ export class E {
    * an exchange, over its participants, never globally: outside an interaction
    * a Robot 7 is a 7/7 and stays one.
    */
-  private sweepCollapsedDeaths(ids: Iterable<EntityId>): void {
+  private collapsedVictims(ids: Iterable<EntityId>): Doomed[] {
+    const out: Doomed[] = [];
     for (const id of ids) {
       const u = this.entity(id);
       if (!u) continue;
       const [p, t] = this.printedStats(u);
       if (t > 0 && u.damage < t) continue;
-      this.ev('info',
-        `Unaware: ${u.card} is read at its printed ${p}/${t} — it dies.`, { unit: id });
-      this.destroy(u, 'dies');
+      out.push({ u, say: () => this.ev('info',
+        `Unaware: ${u.card} is read at its printed ${p}/${t} — it dies.`, { unit: id }) });
     }
+    return out;
   }
   /** CR 709.4b, 709.4c, 802.1j: the stat-layer attrs a unit has — augment
    * mods, its own printed and applied ones, and what its column shares. Only
@@ -3215,6 +3255,11 @@ export class E {
    */
   deckedOut(seat: Seat): void {
     if (this.s.winner !== null || this.s.lesson) return;
+    // CR 104.5, 104.1b / CT-418 (owner, 2026-10-25, "Check both at the end"): inside one
+    // effect (a `lifeBatch`) the deck-out waits for the effect to finish, as a 0
+    // life total does, and `checkLifeTotals` judges both together. The draw has
+    // drawn what was there; the effect goes on.
+    if (this.lifeBatchDepth > 0) { this.deckedInBatch.add(seat); return; }
     let loser: Seat = seat;
     const shared = this.s.mode !== 'constructed';
     if (shared) {
@@ -5293,11 +5338,20 @@ export class E {
     this.lifeBatchDepth++;
     try {
       body();
+    } catch (sig) {
+      // a suspension or rewind: the work is replayed, and so is any deck-out in it
+      if (this.lifeBatchDepth === 1) this.deckedInBatch.clear();
+      throw sig;
     } finally {
       this.lifeBatchDepth--;
     }
     if (this.lifeBatchDepth === 0) this.checkLifeTotals();
   }
+
+  /** CR 104.5, 104.1b / CT-418: the seats whose draw found an empty deck and recycle pile
+   * inside the current `lifeBatch` — judged with the life totals when it ends.
+   * Per-apply, never serialized, like `lifeBatchDepth`. */
+  private deckedInBatch = new Set<Seat>();
 
   /**
    * CR 104.1a / CT-409: end the game if a life total is at 0 or less.
@@ -5310,6 +5364,9 @@ export class E {
    */
   checkLifeTotals(): void {
     if (this.s.winner !== null) return;
+    const decked = [...this.deckedInBatch];
+    this.deckedInBatch.clear();
+    if (decked.length) { this.judgeDeckOutWithLife(decked); return; }
     const down = this.s.players.filter(p => p.life <= 0);
     if (!down.length) return;
     let loser: Seat;
@@ -5332,6 +5389,50 @@ export class E {
           : `the tie at ${w}: it goes against the initiative player. ***`),
         { winner, alsoAtZero: winner });
     }
+    throw new GameEnded();
+  }
+
+  /**
+   * CR 104.5, 104.1b / CT-418 — a deck-out inside one effect, judged when the effect has
+   * finished, together with the life totals. Owner, 2026-10-25, asked about one
+   * effect that brings the opponent to 0 and then makes you draw from nothing:
+   * "Check both at the end".
+   *
+   * The rule chosen: a decked seat and a seat at 0 or less have each LOST at the
+   * same moment.
+   *   · constructed: the losers are every decked seat and every seat at 0 or
+   *     less. One loser loses. Two losers are a double loss, decided as CR 104.1b
+   *     decides two players at 0: the higher life total wins (negative totals
+   *     count), and on equal totals the initiative player loses.
+   *   · a shared deck (live draft): a deck-out ends the game on the higher life
+   *     total whoever drew (CR 104.5b), so that is the answer here too — it
+   *     already covers a player at 0.
+   * Outside an effect (the card step) `deckedOut` still ends the game at once.
+   */
+  private judgeDeckOutWithLife(decked: Seat[]): void {
+    const [a, b] = this.s.players as [PlayerState, PlayerState];
+    const byLife = (): Seat => (a.life < b.life ? a.seat : b.life < a.life ? b.seat : this.initiative);
+    const shared = this.s.mode !== 'constructed';
+    const losers = new Set<Seat>(shared ? [] : decked);
+    if (!shared) for (const p of this.s.players) if (p.life <= 0) losers.add(p.seat);
+    const loser: Seat = shared || losers.size > 1 ? byLife() : [...losers][0]!;
+    const winner = other(loser);
+    this.s.winner = winner;
+    this.s.phase = 'gameover';
+    this.s.resolving = null;   // nothing is resolving any more — the game is over
+    const w = this.player(winner).life, l = this.player(loser).life;
+    const onLife = w > l ? `on the higher life total (${w} to ${l})` : `the tie at ${w}: it goes against the initiative player`;
+    const msg = shared
+      ? `*** The deck has run out — the game ends. ${this.pname(winner)} wins ${onLife}. ***`
+      : losers.size > 1
+        ? `*** Both players lost at once (out of cards or at 0 life) — ${this.pname(winner)} wins ${onLife}. ***`
+        : decked.includes(loser)
+          ? `*** ${this.pname(loser)} has to draw from an empty deck and loses — ${this.pname(winner)} wins! ***`
+          : `*** ${this.pname(winner)} wins! ***`;
+    this.ev('gameOver', msg, {
+      winner, deckedOut: decked[0]!,
+      ...(!shared && losers.size > 1 && this.player(winner).life <= 0 ? { alsoAtZero: winner } : {}),
+    });
     throw new GameEnded();
   }
 
@@ -7020,7 +7121,7 @@ export class E {
       // Phytochemical Protection).
       const through = n;
       // CR 802.9e: this hit was read at printed stats, so its lethality is settled
-      // by `sweepCollapsedDeaths` below rather than by the state-based sweep.
+      // by `collapsedVictims` below rather than by the state-based sweep.
       if (collapsed(u)) collapsedHit.add(u.id);
       // CR 802.25g: every rider below is read against THIS recipient
       const vs = attrsVs(u);
@@ -7069,7 +7170,7 @@ export class E {
        *    trigger to put counters on it."* BOTH. The counters go on and the
        *    unit dies anyway. Combat has always done this (`L.deadlyHit` is
        *    marked in `assignColumnDamage` regardless of {Poisonous}, and
-       *    `sweepDeadly` kills through it) — this path was the one that
+       *    `deadlyVictims` kills through it) — this path was the one that
        *    disagreed with it, which is the whole subject of CR 802.3e and 802.3g: the owner,
        *    2026-08-28, *"deadly works on spell effects and everything. Just
        *    like powerful."*
@@ -7086,7 +7187,7 @@ export class E {
       // CR 802.9: lethality on a collapsed hit is measured on PRINTED defense —
       // "Haboob kills anything that has 1 defense printed at the card level",
       // however many +1/+1 counters are on it. The kill itself is
-      // `sweepCollapsedDeaths` below; `checkDeaths` reads effStats and would
+      // `collapsedVictims` below; `checkDeaths` reads effStats and would
       // let the pumped victim walk.
       const [, t] = collapsed(u) ? this.printedStats(u) : this.effStats(u);
       /**
@@ -7174,21 +7275,19 @@ export class E {
     if (srcAttrs.has('Reaping') && !srcPure && !this.killWatch?.reaps && killed.length) {
       this.reapingDraw(ctx.controller);
     }
-    if (srcAttrs.has('Deadly')) {
-      for (const u of killed) {
-        if (this.entity(u.id)) {
-          this.ev('info', `${ctx.sourceName} is Deadly — ${u.card} dies.`);
-          this.destroy(u, 'dies');
-        }
-      }
-    }
-    // CR 802.9e: settle the deaths the collapsed reading implies before the ordinary
-    // state-based sweep, which reads effStats and cannot see them.
-    this.sweepCollapsedDeaths(collapsedHit);
+    // CR 608.7b, 713.6 / CT-413: every death this batch implies is disposed in ONE
+    // batch — the Deadly kills, then the collapsed and Pure readings', then the
+    // ordinary lethal ones — so they hear each other (CR 706.8c)
+    const doomed: Doomed[] = srcAttrs.has('Deadly')
+      ? killed.filter(u => this.entity(u.id)).map(u => ({ u, say: () => this.ev('info', `${ctx.sourceName} is Deadly — ${u.card} dies.`) }))
+      : [];
+    // CR 802.9e: the deaths the collapsed reading implies, which the ordinary
+    // state-based sweep reads effStats for and cannot see
+    doomed.push(...this.collapsedVictims(collapsedHit));
     // CR 802.25e (CT-260): and the deaths the Pure reading implies — the Pure-paired
     // recipients, read while the blind is still on
-    this.sweepPureDeaths(order.filter(r => r.u && pureWith(r.u)).map(r => r.u!.id));
-    this.checkDeaths();
+    doomed.push(...this.pureVictims(order.filter(r => r.u && pureWith(r.u)).map(r => r.u!.id)));
+    this.checkDeaths(doomed);
   }
 
   /** CR 603.2a orthogonal formation adjacency, read for UNITS: front/back within a
@@ -7403,8 +7502,17 @@ export class E {
    * The second is here as well as in removeFromFormation() because card code
    * splices `b.columns` directly (Hooba-Nan, Shard Sprite, Tiderunner), and a
    * state-based action nobody can forget to run is the whole point. */
-  checkDeaths(): Entity[] {
-    const dead = Object.values(this.s.entities).filter(u => this.isLethal(u));
+  checkDeaths(doomed: readonly Doomed[] = []): Entity[] {
+    // CR 608.7b, 713.6 / CT-413: the units a sweep already decided die (Deadly,
+    // the collapsed and the Pure readings) die in the SAME batch as the lethal
+    // ones, first and in the order decided; a unit doomed twice is announced once
+    const dead: Entity[] = [];
+    for (const d of doomed) {
+      if (this.entity(d.u.id) !== d.u || dead.includes(d.u)) continue;
+      d.say();
+      dead.push(d.u);
+    }
+    for (const u of Object.values(this.s.entities)) if (!dead.includes(u) && this.isLethal(u)) dead.push(u);
     this.destroyBatch(dead, 'dies');
     this.repairFormation();
     return dead;
@@ -9190,8 +9298,8 @@ export class E {
    * Returns `out` itself (same array, not a copy) when nothing compels, so
    * `restrictTargets` can tell the two cases apart by identity.
    *
-   * Public for one other caller: a battle-window Virus's HOST choice (apply.ts
-   * `battleVirusHosts`, CT-331), which is a target choice too (CR 110.10a). */
+   * Public for one other caller: a battle-window Virus's HOST choice
+   * (`battleVirusHosts` below, CT-331), which is a target choice too (CR 110.10a). */
   compelledTargets(out: TargetRef[], region: number, chosen?: readonly ResolvedTarget[]): TargetRef[] {
     const gates = this.mustBeTargetedIn(region);
     for (const t of chosen ?? []) if (isEntityTarget(t)) gates.delete(t.id);
@@ -9201,6 +9309,40 @@ export class E {
       if (forced.length) cands = forced;
     }
     return cands;
+  }
+
+  /**
+   * CR 110.10a, 110.12 (CT-331): every host a battle-window Virus may be applied
+   * to in `region` right now — the units standing there, then the spells on that
+   * region's stack (CR 723.4) — narrowed by Gatekeeper of Souls' "I must be
+   * targeted if able" through the SAME compulsion the target collector applies
+   * (`E.compelledTargets`). Applying a Virus targets its host, so while a
+   * Gatekeeper stands in the battle the Virus goes onto it or onto nothing: not
+   * onto another unit, and not onto a spell on the stack either, exactly as an
+   * "any target" spell may not aim at a player then.
+   *
+   * ONE list for both sides of the fuzzer's "legalActions lied" check:
+   * `pushBattleAugments` offers it and both battle branches of `doAugment`
+   * refuse anything outside it. CT-416: and the Virus mode of Tides of the
+   * Cosmos reads it too, so a Virus it plays reaches every host a Virus from
+   * hand reaches. With no Gatekeeper it is the old list, in the
+   * old order.
+   */
+  battleVirusHosts(region: number): TargetRef[] {
+    const out: TargetRef[] = this.unitsIn(region).map(u => ({ unit: u.id }));
+    for (const it of this.s.stack) {
+      if (STACK_VIRUS_HOSTS.has(it.kind) && it.region === region) out.push({ stack: it.id });
+    }
+    // CR 721.4a / CT-407: a spell token STANDING IN PLAY in the battle's region,
+    // either player's. Caleb (RQ 1364998183226179735), asked "Can you Augment
+    // Fireball in play or only Fireball on stack?": "Honestly I don't see why you
+    // couldn't"; and of Viruses, "you can hit enemy spells" (RQ
+    // 1347270455198879858). Owner 2026-10-24: "Yes, allow it". Appended LAST so
+    // every unit and stack offer keeps its index.
+    for (const t of Object.values(this.s.entities)) {
+      if (t.kind === 'spellToken' && t.region === region && !t.absent) out.push({ unit: t.id });
+    }
+    return this.compelledTargets(out, region);
   }
 
   /** Stage two of `targetCandidates`: the printed restriction, in two passes.
@@ -9282,18 +9424,31 @@ export class E {
    * options (answered before anything can leave a bin) and never a
    * suspension's answers or snapshot (a replay re-runs from the snapshot).
    * Each ref object is adjusted once, however many paths reach it.
+   *
+   * CR 405.6b / CT-415 — AND THE COPY AN EVENT NAMES FOLLOWS IT TOO. A 'died' or
+   * 'trashed' event stamps `binNth` (with `card` and `binSeat ?? seat`): the
+   * copy the event's card is in that bin, read back by `eventBinSlot` when a
+   * waiting responder resolves (Biomass Devourer, Cthyrian Rector, Murkdrop
+   * Distiller) and by `notSelfBinCard`. The stamp is the same (name, nth)
+   * identity as a BinRef and slides the same way, so the events held by the
+   * same live items, by the trigger queue and by a pay-to-trigger gate are
+   * re-indexed here by the same rule. Each event data object once.
    */
   private reindexBinRefs(seat: Seat, card: CardName, removedNth: number): void {
     const items = new Set<StackItem>(this.liveItems);
     const add = (it: StackItem | null | undefined): void => { if (it) items.add(it); };
+    const events = new Set<Record<string, unknown>>();
+    const addEv = (ev: EngineEvent | null | undefined): void => { if (ev?.data) events.add(ev.data); };
     for (const it of this.s.stack) add(it);
     add(this.s.resolving);
+    for (const t of this.s.triggerQueue) addEv(t.event);
     for (const sus of [this.s.suspension, this.resumedSuspension]) {
       if (!sus) continue;
-      const held = sus as { item?: StackItem; moreItems?: StackItem[]; aimed?: StackItem[] };
+      const held = sus as { item?: StackItem; moreItems?: StackItem[]; aimed?: StackItem[]; trigger?: PendingTrigger };
       add(held.item);
       for (const it of held.moreItems ?? []) add(it);
       for (const it of held.aimed ?? []) add(it);
+      addEv(held.trigger?.event);
     }
     for (const it of [...items]) for (const a of it.burstRest?.aimed ?? []) add(a);   // a burst being aimed
     const done = new Set<BinRef>();
@@ -9311,6 +9466,15 @@ export class E {
     for (const it of items) {
       for (const part of it.parts) part.targets.forEach(fix);
       for (const c of it.asYouPlay?.copies ?? []) c.targets?.forEach(fix);
+      addEv(it.event);
+    }
+    // CT-415: the event stamps, by the same rule (a gone copy is -1, which
+    // `eventBinSlot` answers with "gone" and `notSelfBinCard` with "not me")
+    for (const d of events) {
+      const n = d['binNth'];
+      if (typeof n !== 'number' || n < 0 || n < removedNth) continue;
+      if (d['card'] !== card || (d['binSeat'] ?? d['seat']) !== seat) continue;
+      d['binNth'] = n === removedNth ? -1 : n - 1;
     }
   }
 
@@ -14583,8 +14747,9 @@ export class E {
           return;
         }
         const sub = b.damageStep;
-        this.combatSubStep(sub);
-        this.checkDeaths();   // deaths + promotion between sub-steps, no priority (CR 608.3e)
+        // deaths + promotion between sub-steps, no priority (CR 608.3e); the
+        // sub-step's Deadly / collapsed / Pure victims in the same batch (CT-413)
+        this.checkDeaths(this.combatSubStep(sub));
         const next = sub === 'Swift' ? 'normal' : sub === 'normal' ? 'Sluggish' : 'after';
         /**
          * CR 608.3b — A SPLIT DAMAGE STEP IS SEVERAL STEPS, and this is the
@@ -14978,11 +15143,11 @@ export class E {
    * to players, Lethal and Thieving read it in that order). The order of the
    * aftermath is the rules' order — each step's comment says why it sits
    * where it does — and the ledger lives for exactly this sub-step. */
-  private combatSubStep(sub: DamageSubStep): void {
+  private combatSubStep(sub: DamageSubStep): Doomed[] {
     // CR 802.25e, 802.25f (CT-260): every unit of a Pure exchange is read without
     // its stat attributes for the whole sub-step — the election, the
     // assignment, the commit and the death sweep
-    this.withPureBlind(this.pureExchangeUnits(this.s.battle!), () => this.combatSubStepRun(sub));
+    return this.withPureBlind(this.pureExchangeUnits(this.s.battle!), () => this.combatSubStepRun(sub));
   }
 
   /** the units standing in a Pure exchange (CR 802.25b) right now */
@@ -14996,7 +15161,8 @@ export class E {
     return out;
   }
 
-  private combatSubStepRun(sub: DamageSubStep): void {
+  private combatSubStepRun(sub: DamageSubStep): Doomed[] {
+    let doomedOut: Doomed[] = [];
     const b = this.s.battle!;
     // CR 608.6h: elective damage splits are asked for FIRST — before the ledger
     // exists, before any event is emitted — so a suspension here leaves
@@ -15012,18 +15178,25 @@ export class E {
       // its length), so they do not outlive it.
       b.assignPlans = undefined;
       const shielded = this.commitUnitDamage(b, L);
-      this.sweepDeadly(L, shielded);
-      // CR 802.9e {Unaware}: an exchange collapsed to printed stats settles its own
-      // deaths, because the state-based sweep reads effStats and would keep a
-      // Robot 7 that just fought as a 0/0 alive. Beside sweepDeadly on purpose:
-      // both are "this exchange killed something the ordinary check misses".
-      this.sweepCollapsedDeaths(L.collapsed);
-      // CR 802.25e (CT-260): and a Pure exchange settles the deaths its
-      // stat-attribute-blind reading implies, the same way
-      if (this.pureBlind) this.sweepPureDeaths(this.pureBlind);
-      this.afflictingAftermath(L);
+      const doomed = [
+        ...this.deadlyVictims(L, shielded),
+        // CR 802.9e {Unaware}: an exchange collapsed to printed stats settles its own
+        // deaths, because the state-based sweep reads effStats and would keep a
+        // Robot 7 that just fought as a 0/0 alive. Beside Deadly on purpose:
+        // both are "this exchange killed something the ordinary check misses".
+        ...this.collapsedVictims(L.collapsed),
+        // CR 802.25e (CT-260): and a Pure exchange settles the deaths its
+        // stat-attribute-blind reading implies, the same way
+        ...(this.pureBlind ? this.pureVictims(this.pureBlind) : []),
+      ];
+      this.afflictingAftermath(L, doomed);
       this.commitPlayerDamage(b, L);
       this.thievingDraws(L);
+      // CR 608.7b, 713.6 / CT-413: decided here, read inside the interaction, but
+      // disposed by the pump's state check after this sub-step — ONE batch with
+      // the lethal-damage deaths. Set only when the run completes: a seam that
+      // rewinds (orderSeamRun) re-runs it from scratch.
+      doomedOut = doomed;
     };
     // CR 708.4a: where two Oorblaks, or two Counter Thieves, could each take what
     // this sub-step deals, the sub-step is a seam the player is asked from
@@ -15035,6 +15208,7 @@ export class E {
       || thieves >= 2 || (thieves >= 1 && this.amountReplacers(b.region).length >= 1);
     if (mayAsk) this.orderSeamRun('combat', `combat:${sub}`, run);
     else run();
+    return doomedOut;
   }
 
   /** CR 708.4a: how many faces radiate `key` in `region` (see `orderSeamRun`) */
@@ -15194,7 +15368,7 @@ export class E {
    * double, so half the pool is its share (rounded up — CR 608.6e).
    * CR 608.6e: in an exchange collapsed by {Unaware} the victim is priced at the
    * defense PRINTED on its card, so a Robot 7 needs 0 and a counter-laden
-   * 1/1 needs 1. The kill itself is `sweepCollapsedDeaths`, because a
+   * 1/1 needs 1. The kill itself is `collapsedVictims`, because a
    * 0-defense victim is assigned nothing at all here.
    * Shared by the assignment walk and the CR 608.6a election (floors AND option
    * ranges) — one price, one place. `prevPool` is what this sub-step's ledger
@@ -15559,8 +15733,8 @@ export class E {
       if (hit.blessedTo !== undefined) this.blessedGain(hit.blessedTo, received, hit.blessedFrom ?? 'combat');
       // CR 608.7b: the same `lethal` fact the effect-damage path puts on its
       // 'damage' event, computed against the three doors out of this
-      // sub-step in the order `combatSubStep` runs them — `sweepDeadly`
-      // (CR 802.3d), `sweepCollapsedDeaths` (CR 802.9e, printed defense) and the
+      // sub-step in the order `combatSubStep` runs them — `deadlyVictims`
+      // (CR 802.3d), `collapsedVictims` (CR 802.9e, printed defense) and the
       // ordinary state check on effective defense. A listener asking "did I
       // survive this?" (Molten Tormentor) may not read marked damage alone.
       const [, ct] = L.collapsed.has(id) ? this.printedStats(u) : this.effStats(u);
@@ -15599,16 +15773,17 @@ export class E {
   }
 
   /** CR 802.3a {Deadly}: any damage from a Deadly column kills — unless none was
-   * actually dealt (CR 802.3h `shielded`). */
-  private sweepDeadly(L: CombatLedger, shielded: Set<EntityId>): void {
+   * actually dealt (CR 802.3h `shielded`). It only DECIDES: the deaths are
+   * disposed by `checkDeaths(doomed)` in one batch with the sub-step's
+   * lethal-damage deaths (CR 608.7b, 713.6, CT-413). */
+  private deadlyVictims(L: CombatLedger, shielded: Set<EntityId>): Doomed[] {
+    const out: Doomed[] = [];
     for (const id of L.deadlyHit) {
       if (shielded.has(id)) continue;   // CR 802.3h: no damage dealt, nothing to kill through
       const u = this.entity(id);
-      if (u) {
-        this.ev('info', `Deadly — ${u.card} dies.`);
-        this.destroy(u, 'dies');
-      }
+      if (u) out.push({ u, say: () => this.ev('info', `Deadly — ${u.card} dies.`) });
     }
+    return out;
   }
 
   /** CR 802.23d {Afflicting}: whatever an afflicting column damaged and killed gives
@@ -15617,8 +15792,8 @@ export class E {
    * runs only AFTER this sub-step returns — so run it here first, or a
    * straightforward combat kill would fall outside the diff. Idempotent: the
    * pump's own checkDeaths then finds nothing left to do. */
-  private afflictingAftermath(L: CombatLedger): void {
-    if (L.afflicted.size) this.checkDeaths();
+  private afflictingAftermath(L: CombatLedger, doomed: readonly Doomed[]): void {
+    if (L.afflicted.size) this.checkDeaths(doomed);
     for (const bucket of L.afflicted.values()) {
       this.afflictingKills(L.beforeUnits, bucket.label, bucket.ids);
     }

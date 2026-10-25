@@ -142,7 +142,7 @@ import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, eventBinSlot, notSelfBinCard, type EffectDef } from '../dsl.ts';
 import { transformsInto } from '../registry.ts';
-import { selfOf, isEnt, manaOf, isUnitCard, sacrificeMeOnResolve } from './helpers.ts';
+import { selfOf, isEnt, manaOf, isUnitCard, sacrificeMeOnResolve, sacrificeTogether } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -457,10 +457,7 @@ const lurkingDread: EffectDef = {
       }
       picks.push(v as EntityId);
     }
-    for (const id of picks) {
-      const u = g.entity(id);
-      if (u) g.destroy(u, 'is sacrificed');
-    }
+    sacrificeTogether(g, picks);   // CR 713.6 / CT-414: the two die together
     // take it out of whichever zone still holds it, then put it into play
     const bi = g.player(seat).bin.lastIndexOf('Lurking Dread');
     let owner: Seat = seat;                                // CR 102.4 / CT-233
