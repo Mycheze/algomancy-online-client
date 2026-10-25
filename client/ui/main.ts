@@ -2083,8 +2083,10 @@ function relayout(): void {
   placeStackWindow();
   placeCasting();
   // CT-369: the pick dialog is centred in the window left of the rail
-  $app.style.setProperty('--pick-railclear',
-    `${railClearance(innerWidth, document.querySelector('#app > .side')?.getBoundingClientRect() ?? null)}px`);
+  if (document.querySelector('.overlay.pickover')) {
+    $app.style.setProperty('--pick-railclear',
+      `${railClearance(innerWidth, document.querySelector('#app > .side')?.getBoundingClientRect() ?? null)}px`);
+  }
   // the windows placed above are arrow endpoints (the stack, the card being
   // played): an arrow measured before they moved points at where they were
   repaintArrows();
@@ -7647,6 +7649,7 @@ function renderNow(): boolean {
   $app.classList.toggle('v2', regionsBoard());   // the regions board (style.css §lboard)
   ensureDraftUi();
   ensureBottomUi();
+  $app.classList.toggle('pickup', pickOpen());   // CT-369: the rail stands over the pick's dim
   ensureCounterPrefill();
   ensureBlockKeys();
   modHostCache = moddingHosts();   // #4: legal hosts for a mod-in-progress glow

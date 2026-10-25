@@ -4153,12 +4153,14 @@ html.touch .remind, html.touch .remindrow:not(:has(b)) { display: none; }
 /* CT-369: the rail stays usable while the pick is up — above the pick's dim
    (a click on report used to land on the dim, or on the box's own hide button,
    and hid the pick instead), with the box centred in the rest of the window
-   (main.ts relayout sets --pick-railclear from ui/railclear.ts). Not under
-   900px, where the regions board's rail is a drawer that already sits above. */
+   (main.ts relayout sets --pick-railclear from ui/railclear.ts). `.pickup` is
+   main.ts's flag for "the pick is up" (a class, not a :has(), so test 368's
+   cascade can read it). Not under 900px, where the regions board's rail is a
+   drawer that already sits above. */
 .overlay.pickover { padding-right: var(--pick-railclear, 0px); }
 .overlaybox.pickbox { max-width: 100%; }
 @media (min-width: 901px) {
-  #app.board:has(> .overlay.pickover) > .side { position: relative; z-index: 59; }
+  #app.board.pickup > .side { position: relative; z-index: 59; }
 }
 .pickbox .draftpanel { border: none; background: none; margin: 0; padding: 0; }
 .pickbox .draftpanel .zone { gap: 8px; }

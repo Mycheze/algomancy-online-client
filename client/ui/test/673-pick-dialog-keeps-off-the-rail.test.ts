@@ -43,12 +43,13 @@ function zOf(selector: string): number {
 }
 
 test('CT-369: while the pick is up the rail stands above its dim, and the box keeps to the window left of it', () => {
-  assert.ok(zOf('#app.board:has(> .overlay.pickover) > .side') > zOf('.overlay.pickover'),
+  assert.ok(zOf('#app.board.pickup > .side') > zOf('.overlay.pickover'),
     'the rail is above the pick dim, so a click on report reaches report');
-  assert.ok(zOf('#app.board:has(> .overlay.pickover) > .side') < zOf('.overlay'),
+  assert.ok(zOf('#app.board.pickup > .side') < zOf('.overlay'),
     'and still under every other dialog, which may open over the pick (the judge, the rules)');
   assert.match(CSS, /\.overlay\.pickover \{ padding-right: var\(--pick-railclear, 0px\); \}/);
   assert.match(CSS, /\.overlaybox\.pickbox \{ max-width: 100%; \}/, 'a box never wider than what is left');
   assert.match(MAIN, /setProperty\('--pick-railclear',\s*`\$\{railClearance\(innerWidth,/,
     'relayout (after every paint and resize) measures the rail and sets the clearance');
+  assert.match(MAIN, /\$app\.classList\.toggle\('pickup', pickOpen\(\)\)/, 'and the board says when the pick is up');
 });

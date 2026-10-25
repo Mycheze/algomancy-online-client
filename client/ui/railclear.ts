@@ -8,7 +8,7 @@
  * button and land on the dim outside the box instead, which hides the pick too.
  *
  * So while the pick is up the rail stands above the pick's dim (style.css,
- * `:has(> .overlay.pickover)`), and the dialog is centred in what is left of
+ * `#app.board.pickup > .side`), and the dialog is centred in what is left of
  * the window: this is how much to leave clear on the right. Pure, so a test
  * can hand it boxes; main.ts relayout() applies it as `--pick-railclear`.
  */
