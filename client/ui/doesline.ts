@@ -72,7 +72,7 @@ export interface SlotContext {
   /** escapes the template's own words (main.ts passes esc; tests identity) */
   text: (s: string) => string;
   /** CT-194: the item deals double damage ({Powerful}) — its own "Deal N
-   * damage" says the doubled number, and why (`doublesDamage`). The simple
+   * damage" says the doubled number, and why. The simple
    * case of `damage`, which wins when both are given. */
   powerful?: boolean;
   /** CT-370: the item's own damage as it will land (`damagePricer`) */
@@ -427,25 +427,6 @@ export function doesLine(item: StackItem, state: GameState, label: (t: TargetRef
   const join = (ls: typeof lines): string => ls
     .map((l, i) => (i && l.lower ? l.text[0]!.toLowerCase() + l.text.slice(1) : l.text)).join(', then ');
   return repeats(lines, join);
-}
-
-/**
- * CT-194 (#188's caption half): does this part deal DOUBLE damage? The chips
- * already ask `E.stackItemAttrs` — the assembly resolution itself makes — so
- * the line asks the same thing per part. {Pure} switches it off (CR 802.10f, 802.25g):
- * a Pure item, or a Pure unit it names, is dealt the printed number. A pure
- * query; a state the engine cannot read answers no.
- */
-export function doublesDamage(item: StackItem, part: EffectPart, state: GameState): boolean {
-  try {
-    const e = new E(state);
-    const attrs = e.stackItemAttrs(item, part);
-    if (!attrs.has('Powerful') || attrs.has('Pure')) return false;
-    return !part.targets.some(t => {
-      const u = 'unit' in t ? e.entity(t.unit) : undefined;
-      return !!u && e.effAttrs(u).has('Pure');
-    });
-  } catch { return false; }
 }
 
 /**

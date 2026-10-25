@@ -146,7 +146,9 @@ test('a section downloaded as html is the edition shell filled: one title hole, 
 test('owner questions are owner-questions.md, in its order and numbering, with each items reading labels', () => {
   const ids = [...R.files.oq.text.matchAll(/^\*(D-[A-Z0-9-]+), rule /gm)].map(m => m[1]);
   const items = R.ownerQuestions.flatMap(t => t.items);
-  assert.ok(items.length > 0, 'no owner questions');
+  // An empty sheet is the goal (every question answered, 2026-10-25), so it has to SAY so: a parse
+  // gone blind on a sheet that still has questions fails here, or on the ids below.
+  if (!items.length) assert.match(R.files.oq.text, /^0 questions\./m, 'no owner questions parsed, and the sheet does not say 0');
   assert.deepEqual(items.map(i => i.id), ids);
   assert.deepEqual(items.map(i => i.n), items.map((_, i) => i + 1));
   const topics = [...R.files.oq.text.matchAll(/^## (.+)$/gm)].map(m => m[1]);
