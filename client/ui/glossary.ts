@@ -13,17 +13,19 @@
  * unreadable if the reminder text lives behind another button.
  *
  * ⚠ THIS FILE IS A RULES DOCUMENT, NOT UI COPY (CT-80, 2026-08-26).
- * TEN of the 25 attributes here carry NO printed reminder anywhere in the
- * pool — {Evasive}, {Sneaky}, {Alluring}, {Tough}, {Vulnerable}, {Feeble},
- * {Resonant}, {Thieving}, {Reaping}, {Unaware} — and neither do the four
- * printed markers {Burst}, {Virus}, {Ambush} and {Unstable}. The manual channel (CR D6.11) later found
- * three of those four in the MANUAL; the ten attributes and {Unstable} are in
- * neither channel, so for them the row below is the ONLY statement of the rule
- * the repository has, and for the other three it is still the only COMPLETE
- * one — the manual's sentence is shorter than the rule. `engine.ts` says
- * so in as many words on {Reaping}: "none of the four cards carries a reminder at all.
- * ui/glossary.ts is the repo's own statement of it, AND IT IS WHAT […]
- * READ." A wrong row is therefore a rules bug. FIFTEEN of the 43 rows were
+ * TEN of the 25 attributes here — {Evasive}, {Sneaky}, {Alluring}, {Tough},
+ * {Vulnerable}, {Feeble}, {Resonant}, {Thieving}, {Reaping}, {Unaware} —
+ * print their reminder only UNDER THE TYPE LINE, which the oracle
+ * transcription never carried, so this file was long believed to be the
+ * only statement of them (CT-171 and CT-173 found the printed sentences on
+ * the scans; ui/scan-reminders.json holds them, and `withScanShort` below
+ * shows them). The four printed markers {Burst}, {Virus}, {Ambush} and
+ * {Unstable} print none; the manual channel (CR D6.11) later found three of
+ * those four in the MANUAL. For every one of these the row below is still the
+ * repository's only COMPLETE statement of the rule: a printed or manual
+ * sentence is shorter than the rule. The engine once built {Reaping} from
+ * this file's paraphrase alone (CR 802.21a fixed the draw it got wrong). A
+ * wrong row is therefore a rules bug. FIFTEEN of the 43 rows were
  * wrong when the 2026-08-26 audit read all of them against the engine — 35%, against the
  * four the ticket had found — and FIVE of the fifteen were on a list that
  * said they had already been checked, so "somebody looked at it" is not
@@ -231,11 +233,14 @@ const KEYWORD_RULES: GlossEntry[] = [
   { term: 'Poisonous', cites: ['printed'], text: 'Damage it deals becomes permanent −1/−1 counters instead of marked damage.' },
   { term: 'Resonant', cites: ['docs/08'], text: 'When it damages a unit, that unit’s controller also loses that much life.' },
   { term: 'Thieving', cites: ['attr.thieving'], text: 'When its column deals combat damage to a player, its controller draws a card.' },
-  // ⚠ DO NOT REWORD WITHOUT READING 156-reaping-and-formation.test.ts. This
-  // row is the repo's only statement of {Reaping} — none of its four cards
-  // prints a reminder — and 156 DERIVES `E.KILL_RIDERS` by scraping the word
-  // "kills … unit" out of it. Losing that phrasing silently changes which
-  // attributes ride the kill diff.
+  // ⚠ DO NOT REWORD WITHOUT READING 156-reaping-and-formation.test.ts. The
+  // cards print {Reaping}'s reminder under the type line ("When a reaping
+  // source kills one or more units, draw a card. It loses reaping until
+  // regroup.", ui/scan-reminders.json; CR 802.21), and 156 DERIVES
+  // `E.KILL_RIDERS` by scraping "kills … unit" out of this row and that
+  // sentence. Losing that phrasing silently changes which attributes ride
+  // the kill diff. (The draw is one card per kill, CR 802.21a; the loss until
+  // regroup, CR 802.21c, is not built: no unit can carry {Reaping}, CT-173.)
   { term: 'Reaping', cites: ['attr.reaping'], text: 'When it kills a unit, its controller draws a card.' },
   { term: 'Inverted', cites: ['attr.inverted.net', 'attr.inverted.base', 'printed'], text: 'Its stat CHANGES are reversed (a −7/−7 becomes +7/+7), measured from its printed stats, so a base rewrite (Aberrant Statweaver) is reversed too. It applies once however many sources granted it.' },
   // CT-80 (c): this row carried the first Unaware ruling's 2026-07-16 wording — "everything
