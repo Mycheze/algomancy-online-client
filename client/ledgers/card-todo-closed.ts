@@ -14079,4 +14079,19 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-10-25 (5cfe5ab8), docs only. docs/19 now says what the code does: on touch, a tap on a hand card only reads it unless the card is an option of the question asked, and the other route is the drag, whose drop opens the click's own menu; the rail's card menu has no play entry.",
     status: 'done',
   },
+  {
+    id: 425, area: "coverage", severity: "minor",
+    title: "CR 708.6a still states a fixed add-then-double order; the designer lets the player who controls the replacements choose, and the engine now does",
+    detail: "CR 708.6a (effects.replacement.multipliers.additive-first) fixes the additions before a doubling. Caleb, rules-questions 2026-02-23 [1475287013040062686]: \"generally as the owner of all the replacement effects, you can choose the order you'd like to apply them in\", then \"which usually would mean doing +1 then doubling\" / \"for max damage\". Since the replacement-order round (ecfa987b, 675e870f) the engine asks the player who controls both, with the additions-first order as a one-click default, and orders two players' replacements by initiative (owner, 2026-10-25). The same order is stated in 112.9 and 802.10b.",
+    evidence: "CR pass D 2026-10-25 (zero-handoff/PD-cr.md, tier-3 stretch): discrepancy D-U15-4 (also D-U04-6); the drafts are in zero-handoff/RO.md section 6.",
+    fix: "Redraft 708.6a, 112.9 and 802.10b from RO.md section 6 (the default, the choice, different controllers by initiative), bind 699's tests, re-verify with a fresh verifier and decoys, cr:render, and close D-U15-4 and D-U04-6. When this was filed the CR pass of the same round had a 708.6a redraft in its working tree, not yet committed: once it lands, check the three rules and the two rows and close this.",
+    proof: null,
+    verify: "Read CR 708.6a against 699's tests: does the rule say the controller may choose, with the additions first as the default?",
+    guards: [
+      "699-damage-addition-and-doubling-order.test.ts::CR 708.6a: Conduit of Pain and Powerful, the default is the addition first and says it gives the higher number",
+      "699-damage-addition-and-doubling-order.test.ts::CR 708.6a: choosing Powerful first, the damage is doubled and then one is added",
+    ],
+    closed: "FIXED 2026-10-25 (CR pass PDI 36aec0c0): 708.6a, 112.9 and 802.10b now say the player who controls both chooses, additions first is the one-click default, and different controllers go by initiative (708.4a); D-U15-4 / D-U04-6 settled.",
+    status: 'done',
+  },
 ];

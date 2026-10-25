@@ -201,16 +201,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 425, area: "coverage", severity: "minor",
-    title: "CR 708.6a still states a fixed add-then-double order; the designer lets the player who controls the replacements choose, and the engine now does",
-    detail: "CR 708.6a (effects.replacement.multipliers.additive-first) fixes the additions before a doubling. Caleb, rules-questions 2026-02-23 [1475287013040062686]: \"generally as the owner of all the replacement effects, you can choose the order you'd like to apply them in\", then \"which usually would mean doing +1 then doubling\" / \"for max damage\". Since the replacement-order round (ecfa987b, 675e870f) the engine asks the player who controls both, with the additions-first order as a one-click default, and orders two players' replacements by initiative (owner, 2026-10-25). The same order is stated in 112.9 and 802.10b.",
-    evidence: "CR pass D 2026-10-25 (zero-handoff/PD-cr.md, tier-3 stretch): discrepancy D-U15-4 (also D-U04-6); the drafts are in zero-handoff/RO.md section 6.",
-    fix: "Redraft 708.6a, 112.9 and 802.10b from RO.md section 6 (the default, the choice, different controllers by initiative), bind 699's tests, re-verify with a fresh verifier and decoys, cr:render, and close D-U15-4 and D-U04-6. When this was filed the CR pass of the same round had a 708.6a redraft in its working tree, not yet committed: once it lands, check the three rules and the two rows and close this.",
-    proof: null,
-    verify: "Read CR 708.6a against 699's tests: does the rule say the controller may choose, with the additions first as the default?",
-    status: 'open',
-  },
-  {
     id: 426, area: "engine", severity: "minor",
     title: "a Virus on a resolving spell unit stays on as an augment; the designer says a spell carrying a Virus is erased on resolution",
     detail: "CR 723.4c (effects.virus.spell-host.spell-unit) states the owner's 2026-08-22 exception: a spell unit enters play with the Virus as an augment instead of being erased. Caleb, rules-questions 2025-03-06 [1347270455198879858]: \"It's very similar to how regular viruses work. So you can hit enemy spells, the spell gets erased on resolution\". No source makes the spell-unit exception; the record says no ruling asks for it.",
