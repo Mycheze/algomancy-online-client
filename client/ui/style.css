@@ -4432,11 +4432,20 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
    the hand is long. Only when
    it is drawn (:has), so a player's own board does not move by a pixel. */
 .linfo.theirs > .lin:has(> .lspect) {
-  grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(35%, 1fr) auto auto; grid-template-rows: auto auto minmax(0, 1fr);
   grid-template-areas: "id spect cache bin" "res spect cache bin" "hand spect cache bin"; }
-@container (max-height: 132px) {
+/* CT-419: the strip's squeezed (two-row) shape only where the three rows do
+   not fit beside it — the name, the resources and the hand line need ~90px.
+   It used to switch with the rest of the battle block at 132px, which put
+   the hand line and the resources side by side across the strip's width:
+   at 1280x720 a 109px block left the strip 153px wide, and four cards 35px.
+   And the strip keeps at least 35% of the block's width in both shapes: the
+   name column is `auto`, and a top seat with many resource groups widened it
+   until the strip (a bare 1fr) had nothing — 13 resources in 8 groups left
+   the hand 0px wide at 1280x720 and at 1440x900, no card showing at all. */
+@container (max-height: 90px) {
   .linfo.theirs > .lin:has(> .lspect) {
-    grid-template-columns: auto auto minmax(0, 1fr) auto auto; grid-template-rows: auto minmax(0, 1fr);
+    grid-template-columns: auto auto minmax(35%, 1fr) auto auto; grid-template-rows: auto minmax(0, 1fr);
     grid-template-areas: "id hand spect cache bin" "res res spect cache bin"; }
 }
 .linfo .lspect { grid-area: spect; align-self: stretch; min-height: 0; container-type: size;
