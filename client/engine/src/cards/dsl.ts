@@ -2061,6 +2061,23 @@ export interface TokenRequest {
    * mods gained since are not part of it.
    */
   stats?: [number, number];
+  /**
+   * CR 708.4a: this request is a COPY an Automaton of Abundance added to the
+   * creation, offered to a later replacement (Cosmic Conspirator says "the
+   * copy of the Robot 1"). Only ever set on the request handed to a hook.
+   */
+  copy?: boolean;
+}
+
+/**
+ * CR 304.14, 708.9: what makes a created token UNIQUE for "each unique token
+ * you created" — its name, its X and the stats the creation set (owner
+ * 2026-08-25: "'Unique' means unique (name, X) pair"; reports #212/#213). A
+ * creation that set no stats is the definition's own.
+ */
+export function tokenUniqueKey(r: TokenRequest): string {
+  const def = r.stats ?? [getCard(r.name).power, getCard(r.name).toughness];
+  return `${r.name} #${r.x} ${def[0]}/${def[1]}`;
 }
 
 export interface CardBehavior {

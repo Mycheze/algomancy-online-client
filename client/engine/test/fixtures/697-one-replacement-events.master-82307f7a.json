@@ -1,0 +1,702 @@
+{
+ "aoaManufacture": {
+  "log": [
+   {
+    "type": "spellPlayed",
+    "msg": "Player 1 plays Manufacture → stack.",
+    "data": {
+     "seat": 0,
+     "card": "Manufacture",
+     "token": false,
+     "region": 0,
+     "from": "hand",
+     "item": 2,
+     "targets": []
+    }
+   },
+   {
+    "type": "cardPlayed",
+    "msg": "",
+    "data": {
+     "seat": 0,
+     "card": "Manufacture",
+     "token": false,
+     "region": 0,
+     "from": "hand",
+     "item": 2
+    }
+   },
+   {
+    "type": "stackFlash",
+    "msg": "",
+    "data": {
+     "item": {
+      "id": 2,
+      "kind": "spell",
+      "card": "Manufacture",
+      "label": "Manufacture",
+      "controller": 0,
+      "region": 0,
+      "negated": false,
+      "parts": [
+       {
+        "effectKey": "spell:Manufacture",
+        "targets": []
+       }
+      ],
+      "from": "hand"
+     }
+    }
+   },
+   {
+    "type": "stackPushed",
+    "msg": "",
+    "data": {
+     "id": 2,
+     "controller": 0
+    }
+   },
+   {
+    "type": "resolved",
+    "msg": "Resolving Manufacture:",
+    "data": {
+     "id": 2
+    }
+   },
+   {
+    "type": "spawned",
+    "msg": "Player 1 spawns Robot (3 +1/+1).",
+    "data": {
+     "seat": 0,
+     "unit": 3,
+     "region": 0,
+     "card": "Robot"
+    }
+   },
+   {
+    "type": "countersChanged",
+    "msg": "",
+    "data": {
+     "unit": 3,
+     "n": 3,
+     "total": 3,
+     "by": 0,
+     "spawn": 3
+    }
+   },
+   {
+    "type": "spawned",
+    "msg": "Player 1 spawns Robot (2 +1/+1).",
+    "data": {
+     "seat": 0,
+     "unit": 4,
+     "region": 0,
+     "card": "Robot"
+    }
+   },
+   {
+    "type": "countersChanged",
+    "msg": "",
+    "data": {
+     "unit": 4,
+     "n": 2,
+     "total": 2,
+     "by": 0,
+     "spawn": 4
+    }
+   },
+   {
+    "type": "spawned",
+    "msg": "Player 1 spawns Robot (1 +1/+1).",
+    "data": {
+     "seat": 0,
+     "unit": 5,
+     "region": 0,
+     "card": "Robot"
+    }
+   },
+   {
+    "type": "countersChanged",
+    "msg": "",
+    "data": {
+     "unit": 5,
+     "n": 1,
+     "total": 1,
+     "by": 0,
+     "spawn": 5
+    }
+   },
+   {
+    "type": "info",
+    "msg": "Automaton of Abundance: the creation is replaced — 3 more token(s) (Robot, Robot, Robot) are created with it.",
+    "data": {
+     "by": "Automaton of Abundance",
+     "unit": 1,
+     "n": 3
+    }
+   },
+   {
+    "type": "spawned",
+    "msg": "Player 1 spawns Robot (3 +1/+1).",
+    "data": {
+     "seat": 0,
+     "unit": 6,
+     "region": 0,
+     "card": "Robot"
+    }
+   },
+   {
+    "type": "countersChanged",
+    "msg": "",
+    "data": {
+     "unit": 6,
+     "n": 3,
+     "total": 3,
+     "by": 0,
+     "spawn": 6
+    }
+   },
+   {
+    "type": "spawned",
+    "msg": "Player 1 spawns Robot (2 +1/+1).",
+    "data": {
+     "seat": 0,
+     "unit": 7,
+     "region": 0,
+     "card": "Robot"
+    }
+   },
+   {
+    "type": "countersChanged",
+    "msg": "",
+    "data": {
+     "unit": 7,
+     "n": 2,
+     "total": 2,
+     "by": 0,
+     "spawn": 7
+    }
+   },
+   {
+    "type": "spawned",
+    "msg": "Player 1 spawns Robot (1 +1/+1).",
+    "data": {
+     "seat": 0,
+     "unit": 8,
+     "region": 0,
+     "card": "Robot"
+    }
+   },
+   {
+    "type": "countersChanged",
+    "msg": "",
+    "data": {
+     "unit": 8,
+     "n": 1,
+     "total": 1,
+     "by": 0,
+     "spawn": 8
+    }
+   }
+  ],
+  "decision": null
+ },
+ "twoAoaSelfAssembly": {
+  "log": [
+   {
+    "type": "spellPlayed",
+    "msg": "Player 2 plays Self-Assembly → stack.",
+    "data": {
+     "seat": 1,
+     "card": "Self-Assembly",
+     "token": false,
+     "region": 1,
+     "from": "hand",
+     "item": 3,
+     "targets": []
+    }
+   },
+   {
+    "type": "cardPlayed",
+    "msg": "",
+    "data": {
+     "seat": 1,
+     "card": "Self-Assembly",
+     "token": false,
+     "region": 1,
+     "from": "hand",
+     "item": 3
+    }
+   },
+   {
+    "type": "stackFlash",
+    "msg": "",
+    "data": {
+     "item": {
+      "id": 3,
+      "kind": "spell",
+      "card": "Self-Assembly",
+      "label": "Self-Assembly",
+      "controller": 1,
+      "region": 1,
+      "negated": false,
+      "parts": [
+       {
+        "effectKey": "spell:Self-Assembly",
+        "targets": []
+       }
+      ],
+      "from": "hand"
+     }
+    }
+   },
+   {
+    "type": "stackPushed",
+    "msg": "",
+    "data": {
+     "id": 3,
+     "controller": 1
+    }
+   },
+   {
+    "type": "resolved",
+    "msg": "Resolving Self-Assembly:",
+    "data": {
+     "id": 3
+    }
+   },
+   {
+    "type": "spawned",
+    "msg": "Player 2 spawns Robot (2 +1/+1).",
+    "data": {
+     "seat": 1,
+     "unit": 4,
+     "region": 1,
+     "card": "Robot"
+    }
+   },
+   {
+    "type": "countersChanged",
+    "msg": "",
+    "data": {
+     "unit": 4,
+     "n": 2,
+     "total": 2,
+     "by": 1,
+     "spawn": 4
+    }
+   },
+   {
+    "type": "info",
+    "msg": "Automaton of Abundance: the creation is replaced — 1 more token(s) (Robot) are created with it.",
+    "data": {
+     "by": "Automaton of Abundance",
+     "unit": 1,
+     "n": 1
+    }
+   },
+   {
+    "type": "info",
+    "msg": "Automaton of Abundance: the creation is replaced — 1 more token(s) (Robot) are created with it.",
+    "data": {
+     "by": "Automaton of Abundance",
+     "unit": 2,
+     "n": 1
+    }
+   },
+   {
+    "type": "spawned",
+    "msg": "Player 2 spawns Robot (2 +1/+1).",
+    "data": {
+     "seat": 1,
+     "unit": 5,
+     "region": 1,
+     "card": "Robot"
+    }
+   },
+   {
+    "type": "countersChanged",
+    "msg": "",
+    "data": {
+     "unit": 5,
+     "n": 2,
+     "total": 2,
+     "by": 1,
+     "spawn": 5
+    }
+   },
+   {
+    "type": "spawned",
+    "msg": "Player 2 spawns Robot (2 +1/+1).",
+    "data": {
+     "seat": 1,
+     "unit": 6,
+     "region": 1,
+     "card": "Robot"
+    }
+   },
+   {
+    "type": "countersChanged",
+    "msg": "",
+    "data": {
+     "unit": 6,
+     "n": 2,
+     "total": 2,
+     "by": 1,
+     "spawn": 6
+    }
+   }
+  ],
+  "decision": null
+ },
+ "ccManufacture": {
+  "log": [
+   {
+    "type": "spellPlayed",
+    "msg": "Player 2 plays Manufacture → stack.",
+    "data": {
+     "seat": 1,
+     "card": "Manufacture",
+     "token": false,
+     "region": 1,
+     "from": "hand",
+     "item": 2,
+     "targets": []
+    }
+   },
+   {
+    "type": "cardPlayed",
+    "msg": "",
+    "data": {
+     "seat": 1,
+     "card": "Manufacture",
+     "token": false,
+     "region": 1,
+     "from": "hand",
+     "item": 2
+    }
+   },
+   {
+    "type": "stackFlash",
+    "msg": "",
+    "data": {
+     "item": {
+      "id": 2,
+      "kind": "spell",
+      "card": "Manufacture",
+      "label": "Manufacture",
+      "controller": 1,
+      "region": 1,
+      "negated": false,
+      "parts": [
+       {
+        "effectKey": "spell:Manufacture",
+        "targets": []
+       }
+      ],
+      "from": "hand"
+     }
+    }
+   },
+   {
+    "type": "stackPushed",
+    "msg": "",
+    "data": {
+     "id": 2,
+     "controller": 1
+    }
+   },
+   {
+    "type": "resolved",
+    "msg": "Resolving Manufacture:",
+    "data": {
+     "id": 2
+    }
+   },
+   {
+    "type": "info",
+    "msg": "Cosmic Conspirator: a Robot 3 is created as a Fireball 3 instead.",
+    "data": {
+     "by": "Cosmic Conspirator",
+     "was": "Robot",
+     "now": "Fireball",
+     "x": 3,
+     "seat": 1
+    }
+   },
+   {
+    "type": "tokenCreated",
+    "msg": "Player 2 creates a Fireball 3.",
+    "data": {
+     "seat": 1,
+     "id": 4,
+     "region": 1
+    }
+   },
+   {
+    "type": "spawned",
+    "msg": "Player 2 spawns Robot (2 +1/+1).",
+    "data": {
+     "seat": 1,
+     "unit": 6,
+     "region": 1,
+     "card": "Robot"
+    }
+   },
+   {
+    "type": "countersChanged",
+    "msg": "",
+    "data": {
+     "unit": 6,
+     "n": 2,
+     "total": 2,
+     "by": 1,
+     "spawn": 6
+    }
+   },
+   {
+    "type": "info",
+    "msg": "Cosmic Conspirator: a Robot 1 is created as a Poison 1 instead.",
+    "data": {
+     "by": "Cosmic Conspirator",
+     "was": "Robot",
+     "now": "Poison",
+     "x": 1,
+     "seat": 1
+    }
+   },
+   {
+    "type": "tokenCreated",
+    "msg": "Player 2 creates a Poison 1.",
+    "data": {
+     "seat": 1,
+     "id": 8,
+     "region": 1
+    }
+   }
+  ],
+  "decision": null
+ },
+ "ccBiotoxicity": {
+  "log": [
+   {
+    "type": "spellPlayed",
+    "msg": "Player 1 plays Biotoxicity → stack.",
+    "data": {
+     "seat": 0,
+     "card": "Biotoxicity",
+     "token": false,
+     "region": 0,
+     "from": "hand",
+     "item": 2,
+     "targets": []
+    }
+   },
+   {
+    "type": "cardPlayed",
+    "msg": "",
+    "data": {
+     "seat": 0,
+     "card": "Biotoxicity",
+     "token": false,
+     "region": 0,
+     "from": "hand",
+     "item": 2
+    }
+   },
+   {
+    "type": "stackFlash",
+    "msg": "",
+    "data": {
+     "item": {
+      "id": 2,
+      "kind": "spell",
+      "card": "Biotoxicity",
+      "label": "Biotoxicity",
+      "controller": 0,
+      "region": 0,
+      "negated": false,
+      "parts": [
+       {
+        "effectKey": "spell:Biotoxicity",
+        "targets": []
+       }
+      ],
+      "from": "hand"
+     }
+    }
+   },
+   {
+    "type": "stackPushed",
+    "msg": "",
+    "data": {
+     "id": 2,
+     "controller": 0
+    }
+   },
+   {
+    "type": "resolved",
+    "msg": "Resolving Biotoxicity:",
+    "data": {
+     "id": 2
+    }
+   },
+   {
+    "type": "info",
+    "msg": "Cosmic Conspirator: a Poison 1 is created as a Robot 1 instead.",
+    "data": {
+     "by": "Cosmic Conspirator",
+     "was": "Poison",
+     "now": "Robot",
+     "x": 1,
+     "seat": 0
+    }
+   },
+   {
+    "type": "spawned",
+    "msg": "Player 1 spawns Robot (1 +1/+1).",
+    "data": {
+     "seat": 0,
+     "unit": 4,
+     "region": 0,
+     "card": "Robot"
+    }
+   },
+   {
+    "type": "countersChanged",
+    "msg": "",
+    "data": {
+     "unit": 4,
+     "n": 1,
+     "total": 1,
+     "by": 0,
+     "spawn": 4
+    }
+   },
+   {
+    "type": "info",
+    "msg": "Cosmic Conspirator: a Poison 1 is created as a Crystal 1 instead.",
+    "data": {
+     "by": "Cosmic Conspirator",
+     "was": "Poison",
+     "now": "Crystal",
+     "x": 1,
+     "seat": 0
+    }
+   },
+   {
+    "type": "tokenCreated",
+    "msg": "Player 1 creates a Crystal 1.",
+    "data": {
+     "seat": 0,
+     "id": 6,
+     "region": 0
+    }
+   },
+   {
+    "type": "tokenCreated",
+    "msg": "Player 1 creates a Poison 1.",
+    "data": {
+     "seat": 0,
+     "id": 8,
+     "region": 0
+    }
+   }
+  ],
+  "decision": null
+ },
+ "aoaBiotoxicity": {
+  "log": [
+   {
+    "type": "spellPlayed",
+    "msg": "Player 2 plays Biotoxicity → stack.",
+    "data": {
+     "seat": 1,
+     "card": "Biotoxicity",
+     "token": false,
+     "region": 1,
+     "from": "hand",
+     "item": 2,
+     "targets": []
+    }
+   },
+   {
+    "type": "cardPlayed",
+    "msg": "",
+    "data": {
+     "seat": 1,
+     "card": "Biotoxicity",
+     "token": false,
+     "region": 1,
+     "from": "hand",
+     "item": 2
+    }
+   },
+   {
+    "type": "stackFlash",
+    "msg": "",
+    "data": {
+     "item": {
+      "id": 2,
+      "kind": "spell",
+      "card": "Biotoxicity",
+      "label": "Biotoxicity",
+      "controller": 1,
+      "region": 1,
+      "negated": false,
+      "parts": [
+       {
+        "effectKey": "spell:Biotoxicity",
+        "targets": []
+       }
+      ],
+      "from": "hand"
+     }
+    }
+   },
+   {
+    "type": "stackPushed",
+    "msg": "",
+    "data": {
+     "id": 2,
+     "controller": 1
+    }
+   },
+   {
+    "type": "resolved",
+    "msg": "Resolving Biotoxicity:",
+    "data": {
+     "id": 2
+    }
+   },
+   {
+    "type": "tokenCreated",
+    "msg": "Player 2 creates a Poison 1.",
+    "data": {
+     "seat": 1,
+     "id": 3,
+     "region": 1
+    }
+   },
+   {
+    "type": "tokenCreated",
+    "msg": "Player 2 creates a Poison 1.",
+    "data": {
+     "seat": 1,
+     "id": 4,
+     "region": 1
+    }
+   },
+   {
+    "type": "tokenCreated",
+    "msg": "Player 2 creates a Poison 1.",
+    "data": {
+     "seat": 1,
+     "id": 5,
+     "region": 1
+    }
+   }
+  ],
+  "decision": null
+ }
+}

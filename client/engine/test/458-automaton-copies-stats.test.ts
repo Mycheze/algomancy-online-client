@@ -19,7 +19,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
-import { getCard, radiantHook } from '../src/cards/dsl.ts';
+import { getCard, radiantHook, tokenUniqueKey } from '../src/cards/dsl.ts';
 import type { TokenRequest } from '../src/cards/dsl.ts';
 import { DECK_LIST, createsOf } from '../src/cards/registry.ts';
 import type { Entity, Seat } from '../src/types.ts';
@@ -146,7 +146,9 @@ test('CR 304.14 sweep: every Automaton copy of a card-created Unit Token has the
     newEntity: proto.newEntity!, note: proto.noteTokenCreated!,
     createToken: proto.createToken!, settle: proto.settleTokenBatch!,
   };
-  const madeAs = new WeakMap<object, string>();
+  // keyed by the request's CR 708.9 unique key: a request that does not carry
+  // its stats (the defect) keys as the 1/1 definition while its body is bigger
+  const madeAs = new Map<string, string>();
   let lastTok: Entity | null = null;
   let current: Batch | null = null;
   let batches: Batch[] = [];
@@ -158,7 +160,7 @@ test('CR 304.14 sweep: every Automaton copy of a card-created Unit Token has the
   proto.noteTokenCreated = function (this: E, ...a: unknown[]) {
     const req = a[0] as TokenRequest;
     if (req.form === 'unit' && lastTok && lastTok.card === req.name) {
-      madeAs.set(req, this.printedStats(lastTok).join('/'));
+      madeAs.set(`${req.seat}|${tokenUniqueKey(req)}`, this.printedStats(lastTok).join('/'));
     }
     return orig.note.apply(this, a);
   };
@@ -168,11 +170,13 @@ test('CR 304.14 sweep: every Automaton copy of a card-created Unit Token has the
     return t;
   };
   proto.settleTokenBatch = function (this: E, ...a: unknown[]) {
-    const batch = a[0] as TokenRequest[];
+    // CR 708.9: the batch carries the copies still to be made, each with the
+    // request it copies (`copy.of`)
+    const batch = a[0] as { extras: { copy: { of: TokenRequest } }[] };
     const outer = current;
     current = {
-      orig: batch.filter(r => r.form === 'unit' && r.name === 'Unit Token' && r.seat === 0)
-        .map(r => madeAs.get(r) ?? '?'),
+      orig: batch.extras.map(x => x.copy.of).filter(r => r.form === 'unit' && r.name === 'Unit Token' && r.seat === 0)
+        .map(r => madeAs.get(`${r.seat}|${tokenUniqueKey(r)}`) ?? '?'),
       copies: [],
     };
     try { return orig.settle.apply(this, a); } finally {

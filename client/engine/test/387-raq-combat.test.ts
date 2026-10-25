@@ -312,6 +312,10 @@ test('RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles — a Powerful Be
   grant(h, boulder, 'Powerful');
   h.do({ type: 'declareAttack', seat: A, columns: [[boulder], [conduit]] });
   pass(h); pass(h);                                  // the trigger resolves
+  // CR 708.6a (owner 2026-10-25): the additions first is the one-click DEFAULT
+  // of an order question now, not a silent rule
+  assert.match(h.state.decision?.options[0]?.label ?? '', /^Default: 4 damage \(the higher number\)$/);
+  h.do({ type: 'decide', seat: A, choice: 0 });
   assert.equal(ent(h, wall)!.damage, 4,
     '"(1+1)x2 damage to each unit = 4 damage to each unit" — the engine doubles first and adds after (1x2+1 = 3)');
 });
@@ -337,7 +341,12 @@ test('RAQ Resonant: Bellowing Boulder with Resonant + Powerful + Conduit — 4 t
   h.do({ type: 'declareAttack', seat: A, columns: [[boulder], [conduit]] });
   pass(h); pass(h);                                  // the trigger resolves
   let guard = 20;
-  while (h.state.stack.length && guard-- > 0) pass(h);   // and its three Resonant riders
+  // and its three Resonant riders — each batch with Conduit and Powerful asks
+  // its order once (CR 708.6a), answered with the one-click default
+  while ((h.state.stack.length || h.state.decision) && guard-- > 0) {
+    if (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
+    else pass(h);
+  }
   assert.equal(ent(h, wall)!.damage, 4, '"(1+1)x2 damage to each unit = 4 damage to each unit"');
   assert.equal(lifeD - h.state.players[D]!.life, 10, '"(4+1)x2 =10 damage to … enemy face for each of … their damaged unit"');
   assert.equal(lifeA - h.state.players[A]!.life, 20, 'and 10 to its own face for each of its own two damaged units');

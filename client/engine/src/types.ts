@@ -1271,6 +1271,17 @@ export interface StackItem {
    */
   eraseSelf?: boolean;
   /**
+   * CR 708.9: what this item's resolution has created so far, for the
+   * replacements that act on "each unique token you created" — the unique
+   * tokens each Automaton of Abundance has copied (keyed by the holder and
+   * face), and the order answers given for the creation (CR 708.4a). The
+   * effect is the batch, not the part: Caleb, RQ 1358924537160536247, an
+   * Omniwield Evoker grafted with three creators makes one creation. Written
+   * when a part finishes, so a part that suspends and replays starts from
+   * what the parts before it left. Optional and additive; absent = nothing yet.
+   */
+  tokenMemo?: { copied: Record<string, string[]>; order: Record<string, string> };
+  /**
    * CR 303.10 — "…gains control of me" on a SPELL UNIT: the seat the body ENTERS
    * under. `afterParts` spawns it as this seat's unit and keeps `controller`
    * (the caster) as its OWNER, which is exactly CR 102.5's owner≠controller split.

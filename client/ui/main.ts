@@ -25,7 +25,7 @@ import {
   erasedPileView, growCardLedger, handOfferBadge, handOffers,
   linkCardNames, modHostCount, modHostPhrase,
   modHosts, modStrips, nameBarIcon, numberEntry, declineButtonClass, suppressionBand, suppressionNote, numberEntrySubmit, onlyKnownNames, optionPingId, packBadgeLine,
-  partitionOptions, planOffer, playableCachedIndexes, playableCachedNames, restoreSeenHand,
+  isReplacementDefault, partitionOptions, planOffer, playableCachedIndexes, playableCachedNames, restoreSeenHand,
   seenHandView,
   scrollHidesHoverTip, spellAugmentNote,
   stackAbilityRows, stackItemX, stackItemModes, stepNumberEntry,
@@ -6241,9 +6241,16 @@ function decisionBarHtml(dec: Decision, err: string): string {
   // payOrDecline / electricPath: cards, then the affirmative
   // options, then the decline — same ordering rule as the targets bar, so
   // "stop" is never where "go" was a click ago
+  // CR 708.4a: a replacement-order question whose one order is never worse
+  // opens with a one-click DEFAULT that names what it gives — the owner,
+  // 2026-10-25: "Sorta like when blocking, how it asks 'Choose your split? Or
+  // just use default?'" — so it is the bar's primary button, first, and the
+  // board takes a click on the one to apply first instead
+  const isDefault = (i: number): boolean => isReplacementDefault(dec.options[i]!.value);
   const btns = [...split.refs, ...split.plain]
     .filter(i => !onBoard(i) && (step.mode !== 'pick' || !isCtrOpt(i)))
-    .map(i => optBtn(i)).join(' ');
+    .sort((a, b) => Number(isDefault(b)) - Number(isDefault(a)))
+    .map(i => optBtn(i, isDefault(i) ? 'primary' : '')).join(' ');
   const declines = split.decline.map(i => optBtn(i, declineButtonClass(dec.options[i]!))).join(' ');
   return `<div class="promptbar pending"><span class="who">${who}:</span> ${iconizeText(dec.prompt)}${boardHint}
       ${stepperHtml}

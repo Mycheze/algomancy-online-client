@@ -108,7 +108,7 @@
  */
 import type { EngineEvent, Entity, EntityId, EventType, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { allCardNames, card, eventBinSlot, getCard, type EffectDef, type TokenRequest } from '../dsl.ts';
+import { allCardNames, card, eventBinSlot, getCard, tokenUniqueKey, type EffectDef, type TokenRequest } from '../dsl.ts';
 import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets, sacrificeMeOnResolve } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -579,11 +579,13 @@ card('Automaton of Abundance', {
         // together are two unique tokens, the reading that lets more happen.
         // A creation that set no stats is the definition's own, so a bare
         // Unit Token and one created "as a 1/1" are the same unique token.
-        const def = r.stats ?? [getCard(r.name).power, getCard(r.name).toughness];
-        const key = `${r.name} #${r.x} ${def[0]}/${def[1]}`;
+        // The engine reads the same key to remember what this card has
+        // already copied in the batch (`tokenUniqueKey`).
+        const key = tokenUniqueKey(r);
         if (seen.has(key)) continue;                 // one copy per unique pair
         seen.add(key);
-        extra.push({ ...r });
+        const { copy: _copy, ...req } = r;
+        extra.push(req);
       }
       return extra.length ? extra : null;
     },
@@ -894,7 +896,9 @@ card('Cosmic Conspirator', {
     if (!(CONSPIRATOR_KINDS as readonly string[]).includes(req.name)) return null;
     const pick = g.askInResolution('conspire', {
       kind: 'payOrDecline', seat: self.controller,
-      prompt: `Cosmic Conspirator: create a token of another type instead of the ${req.name} ${req.x}?`,
+      // CR 708.4a: a copy an Automaton of Abundance added (Automaton first) is
+      // offered too, and named as the copy (the owner, 2026-10-25: "Yes, each one")
+      prompt: `Cosmic Conspirator: create a token of another type instead of the ${req.copy ? 'copy of the ' : ''}${req.name} ${req.x}?`,
       options: [
         // #173 (room UYRX): `card` makes "keep" a fourth scan beside the other
         // three, instead of a lone text button. The value stays 'keep' — every

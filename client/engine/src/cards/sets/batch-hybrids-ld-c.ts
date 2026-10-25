@@ -498,7 +498,7 @@ card('Buffer Overflow', {
 // first never takes them back. They end on the LATER thief in the order —
 // and the order is the player's (CR 708.4a, the owner 2026-10-16: "Ask the
 // player now"): the controller of the unit the counters were meant for is
-// asked which unit keeps them (E.orderCounterDonors).
+// asked which unit keeps them (E.counterChooser).
 //
 // "DURING BATTLE" is the printed restriction and it is real: outside battle
 // the thief takes nothing. The engine's own battle state answers it, and it
@@ -513,7 +513,7 @@ card('Buffer Overflow', {
 // Blight's "counters on me" gets, and it comes free from E.anchored().
 //
 // No ping-pong: each thief applies to one placement once, and the engine's
-// chain (E.chainReplacements), not a flag in this file, is what enforces it —
+// chain (E.replaceEvent), not a flag in this file, is what enforces it —
 // a module-level `let` here was the thing report #60 asked to be rid of.
 //
 // ⚠ TRANSCRIPTION — a DELIBERATE, RECORDED divergence from the printed card.
