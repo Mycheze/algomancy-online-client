@@ -6,6 +6,9 @@
  *                             with a Feeble unit and no flyer. Drag the Feeble
  *                             unit into a column, or a ground unit against
  *                             their flyer: the card wears a (!) before Confirm
+ *   review-ui-sent-eleven     you attacked; they blocked once and sent ELEVEN
+ *                             units to counterattack — the in-transit strip
+ *                             must show every one of them
  */
 import type { Seat } from '../engine/src/types.ts';
 import type { Scenario } from './scenarios.ts';
@@ -50,6 +53,47 @@ export const BATCH_O: Record<string, Scenario> = {
     ],
     phase: 'battle',
     priority: null,
+    needsLiveOpponent: false,
+  },
+
+  'review-ui-sent-eleven': {
+    id: 'review-ui-sent-eleven',
+    card: 'Trashling',
+    why: 'The strip of counterattackers on their way was a fixed narrow column, and might have cut '
+      + 'units off once ten or more were sent.',
+    expect:
+      'You attacked with one unit; they blocked it and sent ELEVEN units to counterattack you.\n'
+      + 'Blocks are in; you have priority.\n'
+      + 'LOOK: the "incoming" strip shows all eleven, none cut off or hidden behind another zone.\n'
+      + 'TRY: pass through round 1, and watch round 2 begin.',
+    initiative: YOU,
+    you: {
+      hand: [],
+      play: [{ card: 'The Foretold' }, { card: 'Rampart Guardian' }],
+      resources: {},
+    },
+    opponent: {
+      hand: [],
+      play: [
+        { card: 'Good Whale' },
+        { card: 'Trashling' }, { card: 'Slink' }, { card: 'Chitin Shredder' }, { card: 'Tidepool Terror' },
+        { card: 'Bubb' }, { card: 'Bumblecrab' }, { card: 'Carapace Devourer' }, { card: 'Resonant Form' },
+        { card: 'The Foretold' }, { card: 'Crumbling Ancient' }, { card: 'Rampart Guardian' },
+      ],
+      resources: {},
+    },
+    prologue: ids => {
+      const y = ids.you, o = ids.opponent;
+      return [
+        ...START,
+        { type: 'declareAttack', seat: YOU, columns: [[y[0]!]] },
+        { type: 'passPriority', seat: YOU },
+        { type: 'passPriority', seat: OPPONENT },
+        { type: 'declareBlocks', seat: OPPONENT, blocks: { 0: [o[0]!] }, send: o.slice(1) },
+      ];
+    },
+    phase: 'battle',
+    priority: YOU,
     needsLiveOpponent: false,
   },
 };

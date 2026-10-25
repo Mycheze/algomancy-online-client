@@ -883,6 +883,13 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 .sentstrip .sentzone { gap: 3px; }
 .sentstrip .card { width: 40px; cursor: default; }
 .sentfoot { color: var(--dim); font-size: 9px; margin-top: 3px; line-height: 1.2; }
+/* CT-383: on the classic board the strip is a grid of 40px cards, --sentcols
+   wide (main.ts sentCols). It was a fixed 96px whose inside (82px) was a pixel
+   short of two cards and a gap, so every sent unit took a row of its own:
+   eleven made a column 700px tall that stretched the region and scrolled the
+   board. min-content: as wide as its columns, the label wrapping inside. */
+.regionrow > .sentstrip { width: min-content; }
+.regionrow > .sentstrip .sentzone { display: grid; grid-template-columns: repeat(var(--sentcols, 2), 40px); }
 
 /* B3: during a battle only state.battle.region is "real" */
 .player.battlefocus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }

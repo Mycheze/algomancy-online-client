@@ -4067,7 +4067,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
   const incoming = Object.values(s.entities).filter(en =>
     (en.kind === 'unit' || en.kind === 'spellToken') && en.controller !== p && en.absent);
   const sentStrip = incoming.length
-    ? `<div class="sentstrip" title="sent to counterattack — they arrive next round and cannot be touched until then">
+    ? `<div class="sentstrip" style="--sentcols:${sentCols(incoming.length)}" title="sent to counterattack — they arrive next round and cannot be touched until then">
         <div class="zonelabel">${txtIcon('battle', '[battle]')} incoming — ${esc(s.players[incoming[0]!.controller]!.name)}</div>
         <div class="zone sentzone">${incoming.map(en => en.kind === 'spellToken'
           ? cardHtml(en.card, { die: en.x })
@@ -5420,6 +5420,12 @@ function counterTrayHtml(ids: readonly EntityId[], poolSize: number): string {
     ? '<span class="remind"> — click one, then a slot</span>' : ' — all placed'}</div>
       <div class="zone stagezone">${cards}</div></div>`;
 }
+
+/** CT-383: how many 40px columns the classic board's in-transit strip lays
+ * its cards in — two (what its old fixed 96px meant, and missed by a pixel,
+ * so it stacked one card per row), and one more for every four past eight, so
+ * eleven sent is three columns of four rather than one column eleven tall */
+const sentCols = (n: number): number => Math.max(2, Math.ceil(n / 4));
 
 /** a unit or token on the counterattack send list, as the blocker picked it */
 function sendEntHtml(id: EntityId): string {
