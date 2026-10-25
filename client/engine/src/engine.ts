@@ -185,6 +185,34 @@ class OrderNeeded {
  * why. Handed to `checkDeaths`, which disposes it in the same batch as the
  * lethal-damage deaths. */
 interface Doomed { u: Entity; why: string; data?: Record<string, unknown> }
+/**
+ * CR 723.4a: the stack-item kinds a Virus may be augmented onto.
+ *
+ * SPELLS, and only spells. Caleb 2025-04-06 asks and answers exactly this
+ * ("can you augment a spell with a virus, such as applying Chitin Shredder as
+ * an augment on Arc Lightning? Yes"), and 2025-03-06 adds spell TOKENS by
+ * name. A spell UNIT is a spell on the way to being a body, and its viruses
+ * simply arrive with it as the augment mods they already were.
+ *
+ * Deliberately NOT here, each for its own reason:
+ *  - 'triggered' / 'activated' — an ability is an effect but not a spell, and
+ *    it has no card of its own for a mod to sit under. CR 700.1 lets you NEGATE
+ *    one; that is not the same permission.
+ *  - 'virus' — a virus is itself a mod in flight, not a host.
+ *  - 'unit' — a {Battle} unit mid-cast. A virus wants to be a mod on the body
+ *    it lands on, which is the ordinary augment, available the moment it
+ *    spawns; nothing in the rules asks for the mid-cast version. CR 700.1a does NOT
+ *    reopen this: it made a unit on the stack an EFFECT (so it can be negated
+ *    and it is a "nonspell effect"), and the same sentence says a unit is not
+ *    a SPELL — which is what this set is a list of ("onto a giant fireball
+ *    you're casting").
+ *  - 'ambush' — an ambusher is a unit played face-down, not a spell, and CR 803.6h
+ *    only makes it negatable.
+ * All four exclusions are ⚠ judgement calls, not sourced answers — see
+ * CR 723.4e.
+ */
+export const STACK_VIRUS_HOSTS = new Set<StackItem['kind']>(['spell', 'spellUnit', 'spellToken']);
+
 interface ReplacementPick { label: string; card: CardName; unit: EntityId; pick: number }
 
 export function other(seat: Seat): Seat { return 1 - seat; }
@@ -8602,8 +8630,8 @@ export class E {
    * Returns `out` itself (same array, not a copy) when nothing compels, so
    * `restrictTargets` can tell the two cases apart by identity.
    *
-   * Public for one other caller: a battle-window Virus's HOST choice (apply.ts
-   * `battleVirusHosts`, CT-331), which is a target choice too (CR 110.10a). */
+   * Public for one other caller: a battle-window Virus's HOST choice
+   * (`battleVirusHosts` below, CT-331), which is a target choice too (CR 110.10a). */
   compelledTargets(out: TargetRef[], region: number, chosen?: readonly ResolvedTarget[]): TargetRef[] {
     const gates = this.mustBeTargetedIn(region);
     for (const t of chosen ?? []) if (isEntityTarget(t)) gates.delete(t.id);
@@ -8613,6 +8641,40 @@ export class E {
       if (forced.length) cands = forced;
     }
     return cands;
+  }
+
+  /**
+   * CR 110.10a, 110.12 (CT-331): every host a battle-window Virus may be applied
+   * to in `region` right now — the units standing there, then the spells on that
+   * region's stack (CR 723.4) — narrowed by Gatekeeper of Souls' "I must be
+   * targeted if able" through the SAME compulsion the target collector applies
+   * (`E.compelledTargets`). Applying a Virus targets its host, so while a
+   * Gatekeeper stands in the battle the Virus goes onto it or onto nothing: not
+   * onto another unit, and not onto a spell on the stack either, exactly as an
+   * "any target" spell may not aim at a player then.
+   *
+   * ONE list for both sides of the fuzzer's "legalActions lied" check:
+   * `pushBattleAugments` offers it and both battle branches of `doAugment`
+   * refuse anything outside it. CT-416: and the Virus mode of Tides of the
+   * Cosmos reads it too, so a Virus it plays reaches every host a Virus from
+   * hand reaches. With no Gatekeeper it is the old list, in the
+   * old order.
+   */
+  battleVirusHosts(region: number): TargetRef[] {
+    const out: TargetRef[] = this.unitsIn(region).map(u => ({ unit: u.id }));
+    for (const it of this.s.stack) {
+      if (STACK_VIRUS_HOSTS.has(it.kind) && it.region === region) out.push({ stack: it.id });
+    }
+    // CR 721.4a / CT-407: a spell token STANDING IN PLAY in the battle's region,
+    // either player's. Caleb (RQ 1364998183226179735), asked "Can you Augment
+    // Fireball in play or only Fireball on stack?": "Honestly I don't see why you
+    // couldn't"; and of Viruses, "you can hit enemy spells" (RQ
+    // 1347270455198879858). Owner 2026-10-24: "Yes, allow it". Appended LAST so
+    // every unit and stack offer keeps its index.
+    for (const t of Object.values(this.s.entities)) {
+      if (t.kind === 'spellToken' && t.region === region && !t.absent) out.push({ unit: t.id });
+    }
+    return this.compelledTargets(out, region);
   }
 
   /** Stage two of `targetCandidates`: the printed restriction, in two passes.
