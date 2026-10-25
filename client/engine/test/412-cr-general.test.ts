@@ -267,20 +267,44 @@ test('cr:concepts.starting.constructed.first-draw — the only draws of a new co
 
 /* ---------- 104 ending the game ---------- */
 
-test('cr:concepts.ending.elimination.immediate — life reaching 0 ends the game inside the effect, and the rest of the effect never runs', () => {
-  const h = new Harness(80111);
-  toDeployment(h);
-  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
-  const g = new E(h.state);
-  g.player(D).life = 2;
-  let after = false;
-  const def = { run: (gg: E) => { gg.loseLife(D, 3, 'probe'); after = true; } } as unknown as EffectDef;
-  let ended = false;
-  try { run(def, g, { controller: A }); } catch (err) { ended = err instanceof GameEnded; }
-  assert.equal(ended, true, 'GameEnded is thrown out of the middle of the effect');
-  assert.equal(after, false, 'the second half of the effect did not run');
-  assert.equal(g.s.winner, A);
-  assert.equal(g.s.phase, 'gameover');
+test('cr:concepts.ending.elimination.immediate — a player at 0 is out only once the effect has finished, and a lone life change is checked at once', () => {
+  // CR 104.1a (CT-409, 2026-10-25): "A player brought to 0 or less by an effect
+  // is not eliminated until that effect has finished … Any other life change …
+  // is checked the moment it happens." This test used to be titled "life
+  // reaching 0 ends the game inside the effect, and the rest of the effect never
+  // runs", the rule the owner retired that day; it called the effect outside
+  // the engine's resolution path, so it never saw the effect batch.
+  const def = (flag: { after: boolean }, D: Seat) =>
+    ({ run: (gg: E) => { gg.loseLife(D, 3, 'probe'); flag.after = true; } } as unknown as EffectDef);
+
+  // (1) one effect, resolved as the engine resolves a part (E.lifeBatch)
+  {
+    const h = new Harness(80111);
+    toDeployment(h);
+    const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+    const g = new E(h.state);
+    g.player(D).life = 2;
+    const flag = { after: false };
+    let ended = false;
+    try { g.lifeBatch(() => { run(def(flag, D), g, { controller: A }); }); } catch (err) { ended = err instanceof GameEnded; }
+    assert.equal(flag.after, true, 'the rest of the effect ran with the player already at 0');
+    assert.equal(ended, true, 'and then the game ended');
+    assert.equal(g.s.winner, A);
+    assert.equal(g.s.phase, 'gameover');
+  }
+
+  // (2) a life change with no effect around it is checked the moment it happens
+  {
+    const h = new Harness(80112);
+    toDeployment(h);
+    const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+    const g = new E(h.state);
+    g.player(D).life = 2;
+    let ended = false;
+    try { g.loseLife(D, 3, 'probe'); } catch (err) { ended = err instanceof GameEnded; }
+    assert.equal(ended, true, 'GameEnded at once');
+    assert.equal(g.s.winner, A);
+  }
 });
 
 /* ---------- added by the unit tester: the rules no verifier probe demonstrated ---------- */
