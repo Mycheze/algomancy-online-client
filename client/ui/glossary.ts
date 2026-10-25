@@ -237,7 +237,7 @@ const KEYWORD_RULES: GlossEntry[] = [
   // "kills … unit" out of it. Losing that phrasing silently changes which
   // attributes ride the kill diff.
   { term: 'Reaping', cites: ['attr.reaping'], text: 'When it kills a unit, its controller draws a card.' },
-  { term: 'Inverted', cites: ['attr.inverted.net', 'printed'], text: 'Its stat CHANGES are reversed (a −7/−7 becomes +7/+7). Base stats and base rewrites are what it inverts FROM, so they never move; it applies once however many sources granted it.' },
+  { term: 'Inverted', cites: ['attr.inverted.net', 'attr.inverted.base', 'printed'], text: 'Its stat CHANGES are reversed (a −7/−7 becomes +7/+7), measured from its printed stats, so a base rewrite (Aberrant Statweaver) is reversed too. It applies once however many sources granted it.' },
   // CT-80 (c): this row carried the first Unaware ruling's 2026-07-16 wording — "everything
   // counts as interacting with it" — which the Unaware ruling replaced on 2026-08-23 and
   // which never stated the operative rule at all. That ruling's own "everything"

@@ -44,6 +44,15 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-25', kind: 'change', text: 'If one effect drops both players to 0 life, the higher life total wins, even below 0. On an exact tie the player with initiative loses.' },
+  { date: '2026-10-25', kind: 'change', text: 'Running out of cards now ends the game. In constructed, the player who has to draw from an empty deck and recycle pile loses. In live draft the game ends and the higher life total wins.' },
+  { date: '2026-10-25', kind: 'fix', text: 'Inverted now reverses base stat changes too: a 7/5 made a 3/3 by Aberrant Statweaver is an 11/7 while Inverted. Ruinbringer and the other "delete all" cards now delete everything at once, so death triggers hear every unit.' },
+  { date: '2026-10-25', kind: 'change', text: "In battle you can now apply a Virus to a spell token in play, yours or your opponent's. Giving a unit Sluggish after Swift damage now opens a chance to respond before its Sluggish strike." },
+  { date: '2026-10-25', kind: 'change', text: 'In a draft you can now recycle a card for, or turn a Prismite into, a resource of any element. The elements outside your draft are under "more…".' },
+  { date: '2026-10-25', kind: 'new', text: 'While you declare blockers, a card placed where it cannot block (a Feeble unit, a non-flyer against a flyer, an unmet Alluring duty) now shows a red (!), and the bar says why.' },
+  { date: '2026-10-25', kind: 'change', text: 'On a touch screen, tapping your own spell token or a resource now shows the card first. Tap the Cast or Activate button that appears to use it.' },
+  { date: '2026-10-25', kind: 'fix', text: "Clicking a card in your hand that you can't play now says why, and on the classic board hovering does too. The damage a spell on the stack says now counts Conduit of Pain and a Vulnerable target." },
+  { date: '2026-10-25', kind: 'fix', text: 'Report works during a draft pick, a big counterattack no longer stretches the classic board, a second quick play flies from your hand, and a spectated top hand shows whole cards. Rewinding to the step before really goes back a step.' },
   { date: '2026-10-25', kind: 'fix', text: "League: sitting out a week now takes two presses, so a stray tap can't take you out of it. Sat out a week by mistake and its pairings are already up? The organizer can put you back in." },
   { date: '2026-10-25', kind: 'fix', text: "Proph and Stalwart Sentinel now trigger when you play a unit, not when it enters play. Their ability resolves before the unit arrives, and still happens if the unit is negated." },
   { date: '2026-10-25', kind: 'fix', text: "The deployment stack now resolves in the same order as the battle stack. An ability you activate goes on it like a card you play, so anything it triggers (a unit sacrificed to pay for it, say) resolves first." },
