@@ -2529,6 +2529,9 @@ button.acctbar:hover .acctname { text-decoration: underline; }
   filter: drop-shadow(0 6px 18px rgba(0,0,0,.65)); }
 .hovertip.on { opacity: 1; visibility: visible; }
 .hovertip .textbox { margin-top: 0; background: var(--panel); }
+/* CT-371: why a dark hand card will not play, under its text (classic board) */
+.hovertip .tipwhy { margin-top: 4px; padding: 5px 9px; font-size: 12.5px; line-height: 1.35;
+  background: rgba(20, 24, 30, .96); border: 1px solid var(--line); border-radius: 6px; }
 /* a card name in PROSE hovers its scan instead of its rules text — the box is
    sized for a paragraph, a card is sized for a card (ui/cardlinks.ts `art`) */
 .hovertip.art { width: 260px; }

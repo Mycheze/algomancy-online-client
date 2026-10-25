@@ -9933,7 +9933,13 @@ function hoverTipHtml(target: HTMLElement, id: string | undefined, name: string)
       onerror="this.style.visibility='hidden'">`;
   }
   const box = id !== undefined ? boxFor(name, Number(id)) : printedTextBox(name);
-  return textBoxHtml(box, { compact: true });
+  // CT-371: the classic board has no zoom to hang a dark hand card's reason
+  // under (CT-288), so its hover box says it, last
+  let why = '';
+  if (!zoomOn() && target.dataset['act'] === 'hand') {
+    why = handWhy(Number(target.dataset['p']) as Seat, Number(target.dataset['i']));
+  }
+  return textBoxHtml(box, { compact: true }) + (why ? `<div class="tipwhy">${esc(why)}</div>` : '');
 }
 
 function armHoverTip(target: HTMLElement, x: number, y: number): void {
@@ -10132,11 +10138,8 @@ setZoomDecorator((src, copy) => {
       const offers = handOffers(legalFor(p), i);
       badges = handBadges(n, offers, xrows);
       // CT-288 (#211): a card with no ring says why, under the zoom — the one
-      // surface both a hover and a finger's tap (#201) reach. Only for a seat
-      // this screen plays, and never in the replay viewer.
-      const mine = !replayActive() && (bothSeats() || NET?.seat === p);
-      const why = !mine || offers.length || pickable(`hand:${p}:${i}`) ? ''
-        : handBlockLine(handBlockReason(q(), p, i, legalFor(p)));
+      // surface both a hover and a finger's tap (#201) reach (handWhy)
+      const why = handWhy(p, i);
       if (why) copy.insertAdjacentHTML('beforeend', `<div class="zoomhang handwhy">${esc(why)}</div>`);
     }
   } else if (src.dataset['prevstack'] !== undefined) {
@@ -11355,6 +11358,21 @@ function cachePickKey(p: Seat, i: number): string | null {
   return uid === undefined ? null : `cache:${p}:${uid}`;
 }
 
+/**
+ * CT-288 / CT-371: why hand card `i` has no offer right now, as one short
+ * sentence, or '' — for a card that is offered, one that answers the open
+ * question, a seat this screen does not play, or the replay viewer. Said under
+ * the zoom (the decorator), on a click on the dark card (handleHandClick's
+ * toast) and in the classic board's hover box (hoverTipHtml).
+ */
+function handWhy(p: Seat, i: number): string {
+  const n = h.state.players[p]?.hand[i];
+  if (!n || n === HIDDEN_CARD) return '';
+  const mine = !replayActive() && (bothSeats() || NET?.seat === p);
+  return !mine || handOffers(legalFor(p), i).length || pickable(`hand:${p}:${i}`) ? ''
+    : handBlockLine(handBlockReason(q(), p, i, legalFor(p)));
+}
+
 function handleHandClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: boolean } = {}): void {
   if (!bothSeats() && p !== NET!.seat) return;   // can't act from the opponent's hand
   const s = h.state;
@@ -11433,6 +11451,8 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: boo
   }
   // a drag onto the table plays; a drag onto a host is the mod (see dragCardPlan)
   if (!opts.noMods) items.push(...modMenuItems(p, 'hand', i, name, modActions));
+  // CT-371: a dark card's click used to do nothing at all; it says why
+  if (!items.length) { const why = handWhy(p, i); if (why) showToast(why); }
   offer(items, e);
 }
 
