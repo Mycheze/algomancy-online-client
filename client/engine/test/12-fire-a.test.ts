@@ -138,13 +138,13 @@ test('Abyssal Evocation: without the permission the action is refused, not just 
   finishBattle(h);
 });
 
-test('Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing', () => {
-  // SETTLED, not open: the owner, 2026-08-25, "Already correct — Abyssal
-  // Evocation, Writhing Host.", now CR 702.2a: "A card played from the cache or
-  // a bin under a permission still obeys its own printed timing". CR 403.3d says
-  // the same of the cache, and `playAtTiming` enforces it for free, so a bin
-  // full of DEPLOY-timing spells is inert under this card. (The title keeps its
-  // old words only because CR record U07 binds it by its full text.)
+test('CR 702.2a Abyssal Evocation: a bin-played card obeys its PRINTED timing (settled by the owner on 2026-08-25, Already correct)', () => {
+  // The owner, 2026-08-25, "Already correct — Abyssal Evocation, Writhing
+  // Host.", now CR 702.2a: "A card played from the cache or a bin under a
+  // permission still obeys its own printed timing". CR 403.3d says the same of
+  // the cache, and `playAtTiming` enforces it for free, so a bin full of
+  // DEPLOY-timing spells is inert under this card. CR 405.9's example binds
+  // this title by its full text.
   const h = new Harness(1243);
   toDeployment(h);
   const A = h.state.initiative;

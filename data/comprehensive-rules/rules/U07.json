@@ -2275,7 +2275,7 @@
     "examples": [
       {
         "text": "Abyssal Evocation lets its caster play spells from the bin in this battle; only {Battle} spells there can be played.",
-        "test": "12-fire-a.test.ts::Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing"
+        "test": "12-fire-a.test.ts::CR 702.2a Abyssal Evocation: a bin-played card obeys its PRINTED timing (settled by the owner on 2026-08-25, Already correct)"
       }
     ],
     "see": [
