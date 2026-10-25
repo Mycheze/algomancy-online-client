@@ -6774,7 +6774,8 @@ export class E {
         plusShare = damageOrder === 'add' ? plus * 2 : plus;
       } else {
         n += plus;
-        if (n > 0 && powerful) { n *= 2; plusShare *= 2; }
+        if (n > 0 && attrsVs(hitUnit).has('Powerful')) n *= 2;
+        if (n > 0 && powerful) plusShare *= 2;
       }
       if (n <= 0) continue;
       const target = hit.target;
