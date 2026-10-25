@@ -819,56 +819,82 @@
   },
   {
     "key": "combat.damage.dealing.deaths",
-    "textHash": "d1740e843855959f",
+    "textHash": "99354d8fcc698321",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U12-r1",
+    "round": 4,
+    "verifier": "U12-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:pumpCombatDamage/combatSubStep",
+        "loc": "client/engine/src/engine.ts:combat sub-step run (deadlyVictims/collapsedVictims/pureVictims -> commitPlayerDamage -> doomedOut)",
         "agrees": true,
-        "note": "sweepDeadly + checkDeaths after each sub-step, before the next"
+        "note": "deaths only decided inside the sub-step; player damage committed; deaths disposed by the state check after the sub-step in one destroyBatch"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:checkDeaths/destroyBatch",
+        "agrees": true,
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "02-combat.test.ts",
-        "pattern": "R3/Swift: swift column deals damage first",
+        "file": "client/engine/test/02-combat.test.ts",
+        "pattern": "Swift: swift column deals damage first",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/680-deadly-deaths-one-batch.test.ts",
+        "pattern": "CR 608.7b, 713.6 / CT-413: a Deadly kill and two lethal-damage kills in one combat sub-step are one batch",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U12-1.test.ts",
+        "test": "probe U12-1: player damage is committed before the sub-step deaths, and the deaths are one batch",
+        "passed": true,
+        "demonstrates": "yes: in one sub-step commitPlayerDamage runs before the first non-empty destroyBatch, which holds the Deadly-killed and the lethally damaged blocker together; the unblocked column's 3 reached the player"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "R21",
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": "'Every damage exchange happens at the same time during combat' with unit and player damage listed together — simultaneity of the sub-step's damage"
+      },
+      {
+        "ref": "owner register@72de434 (sub-step deaths)",
+        "supports": "yes",
+        "note": "deaths in the same damage sub-step, before the next sub-step"
+      },
+      {
+        "ref": "owner register@72de434 (SBAs after damage)",
         "supports": "yes",
         "note": ""
       },
       {
-        "ref": "R300",
-        "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "R3",
+        "ref": "owner register@72de434 (recalc)",
         "supports": "yes",
         "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "this.checkDeaths();   // deaths + promotion between sub-steps, no priority (R3)"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Every damage exchange happens at the same time"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> Damage happens in the combat damage step, then state based actions are checked and units"
+        "file": "client/engine/src/engine.ts",
+        "text": "// CR 608.7b, 713.6 / CT-413: decided here, read inside the interaction, but"
+      },
+      {
+        "file": "client/engine/test/680-deadly-deaths-one-batch.test.ts",
+        "text": "assert.equal(borrowedQueued(h), 2, 'one borrowed \"when I die\" per neighbour, the Deadly-killed one included');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.damage.dealing.prevention",

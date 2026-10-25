@@ -2195,33 +2195,62 @@
   },
   {
     "key": "effects.playing.applying.tides",
-    "textHash": "419b7646fabfee92",
+    "textHash": "a5bc4e66ea4ad1dd",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-water-a.ts:inlineModes / playInlineMode",
+        "loc": "client/engine/src/engine.ts:battleVirusHosts",
         "agrees": true,
-        "note": "Tides offers Virus/Ambush/Prophecy modes; graft and non-virus augments are not offered"
+        "note": "The Tides Virus mode reads the battle Virus host list (units, spells on the stack, spell tokens in play in the battle region)."
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:virusHosts",
+        "agrees": true,
+        "note": "Tides of the Cosmos uses g.battleVirusHosts(region)."
       }
     ],
     "tests_run": [
       {
-        "file": "404-raq-fix-tides.test.ts",
-        "pattern": "R337: a Virus card played by Tides as a Virus augments a unit and never enters play",
+        "file": "client/engine/test/404-raq-fix-tides.test.ts",
+        "pattern": "CR 701.2c: a Virus card played by Tides",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "396-raq-timing.test.ts",
-        "pattern": "RAQ Tides 3:",
+        "file": "client/engine/test/404-raq-fix-tides.test.ts",
+        "pattern": "CR 803.6j: an Ambush card played by Tides",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "396-raq-timing.test.ts",
-        "pattern": "RAQ Tides 4:",
+        "file": "client/engine/test/404-raq-fix-tides.test.ts",
+        "pattern": "CR 803.7n: a card played by Tides as a Prophecy",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/682-tides-virus-every-host.test.ts",
+        "pattern": "CR 723.4 / CT-416",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/682-tides-virus-every-host.test.ts",
+        "pattern": "CR 721.4a / CT-416",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 4",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 3",
         "passed": true,
         "asserts_claim": true
       }
@@ -2231,38 +2260,71 @@
       {
         "ref": "RAQ 1537748882501668934#2",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "[Solved] Mods are NOT Played, claim 2 (covered); same source line names Glimpse as the other exception (claim 3)."
       },
       {
         "ref": "RAQ 1396955380000755795#2",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "Ambush/Prophecy and Viruses via Tides; covered."
       },
       {
         "ref": "RAQ 1396955380000755795#3",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "no grafting or non-virus augments; covered (the Rook claim #4 is outdated and not relied on)."
       },
       {
         "ref": "RAQ 1357483405276614856#1",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "calebgannon: augment is a special action; covered."
       },
       {
-        "ref": "R337",
+        "ref": "RQ 1356456406206775407",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "calebgannon, answering ottocycleplus: 'Can you augment a virus onto an enemy unit with Tides of the Cosmos?'"
+      },
+      {
+        "ref": "owner register@72de434",
+        "supports": "yes",
+        "note": "taken as given: Tides free plays may use an alternative (Ambush/Prophecy)."
+      },
+      {
+        "ref": "owner chat 2026-10-25 (CT-416)",
+        "supports": "yes",
+        "note": "'Keep it' on the context stating a Tides Virus may go onto a spell on the stack or a spell token in play."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "A card Tides of the Cosmos plays for free may be played in any alternative"
+        "file": "client/ledgers/raq.ts",
+        "text": "The only exceptions to this is Tides of Cosmos which allow you to use Viruses"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "3. Tides allows you to play Ambushes/Prophecy and apply Viruses"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "So no Grafting or non-virus augments."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "No because augment in general is a special action"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "So, I want it to be yes"
+      },
+      {
+        "file": "client/engine/test/682-tides-virus-every-host.test.ts",
+        "text": "  assert.equal(item!.hostStack, haboob!.id, 'aimed at Haboob on the stack');"
+      },
+      {
+        "file": "client/engine/test/682-tides-virus-every-host.test.ts",
+        "text": "  assert.equal(item?.hostId, tok, 'aimed at the Fireball token');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.playing.copy-not-played",

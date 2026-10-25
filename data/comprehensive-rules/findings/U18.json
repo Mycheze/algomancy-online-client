@@ -7,7 +7,7 @@
     "evidence": [
       {
         "file": "client/engine/test/224-mod-trash.test.ts",
-        "quote": "CT-246 GUARD (engine; CR 801.2h says not trashed): the BODY of an Unstable unit that dies is still trashed, mods or no mods"
+        "quote": "CT-246 GUARD (CR 801.2h: an Unstable card that dies is still trashed): the BODY of an Unstable unit that dies is trashed, mods or no mods"
       },
       {
         "file": "client/engine/test/35-rot-debt-trash.test.ts",

@@ -5700,44 +5700,61 @@
     "key": "effects.virus.spell-host.not-hosts",
     "textHash": "621069a263d6c2db",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U17-r2",
+    "round": 4,
+    "verifier": "U17-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:STACK_VIRUS_HOSTS",
+        "loc": "client/engine/src/engine.ts:STACK_VIRUS_HOSTS",
         "agrees": true,
-        "note": "set is {spell, spellUnit, spellToken}; triggered, activated, virus, unit, ambush excluded; doAugment needs it"
+        "note": "the set is spell, spellUnit, spellToken; apply.ts doAugment refuses any other stack kind ('no such spell on the stack')"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/67-resolving-and-stack-viruses.test.ts",
-        "pattern": "R79: only SPELLS are legal hosts",
+        "file": "67-resolving-and-stack-viruses.test.ts",
+        "pattern": "CR 723.4e",
         "passed": true,
-        "asserts_claim": "yes for triggered (not offered, refused); other kinds rest on the engine Set (test title says 'units mid-cast' but body does not exercise it)"
+        "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U17-1.test.ts",
+        "test": "probe U17-1a: a real Ambush on the stack is not offered as a Virus host, and is refused; the spell under it is",
+        "passed": true,
+        "demonstrates": "yes: a real Lurking Slimebeast Ambush is neither offered nor accepted as a host while the spell under it is"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U17-1.test.ts",
+        "test": "probe U17-1b: a stack item of kind triggered|activated|virus|unit|ambush is not a Virus host (spell control is)",
+        "passed": true,
+        "demonstrates": "yes: the same stack item is a host as a spell and stops being one (not offered, refused) as each of the five excluded kinds"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "R79 (its stack-host half)",
+        "ref": "owner register@72de434",
+        "supports": "no",
+        "note": "not a ruling: it says the exclusions are judgement calls; the record correctly rests on basis engine"
+      },
+      {
+        "ref": "apply.ts:STACK_VIRUS_HOSTS",
         "supports": "yes",
-        "note": "The exclusions are listed and openly flagged as judgement calls; basis 'engine' is honest."
+        "note": "defined in engine.ts, used in apply.ts doAugment"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "The four ⚠ are judgement calls, not sourced answers. **Bena to rule** if any of"
+        "file": "client/engine/src/engine.ts",
+        "text": "export const STACK_VIRUS_HOSTS = new Set<StackItem['kind']>(['spell', 'spellUnit', 'spellToken']);"
       },
       {
         "file": "client/engine/src/apply.ts",
-        "text": "const STACK_VIRUS_HOSTS = new Set<StackItem['kind']>(['spell', 'spellUnit', 'spellToken']);"
+        "text": "e.need(target !== undefined && STACK_VIRUS_HOSTS.has(target.kind),"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.virus.spell-host.resolving",

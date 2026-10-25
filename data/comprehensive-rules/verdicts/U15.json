@@ -566,15 +566,15 @@
   },
   {
     "key": "effects.replacement.amount-before-redirect",
-    "textHash": "c2c9891ed4344db8",
+    "textHash": "506e586b8d19f5f9",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U15-r2",
+    "round": 4,
+    "verifier": "U15-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:addCounters",
+        "loc": "client/engine/src/engine.ts:replaceEvent + addCounters order question (askReplacement with default)",
         "agrees": true,
-        "note": "n += amountDelta(...) then target = replaceCounters(target, n)"
+        "note": "re-tests an unapplied amount replacer after a redirect; Slime+Thief of one player asks with 'Default: 3 counters on Counter Thief (the higher number)' first; Flux+Thief asks nothing"
       }
     ],
     "tests_run": [
@@ -583,29 +583,94 @@
         "pattern": "an AmountMod runs BEFORE the redirect",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "698-counter-amounts-and-redirects.test.ts",
+        "pattern": "CR 708.4a: Flux Resonator and a Counter Thief",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "698-counter-amounts-and-redirects.test.ts",
+        "pattern": "CR 708.4a: Proliferating Slime applies after a Counter Thief",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "698-counter-amounts-and-redirects.test.ts",
+        "pattern": "CR 708.7: Proliferating Slime and a Counter Thief of one player",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "698-counter-amounts-and-redirects.test.ts",
+        "pattern": "CR 708.7: choosing the Counter Thief first",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R104 (its two families and hooks)",
+        "ref": "card: Counter Thief",
         "supports": "yes",
-        "note": "owner/engine reading from the printed wording; no designer source"
+        "note": "verbatim"
+      },
+      {
+        "ref": "card: Proliferating Slime",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "RQ 1151674242774073354",
+        "supports": "yes",
+        "note": "calebgannon, on Cosmic Conspirator ordering: a replacement that did not match (the doubling of a crystal) applies after another changes the event"
+      },
+      {
+        "ref": "RQ 1475287013040062686",
+        "supports": "yes",
+        "note": "calebgannon: the owner of the replacements chooses the order"
+      },
+      {
+        "ref": "owner register@72de434 (amount before redirect)",
+        "supports": "partial",
+        "note": "the older fixed order; now the default rather than forced, which the 2026-10-25 quotes settle"
+      },
+      {
+        "ref": "owner 2026-10-25 'For cases where its \"just worse\" give them the option…'",
+        "supports": "yes",
+        "note": "default + option"
+      },
+      {
+        "ref": "owner 2026-10-25 'In 9/10 cases, default is fine, but the option is always there'",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**In `addCounters`**, the amount runs before the redirect. \"Put that many"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "If one or more counters would be placed on one or more units during battle, those counters are placed on me instead."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "beside a Flux Resonator steals the plus-one too."
+        "file": "client/engine/src/cards/printed.json",
+        "text": "If one or more counters would be put on an enemy unit or player, put that many counters plus one instead."
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "Or make a fireball, then turn it into a crystal and double it"
+      },
+      {
+        "file": "client/engine/test/698-counter-amounts-and-redirects.test.ts",
+        "text": "assert.equal(counters(r.h, r.d[0]!), 3, 'two, plus one: once on the thief they are on an enemy unit');"
+      },
+      {
+        "file": "client/engine/test/698-counter-amounts-and-redirects.test.ts",
+        "text": "assert.equal(dec!.options[0]!.label, 'Default: 3 counters on Counter Thief (the higher number)', 'the one-click default comes first and says what it gives');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.replacement.amount-modifiers",
@@ -769,27 +834,56 @@
   },
   {
     "key": "effects.replacement.multipliers.additive-first",
-    "textHash": "5a859491aa63c96e",
+    "textHash": "1db335c7a41d88cd",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U15-r1",
+    "round": 4,
+    "verifier": "U15-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:lifeAmount ((v+Σdelta)×factor)",
+        "loc": "client/engine/src/engine.ts:additionOrder",
         "agrees": true,
-        "note": ""
+        "note": "one player: asked, 'Default: <hi> damage (the higher number)' first; two players: initiative's applies first, no question"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:lossOrder",
+        "agrees": true,
+        "note": "Conduit + Arbiter of Vitality on the replaceEvent seam, same default"
       }
     ],
     "tests_run": [
       {
-        "file": "387-raq-combat.test.ts",
-        "pattern": "RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles",
+        "file": "699-damage-addition-and-doubling-order.test.ts",
+        "pattern": "CR 708.6a: Conduit of Pain and Powerful",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "137-multiplier-and-mode.test.ts",
-        "pattern": "the multiplier composes with a REAL additive mod end to end",
+        "file": "699-damage-addition-and-doubling-order.test.ts",
+        "pattern": "CR 708.6a: choosing Powerful first",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "699-damage-addition-and-doubling-order.test.ts",
+        "pattern": "CR 708.6a: Conduit of Pain and Arbiter of Vitality of one player",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "699-damage-addition-and-doubling-order.test.ts",
+        "pattern": "CR 708.6a: choosing Arbiter of Vitality first",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "699-damage-addition-and-doubling-order.test.ts",
+        "pattern": "CR 708.4a: Conduit of Pain and an Arbiter of Vitality of the other player",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles",
         "passed": true,
         "asserts_claim": true
       }
@@ -797,34 +891,56 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R316",
+        "ref": "RAQ 1362838395298119912#4",
         "supports": "yes",
-        "note": "quote found verbatim in the source and states the claim"
+        "note": "[Solved], _passer, status covered; verbatim claim"
       },
       {
-        "ref": "R264",
+        "ref": "RQ 1475287013040062686",
         "supports": "yes",
-        "note": "quote found verbatim in the source and states the claim"
+        "note": ""
       },
       {
-        "ref": "history R104",
+        "ref": "RQ 1475287086247579648",
         "supports": "yes",
-        "note": "its order (Conduit after Powerful) was reversed by R316"
+        "note": ""
+      },
+      {
+        "ref": "RQ 1475287265080119389",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner 2026-10-25 Q4/Q5 quotes",
+        "supports": "yes",
+        "note": "default + the option"
+      },
+      {
+        "ref": "owner 2026-10-25 'Each owner, INT first'",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> \"Bellowing Boulder with Powerful and Conduit of Pain: (1+1)x2 damage to each unit ="
+        "file": "client/ledgers/raq.ts",
+        "text": "Conduit of Pain adds its 1 BEFORE Powerful doubles: a Powerful Bellowing Boulder's 1 deals (1+1)x2 = 4."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "does not reach it. `E.lifeAmount` keeps its interim `(v + Σdelta) × factor` —"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "which usually would mean doing +1 then doubling"
+      },
+      {
+        "file": "client/engine/test/699-damage-addition-and-doubling-order.test.ts",
+        "text": "assert.deepEqual(r.w.map(id => ent(r.h, id)!.damage), [3, 3], '1x2+1 to each unit');"
+      },
+      {
+        "file": "client/engine/test/699-damage-addition-and-doubling-order.test.ts",
+        "text": "assert.equal(b.lost(), 5);"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.replacement.multipliers.lethal",
@@ -1042,39 +1158,43 @@
   },
   {
     "key": "effects.replacement.once.one-applies",
-    "textHash": "c7891b359b0a78da",
+    "textHash": "b33e67d3ae5766e9",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U15-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.replaceCombatDamage / E.orderSeamRun / E.replaceCounters",
+        "loc": "client/engine/src/engine.ts:E.replaceEvent",
         "agrees": true,
-        "note": "Chain: each holder applies once to what the earlier left; with two or more holders the affected player is asked (orderSeamRun for combat and rot, before any is dealt); one holder asks nothing."
+        "note": "each replacer applies at most once, to the event as left; not-matching ones are declined and re-tested after another applies (declined.clear()); the family's chooser asks only with >=2 groups and where order matters"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:E.replaceBand",
+        "agrees": true,
+        "note": "lowest tier first, then the initiative player's replacers before the other player's ('Each owner, INT first')"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:E.exploreReplacements",
+        "agrees": true,
+        "note": "explores the orders on paper, default order first; used to skip the question when every order gives the same end and to offer the default"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/469-replacement-chain-damage.test.ts",
-        "pattern": "CR 708.4: two Oorblaks and combat damage to you — one takes",
+        "pattern": "CR 708.4: two Oorblaks and combat damage to you",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/471-oorblak-order-and-polyp.test.ts",
-        "pattern": "CR 708.4a: two Oorblaks and combat damage — the player being",
+        "pattern": "CR 708.4a: two Oorblaks and combat damage",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/468-replacement-chain-redirects.test.ts",
-        "pattern": "CR 708.4: two Counter Thieves chain — the second takes the c",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "client/engine/test/472-counter-thief-and-rot-order.test.ts",
-        "pattern": "CR 708.4a: two Counter Thieves — choosing the second puts th",
+        "pattern": "CR 708.4: two Counter Thieves chain",
         "passed": true,
         "asserts_claim": true
       },
@@ -1086,25 +1206,37 @@
       },
       {
         "file": "client/engine/test/459-automatons-chain.test.ts",
-        "pattern": "CR 708.4: two Automatons of Abundance turn one created token",
+        "pattern": "CR 708.4: two Automatons of Abundance turn one created token into three",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/472-counter-thief-and-rot-order.test.ts",
-        "pattern": "CR 708.4a: two Skittering Blights — the player is asked whic",
+        "pattern": "CR 708.4a: two Skittering Blights",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/472-counter-thief-and-rot-order.test.ts",
-        "pattern": "CR 708.4a: one Counter Thief asks nothing",
+        "file": "client/engine/test/696-replacement-order-each-owner.test.ts",
+        "pattern": "CR 708.4a",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/471-oorblak-order-and-polyp.test.ts",
-        "pattern": "CR 708.4a: one Oorblak asks nothing",
+        "file": "client/engine/test/697-replacement-order-tokens.test.ts",
+        "pattern": "CR 708.4",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/698-counter-amounts-and-redirects.test.ts",
+        "pattern": "CR 708",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/699-damage-addition-and-doubling-order.test.ts",
+        "pattern": "CR 708",
         "passed": true,
         "asserts_claim": true
       }
@@ -1114,68 +1246,103 @@
       {
         "ref": "card: Oorblak",
         "supports": "yes",
-        "note": "Verbatim."
+        "note": "verbatim"
       },
       {
         "ref": "card: Counter Thief",
         "supports": "yes",
-        "note": "Verbatim."
+        "note": "verbatim"
+      },
+      {
+        "ref": "card: Automaton of Abundance",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "card: Cosmic Conspirator",
+        "supports": "yes",
+        "note": "verbatim"
       },
       {
         "ref": "RAQ 1397188292239163454#0",
         "supports": "yes",
-        "note": ""
+        "note": "Caleb quoted in the claim's source; status covered"
       },
       {
         "ref": "RQ 1442982460034912287",
         "supports": "yes",
-        "note": ""
+        "note": "calebgannon; tldr after his Oorblak/Automaton explanation"
       },
       {
         "ref": "RQ 1442981461476245685",
         "supports": "yes",
-        "note": "calebgannon, in his Automaton/Oorblak explanation: the player controls how replacements stack."
+        "note": "calebgannon; player controls how they stack"
       },
       {
         "ref": "RQ 1442981580535496807",
         "supports": "yes",
-        "note": "With 1442981663603687588: two Automatons, 1 -> 2 -> 3 tokens (the chain)."
+        "note": "calebgannon; leads into 1->2->3"
       },
       {
         "ref": "RQ 1442981663603687588",
         "supports": "yes",
-        "note": ""
+        "note": "calebgannon; two Automatons give three tokens"
       },
       {
-        "ref": "owner 2026-10-16 (four quotes)",
+        "ref": "RQ 1151673983960359022",
         "supports": "yes",
-        "note": "Two Oorblaks: one takes all, the other 0; Counter Thieves end on the second; 'Ask the player now' for the order. Which player is asked is the engine/test's reading (the player the event affects); Caleb's 'you the player' is consistent."
+        "note": "calebgannon; answers whether you choose the order with Conspirator and the other card"
+      },
+      {
+        "ref": "RQ 1151674242774073354",
+        "supports": "yes",
+        "note": "calebgannon; the re-test case (make, exchange, then double)"
+      },
+      {
+        "ref": "RQ 1364310799023083601",
+        "supports": "yes",
+        "note": "calebgannon; you choose the order"
+      },
+      {
+        "ref": "RQ 1475287013040062686",
+        "supports": "yes",
+        "note": "calebgannon; the owner of the replacement effects chooses the order"
+      },
+      {
+        "ref": "RQ 1314637885097512980",
+        "supports": "yes",
+        "note": "calebgannon; Conspirator makes one exchange per token"
+      },
+      {
+        "ref": "owner 2026-10-16 / 2026-10-25 quotes",
+        "supports": "yes",
+        "note": "chain per Caleb; two Oorblaks, one takes 0; second Thief; ask the player; Each owner, INT first; Conspirator exchanges each of the two"
       }
     ],
     "quote_spans": [
       {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "If combat damage would be dealt to you, that damage is dealt to me instead."
+      },
+      {
         "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "its a replacement effect so it just takes one thing and replaces it with another (you the player control how they stack)"
+        "text": "the tldr is replacement effects only apply once onto an effect"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "generally as the owner of all the replacement effects, you can choose the order you'd like to apply them in"
       },
       {
         "file": "client/ledgers/rules-questions.snapshot.jsonl",
         "text": "1 token -> 2tokens -> 3 tokens"
       },
       {
-        "file": "client/engine/test/471-oorblak-order-and-polyp.test.ts",
-        "text": "assert.equal(dec!.seat, r.D, 'the player the damage would be dealt to chooses');"
+        "file": "client/ledgers/raq.ts",
+        "text": "replacement effects only apply once in an effect Unless a new trigger occurs"
       },
       {
-        "file": "client/engine/test/472-counter-thief-and-rot-order.test.ts",
-        "text": "assert.equal(dec!.seat, r.D, 'the controller of the unit the counters were going to');"
-      },
-      {
-        "file": "client/engine/test/468-replacement-chain-redirects.test.ts",
-        "text": "assert.equal(ent(h, second)!.counters, 3, 'so they end on the second thief');"
-      },
-      {
-        "file": "client/engine/test/469-replacement-chain-damage.test.ts",
-        "text": "'owner 2026-10-16: \"only ONE of them will actually get damaged. The other receives 0 damage.\"');"
+        "file": "client/engine/src/engine.ts",
+        "text": "EACH OWNER ORDERS THEIR OWN, THE INITIATIVE PLAYER'S FIRST"
       }
     ],
     "basis_ok": true,
@@ -1596,33 +1763,51 @@
   },
   {
     "key": "effects.replacement.token-batch",
-    "textHash": "53109a2ffd0c91a5",
+    "textHash": "2d796124f7e503c7",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U15-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-metal-a.ts:Automaton of Abundance",
+        "loc": "client/engine/src/engine.ts:resolve part token batch (StackItem.tokenMemo, types.ts:1283)",
         "agrees": true,
-        "note": "One extra per (name, X, stats) in one creation batch."
+        "note": "copies are made at the end of each part, but a part only copies tokens not yet copied in the effect, which gives the same result as one creation"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/136-triggers-and-modes.test.ts",
+        "file": "136-triggers-and-modes.test.ts",
         "pattern": "CR 708.9: end to end",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/136-triggers-and-modes.test.ts",
+        "file": "136-triggers-and-modes.test.ts",
         "pattern": "CR 304.14: three IDENTICAL Robot 2s",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/458-automaton-copies-stats.test.ts",
-        "pattern": "CR 304.14: a 3/3 and a 5/5 Unit Token made together are TWO",
+        "file": "458-automaton-copies-stats.test.ts",
+        "pattern": "CR 304.14: a 3/3 and a 5/5 Unit Token made together are TWO unique tokens",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "700-token-batch-is-the-effect.test.ts",
+        "pattern": "CR 708.9: Omniwield Evoker grafted with Manufacture and Construct Overseer",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "700-token-batch-is-the-effect.test.ts",
+        "pattern": "CR 708.9: a token not yet copied in the effect is still copied in a later part",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "700-token-batch-is-the-effect.test.ts",
+        "pattern": "CR 708.9: two activations are two effects",
         "passed": true,
         "asserts_claim": true
       }
@@ -1632,22 +1817,22 @@
       {
         "ref": "card: Automaton of Abundance",
         "supports": "yes",
-        "note": "Quote verbatim."
+        "note": "verbatim"
       },
       {
-        "ref": "owner register@72de434 (2026-08-23): one resolving part is one creation batch",
+        "ref": "RQ 1358924537160536247",
         "supports": "yes",
-        "note": ""
+        "note": "calebgannon; answers _passer's two options for Automaton + an Omniweld Evoker with grafts. Option 2 copies a Robot 3 and a Robot 1 only once 'cuz you already made extra Robot 3 with this effect': one copy per unique token per effect, grafts included"
       },
       {
-        "ref": "owner register@72de434 (2026-08-25): unique (name, X) pair",
+        "ref": "owner register@72de434 (name, X) pair",
         "supports": "yes",
-        "note": ""
+        "note": "taken as given"
       },
       {
-        "ref": "owner 2026-10-16: \"Yeah, those would count as unique tokens.\"",
+        "ref": "owner 2026-10-16 'Yeah, those would count as unique tokens.'",
         "supports": "yes",
-        "note": "On a 3/3 and a 5/5 Unit Token: supports stats as part of uniqueness. No designer source speaks to uniqueness."
+        "note": "the 3/3 and 5/5 Unit Token question"
       }
     ],
     "quote_spans": [
@@ -1656,12 +1841,16 @@
         "text": "instead create those tokens plus an additional copy of each unique token you created."
       },
       {
-        "file": "client/engine/test/458-automaton-copies-stats.test.ts",
-        "text": "assert.equal(extras.length, 2, 'one extra per (name, X, stats), not one per name');"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "it would be the second one"
       },
       {
-        "file": "client/engine/test/136-triggers-and-modes.test.ts",
-        "text": "assert.equal(extras.length, 1, 'same name AND same X is one unique token');"
+        "file": "client/engine/test/700-token-batch-is-the-effect.test.ts",
+        "text": "assert.deepEqual(robots(h, A), [1, 1, 1, 2, 2, 3, 3],"
+      },
+      {
+        "file": "client/engine/test/458-automaton-copies-stats.test.ts",
+        "text": "assert.equal(extras.length, 2, 'one extra per (name, X, stats), not one per name');"
       }
     ],
     "basis_ok": true,

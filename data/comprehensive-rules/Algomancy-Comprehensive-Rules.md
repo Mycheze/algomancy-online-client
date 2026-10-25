@@ -440,7 +440,7 @@ order.
 
 <sub>Discrepancies: D-U01-4 (discrepancies.md)</sub>
 
-<a id="r104.1a"></a>**104.1a** A player brought to 0 or less by an effect is not eliminated until that effect has finished: every life change one resolution of one effect makes (the unit damage is dealt in, 112.8) is applied first, and only then are the life totals checked. All the life changes of one combat damage sub-step are applied together in the same way, Lethal kills included (802.24a), and checked after all of them. Any other life change, such as rot damage, is checked the moment it happens; rot is dealt one player at a time, in initiative order, and is never simultaneous (112.13). A life cost that would by itself bring its payer to 0 cannot be paid at all (111). See rules 111, 112, 608.
+<a id="r104.1a"></a>**104.1a** A player brought to 0 or less by an effect is not eliminated until that effect has finished: every life change one resolution of one effect makes (the unit damage is dealt in, 112.8) is applied first, and only then are the life totals checked. All the life changes of one combat damage sub-step are applied together in the same way, Lethal kills included (802.24a), and checked after all of them. A player who runs out of cards during such an effect or sub-step has not lost until it has finished either, and is judged with the life totals then (104.5a, 104.5b). Any other life change, such as rot damage, is checked the moment it happens; rot is dealt one player at a time, in initiative order, and is never simultaneous (112.13). A life cost that would by itself bring its payer to 0 cannot be paid at all (111). See rules 111, 112, 608.
 
 > *Example: Both players are at 1 life and Penance brings each of them to 0. Neither is eliminated until the effect has finished, and then both are at 0 together (104.1b).*
 
@@ -448,7 +448,7 @@ order.
 
 > *Example: Both players have more rot than life as deployment begins. The initiative player's rot is dealt first and that player loses before the other player's rot is dealt.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 8 tests (a probe it wrote), all passed; 2 gate test files · Designer: RQ 1348854126699614248; RQ 1542923825904099349; RQ 1542924008620564610 · Owner call · adopted 2026-10-25; Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Tests: 654-simultaneous-loss.test.ts · Example tests: 654-simultaneous-loss.test.ts::CR 104.1a / CT-409: Penance takes both players from 1 to 0 and the initiative player loses the tie, 654-simultaneous-loss.test.ts::CR 104.1a / CT-409: with one player at 0 the other still wins, and an effect finishes before the game ends, 654-simultaneous-loss.test.ts::CR 104.1a / CT-409: rot is not simultaneous, so the initiative player whose rot takes them to 0 loses before the other player takes theirs · Demonstrated by test: 37-attrs-wight.test.ts::CR 802.22b {Blessed}: without the attribute the same shot is lethal · Key: concepts.ending.elimination.immediate</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 9 tests (a probe it wrote), all passed; 4 gate test files · Designer: RQ 1348854126699614248; RQ 1542923825904099349; RQ 1542924008620564610 · Owner call · adopted 2026-10-25; Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Tests: 654-simultaneous-loss.test.ts, 684-deck-out-judged-with-life.test.ts, 412-cr-general.test.ts · Example tests: 654-simultaneous-loss.test.ts::CR 104.1a / CT-409: Penance takes both players from 1 to 0 and the initiative player loses the tie, 654-simultaneous-loss.test.ts::CR 104.1a / CT-409: with one player at 0 the other still wins, and an effect finishes before the game ends, 654-simultaneous-loss.test.ts::CR 104.1a / CT-409: rot is not simultaneous, so the initiative player whose rot takes them to 0 loses before the other player takes theirs · Demonstrated by test: 37-attrs-wight.test.ts::CR 802.22b {Blessed}: without the attribute the same shot is lethal · Key: concepts.ending.elimination.immediate</sub>
 
 <sub>Discrepancies: D-U01-14 (discrepancies.md)</sub>
 
@@ -502,21 +502,29 @@ order.
 
 <sub>Discrepancies: D-U01-8 (discrepancies.md)</sub>
 
-<a id="r104.5a"></a>**104.5a** In constructed, the player who ran out of cards loses the game, whatever the life totals. A Single Card Duel is constructed for this rule (D8.2). See rule D8.2.
+<a id="r104.5a"></a>**104.5a** In constructed, the player who ran out of cards loses the game, whatever the life totals. A Single Card Duel is constructed for this rule (D8.2). A player who runs out of cards during an effect has not lost until that effect has finished, as with a life total of 0 (104.1a). When it has finished, each player who ran out of cards and each player at 0 or less has lost; if that is both players, 104.1b decides the game on the life totals. See rules 104.1a, 104.1b, D8.2.
 
 > *Example: A constructed player at 25 life has to draw with an empty deck and an empty recycle pile while the opponent is at 3. The player who had to draw loses.*
 
 > *Example: The card step at the start of a turn is a draw too: from an empty deck and pile it ends the game.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 1 gate test file · Designer: RQ 1356616873655140546; RQ 1402038431659593859; RQ 1402046171094057041 · Owner call · adopted 2026-10-24, 2026-10-25 · Tests: 656-deck-out.test.ts · Example tests: 656-deck-out.test.ts::CR 104.5 / CT-385: in constructed a draw from an empty deck and an empty recycle pile loses, whatever the life totals, 656-deck-out.test.ts::CR 104.5 / CT-385: in constructed the card step from an empty deck and pile ends the game at the start of the turn · Key: concepts.ending.deck-out.constructed</sub>
+> *Example: In constructed, a player resolves an effect that takes the opponent from 1 to 0 and then has to draw from an empty deck and an empty recycle pile. When the effect has finished both players have lost, and the caster, on the higher life total, wins.*
 
-<a id="r104.5b"></a>**104.5b** With a shared deck (live draft), running out of cards ends the game, and the player with the higher life total wins, even if that is the player who had to draw. If the life totals are equal, the initiative player loses. See rule 104.1b.
+> *Example: The same effect brings both players to 0 and decks the caster: both have lost, the totals are equal, and the initiative player loses.*
+
+> *Example: A player runs out of cards during an effect and nobody is at 0: the effect finishes, and then that player loses.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 2 gate test files · Designer: RQ 1356616873655140546; RQ 1402038431659593859; RQ 1402046171094057041 · Owner call · adopted 2026-10-24, 2026-10-25 · Tests: 656-deck-out.test.ts, 684-deck-out-judged-with-life.test.ts · Example tests: 656-deck-out.test.ts::CR 104.5 / CT-385: in constructed a draw from an empty deck and an empty recycle pile loses, whatever the life totals, 656-deck-out.test.ts::CR 104.5 / CT-385: in constructed the card step from an empty deck and pile ends the game at the start of the turn, 684-deck-out-judged-with-life.test.ts::CR 104.5, 104.1b / CT-418: one effect takes the opponent to 0 and decks the caster -- both lost, and the higher life total (the caster) wins, 684-deck-out-judged-with-life.test.ts::CR 104.5, 104.1b / CT-418: both players brought to 0 and the caster decked in one effect -- equal totals, the initiative player loses, 684-deck-out-judged-with-life.test.ts::CR 104.5a / CT-418: a deck-out inside an effect with nobody at 0 -- the decked player still loses, once the effect has finished · Key: concepts.ending.deck-out.constructed</sub>
+
+<a id="r104.5b"></a>**104.5b** With a shared deck (live draft), running out of cards ends the game, and the player with the higher life total wins, even if that is the player who had to draw. If the life totals are equal, the initiative player loses. A shared deck that runs out during an effect ends the game once that effect has finished (104.1a), and the life totals are compared then, a player at 0 or less included. See rule 104.1b.
 
 > *Example: In a live draft the shared deck runs out when a player at 12 life has to draw against an opponent at 9. The game ends, and the player at 12 wins.*
 
 > *Example: If the two players are on the same life total, the initiative player loses.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Designer: RQ 1387479757406474313; RQ 1402046319643856916 · Owner call · adopted 2026-10-24, 2026-10-25 · Tests: 656-deck-out.test.ts · Example tests: 656-deck-out.test.ts::CR 104.5 / CT-385: with a shared deck (live draft) the game ends and the higher life total wins, even over the player who had to draw, 656-deck-out.test.ts::CR 104.5 / CT-385: a live-draft deck-out with the life totals tied goes against the initiative player · Key: concepts.ending.deck-out.shared-deck</sub>
+> *Example: In a live draft one effect takes a player to 0 and then the shared deck runs out: when the effect has finished the game ends, and the higher life total wins.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Designer: RQ 1387479757406474313; RQ 1402046319643856916 · Owner call · adopted 2026-10-24, 2026-10-25 · Tests: 656-deck-out.test.ts, 684-deck-out-judged-with-life.test.ts · Example tests: 656-deck-out.test.ts::CR 104.5 / CT-385: with a shared deck (live draft) the game ends and the higher life total wins, even over the player who had to draw, 656-deck-out.test.ts::CR 104.5 / CT-385: a live-draft deck-out with the life totals tied goes against the initiative player, 684-deck-out-judged-with-life.test.ts::CR 104.5b / CT-418: with a shared deck the deck-out inside an effect is decided on life totals, the player on 0 included · Key: concepts.ending.deck-out.shared-deck</sub>
 
 <a id="r104.5c"></a>**104.5c** Only a draw runs out of cards. Milling, revealing, glimpsing or caching from an empty deck and an empty recycle pile takes nothing, and the game goes on. See rule 401.4.
 
@@ -1814,11 +1822,13 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Tests: 415-cr-costs-life-timestamps.test.ts · Example test: 415-cr-costs-life-timestamps.test.ts::cr:concepts.damage.one-effect.copies — the three Meteor Shower rockfalls are three separate dealings of damage · Key: concepts.damage.one-effect.copies</sub>
 
-<a id="r112.9"></a>**112.9.** When a source would deal noncombat damage, its amount is worked out in this order: first, modifiers that add to it (such as Conduit of Pain's "plus 1") apply; then Powerful doubles the result; then a Vulnerable recipient is dealt double what reaches it. See rules 802, 708.
+<a id="r112.9"></a>**112.9.** When a source would deal noncombat damage, its amount is worked out from the modifiers that add to it (such as Conduit of Pain's "plus 1") and Powerful's doubling, and then a Vulnerable recipient is dealt double what reaches it. A player who controls both an addition and the doubling chooses which applies first (708.6a); the additions first, which never gives less, is the default *(Digital client)*. When they are controlled by different players, rule 708.4a orders them. See rules 802, 708, 708.6a, 708.4a.
 
-> *Example: a Powerful Bellowing Boulder beside Conduit of Pain deals (1+1)x2 = 4 to each unit.*
+> *Example: a Powerful Bellowing Boulder beside Conduit of Pain deals, by default, (1+1)x2 = 4 to each unit.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Designer: RAQ 1362838395298119912#4 · Owner ruling, adopted 2026-08-23, 2026-10-09 (quoted from the retired ruling register) · Tests: 387-raq-combat.test.ts, 415-cr-costs-life-timestamps.test.ts · Example test: 387-raq-combat.test.ts::RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles — a Powerful Bellowing Boulder deals (1+1)x2 = 4 to each unit · Key: concepts.damage.amount-order</sub>
+> *Example: choosing Powerful first, it deals 1x2+1 = 3 to each unit.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 3 gate test files · Designer: RAQ 1362838395298119912#4; RQ 1475287013040062686; RQ 1475287086247579648; RQ 1475287265080119389 · Owner call · adopted 2026-10-25; Owner ruling, adopted 2026-08-23, 2026-10-09 (quoted from the retired ruling register) · Tests: 387-raq-combat.test.ts, 415-cr-costs-life-timestamps.test.ts, 699-damage-addition-and-doubling-order.test.ts · Example tests: 699-damage-addition-and-doubling-order.test.ts::CR 708.6a: Conduit of Pain and Powerful, the default is the addition first and says it gives the higher number, 699-damage-addition-and-doubling-order.test.ts::CR 708.6a: choosing Powerful first, the damage is doubled and then one is added · Key: concepts.damage.amount-order</sub>
 
 <a id="r112.10"></a>**112.10.** Damage dealt in the form of -1/-1 counters (by a Poisonous source) is still damage dealt: it triggers abilities that trigger on a unit being dealt damage. See rule 802.
 
@@ -2893,7 +2903,7 @@ order.
 
 > *Example: In battle a player applies Chitin Shredder, a Virus, to a Fireball token standing in play. The Fireball gains Powerful and deals double damage when it is cast.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Designer: RQ 1347270455198879858; RQ 1364998183226179735 · Owner call · adopted 2026-10-24; Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 78-round17-core.test.ts, 417-cr-card-types.test.ts, 665-battle-virus-spell-token.test.ts · Example tests: 78-round17-core.test.ts::CR 721.4a: only ATTRIBUTES transfer, 417-cr-card-types.test.ts::cr:types.mods.spell-token-host — a non-Virus augment (Carapace Devourer) may augment a spell token in deployment, 665-battle-virus-spell-token.test.ts::CR 721.4a / CT-407: a Virus gives a Fireball token in play Powerful mid-battle, and its cast deals double · Demonstrated by tests: 78-round17-core.test.ts::CR 721.4a: a spell token is a legal augment host during deployment, 78-round17-core.test.ts::CR 721.4a: a text-only augment on a token grants nothing · Key: types.mods.spell-token-host</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 6 tests, all passed; 3 gate test files · Designer: RQ 1347270455198879858; RQ 1364998183226179735 · Owner call · adopted 2026-10-24; Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 78-round17-core.test.ts, 417-cr-card-types.test.ts, 665-battle-virus-spell-token.test.ts · Example tests: 78-round17-core.test.ts::CR 721.4a: only ATTRIBUTES transfer, 417-cr-card-types.test.ts::cr:types.mods.spell-token-host — a non-Virus augment (Carapace Devourer) may augment a spell token in deployment, 665-battle-virus-spell-token.test.ts::CR 721.4a / CT-407: a Virus gives a Fireball token in play Powerful mid-battle, and its cast deals double · Demonstrated by tests: 78-round17-core.test.ts::CR 721.4a: a spell token is a legal augment host during deployment, 78-round17-core.test.ts::CR 721.4a: a text-only augment on a token grants nothing · Key: types.mods.spell-token-host</sub>
 
 <sub>Discrepancies: D-U06-7, D-U06-9 (discrepancies.md)</sub>
 
@@ -3193,7 +3203,7 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 121-another-identity.test.ts · Example test: 121-another-identity.test.ts::CR 405.6a Blightwalker: a Blightwalker ALREADY in the bin is · Key: zones.bin.identity.another</sub>
 
-<a id="r405.6b"></a>**405.6b** An effect that refers back to a card that just entered a bin ("that card", "it") means that copy. If that copy has left the bin, the effect finds nothing. It never takes a different copy of the same name. A card a spell or ability targets in a bin is held the same way: the target stays on the copy it named while other copies of that name leave, and if that copy itself leaves before the effect resolves, the target is gone.
+<a id="r405.6b"></a>**405.6b** An effect that refers back to a card that just entered a bin ("that card", "it") means that copy. If that copy has left the bin, the effect finds nothing. It never takes a different copy of the same name. A card a spell or ability targets in a bin is held the same way: the target stays on the copy it named while other copies of that name leave, and if that copy itself leaves before the effect resolves, the target is gone. The same holds for the card an event names: an ability that triggered on a card entering a bin finds that copy even when an earlier copy of the same name leaves the bin first.
 
 > *Example: An {Unstable} unit dies and is erased instead of staying in the bin. Biomass Devourer's "erase it" then finds nothing, and does not erase an older copy of the same card already in that bin.*
 
@@ -3201,7 +3211,9 @@ order.
 
 > *Example: A spell targets the first of two copies, and the first is taken in response. The spell does not slide onto the second copy.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Tests: 26-metal-a.test.ts, 663-bin-target-copy-identity.test.ts · Example tests: 26-metal-a.test.ts::CR 405.6: Biomass Devourer does NOT erase an innocent older copy when the dead one was swept, 663-bin-target-copy-identity.test.ts::CR 405.6b / CT-380: the second copy targeted and taken in response leaves the first copy alone, 663-bin-target-copy-identity.test.ts::CR 405.6b / CT-380: the first copy targeted and taken in response does not slide onto the second · Key: zones.bin.identity.that-card</sub>
+> *Example: Two Just a Units are in a bin, the second just put there by a death that Biomass Devourer's trigger is waiting on. The first is taken in response, and the Devourer can still erase the second.*
+
+<sub>Basis: Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Tests: 26-metal-a.test.ts, 663-bin-target-copy-identity.test.ts, 681-event-bin-slot-follows-its-copy.test.ts · Example tests: 26-metal-a.test.ts::CR 405.6: Biomass Devourer does NOT erase an innocent older copy when the dead one was swept, 663-bin-target-copy-identity.test.ts::CR 405.6b / CT-380: the second copy targeted and taken in response leaves the first copy alone, 663-bin-target-copy-identity.test.ts::CR 405.6b / CT-380: the first copy targeted and taken in response does not slide onto the second, 681-event-bin-slot-follows-its-copy.test.ts::CR 405.6b / CT-415: an earlier copy taken from the bin in response leaves the death copy findable, and Biomass Devourer still offers to erase it · Key: zones.bin.identity.that-card</sub>
 
 <a id="r405.7"></a>**405.7.** A card leaves a bin whenever an effect takes it out, for any reason: recalled, played, cached, erased, recycled, prophesied, or applied as a mod. A "when I leave your bin" ability triggers on every such departure.
 
@@ -3223,7 +3235,7 @@ order.
 
 > *Example: Abyssal Evocation lets its caster play spells from the bin in this battle; only {Battle} spells there can be played.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Abyssal Evocation; card: Trench Stalker · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 12-fire-a.test.ts · Example test: 12-fire-a.test.ts::Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing · Key: zones.bin.play-from-bin</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 1 gate test file · Printed: card: Abyssal Evocation; card: Trench Stalker · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 12-fire-a.test.ts · Example test: 12-fire-a.test.ts::CR 702.2a Abyssal Evocation: a bin-played card obeys its PRINTED timing (settled by the owner on 2026-08-25, Already correct) · Key: zones.bin.play-from-bin</sub>
 
 <a id="r405.9a"></a>**405.9a** A card played from a bin is {Unstable} only if the permission says so. A card played from a bin under its own text does not become {Unstable}. See rule 803.
 
@@ -5440,11 +5452,13 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 5 tests (a probe it wrote), all passed; 3 gate test files · Designer: RAQ 1354148437355925554#1 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 24-wood-b.test.ts, 387-raq-combat.test.ts, 423-cr-combat-damage.test.ts · Example tests: 387-raq-combat.test.ts::RAQ Excessive: a shielded Awoken Tomb in front must still be assigned its 5 before anything goes behind it, 24-wood-b.test.ts::Phytochemical Protection: {Deadly} cannot kill through it · Key: combat.damage.dealing.prevention</sub>
 
-<a id="r608.7b"></a>**608.7b** After a sub-step's damage has been dealt, units with lethal damage, and units dealt damage by a Deadly source, are destroyed before the next sub-step begins. See rules 713, 802.3.
+<a id="r608.7b"></a>**608.7b** After a sub-step's damage has been dealt, units with lethal damage (as an Unaware or Pure interaction reads it, where one applies: 802.9e, 802.25e) and units dealt damage by a Deadly source are destroyed before the next sub-step begins. They are destroyed together, in one batch (713.6), once all of the sub-step's damage, to units and to players, has been dealt. See rules 713, 713.6, 802.25e, 802.3, 802.9e.
 
 > *Example: A Swift half-column destroys its 2/2 blocker in the Swift sub-step; the blocker never strikes back in the normal sub-step.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-18, 2026-09-20 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 02-combat.test.ts, 239-damage-triggers-after-combat.test.ts · Example test: 02-combat.test.ts::Swift: swift column deals damage first · Key: combat.damage.dealing.deaths</sub>
+> *Example: In one sub-step a Deadly column deals 1 to a Rubbish token while two other columns deal lethal damage to an Ancient One and another Rubbish token beside it. All three die in one batch, and the Ancient One borrows both neighbours' "when I die" abilities.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Printed: Manual p.23 · Owner ruling, adopted 2026-08-18, 2026-09-20 (quoted from the retired ruling register) · Tests: 02-combat.test.ts, 239-damage-triggers-after-combat.test.ts, 680-deadly-deaths-one-batch.test.ts · Example tests: 02-combat.test.ts::Swift: swift column deals damage first, 680-deadly-deaths-one-batch.test.ts::CR 608.7b, 713.6 / CT-413: a Deadly kill and two lethal-damage kills in one combat sub-step are one batch, so the Ancient One borrows both when-I-die lines · Key: combat.damage.dealing.deaths</sub>
 
 <a id="r608.7c"></a>**608.7c** Damage marked on units remains until the regroup phase, when it is removed. See rule 506.
 
@@ -5860,11 +5874,15 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.32 · Owner ruling, adopted 2026-08-19, 2026-08-20 (quoted from the retired ruling register) · Tests: 408-raq-new-threads.test.ts · Demonstrated by test: 408-raq-new-threads.test.ts::RAQ Mods are NOT Played: a Virus in battle needs its affinity and pays its cost · Key: effects.playing.applying.cost</sub>
 
-<a id="r701.2c"></a>**701.2c** Tides of the Cosmos is the one exception. Although it says "play", it may put a Virus card onto a unit as a Virus, and it may play a card as an Ambush or a Prophecy. It cannot graft a card or apply a non-Virus augment.
+<a id="r701.2c"></a>**701.2c** Tides of the Cosmos is one of the two exceptions; the other is Glimpse (801.9g). Although it says "play", it may apply a Virus card as a Virus, onto any host a Virus applied in that battle may take: a unit, a spell on the stack, or a spell token in play there (723.2, 723.4, 721.4a). It may also play a card as an Ambush or a Prophecy. It cannot graft a card or apply a non-Virus augment. See rules 721.4a, 723.2, 723.4, 801.9g.
 
 > *Example: a Virus card that Tides of the Cosmos plays as a Virus is attached to a unit and never enters play.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Designer: RAQ 1537748882501668934#2; RAQ 1396955380000755795#2; RAQ 1396955380000755795#3; RAQ 1357483405276614856#1 · Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 404-raq-fix-tides.test.ts, 396-raq-timing.test.ts · Example test: 404-raq-fix-tides.test.ts::CR 701.2c: a Virus card played by Tides as a Virus augments a unit and never enters play · Key: effects.playing.applying.tides</sub>
+> *Example: Tides of the Cosmos reveals a Virus card while an opponent's spell is on the stack in the battle: its controller may apply the Virus onto that spell.*
+
+> *Example: A Virus card Tides of the Cosmos plays may go onto a spell token in play in the battle.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 7 tests, all passed; 3 gate test files · Designer: RAQ 1537748882501668934#2; RAQ 1396955380000755795#2; RAQ 1396955380000755795#3; RAQ 1357483405276614856#1; RQ 1356456406206775407 · Owner call · adopted 2026-10-25; Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 404-raq-fix-tides.test.ts, 396-raq-timing.test.ts, 682-tides-virus-every-host.test.ts · Example tests: 404-raq-fix-tides.test.ts::CR 701.2c: a Virus card played by Tides as a Virus augments a unit and never enters play, 682-tides-virus-every-host.test.ts::CR 723.4 / CT-416: a Virus played by Tides of the Cosmos is offered onto an enemy spell on the stack, and goes there, 682-tides-virus-every-host.test.ts::CR 721.4a / CT-416: a Virus played by Tides of the Cosmos is offered onto a spell token in play in the battle · Key: effects.playing.applying.tides</sub>
 
 <a id="r701.3"></a>**701.3.** Putting a card into play is not playing it. Whether an effect plays a card or puts it into play is decided by the verb the effect prints.
 
@@ -6845,15 +6863,13 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1397188292239163454#0; RQ 1442982460034912287 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 387-raq-combat.test.ts, 40-light-c.test.ts · Example tests: 387-raq-combat.test.ts::RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4 Oorblak, 40-light-c.test.ts::Nullbringer: two copies do not stack · Key: effects.replacement.once</sub>
 
-<a id="r708.4a"></a>**708.4a** If two or more replacement effects could apply to one event, they apply one at a time. Each applies at most once, to the event as the earlier ones left it, and only if that event still matches its own text; one that has applied does not apply again, so nothing loops. The player the event affects (the player who would be dealt the damage, the player whose rot it is, or the controller of the unit the counters would be put on) chooses the order in which they apply, except where rule 608.8c fixes it. When only one such effect applies, nothing is asked. *(Digital client)*
+<a id="r708.4a"></a>**708.4a** If two or more replacement effects could apply to one event, they apply one at a time. Each applies at most once, to the event as the earlier ones left it, and only if that event still matches its own text: one that has applied does not apply again, so nothing loops, and one that did not match may apply once an earlier one has changed the event so that it does. Each player orders the replacement effects they control. When both players control replacement effects that could apply, the initiative player's apply first, and then the other player's. A player with two or more that could apply chooses which applies next, except where rule 608.8c fixes it. When only one could apply, or the order cannot change the result, nothing is asked; when one order never gives less (708.6a, 708.7), it is offered as the default. *(Digital client)*
 
 > *Example: two Oorblaks and combat damage that would be dealt to their controller: the first to apply takes all of it, and the other takes 0, because the damage is no longer being dealt to that player.*
 
-> *Example: the player who would be dealt the damage chooses which of two Oorblaks applies first, and that one takes it.*
+> *Example: the player who would be dealt the damage, who controls both Oorblaks, chooses which applies first, and that one takes it.*
 
 > *Example: two Counter Thieves: the counters the first redirects onto itself are still being placed on a unit, so the second, which has not applied, takes them; they end on the second to apply.*
-
-> *Example: the controller of the unit the counters were meant for chooses the order of two Counter Thieves; choosing the second to apply last puts the counters on it.*
 
 > *Example: two Counter Thieves do not pass the same counters back and forth: each applies once.*
 
@@ -6861,7 +6877,21 @@ order.
 
 > *Example: two Skittering Blights: the player whose rot it is chooses which one takes it as counters; the other has nothing left to replace.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 9 tests, all passed; 7 gate test files · Printed: card: Oorblak; card: Counter Thief · Designer: RAQ 1397188292239163454#0; RQ 1442982460034912287; RQ 1442981461476245685; RQ 1442981580535496807; RQ 1442981663603687588 · Owner call · adopted 2026-10-16 · Tests: 469-replacement-chain-damage.test.ts, 468-replacement-chain-redirects.test.ts, 471-oorblak-order-and-polyp.test.ts, 472-counter-thief-and-rot-order.test.ts, 459-automatons-chain.test.ts, 46-hybrids-ld-c.test.ts, 40-light-c.test.ts · Example tests: 469-replacement-chain-damage.test.ts::CR 708.4: two Oorblaks and combat damage to you — one takes all of it, the other takes 0, 471-oorblak-order-and-polyp.test.ts::CR 708.4a: two Oorblaks and combat damage — the player being hit is asked which takes it, and the answer decides it, 468-replacement-chain-redirects.test.ts::CR 708.4: two Counter Thieves chain — the second takes the counters from the first, once, 472-counter-thief-and-rot-order.test.ts::CR 708.4a: two Counter Thieves — choosing the second puts them on the second (the owner, 2026-10-16), 46-hybrids-ld-c.test.ts::Counter Thief: two thieves do not ping-pong, 459-automatons-chain.test.ts::CR 708.4: two Automatons of Abundance turn one created token into three, 472-counter-thief-and-rot-order.test.ts::CR 708.4a: two Skittering Blights — the player is asked which takes their rot · Key: effects.replacement.once.one-applies</sub>
+> *Example: two Counter Thieves of one player: that player chooses which applies first, whoever controls the unit the counters were meant for, and the one that applies last keeps the counters.*
+
+> *Example: two Counter Thieves of different players: nothing is asked. The initiative player's applies first, and the other player's, applying last, keeps the counters.*
+
+> *Example: a player creates a Robot 2 with Automaton of Abundance and Cosmic Conspirator in play and is asked which applies first.*
+
+> *Example: the Automaton first: a Robot 2 and a copy of it, and the Conspirator may exchange each of the two.*
+
+> *Example: the Conspirator first and a Fireball chosen: the Automaton no longer applies, because a Fireball is not a unit token.*
+
+> *Example: the Conspirator first and the Robot kept: the Automaton adds its copy, and the Conspirator, which has already applied, is not offered the copy.*
+
+> *Example: two Automatons and a Conspirator: the player is asked again after the first Automaton applies.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 10 tests, all passed; 11 gate test files · Printed: card: Oorblak; card: Counter Thief; card: Automaton of Abundance; card: Cosmic Conspirator · Designer: RAQ 1397188292239163454#0; RQ 1442982460034912287; RQ 1442981461476245685; RQ 1442981580535496807; RQ 1442981663603687588; RQ 1151673983960359022; RQ 1151674242774073354; RQ 1364310799023083601; RQ 1475287013040062686; RQ 1314637885097512980 · Owner call · adopted 2026-10-16, 2026-10-25 · Tests: 469-replacement-chain-damage.test.ts, 468-replacement-chain-redirects.test.ts, 471-oorblak-order-and-polyp.test.ts, 472-counter-thief-and-rot-order.test.ts, 459-automatons-chain.test.ts, 46-hybrids-ld-c.test.ts, 40-light-c.test.ts, 696-replacement-order-each-owner.test.ts, 697-replacement-order-tokens.test.ts, 698-counter-amounts-and-redirects.test.ts, 699-damage-addition-and-doubling-order.test.ts · Example tests: 469-replacement-chain-damage.test.ts::CR 708.4: two Oorblaks and combat damage to you — one takes all of it, the other takes 0, 471-oorblak-order-and-polyp.test.ts::CR 708.4a: two Oorblaks and combat damage — the player being hit is asked which takes it, and the answer decides it, 468-replacement-chain-redirects.test.ts::CR 708.4: two Counter Thieves chain — the second takes the counters from the first, once, 46-hybrids-ld-c.test.ts::Counter Thief: two thieves do not ping-pong, 459-automatons-chain.test.ts::CR 708.4: two Automatons of Abundance turn one created token into three, 472-counter-thief-and-rot-order.test.ts::CR 708.4a: two Skittering Blights — the player is asked which takes their rot, 696-replacement-order-each-owner.test.ts::CR 708.4a: two Counter Thieves of one player — that player orders them, not the player whose unit it was, 696-replacement-order-each-owner.test.ts::CR 708.4a: Counter Thieves of different players — nothing is asked, the initiative player applies first and the other keeps them, 697-replacement-order-tokens.test.ts::CR 708.4a: Automaton of Abundance and Cosmic Conspirator, the creator is asked which applies first, 697-replacement-order-tokens.test.ts::CR 708.4a: Automaton first, both Robots are offered to Cosmic Conspirator, 697-replacement-order-tokens.test.ts::CR 708.4a: Conspirator first and a Fireball chosen, Automaton no longer applies, 697-replacement-order-tokens.test.ts::CR 708.4: Conspirator first and the Robot kept, the copy is not offered to Conspirator again, 697-replacement-order-tokens.test.ts::CR 708.4a: two Automatons and a Conspirator, asked again after the first Automaton applies · Key: effects.replacement.once.one-applies</sub>
 
 <sub>Discrepancies: D-U12-13, D-U15-3 (discrepancies.md)</sub>
 
@@ -6879,13 +6909,17 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 137-multiplier-and-mode.test.ts · Example test: 137-multiplier-and-mode.test.ts::CR 708.6: THREE Arbiters multiply · Key: effects.replacement.multipliers</sub>
 
-<a id="r708.6a"></a>**708.6a** When modifiers that add to an amount and an effect that doubles it apply to the same amount, the additions are made first and the result is doubled. See rule 112.9.
+<a id="r708.6a"></a>**708.6a** When modifiers that add to an amount and an effect that doubles it apply to the same amount, the player who controls both chooses which applies first. The additions first and then the doubling never gives less, and it is the default. *(Digital client)* When they are controlled by different players, rule 708.4a orders them: the initiative player's applies first. See rules 112.9, 708.4a.
 
-> *Example: a {Powerful} Bellowing Boulder with Conduit of Pain deals (1+1)x2 = 4 damage to each unit.*
+> *Example: a {Powerful} Bellowing Boulder with Conduit of Pain deals, by default, (1+1)x2 = 4 damage to each unit; with Powerful chosen first, 1x2+1 = 3.*
 
-> *Example: Conduit of Pain and Arbiter of Vitality: the 1 is added before the life loss is doubled.*
+> *Example: Conduit of Pain and Arbiter of Vitality of one player, and 2 damage to the opponent: by default the opponent loses (2+1)x2 = 6 life.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-30, 2026-10-09 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Tests: 387-raq-combat.test.ts, 137-multiplier-and-mode.test.ts · Example tests: 387-raq-combat.test.ts::RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles, 137-multiplier-and-mode.test.ts::the multiplier composes with a REAL additive mod end to end · Key: effects.replacement.multipliers.additive-first</sub>
+> *Example: the same, with Arbiter of Vitality chosen first: the opponent loses 2x2+1 = 5.*
+
+> *Example: a Conduit of Pain and an Arbiter of Vitality of different players: nothing is asked, and the initiative player's applies first.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 6 tests, all passed; 3 gate test files · Designer: RAQ 1362838395298119912#4; RQ 1475287013040062686; RQ 1475287086247579648; RQ 1475287265080119389 · Owner call · adopted 2026-10-25 · Tests: 699-damage-addition-and-doubling-order.test.ts, 387-raq-combat.test.ts, 137-multiplier-and-mode.test.ts · Example tests: 699-damage-addition-and-doubling-order.test.ts::CR 708.6a: Conduit of Pain and Powerful, the default is the addition first and says it gives the higher number, 699-damage-addition-and-doubling-order.test.ts::CR 708.6a: Conduit of Pain and Arbiter of Vitality of one player, the default doubles the whole loss, 699-damage-addition-and-doubling-order.test.ts::CR 708.6a: choosing Arbiter of Vitality first, the doubled loss has the addition added after, 699-damage-addition-and-doubling-order.test.ts::CR 708.4a: Conduit of Pain and an Arbiter of Vitality of the other player, nothing is asked and the initiative player applies first · Key: effects.replacement.multipliers.additive-first</sub>
 
 <sub>Discrepancies: D-U15-4 (discrepancies.md)</sub>
 
@@ -6895,11 +6929,19 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 137-multiplier-and-mode.test.ts · Example test: 137-multiplier-and-mode.test.ts::Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check · Demonstrated by test: 137-multiplier-and-mode.test.ts::the multiplier is a REPLACEMENT, not a second helping · Key: effects.replacement.multipliers.lethal</sub>
 
-<a id="r708.7"></a>**708.7.** When a replacement that changes the number of counters and a replacement that redirects them both apply to the same placement, the number is changed first, and the redirect then moves the whole changed number.
+<a id="r708.7"></a>**708.7.** When a replacement that changes the number of counters and a replacement that redirects them could both apply to one placement, they are ordered as rule 708.4a says: a player who controls both chooses which applies first. Changing the number first, so that the redirect moves the whole changed number, never gives fewer counters, and it is the default. *(Digital client)* A replacement that changes the number and did not apply to the placement as it first stood applies once a redirect makes the placement match its text. See rule 708.4a.
 
 > *Example: a Counter Thief beside a Flux Resonator steals the extra counter too.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Tests: 87-replacement-layer.test.ts · Example test: 87-replacement-layer.test.ts::an AmountMod runs BEFORE the redirect · Key: effects.replacement.amount-before-redirect</sub>
+> *Example: Flux Resonator and a Counter Thief: the order cannot change the result, so nothing is asked.*
+
+> *Example: a player puts +1/+1 counters on their own unit during battle and the opponent's Counter Thief takes them. That player's Proliferating Slime, which did not apply to their own unit, now applies, because the counters are being put on an enemy unit.*
+
+> *Example: a player's Proliferating Slime and Counter Thief, and two counters aimed at an enemy unit: by default the Slime applies first and the thief gets three.*
+
+> *Example: the same, with the thief chosen first: the counters are now going onto the player's own unit, so the Slime no longer applies and the thief gets two.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 2 gate test files · Printed: card: Counter Thief; card: Proliferating Slime · Designer: RQ 1151674242774073354; RQ 1475287013040062686 · Owner call · adopted 2026-10-25; Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 87-replacement-layer.test.ts, 698-counter-amounts-and-redirects.test.ts · Example tests: 87-replacement-layer.test.ts::an AmountMod runs BEFORE the redirect, 698-counter-amounts-and-redirects.test.ts::CR 708.4a: Flux Resonator and a Counter Thief, the order cannot change the result, nothing is asked, 698-counter-amounts-and-redirects.test.ts::CR 708.4a: Proliferating Slime applies after a Counter Thief moves the counters onto an enemy unit, 698-counter-amounts-and-redirects.test.ts::CR 708.7: Proliferating Slime and a Counter Thief of one player, the default is the amounts first and says it gives the higher number, 698-counter-amounts-and-redirects.test.ts::CR 708.7: choosing the Counter Thief first, the counters arrive on the thief without the Slime · Key: effects.replacement.amount-before-redirect</sub>
 
 <a id="r708.8"></a>**708.8.** A replacement effect applies only to what its own text names. One that applies when counters "would be put on" a unit does not apply when counters are removed.
 
@@ -6929,7 +6971,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: card: Scrap For Parts; card: Flux Resonator · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 455-counter-removal-is-not-placement.test.ts · Example test: 455-counter-removal-is-not-placement.test.ts::a MOVE removes from the source and puts on the destination: Flux Resonator enlarges only the put · Key: effects.replacement.scope.move</sub>
 
-<a id="r708.9"></a>**708.9.** All the tokens one resolution of one effect creates are created together. A replacement effect that acts on "each unique token you created" sees all of them at once, and a token is unique by its name, its X and the stats the effect that created it set, together.
+<a id="r708.9"></a>**708.9.** All the tokens one resolution of one effect creates are created together, including the tokens created by the parts it has from grafted cards. A replacement effect that acts on "each unique token you created" sees all of them, and copies each unique token once in the whole effect; a token is unique by its name, its X and the stats the effect that created it set, together.
 
 > *Example: Automaton of Abundance with Manufacture (a Robot 3, a Robot 2 and a Robot 1) creates three extra Robots.*
 
@@ -6937,7 +6979,13 @@ order.
 
 > *Example: a 3/3 and a 5/5 unit token created together are two unique tokens and yield two extras.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: card: Automaton of Abundance · Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-08-23, 2026-08-25 (quoted from the retired ruling register) · Tests: 136-triggers-and-modes.test.ts, 87-replacement-layer.test.ts, 458-automaton-copies-stats.test.ts · Example tests: 136-triggers-and-modes.test.ts::CR 708.9: end to end, 136-triggers-and-modes.test.ts::CR 304.14: three IDENTICAL Robot 2s, 458-automaton-copies-stats.test.ts::CR 304.14: a 3/3 and a 5/5 Unit Token made together are TWO unique tokens · Key: effects.replacement.token-batch</sub>
+> *Example: Automaton of Abundance and an Omniwield Evoker grafted with Manufacture and Construct Overseer: one activation makes a Robot 3, a Robot 2 and two Robot 1s, and the Automaton copies the Robot 3, the Robot 2 and one Robot 1, three extras and not four.*
+
+> *Example: a token the effect has not yet copied is still copied when a later part creates it.*
+
+> *Example: two activations are two effects: the second copies again.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 6 tests, all passed; 4 gate test files · Printed: card: Automaton of Abundance · Designer: RQ 1358924537160536247 · Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 136-triggers-and-modes.test.ts, 87-replacement-layer.test.ts, 458-automaton-copies-stats.test.ts, 700-token-batch-is-the-effect.test.ts · Example tests: 136-triggers-and-modes.test.ts::CR 708.9: end to end, 136-triggers-and-modes.test.ts::CR 304.14: three IDENTICAL Robot 2s, 458-automaton-copies-stats.test.ts::CR 304.14: a 3/3 and a 5/5 Unit Token made together are TWO unique tokens, 700-token-batch-is-the-effect.test.ts::CR 708.9: Omniwield Evoker grafted with Manufacture and Construct Overseer, one extra Robot 1, not two, 700-token-batch-is-the-effect.test.ts::CR 708.9: a token not yet copied in the effect is still copied in a later part, 700-token-batch-is-the-effect.test.ts::CR 708.9: two activations are two effects — the second copies again · Key: effects.replacement.token-batch</sub>
 
 <a id="r708.10"></a>**708.10.** When an effect says a player's life total can't change, a gain or loss of life for that player does not happen at all, and no replacement effect applies to it.
 
@@ -7434,7 +7482,7 @@ order.
 
 > *Example: a lethally damaged unit and a dead unit token both go at the next safe point; the card reaches the bin, the token is erased, and a token recalled to a hand is erased from it.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-25, 2026-10-06 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; 2 gate test files · Tests: 380-no-action-ends-dead.test.ts, 427-cr-continuous-effects.test.ts · Example test: 427-cr-continuous-effects.test.ts::cr:effects.state.what — at a safe point a lethally damaged unit dies, a dead unit token is erased instead of staying in the bin, and a recalled token is erased from the hand · Key: effects.state.what</sub>
+<sub>Basis: Owner ruling, adopted 2026-08-25, 2026-10-06 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Tests: 380-no-action-ends-dead.test.ts, 427-cr-continuous-effects.test.ts · Example test: 427-cr-continuous-effects.test.ts::cr:effects.state.what — at a safe point a lethally damaged unit dies, a dead unit token is erased instead of staying in the bin, and a recalled token is erased from the hand · Key: effects.state.what</sub>
 
 <a id="r713.2"></a>**713.2.** A unit dies in a state check if its defense is 0 or less, or if the damage marked on it is greater than or equal to its defense. See rules 112.5, 206.
 
@@ -7501,6 +7549,20 @@ order.
 > *Example: After combat Ruinbringer deletes a row of three units: an Ancient One between two units that have "when I die" abilities. The three die in one batch, so the Ancient One borrows both of its neighbours' "when I die" abilities.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Owner ruling, adopted 2026-10-11 (quoted from the retired ruling register) · Engine: destroyBatch · Tests: 660-delete-all-is-one-batch.test.ts · Example test: 660-delete-all-is-one-batch.test.ts::CR 706.8c, 714.9 / CT-363: Ruinbringer after combat deletes an Ancient One with both neighbours in one batch · Key: effects.state.together.delete-all</sub>
+
+<a id="r713.6c"></a>**713.6c** The units one effect's damage destroys die together in one batch (112.8), whether they die of lethal damage, of Deadly (802.3e), or of an Unaware or Pure reading of their stats (802.9e, 802.25e). See rules 112.8, 706.8c, 802.3e.
+
+> *Example: A Deadly effect deals damage to a row of three: an Ancient One between two units that have "when I die" abilities. The three die in one batch, so the Ancient One borrows both neighbours' "when I die" abilities.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests (2 probes it wrote), all passed; 2 gate test files · Owner ruling, adopted 2026-08-22, 2026-08-28 (quoted from the retired ruling register) · Engine: destroyBatch, checkDeaths · Tests: 680-deadly-deaths-one-batch.test.ts, 69-damage-batch.test.ts · Example test: 680-deadly-deaths-one-batch.test.ts::CR 802.3e, 713.6 / CT-413: a Deadly effect dealing damage to a row kills it in one batch, so the Ancient One borrows both when-I-die lines · Key: effects.state.together.one-damage</sub>
+
+<a id="r713.6d"></a>**713.6d** Units that one instruction of an effect makes players sacrifice ("each player sacrifices …", "sacrifice two units") are sacrificed simultaneously: every player's choice is made first, and then they all die together in one batch (706.8c). See rules 706.8c, 714.9.
+
+> *Example: Perish takes a Refuse Reclaimer and two other units. The Reclaimer triggers for each of the other two, but it is already dead when those triggers resolve.*
+
+> *Example: Maw of Damnation sacrifices an Ancient One with its neighbour in one batch, so the Ancient One borrows the neighbour's "when I die" ability.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 1 gate test file · Printed: card: Perish · Designer: RQ 1442175942838718518; RQ 1442177903952396430 · Engine: destroyBatch · Tests: 683-sacrifices-die-together.test.ts · Example tests: 683-sacrifices-die-together.test.ts::CR 706.8c, 713.6 / CT-414: a Refuse Reclaimer sacrificed first to Perish still triggers on every other unit Perish takes (the designer example), 683-sacrifices-die-together.test.ts::CR 706.8c, 714.9 / CT-414: Maw of Damnation sacrifices an Ancient One with its neighbour in one batch, so it borrows that neighbour when-I-die line · Key: effects.state.together.sacrifices</sub>
 
 <a id="r713.7"></a>**713.7.** A unit sent out to counterattack, which does not exist until round 1 ends, is not checked for death while it is away. It is checked as it comes back. See rules 505.3b, 610.
 
@@ -8195,7 +8257,7 @@ order.
 
 <a id="r723.4e"></a>**723.4e** Triggered and activated abilities, Viruses, units being cast and Ambushes on the stack are not legal hosts for a Virus. See rule 723.4a.
 
-<sub>Basis: Engine only · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Engine: apply.ts:STACK_VIRUS_HOSTS · Tests: 67-resolving-and-stack-viruses.test.ts · Demonstrated by test: 67-resolving-and-stack-viruses.test.ts::CR 723.4e: only SPELLS are legal hosts · Key: effects.virus.spell-host.not-hosts</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 3 tests (2 probes it wrote), all passed; 1 gate test file · Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Engine: apply.ts:STACK_VIRUS_HOSTS · Tests: 67-resolving-and-stack-viruses.test.ts · Demonstrated by test: 67-resolving-and-stack-viruses.test.ts::CR 723.4e: only SPELLS are legal hosts · Key: effects.virus.spell-host.not-hosts</sub>
 
 <sub>Discrepancies: D-U17-2 (discrepancies.md)</sub>
 
@@ -9051,7 +9113,7 @@ order.
 
 > *Example: Haboob's 1 damage kills any unit with a printed defense of 1.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 92-unaware.test.ts · Example tests: 92-unaware.test.ts::"Bubb blocking a Robot token would kill it, 92-unaware.test.ts::"Haboob kills anything that has 1 defense printed at the card level" · Key: attr.unaware.death</sub>
+<sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Tests: 92-unaware.test.ts · Example tests: 92-unaware.test.ts::"Bubb blocking a Robot token would kill it, 92-unaware.test.ts::"Haboob kills anything that has 1 defense printed at the card level" · Key: attr.unaware.death</sub>
 
 <a id="r802.9f"></a>**802.9f** Outside such an interaction, an Unaware card does not change the stats of the other cards.
 
@@ -9087,11 +9149,11 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Designer: RAQ 1362838395298119912#2 · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 09-attrs.test.ts · Example tests: 09-attrs.test.ts::Powerful: Chitin Shredder deals double combat damage to a player, 09-attrs.test.ts::Powerful: column-shares · Key: attr.powerful.combat</sub>
 
-<a id="r802.10b"></a>**802.10b** If a modifier that adds to the damage also applies, the addition is made first and Powerful doubles the result (see rule 112.9). See rule 112.9.
+<a id="r802.10b"></a>**802.10b** If a modifier that adds to the damage also applies, by default the addition is made first and Powerful doubles the result *(Digital client)*; a player who controls both may choose the doubling first instead (see rules 112.9, 708.6a). See rules 112.9, 708.6a.
 
-> *Example: A Powerful Bellowing Boulder's 1 damage with Conduit of Pain is (1+1)x2 = 4 to each unit.*
+> *Example: A Powerful Bellowing Boulder's 1 damage with Conduit of Pain is, by default, (1+1)x2 = 4 to each unit; with the doubling first, 1x2+1 = 3.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1362838395298119912#4 · Tests: 387-raq-combat.test.ts · Example test: 387-raq-combat.test.ts::RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles · Key: attr.powerful.additive</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Designer: RAQ 1362838395298119912#4; RQ 1475287013040062686; RQ 1475287086247579648 · Owner call · adopted 2026-10-25 · Tests: 699-damage-addition-and-doubling-order.test.ts, 387-raq-combat.test.ts · Example test: 699-damage-addition-and-doubling-order.test.ts::CR 708.6a: choosing Powerful first, the damage is doubled and then one is added · Key: attr.powerful.additive</sub>
 
 <a id="r802.10c"></a>**802.10c** Powerful also doubles damage its source deals through spells and abilities, to units and players alike. See rule 112.9.
 
@@ -10708,21 +10770,21 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1839 numbered rules.
+1841 numbered rules.
 
 | basis | rules |
 |---|---|
 | Printed | 453 |
-| Designer | 203 |
-| Owner call | 667 |
-| Engine only | 41 |
-| Mixed | 475 |
+| Designer | 201 |
+| Owner call | 664 |
+| Engine only | 40 |
+| Mixed | 483 |
 
 ### Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1832 |
+| confirmed | 1834 |
 | partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
@@ -10740,7 +10802,6 @@ Generated from the records and the verdicts. Nothing here is a rule.
 - [603.1c](#r603.1c) Two side-blocking units may stand in the same side-block column, one in its front slot and one in its back slot.
 - [713.3a](#r713.3a) Deaths are also checked while an effect is still resolving, not only at safe points. Each time an effect puts counters on a unit, and after each part of an effect made of several parts, units that should be dead die at once, before the rest of the effect happens.
 - [723.4e](#r723.4e) Triggered and activated abilities, Viruses, units being cast and Ambushes on the stack are not legal hosts for a Virus.
-- [D1.2i](#rD1.2i) When a player chooses the order of replacement effects (see rule 708.4a), each choice is the unit whose effect it is: the player answers by clicking that unit on the board, the choices are not also buttons in the prompt bar, and the prompt says what is being chosen. A question raised by combat damage or by rot is asked before any of that damage or rot is dealt. The other player sees that a question is open, but not the question; while the rot question is open at the start of deployment, the other player cannot deploy.
 - [D2.3](#rD2.3) A player may turn on auto-pass. With it on, the client passes priority for the player only in a window where passing is the only thing they could do. Auto-pass never passes through an open decision.
 - [D3.1](#rD3.1) A game may be played with a chess clock, in which each player has a bank of time. The home screen offers three settings: no clock, 45 minutes and 60 minutes.
 - [D3.1a](#rD3.1a) Unless the player chooses otherwise, the bank is 45 minutes for a constructed game and 60 minutes for a live draft.
@@ -10794,7 +10855,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
   - <a id="F-U07-2"></a>**F-U07-2** Two test titles disagree about a token being cached. Rule 410.5c.
     36-cache-prophecy says a token cached from play "is erased, not cached". 35-rot-debt-trash (owner ruling of 2026-08-22, “A token entering a ZONE is…”) says it "visits the cache and is erased out of it". Both assert the same end state, so neither can fail on the visit, but the 36 title states the model from before the owner ruling of 2026-08-22 (“A token entering a ZONE is…”). Re-checked: fixed on 2026-10-24 (CT-235): both titles say a cached token enters the cache and is erased out of it.
   - <a id="F-U07-4"></a><a id="F-U16-1"></a>**F-U07-4** Two the owner ruling of 2026-08-26 (“E.eraseMod: one door for taking a…”) test titles assert law that the owner ruling of 2026-08-26 (“an erased card goes to the…”) reversed (cost-erased mods and the erased pile). Rules 407.2, 712.1c. Also found as F-U16-1.
-    The owner ruling of 2026-08-26 (“an erased card goes to the…”) rules that a mod erased off a living host goes to the erased pile (Slag Spewer's cost, Suppression Field). The 178 test titles still say "Q3 is OPEN" and "the pile is untouched". The assertions may have been updated without the titles; check them.
+    The owner ruling of 2026-08-26 (“an erased card goes to the…”) rules that a mod erased off a living host goes to the erased pile (Slag Spewer's cost, Suppression Field). The 178 test titles still say "Q3 is OPEN" and "the pile is untouched". The assertions may have been updated without the titles; check them. Re-checked: fixed on 2026-10-25 (CT-235, pd-paper 149d1217): the 178 titles state the erased-pile behaviour the bodies assert (CR 720.9). Re-checked (F-U16-1): fixed on 2026-10-25 (CT-235, pd-paper 149d1217): the 178 titles state the erased-pile behaviour the bodies assert (CR 720.9).
   - <a id="F-U08-2"></a>**F-U08-2** Prophecy timing test title says prophesying is illegal in the haste step without the owner ruling of 2026-08-30 (“the [Haste] on a prophecy banner…”) exception. Rule 504.9.
     36-cache-prophecy's title states that prophesying is illegal in planning, the haste step and battle, unqualified. The owner ruling of 2026-08-30 (“the [Haste] on a prophecy banner…”) later made a banner whose condition ends in [Haste] prophesiable in the haste step. The test uses an unmarked banner, so its assertions still hold, but the title states the law from before the owner ruling of 2026-08-30 (“the [Haste] on a prophecy banner…”). Retitle it "an UNMARKED banner…" and point at 257. Re-checked: fixed on 2026-10-24 (CT-235): the title names the [Haste] banner exception.
   - <a id="F-U08-3"></a>**F-U08-3** Test comments and assertion messages still say the haste step opens only when someone holds a haste card. Rule 504.5.
@@ -10815,7 +10876,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
   - <a id="F-U11-2"></a>**F-U11-2** The owner ruling of 2026-08-23 (“A counterattacker may bring spell tokens…”)’s open client item (no reachability row for a counterattack with spell tokens) appears done. Rule 606.5a.
     The owner ruling of 2026-08-23 (“A counterattacker may bring spell tokens…”)’s '⚠ Open for the client' says 75-ui-reachability's facetsOf does not tell a declareBlocks that carries spell tokens from one that does not, so the rider has no reachability row, and asks for a declareBlocks:spellTokens facet and ledger entry. client/ui/test/75-ui-reachability.test.ts now has both. The ⚠ in the register is stale. A register fix, not an engine bug. Re-checked: closed on 2026-10-24 (housework): register text only; the register was retired on 2026-10-11 and 75-ui-reachability already has the declareBlocks spellTokens facet.
   - <a id="F-U15-2"></a>**F-U15-2** A RAQ register note still warns that the Wispweaver Nectar Ridge guard may be green for the wrong reason. Rule 707.4a.
-    The RAQ register note on claim 1355633589890584636#1 says the Infernal Wispweaver guard is "green partly for the wrong reason given the Sandstone defect" and should be re-checked when the Sandstone case is fixed. The note on #0 says the Sandstone case was a fixture error and the engine was already right, so the warning is stale or the re-check is still owed. A test-and-register problem, not an engine bug.
+    The RAQ register note on claim 1355633589890584636#1 says the Infernal Wispweaver guard is "green partly for the wrong reason given the Sandstone defect" and should be re-checked when the Sandstone case is fixed. The note on #0 says the Sandstone case was a fixture error and the engine was already right, so the warning is stale or the re-check is still owed. A test-and-register problem, not an engine bug. Re-checked: fixed on 2026-10-25 (CT-236, pd-paper 4ea1dc75): the raq.ts note says the guard is green for the right reason; the Sandstone case was a fixture error (CT-217).
   - <a id="F-U24-1"></a>**F-U24-1** The in-game inspector states a type-line attribute's reminder twice on cards with an empty text box. Rule D6.10.
     The owner ruling of 2026-08-30 (“A type-line attribute is rules text…”) put a card's type-line attribute reminders into its text box when the printed box is empty (21 cards). The card browser was changed to stop repeating them, but the owner ruling of 2026-08-30 (“A type-line attribute is rules text…”) says the in-game inspector still prints its own Attributes (printed) section under the box, so on those cards it states the reminder twice. The owner ruling of 2026-08-30 (“A type-line attribute is rules text…”) says the one-condition fix in inspectorHtml should be made before the ruling counts as closed. Suspected still open; not checked against the client. Re-checked: the client already drops the inspector rows the text box states (ui/main.ts inBox filter), so nothing is printed twice; what stands is the ruling's open warning, filed with the stale register text.
   - <a id="F-U24-4"></a>**F-U24-4** Announcements of a loss the player paid for are still shown only in the game log. Rule D7.4.
@@ -10826,7 +10887,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
   - <a id="F-U03-1"></a>**F-U03-1** Wraith test title still calls the self-pick an unconfirmed reading after the owner confirmed it. Rule 110.4a.
     The owner ruling of 2026-08-22 (“The Wraith token, redesigned; and "an…”) item 4 (owner, 2026-08-21) settled that "an ally" may be the Wraith itself, and the owner ruling of 2026-08-30 (“An ally includes itself, "another" is…”) (owner, 2026-08-30) made "an ally includes itself" general. The 37-attrs-wight test is still titled "(unconfirmed reading)" with a warning mark. The title states an open question that is closed; retitle it to cite the ruling. Re-checked: fixed on 2026-10-24 (CT-238): the title states the owner's confirmed reading.
   - <a id="F-U07-3"></a><a id="F-U14-4"></a><a id="F-U21-1"></a>**F-U07-3** Abyssal Evocation timing test is still titled OPEN after the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) ruled it. Rules 405.9, 702.2a, 803.8c. Also found as F-U14-4, F-U21-1.
-    The owner ruling of 2026-08-23 (“Playing a spell from your BIN…”) left open whether a bin-played card obeys its printed timing. The owner ruling of 2026-08-25 (“the owner's answers to the 27…”) (owner) answered: a bin-play grant does not waive printed timing ("Already correct — Abyssal Evocation, Writhing Host."). The test and its comment still call the question open and say the assertion "flips" if the owner rules otherwise.
+    The owner ruling of 2026-08-23 (“Playing a spell from your BIN…”) left open whether a bin-played card obeys its printed timing. The owner ruling of 2026-08-25 (“the owner's answers to the 27…”) (owner) answered: a bin-play grant does not waive printed timing ("Already correct — Abyssal Evocation, Writhing Host."). The test and its comment still call the question open and say the assertion "flips" if the owner rules otherwise. Re-checked: fixed on 2026-10-25 (CT-238, pd-paper 7bb063e3): the 12-fire-a title states the owner's 2026-08-25 answer (CR 702.2a) and is no longer marked OPEN. Re-checked (F-U14-4): fixed on 2026-10-25 (CT-238, pd-paper 7bb063e3): the 12-fire-a title states the owner's 2026-08-25 answer (CR 702.2a) and is no longer marked OPEN. Re-checked (F-U21-1): fixed on 2026-10-25 (CT-238, pd-paper 7bb063e3): the 12-fire-a title states the owner's 2026-08-25 answer (CR 702.2a) and is no longer marked OPEN.
 - <a id="F-U03-2"></a>**F-U03-2** Gatekeeper of Souls compels targets chosen outside battle (CT-239). Rule 110.12.
   Printed: "When a player selects targets for an effect during battle, I must be targeted if able." The engine applies the compulsion by region only, so in deployment a player whose own Gatekeeper stands in their home region can only aim a unit-targeting effect (Overbloom) at the Gatekeeper. Measured by the round-1 verifier's probe. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-239): Gatekeeper of Souls compels targets only during a battle in its region (544).
 - **CT-240**: 3 divergences.
@@ -11337,7 +11398,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1844 rules and 99 sections.
+- New: 1846 rules and 99 sections.
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)
 - Removed: 901.8 `formats.constructed.single-card`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)
 - Removed: 901.8a `formats.constructed.single-card.copies`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)

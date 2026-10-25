@@ -2411,23 +2411,19 @@
     "key": "effects.replacement.once.one-applies",
     "parent": "effects.replacement.once",
     "order": 1,
-    "text": "If two or more replacement effects could apply to one event, they apply one at a time. Each applies at most once, to the event as the earlier ones left it, and only if that event still matches its own text; one that has applied does not apply again, so nothing loops. The player the event affects (the player who would be dealt the damage, the player whose rot it is, or the controller of the unit the counters would be put on) chooses the order in which they apply, except where rule combat.damage.player.redirect fixes it. When only one such effect applies, nothing is asked.",
+    "text": "If two or more replacement effects could apply to one event, they apply one at a time. Each applies at most once, to the event as the earlier ones left it, and only if that event still matches its own text: one that has applied does not apply again, so nothing loops, and one that did not match may apply once an earlier one has changed the event so that it does. Each player orders the replacement effects they control. When both players control replacement effects that could apply, the initiative player's apply first, and then the other player's. A player with two or more that could apply chooses which applies next, except where rule combat.damage.player.redirect fixes it. When only one could apply, or the order cannot change the result, nothing is asked; when one order never gives less (708.6a, 708.7), it is offered as the default.",
     "examples": [
       {
         "text": "two Oorblaks and combat damage that would be dealt to their controller: the first to apply takes all of it, and the other takes 0, because the damage is no longer being dealt to that player.",
         "test": "469-replacement-chain-damage.test.ts::CR 708.4: two Oorblaks and combat damage to you — one takes all of it, the other takes 0"
       },
       {
-        "text": "the player who would be dealt the damage chooses which of two Oorblaks applies first, and that one takes it.",
+        "text": "the player who would be dealt the damage, who controls both Oorblaks, chooses which applies first, and that one takes it.",
         "test": "471-oorblak-order-and-polyp.test.ts::CR 708.4a: two Oorblaks and combat damage — the player being hit is asked which takes it, and the answer decides it"
       },
       {
         "text": "two Counter Thieves: the counters the first redirects onto itself are still being placed on a unit, so the second, which has not applied, takes them; they end on the second to apply.",
         "test": "468-replacement-chain-redirects.test.ts::CR 708.4: two Counter Thieves chain — the second takes the counters from the first, once"
-      },
-      {
-        "text": "the controller of the unit the counters were meant for chooses the order of two Counter Thieves; choosing the second to apply last puts the counters on it.",
-        "test": "472-counter-thief-and-rot-order.test.ts::CR 708.4a: two Counter Thieves — choosing the second puts them on the second (the owner, 2026-10-16)"
       },
       {
         "text": "two Counter Thieves do not pass the same counters back and forth: each applies once.",
@@ -2440,6 +2436,34 @@
       {
         "text": "two Skittering Blights: the player whose rot it is chooses which one takes it as counters; the other has nothing left to replace.",
         "test": "472-counter-thief-and-rot-order.test.ts::CR 708.4a: two Skittering Blights — the player is asked which takes their rot"
+      },
+      {
+        "text": "two Counter Thieves of one player: that player chooses which applies first, whoever controls the unit the counters were meant for, and the one that applies last keeps the counters.",
+        "test": "696-replacement-order-each-owner.test.ts::CR 708.4a: two Counter Thieves of one player — that player orders them, not the player whose unit it was"
+      },
+      {
+        "text": "two Counter Thieves of different players: nothing is asked. The initiative player's applies first, and the other player's, applying last, keeps the counters.",
+        "test": "696-replacement-order-each-owner.test.ts::CR 708.4a: Counter Thieves of different players — nothing is asked, the initiative player applies first and the other keeps them"
+      },
+      {
+        "text": "a player creates a Robot 2 with Automaton of Abundance and Cosmic Conspirator in play and is asked which applies first.",
+        "test": "697-replacement-order-tokens.test.ts::CR 708.4a: Automaton of Abundance and Cosmic Conspirator, the creator is asked which applies first"
+      },
+      {
+        "text": "the Automaton first: a Robot 2 and a copy of it, and the Conspirator may exchange each of the two.",
+        "test": "697-replacement-order-tokens.test.ts::CR 708.4a: Automaton first, both Robots are offered to Cosmic Conspirator"
+      },
+      {
+        "text": "the Conspirator first and a Fireball chosen: the Automaton no longer applies, because a Fireball is not a unit token.",
+        "test": "697-replacement-order-tokens.test.ts::CR 708.4a: Conspirator first and a Fireball chosen, Automaton no longer applies"
+      },
+      {
+        "text": "the Conspirator first and the Robot kept: the Automaton adds its copy, and the Conspirator, which has already applied, is not offered the copy.",
+        "test": "697-replacement-order-tokens.test.ts::CR 708.4: Conspirator first and the Robot kept, the copy is not offered to Conspirator again"
+      },
+      {
+        "text": "two Automatons and a Conspirator: the player is asked again after the first Automaton applies.",
+        "test": "697-replacement-order-tokens.test.ts::CR 708.4a: two Automatons and a Conspirator, asked again after the first Automaton applies"
       }
     ],
     "see": [],
@@ -2452,6 +2476,14 @@
         {
           "ref": "card: Counter Thief",
           "quote": "If one or more counters would be placed on one or more units during battle, those counters are placed on me instead."
+        },
+        {
+          "ref": "card: Automaton of Abundance",
+          "quote": "If you would create one or more unit tokens, instead create those tokens plus an additional copy of each unique token you created."
+        },
+        {
+          "ref": "card: Cosmic Conspirator",
+          "quote": "If you would create a Robot, Poison, Crystal or Fireball, you may instead create a token of any of these types."
         }
       ],
       "designer": [
@@ -2474,6 +2506,26 @@
         {
           "ref": "RQ 1442981663603687588",
           "quote": "1 token -> 2tokens -> 3 tokens"
+        },
+        {
+          "ref": "RQ 1151673983960359022",
+          "quote": "You basically stack your replacement effects"
+        },
+        {
+          "ref": "RQ 1151674242774073354",
+          "quote": "Or make a fireball, then turn it into a crystal and double it"
+        },
+        {
+          "ref": "RQ 1364310799023083601",
+          "quote": "you have to choose which order to apply replacement effects"
+        },
+        {
+          "ref": "RQ 1475287013040062686",
+          "quote": "generally as the owner of all the replacement effects, you can choose the order you'd like to apply them in"
+        },
+        {
+          "ref": "RQ 1314637885097512980",
+          "quote": "Ie, it's a 1 for 1 exchange"
         }
       ],
       "ours": [],
@@ -2497,6 +2549,31 @@
           "quote": "Ask the player now",
           "adopted": "2026-10-16",
           "from": "report round 2026-10-16, who orders replacement effects (in session; the option he chose)"
+        },
+        {
+          "quote": "Each owner, INT first",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (replacement order Q1: who orders replacement effects that belong to different players)"
+        },
+        {
+          "quote": "Yes, that's right",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (replacement order Q1, told its consequences: two Counter Thieves of different players are not asked, the initiative player's applies first; an opponent's Arbiter of Vitality before your Conduit of Pain when they have initiative)"
+        },
+        {
+          "quote": "Yes, each one",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (replacement order Q2: with Automaton of Abundance first, may Cosmic Conspirator exchange each of the two Robots?)"
+        },
+        {
+          "quote": "For cases where its \"just worse\" *give them the option* to choose, but be like \"Yo, this will be a higher number\".",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (replacement order Q4/Q5: a fixed order whose other order only ever gives less, +1 before doubling and counter amounts before a Counter Thief)"
+        },
+        {
+          "quote": "In 9/10 cases, default is fine, but the option is always there",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (replacement order Q4/Q5, the same answer)"
         }
       ],
       "engine": [],
@@ -2507,20 +2584,29 @@
         "472-counter-thief-and-rot-order.test.ts",
         "459-automatons-chain.test.ts",
         "46-hybrids-ld-c.test.ts",
-        "40-light-c.test.ts"
+        "40-light-c.test.ts",
+        "696-replacement-order-each-owner.test.ts",
+        "697-replacement-order-tokens.test.ts",
+        "698-counter-amounts-and-redirects.test.ts",
+        "699-damage-addition-and-doubling-order.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
-    "digitalClause": "When only one such effect applies, nothing is asked.",
+    "digitalClause": "When only one could apply, or the order cannot change the result, nothing is asked; when one order never gives less (708.6a, 708.7), it is offered as the default.",
     "confidence": "high",
-    "notes": "The owner's 2026-08-23 entries (\"A thing can only be replaced once\"; two thieves) are replaced by his 2026-10-16 calls: O6 adopts Caleb's chain, O8 the second Thief, O9 asking the player. The chain and the player's order are Caleb's (RQ refs, 2025-11-25). F-U15-3 and F-U12-1 are closed (CT-228 ruled correct, CT-290 done). D-U15-3.",
+    "notes": "Replacement-order round (2026-10-25, Nyar's Token Gesture report). The chain and the player's order are Caleb's (\"You basically stack your replacement effects\", 2023; \"you the player control how they stack\", 2025; \"as the owner of all the replacement effects, you can choose the order\", 2026), and so is the re-test (\"make a fireball, then turn it into a crystal and double it\"). Who orders effects of different players is the owner's (Q1, \"Each owner, INT first\", confirmed after hearing its consequences: \"Yes, that's right\"); it replaces \"the player the event affects\" of 2026-10-16. Q2: \"Yes, each one\". 472's first title (\"the player whose unit the counters were for is asked\") now describes a coincidence of seats and is no longer an example. F-U15-3 and F-U12-1 are closed (CT-228 ruled correct, CT-290 done). D-U15-3.",
     "sourceHashes": {
       "RAQ 1397188292239163454#0": "859ade14197b364f8aed8a0d8462175435c6ba4ba8f67b055cf85849ae403635",
+      "RQ 1151673983960359022": "f04afcfd0ae0f9a9c4e5e343f3468cd28163994f6c4e1b27e35f31e72d1be1c2",
+      "RQ 1151674242774073354": "22fe3368cd4f1122b3183d332f23e8fa734958edc14ebceda6f9fa222e28dd3b",
+      "RQ 1314637885097512980": "c075df48a46f52dbb87bc7b94d32e74dc7d657119619bd296d225df44ffe2f0d",
+      "RQ 1364310799023083601": "55071bcbd4181b0d75657eedfc74b39c16ce5bf674abac607aec81edeb128477",
       "RQ 1442981461476245685": "2e53cbfabcf077323598bae7c038f082e3dee71b19f1a0c3071d4f5d85210ffd",
       "RQ 1442981580535496807": "37dfed9ea804dd8b473d9884062e9c439d99fad0c5cf1dad9aa481eaecc29180",
       "RQ 1442981663603687588": "230c64bb04b8f05a5582dd3e0688cfd411876bdca2b1e25ba3c8f6751842dee2",
-      "RQ 1442982460034912287": "edcc9a20d186b9aac49dde4a5b4e8075aa66f4856337bdca96b4673c713f58ec"
+      "RQ 1442982460034912287": "edcc9a20d186b9aac49dde4a5b4e8075aa66f4856337bdca96b4673c713f58ec",
+      "RQ 1475287013040062686": "f8de3bf62ef5cdd7b40e8b084a3459fe46315db6cf3b907c1f5e8e1a45cc061d"
     }
   },
   {
@@ -2611,47 +2697,85 @@
     "key": "effects.replacement.multipliers.additive-first",
     "parent": "effects.replacement.multipliers",
     "order": 1,
-    "text": "When modifiers that add to an amount and an effect that doubles it apply to the same amount, the additions are made first and the result is doubled.",
+    "text": "When modifiers that add to an amount and an effect that doubles it apply to the same amount, the player who controls both chooses which applies first. The additions first and then the doubling never gives less, and it is the default. When they are controlled by different players, rule 708.4a orders them: the initiative player's applies first.",
     "examples": [
       {
-        "text": "a {Powerful} Bellowing Boulder with Conduit of Pain deals (1+1)x2 = 4 damage to each unit.",
-        "test": "387-raq-combat.test.ts::RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles"
+        "text": "a {Powerful} Bellowing Boulder with Conduit of Pain deals, by default, (1+1)x2 = 4 damage to each unit; with Powerful chosen first, 1x2+1 = 3.",
+        "test": "699-damage-addition-and-doubling-order.test.ts::CR 708.6a: Conduit of Pain and Powerful, the default is the addition first and says it gives the higher number"
       },
       {
-        "text": "Conduit of Pain and Arbiter of Vitality: the 1 is added before the life loss is doubled.",
-        "test": "137-multiplier-and-mode.test.ts::the multiplier composes with a REAL additive mod end to end"
+        "text": "Conduit of Pain and Arbiter of Vitality of one player, and 2 damage to the opponent: by default the opponent loses (2+1)x2 = 6 life.",
+        "test": "699-damage-addition-and-doubling-order.test.ts::CR 708.6a: Conduit of Pain and Arbiter of Vitality of one player, the default doubles the whole loss"
+      },
+      {
+        "text": "the same, with Arbiter of Vitality chosen first: the opponent loses 2x2+1 = 5.",
+        "test": "699-damage-addition-and-doubling-order.test.ts::CR 708.6a: choosing Arbiter of Vitality first, the doubled loss has the addition added after"
+      },
+      {
+        "text": "a Conduit of Pain and an Arbiter of Vitality of different players: nothing is asked, and the initiative player's applies first.",
+        "test": "699-damage-addition-and-doubling-order.test.ts::CR 708.4a: Conduit of Pain and an Arbiter of Vitality of the other player, nothing is asked and the initiative player applies first"
       }
     ],
     "see": [
-      "112.9"
+      "112.9",
+      "708.4a"
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RAQ 1362838395298119912#4",
+          "quote": "Conduit of Pain adds its 1 BEFORE Powerful doubles: a Powerful Bellowing Boulder's 1 deals (1+1)x2 = 4."
+        },
+        {
+          "ref": "RQ 1475287013040062686",
+          "quote": "generally as the owner of all the replacement effects, you can choose the order you'd like to apply them in"
+        },
+        {
+          "ref": "RQ 1475287086247579648",
+          "quote": "which usually would mean doing +1 then doubling"
+        },
+        {
+          "ref": "RQ 1475287265080119389",
+          "quote": "for max damage"
+        }
+      ],
       "ours": [],
       "owner": [
         {
-          "quote": "> \"Bellowing Boulder with Powerful and Conduit of Pain: (1+1)x2 damage to each unit =",
-          "adopted": "2026-10-09",
-          "from": "register@72de434"
+          "quote": "For cases where its \"just worse\" *give them the option* to choose, but be like \"Yo, this will be a higher number\".",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (replacement order Q4/Q5: a fixed order whose other order only ever gives less, +1 before doubling and counter amounts before a Counter Thief)"
         },
         {
-          "quote": "does not reach it. `E.lifeAmount` keeps its interim `(v + Σdelta) × factor` —",
-          "adopted": "2026-08-30",
-          "from": "register@72de434"
+          "quote": "In 9/10 cases, default is fine, but the option is always there",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (replacement order Q4/Q5, the same answer)"
+        },
+        {
+          "quote": "Each owner, INT first",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (replacement order Q1: who orders replacement effects that belong to different players)"
         }
       ],
       "engine": [],
       "tests": [
+        "699-damage-addition-and-doubling-order.test.ts",
         "387-raq-combat.test.ts",
         "137-multiplier-and-mode.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
-    "confidence": "medium",
-    "notes": "For damage and {Powerful} the order is the designer's (the owner ruling of 2026-10-09 (“Additive damage modifiers apply before {Powerful}…”) quotes the RAQ). For a life multiplier (Arbiter) the owner ruling of 2026-08-30 (“multipliers are exponential (round-32 Q4)”) calls the same order an interim decision, unruled (D-U15-4).",
-    "sourceHashes": {}
+    "confidence": "high",
+    "notes": "Replacement-order round (2026-10-25). Caleb (2026-02-23): \"as the owner of all the replacement effects, you can choose the order you'd like to apply them in\" / \"which usually would mean doing +1 then doubling\" / \"for max damage\"; the RAQ's (1+1)x2 is that usual choice. The owner (Q4/Q5): offer the order, with the higher number as a one-click default. Different players: Q1, \"Each owner, INT first\". The 2026-08-30 \"interim\" order for a life multiplier (D-U15-4) is settled by the same answers.",
+    "sourceHashes": {
+      "RAQ 1362838395298119912#4": "17213edf2cc843dab7504dfd0d633bd4f4c5fc3d7997ea9ffc883f4aed2df901",
+      "RQ 1475287013040062686": "f8de3bf62ef5cdd7b40e8b084a3459fe46315db6cf3b907c1f5e8e1a45cc061d",
+      "RQ 1475287086247579648": "d653aa2a96f338d3095265d9ae542637b3bf472037efca51e14388b641c5b8af",
+      "RQ 1475287265080119389": "f2c0e94e9861daf821e8ee7de11e5306b096b092335b5769b26f2229e045dd5e"
+    },
+    "digitalClause": "The additions first and then the doubling never gives less, and it is the default."
   },
   {
     "key": "effects.replacement.multipliers.lethal",
@@ -2697,17 +2821,53 @@
     "key": "effects.replacement.amount-before-redirect",
     "parent": "708",
     "order": 7,
-    "text": "When a replacement that changes the number of counters and a replacement that redirects them both apply to the same placement, the number is changed first, and the redirect then moves the whole changed number.",
+    "text": "When a replacement that changes the number of counters and a replacement that redirects them could both apply to one placement, they are ordered as rule 708.4a says: a player who controls both chooses which applies first. Changing the number first, so that the redirect moves the whole changed number, never gives fewer counters, and it is the default. A replacement that changes the number and did not apply to the placement as it first stood applies once a redirect makes the placement match its text.",
     "examples": [
       {
         "text": "a Counter Thief beside a Flux Resonator steals the extra counter too.",
         "test": "87-replacement-layer.test.ts::an AmountMod runs BEFORE the redirect"
+      },
+      {
+        "text": "Flux Resonator and a Counter Thief: the order cannot change the result, so nothing is asked.",
+        "test": "698-counter-amounts-and-redirects.test.ts::CR 708.4a: Flux Resonator and a Counter Thief, the order cannot change the result, nothing is asked"
+      },
+      {
+        "text": "a player puts +1/+1 counters on their own unit during battle and the opponent's Counter Thief takes them. That player's Proliferating Slime, which did not apply to their own unit, now applies, because the counters are being put on an enemy unit.",
+        "test": "698-counter-amounts-and-redirects.test.ts::CR 708.4a: Proliferating Slime applies after a Counter Thief moves the counters onto an enemy unit"
+      },
+      {
+        "text": "a player's Proliferating Slime and Counter Thief, and two counters aimed at an enemy unit: by default the Slime applies first and the thief gets three.",
+        "test": "698-counter-amounts-and-redirects.test.ts::CR 708.7: Proliferating Slime and a Counter Thief of one player, the default is the amounts first and says it gives the higher number"
+      },
+      {
+        "text": "the same, with the thief chosen first: the counters are now going onto the player's own unit, so the Slime no longer applies and the thief gets two.",
+        "test": "698-counter-amounts-and-redirects.test.ts::CR 708.7: choosing the Counter Thief first, the counters arrive on the thief without the Slime"
       }
     ],
-    "see": [],
+    "see": [
+      "708.4a"
+    ],
     "sources": {
-      "printed": [],
-      "designer": [],
+      "printed": [
+        {
+          "ref": "card: Counter Thief",
+          "quote": "If one or more counters would be placed on one or more units during battle, those counters are placed on me instead."
+        },
+        {
+          "ref": "card: Proliferating Slime",
+          "quote": "If one or more counters would be put on an enemy unit or player, put that many counters plus one instead."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RQ 1151674242774073354",
+          "quote": "Or make a fireball, then turn it into a crystal and double it"
+        },
+        {
+          "ref": "RQ 1475287013040062686",
+          "quote": "generally as the owner of all the replacement effects, you can choose the order you'd like to apply them in"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -2719,18 +2879,33 @@
           "quote": "beside a Flux Resonator steals the plus-one too.",
           "adopted": "2026-08-23",
           "from": "register@72de434"
+        },
+        {
+          "quote": "For cases where its \"just worse\" *give them the option* to choose, but be like \"Yo, this will be a higher number\".",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (replacement order Q4/Q5: a fixed order whose other order only ever gives less, +1 before doubling and counter amounts before a Counter Thief)"
+        },
+        {
+          "quote": "In 9/10 cases, default is fine, but the option is always there",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (replacement order Q4/Q5, the same answer)"
         }
       ],
       "engine": [],
       "tests": [
-        "87-replacement-layer.test.ts"
+        "87-replacement-layer.test.ts",
+        "698-counter-amounts-and-redirects.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
-    "sourceHashes": {}
+    "notes": "Replacement-order round (2026-10-25). The owner's 2026-08-23 fixed order (amounts before the redirect) becomes the default; Q4/Q5: \"give them the option to choose\", with the higher number as the default. The re-test is 708.4a's (Caleb: \"make a fireball, then turn it into a crystal and double it\").",
+    "sourceHashes": {
+      "RQ 1151674242774073354": "22fe3368cd4f1122b3183d332f23e8fa734958edc14ebceda6f9fa222e28dd3b",
+      "RQ 1475287013040062686": "f8de3bf62ef5cdd7b40e8b084a3459fe46315db6cf3b907c1f5e8e1a45cc061d"
+    },
+    "digitalClause": "Changing the number first, so that the redirect moves the whole changed number, never gives fewer counters, and it is the default."
   },
   {
     "key": "effects.replacement.scope",
@@ -2905,7 +3080,7 @@
     "key": "effects.replacement.token-batch",
     "parent": "708",
     "order": 9,
-    "text": "All the tokens one resolution of one effect creates are created together. A replacement effect that acts on \"each unique token you created\" sees all of them at once, and a token is unique by its name, its X and the stats the effect that created it set, together.",
+    "text": "All the tokens one resolution of one effect creates are created together, including the tokens created by the parts it has from grafted cards. A replacement effect that acts on \"each unique token you created\" sees all of them, and copies each unique token once in the whole effect; a token is unique by its name, its X and the stats the effect that created it set, together.",
     "examples": [
       {
         "text": "Automaton of Abundance with Manufacture (a Robot 3, a Robot 2 and a Robot 1) creates three extra Robots.",
@@ -2918,6 +3093,18 @@
       {
         "text": "a 3/3 and a 5/5 unit token created together are two unique tokens and yield two extras.",
         "test": "458-automaton-copies-stats.test.ts::CR 304.14: a 3/3 and a 5/5 Unit Token made together are TWO unique tokens"
+      },
+      {
+        "text": "Automaton of Abundance and an Omniwield Evoker grafted with Manufacture and Construct Overseer: one activation makes a Robot 3, a Robot 2 and two Robot 1s, and the Automaton copies the Robot 3, the Robot 2 and one Robot 1, three extras and not four.",
+        "test": "700-token-batch-is-the-effect.test.ts::CR 708.9: Omniwield Evoker grafted with Manufacture and Construct Overseer, one extra Robot 1, not two"
+      },
+      {
+        "text": "a token the effect has not yet copied is still copied when a later part creates it.",
+        "test": "700-token-batch-is-the-effect.test.ts::CR 708.9: a token not yet copied in the effect is still copied in a later part"
+      },
+      {
+        "text": "two activations are two effects: the second copies again.",
+        "test": "700-token-batch-is-the-effect.test.ts::CR 708.9: two activations are two effects — the second copies again"
       }
     ],
     "see": [],
@@ -2928,14 +3115,14 @@
           "quote": "instead create those tokens plus an additional copy of each unique token you created."
         }
       ],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1358924537160536247",
+          "quote": "it would be the second one"
+        }
+      ],
       "ours": [],
       "owner": [
-        {
-          "quote": "**One resolving part is one creation batch**, which is the unit R80 already gave",
-          "adopted": "2026-08-23",
-          "from": "register@72de434"
-        },
         {
           "quote": "> *\"'Unique' means unique (name, X) pair — you get two extras.\"*",
           "adopted": "2026-08-25",
@@ -2951,14 +3138,17 @@
       "tests": [
         "136-triggers-and-modes.test.ts",
         "87-replacement-layer.test.ts",
-        "458-automaton-copies-stats.test.ts"
+        "458-automaton-copies-stats.test.ts",
+        "700-token-batch-is-the-effect.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The stats clause is the owner's call of 2026-10-16 (asked whether a 3/3 and a 5/5 Unit Token made together are two unique tokens: \"Yeah, those would count as unique tokens.\"); D-U06-13 is resolved.",
-    "sourceHashes": {}
+    "notes": "The batch is the whole effect, grafted parts included: Caleb, asked (_passer, 2025-04-08) whether Automaton of Abundance with an Omniweld Evoker grafted with Manufacture, Self-Assembly and Construct Overseer copies a Robot 3 or Robot 1 made twice in the activation once or twice, chose option 2: \"it would be the second one\" (once). This replaces the owner's 2026-08-23 \"One resolving part is one creation batch\" (register), which the designer outranks (CT-294). The stats clause is the owner's call of 2026-10-16 (\"Yeah, those would count as unique tokens.\"); D-U06-13 is resolved.",
+    "sourceHashes": {
+      "RQ 1358924537160536247": "e83d81209fa5cd69293fee342eec32ce7f8920d2abf081d8a91e03b8a6b068d1"
+    }
   },
   {
     "key": "effects.replacement.locked-life",

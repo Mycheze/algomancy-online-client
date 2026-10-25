@@ -79,7 +79,7 @@
     "id": "D-U15-4",
     "kind": "c-owner-call-only",
     "rule": "effects.replacement.multipliers.additive-first",
-    "tier": 3,
+    "tier": 2,
     "summary": "The order \"add, then double\" is the designer's for damage and {Powerful} (the owner ruling of 2026-10-09 (“Additive damage modifiers apply before {Powerful}…”), from the RAQ). For a life-total multiplier (Arbiter of Vitality) beside an additive modifier, the owner ruling of 2026-08-30 (“multipliers are exponential (round-32 Q4)”) says the composition is still unruled and the engine's order is an interim decision.",
     "seeAlso": [
       {
@@ -99,9 +99,21 @@
       {
         "source": "RAQ 1362838395298119912#4",
         "quote": "Conduit of Pain adds its 1 BEFORE Powerful doubles"
+      },
+      {
+        "source": "RQ 1475287013040062686",
+        "quote": "generally as the owner of all the replacement effects, you can choose the order you'd like to apply them in"
+      },
+      {
+        "source": "RQ 1475287086247579648",
+        "quote": "which usually would mean doing +1 then doubling"
+      },
+      {
+        "source": "owner ruling, adopted 2026-10-25",
+        "quote": "For cases where its \"just worse\" *give them the option* to choose, but be like \"Yo, this will be a higher number\"."
       }
     ],
-    "resolution": "The rule states one order for both, add first and then double, which is the designer's order for damage and the engine's interim order for life. Question for the owner only if the RAQ order for {Powerful} is not meant to carry over to Arbiter of Vitality."
+    "resolution": "Settled on 2026-10-25. Caleb (rules-questions 2026-02-23): \"as the owner of all the replacement effects, you can choose the order you'd like to apply them in\", \"which usually would mean doing +1 then doubling\" \"for max damage\" — for damage and for a life multiplier alike. The owner (replacement order Q4/Q5) keeps the choice and makes the higher number a one-click default; between players, Q1 \"Each owner, INT first\". effects.replacement.multipliers.additive-first, concepts.damage.amount-order and attr.powerful.additive state it; the engine asks (699)."
   },
   {
     "id": "D-U15-5",

@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:17ccddac3b3bb11e",
+ "generated_from": "sha256:ee9d92716b14774b",
  "rules": [
   {
    "num": "100.1",
@@ -989,7 +989,7 @@
    "sectionTitle": "Ending the Game",
    "chapterTitle": "1. Game Concepts",
    "parent": "104.1",
-   "text": "A player brought to 0 or less by an effect is not eliminated until that effect has finished: every life change one resolution of one effect makes (the unit damage is dealt in, 112.8) is applied first, and only then are the life totals checked. All the life changes of one combat damage sub-step are applied together in the same way, Lethal kills included (802.24a), and checked after all of them. Any other life change, such as rot damage, is checked the moment it happens; rot is dealt one player at a time, in initiative order, and is never simultaneous (112.13). A life cost that would by itself bring its payer to 0 cannot be paid at all (111).",
+   "text": "A player brought to 0 or less by an effect is not eliminated until that effect has finished: every life change one resolution of one effect makes (the unit damage is dealt in, 112.8) is applied first, and only then are the life totals checked. All the life changes of one combat damage sub-step are applied together in the same way, Lethal kills included (802.24a), and checked after all of them. A player who runs out of cards during such an effect or sub-step has not lost until it has finished either, and is judged with the life totals then (104.5a, 104.5b). Any other life change, such as rot damage, is checked the moment it happens; rot is dealt one player at a time, in initiative order, and is never simultaneous (112.13). A life cost that would by itself bring its payer to 0 cannot be paid at all (111).",
    "see": [
     "111",
     "112",
@@ -1206,13 +1206,18 @@
    "sectionTitle": "Ending the Game",
    "chapterTitle": "1. Game Concepts",
    "parent": "104.5",
-   "text": "In constructed, the player who ran out of cards loses the game, whatever the life totals. A Single Card Duel is constructed for this rule (D8.2).",
+   "text": "In constructed, the player who ran out of cards loses the game, whatever the life totals. A Single Card Duel is constructed for this rule (D8.2). A player who runs out of cards during an effect has not lost until that effect has finished, as with a life total of 0 (104.1a). When it has finished, each player who ran out of cards and each player at 0 or less has lost; if that is both players, 104.1b decides the game on the life totals.",
    "see": [
+    "104.1a",
+    "104.1b",
     "D8.2"
    ],
    "examples": [
     "A constructed player at 25 life has to draw with an empty deck and an empty recycle pile while the opponent is at 3. The player who had to draw loses.",
-    "The card step at the start of a turn is a draw too: from an empty deck and pile it ends the game."
+    "The card step at the start of a turn is a draw too: from an empty deck and pile it ends the game.",
+    "In constructed, a player resolves an effect that takes the opponent from 1 to 0 and then has to draw from an empty deck and an empty recycle pile. When the effect has finished both players have lost, and the caster, on the higher life total, wins.",
+    "The same effect brings both players to 0 and decks the caster: both have lost, the totals are equal, and the initiative player loses.",
+    "A player runs out of cards during an effect and nobody is at 0: the effect finishes, and then that player loses."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -1230,13 +1235,14 @@
    "sectionTitle": "Ending the Game",
    "chapterTitle": "1. Game Concepts",
    "parent": "104.5",
-   "text": "With a shared deck (live draft), running out of cards ends the game, and the player with the higher life total wins, even if that is the player who had to draw. If the life totals are equal, the initiative player loses.",
+   "text": "With a shared deck (live draft), running out of cards ends the game, and the player with the higher life total wins, even if that is the player who had to draw. If the life totals are equal, the initiative player loses. A shared deck that runs out during an effect ends the game once that effect has finished (104.1a), and the life totals are compared then, a player at 0 or less included.",
    "see": [
     "104.1b"
    ],
    "examples": [
     "In a live draft the shared deck runs out when a player at 12 life has to draw against an opponent at 9. The game ends, and the player at 12 wins.",
-    "If the two players are on the same life total, the initiative player loses."
+    "If the two players are on the same life total, the initiative player loses.",
+    "In a live draft one effect takes a player to 0 and then the shared deck runs out: when the effect has finished the game ends, and the higher life total wins."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -5720,13 +5726,16 @@
    "sectionTitle": "Life, Damage, Rot and Debt",
    "chapterTitle": "1. Game Concepts",
    "parent": "112",
-   "text": "When a source would deal noncombat damage, its amount is worked out in this order: first, modifiers that add to it (such as Conduit of Pain's \"plus 1\") apply; then Powerful doubles the result; then a Vulnerable recipient is dealt double what reaches it.",
+   "text": "When a source would deal noncombat damage, its amount is worked out from the modifiers that add to it (such as Conduit of Pain's \"plus 1\") and Powerful's doubling, and then a Vulnerable recipient is dealt double what reaches it. A player who controls both an addition and the doubling chooses which applies first (708.6a); the additions first, which never gives less, is the default. When they are controlled by different players, rule 708.4a orders them.",
    "see": [
     "802",
-    "708"
+    "708",
+    "708.6a",
+    "708.4a"
    ],
    "examples": [
-    "a Powerful Bellowing Boulder beside Conduit of Pain deals (1+1)x2 = 4 to each unit."
+    "a Powerful Bellowing Boulder beside Conduit of Pain deals, by default, (1+1)x2 = 4 to each unit.",
+    "choosing Powerful first, it deals 1x2+1 = 3 to each unit."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -10606,12 +10615,13 @@
    "sectionTitle": "Bin",
    "chapterTitle": "4. Zones",
    "parent": "405.6",
-   "text": "An effect that refers back to a card that just entered a bin (\"that card\", \"it\") means that copy. If that copy has left the bin, the effect finds nothing. It never takes a different copy of the same name. A card a spell or ability targets in a bin is held the same way: the target stays on the copy it named while other copies of that name leave, and if that copy itself leaves before the effect resolves, the target is gone.",
+   "text": "An effect that refers back to a card that just entered a bin (\"that card\", \"it\") means that copy. If that copy has left the bin, the effect finds nothing. It never takes a different copy of the same name. A card a spell or ability targets in a bin is held the same way: the target stays on the copy it named while other copies of that name leave, and if that copy itself leaves before the effect resolves, the target is gone. The same holds for the card an event names: an ability that triggered on a card entering a bin finds that copy even when an earlier copy of the same name leaves the bin first.",
    "see": [],
    "examples": [
     "An {Unstable} unit dies and is erased instead of staying in the bin. Biomass Devourer's \"erase it\" then finds nothing, and does not erase an older copy of the same card already in that bin.",
     "Two copies of a card are in a bin. A spell targets the second, and the second is taken in response. The spell finds nothing; it does not take the first copy instead.",
-    "A spell targets the first of two copies, and the first is taken in response. The spell does not slide onto the second copy."
+    "A spell targets the first of two copies, and the first is taken in response. The spell does not slide onto the second copy.",
+    "Two Just a Units are in a bin, the second just put there by a death that Biomass Devourer's trigger is waiting on. The first is taken in response, and the Devourer can still erase the second."
    ],
    "basis": "owner",
    "scope": "game",
@@ -18522,15 +18532,19 @@
    "sectionTitle": "Combat Damage Step",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "608.7",
-   "text": "After a sub-step's damage has been dealt, units with lethal damage, and units dealt damage by a Deadly source, are destroyed before the next sub-step begins.",
+   "text": "After a sub-step's damage has been dealt, units with lethal damage (as an Unaware or Pure interaction reads it, where one applies: 802.9e, 802.25e) and units dealt damage by a Deadly source are destroyed before the next sub-step begins. They are destroyed together, in one batch (713.6), once all of the sub-step's damage, to units and to players, has been dealt.",
    "see": [
     "713",
-    "802.3"
+    "713.6",
+    "802.25e",
+    "802.3",
+    "802.9e"
    ],
    "examples": [
-    "A Swift half-column destroys its 2/2 blocker in the Swift sub-step; the blocker never strikes back in the normal sub-step."
+    "A Swift half-column destroys its 2/2 blocker in the Swift sub-step; the blocker never strikes back in the normal sub-step.",
+    "In one sub-step a Deadly column deals 1 to a Rubbish token while two other columns deal lethal damage to an Ancient One and another Rubbish token beside it. All three die in one batch, and the Ancient One borrows both neighbours' \"when I die\" abilities."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -19903,12 +19917,19 @@
    "sectionTitle": "Playing and Applying",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "701.2",
-   "text": "Tides of the Cosmos is the one exception. Although it says \"play\", it may put a Virus card onto a unit as a Virus, and it may play a card as an Ambush or a Prophecy. It cannot graft a card or apply a non-Virus augment.",
-   "see": [],
-   "examples": [
-    "a Virus card that Tides of the Cosmos plays as a Virus is attached to a unit and never enters play."
+   "text": "Tides of the Cosmos is one of the two exceptions; the other is Glimpse (801.9g). Although it says \"play\", it may apply a Virus card as a Virus, onto any host a Virus applied in that battle may take: a unit, a spell on the stack, or a spell token in play there (723.2, 723.4, 721.4a). It may also play a card as an Ambush or a Prophecy. It cannot graft a card or apply a non-Virus augment.",
+   "see": [
+    "721.4a",
+    "723.2",
+    "723.4",
+    "801.9g"
    ],
-   "basis": "designer",
+   "examples": [
+    "a Virus card that Tides of the Cosmos plays as a Virus is attached to a unit and never enters play.",
+    "Tides of the Cosmos reveals a Virus card while an opponent's spell is on the stack in the battle: its controller may apply the Virus onto that spell.",
+    "A Virus card Tides of the Cosmos plays may go onto a spell token in play in the battle."
+   ],
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -23241,16 +23262,22 @@
    "sectionTitle": "Replacement and Prevention Effects",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "708.4",
-   "text": "If two or more replacement effects could apply to one event, they apply one at a time. Each applies at most once, to the event as the earlier ones left it, and only if that event still matches its own text; one that has applied does not apply again, so nothing loops. The player the event affects (the player who would be dealt the damage, the player whose rot it is, or the controller of the unit the counters would be put on) chooses the order in which they apply, except where rule 608.8c fixes it. When only one such effect applies, nothing is asked.",
+   "text": "If two or more replacement effects could apply to one event, they apply one at a time. Each applies at most once, to the event as the earlier ones left it, and only if that event still matches its own text: one that has applied does not apply again, so nothing loops, and one that did not match may apply once an earlier one has changed the event so that it does. Each player orders the replacement effects they control. When both players control replacement effects that could apply, the initiative player's apply first, and then the other player's. A player with two or more that could apply chooses which applies next, except where rule 608.8c fixes it. When only one could apply, or the order cannot change the result, nothing is asked; when one order never gives less (708.6a, 708.7), it is offered as the default.",
    "see": [],
    "examples": [
     "two Oorblaks and combat damage that would be dealt to their controller: the first to apply takes all of it, and the other takes 0, because the damage is no longer being dealt to that player.",
-    "the player who would be dealt the damage chooses which of two Oorblaks applies first, and that one takes it.",
+    "the player who would be dealt the damage, who controls both Oorblaks, chooses which applies first, and that one takes it.",
     "two Counter Thieves: the counters the first redirects onto itself are still being placed on a unit, so the second, which has not applied, takes them; they end on the second to apply.",
-    "the controller of the unit the counters were meant for chooses the order of two Counter Thieves; choosing the second to apply last puts the counters on it.",
     "two Counter Thieves do not pass the same counters back and forth: each applies once.",
     "two Automatons of Abundance turn one created token into three: 1, then 2, then 3.",
-    "two Skittering Blights: the player whose rot it is chooses which one takes it as counters; the other has nothing left to replace."
+    "two Skittering Blights: the player whose rot it is chooses which one takes it as counters; the other has nothing left to replace.",
+    "two Counter Thieves of one player: that player chooses which applies first, whoever controls the unit the counters were meant for, and the one that applies last keeps the counters.",
+    "two Counter Thieves of different players: nothing is asked. The initiative player's applies first, and the other player's, applying last, keeps the counters.",
+    "a player creates a Robot 2 with Automaton of Abundance and Cosmic Conspirator in play and is asked which applies first.",
+    "the Automaton first: a Robot 2 and a copy of it, and the Conspirator may exchange each of the two.",
+    "the Conspirator first and a Fireball chosen: the Automaton no longer applies, because a Fireball is not a unit token.",
+    "the Conspirator first and the Robot kept: the Automaton adds its copy, and the Conspirator, which has already applied, is not offered the copy.",
+    "two Automatons and a Conspirator: the player is asked again after the first Automaton applies."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -23314,15 +23341,18 @@
    "sectionTitle": "Replacement and Prevention Effects",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "708.6",
-   "text": "When modifiers that add to an amount and an effect that doubles it apply to the same amount, the additions are made first and the result is doubled.",
+   "text": "When modifiers that add to an amount and an effect that doubles it apply to the same amount, the player who controls both chooses which applies first. The additions first and then the doubling never gives less, and it is the default. When they are controlled by different players, rule 708.4a orders them: the initiative player's applies first.",
    "see": [
-    "112.9"
+    "112.9",
+    "708.4a"
    ],
    "examples": [
-    "a {Powerful} Bellowing Boulder with Conduit of Pain deals (1+1)x2 = 4 damage to each unit.",
-    "Conduit of Pain and Arbiter of Vitality: the 1 is added before the life loss is doubled."
+    "a {Powerful} Bellowing Boulder with Conduit of Pain deals, by default, (1+1)x2 = 4 damage to each unit; with Powerful chosen first, 1x2+1 = 3.",
+    "Conduit of Pain and Arbiter of Vitality of one player, and 2 damage to the opponent: by default the opponent loses (2+1)x2 = 6 life.",
+    "the same, with Arbiter of Vitality chosen first: the opponent loses 2x2+1 = 5.",
+    "a Conduit of Pain and an Arbiter of Vitality of different players: nothing is asked, and the initiative player's applies first."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
@@ -23363,12 +23393,18 @@
    "sectionTitle": "Replacement and Prevention Effects",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "708",
-   "text": "When a replacement that changes the number of counters and a replacement that redirects them both apply to the same placement, the number is changed first, and the redirect then moves the whole changed number.",
-   "see": [],
-   "examples": [
-    "a Counter Thief beside a Flux Resonator steals the extra counter too."
+   "text": "When a replacement that changes the number of counters and a replacement that redirects them could both apply to one placement, they are ordered as rule 708.4a says: a player who controls both chooses which applies first. Changing the number first, so that the redirect moves the whole changed number, never gives fewer counters, and it is the default. A replacement that changes the number and did not apply to the placement as it first stood applies once a redirect makes the placement match its text.",
+   "see": [
+    "708.4a"
    ],
-   "basis": "owner",
+   "examples": [
+    "a Counter Thief beside a Flux Resonator steals the extra counter too.",
+    "Flux Resonator and a Counter Thief: the order cannot change the result, so nothing is asked.",
+    "a player puts +1/+1 counters on their own unit during battle and the opponent's Counter Thief takes them. That player's Proliferating Slime, which did not apply to their own unit, now applies, because the counters are being put on an enemy unit.",
+    "a player's Proliferating Slime and Counter Thief, and two counters aimed at an enemy unit: by default the Slime applies first and the thief gets three.",
+    "the same, with the thief chosen first: the counters are now going onto the player's own unit, so the Slime no longer applies and the thief gets two."
+   ],
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -23473,12 +23509,15 @@
    "sectionTitle": "Replacement and Prevention Effects",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "708",
-   "text": "All the tokens one resolution of one effect creates are created together. A replacement effect that acts on \"each unique token you created\" sees all of them at once, and a token is unique by its name, its X and the stats the effect that created it set, together.",
+   "text": "All the tokens one resolution of one effect creates are created together, including the tokens created by the parts it has from grafted cards. A replacement effect that acts on \"each unique token you created\" sees all of them, and copies each unique token once in the whole effect; a token is unique by its name, its X and the stats the effect that created it set, together.",
    "see": [],
    "examples": [
     "Automaton of Abundance with Manufacture (a Robot 3, a Robot 2 and a Robot 1) creates three extra Robots.",
     "three identical Robot 2s created together are one unique token and yield one extra.",
-    "a 3/3 and a 5/5 unit token created together are two unique tokens and yield two extras."
+    "a 3/3 and a 5/5 unit token created together are two unique tokens and yield two extras.",
+    "Automaton of Abundance and an Omniwield Evoker grafted with Manufacture and Construct Overseer: one activation makes a Robot 3, a Robot 2 and two Robot 1s, and the Automaton copies the Robot 3, the Robot 2 and one Robot 1, three extras and not four.",
+    "a token the effect has not yet copied is still copied when a later part creates it.",
+    "two activations are two effects: the second copies again."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -25287,6 +25326,56 @@
    ],
    "examples": [
     "After combat Ruinbringer deletes a row of three units: an Ancient One between two units that have \"when I die\" abilities. The three die in one batch, so the Ancient One borrows both of its neighbours' \"when I die\" abilities."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "713.6c",
+   "key": "effects.state.together.one-damage",
+   "title": null,
+   "section": "713",
+   "sectionTitle": "State Checks",
+   "chapterTitle": "7. Spells, Abilities and Effects",
+   "parent": "713.6",
+   "text": "The units one effect's damage destroys die together in one batch (112.8), whether they die of lethal damage, of Deadly (802.3e), or of an Unaware or Pure reading of their stats (802.9e, 802.25e).",
+   "see": [
+    "112.8",
+    "706.8c",
+    "802.3e"
+   ],
+   "examples": [
+    "A Deadly effect deals damage to a row of three: an Ancient One between two units that have \"when I die\" abilities. The three die in one batch, so the Ancient One borrows both neighbours' \"when I die\" abilities."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "713.6d",
+   "key": "effects.state.together.sacrifices",
+   "title": null,
+   "section": "713",
+   "sectionTitle": "State Checks",
+   "chapterTitle": "7. Spells, Abilities and Effects",
+   "parent": "713.6",
+   "text": "Units that one instruction of an effect makes players sacrifice (\"each player sacrifices …\", \"sacrifice two units\") are sacrificed simultaneously: every player's choice is made first, and then they all die together in one batch (706.8c).",
+   "see": [
+    "706.8c",
+    "714.9"
+   ],
+   "examples": [
+    "Perish takes a Refuse Reclaimer and two other units. The Reclaimer triggers for each of the other two, but it is already dead when those triggers resolve.",
+    "Maw of Damnation sacrifices an Ancient One with its neighbour in one batch, so the Ancient One borrows the neighbour's \"when I die\" ability."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -31055,14 +31144,15 @@
    "sectionTitle": "Attributes",
    "chapterTitle": "8. Keywords",
    "parent": "802.10",
-   "text": "If a modifier that adds to the damage also applies, the addition is made first and Powerful doubles the result (see rule 112.9).",
+   "text": "If a modifier that adds to the damage also applies, by default the addition is made first and Powerful doubles the result; a player who controls both may choose the doubling first instead (see rules 112.9, 708.6a).",
    "see": [
-    "112.9"
+    "112.9",
+    "708.6a"
    ],
    "examples": [
-    "A Powerful Bellowing Boulder's 1 damage with Conduit of Pain is (1+1)x2 = 4 to each unit."
+    "A Powerful Bellowing Boulder's 1 damage with Conduit of Pain is, by default, (1+1)x2 = 4 to each unit; with the doubling first, 1x2+1 = 3."
    ],
-   "basis": "designer",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -37478,15 +37568,18 @@
    "sectionTitle": "General and Precedence",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D1.2",
-   "text": "When a player chooses the order of replacement effects (see rule 708.4a), each choice is the unit whose effect it is: the player answers by clicking that unit on the board, the choices are not also buttons in the prompt bar, and the prompt says what is being chosen. A question raised by combat damage or by rot is asked before any of that damage or rot is dealt. The other player sees that a question is open, but not the question; while the rot question is open at the start of deployment, the other player cannot deploy.",
+   "text": "When a player chooses the order of replacement effects (see rule 708.4a), each choice is the unit whose effect it is: the player answers by clicking that unit on the board, and the prompt says what is being chosen. A replacement effect of an [Augment] mod acts from its host, so the mod's own badge is the click for the mod's effect. Where one order never gives less (708.6a, 708.7), the prompt bar's first button is that default and says what it gives; every other order is a click on the board, not also a button in the prompt bar. A question raised by combat damage or by rot is asked before any of that damage or rot is dealt. The other player sees that a question is open, but not the question; while the rot question is open at the start of deployment, the other player cannot deploy.",
    "see": [],
    "examples": [
     "Two Oorblaks: the prompt asks which Oorblak takes the damage first, and clicking the second Oorblak chooses it.",
     "The attacker sees that the defender is being asked, but not the question.",
     "Two Skittering Blights at the start of deployment: the rot question is answered on the board, and the other player can deploy only once it is answered.",
-    "A Poisonous blocker and two Counter Thieves: the question comes before any of the combat damage is dealt."
+    "A Poisonous blocker and two Counter Thieves: the question comes before any of the combat damage is dealt.",
+    "\"Creating a Robot 3 — which applies first?\": the player answers by clicking Automaton of Abundance or Cosmic Conspirator on the board.",
+    "An Automaton of Abundance augmented onto the Conspirator is answered by a click on its mod badge.",
+    "Proliferating Slime and a Counter Thief: the bar's first button is the default and names the higher number; the other order is a click on the board."
    ],
-   "basis": "engine",
+   "basis": "mixed",
    "scope": "digital",
    "engineDiffers": false,
    "discrepancies": [],

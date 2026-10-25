@@ -326,10 +326,10 @@
       },
       {
         "source": "file: client/ledgers/raq.ts",
-        "quote": "Green today only because the engine keeps NO strike memory at all."
+        "quote": "The engine keeps strike memory (CR 608.2e, since 2026-10-09)"
       }
     ],
-    "resolution": "The register note is stale: The owner ruling of 2026-10-09 (“A column remembers the damage sub-step…”) is the strike memory it was waiting for, and the owner ruling of 2026-10-09 (“A column remembers the damage sub-step…”) says a Swift mark bars only normal damage, so the double strike is now held by rule. Update the note in client/ledgers/raq.ts. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]"
+    "resolution": "The register note is stale: The owner ruling of 2026-10-09 (“A column remembers the damage sub-step…”) is the strike memory it was waiting for, and the owner ruling of 2026-10-09 (“A column remembers the damage sub-step…”) says a Swift mark bars only normal damage, so the double strike is now held by rule. Update the note in client/ledgers/raq.ts. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.] Done on 2026-10-25 (CT-236, pd-paper 4ea1dc75): the note now says the engine keeps strike memory and cites CR 608.2e."
   },
   {
     "id": "D-U12-17",

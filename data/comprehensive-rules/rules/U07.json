@@ -2102,7 +2102,7 @@
     "key": "zones.bin.identity.that-card",
     "parent": "zones.bin.identity",
     "order": 2,
-    "text": "An effect that refers back to a card that just entered a bin (\"that card\", \"it\") means that copy. If that copy has left the bin, the effect finds nothing. It never takes a different copy of the same name. A card a spell or ability targets in a bin is held the same way: the target stays on the copy it named while other copies of that name leave, and if that copy itself leaves before the effect resolves, the target is gone.",
+    "text": "An effect that refers back to a card that just entered a bin (\"that card\", \"it\") means that copy. If that copy has left the bin, the effect finds nothing. It never takes a different copy of the same name. A card a spell or ability targets in a bin is held the same way: the target stays on the copy it named while other copies of that name leave, and if that copy itself leaves before the effect resolves, the target is gone. The same holds for the card an event names: an ability that triggered on a card entering a bin finds that copy even when an earlier copy of the same name leaves the bin first.",
     "examples": [
       {
         "text": "An {Unstable} unit dies and is erased instead of staying in the bin. Biomass Devourer's \"erase it\" then finds nothing, and does not erase an older copy of the same card already in that bin.",
@@ -2115,6 +2115,10 @@
       {
         "text": "A spell targets the first of two copies, and the first is taken in response. The spell does not slide onto the second copy.",
         "test": "663-bin-target-copy-identity.test.ts::CR 405.6b / CT-380: the first copy targeted and taken in response does not slide onto the second"
+      },
+      {
+        "text": "Two Just a Units are in a bin, the second just put there by a death that Biomass Devourer's trigger is waiting on. The first is taken in response, and the Devourer can still erase the second.",
+        "test": "681-event-bin-slot-follows-its-copy.test.ts::CR 405.6b / CT-415: an earlier copy taken from the bin in response leaves the death copy findable, and Biomass Devourer still offers to erase it"
       }
     ],
     "see": [],
@@ -2132,13 +2136,14 @@
       "engine": [],
       "tests": [
         "26-metal-a.test.ts",
-        "663-bin-target-copy-identity.test.ts"
+        "663-bin-target-copy-identity.test.ts",
+        "681-event-bin-slot-follows-its-copy.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-24 (\"a responder that reaches back into…\") calls itself the owner ruling of 2026-08-24 (\"another\" is a different ENTITY, not…) applied, \"not an owner ruling and not a new rule of the game\". CT-380 (2026-10-25) carries the same identity to declared targets in a bin: the last sentence. The event back-references (binNth on a died/trashed event) are not yet re-indexed the same way (pb-zones report, a new ticket).",
+    "notes": "The owner ruling of 2026-08-24 (\"a responder that reaches back into…\") calls itself the owner ruling of 2026-08-24 (\"another\" is a different ENTITY, not…) applied, \"not an owner ruling and not a new rule of the game\". CT-380 (2026-10-25) carries the same identity to declared targets in a bin: the last sentence. CT-415 (2026-10-25) re-indexes the event back-references (binNth on a died/trashed event) the same way: the event sentence and 681.",
     "sourceHashes": {}
   },
   {
@@ -2309,7 +2314,7 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-23 (“Playing a spell from your BIN…”) left the timing question OPEN; the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) (owner) answered it. The test that pins it still says OPEN in its title: F-U07-3.",
+    "notes": "The owner ruling of 2026-08-23 (“Playing a spell from your BIN…”) left the timing question OPEN; the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) (owner) answered it. Its test's title now states the answer (CT-238, 2026-10-25); F-U07-3 is closed.",
     "sourceHashes": {}
   },
   {

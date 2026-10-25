@@ -661,14 +661,27 @@
     "key": "effects.playing.applying.tides",
     "parent": "effects.playing.applying",
     "order": 3,
-    "text": "Tides of the Cosmos is the one exception. Although it says \"play\", it may put a Virus card onto a unit as a Virus, and it may play a card as an Ambush or a Prophecy. It cannot graft a card or apply a non-Virus augment.",
+    "text": "Tides of the Cosmos is one of the two exceptions; the other is Glimpse (801.9g). Although it says \"play\", it may apply a Virus card as a Virus, onto any host a Virus applied in that battle may take: a unit, a spell on the stack, or a spell token in play there (723.2, 723.4, 721.4a). It may also play a card as an Ambush or a Prophecy. It cannot graft a card or apply a non-Virus augment.",
     "examples": [
       {
         "text": "a Virus card that Tides of the Cosmos plays as a Virus is attached to a unit and never enters play.",
         "test": "404-raq-fix-tides.test.ts::CR 701.2c: a Virus card played by Tides as a Virus augments a unit and never enters play"
+      },
+      {
+        "text": "Tides of the Cosmos reveals a Virus card while an opponent's spell is on the stack in the battle: its controller may apply the Virus onto that spell.",
+        "test": "682-tides-virus-every-host.test.ts::CR 723.4 / CT-416: a Virus played by Tides of the Cosmos is offered onto an enemy spell on the stack, and goes there"
+      },
+      {
+        "text": "A Virus card Tides of the Cosmos plays may go onto a spell token in play in the battle.",
+        "test": "682-tides-virus-every-host.test.ts::CR 721.4a / CT-416: a Virus played by Tides of the Cosmos is offered onto a spell token in play in the battle"
       }
     ],
-    "see": [],
+    "see": [
+      "721.4a",
+      "723.2",
+      "723.4",
+      "801.9g"
+    ],
     "sources": {
       "printed": [],
       "designer": [
@@ -687,6 +700,10 @@
         {
           "ref": "RAQ 1357483405276614856#1",
           "quote": "No because augment in general is a special action"
+        },
+        {
+          "ref": "RQ 1356456406206775407",
+          "quote": "So, I want it to be yes"
         }
       ],
       "ours": [],
@@ -695,23 +712,30 @@
           "quote": "A card Tides of the Cosmos plays for free may be played in any alternative",
           "adopted": "2026-10-09",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Keep it",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (CT-416: a Virus that Tides of the Cosmos plays may go onto a spell on the stack or a spell token in play, as a Virus from hand may)"
         }
       ],
       "engine": [],
       "tests": [
         "404-raq-fix-tides.test.ts",
-        "396-raq-timing.test.ts"
+        "396-raq-timing.test.ts",
+        "682-tides-virus-every-host.test.ts"
       ]
     },
-    "basis": "designer",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Card-specific, but the designer names it as the only exception to 701.2.",
+    "notes": "Card-specific. The RAQ write-up names two exceptions to 701.2, Tides and Glimpse (round-4 verifier, 2026-10-25). CT-416 (2026-10-25): no source names a stack spell or a spell token under Tides; the sources say Tides applies Viruses (RAQ, and Caleb's \"So, I want it to be yes\" to augmenting a Virus onto an enemy unit with Tides), and a Virus applied in battle may take those hosts (723.2, 723.4, 721.4a). The owner kept the widened reading: \"Keep it\".",
     "sourceHashes": {
       "RAQ 1357483405276614856#1": "6596eb521f6e565e13e38310b494ea231a98a3f040a434a97e8646b90b63f1b4",
       "RAQ 1396955380000755795#2": "c99d91592799c322dbb925f3e9722f4405940adf79dca2d70d1e8b52b8707d79",
       "RAQ 1396955380000755795#3": "03340644aaa8569500998dccb31c10ba56d4e70ad629c4c3acb533a0b4c485fb",
-      "RAQ 1537748882501668934#2": "1fd1e7b02083233cc1970fdb0f2fe6be108e789c03e043b2d7717258f46a9293"
+      "RAQ 1537748882501668934#2": "1fd1e7b02083233cc1970fdb0f2fe6be108e789c03e043b2d7717258f46a9293",
+      "RQ 1356456406206775407": "efbbd0cc5db9797be4bf7a10d47865c002f5a27e1ee489214bce3eec03b1114c"
     }
   },
   {

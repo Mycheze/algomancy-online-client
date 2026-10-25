@@ -114,14 +114,14 @@
     "sides": [
       {
         "source": "file: client/ledgers/raq.ts",
-        "quote": "Resonant never waits on the stack, so there is nothing to negate."
+        "quote": "Resonant waits on the stack too (CR 706.11, since 2026-10-09), and the engine negates it"
       },
       {
         "source": "owner ruling, adopted 2026-10-09",
         "quote": "the resonant source**, put on the stack as that source's trigger — not life loss"
       }
     ],
-    "resolution": "Register fix: update the note on RAQ 1366446116274442291#2 to say the Resonant trigger waits on the stack (owner ruling of 2026-10-09, “{Resonant} is its source's trigger: damage…”) and would be negated by the engine."
+    "resolution": "Register fix: update the note on RAQ 1366446116274442291#2 to say the Resonant trigger waits on the stack (owner ruling of 2026-10-09, “{Resonant} is its source's trigger: damage…”) and would be negated by the engine. Done on 2026-10-25 (CT-236, pd-paper 4ea1dc75): the note now says the Resonant trigger waits on the stack (CR 706.11) and is negated (399)."
   },
   {
     "id": "D-U20-7",

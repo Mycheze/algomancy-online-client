@@ -533,37 +533,45 @@
     "verifier": "U06-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:doAugment (tokenHost)",
+        "loc": "client/engine/src/apply.ts:augment hosts (CR 721.4a deployment + CT-407 battle branch)",
         "agrees": true,
-        "note": "deployment: own spell token is a host for any augment; battle: any spell token in the region via virusHostOk"
-      },
-      {
-        "loc": "client/engine/src/apply.ts:battleVirusHosts",
-        "agrees": true,
-        "note": "appends spell tokens in play in the battle region, either player"
-      },
-      {
-        "loc": "client/engine/src/apply.ts:battleAugmentAllowed",
-        "agrees": true,
-        "note": "only a Virus (or Rook-style permission) in battle"
+        "note": "deployment: any augment onto a spell token; battle: Virus onto either player's token in the battle region; only attributes transfer"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/78-round17-core.test.ts",
-        "pattern": "CR 721.4a",
+        "pattern": "CR 721.4a: a spell token is a legal augment host during deployment",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/78-round17-core.test.ts",
+        "pattern": "CR 721.4a: only ATTRIBUTES transfer",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/78-round17-core.test.ts",
+        "pattern": "CR 721.4a: a text-only augment on a token grants nothing",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/417-cr-card-types.test.ts",
-        "pattern": "cr:types.mods.spell-token-host",
+        "pattern": "cr:types.mods.spell-token-host — a non-Virus augment",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/665-battle-virus-spell-token.test.ts",
-        "pattern": "CR 721.4a",
+        "pattern": "CR 721.4a / CT-407: in battle a Virus is offered onto a spell token in play, either player",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/665-battle-virus-spell-token.test.ts",
+        "pattern": "CR 721.4a / CT-407: a Virus gives a Fireball token in play Powerful mid-battle",
         "passed": true,
         "asserts_claim": true
       }
@@ -573,31 +581,40 @@
       {
         "ref": "RQ 1347270455198879858",
         "supports": "yes",
-        "note": "calebgannon, answering \"does this mean i can augment my opponents spell too? ... can i augment my spells during deployment?\": \"So you can hit enemy spells\" / \"You can augment spells during deployment but currently that would only be possible with spell tokens\" / \"Also you can only do this with attributes\""
+        "note": "calebgannon answering thenathmeister: enemy spells may be hit, spells augmented in deployment only via spell tokens, 'only ... with attributes'"
       },
       {
         "ref": "RQ 1364998183226179735",
         "supports": "partial",
-        "note": "calebgannon \"Honestly I don't see why you couldn't\"; the question in the snapshot is only \"Asking for this guy, since he is only Augmentable during Deployment (except Rook)\" (image not in snapshot) - consistent but weak alone"
+        "note": "calebgannon; the snapshot's `before` shows only _passer's 'Asking for this guy, since he is only Augmentable during Deployment (except Rook)', the full question is not in the snapshot; the battle half rests on the owner's 2026-10-24 'Yes, allow it'"
       },
       {
-        "ref": "owner quotes (2026-08-23, 2026-10-24)",
+        "ref": "owner register@72de434 x3",
         "supports": "yes",
-        "note": "\"a SPELL TOKEN may be augmented during DEPLOYMENT\", \"you can only do this with attributes.\", \"It is NOT restricted to Virus cards\", \"Yes, allow it\" (battle Virus onto a token in play)"
+        "note": "deployment spell-token host, attributes only, not restricted to Virus"
+      },
+      {
+        "ref": "owner 2026-10-24 CT-407",
+        "supports": "yes",
+        "note": "battle Virus onto a spell token in play"
       }
     ],
     "quote_spans": [
       {
         "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "You can augment spells during deployment but currently that would only be possible with spell tokens."
+        "text": "So you can hit enemy spells"
       },
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "&& (((e.s.phase === 'deploy' || hasteMod) && host.controller === seat) || e.s.phase === 'battle');"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "Honestly I don't see why you couldn't"
       },
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "if (t.kind === 'spellToken' && t.region === region && !t.absent) out.push({ unit: t.id });"
+        "file": "client/engine/test/665-battle-virus-spell-token.test.ts",
+        "text": "assert.ok(hosts.includes(theirs), 'and so is the enemy Fireball (\"you can hit enemy spells\")');"
+      },
+      {
+        "file": "client/engine/test/417-cr-card-types.test.ts",
+        "text": "const idx = give(h, A, 'Carapace Devourer');            // [Augment] {Deadly}, not a Virus"
       }
     ],
     "basis_ok": true,
@@ -2819,9 +2836,14 @@
     "verifier": "U06-r4",
     "engine": [
       {
+        "loc": "client/engine/src/cards/dsl.ts:tokenUniqueKey",
+        "agrees": true,
+        "note": "key = name, X and the stats the request set, else the definition's own stats"
+      },
+      {
         "loc": "client/engine/src/cards/sets/batch-metal-a.ts:Automaton of Abundance replaceTokenBatch",
         "agrees": true,
-        "note": "key (name, X, stats); an unset stats creation = the definition's printed stats"
+        "note": "one extra per tokenUniqueKey"
       }
     ],
     "tests_run": [
@@ -2839,13 +2861,13 @@
       },
       {
         "file": "client/engine/test/458-automaton-copies-stats.test.ts",
-        "pattern": "CR 304.14: a 3/3 and a 5/5 Unit Token made together are TWO unique tokens",
+        "pattern": "CR 304.14: a 3/3 and a 5/5 Unit Token made together",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/458-automaton-copies-stats.test.ts",
-        "pattern": "CR 304.14: a Unit Token created with no stats and one created as a 1/1 are ONE unique token",
+        "pattern": "CR 304.14: a Unit Token created with no stats and one created as a 1/1",
         "passed": true,
         "asserts_claim": true
       }
@@ -2854,23 +2876,23 @@
     "source_checks": [
       {
         "ref": "card: Automaton of Abundance",
-        "supports": "partial",
-        "note": "the word 'unique' is printed; its meaning comes from the owner calls"
+        "supports": "yes",
+        "note": "verbatim; 'each unique token' is the term the rule defines"
       },
       {
-        "ref": "owner 2026-08-25 'unique (name, X) pair'",
+        "ref": "RQ 1358924537160536247",
         "supports": "yes",
-        "note": ""
+        "note": "calebgannon; answers _passer's Automaton+Omniweld question choosing the per-unique-token reading (option 2)"
       },
       {
-        "ref": "owner 2026-08-25 'one card's word'",
+        "ref": "owner register@72de434 (name, X)",
         "supports": "yes",
-        "note": "scope note"
+        "note": "words taken as given"
       },
       {
-        "ref": "owner 2026-10-16 'those would count as unique tokens'",
+        "ref": "owner 2026-10-16 3/3 and 5/5",
         "supports": "yes",
-        "note": "3/3 vs 5/5 are distinct"
+        "note": "stats set by the creating effect distinguish unique tokens"
       }
     ],
     "quote_spans": [
@@ -2879,8 +2901,16 @@
         "text": "instead create those tokens plus an additional copy of each unique token you created."
       },
       {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "[Switch1] Create a Robot 3, a Robot 2 and a Robot 1."
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "it would be the second one"
+      },
+      {
+        "file": "client/engine/src/cards/dsl.ts",
+        "text": "const def = r.stats ?? [getCard(r.name).power, getCard(r.name).toughness];"
+      },
+      {
+        "file": "client/engine/test/458-automaton-copies-stats.test.ts",
+        "text": "assert.equal(extras.length, 2, 'one extra per (name, X, stats), not one per name');"
       }
     ],
     "basis_ok": true,

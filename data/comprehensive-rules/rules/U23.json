@@ -475,7 +475,7 @@
     "key": "annexd.general.player-decides.replacement-order",
     "parent": "annexd.general.player-decides",
     "order": 8,
-    "text": "When a player chooses the order of replacement effects (see rule effects.replacement.once.one-applies), each choice is the unit whose effect it is: the player answers by clicking that unit on the board, the choices are not also buttons in the prompt bar, and the prompt says what is being chosen. A question raised by combat damage or by rot is asked before any of that damage or rot is dealt. The other player sees that a question is open, but not the question; while the rot question is open at the start of deployment, the other player cannot deploy.",
+    "text": "When a player chooses the order of replacement effects (see rule effects.replacement.once.one-applies), each choice is the unit whose effect it is: the player answers by clicking that unit on the board, and the prompt says what is being chosen. A replacement effect of an [Augment] mod acts from its host, so the mod's own badge is the click for the mod's effect. Where one order never gives less (708.6a, 708.7), the prompt bar's first button is that default and says what it gives; every other order is a click on the board, not also a button in the prompt bar. A question raised by combat damage or by rot is asked before any of that damage or rot is dealt. The other player sees that a question is open, but not the question; while the rot question is open at the start of deployment, the other player cannot deploy.",
     "examples": [
       {
         "text": "Two Oorblaks: the prompt asks which Oorblak takes the damage first, and clicking the second Oorblak chooses it.",
@@ -492,6 +492,18 @@
       {
         "text": "A Poisonous blocker and two Counter Thieves: the question comes before any of the combat damage is dealt.",
         "test": "472-counter-thief-and-rot-order.test.ts::CR 708.4a: Poisonous combat damage and two Counter Thieves — asked before the damage"
+      },
+      {
+        "text": "\"Creating a Robot 3 — which applies first?\": the player answers by clicking Automaton of Abundance or Cosmic Conspirator on the board.",
+        "test": "701-replacement-order-picks.test.ts::CR 708.4a: two token replacements, the question is drawn on the board, says what it asks, and a click on Automaton of Abundance answers it"
+      },
+      {
+        "text": "An Automaton of Abundance augmented onto the Conspirator is answered by a click on its mod badge.",
+        "test": "701-replacement-order-picks.test.ts::CR 708.4a: an Automaton augmented onto the Conspirator is its own click, on the mod badge"
+      },
+      {
+        "text": "Proliferating Slime and a Counter Thief: the bar's first button is the default and names the higher number; the other order is a click on the board.",
+        "test": "701-replacement-order-picks.test.ts::CR 708.7: the default is the bar primary button, first, naming its result, and the board takes the other orders"
       }
     ],
     "see": [],
@@ -499,18 +511,32 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "owner": [],
-      "engine": [],
+      "owner": [
+        {
+          "quote": "Sorta like when blocking, how it asks \"Choose your split? Or just use default?\"",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (replacement order Q4/Q5, the same answer)"
+        },
+        {
+          "quote": "In 9/10 cases, default is fine, but the option is always there",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (replacement order Q4/Q5, the same answer)"
+        }
+      ],
+      "engine": [
+        "askReplacement"
+      ],
       "tests": [
         "473-replacement-order-on-the-board.test.ts",
         "471-oorblak-order-and-polyp.test.ts",
-        "472-counter-thief-and-rot-order.test.ts"
+        "472-counter-thief-and-rot-order.test.ts",
+        "701-replacement-order-picks.test.ts"
       ]
     },
-    "basis": "engine",
+    "basis": "mixed",
     "scope": "digital",
     "confidence": "medium",
-    "notes": "The client side of the owner's 2026-10-16 \"Ask the player now\" (effects.replacement.once.one-applies).",
+    "notes": "The client side of the owner's 2026-10-16 \"Ask the player now\" (effects.replacement.once.one-applies) and of his 2026-10-25 default (Q4/Q5: \"Sorta like when blocking, how it asks 'Choose your split? Or just use default?'\").",
     "sourceHashes": {}
   },
   {

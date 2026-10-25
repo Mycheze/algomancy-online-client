@@ -309,39 +309,33 @@
   },
   {
     "key": "zones.bin.identity.that-card",
-    "textHash": "ea729f1af84a9381",
+    "textHash": "178d50f652192084",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.binIndexOf / E.removeFromBin",
+        "loc": "client/engine/src/engine.ts:E.removeFromBin / binIndexOf",
         "agrees": true,
-        "note": "a gone copy's ref resolves to -1, no fallback to another copy"
+        "note": "BinRefs re-indexed on every bin exit; a removed copy's ref is gone, no fallback"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/26-metal-a.test.ts",
+        "file": "26-metal-a.test.ts",
         "pattern": "CR 405.6: Biomass Devourer does NOT erase an innocent older copy",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/663-bin-target-copy-identity.test.ts",
-        "pattern": "CR 405.6b / CT-380: the second copy targeted and taken in response",
+        "file": "663-bin-target-copy-identity.test.ts",
+        "pattern": "CR 405.6b / CT-380",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/663-bin-target-copy-identity.test.ts",
-        "pattern": "CR 405.6b / CT-380: the first copy targeted and taken in response",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "client/engine/test/663-bin-target-copy-identity.test.ts",
-        "pattern": "CR 405.6b / CT-380: a later copy leaving does not move the target",
+        "file": "681-event-bin-slot-follows-its-copy.test.ts",
+        "pattern": "CR 405.6b / CT-415",
         "passed": true,
         "asserts_claim": true
       }
@@ -351,17 +345,17 @@
       {
         "ref": "owner register@72de434 'It never means \"take the other copy\".'",
         "supports": "yes",
-        "note": "covers 'never a different copy'; the target sentence applies the same ruling to a bin target (stay on the named copy, gone if it leaves)"
+        "note": "words as given"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/26-metal-a.test.ts",
-        "text": "'the innocent copy is untouched — it was never the card that died');"
+        "file": "client/engine/test/663-bin-target-copy-identity.test.ts",
+        "text": "  assert.deepEqual(handCopies(h, A), [], 'A finds nothing: its copy is gone (it used to take copy 1)');"
       },
       {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "Whenever a nontoken unit dies, you may pay [two] to erase it and put two +1/+1 counters on me."
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "text": "    'the innocent copy is untouched — it was never the card that died');"
       }
     ],
     "basis_ok": true,
@@ -503,21 +497,38 @@
   },
   {
     "key": "zones.bin.play-from-bin",
-    "textHash": "bcc151be5a20c28f",
+    "textHash": "25abcacb9b80251f",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U07-r1-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "apply.ts pushBinPlays/playAtTiming",
+        "loc": "client/engine/src/apply.ts:playFromBin",
         "agrees": true,
-        "note": "bin plays need a grant or own text; printed timing applies"
+        "note": "refused without a permission ('no permission to play cards from your bin'); playAtTiming keeps printed timing"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Wake the Dead",
+        "agrees": true,
+        "note": "'now, for free' plays deploy-timed units in battle"
       }
     ],
     "tests_run": [
       {
         "file": "12-fire-a.test.ts",
-        "pattern": "Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing",
+        "pattern": "CR 702.2a Abyssal Evocation: a bin-played card obeys its PRINTED timing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Abyssal Evocation: without the permission the action is refused",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "41-dark-a.test.ts",
+        "pattern": "Wake the Dead: plays up to two units out of ANY bin",
         "passed": true,
         "asserts_claim": true
       }
@@ -532,22 +543,34 @@
       {
         "ref": "card: Trench Stalker",
         "supports": "yes",
-        "note": ""
+        "note": "the card's own text"
       },
       {
-        "ref": "R157 §12",
+        "ref": "owner register@72de434 'Cards that let you ignore timing say something like...'",
         "supports": "yes",
-        "note": ""
+        "note": "truncated before the word itself; its 'You may play them' matches Tides of the Cosmos 'You may play them now', and Wake the Dead 'now' plays deploy units in battle (41-dark-a)"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> *\"Cards that let you ignore timing say something like 'You may play them"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "In this battle, you may play spells from your bin."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "I can be played directly into formation, and played from your bin."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "You may play them now, for free."
+      },
+      {
+        "file": "client/engine/test/12-fire-a.test.ts",
+        "text": "    /only battle cards can be played now/, 'and the deploy spell is refused outright');"
       }
     ],
     "basis_ok": true,
-    "problem": "Note only: the bound test title still says \"⚠ OPEN\"; R157 §12 has since settled it in the tested direction."
+    "problem": ""
   },
   {
     "key": "zones.bin.play-from-bin.one-card",

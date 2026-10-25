@@ -2293,16 +2293,22 @@
     "key": "concepts.damage.amount-order",
     "parent": "112",
     "order": 9,
-    "text": "When a source would deal noncombat damage, its amount is worked out in this order: first, modifiers that add to it (such as Conduit of Pain's \"plus 1\") apply; then Powerful doubles the result; then a Vulnerable recipient is dealt double what reaches it.",
+    "text": "When a source would deal noncombat damage, its amount is worked out from the modifiers that add to it (such as Conduit of Pain's \"plus 1\") and Powerful's doubling, and then a Vulnerable recipient is dealt double what reaches it. A player who controls both an addition and the doubling chooses which applies first (708.6a); the additions first, which never gives less, is the default. When they are controlled by different players, rule 708.4a orders them.",
     "examples": [
       {
-        "text": "a Powerful Bellowing Boulder beside Conduit of Pain deals (1+1)x2 = 4 to each unit.",
-        "test": "387-raq-combat.test.ts::RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles — a Powerful Bellowing Boulder deals (1+1)x2 = 4 to each unit"
+        "text": "a Powerful Bellowing Boulder beside Conduit of Pain deals, by default, (1+1)x2 = 4 to each unit.",
+        "test": "699-damage-addition-and-doubling-order.test.ts::CR 708.6a: Conduit of Pain and Powerful, the default is the addition first and says it gives the higher number"
+      },
+      {
+        "text": "choosing Powerful first, it deals 1x2+1 = 3 to each unit.",
+        "test": "699-damage-addition-and-doubling-order.test.ts::CR 708.6a: choosing Powerful first, the damage is doubled and then one is added"
       }
     ],
     "see": [
       "802",
-      "708"
+      "708",
+      "708.6a",
+      "708.4a"
     ],
     "sources": {
       "printed": [],
@@ -2310,6 +2316,18 @@
         {
           "ref": "RAQ 1362838395298119912#4",
           "quote": "Conduit of Pain adds its 1 BEFORE Powerful doubles: a Powerful Bellowing Boulder's 1 deals (1+1)x2 = 4."
+        },
+        {
+          "ref": "RQ 1475287013040062686",
+          "quote": "generally as the owner of all the replacement effects, you can choose the order you'd like to apply them in"
+        },
+        {
+          "ref": "RQ 1475287086247579648",
+          "quote": "which usually would mean doing +1 then doubling"
+        },
+        {
+          "ref": "RQ 1475287265080119389",
+          "quote": "for max damage"
         }
       ],
       "ours": [],
@@ -2323,21 +2341,41 @@
           "quote": "2. The victim is priced in what it RECEIVES, so {Vulnerable}'s receive-side",
           "adopted": "2026-08-23",
           "from": "register@72de434"
+        },
+        {
+          "quote": "For cases where its \"just worse\" *give them the option* to choose, but be like \"Yo, this will be a higher number\".",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (replacement order Q4/Q5: a fixed order whose other order only ever gives less, +1 before doubling and counter amounts before a Counter Thief)"
+        },
+        {
+          "quote": "In 9/10 cases, default is fine, but the option is always there",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (replacement order Q4/Q5, the same answer)"
+        },
+        {
+          "quote": "Each owner, INT first",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (replacement order Q1: who orders replacement effects that belong to different players)"
         }
       ],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts",
-        "415-cr-costs-life-timestamps.test.ts"
+        "415-cr-costs-life-timestamps.test.ts",
+        "699-damage-addition-and-doubling-order.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "Replacement-order round (2026-10-25). The RAQ gives (1+1)x2; Caleb (2026-02-23) says the owner of the replacement effects chooses the order, \"which usually would mean doing +1 then doubling\" \"for max damage\". The owner (Q5): give the player the option, with the higher number as the default. 387's Resonant tests answer the default.",
     "sourceHashes": {
-      "RAQ 1362838395298119912#4": "17213edf2cc843dab7504dfd0d633bd4f4c5fc3d7997ea9ffc883f4aed2df901"
-    }
+      "RAQ 1362838395298119912#4": "17213edf2cc843dab7504dfd0d633bd4f4c5fc3d7997ea9ffc883f4aed2df901",
+      "RQ 1475287013040062686": "f8de3bf62ef5cdd7b40e8b084a3459fe46315db6cf3b907c1f5e8e1a45cc061d",
+      "RQ 1475287086247579648": "d653aa2a96f338d3095265d9ae542637b3bf472037efca51e14388b641c5b8af",
+      "RQ 1475287265080119389": "f2c0e94e9861daf821e8ee7de11e5306b096b092335b5769b26f2229e045dd5e"
+    },
+    "digitalClause": "the additions first, which never gives less, is the default"
   },
   {
     "key": "concepts.damage.poisonous",

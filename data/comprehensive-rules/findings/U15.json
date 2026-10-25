@@ -36,10 +36,11 @@
       },
       {
         "file": "client/ledgers/raq.ts",
-        "quote": "⚠ Green partly for the wrong reason given the Sandstone defect"
+        "quote": "Green for the right reason: a Wisp the Oracle did not see buffed would read 0/1 and DRAW, so this exercises the static."
       }
     ],
-    "ct": "CT-236"
+    "ct": "CT-236",
+    "closed": "fixed on 2026-10-25 (CT-236, pd-paper 4ea1dc75): the raq.ts note says the guard is green for the right reason; the Sandstone case was a fixture error (CT-217)."
   },
   {
     "id": "F-U15-3",

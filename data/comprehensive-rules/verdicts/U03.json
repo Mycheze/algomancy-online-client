@@ -1264,32 +1264,27 @@
     "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-earth-b.ts:Mirage Scuttler",
+        "loc": "client/engine/src/cards (Mirage Scuttler, Vroot, Torrential Reclamation)",
         "agrees": true,
-        "note": "reads n off the triggering event"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-hybrids-fwe.ts:Torrential Reclamation",
-        "agrees": true,
-        "note": "rounds = recalled.length"
+        "note": "amount read off the event / the recalled count"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/17-earth-b.test.ts",
-        "pattern": "Mirage Scuttler: surviving",
+        "file": "17-earth-b.test.ts",
+        "pattern": "Mirage Scuttler: surviving damage grows it by that much",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/166-face-damage-attribution.test.ts",
+        "file": "166-face-damage-attribution.test.ts",
         "pattern": "CR 608.9a — Vroot",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/632-torrential-sacrifice-per-recall.test.ts",
-        "pattern": "CT-375: Torrential Reclamation for X = 2",
+        "file": "632-torrential-sacrifice-per-recall.test.ts",
+        "pattern": "CT-375: Torrential Reclamation for X = 2 with one target removed",
         "passed": true,
         "asserts_claim": true
       }
@@ -1314,17 +1309,17 @@
       {
         "ref": "RQ 1223287683804037202",
         "supports": "yes",
-        "note": "calebgannon, after 'X and the for each to be different'"
+        "note": "Caleb: removing targets prevents the sacrifice -- the for-each counts what was recalled"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/cards/sets/batch-earth-b.ts",
-        "text": "const n = (ctx.event?.data?.n as number | undefined) ?? 0;"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Whenever I survive damage, put that many +1/+1 counters on me."
       },
       {
-        "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
-        "text": "const rounds = recalled.length;"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "For each ally recalled this way, each player sacrifices a unit and you lose 1 life."
       },
       {
         "file": "client/ledgers/rules-questions.snapshot.jsonl",

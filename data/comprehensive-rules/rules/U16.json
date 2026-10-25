@@ -3343,6 +3343,107 @@
     "sourceHashes": {}
   },
   {
+    "key": "effects.state.together.one-damage",
+    "parent": "effects.state.together",
+    "order": 3,
+    "text": "The units one effect's damage destroys die together in one batch (112.8), whether they die of lethal damage, of Deadly (802.3e), or of an Unaware or Pure reading of their stats (802.9e, 802.25e).",
+    "examples": [
+      {
+        "text": "A Deadly effect deals damage to a row of three: an Ancient One between two units that have \"when I die\" abilities. The three die in one batch, so the Ancient One borrows both neighbours' \"when I die\" abilities.",
+        "test": "680-deadly-deaths-one-batch.test.ts::CR 802.3e, 713.6 / CT-413: a Deadly effect dealing damage to a row kills it in one batch, so the Ancient One borrows both when-I-die lines"
+      }
+    ],
+    "see": [
+      "112.8",
+      "706.8c",
+      "802.3e"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "- **deaths are checked once**, after all of it is marked, which is what",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
+        },
+        {
+          "quote": "Yes, deadly works on spell effects and everything. Just like powerful. So a",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q2; register@72de434"
+        }
+      ],
+      "engine": [
+        "destroyBatch",
+        "checkDeaths"
+      ],
+      "tests": [
+        "680-deadly-deaths-one-batch.test.ts",
+        "69-damage-batch.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "medium",
+    "notes": "CT-413 (2026-10-25): Deadly kills from effect damage were destroyed one at a time before the lethal ones; they now die in the effect's one death batch. 112.8 (the owner's \"deaths are checked once, after all of it is marked\") and 802.3e (Deadly works on spell damage) give it; no source speaks of Deadly victims and lethal victims of one effect separately.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.state.together.sacrifices",
+    "parent": "effects.state.together",
+    "order": 4,
+    "text": "Units that one instruction of an effect makes players sacrifice (\"each player sacrifices …\", \"sacrifice two units\") are sacrificed simultaneously: every player's choice is made first, and then they all die together in one batch (706.8c).",
+    "examples": [
+      {
+        "text": "Perish takes a Refuse Reclaimer and two other units. The Reclaimer triggers for each of the other two, but it is already dead when those triggers resolve.",
+        "test": "683-sacrifices-die-together.test.ts::CR 706.8c, 713.6 / CT-414: a Refuse Reclaimer sacrificed first to Perish still triggers on every other unit Perish takes (the designer example)"
+      },
+      {
+        "text": "Maw of Damnation sacrifices an Ancient One with its neighbour in one batch, so the Ancient One borrows the neighbour's \"when I die\" ability.",
+        "test": "683-sacrifices-die-together.test.ts::CR 706.8c, 714.9 / CT-414: Maw of Damnation sacrifices an Ancient One with its neighbour in one batch, so it borrows that neighbour when-I-die line"
+      }
+    ],
+    "see": [
+      "706.8c",
+      "714.9"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Perish",
+          "quote": "Each player sacrifices half of their units, rounded up."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RQ 1442175942838718518",
+          "quote": "Sacrifices are resolved simultaneously, so there's no window between the first and second sacrifice."
+        },
+        {
+          "ref": "RQ 1442177903952396430",
+          "quote": "It would trigger but it would be dead before it was able to get any counters."
+        }
+      ],
+      "ours": [],
+      "owner": [],
+      "engine": [
+        "destroyBatch"
+      ],
+      "tests": [
+        "683-sacrifices-die-together.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "CT-414 (2026-10-25). Caleb, asked (2025-11-23) whether Perish's sacrifices resolve one by one with a Refuse Reclaimer among them: \"Sacrifices are resolved simultaneously\"; asked whether a sacrificed Reclaimer triggers: \"It would trigger but it would be dead before it was able to get any counters\". The engine now plans every pick and destroys them in one batch. A \"[Sacrifice X units]\" COST is not covered: no source speaks to it.",
+    "sourceHashes": {
+      "RQ 1442175942838718518": "7a7b81efa7ba50456d04019f45acb19bc6d48093dd4ed9c32afea3714f1e4dec",
+      "RQ 1442177903952396430": "e0822c7df3e02e64810bee52a8d521cdedeac23f82ee4f1301a7931a3dd306b8"
+    }
+  },
+  {
     "key": "effects.state.absent",
     "parent": "713",
     "order": 7,

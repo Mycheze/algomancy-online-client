@@ -3591,6 +3591,141 @@
     "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
+    "key": "effects.state.together.one-damage",
+    "textHash": "fc3a9705bdd9db62",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U16-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll -> checkDeaths(doomed) -> destroyBatch",
+        "agrees": true,
+        "note": "Deadly/Unaware/Pure victims are only decided, then disposed with the lethal set in one batch"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/680-deadly-deaths-one-batch.test.ts",
+        "pattern": "CR 802.3e, 713.6 / CT-413: a Deadly effect dealing damage to a row kills it in one batch",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/69-damage-batch.test.ts",
+        "pattern": "CR 112.8: \"each unit\" damage kills simultaneously",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U16-1.test.ts",
+        "test": "probe U16-1a: a Deadly effect: a lethal-damage kill and Deadly-only kills are one batch",
+        "passed": true,
+        "demonstrates": "yes: one destroyBatch holds a 3/3 dealt 3 and two 3/3s dealt 1 by a Deadly source"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U16-1.test.ts",
+        "test": "probe U16-1b: Haboob (Unaware): a plain 1/1 lethal kill and a counter-pumped printed-1 kill are one batch",
+        "passed": true,
+        "demonstrates": "yes: Haboob's Unaware-reading kill of a 5/5 (printed 1/1) dies in the same destroyBatch as a plain 1/1"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "owner register@72de434 (deaths checked once)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner questions-round27 Q2",
+        "supports": "yes",
+        "note": "Deadly works on spell effects"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "* the deaths are disposed by `checkDeaths(doomed)`, in one batch with the"
+      },
+      {
+        "file": "client/engine/test/680-deadly-deaths-one-batch.test.ts",
+        "text": "assert.equal(borrowedQueued(h), 2, 'one borrowed \"when I die\" per neighbour, the earlier-killed one included');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Pure-reading deaths in an effect batch were not separately probed (same doomed path as Unaware, pureVictims)."
+  },
+  {
+    "key": "effects.state.together.sacrifices",
+    "textHash": "4ec45a9e2948ca9f",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U16-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:destroyBatch (the sacrifice cards plan every pick, then one batch)",
+        "agrees": true,
+        "note": "all picks planned, then one batch"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/683-sacrifices-die-together.test.ts",
+        "pattern": "CR 706.8c, 713.6 / CT-414: a Refuse Reclaimer sacrificed first to Perish",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/683-sacrifices-die-together.test.ts",
+        "pattern": "CR 706.8c, 714.9 / CT-414: Maw of Damnation sacrifices an Ancient One",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U16-2.test.ts",
+        "test": "probe U16-2: Perish — every pick, both players, is made before any sacrificed unit leaves play",
+        "passed": true,
+        "demonstrates": "yes: after A's picks both picked units are still in play and D is still choosing; all leave only after D's pick"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Perish",
+        "supports": "yes",
+        "note": "verbatim; the instruction form"
+      },
+      {
+        "ref": "RQ 1442175942838718518",
+        "supports": "yes",
+        "note": "calebgannon answering ainecaptain's Perish ordering question"
+      },
+      {
+        "ref": "RQ 1442177903952396430",
+        "supports": "yes",
+        "note": "calebgannon: the sacrificed Reclaimer triggers but is dead before its counters"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Each player sacrifices half of their units, rounded up."
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "Sacrifices are resolved simultaneously, so there's no window between the first and second sacrifice."
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "It would trigger but it would be dead before it was able to get any counters."
+      }
+    ],
+    "basis_ok": false,
+    "problem": "Content confirmed. Only basis is off: it says `designer`, but the record also cites a printed source (card: Perish), so by the brief's rule it should be `mixed`."
+  },
+  {
     "key": "effects.state.tokens",
     "textHash": "fd6370130a63a8ef",
     "verdict": "confirmed",
@@ -3648,47 +3783,54 @@
     "key": "effects.state.what",
     "textHash": "5200a03d44552d42",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U16-r1",
+    "round": 4,
+    "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "engine.ts:checkDeaths",
+        "loc": "client/engine/src/engine.ts:settle/checkDeaths (state check at safe points)",
         "agrees": true,
-        "note": "kills every isLethal unit at a safe point"
-      },
-      {
-        "loc": "engine.ts:destroy",
-        "agrees": true,
-        "note": "token sweep in the disposal tail"
+        "note": ""
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/427-cr-continuous-effects.test.ts",
+        "pattern": "cr:effects.state.what",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/380-no-action-ends-dead.test.ts",
+        "pattern": "CR 713.3: a planning action that does not settle still ends with the dead unit gone",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R313",
+        "ref": "owner register@72de434 (safe point)",
         "supports": "yes",
-        "note": ""
+        "note": "the state check is the game's, at safe points"
       },
       {
-        "ref": "R152",
+        "ref": "owner register@72de434 (tokens cease to exist outside play/stack)",
         "supports": "yes",
         "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "safe point — the engine's state-based check. The end of every action is a safe"
+        "file": "client/engine/test/427-cr-continuous-effects.test.ts",
+        "text": "assert.ok(!h.state.players[p]!.hand.includes('Unit Token'), 'a token cannot exist in a hand');"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "const dead = Object.values(this.s.entities).filter(u => this.isLethal(u));"
+        "file": "client/engine/test/427-cr-continuous-effects.test.ts",
+        "text": "assert.equal(ent(h, whale), undefined, 'the unit that should be dead died');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.state.when",

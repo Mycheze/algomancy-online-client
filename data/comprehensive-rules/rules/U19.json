@@ -3067,15 +3067,16 @@
     "key": "attr.powerful.additive",
     "parent": "attr.powerful",
     "order": 2,
-    "text": "If a modifier that adds to the damage also applies, the addition is made first and Powerful doubles the result (see rule 112.9).",
+    "text": "If a modifier that adds to the damage also applies, by default the addition is made first and Powerful doubles the result; a player who controls both may choose the doubling first instead (see rules 112.9, 708.6a).",
     "examples": [
       {
-        "text": "A Powerful Bellowing Boulder's 1 damage with Conduit of Pain is (1+1)x2 = 4 to each unit.",
-        "test": "387-raq-combat.test.ts::RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles"
+        "text": "A Powerful Bellowing Boulder's 1 damage with Conduit of Pain is, by default, (1+1)x2 = 4 to each unit; with the doubling first, 1x2+1 = 3.",
+        "test": "699-damage-addition-and-doubling-order.test.ts::CR 708.6a: choosing Powerful first, the damage is doubled and then one is added"
       }
     ],
     "see": [
-      "112.9"
+      "112.9",
+      "708.6a"
     ],
     "sources": {
       "printed": [],
@@ -3083,22 +3084,45 @@
         {
           "ref": "RAQ 1362838395298119912#4",
           "quote": "A: (1+1)x2 damage to each unit = 4 damage to each unit"
+        },
+        {
+          "ref": "RQ 1475287013040062686",
+          "quote": "generally as the owner of all the replacement effects, you can choose the order you'd like to apply them in"
+        },
+        {
+          "ref": "RQ 1475287086247579648",
+          "quote": "which usually would mean doing +1 then doubling"
         }
       ],
       "ours": [],
-      "owner": [],
+      "owner": [
+        {
+          "quote": "For cases where its \"just worse\" *give them the option* to choose, but be like \"Yo, this will be a higher number\".",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (replacement order Q4/Q5: a fixed order whose other order only ever gives less, +1 before doubling and counter amounts before a Counter Thief)"
+        },
+        {
+          "quote": "In 9/10 cases, default is fine, but the option is always there",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (replacement order Q4/Q5, the same answer)"
+        }
+      ],
       "engine": [],
       "tests": [
+        "699-damage-addition-and-doubling-order.test.ts",
         "387-raq-combat.test.ts"
       ]
     },
-    "basis": "designer",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Stated for noncombat damage only: the pool's one additive modifier (Conduit of Pain) excludes combat damage.",
+    "notes": "Stated for noncombat damage only: the pool's one additive modifier (Conduit of Pain) excludes combat damage. Replacement-order round (2026-10-25): the order is the player's (Caleb 2026-02-23), the RAQ's (1+1)x2 the default (owner Q4/Q5).",
     "sourceHashes": {
-      "RAQ 1362838395298119912#4": "17213edf2cc843dab7504dfd0d633bd4f4c5fc3d7997ea9ffc883f4aed2df901"
-    }
+      "RAQ 1362838395298119912#4": "17213edf2cc843dab7504dfd0d633bd4f4c5fc3d7997ea9ffc883f4aed2df901",
+      "RQ 1475287013040062686": "f8de3bf62ef5cdd7b40e8b084a3459fe46315db6cf3b907c1f5e8e1a45cc061d",
+      "RQ 1475287086247579648": "d653aa2a96f338d3095265d9ae542637b3bf472037efca51e14388b641c5b8af"
+    },
+    "digitalClause": "by default the addition is made first and Powerful doubles the result"
   },
   {
     "key": "attr.powerful.noncombat",

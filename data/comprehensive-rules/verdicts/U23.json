@@ -3431,80 +3431,106 @@
   },
   {
     "key": "annexd.general.player-decides.replacement-order",
-    "textHash": "6e3cd1831a61affc",
+    "textHash": "4a016f5c0692b218",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U23-r4",
     "engine": [
       {
+        "loc": "client/engine/src/engine.ts:askReplacement",
+        "agrees": true,
+        "note": "every pick carries value.unit (and value.mod for an [Augment] mod); the default is a first option with no unit"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:orderSeamRun",
+        "agrees": true,
+        "note": "combat/rot seam rewinds and asks before any damage or rot is dealt"
+      },
+      {
         "loc": "client/ui/boardpick.ts:optionSubjects",
         "agrees": true,
-        "note": "Each option names a unit on the board, not a bar button."
+        "note": "unit / mod-badge subjects; board picks are not drawn as prompt-bar buttons"
       },
       {
         "loc": "client/server/view.ts:pendingAskFor",
         "agrees": true,
-        "note": "The other seat gets pendingAsk (that a question is open), decision null."
-      },
-      {
-        "loc": "client/engine/src/engine.ts:E.orderSeamRun",
-        "agrees": true,
-        "note": "Combat and rot questions are asked at the step's seam, before any is dealt; legalActions for the other seat is empty meanwhile."
-      },
-      {
-        "loc": "client/engine/src/engine.ts:E.replaceCombatDamage (askReplacement prompt)",
-        "agrees": true,
-        "note": "The prompt says what is being chosen: which Oorblak takes the damage first."
-      },
-      {
-        "loc": "client/ui/main.ts:decisionBarHtml (onBoard)",
-        "agrees": true,
-        "note": "Options whose subject is on the board are drawn on the board, not as bar buttons."
-      },
-      {
-        "loc": "client/engine/src/apply.ts:decisionBlocks (replaceOrder)",
-        "agrees": true,
-        "note": "An open replaceOrder question blocks both seats, so the other player cannot deploy during the rot question."
+        "note": "the other seat sees pendingAsk, not the decision"
       }
     ],
     "tests_run": [
       {
-        "file": "client/ui/test/473-replacement-order-on-the-board.test.ts",
+        "file": "473-replacement-order-on-the-board.test.ts",
         "pattern": "two Oorblaks: the question is drawn on the board",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/ui/test/473-replacement-order-on-the-board.test.ts",
+        "file": "473-replacement-order-on-the-board.test.ts",
         "pattern": "two Oorblaks: the attacker sees that a question is open",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/ui/test/473-replacement-order-on-the-board.test.ts",
+        "file": "473-replacement-order-on-the-board.test.ts",
         "pattern": "two Skittering Blights at the rot step",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/472-counter-thief-and-rot-order.test.ts",
+        "file": "472-counter-thief-and-rot-order.test.ts",
         "pattern": "CR 708.4a: Poisonous combat damage and two Counter Thieves",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/471-oorblak-order-and-polyp.test.ts",
-        "pattern": "CR 708.4a: two Oorblaks and combat damage — the player being",
+        "file": "471-oorblak-order-and-polyp.test.ts",
+        "pattern": "CR 708.4a: two Oorblaks and combat damage",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "701-replacement-order-picks.test.ts",
+        "pattern": "CR 708.4a: two token replacements",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "701-replacement-order-picks.test.ts",
+        "pattern": "CR 708.4a: the other player sees that a replacement question is open",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "701-replacement-order-picks.test.ts",
+        "pattern": "CR 708.4a: an Automaton augmented onto the Conspirator",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "701-replacement-order-picks.test.ts",
+        "pattern": "CR 708.7: the default is the bar primary button",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/ui/test/zz-probe-U23-1.test.ts",
+        "test": "probe U23-1: default case — only the default is a bar button; the other orders are board picks only",
+        "passed": true,
+        "demonstrates": "yes: with a default (Slime + Counter Thief), option 0 is the bar button and options 1 and 2 are unit picks with no data-btn=\"decide\" button in the bar — 701's own test tolerates either"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "tests (basis engine)",
+        "ref": "owner 2026-10-25 'Sorta like when blocking, how it asks \"Choose your split? Or just use default?\"'",
         "supports": "yes",
-        "note": "No printed/designer/owner source cited; the record is a digital convention backed by code + executed tests."
+        "note": "the default as a one-click button beside the choice"
+      },
+      {
+        "ref": "owner 2026-10-25 'In 9/10 cases, default is fine, but the option is always there'",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
@@ -3514,35 +3540,15 @@
       },
       {
         "file": "client/ui/test/473-replacement-order-on-the-board.test.ts",
-        "text": "assert.equal(view.pendingAsk?.seat, D, 'but that one is open is public');"
-      },
-      {
-        "file": "client/ui/test/473-replacement-order-on-the-board.test.ts",
         "text": "assert.equal(legalActions(h.state, O).length, 0, 'the other player cannot deploy before the rot is dealt');"
       },
       {
-        "file": "client/engine/test/472-counter-thief-and-rot-order.test.ts",
-        "text": "assert.equal(ent(h, blk)!.damage, 0, 'asked before any of the combat damage is dealt');"
+        "file": "client/ui/test/701-replacement-order-picks.test.ts",
+        "text": "assert.deepEqual(subs[aoaOpt], { at: 'mod', id: mod, host: cc }, 'read as the mod badge');"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "? `Which ${faces[0]} takes the ${left} combat damage first?`"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "`Your ${n} rot would deal ${n} damage to you — which card replaces it?`,"
-      },
-      {
-        "file": "client/ui/main.ts",
-        "text": "const onBoard = (i: number): boolean => !!subs[i] && isBoard(subs[i]!);"
-      },
-      {
-        "file": "client/server/view.ts",
-        "text": "if (asker === undefined || asker === seat || frozenOpp) return null;"
-      },
-      {
-        "file": "client/engine/src/apply.ts",
-        "text": "if (s.suspension?.type === 'replaceOrder') return true;"
+        "file": "client/engine/test/471-oorblak-order-and-polyp.test.ts",
+        "text": "assert.deepEqual(r.after().damage, [0, 0], 'nothing has been dealt while the question is open');"
       }
     ],
     "basis_ok": true,

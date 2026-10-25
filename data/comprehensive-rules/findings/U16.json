@@ -7,7 +7,7 @@
     "evidence": [
       {
         "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
-        "quote": "CR 720.9 Suppression Field: mods leave host and game, the host lives, and the pile is untouched"
+        "quote": "CR 720.9 Suppression Field: mods leave host and game, the host lives, and the erased pile files them"
       },
       {
         "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
@@ -18,7 +18,8 @@
         "quote": "`E.eraseMod` files the pile now, so the ruling is one line at one site — which"
       }
     ],
-    "ct": "CT-235"
+    "ct": "CT-235",
+    "closed": "fixed on 2026-10-25 (CT-235, pd-paper 149d1217): the 178 titles state the erased-pile behaviour the bodies assert (CR 720.9)."
   },
   {
     "id": "F-U16-2",

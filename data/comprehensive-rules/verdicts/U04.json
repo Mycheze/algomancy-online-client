@@ -2003,63 +2003,103 @@
   },
   {
     "key": "concepts.damage.amount-order",
-    "textHash": "99377d5b0e759aca",
+    "textHash": "0ad250fe8142db15",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U04-r1",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.dealEffectDamageAll",
+        "loc": "client/engine/src/engine.ts:damage order seam (CR 708.6a)",
         "agrees": true,
-        "note": "amountDelta (Conduit) then Powerful x2, then Vulnerable receive-side mult"
+        "note": "asks the dealer, default additions first labelled the higher number; different controllers ordered initiative first with no question"
       }
     ],
     "tests_run": [
       {
+        "file": "699-damage-addition-and-doubling-order.test.ts",
+        "pattern": "CR 708.6a: Conduit of Pain and Powerful, the default is the addition first",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "699-damage-addition-and-doubling-order.test.ts",
+        "pattern": "CR 708.6a: choosing Powerful first",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "699-damage-addition-and-doubling-order.test.ts",
+        "pattern": "CR 708.4a: Conduit of Pain and an Arbiter of Vitality of the other player",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "415-cr-costs-life-timestamps.test.ts",
+        "pattern": "cr:concepts.damage.amount-order",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
         "file": "387-raq-combat.test.ts",
-        "pattern": "RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles — a Powerful Bellowing Boulder deals (1+1)x2 = 4 to each unit",
+        "pattern": "RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
-        "title": "concepts.damage.amount-order: Conduit adds, Powerful doubles, then a Vulnerable recipient takes double",
-        "passed": true,
-        "demonstrates": "yes — 4 on a plain unit, 8 on a Vulnerable one"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "RAQ 1362838395298119912#4",
         "supports": "yes",
-        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees"
+        "note": "[Solved], claim status covered, _passer"
       },
       {
-        "ref": "R316",
+        "ref": "RQ 1475287013040062686",
+        "supports": "yes",
+        "note": "Caleb: the owner of all the replacement effects chooses the order"
+      },
+      {
+        "ref": "RQ 1475287086247579648",
         "supports": "yes",
         "note": ""
       },
       {
-        "ref": "R103 (its order-of-operations arithmetic)",
+        "ref": "RQ 1475287265080119389",
         "supports": "yes",
-        "note": "Vulnerable is receive-side"
+        "note": ""
+      },
+      {
+        "ref": "owner register@72de434 (additive modifiers / Vulnerable receive-side)",
+        "supports": "yes",
+        "note": "words as given"
+      },
+      {
+        "ref": "owner 2026-10-25 Q4/Q5",
+        "supports": "yes",
+        "note": "option with a default that says it is the higher number"
+      },
+      {
+        "ref": "owner 2026-10-25 Q1 'Each owner, INT first'",
+        "supports": "yes",
+        "note": "different controllers"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "// once, AFTER the additive modifiers (R316) and before Electric"
+        "file": "client/ledgers/raq.ts",
+        "text": "Conduit of Pain adds its 1 BEFORE Powerful doubles: a Powerful Bellowing Boulder's 1 deals (1+1)x2 = 4."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "additive modifiers (Conduit of Pain's"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "generally as the owner of all the replacement effects, you can choose the order you'd like to apply them in"
+      },
+      {
+        "file": "client/engine/test/415-cr-costs-life-timestamps.test.ts",
+        "text": "  assert.equal(ent(h, wall)!.damage, 8, 'and the Vulnerable unit is dealt double that: 8');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.damage.basics",

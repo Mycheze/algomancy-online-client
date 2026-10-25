@@ -1950,19 +1950,31 @@
     "key": "combat.damage.dealing.deaths",
     "parent": "combat.damage.dealing",
     "order": 2,
-    "text": "After a sub-step's damage has been dealt, units with lethal damage, and units dealt damage by a Deadly source, are destroyed before the next sub-step begins.",
+    "text": "After a sub-step's damage has been dealt, units with lethal damage (as an Unaware or Pure interaction reads it, where one applies: 802.9e, 802.25e) and units dealt damage by a Deadly source are destroyed before the next sub-step begins. They are destroyed together, in one batch (713.6), once all of the sub-step's damage, to units and to players, has been dealt.",
     "examples": [
       {
         "text": "A Swift half-column destroys its 2/2 blocker in the Swift sub-step; the blocker never strikes back in the normal sub-step.",
         "test": "02-combat.test.ts::Swift: swift column deals damage first"
+      },
+      {
+        "text": "In one sub-step a Deadly column deals 1 to a Rubbish token while two other columns deal lethal damage to an Ancient One and another Rubbish token beside it. All three die in one batch, and the Ancient One borrows both neighbours' \"when I die\" abilities.",
+        "test": "680-deadly-deaths-one-batch.test.ts::CR 608.7b, 713.6 / CT-413: a Deadly kill and two lethal-damage kills in one combat sub-step are one batch, so the Ancient One borrows both when-I-die lines"
       }
     ],
     "see": [
       "713",
-      "802.3"
+      "713.6",
+      "802.25e",
+      "802.3",
+      "802.9e"
     ],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "Every damage exchange happens at the same time"
+        }
+      ],
       "designer": [],
       "ours": [],
       "owner": [
@@ -1985,13 +1997,14 @@
       "engine": [],
       "tests": [
         "02-combat.test.ts",
-        "239-damage-triggers-after-combat.test.ts"
+        "239-damage-triggers-after-combat.test.ts",
+        "680-deadly-deaths-one-batch.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "CT-413 (2026-10-25): Deadly, collapsed (Unaware) and Pure victims used to be destroyed one at a time before the lethal-damage deaths; they now share the sub-step's one state check and die in one batch with them, after the sub-step's player damage. 608.7 (\"Every damage exchange happens at the same time\") and 713.6 give the batch.",
     "sourceHashes": {}
   },
   {

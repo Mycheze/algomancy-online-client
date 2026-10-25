@@ -2243,20 +2243,32 @@
   },
   {
     "key": "attr.powerful.additive",
-    "textHash": "606da9f560fb6d90",
+    "textHash": "b70e0825254cedf8",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "loc": "client/engine/src/engine.ts:effect damage additions-then-Powerful with the CR 708.6a order question",
         "agrees": true,
-        "note": "amountDelta (Conduit) applied before the Powerful doubling"
+        "note": "default is the addition first; the dealer controlling both is asked and may choose Powerful first"
       }
     ],
     "tests_run": [
       {
-        "file": "387-raq-combat.test.ts",
+        "file": "client/engine/test/699-damage-addition-and-doubling-order.test.ts",
+        "pattern": "CR 708.6a: Conduit of Pain and Powerful, the default is the addition f",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/699-damage-addition-and-doubling-order.test.ts",
+        "pattern": "CR 708.6a: choosing Powerful first, the damage is doubled and then one",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/387-raq-combat.test.ts",
         "pattern": "RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles",
         "passed": true,
         "asserts_claim": true
@@ -2267,22 +2279,40 @@
       {
         "ref": "RAQ 1362838395298119912#4",
         "supports": "yes",
-        "note": ""
+        "note": "[Solved] write-up, status covered: (1+1)x2 = 4"
       },
       {
-        "ref": "R316",
+        "ref": "RQ 1475287013040062686",
         "supports": "yes",
-        "note": ""
+        "note": "calebgannon: the owner of all the replacement effects chooses their order"
+      },
+      {
+        "ref": "RQ 1475287086247579648",
+        "supports": "yes",
+        "note": "calebgannon: usually +1 then doubling (the default)"
+      },
+      {
+        "ref": "owner 2026-10-25 Q4/Q5",
+        "supports": "yes",
+        "note": "give the option, default fine"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "* ORDER: the additive modifiers come FIRST, then {Powerful} doubles the"
+        "file": "client/ledgers/raq.ts",
+        "text": "A: (1+1)x2 damage to each unit = 4 damage to each unit"
       },
       {
-        "file": "client/ledgers/raq.ts",
-        "text": "(1+1)x2 damage to each unit = 4 damage to each unit"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "generally as the owner of all the replacement effects, you can choose the order you'd like to apply them in"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "which usually would mean doing +1 then doubling"
+      },
+      {
+        "file": "client/engine/test/699-damage-addition-and-doubling-order.test.ts",
+        "text": "assert.deepEqual(r.w.map(id => ent(r.h, id)!.damage), [3, 3], '1x2+1 to each unit');"
       }
     ],
     "basis_ok": true,
@@ -3475,24 +3505,24 @@
     "key": "attr.unaware.death",
     "textHash": "2931aaf8b98fb4e3",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:sweepCollapsedDeaths",
+        "loc": "client/engine/src/engine.ts:collapsedVictims",
         "agrees": true,
-        "note": "kills participants whose printed defense is met"
+        "note": "kills by printed defense after a collapsed exchange"
       }
     ],
     "tests_run": [
       {
-        "file": "92-unaware.test.ts",
+        "file": "client/engine/test/92-unaware.test.ts",
         "pattern": "\"Bubb blocking a Robot token would kill it",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "92-unaware.test.ts",
+        "file": "client/engine/test/92-unaware.test.ts",
         "pattern": "\"Haboob kills anything that has 1 defense printed at the card level\"",
         "passed": true,
         "asserts_claim": true
@@ -3501,15 +3531,24 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R106",
+        "ref": "owner register@72de434 (Unaware reads only printed)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner register@72de434 (Haboob kills printed-1)",
         "supports": "yes",
         "note": ""
       }
     ],
     "quote_spans": [
       {
+        "file": "client/engine/test/92-unaware.test.ts",
+        "text": "assert.ok(!ent(h, pumped), '1 printed defense: dead, whatever the counters say');"
+      },
+      {
         "file": "client/engine/src/engine.ts",
-        "text": "private sweepCollapsedDeaths(ids: Iterable<EntityId>): void {"
+        "text": "const [p, t] = this.printedStats(u);"
       }
     ],
     "basis_ok": true,

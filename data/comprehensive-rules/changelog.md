@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1844 rules and 99 sections.
+- New: 1846 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -1098,6 +1098,8 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 713.6 `effects.state.together`
   - 713.6a `effects.state.together.limits`
   - 713.6b `effects.state.together.delete-all`
+  - 713.6c `effects.state.together.one-damage`
+  - 713.6d `effects.state.together.sacrifices`
   - 713.7 `effects.state.absent`
   - 713.7a `effects.state.absent.home`
   - 713.8 `effects.state.dying`

@@ -1629,7 +1629,7 @@
     "key": "concepts.ending.elimination.immediate",
     "parent": "concepts.ending.elimination",
     "order": 1,
-    "text": "A player brought to 0 or less by an effect is not eliminated until that effect has finished: every life change one resolution of one effect makes (the unit damage is dealt in, 112.8) is applied first, and only then are the life totals checked. All the life changes of one combat damage sub-step are applied together in the same way, Lethal kills included (802.24a), and checked after all of them. Any other life change, such as rot damage, is checked the moment it happens; rot is dealt one player at a time, in initiative order, and is never simultaneous (112.13). A life cost that would by itself bring its payer to 0 cannot be paid at all (111).",
+    "text": "A player brought to 0 or less by an effect is not eliminated until that effect has finished: every life change one resolution of one effect makes (the unit damage is dealt in, 112.8) is applied first, and only then are the life totals checked. All the life changes of one combat damage sub-step are applied together in the same way, Lethal kills included (802.24a), and checked after all of them. A player who runs out of cards during such an effect or sub-step has not lost until it has finished either, and is judged with the life totals then (104.5a, 104.5b). Any other life change, such as rot damage, is checked the moment it happens; rot is dealt one player at a time, in initiative order, and is never simultaneous (112.13). A life cost that would by itself bring its payer to 0 cannot be paid at all (111).",
     "examples": [
       {
         "text": "Both players are at 1 life and Penance brings each of them to 0. Neither is eliminated until the effect has finished, and then both are at 0 together (104.1b).",
@@ -1677,6 +1677,11 @@
           "from": "owner, chat 2026-10-25 (CT-409: one effect brings both players to 0 life or less)"
         },
         {
+          "quote": "Check both at the end",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (CT-418: one effect brings your opponent to 0 and then makes you draw from an empty deck and an empty recycle pile; who wins?)"
+        },
+        {
           "quote": "⚠ **May a life cost be paid if it would kill you? No.** You may pay N life only",
           "adopted": "2026-08-19",
           "from": "register@72de434"
@@ -1684,13 +1689,15 @@
       ],
       "engine": [],
       "tests": [
-        "654-simultaneous-loss.test.ts"
+        "654-simultaneous-loss.test.ts",
+        "684-deck-out-judged-with-life.test.ts",
+        "412-cr-general.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "CT-409 (2026-10-25). Replaces \"A life total reaching 0 ends the game at once, even in the middle of resolving an effect … Nothing waits for the effect to finish\" (owner 2026-08-19/26, register), which described the engine of the time. The owner, asked what happens when one effect brings both players to 0: \"Highest total, tie: INT loses\" — which needs every life change of the effect applied before anyone is out. The unit is one resolution of one effect (the unit 112.8 deals damage in and 708.9 creates tokens in) and one combat damage sub-step (Caleb's case: both players dying \"in the same combat step\"). Rot is excluded by the designer: \"initiative takes their deployment first and dies\" … \"But rot isn't simultaneous\" (2026-08-28). The life-cost clause keeps the owner's 2026-08-19 call (111). 412 \"cr:concepts.ending.elimination.immediate — … the rest of the effect never runs\" is no longer listed: it calls the effect outside the resolution path (no life batch), so its title states the retired rule (round-4 verifier, 2026-10-25). It needs a new title or body.",
+    "notes": "CT-409 (2026-10-25). Replaces \"A life total reaching 0 ends the game at once, even in the middle of resolving an effect … Nothing waits for the effect to finish\" (owner 2026-08-19/26, register), which described the engine of the time. The owner, asked what happens when one effect brings both players to 0: \"Highest total, tie: INT loses\" — which needs every life change of the effect applied before anyone is out. The unit is one resolution of one effect (the unit 112.8 deals damage in and 708.9 creates tokens in) and one combat damage sub-step (Caleb's case: both players dying \"in the same combat step\"). Rot is excluded by the designer: \"initiative takes their deployment first and dies\" … \"But rot isn't simultaneous\" (2026-08-28). The life-cost clause keeps the owner's 2026-08-19 call (111). 412 \"cr:concepts.ending.elimination.immediate — … the rest of the effect never runs\" is no longer listed: it calls the effect outside the resolution path (no life batch), so its title states the retired rule (round-4 verifier, 2026-10-25). pd-paper (2026-10-25) rewrote it: it now asserts this rule and is listed in tests. CT-418 (2026-10-25): a deck-out inside the effect waits too; the owner, asked who wins when one effect takes the opponent to 0 and then decks the caster: \"Check both at the end\".",
     "sourceHashes": {
       "RQ 1348854126699614248": "1128ac26d0faef75a906ab34da44312c52450197dc9cd14dd0d4e8978c91c6bf",
       "RQ 1542923825904099349": "06dcd00ff2501fd23b206df64b8102ed085aebd4047d11f6fe514c5b2b491d98",
@@ -2036,7 +2043,7 @@
     "key": "concepts.ending.deck-out.constructed",
     "parent": "concepts.ending.no-deck-out",
     "order": 1,
-    "text": "In constructed, the player who ran out of cards loses the game, whatever the life totals. A Single Card Duel is constructed for this rule (D8.2).",
+    "text": "In constructed, the player who ran out of cards loses the game, whatever the life totals. A Single Card Duel is constructed for this rule (D8.2). A player who runs out of cards during an effect has not lost until that effect has finished, as with a life total of 0 (104.1a). When it has finished, each player who ran out of cards and each player at 0 or less has lost; if that is both players, 104.1b decides the game on the life totals.",
     "examples": [
       {
         "text": "A constructed player at 25 life has to draw with an empty deck and an empty recycle pile while the opponent is at 3. The player who had to draw loses.",
@@ -2045,9 +2052,23 @@
       {
         "text": "The card step at the start of a turn is a draw too: from an empty deck and pile it ends the game.",
         "test": "656-deck-out.test.ts::CR 104.5 / CT-385: in constructed the card step from an empty deck and pile ends the game at the start of the turn"
+      },
+      {
+        "text": "In constructed, a player resolves an effect that takes the opponent from 1 to 0 and then has to draw from an empty deck and an empty recycle pile. When the effect has finished both players have lost, and the caster, on the higher life total, wins.",
+        "test": "684-deck-out-judged-with-life.test.ts::CR 104.5, 104.1b / CT-418: one effect takes the opponent to 0 and decks the caster -- both lost, and the higher life total (the caster) wins"
+      },
+      {
+        "text": "The same effect brings both players to 0 and decks the caster: both have lost, the totals are equal, and the initiative player loses.",
+        "test": "684-deck-out-judged-with-life.test.ts::CR 104.5, 104.1b / CT-418: both players brought to 0 and the caster decked in one effect -- equal totals, the initiative player loses"
+      },
+      {
+        "text": "A player runs out of cards during an effect and nobody is at 0: the effect finishes, and then that player loses.",
+        "test": "684-deck-out-judged-with-life.test.ts::CR 104.5a / CT-418: a deck-out inside an effect with nobody at 0 -- the decked player still loses, once the effect has finished"
       }
     ],
     "see": [
+      "104.1a",
+      "104.1b",
       "D8.2"
     ],
     "sources": {
@@ -2078,16 +2099,22 @@
           "quote": "Constructed is lose when draw with nothing. Same woth single card. But challenges are excempt",
           "adopted": "2026-10-25",
           "from": "owner, chat 2026-10-25 (CT-385: which games running out of cards ends)"
+        },
+        {
+          "quote": "Check both at the end",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (CT-418: one effect brings your opponent to 0 and then makes you draw from an empty deck and an empty recycle pile; who wins?)"
         }
       ],
       "tests": [
-        "656-deck-out.test.ts"
+        "656-deck-out.test.ts",
+        "684-deck-out-judged-with-life.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The designer for constructed (2025-04-01, 2025-08-04); the owner for Single Card Duel (\"Same woth single card\", 2026-10-25).",
+    "notes": "The designer for constructed (2025-04-01, 2025-08-04); the owner for Single Card Duel (\"Same woth single card\", 2026-10-25). CT-418 (2026-10-25): the deck-out inside an effect waits for the effect and is judged with the life totals; the owner, asked \"Constructed: one effect brings your opponent to 0 and then makes you draw from an empty deck … Who should win?\": \"Check both at the end\". No designer word on a deck-out and a life loss in one effect was found (pm-engine searched the export). Outside an effect (the card step, a bare draw) the deck-out still ends the game at once.",
     "sourceHashes": {
       "RQ 1356616873655140546": "37dcd0764727290b18383b946f8c3f942c3a12dfd2335b013351f00be49de75b",
       "RQ 1402038431659593859": "6473b7ce0a1a6290de113756afa7488745cf32d1482f13da299bfa7de3b0dfe8",
@@ -2098,7 +2125,7 @@
     "key": "concepts.ending.deck-out.shared-deck",
     "parent": "concepts.ending.no-deck-out",
     "order": 2,
-    "text": "With a shared deck (live draft), running out of cards ends the game, and the player with the higher life total wins, even if that is the player who had to draw. If the life totals are equal, the initiative player loses.",
+    "text": "With a shared deck (live draft), running out of cards ends the game, and the player with the higher life total wins, even if that is the player who had to draw. If the life totals are equal, the initiative player loses. A shared deck that runs out during an effect ends the game once that effect has finished (104.1a), and the life totals are compared then, a player at 0 or less included.",
     "examples": [
       {
         "text": "In a live draft the shared deck runs out when a player at 12 life has to draw against an opponent at 9. The game ends, and the player at 12 wins.",
@@ -2107,6 +2134,10 @@
       {
         "text": "If the two players are on the same life total, the initiative player loses.",
         "test": "656-deck-out.test.ts::CR 104.5 / CT-385: a live-draft deck-out with the life totals tied goes against the initiative player"
+      },
+      {
+        "text": "In a live draft one effect takes a player to 0 and then the shared deck runs out: when the effect has finished the game ends, and the higher life total wins.",
+        "test": "684-deck-out-judged-with-life.test.ts::CR 104.5b / CT-418: with a shared deck the deck-out inside an effect is decided on life totals, the player on 0 included"
       }
     ],
     "see": [
@@ -2136,10 +2167,16 @@
           "quote": "INT player loses",
           "adopted": "2026-10-25",
           "from": "owner, chat 2026-10-25 (CT-385: a live-draft game whose shared deck runs out with the life totals tied)"
+        },
+        {
+          "quote": "Check both at the end",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (CT-418: one effect brings your opponent to 0 and then makes you draw from an empty deck and an empty recycle pile; who wins?)"
         }
       ],
       "tests": [
-        "656-deck-out.test.ts"
+        "656-deck-out.test.ts",
+        "684-deck-out-judged-with-life.test.ts"
       ]
     },
     "basis": "mixed",

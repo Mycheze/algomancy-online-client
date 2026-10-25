@@ -43,14 +43,15 @@
     "evidence": [
       {
         "file": "client/engine/test/12-fire-a.test.ts",
-        "quote": "test('Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing', () => {"
+        "quote": "test('CR 702.2a Abyssal Evocation: a bin-played card obeys its PRINTED timing (settled by the owner on 2026-08-25, Already correct)', () => {"
       }
     ],
     "ct": "CT-238",
     "dupes": [
       "F-U14-4",
       "F-U21-1"
-    ]
+    ],
+    "closed": "fixed on 2026-10-25 (CT-238, pd-paper 7bb063e3): the 12-fire-a title states the owner's 2026-08-25 answer (CR 702.2a) and is no longer marked OPEN."
   },
   {
     "id": "F-U07-4",
@@ -60,17 +61,18 @@
     "evidence": [
       {
         "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
-        "quote": "test('CR 720.9 Slag Spewer: an erase paid as a COST still announces itself with \"info\" — Q3 is OPEN', () => {"
+        "quote": "test('CR 720.9 Slag Spewer: an erase paid as a COST announces itself with a real erased event and files the erased pile', () => {"
       },
       {
         "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
-        "quote": "test('CR 720.9 Suppression Field: mods leave host and game, the host lives, and the pile is untouched', () => {"
+        "quote": "test('CR 720.9 Suppression Field: mods leave host and game, the host lives, and the erased pile files them', () => {"
       }
     ],
     "ct": "CT-235",
     "dupes": [
       "F-U16-1"
-    ]
+    ],
+    "closed": "fixed on 2026-10-25 (CT-235, pd-paper 149d1217): the 178 titles state the erased-pile behaviour the bodies assert (CR 720.9)."
   },
   {
     "id": "F-U07-5",
@@ -101,7 +103,7 @@
     "evidence": [
       {
         "file": "client/engine/test/224-mod-trash.test.ts",
-        "quote": "test('CT-246 GUARD (engine; CR 801.2h says not trashed): the BODY of an Unstable unit that dies is still trashed, mods or no mods', () => {"
+        "quote": "test('CT-246 GUARD (CR 801.2h: an Unstable card that dies is still trashed): the BODY of an Unstable unit that dies is trashed, mods or no mods', () => {"
       }
     ],
     "ct": "CT-246",

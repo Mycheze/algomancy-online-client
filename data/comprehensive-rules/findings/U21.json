@@ -7,14 +7,15 @@
     "evidence": [
       {
         "file": "client/engine/test/12-fire-a.test.ts",
-        "quote": "test('Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing', () => {"
+        "quote": "test('CR 702.2a Abyssal Evocation: a bin-played card obeys its PRINTED timing (settled by the owner on 2026-08-25, Already correct)', () => {"
       },
       {
         "file": "client/docs/digital-rules.md",
         "quote": "⚠ **R157 §12 rules the opposite: a bin-play grant does NOT waive printed"
       }
     ],
-    "ct": "CT-238"
+    "ct": "CT-238",
+    "closed": "fixed on 2026-10-25 (CT-238, pd-paper 7bb063e3): the 12-fire-a title states the owner's 2026-08-25 answer (CR 702.2a) and is no longer marked OPEN."
   },
   {
     "id": "F-U21-2",

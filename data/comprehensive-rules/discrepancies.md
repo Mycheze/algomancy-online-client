@@ -6,7 +6,7 @@ Every place where the sources disagree, the register contradicts itself, or a ru
 
 None.
 
-## 2. Record and test fixes (65)
+## 2. Record and test fixes (66)
 
 ### D-U01-10 · Other · rule 102.4
 
@@ -434,9 +434,9 @@ The owner ruling of 2026-08-25 (“a blocked column stays blocked, however…”
 The RAQ register's note on the Swift-gains-Sluggish claim says the engine keeps no strike memory; the owner ruling of 2026-10-09 (“A column remembers the damage sub-step…”) added it.
 
 - RAQ 1363298910528864318#2: "It's still possible to give this column Sluggish attribute and it will deal damage during sluggish-combat-damage (for effective doublestrike)"
-- file: client/ledgers/raq.ts: "Green today only because the engine keeps NO strike memory at all."
+- file: client/ledgers/raq.ts: "The engine keeps strike memory (CR 608.2e, since 2026-10-09)"
 
-**Resolution:** The register note is stale: The owner ruling of 2026-10-09 (“A column remembers the damage sub-step…”) is the strike memory it was waiting for, and the owner ruling of 2026-10-09 (“A column remembers the damage sub-step…”) says a Swift mark bars only normal damage, so the double strike is now held by rule. Update the note in client/ledgers/raq.ts. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]
+**Resolution:** The register note is stale: The owner ruling of 2026-10-09 (“A column remembers the damage sub-step…”) is the strike memory it was waiting for, and the owner ruling of 2026-10-09 (“A column remembers the damage sub-step…”) says a Swift mark bars only normal damage, so the double strike is now held by rule. Update the note in client/ledgers/raq.ts. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.] Done on 2026-10-25 (CT-236, pd-paper 4ea1dc75): the note now says the engine keeps strike memory and cites CR 608.2e.
 
 ### D-U12-18 · Other · rule 608.2a
 
@@ -545,6 +545,21 @@ When two effects could each replace or redirect the same event, only one applies
 
 **Resolution:** Answered by the owner on 2026-10-16: asked who orders replacement effects whose order changes the outcome, he chose "Ask the player now", after Caleb (rules-questions 2025-11-25): "you the player control how they stack". The player the event affects chooses the order (rule 708.4a); the entity-id order is retired, and with two Counter Thieves the counters end on the second to apply ("On the second Thief").
 
+### D-U15-4 · Owner call only · rule 708.6a
+
+The order "add, then double" is the designer's for damage and {Powerful} (the owner ruling of 2026-10-09 (“Additive damage modifiers apply before {Powerful}…”), from the RAQ). For a life-total multiplier (Arbiter of Vitality) beside an additive modifier, the owner ruling of 2026-08-30 (“multipliers are exponential (round-32 Q4)”) says the composition is still unruled and the engine's order is an interim decision.
+
+*Also filed as D-U04-6 (rule 112.3).*
+
+- owner ruling, adopted 2026-10-09: "> "Bellowing Boulder with Powerful and Conduit of Pain: (1+1)x2 damage to each unit ="
+- owner ruling, adopted 2026-08-30: "**⚠ THE ADDITIVE COMPOSITION IS STILL UNRULED, and Q4 asked about it.** R157 §23"
+- RAQ 1362838395298119912#4: "Conduit of Pain adds its 1 BEFORE Powerful doubles"
+- RQ 1475287013040062686: "generally as the owner of all the replacement effects, you can choose the order you'd like to apply them in"
+- RQ 1475287086247579648: "which usually would mean doing +1 then doubling"
+- owner ruling, adopted 2026-10-25: "For cases where its "just worse" *give them the option* to choose, but be like "Yo, this will be a higher number"."
+
+**Resolution:** Settled on 2026-10-25. Caleb (rules-questions 2026-02-23): "as the owner of all the replacement effects, you can choose the order you'd like to apply them in", "which usually would mean doing +1 then doubling" "for max damage" — for damage and for a life multiplier alike. The owner (replacement order Q4/Q5) keeps the choice and makes the higher number a one-click default; between players, Q1 "Each owner, INT first". rule 708.6a, rule 112.9 and rule 802.10b state it; the engine asks (699).
+
 ### D-U15-7 · Ruling chain wrong · rule 706.11
 
 The owner ruling of 2026-08-23 (“The static → effect-attribute channel (EffectAttrMod)…”) is presented as current, but its "OPEN" section says the engine computes the {Resonant} rider from the undoubled amount and that this was deliberately not changed. The owner ruling of 2026-10-09 (“{Resonant} is its source's trigger: damage…”) later made the rider damage from the source, so {Powerful} doubles it (the RAQ's 2/4 Powerful Resonant deals 8 to the face). The owner ruling of 2026-08-23 (“The static → effect-attribute channel (EffectAttrMod)…”) carries no partial-supersession mark.
@@ -647,10 +662,10 @@ The owner ruling of 2026-08-23 (“STAT LAYER 6, {Unaware}: everything in…”)
 
 The RAQ register's note on the Containment Protocol claim says Resonant never waits on the stack. Since the owner ruling of 2026-10-09 (“{Resonant} is its source's trigger: damage…”) the Resonant trigger does go on the stack, so the note is stale.
 
-- file: client/ledgers/raq.ts: "Resonant never waits on the stack, so there is nothing to negate."
+- file: client/ledgers/raq.ts: "Resonant waits on the stack too (CR 706.11, since 2026-10-09), and the engine negates it"
 - owner ruling, adopted 2026-10-09: "the resonant source**, put on the stack as that source's trigger — not life loss"
 
-**Resolution:** Register fix: update the note on RAQ 1366446116274442291#2 to say the Resonant trigger waits on the stack (owner ruling of 2026-10-09, “{Resonant} is its source's trigger: damage…”) and would be negated by the engine.
+**Resolution:** Register fix: update the note on RAQ 1366446116274442291#2 to say the Resonant trigger waits on the stack (owner ruling of 2026-10-09, “{Resonant} is its source's trigger: damage…”) and would be negated by the engine. Done on 2026-10-25 (CT-236, pd-paper 4ea1dc75): the note now says the Resonant trigger waits on the stack (CR 706.11) and is negated (399).
 
 ### D-U20-8 · Other · rule 802.17e
 
@@ -745,7 +760,7 @@ The owner ruling of 2026-08-30 (“nothing may exist only in the…”) still sa
 
 **Resolution:** Mark the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s closing count as answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) in the register ("its log-only count answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”)"); CT-236 tracks the stale sentence. The rules follow the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) (rule D7.4b). rule D7.4 states the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s standard; its engine-differs marker for F-U24-4 (CT-236) has been dropped, because the toast tier gives every such announcement a surface. D-U24-9 is this item from the rule's side: its count of nineteen against the inventory test's 21 is the same stale sentence. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]
 
-## 3. Engine-only and owner-only rules (85)
+## 3. Engine-only and owner-only rules (84)
 
 ### D-U01-13 · Engine only · rule 103.3a
 
@@ -1213,18 +1228,6 @@ The owner ruling of 2026-10-09 (“Every target is re-checked against its…”)
 - owner ruling, adopted 2026-08-19: "never what will still be true later. Redirection, death, region changes and"
 
 **Resolution:** Engine decides. The rule states only the owner ruling of 2026-10-09 (“Every target is re-checked against its…”)’s legality exception; the leaving-play case is left to the engine until a source speaks.
-
-### D-U15-4 · Owner call only · rule 708.6a
-
-The order "add, then double" is the designer's for damage and {Powerful} (the owner ruling of 2026-10-09 (“Additive damage modifiers apply before {Powerful}…”), from the RAQ). For a life-total multiplier (Arbiter of Vitality) beside an additive modifier, the owner ruling of 2026-08-30 (“multipliers are exponential (round-32 Q4)”) says the composition is still unruled and the engine's order is an interim decision.
-
-*Also filed as D-U04-6 (rule 112.3).*
-
-- owner ruling, adopted 2026-10-09: "> "Bellowing Boulder with Powerful and Conduit of Pain: (1+1)x2 damage to each unit ="
-- owner ruling, adopted 2026-08-30: "**⚠ THE ADDITIVE COMPOSITION IS STILL UNRULED, and Q4 asked about it.** R157 §23"
-- RAQ 1362838395298119912#4: "Conduit of Pain adds its 1 BEFORE Powerful doubles"
-
-**Resolution:** The rule states one order for both, add first and then double, which is the designer's order for damage and the engine's interim order for life. Question for the owner only if the RAQ order for {Powerful} is not meant to carry over to Arbiter of Vitality.
 
 ### D-U16-10 · Engine only · rule 710.8d
 

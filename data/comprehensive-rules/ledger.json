@@ -1169,6 +1169,8 @@
     {"num":"713.6","key":"effects.state.together","since":"First generation (draft)"},
     {"num":"713.6a","key":"effects.state.together.limits","since":"First generation (draft)"},
     {"num":"713.6b","key":"effects.state.together.delete-all","since":"First generation (draft)"},
+    {"num":"713.6c","key":"effects.state.together.one-damage","since":"First generation (draft)"},
+    {"num":"713.6d","key":"effects.state.together.sacrifices","since":"First generation (draft)"},
     {"num":"713.7","key":"effects.state.absent","since":"First generation (draft)"},
     {"num":"713.7a","key":"effects.state.absent.home","since":"First generation (draft)"},
     {"num":"713.8","key":"effects.state.dying","since":"First generation (draft)"},
