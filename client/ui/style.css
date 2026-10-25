@@ -4400,6 +4400,27 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .linfo .seenhand, .linfo .lspect { grid-column: 1 / -1; }
 /* a spectator sees the top seat's whole hand: one row, clipped, never taller */
 .linfo .lspect .zone { flex-wrap: nowrap; overflow: hidden; }
+/* CT-368: …in a column of its own, the block's whole height. As a fourth row
+   under the name, the resources and the hand line it got what those three
+   left of the block — 20 to 30px at 1440x900, its cards a sliver. Now it
+   stands between them and the cache and bin, as tall as the block (the last
+   row takes the slack, so the column spans all of it), each card as wide as
+   that height allows up to the hand dock's 92px, and narrower together when
+   the hand is long. Only when
+   it is drawn (:has), so a player's own board does not move by a pixel. */
+.linfo.theirs > .lin:has(> .lspect) {
+  grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-areas: "id spect cache bin" "res spect cache bin" "hand spect cache bin"; }
+@container (max-height: 132px) {
+  .linfo.theirs > .lin:has(> .lspect) {
+    grid-template-columns: auto auto minmax(0, 1fr) auto auto; grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: "id hand spect cache bin" "res res spect cache bin"; }
+}
+.linfo .lspect { grid-area: spect; align-self: stretch; min-height: 0; container-type: size;
+  display: flex; flex-direction: column; }
+.linfo .lspect > .zonelabel { margin-top: 0; flex: none; }
+.linfo .lspect > .zone { flex: 1 1 0; min-height: 0; margin-top: 2px; gap: 4px; }
+.linfo .lspect > .zone > .card { flex: 0 1 min(92px, calc((100cqh - 18px) / 1.4)); width: auto; min-width: 0; }
 .linfo .regionbin, .linfo .regioncache { border-left: 0; padding-left: 0; width: auto; }
 /* the bin keeps clear of the block's edges (owner, 2026-09-27: "The border of
    the bin needs a buffer. Cards overlap with it"): the 56px fan was taller
