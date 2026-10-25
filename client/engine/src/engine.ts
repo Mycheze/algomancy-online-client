@@ -8694,18 +8694,31 @@ export class E {
    * options (answered before anything can leave a bin) and never a
    * suspension's answers or snapshot (a replay re-runs from the snapshot).
    * Each ref object is adjusted once, however many paths reach it.
+   *
+   * CR 405.6b / CT-415 — AND THE COPY AN EVENT NAMES FOLLOWS IT TOO. A 'died' or
+   * 'trashed' event stamps `binNth` (with `card` and `binSeat ?? seat`): the
+   * copy the event's card is in that bin, read back by `eventBinSlot` when a
+   * waiting responder resolves (Biomass Devourer, Cthyrian Rector, Murkdrop
+   * Distiller) and by `notSelfBinCard`. The stamp is the same (name, nth)
+   * identity as a BinRef and slides the same way, so the events held by the
+   * same live items, by the trigger queue and by a pay-to-trigger gate are
+   * re-indexed here by the same rule. Each event data object once.
    */
   private reindexBinRefs(seat: Seat, card: CardName, removedNth: number): void {
     const items = new Set<StackItem>(this.liveItems);
     const add = (it: StackItem | null | undefined): void => { if (it) items.add(it); };
+    const events = new Set<Record<string, unknown>>();
+    const addEv = (ev: EngineEvent | null | undefined): void => { if (ev?.data) events.add(ev.data); };
     for (const it of this.s.stack) add(it);
     add(this.s.resolving);
+    for (const t of this.s.triggerQueue) addEv(t.event);
     for (const sus of [this.s.suspension, this.resumedSuspension]) {
       if (!sus) continue;
-      const held = sus as { item?: StackItem; moreItems?: StackItem[]; aimed?: StackItem[] };
+      const held = sus as { item?: StackItem; moreItems?: StackItem[]; aimed?: StackItem[]; trigger?: PendingTrigger };
       add(held.item);
       for (const it of held.moreItems ?? []) add(it);
       for (const it of held.aimed ?? []) add(it);
+      addEv(held.trigger?.event);
     }
     for (const it of [...items]) for (const a of it.burstRest?.aimed ?? []) add(a);   // a burst being aimed
     const done = new Set<BinRef>();
@@ -8723,6 +8736,15 @@ export class E {
     for (const it of items) {
       for (const part of it.parts) part.targets.forEach(fix);
       for (const c of it.asYouPlay?.copies ?? []) c.targets?.forEach(fix);
+      addEv(it.event);
+    }
+    // CT-415: the event stamps, by the same rule (a gone copy is -1, which
+    // `eventBinSlot` answers with "gone" and `notSelfBinCard` with "not me")
+    for (const d of events) {
+      const n = d['binNth'];
+      if (typeof n !== 'number' || n < 0 || n < removedNth) continue;
+      if (d['card'] !== card || (d['binSeat'] ?? d['seat']) !== seat) continue;
+      d['binNth'] = n === removedNth ? -1 : n - 1;
     }
   }
 
