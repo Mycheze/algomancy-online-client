@@ -341,6 +341,37 @@ export function setSkip(s: Season, account: Account, week: number, on: boolean, 
   return { ok: true, skips: e.skips };
 }
 
+/** Why the running week cannot be paired again, or null when it can: only
+ * while nobody has started on it — no result, no room, no time suggested. */
+export function repairProblem(s: Season): string | null {
+  const k = s.phase;
+  if (k < 1 || k > s.weeks) return 'only a running week can be paired again';
+  const begun = s.matches.find(m => m.week === k && (m.result || m.room || m.time));
+  return begun ? `${nameOf(begun.a)} vs ${nameOf(begun.b)} has already started` : null;
+}
+
+/** The organizer throws the running week's pairings away and pairs it again —
+ * putting back in a player who sat it out by mistake. Its pairing messages go
+ * with it, so nobody's bell keeps the old opponents. */
+export function repairWeek(s: Season, now: number, opts: { putBack?: string } = {}): Res<{ matches: number }> {
+  const problem = repairProblem(s);
+  if (problem) return { ok: false, error: problem };
+  const k = s.phase;
+  if (opts.putBack) {
+    const e = activeEntrants(s).find(x => x.userId === opts.putBack);
+    if (!e || !e.skips.includes(k)) return { ok: false, error: `they are not sitting week ${k} out` };
+    e.skips = e.skips.filter(w => w !== k);
+    note(s, `${nameOf(e.userId)} put back into week ${k}`, now);
+  }
+  s.matches = s.matches.filter(m => m.week !== k);
+  delete s.shorts[String(k)];
+  const gone = new Set<OutboxKind>(['pairings', 'sitting-out', 'week-pairings']);
+  db().outbox = db().outbox.filter(r => !(r.season === s.id && gone.has(r.kind) && r.data['week'] === k));
+  publishWeek(s, k, now);
+  persist(now);
+  return { ok: true, matches: s.matches.filter(m => m.week === k).length };
+}
+
 // ── week 0: sign-up week games (owner, 2026-10-04) ─────────────────────
 //
 // Sign-up week has no pairings. Instead the page RECOMMENDS the players whose
@@ -948,6 +979,7 @@ export function seasonView(s: Season, viewer: Account | undefined, opts: { admin
       })),
     } : null,
     ...(opts.admin ? {
+      repairProblem: repairProblem(s),
       log: s.log.slice(-40),
       outbox: db().outbox.filter(r => r.season === s.id).slice(-60).map(r => ({
         id: r.id, to: r.to ? nameOf(r.to) : '#channel', kind: r.kind, createdAt: r.createdAt,

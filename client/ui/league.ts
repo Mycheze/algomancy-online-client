@@ -53,6 +53,8 @@ interface SeasonView {
       time: { at: number; mine: boolean; agreed: boolean } | null;
     }[];
   };
+  /** organizers only: why the running week cannot be paired again, or null */
+  repairProblem?: string | null;
   log?: { at: string; what: string }[];
   outbox?: { id: number; to: string; kind: string; createdAt: string; sentAt: string | null; failed: string | null }[];
 }
@@ -496,12 +498,16 @@ function entryCardHtml(s: SeasonView): string {
   const me = s.me!;
   if (me.entered) {
     const future = Array.from({ length: s.weeks }, (_, i) => i + 1).filter(k => k > s.phase);
+    const out = s.phase >= 1 && s.phase <= s.weeks && me.skips.includes(s.phase);
     return `<div class="acctcard"><h3>You're in</h3>
+      ${out ? `<p>You are sitting week ${s.phase} out and its pairings are out. Want to play after all? Ask the organizer to put you back in.</p>` : ''}
       ${future.length ? `<p>Can't play a week? Sit it out before its pairings go out, and nobody is left waiting for you.</p>
         <div class="lgskips">${future.map(k => {
           const on = me.skips.includes(k);
-          return `<button class="${on ? 'on' : ''}" data-btn="lg-skip" data-week="${k}" data-skip="${on ? '0' : '1'}"
-            title="${on ? 'you are sitting this week out — press to play it' : 'sit this week out'}">Week ${k}: ${on ? 'sitting out' : 'playing'}</button>`;
+          const armed = arming === `skip:${k}`;
+          return `<button class="${on ? 'on' : armed ? 'danger' : ''}" data-btn="lg-skip" data-week="${k}" data-skip="${on ? '0' : '1'}"
+            title="${on ? 'you are sitting this week out — press to play it' : 'sit this week out'}">${
+            armed ? `Press again to sit week ${k} out` : `Week ${k}: ${on ? 'sitting out' : 'playing'}`}</button>`;
         }).join('')}</div>` : ''}
       ${s.phase < s.weeks + 2 ? `<p><button data-btn="lg-leave" class="${arming === 'leave' ? 'danger' : ''}">${
         arming === 'leave' ? 'Press again to leave the league' : 'Leave the league'}</button></p>` : ''}
@@ -773,6 +779,7 @@ function organizerHtml(s: SeasonView | null): string {
         <button data-btn="lg-set" data-key="hidden" data-val="${s.hidden ? '0' : '1'}">${s.hidden ? 'Make public' : 'Hide'}</button>
         ${s.hidden ? `<button class="${arming === 'delete' ? 'danger' : ''}" data-btn="lg-delete">${arming === 'delete' ? 'Press again to delete this test season' : 'Delete'}</button>` : ''}
       </p>
+      ${repairHtml(s)}
       <p><input id="lg-addname" placeholder="player name" spellcheck="false"> <button data-btn="lg-add">Add player</button>
         <span class="dim">(skips the Discord-name, hours and late-entry checks)</span></p>
       ${preview ? previewHtml(preview) : ''}
@@ -800,6 +807,22 @@ function organizerHtml(s: SeasonView | null): string {
   </div>`;
 }
 
+/** The running week, paired again: a player who sat it out by mistake goes
+ * back in. Only while nobody has started on it (the server says why not). */
+function repairHtml(s: SeasonView): string {
+  if (s.phase < 1 || s.phase > s.weeks) return '';
+  const k = s.phase;
+  const out = s.entrants.filter(e => !e.withdrawn && e.skips.includes(k));
+  const why = s.repairProblem ?? null;
+  const btn = (key: string, label: string, extra = ''): string =>
+    `<button data-btn="lg-repair" ${extra} class="${arming === key ? 'danger' : ''}" ${why ? 'disabled' : ''}>${
+      arming === key ? `Press again: ${label.toLowerCase()} and pair week ${k} again` : label}</button>`;
+  return `<p>${out.length ? `Sitting week ${k} out: ${out.map(e =>
+      `<b>${esc(e.name)}</b> ${btn(`repair:${e.id}`, 'Put back in', `data-put="${esc(e.id)}"`)}`).join(' ')} ` : ''}
+    ${btn('repair:', `Pair week ${k} again`)}
+    <span class="dim">${why ? `(not now: ${esc(why)})` : '(new opponents for everybody; post the new pairings)'}</span></p>`;
+}
+
 // ── copy for Discord ──────────────────────────────────────────────────
 //
 // The bot is only in the organizer's own server (owner, 2026-10-04), so what
@@ -808,7 +831,8 @@ function organizerHtml(s: SeasonView | null): string {
 // Discord shows in each reader's own zone, typed by anybody — not only a bot.
 
 const stamp = (ms: number, style: 'D' | 'f' | 'F' | 'R' = 'F'): string => `<t:${Math.floor(ms / 1000)}:${style}>`;
-const who = (p: Person): string => `**${p.name}**${p.contact ? ` (${p.contact})` : ''}`;
+/** the name, and the Discord name as a mention, so pasting the post pings them */
+const who = (p: Person): string => `**${p.name}**${p.contact ? ` (@${p.contact.replace(/^@+/, '')})` : ''}`;
 
 export function postText(s: SeasonView, origin: string): string {
   const link = `${origin}/?league`;
@@ -962,7 +986,7 @@ export function handleButton(btn: HTMLElement): boolean {
   const b = btn.dataset['btn'] ?? '';
   if (!b.startsWith('lg-')) return false;
   const s = data?.season ?? null;
-  if (b !== 'lg-advance' && b !== 'lg-delete' && b !== 'lg-leave' && b !== 'lg-cancel') arming = null;
+  if (b !== 'lg-advance' && b !== 'lg-delete' && b !== 'lg-leave' && b !== 'lg-cancel' && b !== 'lg-skip' && b !== 'lg-repair') arming = null;
 
   switch (b) {
     case 'lg-open': openLeague(); return true;
@@ -1060,6 +1084,9 @@ export function handleButton(btn: HTMLElement): boolean {
       if (s) void act('/api/league/leave', { season: s.id }, 'You left the league.');
       return true;
     case 'lg-skip':
+      if (btn.dataset['skip'] === '1' && arming !== `skip:${btn.dataset['week']}`) {
+        arming = `skip:${btn.dataset['week']}`; paint(); return true;
+      }
       if (s) void act('/api/league/skip', { season: s.id, week: Number(btn.dataset['week']), skip: btn.dataset['skip'] === '1' });
       return true;
 
@@ -1098,6 +1125,13 @@ export function handleButton(btn: HTMLElement): boolean {
       if (arming !== 'delete') { arming = 'delete'; paint(); return true; }
       if (s) { want = null; void act('/api/league/admin/delete', { id: s.id }, 'Deleted.'); }
       return true;
+    case 'lg-repair': {
+      const put = btn.dataset['put'] ?? '';
+      if (arming !== `repair:${put}`) { arming = `repair:${put}`; paint(); return true; }
+      if (s) void act('/api/league/admin/repair', { id: s.id, ...(put ? { putBack: put } : {}) },
+        'Paired again. Copy the new post below for Discord.');
+      return true;
+    }
     case 'lg-add':
       if (s) void act('/api/league/admin/add', { id: s.id, name: val('lg-addname').trim() }, 'Added.');
       return true;

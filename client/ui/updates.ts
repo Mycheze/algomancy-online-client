@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-25', kind: 'fix', text: "League: sitting out a week now takes two presses, so a stray tap can't take you out of it. Sat out a week by mistake and its pairings are already up? The organizer can put you back in." },
   { date: '2026-10-25', kind: 'fix', text: "Proph and Stalwart Sentinel now trigger when you play a unit, not when it enters play. Their ability resolves before the unit arrives, and still happens if the unit is negated." },
   { date: '2026-10-25', kind: 'fix', text: "The deployment stack now resolves in the same order as the battle stack. An ability you activate goes on it like a card you play, so anything it triggers (a unit sacrificed to pay for it, say) resolves first." },
   { date: '2026-10-24', kind: 'new', text: "League achievements: play in a league season to earn League Regular (with rungs for 3 and 6 seasons), and win one for League Champion. They unlock when the season closes." },
