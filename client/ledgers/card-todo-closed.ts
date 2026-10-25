@@ -5067,8 +5067,8 @@ export const CLOSED: TodoEntry[] = [
       'The mod Slag Spewer erases as a cost is on a pile the players can see, or a ruling says it '
       + 'deliberately is not.',
     guards: [
-      '178-played-item-and-erased-mods.test.ts::an erase paid as a COST still announces itself with "info" — Q3 is OPEN',
-      '178-played-item-and-erased-mods.test.ts::Suppression Field: mods leave host and game, the host lives, and the pile is untouched',
+      '178-played-item-and-erased-mods.test.ts::an erase paid as a COST announces itself with a real erased event and files the erased pile',
+      '178-played-item-and-erased-mods.test.ts::Suppression Field: mods leave host and game, the host lives, and the erased pile files them',
       '178-played-item-and-erased-mods.test.ts::Return to Nature: the site that already got CR 407.2 right still files the public pile',
     ],
     closed:

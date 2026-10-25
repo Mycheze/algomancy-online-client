@@ -234,20 +234,21 @@ test('Void Mandible: the ordinary case still works — one play, sacrificed, neg
 });
 
 /* ══════════════════════════════════════════════════════════════════════════
- * CR 720.9 / CT-86 — E.eraseMod, THE CHOKE POINT, AND THE RULING IT KEEPS OPEN.
+ * CR 720.9 / CT-86 — E.eraseMod, THE CHOKE POINT, AND THE RULING IT CARRIES.
  *
  * Five sites hand-rolled `host.mods.splice(…)` + `delete s.entities[id]`, each
  * with its own announcement and its own answer to CR 407.2's public-erased-pile
  * question. The mod-move fix (CR 720.10) built `E.moveMod`; the ERASE sibling did not exist. It does
  * now, and every one of those sites routes through it.
  *
- * ⚠ WHAT THESE TESTS GUARD IS THAT NOTHING CHANGED. Whether a mod erased as a
- * COST belongs on the public erased pile is round-27's Q3 and it is an OPEN
- * OWNER RULING — the agent who moved the erase into the cost left it rather than guess, and so did this round.
- * So each site's CURRENT announcement is pinned here, Slag Spewer's 'info'
- * included, and the pile is asserted in both directions. When the owner
- * answers Q3, exactly these assertions are what should have to be edited —
- * deliberately, in one place, instead of a refactor having quietly answered it.
+ * Whether a mod erased as a COST belongs on the public erased pile was
+ * round-27's Q3. It is ANSWERED: the owner, "Obviously the card says where it
+ * should end up. It's erased… It should just end up in the erased zone." (CR
+ * 407.2, 720.9: a mod erased off a host that stays in play, for example to pay
+ * a cost, goes to the erased pile of its controller). These tests pin that
+ * every site, Slag Spewer's cost included, emits a real `erased` event and
+ * files the pile — and that a mod that leaves its host WITHOUT leaving the
+ * game (Reclaim the Fallen) files nothing.
  * ══════════════════════════════════════════════════════════════════════════ */
 
 /** the CR 407.1 public erased pile for a seat */
@@ -265,7 +266,7 @@ function spellBattle(seed: number): { h: Harness; A: Seat; D: Seat; atk: EntityI
   return { h, A, D, atk };
 }
 
-test('CR 720.9 Slag Spewer: an erase paid as a COST still announces itself with "info" — Q3 is OPEN', () => {
+test('CR 720.9 Slag Spewer: an erase paid as a COST announces itself with a real erased event and files the erased pile', () => {
   const { h, A, D, atk } = spellBattle(17804);
   const spewer = spawn(h, D, 'Slag Spewer');
   const victim = spawn(h, D, 'Unit Token');
@@ -298,7 +299,7 @@ test('CR 720.9 Slag Spewer: an erase paid as a COST still announces itself with 
     + 'currently no way to view erased cards". A card erased to nowhere is that bug.');
 });
 
-test('CR 720.9 Suppression Field: mods leave host and game, the host lives, and the pile is untouched', () => {
+test('CR 720.9 Suppression Field: mods leave host and game, the host lives, and the erased pile files them', () => {
   const { h, A, D, atk } = spellBattle(17805);
   const host = spawn(h, D, 'Unit Token');
   giveResources(h, D, 'water', 3); giveResources(h, D, 'earth', 3);
@@ -377,7 +378,7 @@ test('CR 720.9 Reclaim the Fallen: leavesGame:false — the mod entity dies, the
   assert.ok(Object.values(h.state.entities).some(e => e.kind === 'unit' && e.card === 'A Pile of Runes'),
     'because the CARD is standing in play as a unit — this is not an erase at all');
   assert.ok(!erasedEvents(h).includes('A Pile of Runes'),
-    '⚠ and it must NEVER reach the erased pile, whatever Q3 answers: nothing left the game. '
+    '⚠ and it must NEVER reach the erased pile: nothing left the game (CR 407.2 files only an erase). '
     + 'That is the whole reason E.eraseMod takes `leavesGame`.');
   finishBattle(h);
 });
