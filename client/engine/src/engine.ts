@@ -182,9 +182,9 @@ class OrderNeeded {
  * click, ui/boardpick.ts reads `unit`), and the index the asker maps back */
 /** CR 608.7b, 713.6 / CT-413: a unit a sweep has already decided dies ({Deadly},
  * the collapsed Unaware reading, the Pure reading), with the line that says
- * why. Handed to `checkDeaths`, which disposes it in the same batch as the
+ * why (`say`, emitted as the batch is disposed). Handed to `checkDeaths`, which disposes it in the same batch as the
  * lethal-damage deaths. */
-interface Doomed { u: Entity; why: string; data?: Record<string, unknown> }
+interface Doomed { u: Entity; say: () => void }
 /**
  * CR 723.4a: the stack-item kinds a Virus may be augmented onto.
  *
@@ -2246,7 +2246,8 @@ export class E {
       if (!u) continue;
       const [p, t] = this.effStats(u);
       if (t > 0 && u.damage < t) continue;
-      out.push({ u, why: `Pure: ${u.card} is read at ${p}/${t}, without its stat attributes — it dies.`, data: { unit: id } });
+      out.push({ u, say: () => this.ev('info',
+        `Pure: ${u.card} is read at ${p}/${t}, without its stat attributes — it dies.`, { unit: id }) });
     }
     return out;
   }
@@ -2307,7 +2308,8 @@ export class E {
       if (!u) continue;
       const [p, t] = this.printedStats(u);
       if (t > 0 && u.damage < t) continue;
-      out.push({ u, why: `Unaware: ${u.card} is read at its printed ${p}/${t} — it dies.`, data: { unit: id } });
+      out.push({ u, say: () => this.ev('info',
+        `Unaware: ${u.card} is read at its printed ${p}/${t} — it dies.`, { unit: id }) });
     }
     return out;
   }
@@ -6611,7 +6613,7 @@ export class E {
     // batch — the Deadly kills, then the collapsed and Pure readings', then the
     // ordinary lethal ones — so they hear each other (CR 706.8c)
     const doomed: Doomed[] = srcAttrs.has('Deadly')
-      ? killed.filter(u => this.entity(u.id)).map(u => ({ u, why: `${ctx.sourceName} is Deadly — ${u.card} dies.` }))
+      ? killed.filter(u => this.entity(u.id)).map(u => ({ u, say: () => this.ev('info', `${ctx.sourceName} is Deadly — ${u.card} dies.`) }))
       : [];
     // CR 802.9e: the deaths the collapsed reading implies, which the ordinary
     // state-based sweep reads effStats for and cannot see
@@ -6841,7 +6843,7 @@ export class E {
     const dead: Entity[] = [];
     for (const d of doomed) {
       if (this.entity(d.u.id) !== d.u || dead.includes(d.u)) continue;
-      this.ev('info', d.why, d.data);
+      d.say();
       dead.push(d.u);
     }
     for (const u of Object.values(this.s.entities)) if (!dead.includes(u) && this.isLethal(u)) dead.push(u);
@@ -15094,7 +15096,7 @@ export class E {
     for (const id of L.deadlyHit) {
       if (shielded.has(id)) continue;   // CR 802.3h: no damage dealt, nothing to kill through
       const u = this.entity(id);
-      if (u) out.push({ u, why: `Deadly — ${u.card} dies.` });
+      if (u) out.push({ u, say: () => this.ev('info', `Deadly — ${u.card} dies.`) });
     }
     return out;
   }
