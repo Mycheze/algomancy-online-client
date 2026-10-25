@@ -39,6 +39,7 @@
  *     touch is a drag (ui/drag.ts), or the rail's buttons.
  */
 import { zoomPeek, zoomPeekEnd, zoomPeeking } from './zoom.ts';
+import { zoomGoHit } from './tapgo.ts';
 
 /** how long a finger rests on a card before it is a peek and not a tap */
 export const PEEK_MS = 380;
@@ -64,11 +65,15 @@ export interface TouchDeps {
    * (ui/ressum.ts), as a mouse gets on hover. False when `el` is not one. */
   peekResources(el: Element): boolean;
   peekResourcesEnd(): void;
+  /** CT-408: the held read's own button was tapped (ui/tapgo.ts) */
+  zoomGo?(): void;
 }
 
 let peekTimer: ReturnType<typeof setTimeout> | null = null;
 let peekFrom: { id: number; x: number; y: number } | null = null;
 let resPeek = false;
+/** the pointer whose press began on the held read's button (CT-408) */
+let goFrom: number | null = null;
 
 function peekCancel(): void {
   if (peekTimer !== null) clearTimeout(peekTimer);
@@ -115,6 +120,9 @@ export function installTouch(deps: TouchDeps): void {
   endResPeek = deps.peekResourcesEnd;
   document.addEventListener('pointerdown', e => {
     peekCancel();
+    // CT-408: a press that starts on the held read's button (only a tap's read
+    // is up before the press; a hold's peek opens after it)
+    goFrom = e.pointerType !== 'mouse' && zoomGoHit(e.clientX, e.clientY) ? e.pointerId : null;
     if (e.pointerType === 'mouse' || !e.isPrimary) return;
     const target = e.target as Element | null;
     const card = target?.closest?.('.card, .rescard, .stackcard');
@@ -135,9 +143,18 @@ export function installTouch(deps: TouchDeps): void {
   const lift = (e: PointerEvent): void => {
     if (peekFrom && e.pointerId !== peekFrom.id) return;
     const was = peekUp();
+    // CT-408: a tap that lands AND lifts on the read's own button (ui/tapgo.ts
+    // zoomGoHtml) is that button. Asked before the zoom goes, which takes the
+    // button with it; the click it makes is swallowed like any other.
+    const go = was && e.type === 'pointerup' && goFrom === e.pointerId && zoomGoHit(e.clientX, e.clientY);
+    goFrom = null;
     peekEnd();
-    // the lift of a peek is not a tap: nothing under it may act
-    if (was && e.type === 'pointerup') swallowNextClick();
+    if (go) deps.zoomGo?.();
+    // the lift of a peek is not a tap: nothing under it may act — except the
+    // board's own button a tap's read put up to act with (CT-408): the card is
+    // read, and the next tap on its button is the one that was asked for
+    const onGo = !!(e.target as Element | null)?.closest?.('[data-btn="tapgo"]');
+    if (was && e.type === 'pointerup' && (go || !onGo)) swallowNextClick();
   };
   document.addEventListener('pointerup', lift, { passive: true });
   document.addEventListener('pointercancel', lift, { passive: true });

@@ -171,6 +171,7 @@ import { GAME_LESSONS } from './lessons.ts';
 import { installSandbox } from './sandbox.ts';
 import { chooseDeck, chosenDeck, copyText, elIcon as elIconOf, esc, shareBar, type ChosenDeck } from './util.ts';
 import { updatesHtml, wireUpdates } from './updates.ts';
+import { resGoKey, tapGoHtml, tapGoKeyOf, tapGoLabel, tapGoLive, tokenGoKey, zoomGoHtml, type TapGo } from './tapgo.ts';
 
 import { artUrl } from './assets.ts';
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
@@ -1230,6 +1231,9 @@ interface UiState {
    * target decision to walk you back — held until confirmed. */
   confirmAct: { seat: Seat; entityId: EntityId; abilityIndex: number;
     via?: ActivateVia; label: string; unit: string } | null;
+  /** CT-408: the cast or activation a finger's tap held back; its button
+   * (ui/tapgo.ts) is drawn on that token or resource */
+  tapGo: TapGo | null;
   /** home screen: the draft trio being picked (persisted per browser) */
   homeEls: string[];
   /** home screen: the "fix the trio now" drawer is open. Held in state
@@ -1287,7 +1291,7 @@ const freshUi = (): UiState => ({
   prefillFor: '', confirmDone: null, confirmPass: null, confirmTarget: null, boardPick: null,
   confirmRide: null, rideAnswered: false, homeEls: savedEls(),
   homeFixedTrio: false,
-  confirmDeploy: null, confirmHaste: null, acted: [null, null], confirmAct: null,
+  confirmDeploy: null, confirmHaste: null, acted: [null, null], confirmAct: null, tapGo: null,
   bottomPick: [], bottomFor: '', blockLine: null, blockLeft: 0,
   blockRefusal: null, blockSent: false,
 });
@@ -3273,6 +3277,8 @@ function cardHtml(name: string, opts: {
   /** the mods this card wears, hung under it (fieldMods), and their
    * height as a fraction of the card's — what the fit pass reserves */
   mods?: string; modh?: number;
+  /** CT-408: a finger's held cast, as a button on the card (ui/tapgo.ts) */
+  go?: string;
 } = {}): string {
   // [35] the class list is ui/inspect.ts's cardClasses — `.activatable` is the
   // one class with no behaviour attached to it, so nothing but a test notices
@@ -3302,7 +3308,7 @@ function cardHtml(name: string, opts: {
     ${opts.die !== undefined ? dieHtml(opts.die) : ''}
     ${opts.warn ? placeWarnHtml(opts.warn) : ''}
     ${opts.dmg ? `<div class="dmg">${opts.dmg}</div>` : ''}
-    ${opts.mods ?? ''}
+    ${opts.mods ?? ''}${opts.go ?? ''}
   </div>`;
 }
 
@@ -3571,7 +3577,7 @@ function resHtml(r: ResourceView, p: Seat, i: number, opts: { title?: boolean } 
     opts.title === false ? '' : ` title="${r.title}"`}
     data-act="res" data-p="${p}" data-i="${i}" data-prev="${face}"><img src="${art(face)}" alt=""
       onerror="this.closest('.rescard').classList.add('noart')"
-    ><span class="resplate">${esc(r.kind === 'hidden' ? '?' : r.kind)}</span>${chip}</span>`;
+    ><span class="resplate">${esc(r.kind === 'hidden' ? '?' : r.kind)}</span>${chip}${tapGoHtml(ui.tapGo, resGoKey(p, i))}</span>`;
 }
 
 /** one seat's hand row (also used by the sticky bottom dock in net mode) */
@@ -3807,6 +3813,7 @@ function tokenHtml(t: Entity): string {
     candidate: pickable(`unit:${t.id}`),
     modhost,
     badges,
+    go: tapGoHtml(ui.tapGo, tokenGoKey(t.id)),
     data: `data-act="token" data-id="${t.id}"`,
   });
 }
@@ -7863,6 +7870,7 @@ function gcStaleUi(): void {
     || h.state.hasteDone[ui.confirmHaste] || !idleWithPlays(ui.confirmHaste))) {
     ui.confirmHaste = null;
   }
+  if (ui.tapGo && !tapGoLive(ui.tapGo, legalFor(ui.tapGo.action.seat))) ui.tapGo = null;
   if (ui.confirmAct && !legalFor(ui.confirmAct.seat).some(a => a.type === 'activateAbility'
     && a.entityId === ui.confirmAct!.entityId && a.abilityIndex === ui.confirmAct!.abilityIndex)) {
     ui.confirmAct = null;
@@ -9772,7 +9780,7 @@ function pinFocus(sub: FocusSubject, key: string): void {
  * including them would make every click look like it had done something. */
 const CLICK_STATE_KEYS = ['carrying', 'columns', 'send', 'spellTokens', 'modding', 'menu',
   'orderPicked', 'draftPack', 'bottomPick', 'confirmDone', 'confirmPass', 'confirmDeploy',
-  'confirmHaste', 'confirmAct', 'confirmRide', 'confirmTarget', 'counterCount', 'assignCount', 'numberCount'] as const;
+  'confirmHaste', 'confirmAct', 'tapGo', 'confirmRide', 'confirmTarget', 'counterCount', 'assignCount', 'numberCount'] as const;
 
 /** everything a click may move, as one string */
 function clickSig(): string {
@@ -9972,7 +9980,13 @@ function hoverTipHtml(target: HTMLElement, id: string | undefined, name: string)
       onerror="this.style.visibility='hidden'">`;
   }
   const box = id !== undefined ? boxFor(name, Number(id)) : printedTextBox(name);
-  return textBoxHtml(box, { compact: true });
+  // CT-371: the classic board has no zoom to hang a dark hand card's reason
+  // under (CT-288), so its hover box says it, last
+  let why = '';
+  if (!zoomOn() && target.dataset['act'] === 'hand') {
+    why = handWhy(Number(target.dataset['p']) as Seat, Number(target.dataset['i']));
+  }
+  return textBoxHtml(box, { compact: true }) + (why ? `<div class="tipwhy">${esc(why)}</div>` : '');
 }
 
 function armHoverTip(target: HTMLElement, x: number, y: number): void {
@@ -10136,6 +10150,8 @@ const MOD_PEEK_FALLBACK = 0.16;
  * the median of the 505 read by bot/pipeline/read_text_boxes.py, 813 of 1000 */
 const TEXT_TOP_FALLBACK = 0.813;
 setZoomDecorator((src, copy) => {
+  // CT-408: the read of a token or resource a finger's tap armed carries its button
+  if (ui.tapGo && tapGoKeyOf(src) === ui.tapGo.key) copy.insertAdjacentHTML('beforeend', zoomGoHtml(ui.tapGo));
   let badges: Badge[] | null = null;
   let mods: ModStripSource[] = [];
   const eid = src.dataset['previd'];
@@ -10169,11 +10185,8 @@ setZoomDecorator((src, copy) => {
       const offers = handOffers(legalFor(p), i);
       badges = handBadges(n, offers, xrows);
       // CT-288 (#211): a card with no ring says why, under the zoom — the one
-      // surface both a hover and a finger's tap (#201) reach. Only for a seat
-      // this screen plays, and never in the replay viewer.
-      const mine = !replayActive() && (bothSeats() || NET?.seat === p);
-      const why = !mine || offers.length || pickable(`hand:${p}:${i}`) ? ''
-        : handBlockLine(handBlockReason(q(), p, i, legalFor(p)));
+      // surface both a hover and a finger's tap (#201) reach (handWhy)
+      const why = handWhy(p, i);
       if (why) copy.insertAdjacentHTML('beforeend', `<div class="zoomhang handwhy">${esc(why)}</div>`);
     }
   } else if (src.dataset['prevstack'] !== undefined) {
@@ -10320,6 +10333,8 @@ function actBarClick(target: HTMLElement): boolean {
 document.addEventListener('click', e => {
   if (actBarClick(e.target as HTMLElement)) return;
   const btn = (e.target as HTMLElement).closest('[data-btn]') as HTMLElement | null;
+  // CT-408: a held cast or activation lasts until the next click that is not its button
+  if (ui.tapGo && btn?.dataset['btn'] !== 'tapgo') ui.tapGo = null;
   if (btn) { handleButton(btn, e as MouseEvent); return; }
   // outside a game (home screen / kicked screen) a stray click must not
   // trigger the game render() — it would paint a board over the UI.
@@ -10716,6 +10731,12 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     if (seat !== null) act({ type: 'doneDeploying', seat });
   },
   actcancel: () => { ui.confirmAct = null; },
+  // CT-408: the button a finger's tap left on a spell token or a resource
+  tapgo: () => {
+    const go = ui.tapGo;
+    ui.tapGo = null;
+    if (go && tapGoLive(go, legalFor(go.action.seat))) act(go.action);
+  },
   actconfirm: () => { confirmActivation(); },
   skipattack: () => {
     if (myCounterPool()) return;   // CT-298: a living counterattack cannot be declined
@@ -11134,6 +11155,8 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     const openRes = (expanded: boolean): void => {
       const plan = prismiteClickPlan(s, p, opts, expanded);
       if (plan.kind === 'none') return;
+      // CT-408 (owner): on touch the tap reads, and a button on it activates
+      if (plan.kind === 'auto' && tapToGo(t, resGoKey(p, i), plan.action, e)) return;
       if (plan.kind === 'auto') { act(plan.action); return; }
       // CR 106.8d: a Shard has no element, so no icon (only the seven do)
       const isShard = (a: Action): boolean => a.type === 'exchangePrismite' && a.element === 'shard';
@@ -11205,7 +11228,10 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
         if (at >= 0) ui.send.splice(at, 1); else ui.send.push(tok.id);
       } else {
         // CR D1.2h: always ordered — the caster picks the burst's resolve order
-        act({ type: 'castSpellToken', seat: tok.controller, entityId: tok.id, ordered: true });
+        const cast: Action = { type: 'castSpellToken', seat: tok.controller, entityId: tok.id, ordered: true };
+        // CT-408 (owner): on touch the tap reads, and a Cast button on it casts
+        if (tapToGo(t, tokenGoKey(tok.id), cast, e)) { render(); return; }
+        act(cast);
       }
     }
   }
@@ -11362,11 +11388,36 @@ function tapOnlyReads(el: HTMLElement, pickKey: string | null, e: MouseEvent): b
   return true;
 }
 
+/** CT-408: a finger's tap on a spell token or a resource reads it (as
+ * tapOnlyReads) and holds back `action` behind a button on that element
+ * (ui/tapgo.ts). True when the tap was taken. */
+function tapToGo(el: HTMLElement, key: string, action: Action, e: MouseEvent): boolean {
+  if (pointerCanHover()) return false;
+  // armed BEFORE the read, so the zoom's decorator hangs the button under it
+  ui.tapGo = { key, action, label: tapGoLabel(action) };
+  return tapOnlyReads(el, null, e);
+}
+
 /** the board-pick key a cached card answers to, if it can be one at all
  * (a card cached before uids existed cannot be a target — handleCacheClick) */
 function cachePickKey(p: Seat, i: number): string | null {
   const uid = cacheOf(p)[i]?.uid;
   return uid === undefined ? null : `cache:${p}:${uid}`;
+}
+
+/**
+ * CT-288 / CT-371: why hand card `i` has no offer right now, as one short
+ * sentence, or '' — for a card that is offered, one that answers the open
+ * question, a seat this screen does not play, or the replay viewer. Said under
+ * the zoom (the decorator), on a click on the dark card (handleHandClick's
+ * toast) and in the classic board's hover box (hoverTipHtml).
+ */
+function handWhy(p: Seat, i: number): string {
+  const n = h.state.players[p]?.hand[i];
+  if (!n || n === HIDDEN_CARD) return '';
+  const mine = !replayActive() && (bothSeats() || NET?.seat === p);
+  return !mine || handOffers(legalFor(p), i).length || pickable(`hand:${p}:${i}`) ? ''
+    : handBlockLine(handBlockReason(q(), p, i, legalFor(p)));
 }
 
 function handleHandClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: boolean } = {}): void {
@@ -11447,6 +11498,8 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: boo
   }
   // a drag onto the table plays; a drag onto a host is the mod (see dragCardPlan)
   if (!opts.noMods) items.push(...modMenuItems(p, 'hand', i, name, modActions));
+  // CT-371: a dark card's click used to do nothing at all; it says why
+  if (!items.length) { const why = handWhy(p, i); if (why) showToast(why); }
   offer(items, e);
 }
 
@@ -11903,6 +11956,7 @@ document.addEventListener('keydown', e => {
     if (ui.confirmDeploy !== null) { ui.confirmDeploy = null; render(); return; }
     if (ui.confirmHaste !== null) { ui.confirmHaste = null; render(); return; }
     if (ui.confirmAct) { ui.confirmAct = null; render(); return; }
+    if (ui.tapGo) { ui.tapGo = null; render(); return; }
     if (ui.modding) { ui.modding = null; render(); return; }
     // BL-47: Escape is "↺ Start over" on a trigger order being built
     if (h.state.decision && orderPicks(h.state.decision).length) { clearOrderPicks(); render(); return; }
@@ -12279,6 +12333,7 @@ installTouch({
     return true;
   },
   peekResourcesEnd: resSumOff,
+  zoomGo: () => { BOARD_BTNS['tapgo']?.(document.body, new MouseEvent('click')); render(); },
 });
 // drag to play and to build formations (ui/drag.ts); the plans are above,
 // beside dropCarried, and every drop is a click route

@@ -1008,7 +1008,7 @@ export class E {
    * effect-damage hit, and on a board with none of the three cards that
    * declare one it is a single property read per entity.
    */
-  private amountDelta(ctx: import('./cards/dsl.ts').AmountCtx): number {
+  private amountDelta(ctx: import('./cards/dsl.ts').AmountCtx, by?: CardName[]): number {
     if (this.inAmountMods) return 0;
     let total = 0;
     this.inAmountMods = true;
@@ -1018,14 +1018,30 @@ export class E {
         this.donates(h, a, 'amountMods')                       // CR 710.7: off the FACES
         && (ctx.region === undefined || a.region === ctx.region)   // fireEvent's rule
         && live(h, a))) {                                      // CR 712.1a, as staticsFor
-        for (const { def } of this.behaviorBlocks(holder, anchor)) {
+        for (const { face, def } of this.behaviorBlocks(holder, anchor)) {
           for (const mod of def.amountMods ?? []) {
-            total += mod.delta(this, anchor, ctx);
+            const d = mod.delta(this, anchor, ctx);
+            if (d) by?.push(face);                             // CT-370: who, for the caption
+            total += d;
           }
         }
       }
     } finally { this.inAmountMods = false; }
     return total;
+  }
+
+  /**
+   * CT-370 — A READ, for the stack caption (ui/doesline.ts). What the additive
+   * amount modifiers (CR 708.5: Conduit of Pain's "plus 1") add to one quantity
+   * right now, and the faces that add it: `amountDelta` itself, asked once,
+   * committing nothing (it is a pure query — see above). The caption composes
+   * it with {Powerful} and {Vulnerable} in `dealEffectDamageAllIn`'s order
+   * (CR 112.9: the additions first, then the doubling).
+   */
+  amountDeltaPreview(ctx: import('./cards/dsl.ts').AmountCtx): { delta: number; by: CardName[] } {
+    const by: CardName[] = [];
+    const delta = this.amountDelta(ctx, by);
+    return { delta, by: [...new Set(by)] };
   }
 
   /**

@@ -3488,8 +3488,9 @@ function tailStates(room: Room): { lo: number; states: GameState[] } {
  * the 2026-10-21 round "the last 1" took back only the opponent's reply.
  *
  * CT-325 — INSIDE A HIDDEN STEP the other seat's actions there are unseen, so:
- *   · a cut INSIDE the step is offered only where it takes back nothing but
- *     the asking seat's own actions (XSAP #247 took back the opponent's
+ *   · a cut INSIDE the step is offered only where it takes back none of the
+ *     other seat's hidden actions — its public ones (done planning, done
+ *     deploying, an agreed fix) may go (XSAP #247 took back the opponent's
  *     hidden Maw of Despair, RTPE #255 the reverse);
  *   · the start of the step (and the step before) may take the other seat's
  *     hidden actions too — both seats have seen that board — and says so in
@@ -3524,7 +3525,10 @@ export function rewindPlans(room: Room, seat: Seat): CutPlan[] {
   };
   /** something in the cut this seat can see and did not merely re-trigger */
   const real = (xs: CutItem[]): boolean => xs.some(x => !(x.hidden && x.seat !== seat));
-  /** a cut inside the open hidden step takes back only this seat's own actions */
+  /** a cut inside the open hidden step takes back none of the other seat's
+   * HIDDEN actions there: only this seat's own, and the other seat's public
+   * ones (rewind-cuts.ts PUBLIC_IN_HIDDEN: done planning, done deploying, an
+   * agreed fix) — CR D4.5d */
   const ownOnly = (to: number): boolean => {
     if (segNow === null) return true;
     if (to <= openStart) return false;   // that is the start of the step's own option

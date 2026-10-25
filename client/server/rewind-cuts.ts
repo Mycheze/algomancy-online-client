@@ -29,7 +29,8 @@ export interface CutItem {
   i: number;
   seat: Seat;
   /** taken inside the hidden step that is still open, so the other seat has
-   * not seen it (a done-flag excepted: "they are finished" is public) */
+   * not seen it (PUBLIC_IN_HIDDEN excepted: done planning, done deploying and
+   * an agreed fix are public) */
   hidden: boolean;
   /** what it was, without a card: "pass", "choice", "attack", "play" */
   word: string;
@@ -53,8 +54,17 @@ const WORDS: Record<string, string> = {
   activateAbility: 'ability', castSpellToken: 'spell token',
 };
 
-/** done-flags are served live to both seats (server/view.ts viewFor) — all
- * but haste's, which is redacted there */
+/**
+ * The actions inside a hidden step the other seat has already been shown, so a
+ * cut inside the step may take them back (CR D4.5d: "their public ones, such
+ * as finishing planning or deployment, may be taken back"):
+ *  - donePlanning, doneDeploying: planningDone and deployDone are served live
+ *    to both seats (server/view.ts viewFor);
+ *  - amend: an agreed fix is shown to both players at once (CR D4.5c).
+ * NOT here, and so hidden: doneHaste (hasteDone is redacted for the other
+ * seat), and draftCommit and bottomCards — their done-flags are served live,
+ * but the action is the private pick itself. Pinned by server/test/679.
+ */
 const PUBLIC_IN_HIDDEN = new Set(['donePlanning', 'doneDeploying', 'amend']);
 
 const clip = (s: string, n = 32): string => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
