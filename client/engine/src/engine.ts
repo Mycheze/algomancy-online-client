@@ -1231,6 +1231,70 @@ export class E {
     return { delta, by: [...new Set(by)] };
   }
 
+  /** CR 112.15: the quantity `gainRot` / `gainDebt` ask the amount layer about —
+   * written once, so the caption's read (`amountPreview`) asks the same one */
+  private playerCounterCtx(kind: 'rot' | 'debt', seat: Seat, n: number): import('./cards/dsl.ts').AmountCtx {
+    return {
+      kind, ...(this.s.battle ? { region: this.s.battle.region } : {}),
+      amount: n, player: seat, combat: false,
+    };
+  }
+
+  /** CR 708.8: the quantity `addCounters` asks the amount layer about (see there) */
+  private unitCounterCtx(target: Entity, n: number, actor: Seat | undefined): import('./cards/dsl.ts').AmountCtx {
+    return {
+      kind: 'counters', region: target.region, amount: n, unit: target, combat: false,
+      sourceSeat: actor,
+    };
+  }
+
+  /**
+   * CR 708.6a, 112.1a: `lifeAmount`'s arithmetic without its log line — the
+   * additive layer, then the multipliers, `(v + Σdelta) × factor`. `by`
+   * collects the multiplying faces (what the log names); `addBy`, if given,
+   * the adding ones. `n` > 0. `factor` is null when the additions took it all
+   * (no multiplier is asked then).
+   */
+  private lifePrice(kind: 'lifeGain' | 'lifeLoss', seat: Seat, n: number, by: CardName[],
+    addBy?: CardName[]): { out: number; factor: number | null } {
+    const base = {
+      kind, region: this.s.battle ? this.s.battle.region : undefined,
+      player: seat, combat: false,
+    } as const;
+    const added = n + this.amountDelta({ ...base, amount: n }, addBy);
+    if (added <= 0) return { out: 0, factor: null };
+    const factor = this.amountFactor({ ...base, amount: added }, by);
+    return { out: factor === 1 ? added : Math.max(0, Math.round(added * factor)), factor };
+  }
+
+  /**
+   * CT-412 — A READ, for the stack caption (ui/doesline.ts), beside
+   * `amountDeltaPreview`: what one life change, rot, debt or counter placement
+   * of `n` becomes right now, and the faces that change it — the SAME pricing
+   * `lifeAmount`, `gainRot`/`gainDebt` and `addCounters` commit with, asked
+   * once, committing nothing (`amountDelta` and `amountFactor` are pure
+   * queries). `n` is signed for counters (a -1/-1 counter is -1), as
+   * `addCounters` takes it; `by` there is who puts them (CR 708.8b: a resolving
+   * part's controller). It does not see a REDIRECT (`replaceCounters`, Counter
+   * Thief) or a replacement of the whole event: only the amount layer.
+   */
+  amountPreview(q:
+    | { kind: 'lifeGain' | 'lifeLoss' | 'rot' | 'debt'; seat: Seat; n: number }
+    | { kind: 'counters'; unit: Entity; n: number; by?: Seat }): { n: number; by: CardName[] } {
+    const by: CardName[] = [];
+    let out: number;
+    if (q.kind === 'counters') out = q.n + this.amountDelta(this.unitCounterCtx(q.unit, q.n, q.by), by);
+    else if (q.kind === 'rot' || q.kind === 'debt') {
+      out = q.n <= 0 ? q.n : Math.max(0, q.n + this.amountDelta(this.playerCounterCtx(q.kind, q.seat, q.n), by));
+    } else if (q.n <= 0) out = q.n;
+    else {
+      const add: CardName[] = [];
+      out = this.lifePrice(q.kind, q.seat, q.n, by, add).out;
+      by.unshift(...add);
+    }
+    return { n: out, by: [...new Set(by)] };
+  }
+
   /**
    * CR 708.6: every active `AmountMultiplier`'s claim on one quantity, folded into
    * ONE multiplier. `amountDelta`'s walk line for line — the same `anchored()`
@@ -1318,15 +1382,9 @@ export class E {
     // life total, which can be 0), so a zero must come back a zero and still
     // reach the lethal test.
     if (n <= 0) return n;
-    const base = {
-      kind, region: this.s.battle ? this.s.battle.region : undefined,
-      player: seat, combat: false,
-    } as const;
-    const added = n + this.amountDelta({ ...base, amount: n });
-    if (added <= 0) return 0;
     const by: CardName[] = [];
-    const factor = this.amountFactor({ ...base, amount: added }, by);
-    const out = factor === 1 ? added : Math.max(0, Math.round(added * factor));
+    const { out, factor } = this.lifePrice(kind, seat, n, by);
+    if (factor === null) return 0;          // the additive layer took it all: no line
     if (out !== n) {
       const verb = kind === 'lifeGain' ? 'gain' : 'lose';
       this.ev('info',
@@ -3591,10 +3649,7 @@ export class E {
     // makes Proliferating Slime's "an enemy unit OR PLAYER" mean anything at
     // all — no other counter can be put on a player, so the clause would
     // otherwise be dead text. An AmountMod, summed, exactly as for a unit's.
-    n += this.amountDelta({
-      kind: 'rot', ...(this.s.battle ? { region: this.s.battle.region } : {}),
-      amount: n, player: seat, combat: false,
-    });
+    n += this.amountDelta(this.playerCounterCtx('rot', seat, n));
     if (n <= 0) return;
     const p = this.player(seat);
     p.rot = this.rot(seat) + n;
@@ -3609,10 +3664,7 @@ export class E {
     if (n <= 0) return;
     // CR 112.14, 112.15: debt is the second player counter (docs/08), read by Proliferating
     // Slime's "enemy unit or player" the same way rot is.
-    n += this.amountDelta({
-      kind: 'debt', ...(this.s.battle ? { region: this.s.battle.region } : {}),
-      amount: n, player: seat, combat: false,
-    });
+    n += this.amountDelta(this.playerCounterCtx('debt', seat, n));
     if (n <= 0) return;
     const p = this.player(seat);
     p.debt = this.debt(seat) + n;
@@ -6363,14 +6415,22 @@ export class E {
    * `{ attacker, region }` alone.
    */
   preventUnitDamage(u: Entity, amount: number, info: UnitDamageInfo): number {
-    if (amount <= 0) return amount;
-    if (!u.damageShield) return amount;
+    if (this.preventedBy(u, amount) === null) return amount;
     u.shieldPending = (u.shieldPending ?? 0) + amount;
     this.ev('info',
       `${u.damageShield} prevents all ${amount} damage to ${u.card}`
       + ` (from ${info.source}) — no damage is dealt.`,
       { unit: u.id, prevented: amount, by: u.damageShield });
     return 0;
+  }
+
+  /**
+   * CT-412 — A READ, for the stack caption (ui/doesline.ts), and the test
+   * `preventUnitDamage` commits by: the shield that would prevent all of
+   * `amount` damage to `u` right now, or null when it would get through.
+   */
+  preventedBy(u: Entity, amount: number): CardName | null {
+    return amount > 0 && u.damageShield ? u.damageShield : null;
   }
 
   /**

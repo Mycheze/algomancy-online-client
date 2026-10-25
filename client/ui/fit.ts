@@ -248,6 +248,12 @@ export interface BattleBoardIn {
    * slot is two cards wide), its padding across, the gap between its cards
    * and the floor card width */
   idle: { send: boolean; pad: number; gap: number; floor: number };
+  /** CT-419: a spectator's view of the top seat's hand (`.lspect`): the top
+   * band's height at which its cards stand at the hand dock's full size.
+   * While the top band's even share of the spare height is under it, the top
+   * band takes the spare first — never the fight's height, never the bottom
+   * band's own (it keeps what step 1 gave it) */
+  spect?: number;
 }
 
 /** `fight`: the fight column's width; `idle`: the other column's; `wide`:
@@ -309,6 +315,7 @@ export function planBattleBoard(i: BattleBoardIn): BattleBoard | null {
   // 3. the rest goes back: the height to the bands, the width to the other region
   const needH = m.height(p.cw) + i.chrome.h;
   const spareH = Math.max(0, Math.floor(fightH - needH));
-  const top = Math.floor(spareH / 2);
+  let top = Math.floor(spareH / 2);
+  if (i.spect && bandT + top < i.spect) top = Math.min(spareH, i.spect - bandT);
   return { wide, fight, idle: Math.round(W - i.gapX - fight), bandTop: bandT + top, bandBot: bandB + spareH - top, cw: p.cw };
 }

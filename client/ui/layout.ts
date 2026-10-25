@@ -305,6 +305,7 @@ function shapeBoard(root: ParentNode, baseCw: number): void {
     // the units you can put in the declaration being built (ui/battle.ts
     // formationCandidates → `playable` on a standing unit)
     source: sourceOf(lb, baseCw),
+    spect: spectWant(lb),
   });
   if (!plan) return;
   const key = JSON.stringify(plan);
@@ -316,6 +317,34 @@ function shapeBoard(root: ParentNode, baseCw: number): void {
   lb.style.setProperty('--lidle', `${plan.idle}px`);
   lb.style.setProperty('--lbandt', `${plan.bandTop}px`);
   lb.style.setProperty('--lbandb', `${plan.bandBot}px`);
+}
+
+/** CT-419: the spectated hand's largest card width (style.css `.lspect >
+ * .zone > .card`, the hand dock's 92px) */
+export const SPECT_CW = 92;
+
+/** CT-419: the top band's height at which a spectator's view of the top
+ * seat's hand stands as large as its width lets it (SPECT_CW at most), for
+ * planBattleBoard's `spect`: the info block's paddings, the strip's label and
+ * the gap under it — the stylesheet's sizes, not the strip's height (which
+ * follows the band, and grows past the block when a long resource row pushes
+ * it) — and a card as wide as the strip shares out. A long hand is bound by
+ * the width, and then the band asks for no more than its cards can use.
+ * Undefined with no strip. */
+function spectWant(lb: HTMLElement): number | undefined {
+  const info = lb.querySelector?.('.linfo.theirs');
+  const spect = info?.querySelector('.lspect');
+  const zone = spect?.querySelector<HTMLElement>(':scope > .zone');
+  const n = zone?.querySelectorAll(':scope > .card').length ?? 0;
+  const across = boxOf(zone ?? null)?.w;
+  if (!info || !spect || !zone || !n || !across) return undefined;
+  const lin = info.querySelector(':scope > .lin');
+  const label = spect.querySelector(':scope > .zonelabel');
+  const zs = getComputedStyle(zone);
+  const gap = parseFloat(zs.columnGap) || 0;
+  const cw = Math.min(SPECT_CW, (across - (n - 1) * gap) / n);
+  return Math.ceil(chrome(info, 'v') + (lin ? chrome(lin, 'v') : 0) + chrome(spect, 'v')
+    + (label?.getBoundingClientRect().height ?? 0) + (parseFloat(zs.marginTop) || 0) + cw * RATIO);
 }
 
 /** the tallest unit in each In Play band, over a plain card, for

@@ -77,11 +77,18 @@ export interface SlotContext {
   powerful?: boolean;
   /** CT-370: the item's own damage as it will land (`damagePricer`) */
   damage?: DamagePricer;
+  /** CT-412: a life, rot, debt or counter amount as it will land (`amountPricer`) */
+  amounts?: AmountPricer;
 }
 
 /** CT-370: one damage number as it will land, and the words that say why
  * (already escaped) */
-export interface Priced { n: number; why: string[] }
+export interface Priced {
+  n: number; why: string[];
+  /** CT-412: the shield that prevents all of it (E.preventedBy) — `n` is then
+   * what would have been dealt, and none is */
+  none?: string;
+}
 /**
  * CT-370: the printed amount `n` → what lands. `named` is the target indices
  * the sentence names after its damage verb ({0}, {1+}), or null for a
@@ -89,7 +96,71 @@ export interface Priced { n: number; why: string[] }
  * recipient — with a note for the units on the table that take otherwise when
  * `unitsHit` (the sentence says "unit": "each player" has no such note).
  */
-export type DamagePricer = (n: number, named: number[] | null, unitsHit?: boolean) => Priced;
+export type DamagePricer = (n: number, named: number[] | null, unitsHit?: boolean, players?: PlayerGroup | null) => Priced;
+
+/** CT-412: the players a sentence names by word rather than by target slot */
+export type PlayerGroup = 'you' | 'opponent' | 'each';
+/** CT-412: the amount kinds the engine prices besides damage (E.amountPreview) */
+export type AmountKind = 'lifeGain' | 'lifeLoss' | 'rot' | 'debt' | 'counters';
+/**
+ * CT-412: who a sentence's amount lands on, read off the template's own words
+ * (`whoPlayers`, `whoUnits`): players by word or by target slot ({0}, {1+},
+ * {0.controller}), or units — {me}, target slots, or a group on the table.
+ */
+export type Who =
+  | { players: PlayerGroup }
+  | { players: 'slot'; idx: number; on?: true }
+  | { players: 'controllerOf'; idx: number }
+  | { units: 'me' }
+  | { units: 'slot'; idx: number }
+  | { units: 'yours' | 'enemy' | 'each' };
+/** CT-412: the printed amount `n` (signed for counters: a -1/-1 counter is -1)
+ * → its size as it will land, and the words that say why */
+export type AmountPricer = (kind: AmountKind, n: number, who: Who) => Priced;
+
+const WORD_N: Readonly<Record<string, number>> = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4 };
+
+/** CT-412: the amount clauses a caption sentence may hold, besides damage:
+ * `verb`, `amt` (a number, a word, {X}, "that much"; none for "… equal to"),
+ * and for counters `kind` (+1/+1 or -1/-1). The rest of the sentence after a
+ * counter clause names the units ("on {me}", "on each enemy"). */
+const AMOUNT_CLAUSES: readonly { re: RegExp; kind: (verb: string, noun: string) => AmountKind; units?: true }[] = [
+  { re: /\b(?<verb>[Gg]ain|gains|[Ll]ose|loses) (?<amt>\d+|\{X\}|that much) life\b/g, kind: v => (/^[Gg]ain/.test(v) ? 'lifeGain' : 'lifeLoss') },
+  { re: /\b(?<verb>[Gg]ain|gains) life equal to\b/g, kind: () => 'lifeGain' },
+  { re: /\b(?<verb>[Gg]ain|gains) (?<amt>a|one|two|three|four|\d+|\{X\}) (?<noun>rot|debt)\b/g, kind: (_v, u) => u as AmountKind },
+  { re: /\b(?<verb>[Gg]ain|gains) debt equal to\b/g, kind: () => 'debt' },
+  { re: /\b(?<verb>[Pp]ut) (?<amt>a|an|one|two|three|four|\d+|\{X\}) (?<kind>[+-]\d+\/[+-]\d+) counters? on /g, kind: () => 'counters', units: true },
+];
+
+/** CT-412: the players an amount clause lands on, from the words before it */
+export function whoPlayers(before: string): Who {
+  let m: RegExpExecArray | null;
+  if ((m = /\{(\d+)\.controller\}\s*$/.exec(before))) return { players: 'controllerOf', idx: Number(m[1]) };
+  if ((m = /\{(\d+)\+\} each\s*$/.exec(before))) return { players: 'slot', idx: Number(m[1]), on: true };
+  if ((m = /\{(\d+)\}\s*$/.exec(before))) return { players: 'slot', idx: Number(m[1]) };
+  if (/\{opponent\}|\beach opponent\b/i.test(before)) return { players: 'opponent' };
+  if (/\bplayers?\b/i.test(before)) return { players: 'each' };
+  return { players: 'you' };
+}
+
+/** CT-412: the units a counter clause lands on, from the words after "on " */
+export function whoUnits(after: string): Who | null {
+  let m: RegExpExecArray | null;
+  if (/^\{me\}/.test(after)) return { units: 'me' };
+  if ((m = /^\{(\d+)\}/.exec(after))) return { units: 'slot', idx: Number(m[1]) };
+  if (/^(each of your units|your units)\b/.test(after)) return { units: 'yours' };
+  if (/^each enemy\b/.test(after)) return { units: 'enemy' };
+  if (/^each unit\b/.test(after)) return { units: 'each' };
+  return null;
+}
+
+/** CT-412: the words naming players a damage sentence hits without a slot */
+function playersHitBy(rest: string): PlayerGroup | null {
+  if (/\{opponent\}|\beach opponent\b/i.test(rest)) return 'opponent';
+  if (/\beach player\b|\bplayers\b/i.test(rest)) return 'each';
+  if (/\{you\}/.test(rest)) return 'you';
+  return null;
+}
 const POWERFUL: DamagePricer = n => ({ n: 2 * n, why: ['Powerful'] });
 
 /** CT-370: the target indices a sentence names ({0}, {1+}), or null for none */
@@ -133,7 +204,8 @@ export function renderTemplate(tpl: string, c: SlotContext): string | null {
       let rest = raw.slice(dm.index + dm[0].length);
       const named = namedAfter(rest, c.count);
       const unitsHit = /\bunits?\b/.test(rest);
-      const at = (k: number): Priced => price(k, named, unitsHit);
+      const players = named ? null : playersHitBy(rest);
+      const at = (k: number): Priced => price(k, named, unitsHit, players);
       // Channel Through's points: each is one more dealing, doubled as the rest
       // is (its "+1" per point is not said: the split is the controller's)
       // the multiple a plain recipient is dealt: (k + add) x mult is linear
@@ -154,10 +226,17 @@ export function renderTemplate(tpl: string, c: SlotContext): string | null {
         sentence = `${head} ${p.n} damage${rest}`;
       }
     }
+    // CT-412: life, rot, debt and counters, as the engine will price them
+    if (c.amounts) {
+      const r = priceAmounts(sentence, c.amounts, c.count, !priceX);
+      sentence = r.sentence;
+      why.push(...r.why.filter(w => !why.includes(w)));
+      if (r.priceX) priceX = r.priceX;
+    }
     const xNow = (): number => {
       if (!priceX) return c.amount!.x;
       const p = priceX(c.amount!.x);
-      why = p.why;
+      why = [...why.filter(w => !p.why.includes(w)), ...p.why];
       return p.n;
     };
     let out = '';
@@ -200,6 +279,55 @@ export function renderTemplate(tpl: string, c: SlotContext): string | null {
   }).filter((s): s is string => s !== null && s.trim() !== '');
   // "Put 1 -1/-1 counters" → "counter": a filled number of one takes the singular
   return sentences.length ? sentences.join(' ').replace(/(^|\s)1 ((?:[+-]?\d+\/[+-]?\d+ )?[a-z]+?)s\b/g, '$11 $2') : null;
+}
+
+/**
+ * CT-412: rewrite each life / rot / debt / counter clause of one sentence to the
+ * amount that will land (`price`), and collect why. A clause naming no number
+ * ("gain that much life", "debt equal to its cost") keeps its words and gains
+ * only the why. `xFree`: no {X} pricer is taken yet (damage takes it first), so
+ * an {X} clause may take it.
+ */
+function priceAmounts(sentence: string, price: AmountPricer, count: number, xFree: boolean):
+  { sentence: string; why: string[]; priceX: ((n: number) => Priced) | null } {
+  const why: string[] = [];
+  const note = (p: Priced): void => { for (const w of p.why) if (!why.includes(w)) why.push(w); };
+  let priceX: ((n: number) => Priced) | null = null;
+  for (const clause of AMOUNT_CLAUSES) {
+    let out = '';
+    let last = 0;
+    // a clause inside a mode slot is priced when the chosen mode's words are
+    // filled (renderTemplate recurses with the same pricer), not here as well
+    const modes = [...sentence.matchAll(SLOT_RE)].filter(m => m[4] !== undefined)
+      .map(m => [m.index!, m.index! + m[0].length] as const);
+    for (const m of sentence.matchAll(clause.re)) {
+      const g = m.groups!;
+      const at = m.index!;
+      if (modes.some(([a, b]) => at > a && at < b)) continue;
+      const who = clause.units ? whoUnits(sentence.slice(at + m[0].length)) : whoPlayers(sentence.slice(0, at));
+      // a slot with nobody in it: the sentence is dropped when it is filled
+      if (!who || ('idx' in who && who.idx >= count)) continue;
+      const kind = clause.kind(g['verb']!, g['noun'] ?? '');
+      const sign = g['kind']?.startsWith('-') ? -1 : 1;
+      const priceOf = (k: number): Priced => price(kind, sign * k, who);
+      const amt = g['amt'];
+      if (amt === '{X}') {
+        if (xFree && !priceX) priceX = priceOf;
+        continue;
+      }
+      if (amt === undefined || amt === 'that much') { note(priceOf(1)); continue; }
+      const n = WORD_N[amt] ?? Number(amt);
+      const p = priceOf(n);
+      note(p);
+      if (p.n === n) continue;
+      // the amount in figures, and a counter's noun agreeing with it
+      const rest = clause.units ? ` ${g['kind']} ${p.n === 1 ? 'counter' : 'counters'} on ` : m[0].slice(g['verb']!.length + 1 + amt.length);
+      out += sentence.slice(last, at) + `${g['verb']} ${p.n}${rest}`;
+      last = at + m[0].length;
+    }
+    sentence = out + sentence.slice(last);
+  }
+  return { sentence, why, priceX };
 }
 
 export interface Amount { x: number; live: boolean }
@@ -416,6 +544,7 @@ export function doesLine(item: StackItem, state: GameState, label: (t: TargetRef
       me: me ? text(me) : null, you: you ? text(you) : null, opponent: opp ? text(opp) : null,
       amount: amountOf(item, p, state), mode: p.mode, text,
       damage: damagePricer(item, p, state, label, text),
+      amounts: amountPricer(item, p, state, label, text),
     };
     // an optional target left empty, and nothing else to say: "Negate nothing"
     // (owner, 2026-09-30, on Nothyr's "up to one")
@@ -445,11 +574,15 @@ export function doesLine(item: StackItem, state: GameState, label: (t: TargetRef
  * recipient, with a note for the Pure or Vulnerable units on the table in the
  * item's region, which take otherwise if they are hit.
  *
- * NOT priced, and said nowhere on the line (CT-370's sweep): prevention
- * (`preventUnitDamage`), the life-amount layer a player's loss goes through
- * after damage (Arbiter of Vitality doubles it, `E.lifeAmount`), {Piercing} or
- * {Electric} overflow, and the counter / rot / debt modifiers (Flux
- * Resonator, Proliferating Slime), which change no damage line.
+ * CT-412: damage to a player is then a life loss, priced again on its way to
+ * the total (`E.amountPreview` lifeLoss — Arbiter of Vitality doubles it), and
+ * said as the life it costs ("6 life lost, Arbiter of Vitality") — for a
+ * named player, and for the players a sentence names by word.
+ *
+ * NOT priced, and said nowhere on the line: prevention (`preventUnitDamage`
+ * shields), {Piercing} or {Electric} overflow (elective, and distributed at
+ * resolution), and Channel Through's split points (each point is a dealing the
+ * controller places at resolution, so the Conduit's +1 per point is not said).
  * Undefined when the engine cannot read the state.
  */
 export function damagePricer(item: StackItem, part: EffectPart, state: GameState,
@@ -477,7 +610,25 @@ export function damagePricer(item: StackItem, part: EffectPart, state: GameState
     if (!pure && srcPowerful) { k *= 2; why.push('Powerful'); }
     if (d.delta) why.push(text(`${d.delta > 0 ? '+' : ''}${d.delta} ${d.by.join(', ')}`.trim()));
     if (!pure && r.unit && e.effAttrs(r.unit).has('Vulnerable')) { k *= 2; why.push('Vulnerable'); }
+    // CT-412: damage to a player is a life loss, priced again on its way to
+    // the total (E.lifeAmount: Arbiter of Vitality doubles it)
+    if (r.player !== undefined) why.push(...lossNote([r.player], k));
+    // CT-412: a shield on the recipient prevents all of it (preventUnitDamage)
+    const shield = r.unit ? e.preventedBy(r.unit, k) : null;
+    if (shield) return { n: k, why: [...why, text(`prevented by ${shield}`)], none: text(shield) };
     return { n: k, why };
+  };
+  /** what `k` damage to `seats` takes off their life, when that is not `k`:
+   * "6 life lost", "6 life lost each", or per player when they differ */
+  const lossNote = (seats: Seat[], k: number): string[] => {
+    const ls = seats.map(s => ({ s, l: e.amountPreview({ kind: 'lifeLoss', seat: s, n: k }) }));
+    const odd = ls.filter(x => x.l.n !== k);
+    if (!odd.length) return [];
+    const by = [...new Set(odd.flatMap(x => x.l.by))].join(', ');
+    if (odd.length === ls.length && ls.every(x => x.l.n === ls[0]!.l.n)) {
+      return [text(`${ls[0]!.l.n} life lost${ls.length > 1 ? ' each' : ''}`), text(by)];
+    }
+    return [...odd.map(x => text(`${state.players[x.s]?.name ?? 'a player'} loses ${x.l.n} life`)), text(by)];
   };
   const recipientOf = (t: TargetRef | undefined): Recipient | null => {
     if (!t) return null;
@@ -486,10 +637,10 @@ export function damagePricer(item: StackItem, part: EffectPart, state: GameState
     return null;
   };
   // a board the engine cannot read (a hand-built test state) prices nothing
-  return (n, named, unitsHit = false) => {
-    try { return priced(n, named, unitsHit); } catch { return { n, why: [] }; }
+  return (n, named, unitsHit = false, players = null) => {
+    try { return priced(n, named, unitsHit, players); } catch { return { n, why: [] }; }
   };
-  function priced(n: number, named: number[] | null, unitsHit: boolean): Priced {
+  function priced(n: number, named: number[] | null, unitsHit: boolean, players: PlayerGroup | null): Priced {
     const plain = one({}, n);
     if (named) {
       const each = named.flatMap(i => {
@@ -497,23 +648,130 @@ export function damagePricer(item: StackItem, part: EffectPart, state: GameState
         return r ? [{ t: part.targets[i]!, p: one(r, n) }] : [];
       });
       if (!each.length) return plain;
-      if (each.every(x => x.p.n === each[0]!.p.n)) return each[0]!.p;
-      const base = each.find(x => x.p.n === plain.n) ? plain : each[0]!.p;
+      const same = (a: Priced, b: Priced): boolean => a.n === b.n && a.none === b.none;
+      if (each.every(x => same(x.p, each[0]!.p))) return each[0]!.p;
+      const base = each.find(x => same(x.p, plain)) ? plain : each[0]!.p;
       return {
         n: base.n,
-        why: [...base.why, ...each.filter(x => x.p.n !== base.n).map(x => `${label(x.t)} takes ${x.p.n}`)],
+        why: [...base.why, ...each.filter(x => !same(x.p, base)).map(x => (x.p.none
+          ? `${label(x.t)} takes none, prevented by ${x.p.none}` : `${label(x.t)} takes ${x.p.n}`))],
       };
     }
     // nobody named: the units on the table that would take otherwise, by kind
     const notes = new Set<string>();
     for (const u of unitsHit ? e.unitsIn(item.region) : []) {
       const p = one({ unit: u }, n);
+      if (p.none) { notes.add(`${label({ unit: u.id })} takes none, prevented by ${p.none}`); continue; }
       if (p.n === plain.n) continue;
       const kind = srcPure || e.effAttrs(u).has('Pure') ? 'Pure' : 'Vulnerable';
       notes.add(`${kind} units take ${p.n}`);
     }
+    // CT-412: the players it names by word ("each player", {opponent})
+    if (players) {
+      const seats = playerGroup(state, item.controller, players);
+      for (const w of lossNote(seats, one({ player: seats[0] }, n).n)) notes.add(w);
+    }
     return { n: plain.n, why: [...plain.why, ...notes] };
   }
+}
+
+/** CT-412: the seats a player group names, for the item's controller */
+function playerGroup(state: GameState, controller: Seat, g: PlayerGroup): Seat[] {
+  const all = state.players.map((_, i) => i as Seat);
+  return g === 'you' ? [controller] : g === 'each' ? all : all.filter(s => s !== controller);
+}
+
+/**
+ * CT-412: what a life, rot, debt or counter amount of the item will be when it
+ * lands, asked of the engine (`E.amountPreview`: the same amount layer
+ * `lifeAmount`, `gainRot`/`gainDebt` and `addCounters` commit with — Arbiter
+ * of Vitality's doubling, Flux Resonator's and Proliferating Slime's "plus
+ * one"). Each recipient is asked; when they agree the line says that number,
+ * else the number a plain recipient gets and who gets otherwise.
+ *
+ * Counters are put by the item's controller (CR 708.8b: the resolving part's
+ * controller). A group ("each of your units", "each enemy", "each unit") is
+ * read as the units of that side in the item's region, as damagePricer reads
+ * "each unit".
+ *
+ * NOT priced (CT-412's sweep): a redirect of counters (Counter Thief,
+ * `replaceCounters`), prevention, {Piercing}/{Electric} overflow, and a clause
+ * whose verb is inside a mode slot. Undefined when the engine cannot read the
+ * state.
+ */
+export function amountPricer(item: StackItem, part: EffectPart, state: GameState,
+  label: (t: TargetRef) => string, text: (s: string) => string = s => s): AmountPricer | undefined {
+  let e: E;
+  try { e = new E(state); } catch { return undefined; }
+  const nameOf = (s: Seat): string => text(state.players[s]?.name ?? 'a player');
+  const seatOfTarget = (t: TargetRef | undefined): Seat | null => {
+    if (!t) return null;
+    if ('player' in t) return t.player;
+    if ('unit' in t) return state.entities[t.unit]?.controller ?? null;
+    return null;
+  };
+  const seatsOf = (who: Who): Seat[] => {
+    if (!('players' in who)) return [];
+    if (who.players === 'controllerOf') { const s = seatOfTarget(part.targets[who.idx]); return s === null ? [] : [s]; }
+    if (who.players === 'slot') {
+      const ts = who.on ? part.targets.slice(who.idx) : [part.targets[who.idx]];
+      return [...new Set(ts.map(seatOfTarget).filter((s): s is Seat => s !== null))];
+    }
+    return playerGroup(state, item.controller, who.players);
+  };
+  const unitsOf = (who: Who): Entity[] => {
+    if (!('units' in who)) return [];
+    if (who.units === 'me') {
+      const u = item.sourceId !== undefined ? e.entity(item.sourceId) : undefined;
+      return u ? [u] : [];
+    }
+    if (who.units === 'slot') {
+      const t = part.targets[who.idx];
+      const u = t && 'unit' in t ? e.entity(t.unit) : undefined;
+      return u ? [u] : [];
+    }
+    return e.unitsIn(item.region).filter(u => who.units === 'each'
+      || (who.units === 'yours') === (u.controller === item.controller));
+  };
+  const verb = (kind: AmountKind): string =>
+    kind === 'counters' ? 'gets' : kind === 'lifeLoss' ? 'loses' : 'gains';
+  // the reason, in the damage line's words: "+1 Flux Resonator", "Arbiter of Vitality"
+  const reason = (kind: AmountKind, n: number, out: { n: number; by: string[] }): string => {
+    const d = Math.abs(out.n) - Math.abs(n);
+    const add = kind !== 'lifeGain' && kind !== 'lifeLoss';
+    return text(add ? `${d > 0 ? '+' : ''}${d} ${out.by.join(', ')}` : out.by.join(', '));
+  };
+  function priced(kind: AmountKind, n: number, who: Who): Priced {
+    const size = Math.abs(n);
+    const each: { name: string; mine: boolean; n: number; why: string }[] = [];
+    if ('units' in who) {
+      for (const u of unitsOf(who)) {
+        const out = e.amountPreview({ kind: 'counters', unit: u, n, by: item.controller });
+        each.push({ name: label({ unit: u.id }), mine: u.controller === item.controller, n: Math.abs(out.n),
+          why: out.n === n ? '' : reason(kind, n, out) });
+      }
+    } else {
+      for (const s of seatsOf(who)) {
+        const out = e.amountPreview({ kind: kind as Exclude<AmountKind, 'counters'>, seat: s, n: size });
+        each.push({ name: nameOf(s), mine: s === item.controller, n: out.n, why: out.n === size ? '' : reason(kind, size, out) });
+      }
+    }
+    if (!each.length) return { n: size, why: [] };
+    const whys = [...new Set(each.map(x => x.why).filter(Boolean))];
+    if (each.every(x => x.n === each[0]!.n)) return { n: each[0]!.n, why: whys };
+    // they differ: the number a plain recipient gets, and who gets otherwise
+    const base = each.some(x => x.n === size) ? size : each[0]!.n;
+    const odd = each.filter(x => x.n !== base);
+    const groupWord = 'units' in who && odd.length > 3
+      ? (odd.every(x => !x.mine) ? 'enemy units' : odd.every(x => x.mine) ? 'your units' : null) : null;
+    const notes = groupWord
+      ? [...new Set(odd.map(x => `${groupWord} get ${x.n}`))]
+      : odd.map(x => `${x.name} ${verb(kind)} ${x.n}`);
+    return { n: base, why: [...notes, ...whys] };
+  }
+  return (kind, n, who) => {
+    try { return priced(kind, n, who); } catch { return { n: Math.abs(n), why: [] }; }
+  };
 }
 
 const TIMES = ['', '', 'twice', 'three times', 'four times'];
