@@ -164,20 +164,6 @@ export const eventCardCost = (ev: { data?: Record<string, unknown> } | null | un
   return castCostOf(name, typeof x === 'number' ? x : undefined);
 };
 
-/**
- * CR 701.1e — IS THIS 'spawned' EVENT MY OWN ARRIVAL? A plain unit's play is
- * announced on its own 'spawned' line (`from` set), so a "when you play a
- * unit" card that reads 'spawned' as a play (Proph, Stalwart Sentinel) would
- * otherwise hear ITS OWN play: it is standing in play by the time its own spawn
- * fires. CR 701.1e rules that out — a card being played is on the stack, not in
- * play, so it never hears its own play, out of any zone. Such a reader drops
- * its own arrival with this. The 'cardPlayed' half of the same rule is the
- * engine's (E.fireEvent's `beingPlayed`); a "When I spawn" ability is about
- * ARRIVING, not playing, and must not use this. 444 sweeps the pool for both.
- */
-export const isOwnArrival = (self: Entity, ev: EngineEvent): boolean =>
-  ev.type === 'spawned' && ev.data?.['unit'] === self.id;
-
 /** is the card a unit when in play? (spell units are; spell tokens are not) */
 export const isUnitCard = (name: CardName): boolean => {
   const k = getCard(name).kind;

@@ -5742,6 +5742,14 @@ order.
 
 <sub>Discrepancies: D-U14-11 (discrepancies.md)</sub>
 
+<a id="r701.1f"></a>**701.1f** An ability that triggers when a player plays a unit triggers as the unit is played, not when it enters play. It goes on the stack above the unit and resolves before it, and it triggers even if the unit is negated and never enters play. See rule 706.
+
+> *Example: Proph is in play and its controller plays Good Whale from the cache. Proph's draw goes on the stack above Good Whale and resolves first; only then does Good Whale spawn.*
+
+> *Example: A unit played from the cache is negated before it resolves. It never enters play, but it was played, so Proph still draws.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 1 gate test file · Printed: card: Proph · Owner call · adopted 2026-10-25 · Tests: 651-play-is-not-arrival.test.ts · Example tests: 651-play-is-not-arrival.test.ts::play not arrival: Proph resolves before the unit it heard being played from a cache, 651-play-is-not-arrival.test.ts::play not arrival: a unit played from a cache and negated before it resolves still makes Proph draw · Key: effects.playing.what-is-played.on-play</sub>
+
 <a id="r701.2"></a>**701.2.** Applying a modification (an augment, a graft, or a Virus) is not playing a card. A modification is applied, whether it comes from a hand, a bin, a cache or elsewhere. Applying a modification is a special action. See rule 720.
 
 <sub>Basis: Designer · Verified: confirmed in round 1; verifier ran no tests; 3 gate test files · Printed: Manual p.32 · Designer: RAQ 1537748882501668934#0 · Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Tests: 105-semantics-playwatch.test.ts, 119-play-and-token-events.test.ts, 425-cr-casting-and-stack.test.ts · Demonstrated by test: 425-cr-casting-and-stack.test.ts::cr:effects.playing.applying — a graft from hand and a virus from the cache are applied, never played · Key: effects.playing.applying</sub>
@@ -10564,7 +10572,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1821 numbered rules.
+1822 numbered rules.
 
 | basis | rules |
 |---|---|
@@ -10572,13 +10580,13 @@ Generated from the records and the verdicts. Nothing here is a rule.
 | Designer | 203 |
 | Owner call | 675 |
 | Engine only | 40 |
-| Mixed | 451 |
+| Mixed | 452 |
 
 ### Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1810 |
+| confirmed | 1811 |
 | partial | 7 |
 | contradicted | 0 |
 | unsupported | 0 |
@@ -11190,5 +11198,5 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1822 rules and 99 sections.
+- New: 1823 rules and 99 sections.
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)

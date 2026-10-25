@@ -219,7 +219,8 @@ card('Forager of the Fallen', {
 //
 // The loop guard is structural now rather than a token check: a created token
 // never fires 'cardPlayed' at all. The text says "you play a unit" (NOT
-// "another"), so unlike Flourishing Flora it is NOT self-excluded. Region
+// "another"), but it still never hears its own play: a card being played is on
+// the stack, not in play (CR 701.1e, the engine's beingPlayed). Region
 // auto-scoped (CR 601.1d).
 const bloomcasterMake: EffectDef = {
   creates: ['Unit Token'],

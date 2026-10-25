@@ -15,10 +15,13 @@
  *   · every triggered ability (own text or [Augment] text, not a bin/cache
  *     `zone` clause) listening on a PLAY event, `cardPlayed` or `spellPlayed`;
  *   · every one listening on `spawned` whose printed text is a play clause
- *     ("When you play …"). A plain unit play is announced on its own 'spawned',
- *     so a card that reads 'spawned' as a play is a play listener too.
- *     A 'spawned' listener that says "When I spawn" or "another ally spawns" is
- *     about arriving, not about playing, and is outside this rule.
+ *     ("When you play …") — kept as a net, and EMPTY since 2026-10-25: Proph
+ *     and Stalwart Sentinel used to hear a unit's play on its 'spawned' line,
+ *     and the owner ruled that play is not arrival ("It says 'play' not
+ *     'enters'"); they read 'cardPlayed' now, and 651-play-is-not-arrival
+ *     forbids the shape pool-wide. A 'spawned' listener that says "When I
+ *     spawn" or "another ally spawns" is about arriving, and is outside this
+ *     rule.
  *
  * Each card is then PLAYED through every route the engine has for a unit to be
  * played, each by a real effect or action:
@@ -36,8 +39,8 @@
  * A sweep that silently drives nothing passes. So the reach is MEASURED and
  * asserted: the population has a floor, every route must have driven a floor
  * of cards, the known listeners must be in the population, and the detector is
- * calibrated on a firing it must see (a Sentinel already in play hearing the
- * other unit Wake the Dead plays arrive).
+ * calibrated on a firing it must see (a Sentinel already in play hearing a
+ * unit Wake the Dead plays out of the bin).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -200,7 +203,6 @@ test('CR 701.1e reach: the derived population of play listeners holds the known 
   for (const known of ['Stalwart Sentinel', 'Proph', 'Bloomcaster', 'Void Mandible', 'Sparkwraith']) {
     assert.ok(CARDS.includes(known), `${known} is a play listener and must be in the derived population`);
   }
-  assert.ok(POP.some(l => l.why.endsWith('spawned')), 'the spawned-as-play arm found nothing: PLAY_CLAUSE or printed.json went blind');
   // 21 on 2026-10-11. Ancient One is among them only through its "all
   // abilities of adjacent allies" listener: played alone it has nothing to
   // hear, so it is driven but proves nothing about itself.
@@ -228,39 +230,34 @@ test('CR 701.1e reach: the coverage, as a diagnostic', t => {
 });
 
 test('CR 701.1e calibration: the detector sees a Stalwart Sentinel hear a unit played after it', () => {
-  // Wake the Dead plays the Drifter and then the Sentinel. Both are PLAYED onto
-  // the stack (CR 701.4, CT-245), so the Sentinel — played last — resolves
-  // FIRST and is in play when the Drifter arrives from the bin: that arrival is
-  // heard, 2 counters, and the trigger line this sweep looks for is logged.
-  // The Sentinel's own arrival must not be.
+  // The Sentinel is already in play; Wake the Dead then plays Curio Drifter out
+  // of the bin. That PLAY is heard (from 'bin', not the hand): one firing, two
+  // counters, and the trigger line this sweep looks for is logged. Heard on the
+  // play, not the arrival (owner 2026-10-25), so it is logged before the
+  // Drifter spawns.
   const h = new Harness(44471, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!;
   const atk = spawn(h, A, 'Unit Token');
+  const id = spawn(h, A, 'Stalwart Sentinel');
   fund(h, A);
   toNextBattle(h, A);
-  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
-  h.state.players[A]!.bin.push('Stalwart Sentinel', 'Curio Drifter');
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk, id]] });
+  h.state.players[A]!.bin.push('Curio Drifter');
   const from = h.events.length;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Wake the Dead') });
-  let k = 0;
   settle(h, labels => {
-    const want = k++ === 0 ? 'Curio Drifter [' : 'Stalwart Sentinel [';
-    const i = labels.findIndex(l => l.startsWith(want));
-    return i >= 0 ? i : null;
+    const i = labels.findIndex(l => l.startsWith('Curio Drifter ['));
+    return i >= 0 ? i : labels.indexOf('Done');
   });
   const events = h.events.slice(from);
-  const id = arrived(events, 'Stalwart Sentinel', A)!;
-  assert.ok(id !== undefined, 'the Sentinel was played from the bin');
-  assert.ok(unitsOf(h, A).some(u => u.card === 'Curio Drifter'), 'and the Drifter after it');
+  assert.ok(unitsOf(h, A).some(u => u.card === 'Curio Drifter'), 'Wake the Dead played the Drifter');
   assert.equal(selfHeard(events, 'Stalwart Sentinel', id).length, 1,
     'the detector sees exactly one firing ([once])');
-  // …and it is the DRIFTER's: logged after the Drifter arrived. A Sentinel that
-  // heard itself spends its [once] on its own arrival, before the Drifter.
   const fired = events.findIndex(e => e.type === 'triggered' && e.data?.['unit'] === id);
   const drifter = events.findIndex(e => e.type === 'spawned' && e.data?.['card'] === 'Curio Drifter');
-  assert.ok(drifter >= 0 && fired > drifter, 'the one firing came after the Drifter arrived, so it heard the Drifter');
-  assert.equal(h.state.entities[id]!.counters, 2, 'two counters, for the Drifter alone');
+  assert.ok(fired >= 0 && drifter > fired, 'it fired on the PLAY, before the Drifter arrived');
+  assert.equal(h.state.entities[id]!.counters, 2, 'two counters, for the Drifter');
 });
 
 // ── the rule, per route, naming each convicted card ──────────────────────

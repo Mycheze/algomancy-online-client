@@ -2571,6 +2571,71 @@
     "problem": ""
   },
   {
+    "key": "effects.playing.what-is-played.on-play",
+    "textHash": "ba697db2567cfbd1",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U14-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-light-a.ts / batch-light-b.ts:Proph, Stalwart Sentinel",
+        "agrees": true,
+        "note": "unit play heard on 'cardPlayed', fired at commit time, not on 'spawned'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/651-play-is-not-arrival.test.ts",
+        "pattern": "play not arrival: Proph resolves before the unit",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/651-play-is-not-arrival.test.ts",
+        "pattern": "play not arrival: a unit played from a cache and negated",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/651-play-is-not-arrival.test.ts",
+        "pattern": "play not arrival: no card that prints a play clause hears it on a unit spawning",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/651-play-is-not-arrival.test.ts",
+        "pattern": "play not arrival: Stalwart Sentinel resolves before",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Proph",
+        "supports": "yes",
+        "note": "printed 'When you play a unit or spell from anywhere other than your hand' — the trigger is the play"
+      },
+      {
+        "ref": "owner: It says \"play\" not \"enters\"",
+        "supports": "yes",
+        "note": "of Proph, 2026-10-25: the trigger hears the play, not the arrival"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "When you play a unit or spell from anywhere other than your hand, [Switch1] Draw a card."
+      },
+      {
+        "file": "client/engine/test/651-play-is-not-arrival.test.ts",
+        "text": "`${listener}'s trigger goes on the stack above the played Whale and resolves first`"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "effects.playing.what-is-played.spell-token",
     "textHash": "3d5c8657a03bddfd",
     "verdict": "confirmed",

@@ -56,7 +56,7 @@
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, getCard, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets, hasChangeableTarget, isOwnArrival, noChangeConfirm } from './helpers.ts';
+import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets, hasChangeableTarget, noChangeConfirm } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -537,27 +537,30 @@ card('Ploosh', {
 // token), and CR 701.2a keeps mods out — applying a mod from bin or cache is not
 // playing a card and fires no play event in the first place.
 //
-// Heard on BOTH channels so every card type counts exactly once: a unit
-// released from cache fires only 'spawned', a spell only 'spellPlayed', and a
-// SPELL UNIT fires both — hence the kind check, which mirrors Stalwart
-// Sentinel's.
+// Heard on BOTH channels so every card type counts exactly once: a unit play
+// fires 'cardPlayed', a spell only 'spellPlayed', and a SPELL UNIT fires both
+// — hence the kind check, which mirrors Stalwart Sentinel's. The unit half
+// used to read 'spawned', i.e. the unit ENTERING; the owner, 2026-10-25: "It
+// says 'play' not 'enters'". So the draw now goes on the stack above the
+// unit, as it does for a spell, and a negated unit still draws. CR 701.1e
+// (never its own play) is the engine's on 'cardPlayed' (E.fireEvent's
+// beingPlayed).
 const prophDraw: EffectDef = {
   run: (g, ctx) => { g.draw(ctx.controller, 1); },
 };
 card('Proph', {
   abilities: [{
-    type: 'triggered', events: ['spellPlayed', 'spawned'],
+    type: 'triggered', events: ['spellPlayed', 'cardPlayed'],
     bounded: true, graftCause: true,
     label: 'draw a card',
-    when: (g, self, ev) => {
+    when: (_g, self, ev) => {
       if (ev.data?.['seat'] !== self.controller) return false;
-      if (isOwnArrival(self, ev)) return false;              // CR 701.1e: never its own play
       const from = ev.data?.['from'] as string | undefined;
       if (from === undefined || from === 'hand') return false;
       const name = ev.data?.['card'] as string | undefined;
       if (!name) return false;
       // a spell unit fires both events; count it on 'spellPlayed' only
-      if (ev.type === 'spawned' && getCard(name).kind !== 'unit') return false;
+      if (ev.type === 'cardPlayed' && getCard(name).kind !== 'unit') return false;
       return true;
     },
     effect: prophDraw,

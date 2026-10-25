@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:f05052e233c135e8",
+ "generated_from": "sha256:d14e1da822290b12",
  "rules": [
   {
    "num": "100.1",
@@ -19562,6 +19562,30 @@
    "discrepancies": [
     "D-U14-11"
    ],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "701.1f",
+   "key": "effects.playing.what-is-played.on-play",
+   "title": null,
+   "section": "701",
+   "sectionTitle": "Playing and Applying",
+   "chapterTitle": "7. Spells, Abilities and Effects",
+   "parent": "701.1",
+   "text": "An ability that triggers when a player plays a unit triggers as the unit is played, not when it enters play. It goes on the stack above the unit and resolves before it, and it triggers even if the unit is negated and never enters play.",
+   "see": [
+    "706"
+   ],
+   "examples": [
+    "Proph is in play and its controller plays Good Whale from the cache. Proph's draw goes on the stack above Good Whale and resolves first; only then does Good Whale spawn.",
+    "A unit played from the cache is negated before it resolves. It never enters play, but it was played, so Proph still draws."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
