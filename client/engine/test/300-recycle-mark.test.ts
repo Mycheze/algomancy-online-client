@@ -36,7 +36,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import '../src/cards/registry.ts';
 import { Harness } from '../src/harness.ts';
-import { E } from '../src/engine.ts';
+import { E, GameEnded } from '../src/engine.ts';
 import { DECK_LIST } from '../src/cards/registry.ts';
 import { logFor, toDeployment } from './util.ts';
 import type { CardName, Seat } from '../src/types.ts';
@@ -138,20 +138,28 @@ test('CR 408.2b the reshuffle really shuffles — it is not the pile in the orde
 
 /* ══ §4 — BOTH EMPTY IS STILL BOTH EMPTY ════════════════════════════ */
 
-test('CR 401.4 an empty deck AND an empty pile draws fewer — no loop, no crash, no loss', () => {
+test('CR 401.4 an empty deck AND an empty pile draws fewer — no loop, no crash; the draw then ends the game (CR 104.5)', () => {
   const { h, g, P } = board(30004);
   deckDownTo(g, P, 0);
   assert.equal(g.recycleOf(P).length, 0, 'the fixture really has nothing anywhere');
+  // the mill and cache readers take the same door, and they are not draws
+  assert.deepEqual(g.mill(P, 2), [], 'mill takes nothing');
+  assert.deepEqual(g.cacheTopOfDeck(P, 2), [], 'and so does a cache-from-deck');
+  assert.equal(g.s.winner, null, 'and neither ends the game');
+  // the deal's opening hand (a silent draw) draws fewer and plays on
   const handBefore = h.state.players[P]!.hand.length;
   g.draw(P, 3, true);
-  h.state = g.s;
-  assert.equal(h.state.players[P]!.hand.length, handBefore, 'nothing was drawn');
+  assert.equal(g.s.players[P]!.hand.length, handBefore, 'nothing was drawn');
   assert.equal(g.deckOf(P).length, 0);
-  // CR 401.4: there is no deck-out loss — you simply draw fewer, as before.
-  assert.equal(h.state.winner, null, 'and running out of cards does not end the game');
-  // the mill and cache readers take the same door
-  assert.deepEqual(g.mill(P, 2), [], 'mill draws nothing either');
-  assert.deepEqual(g.cacheTopOfDeck(P, 2), [], 'and so does a cache-from-deck');
+  assert.equal(g.s.winner, null, 'a deal is not a draw in play');
+  // CT-385 (owner 2026-10-24, "Follow Caleb"): a draw in play from nothing
+  // ends the game. This is a shared-deck game, so — Caleb 2025-06-25, "The
+  // game ends, highest life total wins" — nobody loses for drawing
+  g.s.players[P]!.life = 20;
+  g.s.players[1 - P]!.life = 10;
+  assert.throws(() => g.draw(P, 3), (sig: unknown) => sig instanceof GameEnded);
+  assert.equal(g.s.players[P]!.hand.length, handBefore, 'still nothing drawn');
+  assert.equal(g.s.winner, P, 'the higher life total wins');
 });
 
 /* ══ §5 — WHOSE PILE IS IT ══════════════════════════════════════════ */

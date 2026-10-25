@@ -9,7 +9,8 @@
  *    plays: the full graft ladder 1..12; the One and Done dummy dies from 60 in
  *    the one action that took its life; the Own Goal dummy wins while its own
  *    trigger resolves; the Spending Spree player opens more than two
- *    resources in one planning step (the emblem used)
+ *    resources in one planning step (the emblem used); the Double Knockout
+ *    run ends with both players on 0 from the one effect (CR 104.1a)
  * §3 a bug report filed from any new week keeps its goal AND its setup —
  *    report-run.ts rebuilds both, and a run re-dealt without its setup would
  *    be a different game
@@ -33,7 +34,7 @@ import { stopChallengeWorker } from '../challenge-worker.ts';
 test.after(async () => { await settleReferenceRuns(); resetReferenceRuns(); await stopChallengeWorker(); });
 
 const NEW = ['2026-11-15-set', '2026-11-22-draw', '2026-11-29-owngoal', '2026-12-06-oneshot',
-  '2026-12-13-health', '2026-12-20-grafts', '2026-12-27-spree', '2027-01-03-stack'];
+  '2026-12-13-health', '2026-12-20-grafts', '2026-12-27-spree', '2027-01-03-stack', '2027-01-10-doubleko'];
 
 const ref = (id: string) => JSON.parse(readFileSync(join(REFERENCE_RUNS_DIR, `${id}.json`), 'utf8')) as { deck: CardName[]; actions: Action[] };
 
@@ -55,7 +56,7 @@ function walk(id: string): { def: ChallengeDef; steps: { before: GameState; a: A
   return { def, steps };
 }
 
-test('§1 The Parade is parked, and the eight new weeks run from Sun 15 Nov with the grafts on 20 Dec', () => {
+test('§1 The Parade is parked, and the nine new weeks run from Sun 15 Nov with the grafts on 20 Dec and the double KO on 10 Jan', () => {
   assert.equal(challengeById('2026-11-22-parade'), null, 'off the calendar');
   assert.ok(existsSync(join(REFERENCE_RUNS_DIR, 'parked', '2026-11-22-parade.json')), 'its run kept for later');
   assert.ok(!existsSync(join(REFERENCE_RUNS_DIR, '2026-11-22-parade.json')), 'and not where the gate replays');
@@ -71,6 +72,8 @@ test('§1 The Parade is parked, and the eight new weeks run from Sun 15 Nov with
   }
   assert.equal(new Date(weekWindow(rows[0]!).opens).toISOString(), '2026-11-15T07:00:00.000Z');
   assert.equal(challengeById('2026-12-20-grafts')!.week, '2026-12-20', 'Christmas week');
+  assert.equal(new Date(weekWindow(challengeById('2027-01-10-doubleko')!).opens).toISOString(), '2027-01-10T07:00:00.000Z',
+    'the double KO follows Stack Overflow');
   for (const c of rows) assert.ok(!/one game|course of/i.test(c.blurb), `${c.id}: the challenge is the game`);
 });
 
@@ -96,6 +99,16 @@ test('§2 each reference run does what its goal says', () => {
   for (const x of spree.steps) if (x.a.type === 'activateResource' && x.a.seat === PLAYER) perTurn.set(x.before.turn, (perTurn.get(x.before.turn) ?? 0) + 1);
   assert.ok(Math.max(...perTurn.values()) > 2, `activations per turn: ${[...perTurn.values()].join(' ')}`);
   assert.ok((spree.steps.at(-1)!.acc.manaSpent ?? 0) >= 50);
+  // Double Knockout (CR 104.1a / CT-409): both players on 0 or less after one
+  // action, from one effect, and only on that action
+  const ko = walk('2027-01-10-doubleko');
+  const last = ko.steps.at(-1)!;
+  assert.ok(last.after.players[PLAYER]!.life <= 0 && last.after.players[DUMMY]!.life <= 0, 'both fell');
+  assert.ok(last.before.players[PLAYER]!.life > 0 && last.before.players[DUMMY]!.life > 0, 'in the one action');
+  assert.equal(last.acc.bothFell, true);
+  const over = last.events.find(e => e.type === 'gameOver')!;
+  assert.equal((over.data as { alsoAtZero?: number }).alsoAtZero, last.after.winner, 'the game-over says the winner fell too');
+  assert.ok(ko.steps.slice(0, -1).every(x => x.after.phase !== 'gameover'));
 });
 
 test('§3 a report from a new week keeps its goal and its setup', () => {

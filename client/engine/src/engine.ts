@@ -18,7 +18,7 @@ import type {
   Attr, BattleState, BinRef, CachedCard, CachedProphecy, CardName, CopyFacet, CopyRef, DamageSubStep,
   Decision, DecisionOption,
   EffectPart, EngineEvent, Entity, EntityId, EventType, ForeignCard, FormationSpot, GameState, LastKnown, NumericEntry,
-  PendingTrigger, Phase, Seat, SpawnFace, StackItem, StateFrame, Suspension, TargetRef, Stamp,
+  PendingTrigger, Phase, PlayerState, Seat, SpawnFace, StackItem, StateFrame, Suspension, TargetRef, Stamp,
 } from './types.ts';
 import {
   affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard,
@@ -2797,9 +2797,9 @@ export class E {
    * deck takes that card, refills, and takes the second from the shuffled
    * pile — which is what a player does at the table. The pile-empty guard is
    * what makes a truly empty zone terminate instead of shuffling nothing
-   * forever; a player with an empty deck AND an empty pile simply draws
-   * fewer, which was the behaviour before the mark and is still the rule (CR 401.4: there is no
-   * deck-out loss).
+   * forever; a player with an empty deck AND an empty pile draws fewer
+   * (CR 401.4), and a DRAW that finds both empty then ends the game
+   * (`draw` → `deckedOut`, CR 104.5 / CT-385). A mill or a reveal does not.
    *
    * `need` is how many cards the caller is about to read, and it exists for
    * GLIMPSE, which reveals N at once and must not mutate anything before its
@@ -2885,9 +2885,10 @@ export class E {
   }
   draw(seat: Seat, n: number, silent = false): void {
     const drawn: CardName[] = [];
+    let short = false;
     for (let i = 0; i < n; i++) {
       const c = this.takeFromDeck(seat);
-      if (c === undefined) break;
+      if (c === undefined) { short = true; break; }
       drawn.push(c);
     }
     const got = drawn.length;
@@ -2904,6 +2905,53 @@ export class E {
       // firing triggers outside any settle() window would be unsound.
       if (this.s.battle) this.fireEvent('draw', ev);
     }
+    // CR 104.5 / CT-385: the cards that were there are drawn, and then the draw
+    // that found nothing ends the game. `silent` is the deal's opening hand,
+    // which is not a draw in play (a Weekly Challenge deck may be shorter than
+    // its opening hand).
+    if (short && !silent) this.deckedOut(seat);
+  }
+
+  /**
+   * CR 104.5 / CT-385: `seat` had to draw, and its deck AND its recycle pile
+   * were empty (CR 408.2b: the pile is shuffled in first, so "empty" means both
+   * — Caleb 2025-03-24, the bin is NOT shuffled back in).
+   *
+   *   · constructed — that player loses. Caleb, rules-questions 2025-04-01: "In
+   *     constructed you lose if you draw on an empty deck"; 2025-08-04: "in
+   *     constructed you lose". Single Card Duel is constructed (CR D8.2).
+   *   · a shared deck (live draft, and 'shared') — the game ends and the higher
+   *     life total wins. Caleb 2025-06-25: "The game ends, highest life total
+   *     wins"; 2025-08-04: "in live draft the game just ends if you run out of
+   *     cards (don't make sense to make a player lose since its a shared
+   *     deck)". An exact tie is not in his words: it goes against the
+   *     initiative player, as a simultaneous loss does (CR 104.1a, the owner
+   *     2026-10-25) — PROVISIONAL, put to the owner.
+   *   · a lesson deal (Learn to Play, Weekly Challenges, CR D8.1) — nothing: the
+   *     player draws fewer and plays on, as every lesson and challenge run so
+   *     far was played.
+   *
+   * The owner, 2026-10-24, asked whether to follow Caleb on deck-out: "Follow
+   * Caleb". The game-over carries `deckedOut: <seat>`.
+   */
+  deckedOut(seat: Seat): void {
+    if (this.s.winner !== null || this.s.lesson) return;
+    let loser: Seat = seat;
+    const shared = this.s.mode !== 'constructed';
+    if (shared) {
+      const [a, b] = this.s.players as [PlayerState, PlayerState];
+      loser = a.life < b.life ? a.seat : b.life < a.life ? b.seat : this.initiative;
+    }
+    const winner = other(loser);
+    this.s.winner = winner;
+    this.s.phase = 'gameover';
+    this.s.resolving = null;   // nothing is resolving any more — the game is over
+    this.ev('gameOver', shared
+      ? `*** The deck has run out — the game ends. ${this.pname(winner)} wins `
+        + (this.player(winner).life > this.player(loser).life ? 'on the higher life total. ***' : 'the tie on life: it goes against the initiative player. ***')
+      : `*** ${this.pname(seat)} has to draw from an empty deck and loses — ${this.pname(winner)} wins! ***`,
+      { winner, deckedOut: seat });
+    throw new GameEnded();
   }
 
   /**
@@ -3435,6 +3483,10 @@ export class E {
    * way regroup/end-of-turn triggers are handled.
    */
   rotDamage(): void {
+    // CR 104.1a / CT-409: NOT a life batch. Caleb, 2026-08-28, on both players
+    // holding more rot than life: "initiative takes their deployment first and
+    // dies" … "But rot isn't simultaneous". So the initiative seat's rot lands
+    // and is checked before the other seat's.
     const run = (): void => {
       for (const seat of [this.initiative, this.nit]) {
         const n = this.rot(seat);
@@ -4934,13 +4986,73 @@ export class E {
     const ev = this.ev('lifeLost', `${p.name} loses ${n} life (${why}) → ${p.life}.`,
       { seat, n, why, ...(this.s.battle ? { region: this.s.battle.region } : {}), ...(extra ?? {}) });
     this.fireEvent('lifeLost', ev);   // "when a player loses life" triggers (region-scoped in battle, CR 101.6)
+    // CR 104.1a / CT-409: inside one effect the loss waits for the effect's other
+    // life changes (`lifeBatch`); anywhere else it is checked at once.
     if (p.life <= 0 && this.s.winner === null) {
-      this.s.winner = other(seat);
-      this.s.phase = 'gameover';
-      this.s.resolving = null;   // nothing is resolving any more — the game is over
-      this.ev('gameOver', `*** ${this.pname(other(seat))} wins! ***`, { winner: other(seat) });
-      throw new GameEnded();
+      if (this.lifeBatchDepth === 0) this.checkLifeTotals();
     }
+  }
+
+  /**
+   * CR 104.1a / CT-409: >0 while the life changes of ONE effect are being
+   * applied together — one resolving effect part (the unit CR 112.8 deals damage
+   * in and CR 708.9 creates tokens in), one combat-damage sub-step, one rot
+   * step. Per-apply engine state, never serialized: a suspension inside the
+   * batch throws past it, and the part (or seam) is replayed from its start.
+   */
+  private lifeBatchDepth = 0;
+
+  /**
+   * CR 104.1a / CT-409: run `body` as one effect's worth of life changes. A
+   * player brought to 0 inside it is not out yet: every change `body` makes is
+   * applied first, and only when the outermost batch finishes are the totals
+   * checked (`checkLifeTotals`). A throw (a suspension, a rewind) skips the
+   * check — the work is replayed and checked when it really finishes.
+   */
+  lifeBatch(body: () => void): void {
+    this.lifeBatchDepth++;
+    try {
+      body();
+    } finally {
+      this.lifeBatchDepth--;
+    }
+    if (this.lifeBatchDepth === 0) this.checkLifeTotals();
+  }
+
+  /**
+   * CR 104.1a / CT-409: end the game if a life total is at 0 or less.
+   *
+   * Two players down at once — the owner, 2026-10-25: "Highest total, tie: INT
+   * loses"; Caleb, rules-questions 2025-03-10: "currently the rule is player
+   * with the highest life total wins". The higher total wins (negative numbers
+   * count), and on an exact tie the initiative player loses. The game-over
+   * event then carries `alsoAtZero: <winner>` — the winner fell too.
+   */
+  checkLifeTotals(): void {
+    if (this.s.winner !== null) return;
+    const down = this.s.players.filter(p => p.life <= 0);
+    if (!down.length) return;
+    let loser: Seat;
+    if (down.length === 1) loser = down[0]!.seat;
+    else {
+      const [a, b] = down as [PlayerState, PlayerState];
+      loser = a.life < b.life ? a.seat : b.life < a.life ? b.seat : this.initiative;
+    }
+    const winner = other(loser);
+    this.s.winner = winner;
+    this.s.phase = 'gameover';
+    this.s.resolving = null;   // nothing is resolving any more — the game is over
+    if (down.length === 1) {
+      this.ev('gameOver', `*** ${this.pname(winner)} wins! ***`, { winner });
+    } else {
+      const w = this.player(winner).life, l = this.player(loser).life;
+      this.ev('gameOver',
+        `*** Both players fell to 0 or less — ${this.pname(winner)} wins `
+        + (w > l ? `on the higher life total (${w} to ${l}). ***`
+          : `the tie at ${w}: it goes against the initiative player. ***`),
+        { winner, alsoAtZero: winner });
+    }
+    throw new GameEnded();
   }
 
   /** CR 104.4: end the game with `seat` as the loser — the concede path. Shares
@@ -12060,7 +12172,9 @@ export class E {
       const outerBatch = this.tokenBatch;
       this.tokenBatch = [];
       try {
-        def.run(this, ctx);
+        // CR 104.1a / CT-409: one resolving part is one effect — its life
+        // changes all land before a player at 0 loses
+        this.lifeBatch(() => def.run(this, ctx));
         const batch = this.tokenBatch;
         this.tokenBatch = null;
         if (batch?.length) this.settleTokenBatch(batch);
@@ -14831,28 +14945,35 @@ export class E {
           n: hits.reduce((n, h) => n + h.dealt, 0), hits });
       this.fireEvent('combatFaceDamage', ev);
     }
-    for (const seat of [this.initiative, this.nit]) {
-      const n = playerDmg[seat] ?? 0;
-      // the `hits` on a `lifeLost` keep their post-replacement shares summing
-      // to the loss it reports (CR 608.9a); `combatFaceDamage` above is where the
-      // dealt-but-not-lost half is answerable.
-      if (n > 0) this.loseLife(seat, n, 'combat', { hits: breakdown[seat] ?? [] });
-    }
-    // CR 802.24a {Lethal}: "Any combat damage from a lethal unit will kill a player."
-    // Last, because a normal-damage kill above already ended the game (and a
-    // {Blessed} gain has already been applied).
-    // CT-296 (owner, 2026-10-22): only damage that REACHES the player kills. A hit
-    // WHOLLY redirected into a unit (Oorblak: "that damage is dealt to me
-    // instead") dealt the player nothing — the owner, 2026-10-16: "The column
-    // doesn't even get to deal damage to the player. It gets redirected to the
-    // Oorblak instead." A {Piercing} excess that gets past the redirect does
-    // reach the player, and a hit Blightsea Polyp turns into rot is still
-    // damage dealt to the player (CR 608.8a, Caleb RQ 1298894533718970370), so
-    // both still kill.
-    L.playerHits.forEach((hit, i) => {
-      if (!hit.attrs.has('Lethal')) return;
-      if ((reached[i] ?? 0) > 0) this.killPlayer(hit.seat, `${hit.label} is Lethal`);
-      else this.ev('info', `${hit.label} is Lethal, but none of its damage reached ${this.pname(hit.seat)}.`, { seat: hit.seat });
+    // CR 104.1a / CT-409: one sub-step's face damage is one simultaneous event —
+    // an unblocked attacker and a {Piercing} blocker can bring BOTH players to
+    // 0 here — so every loss below, {Lethal}'s included, lands before anyone
+    // loses (Caleb 2025-03-10, asked about two players dying "in the same
+    // combat step": "the player with the highest life total wins").
+    this.lifeBatch(() => {
+      for (const seat of [this.initiative, this.nit]) {
+        const n = playerDmg[seat] ?? 0;
+        // the `hits` on a `lifeLost` keep their post-replacement shares summing
+        // to the loss it reports (CR 608.9a); `combatFaceDamage` above is where the
+        // dealt-but-not-lost half is answerable.
+        if (n > 0) this.loseLife(seat, n, 'combat', { hits: breakdown[seat] ?? [] });
+      }
+      // CR 802.24a {Lethal}: "Any combat damage from a lethal unit will kill a player."
+      // Last, after the normal damage (and after any {Blessed} gain); a player
+      // that damage already took to 0 is not killed twice (killPlayer).
+      // CT-296 (owner, 2026-10-22): only damage that REACHES the player kills. A hit
+      // WHOLLY redirected into a unit (Oorblak: "that damage is dealt to me
+      // instead") dealt the player nothing — the owner, 2026-10-16: "The column
+      // doesn't even get to deal damage to the player. It gets redirected to the
+      // Oorblak instead." A {Piercing} excess that gets past the redirect does
+      // reach the player, and a hit Blightsea Polyp turns into rot is still
+      // damage dealt to the player (CR 608.8a, Caleb RQ 1298894533718970370), so
+      // both still kill.
+      L.playerHits.forEach((hit, i) => {
+        if (!hit.attrs.has('Lethal')) return;
+        if ((reached[i] ?? 0) > 0) this.killPlayer(hit.seat, `${hit.label} is Lethal`);
+        else this.ev('info', `${hit.label} is Lethal, but none of its damage reached ${this.pname(hit.seat)}.`, { seat: hit.seat });
+      });
     });
   }
 

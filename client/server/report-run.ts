@@ -95,7 +95,7 @@ function actionList(v: unknown): Action[] | string {
 const GOALS: Record<Goal['kind'], 'n' | 'pt' | 'tokens' | 'none'> = {
   unitsInPlay: 'n', spellTokens: 'n', unitSize: 'pt', counters: 'n', unitsPlayed: 'n',
   tokenSet: 'tokens', drawsInTurn: 'n', dummyWins: 'none', oneShot: 'none', graftLadder: 'n',
-  manaSpent: 'n', stackDepth: 'n', life: 'n',
+  manaSpent: 'n', stackDepth: 'n', life: 'n', doubleKO: 'none',
 };
 
 function goalOf(v: unknown): Goal | null {

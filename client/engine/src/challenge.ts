@@ -43,7 +43,9 @@ export type Goal =
   | { kind: 'graftLadder'; n: number }   // seat 0 fires a graft effect of exactly k parts, for every k in 1..n
   | { kind: 'manaSpent'; n: number }     // seat 0 spends ≥ n mana (cumulative)
   | { kind: 'stackDepth'; n: number }    // ≥ n effects on the stack at once
-  | { kind: 'life'; n: number };         // seat 0 has ≥ n life
+  | { kind: 'life'; n: number }          // seat 0 has ≥ n life
+  // ── added 2026-10-25 (the week of 10 Jan) ──
+  | { kind: 'doubleKO' };                // the game ends with BOTH players at 0 or less, from one effect (CR 104.1a)
 
 /** A rule a challenge adds to the game, shown to the player as an emblem. */
 export type ChallengeEmblem = 'anyActivations';
@@ -273,6 +275,10 @@ export interface RunAcc {
   stackBest?: number;
   /** the dummy won the game by an effect it controls (dummyWins) / died (oneShot) */
   ended?: 'dummyWon' | 'dummyDied';
+  /** the game ended with both players at 0 or less (doubleKO): one effect took
+   * them both there, CR 104.1a / CT-409. Optional and additive, beside `ended`,
+   * so the dummyWins/oneShot readings of such an ending are unchanged */
+  bothFell?: true;
   /** the run broke a rule of its goal and cannot meet it any more (oneShot:
    * the dummy lost life and lived); a sentence, and verifyRun's refusal */
   failed?: string;
@@ -444,7 +450,7 @@ function goalTarget(goal: Goal): number {
   switch (goal.kind) {
     case 'unitSize': return Math.max(Math.max(1, goal.p), Math.max(1, goal.t));
     case 'tokenSet': return Object.values(goal.tokens).reduce((a, b) => a + b, 0);
-    case 'dummyWins': case 'oneShot': return 1;
+    case 'dummyWins': case 'oneShot': case 'doubleKO': return 1;
     default: return goal.n;
   }
 }
@@ -478,6 +484,8 @@ function isGraftCause(effectKey: string | undefined): boolean {
  *    The dummy WON by an effect it controls when the item resolving as the
  *    game ended is the dummy's (a concession is not an effect). The dummy
  *    DIED in one blow when the action that killed it took life from it once.
+ *  · bothFell: the game-over says the winner fell too (`alsoAtZero`, CR 104.1a):
+ *    one effect took both players to 0 or less.
  *  · failed (oneShot): the dummy lost life and lived, or took two losses in
  *    the action that killed it — "if it takes any amount of damage that
  *    isn't lethal, you lose".
@@ -513,6 +521,10 @@ function foldTallies(next: RunAcc, before: GameState, action: Action, after: Gam
     } else if (ev.type === 'gameOver') {
       if (d['winner'] === DUMMY && d['conceded'] === undefined && resolving?.controller === DUMMY) next.ended = 'dummyWon';
       if (d['winner'] === PLAYER && d['conceded'] === undefined) next.ended = 'dummyDied';
+      // CR 104.1a / CT-409: the engine stamps `alsoAtZero` when one effect took
+      // both players to 0 or less (a loss is only checked once an effect has
+      // finished, so two players down at once means the same effect)
+      if (d['alsoAtZero'] !== undefined && d['conceded'] === undefined) next.bothFell = true;
     }
   }
   // mana: open → expended, resource by resource, within one turn
@@ -569,6 +581,7 @@ export function foldRun(acc: RunAcc, before: GameState, action: Action, after: G
     : g.kind === 'stackDepth' ? next.stackBest ?? 0
     : g.kind === 'dummyWins' ? Number(next.ended === 'dummyWon')
     : g.kind === 'oneShot' ? Number(next.ended === 'dummyDied' && !next.failed)
+    : g.kind === 'doubleKO' ? Number(next.bothFell === true)
     : boardValue(g, after);
   if (!next.failed && next.value >= goalTarget(g)) { next.met = true; next.metTurn = after.turn; }
   return next;
@@ -617,6 +630,7 @@ export function goalText(goal: Goal): string {
     case 'manaSpent': return `Spend ${goal.n} mana`;
     case 'stackDepth': return `Have ${plural(goal.n, 'effect', 'effects')} on the stack at once`;
     case 'life': return `Reach ${goal.n} life`;
+    case 'doubleKO': return 'Defeat the dummy and yourself with the same effect';
   }
 }
 
@@ -636,6 +650,7 @@ export function progressLabel(goal: Goal): string {
     case 'manaSpent': return 'Mana spent';
     case 'stackDepth': return 'Deepest stack';
     case 'life': return 'Life';
+    case 'doubleKO': return 'Both defeated';
   }
 }
 
