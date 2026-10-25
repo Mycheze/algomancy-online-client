@@ -36,6 +36,7 @@ import {
   type FigCard, type Figure, type Lesson, type LessonCtx,
 } from './lessonflow.ts';
 import { figCardHtml } from './lessonlayer.ts';
+import { shopLinksHtml } from './legal.ts';
 import {
   isAugmentCard, isBattleCard, isGraftCard, isHasteCard, isLearnElement, isVirus, learnerPool,
   type LearnElement,
@@ -791,7 +792,13 @@ You can **rewind to the start of this turn** and try again, or start a new game.
 - **Tips for this client** — the full interface guide — is on the Learn to play menu.
 
 Ready for a person? Start a live draft from the home screen.`,
-      figure: { kind: 'cards', cards: ['Player Icons Card', 'Player Keywords Card'], caption: 'The two reference cards from the box — hover to read them.' },
+      figure: [
+        // BL-12 / BL-15: the tutorial ends at the shop. The owner, 2026-08-25:
+        // "Give them the links and recommend buying the game or AT LEAST the
+        // print and play version to support the creator of this excellent game."
+        { kind: 'html', html: `<div class="lshop"><p><b>Buy the game</b>, or at least the print-and-play, to support the creator of this excellent game.</p>${shopLinksHtml()}</div>` },
+        { kind: 'cards', cards: ['Player Icons Card', 'Player Keywords Card'], caption: 'The two reference cards from the box — hover to read them.' },
+      ],
     },
   ],
 };

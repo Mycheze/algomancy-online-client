@@ -180,6 +180,17 @@ export const BROWSER_KEYS: readonly StoredLine[] = [
 
 // ── the copy ──────────────────────────────────────────────────────────
 
+/** the two shop buttons, box first. Shared by the pitch below and the end of
+ *  Learn to Play (ui/lessons.ts, BL-12), so the links cannot drift apart. */
+export function shopLinksHtml(): string {
+  return `<div class="lgbuys">
+      <a class="lgbuy primary" href="${BUY_PHYSICAL}" target="_blank" rel="noopener noreferrer">
+        Buy the physical game →</a>
+      <a class="lgbuy" href="${BUY_PNP}" target="_blank" rel="noopener noreferrer">
+        Buy the print-and-play →</a>
+    </div>`;
+}
+
 /** the pitch, in the fixed order: box, then print-and-play, then "and this is
  *  free". Written once and used by both the footer and the About page. */
 function pitchHtml(): string {
@@ -190,12 +201,7 @@ function pitchHtml(): string {
       is what funds more of it. If you enjoy it here, that is the moment to buy it.</p>
     <p><b>Or the print-and-play.</b> The whole game for very little money — and every
       copy still supports the creator.</p>
-    <div class="lgbuys">
-      <a class="lgbuy primary" href="${BUY_PHYSICAL}" target="_blank" rel="noopener noreferrer">
-        Buy the physical game →</a>
-      <a class="lgbuy" href="${BUY_PNP}" target="_blank" rel="noopener noreferrer">
-        Buy the print-and-play →</a>
-    </div>
+    ${shopLinksHtml()}
     <p class="lgdim">Both links go to Caleb Gannon's own shop. No affiliate code, no cut —
       nothing reaches this project.</p>`;
 }

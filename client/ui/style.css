@@ -3587,6 +3587,9 @@ a.lcard { color: var(--accent); text-decoration: underline dotted; cursor: help;
 .lquote cite { display: block; margin-top: 3px; font-style: normal; font-size: 11px; color: var(--dim); }
 .lfig { margin: 10px 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .lfig figcaption { font-size: 12px; color: var(--dim); text-align: center; }
+/* BL-12: the end of Learn to Play points at the shop (ui/legal.ts shopLinksHtml) */
+.lshop { text-align: center; }
+.lshop .lgbuys { justify-content: center; }
 .lfigcards { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 .lfigcard { cursor: help; }
 .lfigimg { width: 150px; border-radius: 7px; display: block; box-shadow: 0 3px 12px rgba(0,0,0,.5); }
