@@ -9376,12 +9376,13 @@ export class E {
     const name = zone[index];
     this.need(name !== undefined, 'no card there to apply');
     this.need(this.canPayCard(seat, name, { purpose: 'mod' }), 'cannot pay for that mod');
-    // CT-344: the hand through its choke point; the bin by hand, keeping the
-    // foreign-owner table's positions true (the card itself is erased with the
-    // spell, so its own owner does not matter). ⚠ The bin exit fires no
-    // 'leftBin' (CR 405.7) — a known gap, left as it was so no replay changes.
+    // CT-344: the hand through its choke point. CR 405.7 (CT-366): the bin through
+    // ITS choke point too, so 'leftBin' fires — a Rotling paid as a {Modular}
+    // cost out of the bin hears its own exit, as it does from every other bin
+    // exit. The owner `takeFromBin` returns is not kept: the mod is erased with
+    // the spell (CR 724.5), and the erased pile records no owner.
     if (modFrom === 'hand') this.takeFromHand(seat, index);
-    else { zone.splice(index, 1); this.foreignSpliced(seat, 'bin', index, name); }
+    else this.takeFromBin(seat, index, 'modded');
     this.payCard(seat, name, { purpose: 'mod' });
     (item.mods ??= []).push({ card: name, from: modFrom });
     // CR 724.4: only a GRAFT brings an EFFECT with it — `graft:${name}` is the key
