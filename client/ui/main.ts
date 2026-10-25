@@ -106,6 +106,7 @@ import {
 import { E } from '../engine/src/engine.ts';
 import { fitBoard, focusRegion, layoutV2, ringBoard, setLayoutV2 } from './layout.ts';
 import { freeSpot, type Rect } from './freespot.ts';
+import { railClearance } from './railclear.ts';
 import {
   menuBeside, setZoomDecorator, zoomAfterPaint, zoomAt, zoomCheck, zoomHeld, zoomHold, zoomNotePointer, zoomOff,
   zoomOn, zoomRect,
@@ -2080,6 +2081,9 @@ function relayout(): void {
   if (regionsBoard()) { fitBoard(document, baseCardWidth()); ringBoard(document, motionOn()); }
   placeStackWindow();
   placeCasting();
+  // CT-369: the pick dialog is centred in the window left of the rail
+  $app.style.setProperty('--pick-railclear',
+    `${railClearance(innerWidth, document.querySelector('#app > .side')?.getBoundingClientRect() ?? null)}px`);
   // the windows placed above are arrow endpoints (the stack, the card being
   // played): an arrow measured before they moved points at where they were
   repaintArrows();

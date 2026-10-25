@@ -4150,6 +4150,16 @@ html.touch .remind, html.touch .remindrow:not(:has(b)) { display: none; }
 .overlaybox.pickbox { width: min(1180px, 96vw); max-height: 94vh; max-height: 94dvh; overflow-y: auto;
   padding: 10px 14px 14px; gap: 6px; }
 .pickbox .pickbar { display: flex; justify-content: flex-end; }
+/* CT-369: the rail stays usable while the pick is up — above the pick's dim
+   (a click on report used to land on the dim, or on the box's own hide button,
+   and hid the pick instead), with the box centred in the rest of the window
+   (main.ts relayout sets --pick-railclear from ui/railclear.ts). Not under
+   900px, where the regions board's rail is a drawer that already sits above. */
+.overlay.pickover { padding-right: var(--pick-railclear, 0px); }
+.overlaybox.pickbox { max-width: 100%; }
+@media (min-width: 901px) {
+  #app.board:has(> .overlay.pickover) > .side { position: relative; z-index: 59; }
+}
 .pickbox .draftpanel { border: none; background: none; margin: 0; padding: 0; }
 .pickbox .draftpanel .zone { gap: 8px; }
 .pickbox .draftpanel .card { width: clamp(64px, 9.5vw, 118px); }
