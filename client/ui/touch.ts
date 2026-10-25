@@ -100,6 +100,22 @@ export function tapRead(el: Element | null, at: { x: number; y: number }): boole
   return zoomPeek(el, at);
 }
 
+/** The buttons drawn as a finger's route to USE a card a tap only reads: the
+ * board's button on a tapped token or resource (CT-408, ui/tapgo.ts) and the
+ * button under a usable card in the bin dialog (CT-381, main.ts binDialogHtml).
+ * The read is up while the finger reaches for them, so a tap on one must be
+ * that button, not "put the read away" (CT-411: the bin's took two taps). */
+export const USE_AFTER_READ = '[data-btn="tapgo"], [data-btn="binuse"]';
+
+/** Is the click this lift makes to be eaten? The lift of a peek (or the next
+ * tap after a tap's read) is not a tap: nothing under it may act — except a
+ * USE_AFTER_READ button, which is the tap that was asked for. `go` is a tap on
+ * the zoom's own button, already acted on by the lift, so its click is eaten. */
+export function liftSwallows(was: boolean, type: string, go: boolean, target: Element | null): boolean {
+  if (!was || type !== 'pointerup') return false;
+  return go || !target?.closest?.(USE_AFTER_READ);
+}
+
 export function installTouch(deps: TouchDeps): void {
   // A TABLET SHOULD NOT OPEN IN THE DESKTOP LOOK and change under the first
   // tap (the compact rail is keyed off html.touch — owner, 2026-09-27: the
@@ -150,11 +166,7 @@ export function installTouch(deps: TouchDeps): void {
     goFrom = null;
     peekEnd();
     if (go) deps.zoomGo?.();
-    // the lift of a peek is not a tap: nothing under it may act — except the
-    // board's own button a tap's read put up to act with (CT-408): the card is
-    // read, and the next tap on its button is the one that was asked for
-    const onGo = !!(e.target as Element | null)?.closest?.('[data-btn="tapgo"]');
-    if (was && e.type === 'pointerup' && (go || !onGo)) swallowNextClick();
+    if (liftSwallows(was, e.type, go, e.target as Element | null)) swallowNextClick();
   };
   document.addEventListener('pointerup', lift, { passive: true });
   document.addEventListener('pointercancel', lift, { passive: true });
