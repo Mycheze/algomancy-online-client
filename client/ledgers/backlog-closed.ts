@@ -2555,4 +2555,83 @@ export const CLOSED: Entry[] = [
       + 'mechanism covers it. Extend server/e2e/test-accounts.ts with the probe above. This shape has '
       + 'no priority field; the title carries the \u26a0 instead. Still waiting on doneWhen 4 (the LAN-era claims).',
   },
+  {
+    id: 'BL-16',
+    slug: 'admin-panel',
+    title: 'Admin panel — accounts, live rooms, and bug-report triage',
+    area: 'accounts',
+    size: 'M',
+    status: 'done',
+    track: 'feature',
+    evidence: {
+      commit: '7cb3a8f3',
+      guards: [
+        "301-admin-wiring.test.ts::BL-16 \u00a71 the page asks the SERVER who is an admin, and carries no check of its own",
+        "301-admin-wiring.test.ts::BL-16 \u00a72 main.ts registers the page: init, screen and handleButton",
+      ],
+    },
+    said: 'Admin panel/accounts',
+    means:
+      'An operator page for a public deploy: account management (rename, ban, reset, '
+      + 'delete), a list of live rooms and who is in them, and a triage queue for the 🐛 '
+      + 'reports the client already writes to issues.jsonl — read them, mark them, close '
+      + 'them, without SSHing into the box.',
+    doneWhen: [
+      'An admin account can list, rename, ban and delete accounts',
+      'Live rooms are visible with their seats and status',
+      'Bug reports from the in-client 🐛 button are readable and closable in the browser',
+      'Everything on the page is refused to non-admins, server-side, not just hidden in the UI',
+      'Admin is a flag on an account, grantable only by another admin, and independent of any judge badge',
+      'Ben\'s account has the flag and no other account does until he grants it',
+    ],
+    decided: [
+      'Needed because the target is a public deploy with strangers.',
+      'ADMIN IS A FLAG ON AN ACCOUNT, and it is NOT the judge badge. Owner, 2026-08-25, asked exactly that: "Ben is an admin and L1 judge. He will set the other accounts when anyone else maybe ends up joining." — note that he puts himself at L1 while holding admin, which settles the question outright: the two are independent axes. One admin to start, who grants the rest by hand; there is no self-service path to it.',
+      'The account-claiming problem is NOT this entry. Owner, 2026-08-25, asked whether fixing it belongs here or in its own entry, answered with the rule instead: "When live, no, you will not claim the games unless you make an account right after finishing playing, in which case that becomes your first tracked game." That is a change to server/accounts.ts, not to the admin page, so it is filed as BL-28.',
+    ],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/server/accounts.ts',
+      'client/server/api-accounts.ts',
+      'client/server/main.ts',
+      'client/server/rooms.ts',
+      'client/ui/account.ts',
+    ],
+    notes:
+      'CLOSED AS DONE 2026-10-25, the owner: asked which never-finishing entries to close, he chose "BL-16 admin panel". Rename, ban and delete stay unbuilt; open a new entry if one is ever needed. '
+      + 'SHIPPED 2026-09-16, and the entry stays OPEN for the destructive half. The owner asked '
+      + 'for "an admin dashboard where I can see: all accounts/users (and be able to directly '
+      + 'give people Judge level tags and such), all reports (and their implementation status, '
+      + 'and be able to thumbs up/down them), a full game history (so I can see what people '
+      + 'have been playing)" and, asked, added live rooms. Four of the six doneWhen bullets are '
+      + 'now true: accounts are listed, live rooms are visible, reports are readable and '
+      + 'markable in the browser, every route is refused server-side, admin is an account flag '
+      + 'independent of the judge badge, and only Bena holds it.\n\n'
+      + 'STILL OPEN, ON PURPOSE: rename, ban and delete. Asked which account actions to build, '
+      + 'the owner chose read + badges + the admin flag — everything reversible — and left the '
+      + 'destructive set for when he wants it. A delete has no undo below the nightly var/ '
+      + 'tarball, so it wants a typed-name confirmation when it is built.\n\n'
+      + 'THE ONE DESIGN CONSTRAINT WORTH CARRYING FORWARD: a report\'s implementation STATUS '
+      + 'is not server state. It lives in ledgers/playtest-ledger.ts, which is committed '
+      + 'source, so server/admin.ts imports the ledger and joins by id — the status shown is '
+      + 'the status of the RUNNING BUILD, which is the only version of the question an '
+      + 'operator has. It is read-only in the browser because an edit would write to a source '
+      + 'file on the deploy box and die at the next git pull. The writable signal is the '
+      + 'triage mark (var/report-marks.jsonl, append-only, last-write-wins), which comes down '
+      + 'with `npm run reports` so the next round can see what he already dismissed.\n\n'
+      + 'Two things were flagged here as "raise with the owner rather than silently fix". '
+      + 'NAME CLAIMING was raised on 2026-08-25 and answered — it is now BL-28, with his rule '
+      + 'recorded verbatim.\n\n'
+      + 'NO EMAIL AND THEREFORE NO PASSWORD RESET was raised on 2026-09-01 (round-36 Q3) and '
+      + 'answered, and the answer was not a feature: *"DO NOT FORGET YOUR PASSWORD, THERE IS '
+      + 'NO PASSWORD RESET" must be shown at account creation.* So there is still no reset '
+      + 'route and none is planned; what changed is that the consequence is now SHOWN WHERE '
+      + 'THE DAMAGE IS DONE rather than only on the privacy page somebody would have to go '
+      + 'and read. Landed 2026-09-01 in ui/account.ts, in his own capitals, gated on '
+      + '`isRegister` so it is on the create screen and not the log-in one — a warning on the '
+      + 'log-in screen arrives after the moment it is about. 267 §7 guards all three: the '
+      + 'words, the screen, and that no reset ROUTE has quietly appeared under the shouting. '
+      + 'The admin-panel half of this entry is untouched and still open.',
+  },
 ];
