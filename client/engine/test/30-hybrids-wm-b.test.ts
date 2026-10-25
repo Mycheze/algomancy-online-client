@@ -4,9 +4,10 @@
  * Herald), sacrifice-for-tokens (Volatile Toxicity), a recall-cost activated
  * ability (Auric Ascendant), stack negation + Glimpse (Dematerialize),
  * battle-ending stack wipes (Temporal Rift), spawn-doubling (Transmutide
- * Enigma), gain-control machinery (Abduct, Mindwarp Sporefrog — white-box x
- * for Abduct, the cast-time X primitive is PARKED), modal X spells (Floral
- * Singularity — direct-run with a scripted ctx), token-birth taxes (The
+ * Enigma), gain-control machinery (Abduct, Mindwarp Sporefrog — Abduct is
+ * cast for real, X chosen and paid at cast through collectX, CR 107.2a), modal
+ * X spells (Floral Singularity — direct-run with a scripted ctx, a choice of
+ * this file, not a missing primitive), token-birth taxes (The
  * World Shepherd), modal counter sweeps (Wither and Bloom), counter movement
  * (Aethercap Siphoner), formation-counting creation/recall (Galactic
  * Germination, Lumengrove Lurker) and the start-of-deployment mass recall
@@ -286,7 +287,8 @@ test('Floral Singularity: create X 1/1s at the source\'s region, or your units b
   toDeployment(h);
   const p = h.state.deployPlayer!;
   const auric = spawn(h, p, 'Auric Ascendant');               // 2/1
-  // the cast-time X primitive is PARKED — drive the effect with a scripted ctx
+  // X is chosen and paid at cast (collectX, CR 107.2a) when the card is played;
+  // this test drives the effect directly with a scripted ctx to reach both modes
   const runFloral = (x: number, mode: string): void => {
     whiteBox(h, e => {
       const ctx: EffectCtx = {
