@@ -196,8 +196,9 @@ interface TokenBatch {
   extras: TokenExtra[];
 }
 
-/** CR 708.4a: counters about to be put on a unit — the event Counter Thief redirects */
-interface CounterEv { target: Entity }
+/** CR 708.4a: counters about to be put on a unit — the event Flux Resonator and
+ * Proliferating Slime change the number of, and Counter Thief redirects */
+interface CounterEv { target: Entity; n: number }
 
 interface ReplacementPick { label: string; card: CardName; unit: EntityId; pick: number; mod?: EntityId }
 
@@ -4641,11 +4642,7 @@ export class E {
     // `holder` is where they land: the body itself, or a redirect's unit.
     let holder: Entity = u;
     if (spawnCounters !== 0) {
-      spawnCounters += this.amountDelta({
-        kind: 'counters', region, amount: spawnCounters, unit: u, combat: false,
-        sourceSeat: seat,
-      });
-      if (spawnCounters) holder = this.replaceCounters(u, spawnCounters);
+      ({ target: holder, n: spawnCounters } = this.placeCounters(u, spawnCounters, seat));
     }
     if (spawnCounters) holder.counters += spawnCounters;
     const ownCounters = holder === u ? spawnCounters : 0;
@@ -4855,12 +4852,10 @@ export class E {
     // statement as "you did", and a card that asks WHO must get no for an
     // answer rather than a guess.
     const actor = by ?? this.partActor ?? undefined;
-    n += this.amountDelta({
-      kind: 'counters', region: target.region, amount: n, unit: target, combat: false,
-      sourceSeat: actor,
-    });
+    // CR 708.4a, 708.7: the amounts and the redirects, on one seam — an amount
+    // that did not apply is re-tested after a redirect (`placeCounters`)
+    ({ target, n } = this.placeCounters(target, n, actor));
     if (!n) return;                     // a modifier cancelled it out entirely
-    target = this.replaceCounters(target, n);
     if (!this.entity(target.id)) return;
     target.counters += n;
     const kind = n > 0 ? '+1/+1' : '-1/-1';
@@ -5665,34 +5660,94 @@ export class E {
    * itself while it is being asked. No hook does today — Counter Thief only
    * names a unit — and the chain, not the latch, is what stops two thieves.
    */
-  private replaceCounters(target: Entity, n: number): Entity {
-    if (this.inReplaceCounters) return target;
+  private placeCounters(target: Entity, n: number, actor: Seat | undefined): CounterEv {
+    const ctxFor = (now: CounterEv): import('./cards/dsl.ts').AmountCtx => ({
+      kind: 'counters', region: now.target.region, amount: now.n, unit: now.target, combat: false,
+      sourceSeat: actor,
+    });
+    if (this.inReplaceCounters) return { target, n: n + this.amountDelta(ctxFor({ target, n })) };
     const donors = this.counterDonors(target.region);
+    const amounts = this.amountReplacers(target.region);
     this.inReplaceCounters = true;
     this.replacementDepth++;
     try {
-      // what thief `d` would make of the placement — it only NAMES a unit, so
-      // this is a pure read, and every order can be tried on paper
-      const peek = (d: (typeof donors)[number], now: CounterEv): CounterEv | null => {
-        const to = d.def.replaceCounters!(this, d.anchor, now.target, n);
-        return !to || to.id === now.target.id || !this.entity(to.id) ? null : { target: to };
+      // what each would make of the placement. A thief only NAMES a unit and an
+      // amount modifier is a query, so these are pure reads, and every order
+      // can be tried on paper
+      type Peek = (now: CounterEv) => CounterEv | null;
+      const thief = (d: (typeof donors)[number]): Peek => now => {
+        if (!now.n) return null;
+        const to = d.def.replaceCounters!(this, d.anchor, now.target, now.n);
+        return !to || to.id === now.target.id || !this.entity(to.id) ? null : { target: to, n: now.n };
       };
-      const reps: Replacer<CounterEv>[] = donors.map((d, i) => ({
-        face: d.face, anchor: d.anchor, ...(d.holder.id !== d.anchor.id ? { mod: d.holder } : {}),
-        seat: d.anchor.controller, same: `${i}`, tier: 0, rank: 1,
-        apply: (now: CounterEv): CounterEv | null => {
-          const to = peek(d, now);
-          if (!to) return null;
-          this.ev('info',
-            `${d.face}: the ${Math.abs(n)} counter(s) for ${now.target.card} are placed on `
-            + `${to.target.card} instead.`,
-            { unit: to.target.id, from: now.target.id, n, by: d.face });
-          return to;
-        },
-      }));
-      return this.replaceEvent(reps, { target },
-        this.counterChooser(reps, (r, ev) => peek(donors[reps.indexOf(r)]!, ev), target, n)).target;
+      const amount = (a: (typeof amounts)[number]): Peek => now => {
+        if (!now.n) return null;
+        const d = this.amountQuery(() => a.mod.delta(this, a.anchor, ctxFor(now)));
+        return d ? { target: now.target, n: now.n + d } : null;
+      };
+      const peeks: Peek[] = [];
+      const reps: Replacer<CounterEv>[] = [];
+      // CR 708.5, 708.7: the amounts are the DEFAULT first (rank 0) — "put that
+      // many plus one" before "placed on me instead" — and they say nothing in
+      // the log, as they never did
+      amounts.forEach((a, i) => {
+        const peek = amount(a);
+        peeks.push(peek);
+        reps.push({
+          face: a.face, anchor: a.anchor, ...(a.holder.id !== a.anchor.id ? { mod: a.holder } : {}),
+          seat: a.anchor.controller, same: `a${i}`, tier: 0, rank: 0, apply: peek,
+        });
+      });
+      donors.forEach((d, i) => {
+        const peek = thief(d);
+        peeks.push(peek);
+        reps.push({
+          face: d.face, anchor: d.anchor, ...(d.holder.id !== d.anchor.id ? { mod: d.holder } : {}),
+          seat: d.anchor.controller, same: `t${i}`, tier: 0, rank: 1,
+          apply: now => {
+            const to = peek(now);
+            if (!to) return null;
+            this.ev('info',
+              `${d.face}: the ${Math.abs(now.n)} counter(s) for ${now.target.card} are placed on `
+              + `${to.target.card} instead.`,
+              { unit: to.target.id, from: now.target.id, n: now.n, by: d.face });
+            return to;
+          },
+        });
+      });
+      return this.replaceEvent(reps, { target, n },
+        this.counterChooser(reps, (r, ev) => peeks[reps.indexOf(r)]!(ev), target));
     } finally { this.inReplaceCounters = false; this.replacementDepth--; }
+  }
+
+  /** a pure amount query, under `amountDelta`'s own latch (a modifier's
+   * delta must not re-enter the amount layer) */
+  private amountQuery(q: () => number): number {
+    if (this.inAmountMods) return 0;
+    this.inAmountMods = true;
+    try { return q(); } finally { this.inAmountMods = false; }
+  }
+
+  /**
+   * CR 708.5, 708.7: the additive counter modifiers radiating in `region` — Flux
+   * Resonator, Proliferating Slime — one replacer per printed modifier, the
+   * same walk as `amountDelta` (which sums the same list for every quantity
+   * that is not counters on a unit).
+   */
+  private amountReplacers(region: number): { face: CardName; anchor: Entity; holder: Entity; mod: import('./cards/dsl.ts').AmountMod }[] {
+    if (this.inAmountMods) return [];
+    const out: { face: CardName; anchor: Entity; holder: Entity; mod: import('./cards/dsl.ts').AmountMod }[] = [];
+    this.inAmountMods = true;
+    try {
+      const live = this.radiates();
+      for (const { holder, anchor } of this.anchored((h, a) =>
+        this.donates(h, a, 'amountMods') && a.region === region && live(h, a))) {
+        for (const { face, def } of this.behaviorBlocks(holder, anchor)) {
+          for (const mod of def.amountMods ?? []) out.push({ face, anchor, holder, mod });
+        }
+      }
+    } finally { this.inAmountMods = false; }
+    return out;
   }
 
   /** CR 708.4a: the counter redirects radiating in `region`, one per face, in
@@ -5707,26 +5762,35 @@ export class E {
   }
 
   /**
-   * CR 708.4a — two or more counter redirects: the player chooses where the
-   * counters end up, when the order decides it.
+   * CR 708.4a — the counter family's question, where the order changes the
+   * outcome.
    *
-   * With redirects chaining (each applies once, to the placement as the ones
-   * before it left it), the counters end on whichever applies LAST — so the
-   * question is put the way a player thinks of it: "which unit keeps them?".
-   * A `replaceCounters` hook only NAMES a unit (it mutates nothing), so every
-   * order the seam could take is tried on paper (`exploreReplacements`), and
-   * the player is asked only when two orders end on different units. The
-   * chosen unit's first order (in the order tried, which starts from the
-   * default order) is the one the seam then runs, for real, with its log lines.
+   * Every replacer here only reads (`placeCounters`), so every order the seam
+   * could take is tried on paper (`exploreReplacements`) and the player is
+   * asked only when two orders end differently:
+   *
+   *  · ON DIFFERENT UNITS (two Counter Thieves): redirects chain, so the
+   *    counters end on whichever applies LAST, and the question is put the way
+   *    a player thinks of it: "which unit keeps them?". The chosen unit's
+   *    first order (the default order first) is the one the seam then runs.
+   *  · ON ONE UNIT, IN DIFFERENT NUMBERS (Proliferating Slime and a Counter
+   *    Thief of one player, counters aimed at an enemy: Slime first puts 3 on
+   *    the thief; the thief first moves 2 onto your own unit, where Slime no
+   *    longer applies). One order is never worse — the amounts first, CR 708.7
+   *    — so it is the ONE-CLICK DEFAULT and says what it gives, and the player
+   *    may still click the one to apply first. The owner, 2026-10-25: "give
+   *    them the option to choose, but be like 'Yo, this will be a higher
+   *    number'. Sorta like when blocking, how it asks 'Choose your split? Or
+   *    just use default?'".
    *
    * WHO: the player ordering them (`replaceEvent`) — the controller of the
-   * redirects; each owner orders their own, the initiative player's first (the
-   * owner, 2026-10-25: "Each owner, INT first"). So two thieves of DIFFERENT
-   * players are never a question: the initiative player's applies first, and
-   * the other player's — applying last — keeps the counters.
+   * replacements; each owner orders their own, the initiative player's first
+   * (the owner, 2026-10-25: "Each owner, INT first"). So two thieves of
+   * DIFFERENT players are never a question: the initiative player's applies
+   * first, and the other player's — applying last — keeps the counters.
    */
   private counterChooser(reps: Replacer<CounterEv>[],
-    peek: (r: Replacer<CounterEv>, ev: CounterEv) => CounterEv | null, target: Entity, n: number,
+    peek: (r: Replacer<CounterEv>, ev: CounterEv) => CounterEv | null, target: Entity,
   ): ReplaceChooser<CounterEv> {
     return (groups, ev, at) => {
       const follow = (): Replacer<CounterEv>[] => {
@@ -5737,21 +5801,44 @@ export class E {
       };
       if (at.memo['seq']) return follow();
       const paths = this.exploreReplacements(at.rest, ev, peek);
-      const ends = new Map<EntityId, Replacer<CounterEv>[]>();
-      for (const p of paths) if (!ends.has(p.end.target.id)) ends.set(p.end.target.id, [...at.applied, ...p.seq]);
+      const full = (p: { seq: Replacer<CounterEv>[] }) => [...at.applied, ...p.seq];
+      const ends = new Map<EntityId, { seq: Replacer<CounterEv>[]; end: CounterEv }>();
+      for (const p of paths) if (!ends.has(p.end.target.id)) ends.set(p.end.target.id, { seq: full(p), end: p.end });
       const keepers = [...ends.keys()];
-      let seq = ends.get(keepers[0]!) ?? [];
+      let seq = paths.length ? full(paths[0]!) : [];
+      const counted = (k: number): string => `${Math.abs(k)} counter${Math.abs(k) === 1 ? '' : 's'}`;
       if (keepers.length >= 2) {
-        const faces = [...new Set(reps.map(r => r.face))];
+        const faces = [...new Set(reps.filter(r => r.rank === 1).map(r => r.face))];
         const who = faces.length === 1 ? `${faces[0]}: which` : 'Which';
+        const shown = ends.get(keepers[0]!)!.end.n;
         const got = this.askReplacement(at.seat,
-          `${who} unit keeps the ${Math.abs(n)} counter(s) meant for ${this.faceName(target)}?`,
+          `${who} unit keeps the ${Math.abs(shown)} counter(s) meant for ${this.faceName(target)}?`,
           keepers.map((id, k) => {
             const u = this.entity(id)!;
             return { label: u.id === target.id ? `${this.faceName(u)} (where they were going)` : this.faceName(u),
               card: this.faceName(u), unit: id, pick: k };
           }));
-        if (got !== null) seq = ends.get(keepers[got]!)!;
+        if (got !== null) seq = ends.get(keepers[got]!)!.seq;
+      } else {
+        // one unit: does WHICH GOES FIRST change how many arrive?
+        const live = groups.filter(g => peek(g, ev) !== null);
+        const firstOf = live.map(g => paths.find(p => p.seq[0] === g)!).filter(Boolean);
+        const counts = new Set(firstOf.map(p => p.end.n));
+        if (live.length >= 2 && counts.size >= 2) {
+          const def = firstOf[0]!;
+          const on = this.faceName(def.end.target);
+          const most = firstOf.every(p => Math.abs(p.end.n) <= Math.abs(def.end.n));
+          const got = this.askReplacement(at.seat,
+            `${live.map(r => r.face).join(' and ')} both apply to the ${counted(ev.n)} for `
+            + `${this.faceName(ev.target)} — which applies first?`,
+            live.map((r, k) => ({
+              label: `${this.replacerLabel(r.face, r.anchor)} first: ${counted(firstOf[k]!.end.n)} on ${this.faceName(firstOf[k]!.end.target)}`,
+              card: r.face, unit: r.anchor.id, pick: reps.indexOf(r), ...(r.mod ? { mod: r.mod.id } : {}),
+            })),
+            { label: `Default: ${counted(def.end.n)} on ${on}${most ? ' (the higher number)' : ''}`, pick: reps.indexOf(live[0]!) });
+          const k = live.findIndex(r => reps.indexOf(r) === got);
+          if (k > 0) seq = full(firstOf[k]!);
+        }
       }
       at.memo['seq'] = seq;
       return follow();
@@ -14693,8 +14780,11 @@ export class E {
     // CR 708.4a: where two Oorblaks, or two Counter Thieves, could each take what
     // this sub-step deals, the sub-step is a seam the player is asked from
     // (`orderSeamRun`). Anywhere else it runs exactly as it always did.
+    // …or a Counter Thief beside an amount modifier of one player (Proliferating
+    // Slime: which applies first can change how many arrive, `counterChooser`)
+    const thieves = this.counterDonors(b.region).length;
     const mayAsk = this.combatDonorCount(b.region, 'replaceCombatDamageToPlayer') >= 2
-      || this.counterDonors(b.region).length >= 2;
+      || thieves >= 2 || (thieves >= 1 && this.amountReplacers(b.region).length >= 1);
     if (mayAsk) this.orderSeamRun('combat', `combat:${sub}`, run);
     else run();
   }
