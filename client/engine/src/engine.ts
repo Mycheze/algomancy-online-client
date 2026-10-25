@@ -13638,6 +13638,9 @@ export class E {
       // sub-step deals its damage into the board that left behind.
       const next = b.pendingSub ?? 'after';
       b.pendingSub = null;
+      // CR 608.3d (CT-378): the window after the Swift sub-step is the one
+      // whose close decides whether the Sluggish sub-step is a step
+      if (next === 'normal' && b.damageSubs) this.rescheduleSluggish(b);
       b.damageStep = next;
       this.pumpCombatDamage();
     } else if (b.step === 'afterWindow') {
@@ -13650,15 +13653,42 @@ export class E {
    * real step with priority between them. The walk is `assignCombatDamage`'s
    * own, asked of all three sub-steps instead of one, so a sub-step counts
    * here exactly when that method would deal damage in it. */
-  private subStepsWithStrikes(b: BattleState): DamageSubStep[] {
-    const ALL = ['Swift', 'normal', 'Sluggish'] as const;
+  private subStepsWithStrikes(b: BattleState,
+    among: readonly DamageSubStep[] = ['Swift', 'normal', 'Sluggish'] as const): DamageSubStep[] {
     // CR 606.4f: a blocking column strikes only with an attacker in front of it, so
     // a side-block (and a CR 608.4e hole) opens no damage window of its own
-    return ALL.filter(sub => b.columns.some((_col, ci) => {
+    return among.filter(sub => b.columns.some((_col, ci) => {
       const x = this.exchangeAt(b, ci);
       return (x.atk.length > 0 && this.strikes(b, 'atk', ci, x.atk, sub, x.pure))
         || (x.blk.length > 0 && x.atk.length > 0 && this.strikes(b, 'blk', ci, x.blk, sub, x.pure));
     }));
+  }
+
+  /**
+   * CR 608.3d (CT-378) — the ONE revision of the schedule fixed as the step
+   * opened: as the window after the Swift sub-step closes, the Sluggish
+   * sub-step is scheduled exactly when some half-column will strike in it
+   * NOW. Added, so a column given {Sluggish} in that window gets the
+   * before-Sluggish window ahead of its strike; dropped, so a Sluggish striker
+   * gone by then leaves the normal sub-step last, straight on to after combat.
+   * The designer, rules-questions 2025-04-20: "Need sluggish to exist after
+   * here---> Combat / Before Sluggish priority window / Sluggish damage"
+   * [1363278470938890250]; "Before sluggish priority <- remaining columns will
+   * deal sluggish damange here" [1363287109401710603]; to "if no sluggish unit
+   * exists ... you will go from normal damage -> after combat": "correct" /
+   * "you would have to add sluggish during the "after swift" window"
+   * [1363288029799911664]; and on Sluggish removed in that window, "should do
+   * regular damage in that case" / "and no sluggish priority window would be
+   * opened" [1363281782749003809].
+   *
+   * Only Sluggish moves, and only here. The Swift sub-step has already
+   * happened, so a Swift unit dying cannot unsplit the step (297), and the
+   * normal sub-step keeps its place however its strikers fared (CR 608.3c).
+   */
+  private rescheduleSluggish(b: BattleState): void {
+    const subs: DamageSubStep[] = b.damageSubs!.filter(s => s !== 'Sluggish');
+    if (this.subStepsWithStrikes(b, ['Sluggish']).length) subs.push('Sluggish');
+    b.damageSubs = subs;
   }
 
   // ── combat ──────────────────────────────────────────────────────────
