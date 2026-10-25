@@ -2797,9 +2797,9 @@ export class E {
    * deck takes that card, refills, and takes the second from the shuffled
    * pile — which is what a player does at the table. The pile-empty guard is
    * what makes a truly empty zone terminate instead of shuffling nothing
-   * forever; a player with an empty deck AND an empty pile simply draws
-   * fewer, which was the behaviour before the mark and is still the rule (CR 401.4: there is no
-   * deck-out loss).
+   * forever; a player with an empty deck AND an empty pile draws fewer
+   * (CR 401.4), and a DRAW that finds both empty then ends the game
+   * (`draw` → `deckedOut`, CR 104.5 / CT-385). A mill or a reveal does not.
    *
    * `need` is how many cards the caller is about to read, and it exists for
    * GLIMPSE, which reveals N at once and must not mutate anything before its
@@ -2885,9 +2885,10 @@ export class E {
   }
   draw(seat: Seat, n: number, silent = false): void {
     const drawn: CardName[] = [];
+    let short = false;
     for (let i = 0; i < n; i++) {
       const c = this.takeFromDeck(seat);
-      if (c === undefined) break;
+      if (c === undefined) { short = true; break; }
       drawn.push(c);
     }
     const got = drawn.length;
@@ -2904,6 +2905,53 @@ export class E {
       // firing triggers outside any settle() window would be unsound.
       if (this.s.battle) this.fireEvent('draw', ev);
     }
+    // CR 104.5 / CT-385: the cards that were there are drawn, and then the draw
+    // that found nothing ends the game. `silent` is the deal's opening hand,
+    // which is not a draw in play (a Weekly Challenge deck may be shorter than
+    // its opening hand).
+    if (short && !silent) this.deckedOut(seat);
+  }
+
+  /**
+   * CR 104.5 / CT-385: `seat` had to draw, and its deck AND its recycle pile
+   * were empty (CR 408.2b: the pile is shuffled in first, so "empty" means both
+   * — Caleb 2025-03-24, the bin is NOT shuffled back in).
+   *
+   *   · constructed — that player loses. Caleb, rules-questions 2025-04-01: "In
+   *     constructed you lose if you draw on an empty deck"; 2025-08-04: "in
+   *     constructed you lose". Single Card Duel is constructed (CR D8.2).
+   *   · a shared deck (live draft, and 'shared') — the game ends and the higher
+   *     life total wins. Caleb 2025-06-25: "The game ends, highest life total
+   *     wins"; 2025-08-04: "in live draft the game just ends if you run out of
+   *     cards (don't make sense to make a player lose since its a shared
+   *     deck)". An exact tie is not in his words: it goes against the
+   *     initiative player, as a simultaneous loss does (CR 104.1a, the owner
+   *     2026-10-25) — PROVISIONAL, put to the owner.
+   *   · a lesson deal (Learn to Play, Weekly Challenges, CR D8.1) — nothing: the
+   *     player draws fewer and plays on, as every lesson and challenge run so
+   *     far was played.
+   *
+   * The owner, 2026-10-24, asked whether to follow Caleb on deck-out: "Follow
+   * Caleb". The game-over carries `deckedOut: <seat>`.
+   */
+  deckedOut(seat: Seat): void {
+    if (this.s.winner !== null || this.s.lesson) return;
+    let loser: Seat = seat;
+    const shared = this.s.mode !== 'constructed';
+    if (shared) {
+      const [a, b] = this.s.players as [PlayerState, PlayerState];
+      loser = a.life < b.life ? a.seat : b.life < a.life ? b.seat : this.initiative;
+    }
+    const winner = other(loser);
+    this.s.winner = winner;
+    this.s.phase = 'gameover';
+    this.s.resolving = null;   // nothing is resolving any more — the game is over
+    this.ev('gameOver', shared
+      ? `*** The deck has run out — the game ends. ${this.pname(winner)} wins `
+        + (this.player(winner).life > this.player(loser).life ? 'on the higher life total. ***' : 'the tie on life: it goes against the initiative player. ***')
+      : `*** ${this.pname(seat)} has to draw from an empty deck and loses — ${this.pname(winner)} wins! ***`,
+      { winner, deckedOut: seat });
+    throw new GameEnded();
   }
 
   /**

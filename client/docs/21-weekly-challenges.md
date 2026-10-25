@@ -91,6 +91,9 @@ Skill    = par ÷ raw × 100, rounded half up    — HIGHER is better (skillOf)
   is over and the run failed. Nothing else ends it; the player can give up. The action that meets
   the goal counts even if it also ends the game (CT-353, 2026-10-24: the permissive reading, the
   same on the server's `verifyRun` and in the browser).
+- **Running out of cards ends nothing here.** A constructed game is lost by a draw from an empty
+  deck and recycle pile (CR 104.5, CT-385, 2026-10-25), but not a lesson deal: a challenge deck
+  may be tiny, and its player draws fewer and plays on, as every run before the rule did.
 - **A row's setup** (`ChallengeDef.setup`, added 2026-10-24) changes the deal: `dummyLife` (the
   dummy's starting life) and `emblem` (a rule the player has all game; `anyActivations` = "You
   may activate any number of dormant resources during your planning step", the lesson deal's
