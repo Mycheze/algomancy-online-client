@@ -12838,14 +12838,27 @@ export class E {
       // the resume rolls the world back to the part boundary and replays it, and a
       // batch settled at the suspension would be paid out twice.
       const outerBatch = this.tokenBatch;
-      this.tokenBatch = E.newTokenBatch();
+      // CR 708.9: …and the item's memory of what the parts before this one
+      // created and copied (Caleb, RQ 1358924537160536247: one Evoker
+      // activation with three grafted creators is ONE creation). A working
+      // copy: it is written back only when the part finishes, so a part that
+      // suspends replays from what the earlier parts left.
+      this.tokenBatch = {
+        ...E.newTokenBatch(),
+        ...(item.tokenMemo ? structuredClone(item.tokenMemo) : {}),
+      };
       try {
         // CR 104.1a / CT-409: one resolving part is one effect — its life
         // changes all land before a player at 0 loses
         this.lifeBatch(() => def.run(this, ctx));
         const batch = this.tokenBatch;
         this.tokenBatch = null;
-        if (batch) this.settleTokenBatch(batch);
+        if (batch) {
+          this.settleTokenBatch(batch);
+          if (Object.keys(batch.copied).length || Object.keys(batch.order).length) {
+            item.tokenMemo = { copied: batch.copied, order: batch.order };
+          }
+        }
       } catch (sig) {
         if (sig instanceof PartChoice) {
           item.parts.forEach((p, i) => { p.targets = aimedAtBoundary[i]!; });   // CT-380, above

@@ -196,5 +196,8 @@ test('CR 708.4a: Nyar run, Automaton first and every Robot a Fireball, Manufactu
   }
   assert.deepEqual(made.slice(0, 6), ['Fireball 3', 'Fireball 2', 'Fireball 1', 'Fireball 3', 'Fireball 2', 'Fireball 1'],
     'Manufacture: three Robots, each copied, all six exchanged (the engine allowed three)');
-  assert.equal(made.length, 10, 'and Arcane Echo and Construct Overseer one Robot each, each copied in its own part');
+  // CR 708.9 (Caleb, RQ 1358924537160536247): the whole activation is one
+  // creation, so the Robot 1s Arcane Echo and Construct Overseer make are not
+  // copied again — a Robot 1 was already copied in it. One Fireball each.
+  assert.equal(made.length, 8, 'and Arcane Echo and Construct Overseer one Fireball each, not copied');
 });
