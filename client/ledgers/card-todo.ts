@@ -684,7 +684,7 @@ const OPEN: TodoEntry[] = [
     title: "on a touch screen a single tap still acts at once on three things: casting your own spell token, firing a unit's only unconfirmed ability, and activating a resource",
     detail: "Found by the Pass A touch agent (CT-381, zero-handoff/PA-touch.md). Report #201 and CT-381 made a finger tap on hand, cache and bin cards only READ the card; these three still act on the first tap. None has another touch route today, so gating the tap alone would remove the action on touch.",
     evidence: "Pass A 2026-10-24, PA-touch.md (not fixed).",
-    fix: "Owner call per item: keep the one-tap action, or make the tap read and add a button (as the bin now has). Then guard like 646.",
+    fix: "Owner 2026-10-25, asked which of the three should become \"tap shows the card, then a button acts\": \"Casting a spell token, Activating a resource\". So those two read on a tap and get a button (as the bin now has); a unit's only unconfirmed ability stays a one-tap action. Guard like 646.",
     proof: null,
     verify: "On a touch device, tap your own spell token, a unit with one ability, and a resource.",
     status: 'open',
