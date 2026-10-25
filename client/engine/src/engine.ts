@@ -2023,12 +2023,19 @@ export class E {
      * them"). Counters ride along by construction: "Does inverted reverse the
      * affect of +1/+1 Counters?" — "yes".
      *
-     * `base` here is layers 1-2, which is exactly right: a base REWRITE
-     * (`baseSet`, `StaticMod.baseP/baseT`) redefines what base IS rather than
-     * changing it, so it is the thing inverted FROM and is never inverted.
-     * spikeydog_40883, uncontradicted: "Its base stats aren't being inverted.
-     * Just the modifications to those stats by counters, stat-altering
-     * augments, or attributes."
+     * CR 802.8c (CT-379): the reference is the PRINTED stats (layer 1), not
+     * layers 1-2. A base REWRITE (`baseSet`, `StaticMod.baseP/baseT`) is a stat
+     * change like any other, and it is inverted with the rest. The designer,
+     * rules-questions 2023-10-26, to "I assume inverted does NOT interact with
+     * stat \"setting\" like Reshape": "It does because it applies in a later
+     * layer" / "Basically you just look at the stats printed on the card, then
+     * look at its current stats. Take the difference"; to "I guess ANY changes
+     * are changes from printed. including BASE ones.": "yeah and it lets me be
+     * more cavalier with base stat changes"; and 2025-11-26, on Bubb and
+     * Statweaver: "base stat changes are still stat changes". So a printed 7/5
+     * that Aberrant Statweaver makes base 3/3 is an 11/7 while Inverted.
+     * (Until 2026-10-25 the engine inverted from layers 1-2, on an owner
+     * reading taken before these quotes were found.)
      *
      * Applied ONCE, however many sources granted it — `statLayerAttrs` dedupes
      * on the way in, the same "an attribute is either present or not" rule
@@ -2048,8 +2055,9 @@ export class E {
      * worked example is the clean layer. Shipped clean; see CR 709.4d.
      */
     if (statAttrs.includes('Inverted')) {
-      p = 2 * base[0]! - p;
-      t = 2 * base[1]! - t;
+      const printed = this.printedStats(e);                  // CR 802.8c: layer 1, not `base`
+      p = 2 * printed[0]! - p;
+      t = 2 * printed[1]! - t;
     }
     /**
      * LAYER 6 — {Unaware} (CR 802.9a, 802.9b). PRINTED, not base: layer 1 and nothing else.
@@ -2069,12 +2077,10 @@ export class E {
      * state-based death check alike, which is what makes "survive 100 -1/-1
      * counters just fine" true without a special case anywhere.
      *
-     * Note it drops layer 2 as well, unlike {Inverted} one layer up. The Inverted
-     * ruling's (CR 802.8c)
-     * argument for keeping base rewrites there is about what {Inverted}
-     * inverts FROM; this rule is about what a card READS, and "your units are
-     * base 3/3" (Aberrant Statweaver) is not literal printed text on Bubb's
-     * card. So `baseSet` and `StaticMod.baseP`/`baseT` are ignored too, along
+     * Note it drops layer 2 as well; {Inverted} one layer up also measures
+     * from layer 1 (CR 802.8c), and here the reason is what a card READS:
+     * "your units are base 3/3" (Aberrant Statweaver) is not literal printed
+     * text on Bubb's card. So `baseSet` and `StaticMod.baseP`/`baseT` are ignored too, along
      * with counters, temp deltas, dp/dt statics, layer 4 ({Tough}/{Balanced})
      * and layer 5 ({Inverted}). Everything above layer 1 goes.
      *

@@ -82,7 +82,8 @@ test('CR 802.10c: a unit\'s own damage ability reads the {Powerful} it was GRANT
  *   "If we compare 8/8 to 1/4, it's +7/+4"
  *   "Which also works to invert to a -6/0"
  *
- * so `2·base − current`, applied once, after layer 4.
+ * so `2·printed − current`, applied once, after layer 4 (CR 802.8c: printed, not
+ * the layer-2 base — a base rewrite is a stat change too, CT-379).
  */
 
 test('CR 802.8a layer 5: the owner\'s Malformed Monstrosity — a 10/9 at -7/-7 inverts to 17/16', () => {
@@ -138,34 +139,22 @@ test('CR 802.8b layer 5: Caleb\'s worked example — a 1/4 Tough Balanced Invert
   assert.deepEqual(effStats(h, u), [-6, 0], "calebgannon: 'To become a -6/0'");
 });
 
-test('CR 802.8c layer 5: a base REWRITE is the thing inverted FROM, never inverted itself', () => {
-  // Layer 2 redefines what base IS ("Your units are base 3/3" — Aberrant
-  // Statweaver, CR 206.5), so it is not a "stat change" and {Inverted} must not
-  // touch it. spikeydog_40883 in rules-questions: "Its base stats aren't being
-  // inverted. Just the modifications to those stats by counters, stat-altering
-  // augments, or attributes."
+test('CR 802.8c layer 5: a base REWRITE is the thing inverted FROM -- NO, since CT-379: the printed stats are, and the rewrite is inverted with the rest', () => {
+  // Layer 2 rewrites the base ("Your units are base 3/3" — Aberrant Statweaver,
+  // CR 206.5). Until 2026-10-25 this test pinned the owner's 2026-08-22 reading
+  // that a rewrite is not a stat change and is what {Inverted} inverts FROM.
+  // The designer had answered it the other way, in rules-questions, and the
+  // owner-questions round of 2026-10-24 adopted his answer (CT-379):
   //
-  // ⚠ THIS ONE IS CONTESTED IN THE CORPUS AND THE OWNER SETTLED IT. Do not
-  // "fix" this test by re-deriving the other reading — it has been considered
-  // and rejected. _passer, who writes most of the [Solved] RAQ summaries, says
-  // the OPPOSITE in rules-questions, twice and explicitly:
+  //   2023-10-26, to "I assume inverted does NOT interact with stat "setting"
+  //   like Reshape": "It does because it applies in a later layer" /
+  //   "Basically you just look at the stats printed on the card, then look at
+  //   its current stats. Take the difference"; to "I guess ANY changes are
+  //   changes from printed. including BASE ones.": "yeah and it lets me be
+  //   more cavalier with base stat changes".
+  //   2025-11-26, on Bubb and Statweaver: "base stat changes are still stat changes".
   //
-  //   "Inverted looks at Printed base stats, looks what unit is 'currently'
-  //    and invert the difference"
-  //
-  //   "So if there was 10/15 which base stats were changed to be 4/4 (Formless
-  //    does this), it had +1/+1 counter, then: 10/15 → 4/4 → 5/5. If you invert
-  //    it now it sees that total diff from original stat is -5/-10, so it
-  //    traces back to original stats (10/15) and add inverted values (+5/+10)
-  //    to 15/25"
-  //
-  // On this board that reading gives 15/25 where we give 3/3. Caleb never
-  // addressed base rewrites — his own worked example (1/4 Tough Balanced
-  // Inverted → -6/0, the test above) has no rewrite in it, so it does not
-  // discriminate between the two readings. Bena ruled for THIS one on
-  // 2026-08-22, having been shown both worked examples side by side. If it is
-  // ever put to Caleb and he answers the other way, the change is one line in
-  // effStats (compare against layer 1 instead of `base`) plus this test.
+  // So the reference is layer 1, and the -4/-2 the rewrite made is flipped.
   const h = new Harness(7902);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -176,13 +165,13 @@ test('CR 802.8c layer 5: a base REWRITE is the thing inverted FROM, never invert
   const e = new E(h.state);
   e.addTempAttr(e.entity(u)!, 'Inverted');
   e.settle(); h.state = e.s;
-  assert.deepEqual(effStats(h, u), [3, 3],
-    'nothing changed the base, so there is no change to invert — NOT 2·3−3 off the printed 7/5');
+  assert.deepEqual(effStats(h, u), [11, 7],
+    'printed 7/5, now 3/3: the -4/-2 change is inverted to +4/+2, an 11/7');
 
-  // and with a real change on top of the rewritten base, it is THAT change
-  // that flips: 3/3 with a +1/+1 counter is a 4/4, inverted a 2/2.
+  // and a counter on top joins the same net change: 3/3 +1 = 4/4, a -3/-1
+  // change from the printed 7/5, inverted to 10/6.
   ent(h, u)!.counters = 1;
-  assert.deepEqual(effStats(h, u), [2, 2], "'Does inverted reverse the affect of +1/+1 Counters?' — 'yes'");
+  assert.deepEqual(effStats(h, u), [10, 6], "'Does inverted reverse the affect of +1/+1 Counters?' — 'yes'");
 });
 
 test('CR 709.4c layer 5: {Inverted} applies ONCE however many sources grant it', () => {
