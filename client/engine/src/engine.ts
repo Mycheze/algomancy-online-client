@@ -27,7 +27,7 @@ import {
   type AsYouPlayOption,
   type Ability, type CardBehavior,
   type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
-  type ResolvedTarget, type TargetCtx, type TargetRestrict, type TargetSpec, type TokenRequest, type TriggeredAbility,
+  type ResolvedTarget, type TargetCtx, type TargetRestrict, type TargetSpec, type TokenRequest, type TriggeredAbility, tokenUniqueKey,
 } from './cards/dsl.ts';
 import { doneTargetsLabel } from './cards/dsl.ts';   // report #206: the stop option's label
 import { rngShuffle } from './rng.ts';
@@ -180,6 +180,22 @@ class OrderNeeded {
 
 /** one choice in a replacement-order question: the unit it is about (a board
  * click, ui/boardpick.ts reads `unit`), and the index the asker maps back */
+/** CR 708.9: one token of a creation event — the call's own, or a copy an
+ * Automaton of Abundance added (`copy`), with the swaps a Conspirator made */
+interface TokenEntry {
+  req: TokenRequest;
+  copy?: { by: CardName; unit: EntityId; holder: EntityId; of: TokenRequest };
+  swaps?: { face: CardName; was: TokenRequest }[];
+}
+type TokenExtra = TokenEntry & { copy: NonNullable<TokenEntry['copy']> };
+/** CR 708.9: one creation batch — what each Automaton has copied in it, the
+ * order answers given for it, and the copies still to be made */
+interface TokenBatch {
+  copied: Record<string, string[]>;
+  order: Record<string, string>;
+  extras: TokenExtra[];
+}
+
 /** CR 708.4a: counters about to be put on a unit — the event Counter Thief redirects */
 interface CounterEv { target: Entity }
 
@@ -5773,7 +5789,10 @@ export class E {
   // batch out twice.
 
   /** CR 708.9: the open token-creation batch, or null outside a resolving part. */
-  private tokenBatch: TokenRequest[] | null = null;
+  private tokenBatch: TokenBatch | null = null;
+  /** CR 708.9: a creation outside any resolving part is a batch of its own,
+   * held here from its replacement to its `noteTokenCreated` */
+  private looseBatch: TokenBatch | null = null;
   /**
    * CR 802.21b: the OPEN kill diff — the units alive when the part currently
    * resolving began, or null when no kill-scoped source is resolving.
@@ -5813,112 +5832,228 @@ export class E {
   }
 
   /**
-   * CR 708.3: one token is about to be created — may a card substitute it?
+   * CR 708.3, 708.4a, 708.9 — one token is about to be created: the TOKEN
+   * FAMILY on the seam (`replaceEvent`).
    *
-   * Cosmic Conspirator: "If you would create a Robot, Poison, Crystal or
-   * Fireball, you may instead create a token of any of these types."
+   * Two replacements act on a creation:
+   *  · Cosmic Conspirator: "If you would create a Robot, Poison, Crystal or
+   *    Fireball, you may instead create a token of any of these types." —
+   *    asks a kind for each such token (its own `conspire` question).
+   *  · Automaton of Abundance: "[Augment] If you would create one or more unit
+   *    tokens, instead create those tokens plus an additional copy of each
+   *    unique token you created." — adds a copy of each unique token it has
+   *    not copied yet in this creation (CR 708.9: the BATCH, `tokenBatch`).
    *
-   * CR 708.4: the substitutions CHAIN (`replaceEvent`). A Fireball one
-   * Conspirator made of a Robot is still a token "you would create", so a
-   * second Conspirator that has not applied yet is offered THAT, and may swap
-   * it again; neither is ever offered the same creation twice. A hook that
-   * returns null has not applied (not its controller's creation, not one of
-   * its kinds, nowhere to ask); one that returns a request — the same one,
-   * when the player kept it — has applied.
+   * THE EVENT is this call's token plus whatever the replacements have added
+   * to it, and both apply to it one at a time, re-tested (CR 708.4a):
+   *  · Automaton first: two Robots, and the Conspirator is offered EACH (the
+   *    owner, 2026-10-25, Q2: "Yes, each one"; Caleb, a Conspirator is "a 1
+   *    for 1 exchange").
+   *  · Conspirator first and a Fireball chosen: the Automaton's "unit tokens"
+   *    no longer matches, and it does not apply.
+   *  · Conspirator first and the Robot kept: the Automaton copies it, and the
+   *    copy is NOT offered to the Conspirator again — it has applied to this
+   *    event ("replacement effects only apply once onto an effect", Caleb
+   *    2025-11-25). It used to be, because the copy was made after the part.
    *
-   * The hook may ask a question (`askInResolution`), and a
-   * question raised here suspends the whole resolving part and replays it —
-   * which is correct and is why the substitution must happen before ANY state
-   * is mutated: the rollback would otherwise undo a token that was already on
-   * the board.
+   * WHO ORDERS THEM: the creator — both cards say "you", so both are the
+   * creator's (Caleb 2026-02-23: "as the owner of all the replacement effects,
+   * you can choose the order"). Asked as "Creating a Robot 3 — which applies
+   * first?", only where both would apply, and ONCE PER CREATION BATCH: the
+   * answer is kept in the batch and reused for its other tokens (Manufacture
+   * asks once). With two Automatons and a Conspirator the question comes again
+   * after each Automaton, because the choice is how many go before it.
+   *
+   * WHEN: this call's own token is created inline, as it always was (three
+   * callers use the returned entity). An Automaton's copies are queued in the
+   * batch and created when the batch settles, at the end of the resolving
+   * part, with the same "the creation is replaced — N more token(s)" line —
+   * so a game with only one of the two cards plays exactly as it did.
+   *
+   * A question raised here suspends the whole resolving part and replays it,
+   * which is why nothing may be mutated before every replacement has applied.
    */
   private replaceTokenCreation(req: TokenRequest): TokenRequest {
-    const holders = this.anchored((h, a) =>
-      this.donates(h, a, 'replaceTokenCreation')              // CR 710.7: off the FACES
-      && a.region === req.region
-      && !this.textStripped(h, a));                       // CR 712.1a (full projection)
-    holders.sort((a, z) => a.holder.id - z.holder.id);
-    const donors = this.donorFaces(holders, 'replaceTokenCreation');
+    const batch = this.tokenBatch ?? (this.looseBatch ??= E.newTokenBatch());
+    const near = (key: 'replaceTokenCreation' | 'replaceTokenBatch') => {
+      const holders = this.anchored((h, a) =>
+        this.donates(h, a, key)                                // CR 710.7: off the FACES
+        && a.region === req.region
+        && !this.textStripped(h, a));                     // CR 712.1a (full projection)
+      holders.sort((a, z) => a.holder.id - z.holder.id);
+      return this.donorFaces(holders, key);
+    };
+    const swappers = near('replaceTokenCreation');
+    const copiers = near('replaceTokenBatch');
+    if (!swappers.length && !copiers.length) return req;
     this.replacementDepth++;
     try {
-      return this.replaceEvent(donors.map(({ face, def, anchor, holder }, i): Replacer<TokenRequest> => ({
-        face, anchor, ...(holder.id !== anchor.id ? { mod: holder } : {}), seat: anchor.controller,
-        same: `${i}`, tier: 0, rank: 0,
-        apply: now => {
-          const sub = def.replaceTokenCreation!(this, anchor, now);
-          if (!sub) return null;
-          if (sub.name === now.name && sub.form === now.form) return now;   // applied, and kept it
-          this.ev('info',
-            `${face}: a ${now.name} ${now.x} is created as a ${sub.name} ${sub.x} instead.`,
-            { by: face, was: now.name, now: sub.name, x: sub.x, seat: now.seat });
-          return sub;
-        },
-      })), req);
+      const reps: Replacer<TokenEntry[]>[] = [];
+      // the Conspirators: each asks once per token it may swap
+      swappers.forEach(({ face, def, anchor, holder }) => {
+        const offer = (e: TokenEntry): TokenRequest | null =>
+          def.replaceTokenCreation!(this, anchor, e.copy ? { ...e.req, copy: true } : e.req);
+        reps.push({
+          face, anchor, ...(holder.id !== anchor.id ? { mod: holder } : {}), seat: anchor.controller,
+          same: `s${anchor.controller}|${face}`, tier: 0, rank: 0,
+          apply: ev => {
+            let applied = false;
+            const out = ev.map(e => {
+              const raw = offer(e);
+              if (!raw) return e;
+              applied = true;
+              const { copy: _c, ...sub } = raw;
+              if (sub.name === e.req.name && sub.form === e.req.form) return e;   // applied, and kept it
+              // a copy's swap is said where the copy is made (`settleTokenBatch`)
+              if (!e.copy) {
+                this.ev('info',
+                  `${face}: a ${e.req.name} ${e.req.x} is created as a ${sub.name} ${sub.x} instead.`,
+                  { by: face, was: e.req.name, now: sub.name, x: sub.x, seat: e.req.seat });
+              }
+              return { ...e, req: sub, swaps: [...(e.swaps ?? []), { face, was: e.req }] };
+            });
+            return applied ? out : null;
+          },
+        });
+      });
+      // the Automatons: a copy of each unique token this one has not copied yet
+      const fresh = (d: (typeof copiers)[number], ev: TokenEntry[]): TokenRequest[] => {
+        const done = batch.copied[`${d.holder.id}|${d.face}`] ?? [];
+        return (d.def.replaceTokenBatch!(this, d.anchor, ev.map(e => e.req)) ?? [])
+          .filter(r => !done.includes(tokenUniqueKey(r)));
+      };
+      copiers.forEach(d => {
+        reps.push({
+          face: d.face, anchor: d.anchor, ...(d.holder.id !== d.anchor.id ? { mod: d.holder } : {}),
+          seat: d.anchor.controller, same: `c${d.anchor.controller}|${d.face}`, tier: 0, rank: 0,
+          apply: ev => {
+            const extra = fresh(d, ev);
+            if (!extra.length) return null;
+            (batch.copied[`${d.holder.id}|${d.face}`] ??= []).push(...extra.map(tokenUniqueKey));
+            return [...ev, ...extra.map(r => ({
+              req: { ...r }, copy: { by: d.face, unit: d.anchor.id, holder: d.holder.id, of: { ...r } },
+            }))];
+          },
+        });
+      });
+      const end = this.replaceEvent(reps, [{ req }], (groups, ev, at) => {
+        // only where a question can be asked at all, and only among the
+        // groups that would apply now
+        if (!this.partChoose) return groups;
+        const live = groups.filter(r => {
+          const i = reps.indexOf(r);           // the Conspirators first, then the Automatons
+          return i < swappers.length ? this.wouldSwap(swappers[i]!, ev)
+            : fresh(copiers[i - swappers.length]!, ev).length > 0;
+        });
+        if (live.length < 2) return live;
+        // ONE answer per batch, per point in the order (`at.applied.length`)
+        const memoKey = `${at.applied.length}|${live.map(r => r.face).sort().join('+')}`;
+        const kept = batch.order[memoKey];
+        let pick = kept !== undefined ? live.find(r => r.face === kept) : undefined;
+        if (!pick) {
+          const head = ev[0]!.req;
+          const copies = ev.length - 1;
+          const got = this.askReplacement(at.seat,
+            `Creating a ${head.name} ${head.x}${copies ? ` and ${copies === 1 ? 'a copy' : `${copies} copies`}` : ''}`
+            + ` — which applies ${at.applied.length ? 'next' : 'first'}?`,
+            live.map(r => ({
+              label: `${reps.indexOf(r) < swappers.length ? 'Swap first' : 'Copy first'} ${this.replacerLabel(r.face, r.anchor)}`,
+              card: r.face, unit: r.anchor.id, pick: reps.indexOf(r),
+              ...(r.mod ? { mod: r.mod.id } : {}),
+            })));
+          pick = live.find(r => reps.indexOf(r) === got) ?? live[0]!;
+          batch.order[memoKey] = pick.face;
+          this.ev('info', `${this.pname(at.seat)} applies ${pick.face} first.`,
+            { seat: at.seat, by: pick.face, unit: pick.anchor.id });
+        }
+        return [pick, ...live.filter(r => r !== pick)];
+      });
+      for (const e of end.slice(1)) batch.extras.push(e as TokenExtra);
+      return end[0]!.req;
     } finally { this.replacementDepth--; }
   }
 
   /**
-   * CR 708.9: record a token that was just created into the open batch — or, with
-   * no batch open, settle it as a batch of one.
+   * CR 708.4a: would this Conspirator apply to any token of the event now? Its
+   * hook is pure up to the question it asks, so it is asked with a probe in
+   * place of the question: reaching the question, or returning a request, is
+   * applying.
    */
-  private noteTokenCreated(req: TokenRequest): void {
-    if (this.inTokenBatchSettle) return;         // an extra is not part of its own batch
-    if (this.tokenBatch) { this.tokenBatch.push(req); return; }
-    this.settleTokenBatch([req]);
+  private wouldSwap(d: { def: CardBehavior; anchor: Entity }, ev: TokenEntry[]): boolean {
+    const outer = this.partChoose;
+    const probe = new OrderNeeded('probe', { seat: 0, kind: 'electricPath', prompt: '', options: [] });
+    this.partChoose = () => { throw probe; };
+    try {
+      return ev.some(e => {
+        try { return d.def.replaceTokenCreation!(this, d.anchor, e.copy ? { ...e.req, copy: true } : e.req) !== null; }
+        catch (x) { if (x === probe) return true; throw x; }
+      });
+    } finally { this.partChoose = outer; }
+  }
+
+  /** CR 708.9: a creation batch with nothing in it yet */
+  static newTokenBatch(): TokenBatch { return { copied: {}, order: {}, extras: [] }; }
+
+  /**
+   * CR 708.9: a token was just created. With no resolving part open its
+   * creation is a batch of its own, settled now.
+   */
+  private noteTokenCreated(_req: TokenRequest): void {
+    if (this.inTokenBatchSettle || this.tokenBatch) return;   // the part's batch settles at its end
+    const loose = this.looseBatch;
+    this.looseBatch = null;
+    if (loose) this.settleTokenBatch(loose);
   }
 
   /**
-   * CR 708.9: one creation batch has finished — may a card add to it?
+   * CR 708.9: one creation batch has finished — create the copies the
+   * Automatons of Abundance added to it.
    *
-   * Automaton of Abundance: "[Augment] If you would create one or more unit
-   * tokens, instead create those tokens plus an additional copy of each unique
-   * token you created."
-   *
-   * EVERY donor applies, each ONCE, in entity-id order, and each is handed the
-   * batch as the donors before it left it — CR 708.4, Caleb (rules-questions
-   * 2025-11-25) on two Automatons: "1 token -> 2tokens -> 3 tokens", "the tldr
-   * is replacement effects only apply once onto an effect". So a replacement
-   * never re-applies to what it produced, but a DIFFERENT one that has not
-   * applied yet still sees the replaced event. This used to be first-non-null
-   * consumes, and two Automatons gave one extra token instead of two.
-   *
-   * The extras are created only after every donor has answered, so no donor
-   * ever observes a half-paid batch, and they are created in the order the
-   * donors produced them.
+   * The copies were decided as each token's creation was replaced
+   * (`replaceTokenCreation`); here they are made, with one line per Automaton
+   * in timestamp order — "the creation is replaced — N more token(s)" — and
+   * then the tokens, in that order. A copy a Conspirator swapped says so as it
+   * is made. The copies are not themselves replaced again (`substitutingToken`)
+   * and are not part of a batch (`inTokenBatchSettle`): every replacement has
+   * already applied to them.
    *
    * The extras are created INLINE, in the same resolution, with nothing on the
    * stack in between and no priority window — the CR 802.16i test for "part of
-   * resolution, not a trigger". They are NOT themselves batched
-   * (`this.tokenBatch` is parked for the duration), which is what "none
-   * applies to itself" means here and is why the module-level `aoaCopying`
-   * flag it replaces is gone.
+   * resolution, not a trigger".
    */
-  private settleTokenBatch(batch: TokenRequest[]): void {
-    if (!batch.length) return;
-    const holders = this.anchored((h, a) =>
-      this.donates(h, a, 'replaceTokenBatch')                 // CR 710.7: off the FACES
-      && a.region === batch[0]!.region
-      && !this.textStripped(h, a));                       // CR 712.1a (full projection)
-    if (!holders.length || this.inTokenBatchSettle) return;
-    holders.sort((a, z) => a.holder.id - z.holder.id);
-    const donors = this.donorFaces(holders, 'replaceTokenBatch');
+  private settleTokenBatch(batch: TokenBatch): void {
+    const extras = batch.extras;
+    batch.extras = [];
+    if (!extras.length || this.inTokenBatchSettle) return;
+    const by = new Map<string, TokenExtra[]>();
+    for (const x of extras) {
+      const k = `${x.copy.holder}|${x.copy.by}`;
+      by.set(k, [...(by.get(k) ?? []), x]);
+    }
+    const groups = [...by.values()].map((xs, i) => ({ xs, i }))
+      .sort((a, z) => a.xs[0]!.copy.holder - z.xs[0]!.copy.holder || a.i - z.i).map(g => g.xs);
     this.inTokenBatchSettle = true;
     this.replacementDepth++;
+    const outerSub = this.substitutingToken;
     try {
-      let replaced: readonly TokenRequest[] = batch;   // the event as replaced so far
-      const toCreate: TokenRequest[] = [];
-      for (const { face, def, anchor } of donors) {
-        const extra = def.replaceTokenBatch!(this, anchor, replaced);
-        if (!extra || !extra.length) continue;
+      for (const xs of groups) {
+        const { by: face, unit } = xs[0]!.copy;
         this.ev('info',
-          `${face}: the creation is replaced — ${extra.length} more token(s) `
-          + `(${extra.map(r => r.name).join(', ')}) are created with it.`,
-          { by: face, unit: anchor.id, n: extra.length });
-        replaced = [...replaced, ...extra];       // CR 708.4: the next donor sees this
-        toCreate.push(...extra);                  // …and this donor never applies again
+          `${face}: the creation is replaced — ${xs.length} more token(s) `
+          + `(${xs.map(x => x.copy.of.name).join(', ')}) are created with it.`,
+          { by: face, unit, n: xs.length });
       }
-      for (const r of toCreate) this.createToken(r);
-    } finally { this.inTokenBatchSettle = false; this.replacementDepth--; }
+      this.substitutingToken = true;
+      for (const x of groups.flat()) {
+        for (const s of x.swaps ?? []) {
+          const now = x.swaps![x.swaps!.indexOf(s) + 1]?.was ?? x.req;
+          this.ev('info',
+            `${s.face}: a ${s.was.name} ${s.was.x} is created as a ${now.name} ${now.x} instead.`,
+            { by: s.face, was: s.was.name, now: now.name, x: now.x, seat: now.seat });
+        }
+        this.createToken(x.req);
+      }
+    } finally { this.substitutingToken = outerSub; this.inTokenBatchSettle = false; this.replacementDepth--; }
   }
 
   /**
@@ -12447,14 +12582,14 @@ export class E {
       // the resume rolls the world back to the part boundary and replays it, and a
       // batch settled at the suspension would be paid out twice.
       const outerBatch = this.tokenBatch;
-      this.tokenBatch = [];
+      this.tokenBatch = E.newTokenBatch();
       try {
         // CR 104.1a / CT-409: one resolving part is one effect — its life
         // changes all land before a player at 0 loses
         this.lifeBatch(() => def.run(this, ctx));
         const batch = this.tokenBatch;
         this.tokenBatch = null;
-        if (batch?.length) this.settleTokenBatch(batch);
+        if (batch) this.settleTokenBatch(batch);
       } catch (sig) {
         if (sig instanceof PartChoice) {
           item.parts.forEach((p, i) => { p.targets = aimedAtBoundary[i]!; });   // CT-380, above
