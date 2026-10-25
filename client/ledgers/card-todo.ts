@@ -585,16 +585,6 @@ const OPEN: TodoEntry[] = [
     verify: "Read the \"A tap only reads\" paragraph of client/docs/19-touch-and-drag.md against the rail.",
     status: 'open',
   },
-  {
-    id: 421, area: "coverage", severity: "minor",
-    title: "the live-draft deck-out tie rule is still labelled provisional in engine.ts and test 656, though the owner settled it",
-    detail: "CT-385 shipped the tie rule for a shared-deck deck-out (the initiative player loses) as a provisional default put to the owner: engine.ts deckedOut's comment says \"PROVISIONAL, put to the owner\" and 656's test title ends \"(provisional)\". The owner settled it on 2026-10-25: \"INT player loses\". The behaviour is right; only the labels are stale.",
-    evidence: "Books pass 2026-10-25, closing CT-385 against zero-handoff/ROUND-BC.md (owner answers).",
-    fix: "Replace the provisional note in engine.ts with the owner's words and date, and drop \"(provisional)\" from 656's title (CT-385's guard cites the title without it, so no ledger change).",
-    proof: () => still('engine/src/engine.ts', 'PROVISIONAL, put to the owner') || still('engine/test/656-deck-out.test.ts', 'goes against the initiative player (provisional)'),
-    verify: "grep provisional in engine.ts deckedOut and in 656-deck-out.test.ts.",
-    status: 'open',
-  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

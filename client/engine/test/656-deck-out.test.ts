@@ -154,7 +154,7 @@ test('CR 104.5 / CT-385: with a shared deck (live draft) the game ends and the h
   }
 });
 
-test('CR 104.5 / CT-385: a live-draft deck-out with the life totals tied goes against the initiative player (provisional)', () => {
+test('CR 104.5 / CT-385: a live-draft deck-out with the life totals tied goes against the initiative player', () => {
   const h = new Harness(65607, undefined, 'draft');
   const { g, ended } = ends(h.state, e => {
     e.deckOf(0).length = 0;

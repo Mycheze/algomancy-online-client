@@ -13457,4 +13457,18 @@ export const CLOSED: TodoEntry[] = [
     closed: "WONTFIX (owner) 2026-10-25, no engine change. Asked whether Rook lets Tides of the Cosmos apply a revealed non-Virus augment, the owner answered: \"No (printed text)\". Rook prints \"You may augment cards from hand and bin during battle as if they were [Virus].\" Tides plays off the revealed top of the deck, which is neither, so CR 723.5b stands and Tides offers only true Viruses. The line _passer added to the RAQ write-up in his 2026-08-14 edit, \"Having Rook would allow you to use Augments\", has no designer message behind it and is not followed; raq.ts records it as an outdated claim on thread 1396955380000755795.",
     status: 'wontfix',
   },
+  {
+    id: 421, area: "coverage", severity: "minor",
+    title: "the live-draft deck-out tie rule is still labelled provisional in engine.ts and test 656, though the owner settled it",
+    detail: "CT-385 shipped the tie rule for a shared-deck deck-out (the initiative player loses) as a provisional default put to the owner: engine.ts deckedOut's comment says \"PROVISIONAL, put to the owner\" and 656's test title ends \"(provisional)\". The owner settled it on 2026-10-25: \"INT player loses\". The behaviour is right; only the labels are stale.",
+    evidence: "Books pass 2026-10-25, closing CT-385 against zero-handoff/ROUND-BC.md (owner answers).",
+    fix: "Replace the provisional note in engine.ts with the owner's words and date, and drop \"(provisional)\" from 656's title (CT-385's guard cites the title without it, so no ledger change).",
+    proof: () => still('engine/src/engine.ts', 'PROVISIONAL, put to the owner') || still('engine/test/656-deck-out.test.ts', 'goes against the initiative player (provisional)'),
+    verify: "grep provisional in engine.ts deckedOut and in 656-deck-out.test.ts.",
+    guards: [
+      "656-deck-out.test.ts::CR 104.5 / CT-385: a live-draft deck-out with the life totals tied goes against the initiative player",
+    ],
+    closed: "FIXED 2026-10-25 (round B+C books): engine.ts deckedOut quotes the owner's answer (\"INT player loses\") in place of the provisional note, and 656's title drops \"(provisional)\". Labels only; behaviour unchanged.",
+    status: 'done',
+  },
 ];

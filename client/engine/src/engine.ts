@@ -2959,8 +2959,8 @@ export class E {
    *     wins"; 2025-08-04: "in live draft the game just ends if you run out of
    *     cards (don't make sense to make a player lose since its a shared
    *     deck)". An exact tie is not in his words: it goes against the
-   *     initiative player, as a simultaneous loss does (CR 104.1a, the owner
-   *     2026-10-25) — PROVISIONAL, put to the owner.
+   *     initiative player, as a simultaneous loss does (CR 104.1a). The owner,
+   *     2026-10-25, asked who wins a tie: "INT player loses".
    *   · a lesson deal (Learn to Play, Weekly Challenges, CR D8.1) — nothing: the
    *     player draws fewer and plays on, as every lesson and challenge run so
    *     far was played.
