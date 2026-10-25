@@ -2163,6 +2163,15 @@ function battleVirusHosts(e: E, region: number): TargetRef[] {
   for (const it of e.s.stack) {
     if (STACK_VIRUS_HOSTS.has(it.kind) && it.region === region) out.push({ stack: it.id });
   }
+  // CR 721.4a / CT-407: a spell token STANDING IN PLAY in the battle's region,
+  // either player's. Caleb (RQ 1364998183226179735), asked "Can you Augment
+  // Fireball in play or only Fireball on stack?": "Honestly I don't see why you
+  // couldn't"; and of Viruses, "you can hit enemy spells" (RQ
+  // 1347270455198879858). Owner 2026-10-24: "Yes, allow it". Appended LAST so
+  // every unit and stack offer keeps its index.
+  for (const t of Object.values(e.s.entities)) {
+    if (t.kind === 'spellToken' && t.region === region && !t.absent) out.push({ unit: t.id });
+  }
   return e.compelledTargets(out, region);
 }
 const virusHostOk = (e: E, region: number, host: TargetRef): boolean => {
@@ -2279,11 +2288,16 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
   //
   // A spell token in play is an `Entity` with `kind: 'spellToken'`, and this
   // line has always demanded a unit, so the stack-Virus ruling first listed the whole half as
-  // "⚠ Not in scope". It is in scope now, in DEPLOYMENT only: during battle a
-  // token is a spell you cast, and the host you want is the stack item the
-  // `hostStack` branch above already reaches.
-  const tokenHost = (e.s.phase === 'deploy' || hasteMod)
-    && host?.kind === 'spellToken' && host.controller === seat;
+  // "⚠ Not in scope". It came into scope for DEPLOYMENT first, on the reading
+  // that during battle a token is a spell you cast, and the host you want is the
+  // stack item the `hostStack` branch above already reaches.
+  //
+  // CR 721.4a / CT-407: and in BATTLE too, for a Virus — a token standing in play
+  // in the battle's region, either player's, exactly as a battle Virus reaches a
+  // unit (owner 2026-10-24, "Yes, allow it"). `virusHostOk` below is what limits
+  // it to the battle region and to CR 110.12.
+  const tokenHost = host?.kind === 'spellToken'
+    && (((e.s.phase === 'deploy' || hasteMod) && host.controller === seat) || e.s.phase === 'battle');
   e.need(host && (host.kind === 'unit' || tokenHost) && !host.absent,
     tokenHost ? 'no such spell token' : 'no such unit');
 

@@ -11783,6 +11783,16 @@ export class E {
       // CR 102.4 / CT-343: the applier is the item's controller; the card keeps its owner
       this.attachMod(host, item.card!, item.controller, 'augment', undefined,
         item.owner !== undefined ? { owner: item.owner } : {});
+      // CR 721.4a / CT-407: a battle Virus onto a spell token in play — said as the
+      // deployment branch says it (apply.ts doAugment): a spell gains only attributes
+      if (host.kind === 'spellToken') {
+        const granted = this.card(item.card!).augmentAttrs;
+        this.ev('info', `${item.card} augments ${host.card}`
+          + (granted.length
+            ? ` — the spell gains {${granted.join('} {')}} when it is played.`
+            : ' — but a spell can only gain ATTRIBUTES, and this grants none, so nothing changes.'),
+          { unit: host.id, card: item.card, seat: item.controller });
+      }
       return;
     }
     // spell / spellUnit / spellToken / triggered / activated: run live parts
