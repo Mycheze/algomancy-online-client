@@ -3567,9 +3567,24 @@ export function rewindPlans(room: Room, seat: Seat): CutPlan[] {
   };
   const here = segNow !== null ? openStart : startOf(len);
   offer({ to: here, kind: 'start', step: stepLabel(at(len)), items: items(here), hiddenStep: segNow !== null, seat });
-  if (here > lo) {
-    const prev = startOf(here - 1);
-    offer({ to: prev, kind: 'prev', step: stepLabel(at(here - 1)), items: items(prev), hiddenStep: segNow !== null, seat });
+  // CT-376 — "the start of the step before" gets the before-cuts' forced-action
+  // skip. A cut just before a forced action lands and takes it again at once
+  // (main.ts drainForced), so the step's first board a player can STAND on is
+  // its first non-forced action. A step that was nothing but forced actions
+  // (turn 1's two empty attack declarations) was never stood on at all: cutting
+  // to it collapsed onto the start of the step after it — the current one. Such
+  // a step is passed over, and the option is the last step before this one that
+  // a player actually stood in.
+  let end = here;
+  while (end > lo) {
+    const prev = startOf(end - 1);
+    let to = prev;
+    while (to < end && forced(to)) to++;
+    if (to < end) {
+      offer({ to, kind: 'prev', step: stepLabel(at(to)), items: items(to), hiddenStep: segNow !== null, seat });
+      break;
+    }
+    end = prev;
   }
   return plans.sort((x, y) => y.to - x.to);
 }
