@@ -78,7 +78,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { apply, createGame, legalActions, IllegalAction } from '../../engine/src/apply.ts';
+import { apply, createGame, legalActions, IllegalAction, ALL_ELEMENTS } from '../../engine/src/apply.ts';
 import { rngNext } from '../../engine/src/rng.ts';
 import { Harness } from '../../engine/src/harness.ts';
 import { E } from '../../engine/src/engine.ts';
@@ -627,10 +627,12 @@ const REACH: Record<string, Evidence> = {
       const offered = new Set(legalAt(s).filter(a => a.type === 'recycleForResource').map(a => a.element));
       // CR D6.14b (#168): plus the Prismite entry, and the Shard behind the
       // expander, drawn in every game
-      const inMenu = new Set<string>([...s.state.elements, 'prismite', 'shard']);
+      // BL-44: the menu is built from all seven (a draft's trio leads, the rest
+      // behind the expander), since any element resource is legal
+      const inMenu = new Set<string>([...ALL_ELEMENTS, 'prismite', 'shard']);
       for (const el of offered) {
         assert.ok(inMenu.has(el as never),
-          `the engine offers a recycle into ${el}, which the hand menu (built from state.elements: `
+          `the engine offers a recycle into ${el}, which the hand menu (built from ALL_ELEMENTS: `
           + `${[...inMenu].join(', ')}) never lists`);
       }
       const a = s.action as Extract<Action, { type: 'recycleForResource' }>;
@@ -639,7 +641,7 @@ const REACH: Record<string, Evidence> = {
     // CR D6.14b (#168), the owner's layout: the main menu is the deck's elements,
     // a Prismite and the expander; the expander is the OTHER elements and a
     // Shard — so between them every element in s.elements is one click away
-    needs: [/const \{ show, hidden \} = resourceMenuElements\(s, p, s\.elements, false\);/,
+    needs: [/const \{ show, hidden \} = resourceMenuElements\(s, p, ALL_ELEMENTS, false\);/,
       /type: 'recycleForResource', seat: p, handIndex: i, element: el \}/,
       /\? \[\.\.\.hidden\.map\(elementItem\), recycleTo\('shard', 'Recycle → Shard'\)\]/,
       /: \[\.\.\.show\.map\(elementItem\), recycleTo\('prismite', 'Recycle → Prismite'\), \{/,
@@ -1273,7 +1275,7 @@ test('a card with no back face gets no Transforms into section at all', () => {
 test('both resource menus default to the deck elements through the one shared helper', () => {
   // Ledger #63 (GETD, 2026-08-22). A PRESENTATION default: the engine still
   // offers all seven and both menus keep all seven reachable.
-  assert.match(MAIN, /const \{ show, hidden \} = resourceMenuElements\(s, p, s\.elements, false\);/,
+  assert.match(MAIN, /const \{ show, hidden \} = resourceMenuElements\(s, p, ALL_ELEMENTS, false\);/,
     'the recycle menu asks the helper — and puts `show` on the main menu, `hidden` behind the expander (CR D6.14b)');
   assert.doesNotMatch(MAIN, /items: s\.elements\.map\(el => \(\{/,
     'the old unfiltered recycle list must be gone');

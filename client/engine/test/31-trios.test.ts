@@ -85,9 +85,10 @@ test('createGame honors the chosen trio: deck, elements, and the recycle menu', 
   h.do({ type: 'draftCommit', seat: 0, packIndices: h.state.packs[0]!.map((_, i) => H + i) });
   h.do({ type: 'draftCommit', seat: 1, packIndices: h.state.packs[1]!.map((_, i) => H + i) });
   assert.equal(h.state.draftDone, null, 'packs passed');
-  // resources are gated to the trio
-  assert.throws(() => h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'water' }));
+  // the trio is what the draft deals, not what it may make (BL-44): wood is in
+  // the trio, and water, outside it, is legal too
   h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'wood' });
+  h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'water' });
 });
 
 test('two different trios from the same seed are different decks; same trio replays identically', () => {
@@ -135,8 +136,8 @@ test('createGame deals a light/dark trio end to end', () => {
   h.do({ type: 'draftCommit', seat: 0, packIndices: h.state.packs[0]!.map((_, i) => H + i) });
   h.do({ type: 'draftCommit', seat: 1, packIndices: h.state.packs[1]!.map((_, i) => H + i) });
   assert.equal(h.state.draftDone, null, 'packs passed');
-  // resources are gated to the trio: light and dark are in, water is not
-  assert.throws(() => h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'water' }));
+  // light and dark resources work; water, outside the trio, is legal too (BL-44)
   h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'light' });
   h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'dark' });
+  h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'water' });
 });

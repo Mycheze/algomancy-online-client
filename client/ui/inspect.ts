@@ -2515,8 +2515,9 @@ export function blockPlanIssue(
  * `state.deckElements?.[seat] ?? state.elements` — ALWAYS the asking seat's own
  * entry, never the opponent's, and never the union of both. The fallback covers
  * three real cases at once and all three want the same answer:
- *   · 'shared' and 'draft', where the engine never writes the field (draft has
- *     already narrowed `elements` to its trio, so a second narrowing is noise);
+ *   · 'shared' and 'draft', where the engine never writes the field ('shared'
+ *     plays all seven, so nothing is held back; a draft leads with its trio and
+ *     keeps the other four, legal since BL-44, behind the expander);
  *   · a game saved before the field existed, which simply lacks it;
  *   · a seat entry that is missing or empty.
  *
@@ -2525,8 +2526,8 @@ export function blockPlanIssue(
  * EMPTY menu. A menu with nothing in it reads as "you may not do this", which
  * is a rules claim, and it would be a false one.
  *
- * `offered` is what the caller can actually put on screen — `s.elements` for
- * recycling, the elements of the legal `exchangePrismite` actions for a
+ * `offered` is what the caller can actually put on screen — all seven for
+ * recycling (BL-44), the elements of the legal `exchangePrismite` actions for a
  * prismite — so this never invents an option the engine did not offer.
  *
  * ⚠ CALLERS MUST NOT key an auto-fire off `show.length`. The prismite site
@@ -2546,7 +2547,9 @@ export function resourceMenuElements<T extends string>(
   // `element` on an exchangePrismite action is typed ResourceKind, which is
   // Element plus 'prismite' — hence the widened compare rather than a cast that
   // would quietly swallow a real mismatch.
-  const deck: readonly string[] | undefined = s.deckElements?.[seat];
+  // the fallback is real since BL-44: a draft's trio leads and the other four,
+  // legal too, sit behind the expander (shared: all seven, so nothing is hidden)
+  const deck: readonly string[] | undefined = s.deckElements?.[seat] ?? s.elements;
   if (!deck || deck.length === 0) return { show: all, hidden: [] };
   const show = all.filter(el => deck.includes(el));
   const hidden = all.filter(el => !deck.includes(el));
@@ -2591,8 +2594,12 @@ export function prismiteClickPlan(
   const offered = opts.flatMap(a => a.type === 'exchangePrismite' && a.element !== 'shard' ? [a.element] : []);
   const shard = opts.some(a => a.type === 'exchangePrismite' && a.element === 'shard');
   const { show, hidden } = resourceMenuElements(s, seat, offered, expanded);
-  const actions = opts.filter(a => a.type !== 'exchangePrismite'
+  const kept = opts.filter(a => a.type !== 'exchangePrismite'
     || (a.element === 'shard' ? expanded : show.includes(a.element)));
+  // the Shard last, as on the recycle menu: a draft's legal list puts its four
+  // outside elements AFTER the Shard (BL-44, appended to keep old indices)
+  const isShard = (a: Action): boolean => a.type === 'exchangePrismite' && a.element === 'shard';
+  const actions = [...kept.filter(a => !isShard(a)), ...kept.filter(isShard)];
   return { kind: 'menu', actions, hidden: hidden.length, more: !expanded && (hidden.length > 0 || shard) };
 }
 

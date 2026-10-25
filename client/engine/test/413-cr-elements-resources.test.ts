@@ -137,15 +137,18 @@ test('cr:concepts.elements.no-affinity-resources — active Prismites and Shards
   for (const el of ALL_ELEMENTS) assert.equal(new E(h.state).affinity(0, el), 0, `${el}: 0`);
 });
 
-test('cr:concepts.elements.game-elements — a fire-water-earth draft refuses a Prismite exchanged into wood and accepts fire; a non-draft game has all seven', () => {
+test('cr:concepts.elements.game-elements — a fire-water-earth draft exchanges a Prismite into fire, and into wood outside its trio (BL-44); a non-draft game has all seven', () => {
   const h = new Harness(92009, undefined, 'draft');
   assert.deepEqual([...h.state.elements].sort(), ['earth', 'fire', 'water']);
   const H = h.state.players[0]!.hand.length;
   h.do({ type: 'draftCommit', seat: 0, packIndices: h.state.packs[0]!.map((_, i) => H + i) });
   h.do({ type: 'activateResource', seat: 0, index: 0 });
-  assert.throws(() => h.do({ type: 'exchangePrismite', seat: 0, index: 0, element: 'wood' }), IllegalAction);
-  h.do({ type: 'exchangePrismite', seat: 0, index: 0, element: 'fire' });
-  assert.equal(h.state.players[0]!.resources[0]!.kind, 'fire');
+  // the exchange is offered for wood (behind the trio), and goes through
+  assert.ok(legalActions(h.state, 0).some(a => a.type === 'exchangePrismite' && a.index === 0 && a.element === 'wood'));
+  h.do({ type: 'exchangePrismite', seat: 0, index: 0, element: 'wood' });
+  assert.equal(h.state.players[0]!.resources[0]!.kind, 'wood');
+  assert.throws(() => h.do({ type: 'exchangePrismite', seat: 0, index: 0, element: 'fire' }), IllegalAction,
+    'and it is no longer a Prismite to exchange');
   const shared = new Harness(92010);
   assert.deepEqual(shared.state.elements, ALL_ELEMENTS, 'a non-draft game has all seven');
 });
