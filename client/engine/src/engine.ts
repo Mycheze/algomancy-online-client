@@ -180,6 +180,11 @@ class OrderNeeded {
 
 /** one choice in a replacement-order question: the unit it is about (a board
  * click, ui/boardpick.ts reads `unit`), and the index the asker maps back */
+/** CR 608.7b, 713.6 / CT-413: a unit a sweep has already decided dies ({Deadly},
+ * the collapsed Unaware reading, the Pure reading), with the line that says
+ * why. Handed to `checkDeaths`, which disposes it in the same batch as the
+ * lethal-damage deaths. */
+interface Doomed { u: Entity; why: string; data?: Record<string, unknown> }
 interface ReplacementPick { label: string; card: CardName; unit: EntityId; pick: number }
 
 export function other(seat: Seat): Seat { return 1 - seat; }
@@ -2180,7 +2185,7 @@ export class E {
    * every stat read inside the interaction (lethal arithmetic, column power,
    * the commit's death read, `unaware`) takes layers 1-3 without a special
    * case at any site. It is an E-instance field, never state: it exists only
-   * while an interaction is being computed, and `sweepPureDeaths` settles the
+   * while an interaction is being computed, and `pureVictims` decides the
    * deaths that reading implies before it is lifted — the state-based check
    * after it reads the unit outside any interaction again.
    */
@@ -2202,18 +2207,20 @@ export class E {
   private pureAmong(involved: readonly (Entity | undefined)[]): boolean {
     return involved.some(e => !!e && this.effAttrs(e).has('Pure'));
   }
-  /** CR 802.25e, 802.25f: kill what the Pure reading has already killed —
-   * `sweepCollapsedDeaths`'s twin, called while the blind is still on. */
-  private sweepPureDeaths(ids: Iterable<EntityId>): void {
+  /** CR 802.25e, 802.25f: who the Pure reading has already killed —
+   * `collapsedVictims`'s twin, called while the blind is still on. It only
+   * DECIDES: the deaths are disposed by `checkDeaths(doomed)`, in one batch
+   * with the rest of the interaction's deaths (CR 713.6, CT-413). */
+  private pureVictims(ids: Iterable<EntityId>): Doomed[] {
+    const out: Doomed[] = [];
     for (const id of ids) {
       const u = this.entity(id);
       if (!u) continue;
       const [p, t] = this.effStats(u);
       if (t > 0 && u.damage < t) continue;
-      this.ev('info',
-        `Pure: ${u.card} is read at ${p}/${t}, without its stat attributes — it dies.`, { unit: id });
-      this.destroy(u, 'dies');
+      out.push({ u, why: `Pure: ${u.card} is read at ${p}/${t}, without its stat attributes — it dies.`, data: { unit: id } });
     }
+    return out;
   }
 
   /**
@@ -2254,7 +2261,9 @@ export class E {
     return false;
   }
   /**
-   * CR 802.9e: kill whatever the collapsed reading has already killed.
+   * CR 802.9e: who the collapsed reading has already killed. It only DECIDES:
+   * the deaths are disposed by `checkDeaths(doomed)`, in one batch with the
+   * interaction's lethal-damage deaths (CR 713.6, CT-413).
    *
    * `checkDeaths` is the state-based sweep and it reads `effStats`, so it
    * cannot see that a Robot 7 read 0 defense in the exchange it just lost, or
@@ -2263,16 +2272,16 @@ export class E {
    * an exchange, over its participants, never globally: outside an interaction
    * a Robot 7 is a 7/7 and stays one.
    */
-  private sweepCollapsedDeaths(ids: Iterable<EntityId>): void {
+  private collapsedVictims(ids: Iterable<EntityId>): Doomed[] {
+    const out: Doomed[] = [];
     for (const id of ids) {
       const u = this.entity(id);
       if (!u) continue;
       const [p, t] = this.printedStats(u);
       if (t > 0 && u.damage < t) continue;
-      this.ev('info',
-        `Unaware: ${u.card} is read at its printed ${p}/${t} — it dies.`, { unit: id });
-      this.destroy(u, 'dies');
+      out.push({ u, why: `Unaware: ${u.card} is read at its printed ${p}/${t} — it dies.`, data: { unit: id } });
     }
+    return out;
   }
   /** CR 709.4b, 709.4c, 802.1j: the stat-layer attrs a unit has — augment
    * mods, its own printed and applied ones, and what its column shares. Only
@@ -6416,7 +6425,7 @@ export class E {
       // Phytochemical Protection).
       const through = n;
       // CR 802.9e: this hit was read at printed stats, so its lethality is settled
-      // by `sweepCollapsedDeaths` below rather than by the state-based sweep.
+      // by `collapsedVictims` below rather than by the state-based sweep.
       if (collapsed(u)) collapsedHit.add(u.id);
       // CR 802.25g: every rider below is read against THIS recipient
       const vs = attrsVs(u);
@@ -6465,7 +6474,7 @@ export class E {
        *    trigger to put counters on it."* BOTH. The counters go on and the
        *    unit dies anyway. Combat has always done this (`L.deadlyHit` is
        *    marked in `assignColumnDamage` regardless of {Poisonous}, and
-       *    `sweepDeadly` kills through it) — this path was the one that
+       *    `deadlyVictims` kills through it) — this path was the one that
        *    disagreed with it, which is the whole subject of CR 802.3e and 802.3g: the owner,
        *    2026-08-28, *"deadly works on spell effects and everything. Just
        *    like powerful."*
@@ -6482,7 +6491,7 @@ export class E {
       // CR 802.9: lethality on a collapsed hit is measured on PRINTED defense —
       // "Haboob kills anything that has 1 defense printed at the card level",
       // however many +1/+1 counters are on it. The kill itself is
-      // `sweepCollapsedDeaths` below; `checkDeaths` reads effStats and would
+      // `collapsedVictims` below; `checkDeaths` reads effStats and would
       // let the pumped victim walk.
       const [, t] = collapsed(u) ? this.printedStats(u) : this.effStats(u);
       /**
@@ -6570,21 +6579,19 @@ export class E {
     if (srcAttrs.has('Reaping') && !srcPure && !this.killWatch?.reaps && killed.length) {
       this.reapingDraw(ctx.controller);
     }
-    if (srcAttrs.has('Deadly')) {
-      for (const u of killed) {
-        if (this.entity(u.id)) {
-          this.ev('info', `${ctx.sourceName} is Deadly — ${u.card} dies.`);
-          this.destroy(u, 'dies');
-        }
-      }
-    }
-    // CR 802.9e: settle the deaths the collapsed reading implies before the ordinary
-    // state-based sweep, which reads effStats and cannot see them.
-    this.sweepCollapsedDeaths(collapsedHit);
+    // CR 608.7b, 713.6 / CT-413: every death this batch implies is disposed in ONE
+    // batch — the Deadly kills, then the collapsed and Pure readings', then the
+    // ordinary lethal ones — so they hear each other (CR 706.8c)
+    const doomed: Doomed[] = srcAttrs.has('Deadly')
+      ? killed.filter(u => this.entity(u.id)).map(u => ({ u, why: `${ctx.sourceName} is Deadly — ${u.card} dies.` }))
+      : [];
+    // CR 802.9e: the deaths the collapsed reading implies, which the ordinary
+    // state-based sweep reads effStats for and cannot see
+    doomed.push(...this.collapsedVictims(collapsedHit));
     // CR 802.25e (CT-260): and the deaths the Pure reading implies — the Pure-paired
     // recipients, read while the blind is still on
-    this.sweepPureDeaths(order.filter(r => r.u && pureWith(r.u)).map(r => r.u!.id));
-    this.checkDeaths();
+    doomed.push(...this.pureVictims(order.filter(r => r.u && pureWith(r.u)).map(r => r.u!.id)));
+    this.checkDeaths(doomed);
   }
 
   /** CR 603.2a orthogonal formation adjacency, read for UNITS: front/back within a
@@ -6799,8 +6806,17 @@ export class E {
    * The second is here as well as in removeFromFormation() because card code
    * splices `b.columns` directly (Hooba-Nan, Shard Sprite, Tiderunner), and a
    * state-based action nobody can forget to run is the whole point. */
-  checkDeaths(): Entity[] {
-    const dead = Object.values(this.s.entities).filter(u => this.isLethal(u));
+  checkDeaths(doomed: readonly Doomed[] = []): Entity[] {
+    // CR 608.7b, 713.6 / CT-413: the units a sweep already decided die (Deadly,
+    // the collapsed and the Pure readings) die in the SAME batch as the lethal
+    // ones, first and in the order decided; a unit doomed twice is announced once
+    const dead: Entity[] = [];
+    for (const d of doomed) {
+      if (this.entity(d.u.id) !== d.u || dead.includes(d.u)) continue;
+      this.ev('info', d.why, d.data);
+      dead.push(d.u);
+    }
+    for (const u of Object.values(this.s.entities)) if (!dead.includes(u) && this.isLethal(u)) dead.push(u);
     this.destroyBatch(dead, 'dies');
     this.repairFormation();
     return dead;
@@ -13964,8 +13980,9 @@ export class E {
           return;
         }
         const sub = b.damageStep;
-        this.combatSubStep(sub);
-        this.checkDeaths();   // deaths + promotion between sub-steps, no priority (CR 608.3e)
+        // deaths + promotion between sub-steps, no priority (CR 608.3e); the
+        // sub-step's Deadly / collapsed / Pure victims in the same batch (CT-413)
+        this.checkDeaths(this.combatSubStep(sub));
         const next = sub === 'Swift' ? 'normal' : sub === 'normal' ? 'Sluggish' : 'after';
         /**
          * CR 608.3b — A SPLIT DAMAGE STEP IS SEVERAL STEPS, and this is the
@@ -14359,11 +14376,11 @@ export class E {
    * to players, Lethal and Thieving read it in that order). The order of the
    * aftermath is the rules' order — each step's comment says why it sits
    * where it does — and the ledger lives for exactly this sub-step. */
-  private combatSubStep(sub: DamageSubStep): void {
+  private combatSubStep(sub: DamageSubStep): Doomed[] {
     // CR 802.25e, 802.25f (CT-260): every unit of a Pure exchange is read without
     // its stat attributes for the whole sub-step — the election, the
     // assignment, the commit and the death sweep
-    this.withPureBlind(this.pureExchangeUnits(this.s.battle!), () => this.combatSubStepRun(sub));
+    return this.withPureBlind(this.pureExchangeUnits(this.s.battle!), () => this.combatSubStepRun(sub));
   }
 
   /** the units standing in a Pure exchange (CR 802.25b) right now */
@@ -14377,7 +14394,8 @@ export class E {
     return out;
   }
 
-  private combatSubStepRun(sub: DamageSubStep): void {
+  private combatSubStepRun(sub: DamageSubStep): Doomed[] {
+    let doomedOut: Doomed[] = [];
     const b = this.s.battle!;
     // CR 608.6h: elective damage splits are asked for FIRST — before the ledger
     // exists, before any event is emitted — so a suspension here leaves
@@ -14393,18 +14411,25 @@ export class E {
       // its length), so they do not outlive it.
       b.assignPlans = undefined;
       const shielded = this.commitUnitDamage(b, L);
-      this.sweepDeadly(L, shielded);
-      // CR 802.9e {Unaware}: an exchange collapsed to printed stats settles its own
-      // deaths, because the state-based sweep reads effStats and would keep a
-      // Robot 7 that just fought as a 0/0 alive. Beside sweepDeadly on purpose:
-      // both are "this exchange killed something the ordinary check misses".
-      this.sweepCollapsedDeaths(L.collapsed);
-      // CR 802.25e (CT-260): and a Pure exchange settles the deaths its
-      // stat-attribute-blind reading implies, the same way
-      if (this.pureBlind) this.sweepPureDeaths(this.pureBlind);
-      this.afflictingAftermath(L);
+      const doomed = [
+        ...this.deadlyVictims(L, shielded),
+        // CR 802.9e {Unaware}: an exchange collapsed to printed stats settles its own
+        // deaths, because the state-based sweep reads effStats and would keep a
+        // Robot 7 that just fought as a 0/0 alive. Beside Deadly on purpose:
+        // both are "this exchange killed something the ordinary check misses".
+        ...this.collapsedVictims(L.collapsed),
+        // CR 802.25e (CT-260): and a Pure exchange settles the deaths its
+        // stat-attribute-blind reading implies, the same way
+        ...(this.pureBlind ? this.pureVictims(this.pureBlind) : []),
+      ];
+      this.afflictingAftermath(L, doomed);
       this.commitPlayerDamage(b, L);
       this.thievingDraws(L);
+      // CR 608.7b, 713.6 / CT-413: decided here, read inside the interaction, but
+      // disposed by the pump's state check after this sub-step — ONE batch with
+      // the lethal-damage deaths. Set only when the run completes: a seam that
+      // rewinds (orderSeamRun) re-runs it from scratch.
+      doomedOut = doomed;
     };
     // CR 708.4a: where two Oorblaks, or two Counter Thieves, could each take what
     // this sub-step deals, the sub-step is a seam the player is asked from
@@ -14413,6 +14438,7 @@ export class E {
       || this.counterDonors(b.region).length >= 2;
     if (mayAsk) this.orderSeamRun('combat', `combat:${sub}`, run);
     else run();
+    return doomedOut;
   }
 
   /** CR 708.4a: how many faces radiate `key` in `region` (see `orderSeamRun`) */
@@ -14572,7 +14598,7 @@ export class E {
    * double, so half the pool is its share (rounded up — CR 608.6e).
    * CR 608.6e: in an exchange collapsed by {Unaware} the victim is priced at the
    * defense PRINTED on its card, so a Robot 7 needs 0 and a counter-laden
-   * 1/1 needs 1. The kill itself is `sweepCollapsedDeaths`, because a
+   * 1/1 needs 1. The kill itself is `collapsedVictims`, because a
    * 0-defense victim is assigned nothing at all here.
    * Shared by the assignment walk and the CR 608.6a election (floors AND option
    * ranges) — one price, one place. `prevPool` is what this sub-step's ledger
@@ -14936,8 +14962,8 @@ export class E {
       if (hit.blessedTo !== undefined) this.blessedGain(hit.blessedTo, received, hit.blessedFrom ?? 'combat');
       // CR 608.7b: the same `lethal` fact the effect-damage path puts on its
       // 'damage' event, computed against the three doors out of this
-      // sub-step in the order `combatSubStep` runs them — `sweepDeadly`
-      // (CR 802.3d), `sweepCollapsedDeaths` (CR 802.9e, printed defense) and the
+      // sub-step in the order `combatSubStep` runs them — `deadlyVictims`
+      // (CR 802.3d), `collapsedVictims` (CR 802.9e, printed defense) and the
       // ordinary state check on effective defense. A listener asking "did I
       // survive this?" (Molten Tormentor) may not read marked damage alone.
       const [, ct] = L.collapsed.has(id) ? this.printedStats(u) : this.effStats(u);
@@ -14976,16 +15002,17 @@ export class E {
   }
 
   /** CR 802.3a {Deadly}: any damage from a Deadly column kills — unless none was
-   * actually dealt (CR 802.3h `shielded`). */
-  private sweepDeadly(L: CombatLedger, shielded: Set<EntityId>): void {
+   * actually dealt (CR 802.3h `shielded`). It only DECIDES: the deaths are
+   * disposed by `checkDeaths(doomed)` in one batch with the sub-step's
+   * lethal-damage deaths (CR 608.7b, 713.6, CT-413). */
+  private deadlyVictims(L: CombatLedger, shielded: Set<EntityId>): Doomed[] {
+    const out: Doomed[] = [];
     for (const id of L.deadlyHit) {
       if (shielded.has(id)) continue;   // CR 802.3h: no damage dealt, nothing to kill through
       const u = this.entity(id);
-      if (u) {
-        this.ev('info', `Deadly — ${u.card} dies.`);
-        this.destroy(u, 'dies');
-      }
+      if (u) out.push({ u, why: `Deadly — ${u.card} dies.` });
     }
+    return out;
   }
 
   /** CR 802.23d {Afflicting}: whatever an afflicting column damaged and killed gives
@@ -14994,8 +15021,8 @@ export class E {
    * runs only AFTER this sub-step returns — so run it here first, or a
    * straightforward combat kill would fall outside the diff. Idempotent: the
    * pump's own checkDeaths then finds nothing left to do. */
-  private afflictingAftermath(L: CombatLedger): void {
-    if (L.afflicted.size) this.checkDeaths();
+  private afflictingAftermath(L: CombatLedger, doomed: readonly Doomed[]): void {
+    if (L.afflicted.size) this.checkDeaths(doomed);
     for (const bucket of L.afflicted.values()) {
       this.afflictingKills(L.beforeUnits, bucket.label, bucket.ids);
     }
