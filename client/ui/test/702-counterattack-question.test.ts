@@ -166,6 +166,10 @@ test('§5 no leftover unit, no question; "Go back" keeps the plan and Confirm as
     ui.click({ btn: 'confirmblocks' });
     const html = ui.click({ btn: 'countercancel' });
     assert.match(html, /data-btn="confirmblocks"/, 'back on the block bar');
+    ui.click({ btn: 'confirmblocks' });
+    assert.ok(ui.has({ btn: 'counternone' }), 'asked again');
+    ui.key('Escape');
+    assert.ok(ui.has({ btn: 'confirmblocks' }) && !ui.has({ btn: 'counternone' }), 'Escape is Go back');
     ui.actions();
     ui.click({ btn: 'confirmblocks' });
     assert.equal(sent().length, 0, 'unanswered, so it asks again');
