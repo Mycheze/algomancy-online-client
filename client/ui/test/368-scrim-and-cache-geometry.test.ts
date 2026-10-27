@@ -6,7 +6,7 @@
  * rail's left edge. It used to stop at a guessed clamp(250px, 24vw, 320px);
  * once the regions board's rail was narrowed (250px, 210px under 1100px)
  * inside the centred max-width #app, a strip of table beside the rail stayed
- * undimmed. The fix computes the edge from the same numbers that place the
+ * undimmed. (Board round 8 made that rail a 50px toolbar at every width.) The fix computes the edge from the same numbers that place the
  * rail. The defect CLASS is "the rail's width changes and the scrim's
  * arithmetic does not follow", so this test does not pin either number: it
  * resolves BOTH sides out of style.css — the rail's left edge from #app's
@@ -571,9 +571,13 @@ const misses = (es: Edge[]): Edge[] => es.filter(e => e.scrim === null || Math.a
 
 test('the dialog scrim stops exactly at the rail on the regions board, at every window width', () => {
   const es = WIDTHS.map(w => edges('regions', w));
-  // not blind: the widths really do move the rail (else the media queries
-  // were never read and every row compares one number with itself)
-  assert.ok(new Set(es.map(e => e.rail)).size >= 3, `the rail never changed width across the sweep:\n  ${table(es)}`);
+  // board round 8: the rail is the 50px toolbar at EVERY width — no 210px
+  // step under 1100px, no drawer under 900px (a drawer would read here as
+  // `rail 0`, position fixed)
+  assert.deepEqual([...new Set(es.map(e => e.rail))], [50], `the toolbar is not one 50px column at every width:\n  ${table(es)}`);
+  // not blind: the widths really do move the rail's EDGE (the centred
+  // max-width margin), else every row compares one number with itself
+  assert.ok(new Set(es.map(e => e.railLeft)).size >= 3, `the rail's edge never moved across the sweep:\n  ${table(es)}`);
   assert.deepEqual(misses(es), [], `scrim right != rail left:\n  ${table(es)}`);
 });
 

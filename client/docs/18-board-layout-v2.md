@@ -16,33 +16,36 @@ The regions board draws both facts, on different axes, and never scrolls.
 
 ## The topology
 
-The play zone is a 6-wide × 9-tall grid of named areas. It is a **topology,
-not a size map**: which areas exist, what touches what, what each holds. Real
-sizes flex with the screen, the phase and the number of cards.
+Board round 8 (owner, 2026-10-27; the original 6 × 9 grid of 2026-09-22 is in git
+history). The play zone is a grid of two columns between two full-width info
+lines. It is a **topology, not a size map**: which areas exist, what touches
+what, what each holds. Real sizes flex with the screen, the phase and the
+number of cards.
 
 ```
-      c0    c1    c2  |  c3    c4    c5
-r0  [their life][res ][bin] tP    tP    tP      their region: In Play      (tinfo · tplay)
-r1  [hand/deck ][cache][bin] tP    tP    tP
-r2   yV    yV    yV   |  tP    tP*   tP*     my Invaders row              (yinv)
-r3   yF    yF    yF   |  tF    tF    tF      In Battle: mine left, theirs right (yfight · tfight)
-r4   yF    yF    yF   |  tF    tF    tF
-r5   yF    yF    yF   |  tF    tF    tF
-r6   yP*   yP*   yP   |  tV    tV    tV      their Invaders row           (yplay · tinv)
-r7   yP    yP    yP   | [bin][cache][hand/deck]   my info offshoot        (yinfo)
-r8   yP    yP    yP   | [bin][res  ][my life ]
+ ┌──────────────────────────────────────────────────────────┐
+ │ tinfo: their name ♥ ⭐ · cache · bin · resources (flex)   │  their info line
+ ├───────────────────────────┬┄┬────────────────────────────┤
+ │ yV  my Invaders           │┆│ tP  their In Play          │
+ │ yF  my battle block       │┆│ tF  their battle block     │  the two columns
+ │ yP  my In Play            │┆│ tV  their Invaders         │  (.lcol), the seam
+ ├───────────────────────────┴┄┴────────────────────────────┤  between them
+ │ yinfo: resources (flex) · phase icons · bin · cache · You ♥│  my info line
+ ├──────────────────────────────────────────────────────────┤
+ │ action bar                                               │  my region's tint and
+ │ hand                                                     │  ring run on down
+ ╵                                                          ╵  off the window
 ```
 
-`y` / `t` = whose **region** (gold / green). `P` In Play, `F` In Battle, `V`
-Invaders, `*` the "spawned in combat" corner of In Play — the region owner's
-spell tokens sit there, visibly not in the formation. The info blocks are each
-L's offshoot: part of the region, beside its own In Play, not the play area.
-Their side is yours rotated 180°.
-
-Two interlocking Ls. The opponent's region is the right column from the top
-down to their Invaders row, plus the offshoot at the top left. Yours is the
-left column from your Invaders row down, plus the offshoot at the bottom
-right.
+`y` / `t` = whose **region** (each region keeps one colour, gold region 0 and
+green region 1, whoever is looking). `P` In Play, `F` the battle block, `V`
+Invaders. Their side is yours rotated 180°: two interlocking Ls, each a
+column and a full-width foot. The opponent's region is their info line along
+the top and the right column down to just above your line; yours is the left
+column up to just under theirs, and your info line along the bottom — which
+continues, in your colour, round the action bar and the hand. Each column is
+a box of its own (`.lcol`), so the two stack independently: In Play takes
+the room, the Invaders rows and an idle battle block what they hold.
 
 ## The three axes
 
@@ -444,6 +447,55 @@ not share, never under half, the 100px cap, the source band — and the DOM pass
 that writes it), `449-battle-board-grid` (`data-fight` in both rounds from both
 seats, the half-and-half grid and the wide one per side, the centring, the
 labels), `450-ring-takes-the-visitor-info`.
+
+### Board round 8 — more table (owner and invi, 2026-10-27; phases P1–P3)
+
+The verdict: the chrome took space from the battlefield and made the eye
+travel. What changed:
+
+- **Gaps of 1–2px** between every box on the game screen (`--gap`,
+  `--gap-tight` on `:root`); the cards keep clear of the ring by the blocks'
+  own padding (`--ringpad`, 5px), not by gaps. `layout.ts` COL_GAP /
+  COL_CHROME / INV_PAD / INV_GAP / BAND and `fit.ts` OUTER_GAPS moved with
+  the CSS (test 711 derives them from it).
+- **Each player's info is one full-width line** (`--linh`, 66px; 60px under
+  820px tall). Mine: resources (they take all the width left, no fixed share)
+  · phase icons · bin · cache · name and life at the right edge. Theirs, the
+  mirror: name and life with their card backs under the name · cache · bin ·
+  resources. The cache is absent when empty. The resources spread when the
+  line has the room (`layout.ts resLine` → `fit.ts fitRes`, `--resstep`) and
+  fan only when it does not; the resource window (`ressum.ts`) is unchanged.
+  A spectator's view of the top hand is a stretch of that seat's line, which
+  grows to 128px (100px) while it holds it.
+- **The deck line is gone.** Hovering a name — tapping it on touch — shows
+  hand, deck, recycle pile, bin and cache as numbers, with the mark's
+  explanation (`ui/infotip.ts`, the resource window's pattern; the name also
+  carries the `deck:` anchor draws fly from).
+- **Phase icons** in my line replace the top bar's phase track: (Draft) ·
+  Plan · Haste · Battle 1 · Battle 2 · Regroup · Deploy, the current one lit,
+  the battle's four steps as pips, the turn as a numeral. Hover or tap for the
+  caption ("Battle · round 1 · choosing blockers · Turn 4 · … has the
+  initiative"). The new glyphs are flat white SVGs in `data/icons/`.
+- **No top bar** on this board. Its draft elements, custom and single-card
+  chips and the pass-through chip stand in the rail's head for now.
+- **The columns.** In a battle the fight's column holds its region's In Play
+  (`--lband`, `fit.ts planBattleBoard`, one band now) and the fight down to the
+  info line; the other column splits between its idle block and its In Play.
+  The idle column's width (`--lidle`, `data-wide`) is as round 7 left it.
+- **Your ring runs off the window.** On your region the ring is an open path
+  up the left, round your column, across your line and down the right, round
+  the action bar and the hand, its ends below the window's foot. The ring is a
+  fixed layer beside the board (`#app > .lring`, `main.ts lringHtml`) because
+  the bar and the dock are rows of `#app` outside `.main`, which clips — one
+  SVG over the window, so the visitor tween keeps working on one path. Your
+  tint runs on behind the bar and the dock in every phase (`#app > .ltail`,
+  z -1 under them); the dock's accent edge is gone. A visitor's line is taken
+  into the ring only over the region's column, so entering just lengthens the
+  column (six points either way).
+
+Guards: `711-board8-lines-and-gaps`, and 318, 324, 352, 448, 449, 450, 674,
+687, 302 (the deck's numbers now come from the tap) and 273 §4 (the two tap
+routes), updated to the new contract.
 
 ## The toggle
 

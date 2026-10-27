@@ -364,7 +364,7 @@ const SEAT: Seat = 0;
  * rather than tested.
  */
 function board(seed: number): GameState {
-  if (ui.html().includes('class="topbar"')) ui.key('s');   // drain first (S, the skip key)
+  if (ui.html().includes('class="lboard') || ui.html().includes('class="topbar"')) ui.key('s');   // drain first (S, the skip key)
   const h = new Harness(seed);
   const e = new E(h.state);
   h.state.players[SEAT]!.bin.push('Oorblak');

@@ -73,6 +73,11 @@ let busy = false;
  * a verdict is a record, and the owner should be able to see that it landed
  * without watching for a four-second banner */
 let status = '';
+/** board round 8: on the regions board the panel is a popover off the
+ * toolbar's 🧪 (main.ts toolbarHtml). It opens by itself on a scenario's first
+ * paint — the brief is the first thing a tester must read — and stays as the
+ * tester leaves it after that, through every push of the same scenario. */
+let popShown = false;
 
 export function setScenario(next: ScenarioInfo | null): void {
   // a new scenario clears the drafts; the same one keeps them (every server
@@ -80,8 +85,15 @@ export function setScenario(next: ScenarioInfo | null): void {
   if (next && info && next.id !== info.id) {
     detailOpen = false; noteDraft = ''; rulingDraft = ''; clauseDraft = ''; status = '';
   }
+  if (next && next.id !== info?.id) popShown = true;
   info = next;
 }
+
+/** is this a scenario room (the server said so)? */
+export function isScenario(): boolean { return info !== null; }
+
+/** is the toolbar's scenario popover open? */
+export function popOpen(): boolean { return info !== null && popShown; }
 
 /** The seat-1 line. docs/14 §4's ⚠ made visible: the expensive mistake is a
  * scenario that silently needs an opponent, because a hung game looks like a
@@ -102,8 +114,9 @@ function opponentLine(room: string): string {
     the scripted opponent is off for this scenario, so the board will not move on its own.</div>`;
 }
 
-/** The panel. Empty string for every ordinary room. */
-export function panelHtml(room: string): string {
+/** The panel. Empty string for every ordinary room. `closable`: the
+ * toolbar's popover, which carries its own ✕ in the head. */
+export function panelHtml(room: string, closable = false): string {
   if (!info) return '';
   const buttons = info.verdicts.map(v => {
     const l = LABELS[v] ?? { icon: '•', text: v, title: v };
@@ -120,7 +133,8 @@ export function panelHtml(room: string): string {
     .join('');
   return `<div class="scnpanel">
     <div class="scnhead">🧪 Scenario · <b>${esc(info.card)}</b>
-      <span class="scnid" title="${esc(info.why)}">${esc(info.id)}</span></div>
+      <span class="scnid" title="${esc(info.why)}">${esc(info.id)}</span>${
+      closable ? '<button class="scnx" data-btn="scn-popx" title="close — 🧪 on the toolbar opens it again">✕</button>' : ''}</div>
     <div class="scnexpect">${expect}</div>
     ${opponentLine(room)}
     <div class="scnbtns">${buttons}</div>
@@ -150,6 +164,11 @@ export function handleButton(btn: HTMLElement, ctx: RunnerCtx): boolean {
   const b = btn.dataset['btn'];
   if (!b || !b.startsWith('scn-')) return false;
   if (!info) return true;
+  if (b === 'scn-pop' || b === 'scn-popx') {
+    popShown = b === 'scn-pop' ? !popShown : false;
+    ctx.rerender();
+    return true;
+  }
   if (b === 'scn-detail') {
     // <summary>'s own toggle already moved the <details>; this just remembers
     // it, so the next server push does not close the box mid-sentence

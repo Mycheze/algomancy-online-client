@@ -16,10 +16,11 @@
 export interface RailBox { left: number; top: number; width: number }
 
 /**
- * Pixels the pick dialog must leave clear on the window's right for the rail.
+ * Pixels the pick dialog must leave clear on the window's right for the rail —
+ * on the regions board the 50px toolbar (board round 8), at every width.
  * Zero when there is no rail beside the table — none drawn, the rail stacked
- * under the board on a narrow screen, or the narrow board's drawer parked off
- * the window's right edge.
+ * under the board on a narrow screen, or a box parked off the window's right
+ * edge (the narrow board's drawer did that, until round 8 removed it).
  */
 export function railClearance(viewW: number, side: RailBox | null): number {
   if (!side || !(side.width > 0)) return 0;

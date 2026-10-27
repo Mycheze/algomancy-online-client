@@ -125,13 +125,17 @@ test('339 §4 the rail says the room, not who you are', () => {
   const h = new Harness(33904);
   toDeployment(h);
   const html = ui.join(viewFor(h.state, 0), 0, legalActions(h.state, 0));
-  assert.match(html, /<span class="init">room UIDRIVER/, 'positive control: the room tag is drawn');
-  const tag = (html.match(/<span class="init">room UIDRIVER[\s\S]*?<\/span>/) ?? [''])[0];
+  // board round 8: the toolbar's room icon, its words its label and its tip
+  assert.match(html, /<button class="tbstat" data-tip="room" data-btn="infotip" aria-label="room UIDRIVER"/, 'positive control: the room is named');
+  const tip = ui.click({ tip: 'room' });
+  const tag = (tip.match(/<div class="tiphead">[\s\S]*?<\/div>/) ?? [''])[0];
+  assert.match(tag, /room UIDRIVER/, 'and its window says the room');
   assert.doesNotMatch(tag, /you are/i, `the tag: ${tag}`);
-  assert.doesNotMatch(html, new RegExp(`you are ${h.state.players[0]!.name}`), 'nor anywhere on the board');
+  assert.doesNotMatch(tip, new RegExp(`you are ${h.state.players[0]!.name}`), 'nor anywhere on the board');
+  ui.click({ tip: 'room' });
   // a replay says its room; a rules question (?question=) says that instead
-  assert.match(MAIN, /<span class="init spectating">\$\{asQuestion\(\) \? '❓ rules question' : `▶ replay \$\{esc\(NET\.room\)\}`\}<\/span>/);
-  assert.match(MAIN, /`<span class="init spectating">👁 spectating \$\{esc\(NET\.room\)\}<\/span>`/);
+  assert.match(MAIN, /if \(replayActive\(\)\) return asQuestion\(\) \? \{ icon: '❓', label: 'rules question' \} : \{ icon: '▶', label: `replay \$\{room\}` \};/);
+  assert.match(MAIN, /if \(NET!\.spectating\) return \{ icon: '👁', label: `spectating \$\{room\}` \};/);
   assert.doesNotMatch(MAIN, /SPECTATING\. You are watching this|a finished game\. Nothing here is clickable/);
 });
 

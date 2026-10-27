@@ -74,12 +74,16 @@ export function zoomGoHtml(go: TapGo): string {
   return `<div class="zoomhang zoomgo"><span class="tapgo">${go.label}</span></div>`;
 }
 
-/** is (x, y) on the zoom's own button? */
-export function zoomGoHit(x: number, y: number): boolean {
-  if (typeof document === 'undefined') return false;
-  const b = document.querySelector?.('#cardzoom .zoomgo .tapgo') as Element | null;
-  const r = b?.getBoundingClientRect?.();
-  return !!r && r.width > 0 && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+/** the read's own button that (x, y) is on, or null: the cast / activate
+ * above (CT-408), or an entry of the card menu a finger's read carries
+ * (board round 8, main.ts readMenuHtml — `data-zmi` is its index) */
+export function zoomHangHit(x: number, y: number): HTMLElement | null {
+  if (typeof document === 'undefined' || typeof document.querySelectorAll !== 'function') return null;
+  for (const b of document.querySelectorAll<HTMLElement>('#cardzoom .zoomgo .tapgo, #cardzoom .zoommenu [data-zmi]')) {
+    const r = b.getBoundingClientRect?.();
+    if (r && r.width > 0 && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return b;
+  }
+  return null;
 }
 
 /** the button, for the element whose key the held action names (else '') */

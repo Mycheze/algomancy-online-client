@@ -21,7 +21,8 @@
  *     the one being fought in, in a strip down the right of the fight instead
  *     (owner, 2026-09-27), never the battle's invader column; the spell tokens
  *     sit in the In Play block
- * §6  the stylesheet: the nine named rows, the no-scroll clip, the stack rule
+ * §6  the stylesheet: the info lines and the two columns (board round 8), the
+ *     no-scroll clip, the stack rule
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -93,9 +94,10 @@ function fightBlock(html: string, region: number): string {
   const m = re.exec(html);
   assert.ok(m, `no .lfight for region ${region}`);
   const from = m.index;
-  const next = html.indexOf('<div class="lfight ', from + 10);
-  const end = html.indexOf('<div class="linv ', from + 10);
-  const stop = [next, end].filter(i => i > from).sort((a, b) => a - b)[0] ?? html.length;
+  // board round 8: each region is a column (.lcol), so the block ends at
+  // the next block of either column, or the end of its own
+  const stop = ['<div class="lfight ', '<div class="linv ', '<div class="lplay ', '<div class="lcol ', '<div class="linfo ']
+    .map(t => html.indexOf(t, from + 10)).filter(i => i > from).sort((a, b) => a - b)[0] ?? html.length;
   return html.slice(from, stop);
 }
 
@@ -143,7 +145,7 @@ test('§3 no data-act inside a data-btn; main, actionbar, side in that order', (
     const bad = all.filter(a => a.act !== null && a.enclosingBtn !== null)
       .map(a => `data-act="${a.act}" inside data-btn="${a.enclosingBtn}"`);
     assert.deepEqual(bad, [], `${f.label}: swallowed affordances`);
-    const main = html.indexOf('class="main"'), bar = html.indexOf('class="actionbar"'), side = html.indexOf('class="side"');
+    const main = html.indexOf('class="main"'), bar = html.indexOf('class="actionbar"'), side = html.indexOf('class="side toolbar"');
     assert.ok(main >= 0 && main < bar && bar < side, `${f.label}: column order`);
     assert.match(html, /<div class="stickytop">[\s\S]*?<div class="actionbar">/);
     assert.ok(html.indexOf('class="lboard') > main && html.indexOf('class="lboard') < bar, `${f.label}: the board is inside .main`);
@@ -207,10 +209,15 @@ test('§5b no zone captions; the send box is in the attacker\'s block; one colou
     const html = paint(f, true);
     const board = html.slice(html.indexOf('class="lboard'), html.indexOf('class="actionbar"'));
     assert.doesNotMatch(board, /Region of |invaders in |battle line of /, `${f.label}: a zone caption is back`);
+    // board round 8: the ring is a layer over the table column, beside the
+    // board — your region's runs on down round the bar and the hand — and your
+    // tint goes on behind them (.ltail), in your region's colour
+    assert.doesNotMatch(board, /class="lring/, `${f.label}: the ring is not inside the board (.main clips)`);
+    assert.match(html, new RegExp(`<div class="ltail rc${e.homeRegion(0)}"`), `${f.label}: my tint behind the bar and the hand`);
     // region colour follows the REGION, not the viewer
     assert.match(board, new RegExp(`<div class="lback theirs a rc${e.homeRegion(1)}">`), `${f.label}: their tint`);
     assert.match(board, new RegExp(`<div class="lback mine a rc${e.homeRegion(0)}">`), `${f.label}: my tint`);
-    assert.match(board, /<svg class="lring rc\d" data-ring="(top|bottom)" data-visit="[01]"/, `${f.label}: no ring`);
+    assert.match(html, /<svg class="lring rc\d" data-ring="(top|bottom)" data-visit="[01]"/, `${f.label}: no ring`);
   }
   // round 1, seat 0 attacking into seat 1's region: seen from the DEFENDER's
   // seat, the send box is in seat 0's block — where the counterattack will be
@@ -255,15 +262,26 @@ test('§5b no zone captions; the send box is in the attacker\'s block; one colou
 
 /* ── §6 the stylesheet ──────────────────────────────────────────────── */
 test('§6 the grid, the clip and the stack rule are in style.css', () => {
+  // board round 8 (owner, 2026-10-27): each region is a column and a
+  // full-width foot — their info line on top, mine at the bottom, and the
+  // two columns between them, mine on the left
   const areas = (CSS.match(/\.lboard \{[\s\S]*?grid-template-areas:([\s\S]*?);/) ?? [])[1] ?? '';
   const rows = [...areas.matchAll(/"([^"]+)"/g)].map(m => m[1]!.trim().split(/\s+/));
-  assert.equal(rows.length, 9, 'nine rows');
-  assert.ok(rows.every(r => r.length === 6), 'six columns each');
-  assert.deepEqual(rows[0], ['tinfo', 'tinfo', 'tinfo', 'tplay', 'tplay', 'tplay']);
-  assert.deepEqual(rows[2], ['yinv', 'yinv', 'yinv', 'tplay', 'tplay', 'tplay']);
-  assert.deepEqual(rows[3], ['yfight', 'yfight', 'yfight', 'tfight', 'tfight', 'tfight']);
-  assert.deepEqual(rows[6], ['yplay', 'yplay', 'yplay', 'tinv', 'tinv', 'tinv']);
-  assert.deepEqual(rows[8], ['yplay', 'yplay', 'yplay', 'yinfo', 'yinfo', 'yinfo']);
+  assert.deepEqual(rows, [['tinfo', 'tinfo'], ['ycol', 'tcol'], ['yinfo', 'yinfo']]);
+  assert.match(CSS, /\.lboard \{[^}]*grid-template-rows: var\(--linh\) minmax\(0, 1fr\) var\(--linh\);/,
+    'the info lines are one fixed height; the columns take the rest');
+  assert.match(CSS, /\.lcol \{ grid-area: tcol;[^}]*flex-direction: column;/);
+  assert.match(CSS, /\.lcol\.mine \{ grid-area: ycol; \}/);
+  // and in the markup: mine is Invaders, battle block, In Play from the top;
+  // theirs In Play, battle block, Invaders — so control reads top and bottom
+  const html = paint(FIX[3]!, true);
+  const col = (side: string): string[] => {
+    const at = html.indexOf(`<div class="lcol ${side}"`);
+    const body = html.slice(at, html.indexOf('<div class="lcol ', at + 10) > at ? html.indexOf('<div class="lcol ', at + 10) : html.indexOf('<div class="linfo mine', at));
+    return [...body.matchAll(/<div class="(lplay|lfight|linv) /g)].map(m => m[1]!);
+  };
+  assert.deepEqual(col('mine'), ['linv', 'lfight', 'lplay']);
+  assert.deepEqual(col('theirs'), ['lplay', 'lfight', 'linv']);
   assert.match(CSS, /#app\.board\.v2 \.main \{[^}]*overflow: hidden/);
   assert.match(CSS, /\.lfight\.focus \.battle \.cols \{[^}]*flex-wrap: nowrap/);
   assert.match(CSS, /#app\.stackfree \.stackboard\.live \{/);

@@ -24,11 +24,22 @@ import type { GameState } from '../../engine/src/types.ts';
 const { local } = await import('./ui-driver.ts');
 const ui = local();
 
-/** the deck line as a player reads it, for seat 0 */
+/** the deck's numbers as a player reads them, for seat 0. Board round 8
+ * (owner, 2026-10-27) took the always-on deck line off the table: hovering
+ * — or tapping — a player's name shows every pile as a number (ui/infotip.ts),
+ * so this taps the name, as a finger would, and reads the window it opens. */
+let lastTip = '';
 function deckLine(html: string): string {
-  const m = html.match(/<span class="binline"[^>]*>([\s\S]*?)<\/span>/);
-  assert.ok(m, 'the board draws a deck line at all');
-  return m![1]!.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  assert.match(html, /data-tip="counts"[^>]*data-p="0"|data-p="0"[^>]*data-tip="counts"/, 'the name opens the counts at all');
+  const shown = ui.click({ tip: 'counts', p: 0 });
+  // a second tap closes it; leave the window down for the next read
+  const tip = /<div class="tiphead">[\s\S]*?<\/table>(?:<div class="tipfoot">[\s\S]*?<\/div>)?/.exec(shown)?.[0] ?? '';
+  ui.click({ tip: 'counts', p: 0 });
+  assert.ok(tip, 'the tap opened the counts window');
+  lastTip = tip;
+  const cell = (k: string): string | undefined => new RegExp(`<th>${k}</th><td>(\\d+)</td>`).exec(tip)?.[1];
+  const recycled = Number(cell('recycle pile') ?? 0);
+  return `deck ${cell('deck(?: \\(shared\\))?')}${recycled ? ` · recycled ${recycled}` : ''}`;
 }
 
 /** a fresh shared-mode game, with `n` cards pushed past seat 0's mark */
@@ -68,10 +79,10 @@ test('CR 408.2 recycling does NOT inflate the deck count — that is the whole p
   assert.match(after, /recycled 5/, 'they are all accounted for in the other number');
 });
 
-test('§4 the line explains the mark on hover, in words, where an operator-free player is', () => {
-  const html = ui.show(withPile(3023, 2));
-  const m = html.match(/<span class="binline"[^>]*title="([^"]*)"/);
-  assert.ok(m, 'the deck line carries a title');
+test('§4 the counts explain the mark, in words, where an operator-free player is', () => {
+  deckLine(ui.show(withPile(3023, 2)));
+  const m = /<div class="tipfoot">([\s\S]*?)<\/div>/.exec(lastTip);
+  assert.ok(m, 'the counts window carries the note');
   const title = m![1]!;
   assert.match(title, /mark/i, 'it names the mark');
   assert.match(title, /shuffled/i, 'and says what happens when the deck runs out');

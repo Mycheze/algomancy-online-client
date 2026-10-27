@@ -121,41 +121,34 @@ test('§6 a finger gets the keyboard hints hidden and bigger targets; a card sca
   assert.deepEqual(bare.map(m => m[0]), [], 'no keyboard hint outside a .kh span');
 });
 
-test('§7 the rail: three icons and "more"; the reminders can be hidden; a narrow board has a rail drawer', () => {
-  // owner, 2026-09-27: rules, the judge and every toggle are INSIDE the group
-  // "more" opens; table, report and undo stay out, as icons
-  const side = MAIN.slice(MAIN.indexOf('<div class="sidebtns'), MAIN.indexOf('${NET ? scn.panelHtml'));
-  const group = side.slice(side.indexOf('<div class="setgroup'), side.lastIndexOf('</div>'));
-  for (const b of ['helpopen', 'judgeopen', 'autopasstoggle', 'bluffhastetoggle', 'motiontoggle', 'layouttoggle', 'soundtoggle']) {
+test('§7 the toolbar: icons, the toggles behind "more"; the reminders can be hidden; no drawer at any width', () => {
+  // owner, 2026-09-27: on a tablet the rail was ☰ 📝 ↶ as icons and "more";
+  // board round 8 made the regions board's rail a 50px toolbar of icons at
+  // EVERY width (main.ts toolbarHtml; test/712 drives it). Every toggle waits
+  // in the "more" popover; rules and the judge are tools, so they stay out.
+  const bar = /function toolbarHtml[\s\S]*?\n}/.exec(MAIN)?.[0] ?? '';
+  const group = bar.slice(bar.indexOf('<div class="setgroup'), bar.indexOf('${NET && scnPop'));
+  for (const b of ['autopasstoggle', 'bluffhastetoggle', 'motiontoggle', 'layouttoggle', 'soundtoggle']) {
     assert.ok(group.includes(`data-btn="${b}"`), `${b} is behind "more"`);
   }
   assert.ok(group.includes('data-chip="fullcontrol"'), 'the full-control chip too');
-  for (const b of ['tablemenu', 'reportopen', 'undo']) {
-    const at = side.indexOf(`data-btn="${b}"`);
-    assert.ok(at >= 0 && !group.includes(`data-btn="${b}"`), `${b} stays on the rail`);
-    assert.match(side.slice(at, side.indexOf('</button>', at)), /<span class="lbl">/, `${b} is an icon whose word is a .lbl`);
+  for (const b of ['tablemenu', 'reportopen', 'undo', 'helpopen', 'judgeopen']) {
+    const at = bar.indexOf(`data-btn="${b}"`);
+    assert.ok(at >= 0 && !group.includes(`data-btn="${b}"`), `${b} stays on the strip`);
+    assert.match(bar.slice(at, bar.indexOf('</button>', at)), / title="[^"]{6,}">[^<]{1,2}$/, `${b} is an icon with its words in a title`);
   }
-  assert.match(side, />⋯ more</, 'the button is called "more"');
-  // …but ONLY on a touch screen or a narrow window (owner: "I meant for it
-  // just to be for the iPad and show the same, normal view for computers"):
-  // by default the group dissolves and the words show, and the compact look
-  // is written under html.touch and under 900px, nowhere else
-  // (since 2026-10-10 the desktop hides the TOGGLES behind "more" too — ui/test/447)
-  assert.match(CSS, /^\.setgroup \{ display: contents; \}/m, 'the desktop default');
-  assert.match(CSS, /^html\.touch \.setgroup \{ display: none;/m);
-  assert.match(CSS, /^html\.touch \.sidebtns \.lbl \{ display: none; \}\nhtml\.touch \.sidebtns\.moreopen \.lbl \{ display: inline; \}/m);
-  assert.match(CSS, /@media \(max-width: 900px\) \{\n  \.setbtn \{ display: inline-block;[\s\S]*?  \.sidebtns \.lbl \{ display: none; \}/);
-  // no bare rule outside those two hides a word or the group
-  for (const m of CSS.matchAll(/^(\.sidebtns \.lbl|\.setgroup) \{ display: none; \}/gm)) assert.fail(`a desktop-wide ${m[1]} rule hides the rail`);
-  // the desktop order is the rail's old one, the toggles moved after "more" (2026-10-10, ui/test/447)
-  const order = [...CSS.matchAll(/^\.sidebtns \[data-(?:btn|chip)="(\w+)"\] \{ order: (\d+); \}/gm)].map(m => m[1]);
-  assert.deepEqual(order, ['tablemenu', 'helpopen', 'judgeopen', 'reportopen', 'undo', 'restart', 'fullcontrol',
-    'autopasstoggle', 'bluffhastetoggle', 'motiontoggle', 'layouttoggle', 'soundtoggle']);
+  assert.match(bar, /data-btn="settingsmenu"[^>]*title="more: /, 'the button is called "more"');
+  // the popover is hidden until open — at every width, on a mouse or a finger
+  assert.match(CSS, /#app\.board\.v2 > \.toolbar \.setgroup\.tbpop \{ display: none;/);
+  assert.match(CSS, /#app\.board\.v2 > \.toolbar \.setgroup\.tbpop\.open \{ display: flex; \}/);
   assert.match(CSS, /html\.touch \.remind, html\.touch \.remindrow:not\(:has\(b\)\) \{ display: none; \}/);
   // the owner (2026-09-28) cut most of the how-to sentences outright; the
   // short ones left (haste, planning, the attack builder, the draft) are marked
   assert.ok((MAIN.match(/class="remind"/g) ?? []).length >= 4, 'the prompt bars\' how-to phrases are marked');
-  assert.match(CSS, /@media \(max-width: 900px\) \{\s*#app\.board\.v2 \{ grid-template-columns: minmax\(0, 1fr\); \}/);
+  // the narrow board's rail drawer (2026-09-27) is gone: a 50px strip fits at every size
+  assert.match(CSS, /#app\.board\.v2 \{ grid-template-columns: minmax\(0, 1fr\) 50px; \}/);
+  assert.doesNotMatch(CSS, /railopen|#app\.board\.v2::(before|after)/, 'no drawer, no ☰ tab, no scrim pseudo-element');
+  assert.doesNotMatch(read('../touch.ts'), /railopen/, 'and nothing in touch.ts opens one');
 });
 
 test('§8 the draft and the draw are a dialog that hides to show the board, and Enter still confirms them', () => {

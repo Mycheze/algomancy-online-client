@@ -275,7 +275,7 @@ Every card you recycle is a card you will not play, so choose one you need least
         title: 'Shards',
         body: c => `When you activate an elemental resource and it gives you **three or more affinity** for its element, you get a free **Shard** as well. A Shard is 1 mana with no affinity. It arrives **dormant**, like every new resource: activating it later uses one of your two activations for that turn.
 
-**Your turn:** play your planning phase. You can activate (by clicking) Prismites, recycle cards for ${element(c)} (don't forget to activate them) and even try exchanging a Prismite for a ${El(c)} resource. Everything is done by clicking and choosing from a menu. During planning, you can also use \`Ctrl + Z\` to undo things if you make a mistake. When you're done, press **done planning** or hit \`Enter\`.`,
+**Your turn:** play your planning phase. You can activate (by clicking) Prismites, recycle cards for ${element(c)} (don't forget to activate them) and even try exchanging a Prismite for a ${El(c)} resource. Everything is done by clicking and choosing from a menu. During planning, you can also use \`Ctrl + Z\` to undo things if you make a mistake. When you're done, press **Done Planning** or hit \`Enter\`.`,
         callout: 'This means that you are rewarded for making more resources of the same colour, since each recycled card can generate 2 resources, rather than just 1.',
         quotes: [{ text: 'The elemental resources can provide free Shards when they are activated if the player has at least three affinity towards that resource. Shards are a resource that adds no affinity, but can still be expended for mana like all other resources.', source: 'Manual, p. 18' }],
         figure: c => {
@@ -330,7 +330,7 @@ If you're not actively in combat with an opponent, they **do not exist**. You ca
 
 In this client both players deploy at the same time, each alone in their own region. You will not see what your opponent did until you both finish — then their moves are revealed.
 
-**Your turn:** cards you can afford glow. Click one, or drag it onto the table, to play it${ex ? ` — [[${ex}]] is a good start` : ''}. When you are finished, press **done deploying**.`;
+**Your turn:** cards you can afford glow. Click one, or drag it onto the table, to play it${ex ? ` — [[${ex}]] is a good start` : ''}. When you are finished, press **Done Deploying**.`;
         },
         quotes: [
           { text: 'Any card can be played during this phase, with the exception of battle cards, which can only be played in the battle phase.', source: 'Manual, p. 26' },
@@ -340,7 +340,7 @@ In this client both players deploy at the same time, each alone in their own reg
           const held = hand(c).filter(deployUnit).slice(0, 2).map(r => r.name);
           return held.length ? { kind: 'cards', cards: held, caption: 'In your hand right now.' } : turnStrip('Deploy');
         },
-        highlight: ['.phasetrack'],
+        highlight: ['.phicons'],
       },
     ],
   },
@@ -380,8 +380,8 @@ ${lines}
     pages: [
       {
         title: 'A new turn',
-        body: 'You\'re in planning again now! You can always see what to do in the **yellow box above your hand**, and quickly tell which part of the turn you\'re in up at the **top of the screen**.',
-        highlight: ['.actionbar', '.phasetrack'],
+        body: 'You\'re in planning again now! You can always see what to do in the **yellow box above your hand**, and quickly tell which part of the turn you\'re in from the **icons beside your resources**.',
+        highlight: ['.actionbar', '.phicons'],
       },
     ],
   },
@@ -493,7 +493,7 @@ Battle is the only interactive phase. Every card played, ability activated or tr
         title: 'The stack: last in, first out',
         body: `Cards on the stack pile up, and **the top one resolves first**. So a response always happens before the thing it responds to.
 
-Between the steps of a battle there are **priority windows**. The initiative player may act first, then the other. When both **pass** in a row, the top of the stack resolves, and both get priority again. When both pass with the stack empty, the battle moves on. **Pass** (space) is how you say "nothing from me".
+Between the steps of a battle there are **priority windows**. The initiative player may act first, then the other. When both **pass** in a row, the top of the stack resolves, and both get priority again. When both pass with the stack empty, the battle moves on. Passing (space) is how you say "nothing from me" — the main button names where both passes lead, like **To Blockers** or **End Battle**.
 
 Step through the rulebook's own example.`,
         quotes: [
@@ -674,7 +674,7 @@ A haste card keeps its normal timing too, so you can also hold it for deployment
           if (ex) figs.push({ kind: 'cards', cards: [ex] });
           return figs;
         },
-        highlight: ['.phasetrack'],
+        highlight: ['.phicons'],
       },
     ],
   },

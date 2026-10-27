@@ -36,10 +36,12 @@
  *     peek and leaves it up after the finger lifts. The NEXT tap anywhere puts
  *     it away and is swallowed — the lift handler below already does exactly
  *     that for a peek — and Escape puts it away too. Playing from the hand on
- *     touch is a drag (ui/drag.ts), or the rail's buttons.
+ *     touch is a drag (ui/drag.ts), or the buttons in the action bar. The
+ *     read carries the card menu a right-click would open (board round 8:
+ *     rulings, the judge — main.ts readMenuHtml), pressed like CT-408's button.
  */
 import { zoomPeek, zoomPeekEnd, zoomPeeking } from './zoom.ts';
-import { zoomGoHit } from './tapgo.ts';
+import { zoomHangHit } from './tapgo.ts';
 
 /** how long a finger rests on a card before it is a peek and not a tap */
 export const PEEK_MS = 380;
@@ -65,8 +67,10 @@ export interface TouchDeps {
    * (ui/ressum.ts), as a mouse gets on hover. False when `el` is not one. */
   peekResources(el: Element): boolean;
   peekResourcesEnd(): void;
-  /** CT-408: the held read's own button was tapped (ui/tapgo.ts) */
-  zoomGo?(): void;
+  /** CT-408: the held read's own button was tapped (ui/tapgo.ts) — the
+   * cast / activate, or (board round 8) an entry of the card menu under a
+   * read; `hit` is the element, already detached with the read */
+  zoomGo?(hit: HTMLElement): void;
 }
 
 let peekTimer: ReturnType<typeof setTimeout> | null = null;
@@ -138,7 +142,7 @@ export function installTouch(deps: TouchDeps): void {
     peekCancel();
     // CT-408: a press that starts on the held read's button (only a tap's read
     // is up before the press; a hold's peek opens after it)
-    goFrom = e.pointerType !== 'mouse' && zoomGoHit(e.clientX, e.clientY) ? e.pointerId : null;
+    goFrom = e.pointerType !== 'mouse' && zoomHangHit(e.clientX, e.clientY) ? e.pointerId : null;
     if (e.pointerType === 'mouse' || !e.isPrimary) return;
     const target = e.target as Element | null;
     const card = target?.closest?.('.card, .rescard, .stackcard');
@@ -162,17 +166,18 @@ export function installTouch(deps: TouchDeps): void {
     // CT-408: a tap that lands AND lifts on the read's own button (ui/tapgo.ts
     // zoomGoHtml) is that button. Asked before the zoom goes, which takes the
     // button with it; the click it makes is swallowed like any other.
-    const go = was && e.type === 'pointerup' && goFrom === e.pointerId && zoomGoHit(e.clientX, e.clientY);
+    const hit = was && e.type === 'pointerup' && goFrom === e.pointerId ? zoomHangHit(e.clientX, e.clientY) : null;
+    const go = !!hit;
     goFrom = null;
     peekEnd();
-    if (go) deps.zoomGo?.();
+    if (hit) deps.zoomGo?.(hit);
     if (liftSwallows(was, e.type, go, e.target as Element | null)) swallowNextClick();
   };
   document.addEventListener('pointerup', lift, { passive: true });
   document.addEventListener('pointercancel', lift, { passive: true });
   // Android Chrome turns a long press into a contextmenu (~500ms): the card
   // menu main.ts would open. While the peek holds the card, the press is the
-  // peek's; the card menu is still in the rail (railMenuHtml).
+  // peek's; a finger's card menu hangs under a tap's read (main.ts readMenuHtml).
   window.addEventListener('contextmenu', e => {
     if (peekUp() || peekTimer !== null) { e.preventDefault(); e.stopPropagation(); }
   }, { capture: true });
@@ -187,34 +192,11 @@ export function installTouch(deps: TouchDeps): void {
     }
   }, { capture: true });
 
-  // the narrow board's rail drawer (style.css "NARROW"): the ☰ tab and the
-  // scrim are #app's own pseudo-elements, so a click on either lands on #app
-  // itself — and the only other way to hit #app bare is its 8px grid gap
-  document.addEventListener('click', e => {
-    const app = document.getElementById('app');
-    if (!app || e.target !== app || !app.classList.contains('v2')) return;
-    const root = document.documentElement;
-    const tab = getComputedStyle(app, '::before');
-    if (tab.content === 'none' || tab.content === 'normal') return;   // wide: no drawer
-    const open = root.classList.contains('railopen');
-    // the tab sits 8px in from the top right when shut, beside the drawer when open
-    const tabRight = open ? innerWidth - Math.min(300, innerWidth * 0.86) - 8 : innerWidth - 8;
-    const onTab = e.clientY >= 8 && e.clientY <= 42 && e.clientX <= tabRight && e.clientX >= tabRight - 42;
-    if (onTab || open) {
-      root.classList.toggle('railopen', !open);
-      e.stopPropagation();
-    }
-  }, { capture: true });
   window.addEventListener('keydown', e => {
     // #201: a card held open by a tap goes away on Escape, before anything else
     // Escape would close
     if (e.key === 'Escape' && zoomPeeking()) {
       peekEnd();
-      e.stopPropagation();
-      return;
-    }
-    if (e.key === 'Escape' && document.documentElement.classList.contains('railopen')) {
-      document.documentElement.classList.remove('railopen');
       e.stopPropagation();
     }
   }, { capture: true });

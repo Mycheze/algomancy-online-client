@@ -60,7 +60,7 @@ const SEAT: Seat = 0;
 function board(seed: number): GameState {
   // S drains the pace queue (a no-op when it is empty). Only once a board is
   // up: the hotkey reads the game state, and before the first join there is none.
-  if (ui.html().includes('class="topbar"')) ui.key('s');
+  if (ui.html().includes('class="lboard') || ui.html().includes('class="topbar"')) ui.key('s');
   const h = new Harness(seed);
   ui.join(viewFor(h.state, SEAT), SEAT, legalActions(h.state, SEAT));
   return h.state;

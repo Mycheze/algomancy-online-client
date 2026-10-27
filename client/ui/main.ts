@@ -45,6 +45,7 @@ import {
   shouldAskCounter, shouldAskSend, splitCounterattack,
 } from './battle.ts';
 import type * as bat from './battle.ts';
+import { passLabel } from './nextstep.ts';
 import { placementWarnings, placeWarnHtml } from './placewarn.ts';
 import {
   buildOfPlan, clearBuild, dropIntoRow, forwardRow, halfRows, hasBuild, leftCols, leftReach, moveInBuild, openLeft,
@@ -77,6 +78,7 @@ import { rowFor } from './cardindex.ts';
 import type { CardRow } from './cardindex.ts';
 import { resourceRow, resourceSummary } from './resources.ts';
 import { resSumAfterPaint, resSumAt, resSumNotePointer, resSumOff, resSumRow } from './ressum.ts';
+import { countsTipHtml, tipAfterPaint, tipAt, tipClick, tipNotePointer, tipOff, tipTarget, tipToggle } from './infotip.ts';
 import type { ResourceView } from './resources.ts';
 import type { GlossEntry } from './glossary.ts';
 import type { Census, Slot } from './motion.ts';
@@ -110,7 +112,7 @@ import { railClearance } from './railclear.ts';
 import { waitingFlights, type Parked } from './beatflight.ts';
 import {
   menuBeside, setZoomDecorator, zoomAfterPaint, zoomAt, zoomCheck, zoomHeld, zoomHold, zoomNotePointer, zoomOff,
-  zoomOn, zoomRect,
+  zoomOn, zoomPeeking, zoomRect,
 } from './zoom.ts';
 import type {
   Action, ActivateVia, CachedCard, CardName, Decision, DecisionOption, EngineEvent, Entity, EntityId, EventType,
@@ -173,7 +175,7 @@ import { chooseDeck, chosenDeck, copyText, elIcon as elIconOf, esc, shareBar, ty
 import { updatesHtml, wireUpdates } from './updates.ts';
 import { resGoKey, tapGoHtml, tapGoKeyOf, tapGoLabel, tapGoLive, tokenGoKey, zoomGoHtml, type TapGo } from './tapgo.ts';
 
-import { artUrl } from './assets.ts';
+import { artUrl, ICON_BASE } from './assets.ts';
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
 
 /** chess-clock snapshot the server attaches to every state broadcast (#6);
@@ -1783,6 +1785,13 @@ function presenceHtml(): string {
   // ?demo board never had one.
   if (!liveSession) return '';
   const on = NET.peers[other(NET.seat)];
+  // board round 8: on the toolbar the dot alone, on the room icon — and
+  // "offline" in words under it, because that one must not be missed
+  if (regionsBoard()) {
+    if (NET.spectating) return '';
+    return on ? '<span class="presence on" aria-label="opponent connected">●</span>'
+      : '<span class="presence off" aria-label="opponent offline">●<span class="tbsub">offline</span></span>';
+  }
   return `<span class="presence ${on ? 'on' : 'off'}">● ${on ? 'opponent connected' : 'opponent offline'}</span>`;
 }
 
@@ -2965,6 +2974,13 @@ function fmtClock(ms: number): string {
   const p = (n: number): string => String(n).padStart(2, '0');
   return hh > 0 ? `${hh}:${p(mm)}:${p(ss)}` : `${mm}:${p(ss)}`;
 }
+/** the toolbar's clock (board round 8): m:ss, and from an hour up 1h05 —
+ * h:mm would read as minutes in a strip that also shows m:ss */
+function fmtClockShort(ms: number): string {
+  const t = Math.max(0, Math.ceil(ms / 1000));
+  if (t < 3600) return fmtClock(ms);
+  return `${Math.floor(t / 3600)}h${String(Math.floor((t % 3600) / 60)).padStart(2, '0')}`;
+}
 /**
  * BL-27 — WHEN A BANK GOES CRITICAL, and it is derived from the bank itself.
  *
@@ -3105,7 +3121,7 @@ setInterval(() => {
   for (const el of document.querySelectorAll('.clocktime[data-clkseat]')) {
     const seat = Number((el as HTMLElement).dataset['clkseat']) as Seat;
     const ms = clockDisplayMs(seat);
-    el.textContent = fmtClock(ms);
+    el.textContent = (el as HTMLElement).dataset['short'] ? fmtClockShort(ms) : fmtClock(ms);
     el.classList.toggle('run', !!clockSnap.running[seat] && ms > 0);
     el.classList.toggle('warn', ms > 0 && ms <= warnAt);
     el.classList.toggle('exp', ms <= 0);
@@ -4366,29 +4382,44 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
   // the counterattack send box is drawn in the OTHER block (counterSendHtml)
   const battle = battleHtml({ sendApart: true });
 
-  const info = (side: 'theirs' | 'mine', p: Seat, r: RegionParts, region: number): string =>
-    `<div class="linfo ${side}${r.acting ? '' : ' inactive'}" data-region="${region}" data-p="${p}"><div class="lin">
-        <div class="lid">${r.pnameFixed}${r.life}${r.counters}</div>
-        <div class="lhand">${r.miniHand}${r.deckLine}</div>
-        <div class="lres">${r.resGrouped}</div>
-        <div class="lcache">${r.cache}</div>
-        <div class="lbin">${r.binMini}</div>
-        ${b ? '' : r.seenStrip}${r.handZone ? `<div class="lspect">${r.handZone}</div>` : ''}
-      </div></div>`;
-  // CT-191 / report #177: "their hand, seen" is a row of the info block, and
-  // in a battle that block is squeezed to two lines and CLIPS (overflow and
+  // BOARD ROUND 8 (owner, 2026-10-27): each player's info is ONE full-width
+  // line — theirs the board's top row, mine its bottom row, just above the
+  // action bar and the hand. Mine reads, left to right: the resources (they
+  // take whatever the line has left) · the phase icons · bin · cache · name and
+  // life at the right edge, where they always were. Theirs is the mirror, with
+  // no phase icons and their hand's card backs under the name. The deck line
+  // is gone: hovering (tapping) the name shows every pile as a number
+  // (ui/infotip.ts) — and the name carries the deck's anchor, so a draw still
+  // has somewhere to fly from.
+  const info = (side: 'theirs' | 'mine', p: Seat, r: RegionParts, region: number): string => {
+    const id = `<div class="lid"><div class="lidtop"><span class="lname" data-tip="counts" data-btn="infotip" data-p="${p}" data-animzone="deck:${p}">${
+      r.pnameFixed}</span>${r.life}${r.counters}</div>${side === 'theirs' && r.miniHand ? `<div class="lhand">${r.miniHand}</div>` : ''}</div>`;
+    const cache = r.cache ? `<div class="lcache">${r.cache}</div>` : '';
+    const bin = `<div class="lbin">${r.binMini}</div>`;
+    const res = `<div class="lres" data-fit="res">${r.resGrouped}</div>`;
+    const spect = r.handZone ? `<div class="lspect">${r.handZone}</div>` : '';
+    const inner = side === 'mine'
+      ? `${res}${phaseIconsHtml()}${bin}${cache}${id}`
+      : `${id}${spect}${cache}${bin}${res}`;
+    return `<div class="linfo ${side}${r.acting ? '' : ' inactive'}" data-region="${region}" data-p="${p}"><div class="lin">${inner}</div></div>`;
+  };
+  // CT-191 / report #177: "their hand, seen" was a row of the info block, and
+  // in a battle that block was squeezed to two lines and CLIPPED (overflow and
   // `container-type: size` — the second also makes it the containing block
   // of anything positioned inside it, so no amount of `position` can let the
-  // strip out). So during a battle the strip is not in it at all: it floats
+  // strip out). Since board round 8 the info is one line in every phase, so
+  // the strip is never in it: it floats
   // over the In Play block of the region that is NOT the focus, at that
   // block's outer corner — the region the stack window also floats over
   // (placeStackFree), and the owner's own answer: "It's fine to sorta hover
   // over the inactive region, like how the stack can be on either side."
   // The outer corner keeps it clear of the stack (centred on that region's
   // battle band) and of the counterattack send box (in that band). Placed by
-  // the stylesheet off the grid area itself, so there is nothing to measure.
+  // the stylesheet at the outer corner of that region's column, so there is
+  // nothing to measure. Outside a battle your region is the focus, so it
+  // floats over theirs.
   const seenFloat = (r: RegionParts): string => {
-    if (!b || !r.seenStrip) return '';
+    if (!r.seenStrip) return '';
     const over = focus === tRegion ? 'mine' : 'theirs';
     return `<div class="lseen ${over}" data-region="${over === 'mine' ? yRegion : tRegion}">${r.seenStrip}</div>`;
   };
@@ -4440,42 +4471,71 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
       </div>`;
   };
 
-  // THE ACTIVE REGION'S RING (owner, 2026-09-23): one border round the whole
-  // L of the focus region — info offshoot, In Play, battle block, Invaders
-  // row — and, once they are IN it, the visiting player's info offshoot too
-  // ("that stuff always travels with them"). The Ls are not rectangles, so it
-  // is an SVG path the relayout pass draws from the measured blocks
-  // (ui/layout.ts ringBoard). Each region keeps ONE colour whoever is looking
-  // (`rc<region>`) so "the green region" means the same thing to both players.
-  //
-  // "Once they are in it" is the engine's `presentSeats`: the attacker enters
-  // on DECLARING the attack, not when the battle opens (owner, 2026-09-26: while
-  // you are still choosing attackers you are not there yet — the ring grows to
-  // take you in when you commit). A player who does not attack never enters.
-  const visiting = !!b && !!s.regions[b.region]?.presentSeats.includes(b.attacker);
-  const ring = `<svg class="lring rc${focus}" data-ring="${focus === tRegion ? 'top' : 'bottom'}" data-visit="${visiting ? 1 : 0}" aria-hidden="true"><path/></svg>`;
-
   // ROUND 7 (report #204): in a battle the block holding the fight takes most
   // of the board and the other region's column is a narrow band at the side.
   // `data-fight` says which column is the fight's — mine (left) or theirs
   // (right); style.css `.lboard[data-fight]` is that grid, and ui/layout.ts
   // shapeBoard sizes its tracks from the room there is
   const fightSide = b ? ` data-fight="${b.region === yRegion ? 'mine' : 'theirs'}"` : '';
+  // BOARD ROUND 8: each region is a COLUMN and a full-width foot (the info
+  // line). Their column — In Play, their battle block, their Invaders — runs
+  // from under their line down to just above mine; mine — my Invaders, my
+  // battle block, my In Play — the other way. The seam between them is the
+  // crossing, as it always was. The columns are boxes of their own
+  // (`.lcol`), so the two sides stack independently: the fight's column gives
+  // the room its In Play does not need to the fight, and nothing in the other
+  // column has to line up with it.
   return `<div class="lboard${b ? ' fighting' : ' idle'}" data-focus="${focus}"${fightSide}>
       <div class="lback theirs a rc${tRegion}"></div><div class="lback theirs b rc${tRegion}"></div>
       <div class="lback mine a rc${yRegion}"></div><div class="lback mine b rc${yRegion}"></div>
       <div class="lseam"></div>
       ${info('theirs', topSeat, t, tRegion)}
-      ${play('theirs', topSeat, t, tRegion)}
-      ${invaders('mine', botSeat, y, yRegion)}
-      ${fight('mine', botSeat, y, yRegion)}
-      ${fight('theirs', topSeat, t, tRegion)}
-      ${invaders('theirs', topSeat, t, tRegion)}
-      ${play('mine', botSeat, y, yRegion)}
+      <div class="lcol mine" data-region="${yRegion}">
+        ${invaders('mine', botSeat, y, yRegion)}
+        ${fight('mine', botSeat, y, yRegion)}
+        ${play('mine', botSeat, y, yRegion)}
+        ${seenFloat(y)}
+      </div>
+      <div class="lcol theirs" data-region="${tRegion}">
+        ${play('theirs', topSeat, t, tRegion)}
+        ${fight('theirs', topSeat, t, tRegion)}
+        ${invaders('theirs', topSeat, t, tRegion)}
+        ${seenFloat(t)}
+      </div>
       ${info('mine', botSeat, y, yRegion)}
-      ${ring}
-      ${seenFloat(t)}${seenFloat(y)}
     </div>`;
+}
+
+/**
+ * THE ACTIVE REGION'S RING (owner, 2026-09-23): one border round the whole
+ * L of the focus region — info offshoot, In Play, battle block, Invaders
+ * row — and, once they are IN it, the visiting player's info offshoot too
+ * ("that stuff always travels with them"). The Ls are not rectangles, so it
+ * is an SVG path the relayout pass draws from the measured blocks
+ * (ui/layout.ts ringBoard). Each region keeps ONE colour whoever is looking
+ * (`rc<region>`) so "the green region" means the same thing to both players.
+ *
+ * "Once they are in it" is the engine's `presentSeats`: the attacker enters
+ * on DECLARING the attack, not when the battle opens (owner, 2026-09-26: while
+ * you are still choosing attackers you are not there yet — the ring grows to
+ * take you in when you commit). A player who does not attack never enters.
+ *
+ * BOARD ROUND 8 (owner, 2026-10-27): the ring is drawn OUTSIDE the board, on
+ * a fixed layer over the whole table column (`#app > .lring`), because YOUR
+ * region's ring now runs on down round the action bar and the hand and off the
+ * bottom of the screen — and those are rows of #app, outside `.main`, which
+ * clips. `.ltail` is your region's tint behind the action bar and the dock, in
+ * every phase: "this is mine" holds even while the ring is on theirs.
+ */
+function lringHtml(botSeat: Seat): string {
+  const s = h.state;
+  const e = q();
+  const yRegion = e.homeRegion(botSeat);
+  const b = s.phase === 'battle' || s.phase === 'gameover' ? s.battle : null;
+  const focus = focusRegion(s, botSeat);
+  const visiting = !!b && !!s.regions[b.region]?.presentSeats.includes(b.attacker);
+  return `<svg class="lring rc${focus}" data-ring="${focus === yRegion ? 'bottom' : 'top'}" data-visit="${visiting ? 1 : 0}" aria-hidden="true"><path/></svg>
+    <div class="ltail rc${yRegion}" aria-hidden="true"></div>`;
 }
 
 /** CT-82(b)/CR D6.16: the bin indexes `seat` can do something with RIGHT NOW.
@@ -4919,17 +4979,10 @@ function cacheDialogHtml(): string {
   </div></div>`;
 }
 
-/** what happens when both players pass the current battle window */
-function nextBattleStepName(): string {
-  const s = h.state;
-  const b = s.battle;
-  if (!b) return 'the next step';
-  if (b.step === 'attackWindow') return `${esc(s.players[b.defender]!.name)} declares blocks`;
-  if (b.step === 'blockWindow') return 'combat damage';
-  if (b.step === 'afterWindow') {
-    return s.battleRound === 1 ? 'round 2 (the counterattack)' : 'regroup & deployment';
-  }
-  return 'the next step';
+/** the main button's words, its key hint and its small second line (ui/nextstep.ts) */
+function mainBtnLabel(seat: Seat, key: string): string {
+  const l = passLabel(h.state, seat);
+  return `${esc(l.text)} <span class="kh">(${key})</span>${l.note ? `<span class="btnnote">${esc(l.note)}</span>` : ''}`;
 }
 
 // ── rules reference + judge (in-game help) ────────────────────────────
@@ -6425,22 +6478,23 @@ function phaseBarHtml(err: string): string {
   // must not be handed a "done deploying" button that `apply()` throws on —
   // that is the "screen full of refusals" the pacing ruling's own notes warn about. A no-op
   // online, where this bar is only ever reached with no decision at all.
-  const doneRow = (done: boolean[], btn: string, label: string): string =>
+  // board round 8: the button says what it does (ui/nextstep.ts passLabel)
+  const doneRow = (done: boolean[], btn: string): string =>
     ([0, 1] as Seat[]).map(p => (done[p] || (!bothSeats() && p !== NET!.seat) || decisionFreezes(p))
       ? `<span style="color:var(--dim)">${esc(s.players[p]!.name)} ${done[p] ? 'ready ✓' : '…'}</span>`
-      : `<button data-btn="${btn}" data-p="${p}" title="hotkey: enter">${esc(s.players[p]!.name)}: ${label} <span class="kh">(enter)</span></button>`).join(' ');
+      : `<button data-btn="${btn}" data-p="${p}" title="hotkey: enter">${esc(s.players[p]!.name)}: ${mainBtnLabel(p, 'enter')}</button>`).join(' ');
   if (s.phase === 'planning' && s.hasteDone) {
     if (ui.confirmHaste !== null) {
       return confirmBarHtml('haste', ui.confirmHaste, IDLE_DONE_ASK, err);
     }
     return `<div class="promptbar"><span class="who">Haste step</span>
-      <span class="remind">Cards with haste resolve at once.</span> ${doneRow(s.hasteDone, 'donehaste', 'done')}${err}</div>`;
+      <span class="remind">Cards with haste resolve at once.</span> ${doneRow(s.hasteDone, 'donehaste')}${err}</div>`;
   }
   if (s.phase === 'planning' && s.mode === 'draft' && s.draftDone) {
     if (NET && s.draftDone[NET.seat]) {
       return `<div class="promptbar"><span class="who">Draft</span>
         Pack passed — your opponent is still drafting.
-        ${doneRow(s.planningDone, 'doneplan', 'done planning')}${err}</div>`;
+        ${doneRow(s.planningDone, 'doneplan')}${err}</div>`;
     }
     // the pick dialog says all of this; hidden, the bar above it (pickShowHtml)
     // carries the way back, and a second bar saying "below" would be a lie
@@ -6457,7 +6511,7 @@ function phaseBarHtml(err: string): string {
         <b>${dormant} dormant resource${dormant === 1 ? '' : 's'}</b> — activate them this turn?`, err, ` data-p="${p}"`);
     }
     return `<div class="promptbar"><span class="who">Planning</span>
-      <span class="remind">Recycle a card; activate up to 2 resources.</span> ${doneRow(s.planningDone, 'doneplan', 'done planning')}${err}</div>`;
+      <span class="remind">Recycle a card; activate up to 2 resources.</span> ${doneRow(s.planningDone, 'doneplan')}${err}</div>`;
   }
   if (s.phase === 'battle') {
     const b = s.battle!;
@@ -6569,7 +6623,7 @@ function phaseBarHtml(err: string): string {
             ? `no attackers left to block${b.round === 1 ? ' — you may still send counterattackers' : ''}`
             : `assign blockers (click unit, then slot)${b.round === 1 ? ' and optionally send counterattackers' : ''}`}
         ${rest.length ? `<button data-btn="sendrest" title="adjust before confirming">${txtIcon('battle', '[battle]')} Counterattack with the rest</button>` : ''}
-        <button class="primary" data-btn="confirmblocks" ${duty ? 'disabled' : ''}>Confirm <span class="kh">(enter)</span></button>
+        <button class="primary" data-btn="confirmblocks" ${duty ? 'disabled' : ''}>${mainBtnLabel(b.defender, 'enter')}</button>
         ${built ? '<button data-btn="clearform" title="empty the blocks/send being built">✕ Clear <span class="kh">(esc)</span></button>' : ''}${err}</div>`;
     }
     if (ui.modding) return moddingBarHtml(err);
@@ -6589,11 +6643,10 @@ function phaseBarHtml(err: string): string {
     }
     return `<div class="promptbar"><span class="who">${esc(s.players[s.priority!]!.name)}:</span>
       you have priority
-      <button class="primary" data-btn="pass">Pass <span class="kh">(space)</span></button>
+      <button class="primary" data-btn="pass">${mainBtnLabel(s.priority!, 'space')}</button>
       ${holdPriorityButton()}
       ${NET && !fullControlOn() && s.stack.length ? `<button data-btn="passstack" title="pass until the stack has resolved or something changes">Pass through stack</button>` : ''}
-      ${NET && !fullControlOn() ? `<button data-btn="passall" title="give up priority until the next phase">Pass all</button>` : ''}
-      <span style="color:var(--dim)">(both pass: ${s.stack.length ? 'resolve top of stack' : `move to ${nextBattleStepName()}`})</span>${err}</div>`;
+      ${NET && !fullControlOn() ? `<button data-btn="passall" title="give up priority until the next phase">Pass all</button>` : ''}${err}</div>`;
   }
   if (s.phase === 'deploy') {
     if (ui.modding) return moddingBarHtml(err);
@@ -6610,7 +6663,7 @@ function phaseBarHtml(err: string): string {
         <span class="cachenames">${names.map(n => `<span data-prev="${esc(n)}">${esc(n)}</span>`).join(', ')}</span>`, err);
     }
     return `<div class="promptbar"><span class="who">Deployment</span>
-      ${doneRow(dd, 'donedeploy', 'done deploying')}${err}</div>`;
+      ${doneRow(dd, 'donedeploy')}${err}</div>`;
   }
   return `<div class="promptbar">${esc(s.phase)}${err}</div>`;
 }
@@ -7296,6 +7349,218 @@ function menuHtml(): string {
   return `<div class="menu" style="left:${ui.menu.x}px;top:${ui.menu.y}px">${items}<button data-btn="menuclose">cancel</button></div>`;
 }
 
+/** the game's own chips, which the top bar carried after "Turn N": the draft's
+ * elements, and a custom deal or a Single Card Duel. Board round 8: the
+ * regions board has no top bar, so they are a badge on the toolbar
+ * (toolGameHtml) with these words in its window. */
+function gameChipsHtml(): string {
+  const s = h.state;
+  return `${s.mode === 'draft' ? ` · draft: ${s.elements.map(el => elIcon(el)).join('')}` : ''}${s.draftDeal
+    ? ` <span class="customchip" title="${esc(`Custom rules: ${NET?.custom?.summary.join(' · ') ?? `packs of ${s.draftDeal.packSize}`}`)}">custom</span>` : ''}${NET?.single
+    ? ' <span class="customchip" title="Single Card Duel: thirty copies of one card each. Rates the cards, not you.">single card duel</span>' : ''}`;
+}
+/** the pass-through chip: the only way out of a standing pass, so it is
+ * never hidden — the top bar's; the regions board's is an icon on the
+ * toolbar (toolbarHtml), same data-btn */
+function passModeChipHtml(): string {
+  return ui.passMode ? `<button class="passallchip" data-btn="passallstop"
+            title="${esc(PASS_MODE_WHY[ui.passMode])} Click to stop.">${esc(PASS_MODE_CHIP[ui.passMode])}… ✕ stop</button>` : '';
+}
+/* BOARD ROUND 8 — THE TOOLBAR (owner, 2026-10-27: the 250px rail "mostly
+ * repeats what hover zoom already does better"). The regions board's right
+ * column is a strip of icons ~50px wide: every button the rail had, with the
+ * SAME data-btn, its words in the hover title. Reading a card is the zoom
+ * (a mouse) or the peek (a finger); the click-to-read viewer is gone.
+ *
+ * Nothing on it is hover-only (test/273's house rule): a button's tap IS its
+ * action, and the few things that only SAY something — the room and presence,
+ * the game's chips, the clocks — are info-tip targets (ui/infotip.ts), a
+ * hover window for a mouse and the same window pinned by a tap. Their window
+ * opens beside the strip, never on it. The toggles are behind ⋯ (a popover
+ * in the markup at all times, shown while open, so each keeps its data-btn
+ * and its test), and a scenario room's verdict panel is behind 🧪 — open on
+ * the first paint of each scenario, so the tester reads the brief first.
+ * Pinned by test/712. */
+function toolbarHtml(o: { canUndo: boolean; autoPref: boolean; bluffPref: boolean; fullPref: boolean }): string {
+  const { canUndo, autoPref, bluffPref, fullPref } = o;
+  // Learn to Play has no room to speak of: its icon is the way to the lessons
+  const room = NET && !learn.currentSolo() ? roomStatus() : null;
+  const scnPop = NET ? scn.popOpen() : false;
+  return `<div class="side toolbar">
+    ${room ? `<button class="tbstat" data-tip="room" data-btn="infotip" aria-label="${esc(room.label)}">${room.icon}<span class="liveslot" id="presenceslot"></span>${
+      NET!.watchers && !replayActive() && !NET!.spectating ? `<span class="tbcount">${NET!.watchers}</span>` : ''}</button>` : ''}
+    ${NET && learn.currentSolo() ? '<button data-learn="menu" title="Learn to Play: the lessons">📘</button>' : ''}
+    ${toolGameHtml()}
+    ${ui.passMode ? `<button class="passallchip" data-btn="passallstop"
+      title="${esc(PASS_MODE_CHIP[ui.passMode])}: ${esc(PASS_MODE_WHY[ui.passMode])} Click to stop.">⏩<span class="tbsub">stop</span></button>` : ''}
+    ${NET && scn.isScenario() ? `<button data-btn="scn-pop" class="${scnPop ? 'on' : ''}" aria-expanded="${scnPop}"
+      title="the scenario: what it should do, and your verdict">🧪</button>` : ''}
+    ${boardMenuItems().length ? '<button data-btn="tablemenu" title="table: game log · erased piles · concede">☰</button>' : ''}
+    ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶</button>' : ''}
+    ${watchAgainHtml()}
+    <button data-btn="judgeopen" title="ask the rules judge bot">⚖</button>
+    <button data-btn="helpopen" title="rules: the rules reference and the interface guide">?</button>
+    ${NET ? '<button data-btn="reportopen" title="Report — this exact game moment is logged with what you write">📝</button>' : ''}
+    <div class="tbfill"></div>
+    ${toolClocksHtml()}
+    ${fullPref && !settingsOpen ? '<span class="fcnote" title="full control: Ctrl is held, nothing acts for you">🔒</span>' : ''}
+    <div class="tbmore">
+      <button data-btn="settingsmenu" class="setbtn${settingsOpen ? ' on' : ''}" aria-expanded="${settingsOpen}"
+        title="more: full control, auto-pass, bluff haste, motion, board layout, sound">⋯</button>
+      <div class="setgroup tbpop${settingsOpen ? ' open' : ''}">
+        <button type="button" data-chip="fullcontrol" class="aptoggle fullctl${fullPref ? ' on' : ''}" aria-pressed="${fullPref}"
+          title="Full control — hold Ctrl. While it is held nothing acts for you: no auto-pass, no standing pass, no auto-yield, no automatic haste ready — every window is yours, and it overrides the toggles below it. Let go to restore.">🔒 full control: ${fullPref ? 'on' : 'off'}</button>
+        ${NET ? `<button data-btn="autopasstoggle" class="aptoggle${autoPref && !fullPref ? ' on' : ''}"
+          title="when ON: automatically pass whenever passing is your only legal action${fullPref ? ' — overridden right now by full control' : ''}">⏭ auto-pass: ${
+            fullPref ? 'off (full control)' : autoPref ? 'on' : 'off'}</button>` : ''}
+        ${NET ? `<button data-btn="bluffhastetoggle" class="aptoggle${bluffPref ? ' on' : ''}"
+          title="ON: you always sit in the haste step, so your timing tells your opponent nothing. OFF: with nothing playable you are readied through it at once.">🎭 bluff haste: ${bluffPref ? 'on' : 'off'}</button>` : ''}
+        <button data-btn="motiontoggle" class="aptoggle${motionOn() ? ' on' : ''}"
+          title="card-movement animations and targeting arrows">✨ motion: ${motionOn() ? 'on' : 'off'}</button>
+        <button data-btn="layouttoggle" class="aptoggle on"
+          title="regions (the default): each player's region drawn as an L — your cards on your half, the colour says whose region, attacks cross the seam. Never scrolls. classic: the original board.">▦ board: regions</button>
+        <button data-btn="soundtoggle" class="aptoggle${soundOn() ? ' on' : ''}"
+          title="notification sounds: phase and sub-step changes, priority, decisions, and a nudge if you haven't reacted in 15s">${soundOn() ? '🔊' : '🔇'} sound: ${soundOn() ? 'on' : 'off'}</button>
+      </div>
+    </div>
+    ${NET && scnPop ? `<div class="scnpop tbpop">${scn.panelHtml(NET.room, true)}</div>` : ''}
+  </div>`;
+}
+
+/** the room, said as one icon and its words: what kind of table this is.
+ * The details (code, watchers, presence) are its info tip (toolTipHtml). */
+function roomStatus(): { icon: string; label: string } {
+  const room = NET!.room;
+  if (replayActive()) return asQuestion() ? { icon: '❓', label: 'rules question' } : { icon: '▶', label: `replay ${room}` };
+  if (NET!.spectating) return { icon: '👁', label: `spectating ${room}` };
+  if (learn.currentSolo()) return { icon: '📘', label: 'Learn to Play' };
+  const run = chrun.currentRun();
+  if (run) return { icon: '🧩', label: run.def.title };
+  return { icon: 'ⓘ', label: `room ${room}` };
+}
+
+/** the game's chips as one badge (the draft's elements; ⚙ a custom deal; 1×
+ * a Single Card Duel), their words in its info tip — or nothing */
+function toolGameHtml(): string {
+  const s = h.state;
+  const draft = s.mode === 'draft' && s.elements.length > 0;
+  if (!draft && !s.draftDeal && !NET?.single) return '';
+  return `<button class="tbgame" data-tip="game" data-btn="infotip" aria-label="this game's format">${
+    draft ? `<span class="tbels">${s.elements.map(el => elIcon(el)).join('')}</span>` : ''}${
+    s.draftDeal ? '<span class="tbglyph">⚙</span>' : ''}${NET?.single ? '<span class="tbglyph">1×</span>' : ''}</button>`;
+}
+
+/** the toolbar's clocks: theirs over yours, as the board stacks the seats,
+ * the one that is running lit. Short, to fit the strip: m:ss, or 1h05 from
+ * an hour up (`data-short` tells the 1s ticker). Display only, like the rail's. */
+function toolClocksHtml(): string {
+  if (!NET || !clockSnap) return '';
+  const warnAt = clockWarnAt(clockSnap.start);
+  const cell = (seat: Seat, who: string): string => {
+    const ms = clockDisplayMs(seat);
+    const cls = `clocktime ${who}${clockSnap!.running[seat] && ms > 0 ? ' run' : ''}${
+      ms > 0 && ms <= warnAt ? ' warn' : ''}${ms <= 0 ? ' exp' : ''}`;
+    return `<span class="${cls}" data-clkseat="${seat}" data-short="1">${fmtClockShort(ms)}</span>`;
+  };
+  return `<div class="tbclocks" data-tip="clocks" data-btn="infotip" aria-label="chess clocks">${
+    cell(other(NET.seat), 'opp')}${cell(NET.seat, 'you')}</div>`;
+}
+
+/** an info tip of the toolbar's (ui/infotip.ts): the room, the game's
+ * chips, the clocks — read at the moment it opens */
+function toolTipHtml(kind: string): string | null {
+  if (!NET) return null;
+  const line = (t: string, cls = ''): string => `<div class="tipline${cls ? ` ${cls}` : ''}">${t}</div>`;
+  if (kind === 'room') {
+    const st = roomStatus();
+    const on = NET.peers[other(NET.seat)];
+    return `<div class="tiphead">${st.icon} ${esc(st.label)}</div>${
+      NET.spectating && !replayActive() ? line('you can see both hands', 'dim') : ''}${
+      NET.watchers && !replayActive() && !NET.spectating ? line(`👁 ${NET.watchers} watching — they see both hands`) : ''}${
+      liveSession && !NET.spectating ? line(on ? '● opponent connected' : '● opponent offline', on ? 'tipok' : 'tipwarn') : ''}${
+      learn.currentSolo() || chrun.currentRun() ? line(`room ${esc(NET.room)}`, 'dim') : ''}`;
+  }
+  if (kind === 'game') {
+    const s = h.state;
+    return `${s.mode === 'draft' ? line(`live draft: ${s.elements.map(el => `${elIcon(el)} ${esc(el)}`).join(' · ')}`, 'wrap') : ''}${
+      s.draftDeal ? line(`⚙ custom rules: ${esc(NET.custom?.summary.join(' · ') ?? `packs of ${s.draftDeal.packSize}`)}`, 'wrap') : ''}${
+      NET.single ? line('1× Single Card Duel: thirty copies of one card each. Rates the cards, not you.', 'wrap') : ''}` || null;
+  }
+  if (kind === 'clocks') {
+    if (!clockSnap) return null;
+    const row = (seat: Seat, who: string): string =>
+      `<tr${clockSnap!.running[seat] ? ' class="tiprun"' : ''}><th>${who}</th><td>${fmtClock(clockDisplayMs(seat))}</td></tr>`;
+    return `<div class="tiphead">⏱ chess clocks</div><table class="tiptab"><tbody>${
+      row(other(NET.seat), esc(h.state.players[other(NET.seat)]!.name))}${row(NET.seat, NET.spectating ? esc(h.state.players[NET.seat]!.name) : 'you')}</tbody></table>${
+      '<div class="tipfoot">display only — the server keeps the time</div>'}`;
+  }
+  return null;
+}
+
+/** BOARD ROUND 8 — THE PHASE ICONS (owner, 2026-10-27: the phase bar "lives at
+ * the top edge, far from the hand"). The turn's track as a strip of icons in
+ * your info line, beside your resources: (Draft) · Plan · Haste · Battle
+ * round 1 · Battle round 2 · Regroup · Deploy, the current one lit, the
+ * battle's steps (attack · blocks · damage · after) as pips under its icon,
+ * and the turn number as a small numeral. The caption (`phaseCaption`) says
+ * it all in words — hover, or tap on touch (ui/infotip.ts) — so nothing here
+ * is hover-only. Reads the same state as phaseTrackHtml. */
+function phaseIconsHtml(): string {
+  const s = h.state;
+  const planning = s.phase === 'planning';
+  const drafting = planning && !!s.draftDone;
+  const steps: { key: string; icon: string; label: string; cur: boolean; round?: 1 | 2 }[] = [
+    ...(s.mode === 'draft' ? [{ key: 'draft', icon: 'draft.svg', label: 'Draft', cur: drafting }] : []),
+    { key: 'plan', icon: 'planning.svg', label: 'Planning', cur: planning && !drafting && !s.hasteDone },
+    { key: 'haste', icon: 'haste.webp', label: 'Haste', cur: planning && !!s.hasteDone },
+    { key: 'battle1', icon: 'battle.webp', label: 'Battle, round 1', cur: s.phase === 'battle' && s.battleRound !== 2, round: 1 },
+    { key: 'battle2', icon: 'battle.webp', label: 'Battle, round 2', cur: s.phase === 'battle' && s.battleRound === 2, round: 2 },
+    { key: 'regroup', icon: 'regroup.svg', label: 'Regroup', cur: s.phase === 'regroup' },
+    { key: 'deploy', icon: 'deploy.svg', label: 'Deploy', cur: s.phase === 'deploy' },
+  ];
+  const step = battleStepIndex();
+  const pips = (round: 1 | 2, cur: boolean): string => `<span class="phpips">${[0, 1, 2, 3].map(i =>
+    `<i class="${cur && i === step ? 'on' : cur && i < step ? 'done' : ''}"></i>`).join('')}</span>`;
+  const caption = phaseCaption();
+  return `<div class="phicons${s.phase === 'gameover' ? ' over' : ''}" data-tip="phase" data-btn="infotip" aria-label="${esc(caption)}">
+      <span class="phturn">${s.turn}</span>${steps.map(st =>
+        `<span class="phi ${st.key}${st.cur ? ' cur' : ''}"><img src="${ICON_BASE}${st.icon}" alt="${st.label}">${
+          st.round ? `<b class="phr">${st.round}</b>${pips(st.round, st.cur)}` : ''}</span>`).join('')}
+    </div>`;
+}
+/** the battle's step as one of four pips: attack (declaring and its window),
+ * blocks (declaring and its window), damage, after combat; -1 outside a battle */
+function battleStepIndex(): number {
+  const b = h.state.battle;
+  if (h.state.phase !== 'battle' || !b) return -1;
+  if (b.damageStep === 'after' || b.step === 'afterWindow') return 3;
+  if (b.damageStep || b.step === 'damageWindow') return 2;
+  if (b.step === 'blocks' || b.step === 'blockWindow') return 1;
+  return 0;
+}
+/** the phase icons' caption: where the turn is, in words — "Battle · round 1 ·
+ * blocks · Turn 4" — and who has the initiative (the top bar's other line) */
+function phaseCaption(): string {
+  const s = h.state;
+  const b = s.battle;
+  const turn = `Turn ${s.turn}`;
+  const init = NET && !NET.spectating && s.initiative === NET.seat ? 'you have the initiative'
+    : `${s.players[s.initiative]!.name} has the initiative`;
+  if (s.phase === 'gameover') return `Game over · ${turn}`;
+  if (s.phase === 'battle') {
+    const STEP: Record<string, string> = {
+      declare: 'choosing attackers', attackWindow: 'attack — responses', blocks: 'choosing blockers',
+      blockWindow: 'blocks — responses', damageWindow: 'damage — responses', afterWindow: 'after combat',
+    };
+    const sub = b?.damageStep === 'after' ? 'after combat' : b?.damageStep ? 'damage' : STEP[b?.step ?? ''] ?? b?.step ?? '';
+    return `Battle · round ${s.battleRound || b?.round || 1}${sub ? ` · ${sub}` : ''} · ${turn} · ${init}`;
+  }
+  const name = s.phase === 'planning'
+    ? (s.draftDone ? 'Draft' : s.hasteDone ? 'Haste step' : 'Planning')
+    : s.phase === 'regroup' ? 'Regroup' : s.phase === 'deploy' ? 'Deployment' : s.phase;
+  return `${name} · ${turn} · ${init}`;
+}
+
 /** Phase track (docs/07 §4.5): every phase visible, the current one lit —
  * including the battle SUB-step (playtest: "impossible to tell the sub phase"). */
 function phaseTrackHtml(): string {
@@ -7670,6 +7935,65 @@ function ensureBlockKeys(): void {
 // used to throw it back to the top (owner, 2026-09-05)
 const SCROLLERS = ['.main', '.side .preview', '#rules-list'] as const;
 
+/** the CLASSIC board's rail: room identity, clocks, every chrome button, the
+ * scenario panel and the click-to-read viewer. The regions board has the
+ * toolbar instead (toolbarHtml, board round 8); this goes with classic (P7). */
+function classicSideHtml(o: { netTag: string; canUndo: boolean; autoPref: boolean; bluffPref: boolean; fullPref: boolean }): string {
+  const { netTag, canUndo, autoPref, bluffPref, fullPref } = o;
+  return `
+    <div class="side">
+      <!-- playtest: room identity, presence, clocks and every chrome button
+           live here, above the focus viewer, instead of crowding the left. -->
+      <div class="sidehead">
+        ${netTag ? `<div class="sideid">${netTag}</div>` : ''}
+        ${clocksHtml()}
+        <div class="sidebtns${settingsOpen ? ' moreopen' : ''}">
+          <!-- owner, 2026-09-27: "the info and buttons can be even more
+               scrunched down" — the three the table uses most are ICONS (their
+               words come back while "more" is open); rules, judge and every
+               toggle live behind "more". The markup is always there, so every
+               button keeps its data-btn and its test. On a computer only the
+               toggles hide (owner, 2026-10-10; style.css § THE RAIL'S BUTTONS). -->
+          ${boardMenuItems().length ? '<button data-btn="tablemenu" title="game log · erased piles · concede">☰<span class="lbl"> table</span></button>' : ''}
+          ${NET ? '<button data-btn="reportopen" title="report a bug or a wish — this exact game moment is logged with it">📝<span class="lbl"> report</span></button>' : ''}
+          ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶<span class="lbl"> undo</span></button>' : ''}
+          ${watchAgainHtml()}
+          <button data-btn="settingsmenu" class="setbtn${settingsOpen ? ' on' : ''}" aria-expanded="${settingsOpen}"
+            title="settings: full control, auto-pass, bluff haste, motion, board layout, sound — and, on a small screen, rules and the judge">⋯ more</button>
+          ${fullPref && !settingsOpen ? '<span class="fcnote" title="Ctrl is held: nothing acts for you">🔒 full control</span>' : ''}
+          <div class="setgroup${settingsOpen ? ' open' : ''}">
+          <button data-btn="helpopen" title="the rules reference and the interface guide">? rules</button>
+          <button data-btn="judgeopen" title="ask the rules judge bot">⚖ judge</button>
+          <!-- CT-183: a KEY YOU HOLD, not a mode — this button is the readout of
+               that key (green while Ctrl is down), styled like the toggles beside
+               it so it does not look out of place (owner, 2026-09-05). It has no
+               data-btn on purpose: there is nothing a click could do, and the
+               "hold Ctrl" instruction lives in the hover text only. -->
+          <button type="button" data-chip="fullcontrol" class="aptoggle fullctl${fullPref ? ' on' : ''}" aria-pressed="${fullPref}"
+            title="Full control — hold Ctrl. While it is held nothing acts for you: no auto-pass, no standing pass, no auto-yield, no automatic haste ready — every window is yours, and it overrides the toggles beside it. Let go to restore.">🔒 full control: ${fullPref ? 'on' : 'off'}</button>
+          ${NET ? `<button data-btn="autopasstoggle" class="aptoggle${autoPref && !fullPref ? ' on' : ''}"
+            title="when ON: automatically pass whenever passing is your only legal action${fullPref ? ' — overridden right now by full control' : ''}">auto-pass: ${
+              fullPref ? 'off (full control)' : autoPref ? 'on' : 'off'}</button>` : ''}
+          ${NET ? `<button data-btn="bluffhastetoggle" class="aptoggle${bluffPref ? ' on' : ''}"
+            title="ON: you always sit in the haste step, so your timing tells your opponent nothing. OFF: with nothing playable you are readied through it at once.">🎭 bluff haste: ${bluffPref ? 'on' : 'off'}</button>` : ''}
+          <button data-btn="motiontoggle" class="aptoggle${motionOn() ? ' on' : ''}"
+            title="card-movement animations and targeting arrows">✨ motion: ${motionOn() ? 'on' : 'off'}</button>
+          ${NET ? `<button data-btn="layouttoggle" class="aptoggle${layoutV2() ? ' on' : ''}"
+            title="regions (the default): each player's region drawn as an L — your cards on your half, the colour says whose region, attacks cross the seam. Never scrolls. classic: the original board.">▦ board: ${layoutV2() ? 'regions' : 'classic'}</button>` : ''}
+          <button data-btn="soundtoggle" class="aptoggle${soundOn() ? ' on' : ''}"
+            title="notification sounds: phase and sub-step changes, priority, decisions${NET ? ", and a nudge if you haven't reacted in 15s" : ''}">${soundOn() ? '🔊' : '🔇'} sound: ${soundOn() ? 'on' : 'off'}</button>
+          </div>
+          ${NET ? '' : '<button data-btn="restart">New game</button>'}
+        </div>
+      </div>
+      ${NET ? scn.panelHtml(NET.room) : ''}
+      <!-- CT-124/#131: the log used to sit here and is now a modal off the
+           bare-table right-click menu. The focus viewer takes the slack it
+           left (style.css) — the rail must never end in dead space. -->
+      <div class="preview" id="preview"><div class="hint">${zoomOn() ? 'click a card to read it here' : 'hover a card to preview'}</div></div>
+    </div>`;
+}
+
 /** Paint the whole UI. Returns false when it painted something that is NOT a
  * board (connecting / lobby) — the motion layer uses that to drop its
  * baseline instead of animating the first real board out of nowhere. */
@@ -7747,15 +8071,12 @@ function renderNow(): boolean {
            next" bar was its lower half until 2026-09-05; it is .actionbar
            now, pinned at the bottom of the column (see below). -->
       <div class="stickytop">
-        <div class="topbar">
-          <span>Turn ${h.state.turn}${h.state.mode === 'draft' ? ` · draft: ${h.state.elements.map(el => elIcon(el)).join('')}` : ''}${h.state.draftDeal
-            ? ` <span class="customchip" title="${esc(`Custom rules: ${NET?.custom?.summary.join(' · ') ?? `packs of ${h.state.draftDeal.packSize}`}`)}">custom</span>` : ''}${NET?.single
-            ? ' <span class="customchip" title="Single Card Duel: thirty copies of one card each. Rates the cards, not you.">single card duel</span>' : ''}</span>
+        ${regionsBoard() ? '' : `<div class="topbar">
+          <span>Turn ${h.state.turn}${gameChipsHtml()}</span>
           ${phaseTrackHtml()}
           <span class="init">initiative: ${esc(h.state.players[h.state.initiative]!.name)} ⭐</span>
-          ${ui.passMode ? `<button class="passallchip" data-btn="passallstop"
-            title="${esc(PASS_MODE_WHY[ui.passMode])} Click to stop.">${esc(PASS_MODE_CHIP[ui.passMode])}… ✕ stop</button>` : ''}
-        </div>
+          ${passModeChipHtml()}
+        </div>`}
         ${chrun.currentRun() ? chrun.meterHtml(chrun.currentRun()!) : ''}
         <div class="liveslot" id="shareslot"></div>
       </div>
@@ -7770,59 +8091,12 @@ function renderNow(): boolean {
       ${tokenLossBarHtml()}
       ${promptHtml()}
     </div>
-    <div class="side">
-      <!-- playtest: room identity, presence, clocks and every chrome button
-           live here, above the focus viewer, instead of crowding the left. -->
-      <div class="sidehead">
-        ${netTag ? `<div class="sideid">${netTag}</div>` : ''}
-        ${clocksHtml()}
-        <div class="sidebtns${settingsOpen ? ' moreopen' : ''}">
-          <!-- owner, 2026-09-27: "the info and buttons can be even more
-               scrunched down" — the three the table uses most are ICONS (their
-               words come back while "more" is open); rules, judge and every
-               toggle live behind "more". The markup is always there, so every
-               button keeps its data-btn and its test. On a computer only the
-               toggles hide (owner, 2026-10-10; style.css § THE RAIL'S BUTTONS). -->
-          ${boardMenuItems().length ? '<button data-btn="tablemenu" title="game log · erased piles · concede">☰<span class="lbl"> table</span></button>' : ''}
-          ${NET ? '<button data-btn="reportopen" title="report a bug or a wish — this exact game moment is logged with it">📝<span class="lbl"> report</span></button>' : ''}
-          ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶<span class="lbl"> undo</span></button>' : ''}
-          ${watchAgainHtml()}
-          <button data-btn="settingsmenu" class="setbtn${settingsOpen ? ' on' : ''}" aria-expanded="${settingsOpen}"
-            title="settings: full control, auto-pass, bluff haste, motion, board layout, sound — and, on a small screen, rules and the judge">⋯ more</button>
-          ${fullPref && !settingsOpen ? '<span class="fcnote" title="Ctrl is held: nothing acts for you">🔒 full control</span>' : ''}
-          <div class="setgroup${settingsOpen ? ' open' : ''}">
-          <button data-btn="helpopen" title="the rules reference and the interface guide">? rules</button>
-          <button data-btn="judgeopen" title="ask the rules judge bot">⚖ judge</button>
-          <!-- CT-183: a KEY YOU HOLD, not a mode — this button is the readout of
-               that key (green while Ctrl is down), styled like the toggles beside
-               it so it does not look out of place (owner, 2026-09-05). It has no
-               data-btn on purpose: there is nothing a click could do, and the
-               "hold Ctrl" instruction lives in the hover text only. -->
-          <button type="button" data-chip="fullcontrol" class="aptoggle fullctl${fullPref ? ' on' : ''}" aria-pressed="${fullPref}"
-            title="Full control — hold Ctrl. While it is held nothing acts for you: no auto-pass, no standing pass, no auto-yield, no automatic haste ready — every window is yours, and it overrides the toggles beside it. Let go to restore.">🔒 full control: ${fullPref ? 'on' : 'off'}</button>
-          ${NET ? `<button data-btn="autopasstoggle" class="aptoggle${autoPref && !fullPref ? ' on' : ''}"
-            title="when ON: automatically pass whenever passing is your only legal action${fullPref ? ' — overridden right now by full control' : ''}">auto-pass: ${
-              fullPref ? 'off (full control)' : autoPref ? 'on' : 'off'}</button>` : ''}
-          ${NET ? `<button data-btn="bluffhastetoggle" class="aptoggle${bluffPref ? ' on' : ''}"
-            title="ON: you always sit in the haste step, so your timing tells your opponent nothing. OFF: with nothing playable you are readied through it at once.">🎭 bluff haste: ${bluffPref ? 'on' : 'off'}</button>` : ''}
-          <button data-btn="motiontoggle" class="aptoggle${motionOn() ? ' on' : ''}"
-            title="card-movement animations and targeting arrows">✨ motion: ${motionOn() ? 'on' : 'off'}</button>
-          ${NET ? `<button data-btn="layouttoggle" class="aptoggle${layoutV2() ? ' on' : ''}"
-            title="regions (the default): each player's region drawn as an L — your cards on your half, the colour says whose region, attacks cross the seam. Never scrolls. classic: the original board.">▦ board: ${layoutV2() ? 'regions' : 'classic'}</button>` : ''}
-          <button data-btn="soundtoggle" class="aptoggle${soundOn() ? ' on' : ''}"
-            title="notification sounds: phase and sub-step changes, priority, decisions${NET ? ", and a nudge if you haven't reacted in 15s" : ''}">${soundOn() ? '🔊' : '🔇'} sound: ${soundOn() ? 'on' : 'off'}</button>
-          </div>
-          ${NET ? '' : '<button data-btn="restart">New game</button>'}
-        </div>
-      </div>
-      ${NET ? scn.panelHtml(NET.room) : ''}
-      <!-- CT-124/#131: the log used to sit here and is now a modal off the
-           bare-table right-click menu. The focus viewer takes the slack it
-           left (style.css) — the rail must never end in dead space. -->
-      <div class="preview" id="preview"><div class="hint">${zoomOn() ? 'click a card to read it here' : 'hover a card to preview'}</div></div>
-    </div>
+    ${regionsBoard()
+      ? toolbarHtml({ canUndo, autoPref, bluffPref, fullPref })
+      : classicSideHtml({ netTag, canUndo, autoPref, bluffPref, fullPref })}
     ${NET ? `<div class="handdock${handDockTucked() ? ' tucked' : ''}"><div class="zonelabel">${handLabel('Your hand', h.state.players[botSeat]!.hand.length)}${handDockTucked() ? ' — tucked away while you choose; <span class="mouseonly">hover</span><span class="touchonly">tap here</span> to look' : ''}</div>
       <div class="zone" data-animzone="hand:${botSeat}">${handZoneHtml(botSeat)}</div></div>` : ''}
+    ${regionsBoard() ? lringHtml(botSeat) : ''}
     ${stackBoardHtml()}
     ${castingHtml()}
     ${pickOpen() ? pickModalHtml() : ''}
@@ -7986,6 +8260,7 @@ function restoreViewport(snap: ViewportSnap): void {
   zoomHold(!!ui.menu);
   zoomAfterPaint();
   resSumAfterPaint(resSumFor);
+  tipAfterPaint(tipFor);
   if (tableWatcher) {
     tableWatcher.disconnect();
     const main = document.querySelector('.main');
@@ -9856,24 +10131,23 @@ document.addEventListener('click', e => {
   // one every single turn") — the click must not take over the rail
   if (sub.name === DORMANT_FACE && sub.eid === undefined) return;
   const key = focusKeyOf(t);
-  // with the zoom, hovering no longer drives the rail, so there is nothing
-  // for a click to have to hold it against: a card click puts that card in
-  // the rail, a move included (owner, 2026-09-23: "only show the latest
-  // clicked card"). No pin, no badge, no timer. EXCEPT in the planning phase
-  // up to its haste step (CR 501.2: the draw, draft and resource steps),
-  // where the moves are picks — a bottom card, a draft card, a recycle — and
-  // the card you picked is not one you want to read (report #223, owner
-  // 2026-10-18: "only in planning"): there a move keeps the rail, as on the
-  // classic board. The haste step is left out because a move there PLAYS a
-  // card, and the owner's other half was "when you're attacking/playing with
-  // cards, it's fine to show them". `hasteDone` is non-null exactly while the
-  // haste step runs. Read at the click, before the move can change it.
   const before = clickSig();
+  // BOARD ROUND 8: the regions board has no rail to put a card in — a mouse
+  // reads by the zoom, and its right-click is the card menu. A FINGER has
+  // neither, and the rail under the clicked card was its card menu (iPad,
+  // 2026-09-05). So on touch a tap that did nothing else opens the read a hand
+  // card's tap opens (#201), with the card menu hung under it (readMenuHtml).
+  // (The rail used to take every clicked card, a move included, except a
+  // planning pick — report #223. Only a tap that moved nothing reads now, so
+  // a move never puts a read over the board it just changed.) The read is
+  // found again by the tap's point: the click's own handler usually repaints,
+  // which replaces the element it landed on.
   if (zoomOn()) {
-    const planning = h.state.phase === 'planning' && !h.state.hasteDone;
+    if (pointerCanHover()) return;
+    const at = { x: e.clientX, y: e.clientY };
     setTimeout(() => {
-      if (planning && clickSig() !== before) return;
-      focusSub = sub; focusKey = key; paintFocus(sub, true);
+      if (clickSig() !== before || zoomPeeking() || typeof document.elementFromPoint !== 'function') return;
+      menuRead(document.elementFromPoint(at.x, at.y), at);
     }, 0);
     return;
   }
@@ -10099,9 +10373,9 @@ document.addEventListener('mouseover', e => {
     for (const el of document.querySelectorAll(`[data-id="${ping.dataset['ping']}"]`)) el.classList.add('pinghl');
   }
   // THE CARD ZOOM (ui/zoom.ts, owner 2026-09-23): the card under the cursor
-  // grows where it is, and that IS the preview — the rail no longer follows
-  // the hover (it holds the last card clicked, see the click listener below)
-  // and the long-hover box has nothing left to add over a readable scan
+  // grows where it is, and that IS the preview — nothing else follows the
+  // hover (board round 8 took the rail's viewer away altogether) and the
+  // long-hover box has nothing left to add over a readable scan
   if (zoomOn()) {
     // a card NAME that asks for its scan (`data-prevart`: a deck
     // description's link, a mod's name in the rail) has no picture of its own
@@ -10117,10 +10391,19 @@ document.addEventListener('mouseover', e => {
     // an info block's resources: the resource window, not the art (ui/ressum.ts)
     if (pointerCanHover() && resSumRow(e.target as Element)) {
       zoomOff();
+      tipOff();
       resSumAt(e.target as Element, resSumFor);
       return;
     }
     resSumOff();
+    // board round 8: a player's name (every pile as a number) and the phase
+    // icons (the step in words) — ui/infotip.ts; a tap pins the same window
+    if (pointerCanHover() && tipTarget(e.target as Element)) {
+      zoomOff();
+      tipAt(e.target as Element, tipFor);
+      return;
+    }
+    if (pointerCanHover()) tipAt(null, tipFor);
     if (pointerCanHover()) zoomAt(e.target as Element); else zoomOff();
     return;
   }
@@ -10145,11 +10428,29 @@ document.addEventListener('mouseout', e => {
 });
 
 // the cursor leaving the window fires no mouseover, so drop the hover set here
-document.addEventListener('mouseleave', () => { setHoverArrows(null); hideHoverTip(); zoomOff(); resSumOff(); });
+document.addEventListener('mouseleave', () => { setHoverArrows(null); hideHoverTip(); zoomOff(); resSumOff(); tipAt(null, tipFor); });
 /** the resource window's content for a seat. A function
  * DECLARATION: renderNow hands it over, and may run before this line has */
 function resSumFor(seat: number): ReturnType<typeof resourceSummary> | null {
   return h.state?.players[seat as Seat] ? resourceSummary(q(), seat as Seat) : null;
+}
+/** the info tip's content for a target (ui/infotip.ts): a name's piles, or
+ * the phase icons' caption. A function DECLARATION, like resSumFor */
+function tipFor(el: HTMLElement): string | null {
+  const s = h.state;
+  if (!inGame || !s) return null;
+  if (el.dataset['tip'] === 'phase') return `<div class="tipline">${esc(phaseCaption())}</div>`;
+  if (el.dataset['tip'] !== 'counts') return toolTipHtml(el.dataset['tip'] ?? '');
+  const p = Number(el.dataset['p']) as Seat;
+  const pl = s.players[p];
+  if (!pl) return null;
+  return countsTipHtml({
+    name: esc(pl.name), hand: pl.hand.length, deck: deckLeft(s, p), recycled: recycledLeft(s, p),
+    bin: pl.bin.length, cache: cacheOf(p).length, shared: s.mode !== 'constructed',
+    // CR 408.2c: the mark, in words (it was the deck line's title)
+    note: deckTitle(s, p),
+    ...(s.mode === 'draft' ? { pack: s.packs[p]?.length ?? 0 } : {}),
+  });
 }
 // the zoom follows what is under the cursor, not which edges it crossed
 // (ui/zoom.ts zoomCheck): at most once a frame, and only a mouse
@@ -10157,6 +10458,7 @@ let zoomFrame = 0;
 document.addEventListener('pointermove', e => {
   zoomNotePointer(e.clientX, e.clientY);
   resSumNotePointer(e.clientX, e.clientY);
+  tipNotePointer(e.clientX, e.clientY);
   if (zoomFrame || e.pointerType !== 'mouse' || dragActive()) return;
   zoomFrame = requestAnimationFrame(() => { zoomFrame = 0; zoomCheck(); });
 }, { passive: true });
@@ -10186,7 +10488,7 @@ const MOD_PEEK_FALLBACK = 0.16;
 /** where a rules box starts on a scan with no reading of its own (a token):
  * the median of the 505 read by bot/pipeline/read_text_boxes.py, 813 of 1000 */
 const TEXT_TOP_FALLBACK = 0.813;
-setZoomDecorator((src, copy) => {
+function decorateZoom(src: HTMLElement, copy: HTMLElement): { extraH?: number } | void {
   // CT-408: the read of a token or resource a finger's tap armed carries its button
   if (ui.tapGo && tapGoKeyOf(src) === ui.tapGo.key) copy.insertAdjacentHTML('beforeend', zoomGoHtml(ui.tapGo));
   let badges: Badge[] | null = null;
@@ -10264,7 +10566,66 @@ setZoomDecorator((src, copy) => {
   copy.insertAdjacentHTML('beforeend', `<div class="zoommods">${modStripsHtml(mods)}</div>`);
   // how far the strips hang below the card, as a fraction of its height
   return { extraH: modStrips(mods).reduce((n, m) => n + (m.peek ?? MOD_PEEK_FALLBACK), 0) };
+}
+setZoomDecorator((src, copy) => {
+  const r = decorateZoom(src, copy);
+  if (readMenuArmed) hangReadMenu(src, copy);
+  return r;
 });
+
+/* BOARD ROUND 8 — A FINGER'S CARD MENU. The rail drew the card menu (details
+ * & rulings, Ask the judge, auto-yield, propose a fix) under the card a tap
+ * put there: the iPad's right-click (2026-09-05). The rail is gone, so the
+ * menu hangs under the READ a tap opens instead — a hand or cache card's
+ * (#201, tapOnlyReads), or any card whose tap moved nothing (the click
+ * listener above) — the same list the right-click opens (cardMenuForEl). The
+ * zoom layer takes no pointer events, so its entries are pressed the way
+ * CT-408's button is: ui/touch.ts asks tapgo.ts zoomHangHit when the finger
+ * that landed on one lifts, and hands it to zoomGo above. Only a TAP's read
+ * carries it: a held peek ends when the finger lifts, so there would be no
+ * second touch to press anything with. Pinned by test/273 and test/715. */
+let readMenuArmed = false;
+/** the entries the read on screen offers; `data-zmi` indexes into it */
+let readMenuItems: MenuItem[] = [];
+
+/** the card menu a right-click on `t` opens — null for a card back, which
+ * offers the table's menu instead (CR D6.15/BL-20; the contextmenu handler) */
+function cardMenuForEl(t: HTMLElement): MenuItem[] | null {
+  const id = t.dataset['previd'] !== undefined ? Number(t.dataset['previd']) : undefined;
+  // CR D6.8: the face, as the right-click names it
+  const en = id !== undefined ? h.state.entities[id] : undefined;
+  const name = id !== undefined ? (en && faceOf(en)) : t.dataset['prev'];
+  if (!name || name === HIDDEN_CARD) return null;
+  const sid = t.dataset['act'] === 'stackitem' ? Number(t.dataset['id'])
+    : t.dataset['prevstack'] !== undefined ? Number(t.dataset['prevstack']) : undefined;
+  return cardMenuItems(name, id, sid);
+}
+
+/** the entries, as the read hangs them under the card (pure markup) */
+function readMenuHtml(items: readonly MenuItem[]): string {
+  return `<div class="zoommenu">${items.map((it, i) =>
+    `<span class="zmi" data-zmi="${i}">${iconizeText(it.label)}</span>`).join('')}</div>`;
+}
+
+/** hang the menu under the read: inside the hang the copy already has (a hand
+ * card's why, a stack card's caption, CT-408's button), so the two stack
+ * instead of overlapping — every hang sits at the same spot under the card */
+function hangReadMenu(src: HTMLElement, copy: HTMLElement): void {
+  const t = src.closest('[data-prev], [data-previd], [data-prevstack]') as HTMLElement | null
+    ?? src.querySelector<HTMLElement>('[data-prev], [data-previd], [data-prevstack]');
+  const items = t ? cardMenuForEl(t) : null;
+  readMenuItems = items ?? [];
+  if (!items?.length) return;
+  const hang = copy.querySelector<HTMLElement>(':scope > .zoomhang');
+  if (hang) hang.insertAdjacentHTML('beforeend', readMenuHtml(items));
+  else copy.insertAdjacentHTML('beforeend', `<div class="zoomhang zoommenuhang">${readMenuHtml(items)}</div>`);
+}
+
+/** open a finger's read on `el` with the card menu under it (tapRead) */
+function menuRead(el: Element | null, at: { x: number; y: number }): boolean {
+  readMenuArmed = true;
+  try { return tapRead(el, at); } finally { readMenuArmed = false; }
+}
 // a scroll moves the card out from under its zoom — except the rail's own
 window.addEventListener('scroll', e => {
   const t = e.target;
@@ -10368,6 +10729,7 @@ function actBarClick(target: HTMLElement): boolean {
 }
 
 document.addEventListener('click', e => {
+  tipClick(e.target as Element);   // a pinned info tip drops on any other click
   if (actBarClick(e.target as HTMLElement)) return;
   const btn = (e.target as HTMLElement).closest('[data-btn]') as HTMLElement | null;
   // CT-408: a held cast or activation lasts until the next click that is not its button
@@ -10670,6 +11032,9 @@ function forgetSeen(what: 'card' | 'all' | 'restore', i = 0): void {
  * own modules before this table is consulted (handleButton). */
 const BOARD_BTNS: Record<string, BtnHandler> = {
   settingsmenu: () => { settingsOpen = !settingsOpen; },
+  // board round 8: a tap (or a click) on a player's name or the phase icons
+  // pins the window a hover shows — no hover-only information (test/273)
+  infotip: btn => { tipToggle(btn, tipFor); return 'no-repaint'; },
   pickhide: () => { pickHidden = true; },
   pickshow: () => { pickHidden = false; },
   pspick: psButton, pshide: psButton, psshow: psButton, psconfirm: psButton,
@@ -11454,7 +11819,7 @@ function tapOnlyReads(el: HTMLElement, pickKey: string | null, e: MouseEvent): b
   if (pointerCanHover()) return false;
   if (pickKey !== null && h.state?.decision && pickable(pickKey)) return false;
   ui.menu = null;
-  tapRead(el, { x: e.clientX, y: e.clientY });
+  menuRead(el, { x: e.clientX, y: e.clientY });
   return true;
 }
 
@@ -12407,7 +12772,12 @@ installTouch({
     return true;
   },
   peekResourcesEnd: resSumOff,
-  zoomGo: () => { BOARD_BTNS['tapgo']?.(document.body, new MouseEvent('click')); render(); },
+  zoomGo: hit => {
+    // board round 8: an entry of the card menu under a finger's read
+    const i = hit.dataset['zmi'];
+    if (i !== undefined) { readMenuItems[Number(i)]?.go(); render(); return; }
+    BOARD_BTNS['tapgo']?.(document.body, new MouseEvent('click')); render();
+  },
 });
 // drag to play and to build formations (ui/drag.ts); the plans are above,
 // beside dropCarried, and every drop is a click route

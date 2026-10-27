@@ -11,6 +11,9 @@
  * and 1920x1080 on both boards: the element under the report button's centre
  * is the button, one click opens the report, and the pick stays up.
  *
+ * Board round 8 made that rail a 50px toolbar at every width (there is no
+ * narrow-screen drawer any more), so the rail rule below holds at every width.
+ *
  * Geometry is the browser's. What is held here: the clearance arithmetic, that
  * the stylesheet puts the rail over the pick's dim, and that relayout applies it.
  */
@@ -24,11 +27,17 @@ const CSS = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url))
 const MAIN = readFileSync(fileURLToPath(new URL('../main.ts', import.meta.url)), 'utf8');
 
 test('CT-369: the pick dialog leaves the rail clear on the right, and only when the rail is beside the table', () => {
-  assert.equal(railClearance(1440, { left: 1182, top: 8, width: 250 }), 258, 'the measured 1440x900 board');
-  assert.equal(railClearance(1920, { left: 1452, top: 8, width: 250 }), 468, 'a wide window: the board is centred');
+  // board round 8: the regions board's rail is the 50px toolbar — #app's 2px
+  // padding and the strip, at every width (measured in Chrome at 1344x768:
+  // the toolbar's left edge at 1292)
+  assert.equal(railClearance(1440, { left: 1388, top: 2, width: 50 }), 52, 'the toolbar at 1440');
+  assert.equal(railClearance(1920, { left: 1658, top: 2, width: 50 }), 262, 'a wide window: the board is centred');
+  assert.equal(railClearance(800, { left: 748, top: 2, width: 50 }), 52, 'and at 800: no drawer any more, the strip is beside the table');
+  // the classic board's rail (until it is deleted)
+  assert.equal(railClearance(1440, { left: 1182, top: 8, width: 250 }), 258, 'the measured 1440x900 classic board');
   assert.equal(railClearance(1440, null), 0, 'no rail drawn');
   assert.equal(railClearance(800, { left: 8, top: 900, width: 784 }), 0, 'a rail stacked under the board');
-  assert.equal(railClearance(800, { left: 815, top: 0, width: 300 }), 0, 'the narrow board drawer, parked off the edge');
+  assert.equal(railClearance(800, { left: 815, top: 0, width: 300 }), 0, 'a box parked off the window\'s right edge');
   assert.equal(railClearance(1440, { left: 1182, top: 8, width: 0 }), 0, 'a rail with no box');
 });
 

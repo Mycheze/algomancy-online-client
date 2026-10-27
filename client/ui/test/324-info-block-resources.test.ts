@@ -36,6 +36,7 @@ import { zoomTarget } from '../zoom.ts';
 import { client } from './ui-driver.ts';
 
 const ui = await client();
+const MAIN = readFileSync(fileURLToPath(new URL('../main.ts', import.meta.url)), 'utf8');
 const CSS = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url)), 'utf8');
 const store = (globalThis as { localStorage: Storage }).localStorage;
 
@@ -178,26 +179,26 @@ test('§4 an info block\'s resource is not a zoom target; a card elsewhere still
 });
 
 /* ── §5 the pin ─────────────────────────────────────────────────────── */
-test('§5 the info grid packs against the outer edge, not the middle', () => {
-  assert.match(CSS, /\.linfo > \.lin \{[^}]*align-content: start;/);
-  assert.match(CSS, /\.linfo\.mine > \.lin \{ align-content: end; \}/);
-  assert.doesNotMatch(CSS, /\.linfo > \.lin \{[^}]*align-content: center/);
-  assert.match(CSS, /\.linfo\.mine \.lcache, \.linfo\.mine \.lbin \{ align-self: end; \}/);
+test('§5 board round 8: the info is ONE line — resources take what is left, the name and life at the outer end', () => {
+  assert.match(CSS, /\.linfo > \.lin \{ height: 100%; display: flex; align-items: center;/);
+  assert.match(CSS, /\.linfo \.lres \{ flex: 1 1 0;/, 'the resources take all the free width (no fixed share)');
+  assert.match(CSS, /\.linfo \.lid, \.linfo \.lbin, \.linfo \.lcache, \.linfo \.phicons \{ flex: none; \}/);
+  // no two- or three-line collapses are left: one line, one fixed height
+  assert.doesNotMatch(CSS, /grid-template-areas: "id cache bin" "res cache bin"/);
+  assert.match(CSS, /\.lboard \{[^}]*--linh: \d+px;/);
 });
 
-test('§5 the frame round the board: a one-line top bar, an action bar that fits its content', () => {
-  assert.match(CSS, /#app\.board\.v2 \.topbar \{ flex-wrap: nowrap;/);
+test('§5 the frame round the board: no top bar on this board, an action bar that fits its content', () => {
+  const ui2 = MAIN.slice(MAIN.indexOf('<div class="stickytop">'));
+  assert.match(ui2, /\$\{regionsBoard\(\) \? '' : `<div class="topbar">/, 'the top bar is the classic board\'s only');
   // the action bar's floor lasted one round (owner, 2026-09-26: "much larger
   // than normal" in a battle) — the bar is as tall as what it holds
   assert.doesNotMatch(CSS, /#app\.board\.v2 \.actionbar[^{]*\{[^}]*min-height/);
 });
 
-// CT-336: at 1440x900 with both hands shown (a spectator, a rules question
-// board), the over-full block collapsed the hand-and-deck row to 0px and
-// "deck 948" drew over "HAND (2)" — measured in headless Chrome before and
-// after (round r1024). An `overflow: hidden` line is a scroll container, so
-// its grid row may shrink to nothing; `clip` cuts the same overflow without
-// being one, so the row keeps the line's height.
-test('§6 CT-336: the hand-and-deck line clips without being a scroll container, so its row never collapses', () => {
-  assert.match(CSS, /\.linfo \.lhand \{[^}]*overflow: hidden; overflow: clip; \}/);
+// CT-336's lesson, kept: a line that cuts its overflow does it with `clip`,
+// which is not a scroll container, so nothing in it can collapse to nothing
+// and draw over its neighbour (a spectator's full hand, 1440x900, r1024).
+test('§6 CT-336: the resources clip without being a scroll container', () => {
+  assert.match(CSS, /\.linfo \.lres \{[^}]*overflow: hidden; overflow: clip; \}/);
 });

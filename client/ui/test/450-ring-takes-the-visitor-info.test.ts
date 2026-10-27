@@ -1,16 +1,21 @@
-/* ROUND 7 (report #204; docs/18 § Round 7): the ring round the focus region
- * takes in the VISITOR's info offshoot at that block's own width.
+/* THE RING ROUND THE FOCUS REGION (ui/layout.ts ringBoard; docs/18 § The
+ * ring, § Round 7, § Board round 8).
  *
- * The ring (ui/layout.ts ringBoard, owner 2026-09-23/26) is one path round
- * the focus region's L, grown over the visiting player's info offshoot once
- * they have entered. It used to run along the far band as wide as the fight's
- * column below it — the same thing, while every column was half the board.
- * In a battle the fight's column is now most of the board while the info
- * offshoots keep their half, so a ring that followed the column would close
- * round the other region's In Play as well.
+ * One path round the focus region's L — its info line (the foot) and its
+ * column — grown over the visiting player's info line once they have entered
+ * (owner 2026-09-23/26). Board round 8 (owner, 2026-10-27) changed two things:
  *
- * Driven on a stand-in DOM with the boxes of the HPTR s084 board at 1440×900
- * after the round (fight in my column, 1092px of 1166; their info 579px).
+ *   - the info lines are the board's full width, so the ring takes in the
+ *     visitor's line only where it runs under (over) the region's column —
+ *     round the whole line it would box the other region's column in on
+ *     three sides. Entering only lengthens the column: six points either way,
+ *     so the entry still tweens point for point.
+ *   - YOUR region's ring is open: it runs on down both sides, round the
+ *     action bar and the hand, and off the window's foot, with no bottom edge.
+ *     The layer is fixed over the window (`#app > .lring`), outside the board.
+ *
+ * Driven on a stand-in DOM with the boxes of a board8 review board at
+ * 1344×768 (the board 1088 wide, the lines 60 tall, the window 768 tall).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -18,6 +23,7 @@ import { ringBoard, roundedPath } from '../layout.ts';
 
 type B = { l: number; t: number; r: number; b: number };
 const rect = (x: B) => ({ left: x.l, top: x.t, right: x.r, bottom: x.b, width: x.r - x.l, height: x.b - x.t, x: x.l, y: x.t });
+const VIEW: B = { l: 0, t: 0, r: 1344, b: 768 };
 
 /** a board with these boxes, the ring on `ring`, the visitor in or not */
 function board(boxes: Record<string, B>, ring: 'top' | 'bottom', visit: boolean) {
@@ -26,10 +32,10 @@ function board(boxes: Record<string, B>, ring: 'top' | 'bottom', visit: boolean)
   const el = (b: B | undefined) => (b ? { getBoundingClientRect: () => rect(b) } : null);
   const lboard = { getBoundingClientRect: () => rect(boxes['board']!), querySelector: (sel: string) => el(boxes[sel]) };
   const svg = {
-    dataset: { ring, visit: visit ? '1' : '0' }, parentElement: lboard,
+    dataset: { ring, visit: visit ? '1' : '0' }, getBoundingClientRect: () => rect(VIEW),
     querySelector: (sel: string) => (sel === 'path' ? path : null), getAttribute: () => `lring rc${ring === 'top' ? 1 : 0}`,
   };
-  const root = { querySelector: (sel: string) => (sel === '.lboard > .lring' ? svg : null) } as unknown as ParentNode;
+  const root = { querySelector: (sel: string) => (sel === '#app > .lring' ? svg : sel === '.lboard' ? lboard : null) } as unknown as ParentNode;
   ringBoard(root, false);
   return attrs.get('d') ?? '';
 }
@@ -37,75 +43,69 @@ function board(boxes: Record<string, B>, ring: 'top' | 'bottom', visit: boolean)
 const points = (d: string): Array<[number, number]> =>
   [...d.matchAll(/[ML]([\d.-]+) ([\d.-]+)|Q[\d.-]+ [\d.-]+ ([\d.-]+) ([\d.-]+)/g)]
     .map(m => (m[1] !== undefined ? [+m[1], +m[2]!] : [+m[3]!, +m[4]!]) as [number, number]);
-const corners = (d: string): number => (d.match(/Q/g) ?? []).length;
+const shape = (d: string): string => d.replace(/[\d.-]+/g, '');
 
-/** HPTR s084 at 1440×900, round 7: the fight in my (left) column */
+/** the fight in my (left) column, wide */
 const FIGHT_MINE: Record<string, B> = {
-  board: { l: 0, t: 0, r: 1166, b: 628 },
-  '.lback.theirs.a': { l: 0, t: 2, r: 1166, b: 84 },
-  '.lback.theirs.b': { l: 1100, t: 84, r: 1166, b: 540 },
-  '.lback.mine.a': { l: 0, t: 546, r: 1166, b: 626 },
-  '.lback.mine.b': { l: 0, t: 90, r: 1092, b: 546 },
-  '.linfo.theirs': { l: 0, t: 2, r: 579, b: 84 },
-  '.linfo.mine': { l: 587, t: 546, r: 1166, b: 626 },
+  board: { l: 2, t: 2, r: 1090, b: 584 },
+  '.lback.theirs.a': { l: 2, t: 2, r: 1090, b: 62 },
+  '.lback.theirs.b': { l: 820, t: 62, r: 1090, b: 522 },
+  '.lback.mine.a': { l: 2, t: 524, r: 1090, b: 584 },
+  '.lback.mine.b': { l: 2, t: 64, r: 818, b: 524 },
 };
-/** the same board with the fight in THEIR (right) column */
+/** the fight in THEIR (right) column, wide */
 const FIGHT_THEIRS: Record<string, B> = {
-  board: { l: 0, t: 0, r: 1166, b: 628 },
-  '.lback.theirs.a': { l: 0, t: 2, r: 1166, b: 84 },
-  '.lback.theirs.b': { l: 74, t: 84, r: 1166, b: 540 },
-  '.lback.mine.a': { l: 0, t: 546, r: 1166, b: 626 },
-  '.lback.mine.b': { l: 0, t: 90, r: 66, b: 546 },
-  '.linfo.theirs': { l: 0, t: 2, r: 579, b: 84 },
-  '.linfo.mine': { l: 587, t: 546, r: 1166, b: 626 },
+  board: { l: 2, t: 2, r: 1090, b: 584 },
+  '.lback.theirs.a': { l: 2, t: 2, r: 1090, b: 62 },
+  '.lback.theirs.b': { l: 276, t: 62, r: 1090, b: 522 },
+  '.lback.mine.a': { l: 2, t: 524, r: 1090, b: 584 },
+  '.lback.mine.b': { l: 2, t: 64, r: 274, b: 524 },
 };
-/** outside a battle: every column half the board, as it always was */
+/** outside a battle: the columns half and half */
 const HALVES: Record<string, B> = {
-  board: { l: 0, t: 0, r: 1166, b: 628 },
-  '.lback.theirs.a': { l: 0, t: 2, r: 1166, b: 200 },
-  '.lback.theirs.b': { l: 587, t: 200, r: 1166, b: 420 },
-  '.lback.mine.a': { l: 0, t: 426, r: 1166, b: 626 },
-  '.lback.mine.b': { l: 0, t: 206, r: 579, b: 426 },
-  '.linfo.theirs': { l: 0, t: 2, r: 579, b: 200 },
-  '.linfo.mine': { l: 587, t: 426, r: 1166, b: 626 },
+  board: { l: 2, t: 2, r: 1090, b: 594 },
+  '.lback.theirs.a': { l: 2, t: 2, r: 1090, b: 62 },
+  '.lback.theirs.b': { l: 547, t: 62, r: 1090, b: 532 },
+  '.lback.mine.a': { l: 2, t: 534, r: 1090, b: 594 },
+  '.lback.mine.b': { l: 2, t: 64, r: 545, b: 534 },
 };
 
-test('the ring takes in the visitor info at its own width, not the fight column', () => {
-  // bottom ring (my region, the fight in my column), the attacker in: the ring
-  // runs along the top of THEIR info, and no further right than its edge
-  const d = board(FIGHT_MINE, 'bottom', true);
-  const pts = points(d);
-  const top = Math.min(...pts.map(p => p[1]));
-  assert.ok(top < 10, `the ring reaches the top band (${top})`);
+test('the ring takes in the visitor\'s line only where it runs under the region\'s column', () => {
+  // my region, the attacker in: up over THEIR line, but no further right than my column
+  const pts = points(board(FIGHT_MINE, 'bottom', true));
   const alongTop = pts.filter(p => p[1] < 10).map(p => p[0]);
-  assert.ok(Math.max(...alongTop) <= 579, `…only as far as their info offshoot goes (reached ${Math.max(...alongTop)}px, the info ends at 579)`);
-  assert.ok(pts.some(p => p[0] > 1080 && p[1] > 90 && p[1] < 546), 'and still round the whole fight column');
-  // top ring (their region, the fight in their column), me in: along the
-  // bottom of MY info, no further left than its edge
-  const dt = board(FIGHT_THEIRS, 'top', true);
-  const pb = points(dt);
-  const alongBottom = pb.filter(p => p[1] > 615).map(p => p[0]);
-  assert.ok(alongBottom.length && Math.min(...alongBottom) >= 587, `…from my info offshoot's edge (reached ${Math.min(...alongBottom)}px)`);
+  assert.ok(alongTop.length, 'the ring reaches their line');
+  assert.ok(Math.max(...alongTop) <= 818, `…only over my column (reached ${Math.max(...alongTop)}px, the column ends at 818)`);
+  // their region, me in: down over MY line, from their column's edge
+  const pb = points(board(FIGHT_THEIRS, 'top', true));
+  const alongBottom = pb.filter(p => p[1] > 575 && p[1] < 600).map(p => p[0]);
+  assert.ok(alongBottom.length && Math.min(...alongBottom) >= 276, `…from their column's edge (reached ${Math.min(...alongBottom)}px)`);
 });
 
-test('the ring keeps eight corners round a wide fight either way, so the entry still tweens point for point', () => {
-  assert.equal(corners(board(FIGHT_MINE, 'bottom', false)), 8, 'not yet entered');
-  assert.equal(corners(board(FIGHT_MINE, 'bottom', true)), 8, 'entered');
-  assert.equal(corners(board(FIGHT_THEIRS, 'top', false)), 8);
-  assert.equal(corners(board(FIGHT_THEIRS, 'top', true)), 8);
+test('entering keeps the same points, so the entry tweens point for point', () => {
+  for (const [boxes, ring] of [[FIGHT_MINE, 'bottom'], [FIGHT_THEIRS, 'top'], [HALVES, 'bottom'], [HALVES, 'top']] as const) {
+    assert.equal(shape(board(boxes, ring, true)), shape(board(boxes, ring, false)), `${ring}: one command list in and out`);
+  }
 });
 
-test('outside a battle, or round a fight that fits in half, the ring is the six-cornered L it always was', () => {
-  // the L as ringBoard drew it before round 7, corner for corner
-  const i = 1.5, a = HALVES['.lback.mine.a']!, b = HALVES['.lback.mine.b']!;
-  const before = roundedPath([[a.l + i, b.t + i], [b.r - i, b.t + i], [b.r - i, a.t + i], [a.r - i, a.t + i], [a.r - i, a.b - i], [a.l + i, a.b - i]], 8);
-  assert.equal(board(HALVES, 'bottom', false), before);
+test('your region\'s ring runs off the window\'s foot with no bottom edge; theirs closes', () => {
+  for (const visit of [false, true]) {
+    const d = board(HALVES, 'bottom', visit);
+    assert.ok(!d.endsWith('Z'), 'an open path');
+    const pts = points(d);
+    assert.ok(pts[0]![1] > VIEW.b && pts[pts.length - 1]![1] > VIEW.b, 'both ends below the window');
+    assert.equal(pts[0]![0], 3.5, 'up the board\'s left edge');
+    assert.equal(pts[pts.length - 1]![0], 1088.5, 'and down its right edge');
+  }
+  assert.ok(board(HALVES, 'top', false).endsWith('Z'), 'their region\'s ring closes, as it always did');
+});
+
+test('outside a battle the ring is the L it always was — and mine stays open below', () => {
+  const i = 1.5;
   const ta = HALVES['.lback.theirs.a']!, tb = HALVES['.lback.theirs.b']!;
-  const beforeTop = roundedPath([[ta.l + i, ta.t + i], [ta.r - i, ta.t + i], [ta.r - i, tb.b - i], [tb.l + i, tb.b - i], [tb.l + i, ta.b - i], [ta.l + i, ta.b - i]], 8);
-  assert.equal(board(HALVES, 'top', false), beforeTop);
-  // a fight that fits in half keeps the half-and-half board, and with the
-  // visitor in, the ring it always drew: the column straight up over their info
-  const far = HALVES['.lback.theirs.a']!;
-  const visited = roundedPath([[a.l + i, far.t + i], [b.r - i, far.t + i], [b.r - i, a.t + i], [a.r - i, a.t + i], [a.r - i, a.b - i], [a.l + i, a.b - i]], 8);
-  assert.equal(board(HALVES, 'bottom', true), visited);
+  assert.equal(board(HALVES, 'top', false),
+    roundedPath([[ta.l + i, ta.t + i], [ta.r - i, ta.t + i], [ta.r - i, tb.b - i], [tb.l + i, tb.b - i], [tb.l + i, ta.b - i], [ta.l + i, ta.b - i]], 8));
+  const a = HALVES['.lback.mine.a']!, b = HALVES['.lback.mine.b']!, Y = VIEW.b + 8;
+  assert.equal(board(HALVES, 'bottom', false),
+    roundedPath([[a.l + i, Y], [a.l + i, b.t + i], [b.r - i, b.t + i], [b.r - i, a.t + i], [a.r - i, a.t + i], [a.r - i, Y]], 8, true));
 });

@@ -293,7 +293,7 @@ test('CT-161 §5 an arrival still runs every helper on its way through pumpPace'
 
 test('CT-161 §6 the derived census is exactly the set of live slots the board emits', () => {
   const h = new Harness(26501);
-  if (ui.html().includes('class="topbar"')) ui.key('s');   // 237: drain first (S, the skip key)
+  if (ui.html().includes('class="lboard') || ui.html().includes('class="topbar"')) ui.key('s');   // 237: drain first (S, the skip key)
   ui.join(viewFor(h.state, SEAT), SEAT, legalActions(h.state, SEAT));
 
   // what render() really wrote, read the way test/ui-driver.ts reads it: a

@@ -71,7 +71,8 @@ test('§1 the run page boots into the board with the meter', async () => {
   assert.match(html, /Units played 0 \/ 1 · turn 1 · cards 0/);
   assert.match(html, /data-chal="giveup"/);
   assert.match(html, /data-chal="rewind"/);
-  assert.match(html, /🧩 Tiny/, 'the board says which challenge this is');
+  // board round 8: the toolbar's room icon is the 🧩, the challenge its words
+  assert.match(html, /<button class="tbstat" data-tip="room" data-btn="infotip" aria-label="Tiny">🧩/, 'the board says which challenge this is');
 });
 
 test('§2 the dummy is strict, so the uploaded log is the log the server accepts', () => {

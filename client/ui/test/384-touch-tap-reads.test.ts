@@ -67,10 +67,12 @@ test('§2 a finger\'s tap on that card in battle sends nothing and opens no menu
   const html = ui.tap({ act: 'hand', p: me, i });
   assert.deepEqual(ui.actions(), [], 'a tap must not play the card (report #201)');
   assert.doesNotMatch(html, /class="menu"/, 'nor offer a menu to play it from');
-  // the rail still follows the tap, as it always did on touch — the card's
-  // text is one look away in the rail as well as in the zoom
+  // board round 8: there is no rail to follow the tap any more — the read is
+  // the zoom (which the driver cannot lay out), and its card menu hangs under
+  // it (test/715). Nothing else on the board takes the card.
   ui.tick();
-  assert.match(preview(), /Fireball/, 'the rail shows the tapped card');
+  assert.equal(preview(), '', 'no rail viewer on the regions board');
+  assert.doesNotMatch(html, /id="preview"/);
 });
 
 test('§3 the same on every surface: deployment, and planning (no recycle menu)', () => {

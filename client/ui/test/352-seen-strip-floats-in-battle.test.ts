@@ -75,12 +75,14 @@ function floats(html: string): { side: string; region: number; body: string }[] 
   }));
 }
 
-test('CT-191 outside a battle the seen strip stays in the info block', () => {
+test('CT-191 outside a battle the seen strip floats over their region (board round 8: the info is one line)', () => {
   const { deploy } = game(35201, ME);
   const html = paint(deploy);
   assert.match(html, /Their hand, seen turn/, 'fixture: the aid is on screen');
-  assert.match(infoBlock(html, 'theirs'), /class="seenhand/, 'it is a row of their info block, as before');
-  assert.equal(floats(html).length, 0, 'and nothing floats');
+  assert.doesNotMatch(infoBlock(html, 'theirs'), /class="seenhand/, 'the one-line info has no row for it');
+  const f = floats(html);
+  assert.equal(f.length, 1, 'it floats');
+  assert.equal(f[0]!.side, 'theirs', 'outside a battle your region is the focus, so it floats over theirs');
 });
 
 for (const [attacker, label] of [[ME, 'I attack, so the fight is in their region'], [THEM, 'they attack, so the fight is in mine']] as const) {
@@ -107,13 +109,9 @@ for (const [attacker, label] of [[ME, 'I attack, so the fight is in their region
   });
 }
 
-test('CT-191 the stylesheet places the float by grid area, above the ring', () => {
-  assert.match(CSS, /\.linfo \{ display: block; container-type: size; \}/,
-    'premise: the info block is a size container (the reason the strip cannot be positioned out of it)');
-  assert.match(CSS, /\.lboard > \.lseen \{ position: absolute; z-index: 4;/);
-  assert.match(CSS, /\.lboard > \.lseen\.theirs \{ grid-area: tplay;/);
-  assert.match(CSS, /\.lboard > \.lseen\.mine \{ grid-area: yplay;/);
-  // later than the rule that makes every board block `position: relative`
-  assert.ok(CSS.indexOf('.lboard > .lseen {') > CSS.indexOf('.lboard > :not(.lback) {'),
-    'the float rule comes after the blanket position: relative, so it wins');
+test('CT-191 the stylesheet places the float at the outer corner of its column', () => {
+  assert.match(CSS, /\.lcol \{ grid-area: tcol; position: relative;/, 'the column is the float\'s containing block');
+  assert.match(CSS, /\.lcol > \.lseen \{ position: absolute; z-index: 4;/);
+  assert.match(CSS, /\.lcol\.theirs > \.lseen \{ top: 4px; right: 8px; \}/);
+  assert.match(CSS, /\.lcol\.mine > \.lseen \{ bottom: 4px; left: 8px; \}/);
 });

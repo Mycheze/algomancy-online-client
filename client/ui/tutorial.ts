@@ -101,7 +101,7 @@ export const TUTORIAL: readonly TutorialSection[] = [
       {
         label: 'The prompt bar',
         text: 'At the bottom of the table, just above your hand. It always says whose move it is and what you can do right now, and carries '
-          + 'the buttons for this moment — Pass, Confirm, every decision. Read it first — it is the one thing that never scrolls away.',
+          + 'the buttons for this moment — the main one says what it does (To Blockers, End Battle, End Turn), plus every decision. Read it first — it is the one thing that never scrolls away.',
       },
       {
         label: 'Regions',
@@ -162,7 +162,7 @@ export const TUTORIAL: readonly TutorialSection[] = [
           + 'for a resource of another element.',
       },
       {
-        text: 'Press done planning (Enter). If you still have dormant resources and activations left, it asks “Really done” — Go back (Esc) '
+        text: 'Press Done Planning (Enter). If you still have dormant resources and activations left, it asks “Really done” — Go back (Esc) '
           + 'returns you to the step.',
         btns: ['doneplan', 'doneplanconfirm', 'doneplancancel'],
       },
@@ -253,8 +253,9 @@ export const TUTORIAL: readonly TutorialSection[] = [
       },
       {
         text: 'Priority windows: the bar says you have priority. Play a battle card, cast a spell token, augment a virus from hand, activate an '
-          + 'ability — or Pass (Space). Pass through stack passes until everything now on the stack has resolved; Pass all gives priority up '
-          + 'until the next phase. Either can be stopped with the chip at the top.',
+          + 'ability — or pass (Space). The main button names where two passes lead: To Blockers, To Damage, End Battle, or Resolve and the '
+          + 'card on top; while yours is the first pass it adds that your opponent can still reply. Pass through stack passes until '
+          + 'everything now on the stack has resolved; Pass all gives priority up until the next phase. Either can be stopped with the chip at the top.',
         btns: ['pass', 'passstack', 'passall', 'passallstop', 'passconfirm', 'passcancel'],
       },
       {
@@ -273,7 +274,7 @@ export const TUTORIAL: readonly TutorialSection[] = [
       { text: 'Both players deploy at the same time and nothing is shown to the other until both are done. The bar says “Waiting” while your opponent finishes.' },
       { text: 'Play cards, apply mods from hand or bin, activate abilities, and prophecy cards into your cache — all as in the section above.' },
       {
-        text: 'Press done deploying (Enter). If you have played nothing yet and still could, or cards in your cache could still be played, '
+        text: 'Press Done Deploying (Enter) — it reads End Turn when your opponent has already finished. If you have played nothing yet and still could, or cards in your cache could still be played, '
           + 'it asks “End deployment anyway”.',
         btns: ['donedeploy', 'deployconfirm', 'deploycancel'],
       },
@@ -347,8 +348,8 @@ export const TUTORIAL: readonly TutorialSection[] = [
     id: 'keys',
     title: 'Keyboard',
     steps: [
-      { label: 'Space', text: 'Pass.' },
-      { label: 'Enter', text: 'The primary confirm of the moment: done, Attack!, Confirm, Keep, Continue.' },
+      { label: 'Space', text: 'Pass — the main button of a battle window, named for where it goes.' },
+      { label: 'Enter', text: 'The primary confirm of the moment: Done Planning, To Battle, Done Deploying, Attack!, Confirm Blocks, Keep, Continue.' },
       { label: 'Esc', text: 'Close whatever is on top — a menu, a dialog, this panel — and, with nothing open, cancel or go back.' },
       { label: '1–9', text: 'With a unit picked up for an attack or a block, put it in that column: the front if it is free, else the back.' },
       { label: 'S', text: 'Skip ahead when the table is being shown to you a step at a time: it only moves the screen forward, never the game.' },

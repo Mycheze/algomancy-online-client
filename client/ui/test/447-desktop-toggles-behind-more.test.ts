@@ -4,16 +4,19 @@
  *
  * A touch screen and a narrow window already had that menu ("⋯ more", 2026-09-27).
  * A computer showed every toggle in the rail, because the owner had asked then
- * for "the same, normal view for computers". Now, on a computer, the TOGGLES
- * wait behind "more". Everything else on the computer's rail stays the same:
- * the words, rules and the judge, which are tools you use mid-game rather
- * than settings.
+ * for "the same, normal view for computers". From #205, on a computer, the
+ * TOGGLES waited behind "more"; rules and the judge, tools you use mid-game
+ * rather than settings, stayed on the rail.
  *
- * main.ts runs DOM code on import and the ui-driver applies no stylesheet, so
- * this reads the two halves that decide it: the markup (which buttons are
- * toggles) and the cascade (what a computer hides). It was checked in headless
- * Chrome at 1440px when written: six toggles hidden, "more" shown, opening it
- * adds them after "more".
+ * Board round 8 (owner, 2026-10-27) made the regions board's rail a 50px
+ * toolbar of icons (main.ts toolbarHtml). The rule carries over unchanged and
+ * is now the same on every device: the toggles are a popover behind ⋯, rules
+ * (?) and the judge (⚖) are icons on the strip. This reads the two halves that
+ * decide it — the markup (which controls are toggles, and where they sit) and
+ * the cascade (the popover hidden until open, with no width or device that
+ * shows it shut). It was checked in headless Chrome at 1344, 1024 (touch),
+ * 800 and 1280x500: ⋯ opens the six toggles to the strip's left, each one
+ * hit-testable.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -23,65 +26,41 @@ const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url)
 const MAIN = read('../main.ts');
 const CSS = read('../style.css');
 
-const side = MAIN.slice(MAIN.indexOf('<div class="sidebtns'), MAIN.indexOf('${NET ? scn.panelHtml'));
-const groupAt = side.indexOf('<div class="setgroup');
-const group = side.slice(groupAt, side.indexOf('</div>', groupAt)); // the group holds no div of its own
+const bar = /function toolbarHtml[\s\S]*?\n}/.exec(MAIN)?.[0] ?? '';
+const groupAt = bar.indexOf('<div class="setgroup');
+const group = bar.slice(groupAt, bar.indexOf('</div>', groupAt)); // the group holds no div of its own
 /** each control inside the group: its data-btn / data-chip and its class list */
 const controls = [...group.matchAll(/<button\b([^>]*)>/g)].map(m => ({
   key: /data-(?:btn|chip)="(\w+)"/.exec(m[1] ?? '')?.[1] ?? '?',
   cls: /class="([^"]*)"/.exec(m[1] ?? '')?.[1] ?? '',
 }));
+const TOGGLES = ['fullcontrol', 'autopasstoggle', 'bluffhastetoggle', 'motiontoggle', 'layouttoggle', 'soundtoggle'];
 
-/** the rules at the stylesheet's top level: not under html.touch, not inside @media */
-const topLevel = (): string => {
-  let out = '', depth = 0, inMedia = false;
-  for (const line of CSS.split('\n')) {
-    if (depth === 0 && line.startsWith('@media')) inMedia = true;
-    if (!inMedia && !line.startsWith('html.touch')) out += line + '\n';
-    depth += (line.match(/\{/g) ?? []).length - (line.match(/\}/g) ?? []).length;
-    if (depth === 0) inMedia = false;
-  }
-  return out;
-};
-const orderOf = (css: string, sel: string): number => {
-  const m = new RegExp(`^${sel.replace(/[.[\]"=]/g, c => `\\${c}`)} \\{[^}]*order: (\\d+);`, 'm').exec(css);
-  assert.ok(m, `no order for ${sel}`);
-  return Number(m[1]);
-};
-
-test('on a computer every toggle in the rail waits behind more', () => {
-  const desk = topLevel();
-  assert.match(desk, /^\.sidebtns:not\(\.moreopen\) \.setgroup > \.aptoggle \{ display: none; \}/m,
-    'a computer hides the group\'s toggles until "more" is open');
-  const toggles = ['fullcontrol', 'autopasstoggle', 'bluffhastetoggle', 'motiontoggle', 'layouttoggle', 'soundtoggle'];
-  for (const k of toggles) {
+test('every toggle waits behind more, and only toggles do', () => {
+  assert.ok(groupAt > 0, 'the toolbar has a setgroup');
+  for (const k of TOGGLES) {
     const c = controls.find(x => x.key === k);
     assert.ok(c, `${k} is in the group`);
-    assert.ok(c.cls.split(/\s+/).some(w => w === 'aptoggle' || w.startsWith('aptoggle')),
-      `${k} carries .aptoggle, so the rule catches it`);
+    assert.ok(c.cls.split(/\s+/).some(w => w === 'aptoggle' || w.startsWith('aptoggle$')), `${k} carries .aptoggle`);
   }
-  // a new toggle added to the group without .aptoggle would sit in the rail
-  // again: everything in the group is a toggle, or one of the two tools
-  for (const c of controls) {
-    assert.ok(toggles.includes(c.key) || ['helpopen', 'judgeopen'].includes(c.key), `${c.key} is accounted for`);
+  // a new control added to the group must be a toggle — the tools stay out
+  for (const c of controls) assert.ok(TOGGLES.includes(c.key), `${c.key} is accounted for`);
+  for (const k of ['helpopen', 'judgeopen']) {
+    assert.ok(!group.includes(`data-btn="${k}"`) && bar.includes(`data-btn="${k}"`), `${k} is a tool on the strip, not behind more`);
   }
-  // and "more" itself is shown on a computer
-  assert.doesNotMatch(desk, /^\.setbtn[^{]*\{[^}]*display: none/m, 'the "more" button is not hidden on a computer');
 });
 
-test('on a computer rules and the judge stay on the rail and opening more moves nothing', () => {
-  const desk = topLevel();
-  for (const k of ['helpopen', 'judgeopen']) {
-    const c = controls.find(x => x.key === k);
-    assert.ok(c && !/\baptoggle\b/.test(c.cls), `${k} is a tool, not a toggle — it stays out`);
+test('the group is a popover, shut unless "more" is open — on every width and device', () => {
+  assert.match(bar, /<div class="setgroup tbpop\$\{settingsOpen \? ' open' : ''\}">/, 'open follows settingsOpen');
+  assert.match(CSS, /^#app\.board\.v2 > \.toolbar \.setgroup\.tbpop \{ display: none;/m);
+  assert.match(CSS, /^#app\.board\.v2 > \.toolbar \.setgroup\.tbpop\.open \{ display: flex; \}/m);
+  // nothing that would show it shut: no html.touch or @media rule on the
+  // toolbar's group sets a display other than none
+  for (const m of CSS.matchAll(/^.*\.toolbar[^{]*\.setgroup[^{]*\{[^}]*display: (\w+)/gm)) {
+    if (m[1] !== 'none') assert.match(m[0], /\.open\b/, `a rule shows the group while shut: ${m[0]}`);
   }
-  // the toggles open AFTER "more", so the buttons before it keep their places
-  const more = orderOf(desk, '.setbtn');
-  for (const k of ['tablemenu', 'helpopen', 'judgeopen', 'reportopen', 'undo', 'restart']) {
-    assert.ok(orderOf(desk, `.sidebtns [data-btn="${k}"]`) < more, `${k} sits before "more"`);
-  }
-  for (const k of ['autopasstoggle', 'bluffhastetoggle', 'motiontoggle', 'layouttoggle', 'soundtoggle']) {
-    assert.ok(orderOf(desk, `.sidebtns [data-btn="${k}"]`) > more, `${k} opens after "more"`);
-  }
-  assert.ok(orderOf(desk, '.sidebtns [data-chip="fullcontrol"]') > more, 'the full-control readout opens after "more"');
+  // "more" is the strip's last control, so the popover opens up from the foot
+  // and moves nothing on the strip
+  assert.ok(bar.indexOf('data-btn="settingsmenu"') > bar.indexOf('data-btn="helpopen"'), 'more sits below the tools');
+  assert.match(CSS, /\.setgroup\.tbpop \{ display: none; bottom: 0;/, 'anchored to the strip\'s foot');
 });
