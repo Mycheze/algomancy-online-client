@@ -58,6 +58,8 @@ test('§2 a unit dropped in the side column is sent past the last attacking colu
   assert.ok(ui.has({ act: 'slot', ci: '3', row: '0' }), 'the next side column opens beside it');
   ui.actions();
   ui.click({ btn: 'confirmblocks' });
+  // 702: units left over are asked about the counterattack — not this test's subject
+  if (ui.has({ btn: 'counternone' })) ui.click({ btn: 'counternone' });
   const sent = ui.actions().filter((a): a is Extract<Action, { type: 'declareBlocks' }> => a.type === 'declareBlocks');
   assert.equal(sent.length, 1, 'Confirm sent one declaration');
   assert.deepEqual(sent[0]!.blocks, { 2: [mine[0]] }, 'keyed past the two attacking columns');
@@ -93,6 +95,8 @@ test('§6 a number key reaches the open side-block column', () => {
   ui.key('3');                                          // two attacking columns, then the side column
   ui.actions();
   ui.click({ btn: 'confirmblocks' });
+  // 702: units left over are asked about the counterattack — not this test's subject
+  if (ui.has({ btn: 'counternone' })) ui.click({ btn: 'counternone' });
   const sent = ui.actions().filter((a): a is Extract<Action, { type: 'declareBlocks' }> => a.type === 'declareBlocks');
   assert.deepEqual(sent[0]?.blocks, { 2: [mine[0]] }, 'key 3 put it in the side-block column');
 });

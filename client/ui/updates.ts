@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-27', kind: 'new', text: 'Forgot to counterattack? If you confirm your blocks with units left over and none sent, the game now asks: pick the units to send (or All), or choose No counterattack. Send while blocking, as before, and it never asks.' },
   { date: '2026-10-25', kind: 'fix', text: 'Automaton of Abundance and Cosmic Conspirator: when you make a token you now choose which applies first, so you can copy a Robot and then swap both. Automaton copies each kind of token once per effect, grafted cards included.' },
   { date: '2026-10-25', kind: 'change', text: 'If the order of two effects only changes how big a number gets (Conduit of Pain with Powerful or Arbiter of Vitality, Proliferating Slime with Counter Thief), the bigger result is a one-click default; you can still pick the other order.' },
   { date: '2026-10-25', kind: 'change', text: "When both players have effects that could change the same thing, the initiative player's now apply first and nobody is asked. With a Counter Thief on each side, the other player's thief ends up with the counters." },

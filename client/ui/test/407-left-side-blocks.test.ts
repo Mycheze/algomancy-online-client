@@ -59,6 +59,8 @@ function joinBlocking(h: Harness, D: Seat): void {
 function confirm(): Extract<Action, { type: 'declareBlocks' }> {
   ui.actions();
   ui.click({ btn: 'confirmblocks' });
+  // 702: units left over are asked about the counterattack — not this test's subject
+  if (ui.has({ btn: 'counternone' })) ui.click({ btn: 'counternone' });
   const sent = ui.actions().filter((a): a is Extract<Action, { type: 'declareBlocks' }> => a.type === 'declareBlocks');
   assert.equal(sent.length, 1, 'Confirm sent one declaration');
   return sent[0]!;

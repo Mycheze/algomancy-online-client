@@ -547,3 +547,26 @@ export function sendableRest(s: GameState, seat: Seat, planned: readonly EntityI
   return formationCandidates(s, seat)
     .filter(id => !taken.has(id) && blockDeclarationIssue(e, seat, base, [id]) === null);
 }
+
+/**
+ * Reports #281 and #292: two players in three days took back their blocks to
+ * send the counterattack they had forgotten. The owner, 2026-10-27: *"once a
+ * player declares their blocking formation and has leftover units that aren't
+ * blocking, didn't send any units during the normal window AND is able to
+ * counter attack, then we should add a 'send counter attackers?' window … (or
+ * hit no counterattackers)."* Whoever already sends while blocking never sees it.
+ *
+ * Whether Confirm asks it: not yet answered for this block step, no UNIT in
+ * the send list (a spell token cannot go alone, so tokens do not count as
+ * having sent), and at least one unit left over that the engine would take as
+ * a counterattacker — `sendableRest`, so round 1 only and never a lured unit.
+ * The answer is a UI step in front of the one `declareBlocks`; the engine has
+ * no new window.
+ */
+export function shouldAskCounter(
+  s: GameState, seat: Seat, blockers: readonly EntityId[], picked: readonly EntityId[], answered: boolean,
+): boolean {
+  if (answered) return false;
+  if (splitCounterattack(s, picked).send.length) return false;
+  return sendableRest(s, seat, [...blockers, ...picked]).length > 0;
+}

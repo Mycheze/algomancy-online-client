@@ -4914,7 +4914,7 @@ export const CLOSED: LedgerEntry[] = [
     id: 281, room: "CQTW", date: "2026-10-24",
     report: "Karanda (judge), seat 1, agreed fix: back to before Karanda's blocks (turn 7). \"oops\"",
     status: 'agreed-fix',
-    note: "Took back 12 blocks with nothing sent to counterattack [376]; Karanda re-declared the blocks and sent 7 Swarmlings to counterattack. A re-plan (the counterattack forgotten); the block bar already offers Counterattack with the rest. No defect.",
+    note: "Took back 12 blocks with nothing sent to counterattack [376]; Karanda re-declared the blocks and sent 7 Swarmlings to counterattack. A re-plan (the counterattack forgotten); the block bar already offers Counterattack with the rest. No defect. Since 2026-10-27 (owner, after #292) Confirm asks \"Send counterattackers?\" when units are left over and none sent (702-counterattack-question).",
   },
   {
     id: 282, room: "CXCY", date: "2026-10-24",
@@ -4991,7 +4991,7 @@ export const CLOSED: LedgerEntry[] = [
     id: 292, room: "KEHE", date: "2026-10-25",
     report: "StubTailDstroyer, seat 1, agreed fix: back to before StubTailDstroyer's blocks (turn 6). \"oops\"",
     status: 'agreed-fix',
-    note: "Took back the turn-6 blocks [208] with nothing sent to counterattack; StubTailDstroyer re-declared exactly the same blocks and sent three units to counterattack. The counterattack forgotten, the same shape as #281 three days earlier; the block bar already offers Counterattack with the rest. No defect.",
+    note: "Took back the turn-6 blocks [208] with nothing sent to counterattack; StubTailDstroyer re-declared exactly the same blocks and sent three units to counterattack. The counterattack forgotten, the same shape as #281 three days earlier; the block bar already offers Counterattack with the rest. No defect. The owner asked for a prompt (2026-10-27): Confirm now asks \"Send counterattackers?\" in that position (702-counterattack-question).",
   },
   {
     id: 293, room: "JWTA", date: "2026-10-27",

@@ -247,6 +247,11 @@ export const TUTORIAL: readonly TutorialSection[] = [
         btns: ['confirmblocks', 'sendrest', 'resetblocks', 'clearform'],
       },
       {
+        text: 'If you confirm with units left over and none sent, the bar asks: click the units to send (or All), then Counterattack, '
+          + 'or No counterattack.',
+        btns: ['countertoggle', 'counterall', 'counterconfirm', 'counternone', 'countercancel'],
+      },
+      {
         text: 'Priority windows: the bar says you have priority. Play a battle card, cast a spell token, augment a virus from hand, activate an '
           + 'ability — or Pass (Space). Pass through stack passes until everything now on the stack has resolved; Pass all gives priority up '
           + 'until the next phase. Either can be stopped with the chip at the top.',

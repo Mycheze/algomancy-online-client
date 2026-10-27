@@ -42,7 +42,7 @@ import {
   armSnapshot, attackFrom, attackToBlock, autoPassDecision, blockVerdict, canJoinFormation, counterPool, counterShapes,
   counterUnplaced,
   formationCandidates, passEndsBattlePhase, ridableTokens, sendableRest, sendableTokens, shouldAskRide,
-  shouldAskSend, splitCounterattack,
+  shouldAskCounter, shouldAskSend, splitCounterattack,
 } from './battle.ts';
 import type * as bat from './battle.ts';
 import { placementWarnings, placeWarnHtml } from './placewarn.ts';
@@ -1213,6 +1213,13 @@ interface UiState {
    * being built — one dialogue per attack, not one per click of Attack!.
    * Cleared wherever the formation is (a declaration, a clear, a skip). */
   rideAnswered: boolean;
+  /** #281/#292: Confirm pressed on blocks with units left over that could
+   * counterattack and none sent — the seat being asked "send counterattackers?"
+   * (ui/battle.ts shouldAskCounter) */
+  confirmCounter: Seat | null;
+  /** …and that question has been answered for this block step: once per
+   * declaration, cleared wherever the plan is */
+  counterAnswered: boolean;
   /** playtest: "done deploying" pressed while cards in the cache are playable
    * RIGHT NOW — easy to forget a zone you are not used to watching. Holds the
    * seat being asked. */
@@ -1289,7 +1296,7 @@ const freshUi = (): UiState => ({
   autoAt: -1, sentFor: -1, cancelling: false, cancelAt: -1,
   rampTo: null, rampAt: -1, rampDone: 0,
   prefillFor: '', confirmDone: null, confirmPass: null, confirmTarget: null, boardPick: null,
-  confirmRide: null, rideAnswered: false, homeEls: savedEls(),
+  confirmRide: null, rideAnswered: false, confirmCounter: null, counterAnswered: false, homeEls: savedEls(),
   homeFixedTrio: false,
   confirmDeploy: null, confirmHaste: null, acted: [null, null], confirmAct: null, tapGo: null,
   bottomPick: [], bottomFor: '', blockLine: null, blockLeft: 0,
@@ -6523,6 +6530,25 @@ function phaseBarHtml(err: string): string {
           <button ${n ? '' : 'class="primary" '}data-btn="ridenone">Bring none</button>
           ${n ? `<button class="primary" data-btn="rideconfirm">Counterattack — ${n} token${n === 1 ? '' : 's'} riding <span class="kh">(enter)</span></button>` : ''}${err}</div>`;
       }
+      // #281/#292 (owner, 2026-10-27): Confirm with units left over and none
+      // sent asks once. Each chip is one leftover unit the engine would take
+      // (ui/battle.ts sendableRest), toggled in and out of the send list the
+      // board's send box already draws.
+      if (ui.confirmCounter !== null) {
+        const pool = sendableRest(s, ui.confirmCounter, ui.columns.flat());
+        const chips = pool.map(id => s.entities[id]).filter((u): u is Entity => !!u)
+          .map(u => `<span class="ridechip${ui.send.includes(u.id) ? ' on' : ''}"
+              data-btn="countertoggle" data-id="${u.id}">${ui.send.includes(u.id) ? '✓ ' : ''}${esc(u.card)}</span>`)
+          .join('');
+        const n = splitCounterattack(s, ui.send).send.length;
+        return `<div class="promptbar pending"><span class="who">${esc(s.players[ui.confirmCounter]!.name)}:</span>
+          Send counterattackers? ${pool.length} unit${pool.length === 1 ? ' isn’t' : 's aren’t'} blocking.
+          <span class="ridepick">${chips}</span>
+          <button data-btn="countercancel">Go back <span class="kh">(esc)</span></button>
+          ${n < pool.length ? `<button data-btn="counterall">All ${pool.length}</button>` : ''}
+          <button ${n ? '' : 'class="primary" '}data-btn="counternone">No counterattack</button>
+          ${n ? `<button class="primary" data-btn="counterconfirm">Counterattack — ${n} unit${n === 1 ? '' : 's'} <span class="kh">(enter)</span></button>` : ''}${err}</div>`;
+      }
       const built = hasBuild(ui);   // BL-19 — same question, same answer, both bars
       // CR 606.2e: a lured unit's block is COMPULSORY, and the client used to know
       // nothing about it — Confirm was always live and the duty only ever
@@ -7614,6 +7640,7 @@ function ensureBlockKeys(): void {
   if (ui.blockSent && !mine) {
     ui.blockSent = false;
     ui.columns = []; ui.blockLeft = 0; ui.backOnly = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false;
+    ui.counterAnswered = false;
   }
   // CR 606.4: left side-blocks mean nothing outside the block step, and an
   // attack build has no negative keys — whatever is left of one goes
@@ -7890,6 +7917,8 @@ function gcStaleUi(): void {
   if (h.state.battle?.step !== 'declare' && h.state.battle?.step !== 'blocks') {
     ui.confirmRide = null; ui.rideAnswered = false;
   }
+  // #281/#292: the counterattack question belongs to one block step the same way
+  if (h.state.battle?.step !== 'blocks') { ui.confirmCounter = null; ui.counterAnswered = false; }
 }
 
 /** What a repaint would otherwise destroy: the scroll position of each
@@ -8610,6 +8639,7 @@ function resetFormation(): void {
   ui.spellTokens = fresh.spellTokens;
   ui.carrying = fresh.carrying;
   ui.rideAnswered = fresh.rideAnswered;   // [69] a cleared formation is a new attack
+  ui.counterAnswered = false; ui.confirmCounter = null;
   // the complaints were about the plan that no longer exists
   ui.blockRefusal = null;
   uiError = '';
@@ -9787,7 +9817,7 @@ function pinFocus(sub: FocusSubject, key: string): void {
  * including them would make every click look like it had done something. */
 const CLICK_STATE_KEYS = ['carrying', 'columns', 'send', 'spellTokens', 'modding', 'menu',
   'orderPicked', 'draftPack', 'bottomPick', 'confirmDone', 'confirmPass', 'confirmDeploy',
-  'confirmHaste', 'confirmAct', 'tapGo', 'confirmRide', 'confirmTarget', 'counterCount', 'assignCount', 'numberCount'] as const;
+  'confirmHaste', 'confirmAct', 'tapGo', 'confirmRide', 'confirmCounter', 'confirmTarget', 'counterCount', 'assignCount', 'numberCount'] as const;
 
 /** everything a click may move, as one string */
 function clickSig(): string {
@@ -10600,9 +10630,29 @@ function declareBuiltBlocks(): void {
     // held until an authoritative state says the declaration LANDED
     // (ensureBlockKeys). Hotseat has already applied it, so it goes now.
     if (NET) ui.blockSent = true;
-    else { ui.columns = []; ui.blockLeft = 0; ui.backOnly = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false; }
+    else { ui.columns = []; ui.blockLeft = 0; ui.backOnly = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false; ui.counterAnswered = false; }
     ui.carrying = null;
   }
+}
+
+/** Confirm on the block bar: the questions it may ask, in order, then the declaration */
+function confirmBuiltBlocks(): void {
+  const s = h.state;
+  const def = s.battle!.defender;
+  // #281/#292 (owner, 2026-10-27): blockers set, units left over, none sent —
+  // ask once whether any counterattack before the declaration goes. It comes
+  // first, because the units it sends are what the ride question is about.
+  if (shouldAskCounter(s, def, ui.columns.flat(), ui.send, ui.counterAnswered)) {
+    ui.confirmCounter = def; return;
+  }
+  // [67] the counterattack's own ride question, gated by shouldAskSend —
+  // which stays silent when there are no tokens, when the player has already
+  // picked some, and (the rule, not politeness) when no UNIT is being sent,
+  // because "they always need a unit to take them with them".
+  if (shouldAskSend(s, def, ui.send, ui.rideAnswered)) {
+    ui.confirmRide = def; return;
+  }
+  declareBuiltBlocks();
 }
 
 /** the memory aid: forget one card, or the whole strip. Decision logic is in
@@ -10822,18 +10872,31 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     if (h.state.battle?.step === 'blocks') declareBuiltBlocks(); else declareBuiltAttack();
   },
   ridecancel: () => { ui.confirmRide = null; },   // back to building, unanswered
-  confirmblocks: () => {
-    // [67] the counterattack's own ride question, gated by shouldAskSend —
-    // which stays silent when there are no tokens, when the player has already
-    // picked some, and (the rule, not politeness) when no UNIT is being sent,
-    // because "they always need a unit to take them with them".
-    const s = h.state;
-    const def = s.battle!.defender;
-    if (shouldAskSend(s, def, ui.send, ui.rideAnswered)) {
-      ui.confirmRide = def; return;
-    }
-    declareBuiltBlocks();
+  confirmblocks: () => { confirmBuiltBlocks(); },
+  // the counterattack question's chips: each is one leftover unit, in or out
+  // of the send list — the same list the board's send box shows
+  countertoggle: btn => {
+    const id = Number(btn.dataset['id']) as EntityId;
+    const at = ui.send.indexOf(id);
+    if (at >= 0) ui.send.splice(at, 1); else ui.send.push(id);
   },
+  counterall: () => {
+    const s = h.state;
+    ui.send.push(...sendableRest(s, s.battle!.defender, [...ui.columns.flat(), ...ui.send]));
+  },
+  // "No counterattack" is an answer, and goes on to declare exactly the blocks
+  // that were built; "Counterattack" goes on through the ride question
+  counternone: () => {
+    const s = h.state;
+    ui.send = ui.send.filter(id => s.entities[id]?.kind === 'spellToken');
+    ui.counterAnswered = true; ui.confirmCounter = null;
+    confirmBuiltBlocks();
+  },
+  counterconfirm: () => {
+    ui.counterAnswered = true; ui.confirmCounter = null;
+    confirmBuiltBlocks();
+  },
+  countercancel: () => { ui.confirmCounter = null; },   // back to blocking, unanswered
   draftcommit: btn => {
     if (!ui.draftPack) return;
     act({ type: 'draftCommit', seat: Number(btn.dataset['p']) as Seat, packIndices: ui.draftPack.slice() });
@@ -11873,6 +11936,9 @@ const ENTER_BTNS = [
   // attack got sent ten times in GETD, and the whole point of this bar is that
   // declining is a choice somebody makes, not a key they were already holding.
   '[data-btn="rideconfirm"]',
+  // #281/#292: the same for "No counterattack" — Enter sends the counterattack
+  // once units are picked, and never declines it by reflex
+  '[data-btn="counterconfirm"]',
   '[data-btn="confirmattack"]', '[data-btn="confirmblocks"]', '[data-btn="draftcommit"]',
   '[data-btn="bottomcommit"]',
   '[data-btn="donedeploy"]', '[data-btn="doneplan"]', '[data-btn="donehaste"]',
@@ -11953,6 +12019,7 @@ document.addEventListener('keydown', e => {
     // the five "are you sure?" bars — Esc is their "Go back" (the doneplan and
     // the [69] ride-along ones even advertise it on the button)
     if (ui.confirmRide !== null) { ui.confirmRide = null; render(); return; }
+    if (ui.confirmCounter !== null) { ui.confirmCounter = null; render(); return; }
     if (ui.confirmDone !== null) { ui.confirmDone = null; render(); return; }
     // CR D2.8/BL-30 — ABOVE the others because it is the innermost: it stands in
     // front of a target pick that is itself in front of a cast, and Escape
