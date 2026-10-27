@@ -55,17 +55,33 @@ const rowHtml = (r: ResourceSummaryRow): string =>
 
 /** the window's content. Pure: test/324 reads it. */
 export function resSumHtml(s: ResourceSummary): string {
-  const head = `<div class="rshead"><b class="rsmana">${s.mana}</b> mana open${
-    s.activations !== null ? `<span class="rsact"> · ${s.activations} activation${s.activations === 1 ? '' : 's'} left</span>` : ''}</div>`;
-  if (!s.rows.length) return `${head}<div class="rsfoot">No resources yet.</div>`;
-  return `${head}<table class="rstab"><thead><tr><th></th><th>open</th><th>expended</th><th>dormant</th><th>affinity</th></tr></thead>
+  // board round 8 (owner, 2026-10-27): no "N mana open" head — the info line
+  // the window opens beside already says it, and the activations with it
+  if (!s.rows.length) return `<div class="rsfoot">No resources yet.</div>`;
+  return `<table class="rstab"><thead><tr><th></th><th>open</th><th>expended</th><th>dormant</th><th>affinity</th></tr></thead>
     <tbody>${s.rows.map(rowHtml).join('')}</tbody></table>${
     s.anyDormant ? '<div class="rsfoot">Dormant: no mana or affinity until activated in planning.</div>' : ''}`;
 }
 
-/** the info block's resource row a hover target is in, or null */
+/** the info block's resource row a hover target is in, or null — only over
+ * a resource card itself (owner, 2026-10-27: the line is wide now, and its
+ * empty stretch beside the cards must not open the window) */
 export function resSumRow(el: Element | null): HTMLElement | null {
-  return (el?.closest?.('.linfo .lres') as HTMLElement | null) ?? null;
+  if (!el?.closest?.('.linfo .lres .rescard')) return null;
+  return (el.closest('.linfo .lres') as HTMLElement | null) ?? null;
+}
+
+/** the box the resource CARDS take up in a row — from the first run's left
+ * edge to the last one's right — not the row, which runs the line's width */
+export function cardsRect(row: Element): Rect {
+  const runs = Array.from(row.querySelectorAll('.resgroup'));
+  if (!runs.length) return row.getBoundingClientRect();
+  let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
+  for (const g of runs) {
+    const x = g.getBoundingClientRect();
+    l = Math.min(l, x.left); t = Math.min(t, x.top); r = Math.max(r, x.right); b = Math.max(b, x.bottom);
+  }
+  return { left: l, top: t, width: r - l, height: b - t };
 }
 
 /** what main.ts hands over: the summary for the seat whose row it is */
@@ -95,11 +111,12 @@ export function resSumAt(el: Element | null, src: ResSumSource): void {
   host.innerHTML = resSumHtml(sum);
   host.classList.add('on');
   const mine = info.classList.contains('mine');
-  // the resources themselves, not the whole grid cell — the row is
-  // right-aligned in yours and may be narrower than its cell
-  const r = (row.querySelector('.lresrow') ?? row).getBoundingClientRect();
+  // the resource cards themselves, not the row — which runs the width of the
+  // line, so its far end was where the window went (owner, 2026-10-27: "way
+  // off to the right")
+  const r = cardsRect(row);
   const at = resSumBox(r, { width: host.offsetWidth, height: host.offsetHeight },
-    { w: innerWidth, h: innerHeight }, mine ? 'above' : 'below', mine ? 'right' : 'left');
+    { w: innerWidth, h: innerHeight }, mine ? 'above' : 'below', 'left');
   host.style.left = `${at.left}px`;
   host.style.top = `${at.top}px`;
   shownSeat = seat;

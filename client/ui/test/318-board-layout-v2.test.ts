@@ -262,26 +262,24 @@ test('§5b no zone captions; the send box is in the attacker\'s block; one colou
 
 /* ── §6 the stylesheet ──────────────────────────────────────────────── */
 test('§6 the grid, the clip and the stack rule are in style.css', () => {
-  // board round 8 (owner, 2026-10-27): each region is a column and a
-  // full-width foot — their info line on top, mine at the bottom, and the
-  // two columns between them, mine on the left
+  // board round 8 (owner, 2026-10-27, after the first review): each region
+  // is a full-width FOOT — their info line and In Play on top, my In Play and
+  // info line at the bottom — and a column of the MIDDLE, which is the only
+  // part the seam splits: my Invaders and battle block on the left, their
+  // battle block and Invaders on the right. Your cards stay on the bottom half.
   const areas = (CSS.match(/\.lboard \{[\s\S]*?grid-template-areas:([\s\S]*?);/) ?? [])[1] ?? '';
   const rows = [...areas.matchAll(/"([^"]+)"/g)].map(m => m[1]!.trim().split(/\s+/));
-  assert.deepEqual(rows, [['tinfo', 'tinfo'], ['ycol', 'tcol'], ['yinfo', 'yinfo']]);
-  assert.match(CSS, /\.lboard \{[^}]*grid-template-rows: var\(--linh\) minmax\(0, 1fr\) var\(--linh\);/,
-    'the info lines are one fixed height; the columns take the rest');
-  assert.match(CSS, /\.lcol \{ grid-area: tcol;[^}]*flex-direction: column;/);
-  assert.match(CSS, /\.lcol\.mine \{ grid-area: ycol; \}/);
-  // and in the markup: mine is Invaders, battle block, In Play from the top;
-  // theirs In Play, battle block, Invaders — so control reads top and bottom
-  const html = paint(FIX[3]!, true);
-  const col = (side: string): string[] => {
-    const at = html.indexOf(`<div class="lcol ${side}"`);
-    const body = html.slice(at, html.indexOf('<div class="lcol ', at + 10) > at ? html.indexOf('<div class="lcol ', at + 10) : html.indexOf('<div class="linfo mine', at));
-    return [...body.matchAll(/<div class="(lplay|lfight|linv) /g)].map(m => m[1]!);
-  };
-  assert.deepEqual(col('mine'), ['linv', 'lfight', 'lplay']);
-  assert.deepEqual(col('theirs'), ['lplay', 'lfight', 'linv']);
+  assert.deepEqual(rows, [['tinfo', 'tinfo'], ['tplay', 'tplay'], ['yinv', 'tfight'], ['yfight', 'tfight'],
+    ['yfight', 'tinv'], ['yplay', 'yplay'], ['yinfo', 'yinfo']]);
+  // outside a battle the middle is auto (it collapses to bands) and the two
+  // In Plays share the rest: each region about half the table
+  const tracks = ((CSS.match(/\.lboard \{[\s\S]*?grid-template-rows:([\s\S]*?);/) ?? [])[1] ?? '')
+    .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\s+/g, ' ').trim();
+  assert.equal(tracks, 'var(--lint, var(--linh)) minmax(0, 1fr) auto auto auto minmax(0, 1fr) var(--linh)');
+  for (const [sel, area] of [['.lplay', 'tplay'], ['.lplay.mine', 'yplay'], ['.linv', 'tinv'], ['.linv.mine', 'yinv'],
+    ['.lfight', 'tfight'], ['.lfight.mine', 'yfight'], ['.linfo', 'tinfo'], ['.linfo.mine', 'yinfo']] as const) {
+    assert.ok(CSS.includes(`${sel} { grid-area: ${area}; }`), `${sel} is placed in ${area}`);
+  }
   assert.match(CSS, /#app\.board\.v2 \.main \{[^}]*overflow: hidden/);
   assert.match(CSS, /\.lfight\.focus \.battle \.cols \{[^}]*flex-wrap: nowrap/);
   assert.match(CSS, /#app\.stackfree \.stackboard\.live \{/);

@@ -31,7 +31,7 @@ import { legalActions } from '../../engine/src/apply.ts';
 import { giveResources } from '../../engine/test/util.ts';
 import type { ResourceKind } from '../../engine/src/types.ts';
 import { resourceSummary } from '../resources.ts';
-import { resSumBox, resSumHtml } from '../ressum.ts';
+import { cardsRect, resSumBox, resSumHtml, resSumRow } from '../ressum.ts';
 import { zoomTarget } from '../zoom.ts';
 import { client } from './ui-driver.ts';
 
@@ -92,18 +92,29 @@ test('§1 outside planning the activations are not shown', () => {
 });
 
 /* ── §2 the window ──────────────────────────────────────────────────── */
-test('§2 the window says the mana, a line per kind, and what dormant means', () => {
+test('§2 the window: a line per kind and what dormant means — not the mana, which the line already says', () => {
   const h = game();
   const html = resSumHtml(resourceSummary(new E(h.state), 0));
-  assert.match(html, /<b class="rsmana">4<\/b> mana open/);
-  assert.match(html, /activations? left/);
+  // board round 8 (owner, 2026-10-27): "drop the N mana open line"
+  assert.doesNotMatch(html, /mana open|rsmana|activations? left/);
   assert.match(html, /<tr class="rs-fire"><th>[^]*?Fire<\/th><td class="rsnil">–<\/td><td class="rsnil">–<\/td><td>2<\/td><td class="rsnil">–<\/td><\/tr>/,
     'fire: none open, none expended, two dormant, no affinity');
   assert.match(html, /<tr class="rs-shard"><th>Shard<\/th>/);
   assert.match(html, /Dormant: no mana or affinity/);
   assert.doesNotMatch(html, /data-/, 'nothing in the window can be found as an anchor or take a click');
-  const bare = resSumHtml({ mana: 0, activations: null, rows: [], anyDormant: false });
-  assert.match(bare, /<b class="rsmana">0<\/b> mana open/, 'zero mana is still said');
+  assert.match(resSumHtml({ mana: 0, activations: null, rows: [], anyDormant: false }), /No resources yet/);
+});
+
+test('§2 it opens over the resource cards only, and stands beside the cards, not the whole line', () => {
+  const row = { closest: (sel: string) => (sel === '.linfo .lres' ? row : null) } as unknown as Element;
+  const card = { closest: (sel: string) => (sel === '.linfo .lres .rescard' ? card : sel === '.linfo .lres' ? row : null) } as unknown as Element;
+  const bare = { closest: (sel: string) => (sel === '.linfo .lres' ? row : null) } as unknown as Element;
+  assert.equal(resSumRow(card), row, 'over a resource card: the window');
+  assert.equal(resSumRow(bare), null, 'over the line\'s empty stretch beside the cards: nothing');
+  // the box it lines up with is the cards' — the first run to the last
+  const g = (l: number, r: number) => ({ getBoundingClientRect: () => ({ left: l, right: r, top: 700, bottom: 742, width: r - l, height: 42 }) });
+  const line = { querySelectorAll: () => [g(10, 90), g(100, 250)], getBoundingClientRect: () => ({ left: 0, top: 690, width: 1200, height: 60 }) } as unknown as Element;
+  assert.deepEqual(cardsRect(line), { left: 10, top: 700, width: 240, height: 42 });
 });
 
 test('§2 it sits beside the row — below theirs, above yours — and never on it', () => {

@@ -9,7 +9,8 @@
  * seat's line is the one line that grows while a spectator's view of that
  * hand is in it — 128px (100px on a window under 820px tall), so its cards
  * stand ~83px (~62px) wide, where a 60px line would have left them ~33px —
- * and the battle plan is over the columns under it, whatever the line is.
+ * and the battle plan is over the board between the two lines, whatever
+ * they are.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -20,15 +21,16 @@ const read = (f: string): string => readFileSync(fileURLToPath(new URL(f, import
 const CSS = read('../style.css');
 
 test('CT-419: the top line grows while it holds a spectated hand, and only then', () => {
-  assert.match(CSS, /\.lboard:has\(> \.linfo\.theirs \.lspect\) \{ grid-template-rows: var\(--linspect, (\d+)px\) minmax\(0, 1fr\) var\(--linh\); \}/);
+  assert.match(CSS, /\.lboard:has\(> \.linfo\.theirs \.lspect\) \{ --lint: var\(--linspect, (\d+)px\); \}/);
+  assert.match(CSS, /\.lboard \{[^}]*grid-template-rows:\s*var\(--lint, var\(--linh\)\)/, 'the top line\'s track is --lint, the plain line by default');
   const tall = Number(/var\(--linspect, (\d+)px\)/.exec(CSS)![1]);
   const line = Number(/\.lboard \{[^}]*--linh: (\d+)px;/.exec(CSS)![1]);
-  assert.ok(tall >= 2 * line - 10, `the spectated line (${tall}px) is about two plain lines (${line}px)`);
+  assert.ok(tall >= line + 40, `the spectated line (${tall}px) is well taller than a plain one (${line}px)`);
   assert.match(CSS, /@media \(max-height: 820px\) \{ \.lboard \{ --linspect: \d+px; \} \}/, 'a smaller one on a short window');
 });
 
-test('CT-419: the battle plan no longer shares the height with the strip — it is over the columns alone', () => {
+test('CT-419: the battle plan no longer shares the height with the strip — it is over what lies between the lines', () => {
   const layout = read('../layout.ts');
   assert.doesNotMatch(layout, /spectWant|spect:/, 'shapeBoard asks the strip nothing');
-  assert.match(layout, /board: \{ w: box\.w - chrome\(lb, 'h'\), h: colBox\.h \}/, 'the plan is over the fight column\'s own height');
+  assert.match(layout, /const lines = \(boxOf\(lb\.querySelector\('\.linfo\.theirs'\)\)/, 'the plan is over the board less the two info lines, however tall they are');
 });

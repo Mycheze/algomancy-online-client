@@ -194,7 +194,7 @@ test('§7 the stylesheet: one 50px column at every width, and what was keyed to 
     assert.equal(m[1], 'minmax(0, 1fr) 50px', `no width gives the regions board another rail: ${m[0].trim()}`);
   }
   // the dialog scrim stops at the strip (test/368 resolves it at every width)
-  assert.match(CSS, /#app\.board\.v2 \.overlay\.mainonly \{ right: calc\(max\(0px, \(100vw - 1500px\) \/ 2\) \+ 52px\); \}/);
+  assert.match(CSS, /#app\.board\.v2 \.overlay\.mainonly \{ right: 52px; \}/, "padding + toolbar: the table has no width cap, so no centring margin");
   // the pick dialog's rail rule at every width (test/673)
   assert.match(CSS, /^#app\.board\.pickup > \.side \{ position: relative; z-index: 59; \}/m);
   // the reveal notice is a row of the table column at every width

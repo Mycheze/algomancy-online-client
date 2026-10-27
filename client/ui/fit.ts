@@ -220,33 +220,33 @@ export function fitBattle(cols: number, ranksTop: number, ranksBot: number, box:
  * (the edges do not move); only the column below it changes width.
  */
 export interface BattleBoardIn {
-  /** the board grid's width, and the height of the fight's COLUMN — the
-   * room between the two info lines (board round 8: the info is a line of
-   * its own, and each region a column under or over it) */
+  /** the board grid's content box less its two info lines and their gaps
+   * (board round 8: the info is a full-width line of its own; the bands are
+   * the two In Plays) */
   board: FitBox;
-  /** the grid's column gap, and the column's own gap between its blocks */
+  /** the grid's column gap and row gap */
   gapX: number; gapY: number;
   /** the battle table, as fitBattle takes it; `o.cw` is the cap */
   cols: number; ranksTop: number; ranksBot: number; o: FitOpts;
   /** the fight block's chrome around the columns' box */
   chrome: FitBox;
-  /** the fight's column keeps its region's In Play at its head (theirs) or
-   * foot (mine): the band. What it wants — a row of cards at the field's
-   * floor — and the least it gives way to, where the fight's floor would not
-   * otherwise stand */
+  /** a band's height (an In Play, since board round 8): a row of cards at
+   * the field's floor, and the least it gives way to */
   bandMin: number; bandFloor: number;
-  /** the tallest unit standing in that band, over a plain card (its mods
-   * hang under it — main.ts fieldMods), in card heights, and the band's
-   * padding: the band never stands shorter than that unit at the field's
-   * floor width, or the unit — and the fit of every card beside it — spills */
-  tall?: { extra: number; pad: number };
-  /** the band is the SOURCE of a formation being built (the units the viewer
-   * can put in the declaration, `.card.playable`): how many stand in it, the
-   * largest a field card grows (`cap`), its padding, and how much taller than
-   * a card its tallest such unit stands. While you build, they are the cards
-   * you are moving into the fight, so the band keeps them at the fight's own
-   * size (up to `cap`). */
-  source?: { n: number; cap: number; pad: number; extra?: number };
+  /** the tallest unit standing in each In Play band, over a plain card (its
+   * mods hang under it — main.ts fieldMods), in card heights, and the band's
+   * padding: a band never stands shorter than that unit at the field's floor
+   * width, or the unit — and the fit of every card beside it — spills out */
+  tall?: { top: number; bot: number; pad: number };
+  /** the In Play bands that are the SOURCE of a formation being built (the
+   * units the viewer can put in the declaration, `.card.playable`): how many
+   * stand in each, the largest a field card grows (`cap`), and the band's
+   * padding. While you build, they are the cards you are moving into the
+   * fight, so their band keeps them at the fight's own size (up to `cap`). */
+  source?: { top: number; bot: number; cap: number; pad: number;
+    /** how much taller than a card the tallest of each band's units stands
+     * (its mods hang under it), in card heights */
+    extra?: { top: number; bot: number } };
   /** the idle block at its narrowest: whether it holds the send box (whose
    * slot is two cards wide), its padding across, the gap between its cards
    * and the floor card width */
@@ -255,14 +255,14 @@ export interface BattleBoardIn {
 
 /** `fight`: the fight column's width; `idle`: the other column's; `wide`:
  * whether the fight needs more than the half it always had (false = the
- * board's half-and-half split, exactly); `band`: the height of the In Play
- * band in the fight's column */
-export interface BattleBoard { wide: boolean; fight: number; idle: number; band: number; cw: number }
+ * board's old half-and-half split, exactly) */
+export interface BattleBoard { wide: boolean; fight: number; idle: number; bandTop: number; bandBot: number; cw: number }
 
-/** the fight's column holds its In Play band and the fight, one gap apart
- * (style.css `.lcol` gap; its Invaders row is empty — the region being fought
- * in stands its invaders down the fight's side — and takes no room) */
-const OUTER_GAPS = 1;
+/** between the info lines the battle template's rows are band · row ·
+ * fight · row · band, and the fight block spans two of the middle three: the
+ * other three row gaps and the one empty row are not the fight's (board round
+ * 8: the bands are the In Plays, full width; the info lines are outside) */
+const OUTER_GAPS = 3;
 
 export function planBattleBoard(i: BattleBoardIn): BattleBoard | null {
   const W = i.board.w, H = i.board.h;
@@ -275,39 +275,46 @@ export function planBattleBoard(i: BattleBoardIn): BattleBoard | null {
   const rt = i.cols > 0 ? i.ranksTop : 1, rb = i.cols > 0 ? i.ranksBot : 1;
   const m = battleMeasure(cols, rt, rb, i.o);
   const floor = Math.min(i.o.floor ?? FLOOR, i.o.cw);
-  const ratio = i.o.ratio ?? RATIO;
-  // 1. height first: the band at a row of cards; less, down to its floor, if
-  //    the fight's floor needs it
+  // 1. height first: the bands at two lines; less, down to one, if the floor needs it
   const room = H - OUTER_GAPS * i.gapY;
   const most = W - i.gapX - idleMin;
-  const lift = i.tall && i.tall.extra > 0 ? Math.round(FLOOR * ratio * (1 + i.tall.extra)) + i.tall.pad : 0;
-  const min = Math.max(i.bandMin, lift);
-  const short = Math.max(0, m.height(floor) + i.chrome.h - (room - min));
-  let band = Math.max(i.bandFloor, lift, min - short);
+  const lift = (t: number): number =>
+    (t > 0 && i.tall ? Math.round(FLOOR * (i.o.ratio ?? RATIO) * (1 + t)) + i.tall.pad : 0);
+  const liftT = lift(i.tall?.top ?? 0), liftB = lift(i.tall?.bot ?? 0);
+  const minT = Math.max(i.bandMin, liftT), minB = Math.max(i.bandMin, liftB);
+  const short = Math.max(0, m.height(floor) + i.chrome.h - (room - minT - minB));
+  let bandT = Math.max(i.bandFloor, liftT, minT - Math.ceil(short / 2));
+  let bandB = Math.max(i.bandFloor, liftB, minB - Math.ceil(short / 2));
   // …but a band you are building a formation FROM holds its units at the
   // size of the slots they go to (owner's review board, 2026-10-11: the units
   // waiting to block stood at ~50px beside ~85px slots): the largest card
   // width at which the fight and that band both stand
   const src = i.source;
-  if (src && src.n > 0) {
-    const bandFor = (cw: number): number =>
-      Math.max(min, Math.round(Math.min(cw, src.cap) * ratio * (1 + (src.extra ?? 0))) + src.pad);
-    const cw = largest(floor, Math.floor(i.o.cw), x => m.height(x) + i.chrome.h + bandFor(x) <= room
+  if (src && (src.top > 0 || src.bot > 0)) {
+    const ratio = i.o.ratio ?? RATIO;
+    const tall = src.extra ?? { top: 0, bot: 0 };
+    const bandFor = (n: number, cw: number, more: number, least: number): number =>
+      (n > 0 ? Math.max(least, Math.round(Math.min(cw, src.cap) * ratio * (1 + more)) + src.pad) : least);
+    const top = (x: number): number => bandFor(src.top, x, tall.top, minT);
+    const bot = (x: number): number => bandFor(src.bot, x, tall.bot, minB);
+    const cw = largest(floor, Math.floor(i.o.cw), x => m.height(x) + i.chrome.h + top(x) + bot(x) <= room
       && m.width(x) + i.chrome.w <= most);
-    if (cw !== null) band = bandFor(cw);
+    if (cw !== null) { bandT = top(cw); bandB = bot(cw); }
   }
-  const fightH = room - band;
+  const fightH = room - bandT - bandB;
   const box = { w: most - i.chrome.w, h: fightH - i.chrome.h };
   const p = fitBattle(cols, rt, rb, box, i.o);
   // 2. then the width those columns need, never under the old half
   const half = (W - i.gapX) / 2;
   const needW = (p.mode === 'fan' ? box.w : m.width(p.cw)) + i.chrome.w;
   const wide = needW > half;
+  // a wide fight is two grid tracks, so at least half and a gap
   const fight = wide ? Math.round(Math.min(most, Math.max(needW, half + i.gapX))) : half;
-  // 3. the rest goes back: the height to the band, the width to the other region
+  // 3. the rest goes back: the height to the bands, the width to the other region
   const needH = m.height(p.cw) + i.chrome.h;
   const spareH = Math.max(0, Math.floor(fightH - needH));
-  return { wide, fight, idle: Math.round(W - i.gapX - fight), band: band + spareH, cw: p.cw };
+  let top = Math.floor(spareH / 2);
+  return { wide, fight, idle: Math.round(W - i.gapX - fight), bandTop: bandT + top, bandBot: bandB + spareH - top, cw: p.cw };
 }
 
 /**
@@ -315,20 +322,29 @@ export function planBattleBoard(i: BattleBoardIn): BattleBoard | null {
  * "resources take whatever space the line has left … the point is that there
  * is plenty of room for them"). Each run of one kind in one state was a fan
  * because the info block was narrow; in a line the width of the table the
- * runs SPREAD when there is room and fan only when there is not.
+ * runs SPREAD when there is room, fan only when there is not, and — only
+ * when even the tightest fan does not fit — the cards get smaller.
  *
- * `runs` is each overlapping run's card count (a `wake` run never overlaps
- * and is part of `room` already), `room` the width the runs have, `cw` a
- * card's width and `gap` the gap between runs. Returns how far each card of a
- * run steps from the one before: `cw + 2` side by side, less to overlap,
- * never under `minStep`. `spread`: no card is hidden.
+ * `runs` is each fanning run's card count, `wakes` each wake run's (a wake
+ * run never overlaps: its cards are `cw + 2` wide, `wakeGap` apart), `room`
+ * the width the runs have (the line less the mana), `cw` the card width the
+ * line's height allows and `minCw` the smallest it may go, `gap` between
+ * runs. Returns the card width, how far each card of a fanning run steps from
+ * the one before (`cw + 2` side by side, never under `minStep`), and
+ * `spread`: no card is hidden. Counts only — nothing measured moves with it.
  */
-export function fitRes(runs: readonly number[], room: number, o: { cw: number; gap: number; minStep: number }): { step: number; spread: boolean } {
-  const n = runs.reduce((a, b) => a + b, 0);
-  const r = runs.length;
-  const full = o.cw + 2;
-  if (n <= r || room <= 0) return { step: full, spread: true };
-  const fixed = r * o.cw + (r - 1) * o.gap;
-  const step = Math.max(o.minStep, Math.min(full, Math.floor((room - fixed) / (n - r))));
-  return { step, spread: step >= full };
+export interface ResLineIn { runs: readonly number[]; wakes: readonly number[]; room: number; cw: number; minCw: number;
+  gap: number; wakeGap: number; minStep: number }
+export function fitRes(i: ResLineIn): { cw: number; step: number; spread: boolean } {
+  const n = i.runs.reduce((a, b) => a + b, 0), r = i.runs.length;
+  const groups = r + i.wakes.length;
+  const fixed = (cw: number): number => i.wakes.reduce((t, k) => t + k * (cw + 2) + (k - 1) * i.wakeGap, 0)
+    + r * cw + Math.max(0, groups - 1) * i.gap;
+  for (let cw = Math.floor(i.cw); cw >= i.minCw; cw--) {
+    const full = cw + 2;
+    if (n <= r) { if (fixed(cw) <= i.room || cw === i.minCw) return { cw, step: full, spread: true }; continue; }
+    const step = Math.min(full, Math.floor((i.room - fixed(cw)) / (n - r)));
+    if (step >= i.minStep) return { cw, step, spread: step >= full };
+  }
+  return { cw: i.minCw, step: i.minStep, spread: false };
 }

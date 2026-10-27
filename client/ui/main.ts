@@ -1087,7 +1087,9 @@ interface UiState {
    * cache" (Caleb 2024-12-02), on the same permission a play from it needs —
    * so the in-progress mod has to name it too. */
   modding: { from: ModZone; index: number; seat: Seat; mode: 'augment' | 'graft' } | null;
-  menu: { x: number; y: number; items: MenuItem[] } | null;
+  /** `right`: the menu's RIGHT edge, from the window's left — it opens leftward
+   * at its natural width (board round 8: the ☰ in the toolbar at the window's edge) */
+  menu: { x: number; y: number; items: MenuItem[]; right?: number } | null;
   /** BL-47: the trigger order being built, first-resolving first — held here
    * until "Confirm order" sends it as ONE decide (CR 706.5). */
   orderPicked: number[];
@@ -4287,7 +4289,7 @@ function resGroupedHtml(e: E, p: Seat): string {
     i = j;
   }
   return `<span class="resrow lresrow" data-animzone="res:${p}">${groups.join('')}
-      <span class="resmana"><b class="resmananum">${e.openMana(p)}</b> mana open${s.phase === 'planning' ? ` · ${s.players[p]!.activationsLeft} activations` : ''}</span>
+      <span class="resmana"><b class="resmananum">${e.openMana(p)}</b> mana open${s.phase === 'planning' ? `<span class="resact">${s.players[p]!.activationsLeft} activations</span>` : ''}</span>
     </span>`;
 }
 
@@ -4394,12 +4396,17 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
   const info = (side: 'theirs' | 'mine', p: Seat, r: RegionParts, region: number): string => {
     const id = `<div class="lid"><div class="lidtop"><span class="lname" data-tip="counts" data-btn="infotip" data-p="${p}" data-animzone="deck:${p}">${
       r.pnameFixed}</span>${r.life}${r.counters}</div>${side === 'theirs' && r.miniHand ? `<div class="lhand">${r.miniHand}</div>` : ''}</div>`;
-    const cache = r.cache ? `<div class="lcache">${r.cache}</div>` : '';
+    // the cache keeps its slot when it is empty (owner, 2026-10-27: "keep a
+    // stable slot even when empty, so things don't jump") — a placeholder
+    // with nothing to open and no anchor, like the classic board's absence
+    const cache = `<div class="lcache">${r.cache || '<div class="regioncache cempty"><div class="zonelabel">cache</div><span class="binempty">empty</span></div>'}</div>`;
     const bin = `<div class="lbin">${r.binMini}</div>`;
     const res = `<div class="lres" data-fit="res">${r.resGrouped}</div>`;
     const spect = r.handZone ? `<div class="lspect">${r.handZone}</div>` : '';
     const inner = side === 'mine'
-      ? `${res}${phaseIconsHtml()}${bin}${cache}${id}`
+      // the phase icons stand in the middle of the window (owner,
+      // 2026-10-27), so the bin, cache and name are one cell on the right
+      ? `${res}${phaseIconsHtml()}<div class="lend">${bin}${cache}${id}</div>`
       : `${id}${spect}${cache}${bin}${res}`;
     return `<div class="linfo ${side}${r.acting ? '' : ' inactive'}" data-region="${region}" data-p="${p}"><div class="lin">${inner}</div></div>`;
   };
@@ -4415,7 +4422,7 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
   // over the inactive region, like how the stack can be on either side."
   // The outer corner keeps it clear of the stack (centred on that region's
   // battle band) and of the counterattack send box (in that band). Placed by
-  // the stylesheet at the outer corner of that region's column, so there is
+  // the stylesheet off that In Play's grid area, so there is
   // nothing to measure. Outside a battle your region is the focus, so it
   // floats over theirs.
   const seenFloat = (r: RegionParts): string => {
@@ -4477,32 +4484,29 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
   // (right); style.css `.lboard[data-fight]` is that grid, and ui/layout.ts
   // shapeBoard sizes its tracks from the room there is
   const fightSide = b ? ` data-fight="${b.region === yRegion ? 'mine' : 'theirs'}"` : '';
-  // BOARD ROUND 8: each region is a COLUMN and a full-width foot (the info
-  // line). Their column — In Play, their battle block, their Invaders — runs
-  // from under their line down to just above mine; mine — my Invaders, my
-  // battle block, my In Play — the other way. The seam between them is the
-  // crossing, as it always was. The columns are boxes of their own
-  // (`.lcol`), so the two sides stack independently: the fight's column gives
-  // the room its In Play does not need to the fight, and nothing in the other
-  // column has to line up with it.
+  // BOARD ROUND 8 (owner, 2026-10-27, after the first review: "you killed
+  // the very important dynamic resizing of the regions"): each region is a
+  // full-width FOOT and a column of the MIDDLE. Their foot is their info line
+  // and their In Play under it; mine is my In Play and my info line under
+  // it. Only the middle is split by the seam: my Invaders row and my battle
+  // block on the left, their battle block and their Invaders row on the
+  // right. Outside a battle the middle collapses to thin bands and the two
+  // In Plays share the height, so each region is about half the table; in a
+  // battle the block being fought in takes the height it needs (round 7,
+  // ui/layout.ts shapeBoard). Your cards stay on the bottom half (axis 1).
   return `<div class="lboard${b ? ' fighting' : ' idle'}" data-focus="${focus}"${fightSide}>
       <div class="lback theirs a rc${tRegion}"></div><div class="lback theirs b rc${tRegion}"></div>
       <div class="lback mine a rc${yRegion}"></div><div class="lback mine b rc${yRegion}"></div>
       <div class="lseam"></div>
       ${info('theirs', topSeat, t, tRegion)}
-      <div class="lcol mine" data-region="${yRegion}">
-        ${invaders('mine', botSeat, y, yRegion)}
-        ${fight('mine', botSeat, y, yRegion)}
-        ${play('mine', botSeat, y, yRegion)}
-        ${seenFloat(y)}
-      </div>
-      <div class="lcol theirs" data-region="${tRegion}">
-        ${play('theirs', topSeat, t, tRegion)}
-        ${fight('theirs', topSeat, t, tRegion)}
-        ${invaders('theirs', topSeat, t, tRegion)}
-        ${seenFloat(t)}
-      </div>
+      ${play('theirs', topSeat, t, tRegion)}
+      ${invaders('mine', botSeat, y, yRegion)}
+      ${fight('mine', botSeat, y, yRegion)}
+      ${fight('theirs', topSeat, t, tRegion)}
+      ${invaders('theirs', topSeat, t, tRegion)}
+      ${play('mine', botSeat, y, yRegion)}
       ${info('mine', botSeat, y, yRegion)}
+      ${seenFloat(t)}${seenFloat(y)}
     </div>`;
 }
 
@@ -7346,7 +7350,8 @@ function menuHtml(): string {
   if (!ui.menu) return '';
   const items = ui.menu.items.map((it, i) =>
     `<button data-btn="menuitem" data-i="${i}">${it.icon ? elIcon(it.icon) : ''}${iconizeText(it.label)}</button>`).join('');
-  return `<div class="menu" style="left:${ui.menu.x}px;top:${ui.menu.y}px">${items}<button data-btn="menuclose">cancel</button></div>`;
+  const at = ui.menu.right !== undefined ? `right:calc(100vw - ${ui.menu.right}px);left:auto` : `left:${ui.menu.x}px`;
+  return `<div class="menu" style="${at};top:${ui.menu.y}px">${items}<button data-btn="menuclose">cancel</button></div>`;
 }
 
 /** the game's own chips, which the top bar carried after "Turn N": the draft's
@@ -8940,6 +8945,8 @@ function clampMenu(): void {
   }
   if (r.bottom > innerHeight - 8) el.style.top = `${Math.max(8, innerHeight - r.height - 8)}px`;
   if (r.right > innerWidth - 8) el.style.left = `${Math.max(8, innerWidth - r.width - 8)}px`;
+  // a right-anchored menu (the toolbar's ☰) that ran off the left edge
+  if (r.left < 8) { el.style.left = '8px'; el.style.right = 'auto'; }
 }
 
 /**
@@ -11498,7 +11505,13 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   // have no right click; the menu drops from the button instead of the cursor
   tablemenu: btn => {
     const r = btn.getBoundingClientRect();
-    ui.menu = { x: r.left, y: r.bottom + 4, items: boardMenuItems() };
+    // board round 8: the ☰ is in the toolbar at the window's right edge, so
+    // the menu opens to its LEFT, level with it, at its own natural width —
+    // placed by its left edge it was squashed against the window's edge
+    const strip = btn.closest('.toolbar')?.getBoundingClientRect();
+    ui.menu = strip
+      ? { x: strip.left - 6, y: r.top, items: boardMenuItems(), right: strip.left - 6 }
+      : { x: r.left, y: r.bottom + 4, items: boardMenuItems() };
   },
 };
 

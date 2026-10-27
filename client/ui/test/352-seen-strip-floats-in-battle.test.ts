@@ -109,9 +109,11 @@ for (const [attacker, label] of [[ME, 'I attack, so the fight is in their region
   });
 }
 
-test('CT-191 the stylesheet places the float at the outer corner of its column', () => {
-  assert.match(CSS, /\.lcol \{ grid-area: tcol; position: relative;/, 'the column is the float\'s containing block');
-  assert.match(CSS, /\.lcol > \.lseen \{ position: absolute; z-index: 4;/);
-  assert.match(CSS, /\.lcol\.theirs > \.lseen \{ top: 4px; right: 8px; \}/);
-  assert.match(CSS, /\.lcol\.mine > \.lseen \{ bottom: 4px; left: 8px; \}/);
+test('CT-191 the stylesheet places the float by grid area, at the In Play\'s outer corner', () => {
+  assert.match(CSS, /\.lboard > \.lseen \{ position: absolute; z-index: 4;/);
+  assert.match(CSS, /\.lboard > \.lseen\.theirs \{ grid-area: tplay; top: 4px; right: 8px; \}/);
+  assert.match(CSS, /\.lboard > \.lseen\.mine \{ grid-area: yplay; bottom: 4px; left: 8px; \}/);
+  // later than the rule that makes every board block `position: relative`
+  assert.ok(CSS.indexOf('.lboard > .lseen {') > CSS.indexOf('.lboard > :not(.lback) {'),
+    'the float rule comes after the blanket position: relative, so it wins');
 });

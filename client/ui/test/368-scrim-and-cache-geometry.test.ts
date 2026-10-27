@@ -575,9 +575,11 @@ test('the dialog scrim stops exactly at the rail on the regions board, at every 
   // step under 1100px, no drawer under 900px (a drawer would read here as
   // `rail 0`, position fixed)
   assert.deepEqual([...new Set(es.map(e => e.rail))], [50], `the toolbar is not one 50px column at every width:\n  ${table(es)}`);
-  // not blind: the widths really do move the rail's EDGE (the centred
-  // max-width margin), else every row compares one number with itself
-  assert.ok(new Set(es.map(e => e.railLeft)).size >= 3, `the rail's edge never moved across the sweep:\n  ${table(es)}`);
+  // board round 8: the table takes the whole window (no 1500px cap), so the
+  // rail's edge is the same at every width — and the resolver must have SEEN
+  // that cap go, or it is comparing against a margin that is not there
+  assert.match(readFileSync(CSS_PATH, 'utf8'), /#app\.board\.v2 \{[^}]*max-width: none;/, 'the regions board has no width cap');
+  assert.deepEqual([...new Set(es.map(e => e.railLeft))], [52], `the rail's edge is padding + toolbar at every width:\n  ${table(es)}`);
   assert.deepEqual(misses(es), [], `scrim right != rail left:\n  ${table(es)}`);
 });
 

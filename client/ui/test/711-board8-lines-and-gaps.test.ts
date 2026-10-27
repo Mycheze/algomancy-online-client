@@ -47,18 +47,17 @@ const paint = (s: GameState, seat: Seat = 0): string => ui.join(s, seat, legalAc
 const line = (html: string, side: 'mine' | 'theirs'): string => {
   const at = html.indexOf(`<div class="linfo ${side}`);
   assert.ok(at >= 0, `no ${side} info line`);
-  const end = side === 'theirs' ? html.indexOf('<div class="lcol ', at) : html.indexOf('class="actionbar"', at);
+  const end = side === 'theirs' ? html.indexOf('<div class="lplay ', at) : html.indexOf('class="actionbar"', at);
   return html.slice(at, end);
 };
 /** the order of the line's cells */
 const cells = (l: string): string[] =>
-  [...l.matchAll(/<div class="(lres|phicons|lbin|lcache|lid|lspect)\b/g)].map(m => m[1]!);
+  [...l.matchAll(/<div class="(lres|phicons|lend|lbin|lcache|lid|lspect)\b/g)].map(m => m[1]!);
 
 test('§1 the gaps are 1–2px tokens, and the TS mirrors move with the CSS', () => {
   assert.match(CSS, /:root \{[^}]*--gap: 2px; --gap-tight: 1px;/);
-  assert.match(CSS, /#app\.board\.v2 \{ gap: var\(--gap\); padding: var\(--gap\); \}/);
+  assert.match(CSS, /#app\.board\.v2 \{ gap: var\(--gap\); padding: var\(--gap\);/);
   assert.match(CSS, /\.lboard \{[^}]*gap: var\(--gap\);/);
-  assert.match(CSS, /\.lcol \{[^}]*gap: var\(--gap\);/);
   // the cards keep clear of the ring by the blocks' padding, not the gaps:
   // the 2.5px stroke and its glow stand inside the tint's edge
   const pad = Number(/--ringpad: (\d+)px;/.exec(CSS)?.[1]);
@@ -72,31 +71,42 @@ test('§1 the gaps are 1–2px tokens, and the TS mirrors move with the CSS', ()
   assert.equal(Number(chrome), 2 * (colPad + 1), 'COL_CHROME is a column\'s padding and border, both sides');
   const fan = Number(/\.cols > \.col \+ \.col \{ margin-left: calc\(var\(--fanstep\) - var\(--cw\) - (\d+)px\); \}/.exec(CSS)?.[1]);
   assert.equal(fan, Number(gap) + Number(chrome), 'the battle fan steps by chrome + gap');
-  assert.match(read('../fit.ts'), /const OUTER_GAPS = 1;/, 'the fight\'s column: its In Play band and the fight, one gap apart');
+  assert.match(read('../fit.ts'), /const OUTER_GAPS = 3;/, 'between the lines: band · row · fight · row · band, the fight over two of the middle three');
 });
 
 test('§2 one line per player, in the owner\'s order; no deck line; no top bar', () => {
   const html = paint(PLAN);
-  // mine, left to right: resources · phase icons · bin · (cache) · name and life
-  assert.deepEqual(cells(line(html, 'mine')), ['lres', 'phicons', 'lbin', 'lid']);
+  // mine, left to right: resources · phase icons · bin · cache · name and
+  // life (the last three one cell, so the icons can stand in the middle)
+  assert.deepEqual(cells(line(html, 'mine')), ['lres', 'phicons', 'lend', 'lbin', 'lcache', 'lid']);
   // theirs mirrored, no phase icons (this driver's state is not redacted,
   // so their whole hand shows, as a spectator's would: right after the name)
-  assert.deepEqual(cells(line(html, 'theirs')), ['lid', 'lspect', 'lbin', 'lres']);
+  assert.deepEqual(cells(line(html, 'theirs')), ['lid', 'lspect', 'lcache', 'lbin', 'lres']);
   // a player sees their card backs under the name instead
   const hidden = structuredClone(PLAN);
   hidden.players[1]!.hand = hidden.players[1]!.hand.map(() => '__HIDDEN__');
   const backs = line(paint(hidden), 'theirs');
-  assert.deepEqual(cells(backs), ['lid', 'lbin', 'lres']);
+  assert.deepEqual(cells(backs), ['lid', 'lcache', 'lbin', 'lres']);
   assert.match(backs, /<div class="lid"><div class="lidtop">[\s\S]*?<div class="lhand"><span class="minihand"/);
   assert.doesNotMatch(html, /class="binline"/, 'the always-on deck line is gone');
   assert.doesNotMatch(html, /class="topbar"/, 'the top bar is gone on this board');
   // the resources take what is left: a fit zone of their own
   assert.match(line(html, 'mine'), /<div class="lres" data-fit="res">/);
-  // with a cache, its column is there — between the bin and the name in mine
+  // the cache keeps its slot when empty (owner, 2026-10-27: "a stable slot
+  // even when empty, so things don't jump") — a placeholder with nothing to
+  // open; with a card in it, the real one
+  assert.match(line(html, 'mine'), /<div class="lcache"><div class="regioncache cempty">/);
+  assert.doesNotMatch(line(html, 'mine'), /data-btn="cacheopen"/);
   const e = new E(structuredClone(PLAN));
   e.cacheFromHand(0, 0);
-  const cached = paint(e.s);
-  assert.deepEqual(cells(line(cached, 'mine')), ['lres', 'phicons', 'lbin', 'lcache', 'lid']);
+  assert.match(line(paint(e.s), 'mine'), /<div class="lcache"><div class="regioncache[^"]*" data-btn="cacheopen"/);
+  // the slots are as wide as they need whatever they hold, thumbs sized off
+  // the line's content height, never under a resource card's size
+  assert.match(CSS, /\.linfo \.regionbin \{ --binth: clamp\(18px, calc\(\(100cqh - 8px\) \/ 1\.4\), 48px\); width: calc\(var\(--binth\) \+ 28px\); \}/);
+  assert.match(CSS, /\.linfo \.regioncache \{ --cacheth: clamp\(18px, calc\(\(100cqh - 2px\) \/ 1\.4\), 48px\);\s*width: calc\(3 \* var\(--cacheth\) \+ 30px\); \}/);
+  // the phase icons in the window's middle: the line is three tracks, the
+  // right one never narrower than the bin, cache and name
+  assert.match(CSS, /\.linfo\.mine > \.lin \{ display: grid; grid-template-columns: minmax\(0, 1fr\) auto minmax\(max-content, 1fr\); \}/);
   // the turn and the initiative live on: the caption, the ⭐
   assert.match(html, new RegExp(`aria-label="[^"]*Turn ${PLAN.turn}\\b`));
   assert.match(MAIN, /\$\{toolGameHtml\(\)\}/, 'the draft elements and the chips are a badge on the toolbar (P4, test/712)');

@@ -13,9 +13,9 @@
  * §1 the board says which column holds the fight, in both rounds and from
  *    both seats, and says nothing outside a battle (the board there is the
  *    one it was); the counterattackers on their way wrap down the idle column
- * §2 the stylesheet: two columns, half and half, and with `data-wide` the
- *    idle one `--lidle`; the fight's In Play band `--lband` (board round 8:
- *    each region a column and a full-width info line)
+ * §2 the stylesheet: the feet (info line + In Play) full width, the middle
+ *    two columns half and half, with `data-wide` the idle one `--lidle`; the
+ *    two In Plays are the bands round 7 plans (board round 8)
  * §3 the columns stand in the middle of the fight, in the width the invader
  *    strip leaves them, by auto margins (which give way when the row is full)
  */
@@ -91,22 +91,28 @@ const rule = (sel: string): string => {
   assert.ok(at >= 0, `style.css has no \`${sel} {\``);
   return CSS.slice(at, CSS.indexOf('}', at));
 };
-test('§2 the battle board: two columns, the fight\'s In Play at --lband, the seam pushed aside only when the fight needs it', () => {
-  // board round 8: each region is a column (.lcol) and a full-width info
-  // line, so the battle needs no grid of its own — the same two tracks, half
-  // and half, until the fight needs more (`data-wide`)
+test('§2 the battle board: the feet full width, the middle two columns, the bands planned, the seam pushed aside only when needed', () => {
+  // board round 8: each region is a full-width foot (info line + In Play)
+  // and a column of the middle; in a battle the two In Plays are the bands
+  // round 7 planned (--lbandt / --lbandb), the middle's fight row takes the
+  // rest, and the info lines stand outside them
+  const base = rule('.lboard.fighting[data-fight]');
+  assert.match(base.replace(/\s+/g, ' '), /grid-template-rows: var\(--lint, var\(--linh\)\) var\(--lbandt, minmax\(0, 1fr\)\) auto minmax\(0, [\d.]+fr\) auto var\(--lbandb, minmax\(0, 1fr\)\) var\(--linh\);/);
+  const areas = [...((/grid-template-areas:([\s\S]*?);/.exec(rule('.lboard')) ?? [])[1] ?? '').matchAll(/"([^"]+)"/g)].map(m => m[1]!.trim().split(/\s+/));
+  const rowsOf = (name: string): number[] => areas.flatMap((r, i) => (r.includes(name) ? [i] : []));
+  assert.deepEqual(rowsOf('tfight'), [2, 3], 'their battle block: the Invaders row on my side, then the fight row');
+  assert.deepEqual(rowsOf('yfight'), [3, 4], 'mine: the fight row, then the Invaders row on their side');
+  assert.deepEqual([rowsOf('yinv'), rowsOf('tinv')], [[2], [4]], 'each region\'s Invaders row nearest the other');
+  assert.ok(['tinfo', 'tplay', 'yplay', 'yinfo'].every(n => areas[rowsOf(n)[0]!]!.every(a => a === n)), 'the feet are the full width');
   assert.match(rule('.lboard'), /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(rule('.lboard.fighting[data-fight="mine"][data-wide]'), /grid-template-columns: minmax\(0, 1fr\) var\(--lidle, [^)]*\);/);
   assert.match(rule('.lboard.fighting[data-fight="theirs"][data-wide]'), /grid-template-columns: var\(--lidle, [^)]*\) minmax\(0, 1fr\);/);
-  // the fight's column: its In Play band at the planned height, the fight the rest
-  assert.match(CSS, /\.lboard\.fighting\[data-fight="theirs"\] \.lcol\.theirs > \.lplay,\n\.lboard\.fighting\[data-fight="mine"\] \.lcol\.mine > \.lplay \{ flex: 0 0 var\(--lband/);
-  assert.match(rule('.lboard.fighting .lcol > .lfight.focus'), /flex: 1 1 0/);
-  // the tints (and so the ring) and the seam follow the columns by grid line
-  assert.match(rule('.lback.mine.b'), /grid-row: 2 \/ 3; grid-column: 1 \/ 2;/);
-  assert.match(rule('.lback.theirs.b'), /grid-row: 2 \/ 3; grid-column: 2 \/ 3;/);
-  assert.match(rule('.lback.theirs.a'), /grid-row: 1 \/ 2; grid-column: 1 \/ -1;/);
-  assert.match(rule('.lback.mine.a'), /grid-row: 3 \/ 4; grid-column: 1 \/ -1;/);
-  assert.match(rule('.lseam'), /grid-row: 2 \/ 3; grid-column: 2 \/ 3; justify-self: start;/);
+  // the tints (and so the ring) and the seam follow the Ls by grid line
+  assert.match(rule('.lback.theirs.a'), /grid-row: 1 \/ 3; grid-column: 1 \/ -1;/);
+  assert.match(rule('.lback.theirs.b'), /grid-row: 3 \/ 6; grid-column: 2 \/ 3;/);
+  assert.match(rule('.lback.mine.b'), /grid-row: 3 \/ 6; grid-column: 1 \/ 2;/);
+  assert.match(rule('.lback.mine.a'), /grid-row: 6 \/ 8; grid-column: 1 \/ -1;/);
+  assert.match(rule('.lseam'), /grid-row: 3 \/ 6; grid-column: 2 \/ 3; justify-self: start;/);
   // the markup never says `data-wide`: only the plan, from the room, does
   assert.doesNotMatch(paint(R1, 0), /data-wide/);
 });

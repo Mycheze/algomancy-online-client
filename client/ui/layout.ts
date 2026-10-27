@@ -203,8 +203,8 @@ const FLOOR = 40;
  * I think it should cap at 100px/card during a fight"). It was the field's
  * GROW, 86px. */
 export const BATTLE_CAP = 100;
-/** the In Play band at the head (or foot) of the fight's column in a battle
- * (board round 8): `want` is a row of cards at the field's floor (46px, 64
+/** a band in a battle — an In Play, full width, between its info line and
+ * the middle (board round 8): `want` is a row of cards at the field's floor (46px, 64
  * tall) and the block's padding (style.css --ringpad, 5px a side) — the
  * cards still read; `least` is as far as it gives before the battle's own
  * floor stops standing. (It was the info offshoot's two lines and one, which
@@ -270,35 +270,38 @@ function ranksOf(cols: HTMLElement): { top: number; bot: number } {
 /**
  * ROUND 7 — THE BOARD'S SHAPE IN A BATTLE (report #204; ui/fit.ts
  * planBattleBoard decides it). Runs before any zone is fitted, since every
- * zone's box follows from it: the idle column's width and the height of the
- * In Play band in the fight's column, written on `.lboard` as `--lidle` and
- * `--lband` (style.css `.lboard.fighting`). Its inputs are the board's own
- * width and the fight column's height (the grid's middle row, which the
- * window sets, not its content), card counts and the stylesheet's paddings —
- * nothing it writes — so it cannot chase its tail. Outside a battle there is
- * no `data-fight` and the board is the grid it was.
+ * zone's box follows from it: the idle column's width and the two bands'
+ * heights, written on `.lboard` as `--lidle`, `--lbandt`, `--lbandb` (style.css
+ * `.lboard[data-fight]` makes the grid of them). Its inputs are the board's
+ * own box (which the flex column sets, not its content), the info lines'
+ * fixed heights, card counts and the stylesheet's paddings — nothing it
+ * writes — so it cannot chase its tail. Outside a battle there is no
+ * `data-fight` and the board is the grid it was.
  *
- * Board round 8: the info is a line of its own, so the fight's column holds
- * only its region's In Play and the fight — one band, not two.
+ * Board round 8: the bands are the two In Plays alone, full width — each
+ * info line is a row of its own outside them.
  */
 const lastShape = new WeakMap<Element, string>();
 function shapeBoard(root: ParentNode, baseCw: number): void {
   const lb = root.querySelector?.<HTMLElement>('.lboard[data-fight]');
   const fight = lb?.querySelector<HTMLElement>('.lfight.focus');
   const idleEl = lb?.querySelector<HTMLElement>('.lfight:not(.focus)');
-  const col = fight?.parentElement ?? null;
-  const box = boxOf(lb ?? null), colBox = boxOf(col);
-  if (!lb || !fight || !idleEl || !col || !box || !colBox) return;
+  const box = boxOf(lb ?? null);
+  if (!lb || !fight || !idleEl || !box) return;
   const cs = getComputedStyle(lb);
+  const gapY = parseFloat(cs.rowGap) || 0;
+  // board round 8: the info lines are rows of their own, the full width —
+  // the plan is over what lies between them (their heights are the
+  // stylesheet's, not anything this writes)
+  const lines = (boxOf(lb.querySelector('.linfo.theirs'))?.h ?? 0) + (boxOf(lb.querySelector('.linfo.mine'))?.h ?? 0);
   const cols = fight.querySelector<HTMLElement>('.cols');
   const stage = !!fight.querySelector('.stagewrap > .stagerow');
   const ranks = cols ? ranksOf(cols) : { top: 1, bot: 1 };
   const battle = fight.querySelector('.battle');
   const inv = fight.querySelectorAll('.linvside .card').length;
-  const play = col.querySelector?.<HTMLElement>(':scope > .lplay') ?? null;
   const plan = planBattleBoard({
-    board: { w: box.w - chrome(lb, 'h'), h: colBox.h },
-    gapX: parseFloat(cs.columnGap) || 0, gapY: parseFloat(getComputedStyle(col).rowGap) || 0,
+    board: { w: box.w - chrome(lb, 'h'), h: box.h - chrome(lb, 'v') - lines - (lines ? 2 * gapY : 0) },
+    gapX: parseFloat(cs.columnGap) || 0, gapY,
     cols: cols ? cols.querySelectorAll(':scope > .col').length : 0,
     // the counterattack tray stands as a third rank under the columns
     ranksTop: stage ? 2 : ranks.top, ranksBot: stage ? 1 : ranks.bot,
@@ -308,36 +311,47 @@ function shapeBoard(root: ParentNode, baseCw: number): void {
       h: chrome(fight, 'v') + (battle ? chrome(battle, 'v') : 0) + (stage ? STAGE_CHROME : 0),
     },
     bandMin: BAND.want, bandFloor: BAND.least,
-    ...bandOf(play, baseCw),
+    tall: bandsTall(lb),
     idle: { send: idleEl.classList.contains('sendhere'), pad: chrome(idleEl, 'h'), gap: 6, floor: CARD_FLOOR },
+    // the units you can put in the declaration being built (ui/battle.ts
+    // formationCandidates → `playable` on a standing unit)
+    source: sourceOf(lb, baseCw),
   });
   if (!plan) return;
   const key = JSON.stringify(plan);
   if (lastShape.get(lb) === key) return;
   lastShape.set(lb, key);
-  // a fight that fits in half the board keeps the half-and-half grid; a
-  // wider one is the grid with the idle column `--lidle` wide
+  // a fight that fits in half the board keeps the half-and-half middle; a
+  // wider one pushes the seam aside, the idle column  wide
   if (plan.wide) lb.dataset['wide'] = ''; else delete lb.dataset['wide'];
   lb.style.setProperty('--lidle', `${plan.idle}px`);
-  lb.style.setProperty('--lband', `${plan.band}px`);
+  lb.style.setProperty('--lbandt', `${plan.bandTop}px`);
+  lb.style.setProperty('--lbandb', `${plan.bandBot}px`);
 }
 
-/** the fight column's In Play band, for planBattleBoard: its tallest unit
- * over a plain card (`tall`), and the units in it the viewer can put in the
- * formation being built (`source`, ui/battle.ts formationCandidates →
- * `playable` on a standing unit) */
-function bandOf(play: HTMLElement | null, baseCw: number): Pick<Parameters<typeof planBattleBoard>[0], 'tall' | 'source'> {
-  if (!play) return {};
-  const pad = chrome(play, 'v');
-  const all = tallest(cardsIn(play, '.regionmain .card'));
-  const playable = cardsIn(play, '.regionmain .card.playable');
+/** the tallest unit in each In Play band, over a plain card, for
+ * planBattleBoard's `tall` */
+function bandsTall(lb: HTMLElement): { top: number; bot: number; pad: number } | undefined {
+  const top = tallest(cardsIn(lb, '.lplay.theirs .regionmain .card'));
+  const bot = tallest(cardsIn(lb, '.lplay.mine .regionmain .card'));
+  if (!top && !bot) return undefined;
+  const play = lb.querySelector?.(top ? '.lplay.theirs' : '.lplay.mine');
+  return { top, bot, pad: play ? chrome(play, 'v') : 12 };
+}
+
+/** the In Play bands holding units the viewer can put in the formation being
+ * built, for planBattleBoard's `source` */
+function sourceOf(lb: HTMLElement, baseCw: number): NonNullable<Parameters<typeof planBattleBoard>[0]['source']> | undefined {
+  const cards = (side: string): Element[] => cardsIn(lb, `.lplay.${side} .regionmain .card.playable`);
+  const theirs = cards('theirs'), mine = cards('mine');
+  const top = theirs.length, bot = mine.length;
+  if (!top && !bot) return undefined;
+  const play = lb.querySelector(top ? '.lplay.theirs' : '.lplay.mine');
   // a band holding a modded unit stands as tall as that unit, or the fit
   // shrinks every unit in it to make the long one fit
-  const extra = tallest(playable);
-  return {
-    ...(all ? { tall: { extra: all, pad } } : {}),
-    ...(playable.length ? { source: { n: playable.length, cap: Math.round(baseCw * GROW), pad, ...(extra ? { extra } : {}) } } : {}),
-  };
+  const extra = { top: tallest(theirs), bot: tallest(mine) };
+  return { top, bot, cap: Math.round(baseCw * GROW), pad: play ? chrome(play, 'v') : 12,
+    ...(extra.top || extra.bot ? { extra } : {}) };
 }
 
 /**
@@ -348,26 +362,28 @@ function bandOf(play: HTMLElement | null, baseCw: number): Pick<Parameters<typeo
  * The room is the line's own width less the mana text and any wake run —
  * neither moves with the answer.
  */
-const RES_GAP = 8, RES_MIN_STEP = 6;
+const RES_GAP = 8, RES_WAKE_GAP = 4, RES_MIN_STEP = 6;
+/** style.css `.linfo .lres { --rcw: clamp(24px, calc((100cqh - 6px) / 1.4), 36px) }` */
+const RES_CW = (lineContentH: number): number => Math.max(24, Math.min(36, (lineContentH - 6) / 1.4));
 function resLine(el: HTMLElement): void {
   const row = el.querySelector<HTMLElement>('.lresrow');
   const box = boxOf(el);
-  if (!row || !box) return;
-  const runs: number[] = [];
-  let fixed = 0, cw = 0;
+  const info = el.closest?.('.linfo') ?? null;
+  const ib = boxOf(info);
+  if (!row || !box || !info || !ib) return;
+  const runs: number[] = [], wakes: number[] = [];
   for (const g of cardsIn(row, ':scope > .resgroup')) {
-    const cards = cardsIn(g, ':scope > .rescard');
-    if (g.classList.contains('wake')) { fixed += (boxOf(g)?.w ?? 0) + RES_GAP; continue; }
-    runs.push(cards.length);
-    cw = cw || (boxOf(cards[0] ?? null)?.w ?? 0);
+    const k = cardsIn(g, ':scope > .rescard').length;
+    (g.classList.contains('wake') ? wakes : runs).push(k);
   }
+  if (!runs.length && !wakes.length) return;
   const mana = row.querySelector('.resmana');
-  fixed += mana ? (boxOf(mana)?.w ?? 0) + RES_GAP : 0;
-  if (!cw || !runs.length) return;
-  const fit = fitRes(runs, box.w - chrome(el, 'h') - fixed - 4, { cw, gap: RES_GAP, minStep: RES_MIN_STEP });
-  const key = `${fit.step}|${fit.spread}`;
+  const room = box.w - chrome(el, 'h') - (mana ? (boxOf(mana)?.w ?? 0) + RES_GAP : 0) - 2;
+  const fit = fitRes({ runs, wakes, room, cw: RES_CW(ib.h - chrome(info, 'v')), minCw: 20, gap: RES_GAP, wakeGap: RES_WAKE_GAP, minStep: RES_MIN_STEP });
+  const key = `${fit.cw}|${fit.step}|${fit.spread}`;
   if (lastFit.get(el) === key) return;
   lastFit.set(el, key);
+  el.style.setProperty('--rcw', `${fit.cw}px`);
   el.style.setProperty('--resstep', `${fit.step}px`);
   if (fit.spread) el.dataset['spread'] = ''; else delete el.dataset['spread'];
 }
@@ -424,10 +440,12 @@ function sideStrip(el: HTMLElement, plan: FitPlan): void {
  *
  * An L is not a rectangle, so no box on the board can carry the border: this
  * writes one SVG path, the outline of the union of the region's two tint
- * rectangles (`.lback.a` its info line, the foot; `.lback.b` its column) —
- * extended, once a visitor has ENTERED the region (`data-visit`: they
- * declared the attack), over the VISITING player's info line, at the far end
- * of the column, whose life, hand and mana travel with them into the fight.
+ * rectangles (`.lback.a` its foot — info line and In Play, the full width;
+ * `.lback.b` its column of the middle) — and, once a visitor has ENTERED the
+ * region (`data-visit`: they declared the attack), the part of the VISITING
+ * player's info line that travels with them into the fight — their name and
+ * life, cache and bin. That line is the far side of the other region's In
+ * Play, so it is a loop of its own.
  *
  * BOARD ROUND 8 (owner, 2026-10-27): YOUR region's ring does not close under
  * your info line. It runs on down both sides round the action bar and the
@@ -437,17 +455,20 @@ function sideStrip(el: HTMLElement, plan: FitPlan): void {
  * because the bar and the dock are outside `.main`, which clips.
  *
  *   top (their region)              bottom (my region)
- *   ┌──────────────────┐            ┌───────┐ ← the end of their line over
- *   └──────┐           │            │       │   my column, once they enter
- *          │           │            │       └──────────┐
- *          └───────────┘            │  bar · hand      │
+ *   ┌──────────────────┐            ┌─────┐ ← their name/cache/bin, once they enter
+ *   │ their line, In Play│          └─────┘
+ *   └──────┐           │            ┌─────┐
+ *          │  middle   │            │     └────────────┐
+ *          └───────────┘            │ my In Play, line │
+ *                                   │ bar · hand       │
  *                                   ╵                  ╵ (off the window)
  *
  * THE ENTRY (owner, 2026-09-26): when the visitor enters — or goes home while
  * the ring stays on the same region — the ring does not jump, it GROWS over
- * their line (or lets it go): the column's end moves past the gap onto the
- * visitor's line, so both shapes are the same six points and the path's `d`
- * tweens point for point. The attribute is
+ * their line (or lets it go): the visitor's line is ringed as a loop of its
+ * own (it lies across the other region's In Play from the column), which
+ * stands as a point until they enter, so the path's `d` tweens point for
+ * point. The attribute is
  * always the final shape; the tween only plays over it, and where a browser
  * cannot animate `d` (Safari) the ring simply snaps. `animate` is the
  * viewer's motion pref.
@@ -478,23 +499,37 @@ export function ringBoard(root: ParentNode, animate = false): void {
   const visit = svg.dataset['visit'] === '1';
   const a = box(top ? '.lback.theirs.a' : '.lback.mine.a');
   const b = box(top ? '.lback.theirs.b' : '.lback.mine.b');
-  const far = visit ? box(top ? '.lback.mine.a' : '.lback.theirs.a') : null;
+  // the visitor's INFO LINE (theirs along the top, mine along the bottom)
+  const far = visit ? box(top ? '.linfo.mine' : '.linfo.theirs') : null;
   if (!o || !a || !b || (visit && !far)) { path.removeAttribute('d'); return; }
   const i = 1.5;   // half the stroke: the line stands just inside the tint
   const L = a.l + i, R = a.r - i;
-  // the visitor's line is taken in only where it runs under (over) this
-  // region's column: that end of it holds their name, life and piles, and a
-  // ring round the whole line would box the OTHER region's column in on three
-  // sides. So entering only lengthens the column — same six points, and the
-  // entry tweens point for point
-  const end = top ? (far ? far.b : b.b) : (far ? far.t : b.t);
   const pts: Array<[number, number]> = top
-    // their line along the top, their column down the right
-    ? [[L, a.t + i], [R, a.t + i], [R, end - i], [b.l + i, end - i], [b.l + i, a.b - i], [L, a.b - i]]
+    // their foot along the top, their column down the right of the middle
+    ? [[L, a.t + i], [R, a.t + i], [R, b.b - i], [b.l + i, b.b - i], [b.l + i, a.b - i], [L, a.b - i]]
     // mine: up the left from off the window's foot, round my column, across
-    // the top of my line and down the right off the foot again
-    : [[L, (o.b - o.t) + RING_RUNOFF], [L, end + i], [b.r - i, end + i], [b.r - i, a.t + i], [R, a.t + i], [R, (o.b - o.t) + RING_RUNOFF]];
-  const d = roundedPath(pts, 8, !top);
+    // the top of my foot and down the right off the foot again
+    : [[L, (o.b - o.t) + RING_RUNOFF], [L, b.t + i], [b.r - i, b.t + i], [b.r - i, a.t + i], [R, a.t + i], [R, (o.b - o.t) + RING_RUNOFF]];
+  // board round 8: the visitor's info line is across the OTHER region's In
+  // Play from the column, so its part that travels with them — their name and
+  // life, cache and bin — is ringed on its own: a second, closed loop. Not
+  // visiting, the loop is a point at that stretch's middle (nothing is
+  // drawn), so the entry tweens point for point
+  const lineSel = top ? '.linfo.mine' : '.linfo.theirs';
+  const lineBox = box(lineSel);
+  const ends = Array.from(board.querySelectorAll?.(`${lineSel} .lid, ${lineSel} .lcache, ${lineSel} .lbin`) ?? [])
+    .map(e => boxAt(e, o)).filter((x): x is Box => !!x);
+  const fl = ends.length ? Math.min(...ends.map(x => x.l)) - 6 : (top ? b.l : a.l);
+  const fr = ends.length ? Math.max(...ends.map(x => x.r)) + 6 : (top ? a.r : b.r);
+  const clampX = (x: number): number => Math.min(R, Math.max(L, x));
+  const lx = clampX(fl + i), rx = clampX(fr - i);
+  const loop: Array<[number, number]> = far
+    ? [[lx, far.t + i], [rx, far.t + i], [rx, far.b - i], [lx, far.b - i]]
+    : (() => {
+      const x = (lx + rx) / 2, y = lineBox ? (lineBox.t + lineBox.b) / 2 : (top ? b.b : b.t);
+      return [[x, y], [x, y], [x, y], [x, y]] as Array<[number, number]>;
+    })();
+  const d = `${roundedPath(pts, 8, !top)} ${roundedPath(loop, 8)}`;
   path.setAttribute('d', d);
 
   const key = `${svg.getAttribute('class')} ${top}`;
