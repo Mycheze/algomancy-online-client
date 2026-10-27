@@ -255,7 +255,7 @@ export const TUTORIAL: readonly TutorialSection[] = [
         text: 'Priority windows: the bar says you have priority. Play a battle card, cast a spell token, augment a virus from hand, activate an '
           + 'ability — or pass (Space). The main button names where two passes lead: To Blockers, To Damage, End Battle, or Resolve and the '
           + 'card on top; while yours is the first pass it adds that your opponent can still reply. Pass through stack passes until '
-          + 'everything now on the stack has resolved; Pass all gives priority up until the next phase. Either can be stopped with the chip at the top.',
+          + 'everything now on the stack has resolved; Pass all gives priority up until the next phase. Either can be stopped with the ⏩ on the toolbar.',
         btns: ['pass', 'passstack', 'passall', 'passallstop', 'passconfirm', 'passcancel'],
       },
       {

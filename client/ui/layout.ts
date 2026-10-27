@@ -204,12 +204,12 @@ const FLOOR = 40;
  * GROW, 86px. */
 export const BATTLE_CAP = 100;
 /** a band in a battle — an In Play, full width, between its info line and
- * the middle (board round 8): `want` is a row of cards at the field's floor (46px, 64
- * tall) and the block's padding (style.css --ringpad, 5px a side) — the
- * cards still read; `least` is as far as it gives before the battle's own
- * floor stops standing. (It was the info offshoot's two lines and one, which
- * shared the band with In Play until round 8.) */
-export const BAND = { want: 76, least: 44 } as const;
+ * the middle (board round 8): `want` is what it stands at while the fight can
+ * use the height, `least` as far as it gives before the battle's own floor
+ * stops standing. Master's numbers (the info offshoot's two lines, 80, and its
+ * one, 44, when the offshoot shared the band with In Play), kept as they were
+ * (audit, board round 8). */
+export const BAND = { want: 80, least: 44 } as const;
 
 function battlePlan(el: HTMLElement, baseCw: number): FitPlan | null {
   const cols = el.querySelector<HTMLElement>('.cols');
@@ -362,15 +362,14 @@ function sourceOf(lb: HTMLElement, baseCw: number): NonNullable<Parameters<typeo
  * The room is the line's own width less the mana text and any wake run —
  * neither moves with the answer.
  */
-const RES_GAP = 8, RES_WAKE_GAP = 4, RES_MIN_STEP = 6;
-/** style.css `.linfo .lres { --rcw: clamp(24px, calc((100cqh - 6px) / 1.4), 36px) }` */
-const RES_CW = (lineContentH: number): number => Math.max(24, Math.min(36, (lineContentH - 6) / 1.4));
+const RES_GAP = 10, RES_WAKE_GAP = 4, RES_MIN_STEP = 6;
+/** style.css `.linfo .lres { --rcw: 30px }` — master's resource card */
+const RES_CW = 30;
 function resLine(el: HTMLElement): void {
   const row = el.querySelector<HTMLElement>('.lresrow');
   const box = boxOf(el);
   const info = el.closest?.('.linfo') ?? null;
-  const ib = boxOf(info);
-  if (!row || !box || !info || !ib) return;
+  if (!row || !box || !info) return;
   const runs: number[] = [], wakes: number[] = [];
   for (const g of cardsIn(row, ':scope > .resgroup')) {
     const k = cardsIn(g, ':scope > .rescard').length;
@@ -379,7 +378,7 @@ function resLine(el: HTMLElement): void {
   if (!runs.length && !wakes.length) return;
   const mana = row.querySelector('.resmana');
   const room = box.w - chrome(el, 'h') - (mana ? (boxOf(mana)?.w ?? 0) + RES_GAP : 0) - 2;
-  const fit = fitRes({ runs, wakes, room, cw: RES_CW(ib.h - chrome(info, 'v')), minCw: 20, gap: RES_GAP, wakeGap: RES_WAKE_GAP, minStep: RES_MIN_STEP });
+  const fit = fitRes({ runs, wakes, room, cw: RES_CW, minCw: 20, gap: RES_GAP, wakeGap: RES_WAKE_GAP, minStep: RES_MIN_STEP });
   const key = `${fit.cw}|${fit.step}|${fit.spread}`;
   if (lastFit.get(el) === key) return;
   lastFit.set(el, key);
@@ -441,11 +440,10 @@ function sideStrip(el: HTMLElement, plan: FitPlan): void {
  * An L is not a rectangle, so no box on the board can carry the border: this
  * writes one SVG path, the outline of the union of the region's two tint
  * rectangles (`.lback.a` its foot — info line and In Play, the full width;
- * `.lback.b` its column of the middle) — and, once a visitor has ENTERED the
- * region (`data-visit`: they declared the attack), the part of the VISITING
- * player's info line that travels with them into the fight — their name and
- * life, cache and bin. That line is the far side of the other region's In
- * Play, so it is a loop of its own.
+ * `.lback.b` its column of the middle) — extended, once a visitor has ENTERED
+ * the region (`data-visit`: they declared the attack), over the part of the
+ * VISITING player's info line that travels with them into the fight: their
+ * name and life, cache and bin, the end of their line beyond this column.
  *
  * BOARD ROUND 8 (owner, 2026-10-27): YOUR region's ring does not close under
  * your info line. It runs on down both sides round the action bar and the
@@ -455,23 +453,20 @@ function sideStrip(el: HTMLElement, plan: FitPlan): void {
  * because the bar and the dock are outside `.main`, which clips.
  *
  *   top (their region)              bottom (my region)
- *   ┌──────────────────┐            ┌─────┐ ← their name/cache/bin, once they enter
- *   │ their line, In Play│          └─────┘
- *   └──────┐           │            ┌─────┐
- *          │  middle   │            │     └────────────┐
- *          └───────────┘            │ my In Play, line │
- *                                   │ bar · hand       │
- *                                   ╵                  ╵ (off the window)
+ *   ┌───────────────────┐                ┌────┐ ← their name/cache/bin,
+ *   │ their line, In Play│               │    │   once they enter
+ *   └──────┐            │                │    └───────┐
+ *          │  middle    │                │            └────────────┐
+ *          └──────┐     │ ← my name/     │ my In Play, line         │
+ *                 └─────┘   cache/bin    │ bar · hand               │
+ *                                        ╵                          ╵ (off the window)
  *
  * THE ENTRY (owner, 2026-09-26): when the visitor enters — or goes home while
  * the ring stays on the same region — the ring does not jump, it GROWS over
- * their line (or lets it go): the visitor's line is ringed as a loop of its
- * own (it lies across the other region's In Play from the column), which
- * stands as a point until they enter, so the path's `d` tweens point for
- * point. The attribute is
- * always the final shape; the tween only plays over it, and where a browser
- * cannot animate `d` (Safari) the ring simply snaps. `animate` is the
- * viewer's motion pref.
+ * their info (or lets it go). Both shapes have the same points, so the path's
+ * `d` tweens point for point. The attribute is always the final shape; the
+ * tween only plays over it, and where a browser cannot animate `d` (Safari)
+ * the ring simply snaps. `animate` is the viewer's motion pref.
  *
  * `root` is `document`; in test/ui-driver.ts nothing has a box and the path is
  * left empty, like the fit pass.
@@ -504,32 +499,31 @@ export function ringBoard(root: ParentNode, animate = false): void {
   if (!o || !a || !b || (visit && !far)) { path.removeAttribute('d'); return; }
   const i = 1.5;   // half the stroke: the line stands just inside the tint
   const L = a.l + i, R = a.r - i;
-  const pts: Array<[number, number]> = top
-    // their foot along the top, their column down the right of the middle
-    ? [[L, a.t + i], [R, a.t + i], [R, b.b - i], [b.l + i, b.b - i], [b.l + i, a.b - i], [L, a.b - i]]
-    // mine: up the left from off the window's foot, round my column, across
-    // the top of my foot and down the right off the foot again
-    : [[L, (o.b - o.t) + RING_RUNOFF], [L, b.t + i], [b.r - i, b.t + i], [b.r - i, a.t + i], [R, a.t + i], [R, (o.b - o.t) + RING_RUNOFF]];
-  // board round 8: the visitor's info line is across the OTHER region's In
-  // Play from the column, so its part that travels with them — their name and
-  // life, cache and bin — is ringed on its own: a second, closed loop. Not
-  // visiting, the loop is a point at that stretch's middle (nothing is
-  // drawn), so the entry tweens point for point
+  // ONCE THE VISITOR HAS ENTERED, the ring grows over the part of their info
+  // line that travels with them (master's ring took in their whole info
+  // offshoot, which sat at the far end of the column): their name and life,
+  // cache and bin — the end of their line that lies under (over) this
+  // region's column, across the other region's In Play, whose cards pack
+  // from the other side. The ring takes in that stretch's width and not the
+  // column's, as it took the offshoot's. Not visiting, the same points stand
+  // on the column's end, so the entry tween moves point for point.
   const lineSel = top ? '.linfo.mine' : '.linfo.theirs';
-  const lineBox = box(lineSel);
   const ends = Array.from(board.querySelectorAll?.(`${lineSel} .lid, ${lineSel} .lcache, ${lineSel} .lbin`) ?? [])
     .map(e => boxAt(e, o)).filter((x): x is Box => !!x);
-  const fl = ends.length ? Math.min(...ends.map(x => x.l)) - 6 : (top ? b.l : a.l);
-  const fr = ends.length ? Math.max(...ends.map(x => x.r)) + 6 : (top ? a.r : b.r);
-  const clampX = (x: number): number => Math.min(R, Math.max(L, x));
-  const lx = clampX(fl + i), rx = clampX(fr - i);
-  const loop: Array<[number, number]> = far
-    ? [[lx, far.t + i], [rx, far.t + i], [rx, far.b - i], [lx, far.b - i]]
-    : (() => {
-      const x = (lx + rx) / 2, y = lineBox ? (lineBox.t + lineBox.b) / 2 : (top ? b.b : b.t);
-      return [[x, y], [x, y], [x, y], [x, y]] as Array<[number, number]>;
-    })();
-  const d = `${roundedPath(pts, 8, !top)} ${roundedPath(loop, 8)}`;
+  const ex = top
+    ? Math.max(b.l, ends.length ? Math.min(...ends.map(x => x.l)) - 6 : b.l) + i
+    : Math.min(b.r, ends.length ? Math.max(...ends.map(x => x.r)) + 6 : b.r) - i;
+  const pts: Array<[number, number]> = top
+    // their foot along the top, their column down the right of the middle,
+    // and (visiting) on down round my name, cache and bin
+    ? [[L, a.t + i], [R, a.t + i], [R, (far ?? b).b - i], [ex, (far ?? b).b - i], [ex, b.b - i],
+      [b.l + i, b.b - i], [b.l + i, a.b - i], [L, a.b - i]]
+    // mine: up the left from off the window's foot — (visiting) on up round
+    // their name, cache and bin — round my column, across the top of my foot
+    // and down the right off the foot again
+    : [[L, (o.b - o.t) + RING_RUNOFF], [L, (far ?? b).t + i], [ex, (far ?? b).t + i], [ex, b.t + i],
+      [b.r - i, b.t + i], [b.r - i, a.t + i], [R, a.t + i], [R, (o.b - o.t) + RING_RUNOFF]];
+  const d = roundedPath(pts, 8, !top);
   path.setAttribute('d', d);
 
   const key = `${svg.getAttribute('class')} ${top}`;

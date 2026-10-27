@@ -4313,7 +4313,7 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
     "yplay  yplay"
     "yinfo  yinfo";
 }
-@media (max-height: 820px) { .lboard { --linh: 68px; } }
+@media (max-height: 820px) { .lboard { --linh: 70px; } }
 /* a spectator sees the top seat's whole hand in that seat's line (CT-368,
    CT-419): the one line that grows, so the cards in it can be read */
 .lboard:has(> .linfo.theirs .lspect) { --lint: var(--linspect, 128px); }
@@ -4390,7 +4390,7 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
       size container, so the bin, the cache and a spectator's view of the
       top hand size themselves off its height. */
 .linfo { display: block; container-type: size; }
-.linfo > .lin { height: 100%; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.linfo > .lin { height: 100%; display: flex; align-items: center; gap: 14px; min-width: 0; }
 /* my line: the phase icons in the middle of the window, or as near it as the
    line allows (owner, 2026-10-27) — the resources take the left track, the
    bin, cache and name the right (never narrower than they are), and the
@@ -4398,7 +4398,7 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
    strip's centre from the table's middle to the window's */
 .linfo.mine > .lin { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 1fr); }
 .linfo.mine .phicons { margin-left: calc(50px + var(--gap)); }
-.linfo .lend { display: flex; align-items: center; justify-content: flex-end; gap: 10px; min-width: 0; height: 100%; }
+.linfo .lend { display: flex; align-items: center; justify-content: flex-end; gap: 14px; min-width: 0; height: 100%; }
 .linfo .lres { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; align-items: center; overflow: hidden; overflow: clip; }
 .linfo .lid, .linfo .lbin, .linfo .lcache, .linfo .phicons { flex: none; }
 .linfo .lid { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; }
@@ -4411,66 +4411,62 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .linfo .linit.off { visibility: hidden; }
 /* the identity pieces a notch smaller than the classic header's: the life
    pill, the opponent's card backs — a count to read, not cards to handle */
-.linfo .life { padding: 1px 10px; }
-.linfo .lifenum { font-size: 18px; }
-.linfo .miniback { width: 13px; height: 18px; margin-right: -7px; border-radius: 2px; }
+.linfo .life { padding: 3px 12px; }
+.linfo .lifenum { font-size: 19px; }
+.linfo .miniback { width: 20px; height: 28px; margin-right: -12px; }
 .linfo .minihand .miniback:last-child { margin-right: 0; }
-.linfo .handcount { font-size: 12px; color: var(--dim); white-space: nowrap; }
+.linfo .handcount { font-size: 14px; white-space: nowrap; }
 /* the cache and bin as thumbs (owner, 2026-10-27: "squashed, and too small
    even when full"): each a STABLE slot the width it needs whether it holds
-   anything or not, so nothing beside it moves; thumbs as tall as the line
-   allows — never smaller than a resource card — with the label a pill ON
-   the fan, not a line above it */
-.linfo .regionbin, .linfo .regioncache { position: relative; border-left: 0; padding: 0; max-width: none; min-width: 0;
-  border-radius: 4px; height: 100cqh; display: flex; align-items: center; justify-content: center; }
-.linfo .regionbin > .zonelabel, .linfo .regioncache > .zonelabel { position: absolute; left: 0; top: 0; z-index: 4; margin: 0;
-  padding: 0 5px; border-radius: 7px; background: rgba(11, 13, 17, .85); font-size: 10px; line-height: 14px; white-space: nowrap;
-  pointer-events: none; }
-.linfo .regionbin { --binth: clamp(18px, calc((100cqh - 8px) / 1.4), 48px); width: calc(var(--binth) + 28px); }
-.linfo .regioncache { --cacheth: clamp(18px, calc((100cqh - 2px) / 1.4), 48px);
-  width: calc(3 * var(--cacheth) + 30px); }
-.linfo .regioncache .cthumbs { flex-wrap: nowrap; gap: 4px; margin-top: 0; align-items: center; }
-.linfo .regioncache.cempty, .linfo .regionbin:has(.binempty) { border: 1px dashed var(--line); }
-.linfo .binempty { font-size: 11px; }
-/* the chip sits ON the card's foot: under it, it cost the thumb half its height */
+   anything or not, so nothing beside it moves, its thumbs as tall as the
+   line allows. The label is master's (the plain zone label), BESIDE the
+   thumbs rather than above them: above, it took 16px of a one-line height
+   and the thumbs came out smaller than the old block's (audit, board round 8). */
+.linfo .regionbin, .linfo .regioncache { border-left: 0; padding: 0 3px; width: auto; max-width: none; min-width: 0;
+  height: 100cqh; display: grid; grid-template-columns: auto auto; grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "lbl fan" "hint fan"; column-gap: 6px; align-items: start; }
+.linfo .regionbin > .zonelabel, .linfo .regioncache > .zonelabel { grid-area: lbl; white-space: nowrap; }
+.linfo .regionbinthumbs, .linfo .regioncache > .cthumbs, .linfo .regioncache > .binempty { grid-area: fan; align-self: center; }
+.linfo .regionbin { --binth: clamp(18px, calc((100cqh - 6px) / 1.4), 48px); }
+.linfo .regioncache { --cacheth: clamp(22px, calc(100cqh / 1.4), 48px);
+  grid-template-columns: auto calc(3 * var(--cacheth) + 12px + 22px); }
+.linfo .regioncache .cthumbs { flex-wrap: nowrap; margin-top: 0; align-items: center; }
+/* the chip sits ON the card's foot: under it, it cost the thumb a third of its
+   height in a one-line slot (FORCED, audit board round 8) */
 .linfo .regioncache .cthumb { position: relative; }
 .linfo .regioncache .cchip { position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%); margin: 0;
-  font-size: 9px; padding: 0 3px; white-space: nowrap; z-index: 2; }
+  white-space: nowrap; z-index: 2; }
 .linfo .regionbinthumbs { height: calc(var(--binth) * 1.4 + 6px); width: calc(var(--binth) + 26px); }
+.linfo .regionbinthumbs:has(> .binempty), .linfo .regioncache > .binempty { height: auto; align-self: start; margin-top: 2px; }
 .linfo .regionbinthumbs .card { width: var(--binth); }
 .linfo .regionbinthumbs .card:nth-child(2) { left: 12px; top: 3px; }
 .linfo .regionbinthumbs .card:nth-child(3) { left: 24px; top: 6px; }
-.linfo .regionbinthumbs:has(> .binempty) { display: flex; align-items: center; justify-content: center; }
-.linfo .binmodhint { position: absolute; left: 0; right: 0; bottom: 0; z-index: 4; margin: 0; text-align: center;
-  background: rgba(11, 13, 17, .85); white-space: nowrap; overflow: hidden; font-size: 10px; line-height: 13px; pointer-events: none; }
+/* "playable as mods" under the label, beside the thumbs */
+.linfo .binmodhint { grid-area: hint; align-self: end; width: 74px; margin: 0; line-height: 1.2; }
 /* a spectator sees the top seat's whole hand: a stretch of the line after the
    name, as tall as the line, each card as wide as that height allows up to the
    hand dock's 92px, narrower together when the hand is long (CT-368/419) */
 .linfo .lspect { flex: 1 1 0; min-width: 30%; align-self: stretch; min-height: 0; container-type: size;
   display: flex; flex-direction: column; }
-.linfo .lspect > .zonelabel { margin-top: 0; flex: none; font-size: 10px; line-height: 12px; }
-.linfo .lspect > .zone { flex: 1 1 0; min-height: 0; margin-top: 1px; gap: 3px; flex-wrap: nowrap; overflow: hidden; }
-.linfo .lspect > .zone > .card { flex: 0 1 min(92px, calc((100cqh - 13px) / 1.4)); width: auto; min-width: 0; }
+.linfo .lspect > .zonelabel { margin-top: 0; flex: none; }
+.linfo .lspect > .zone { flex: 1 1 0; min-height: 0; margin-top: 2px; gap: 4px; flex-wrap: nowrap; overflow: hidden; }
+.linfo .lspect > .zone > .card { flex: 0 1 min(92px, calc((100cqh - 18px) / 1.4)); width: auto; min-width: 0; }
 /* the resources, grouped (main.ts resGroupedHtml): each run of one element
    in one state is a fan, so ten resources of three kinds take the width of
    about five. The line is wide now, so the runs SPREAD when there is room:
    ui/layout.ts writes `--resstep` (how far each card in a run steps from the
    one before) from the room the line has. Hover raises one. */
-.linfo .lresrow { display: flex; flex-wrap: nowrap; align-items: center; gap: 4px 8px; width: 100%; justify-content: flex-start; }
+.linfo .lresrow { display: flex; flex-wrap: nowrap; align-items: center; gap: 4px 10px; width: 100%; justify-content: flex-start; }
 .linfo .lresrow .resgroup { display: inline-flex; align-items: center; flex: none; }
-/* one card as tall as the line allows */
-.linfo .lres { --rcw: clamp(24px, calc((100cqh - 6px) / 1.4), 36px); }   /* 100cqh is the line's CONTENT box */
+/* master's resource card (30px); ui/layout.ts resLine narrows it only when
+   even the tightest fan does not fit */
+.linfo .lres { --rcw: 30px; }
 .linfo .rescard { width: var(--rcw); }
 .linfo .lresrow .resgroup > .rescard + .rescard { margin-left: calc(var(--resstep, 10px) - var(--rcw)); }
 .linfo .lresrow .resgroup > .rescard:hover { z-index: 2; transform: translateY(-3px); }
 .linfo .lresrow .rescard.muted:hover { transform: scale(.8) translateY(-3px); }
-/* the mana leads the line, in both directions */
-.linfo .lresrow .resmana { order: -1; flex: none; color: var(--dim); font-size: 12px; line-height: 1.15; white-space: nowrap;
-  display: grid; grid-template-columns: auto auto; column-gap: 4px; align-items: center; }
-/* the activations under "mana open", beside the big number: the line's width
-   is the resources' */
-.linfo .lresrow .resmana > .resmananum { grid-row: span 2; }
-.linfo .lresrow .resmana > .resact { grid-column: 2; font-size: 11px; }
+/* the mana after the resources, on their line (master's one-line form) */
+.linfo .lresrow .resmana { flex: none; color: var(--dim); font-size: 13px; line-height: 1.2; white-space: nowrap; }
 .linfo .lresrow .resmananum { color: var(--text); font-size: 17px; font-weight: 700; vertical-align: -1px; }
 /* round 5 (owner, 2026-09-26: "hard to see and count … they might need 1px
    borders to help delineate them"): every scan gets a hairline edge — dark on
@@ -4490,7 +4486,7 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 /* a dormant resource you can activate NOW does not fan: every card a whole
    target, a notch bigger, glowing (owner: "without having to thread the
    needle with the mouse"). main.ts resGroupedHtml sorts its run first. */
-.linfo .lresrow .resgroup.wake > .rescard { width: calc(var(--rcw) + 2px); }
+.linfo .lresrow .resgroup.wake > .rescard { width: calc(var(--rcw) + 4px); }
 .linfo .lresrow .resgroup.wake > .rescard + .rescard { margin-left: 4px; }
 .linfo .lresrow .resgroup.wake .rescount { display: none; }
 /* the classic `.rescard.dormant` dashed outline comes later in this file at
@@ -4499,6 +4495,29 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .linfo .lresrow .resgroup.wake > .rescard.canact { outline: 2px solid var(--glow); outline-offset: 1px; border-radius: 3px; }
 .linfo .lresrow .resgroup.wake > .rescard.canact img { filter: grayscale(.3) brightness(.85); }
 .linfo.inactive { opacity: .85; }
+/* a narrow line (a 1024px window) has no width to spare for the centring
+   nudge, and its resources may not all fit: there the mana leads them, so it
+   is the tail of the resources that clips, never the mana (audit, board
+   round 8 — FORCED: the bin and cache keep their full slots, K1-4) */
+@container (max-width: 1100px) {
+  .linfo.mine .phicons { margin-left: 0; }
+  .linfo .lresrow .resmana { order: -1; display: grid; grid-template-columns: auto auto; column-gap: 4px; align-items: center; }
+  .linfo .lresrow .resmana > .resmananum { grid-row: span 2; }
+  .linfo .lresrow .resmana > .resact { grid-column: 2; }
+  .linfo .lresrow .resmana .ressep { display: none; }
+  .linfo .lresrow { gap: 4px; }
+  /* …and the bin's and cache's labels go back ABOVE their thumbs, as on the
+     old block: beside them they cost the resources ~90px of a 1024px window
+     (the thumbs are smaller for it) */
+  .linfo .regionbin, .linfo .regioncache { grid-template-columns: auto; grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "lbl" "fan" "hint"; }
+  .linfo .regioncache { grid-template-columns: calc(3 * var(--cacheth) + 12px + 22px); }
+  .linfo .regionbin { --binth: clamp(18px, calc((100cqh - 24px) / 1.4), 48px); }
+  .linfo .regionbin.hasmods { --binth: clamp(18px, calc((100cqh - 38px) / 1.4), 48px); }
+  .linfo .regioncache { --cacheth: clamp(22px, calc((100cqh - 18px) / 1.4), 48px); }
+  .linfo .binmodhint { width: auto; white-space: nowrap; align-self: start; }
+  .linfo .regioncache .cchip { font-size: 9px; padding: 0 3px; }
+}
 
 /* ── THE PHASE ICONS (board round 8): the turn's track beside your
       resources, where you are already looking — main.ts phaseIconsHtml. The
@@ -4526,6 +4545,10 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .lplay.theirs { flex-direction: row-reverse; }
 .lplay .regionmain { flex: 1 1 0; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 .lplay .regionmain .zone { flex: 1 1 0; min-height: 0; overflow: hidden; align-content: flex-start; }
+/* board round 8 (audit): In Play is the full width now, so their cards pack
+   from the RIGHT edge — mine rotated 180°, as their In Play stood in the
+   right half before — and their token corner is at the left (row-reverse) */
+.lplay.theirs .regionmain .zone { justify-content: flex-end; }
 /* the corner (.ltok) is its own fit zone, sized in BASE card widths (--cwbase,
    the table's --cw before any fit pass wrote over it) — never in the field's
    --cw, or a corner that grew with the field would eat the field it sits
@@ -4549,9 +4572,9 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .linv .zone, .lfight .sentzone { flex-wrap: nowrap; overflow: hidden; }
 .linv.empty { padding: 0; }
 .lfight.idle { justify-content: center; }
-/* an idle battle block is empty: it collapses, and only the column's gap is
-   left of it (the stack window still centres on it) */
-.lfight.idle { padding: 0; min-height: 0; }
+/* outside a battle the bands are empty: they collapse, and only the grid's
+   gaps keep the two regions apart (the stack window still centres on them) */
+.lboard.idle .lfight.idle { padding: 0; min-height: 0; }
 .lfight.incoming .sentstrip { opacity: .6; }
 /* counterattackers stand on the edge of the block nearest their home: mine
    at the bottom of their block, theirs at the top of mine */
@@ -4974,7 +4997,7 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 #app.board.v2 > .toolbar > .scnpop { z-index: 58; }   /* ⋯ opens over the scenario's panel */
 /* Learn to Play's 📘 pill (ui/lessonlayer.ts, a layer beside #app) sat at the
    window's bottom right, which is now the toolbar's ⋯: it keeps left of it */
-body:has(> #app.board.v2) .lessonpill { right: calc(max(0px, (100vw - 1500px) / 2) + 64px); }
+body:has(> #app.board.v2) .lessonpill { right: 64px; }
 /* …and steps aside while ⋯ is open, whose foot it would cover (z 76 over 59) */
 body:has(> #app.board.v2 > .toolbar .setgroup.open) .lessonpill { visibility: hidden; }
 #app.board.v2 > .toolbar .setgroup.tbpop { display: none; bottom: 0; width: 220px; padding: 6px;

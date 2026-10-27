@@ -2,14 +2,17 @@
  * ring, § Round 7, § Board round 8).
  *
  * One path round the focus region's L — its full-width foot (info line and
- * In Play) and its column of the middle — and, once the visiting player has
- * entered (owner 2026-09-23/26), round the part of THEIR info line that
- * travels with them: name and life, cache and bin. Board round 8 (owner,
- * 2026-10-27, after the first review) put that line across the other
- * region's In Play from the column, so it is a loop of its own — a point
- * until they enter, so the entry still tweens point for point. YOUR region's
- * ring is open: it runs on down round the action bar and the hand and off the
- * window's foot. The layer is fixed over the window (`#app > .lring`).
+ * In Play) and its column of the middle — GROWN, once the visiting player has
+ * entered (owner 2026-09-23/26), over the part of THEIR info line that
+ * travels with them: name and life, cache and bin. As before round 8 it is
+ * one shape, and it takes in that stretch's width, not the column's (round
+ * 7). Board round 8 put the visitor's line across the other region's In Play
+ * from the column, so the ring reaches it through the far end of that In
+ * Play, where its cards do not pack (theirs pack from the right, mine from
+ * the left). Not visiting, the same points stand on the column's end, so the
+ * entry tweens point for point. YOUR region's ring is open: it runs on down
+ * round the action bar and the hand and off the window's foot (owner,
+ * 2026-10-27). The layer is fixed over the window (`#app > .lring`).
  *
  * Driven on a stand-in DOM with the boxes of a board8 review board at
  * 1344×768 (the board 1288 wide, the lines 68 tall, the window 768 tall).
@@ -45,8 +48,7 @@ const points = (d: string): Array<[number, number]> =>
   [...d.matchAll(/[ML]([\d.-]+) ([\d.-]+)|Q[\d.-]+ [\d.-]+ ([\d.-]+) ([\d.-]+)/g)]
     .map(m => (m[1] !== undefined ? [+m[1], +m[2]!] : [+m[3]!, +m[4]!]) as [number, number]);
 const shape = (d: string): string => d.replace(/[\d.-]+/g, '');
-/** the path's two subpaths: the L, and the visitor's loop */
-const parts = (d: string): [string, string] => { const i = d.lastIndexOf(' M'); return [d.slice(0, i), d.slice(i + 1)]; };
+const corners = (d: string): number => (d.match(/Q/g) ?? []).length;
 
 /** a battle, the board 1288 wide: their foot (line + In Play) on top, mine at the bottom */
 const FEET = {
@@ -70,46 +72,54 @@ const HALVES: Record<string, B> = { ...FEET,
   '.lback.theirs.a': { l: 2, t: 2, r: 1290, b: 292 }, '.lback.theirs.b': { l: 647, t: 292, r: 1290, b: 298 },
   '.lback.mine.b': { l: 2, t: 296, r: 645, b: 302 }, '.lback.mine.a': { l: 2, t: 302, r: 1290, b: 594 } };
 
-test('the visitor\'s name, cache and bin are ringed as a loop of their own, round their line only', () => {
-  // their region, me in: a loop round MY name, cache and bin, along my line
-  const [, mine] = parts(board(FIGHT_THEIRS, 'top', true));
-  const pm = points(mine);
-  assert.ok(Math.min(...pm.map(p => p[0])) >= 970 - 6 && Math.max(...pm.map(p => p[0])) <= 1290, 'from my bin to the line\'s end');
-  assert.ok(pm.every(p => p[1] >= 516 && p[1] <= 584), 'on my info line, not across my In Play');
-  assert.ok(mine.endsWith('Z'), 'a closed loop');
-  // my region, them in: round THEIR name, cache and bin, along their line
-  const [, theirs] = parts(board(FIGHT_MINE, 'bottom', true));
-  const pt = points(theirs);
-  assert.ok(Math.max(...pt.map(p => p[0])) <= 362 + 6 && pt.every(p => p[1] >= 2 && p[1] <= 70));
+test('the ring grows over the visitor\'s name, cache and bin as ONE shape, at that stretch\'s width', () => {
+  // their region, me in: down from their column round MY name, cache and bin,
+  // no further left than my bin (and never left of the column)
+  const d = board(FIGHT_THEIRS, 'top', true);
+  assert.equal((d.match(/M/g) ?? []).length, 1, 'one path, no loop of its own');
+  const pts = points(d);
+  const low = pts.filter(p => p[1] > 580);
+  assert.ok(low.length && Math.min(...low.map(p => p[0])) >= 970 - 6, `along the foot of my line from my bin (${Math.min(...low.map(p => p[0]))})`);
+  assert.ok(pts.some(p => p[0] > 1280 && p[1] > 580), 'down the right edge to my line\'s foot');
+  assert.ok(pts.some(p => p[0] < 660 && p[1] > 400 && p[1] < 412), 'and still round the whole column');
+  assert.ok(d.endsWith('Z'), 'their region\'s ring closes');
+  // my region, them in: up from my column round THEIR name, cache and bin,
+  // no further right than their bin
+  const m = board(FIGHT_MINE, 'bottom', true);
+  assert.equal((m.match(/M/g) ?? []).length, 1);
+  const up = points(m).filter(p => p[1] < 10);
+  assert.ok(up.length && Math.max(...up.map(p => p[0])) <= 362 + 6, `along the top of their line to their bin (${Math.max(...up.map(p => p[0]))})`);
 });
 
 test('entering keeps the same points, so the entry tweens point for point', () => {
   for (const [boxes, ring] of [[FIGHT_MINE, 'bottom'], [FIGHT_THEIRS, 'top'], [HALVES, 'bottom'], [HALVES, 'top']] as const) {
     assert.equal(shape(board(boxes, ring, true)), shape(board(boxes, ring, false)), `${ring}: one command list in and out`);
+    assert.equal(corners(board(boxes, ring, true)), corners(board(boxes, ring, false)));
   }
-  // not visiting, the loop is a single point: nothing is drawn
-  const [, loop] = parts(board(FIGHT_THEIRS, 'top', false));
-  assert.equal(new Set(points(loop).map(p => p.join(','))).size, 1);
 });
 
 test('your region\'s ring runs off the window\'s foot with no bottom edge; theirs closes', () => {
   for (const visit of [false, true]) {
-    const [l] = parts(board(HALVES, 'bottom', visit));
+    const l = board(HALVES, 'bottom', visit);
     assert.ok(!l.endsWith('Z'), 'an open path');
     const pts = points(l);
     assert.ok(pts[0]![1] > VIEW.b && pts[pts.length - 1]![1] > VIEW.b, 'both ends below the window');
     assert.equal(pts[0]![0], 3.5, 'up the board\'s left edge');
     assert.equal(pts[pts.length - 1]![0], 1288.5, 'and down its right edge');
   }
-  assert.ok(parts(board(HALVES, 'top', false))[0].endsWith('Z'), 'their region\'s ring closes, as it always did');
+  assert.ok(board(HALVES, 'top', false).endsWith('Z'), 'their region\'s ring closes, as it always did');
 });
 
-test('outside a battle the ring is the L it always was — their foot and the band of the middle — and mine stays open below', () => {
+test('not visited, the ring is the L it always was — the visitor\'s points stand on the column\'s end', () => {
   const i = 1.5;
   const ta = HALVES['.lback.theirs.a']!, tb = HALVES['.lback.theirs.b']!;
-  assert.equal(parts(board(HALVES, 'top', false))[0],
-    roundedPath([[ta.l + i, ta.t + i], [ta.r - i, ta.t + i], [ta.r - i, tb.b - i], [tb.l + i, tb.b - i], [tb.l + i, ta.b - i], [ta.l + i, ta.b - i]], 8));
+  const ex = 970 - 6 + i;
+  assert.equal(board(HALVES, 'top', false),
+    roundedPath([[ta.l + i, ta.t + i], [ta.r - i, ta.t + i], [ta.r - i, tb.b - i], [ex, tb.b - i], [ex, tb.b - i],
+      [tb.l + i, tb.b - i], [tb.l + i, ta.b - i], [ta.l + i, ta.b - i]], 8));
   const a = HALVES['.lback.mine.a']!, b = HALVES['.lback.mine.b']!, Y = VIEW.b + 8;
-  assert.equal(parts(board(HALVES, 'bottom', false))[0],
-    roundedPath([[a.l + i, Y], [a.l + i, b.t + i], [b.r - i, b.t + i], [b.r - i, a.t + i], [a.r - i, a.t + i], [a.r - i, Y]], 8, true));
+  const exm = 362 + 6 - i;
+  assert.equal(board(HALVES, 'bottom', false),
+    roundedPath([[a.l + i, Y], [a.l + i, b.t + i], [exm, b.t + i], [exm, b.t + i], [b.r - i, b.t + i], [b.r - i, a.t + i],
+      [a.r - i, a.t + i], [a.r - i, Y]], 8, true));
 });

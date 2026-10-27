@@ -28,6 +28,6 @@ test('CT-368: the spectated hand is a stretch of the top seat\'s line, its whole
 });
 
 test('CT-368: its cards are sized from the strip height and shrink together when the hand is long', () => {
-  assert.match(CSS, /\.linfo \.lspect > \.zone > \.card \{ flex: 0 1 min\(92px, calc\(\(100cqh - 13px\) \/ 1\.4\)\); width: auto; min-width: 0; \}/);
+  assert.match(CSS, /\.linfo \.lspect > \.zone > \.card \{ flex: 0 1 min\(92px, calc\(\(100cqh - 18px\) \/ 1\.4\)\); width: auto; min-width: 0; \}/);
   assert.match(CSS, /\.linfo \.lspect > \.zone \{[^}]*flex-wrap: nowrap; overflow: hidden;/);
 });

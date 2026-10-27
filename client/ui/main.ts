@@ -4289,7 +4289,7 @@ function resGroupedHtml(e: E, p: Seat): string {
     i = j;
   }
   return `<span class="resrow lresrow" data-animzone="res:${p}">${groups.join('')}
-      <span class="resmana"><b class="resmananum">${e.openMana(p)}</b> mana open${s.phase === 'planning' ? `<span class="resact">${s.players[p]!.activationsLeft} activations</span>` : ''}</span>
+      <span class="resmana"><b class="resmananum">${e.openMana(p)}</b> mana open${s.phase === 'planning' ? `<span class="resact"><span class="ressep"> · </span>${s.players[p]!.activationsLeft} activations</span>` : ''}</span>
     </span>`;
 }
 

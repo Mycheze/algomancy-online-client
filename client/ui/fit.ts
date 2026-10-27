@@ -326,7 +326,7 @@ export function planBattleBoard(i: BattleBoardIn): BattleBoard | null {
  * when even the tightest fan does not fit — the cards get smaller.
  *
  * `runs` is each fanning run's card count, `wakes` each wake run's (a wake
- * run never overlaps: its cards are `cw + 2` wide, `wakeGap` apart), `room`
+ * run never overlaps: its cards are `cw + 4` wide, `wakeGap` apart), `room`
  * the width the runs have (the line less the mana), `cw` the card width the
  * line's height allows and `minCw` the smallest it may go, `gap` between
  * runs. Returns the card width, how far each card of a fanning run steps from
@@ -338,7 +338,7 @@ export interface ResLineIn { runs: readonly number[]; wakes: readonly number[]; 
 export function fitRes(i: ResLineIn): { cw: number; step: number; spread: boolean } {
   const n = i.runs.reduce((a, b) => a + b, 0), r = i.runs.length;
   const groups = r + i.wakes.length;
-  const fixed = (cw: number): number => i.wakes.reduce((t, k) => t + k * (cw + 2) + (k - 1) * i.wakeGap, 0)
+  const fixed = (cw: number): number => i.wakes.reduce((t, k) => t + k * (cw + 4) + (k - 1) * i.wakeGap, 0)
     + r * cw + Math.max(0, groups - 1) * i.gap;
   for (let cw = Math.floor(i.cw); cw >= i.minCw; cw--) {
     const full = cw + 2;

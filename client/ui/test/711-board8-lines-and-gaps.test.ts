@@ -101,9 +101,12 @@ test('§2 one line per player, in the owner\'s order; no deck line; no top bar',
   e.cacheFromHand(0, 0);
   assert.match(line(paint(e.s), 'mine'), /<div class="lcache"><div class="regioncache[^"]*" data-btn="cacheopen"/);
   // the slots are as wide as they need whatever they hold, thumbs sized off
-  // the line's content height, never under a resource card's size
-  assert.match(CSS, /\.linfo \.regionbin \{ --binth: clamp\(18px, calc\(\(100cqh - 8px\) \/ 1\.4\), 48px\); width: calc\(var\(--binth\) \+ 28px\); \}/);
-  assert.match(CSS, /\.linfo \.regioncache \{ --cacheth: clamp\(18px, calc\(\(100cqh - 2px\) \/ 1\.4\), 48px\);\s*width: calc\(3 \* var\(--cacheth\) \+ 30px\); \}/);
+  // the line's content height; the label is master's plain zone label, beside
+  // the thumbs, not a pill on them (audit, board round 8)
+  assert.match(CSS, /\.linfo \.regionbin \{ --binth: clamp\(18px, calc\(\(100cqh - 6px\) \/ 1\.4\), 48px\); \}/);
+  assert.match(CSS, /\.linfo \.regioncache \{ --cacheth: clamp\(22px, calc\(100cqh \/ 1\.4\), 48px\);\s*grid-template-columns: auto calc\(3 \* var\(--cacheth\) \+ 12px \+ 22px\); \}/);
+  assert.match(CSS, /grid-template-areas: "lbl fan" "hint fan";/);
+  assert.doesNotMatch(CSS, /\.linfo \.regionbin > \.zonelabel, \.linfo \.regioncache > \.zonelabel \{[^}]*position: absolute/);
   // the phase icons in the window's middle: the line is three tracks, the
   // right one never narrower than the bin, cache and name
   assert.match(CSS, /\.linfo\.mine > \.lin \{ display: grid; grid-template-columns: minmax\(0, 1fr\) auto minmax\(max-content, 1fr\); \}/);
