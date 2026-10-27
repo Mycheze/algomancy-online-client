@@ -4975,4 +4975,34 @@ export const CLOSED: LedgerEntry[] = [
     ],
     note: "Real. Token Gesture run (challenge 2026-11-01-tokens), replayed from the attached run to action 73: Cosmic Conspirator was asked for each Robot as it was created and Automaton of Abundance was never offered first, so at most 5 spell tokens were reachable from action 70 where the rules give 8 (CR 708.4a: the player orders their own replacement effects; Caleb RQ 1151673983960359022, \"You basically stack your replacement effects\"). FIXED 2026-10-25 by the replacement-order round (CT-422): the creator is asked which applies first, on the board; Automaton first lets the Conspirator swap each Robot; and the batch is the whole effect (Caleb RQ 1358924537160536247), so his activation now gives 8. His run refuses at action 70 on the new engine, as expected; the owner chose to deploy anyway.",
   },
+  {
+    id: 290, room: "JDCB", date: "2026-10-25",
+    report: "StubTailDstroyer, seat 1, agreed fix: back to before A2K's Monke (turn 2 counterattack). \"oops\"",
+    status: 'agreed-fix',
+    note: "Took back A2K's Monke played in the turn-2 counterattack's attack window [42], with the two passes that spawned it; StubTailDstroyer proposed it and A2K agreed. Replayed, A2K passed instead and StubTailDstroyer declared blocks. A play withdrawn; nothing fizzled or lost a target in the cut, no defect. Replay: JDCB is faithful on the live engine.",
+  },
+  {
+    id: 291, room: "KEHE", date: "2026-10-25",
+    report: "StubTailDstroyer, seat 1, two agreed fixes in a row: back to before A2K's pass, then back to the start of the turn-6 attack window. \"oops\"",
+    status: 'agreed-fix',
+    note: "One run of two rewinds, both proposed by StubTailDstroyer and agreed by A2K. The first took back five passes [189]-[193] that resolved Spell Excavation (Dematerialize) and Suppression Field on Mirage Walker; the second went on to the start of the turn-6 attack window [173], taking back A2K's three Omniwield Evoker activations and the Suppression Field. Replayed, A2K activated the Evoker once, cast Technological Superiority on it and Unstable Refactor on Mirage Walker, and StubTailDstroyer's Spell Excavation took Insidious Invitation instead. A re-plan of the turn; nothing fizzled or lost a target in the cut, no defect. Replay: KEHE is faithful on the live engine.",
+  },
+  {
+    id: 292, room: "KEHE", date: "2026-10-25",
+    report: "StubTailDstroyer, seat 1, agreed fix: back to before StubTailDstroyer's blocks (turn 6). \"oops\"",
+    status: 'agreed-fix',
+    note: "Took back the turn-6 blocks [208] with nothing sent to counterattack; StubTailDstroyer re-declared exactly the same blocks and sent three units to counterattack. The counterattack forgotten, the same shape as #281 three days earlier; the block bar already offers Counterattack with the rest. No defect.",
+  },
+  {
+    id: 293, room: "JWTA", date: "2026-10-27",
+    report: "Tomzy, seat 1, agreed fix: back to before Tomzy's trigger order (turn 4 counterattack). \"missclick\"",
+    status: 'agreed-fix',
+    note: "Took back Tomzy's trigger order [121], which put Malicious Hardware's sacrifice first and Soulforger's Fireball second; Tomzy re-ordered with Soulforger first, then played Unstable Refactor. A misclick in the order picker, as the reason says; no defect. Replay: JWTA is faithful on the live engine.",
+  },
+  {
+    id: 294, room: "JWTA", date: "2026-10-27",
+    report: "Karanda (judge), seat 0, agreed fix: back to before Karanda's pass (turn 7 battle). \"oops\"",
+    status: 'agreed-fix',
+    note: "Took back Karanda's pass in the turn-7 block window [214], which let 14 combat damage through; Tomzy agreed. Replayed, Karanda played Perish instead, sacrificing Maelstrom Charger (which copied it). A response forgotten; no defect.",
+  },
 ];
