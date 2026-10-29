@@ -786,7 +786,7 @@ You can **rewind to the start of this turn** and try again, or start a new game.
     ...FORMATS.pages,
     {
       title: 'Where next',
-      body: `- **? rules** (right-hand panel) has the whole rules reference and the rulebook.
+      body: `- **? rules** (on the toolbar) has the whole rules reference and the rulebook.
 - **Right-click** any card for its details and rulings.
 - **⚖ judge** answers rules questions, in a game or here.
 - **Tips for this client** — the full interface guide — is on the Learn to play menu.

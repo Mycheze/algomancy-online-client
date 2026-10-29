@@ -31,7 +31,6 @@ import { client } from './ui-driver.ts';
 const read = (f: string): string => readFileSync(fileURLToPath(new URL(f, import.meta.url)), 'utf8');
 const CSS = read('../style.css');
 const ui = await client();
-(globalThis as { localStorage: Storage }).localStorage.setItem('algoLayout', '2');
 const paint = (s: GameState, seat: Seat = 0): string => ui.join(s, seat, legalActions(s, seat));
 
 /** the rule for exactly this selector, at the top level of the sheet */

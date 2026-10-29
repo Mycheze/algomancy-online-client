@@ -37,8 +37,6 @@ import { client } from './ui-driver.ts';
 const ui = await client();
 const MAIN = readFileSync(fileURLToPath(new URL('../main.ts', import.meta.url)), 'utf8');
 const CSS = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url)), 'utf8');
-const store = (globalThis as { localStorage: Storage }).localStorage;
-const regions = (on: boolean): void => { store.setItem('algoLayout', on ? '2' : '1'); };
 
 /** the text of the prompt bar, tags stripped */
 const bar = (html: string): string => {
@@ -51,7 +49,6 @@ const bar = (html: string): string => {
 /* ══ §1 the watching view ══════════════════════════════════════════════ */
 
 test('339 §1 watching an attack being built says live and nothing else', () => {
-  regions(true);
   const h = new Harness(33901);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -89,7 +86,6 @@ test('339 §2 the long how-to sentences are gone from the prompt bars', () => {
 });
 
 test('339 §2 the deployment bar is the heading and the done buttons', () => {
-  regions(true);
   const h = new Harness(33902);
   toDeployment(h);
   const html = ui.join(viewFor(h.state, 0), 0, legalActions(h.state, 0));
@@ -102,7 +98,6 @@ test('339 §2 the deployment bar is the heading and the done buttons', () => {
 /* ══ §3 the waiting line ═══════════════════════════════════════════════ */
 
 test('339 §3 the waiting line is one short line naming who', () => {
-  regions(true);
   const h = new Harness(33903);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -150,7 +145,6 @@ function openErased(): string {
 }
 
 test('339 §5 the erased dialog is the title and the cards, and tokens are not counted', () => {
-  regions(true);
   const h = new Harness(33905);
   toDeployment(h);
   h.state.players[0]!.erased = ['Fight', 'Wisp', 'Wisp'] as never;
@@ -213,7 +207,6 @@ function lethalAttack(seed: number): { s: GameState; A: Seat; D: Seat; atk: Enti
 }
 
 test('339 §8 #172 the regions board still draws the formation after the game', () => {
-  regions(true);
   const { s, A, D, atk } = lethalAttack(33908);
   for (const seat of [A, D]) {
     const html = ui.join(viewFor(s, seat), seat, []);
@@ -229,15 +222,6 @@ test('339 §8 #172 the regions board still draws the formation after the game', 
       'no button in the post-game fight');
     assert.doesNotMatch(html, /class="card[^"]*\b(playable|activatable)\b/, 'and no card offers a click');
   }
-});
-
-test('339 §8 #172 …and so does the classic board', () => {
-  regions(false);
-  const { s, A, atk } = lethalAttack(33909);
-  const html = ui.join(viewFor(s, A), A, []);
-  assert.doesNotMatch(html, /class="lboard/, 'positive control: this is the classic board');
-  for (const id of atk) assert.match(html, new RegExp(`data-id="${id}"`), `attacker ${id} is on the board`);
-  regions(true);
 });
 
 /* ══ §9 #175 Format Fluent ═════════════════════════════════════════════ */

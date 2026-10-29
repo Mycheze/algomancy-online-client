@@ -25,7 +25,6 @@ import type { EntityId, GameState, Seat } from '../../engine/src/types.ts';
 import { client } from './ui-driver.ts';
 
 const ui = await client();
-const store = (globalThis as { localStorage: Storage }).localStorage;
 
 /** battle column `ci` of the panel, as markup up to the next column */
 function colChunk(html: string, ci: number): string {
@@ -64,7 +63,6 @@ function blockerGone(seed: number): { state: GameState; A: Seat; D: Seat; blocke
 const view = (seat: Seat, s: GameState): string => ui.join(s, seat, legalActions(s, seat));
 
 test('§1 regions board: an emptied block reads blocked, not unblocked', () => {
-  store.removeItem('algoLayout');
   const { state, D } = blockerGone(35001);
   const html = view(D, state);
   assert.match(html, /class="lboard/, 'the premise: the regions board is drawn');
@@ -72,20 +70,6 @@ test('§1 regions board: an emptied block reads blocked, not unblocked', () => {
   assert.doesNotMatch(c1, />unblocked</, 'column 1 was blocked — its blocker leaving does not unblock it');
   assert.match(c1, /blockgone[^>]*>blocker gone</);
   assert.match(c2, />unblocked</, 'column 2 nobody blocked, and it still says so');
-});
-
-test('§2 classic board: the same column reads the same', () => {
-  store.setItem('algoLayout', '1');
-  try {
-    const { state, D } = blockerGone(35002);
-    const html = view(D, state);
-    assert.doesNotMatch(html, /class="lboard/, 'the premise: the classic board is drawn');
-    assert.doesNotMatch(colChunk(html, 0), />unblocked</);
-    assert.match(colChunk(html, 0), />blocker gone</);
-    assert.match(colChunk(html, 1), />unblocked</);
-  } finally {
-    store.removeItem('algoLayout');
-  }
 });
 
 test('§3 the attacker is told the same thing', () => {

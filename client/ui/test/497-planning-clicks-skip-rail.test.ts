@@ -24,8 +24,6 @@ import type { GameState, Seat } from '../../engine/src/types.ts';
 
 const ui = await client();
 const me = 0 as Seat;
-const store = (globalThis as { localStorage: Storage }).localStorage;
-store.setItem('algoLayout', '2');
 
 const mouse = (want: Record<string, string | number>): void => {
   ui.pointer('pointerdown', want, { pointerType: 'mouse', pointerId: 2, isPrimary: true });

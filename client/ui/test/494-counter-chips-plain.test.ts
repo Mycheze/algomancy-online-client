@@ -14,15 +14,13 @@ import { Harness } from '../../engine/src/harness.ts';
 import { legalActions } from '../../engine/src/apply.ts';
 
 const ui = await client();
-const store = (globalThis as { localStorage: Storage }).localStorage;
 /** the pictograph blocks — symbols, dingbats, emoji (286's EMOJI, widened to the arrows/misc-technical block ⛓ is not in) */
 const PICTO = /[\u{1F000}-\u{1FAFF}\u{2190}-\u{2BFF}\u{FE0F}]/u;
 
 const chips = (html: string): string[] =>
   [...html.matchAll(/<span class="pcount [^"]*"[^>]*>([^<]*)<\/span>/g)].map(m => m[1]!);
 
-function plainOn(pref: '1' | '2'): void {
-  store.setItem('algoLayout', pref);
+function plainOn(): void {
   const h = new Harness(49401);
   h.state.players[0]!.rot = 3;
   h.state.players[1]!.debt = 2;
@@ -33,11 +31,9 @@ function plainOn(pref: '1' | '2'): void {
 }
 
 // literal names: the playtest ledger cites them, and its resolver reads titles off the source
-test('regions board: rot and debt read as words, with no pictograph', () => plainOn('2'));
-test('classic board: rot and debt read as words, with no pictograph', () => plainOn('1'));
+test('regions board: rot and debt read as words, with no pictograph', () => plainOn());
 
 test('a player with no rot and no debt has no chip at all', () => {
-  store.setItem('algoLayout', '2');
   const h = new Harness(49402);
   assert.deepEqual(chips(ui.join(h.state, 0, legalActions(h.state, 0))), []);
 });

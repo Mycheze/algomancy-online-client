@@ -34,7 +34,8 @@ const controls = [...group.matchAll(/<button\b([^>]*)>/g)].map(m => ({
   key: /data-(?:btn|chip)="(\w+)"/.exec(m[1] ?? '')?.[1] ?? '?',
   cls: /class="([^"]*)"/.exec(m[1] ?? '')?.[1] ?? '',
 }));
-const TOGGLES = ['fullcontrol', 'autopasstoggle', 'bluffhastetoggle', 'motiontoggle', 'layouttoggle', 'soundtoggle'];
+// the ▦ board toggle went with the classic board (board round 8, 2026-10-29)
+const TOGGLES = ['fullcontrol', 'autopasstoggle', 'bluffhastetoggle', 'motiontoggle', 'soundtoggle'];
 
 test('every toggle waits behind more, and only toggles do', () => {
   assert.ok(groupAt > 0, 'the toolbar has a setgroup');

@@ -27,8 +27,6 @@ import { give, giveResources, pass, spawn, toDeployment, toNextBattle } from '..
 import { client } from './ui-driver.ts';
 
 const ui = await client();
-const store = (globalThis as unknown as { localStorage: Storage }).localStorage;
-const board = (regions: boolean): void => { store.setItem('algoLayout', regions ? '2' : '1'); };
 
 /** A attacks with The Foretold; D holds priority in the battle, with `fire` open
  * fire resources and an Arc Lightning (rr, 4) in hand */
@@ -57,10 +55,10 @@ const mouse = (want: Record<string, string | number>): void => {
 };
 const toast = (html: string): string | null => /<div class="toast">([^<]*)<\/div>/.exec(html)?.[1] ?? null;
 
-for (const regions of [false, true]) {
-  const name = regions ? 'the regions board' : 'the classic board';
+// the classic board's half went with the classic board (board round 8)
+for (const regions of [true]) {
+  const name = 'the regions board';
   test(`CR 111.6 / CT-371: on ${name} a mouse click on a hand card it cannot afford says why, and sends nothing`, () => {
-    board(regions);
     const { h, D, i } = battle(regions ? 67701 : 67700, 2);
     show(h, D);
     assert.ok(ui.has({ act: 'hand', p: D, i }), 'the card is in the hand strip');
@@ -68,32 +66,27 @@ for (const regions of [false, true]) {
     const html = ui.click({ act: 'hand', p: D, i });
     assert.deepEqual(ui.actions(), [], 'nothing is played');
     assert.equal(toast(html), 'Needs 4 mana; you have 2.', 'the toast says the reason the zoom would');
-    store.removeItem('algoLayout');
   });
 }
 
 test('CR 403.3b / CT-371: a click on a card that is playable says no reason', () => {
-  board(false);
   const { h, D, i } = battle(67702, 4);
   show(h, D);
   mouse({ act: 'hand', p: D, i });
   const html = ui.click({ act: 'hand', p: D, i });
   assert.equal(toast(html), null, 'a playable card has no reason to give');
   assert.ok(ui.actions().length > 0 || /class="menu"/.test(html), 'it is played or offered, as before');
-  store.removeItem('algoLayout');
 });
 
 test('CR 111.6 / CT-371: a finger tap on the dark card only reads it, it raises no toast', () => {
-  board(false);
   const { h, D, i } = battle(67703, 2);
   show(h, D);
   const html = ui.tap({ act: 'hand', p: D, i });
   assert.deepEqual(ui.actions(), []);
   assert.equal(toast(html), null, 'the read is the tap: its zoom carries the reason');
-  store.removeItem('algoLayout');
 });
 
-test('CT-371: the classic board hover box ends with the reason, and the click and the zoom ask the same helper', () => {
+test('CT-371: the click and the zoom ask the same helper', () => {
   const main = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
   assert.match(main, /function handWhy\(p: Seat, i: number\): string \{/, 'one helper owns the question');
   assert.match(main, /: handBlockLine\(handBlockReason\(q\(\), p, i, legalFor\(p\)\)\);/, 'and it is the CT-288 question');
@@ -101,5 +94,5 @@ test('CT-371: the classic board hover box ends with the reason, and the click an
     'the zoom asks it');
   assert.match(main, /if \(!items\.length\) \{ const why = handWhy\(p, i\); if \(why\) showToast\(why\); \}/,
     'the click asks it when nothing is offered');
-  assert.match(main, /if \(!zoomOn\(\) && target\.dataset\['act'\] === 'hand'\)/, 'the classic hover box asks it for a hand card');
+  // (the classic board's hover box asked it too; it went with the classic board, board round 8)
 });

@@ -89,11 +89,8 @@ test('an update that reveals nothing does not take it down', () => {
   assert.ok(notice(ui.html()), 'still up after a non-reveal update');
 });
 
-test('the layout and motion toggles, and a reconnect to the same game, leave it up', () => {
+test('the motion toggle and a reconnect to the same game leave it up', () => {
   const { h, D } = shown(49503);
-  ui.click({ btn: 'layouttoggle' });
-  ui.click({ btn: 'layouttoggle' });
-  assert.ok(notice(ui.html()), 'still up after the board toggle, twice');
   ui.click({ btn: 'motiontoggle' });
   ui.click({ btn: 'motiontoggle' });
   assert.ok(notice(ui.html()), 'still up after the motion toggle, twice');

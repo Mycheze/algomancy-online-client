@@ -36,7 +36,6 @@ import { counterShapes } from '../battle.ts';
 import { client, idsIn } from './ui-driver.ts';
 
 const ui = await client();
-const store = (globalThis as { localStorage: Storage }).localStorage;
 const { dealScenario } = await import('../../server/scenarios.ts');
 
 /** the `<div …>` element whose opening tag contains `marker`, whole */
@@ -107,7 +106,6 @@ function confirmAndApply(s: GameState): Action {
 }
 
 test('§1 regions board: the sent units wait full-size in the fight, every slot is drawn, the bar names the step', () => {
-  store.removeItem('algoLayout');
   const s = counterBoard();
   const pool = s.battle!.attackerPool!;
   const html = join(s, 0);
@@ -174,20 +172,6 @@ test('§5 a number key reaches every column drawn', () => {
   const html = ui.key('4');
   assert.deepEqual(column(html, 3), [u], '4 put it in column 4, drawn before anything was built');
   ui.click({ btn: 'clearform' });
-});
-
-test('§6 classic board: no tray, but every slot, the bar and the shapes', () => {
-  store.setItem('algoLayout', '1');
-  try {
-    const s = counterBoard();
-    const html = join(s, 0);
-    assert.doesNotMatch(html, /class="lboard/, 'the premise: classic');
-    assert.doesNotMatch(html, /stagerow|stagewrap/, 'the region panel keeps the sent units on this board');
-    assert.equal(slots(html).length, 8);
-    assert.match(divWith(html, 'class="promptbar'), /Build your counterattack \(4 sent\)[\s\S]*>Pairs</);
-  } finally {
-    store.removeItem('algoLayout');
-  }
 });
 
 test('§7 the opponent watching sees no tray and no shape buttons', () => {

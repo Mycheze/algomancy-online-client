@@ -3,9 +3,10 @@
  * *"What if we tweaked the main way of looking at cards? Instead of relying on
  * the right hand panel … all cards are fairly small, but when you hover over
  * one, it blows up like the Mac apps bar … This could apply to ANYWHERE a card
- * is."* So a card under a mouse cursor grows, in place, to a readable size,
- * and the side rail stops following the hover and holds the last card you
- * CLICKED instead (main.ts, the `zoomOn()` branches).
+ * is."* So a card under a mouse cursor grows, in place, to a readable size.
+ * Since board round 8 it is the only way a mouse reads a card: the side rail
+ * and its viewer are gone, and the card's current text stands beside the
+ * zoom (panelBox).
  *
  * ── WHY A FLOATING COPY AND NOT `transform: scale` ON THE CARD ─────────────
  *
@@ -26,13 +27,6 @@
  * for the long-hover box). It gets the same copy from a press-and-hold (the
  * peek) and, on a hand or cache card, from a tap (#201) — see zoomPeek.
  */
-import { layoutV2 } from './layout.ts';
-
-/** is the zoom the way cards are read in this browser? For now it rides with
- * the regions board preference: that is the layout being playtested, and the
- * classic board keeps its hover-follows rail until the owner says otherwise. */
-export function zoomOn(): boolean { return layoutV2(); }
-
 /** the width a zoomed card is drawn at, and the least magnification worth a
  * zoom — a card already this big (a dialog's, the draft pack's) is left alone */
 export const ZOOM_W = 240;

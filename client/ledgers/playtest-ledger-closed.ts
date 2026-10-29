@@ -347,9 +347,9 @@ export const CLOSED: LedgerEntry[] = [
     status: 'fixed',
     guards: ['132-token-separation.test.ts::the formation zone holds units and only units',
       '132-token-separation.test.ts::the spell tokens get their own container',
-      '132-token-separation.test.ts::that container sits beside the bin',
+      '132-token-separation.test.ts::that container is a corner of its own',
       '132-token-separation.test.ts::an invader',
-      '70-playtest-round15.test.ts::floor still fits two cards abreast'],
+      '70-playtest-round15.test.ts::the token corner widens with its stacks'],
     note: 'The strip existed but was a fixed 118px against 108px for two cards — one per row by '
       + 'arithmetic. Now fluid with a cap. Reported twice; the follow-up was id 61. '
       + '⚠ 2026-08-25: for three rounds this entry was closed against the two [61] CSS guards '
@@ -772,7 +772,7 @@ export const CLOSED: LedgerEntry[] = [
     report: 'Instead of all the spell tokens stacking up vertically, their box can expand and they '
       + 'can be grouped horizontally',
     status: 'fixed',
-    guards: ['70-playtest-round15.test.ts::floor still fits two cards abreast',
+    guards: ['70-playtest-round15.test.ts::the token corner widens with its stacks',
       '70-playtest-round15.test.ts::.zone still wraps'],
     note: 'Follow-up to id 25, fixed with it. These two are CSS-arithmetic guards and this is '
       + 'the report they are ABOUT — "their box can expand and they can be grouped '
@@ -3090,7 +3090,7 @@ export const CLOSED: LedgerEntry[] = [
     guards: [
       '253-combat-orientation.test.ts::a token that rode in with the attack is drawn in the battle panel, not off to the side',
       '253-combat-orientation.test.ts::the invaders are drawn once, by the battle panel or the region panel and never both',
-      '253-combat-orientation.test.ts::the invaders stand on the side of the line the seat that controls them is on',
+      '253-combat-orientation.test.ts::the invaders are drawn once',
       '253-combat-orientation.test.ts::while an attack is only being declared the region panel still draws the invaders',
     ],
     status: 'fixed',
@@ -3890,7 +3890,6 @@ export const CLOSED: LedgerEntry[] = [
     status: 'fixed',
     guards: [
       '350-blocker-gone-still-blocked.test.ts::§1 regions board: an emptied block reads blocked, not unblocked',
-      '350-blocker-gone-still-blocked.test.ts::§2 classic board: the same column reads the same',
     ],
     note:
       'The ENGINE was right and the BOARD lied. EGBM replays 393/393 faithful: at [334] Spawntender blocked the original Hooba-God; at [343] Cosmic Reversal recalled it; at [345] combat printed "Column 4 is blocked (blockers gone) - no damage through" (CR 608.4c). The battle panel drew the column "unblocked" because it read an empty blocker list as no block. It now reads key presence and says "blocker gone" on both boards, to both seats. The 4 damage kareds took was the token copy, left unblocked by choice, plus Visionary Construct. CT-190.',
@@ -4395,7 +4394,6 @@ export const CLOSED: LedgerEntry[] = [
     status: 'fixed',
     guards: [
       "494-counter-chips-plain.test.ts::regions board: rot and debt read as words, with no pictograph",
-      "494-counter-chips-plain.test.ts::classic board: rot and debt read as words, with no pictograph",
     ],
     note: "Real. The debt chip read \"⛓ debt N\" and rot \"☠ rot N\"; owner: remove both, \"they're weird\". Mutation-checked: the chain back turns 494 red.",
   },

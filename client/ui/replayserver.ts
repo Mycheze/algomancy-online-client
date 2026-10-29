@@ -10,7 +10,7 @@
  * the real server and `ui/solo.ts`. It holds a log and a cursor, and every
  * time the cursor moves it pushes the board at that moment as a `watching`
  * frame. `NetBackend` cannot tell it from a live spectator feed, so the entire
- * board renderer — `regionPanelHtml` for both sides, the stack, the bin, the
+ * board renderer — the regions board, the stack, the bin, the
  * arrows, the card inspector — works with nothing added to it.
  *
  * ── WHY `watching` AND NOT `update` ──────────────────────────────────

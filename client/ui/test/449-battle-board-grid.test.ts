@@ -32,7 +32,6 @@ import { client } from './ui-driver.ts';
 
 const ui = await client();
 const CSS = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url)), 'utf8');
-const store = (globalThis as { localStorage: Storage }).localStorage;
 
 /* a round-1 attack by seat 0, blocks with a unit sent, and the round-2 counterattack */
 const h = new Harness(44901);
@@ -53,10 +52,7 @@ while (h.state.phase === 'battle' && h.state.battle!.round === 1 && guard-- > 0)
 }
 const R2 = structuredClone(h.state);
 
-const paint = (s: GameState, seat: Seat, layout: '1' | '2' = '2'): string => {
-  store.setItem('algoLayout', layout);
-  return ui.join(s, seat, legalActions(s, seat));
-};
+const paint = (s: GameState, seat: Seat): string => ui.join(s, seat, legalActions(s, seat));
 const boardTag = (html: string): string => (/<div class="lboard[^>]*>/.exec(html) ?? [''])[0];
 
 test('§1 the board names the fight column in both rounds from both seats, and nothing outside a battle', () => {
@@ -75,8 +71,6 @@ test('§1 the board names the fight column in both rounds from both seats, and n
   const idle = boardTag(paint(DEPLOY, 0));
   assert.match(idle, /class="lboard idle"/);
   assert.doesNotMatch(idle, /data-fight/, 'no battle, no battle shape');
-  // the classic board has no such thing
-  assert.doesNotMatch(paint(R1, 0, '1'), /data-fight/);
   // the counterattacker on its way wraps down the narrow idle column (fit
   // `band`), where it used to fan along a single row of a half-board block
   const sent = paint(SENT, 0);

@@ -372,7 +372,9 @@ function fitsPerRow(strip: string, zone: string): number {
   return Math.floor((content + gap) / (card + gap));
 }
 
-for (const [strip, zone] of [['.tokenstrip', '.tokenzone'], ['.invaders', '.invaderzone']]) {
+// (the classic board's .tokenstrip went with the classic board, board round 8:
+// the regions board's token corner is pinned below and in test/716)
+for (const [strip, zone] of [['.invaders', '.invaderzone']]) {
   test(`[61] ${strip} can group its cards horizontally instead of stacking them`, () => {
     assert.ok(fitsPerRow(strip!, zone!) >= 3,
       `${strip} is too narrow to ever put three cards on one row — flex-wrap has nothing to do`);
@@ -383,13 +385,16 @@ for (const [strip, zone] of [['.tokenstrip', '.tokenzone'], ['.invaders', '.inva
   });
 }
 
-test('[61] the floor still fits two cards abreast', () => {
-  // the shrink case: under pressure the strip falls back to min-width, and the
-  // 118px it used to sit at was two pixels short of a pair
-  const floor = maxPx(decl('.tokenstrip', 'min-width')) - 2 * padX(decl('.tokenstrip', 'padding'));
-  const card = maxPx(decl('.tokenstrip .card', 'width'));
-  const gap = maxPx(decl('.tokenstrip .tokenzone', 'gap'));
-  assert.ok(floor >= card * 2 + gap, `${floor}px of content will not hold two ${card}px cards`);
+test('[61] the token corner widens with its stacks, so they stand side by side', () => {
+  // report [61], on the regions board (board round 8): the corner is as wide as
+  // --tokcols base cards (main.ts sets it to the number of stacks, up to four),
+  // capped by a share of the band, and its zone wraps the rest
+  const corner = /\.lplay \.ltok \{([^}]*)\}/.exec(CSS)?.[1] ?? '';
+  assert.match(corner, /width: calc\(var\(--cwbase\) \* var\(--tokcols, 1\)/, 'the width counts the stacks');
+  assert.match(corner, /max-width: 45%/, 'and has a ceiling, or it takes the formation\'s space');
+  const zone = /\.lplay \.ltok > \.tokenzone \{([^}]*)\}/.exec(CSS)?.[1] ?? '';
+  assert.match(zone, /flex-wrap: wrap/, 'past the ceiling the stacks wrap');
+  assert.match(MAIN, /style="--tokcols:\$\{Math\.min\(4, r\.tokenStackCount\)\}"/, 'one column per stack, up to four');
 });
 
 test('[61] .zone still wraps — the strips are relying on it', () => {

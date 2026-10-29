@@ -30,8 +30,6 @@ const CSS = read('../style.css');
 const LAYOUT = read('../layout.ts');
 const MAIN = read('../main.ts');
 const ui = await client();
-const store = (globalThis as { localStorage: Storage }).localStorage;
-store.setItem('algoLayout', '2');
 
 const h = new Harness(71101);
 const PLAN = structuredClone(h.state);

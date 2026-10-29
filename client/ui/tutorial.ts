@@ -93,9 +93,11 @@ export const TUTORIAL: readonly TutorialSection[] = [
     title: 'Reading the board',
     steps: [
       {
-        label: 'The top strip',
-        text: 'The turn number, the phase track with the current phase and step lit, and who holds the initiative ⭐. When the client is '
-          + 'passing for you a chip appears here with a ✕ stop.',
+        label: 'The info lines',
+        text: 'Your line runs along the bottom, above the prompt bar: your resources, the phase icons with the current one lit (hover or tap them '
+          + 'for the phase, step and turn), your bin and cache, then your name and life — ⭐ marks who holds the initiative. Your opponent’s line '
+          + 'runs along the top. Hover or tap a name for hand, deck, recycle pile, bin and cache as numbers. When the client is passing for you, '
+          + 'a ⏩ stop button appears on the toolbar.',
         btns: ['passallstop'],
       },
       {
@@ -105,9 +107,11 @@ export const TUTORIAL: readonly TutorialSection[] = [
       },
       {
         label: 'Regions',
-        text: 'Each player’s region is a panel: their units in play (in battle, the formation with its columns), their resources, and on the '
-          + 'right the region’s bin. Click a bin to open it; a card there that glows can be played or applied from the bin right now. A cache, '
-          + 'when a player has one, sits beside it — it is public, so either player’s can be opened.',
+        text: 'Each player’s region has its own colour: their units in play along the band nearest them and, in a battle, the fight. Units '
+          + 'standing in the other player’s region are invaders, drawn as a small pile: hover it, or tap its count, to spread it out. Spell tokens '
+          + 'stand at the outer end of their In Play, alike ones stacked under a count; hover the corner for how many of each size. Click a bin on '
+          + 'an info line to open it; a card there that glows can be played or applied from the bin right now. A cache, when a player has one, '
+          + 'sits beside it — it is public, so either player’s can be opened.',
         btns: ['binopen', 'cacheopen', 'binclose', 'cacheclose'],
       },
       {
@@ -116,25 +120,26 @@ export const TUTORIAL: readonly TutorialSection[] = [
           + 'panel has room; hover it to look.',
       },
       {
-        label: 'The side rail',
-        text: 'The room code, how many people are watching, the clocks, the settings buttons, and the focus viewer: hover any '
-          + 'card anywhere — hand, board, bin, log — and it is shown large there.',
+        label: 'The toolbar and reading a card',
+        text: 'The narrow strip on the right: ☰ table, ↶ undo, ⚖ judge, ? rules, 📝 report and ⋯ settings, with the room and both clocks; hover '
+          + 'an icon for its name. To read a card, hover it: it grows where it is, with its current text beside it — what it says now, its '
+          + 'attributes, its mods and where its power and defense come from. On a touch screen, press and hold a card, or tap one.',
       },
       {
         label: 'The stack',
         text: 'While effects are waiting to resolve a strip shows them, the one that resolves next on top. Right-click a trigger on it (or tap it and use the buttons '
-          + 'under its text in the right-hand panel) to auto-yield to that unit’s triggers.',
+          + 'that appear under it) to auto-yield to that unit’s triggers.',
       },
       {
         label: 'Card details',
         text: 'Right-click any card you can read for its details page: the text as the game sees it, every attribute with its reminder, the '
           + 'tokens it creates, the rules it refers to, and the recorded rulings — with a button to ask the judge about that card. On a touch '
-          + 'screen there is no right-click: the same entries are buttons under the card’s text in the right-hand panel.',
+          + 'screen there is no right-click: tap the card and the same entries are buttons under it.',
         btns: ['inspectclose', 'inspectjudge'],
       },
       {
         label: 'The game log, erased cards, conceding',
-        text: 'Right-click bare table, or press ☰ table at the top of the right-hand panel. View game log opens the log; its toggle switches '
+        text: 'Right-click bare table, or press ☰ on the toolbar. View game log opens the log; its toggle switches '
           + 'between the story and every bookkeeping line. The same menu shows each player’s erased cards and — with a confirmation — Concede the match.',
         btns: ['logmode', 'logclose', 'erasedclose', 'concedeyes', 'concedeno'],
       },
@@ -283,7 +288,7 @@ export const TUTORIAL: readonly TutorialSection[] = [
         btns: ['revealdone'],
       },
       {
-        text: 'Undo: ↶ undo in the side rail, or Ctrl+Z, takes back your own last action — in planning and deployment only, where the '
+        text: 'Undo: ↶ on the toolbar, or Ctrl+Z, takes back your own last action — in planning and deployment only, where the '
           + 'opponent cannot have seen it.',
         btns: ['undo'],
       },
@@ -291,7 +296,7 @@ export const TUTORIAL: readonly TutorialSection[] = [
   },
   {
     id: 'settings',
-    title: 'Settings in the side rail',
+    title: 'Settings behind ⋯',
     steps: [
       {
         label: 'Full control',
@@ -320,25 +325,19 @@ export const TUTORIAL: readonly TutorialSection[] = [
         btns: ['soundtoggle'],
       },
       {
-        label: 'board',
-        text: 'Regions (the default) or classic. The regions board draws each player’s region as an L: your cards stay on your half of the screen, '
-          + 'the colour says whose region they are in, and attacking crosses the seam in the middle. It never scrolls. Classic is the original board.',
-        btns: ['layouttoggle'],
-      },
-      {
         label: 'Auto-yield',
-        text: 'Right-click one of your units (or its trigger on the stack) — or tap it and use the buttons in the right-hand panel — and choose Auto-yield to its triggers: windows that open only because '
+        text: 'Right-click one of your units (or its trigger on the stack) — or tap it and use the buttons under it — and choose Auto-yield to its triggers: windows that open only because '
           + 'of that unit’s triggers are passed for you, and the unit wears a ⏩ badge. The same menu stops it. Not offered under full control.',
       },
       {
         label: '? rules and ⚖ judge',
         text: 'This panel, and the judge: type a rules question in plain words and it is answered from the rulebook and the card rulings, '
-          + 'with the cards it cites. Right-clicking a card (or the buttons under it in the right-hand panel) offers to ask about that card.',
+          + 'with the cards it cites. Right-clicking a card (or tapping it, on a touch screen) offers to ask about that card.',
         btns: ['helpopen', 'helpclose', 'judgeopen', 'judgeask', 'judgeclose'],
       },
       {
         label: 'Report',
-        text: 'Something wrong, confusing or missing? Report it from the rail. The server keeps this exact game moment with your note, so '
+        text: 'Something wrong, confusing or missing? Report it with 📝 on the toolbar. The server keeps this exact game moment with your note, so '
           + 'describe what you expected and what happened.',
         btns: ['reportopen', 'reportsend', 'reportclose'],
       },
@@ -363,7 +362,7 @@ export const TUTORIAL: readonly TutorialSection[] = [
     steps: [
       {
         label: 'Clocks',
-        text: 'Yours and your opponent’s, in the rail. A clock runs while it is that player’s move, turns to a warning colour when it is low, '
+        text: 'Yours and your opponent’s, at the bottom of the toolbar. A clock runs while it is that player’s move, turns to a warning colour when it is low, '
           + 'and a player whose clock reaches zero loses on time.',
       },
       {
@@ -401,7 +400,7 @@ export const TUTORIAL: readonly TutorialSection[] = [
       },
       {
         label: 'Leaving early',
-        text: 'Right-click bare table, or press ☰ table on the right-hand panel, and choose Concede the match; it asks once before it counts.',
+        text: 'Right-click bare table, or press ☰ on the toolbar, and choose Concede the match; it asks once before it counts.',
         btns: ['concedeyes', 'concedeno'],
       },
       {

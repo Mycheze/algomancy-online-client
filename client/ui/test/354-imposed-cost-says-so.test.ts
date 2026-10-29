@@ -55,7 +55,6 @@ function lit(html: string): { id: number; tag: string | null }[] {
 }
 /** the payer's screen, on the regions board */
 function paint(s: GameState, seat: Seat): string {
-  (globalThis as { localStorage: Storage }).localStorage.setItem('algoLayout', '2');
   return ui.join(viewFor(s, seat), seat, legalActions(s, seat));
 }
 /** everything §1 asserts, for a question that is an imposed cost on `card` */

@@ -88,9 +88,9 @@ g.addEventListener = () => {};
 // the online path: `?room=…` is what makes main.ts build a NetBackend at
 // import time instead of painting the home screen
 g.location = { host: 'x', protocol: 'http:', search: '?room=TOKENSEP&seat=0', hash: '', href: 'http://x/' };
-// '1' = the classic board, which is what these tests read (regions is the
-// default since 2026-09-26, and draws the token strip in its own block)
-g.localStorage = { getItem: (k: string) => (k === 'algoLayout' ? '1' : null), setItem: () => {}, removeItem: () => {} };
+// the regions board is the only board since board round 8 (the classic one
+// these tests were first written against is gone)
+g.localStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
 g.WebSocket = class {
   static OPEN = 1;
   readyState = 1;
@@ -146,15 +146,6 @@ function divAround(html: string, at: number, what: string): string {
 const zone = (html: string, key: string): string =>
   divAround(html, html.indexOf(`data-animzone="${key}"`), `the "${key}" zone`);
 
-/** the container of a whole region panel, found from its formation zone —
- * `.regionrow` is the strip that holds the formation, the side strips and the
- * bin; `.regionmain` is the formation column alone */
-function regionPart(html: string, seat: Seat, cls: 'regionrow' | 'regionmain'): string {
-  const field = html.indexOf(`data-animzone="field:${seat}"`);
-  assert.ok(field >= 0, `seat ${seat} has no formation zone`);
-  return divAround(html, html.lastIndexOf(`class="${cls}"`, field), `.${cls} of seat ${seat}`);
-}
-
 const idsIn = (chunk: string): number[] =>
   [...chunk.matchAll(/data-id="(\d+)"/g)].map(m => Number(m[1]));
 
@@ -200,18 +191,17 @@ test('#25: the spell tokens get their own container, and it is the token that is
   assert.ok(!idsIn(strip).includes(unit), 'and the unit is not in it');
 });
 
-test('#25: that container sits beside the bin, outside the formation column', () => {
+test('#25: that container is a corner of its own, outside the formation', () => {
   const { state, seat, token } = board();
   const html = paint(state, seat);
-  // "over by the bin": same row as the bin, which is what puts it there
-  const row = regionPart(html, seat, 'regionrow');
-  assert.ok(idsIn(row).includes(token), 'the token strip is somewhere in the region row');
-  assert.ok(row.includes(`data-btn="binopen" data-p="${seat}"`),
-    'and the bin is in that same row, which is what "over by the bin" means');
-  // "their own spot": NOT inside the formation column the units live in
-  const main = regionPart(html, seat, 'regionmain');
-  assert.ok(!idsIn(main).includes(token),
-    'the token is inside .regionmain — the formation column. That is the smushing.');
+  // "their own spot": the token corner of the seat's In Play (board round 8,
+  // 2026-10-29: at the band's outer end, away from the units — it was "over by
+  // the bin" on the classic board)
+  const corner = html.split(`<div class="ltok" data-fit="cards" data-tip="tokens" data-p="${seat}"`)[1]?.split('<template')[0] ?? '';
+  assert.ok(idsIn(corner).includes(token), 'the token is in the seat\'s token corner');
+  // …and NOT in the field the units stand in
+  assert.ok(!idsIn(zone(html, `field:${seat}`)).includes(token),
+    'the token is inside the field — the formation. That is the smushing.');
 });
 
 test('#25: no spell tokens means no strip — the spot is earned, not reserved', () => {

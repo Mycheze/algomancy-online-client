@@ -106,9 +106,10 @@ test('§3 the toggles live behind ⋯ and each one works from there', () => {
   const { s, me, legal } = deploy(71203);
   const shut = strip(ui.join(s, me, legal));
   const group = (b: string): string => b.slice(b.indexOf('<div class="setgroup'), b.indexOf('</div>', b.indexOf('<div class="setgroup')));
-  for (const t of ['autopasstoggle', 'bluffhastetoggle', 'motiontoggle', 'layouttoggle', 'soundtoggle']) {
+  for (const t of ['autopasstoggle', 'bluffhastetoggle', 'motiontoggle', 'soundtoggle']) {
     assert.ok(group(shut).includes(`data-btn="${t}"`), `${t} is in the ⋯ popover`);
   }
+  assert.ok(!shut.includes('data-btn="layouttoggle"'), 'the board toggle is gone with the classic board');
   assert.ok(group(shut).includes('data-chip="fullcontrol"'), 'the full-control readout too');
   const open = strip(ui.click({ btn: 'settingsmenu' }));
   const before = /data-btn="motiontoggle"[^>]*>✨ motion: (on|off)/.exec(open)?.[1];

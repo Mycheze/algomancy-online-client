@@ -8513,7 +8513,7 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       '253-combat-orientation.test.ts::a token that rode in with the attack is drawn in the battle panel, not off to the side',
       '253-combat-orientation.test.ts::the invaders are drawn once, by the battle panel or the region panel and never both',
-      '253-combat-orientation.test.ts::the invaders stand on the side of the line the seat that controls them is on',
+      '253-combat-orientation.test.ts::the invaders are drawn once',
       '253-combat-orientation.test.ts::while an attack is only being declared the region panel still draws the invaders',
     ],
     closed:
@@ -10398,7 +10398,6 @@ export const CLOSED: TodoEntry[] = [
     reportId: 176,
     guards: [
       '350-blocker-gone-still-blocked.test.ts::§1 regions board: an emptied block reads blocked, not unblocked',
-      '350-blocker-gone-still-blocked.test.ts::§2 classic board: the same column reads the same',
       '350-blocker-gone-still-blocked.test.ts::§3 the attacker is told the same thing',
     ],
     closed:
@@ -10425,7 +10424,6 @@ export const CLOSED: TodoEntry[] = [
       '351-counterattack-build.test.ts::§1 regions board: the sent units wait full-size in the fight',
       '351-counterattack-build.test.ts::§3 Pairs builds front-and-back pairs the engine accepts',
       '351-counterattack-build.test.ts::§4 a pool of two offers One column, and the engine takes it',
-      '351-counterattack-build.test.ts::§6 classic board: no tray, but every slot, the bar and the shapes',
     ],
     closed:
       'FIXED 2026-09-30 on the owner choice (full-size staging row). In the round-2 declare the sent units leave the 0.6x side strip and wait full-size in a "sent units" tray in the fight, every front and back slot of one column per sent unit is drawn up front, the bar reads "Build your counterattack (N sent)", and shape buttons sit beside "Attack with everything": One column for a pool of two, Pairs for three or more (a column holds at most two units, so "all in one column" is not a legal shape past two and is not offered). Counterattack columns no longer close up when a unit is taken out; the declaration closes the gaps on Attack!. The tray runs along the foot of the fight when a third rank fits and beside the columns otherwise - the agent measured the foot placement clipping the back slots at 1366x768 and 800x700, and chose the fallback itself. Classic board: slots, bar and shapes, no tray. Review board: scenario counter-build (scenarios-h.ts). Not fixed, noted: the WATCHING seat sees the sent units clipped at full size before anything is placed (pre-existing, the watcher path).',
@@ -13220,7 +13218,7 @@ export const CLOSED: TodoEntry[] = [
       "677-hand-block-toast.test.ts::a mouse click on a hand card it cannot afford says why, and sends nothing",
       "677-hand-block-toast.test.ts::CR 403.3b / CT-371: a click on a card that is playable says no reason",
       "677-hand-block-toast.test.ts::CR 111.6 / CT-371: a finger tap on the dark card only reads it, it raises no toast",
-      "677-hand-block-toast.test.ts::CT-371: the classic board hover box ends with the reason",
+      "677-hand-block-toast.test.ts::CT-371: the click and the zoom ask the same helper",
     ],
     closed: "FIXED 2026-10-25 (1cbfad1e). One helper, handWhy, holds CT-288's logic and answers for the zoom, for a toast when a mouse click on a dark hand card is offered nothing (either board), and for the classic board's hover box (a last line, only when the zoom is off). A finger tap still only reads, and its zoom carries the reason. 677 failed 3 of 5 on the old code. Headless Chrome: the classic hover box ends \"Needs 6 mana; you have 0.\", a click shows the same toast and sends nothing, and a 1024x768 tap shows the reason under the zoom with no toast, on both boards.",
     status: 'done',
@@ -13336,7 +13334,6 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       "672-sent-strip-columns.test.ts::CR 606.2d / CT-383: eleven units sent to counterattack are laid out three columns wide, not one",
       "672-sent-strip-columns.test.ts::CR 606.2d / CT-383: a few sent keep the two columns the strip always meant",
-      "672-sent-strip-columns.test.ts::CT-383: the classic board lays the strip out as a grid of those columns, as wide as they are",
     ],
     closed: "FIXED 2026-10-25 (3a05e0c6); the premise was wrong. Measured with 11 sent (review board review-ui-sent-eleven): nothing clips on either board. The real defect was the classic board's fixed 96px strip, one pixel short of two 40px columns and their gap, so each sent unit took a row: an 11-card column 703px tall that scrolled the board by 728px at 1280x720. The strip is now a grid of --sentcols 40px columns (2, plus one per four past eight), min-content wide: 11 sent is 3 columns, 140x293. All three 672 tests failed against the old main.ts and style.css. Not tried: 20 or more sent on the regions board.",
     status: 'done',

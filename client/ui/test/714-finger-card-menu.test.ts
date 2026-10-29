@@ -81,7 +81,8 @@ test('only a TAP\'s read carries the menu — a held peek ends as the finger lif
 });
 
 test('a mouse click reads nothing new: it has the zoom on hover and the menu on a right-click', () => {
-  const listener = MAIN.slice(MAIN.indexOf('// BOARD ROUND 8: the regions board has no rail to put a card in'));
-  assert.match(listener.slice(0, 1500), /if \(zoomOn\(\)\) \{\n\s*if \(pointerCanHover\(\)\) return;/);
-  assert.doesNotMatch(listener.slice(0, 1500), /paintFocus\(/, 'nothing is painted into a rail on the regions board');
+  const listener = MAIN.slice(MAIN.indexOf("/* BOARD ROUND 8 — A FINGER'S TAP THAT MOVED NOTHING READS THE CARD."));
+  assert.match(listener.slice(0, 2200), /\n\s*if \(pointerCanHover\(\)\) return;\n/, 'a mouse click stops before any read');
+  // board round 8 deleted the rail and its viewer with the classic board
+  assert.doesNotMatch(MAIN, /function paintFocus|id="preview"/, 'nothing is painted into a rail: there is none');
 });

@@ -35,7 +35,6 @@ import { client } from './ui-driver.ts';
 
 const ui = await client();
 const CSS = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url)), 'utf8');
-const store = (globalThis as { localStorage: Storage }).localStorage;
 const ME: Seat = 0, THEM: Seat = 1;
 
 /** deployment with my look at their hand recorded, and then a battle —
@@ -56,7 +55,6 @@ function game(seed: number, attacker: Seat): { deploy: GameState; battle: GameSt
 }
 
 function paint(s: GameState): string {
-  store.setItem('algoLayout', '2');   // the regions board
   return ui.join(viewFor(s, ME), ME, legalActions(s, ME));
 }
 

@@ -128,9 +128,11 @@ test('§7 the toolbar: icons, the toggles behind "more"; the reminders can be hi
   // in the "more" popover; rules and the judge are tools, so they stay out.
   const bar = /function toolbarHtml[\s\S]*?\n}/.exec(MAIN)?.[0] ?? '';
   const group = bar.slice(bar.indexOf('<div class="setgroup'), bar.indexOf('${NET && scnPop'));
-  for (const b of ['autopasstoggle', 'bluffhastetoggle', 'motiontoggle', 'layouttoggle', 'soundtoggle']) {
+  for (const b of ['autopasstoggle', 'bluffhastetoggle', 'motiontoggle', 'soundtoggle']) {
     assert.ok(group.includes(`data-btn="${b}"`), `${b} is behind "more"`);
   }
+  // the ▦ board toggle went with the classic board (board round 8)
+  assert.ok(!bar.includes('data-btn="layouttoggle"'), 'no board toggle');
   assert.ok(group.includes('data-chip="fullcontrol"'), 'the full-control chip too');
   for (const b of ['tablemenu', 'reportopen', 'undo', 'helpopen', 'judgeopen']) {
     const at = bar.indexOf(`data-btn="${b}"`);

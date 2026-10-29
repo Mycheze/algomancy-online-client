@@ -1,32 +1,17 @@
-/* THE BOARD LAYOUT PREFERENCE, AND THE TWO RULES THE REGIONS BOARD NEEDS.
+/* THE REGIONS BOARD'S LAYOUT RULES (docs/18-board-layout-v2.md).
  *
- * Owner, 2026-09-22: the middle play zone is being rebuilt as two interlocking
- * L-shaped regions (docs/18-board-layout-v2.md). It shipped behind a toggle —
- * "classic" the board everybody had played on, "regions" the new one — and
- * became the default on 2026-09-26; the toggle stays for classic. The
- * choice is a per-browser preference like sound and motion (ui/audio.ts,
- * ui/anim.ts): a localStorage key, a button in the side rail, a line on the
- * privacy page (ui/legal.ts BROWSER_KEYS, guarded by test/267).
+ * Owner, 2026-09-22: the middle play zone is two interlocking L-shaped
+ * regions. It shipped behind a toggle beside the classic board, became the
+ * default on 2026-09-26, and since board round 8 (2026-10-29: "it's dumb to
+ * leave that in there") it is the only board — the `algoLayout` preference and
+ * the classic board are gone.
  *
  * Nothing in the engine knows about any of this. Region ≠ control is a fact
- * the ENGINE has always had (Entity.region, Region.owner); the new board is
- * the first one that draws both.
+ * the ENGINE has always had (Entity.region, Region.owner); this board is the
+ * first one that draws both.
  */
 import type { GameState, Seat } from '../engine/src/types.ts';
 import { FLOOR as CARD_FLOOR, RATIO, fitBattle, fitCards, fitRes, fitSendBox, pileStepFrac, planBattleBoard, type FitPlan } from './fit.ts';
-
-const PREF = 'algoLayout';
-
-/** is the regions board chosen in this browser? Default: yes — regions.
- * Owner, 2026-09-26: regions is the board for everyone now; classic stays one
- * click away. Only an explicit '1' (the toggle turned back to classic) keeps
- * classic, so a player who already chose it keeps it. */
-export function layoutV2(): boolean {
-  try { return localStorage.getItem(PREF) !== '1'; } catch { return true; }
-}
-export function setLayoutV2(on: boolean): void {
-  try { localStorage.setItem(PREF, on ? '2' : '1'); } catch { /* private window */ }
-}
 
 /**
  * THE FOCUS REGION — the one region that matters right now.

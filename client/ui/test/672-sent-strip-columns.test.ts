@@ -15,15 +15,12 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { Harness } from '../../engine/src/harness.ts';
 import { legalActions } from '../../engine/src/apply.ts';
 import type { Seat } from '../../engine/src/types.ts';
 import { pass, spawn, toDeployment, toNextBattle } from '../../engine/test/util.ts';
 import { client } from './ui-driver.ts';
 
-const CSS = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url)), 'utf8');
 
 /** you attack with one unit; they block it and send `n` units back at you */
 function sent(seed: number, n: number): { h: Harness; A: Seat } {
@@ -57,9 +54,3 @@ test('CR 606.2d / CT-383: a few sent keep the two columns the strip always meant
   assert.match(board, /<div class="sentstrip" style="--sentcols:2"/);
 });
 
-test('CT-383: the classic board lays the strip out as a grid of those columns, as wide as they are', () => {
-  assert.match(CSS, /\.regionrow > \.sentstrip \.sentzone \{ display: grid; grid-template-columns: repeat\(var\(--sentcols, 2\), 40px\); \}/,
-    'the grid the board asks for');
-  assert.match(CSS, /\.regionrow > \.sentstrip \{ width: min-content; \}/,
-    'and no fixed width a pixel too narrow for two cards');
-});

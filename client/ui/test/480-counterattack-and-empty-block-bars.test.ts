@@ -22,7 +22,6 @@ import type { EntityId, GameState, Seat } from '../../engine/src/types.ts';
 import { client } from './ui-driver.ts';
 
 const ui = await client();
-const store = (globalThis as { localStorage: Storage }).localStorage;
 
 /** the opening tag of the element carrying `marker`, or null */
 const tagWith = (html: string, marker: string): string | null => {
@@ -66,36 +65,31 @@ function sentPool(seed: number, k: number, token = false): { s: GameState; D: Se
   return { s: h.state, D, sent, tok };
 }
 
-for (const layout of ['regions', 'classic'] as const) {
+// the classic board's half of this went with the classic board (board round 8)
+for (const layout of ['regions'] as const) {
   test(`CT-298 ${layout} board: a counterattack has no decline and Attack waits until every sent unit is placed`, () => {
-    if (layout === 'classic') store.setItem('algoLayout', '1'); else store.removeItem('algoLayout');
-    try {
-      const { s, D, sent: [u1, u2] } = sentPool(48001, 2);
-      let html = ui.join(s, D, legalActions(s, D));
-      assert.equal(tagWith(html, 'data-btn="skipattack"'), null, 'no Don’t attack button');
-      assert.match(tagWith(html, 'data-btn="confirmattack"')!, /disabled/, 'nothing placed: Attack! is disabled');
-      assert.match(bar(html), /all must attack — 2 to place/);
-      ui.click({ act: 'unit', id: String(u1) });
-      html = ui.click({ act: 'slot', ci: '0', row: '0' });
-      assert.match(tagWith(html, 'data-btn="confirmattack"')!, /disabled/, 'one of two placed: still disabled');
-      assert.match(bar(html), /all must attack — 1 to place/);
-      ui.click({ act: 'unit', id: String(u2) });
-      html = ui.click({ act: 'slot', ci: '1', row: '0' });
-      assert.doesNotMatch(tagWith(html, 'data-btn="confirmattack"')!, /disabled/, 'all placed: Attack! is live');
-      assert.doesNotMatch(bar(html), /to place/, 'and the hint is gone');
-      ui.actions();
-      ui.click({ btn: 'confirmattack' });
-      const out = ui.actions().filter(a => a.type === 'declareAttack');
-      assert.equal(out.length, 1, 'Attack! sent the declaration');
-      assert.doesNotThrow(() => apply(s, out[0]!), 'and the engine takes it');
-    } finally {
-      store.removeItem('algoLayout');
-    }
+    const { s, D, sent: [u1, u2] } = sentPool(48001, 2);
+    let html = ui.join(s, D, legalActions(s, D));
+    assert.equal(tagWith(html, 'data-btn="skipattack"'), null, 'no Don’t attack button');
+    assert.match(tagWith(html, 'data-btn="confirmattack"')!, /disabled/, 'nothing placed: Attack! is disabled');
+    assert.match(bar(html), /all must attack — 2 to place/);
+    ui.click({ act: 'unit', id: String(u1) });
+    html = ui.click({ act: 'slot', ci: '0', row: '0' });
+    assert.match(tagWith(html, 'data-btn="confirmattack"')!, /disabled/, 'one of two placed: still disabled');
+    assert.match(bar(html), /all must attack — 1 to place/);
+    ui.click({ act: 'unit', id: String(u2) });
+    html = ui.click({ act: 'slot', ci: '1', row: '0' });
+    assert.doesNotMatch(tagWith(html, 'data-btn="confirmattack"')!, /disabled/, 'all placed: Attack! is live');
+    assert.doesNotMatch(bar(html), /to place/, 'and the hint is gone');
+    ui.actions();
+    ui.click({ btn: 'confirmattack' });
+    const out = ui.actions().filter(a => a.type === 'declareAttack');
+    assert.equal(out.length, 1, 'Attack! sent the declaration');
+    assert.doesNotThrow(() => apply(s, out[0]!), 'and the engine takes it');
   });
 }
 
 test('CT-298 a sent spell token counts as still to place until it rides, and Attack with everything brings it', () => {
-  store.removeItem('algoLayout');
   const { s, D, sent: [u1, u2], tok } = sentPool(48004, 2, true);
   let html = ui.join(s, D, legalActions(s, D));
   assert.match(bar(html), /all must attack — 3 to place/, 'two units and one token');
@@ -148,19 +142,14 @@ test('CT-297 an emptied attack draws no block slot, says so, and still offers th
   const e = new E(h.state);
   e.destroy(ent(h, atk)!, 'is deleted'); e.settle(); h.state = e.s; absorb(h, e.events);
   assert.deepEqual(h.state.battle!.columns, [], 'the premise: the attack is empty');
-  for (const layout of ['regions', 'classic'] as const) {
-    if (layout === 'classic') store.setItem('algoLayout', '1'); else store.removeItem('algoLayout');
-    try {
-      let html = ui.join(h.state, D, legalActions(h.state, D));
-      assert.match(bar(html), /no attackers left to block — you may still send counterattackers/, `${layout}: the bar says so`);
-      assert.doesNotMatch(bar(html), /assign blockers/, `${layout}: no block wording`);
-      ui.click({ act: 'unit', id: String(d1) });
-      html = ui.html();
-      assert.doesNotMatch(html, /data-act="slot"/, `${layout}: no slot to block in, not even to the side`);
-      assert.match(bar(html), /data-btn="sendrest"/, `${layout}: the send is offered`);
-      ui.click({ act: 'unit', id: String(d1) });   // put it down again
-    } finally {
-      store.removeItem('algoLayout');
-    }
+  for (const layout of ['regions'] as const) {
+    let html = ui.join(h.state, D, legalActions(h.state, D));
+    assert.match(bar(html), /no attackers left to block — you may still send counterattackers/, `${layout}: the bar says so`);
+    assert.doesNotMatch(bar(html), /assign blockers/, `${layout}: no block wording`);
+    ui.click({ act: 'unit', id: String(d1) });
+    html = ui.html();
+    assert.doesNotMatch(html, /data-act="slot"/, `${layout}: no slot to block in, not even to the side`);
+    assert.match(bar(html), /data-btn="sendrest"/, `${layout}: the send is offered`);
+    ui.click({ act: 'unit', id: String(d1) });   // put it down again
   }
 });

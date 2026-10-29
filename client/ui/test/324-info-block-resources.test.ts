@@ -38,7 +38,6 @@ import { client } from './ui-driver.ts';
 const ui = await client();
 const MAIN = readFileSync(fileURLToPath(new URL('../main.ts', import.meta.url)), 'utf8');
 const CSS = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url)), 'utf8');
-const store = (globalThis as { localStorage: Storage }).localStorage;
 
 /** planning, seat 0 with a mixed row: 3 water open, 2 fire dormant, 1 dark
  * expended, 1 shard open; seat 1 with an opponent's face-down resource */
@@ -141,7 +140,6 @@ test('§2 it sits beside the row — below theirs, above yours — and never on 
 /* ── §3 the painted row ─────────────────────────────────────────────── */
 test('§3 counts, the WAKE run first, and no native title on the grouped row', () => {
   const h = game();
-  store.setItem('algoLayout', '2');
   ui.join(h.state, 0, legalActions(h.state, 0));
   const html = ui.update(h.state, legalActions(h.state, 0));
   const m = /<span class="resrow lresrow" data-animzone="res:0">([^]*?)<span class="resmana">/.exec(html);
@@ -159,19 +157,12 @@ test('§3 counts, the WAKE run first, and no native title on the grouped row', (
   // the initiative star keeps its slot on both names, so the life beside it never moves
   assert.equal((html.match(/<span class="linit(?: off)?"/g) ?? []).length, 2, 'a star slot on each name');
   assert.equal((html.match(/<span class="linit off"/g) ?? []).length, 1, 'one seat has the initiative');
-  // classic keeps its titles and has none of this
-  store.setItem('algoLayout', '1');
-  const classic = ui.update(h.state, legalActions(h.state, 0));
-  assert.match(classic, /class="rescard open water" title="water \(open\)"/);
-  assert.doesNotMatch(classic, /rescount|resgroup wake|linit/);
 });
 
 test('§3 with no activation left the dormant run fans like any other', () => {
   const h = game();
   h.state.players[0]!.activationsLeft = 0;
-  store.setItem('algoLayout', '2');
   const html = ui.update(h.state, legalActions(h.state, 0));
-  store.removeItem('algoLayout');
   assert.doesNotMatch(html, /resgroup wake/);
   assert.match(html, /<span class="rescount">2<\/span>/, 'the two dormant fires, counted');
 });
@@ -200,8 +191,11 @@ test('§5 board round 8: the info is ONE line — resources take what is left, t
 });
 
 test('§5 the frame round the board: no top bar on this board, an action bar that fits its content', () => {
-  const ui2 = MAIN.slice(MAIN.indexOf('<div class="stickytop">'));
-  assert.match(ui2, /\$\{regionsBoard\(\) \? '' : `<div class="topbar">/, 'the top bar is the classic board\'s only');
+  // board round 8 deleted the top bar with the classic board: the phases are
+  // icons on your info line, the chips are on the toolbar
+  const ui2 = MAIN.slice(MAIN.indexOf('<div class="stickytop">'), MAIN.indexOf('<div class="actionbar">'));
+  assert.ok(ui2.length > 0, 'the frame is where this test looks');
+  assert.doesNotMatch(ui2, /class="topbar"/, 'no top bar');
   // the action bar's floor lasted one round (owner, 2026-09-26: "much larger
   // than normal" in a battle) — the bar is as tall as what it holds
   assert.doesNotMatch(CSS, /#app\.board\.v2 \.actionbar[^{]*\{[^}]*min-height/);

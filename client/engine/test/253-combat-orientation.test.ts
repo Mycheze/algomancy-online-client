@@ -77,10 +77,12 @@ import type { EntityId, Seat } from '../src/types.ts';
 
 /** the real client, driven — see test/ui-driver.ts */
 const ui = await client();
-// the CLASSIC board's battle panel is what report #138 was about; the regions
-// board (the default since 2026-09-26) draws invaders in its own row, pinned
-// by ui/test/318 §5
-(globalThis as { localStorage: Storage }).localStorage.setItem('algoLayout', '1');
+// report #138 was written against the classic board's battle panel, which
+// took the invaders into a column of its own. The regions board — the only
+// board since board round 8 — stands them in a pile at the right of the
+// fight instead (owner, 2026-09-27: "spell tokens and other invaders can
+// actually be over on the right hand side of the battle area"), so §3 reads
+// the fight's BLOCK, which holds both the table and that pile.
 
 // ── reading the battle table out of the board ─────────────────────────
 
@@ -170,6 +172,15 @@ function placement(html: string): Map<EntityId, string> {
 /** every entity the battle panel drew ANYWHERE, halves or not — the
  * non-vacuity reader, and the one that must agree between the two views */
 const inPanel = (html: string): EntityId[] => entsIn(battlePanel(html));
+/** the block the fight is drawn in: the battle table and the invader pile at
+ * its right edge (`.linvside`) — everything up to the next block of the board */
+function fightBlock(html: string): string {
+  const at = html.search(/<div class="lfight [a-z]+ focus"/);
+  assert.ok(at >= 0, 'no fight block on the board');
+  const next = html.slice(at + 10).search(/<div class="(lfight|linv|lplay|linfo) /);
+  return html.slice(at, next < 0 ? undefined : at + 10 + next);
+}
+const inFight = (html: string): EntityId[] => entsIn(fightBlock(html));
 
 // ── fixtures ──────────────────────────────────────────────────────────
 
@@ -364,9 +375,10 @@ test('a token that rode in with the attack is drawn in the battle panel, not off
     'the premise: it is in no attacking column, so nothing else would draw it in the line');
 
   const board = ui.join(h.state, D, legalActions(h.state, D));
-  assert.ok(inPanel(board).includes(tok),
-    'the riding token is still parked in the region panel’s side strip rather than in the '
-    + 'fight it is part of — report #138');
+  assert.ok(inFight(board).includes(tok),
+    'the riding token is parked away from the fight it is part of — report #138');
+  assert.ok(entsIn(fightBlock(board).slice(fightBlock(board).indexOf('class="linvside"'))).includes(tok),
+    'it stands in the invader pile at the right of the fight');
 });
 
 test('the invaders are drawn once, by the battle panel or the region panel and never both', () => {
@@ -378,33 +390,14 @@ test('the invaders are drawn once, by the battle panel or the region panel and n
   assert.equal(drawn.length, 1,
     `the riding token is drawn ${drawn.length} times on the board — a panel that hands the `
     + 'invaders over has to be the only one that stops drawing them');
-  assert.ok(inPanel(board).includes(tok), 'and the one place it is drawn is the battle panel');
+  assert.ok(inFight(board).includes(tok), 'and the one place it is drawn is the fight');
 });
 
-test('the invaders stand on the side of the line the seat that controls them is on', () => {
-  // the reason this is a COLUMN and not a strip pinned to the top of the row:
-  // a strip reads as "on the attacker's side" for one seat and "on the
-  // defender's side" for the other, which is report #137 inside a fix for #138
-  const { h, A, D, tok } = ridingToken(25323);
-
-  const asDefender = ui.join(h.state, D, legalActions(h.state, D));
-  const defSide = placement(asDefender).get(tok);
-  const asAttacker = ui.join(h.state, A, legalActions(h.state, A));
-  const atkSide = placement(asAttacker).get(tok);
-
-  assert.ok(defSide, 'the defender is not shown the invading token in the battle table at all');
-  assert.ok(atkSide, 'nor is the attacker, who owns it');
-  // NON-VACUITY: the two seats are looking at the same column of the same
-  // table, so the only thing that may differ is which half of it.
-  assert.equal(defSide.split(' / ')[0], atkSide.split(' / ')[0],
-    'the two seats are not even looking at the same column');
-  assert.notEqual(defSide, atkSide,
-    'both seats see the invaders in the SAME half — one of them is being shown their '
-    + 'opponent’s units on their own side of the vs line');
-  const half = (s: string): string => s.split(' / ')[1]!.replace(/ pending$/, '');
-  assert.equal(half(defSide), 'bhalf top', 'the defender sees the invaders across the line');
-  assert.equal(half(atkSide), 'bhalf bot', 'the attacker sees his own, on his own side');
-});
+// (A third test here pinned that the classic battle panel's invader COLUMN
+// stood on its controller's side of the vs line, for both seats — #137 inside
+// #138. The regions board has no such column: the pile stands at the right of
+// the fight for both seats, which is the owner's 2026-09-27 placement, and
+// ui/test/318 §5 pins it.)
 
 test('while an attack is only being declared the region panel still draws the invaders', () => {
   /* THE OTHER DIRECTION OF THE HAND-OFF, and the one the fix creates rather
