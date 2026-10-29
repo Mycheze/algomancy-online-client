@@ -127,18 +127,26 @@ async function paint(s: GameState, seat: Seat): Promise<string> {
 
 /* ══ markup readers ═══════════════════════════════════════════════════════ */
 
-const strip = (html: string): string => (html.match(/<span[\s\S]*?class="tallyrow[\s\S]*?<\/span>\s*<\/span>/g) ?? []).join('');
+const strip = (html: string): string => (html.match(/<tr class="tallyrow[\s\S]*?<\/tr>/g) ?? []).join('');
 
 interface Row { name: string; n: number; sizes: string; mixed: boolean; burst: boolean; title: string }
 
-/** every tally row the strip painted, in the order it painted them */
+/** every tally row the corner's summary holds, in order. Since board round 8
+ * (checkpoint 4, owner 2026-10-29) the summary is the corner's hover tip, not a
+ * heading: a table row per name, and under the table one sentence per name
+ * saying what clicking one does (`title` here — it was the row's tooltip). It
+ * rides in the painted corner as an inert `<template>`, which is what this
+ * reads. */
 function tallyRows(html: string): Row[] {
   const out: Row[] = [];
-  const re = /<span\s+class="tallyrow([^"]*)"\s+title="([^"]*)"><span class="tallyname">([^<]*)<\/span\s*><b class="tallyn">×(\d+)<\/b><span class="tallyx">([^<]*)<\/span>/g;
+  const re = /<tr class="tallyrow([^"]*)"><th class="tallyname">([^<]*)<\/th><td class="tallyn">×(\d+)<\/td><td class="tallyx">([^<]*)<\/td><\/tr>/g;
+  const why = [...html.matchAll(/<div class="tipfoot tokwhy">([^<]*)<\/div>/g)].map(m => m[1]!);
   for (const m of html.matchAll(re)) {
+    const name = m[2]!;
     out.push({
       burst: m[1]!.includes('burst'), mixed: m[1]!.includes('mixed'),
-      title: m[2]!, name: m[3]!, n: Number(m[4]), sizes: m[5]!,
+      title: why.find(w => w.includes(`a ${name} `) || w.startsWith(`Each ${name} `)) ?? '',
+      name, n: Number(m[3]), sizes: m[4]!,
     });
   }
   return out;
@@ -260,25 +268,28 @@ test('§1b a group of one name at different sizes prints every size — the repo
     const r = rows[0]!;
     assert.equal(r.name, name);
     assert.equal(r.n, xs.length, `${name}: the count is the number you hold, not the number of sizes`);
-    assert.equal(r.sizes, 'X=1 ×2 · X=3 · X=7',
+    assert.equal(r.sizes, 'X=7 · X=3 · X=1 ×2',
       `${name}: the sizes and how many of each — "of which sizes they are", answered`);
     assert.ok(r.mixed, `${name}: a group whose Xs differ is marked as such — that is the reported case`);
     assert.ok(r.burst, `${name}: a group of more than one is marked as one chain`);
     assert.match(r.title, /[Bb]urst/,
       `${name}: the row must say what clicking one of these does — casting one casts all of them`);
-    assert.match(r.title, new RegExp(`ALL ${xs.length}\\b`),
+    assert.match(r.title, new RegExp(`all ${xs.length}\\b`, 'i'),
       `${name}: and how many that is`);
   }
 });
 
-test('§1c the tiles are ordered so a burst group is contiguous and reads smallest first', async () => {
+test('§1c the tiles are ordered so a burst group is contiguous and reads BIGGEST first', async () => {
   const name = BURST[0]!, other = BURST[BURST.length - 1]!;
   assert.notEqual(name, other, 'two distinct burst names to interleave');
   // seated in the order that makes id order WRONG: alternating names, sizes
-  // descending. Nothing but a sort can put this right.
+  // ascending. Nothing but a sort can put this right. (Owner, 2026-10-29: the
+  // tokens are "ordered by size, so that it's easier to tell how many
+  // big/small ones there are since their creation order is irrelevant" — the
+  // corner reads biggest first; it read smallest first until then.)
   const seeded = [
-    { name, x: 7 }, { name: other, x: 5 }, { name, x: 1 },
-    { name: other, x: 2 }, { name, x: 3 },
+    { name, x: 1 }, { name: other, x: 2 }, { name, x: 7 },
+    { name: other, x: 5 }, { name, x: 3 },
   ];
   const { s, seat } = holding(23303, seeded);
   const byId = new Map(Object.values(s.entities)
@@ -289,10 +300,10 @@ test('§1c the tiles are ordered so a burst group is contiguous and reads smalle
   const names = shown.map(t => t.card);
   assert.equal(new Set(names).size, names.filter((n, i) => names[i - 1] !== n).length,
     `the tiles interleave the two names (${names.join(', ')}) — a 3-of is three tiles apart`);
-  // …and ascending by X within a name, which is the order the tally prints
+  // …and descending by X within a name, which is the order the tally prints
   for (let i = 1; i < shown.length; i++) {
     if (shown[i]!.card !== shown[i - 1]!.card) continue;
-    assert.ok(shown[i]!.x! >= shown[i - 1]!.x!,
+    assert.ok(shown[i]!.x! <= shown[i - 1]!.x!,
       `${shown[i]!.card}: X=${shown[i - 1]!.x} then X=${shown[i]!.x} — the tiles do not agree with the tally`);
   }
 });
@@ -305,17 +316,34 @@ test('§1d no tokens means no tally — the rows are earned, not reserved', asyn
   assert.equal(strip(html), '', 'and nothing that looks like a row');
 });
 
-test('§1e the tally may not widen the strip — two cards abreast is load-bearing', () => {
-  // 70-playtest-round15 [61] pins that .tokenstrip fits two 52px cards even at
-  // its floor. A summary that set its own width would take that back, and the
-  // failure would surface as a region panel growing a column again.
-  for (const sel of ['.tokentally', '.tallyrow']) {
-    const body = cssRule(sel);
-    assert.equal(/(^|;)\s*(min-)?width\s*:/.test(body), false,
-      `${sel} sets a width — the strip's clamp is what keeps the tiles two abreast`);
-  }
-  assert.match(cssRule('.tallyrow'), /flex-wrap:\s*wrap/,
-    'a long row must wrap inside the strip rather than push it wider');
+test('§1e the summary is the corner\'s hover tip, not a heading over the tokens', async () => {
+  // Owner, 2026-10-29: the heading "is hard to read and too small … basically
+  // just removed and replaced with the same sort of overview box that you get
+  // when hovering a player name or resources". At 1280×720 it also ate the
+  // height the tokens needed, and they could not be seen at all.
+  const { s, seat } = holding(23306, [{ name: BURST[0]!, x: 1 }, { name: BURST[0]!, x: 3 }]);
+  const html = await paint(s, seat);
+  const corner = html.split('class="ltok"')[1] ?? '';
+  assert.ok(corner, 'the regions board drew a token corner');
+  assert.match(corner, /^[^>]*data-tip="tokens"/, 'the corner is an info-tip target (hover: the summary)');
+  assert.match(corner, /class="tokchip" data-btn="infotip"/, 'and a finger has a chip to tap for the same window');
+  const shown = html.replace(/<template class="toktip">[\s\S]*?<\/template>/g, '');
+  assert.equal(/tallyrow|tokentally/.test(shown), false,
+    'no tally drawn on the table — the rows live only in the inert template the tip shows');
+  assert.ok(tallyRows(corner).length === 1, 'and the template holds the row');
+});
+
+test('§1g alike tokens share one stack with a count; any difference keeps them apart', async () => {
+  const name = BURST[0]!;
+  const { s, seat } = holding(23307, [{ name, x: 1 }, { name, x: 3 }, { name, x: 1 }, { name, x: 1 }]);
+  const html = await paint(s, seat);
+  const zone = html.split(`data-animzone="tokens:${seat}"`)[1] ?? '';
+  const stacks = zone.split('<div class="tokstack').slice(1);
+  assert.equal(stacks.length, 2, 'X=3 and the three X=1s: two stacks');
+  assert.equal((stacks[0]!.match(/data-act="token"/g) ?? []).length, 1, 'the biggest, X=3, first and alone');
+  assert.equal(/class="tokcount"/.test(stacks[0]!), false, 'a stack of one has no count');
+  assert.equal((stacks[1]!.match(/data-act="token"/g) ?? []).length, 3, 'the three X=1s together, each still its own card');
+  assert.match(stacks[1]!, /<b class="tokcount">×3<\/b>/, 'under one count');
 });
 
 test('§1f a spell token that is NOT burst gets a row that does not claim the chain', async () => {
@@ -328,10 +356,10 @@ test('§1f a spell token that is NOT burst gets a row that does not claim the ch
       `${name} is not a burst spell, but its row is marked as one chain — the tally is reading the `
       + 'container it is drawn in instead of the card it is about');
     assert.equal(r.mixed, false, `${name}: two sizes that do not fire together are not a mixed chain`);
-    assert.equal(/ALL \d/.test(r.title), false,
+    assert.equal(/all \d/i.test(r.title), false,
       `${name}: the row promises that clicking one casts all of them, and apply.ts would cast one`);
     assert.equal(r.n, 2, `${name}: it is still counted — the count is true of every token`);
-    assert.equal(r.sizes, 'X=2 · X=4', `${name}: and so are the sizes`);
+    assert.equal(r.sizes, 'X=4 · X=2', `${name}: and so are the sizes, biggest first`);
   }
 });
 

@@ -3844,6 +3844,89 @@ function tokenHtml(t: Entity): string {
 }
 
 /**
+ * BOARD ROUND 8, CHECKPOINT 4 — THE TOKEN CORNER AS STACKS (owner, 2026-10-29:
+ * "Tokens of the same value could stack and just have a single count or fan out
+ * when hovered. They can also be ordered by size … their creation order is
+ * irrelevant.").
+ *
+ * Two tokens share a stack only when nothing about them differs on the board:
+ * the same card at the same X, wearing the same mods, and every flag `tokenHtml`
+ * draws from equal — riding, sent, castable, a board pick's candidate, a mod
+ * host, a placement warning, a finger's armed button. So a click on a stack is
+ * never ambiguous: whichever of its cards takes the click, the engine is handed
+ * a token that is the same as the others in every way it reads. Toggling one
+ * to ride changes its flags, and it leaves for a stack of its own.
+ *
+ * Every token is still its own real card in the DOM (its `data-id`, its flight
+ * anchor `e<id>`), only overlapped, so animations, board picks and the zoom
+ * work exactly as before.
+ */
+function tokenLookKey(t: Entity): string {
+  return JSON.stringify([
+    t.card, t.x ?? null, modsOf(t).map(m => m.card),
+    ui.spellTokens.includes(t.id), !!t.absent, ui.send.includes(t.id),
+    legalFor(t.controller).some(a => a.type === 'castSpellToken' && a.entityId === t.id),
+    tokenToggleMode(t), pickable(`unit:${t.id}`), modHostCache.tokens?.has(t.id) ?? false,
+    placeWarnCache.get(t.id) ?? null, ui.tapGo?.key === tokenGoKey(t.id),
+  ]);
+}
+
+/** the viewing order of a region's tokens: by name, then the BIGGEST X first
+ * (an unknown X last), then id so the order is total. A viewing order only —
+ * apply.ts casts a burst chain by id (see regionParts). */
+function tokenViewOrder(a: Entity, z: Entity): number {
+  return a.card.localeCompare(z.card) || (z.x ?? -Infinity) - (a.x ?? -Infinity) || a.id - z.id;
+}
+
+/** `tokens` (already in viewing order) as stacks of alike tokens, in order */
+function tokenStacks(tokens: readonly Entity[]): Entity[][] {
+  const by = new Map<string, Entity[]>();
+  for (const t of tokens) {
+    const k = tokenLookKey(t);
+    if (!by.has(k)) by.set(k, []);
+    by.get(k)!.push(t);
+  }
+  return [...by.values()];
+}
+
+/** one stack: its cards overlapped to a thin deck edge (`--edge`), the count
+ * on top. `--j` is how many cards lie above each one, so a hover can fan the
+ * stack inward without reflowing anything (style.css `.tokstack`). */
+function tokenStackHtml(stack: readonly Entity[]): string {
+  const k = stack.length;
+  // the whole deck edge is never more than 9px, however tall the stack
+  const edge = k > 1 ? Math.round(Math.min(3, 9 / (k - 1)) * 100) / 100 : 0;
+  return `<div class="tokstack${k > 1 ? ' many' : ''}" data-zoomclear style="--k:${k};--edge:${edge}px">${
+    stack.map((t, i) => `<div class="tokslot" style="--i:${i};--j:${k - 1 - i}">${tokenHtml(t)}</div>`).join('')}${
+    k > 1 ? `<b class="tokcount">×${k}</b>` : ''}</div>`;
+}
+
+/**
+ * The corner's summary, as the info tip shows it (owner, 2026-10-29: the
+ * heading "should be basically just removed and replaced with the same sort of
+ * overview box that you get when hovering a player name or resources"). One
+ * row per NAME, as the burst rule groups them, the sizes biggest first like the
+ * tiles; under the table, what clicking one does. It rides in the corner's
+ * markup as a `<template>` (inert, invisible), so the tip shows what this paint
+ * drew and test/233 reads it without hovering.
+ */
+function tokenTipHtml(tokens: readonly Entity[]): string {
+  const rows = tallyByName(tokens.map(t => ({ name: t.card, x: t.x })));
+  if (!rows.length) return '';
+  const sizes = (t: XTally): string => [...t.sizes].reverse()
+    .map(s => `X=${s.x ?? '?'}${s.n > 1 ? ` ×${s.n}` : ''}`).join(' · ');
+  return `<div class="tiphead">Spell tokens · ${tokens.length}</div><table class="tiptab toktab"><tbody>${
+    rows.map(t => `<tr class="tallyrow${t.burst && t.n > 1 ? ' burst' : ''}${t.burst && t.sizes.length > 1 ? ' mixed' : ''}"><th class="tallyname">${
+      esc(t.name)}</th><td class="tallyn">×${t.n}</td><td class="tallyx">${esc(sizes(t))}</td></tr>`).join('')
+  }</tbody></table>${rows.map(t => {
+    const why = !t.burst ? `Each ${t.name} is cast on its own.`
+      : t.n > 1 ? `Burst: clicking a ${t.name} casts all ${t.n} at once, as one chain${t.sizes.length > 1 ? ', of different sizes' : ''}.`
+      : '';
+    return why ? `<div class="tipfoot tokwhy">${esc(why)}</div>` : '';
+  }).join('')}`;
+}
+
+/**
  * Everything the client is holding OUT of the region panels because it is part
  * of a formation: declared, being built by me, or being built by the opponent
  * as I watch.
@@ -4041,8 +4124,12 @@ interface RegionParts {
    * regions board draws the region as a colour, not a caption */
   fieldZone: string;
   tokenStrip: string;
-  /** how many spell tokens the strip holds (the regions board sizes its corner by it) */
+  /** how many spell tokens the strip holds */
   tokenCount: number;
+  /** the regions board's token corner: the same tokens as stacks (checkpoint 4),
+   * its tally a hover tip — and how many stacks, which is what the corner is sized by */
+  tokenCorner: string;
+  tokenStackCount: number;
   invaderHtml: string;
   sentStrip: string;
   binMini: string;
@@ -4085,6 +4172,14 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
       }">✨ spell tokens (${ownTokens.length})</div>
         ${tokenTallyHtml(ownTokens)}
         <div class="zone tokenzone" data-animzone="tokens:${p}">${ownTokens.map(entHtml).join('')}</div></div>`
+    : '';
+  // the regions board's corner: alike tokens as one stack, biggest X first;
+  // the summary is a hover tip on the corner (touch: the ✨ chip), not a heading
+  const stacks = tokenStacks([...ownTokens].sort(tokenViewOrder));
+  const tokenCorner = stacks.length
+    ? `<span class="tokchip" data-btn="infotip" aria-label="spell tokens: the summary">✨${ownTokens.length}</span>
+        <div class="zone tokenzone" data-animzone="tokens:${p}">${stacks.map(tokenStackHtml).join('')}</div>
+        <template class="toktip">${tokenTipHtml(ownTokens)}</template>`
     : '';
   // #1: invaders sit as a compact strip at the SIDE of the region's space —
   // visually subordinate to the owner's formation, not front-and-center.
@@ -4257,6 +4352,8 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
     fieldZone,
     tokenStrip,
     tokenCount: ownTokens.length,
+    tokenCorner,
+    tokenStackCount: stacks.length,
     invaderHtml,
     sentStrip,
     binMini,
@@ -4431,14 +4528,16 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
     return `<div class="lseen ${over}" data-region="${over === 'mine' ? yRegion : tRegion}">${r.seenStrip}</div>`;
   };
   // the In Play block: the field zone, with the region's own spell tokens in
-  // the corner nearest the battle (the "spawned in combat" corner of the
-  // sketch — a token made mid-fight lands there, visibly not in the line).
-  // The corner is a fit zone of its own, one or two full-size cards wide
-  // (owner, 2026-09-23: tokens and invaders were "shrunk down so small" they
-  // could not be used), so its width never depends on what the field holds.
+  // a corner of their own. The corner is a fit zone of its own (owner,
+  // 2026-09-23: tokens and invaders were "shrunk down so small" they could not
+  // be used), so its width never depends on what the field holds. It stands at
+  // the OUTER end of the band — my right, their left — where the unit row
+  // rarely reaches (owner, 2026-10-29: at the seam end it "is taking up space
+  // specifically used for your units, which can get cramped" in deployment);
+  // style.css `.lplay .ltok { order }`. Same place in every phase.
   const play = (side: 'theirs' | 'mine', p: Seat, r: RegionParts, region: number): string =>
     `<div class="lplay ${side}${r.focus ? ` ${r.focus}` : ''}" data-region="${region}" data-p="${p}" data-fit="cards">
-        ${r.tokenStrip ? `<div class="ltok" data-fit="cards" style="--tokcols:${Math.min(2, r.tokenCount)}">${r.tokenStrip}</div>` : ''}
+        ${r.tokenCorner ? `<div class="ltok" data-fit="cards" data-tip="tokens" data-p="${p}" style="--tokcols:${Math.min(4, r.tokenStackCount)}">${r.tokenCorner}</div>` : ''}
         <div class="regionmain">${r.fieldZone}</div>
       </div>`;
   // the Invaders row: everything standing in this region that its owner does
@@ -10405,9 +10504,12 @@ document.addEventListener('mouseover', e => {
     resSumOff();
     // board round 8: a player's name (every pile as a number) and the phase
     // icons (the step in words) — ui/infotip.ts; a tap pins the same window
-    if (pointerCanHover() && tipTarget(e.target as Element)) {
-      zoomOff();
+    const tipEl = pointerCanHover() ? tipTarget(e.target as Element) : null;
+    if (tipEl) {
       tipAt(e.target as Element, tipFor);
+      // the token corner is a tip target AND holds cards: a token under the
+      // cursor still zooms (checkpoint 4), the tip beside the corner
+      if (tipEl.dataset['tip'] === 'tokens') zoomAt(e.target as Element); else zoomOff();
       return;
     }
     if (pointerCanHover()) tipAt(null, tipFor);
@@ -10447,6 +10549,8 @@ function tipFor(el: HTMLElement): string | null {
   const s = h.state;
   if (!inGame || !s) return null;
   if (el.dataset['tip'] === 'phase') return `<div class="tipline">${esc(phaseCaption())}</div>`;
+  // the token corner's summary, as this paint drew it (tokenTipHtml)
+  if (el.dataset['tip'] === 'tokens') return el.querySelector('template.toktip')?.innerHTML.trim() || null;
   if (el.dataset['tip'] !== 'counts') return toolTipHtml(el.dataset['tip'] ?? '');
   const p = Number(el.dataset['p']) as Seat;
   const pl = s.players[p];

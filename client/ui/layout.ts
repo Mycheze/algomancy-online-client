@@ -147,10 +147,24 @@ function cardsPlan(el: HTMLElement, baseCw: number, how: 'box' | 'row' | 'line' 
   const zone = el.querySelector('.regionmain .zone') ?? el.querySelector('.zone');
   const box = boxOf(zone);
   if (!zone || !box) return null;
+  // the token corner (checkpoint 4) holds STACKS: each is one card wide plus
+  // its deck edge (at most TOK_EDGES px, main.ts tokenStackHtml), and it may go
+  // under the field's floor rather than lose a stack below the band's edge —
+  // the die face and the count still read at TOK_FLOOR
+  if (el.classList?.contains('ltok')) {
+    const stacks = zone.querySelectorAll(':scope > .tokstack');
+    const ratio = zoneRatio(cardsIn(zone, ':scope > .tokstack .card'));
+    return fitCards(stacks.length, box, { cw: maxCw, gap: TOK_GAP + TOK_EDGES, ratio, floor: TOK_FLOOR });
+  }
   const n = zone.querySelectorAll(':scope > .card, :scope > .slot').length;
   const ratio = zoneRatio(cardsIn(zone, ':scope > .card'));
   return fitCards(n, row ? { w: box.w, h: Math.round(maxCw * ratio) + 1 } : box, { cw: maxCw, gap: 6, ratio });
 }
+
+/** the token corner's spacing: style.css `.ltok > .tokenzone` gap, the most a
+ * stack's deck edge adds (3 cards' worth, `--edge` ≤ 3px, plus the count's
+ * overhang), and the smallest card it will draw */
+const TOK_GAP = 4, TOK_EDGES = 10, TOK_FLOOR = 28;
 
 /** the vertical (or horizontal) padding + border of an element, from its
  * computed style — what lies between its border box and its content */

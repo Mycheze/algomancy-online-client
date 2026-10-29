@@ -77,6 +77,23 @@ export function zoomBox(card: Rect, view: { w: number; h: number }, target = ZOO
 }
 
 /**
+ * CHECKPOINT 4 (owner, 2026-10-29): a card in a STACK or a PILE — a token
+ * stack, the invaders — fans out when hovered, and a zoom centred on the card
+ * would sit right on the fan it opened. Such a card's zoom clears the ROW
+ * instead: wholly above `row` (its vertical span) when the window has the
+ * room, else wholly below, else where zoomBox put it. Across, it stays
+ * centred on the card. The fans run along the row, so the row's span is the
+ * same fanned or not. Pure, for test/322.
+ */
+export function clearRow(box: Rect, row: { top: number; bottom: number }, view: { w: number; h: number }): Rect {
+  const above = row.top - MARGIN - box.height;
+  if (above >= MARGIN) return { ...box, top: above };
+  const below = row.bottom + MARGIN;
+  if (below + box.height <= view.h - MARGIN) return { ...box, top: below };
+  return box;
+}
+
+/**
  * Where a card's menu goes while its card is held zoomed (round 4, owner
  * 2026-09-26: "the zoom gets in the way of the menu … it'd be much better UX
  * for the menu to be on top and the card to be frozen big"). The menu opens
@@ -226,8 +243,14 @@ function show(card: HTMLElement | null, animate: boolean, at?: { x: number; y: n
   copy.classList.add('zoomcopy');
   const extraH = decorate?.(card, copy)?.extraH ?? 0;
   const view = { w: innerWidth, h: innerHeight };
-  const box = at ? peekBox(r, view, at, extraH) : zoomBox(r, view, ZOOM_W, extraH);
+  let box = at ? peekBox(r, view, at, extraH) : zoomBox(r, view, ZOOM_W, extraH);
   if (!box) { drop(); return; }
+  // a stacked or piled card (`data-zoomclear` on the stack) clears its row
+  const pile = at ? null : card.closest?.('[data-zoomclear]');
+  if (pile) {
+    const pr = pile.getBoundingClientRect();
+    box = clearRow(box, { top: pr.top, bottom: pr.bottom }, view);
+  }
   put(card, copy, r, box, animate);
 }
 

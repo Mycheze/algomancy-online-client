@@ -76,6 +76,24 @@ export function besideBox(target: { top: number; height: number }, stripLeft: nu
   return { left, top };
 }
 
+/** the token corner's window (checkpoint 4): BESIDE the corner, on the side
+ * nearer the window's middle, its edge level with the corner's edge nearer the
+ * window's middle — a stacked token's zoom clears the corner's row on that
+ * side (zoom.ts clearRow), so the two do not meet. Kept inside the window.
+ * Pure — test/233 hands it boxes. */
+export const CORNER_GAP = 8;
+export function cornerBox(corner: { left: number; top: number; width: number; height: number },
+  box: { width: number; height: number }, view: { w: number; h: number }, gap = CORNER_GAP): { left: number; top: number } {
+  const M = 4;
+  const inward = corner.left + corner.width / 2 > view.w / 2 ? 'left' : 'right';
+  const want = inward === 'left' ? corner.left - gap - box.width : corner.left + corner.width + gap;
+  const left = Math.max(M, Math.min(view.w - box.width - M, want));
+  const lower = corner.top + corner.height / 2 > view.h / 2;
+  const want_ = lower ? corner.top + corner.height - box.height : corner.top;
+  const top = Math.max(M, Math.min(view.h - box.height - M, want_));
+  return { left, top };
+}
+
 function place(el: HTMLElement, html: string): void {
   const host = ensureLayer();
   if (!host || typeof el.getBoundingClientRect !== 'function') return;
@@ -85,6 +103,13 @@ function place(el: HTMLElement, html: string): void {
   if (strip) {
     const at = besideBox(el.getBoundingClientRect(), strip.getBoundingClientRect().left,
       { width: host.offsetWidth, height: host.offsetHeight }, { w: innerWidth, h: innerHeight });
+    host.style.left = `${at.left}px`;
+    host.style.top = `${at.top}px`;
+    return;
+  }
+  if (el.classList?.contains('ltok')) {
+    const at = cornerBox(el.getBoundingClientRect(), { width: host.offsetWidth, height: host.offsetHeight },
+      { w: innerWidth, h: innerHeight });
     host.style.left = `${at.left}px`;
     host.style.top = `${at.top}px`;
     return;

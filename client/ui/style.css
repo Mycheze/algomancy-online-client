@@ -4557,12 +4557,36 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
    with that the token zone inside it had no height at all and the tokens
    could not be seen or clicked (owner's game, 2026-09-23). */
 .lboard { --cwbase: var(--cw); }
-.lplay .ltok { flex: 0 0 auto; min-height: 0; display: flex; max-width: 45%;
-  width: calc(var(--cwbase) * var(--tokcols, 1) + 6px * (var(--tokcols, 1) - 1) + 16px); }
-.lplay .ltok .tokenstrip { flex: 1 1 auto; align-self: stretch; max-width: none; min-width: 0; width: auto;
-  min-height: 0; margin-top: 0; display: flex; flex-direction: column; overflow: hidden; }
-.lplay .tokenstrip .zone { flex: 1 1 0; min-height: 0; overflow: hidden; align-content: flex-start; }
-.lplay .ltok .tokenstrip .zone .card { width: var(--cw); }
+/* CHECKPOINT 4 (owner, 2026-10-29): the corner holds STACKS (main.ts
+   tokenStackHtml), sized by how many stacks there are, and stands at the
+   band's OUTER end — my right, their left (the band is row-reverse) — where
+   the unit row rarely reaches. Its tally is a hover tip (data-tip="tokens");
+   the ✨ chip just inside it is the finger's way to the same tip. Not
+   clipped: a hovered stack fans out over the band (which clips at its edge). */
+.lplay .ltok { order: 2; flex: 0 0 auto; min-height: 0; display: flex; flex-direction: column;
+  position: relative; overflow: visible; max-width: 45%;
+  width: calc(var(--cwbase) * var(--tokcols, 1) + 14px * var(--tokcols, 1) + 4px); }
+.lplay .ltok > .tokenzone { flex: 1 1 0; min-height: 0; margin: 0; overflow: visible; gap: 4px;
+  flex-wrap: wrap; align-content: flex-start; justify-content: flex-end; }
+.lplay.theirs .ltok > .tokenzone { justify-content: flex-start; }
+.lplay .ltok > .tokchip { position: absolute; top: 2px; right: 100%; margin-right: 3px; z-index: 2;
+  font-size: 11px; line-height: 1.4; padding: 0 5px; border-radius: 8px; white-space: nowrap;
+  color: var(--target); background: rgba(0, 0, 0, .45); border: 1px solid rgba(255, 255, 255, .15); cursor: help; }
+.lplay.theirs .ltok > .tokchip { right: auto; left: 100%; margin: 0 0 0 3px; }
+/* a stack: its cards one over the next, each --edge in from the one under it */
+.tokstack { position: relative; display: flex; flex: none; }
+.tokstack > .tokslot { flex: none; width: var(--cw); transition: transform .14s ease-out; }
+.tokstack > .tokslot + .tokslot { margin-left: calc(var(--edge) - var(--cw)); }
+.tokstack > .tokcount { position: absolute; right: -3px; bottom: -3px; z-index: 4; pointer-events: none;
+  font-size: max(11px, calc(var(--cw) * .24)); line-height: 1.25; padding: 0 5px; border-radius: 9px;
+  color: #fff; background: rgba(0, 0, 0, .78); border: 1px solid var(--target); }
+/* hovered, a stack fans inward — mine leftward, the top card staying put;
+   theirs rightward, the bottom card staying put — by transform, so nothing
+   else on the board moves */
+.tokstack.many:hover { z-index: 5; }
+.tokstack.many:hover > .tokcount { opacity: 0; }
+.lplay.mine .tokstack.many:hover > .tokslot { transform: translateX(calc(var(--j) * (var(--edge) - var(--cw) - 2px))); }
+.lplay.theirs .tokstack.many:hover > .tokslot { transform: translateX(calc(var(--i) * (var(--cw) + 2px - var(--edge)))); }
 .lplay.battledim { opacity: .8; }
 
 /* ── the Invaders rows and the idle battle bands: one row each ──────────── */
@@ -4664,7 +4688,8 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
    scrollbar, never a "+N" — the owner's choice, 2026-09-22. */
 .lboard [data-fitmode="fan"] .zone:not(.tokenzone) > .card + .card,
 .lboard [data-fitmode="fan"] .zone:not(.tokenzone) > .slot + .slot,
-.lboard .ltok[data-fitmode="fan"] .tokenzone > .card + .card { margin-left: calc(var(--fanstep) - var(--cw)); }
+.lboard .ltok[data-fitmode="fan"] .tokenzone > .tokstack + .tokstack { margin-left: calc(var(--fanstep) - var(--cw)); }
+.lboard .ltok[data-fitmode="fan"] .tokenzone { gap: 0; }
 .lboard [data-fitmode="fan"] .zone > .card:hover,
 .lboard [data-fitmode="fan"] .zone > .card:focus-within { z-index: 6; transform: translateY(-6px); }
 /* 8px = a column's own chrome (6) + the gap (2): each column then starts
@@ -4801,6 +4826,11 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 #infotip .tipline.dim, #infotip .tipfoot { color: var(--dim); }
 #infotip .tiptab tr.tiprun > * { color: var(--accent); }
 #infotip .tipfoot { margin-top: 6px; color: var(--dim); font-size: 11px; line-height: 1.35; }
+/* the token corner's table (checkpoint 4): name · how many · the sizes, biggest first */
+#infotip .toktab th { color: var(--text); font-weight: 600; font-size: 13px; }
+#infotip .toktab td.tallyn { padding: 1px 10px 1px 0; }
+#infotip .toktab td.tallyx { text-align: left; font-weight: 400; font-size: 13px; color: var(--target); white-space: nowrap; }
+#infotip .tokwhy + .tokwhy { margin-top: 2px; }
 #cardzoom > .zoomcopy { box-shadow: 0 14px 40px rgba(0, 0, 0, .75), 0 0 0 1px rgba(0, 0, 0, .5);
   border-radius: 10px; will-change: transform; }
 #cardzoom > .zoomcopy img { border-radius: 10px; }

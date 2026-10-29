@@ -194,8 +194,9 @@ test('§5 invaders: the Invaders row, or the fight\'s strip while their region i
     const html = paint(f, true);
     assert.doesNotMatch(html, /invadercol/, `${f.label}: the battle panel took the invaders`);
     // the corner is a fit zone of its own (owner, 2026-09-23: the tokens had
-    // no height and could not be clicked), so the strip sits in .ltok
-    assert.match(html, /<div class="lplay [^"]*"[^>]*>\s*<div class="ltok" data-fit="cards"[^>]*>\s*<div class="tokenstrip">/, `${f.label}: the token strip is in an In Play block`);
+    // no height and could not be clicked), holding the tokens as stacks
+    // (checkpoint 4, 2026-10-29) — no heading, its summary a hover tip
+    assert.match(html, /<div class="lplay [^"]*"[^>]*>\s*<div class="ltok" data-fit="cards" data-tip="tokens"[^>]*>[\s\S]*?<div class="zone tokenzone"[^>]*>\s*<div class="tokstack/, `${f.label}: the token corner is in an In Play block`);
   }
   const classic = paint(FIX[3]!, false);
   assert.match(classic, /invadercol/, 'positive control: the classic board does hand a battle its invaders');
