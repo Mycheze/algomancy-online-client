@@ -383,7 +383,7 @@ export const BATCH_Q: Record<string, Scenario> = {
       LOOK
       + 'Battle, round 1: you attacked their region with two columns and have priority. Three of their units '
       + 'stand in your region and four of yours in theirs; you hold eight spell tokens (Fireball 3 ×2, '
-      + 'Fireball 2, Fireball 1 ×4, Poison 1).\n'
+      + 'Fireball 2, Fireball 1 ×4, Poison 1); they hold three Fireballs (2, 2, 1).\n'
       + 'LOOK: each side\'s invaders are a small pile with a count; your tokens are four stacks at the right '
       + 'end of your In Play, nothing cut off even in a small window.\n'
       + 'TRY: hover a pile and a stack — each fans out, and the zoom stands clear of it. Hover the token corner: '
@@ -414,6 +414,11 @@ export const BATCH_Q: Record<string, Scenario> = {
       }
       const myRegion = s.regions.findIndex(r => r.owner === YOU);
       const theirRegion = s.regions.findIndex(r => r.owner === OPPONENT);
+      // three of theirs at home: their corner is at the LEFT end of their In Play
+      for (const x of [2, 2, 1]) {
+        const id = s.nextId++;
+        s.entities[id] = { ...structuredClone(fb), id, x, controller: OPPONENT, owner: OPPONENT, region: theirRegion };
+      }
       // their Trashling, Bubb and Slink stand in my region; my Good Whale, Guardian, Bubb, Slink in theirs
       for (const id of ids.opponent.slice(2)) s.entities[id]!.region = myRegion;
       for (const id of ids.you.slice(3)) s.entities[id]!.region = theirRegion;

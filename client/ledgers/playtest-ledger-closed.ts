@@ -2918,7 +2918,7 @@ export const CLOSED: LedgerEntry[] = [
       '232-log-modal.test.ts::§2 the generic right-click menu opens it, and the menu decides that',
       '232-log-modal.test.ts::§3 every affordance the modal emits is a live one',
       '232-log-modal.test.ts::§4 the story toggle and its footer moved into the modal, both working',
-      '232-log-modal.test.ts::§5 the rail did not become dead space, and the modal is still painted',
+      '232-log-modal.test.ts::§5 the modal is still painted',
     ],
     note:
       'ROUND 32. RULED AND FIXED 2026-08-29 (now CR D6.15). ⚠ THIS DOES NOT RETRACT ROUND 31 WORK. Report #125 asked for a '

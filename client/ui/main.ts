@@ -7399,8 +7399,10 @@ function toolClocksHtml(): string {
   const warnAt = clockWarnAt(clockSnap.start);
   const cell = (seat: Seat, who: string): string => {
     const ms = clockDisplayMs(seat);
-    const cls = `clocktime ${who}${clockSnap!.running[seat] && ms > 0 ? ' run' : ''}${
-      ms > 0 && ms <= warnAt ? ' warn' : ''}${ms <= 0 ? ' exp' : ''}`;
+    // BL-27: critical at clockWarnAt — the comprehensive rules quote this line
+    // (annexd.clocks.banks.critical), so it keeps its words
+    const cls = `clocktime ${who}${clockSnap!.running[seat] && ms > 0 ? ' run' : ''} `
+      + `${ms > 0 && ms <= warnAt ? 'warn' : ''} ${ms <= 0 ? 'exp' : ''}`;
     return `<span class="${cls}" data-clkseat="${seat}" data-short="1">${fmtClockShort(ms)}</span>`;
   };
   return `<div class="tbclocks" data-tip="clocks" data-btn="infotip" aria-label="chess clocks">${

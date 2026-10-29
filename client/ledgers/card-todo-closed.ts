@@ -7211,7 +7211,7 @@ export const CLOSED: TodoEntry[] = [
       '232-log-modal.test.ts::§3 every affordance the modal emits is a live one',
       '232-log-modal.test.ts::§3b a card named only in the log is still right-clickable from inside the modal',
       '232-log-modal.test.ts::§4 the story toggle and its footer moved into the modal, both working',
-      '232-log-modal.test.ts::§5 the rail did not become dead space, and the modal is still painted',
+      '232-log-modal.test.ts::§5 the modal is still painted',
     ],
     closed:
       'RULED AND FIXED 2026-08-29 (now CR D6.15a). ALL THIRTEEN of the class were carried; none dropped. '

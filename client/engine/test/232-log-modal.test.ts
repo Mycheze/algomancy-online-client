@@ -319,20 +319,11 @@ test('§4 the story toggle and its footer moved into the modal, both working', a
   closeLog(ui);
 });
 
-/* ── §5 what the rail does with the space, and what still paints it ─────── */
+/* ── §5 what still paints it ─────────────────────────────────────────── */
 
-test('§5 the rail did not become dead space, and the modal is still painted', async () => {
-  /* `#app.board .side` is `overflow: hidden` on purpose, so every child has to
-   * manage its own height and exactly one of them has to absorb the slack. The
-   * log used to be that child. Removing it without handing the job on is the
-   * dead-space regression the note in style.css records as already fixed
-   * once — and no markup assertion can see it. */
-  const board = CSS.slice(CSS.indexOf('#app.board {'));
-  const fillers = [...board.matchAll(/^#app\.board (\.[a-z]+) \{[^}]*flex: 1 1 0/gm)].map(x => x[1]);
-  assert.deepEqual(fillers, ['.preview'],
-    'exactly one child of the board rail absorbs its slack, and with the log gone it is the '
-    + 'focus viewer');
-
+test('§5 the modal is still painted', async () => {
+  // (the half of this that asked which child of the side rail absorbs its
+  // slack went with the rail — board round 8 made it a toolbar)
   // every class the modal emits still has a rule somewhere — DERIVED from the
   // markup, so a row class that survives the move but loses its colour is
   // caught here rather than by looking at the screen
