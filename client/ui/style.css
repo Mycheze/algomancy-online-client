@@ -4668,16 +4668,37 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .lfight.focus[data-stage="beside"] .stagerow .remind { display: none; }
 .lfight.focus { position: relative; }
 .lfight.focus .linvside { position: absolute; top: var(--gap); bottom: var(--gap); right: var(--gap); width: var(--invw, 36px);
-  display: flex; flex-direction: column; align-items: center; overflow: hidden; z-index: 1; }
-.lfight.focus .linvside .invaders { min-width: 0; max-width: none; width: 100%; margin: 0; padding: var(--gap) 0;
-  box-sizing: border-box; display: flex; flex-direction: column; align-items: center; }
-.lfight.focus .linvside .invaderzone { flex-direction: column; flex-wrap: nowrap; align-items: center; gap: 0; margin: 0; }
-.lfight.focus .linvside .invaderzone > .card + .card { margin-top: var(--invstep, 2px); }
-.lfight.focus .linvside .invaderzone > .card:hover { z-index: 6; }
-/* a full card's P/D plate would cover half of a strip card: it scales with it */
-.lfight.focus .linvside .card .stats { font-size: max(8px, calc(var(--cw) * .3)); padding: 0 2px; line-height: 1.2; }
-/* the plate is smaller here, so the strip's reserve beside it is too */
-.lboard .lfight.focus .linvside .card:has(> .stats) > .badges { right: calc(max(8px, var(--cw) * .3) * 1.8 + 4px); }
+  display: flex; flex-direction: column; align-items: flex-end; overflow: visible; z-index: 1; }
+.lfight.focus .linvside .invaders { min-width: 0; max-width: none; width: 100%; margin: 0; padding: var(--gap) 4px 0 0;
+  box-sizing: border-box; display: flex; justify-content: flex-end; overflow: visible; }
+
+/* ── CHECKPOINT 4: invaders as a PILE (owner, 2026-10-29) — small cards, each
+      --pilestep past the one under it (ui/fit.ts pileStepFrac); hovering the
+      pile fans it along its row by transform, so nothing else moves:
+      rightward, or leftward in the fight's strip (`fanleft`, at the block's
+      right edge). `open` (a board pick can land in it, or a finger tapped its
+      count) holds it fanned. ─────────────────────────────────────────────── */
+.lboard .invpile { position: relative; display: flex; flex-wrap: nowrap; gap: 0; margin: 0; overflow: visible; }
+.lboard .invpile > .invslot { flex: none; width: var(--cw); transition: transform .14s ease-out; }
+.lboard .invpile > .invslot + .invslot { margin-left: calc(var(--pilestep, 0px) - var(--cw)); }
+.lboard .invpile.many:hover, .lboard .invpile.open { z-index: 6; }
+.lboard .invpile.many:hover > .invslot, .lboard .invpile.open > .invslot {
+  transform: translateX(calc(var(--i) * (var(--cw) + 2px - var(--pilestep, 0px)))); }
+.lboard .invpile.fanleft.many:hover > .invslot, .lboard .invpile.fanleft.open > .invslot {
+  transform: translateX(calc(var(--j) * (var(--pilestep, 0px) - var(--cw) - 2px))); }
+.lboard .invpile > .pilecount { position: absolute; right: -3px; bottom: -3px; z-index: 4;
+  font: inherit; font-size: 11px; line-height: 1.25; padding: 0 5px; border-radius: 9px; cursor: pointer;
+  color: #fff; background: rgba(0, 0, 0, .78); border: 1px solid var(--line); }
+.lboard .invpile.many:hover > .pilecount, .lboard .invpile.open > .pilecount { opacity: 0; }
+.lboard .invpile.open > .pilecount { opacity: .9; right: auto; left: -3px; }
+.lboard .invpile.fanleft.open > .pilecount { left: auto; right: -3px; }
+/* a full card's P/D plate would cover half of a pile card: it scales with it */
+.lboard .invpile .card .stats { font-size: max(8px, calc(var(--cw) * .3)); padding: 0 2px; line-height: 1.2; }
+/* the plate is smaller here, so the reserve beside it is too */
+.lboard .invpile .card:has(> .stats) > .badges { right: calc(max(8px, var(--cw) * .3) * 1.8 + 4px); }
+/* the Invaders row: the pile's row is as tall as its cards, no more */
+.linv .invaders { overflow: visible; }
+.lboard .linv { overflow: visible; }
 
 /* ── card size: the fit pass writes --cw on each [data-fit] zone ──────────
       The classic strips pin their cards in px; here every card in a zone

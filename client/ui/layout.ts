@@ -13,7 +13,7 @@
  * the first one that draws both.
  */
 import type { GameState, Seat } from '../engine/src/types.ts';
-import { FLOOR as CARD_FLOOR, RATIO, fitBattle, fitCards, fitRes, fitSendBox, planBattleBoard, type FitPlan } from './fit.ts';
+import { FLOOR as CARD_FLOOR, RATIO, fitBattle, fitCards, fitRes, fitSendBox, pileStepFrac, planBattleBoard, type FitPlan } from './fit.ts';
 
 const PREF = 'algoLayout';
 
@@ -78,6 +78,7 @@ export function fitBoard(root: ParentNode, baseCw: number): void {
   for (const el of zones) {
     const kind = el.dataset['fit'];
     if (kind === 'res') { resLine(el); continue; }
+    if (kind === 'pile') { pileRow(el, baseCw); continue; }
     const plan = kind === 'battle' ? battlePlan(el, baseCw)
       : cardsPlan(el, baseCw, kind === 'row' ? 'row' : kind === 'line' ? 'line' : kind === 'band' ? 'band' : 'box');
     if (!plan) continue;
@@ -206,7 +207,12 @@ const COL_GAP = 2, COL_CHROME = 6;
  * "can actually be over on the right hand side of the battle area", "WAY
  * smaller", and "always smaller than the actual units in formation"): each
  * card this fraction of the formation's width, the strip `pad` wider */
-const INV_FRAC = 0.6, INV_PAD = 8, INV_GAP = 2;
+const INV_FRAC = 0.45, INV_PAD = 8;
+/** checkpoint 4 (owner, 2026-10-29: invaders "way too big … can be kept
+ * generally smaller/overlapping"): the strip is a pile now — INV_FRAC went
+ * 0.6 → 0.45 — and a pile card is never under INV_MIN; the Invaders row of a
+ * region not being fought in piles its cards at PILE_FRAC of the base card */
+const INV_MIN = 30, PILE_FRAC = 0.5;
 /** CT-192: the counterattack tray's caption, rule and margins (style.css
  * `.stagerow`), over what fitBattle already allows one rank below the line */
 const STAGE_CHROME = 8;
@@ -249,7 +255,7 @@ function battlePlan(el: HTMLElement, baseCw: number): FitPlan | null {
  * and the height its modded units add to each half (`extraOf`) */
 function battleOpts(inv: number, extra?: { top: number; bot: number }): Parameters<typeof fitBattle>[4] {
   return {
-    cw: BATTLE_CAP, gap: COL_GAP, chrome: COL_CHROME, floor: FLOOR, side: { n: inv, frac: INV_FRAC, pad: INV_PAD },
+    cw: BATTLE_CAP, gap: COL_GAP, chrome: COL_CHROME, floor: FLOOR, side: { n: inv, frac: INV_FRAC, pad: INV_PAD, min: INV_MIN },
     ...(extra && (extra.top || extra.bot) ? { extra } : {}),
   };
 }
@@ -438,13 +444,23 @@ function sideStrip(el: HTMLElement, plan: FitPlan): void {
   // on the block too: the columns centre in the width the strip leaves them
   // (style.css pads `.cols` by it)
   el.style.setProperty('--invw', `${plan.side.w}px`);
-  const cards = cardsIn(strip, '.card');
-  const n = cards.length;
-  // every card's own height: a modded invader is taller by its strips
-  const tall = cards.reduce((t, c) => t + Math.round(plan.side!.cw * RATIO * (1 + modhOf(c))), 0);
-  const h = boxOf(strip)?.h ?? 0;
-  const over = n > 1 && h > 0 && tall + (n - 1) * INV_GAP > h;
-  strip.style.setProperty('--invstep', over ? `${Math.floor((h - tall) / (n - 1))}px` : `${INV_GAP}px`);
+  // checkpoint 4: a pile along the strip's top, each card a sliver past the last
+  const n = cardsIn(strip, '.invslot').length;
+  strip.style.setProperty('--pilestep', `${Math.round(plan.side.cw * pileStepFrac(n))}px`);
+}
+
+/** the Invaders row of a region not being fought in (checkpoint 4): a pile of
+ * small cards — PILE_FRAC of the base card, each a sliver past the last. Its
+ * size depends on nothing it changes, so it cannot chase its own tail. */
+function pileRow(el: HTMLElement, baseCw: number): void {
+  const n = cardsIn(el, '.invslot').length;
+  if (!n) return;
+  const cw = Math.max(INV_MIN, Math.round(baseCw * PILE_FRAC));
+  const key = `pile|${cw}|${n}`;
+  if (lastFit.get(el) === key) return;
+  lastFit.set(el, key);
+  el.style.setProperty('--cw', `${cw}px`);
+  el.style.setProperty('--pilestep', `${Math.round(cw * pileStepFrac(n))}px`);
 }
 
 /**

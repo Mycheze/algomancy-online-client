@@ -39,7 +39,7 @@ export interface FitOpts {
    * (owner, 2026-09-27): each card `frac` of the formation's width — ALWAYS
    * smaller than the units in the line — plus `pad` px of strip around it.
    * Its width comes out of the same box the columns stand in. */
-  side?: { n: number; frac: number; pad: number };
+  side?: { n: number; frac: number; pad: number; min?: number };
   /** battleMeasure: how much taller than its ranks of plain cards each half
    * of the table stands, in card heights — a modded unit hangs its mods under
    * it (main.ts fieldMods), so a column holding one is that much longer. The
@@ -128,6 +128,21 @@ export function fitSendBox(cards: number, box: FitBox, o: FitOpts): FitPlan {
   return plan.mode === 'fan' ? { ...plan, step: Math.min(plan.step, Math.floor(box.w / plan.cols)) } : plan;
 }
 
+/**
+ * CHECKPOINT 4 — AN INVADER PILE (owner, 2026-10-29: "kept generally
+ * smaller/overlapping themselves and fan out when hovered over"). Each card
+ * after the first shows `pileStepFrac(n)` of a card width past the one under
+ * it: 30%, closing up so a pile is never wider than 1.6 cards however many it
+ * holds. `pileSpan` is the whole pile's width in card widths. Pure, test/449.
+ */
+export const PILE_STEP = 0.3, PILE_MAX = 1.6;
+export function pileStepFrac(n: number): number {
+  return n > 1 ? Math.min(PILE_STEP, (PILE_MAX - 1) / (n - 1)) : 0;
+}
+export function pileSpan(n: number): number {
+  return n > 0 ? 1 + (n - 1) * pileStepFrac(n) : 0;
+}
+
 /** the battle table's two measures at a card width `cw`: how wide its row of
  * `cols` columns (and the invader strip, with `o.side`) stands, and how tall
  * its `ranksTop` + `ranksBot` ranks and the vs line between them stand. One
@@ -142,8 +157,11 @@ export function battleMeasure(cols: number, ranksTop: number, ranksBot: number, 
   const COL_CHROME = o.chrome ?? 14, LABEL = 18, VS = 17, GHOST = 22, RANK_GAP = 4;
   const half = (n: number, cw: number, more = 0): number =>
     (n ? n * Math.round(cw * ratio) + Math.round(cw * ratio * more) + RANK_GAP * (n - 1) : GHOST);
-  const sideCw = (cw: number): number => Math.max(1, Math.round(cw * (o.side?.frac ?? 0)));
-  const sideW = (cw: number): number => (o.side && o.side.n > 0 ? sideCw(cw) + o.side.pad : 0);
+  // checkpoint 4: the strip is a PILE along a row (pileSpan), its cards
+  // `frac` of the line's, never under `min`
+  const sideCw = (cw: number): number => Math.max(o.side?.min ?? 1, Math.round(cw * (o.side?.frac ?? 0)));
+  const sideW = (cw: number): number =>
+    (o.side && o.side.n > 0 ? Math.round(sideCw(cw) * pileSpan(o.side.n)) + o.side.pad : 0);
   return {
     width: (cw: number): number => cols * (cw + COL_CHROME) + o.gap * (cols - 1) + sideW(cw),
     height: (cw: number): number =>

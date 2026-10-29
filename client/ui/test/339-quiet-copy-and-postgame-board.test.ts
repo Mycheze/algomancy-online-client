@@ -182,8 +182,8 @@ test('339 §7 the stat plate sits top-right, and the badge strip stops short of 
   assert.doesNotMatch(body, /bottom:/, 'and not to the bottom any more');
   assert.match(CSS, /^\.card:has\(> \.stats\) > \.badges \{ right: 32px; \}/m,
     'a card with a plate reserves the plate\'s lane in the badge strip');
-  assert.match(CSS, /^\.lboard \.lfight\.focus \.linvside \.card:has\(> \.stats\) > \.badges \{ right: calc\(/m,
-    'and the smaller invader cards reserve a smaller lane');
+  assert.match(CSS, /^\.lboard \.invpile \.card:has\(> \.stats\) > \.badges \{ right: calc\(/m,
+    'and the smaller invader cards (the pile, checkpoint 4) reserve a smaller lane');
   assert.match(CSS, /^\.card \.dmg \{ position: absolute; bottom: 2px; left: 2px;/m, 'damage stays bottom-left');
 });
 

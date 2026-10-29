@@ -43,7 +43,9 @@ test('report #200: with no columns placed yet, the invader strip is still sized'
   assert.ok(Number.isFinite(cw), 'the strip gets a card width of its own (it kept the full 78px before)');
   assert.ok(cw < 78, `and it is a strip card, smaller than a full one (got ${cw}px)`);
   assert.ok(strip.style.set.has('--invw'), 'the strip\'s own width is written too');
-  assert.ok(strip.style.set.has('--invstep'), 'and how far its cards overlap to fit its height');
+  // checkpoint 4 (owner, 2026-10-29): the strip is a pile along a row, each
+  // card a sliver past the one under it — it used to stand them down its height
+  assert.ok(strip.style.set.has('--pilestep'), 'and how far its cards overlap in the pile');
 });
 
 test('report #200: a fight with no columns and no invaders is still left alone', () => {
@@ -56,5 +58,6 @@ test('report #200: fitBattle plans the strip with zero columns', () => {
   const side = { n: 4, frac: 0.6, pad: 12 };
   const p = fitBattle(0, 0, 0, { w: 0, h: 0 }, { cw: 86, gap: 6, chrome: 8, floor: 40, side });
   assert.equal(p.cols, 0);
-  assert.deepEqual(p.side, { cw: 52, w: 64 }, 'the same strip a fight with columns would carry');
+  // four cards in a pile span 1.6 card widths (ui/fit.ts pileSpan): 52 × 1.6 + 12
+  assert.deepEqual(p.side, { cw: 52, w: 95 }, 'the same strip a fight with columns would carry');
 });

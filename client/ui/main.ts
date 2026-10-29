@@ -3927,6 +3927,31 @@ function tokenTipHtml(tokens: readonly Entity[]): string {
 }
 
 /**
+ * BOARD ROUND 8, CHECKPOINT 4 — THE INVADERS AS A PILE (owner, 2026-10-29:
+ * "invaders tend to be way too big, when they're largely irrelevant and can be
+ * kept generally smaller/overlapping themselves and fan out when hovered
+ * over"). Small cards (ui/layout.ts sizes them), each overlapping the one
+ * before so a sliver of it shows (`--pilestep`); hovering the pile fans it out
+ * along its row by transform, so nothing else moves — rightward in the
+ * Invaders row, leftward (`fanleft`) in the fight's strip at the block's
+ * right edge. A pile also stands fanned while a board pick can land on one of
+ * its cards, or a finger has opened it with its count (`pilefan`), so every
+ * card can be reached without hovering. Each card is its own real card, so the
+ * zoom, picks and flights work as before; a piled card's zoom clears the row
+ * (`data-zoomclear`, zoom.ts clearRow).
+ */
+const openPiles = new Set<string>();
+function invaderPileHtml(region: number, ents: readonly Entity[]): string {
+  const n = ents.length;
+  const key = `inv:${region}`;
+  const open = n > 1 && (openPiles.has(key) || ents.some(en => pickable(`unit:${en.id}`)));
+  return `<div class="invaders"><div class="zone invaderzone invpile${n > 1 ? ' many' : ''}${open ? ' open' : ''}" data-zoomclear style="--n:${n}">${
+    ents.map((en, i) => `<div class="invslot" style="--i:${i};--j:${n - 1 - i}">${standingEntHtml(en)}</div>`).join('')}${
+    n > 1 ? `<button class="pilecount" data-btn="pilefan" data-pile="${key}" aria-label="${open ? 'close' : 'spread out'} the ${n} invaders">×${n}</button>` : ''
+  }</div></div>`;
+}
+
+/**
  * Everything the client is holding OUT of the region panels because it is part
  * of a formation: declared, being built by me, or being built by the opponent
  * as I watch.
@@ -4131,6 +4156,9 @@ interface RegionParts {
   tokenCorner: string;
   tokenStackCount: number;
   invaderHtml: string;
+  /** the regions board's invaders: the same cards as a small overlapping
+   * pile that fans out when hovered (checkpoint 4, invaderPileHtml) */
+  invaderPile: string;
   sentStrip: string;
   binMini: string;
   cache: string;
@@ -4355,6 +4383,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
     tokenCorner,
     tokenStackCount: stacks.length,
     invaderHtml,
+    invaderPile: inv && !battleHoldsInvaders(region) ? invaderPileHtml(region, inv.ents) : '',
     sentStrip,
     binMini,
     cache: regionCacheHtml(p),
@@ -4555,8 +4584,8 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
   // sizes the strip with the battle.
   const fightingIn = (region: number): boolean => !!b && b.region === region;
   const invaders = (side: 'theirs' | 'mine', _p: Seat, r: RegionParts, region: number): string => {
-    const html = fightingIn(region) ? '' : r.invaderHtml;
-    return `<div class="linv ${side}${html ? '' : ' empty'}" data-region="${region}" data-fit="row">
+    const html = fightingIn(region) ? '' : r.invaderPile;
+    return `<div class="linv ${side}${html ? '' : ' empty'}" data-region="${region}" data-fit="pile">
         ${html}
       </div>`;
   };
@@ -4567,7 +4596,7 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
   const fight = (side: 'theirs' | 'mine', _p: Seat, r: RegionParts, region: number): string => {
     const here = fightingIn(region);
     const send = here ? '' : counterSendHtml();
-    const side_ = here && r.invaderHtml ? `<div class="linvside">${r.invaderHtml}</div>` : '';
+    const side_ = here && r.invaderPile ? `<div class="linvside">${r.invaderPile.replace('class="zone invaderzone invpile', 'class="zone invaderzone invpile fanleft')}</div>` : '';
     const inner = here ? battle + side_ : send || r.sentStrip;
     const cls = here ? ' focus' : send ? ' sendhere' : inner ? ' incoming' : ' idle';
     // round 7: the counterattackers heading here wrap down the narrow idle
@@ -11146,6 +11175,11 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   // board round 8: a tap (or a click) on a player's name or the phase icons
   // pins the window a hover shows — no hover-only information (test/273)
   infotip: btn => { tipToggle(btn, tipFor); return 'no-repaint'; },
+  // a finger opens (or closes) an invader pile with its count (invaderPileHtml)
+  pilefan: btn => {
+    const k = btn.dataset['pile'] ?? '';
+    if (openPiles.has(k)) openPiles.delete(k); else openPiles.add(k);
+  },
   pickhide: () => { pickHidden = true; },
   pickshow: () => { pickHidden = false; },
   pspick: psButton, pshide: psButton, psshow: psButton, psconfirm: psButton,
