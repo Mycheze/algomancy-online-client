@@ -7205,7 +7205,7 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: 'Start a game: the log panel should not be on screen; right-click the field and choose "View game log".',
     guards: [
-      '232-log-modal.test.ts::§1 the board no longer carries the log, and the rail is still a rail',
+      '232-log-modal.test.ts::§1 the board no longer carries the log, and the toolbar is still drawn',
       '232-log-modal.test.ts::§2 the generic right-click menu opens it, and the menu decides that',
       '232-log-modal.test.ts::§2b Escape and Close both put it away',
       '232-log-modal.test.ts::§3 every affordance the modal emits is a live one',
@@ -7285,7 +7285,7 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       '233-burst-count-and-size.test.ts::§1a every burst name you hold gets its own row, named, counted',
       '233-burst-count-and-size.test.ts::§1b a group of one name at different sizes prints every size — the report verbatim',
-      '233-burst-count-and-size.test.ts::§1c the tiles are ordered so a burst group is contiguous and reads smallest first',
+      '233-burst-count-and-size.test.ts::§1c the tiles are ordered so a burst group is contiguous and reads BIGGEST first',
       '233-burst-count-and-size.test.ts::§1f a spell token that is NOT burst gets a row that does not claim the chain',
       '233-burst-count-and-size.test.ts::§2b every buried card wears its X where the overlap cannot reach it',
       '233-burst-count-and-size.test.ts::§2c the depth chip counts the run, so you can see how many are left',
@@ -10279,7 +10279,7 @@ export const CLOSED: TodoEntry[] = [
       + 'stay visible and clickable.',
     reportId: 177,
     guards: [
-      '352-seen-strip-floats-in-battle.test.ts::CT-191 outside a battle the seen strip stays in the info block',
+      '352-seen-strip-floats-in-battle.test.ts::CT-191 outside a battle the seen strip floats over their region',
       '352-seen-strip-floats-in-battle.test.ts::CT-191 in a battle the seen strip floats over the region not being fought in',
     ],
     closed:
@@ -12550,7 +12550,7 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: "Open ?question=transmogrifant-control-change at 1440x900.",
     guards: [
-      "324-info-block-resources.test.ts::§6 CT-336: the hand-and-deck line clips without being a scroll container, so its row never collapses",
+      "324-info-block-resources.test.ts::§6 CT-336: the resources clip without being a scroll container",
     ],
     closed: "FIXED 2026-10-24 (f80cd27, ffb309f). .linfo .lhand was overflow: hidden, which makes it a scroll container, so its grid row could collapse to 0px when the spectated hand over-filled the block; it is now overflow: clip with hidden as the cascade fallback. Measured in headless Chrome: the row is 18px and no label overlaps at 1440x900, 1280x720 or 1920x1080. The spectated hand itself is still clipped to a sliver: CT-368.",
     status: 'done',
@@ -13169,7 +13169,7 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: "Open ?question=transmogrifant-control-change at 1440x900 with both hands shown and look at the top hand.",
     guards: [
-      "674-spectated-hand-column.test.ts::CT-368: the spectated hand has a column of its own the height of the info block, in both block shapes",
+      "674-spectated-hand-column.test.ts::CT-368: the spectated hand is a stretch of the top seat",
       "674-spectated-hand-column.test.ts::CT-368: its cards are sized from the strip height and shrink together when the hand is long",
     ],
     closed: "FIXED 2026-10-25 (6b9d5c8b), CSS only. While the spectator strip is drawn it is a column of its own in the top info block, between the name column and cache/bin, spanning every row, in both block shapes; its cards are sized from the strip height (capped at the hand dock's 92px) and shrink together for a long hand. Measured: 92x128 whole at 1440x900 and 1920x1080, nine cards fit at 31px; 39x55 whole at 1280x720, where the block itself is only 85px tall (CT-419). Both 674 tests failed against the old style.css.",
@@ -14057,9 +14057,10 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: "Spectate a battle on the regions board at 1280x720 with both hands shown and measure the top hand's cards.",
     guards: [
-      "687-spectated-hand-band.test.ts::CT-419: while a spectated hand is drawn the top band takes the spare height first, and the fight keeps every pixel",
-      "687-spectated-hand-band.test.ts::CT-419: in both shapes the strip keeps at least 35% of the block width",
-      "687-spectated-hand-band.test.ts::CT-419: the strip takes its squeezed two-row shape only where its three rows cannot stand",
+      // board round 8 made the info one line: the strip's 35% floor and its
+      // squeezed shape went with the offshoot they lived in
+      "687-spectated-hand-band.test.ts::CT-419: the top line grows while it holds a spectated hand, and only then",
+      "687-spectated-hand-band.test.ts::CT-419: the battle plan no longer shares the height with the strip",
     ],
     closed: "CLOSED 2026-10-25 (36041f21), partly fixed, and the owner accepted it. Whole cards do not fit at 1280x720 without taking the fight's height: live watch leaves the top band 109px and the fight 223px at the 100px unit cap. planBattleBoard now gives a spectated strip the spare height first (two cards go from 56x78 to 78x108 at 1280x720), the squeezed shape applies only under 90px, and a defect found while measuring is fixed: under a long resource row the strip went to 0px, and it now keeps at least 35% of the block. Asked whether that is enough at 1280x720, the owner answered \"Good enough\" (2026-10-25). The hover zoom and the press-and-hold peek already show the card whole.",
     status: 'done',

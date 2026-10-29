@@ -144,7 +144,7 @@ function classes(html: string): Set<string> {
 
 /* ── §1 the log is off the board ────────────────────────────────────────── */
 
-test('§1 the board no longer carries the log, and the rail is still a rail', async () => {
+test('§1 the board no longer carries the log, and the toolbar is still drawn', async () => {
   const ui = await shown(23200);
   const board = ui.html();
   assert.equal(board.includes('class="logpanel"'), false,
@@ -152,11 +152,12 @@ test('§1 the board no longer carries the log, and the rail is still a rail', as
   assert.equal(board.includes('<h3>Game log'), false, 'heading and all');
 
   // POSITIVE CONTROL: "no log on the board" must mean the log moved, not that
-  // the board failed to paint. The rail and its chrome are exactly what the
-  // panel used to sit among, so they are what has to still be there.
-  assert.ok(board.includes('<div class="side">'), 'the side rail is still drawn');
-  assert.ok(board.includes('id="preview"'), 'and the focus viewer it shared the rail with');
-  assert.ok(board.includes('data-btn="helpopen"'), 'and the rail chrome around it');
+  // the board failed to paint. The rail is what the panel used to sit in; since
+  // board round 8 it is a slim toolbar (and the focus viewer is gone — the hover
+  // zoom and its text panel are how a card is read), so the toolbar and its
+  // buttons are what has to still be there.
+  assert.ok(board.includes('<div class="side toolbar">'), 'the toolbar is still drawn');
+  assert.ok(board.includes('data-btn="helpopen"'), 'and its buttons');
 });
 
 /* ── §2 the way in ──────────────────────────────────────────────────────── */

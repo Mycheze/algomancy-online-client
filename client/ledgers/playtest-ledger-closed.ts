@@ -2914,7 +2914,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'current log.',
     status: 'fixed',
     guards: [
-      '232-log-modal.test.ts::§1 the board no longer carries the log, and the rail is still a rail',
+      '232-log-modal.test.ts::§1 the board no longer carries the log, and the toolbar is still drawn',
       '232-log-modal.test.ts::§2 the generic right-click menu opens it, and the menu decides that',
       '232-log-modal.test.ts::§3 every affordance the modal emits is a live one',
       '232-log-modal.test.ts::§4 the story toggle and its footer moved into the modal, both working',
@@ -4227,8 +4227,8 @@ export const CLOSED: LedgerEntry[] = [
     report: "Owner, at [184]: \"We really should hide many of the top right settings toggles in a deeper settings menu. The stuff that usually doesn't need to be touched during a game can just be hidden.\"",
     status: 'fixed',
     guards: [
-      "447-desktop-toggles-behind-more.test.ts::on a computer every toggle in the rail waits behind more",
-      "447-desktop-toggles-behind-more.test.ts::on a computer rules and the judge stay on the rail and opening more moves nothing",
+      "447-desktop-toggles-behind-more.test.ts::every toggle waits behind more, and only toggles do",
+      "447-desktop-toggles-behind-more.test.ts::the group is a popover, shut unless \"more\" is open",
     ],
     note:
       "Real on a computer: the ⋯ more menu (2026-09-27) existed only on touch and under 900px, because the owner then asked for 'the same, normal view for computers'. Now a computer hides the six toggles (full control, auto-pass, bluff haste, motion, board, sound) behind more too; rules and the judge stay out as tools, the words stay, and the toggles open AFTER more so nothing shifts under the pointer. Touch unchanged. Mutation-checked; measured at 1440px over CDP on HPTR.",
@@ -4413,10 +4413,10 @@ export const CLOSED: LedgerEntry[] = [
     report: "mycheze, seat 0, action 149 (ux): \"Cards that are clicked on during drafting/hand crafting in planning shouldn't get pinned to the right hand info column … Same goes for making resources\"",
     status: 'fixed',
     guards: [
-      "497-planning-clicks-skip-rail.test.ts::the draw step: a bottom pick does not take the rail",
-      "497-planning-clicks-skip-rail.test.ts::the resource step: the click that opens the recycle menu does not take the rail",
-      "497-planning-clicks-skip-rail.test.ts::the draft step: a pick off the dock does not take the rail",
-      "497-planning-clicks-skip-rail.test.ts::deployment: a click that PLAYS a card still puts it in the rail",
+      "497-planning-clicks-skip-rail.test.ts::the draw step: a bottom pick is still a pick",
+      "497-planning-clicks-skip-rail.test.ts::the resource step: the click still opens the recycle menu",
+      "497-planning-clicks-skip-rail.test.ts::the draft step: a pick off the dock is still a pick",
+      "497-planning-clicks-skip-rail.test.ts::deployment: a click that PLAYS a card plays it",
     ],
     note: "Real, regions board only: every card click filled the rail, moves included (2026-09-23). Owner: \"only in planning … When you're attacking/playing with cards, it's fine to show them\" — so the classic board's did-the-click-do-something test now applies in the draw, draft and resource steps; the haste step, deployment and battle still show a clicked card. Mutation-checked both ways.",
   },
