@@ -41,8 +41,15 @@ const rule = (sel: string): string => {
   return m[1]!;
 };
 
-test('§1 their In Play packs from the right edge, their token corner at the left', () => {
-  assert.match(rule('.lplay.theirs .regionmain .zone'), /justify-content: flex-end;/);
+test('§1 their In Play starts at the seam, their token corner at the left', () => {
+  // owner, 2026-10-29: their units hugged the far edge and were easy to miss —
+  // they start where their side of the board begins (ui/layout.ts theirLead)
+  // and fill rightward; the lead before the first card gives way as the row grows
+  assert.match(rule('.lplay.theirs .regionmain .zone'), /justify-content: flex-start;/);
+  assert.match(rule('.lplay.theirs .regionmain .zone > :first-child'), /margin-left: var\(--lead, 0px\);/);
+  const layout = readFileSync(new URL('../layout.ts', import.meta.url), 'utf8');
+  assert.match(layout, /Math\.max\(0, Math\.min\(Math\.round\(sr\.left - zr\.left - padL\), Math\.floor\(room - row\)\)\)/,
+    'the lead is the distance to the seam, but never more than the row leaves free');
   assert.match(rule('.lplay.theirs'), /flex-direction: row-reverse;/);
   assert.doesNotMatch(rule('.lplay .regionmain .zone'), /justify-content/, 'mine still packs from the left');
 });

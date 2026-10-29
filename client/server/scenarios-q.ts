@@ -18,6 +18,7 @@
  *   board8-modified-unit    a Robot 3 wearing Debt Blep, its [once] used this turn
  *   board8-full-bins        big bins and caches on both sides: the info line overflowing
  *   board8-invaders-tokens  checkpoint 4: invader piles on both sides, eight spell tokens in four stacks
+ *   board8-their-wide       twelve of their units: their row starts at the seam and still fills the band
  *
  * ⚠ THREE BOARDS SET ZONES THE ENGINE CANNOT REACH FROM A FRESH DEAL, and say so
  * where they do it: board8-full-bins writes both bins and caches in its prologue
@@ -426,6 +427,34 @@ export const BATCH_Q: Record<string, Scenario> = {
     },
     phase: 'battle',
     priority: YOU,
+    needsLiveOpponent: false,
+  },
+
+  'board8-their-wide': {
+    id: 'board8-their-wide',
+    card: 'Good Whale',
+    why: 'Board round 8: the opponent\'s units start at the seam, where their side of the board begins, and '
+      + 'fill rightward. With twelve of them the row needs more than their half, and must still fit.',
+    expect:
+      LOOK
+      + 'Deployment. The opponent has twelve units in play; you have two.\n'
+      + 'LOOK: their row starts from the middle of the board and, being long, slides left so all twelve fit in '
+      + 'their band; nothing is cut off. Yours start at the left edge.',
+    initiative: YOU,
+    you: {
+      hand: ['Bubb', 'Luminous Arc'],
+      play: [{ card: 'The Foretold' }, { card: 'Good Whale' }],
+      resources: { water: 2, fire: 1 },
+    },
+    opponent: {
+      hand: ['Slink'],
+      play: ['Good Whale', 'Chitin Shredder', 'Trashling', 'Bubb', 'Slink', 'Rampart Guardian', 'Carapace Devourer',
+        'Crumbling Ancient', 'Bumblecrab', 'Tidepool Terror', 'The Foretold', 'Resonant Form'].map(card => ({ card: card as CardName })),
+      resources: { water: 3 },
+    },
+    prologue: () => [...TO_DEPLOY, { type: 'doneDeploying', seat: OPPONENT }],
+    phase: 'deploy',
+    priority: null,
     needsLiveOpponent: false,
   },
 

@@ -390,7 +390,7 @@ test('[61] the token corner widens with its stacks, so they stand side by side',
   // --tokcols base cards (main.ts sets it to the number of stacks, up to four),
   // capped by a share of the band, and its zone wraps the rest
   const corner = /\.lplay \.ltok \{([^}]*)\}/.exec(CSS)?.[1] ?? '';
-  assert.match(corner, /width: calc\(var\(--cwbase\) \* var\(--tokcols, 1\)/, 'the width counts the stacks');
+  assert.match(corner, /width: calc\(var\(--cwbase\) \* \.8 \* var\(--tokcols, 1\)/, 'the width counts the stacks, at a token\'s 80% (owner, 2026-10-29)');
   assert.match(corner, /max-width: 45%/, 'and has a ceiling, or it takes the formation\'s space');
   const zone = /\.lplay \.ltok > \.tokenzone \{([^}]*)\}/.exec(CSS)?.[1] ?? '';
   assert.match(zone, /flex-wrap: wrap/, 'past the ceiling the stacks wrap');

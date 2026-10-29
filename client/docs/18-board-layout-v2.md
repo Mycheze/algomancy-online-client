@@ -529,8 +529,15 @@ Checkpoint 4 (owner, 2026-10-29):
   stack under a ×N count, biggest X first, and fan on hover. The corner stands
   at the OUTER end of In Play (mine right, theirs left) — at the seam end it
   crowded the units in deployment — and is sized by its stacks, so no token is
-  lost to a small window. Its heading became an info tip (`data-tip="tokens"`,
-  the ✨ chip for a finger): name, count and sizes, and what a burst click does.
+  lost to a small window. Its cards are 80% of the In Play units' (owner:
+  full-size tokens "feel a bit weird"). Its heading became an info tip
+  (`data-tip="tokens"`, the ✨ chip for a finger): name, count and sizes, and
+  what a burst click does.
+- **Their units start at the seam** (`layout.ts theirLead`): their In Play is
+  the full width, but their row starts where their side of the board begins
+  and fills rightward, as mine fills from the left edge of mine — at the far
+  edge, a few units were easy to miss. The lead before the first card gives
+  way as the row grows (review board `board8-their-wide`).
 - **A stacked or piled card's zoom clears its row** (`zoom.ts clearRow`), so
   the fan it opened stays in sight.
 - **The current text beside every zoom** (`main.ts zoomPanelHtml`, placed by

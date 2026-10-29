@@ -4452,10 +4452,13 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .lplay.theirs { flex-direction: row-reverse; }
 .lplay .regionmain { flex: 1 1 0; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 .lplay .regionmain .zone { flex: 1 1 0; min-height: 0; overflow: hidden; align-content: flex-start; }
-/* board round 8 (audit): In Play is the full width now, so their cards pack
-   from the RIGHT edge — mine rotated 180°, as their In Play stood in the
-   right half before — and their token corner is at the left (row-reverse) */
-.lplay.theirs .regionmain .zone { justify-content: flex-end; }
+/* board round 8: In Play is the full width now. Their cards start at the
+   SEAM, where their side of the board begins, and fill rightward, as mine fill
+   rightward from the left edge of mine (owner, 2026-10-29); --lead is the gap
+   before the first card, written by ui/layout.ts theirLead, giving way as the
+   row grows. Their token corner is at the far left (row-reverse). */
+.lplay.theirs .regionmain .zone { justify-content: flex-start; }
+.lplay.theirs .regionmain .zone > :first-child { margin-left: var(--lead, 0px); }
 /* the corner (.ltok) is its own fit zone, sized in BASE card widths (--cwbase,
    the table's --cw before any fit pass wrote over it) — never in the field's
    --cw, or a corner that grew with the field would eat the field it sits
@@ -4472,7 +4475,7 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
    clipped: a hovered stack fans out over the band (which clips at its edge). */
 .lplay .ltok { order: 2; flex: 0 0 auto; min-height: 0; display: flex; flex-direction: column;
   position: relative; overflow: visible; max-width: 45%;
-  width: calc(var(--cwbase) * var(--tokcols, 1) + 14px * var(--tokcols, 1) + 4px); }
+  width: calc(var(--cwbase) * .8 * var(--tokcols, 1) + 14px * var(--tokcols, 1) + 4px); }
 .lplay .ltok > .tokenzone { flex: 1 1 0; min-height: 0; margin: 0; overflow: visible; gap: 4px;
   flex-wrap: wrap; align-content: flex-start; justify-content: flex-end; }
 .lplay.theirs .ltok > .tokenzone { justify-content: flex-start; }

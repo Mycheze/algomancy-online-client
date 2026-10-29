@@ -83,6 +83,42 @@ export function fitBoard(root: ParentNode, baseCw: number): void {
       el.style.removeProperty('--fanstep');
     }
   }
+  theirLead(root);
+}
+
+/**
+ * THEIR UNITS START AT THE SEAM (owner, 2026-10-29: the opponent's units "can
+ * get suuuuper far … on the screen, making it sorta easy to miss them if there
+ * are few of them. Instead, I think they should also fill in from the left
+ * hand side, but starting from around the mid point of the screen, in the
+ * 'deployment area'"). Their In Play is the full width, but their side of the
+ * board begins at the seam; a lead-in before the first card (`--lead`) puts it
+ * there, and the row fills rightward, as mine fills rightward from the left
+ * edge of my side. The lead gives way as the row grows, so a long row still
+ * uses the whole band and never overflows it. Read after the fit pass, from
+ * the plan it wrote; the plan never reads the lead, so nothing chases its tail.
+ */
+const lastLead = new WeakMap<Element, string>();
+function theirLead(root: ParentNode): void {
+  const lb = root.querySelector?.('.lboard');
+  const seam = lb?.querySelector('.lseam');
+  const play = lb?.querySelector<HTMLElement>('.lplay.theirs');
+  const zone = play?.querySelector<HTMLElement>('.regionmain .zone');
+  const zb = boxOf(zone ?? null), sr = seam ? seam.getBoundingClientRect() : null;
+  if (!play || !zone || !zb || !sr) return;
+  const zr = { left: zone.getBoundingClientRect().left, w: zb.w };
+  const n = zone.querySelectorAll(':scope > .card, :scope > .slot').length;
+  const cw = parseFloat(play.style.getPropertyValue('--cw')) || 0;
+  const cs = getComputedStyle(zone);
+  const padL = parseFloat(cs.paddingLeft) || 0;
+  const room = zr.w - chrome(zone, 'h');
+  const row = n * cw + Math.max(0, n - 1) * ZONE_GAP;
+  const lead = !n || !cw || play.dataset['fitmode'] === 'fan' ? 0
+    : Math.max(0, Math.min(Math.round(sr.left - zr.left - padL), Math.floor(room - row)));
+  const key = String(lead);
+  if (lastLead.get(zone) === key) return;
+  lastLead.set(zone, key);
+  zone.style.setProperty('--lead', `${lead}px`);
 }
 
 /** how much taller than a card a card here is: the mod strips a modded unit
@@ -140,7 +176,10 @@ function cardsPlan(el: HTMLElement, baseCw: number, how: 'box' | 'row' | 'line' 
   if (el.classList?.contains('ltok')) {
     const stacks = zone.querySelectorAll(':scope > .tokstack');
     const ratio = zoneRatio(cardsIn(zone, ':scope > .tokstack .card'));
-    return fitCards(stacks.length, box, { cw: maxCw, gap: TOK_GAP + TOK_EDGES, ratio, floor: TOK_FLOOR });
+    // the In Play around the corner is fitted first (document order), so its
+    // units' width is already written on it
+    const field = parseFloat((el.closest?.('.lplay') as HTMLElement | null)?.style.getPropertyValue('--cw') ?? '') || maxCw;
+    return fitCards(stacks.length, box, { cw: Math.round(field * TOK_FRAC), gap: TOK_GAP + TOK_EDGES, ratio, floor: TOK_FLOOR });
   }
   const n = zone.querySelectorAll(':scope > .card, :scope > .slot').length;
   const ratio = zoneRatio(cardsIn(zone, ':scope > .card'));
@@ -151,6 +190,13 @@ function cardsPlan(el: HTMLElement, baseCw: number, how: 'box' | 'row' | 'line' 
  * stack's deck edge adds (3 cards' worth, `--edge` ≤ 3px, plus the count's
  * overhang), and the smallest card it will draw */
 const TOK_GAP = 4, TOK_EDGES = 10, TOK_FLOOR = 28;
+/** a token is drawn at this fraction of the In Play units' card beside it
+ * (owner, 2026-10-29: "the same size as full unit cards right now, which
+ * feels a bit weird. Maybe just 80% size") — style.css `.lplay .ltok` reserves
+ * the same fraction of a base card per column */
+const TOK_FRAC = 0.8;
+/** style.css `.zone` gap */
+const ZONE_GAP = 6;
 
 /** the vertical (or horizontal) padding + border of an element, from its
  * computed style — what lies between its border box and its content */
