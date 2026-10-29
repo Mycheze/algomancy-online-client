@@ -7017,7 +7017,7 @@ function logOverlayHtml(): string {
  * on the stack — each live part attributed to the card that contributed it,
  * which is the whole point for a graft stack (Manual p.33: they resolve as one
  * composed ability, and you need to see the composition). */
-function previewStackHtml(id: number): string {
+function previewStackHtml(id: number, opts: { noFace?: boolean } = {}): string {
   const it = stackItemById(id);
   if (!it) return '';
   // CR D6.10a: `q()` is what lets the rows narrow a declared modal clause down to
@@ -7081,8 +7081,10 @@ function previewStackHtml(id: number): string {
   const fx = effectFace(it, h.state);
   const face = fx ? `<div class="stackcard fx fxview">${effectBodyHtml(fx)}</div>`
     : it.card ? `<img src="${art(it.card)}" alt="" onerror="this.style.display='none'">` : '';
-  return `${face}
-    ${modStripsHtml(mods)}
+  // the zoom's text panel (checkpoint 4) stands beside the card's own copy:
+  // it wants the words, not a second picture
+  return `${opts.noFace ? '' : `${face}
+    ${modStripsHtml(mods)}`}
     <div class="abilitybox">
       <div class="abhead">${esc(STACK_KIND[it.kind] ?? it.kind)}${composed ? ' — resolves as ONE composed ability' : ''}</div>
       ${fx?.from ? `<div class="hint">${esc(fx.from)}</div>` : ''}
@@ -10710,8 +10712,39 @@ function decorateZoom(src: HTMLElement, copy: HTMLElement): { extraH?: number } 
 setZoomDecorator((src, copy) => {
   const r = decorateZoom(src, copy);
   if (readMenuArmed) hangReadMenu(src, copy);
-  return r;
+  const panel = zoomPanelHtml(src);
+  return { ...(r ?? {}), ...(panel ? { panel } : {}) };
 });
+
+/**
+ * BOARD ROUND 8, CHECKPOINT 4 — THE CURRENT-TEXT PANEL BESIDE EVERY ZOOM
+ * (owner, 2026-10-29). The rail used to hold "an explicit view of the exact
+ * text of the card, including shared attributes, granted abilities, full graft
+ * effects and a breakdown of the power/defense"; the rail went in round 8 and
+ * the box went with it. It comes back beside the zoom, ALWAYS — an unchanged
+ * unit too, "so that players know where to look and what it means" (the
+ * round's first plan said "only when it adds something"; this supersedes it).
+ *
+ * The same builders the rail used (focusHtmlFor), without the art the zoom
+ * already shows: a live entity's box and its mods' names; the ability on the
+ * stack; a hand card's live X and its printed box; any other face its printed
+ * box. Not a resource (the resource window is its read) or a card back.
+ */
+function zoomPanelHtml(src: HTMLElement): string | null {
+  if (!inGame || !h.state) return null;
+  if (src.classList.contains('rescard') || src.dataset['act'] === 'res') return null;
+  const ref = src.dataset['previd'] ?? (src.dataset['act'] === 'token' ? src.dataset['id'] : undefined);
+  const u = ref !== undefined ? h.state.entities[Number(ref)] : undefined;
+  if (u) {
+    if (faceOf(u) === HIDDEN_CARD) return null;
+    return `${textBoxHtml(entityTextBox(q(), u))}${modNamesHtml(modsOf(u))}`;
+  }
+  if (src.dataset['prevstack'] !== undefined) return previewStackHtml(Number(src.dataset['prevstack']), { noFace: true }) || null;
+  const name = src.dataset['prev'];
+  if (!name || name === HIDDEN_CARD) return null;
+  const xrows = src.dataset['act'] === 'hand' ? xPreviewFor(name, Number(src.dataset['p']) as Seat) : null;
+  return `${xrows ? xRowsHtml(xrows) : ''}${textBoxHtml(printedTextBox(name))}`;
+}
 
 /* BOARD ROUND 8 — A FINGER'S CARD MENU. The rail drew the card menu (details
  * & rulings, Ask the judge, auto-yield, propose a fix) under the card a tap

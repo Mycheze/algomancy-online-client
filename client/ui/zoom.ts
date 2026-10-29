@@ -94,6 +94,30 @@ export function clearRow(box: Rect, row: { top: number; bottom: number }, view: 
 }
 
 /**
+ * BOARD ROUND 8, CHECKPOINT 4 — THE CURRENT-TEXT PANEL'S PLACE (owner,
+ * 2026-10-29: the rail's text box — current text, shared attributes, granted
+ * abilities, the full graft text, the power/defense breakdown — went with the
+ * rail; "we should just always show it so that players know where to look").
+ * Beside the zoom: to its right when the window has the room, else its left,
+ * top-aligned with it and pushed inside the window; with room on neither side
+ * (a narrow window), under the zoom, else over it. Never on the zoom. Pure,
+ * for test/716.
+ */
+export const PANEL_GAP = 6;
+export function panelBox(zoom: Rect, panel: { width: number; height: number }, view: { w: number; h: number }): { left: number; top: number } {
+  const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
+  const top = clamp(zoom.top, MARGIN, view.h - panel.height - MARGIN);
+  const right = zoom.left + zoom.width + PANEL_GAP;
+  if (right + panel.width <= view.w - MARGIN) return { left: right, top };
+  const left = zoom.left - PANEL_GAP - panel.width;
+  if (left >= MARGIN) return { left, top };
+  const across = clamp(zoom.left, MARGIN, view.w - panel.width - MARGIN);
+  const below = zoom.top + zoom.height + PANEL_GAP;
+  if (below + panel.height <= view.h - MARGIN) return { left: across, top: below };
+  return { left: across, top: Math.max(MARGIN, zoom.top - PANEL_GAP - panel.height) };
+}
+
+/**
  * Where a card's menu goes while its card is held zoomed (round 4, owner
  * 2026-09-26: "the zoom gets in the way of the menu … it'd be much better UX
  * for the menu to be on top and the card to be frozen big"). The menu opens
@@ -187,8 +211,11 @@ let peeking: HTMLElement | null = null;
  * registers this. It is handed the SOURCE, because the copy has already had
  * every `data-*` stripped and those are how a card is looked up. It returns
  * the height it hung below the card, as a fraction of the card's height.
+ *
+ * `panel` (board round 8, checkpoint 4): the card's current text as HTML —
+ * zoom.ts stands it BESIDE the copy (panelBox).
  */
-export type ZoomDecorator = (source: HTMLElement, copy: HTMLElement) => { extraH?: number } | void;
+export type ZoomDecorator = (source: HTMLElement, copy: HTMLElement) => { extraH?: number; panel?: string } | void;
 let decorate: ZoomDecorator | null = null;
 export function setZoomDecorator(fn: ZoomDecorator | null): void { decorate = fn; }
 
@@ -241,7 +268,8 @@ function show(card: HTMLElement | null, animate: boolean, at?: { x: number; y: n
   const r = faceRect(card);
   const copy = inertCopy(card);
   copy.classList.add('zoomcopy');
-  const extraH = decorate?.(card, copy)?.extraH ?? 0;
+  const deco = decorate?.(card, copy);
+  const extraH = deco?.extraH ?? 0;
   const view = { w: innerWidth, h: innerHeight };
   let box = at ? peekBox(r, view, at, extraH) : zoomBox(r, view, ZOOM_W, extraH);
   if (!box) { drop(); return; }
@@ -252,6 +280,23 @@ function show(card: HTMLElement | null, animate: boolean, at?: { x: number; y: n
     box = clearRow(box, { top: pr.top, bottom: pr.bottom }, view);
   }
   put(card, copy, r, box, animate);
+  if (deco?.panel) hangPanel(deco.panel, view);
+}
+
+/** stand the current-text panel beside the copy `put` just placed. Measured
+ * once laid out; a panel taller than the window goes to two columns (the
+ * layer takes no pointer, so it can never scroll). */
+function hangPanel(html: string, view: { w: number; h: number }): void {
+  const host = layer;
+  if (!host || !shown) return;
+  const panel = document.createElement('div');
+  panel.className = 'zoompanel';
+  panel.innerHTML = html;
+  host.appendChild(panel);
+  if (panel.offsetHeight > view.h - 2 * MARGIN) panel.classList.add('twocol');
+  const at = panelBox(shown, { width: panel.offsetWidth, height: panel.offsetHeight }, view);
+  panel.style.left = `${at.left}px`;
+  panel.style.top = `${at.top}px`;
 }
 
 /** hang `copy` on the layer at `box`, grown out of `r` (the source's face) */

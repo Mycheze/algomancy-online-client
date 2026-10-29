@@ -4810,6 +4810,17 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
    everything, holding at most one inert copy of the card under the cursor at
    a readable width. Never takes a click: the real card is under the cursor. */
 #cardzoom { position: fixed; inset: 0; z-index: 90; pointer-events: none; }
+/* CHECKPOINT 4 (owner, 2026-10-29): the card's current text, beside every zoom
+   (main.ts zoomPanelHtml, placed by zoom.ts panelBox) — the box the rail used
+   to show, back where the eye already is */
+#cardzoom > .zoompanel { position: fixed; width: 270px; max-height: calc(100vh - 16px); overflow: hidden;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .6); font-size: 13px; color: var(--text); text-align: left; }
+#cardzoom > .zoompanel.twocol { width: 540px; column-count: 2; column-gap: 10px; }
+#cardzoom > .zoompanel > .textbox { margin: 0; }
+#cardzoom > .zoompanel .modnames { margin: 6px 0 0; max-width: none; }
+#cardzoom > .zoompanel > .abilitybox:first-child { margin-top: 0; border-top: 0; padding-top: 0; }
+#cardzoom > .zoompanel > .xnow:first-child { margin-top: 0; }
 /* ═══ THE RESOURCE WINDOW — ui/ressum.ts (owner, 2026-09-26). Hovering an
    info block's resources shows how many of each and the mana, beside the row
    and never over it. Pointer-inert, under the menus (z 95). */

@@ -17,8 +17,9 @@
  *   board8-deploy-last      deployment, the opponent already done: "End Turn"
  *   board8-modified-unit    a Robot 3 wearing Debt Blep, its [once] used this turn
  *   board8-full-bins        big bins and caches on both sides: the info line overflowing
+ *   board8-invaders-tokens  checkpoint 4: invader piles on both sides, eight spell tokens in four stacks
  *
- * ⚠ TWO BOARDS SET ZONES THE ENGINE CANNOT REACH FROM A FRESH DEAL, and say so
+ * ⚠ THREE BOARDS SET ZONES THE ENGINE CANNOT REACH FROM A FRESH DEAL, and say so
  * where they do it: board8-full-bins writes both bins and caches in its prologue
  * (twelve units dying and six prophecies paid would be a forty-action prologue
  * about nothing this round reviews), and board8-planning-wide's dormant
@@ -370,6 +371,56 @@ export const BATCH_Q: Record<string, Scenario> = {
     ],
     phase: 'deploy',
     priority: null,
+    needsLiveOpponent: false,
+  },
+
+  'board8-invaders-tokens': {
+    id: 'board8-invaders-tokens',
+    card: 'Ignis Sprite',
+    why: 'Board round 8, checkpoint 4: invaders draw as a small overlapping pile that fans out on hover, '
+      + 'and alike spell tokens stack under one count, biggest first, at the outer end of In Play.',
+    expect:
+      LOOK
+      + 'Battle, round 1: you attacked their region with two columns and have priority. Three of their units '
+      + 'stand in your region and four of yours in theirs; you hold eight spell tokens (Fireball 3 ×2, '
+      + 'Fireball 2, Fireball 1 ×4, Poison 1).\n'
+      + 'LOOK: each side\'s invaders are a small pile with a count; your tokens are four stacks at the right '
+      + 'end of your In Play, nothing cut off even in a small window.\n'
+      + 'TRY: hover a pile and a stack — each fans out, and the zoom stands clear of it. Hover the token corner: '
+      + 'a table of how many of each size. Hover any unit: its current text beside the zoom.',
+    initiative: YOU,
+    you: {
+      hand: [...HAND.slice(0, 5)],
+      play: [{ card: 'The Foretold' }, { card: 'Carapace Devourer' }, { card: 'Ignis Sprite' },
+        { card: 'Good Whale' }, { card: 'Rampart Guardian' }, { card: 'Bubb' }, { card: 'Slink' }],
+      resources: { fire: 3, water: 3 },
+    },
+    opponent: {
+      hand: ['Slink', 'Trashling'],
+      play: [{ card: 'Good Whale' }, { card: 'Chitin Shredder' }, { card: 'Trashling' }, { card: 'Bubb' }, { card: 'Slink' }],
+      resources: { water: 4 },
+    },
+    // ⚠ written straight onto the dealt board: seven more spell tokens (copies of the
+    // Fireball Ignis Sprite made on the deal, at other Xs; one renamed Poison) and
+    // seven units standing in the other region. A real game reaches both, but
+    // only after a battle and a dozen token-making plays; nothing reads them
+    // before the attack this prologue declares.
+    prologue: (ids, s) => {
+      const fb = Object.values(s.entities).find(e => e.kind === 'spellToken' && e.controller === YOU)!;
+      const sizes: [string, number][] = [['Fireball', 3], ['Fireball', 1], ['Fireball', 2], ['Fireball', 1], ['Fireball', 3], ['Fireball', 1], ['Poison', 1]];
+      for (const [card, x] of sizes) {
+        const id = s.nextId++;
+        s.entities[id] = { ...structuredClone(fb), id, card: card as CardName, x };
+      }
+      const myRegion = s.regions.findIndex(r => r.owner === YOU);
+      const theirRegion = s.regions.findIndex(r => r.owner === OPPONENT);
+      // their Trashling, Bubb and Slink stand in my region; my Good Whale, Guardian, Bubb, Slink in theirs
+      for (const id of ids.opponent.slice(2)) s.entities[id]!.region = myRegion;
+      for (const id of ids.you.slice(3)) s.entities[id]!.region = theirRegion;
+      return [...START, { type: 'declareAttack', seat: YOU, columns: [[ids.you[0]!], [ids.you[1]!]] }];
+    },
+    phase: 'battle',
+    priority: YOU,
     needsLiveOpponent: false,
   },
 
