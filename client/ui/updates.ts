@@ -44,6 +44,12 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-29', kind: 'new', text: 'A bigger table. Your resources, the phase, your bin and cache and your life now sit on one line just above your hand, the side panel is a slim toolbar on the right, and the gaps between the boxes are thinner.' },
+  { date: '2026-10-29', kind: 'change', text: "Hover or tap a player's name to see how many cards are in their hand, deck, recycle pile, bin and cache. Hover or tap the phase icons by your hand to see the phase, step and turn." },
+  { date: '2026-10-29', kind: 'change', text: 'The main button now says where it takes the game: To Blockers, To Damage, End Battle, End Turn and so on, with a note when your opponent can still respond.' },
+  { date: '2026-10-29', kind: 'new', text: 'Hover any card to read it big, with its current text beside it: what it says right now, its attributes, its mods, and where its power and defense come from. On a tablet, press and hold a card.' },
+  { date: '2026-10-29', kind: 'change', text: 'Invaders are a small pile now: hover it, or tap its count, to spread it out. Spell tokens of the same size stack under a count, biggest first, at the far end of your units. Hover them for a summary.' },
+  { date: '2026-10-29', kind: 'change', text: 'The classic board is gone: everyone plays on the regions board.' },
   { date: '2026-10-27', kind: 'new', text: 'Forgot to counterattack? If you confirm your blocks with units left over and none sent, the game now asks: pick the units to send (or All), or choose No counterattack. Send while blocking, as before, and it never asks.' },
   { date: '2026-10-25', kind: 'fix', text: 'Automaton of Abundance and Cosmic Conspirator: when you make a token you now choose which applies first, so you can copy a Robot and then swap both. Automaton copies each kind of token once per effect, grafted cards included.' },
   { date: '2026-10-25', kind: 'change', text: 'If the order of two effects only changes how big a number gets (Conduit of Pain with Powerful or Arbiter of Vitality, Proliferating Slime with Counter Thief), the bigger result is a one-click default; you can still pick the other order.' },

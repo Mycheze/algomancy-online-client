@@ -1,7 +1,8 @@
 # 18 — The regions board
 
-*Owner's sketch and decisions, 2026-09-22. Shipped behind the ▦ board toggle
-in the side rail; the classic board is the default until the owner flips it.*
+*Owner's sketch and decisions, 2026-09-22. Shipped behind the ▦ board toggle,
+the default from 2026-09-26, and since board round 8 (2026-10-29) the only
+board: the classic board, the toggle and the side rail are deleted.*
 
 ## Why
 
@@ -454,7 +455,7 @@ that writes it), `449-battle-board-grid` (`data-fight` in both rounds from both
 seats, the half-and-half grid and the wide one per side, the centring, the
 labels), `450-ring-takes-the-visitor-info`.
 
-### Board round 8 — more table (owner and invi, 2026-10-27; phases P1–P3)
+### Board round 8 — more table (owner and invi, 2026-10-27 to 10-29)
 
 The verdict: the chrome took space from the battlefield and made the eye
 travel. What changed:
@@ -503,19 +504,57 @@ travel. What changed:
   own, since their line lies across the other region's In Play from the
   column; the loop is a point until they enter, so the entry still tweens.
 
-Guards: `711-board8-lines-and-gaps`, and 318, 324, 352, 368, 448, 449, 450,
-674, 687, 302 (the deck's numbers now come from the tap) and 273 §4 (the two
-tap routes).
+- **The side rail is a 50px toolbar** (`main.ts toolbarHtml`): ☰ table, ↶
+  undo, ⚖ judge, ? rules, 📝 report, ⋯ (every toggle, behind it), with the
+  room and presence as one icon and both clocks at the foot; a hover names an
+  icon, and the room, the game's chips and the clocks open an info tip (a tap
+  pins it). The card preview pane is gone: a mouse reads a card by the zoom,
+  a finger by the press-and-hold peek or a tap that moves nothing (its read
+  carries the card menu, which the rail used to hold for a finger).
+- **The main button names where it goes** (`ui/nextstep.ts passLabel`): To
+  Blockers, To Damage, End Battle, Resolve ‹card›, End Turn, Done Deploying,
+  with "‹opponent› can reply" while they still can.
 
-## The toggle
+Checkpoint 4 (owner, 2026-10-29):
 
-`algoLayout` in localStorage (`'2'` = regions), read by `ui/layout.ts
-layoutV2()`. The ▦ *board* button in the side rail flips it; it is listed on
-the privacy page (`ui/legal.ts`) and in the guide's settings section
-(`ui/tutorial.ts`). The regions board needs one seat to be "you" (its hand is
-in the dock), so it applies to **online and Learn-to-Play games**; the two-
-hand hotseat rig on `file://` keeps the classic board whatever the preference.
-Flipping the default later is one character in `layoutV2()`.
+- **Invaders are a pile** (`main.ts invaderPileHtml`): small cards (the fight's
+  strip 0.45 × its units, the Invaders row half a base card, never under
+  30px), each a sliver past the last and never wider than 1.6 cards
+  (`fit.ts pileStepFrac`). Hovering fans the pile along its row by transform —
+  rightward in the Invaders row, leftward in the fight's strip — so nothing
+  else moves; a board pick on one of its cards, or a tap on its count, holds
+  it fanned.
+- **The token corner holds stacks** (`tokenStackHtml`): tokens alike in every
+  way the board draws — card, X, mods, riding, castable, pickable — share one
+  stack under a ×N count, biggest X first, and fan on hover. The corner stands
+  at the OUTER end of In Play (mine right, theirs left) — at the seam end it
+  crowded the units in deployment — and is sized by its stacks, so no token is
+  lost to a small window. Its heading became an info tip (`data-tip="tokens"`,
+  the ✨ chip for a finger): name, count and sizes, and what a burst click does.
+- **A stacked or piled card's zoom clears its row** (`zoom.ts clearRow`), so
+  the fan it opened stays in sight.
+- **The current text beside every zoom** (`main.ts zoomPanelHtml`, placed by
+  `zoom.ts panelBox`): the rail's text box — current text, attributes, mods,
+  the power/defense breakdown — for every card, unchanged ones too (owner:
+  "so that players know where to look and what it means").
+
+P7: the classic board is deleted (owner: "it's dumb to leave that in there"):
+`algoLayout` and the ▦ toggle, the classic region panel, its token strip, the
+battle panel's invader column, the side rail, its focus viewer and pin, the
+top bar and its phase track. A browser that chose classic gets this board.
+The stylesheet lost only the rules for deleted classes; on 26 pages the
+computed style of all 10,549 elements was identical before and after.
+
+Guards: `711-board8-lines-and-gaps`, `712-toolbar`, `716-piles-and-stacks`,
+`233` (the stacks and the tip), and 318, 324, 352, 368, 448, 449, 450, 674,
+687, 302 (the deck's numbers now come from the tap) and 273 §4 (the two tap
+routes).
+
+## The classic board
+
+Deleted in board round 8 (2026-10-29). `algoLayout` may still sit in a
+player's localStorage from before; nothing reads it, and 318 §1 pins that a
+stored classic choice gets this board.
 
 ## Guards
 
@@ -523,20 +562,22 @@ Flipping the default later is one character in `layoutV2()`.
 - `client/ui/test/324-info-block-resources.test.ts` — the resource window's
   numbers and placement, the count pills and the wake run, the zoom standing
   aside, and the pin.
-- `client/ui/test/318-board-layout-v2.test.ts` — the regions board's census:
-  the toggle, every anchor once in both boards for every state, nothing
-  swallowed, the battle in the right block in both rounds, invaders and tokens
-  where they belong, the stylesheet's grid.
+- `client/ui/test/318-board-layout-v2.test.ts` — the board's census: no
+  toggle, every anchor once for every state, nothing swallowed, the battle in
+  the right block in both rounds, invaders and tokens where they belong, the
+  stylesheet's grid.
 - `client/ui/test/448`–`450` — the battle board's shape (round 7).
-- The whole rest of the ui suite is the classic board's guard.
+- `client/ui/test/716-piles-and-stacks.test.ts` — the pile arithmetic, the
+  zoom clearing a row, where the token tip and the text panel stand.
 - Headless: a solo Learn-to-Play game walked at 1440×900 and 1280×720 with
   `document.scrollHeight === clientHeight`, `.main` unscrollable, and no
   card, slot or column drawn outside its zone's box (2026-09-22).
 
 ## Deliberately not changed
 
-The engine; the top bar; the hand dock; the instructions/ready bar; the
-right rail; the cache, bin, life and hand-count widgets; the hotseat rig.
+The engine; the hand dock; the instructions/ready bar. (The top bar, the
+right rail and the cache, bin and life widgets were on this list until board
+round 8; the hotseat rig was deleted on 2026-09-23.)
 (The targeting arrows were on this list, aiming a *formation* at the field
 zone, until report RCPN on 2026-09-26: each battle half now carries
 `data-fside` and a formation arrow lands on all of its player's halves.) The In Play vs
