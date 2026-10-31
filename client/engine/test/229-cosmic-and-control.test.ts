@@ -503,8 +503,8 @@ test('CR 405.3 whole pool: every unit-shaped card dies into the bin of whoever c
   // of these to `u.owner`, so this whole population moved. It is asserted over
   // the derived pool for the same reason the mod-trash sweep was — a fix proved on
   // one card is a fix for one card.
-  const wrongSeat: string[] = [], wrongBin: string[] = [];
-  let checked = 0;
+  const wrongSeat: string[] = [], wrongBin: string[] = [], unstableTrashed: string[] = [];
+  let checked = 0, unstableChecked = 0;
   for (const name of unitShapedCards()) {
     const h = new Harness(9431);
     toDeployment(h);
@@ -516,17 +516,27 @@ test('CR 405.3 whole pool: every unit-shaped card dies into the bin of whoever c
     withE(h, e => { e.giveControl(e.entity(id)!, D); });
     const u = ent(h, id);
     if (!u || u.controller !== D || u.owner !== A) continue;
+    const unstable = withE_isUnstable(h, id);
     const mark = h.events.length;
     withE(h, e => { e.destroy(e.entity(id)!, 'dies'); });
     checked++;
     const tr = trashEvents(h, mark).filter(t => t.card === name);
+    if (unstable) {
+      // CR 801.2h (owner 2026-10-31): a printed-{Unstable} card is erased, not trashed
+      unstableChecked++;
+      if (tr.length) unstableTrashed.push(name);
+      if (!(h.state.players[D]!.erased ?? []).includes(name)) wrongBin.push(name);
+      continue;
+    }
     if (tr.length !== 1 || tr[0]!.seat !== D) wrongSeat.push(name);
     if (!binOf(h, D).includes(name) && !(h.state.players[D]!.erased ?? []).includes(name)) {
       wrongBin.push(name);
     }
   }
   assert.ok(checked > 300, `only ${checked} cards reached the death route`);
-  assert.deepEqual(wrongSeat, [], 'every one is trashed by its controller');
+  assert.ok(unstableChecked > 0, 'the printed-{Unstable} cards were exercised too');
+  assert.deepEqual(wrongSeat, [], 'every one that is not {Unstable} is trashed by its controller');
+  assert.deepEqual(unstableTrashed, [], 'and no {Unstable} one is trashed at all (CR 801.2h)');
   assert.deepEqual(wrongBin, [], 'and lands in the controller bin (or the controller erased pile)');
 });
 
@@ -662,12 +672,11 @@ test('CR 405.6 GUARD: the body bin ref is stamped, and it counts in the bin the 
     'which is where the two copies really are');
 });
 
-test('CT-246 GUARD (engine, not CR 801.2h): a stolen Unstable body is still trashed before it is swept', () => {
-  // The worry the mod ruling (CR 801.2g) opened with, one ruling later. An implementation that moves the
-  // body's bin must not quietly stop the body TRASHING on the way through it —
-  // that is playtest report #93 (Dropslime trashed from a hand fired, the same
-  // Dropslime dying under a grafted Wraith fired nothing), and it is the one
-  // thing the Unstable-trash route exists to prevent (CT-246; CR 801.2h).
+test('CR 801.2h (owner 2026-10-31): a stolen Unstable body is erased onto its CONTROLLER\'s pile and NOT trashed', () => {
+  // The mod ruling (CR 801.2g) moved the body's zone to its controller's. The
+  // owner's 2026-10-31 ruling (report BPNS #301/#302) then took the trash away
+  // from an Unstable death altogether: it never ends up in a bin, so it is not
+  // trashed, whoever controls it. The destination half is unchanged.
   const h = new Harness(9434);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -678,12 +687,12 @@ test('CT-246 GUARD (engine, not CR 801.2h): a stolen Unstable body is still tras
   const mark = h.events.length;
   withE(h, e => { e.destroy(e.entity(host)!, 'dies'); });
 
-  const tr = trashEvents(h, mark).filter(t => t.card === 'Good Whale');
-  assert.equal(tr.length, 1, 'the body was trashed on its way through the bin');
-  assert.equal(tr[0]!.seat, D, 'by the controller — CR 801.2e');
-  assert.ok(!binOf(h, D).includes('Good Whale'), 'and then swept back out — engine route (CR 405.5 erases instead, CT-246)');
+  assert.ok(h.events.slice(mark).some(ev => ev.type === 'died' && ev.data?.['card'] === 'Good Whale'), 'it died');
+  assert.equal(trashEvents(h, mark).filter(t => t.card === 'Good Whale').length, 0,
+    'the body was not trashed — by either seat (CR 801.2h)');
+  assert.ok(!binOf(h, D).includes('Good Whale') && !binOf(h, A).includes('Good Whale'), 'it is in no bin');
   assert.ok((h.state.players[D]!.erased ?? []).includes('Good Whale'),
-    'onto the CONTROLLER erased pile, the same seat the bin belonged to');
+    'it is on the CONTROLLER erased pile (CR 400.4, 405.5)');
 });
 
 /** `E.isUnstable` through the harness — a read, not a mutation. */

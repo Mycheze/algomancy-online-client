@@ -40,7 +40,7 @@ function tok(h: Harness, seat: Seat, p: number, t: number): EntityId {
 
 // ---------------------------------------------------------------- trash
 
-test('cr:keywords.actions.trash.unstable-death — a printed-Unstable card that dies in play is trashed once and then erased (CR 801.2h)', () => {
+test('cr:keywords.actions.trash.unstable-death — a printed-Unstable card that dies in play is erased and NOT trashed (CR 801.2h)', () => {
   const h = new Harness(71803);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -50,10 +50,10 @@ test('cr:keywords.actions.trash.unstable-death — a printed-Unstable card that 
   withE(h, e => { e.destroy(e.entity(u)!, 'dies'); });
   const after = h.events.slice(mark);
   assert.equal(after.filter(ev => ev.type === 'died').length, 1, 'it died');
-  assert.equal(after.filter(ev => ev.type === 'trashed' && ev.data!['card'] === 'Aberrant Statweaver').length, 1,
-    'and the engine trashed it (the printed reading says it is not trashed)');
-  assert.ok(new E(h.state).erased(P).includes('Aberrant Statweaver'), 'then erased');
-  assert.ok(!h.state.players[P]!.bin.includes('Aberrant Statweaver'), 'and not left in the bin');
+  assert.equal(after.filter(ev => ev.type === 'trashed' && ev.data!['card'] === 'Aberrant Statweaver').length, 0,
+    'and it was not trashed (owner 2026-10-31: it never ends up in a bin)');
+  assert.ok(new E(h.state).erased(P).includes('Aberrant Statweaver'), 'it is erased');
+  assert.ok(!h.state.players[P]!.bin.includes('Aberrant Statweaver'), 'and not in the bin');
 });
 
 // ---------------------------------------------------------------- discard

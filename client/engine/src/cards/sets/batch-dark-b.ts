@@ -80,7 +80,7 @@
  *    what that primitive does, and it is now stated once in engine.ts:
  *    the exchanged unit leaves play
  *    WITHOUT dying — no DEATH trigger — straight into its owner's bin, which
- *    is a trash from play (CR 801.13a), and an {Unstable} body is erased with its mods instead (CR 410.4d), though the engine still bins it, trashes it and sweeps it out (CT-246). CR 410.2: it is not silent, though. The 'despawned'
+ *    is a trash from play (CR 801.13a), and an {Unstable} body is erased with its mods instead and not trashed (CR 410.4d, 801.2h). CR 410.2: it is not silent, though. The 'despawned'
  *    event is FIRED as well as logged, and the host's mods take destroy()'s
  *    route rather than being deleted — nontoken mods bin, are trashed and are
  *    swept with the body; a token mod only reaches the erased pile (CR 407.3a).
@@ -483,7 +483,7 @@ card('Grim Bargain', {
 // operation now: the replacement takes the outgoing body's region and its
 // exact formation slot, and the outgoing body goes through `E.disposeToBin` —
 // the SAME method `destroy()` calls — for its bin push, its CR 801.13a trash, its
-// Unstable sweep (an engine route: CR 405.5 erases instead of binning, CT-246), its CR 410.5 token sweep and its CR 407.3a erased-pile line.
+// Unstable erase (CR 405.5, no trash: CR 801.2h), its CR 410.5 token sweep and its CR 407.3a erased-pile line.
 //
 // The exchange ruling (a despawn, not a death) is what finally moved it out of this file. Bena, 2026-08-25, asked
 // whether an exchange is a death: *"It's not a death, but it is a despawn and

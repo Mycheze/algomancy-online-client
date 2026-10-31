@@ -162,12 +162,12 @@ test('CR 721.1f (iii): a donated "[Augment] When I despawn" still fires exactly 
 //
 // Chitin Shredder has no text at all, so nothing here can be answered by a
 // trigger cancelling something. It is owned by the OTHER seat, which is what
-// separates "its own owner's bin" (the Unstable-trash ruling) from "the body's".
+// separates "its own owner's bin" (the 2026-08-24 Unstable ruling) from "the body's".
 //
 // The three routes legitimately DIFFER in where the card comes to rest: a
 // recall and a cache leave it in the bin, while a death makes the body
 // {Unstable} (CR 803.8e: a modded card is Unstable) and the state-based sweep takes
-// both back out again (an engine route; CR 410.4b erases both instead, CT-246).
+// both back out again (CR 410.4b).
 //
 // ⚠ The owner's mod-trash ruling (2026-08-29, report #129; CR 720.8, 720.8a) makes that difference decide the TRASH as
 // well, and this test used to assert the opposite. A mod left behind in a bin
@@ -185,7 +185,7 @@ test('CR 801.2f (iv): a nontoken mod is binned and trashed exactly once on all t
     leaveBy(h, host, route);
 
     if (route === 'death') {
-      // the body is {Unstable} because it is modded (CR 410.4b), so the engine's sweep (CT-246)
+      // the body is {Unstable} because it is modded (CR 410.4b), so the sweep
       // pulls the pair back out of the bins it just entered — and CR 801.2g says
       // that departure is not a trashing.
       assert.equal(trashesOf(h, 'Chitin Shredder').length, 0,

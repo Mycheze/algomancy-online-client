@@ -929,7 +929,7 @@
     "basis": "printed",
     "scope": "game",
     "confidence": "high",
-    "notes": "How a dying {Unstable} body reaches the erased pile (through the bin, trashed on the way) is U07's and U21's question: see D-U07 and F-U07-6.",
+    "notes": "A dying {Unstable} body is erased without entering a bin and is not trashed (U07 405.5, U18 801.2h; owner 2026-10-31).",
     "sourceHashes": {}
   },
   {
@@ -1189,11 +1189,15 @@
     "key": "effects.mods.trash.erased-with-host",
     "parent": "effects.mods.trash",
     "order": 1,
-    "text": "A nontoken mod erased together with its {Unstable} host is not trashed. The host's single trash counts for the whole unit.",
+    "text": "A nontoken mod erased together with its {Unstable} host is not trashed. Neither is the host: the whole unit is erased without entering a bin (rule keywords.actions.trash.unstable-death).",
     "examples": [
       {
         "text": null,
         "test": "224-mod-trash.test.ts::CR 720.8a: a nontoken mod erased with its Unstable host is not trashed at all"
+      },
+      {
+        "text": "A modded unit dies: it and its mod are erased, and neither is trashed.",
+        "test": "35-rot-debt-trash.test.ts::CR 801.2h (owner 2026-10-31): a modded unit dying DIES and is erased with its mod, and nothing is trashed"
       }
     ],
     "see": [
@@ -1208,6 +1212,11 @@
           "quote": "**2. A nontoken mod erased with its {Unstable} host is not trashed at all.** It",
           "adopted": "2026-08-29",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Trashing is dependant on a CARD going to the BIN from anywhere *other than* the STACK. Unstable units dying should not count as being Trashed since they don't end up in the BIN.",
+          "adopted": "2026-10-31",
+          "from": "owner, chat 2026-10-31 (report BPNS #301/#302)"
         }
       ],
       "engine": [],
@@ -1218,7 +1227,7 @@
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "Owner, from playtest #129. The body's own trash (owner ruling of 2026-08-24, “an {Unstable} unit that dies IS…”) is U07/U21's.",
+    "notes": "Owner, from playtest #129 (the mod) and 2026-10-31, report BPNS #301/#302 (the host). The host's own trash, ruled on 2026-08-24 and kept on 2026-10-22, was reversed on 2026-10-31.",
     "sourceHashes": {}
   },
   {

@@ -2588,45 +2588,68 @@
   },
   {
     "key": "keywords.actions.trash.unstable-death",
-    "textHash": "ecf1be73724d0040",
+    "textHash": "f6f5b44fb1ae48e3",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U18-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:destroy",
+        "loc": "client/engine/src/engine.ts:disposeToBin (willSweep / noteTrashed)",
         "agrees": true,
-        "note": "a dying Unstable card is binned, trashed once, then swept to the erased pile; discard/mill/cache-to-bin of a printed-Unstable card bins and trashes"
+        "note": "An Unstable body is pushed to the bin for the event window and swept to the erased pile; noteTrashed is skipped when willSweep (CR 801.2h). Mods likewise untrashed unless keepBinned (Pull Under)."
+      },
+      {
+        "loc": "client/engine/src/engine.ts:disposeToBin keepBinned (Pull Under)",
+        "agrees": true,
+        "note": "binTo/keepBinned keeps body+mods in caster's bin and trashes them"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/125-active-zone.test.ts",
-        "pattern": "CR 803.8a: a printed-Unstable card DISCARDED FROM HAND bins and TRASHES",
+        "file": "client/engine/test/224-mod-trash.test.ts",
+        "pattern": "CR 801.2h (owner 2026-10-31): the BODY of an Unstable unit",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/42-dark-b.test.ts",
+        "pattern": "report BPNS #301/#302: Wildfire kills a modded Hooba-Nan",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/43-dark-c.test.ts",
+        "pattern": "CR 801.2h (owner 2026-10-31): Blightwalker dying while {Unstable}",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/15-water-b.test.ts",
+        "pattern": "Pull Under: a MODDED victim and its mods are trashed by the CASTER",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/15-water-b.test.ts",
+        "pattern": "Pull Under: deletes the target; it and its mods land in YOUR bin",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/125-active-zone.test.ts",
-        "pattern": "CR 803.8a: a printed-Unstable card MILLED from the deck",
+        "pattern": "CR 803.8a: a printed-Unstable card DISCARDED FROM HAND",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/125-active-zone.test.ts",
+        "pattern": "CR 803.8a: a printed-Unstable card MILLED",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/125-active-zone.test.ts",
         "pattern": "CR 803.8a: a printed-Unstable card binned from the CACHE",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "client/engine/test/224-mod-trash.test.ts",
-        "pattern": "CT-246 GUARD (engine; CR 801.2h says not trashed): the BODY of an Unstable unit that dies is still trashed",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "client/engine/test/429-cr-keyword-actions.test.ts",
-        "pattern": "cr:keywords.actions.trash.unstable-death — engine differs",
         "passed": true,
         "asserts_claim": true
       }
@@ -2636,27 +2659,22 @@
       {
         "ref": "card: Abyssal Evocation",
         "supports": "yes",
-        "note": "erase instead of entering a bin — where it ends"
-      },
-      {
-        "ref": "owner \"Unstable\": \"If an unstable card would enter a bin from an active",
-        "supports": "yes",
-        "note": "active zones only, so hand/deck/cache bin normally"
-      },
-      {
-        "ref": "owner \"A card leaving an **inactive** zone for a bin is **binned and trashed\"",
-        "supports": "yes",
         "note": ""
       },
       {
-        "ref": "owner 2026-08-24 \"An Unstable card that dies enters a bin, is trashed there, and is only then\"",
+        "ref": "owner register (2026-08-25) x2",
         "supports": "yes",
-        "note": ""
+        "note": "active-zone replacement; inactive zone binned and trashed"
       },
       {
-        "ref": "owner 2026-10-22 \"Trash isnt a trigger tho. Its a kind of death thing...\"",
+        "ref": "owner 2026-10-31 x2",
         "supports": "yes",
-        "note": "answering CT-246: trash is part of the death, not caused by the bin entry — the record's exact reasoning"
+        "note": "not trashed; still dies"
+      },
+      {
+        "ref": "card: Pull Under (via see rule)",
+        "supports": "yes",
+        "note": "printed 'put it and all of its mods into your bin'"
       }
     ],
     "quote_spans": [
@@ -2665,12 +2683,8 @@
         "text": "(If they would enter a bin, erase them instead.)"
       },
       {
-        "file": "client/engine/test/125-active-zone.test.ts",
-        "text": "'and it was trashed (CR 801.3)'"
-      },
-      {
-        "file": "client/engine/test/224-mod-trash.test.ts",
-        "text": "'the Unstable body is trashed exactly once'"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Delete target unit. If you do, put it and {/n}all of its mods into your bin."
       }
     ],
     "basis_ok": true,

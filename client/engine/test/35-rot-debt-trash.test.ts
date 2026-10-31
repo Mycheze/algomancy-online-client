@@ -390,28 +390,15 @@ test('CR 304.10: the erase lands before anything the visit queued can RESOLVE', 
   });
 });
 
-// The owner's call of 2026-08-24 (playtest #93/room ANBB) INVERTS this test in place, and CR 801.2h now states it (CT-246, owner 2026-10-22).
-// It used to read "a modded unit dying is ERASED, so nothing is trashed" and
-// assert `trashes(h).length === 0` — the reading the printed reminder text
-// ("If they would enter a bin, erase them instead.") and Caleb 2025-04-08
-// ("unstable units still die, they just get erased instead of ending up in the
-// bin") both support. The owner overruled both: an Unstable death takes the
-// TOKEN's route — bin, trash, sweep — because the engine already says the same
-// words about a token and still runs it through the bin. The bin assertion is
-// the one line that survives unchanged, and that is the point: the DESTINATION
-// never moved, only what happens on the way.
-//
-// ⚠ The mod ruling (now CR 801.2g; report #129, 2026-08-29) then took the MOD back out of that list and
-// left the BODY where the Unstable-trash route put it (CR 801.2h: still trashed, CT-246): *"When a mod goes onto a unit, it
-// becomes PART of that unit … 'Trashing' didn't happen here."* So the trash
-// list below is the body alone. If it ever loses the body too, report #93 is
-// open again — test/224-mod-trash.test.ts is the fence for that.
-//
-// ⚠ THE TITLE IS LOAD-BEARING and is deliberately not updated to mention the
-// mod: playtest-ledger.ts names this test as report #93's guard, by name, and
-// 70-playtest-ledger.test.ts reddens if it stops matching. It is still exactly
-// true of the body, which is what #93 was about.
-test('CR 801.2h (CT-246): a modded unit dying is binned, TRASHED, and only then erased', () => {
+// The history of this test is the history of the ruling. Before 2026-08-24 it read
+// "a modded unit dying is ERASED, so nothing is trashed" — the printed reminder
+// ("If they would enter a bin, erase them instead.") and Caleb 2025-04-08. The
+// owner's 2026-08-24 call (playtest #93, room ANBB) inverted it: bin, TRASH,
+// sweep. The owner reversed that on 2026-10-31 (report BPNS #301/#302; CR 801.2h):
+// "Unstable units dying should not count as being Trashed since they don't end up
+// in the BIN." So it is back to its first reading, now with the death asserted
+// too: the unit DIES (CR 801.2h), and neither it nor its mod (CR 720.8a) is trashed.
+test('CR 801.2h (owner 2026-10-31): a modded unit dying DIES and is erased with its mod, and nothing is trashed', () => {
   const h = new Harness(3524);
   const P = 0 as const;
   const u = spawn(h, P, 'Test Brute');
@@ -419,19 +406,21 @@ test('CR 801.2h (CT-246): a modded unit dying is binned, TRASHED, and only then 
     e.attachMod(e.entity(u)!, 'Test Grunt', P, 'augment');
     e.destroy(e.entity(u)!, 'dies');
   });
-  const t = trashes(h);
-  assert.deepEqual(t.map(ev => ev.data!['card']), ['Test Brute'],
-    'the BODY entered a bin from play and was trashed there (CR 801.2, 801.2h: an Unstable card that dies is still trashed; CT-246) — and only the body, '
-    + 'because a mod erased with its host was never separately there (CR 801.2g)');
-  assert.ok(t.every(ev => ev.data!['from'] === 'play' && ev.data!['seat'] === P));
-  assert.deepEqual(h.state.players[P]!.bin, [],
-    'and the sweep took both back out again — the visible destination is unchanged');
+  assert.ok(h.events.some(ev => ev.type === 'died' && ev.data!['card'] === 'Test Brute'), 'it DIED');
+  assert.deepEqual(trashes(h).map(ev => ev.data!['card']), [],
+    'and nothing was trashed: not the {Unstable} body (CR 801.2h), not its mod (CR 720.8a)');
+  assert.deepEqual(h.state.players[P]!.bin, [], 'neither rests in a bin');
   assert.deepEqual(h.q.erased(P), ['Test Brute', 'Test Grunt'],
     'both reach the public erased pile (CR 410.4b)');
   const i = (frag: string) => h.log.findIndex(l => l.includes(frag));
-  assert.ok(i('Test Brute dies') !== -1 && i('trashes Test Brute') > i('Test Brute dies')
-    && i('erased from the bin — Unstable') > i('trashes Test Brute'),
-  'died, then trashed, then erased — the same order the token path logs');
+  assert.ok(i('Test Brute dies → ERASED — Unstable (it and its 1 mod(s)).') !== -1,
+    'the death line sends it to ERASED, not to a bin');
+  assert.equal(i('trashes Test Brute'), -1, 'and there is no trash line');
+  // control: an unmodded unit dying the same way is binned and trashed
+  const plain = spawn(h, P, 'Test Brute');
+  whiteBox(h, e => { e.destroy(e.entity(plain)!, 'dies'); });
+  assert.deepEqual(trashes(h).map(ev => ev.data!['card']), ['Test Brute'], 'control: the unmodded one is trashed');
+  assert.deepEqual(h.state.players[P]!.bin, ['Test Brute'], 'and rests in the bin');
 });
 
 // CR 410.4c: a TOKEN mod has no card, so it has nothing to bin and nothing to trash.
@@ -445,8 +434,8 @@ test('CR 410.4c: a TOKEN mod on a dying Unstable carrier is erased, never binned
     e.attachMod(e.entity(u)!, 'Test Grunt', P, 'augment', undefined, { token: true });
     e.destroy(e.entity(u)!, 'dies');
   });
-  assert.deepEqual(trashes(h).map(ev => ev.data!['card']), ['Test Brute'],
-    'only the body — a token mod has no card of its own (CR 410.4c)');
+  assert.deepEqual(trashes(h).map(ev => ev.data!['card']), [],
+    'nothing: a token mod has no card of its own (CR 410.4c), and the {Unstable} body is erased, not trashed (CR 801.2h)');
   assert.deepEqual(h.state.players[P]!.bin, []);
   assert.deepEqual(h.q.erased(P), ['Test Brute'],
     'only the card body is filed on the erased pile, never the token mod (owner, 2026-10-22: never file tokens)');

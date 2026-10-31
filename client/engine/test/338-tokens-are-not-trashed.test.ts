@@ -204,15 +204,15 @@ test('CR 801.2 control: the same Dropslime as a CARD dying in battle does fire',
   assert.equal(triggersOf(h, 'Dropslime', start).length, 1, 'and its own trigger fires');
 });
 
-test('CR 410.4c: a token MOD on a dying card host is erased and not trashed; the host is', () => {
+test('CR 410.4c: a token MOD on a dying card host is erased and not trashed; neither is the Unstable host (CR 801.2h)', () => {
   const { h, A, region } = inBattle(33830);
   const host = put(h, A, 'Good Whale', region);
   withE(h, e => { e.augmentWraith(e.entity(host)!, A); });   // a token MOD
   const start = h.events.length;
   withE(h, e => { e.destroy(e.entity(host)!, 'dies'); });
-  const t = trashes(h, start);
-  assert.deepEqual(t.map(ev => ev.data!['card']), ['Good Whale'],
-    'one trash: the CARD host (Unstable by its mod; the engine trashes it, CR 801.2h does not, CT-246); the token mod never (CR 410.4c)');
+  assert.deepEqual(trashes(h, start).map(ev => ev.data!['card']), [],
+    'no trash: the token mod never (CR 410.4c), and the CARD host is {Unstable} by its mod, so it is erased, not trashed (CR 801.2h, owner 2026-10-31)');
+  assert.ok((h.state.players[A]!.erased ?? []).includes('Good Whale'), 'the host card is on the erased pile');
   assert.ok(!(h.state.players[A]!.erased ?? []).includes('Wraith'),
     'and the token mod is not filed on the erased pile (owner, 2026-10-22: never file tokens)');
 });

@@ -262,10 +262,9 @@ const KEYWORD_RULES: GlossEntry[] = [
   { term: 'Burst', cites: ['keywords.abilities.burst', 'types.tokens.spell-tokens.burst', 'Manual'], text: 'Casting one of your burst spell tokens casts every token of the same name you control in that region at once.' },
   // CR 803.8f (2026-08-22): a spell carrying a virus is Unstable too, and a spell's
   // way out of the game is the stack rather than a death.
-  // In the engine (2026-08-24) a dying {Unstable} UNIT is trashed on the way — it passes through
-  // the bin (firing "when I am trashed" and every trash watcher) and is erased
-  // out of it; CR 801.2h says it is erased instead and not trashed (CT-246). A spell leaving the STACK is not
-  // trashed, because nothing coming from the stack ever is (CR 801.2b).
+  // A dying {Unstable} UNIT is erased instead of binned and is NOT trashed (CR 801.2h,
+  // owner 2026-10-31). A spell leaving the STACK is not trashed either, because
+  // nothing coming from the stack ever is (CR 801.2b).
   // CT-80: two corrections. (1) the row said "a modded card" and stopped,
   // but `isUnstable` (engine.ts:1272-1275) has FOUR ways in — mods, CR 803.8d's
   // until-regroup stamp, the PRINTED {Unstable} type line (Aberrant
@@ -275,7 +274,7 @@ const KEYWORD_RULES: GlossEntry[] = [
   // it to the ACTIVE ZONES. Hand, deck, bin, cache and the erased pile are
   // INACTIVE, so a card leaving one of those for a bin bins normally, printed
   // {Unstable} or not (engine.ts:1279-1292).
-  { term: 'Unstable', cites: ['keywords.abilities.unstable', 'keywords.abilities.unstable.granted', 'zones.bin.unstable', 'printed'], text: 'A card is unstable if it prints the attribute, if it carries mods, or if something stamped it. Leaving an ACTIVE zone — play or the stack — for a bin, it is erased with its mods instead of resting there; leaving hand, deck, bin or cache it bins normally. A unit that dies still passes through the bin first, so it is trashed on the way; a spell leaving the stack carrying a virus is erased without ever being trashed.' },
+  { term: 'Unstable', cites: ['keywords.abilities.unstable', 'keywords.abilities.unstable.granted', 'zones.bin.unstable', 'printed'], text: 'A card is unstable if it prints the attribute, if it carries mods (a spell carrying a virus too), or if something stamped it. Leaving an ACTIVE zone — play or the stack — for a bin, it is erased with its mods instead, and is not trashed; leaving hand, deck, bin or cache it bins normally.' },
   // CT-80 (d) — WRONG IN BOTH DIRECTIONS, and the widest-reaching row of
   // the seven: 64 cards mention Virus. It INVENTED a restriction (the battle
   // branch, apply.ts:1412-1418, checks priority and region and NEVER
@@ -387,7 +386,7 @@ const EXPANSION_RULES: GlossEntry[] = [
   // Reach: 14 cards. 177 re-derives this from `toBin`'s own body.
   {
     term: 'Trash', short: 'A card entering a bin from anywhere but the stack is trashed: discarded, sacrificed, milled, or a unit dying.', cites: ['keywords.actions.trash', 'keywords.actions.trash.unstable-death', 'zones.bin.trash', 'keywords.actions.trash.tokens'],
-    text: 'A card entering a bin from anywhere but the stack is trashed. A token is not a card, so it is never trashed: a dying token passes through the bin and is erased without counting. Discarding, sacrificing, milling and dying in combat all count; a resolved or negated spell going to the bin does not, and an effect that simply erases something never reaches a bin at all. An {Unstable} unit that dies IS trashed on its way through the bin, then erased out of it — but a mod erased along with its host is not trashed separately; the host’s one trash is the whole unit’s.',
+    text: 'A card entering a bin from anywhere but the stack is trashed. A token is not a card, so it is never trashed: a dying token passes through the bin and is erased without counting. Discarding, sacrificing, milling and dying in combat all count; a resolved or negated spell going to the bin does not, and an effect that simply erases something never reaches a bin at all. An {Unstable} unit that dies is erased instead of reaching a bin, so neither it nor its mods are trashed.',
   },
 ];
 

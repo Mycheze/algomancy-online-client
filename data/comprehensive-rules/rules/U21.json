@@ -2329,6 +2329,11 @@
           "quote": "*bin*, not the *death* (Caleb 2025-03-13).",
           "adopted": "2026-08-25",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Dying is when a UNIT \"dies\" while in PLAY, so Tokens and Unstable units all \"die\".",
+          "adopted": "2026-10-31",
+          "from": "owner, chat 2026-10-31 (report BPNS #301/#302)"
         }
       ],
       "engine": [],
@@ -2341,7 +2346,7 @@
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-22 (“A token entering a ZONE is…”) quotes Caleb 2025-03-13 (\"They die\") and 2025-04-08. Whether the dying card is trashed on the way is disputed: keywords.actions.trash.unstable-death and D-U18-1 (the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) says it is; the print and Caleb read as no).",
+    "notes": "The owner ruling of 2026-08-22 quotes Caleb 2025-03-13 (\"They die\") and 2025-04-08. The owner restated it on 2026-10-31 (report BPNS #301/#302), in the same message that ruled an {Unstable} death is not a trash: keywords.actions.trash.unstable-death.",
     "sourceHashes": {}
   },
   {

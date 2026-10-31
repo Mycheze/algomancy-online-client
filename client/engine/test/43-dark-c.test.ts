@@ -77,32 +77,36 @@ test('Blightwalker: trashed from hand → pay [2] to recall another unit from yo
   assert.ok(bin(h, P).includes('Blightwalker'), 'the Blightwalker itself stays in the bin');
 });
 
-// The engine's Unstable-trash route (CT-246; CR 801.2h says such a death is not a trash), FAMILY A (the six cards whose OWN "when I am trashed" trigger died
-// with them whenever they died {Unstable}): Afflicting Anima, Blightwalker,
-// Dropslime, Maw of Despair, Nothyr, Thoughtripper. Dropslime is pinned by the
-// playtest-#93 fixture in 42-dark-b; this is the second witness, and it also
-// shows the ⚠ consequence: unlike a trash from HAND, this card cannot leave
-// itself in the bin to be recurred later — the sweep takes it.
-test('CR 801.2h (CT-246): Blightwalker dying while {Unstable} fires its own "when I am trashed" trigger', () => {
+// CR 801.2h (owner 2026-10-31, report BPNS #301/#302, reversing report #93's
+// 2026-08-24 call): an {Unstable} death is not a trash, so the six cards whose OWN
+// "when I am trashed" trigger could ride one — Afflicting Anima, Blightwalker,
+// Dropslime, Maw of Despair, Nothyr, Thoughtripper — do not fire when they die
+// {Unstable}. Dropslime is pinned in 42-dark-b; this is the second witness, with
+// an unmodded Blightwalker dying beside it as the control.
+test('CR 801.2h (owner 2026-10-31): Blightwalker dying while {Unstable} is erased and does NOT fire its own "when I am trashed" trigger', () => {
   const h = new Harness(4392);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   giveResources(h, P, 'dark', 2);
   bin(h, P).push('Grox');
   const bw = spawn(h, P, 'Blightwalker');
+  const mark = h.events.length;
   whiteBox(h, e => {
     e.entity(bw)!.unstable = true;                         // the CR 803.8d until-regroup STAMP (Abyssal Evocation)
     e.destroy(e.entity(bw)!, 'dies');
   });
-  assert.ok(trashedCards(h).includes('Blightwalker'),
-    'engine (CT-246): dying Unstable is a trash — CR 801.2h says it is not, and before this change nothing fired at all');
-  assert.ok(h.state.decision, 'and its own trigger asks for the bin card to recall');
-  pickBy(h, o => o.label.startsWith('Grox'));
-  pickBy(h, o => o.label === 'Pay [2]');
-  assert.ok(hand(h, P).includes('Grox'), 'the recall happened');
-  assert.ok(!bin(h, P).includes('Blightwalker'),
-    'and the Blightwalker itself does NOT rest in the bin — Unstable swept it out');
-  assert.ok(erasedCards(h, P).includes('Blightwalker'), 'it is in the erased pile (CR 407.1)');
+  assert.ok(h.events.slice(mark).some(ev => ev.type === 'died' && ev.data?.['card'] === 'Blightwalker'), 'it died');
+  assert.ok(!trashedCards(h).includes('Blightwalker'), 'and was not trashed (CR 801.2h)');
+  assert.equal(h.state.decision, null, 'so its own trigger never asked for a bin card');
+  assert.ok(bin(h, P).includes('Grox') && !hand(h, P).includes('Grox'), 'nothing was recalled');
+  assert.ok(!bin(h, P).includes('Blightwalker'), 'it never rests in the bin');
+  assert.ok(erasedCards(h, P).includes('Blightwalker'), 'it is in the erased pile (CR 405.5, 407.1)');
+
+  // control: an unmodded Blightwalker dying is trashed and its trigger asks
+  const plain = spawn(h, P, 'Blightwalker');
+  whiteBox(h, e => e.destroy(e.entity(plain)!, 'dies'));
+  assert.ok(trashedCards(h).includes('Blightwalker'), 'control: the unmodded death is a trash');
+  assert.ok(h.state.decision, 'control: and its own trigger asks for the bin card to recall');
 });
 
 test('Blightwalker: "another" excludes the copy that was just trashed, and the payment is optional', () => {
@@ -188,18 +192,12 @@ test('Cthyrian Rector: Virus-donated, "me" is the HOST and "you" is the host\'s 
   assert.ok(hand(h, D).includes('Rotling'), "and the host controller's card is recalled");
 });
 
-// ENGINE HAZARD 1 (the Unstable-trash route, CT-246; CR 801.2h). The Rector reaches for the trashed card IN THE BIN, and an
-// Unstable card is in a bin only for the trigger window. The answer is NOT new
-// and is not invented here: the TOKEN path has faced exactly this since tokens were ruled to really enter zones (CR 410.5),
-// and the Rector already reads `bin.lastIndexOf(name)` and says so when the
-// card is gone. So the sacrifice is made (CR 111.8: a step of the effect, made
-// as the trigger resolves, and before the bin lookup — "sacrifice me. If you
-// do, recall that card") and the recall finds nothing. The sacrifice is not
-// conditional on the recall; the recall is conditional on the sacrifice. The
-// other way out would be recalling out of the ERASED PILE, which must never
-// become reachable — that pile is how a card leaves the game permanently
-// (CR 407.1b).
-test('engine hazard (CT-246; CR 801.2h: no trash): an Unstable death trashes, the Rector pays, and finds nothing — the erased pile stays unreachable', () => {
+// The Rector hears only a TRASH. Between 2026-08-24 and 2026-10-31 an {Unstable}
+// death was one (bin, trash, sweep), so the Rector made its sacrifice and found
+// the card already erased. Since the owner's 2026-10-31 ruling (CR 801.2h) that
+// death is not a trash: the Rector never triggers, and nothing reaches for the
+// erased pile — which must never become reachable (CR 407.1b).
+test('CR 801.2h (owner 2026-10-31): an Unstable death is not a trash, so the Rector does not trigger and the card is erased', () => {
   const h = new Harness(4390);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -209,14 +207,17 @@ test('engine hazard (CT-246; CR 801.2h: no trash): an Unstable death trashes, th
     e.entity(victim)!.unstable = true;                     // the CR 803.8d until-regroup STAMP (Abyssal Evocation)
     e.destroy(e.entity(victim)!, 'dies');
   });
-  assert.ok(trashedCards(h).includes('Good Whale'), 'engine (CT-246; CR 801.2h says not): the Unstable death IS a trash');
-  assert.ok(!ent(h, rector), 'so the Rector triggered and made its sacrifice');
-  assert.ok(bin(h, P).includes('Cthyrian Rector'), 'which put the Rector itself in the bin');
-  assert.ok(!hand(h, P).includes('Good Whale'), 'but there was nothing left to recall');
-  assert.ok(!bin(h, P).includes('Good Whale'), 'the sweep had already taken it out of the bin');
+  assert.ok(!trashedCards(h).includes('Good Whale'), 'CR 801.2h: the Unstable death is not a trash');
+  assert.ok(ent(h, rector), 'so the Rector did not trigger: it is still in play');
+  assert.ok(!bin(h, P).includes('Cthyrian Rector'), 'and not sacrificed into the bin');
+  assert.ok(!h.log.some(l => l.includes('Cthyrian Rector:')), 'it said nothing at all');
+  assert.ok(!hand(h, P).includes('Good Whale') && !bin(h, P).includes('Good Whale'), 'the card is in neither hand nor bin');
   assert.ok(erasedCards(h, P).includes('Good Whale'), 'it is in the erased pile — out of the game (CR 407.1)');
-  assert.ok(h.log.some(l => l.includes('Cthyrian Rector: Good Whale is no longer in the bin')),
-    'and the card says so out loud, exactly as it already did for a dying TOKEN');
+  // control: a real trash (a discard) does trigger it
+  const i = give(h, P, 'Rotling');
+  whiteBox(h, e => e.discardFromHand(P, i));
+  assert.ok(!ent(h, rector), 'control: a discard is a trash, and the Rector sacrificed itself');
+  assert.ok(hand(h, P).includes('Rotling'), 'control: and recalled that card');
 });
 
 // ── CR 405.6 — THE INNOCENT COPY ─────────────────────────────────────────────
@@ -226,45 +227,60 @@ test('engine hazard (CT-246; CR 801.2h: no trash): an Unstable death trashes, th
 //
 //   · an INNOCENT copy of some card name is already resting in the bin —
 //     trashed ages ago, nobody's business, recurrable by its owner;
-//   · a SECOND copy of that same name is trashed now and swept straight back
-//     out of the bin (a dying token, or the engine's {Unstable} death — CR 801.2h never bins it, CT-246);
+//   · a SECOND copy of that same name is trashed now and taken back out of
+//     the bin before the responder resolves;
 //   · the responder resolves, and the only correct answer is NEITHER. The copy
 //     it saw is gone; the copy still there is not the one it saw.
 //
 // The bug fixed here is that `bin.lastIndexOf(name)` says "the innocent one".
 // A bin holds bare card NAMES, so that search cannot tell them apart — which
 // is exactly why `binNth` is stamped on the event in the first place.
-test('CR 405.6: the Rector does NOT recall an innocent older copy when the trashed one was swept', () => {
+//
+// These two used to take the trashed copy out with an {Unstable} death (bin,
+// trash, sweep). Since the owner's 2026-10-31 ruling (CR 801.2h) an Unstable
+// death is not a trash, so that route no longer exists. The route that remains
+// is the two watchers themselves: a Rector and a Distiller both hear the same
+// discard, and whichever resolves first takes the card out from under the other.
+test('CR 405.6: the Rector does NOT recall an innocent older copy when the trashed one was taken first (by the Distiller)', () => {
   const h = new Harness(4392);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   bin(h, P).push('Good Whale');                            // the INNOCENT copy, trashed long ago
   const rector = spawn(h, P, 'Cthyrian Rector');
-  const victim = spawn(h, P, 'Good Whale');
-  whiteBox(h, e => {
-    e.entity(victim)!.unstable = true;                     // CR 803.8c stamp → the CR 801.2h route (CT-246): bin, trash, sweep
-    e.destroy(e.entity(victim)!, 'dies');
-  });
-  assert.ok(!ent(h, rector), 'the Rector triggered and made its sacrifice as the trigger resolved (CR 111.8)');
+  spawn(h, P, 'Murkdrop Distiller');
+  const i = give(h, P, 'Good Whale');
+  whiteBox(h, e => e.discardFromHand(P, i));               // both hear the same trash
+  assert.equal(h.state.decision!.kind, 'orderTriggers');
+  // the Distiller resolves first and caches the trashed copy
+  const dIdx = h.state.decision!.options.findIndex(o => String(o.label).startsWith('Murkdrop Distiller'));
+  const rIdx = h.state.decision!.options.findIndex(o => String(o.label).startsWith('Cthyrian Rector'));
+  h.do({ type: 'decide', seat: P, choice: [dIdx, rIdx] });
+  pickBy(h, o => String(o.label).startsWith('Cache'));
+  assert.deepEqual(h.q.cache(P).map(c => c.card), ['Good Whale'], 'premise: the Distiller took the trashed copy');
+  assert.ok(!ent(h, rector), 'the Rector made its sacrifice as the trigger resolved (CR 111.8)');
   assert.deepEqual(hand(h, P).filter(c => c === 'Good Whale'), [],
-    'and recalled NOTHING — the copy it saw trashed is in the erased pile, out of the game');
+    'and recalled NOTHING — the copy it saw trashed is in the cache now');
   assert.deepEqual(bin(h, P).filter(c => c === 'Good Whale'), ['Good Whale'],
     'the innocent copy is untouched, still exactly one, still in the bin');
   assert.ok(h.log.some(l => l.includes('Cthyrian Rector: Good Whale is no longer in the bin')),
     'and it says the copy is gone rather than quietly taking the other one');
 });
 
-test('CR 405.6: the Distiller does NOT cache an innocent older copy, and refunds its [once] on that miss', () => {
+test('CR 405.6: the Distiller does NOT cache an innocent older copy when the trashed one was taken first (by the Rector), and refunds its [once]', () => {
   const h = new Harness(4393);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   bin(h, P).push('Good Whale');                            // the INNOCENT copy
+  spawn(h, P, 'Cthyrian Rector');
   spawn(h, P, 'Murkdrop Distiller');
-  const victim = spawn(h, P, 'Good Whale');
-  whiteBox(h, e => {
-    e.entity(victim)!.unstable = true;
-    e.destroy(e.entity(victim)!, 'dies');
-  });
+  const i = give(h, P, 'Good Whale');
+  whiteBox(h, e => e.discardFromHand(P, i));
+  assert.equal(h.state.decision!.kind, 'orderTriggers');
+  // the Rector resolves first and recalls the trashed copy to hand
+  const dIdx = h.state.decision!.options.findIndex(o => String(o.label).startsWith('Murkdrop Distiller'));
+  const rIdx = h.state.decision!.options.findIndex(o => String(o.label).startsWith('Cthyrian Rector'));
+  h.do({ type: 'decide', seat: P, choice: [rIdx, dIdx] });
+  assert.deepEqual(hand(h, P).filter(c => c === 'Good Whale'), ['Good Whale'], 'premise: the Rector recalled the trashed copy');
   assert.equal(h.state.decision, null,
     'no cache is offered: the copy it saw trashed is gone, and the other copy is not it');
   assert.deepEqual(h.q.cache(P).map(c => c.card), [], 'nothing was cached');
@@ -280,10 +296,9 @@ test('CR 405.6: the Distiller does NOT cache an innocent older copy, and refunds
   assert.equal(h.q.cache(P)[0]!.card, 'Rotling');
 });
 
-// CR 405.6, the engine half: the state-based sweep that CREATES the window above
-// had the same name-search in it. `destroy` pushes the card, fires 'died' and
-// 'trashed' (both of which only QUEUE — nothing resolves yet), then sweeps; the
-// sweep took `bin.lastIndexOf(name)`, which is the copy it pushed only by luck
+// CR 405.6, the engine half: the state-based sweep (a dying token or {Unstable}
+// card) had the same name-search in it. `destroy` pushes the card, fires 'died'
+// (which only QUEUES — nothing resolves yet), then sweeps; the sweep took `bin.lastIndexOf(name)`, which is the copy it pushed only by luck
 // of ordering. It knows exactly where it pushed, so it says so, and a named
 // slot that no longer holds that card means GONE — never a fall back to the
 // search, because falling back is the whole bug.
@@ -716,13 +731,11 @@ test('Murkdrop Distiller: a trashed card may be cached and played this turn (CR 
   assert.ok(bin(h, P).includes('Rotling'));
 });
 
-// ENGINE HAZARD 2 (CT-246), the same shape as the Rector's and with the same precedent:
-// the Distiller caches the card it just saw trashed, and an Unstable card is
-// already erased by the time the trigger resolves. It has always guarded on
-// `bin.lastIndexOf(name) === -1` (this is how it behaves for a dying TOKEN),
-// and the [once] rulings (now CR 109.9b) make the guard refund the reservation: "a [once] is spent only
-// when the ability DOES something", and no offer could be made at all.
-test('engine hazard (CT-246; CR 801.2h: no trash): an Unstable death gives the Distiller nothing to cache, and does NOT spend its [once] (CR 109.9b)', () => {
+// The Distiller hears only a TRASH, like the Rector above. Between 2026-08-24 and
+// 2026-10-31 an {Unstable} death was one, and the Distiller found the card already
+// erased and refunded its [once] (CR 109.9b). Since CR 801.2h (owner 2026-10-31) that
+// death is not a trash: the Distiller never triggers, and its [once] is untouched.
+test('CR 801.2h (owner 2026-10-31): an Unstable death is not a trash, so the Distiller offers nothing and its [once] is untouched', () => {
   const h = new Harness(4391);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -732,16 +745,16 @@ test('engine hazard (CT-246; CR 801.2h: no trash): an Unstable death gives the D
     e.entity(victim)!.unstable = true;                     // the CR 803.8d until-regroup STAMP (Abyssal Evocation)
     e.destroy(e.entity(victim)!, 'dies');
   });
-  assert.ok(trashedCards(h).includes('Good Whale'), 'engine (CT-246): the trigger really did see a trash');
-  assert.equal(h.state.decision, null, 'but no cache is offered — the card is already gone');
-  assert.ok(h.log.some(l => l.includes('Murkdrop Distiller: Good Whale is not in your bin')));
+  assert.ok(!trashedCards(h).includes('Good Whale'), 'CR 801.2h: the Unstable death is not a trash');
+  assert.equal(h.state.decision, null, 'no cache is offered');
+  assert.ok(!h.log.some(l => l.includes('Murkdrop Distiller')), 'the Distiller never triggered');
   assert.deepEqual(h.q.cache(P).map(c => c.card), [], 'nothing was cached');
   assert.ok(erasedCards(h, P).includes('Good Whale'),
     'it is in the erased pile, and no card may reach back into that');
-  // and the [once] survived, so a real trash later this turn still gets it
+  // and the [once] is still there for a real trash later this turn
   const j = give(h, P, 'Rotling');
   whiteBox(h, e => e.discardFromHand(P, j));
-  assert.ok(h.state.decision, 'CR 109.9b: an offer that could not be made never spent the use');
+  assert.ok(h.state.decision, 'the [once] was never touched');
   pickBy(h, o => String(o.label).startsWith('Cache'));
   assert.equal(h.q.cache(P)[0]!.card, 'Rotling');
 });

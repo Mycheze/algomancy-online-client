@@ -180,16 +180,6 @@ const OPEN: TodoEntry[] = [
   },
   // ── Pass D, the mop-up and the replacement-order round, 2026-10-25: defects found and not fixed
   {
-    id: 423, area: "engine", severity: "minor",
-    cards: ["Hooba-Mon", "Necromorph"],
-    title: "an exchanged Unstable (modded) unit is trashed before it is erased; CR 410.4d says it is erased instead of entering the bin and is not trashed",
-    detail: "CR 410.4d (zones.changes.mods.exchanged), as redrafted in CR pass D: \"when it is exchanged out of play, it and all of its mods are erased instead of entering the bin. It is not trashed, because it never enters a bin\". Print decides it (the Unstable reminder: \"(If they would enter a bin, erase them instead.)\"), and the owner's 2026-10-22 call keeps an Unstable card's trash for a death. The engine bins the body, trashes it and then erases it on the exchange route: 42-dark-b asserts \"trashed, then ERASED\" and 129-disposal-tail (iii) the same verbs.",
-    evidence: "CR pass D 2026-10-25 (zero-handoff/PD-cr.md, CT-388): finding F-U07-12, discrepancy D-U07-18.",
-    fix: "In the exchange route (disposeToBin from exchangeInPlace), erase an Unstable body without binning or trashing it. Flip 42-dark-b's \"trashed, erased\" order assert and 129 (iii)'s body verbs, and rebind 410.4d's example; keep the death route (CT-246) as it is. Replay stored games: a Hooba-Mon or Necromorph exchange of a modded unit would stop firing trash watchers (the Dropslime count, Cerebrox).",
-    proof: () => still('engine/test/42-dark-b.test.ts', 'Hooba-Mon exchanges a MODDED host → the host is trashed, then ERASED'),
-    status: 'open',
-  },
-  {
     id: 424, area: "engine", severity: "minor",
     cards: ["Download"],
     title: "a unit stolen during a battle sits out until regroup, but the designer says the new controller can block with it",

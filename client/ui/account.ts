@@ -197,6 +197,8 @@ let busy = false;
 /** profile screen tab */
 let tab: 'stats' | 'achievements' | 'ladder' | 'friends' | 'history' | 'decks' = 'stats';
 let friendMsg = '';
+/** #296: the change-password box's last answer (the server's error, or done) */
+let pwMsg: { text: string; ok: boolean } | null = null;
 let leaders: LeaderRow[] | null = null;
 
 /* BL-02 — the rating ladder. Its own state rather than more fields on
@@ -564,6 +566,22 @@ function connectionsHtml(): string {
     </section>`;
 }
 
+/* #296 — change your password, on your own profile. Not for a guest: its
+ * password is one nobody knows, and it claims an account instead. Still no
+ * RESET — this needs the current one. */
+function passwordHtml(): string {
+  if (!me || isGuest()) return '';
+  return `<section class="acctcard pwform">
+      <h3>Password</h3>
+      <input type="text" autocomplete="username" value="${esc(me.username)}" hidden>
+      <label class="namerow">Current <input id="acct-pw-old" type="password" maxlength="200" autocomplete="current-password"></label>
+      <label class="namerow">New <input id="acct-pw-new" type="password" maxlength="200" autocomplete="new-password"></label>
+      <label class="namerow">New again <input id="acct-pw-again" type="password" maxlength="200" autocomplete="new-password"></label>
+      <button type="button" data-btn="acct-password">Change password</button>
+      ${pwMsg ? `<div class="${pwMsg.ok ? 'hint' : 'deckmsg'}">${esc(pwMsg.text)}</div>` : ''}
+    </section>`;
+}
+
 /** A game's `mode` as a player reads it — the one place the wire's names are
  * turned into words. 'shared' is the internal sandbox/tester mode (#175: the
  * account page said "shared" as though it were a format anyone could pick). */
@@ -599,6 +617,7 @@ function statsTab(p: Profile): string {
         results were recorded.</div>` : ''}
     </section>
     ${connectionsHtml()}
+    ${passwordHtml()}
     <section class="acctcard">
       <h3>Elements</h3>
       ${elementBarHtml(p.cardElements)}
@@ -1009,7 +1028,7 @@ export function handleButton(btn: HTMLElement): boolean {
       renderScreen(); return true;
 
     case 'acct-open-profile':
-      view = 'profile'; tab = 'stats';
+      view = 'profile'; tab = 'stats'; pwMsg = null;
       renderScreen();
       void refreshMe();
       return true;
@@ -1026,6 +1045,19 @@ export function handleButton(btn: HTMLElement): boolean {
 
     case 'acct-refresh':
       void refreshMe(); return true;
+
+    case 'acct-password': {
+      const val = (id: string): string => (document.getElementById(id) as HTMLInputElement | null)?.value ?? '';
+      const oldPassword = val('acct-pw-old'), newPassword = val('acct-pw-new');
+      const problem = !oldPassword || !newPassword ? 'fill in your current and new password'
+        : newPassword !== val('acct-pw-again') ? 'the new passwords do not match' : '';
+      if (problem) { pwMsg = { text: problem, ok: false }; renderScreen(); return true; }
+      void post('/api/auth/password', { oldPassword, newPassword }).then(r => {
+        pwMsg = r.ok ? { text: 'Password changed.', ok: true } : { text: r.error ?? 'that did not work', ok: false };
+        renderScreen();
+      }).catch(() => { pwMsg = { text: 'could not reach the server', ok: false }; renderScreen(); });
+      return true;
+    }
 
     case 'acct-favorite': {
       const el = btn.dataset['el'] || null;

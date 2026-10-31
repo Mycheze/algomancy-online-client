@@ -364,7 +364,7 @@ test('Biomass Devourer: pay [two] to erase a dead nontoken unit and grow', () =>
 // worst: Biomass Devourer ERASES what it finds, so a miss removes a card from
 // the game permanently. The fixture is the ruling's: an innocent copy of some
 // card name already resting in the bin, a second copy of that name dying and
-// being swept straight back out ({Unstable}: the engine bins then sweeps it; CR 801.2h never bins it, CT-246), and the only correct
+// being swept straight back out ({Unstable}: pushed for the event window, then erased; CR 405.5), and the only correct
 // answer is NEITHER. `bin.lastIndexOf(name)` cannot tell them apart — a bin
 // holds bare card NAMES — so the card is told WHICH copy died: the engine stamps
 // (binSeat, binNth) onto the 'died' event (CR 405.6), the same bin identity it already
@@ -378,7 +378,7 @@ test('CR 405.6: Biomass Devourer does NOT erase an innocent older copy when the 
   giveResources(h, A, 'metal', 2);                       // the [two] is payable, so that is not what stops it
   const victim = spawn(h, A, 'Good Whale');
   withE(h, e => {
-    e.entity(victim)!.unstable = true;                   // CR 803.8c stamp → bin, trash, then the sweep (CR 801.2h erases instead, CT-246)
+    e.entity(victim)!.unstable = true;                   // CR 803.8c stamp → dies, then erased (CR 405.5; not trashed, CR 801.2h)
     e.destroy(e.entity(victim)!, 'dies');
   });
   assert.equal(h.state.decision, null,

@@ -236,17 +236,17 @@ The owner ruling of 2026-08-30 (“zones follow control, in all four…”) says
 
 ### D-U07-18 · Sources disagree · rule 410.4d
 
-Is an {Unstable} (modded) unit exchanged out of play trashed before it is erased (CT-388)? The printed Unstable reminder erases it instead of letting it enter a bin, and trashing is entering a bin. The owner's 2026-08-25 call says an exchange is "a despawn and trashing", and the engine bins the body, trashes it and then erases it.
+Is an {Unstable} (modded) unit exchanged out of play trashed before it is erased (CT-388)? The printed Unstable reminder erases it instead of letting it enter a bin, and trashing is entering a bin. The owner's 2026-08-25 call says an exchange is "a despawn and trashing", and until 2026-10-31 the engine binned the body, trashed it and then erased it.
 
 - card: Abyssal Evocation: "(If they would enter a bin, erase them instead.)"
 - owner ruling, adopted 2026-08-25: "It's not a death, but it is a despawn and trashing. Weird corner case."
-- owner ruling, adopted 2026-10-22: "Trash isnt a trigger tho. Its a kind of death thing."
+- owner ruling, adopted 2026-10-31: "Trashing is dependant on a CARD going to the BIN from anywhere *other than* the STACK. Unstable units dying should not count as being Trashed since they don't end up in the BIN."
 
-**Resolution:** Settled by the authority order: print outranks the owner's general exchange call, and the owner's own 2026-10-22 call keeps the trash of an {Unstable} card for a death only. rule 410.4d states that the exchanged unit is erased and not trashed; the engine differs (F-U07-12, a CT to file).
+**Resolution:** Settled by print and the owner's 2026-10-31 call (report BPNS #301/#302): trashing needs a card to end up in the bin, and an {Unstable} card leaving play is erased instead. rule 410.4d states that the exchanged unit is erased and not trashed; the engine was aligned the same day (F-U07-12, CT-423, fixed).
 
 ### D-U07-3 · Sources disagree · rule 405.5
 
-Does a dying {Unstable} card enter the bin (and get trashed) before it is erased? The printed reminder and Caleb say it is erased in place of entering the bin. The owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) (owner) says it enters the bin, is trashed there, and is then erased, and the engine does that.
+Does a dying {Unstable} card enter the bin (and get trashed) before it is erased? The printed reminder and Caleb say it is erased in place of entering the bin. The owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) (owner) says it enters the bin, is trashed there, and is then erased, and the engine did that until 2026-10-31.
 
 *Also filed as D-U18-1 (rule 801.2h), D-U07-16 (rule 410.4d).*
 
@@ -258,8 +258,9 @@ Does a dying {Unstable} card enter the bin (and get trashed) before it is erased
 - owner ruling, adopted 2026-08-29: "Trashing means it goes to the BIN. But the unit that died was unstable, so"
 - owner ruling, adopted 2026-08-25: "It's not a death, but it is a despawn and trashing. Weird corner case."
 - owner ruling, adopted 2026-10-22: "Trash isnt a trigger tho. Its a kind of death thing."
+- owner ruling, adopted 2026-10-31: "Trashing is dependant on a CARD going to the BIN from anywhere *other than* the STACK. Unstable units dying should not count as being Trashed since they don't end up in the BIN."
 
-**Resolution:** Settled by the owner on 2026-10-22 (CT-246 closed by design): "Trash isnt a trigger tho. Its a kind of death thing." Trashing is part of a death, so a dying {Unstable} card is trashed, and it still ends on the erased pile as the printed reminder says ("erase them instead"); the engine's sequence (enters a bin, trashed there, then erased; register 2026-08-24) stands. rule 405.5 and rule 801.2h state it. F-U07-6 closed. The exchange route does not follow: an exchange is not a death, so an exchanged {Unstable} unit is erased without being trashed, as print says (rule 410.4d, 2026-10-25, CT-388); the engine trashes it first (F-U07-12).
+**Resolution:** Settled by the owner on 2026-10-31 (report BPNS #301/#302), reversing his 2026-08-24 call and his 2026-10-22 CT-246 answer: "Unstable units dying should not count as being Trashed since they don't end up in the BIN." A dying {Unstable} card still dies, is erased instead of entering a bin, and is not trashed, as the printed reminder says ("erase them instead"); an exchanged one is not trashed either. rule 405.5, rule 801.2h and rule 410.4d state it. The engine was aligned the same day (CT-246, CT-423); F-U07-6 and F-U07-12 closed as fixed.
 
 ### D-U07-4 · Ruling chain wrong · rule 400.4
 

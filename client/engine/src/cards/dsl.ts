@@ -718,7 +718,7 @@ export function binIndexOfNth(g: E, seat: Seat, name: CardName, nth: number): nu
  * honest way for a responder to find it again: a bin holds bare card names, so
  * `lastIndexOf(name)` answers "the last copy of that name there NOW", which is
  * a different card the moment the event's copy has left (a token sweep, an
- * {Unstable} sweep, which the engine runs though CR 801.2h never bins that card — CT-246)
+ * {Unstable} sweep, or another responder taking it first)
  * and an older, innocent copy of the same name is
  * still resting there.
  *

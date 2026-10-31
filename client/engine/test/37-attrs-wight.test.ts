@@ -652,7 +652,7 @@ test('CR 721.1a: an augmented Wraith donates BOTH lines to its host', () => {
 // CR 803.8e — the branch order in destroy(). This is game UZRG's bug: the token
 // test used to come FIRST, so a modded token never reached the Unstable branch.
 //
-// The owner's 2026-08-24 Unstable-trash call (CT-246; now CR 801.2h) inverted the trash half in place. This test used to be
+// The owner's 2026-08-24 Unstable call (reversed 2026-10-31, CR 801.2h) inverted the trash half in place. This test used to be
 // named "…no bin, no trash" and assert `trashes(h).length === 0`; the owner
 // ruled that an Unstable death takes the token's route through the bin, so a
 // Wraith body carrying a Wraith mod now trashes exactly ONCE — for the body,
@@ -662,8 +662,8 @@ test('CR 721.1a: an augmented Wraith donates BOTH lines to its host', () => {
 // test is about, and one trash instead of two is the proof it is still right.
 //
 // The owner's 2026-09-28 ruling (now CR 801.2d) flips the BODY half back: the body is a TOKEN, and
-// a token is never trashed, Unstable or not. The engine still trashes an Unstable
-// CARD (224-mod-trash; CR 801.2h says it should not, CT-246); here both objects are tokens, so ZERO trashes. The
+// a token is never trashed, Unstable or not — and since 2026-10-31 neither is an Unstable
+// CARD (CR 801.2h; 224-mod-trash). Here both objects are tokens, so ZERO trashes. The
 // branch order is proved by the Unstable log line and the two death triggers.
 test('CR 803.8e: a MODDED token is Unstable — erased with its mods; CR 801.2d: neither the token body nor the token mod trashes', () => {
   const h = sterile(3738);

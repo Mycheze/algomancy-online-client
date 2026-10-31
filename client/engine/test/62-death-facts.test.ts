@@ -113,15 +113,14 @@ test('CR 714.9: a dying TOKEN says so on the event (it used to be a log-message 
     'and the old string-matched phrase is gone — which is exactly why the flag exists');
 });
 
-// The owner's Unstable-death call (2026-08-24, CT-246; now CR 801.2h) inverted the destination half of this test in place. It
+// The owner's 2026-08-24 Unstable call inverted the destination half of this test in place. It
 // used to be named "…says its destination was the erased pile" and assert
-// `to === 'erased'`, with "nothing reached a bin" as the reason. The owner
-// ruled that an Unstable death goes through the bin exactly as a token's does,
-// so `to` is 'bin' for EVERY death now — it reports where the card is during
-// the event window, which is the only thing a listener can act on. The bin
-// assertion below is unchanged and now means something different: not "it
-// never went there" but "it does not STAY there".
-test('engine (CT-246; CR 801.2h: erased instead of binned): an Unstable death says BIN, like a token, and still DIES (the earlier reading inverted)', () => {
+// `to === 'erased'`. An Unstable death is pushed into the bin for the event
+// window exactly as a token's is, so `to` is 'bin' for EVERY death — it reports
+// where the card is during the event window, which is the only thing a listener
+// can act on — and it is erased right after (CR 405.5). The 2026-10-31 reversal
+// (CR 801.2h: not trashed) changed only the trash, not this.
+test('CR 405.5 / 714.9: an Unstable death says BIN, like a token, and still DIES (the earlier reading inverted)', () => {
   const h = new Harness(6203);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -133,7 +132,7 @@ test('engine (CT-246; CR 801.2h: erased instead of binned): an Unstable death sa
   const ev = died(h);
   assert.equal(ev.type, 'died', 'Unstable replaces the BIN, not the death (Caleb 2025-04-08)');
   assert.equal(ev.data!['to'], 'bin',
-    'CR 801.2h (CT-246): the same answer a dying token gives — it really is in a bin while this fires');
+    'the same answer a dying token gives — it really is in a bin while this fires (CR 410.5a)');
   assert.deepEqual(h.state.players[P]!.bin, [], 'and the sweep took it back out again');
   const erased = h.events.filter(x => x.type === 'erased');
   assert.ok(erased.some(x => x.data?.['card'] === 'T62 Ally' && x.data?.['from'] === 'bin'),

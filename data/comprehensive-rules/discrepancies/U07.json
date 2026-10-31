@@ -26,7 +26,7 @@
     "kind": "a-sources-disagree",
     "rule": "zones.bin.unstable",
     "tier": 2,
-    "summary": "Does a dying {Unstable} card enter the bin (and get trashed) before it is erased? The printed reminder and Caleb say it is erased in place of entering the bin. The owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) (owner) says it enters the bin, is trashed there, and is then erased, and the engine does that.",
+    "summary": "Does a dying {Unstable} card enter the bin (and get trashed) before it is erased? The printed reminder and Caleb say it is erased in place of entering the bin. The owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) (owner) says it enters the bin, is trashed there, and is then erased, and the engine did that until 2026-10-31.",
     "seeAlso": [
       {
         "id": "D-U18-1",
@@ -69,9 +69,13 @@
       {
         "source": "owner ruling, adopted 2026-10-22",
         "quote": "Trash isnt a trigger tho. Its a kind of death thing."
+      },
+      {
+        "source": "owner ruling, adopted 2026-10-31",
+        "quote": "Trashing is dependant on a CARD going to the BIN from anywhere *other than* the STACK. Unstable units dying should not count as being Trashed since they don't end up in the BIN."
       }
     ],
-    "resolution": "Settled by the owner on 2026-10-22 (CT-246 closed by design): \"Trash isnt a trigger tho. Its a kind of death thing.\" Trashing is part of a death, so a dying {Unstable} card is trashed, and it still ends on the erased pile as the printed reminder says (\"erase them instead\"); the engine's sequence (enters a bin, trashed there, then erased; register 2026-08-24) stands. zones.bin.unstable and keywords.actions.trash.unstable-death state it. F-U07-6 closed. The exchange route does not follow: an exchange is not a death, so an exchanged {Unstable} unit is erased without being trashed, as print says (zones.changes.mods.exchanged, 2026-10-25, CT-388); the engine trashes it first (F-U07-12)."
+    "resolution": "Settled by the owner on 2026-10-31 (report BPNS #301/#302), reversing his 2026-08-24 call and his 2026-10-22 CT-246 answer: \"Unstable units dying should not count as being Trashed since they don't end up in the BIN.\" A dying {Unstable} card still dies, is erased instead of entering a bin, and is not trashed, as the printed reminder says (\"erase them instead\"); an exchanged one is not trashed either. zones.bin.unstable, keywords.actions.trash.unstable-death and zones.changes.mods.exchanged state it. The engine was aligned the same day (CT-246, CT-423); F-U07-6 and F-U07-12 closed as fixed."
   },
   {
     "id": "D-U07-4",
@@ -358,7 +362,7 @@
     "kind": "a-sources-disagree",
     "rule": "zones.changes.mods.exchanged",
     "tier": 2,
-    "summary": "Is an {Unstable} (modded) unit exchanged out of play trashed before it is erased (CT-388)? The printed Unstable reminder erases it instead of letting it enter a bin, and trashing is entering a bin. The owner's 2026-08-25 call says an exchange is \"a despawn and trashing\", and the engine bins the body, trashes it and then erases it.",
+    "summary": "Is an {Unstable} (modded) unit exchanged out of play trashed before it is erased (CT-388)? The printed Unstable reminder erases it instead of letting it enter a bin, and trashing is entering a bin. The owner's 2026-08-25 call says an exchange is \"a despawn and trashing\", and until 2026-10-31 the engine binned the body, trashed it and then erased it.",
     "sides": [
       {
         "source": "card: Abyssal Evocation",
@@ -369,10 +373,10 @@
         "quote": "It's not a death, but it is a despawn and trashing. Weird corner case."
       },
       {
-        "source": "owner ruling, adopted 2026-10-22",
-        "quote": "Trash isnt a trigger tho. Its a kind of death thing."
+        "source": "owner ruling, adopted 2026-10-31",
+        "quote": "Trashing is dependant on a CARD going to the BIN from anywhere *other than* the STACK. Unstable units dying should not count as being Trashed since they don't end up in the BIN."
       }
     ],
-    "resolution": "Settled by the authority order: print outranks the owner's general exchange call, and the owner's own 2026-10-22 call keeps the trash of an {Unstable} card for a death only. zones.changes.mods.exchanged states that the exchanged unit is erased and not trashed; the engine differs (F-U07-12, a CT to file)."
+    "resolution": "Settled by print and the owner's 2026-10-31 call (report BPNS #301/#302): trashing needs a card to end up in the bin, and an {Unstable} card leaving play is erased instead. zones.changes.mods.exchanged states that the exchanged unit is erased and not trashed; the engine was aligned the same day (F-U07-12, CT-423, fixed)."
   }
 ]

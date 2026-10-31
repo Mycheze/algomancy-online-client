@@ -7,15 +7,15 @@
     "evidence": [
       {
         "file": "client/engine/test/224-mod-trash.test.ts",
-        "quote": "CT-246 GUARD (CR 801.2h: an Unstable card that dies is still trashed): the BODY of an Unstable unit that dies is trashed, mods or no mods"
+        "quote": "test('CR 801.2h (owner 2026-10-31): the BODY of an Unstable unit that dies is NOT trashed — it dies and is erased; an unmodded death still trashes', () => {"
       },
       {
         "file": "client/engine/test/35-rot-debt-trash.test.ts",
-        "quote": "CR 801.2h (CT-246): a modded unit dying is binned, TRASHED, and only then erased"
+        "quote": "CR 801.2h (owner 2026-10-31): a modded unit dying DIES and is erased with its mod, and nothing is trashed"
       }
     ],
     "ct": "CT-246",
-    "closed": "by design 2026-10-22 (CT-246 closed): the owner, \"Trash isnt a trigger tho. Its a kind of death thing.\" A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it."
+    "closed": "fixed 2026-10-31 (CT-246 reopened and done): the owner reversed his 2026-10-22 call on report BPNS #301/#302, \"Unstable units dying should not count as being Trashed since they don't end up in the BIN.\" The engine now erases a dying {Unstable} card without binning or trashing it; rules 405.5 and 801.2h state it."
   },
   {
     "id": "F-U18-2",
@@ -50,12 +50,12 @@
         "quote": "*\"Unstable units still die, they just get erased instead of ending up in the"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "quote": "The engine's Unstable-death trash (owner, 2026-08-24; CR 801.2h says otherwise, CT-246) is UNCHANGED for a CARD: an {Unstable} card that"
+        "file": "client/engine/test/429-cr-keyword-actions.test.ts",
+        "quote": "'and it was not trashed (owner 2026-10-31: it never ends up in a bin)');"
       }
     ],
     "ct": "CT-246",
-    "closed": "by design 2026-10-22 (CT-246 closed): the owner, \"Trash isnt a trigger tho. Its a kind of death thing.\" A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it."
+    "closed": "fixed 2026-10-31 (CT-246 reopened and done): the owner reversed his 2026-10-22 call on report BPNS #301/#302, \"Unstable units dying should not count as being Trashed since they don't end up in the BIN.\" The engine now erases a dying {Unstable} card without binning or trashing it; rules 405.5 and 801.2h state it."
   },
   {
     "id": "F-U18-4",
@@ -68,10 +68,10 @@
       },
       {
         "file": "client/engine/test/429-cr-keyword-actions.test.ts",
-        "quote": "'and the engine trashed it (the printed reading says it is not trashed)');"
+        "quote": "'and it was not trashed (owner 2026-10-31: it never ends up in a bin)');"
       }
     ],
     "rule": "keywords.actions.trash.unstable-death",
-    "closed": "by design 2026-10-22 (CT-246 closed): the owner, asked to choose between print and Caleb (erased at once, no trash) and his 2026-08-24 sequence, answered \"Trash isnt a trigger tho. Its a kind of death thing. So these options are the same option\". A dying Unstable card is trashed as part of its death and ends erased; rules 405.5 and 801.2h state it, re-verified with the whole answer quoted."
+    "closed": "fixed 2026-10-31 (CT-246 reopened and done): the owner reversed his 2026-10-22 call on report BPNS #301/#302, \"Unstable units dying should not count as being Trashed since they don't end up in the BIN.\" The engine now erases a dying {Unstable} card without binning or trashing it; rules 405.5 and 801.2h state it."
   }
 ]

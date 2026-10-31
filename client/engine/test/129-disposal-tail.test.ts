@@ -4,9 +4,9 @@
  * When something leaves PLAY for a bin, exactly one sequence runs: push the
  * nontoken mods into their owners' bins (remembering the slot each landed at),
  * push the body into its bin (same), announce the departure, trash the body and
- * then each mod ANCHORED on the entity it was (CR 714.9), sweep the lot back out
- * highest-index-first if the body is {Unstable} (the engine's route; CR 405.5 erases instead, CT-246) or just the
- * body if it is a token (CR 410.5), file the TOKEN mods on the public erased pile
+ * then each mod ANCHORED on the entity it was (CR 714.9) — unless the body is
+ * {Unstable}, which is erased instead and not trashed (CR 405.5, 801.2h): the
+ * lot is swept out highest-index-first — or sweep just the body if it is a token (CR 410.5), file the TOKEN mods on the public erased pile
  * (CR 407.3a) since they never reached a bin to be swept from, and delete the mod
  * entities last so the announce window can still read them.
  *
@@ -17,7 +17,7 @@
  * sequence. `E.destroy` and `exchangeInPlace` now call the same method.
  *
  * WHAT THIS FILE IS FOR, and how it differs from 42-dark-b's Hooba-Mon block:
- * 42-dark-b pins the engine's Unstable-disposal behaviour (which differs from CR 405.5/410.4d, CT-246) from the card's side
+ * 42-dark-b pins the Unstable disposal (CR 405.5, 410.4d, 801.2h) from the card's side
  * and must keep passing untouched. This file pins the SHARING — that there is
  * one implementation and both routes go through it — plus the disposal cases a
  * card-level test reaches most cheaply through Hooba-Mon. Seeds are 12900+, so
@@ -134,7 +134,7 @@ test('CR 410.7 (i): a plain exchanged body is binned and trashed, and is NOT swe
 //    NOT trashed. This bullet used to read "…enters a bin from play and is
 //    TRASHED there"; the owner overruled the earlier ruling's mods paragraph on the ground
 //    that a mod is PART of the unit it sits on and never had a presence of its
-//    own. The BODY is untouched by that and is still trashed (see 224).
+//    own. Since 2026-10-31 the {Unstable} BODY is not trashed either (CR 801.2h; see 224).
 //  · and the zone it reaches is the HOST CONTROLLER's (CR 400.4, 410.4a), not the
 //    mod owner's. The mod here is GRAFTED BY THE OPPONENT, so owner and controller
 //    are different seats and the assertion can tell them apart. The old bullet
@@ -193,8 +193,9 @@ test('CR 410.7 (ii): nontoken mods — the despawn fires, and each mod goes to t
 // (iii) an {Unstable} body — swept with its mods, HIGHEST INDEX FIRST
 // ══════════════════════════════════════════════════════════════════════
 //
-// A body wearing mods is {Unstable} by derivation (CR 803.8e, 720.7), so the engine's sweep (CR 405.5 erases instead of binning, CT-246)
-// takes it and every nontoken mod back out of the bin it was just trashed in.
+// A body wearing mods is {Unstable} by derivation (CR 803.8e, 720.7), so it and every
+// nontoken mod are erased instead of resting in a bin (CR 405.5), and none of them is
+// trashed (CR 801.2h, 720.8a).
 //
 // CR 405.6 is why the order is descending, and TWO MODS OF THE SAME CARD is the
 // only shape that can tell the difference — the case this test exists for.
@@ -228,13 +229,11 @@ test('CR 410.7 (iii): an Unstable body is swept with its mods — including TWO 
   assert.ok(erased.includes('Rune Channeler'), 'it reached the erased pile');
   assert.ok(!bin.includes('Hooba-Mon') && erased.includes('Hooba-Mon'),
     'and so did the mod that did the exchanging');
-  // ORDER is the other half: each was trashed on the way IN and swept
-  // afterwards, never "skipped the trash"
-  assert.deepEqual(verbsFor(h, 'Rune Channeler'), ['trashed', 'erased'],
-    'engine ordering for the body (CT-246; CR 801.2h erases it unbinned): bin → trashed → swept');
+  // and none of them was trashed on the way out
+  assert.deepEqual(verbsFor(h, 'Rune Channeler'), ['erased'],
+    'the body: erased, not trashed (CR 801.2h, owner 2026-10-31)');
   assert.deepEqual(verbsFor(h, 'Nothyr'), ['erased', 'erased'],
-    'and for both mods: swept out of the bin, and NOT trashed on the way — CR 720.8a, the half '
-    + 'that overruled the earlier ruling’s mods paragraph. The body two assertions up still is.');
+    'and both mods: erased, not trashed (CR 720.8a)');
 });
 
 // ══════════════════════════════════════════════════════════════════════

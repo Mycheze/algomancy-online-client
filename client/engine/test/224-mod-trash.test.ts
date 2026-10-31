@@ -25,13 +25,12 @@
  *   2. THE ERASE IS NOT A TRASH. A nontoken mod swept out of the bin with its
  *      {Unstable} host is not trashed at all.
  *
- * ⚠ Half 2 OVERRULES the Unstable-trash ruling's "The mods ride with it" section, which was
+ * ⚠ Half 2 OVERRULES the 2026-08-24 Unstable ruling's "The mods ride with it" section, which was
  * reasoning and not a log (the ANBB mod was a Wraith token, which has no card
- * to trash either way). Everything else in that ruling stands, and the FIRST thing
- * this file does is prove it: the BODY of an {Unstable} unit that dies is
- * still binned and still trashed. That is report #93, and an implementation of
- * the mod rule (CR 801.2g) that stops the body trashing has silently reopened
- * it in the engine — though CR 801.2h says the body is not trashed either (CT-246).
+ * to trash either way). The owner has since reversed the rest of that ruling
+ * too (2026-10-31, report BPNS #301/#302; CR 801.2h): the BODY of an {Unstable}
+ * unit that dies is not trashed either — it never ends up in a bin. The first
+ * two tests below are the fence for that.
  *
  * The log line the owner objected to disappears entirely; the one above it stays.
  *
@@ -92,51 +91,58 @@ function moddedEnemyUnit(seed: number, mod = 'Ignis Sprite', host = 'Good Whale'
   return { h, A, D, hostId, mark: h.events.length };
 }
 
-// ── The Unstable-body trash first (CR 801.2h: an Unstable card that dies is still trashed; CT-246): the boundary this must not cross ──
+// ── The Unstable body first (CR 801.2h, owner 2026-10-31): it dies, and it is NOT trashed ──
 
-test('CT-246 GUARD (CR 801.2h: an Unstable card that dies is still trashed): the BODY of an Unstable unit that dies is trashed, mods or no mods', () => {
-  // ⚠ THIS TEST IS THE FENCE. The owner's call of 2026-08-24 (report #93) overruled
-  // BOTH the printed reminder text ("If they would enter a bin, erase them
-  // instead") AND a direct Caleb ruling, on purpose: an {Unstable} unit that
-  // dies passes THROUGH the bin, is trashed there, and is only then erased. CR 801.2h now agrees
-  // (CT-246, owner 2026-10-22): trashing is part of the death.
-  // CR 720.8a changes what happens to its MODS and nothing else. If this reddens,
-  // report #93 is open again and Dropslime is broken exactly as it was.
+test('CR 801.2h (owner 2026-10-31): the BODY of an Unstable unit that dies is NOT trashed — it dies and is erased; an unmodded death still trashes', () => {
+  // ⚠ THIS TEST IS THE FENCE. The owner, 2026-10-31 (report BPNS #301/#302),
+  // reversing his 2026-08-24 call (report #93): "Trashing is dependant on a CARD
+  // going to the BIN from anywhere *other than* the STACK. Unstable units dying
+  // should not count as being Trashed since they don't end up in the BIN."
+  // If this reddens, an Unstable death is being trashed again.
   const { h, A, hostId, mark } = moddedEnemyUnit(9200);
   assert.equal(ent(h, hostId)!.controller, A);
   withE(h, e => { e.destroy(e.entity(hostId)!, 'dies'); });
 
-  const body = trashEvents(h, mark).filter(t => t.card === 'Good Whale');
-  assert.equal(body.length, 1, 'the Unstable body is trashed exactly once');
-  assert.equal(body[0]!.seat, A, 'and it is trashed by the seat whose bin it entered');
-  assert.ok(h.log.some(l => l.includes('trashes Good Whale')),
-    'and the trash is in the log, where report #93 could not find it');
-  assert.ok(erasedOf(h, A).includes('Good Whale'), 'then erased — the engine sweeps it out of the bin (CR 405.5 erases it instead of binning; CT-246)');
-  assert.equal(binOf(h, A).filter(c => c === 'Good Whale').length, 0,
-    'the bin is empty again before anybody can look');
+  assert.ok(h.events.slice(mark).some(ev => ev.type === 'died' && ev.data?.['card'] === 'Good Whale'),
+    'it still DIES — Unstable replaces the bin, not the death');
+  assert.equal(trashEvents(h, mark).filter(t => t.card === 'Good Whale').length, 0,
+    'the Unstable body is not trashed');
+  assert.ok(!h.log.some(l => l.includes('trashes Good Whale')), 'and no trash line is logged');
+  assert.ok(erasedOf(h, A).includes('Good Whale'), 'it is erased (CR 405.5)');
+  assert.equal(binOf(h, A).filter(c => c === 'Good Whale').length, 0, 'and it does not rest in a bin');
+
+  // positive control: the same seat losing an UNMODDED unit in the same battle still trashes it
+  const plain = spawn(h, A, 'Rune Channeler');
+  const mark2 = h.events.length;
+  withE(h, e => { e.destroy(e.entity(plain)!, 'dies'); });
+  assert.equal(trashEvents(h, mark2).filter(t => t.card === 'Rune Channeler' && t.seat === A).length, 1,
+    'control: an unmodded death is binned and trashed (CR 801.2)');
 });
 
-test('CT-246 GUARD (CR 801.2h: an Unstable card that dies is still trashed): the per-battle trashed ledger counts an Unstable body', () => {
-  // The other half of #93, and the half Dropslime reads: its damage is the
-  // battle-wide `trashed` counter, not a per-seat one. Derived from the card,
-  // not from the counter key, so the guard cannot drift from what the card
-  // asks for.
+test('CR 801.2h (owner 2026-10-31): the per-battle trashed ledger does NOT count an Unstable body; an unmodded death still counts', () => {
+  // The half Dropslime reads: its damage is the battle-wide `trashed` counter,
+  // not a per-seat one. Derived from the card, not from the counter key, so the
+  // guard cannot drift from what the card asks for.
   assert.ok(trashTextCards().includes('Dropslime'),
     'Dropslime is the card whose damage IS this counter');
   const { h, A, hostId } = moddedEnemyUnit(9201);
   const region = ent(h, hostId)!.region;
-  let after = -1;
+  const plain = spawn(h, A, 'Rune Channeler');
+  assert.equal(ent(h, plain)!.region, region, 'premise: the control dies in the same region');
+  let after = -1, afterSeat = -1, control = -1;
   withE(h, e => {
     const start = e.battleCounter(region, 'trashed');
+    const startSeat = e.battleCounter(region, `trashed:${A}`);
     e.destroy(e.entity(hostId)!, 'dies');
     after = e.battleCounter(region, 'trashed') - start;
+    afterSeat = e.battleCounter(region, `trashed:${A}`) - startSeat;
+    const c0 = e.battleCounter(region, 'trashed');
+    e.destroy(e.entity(plain)!, 'dies');
+    control = e.battleCounter(region, 'trashed') - c0;
   });
-  assert.equal(after, 1,
-    'exactly one card was trashed by that death — the body, and NOT the mod as well');
-  withE(h, e => {
-    assert.equal(e.battleCounter(region, `trashed:${A}`) >= 1, true,
-      'and it counted for the seat that lost the unit');
-  });
+  assert.equal(after, 0, 'no card was trashed by the Unstable death — not the body, not the mod');
+  assert.equal(afterSeat, 0, 'and nothing counted for the seat that lost the unit');
+  assert.equal(control, 1, 'control: an unmodded death in the same battle region does count');
 });
 
 // ── half 2: the erase is not a trash ────────────────────────────────────
@@ -162,7 +168,7 @@ test('CR 720.8a: a nontoken mod erased with its Unstable host is not trashed at 
     'and it does not linger in a bin');
   assert.equal(binOf(h, A).filter(c => c === 'Ignis Sprite').length, 0,
     'in either bin');
-  assert.ok(h.log.some(l => l.includes('Ignis Sprite is erased from the bin')),
+  assert.ok(h.log.some(l => l.includes('Ignis Sprite is erased — it modded an Unstable card')),
     'the erase is still announced — the player is told what happened to it');
 });
 
@@ -274,7 +280,7 @@ test('the bin ref names the copy just trashed, not the innocent older one', () =
 
 // ── the whole-pool sweep ────────────────────────────────────────────────
 
-test('CR 801.2g whole pool: no nontoken mod is trashed by its host death — and the body always is (CR 801.2h)', () => {
+test('CR 801.2g whole pool: no nontoken mod is trashed by its host death — and the body never is (CR 801.2h)', () => {
   // Derived over every card that can BE a nontoken mod (203 of them today),
   // not over the one card the report named. Three of them — the [Augment] "I
   // gain -X/-X" viruses, Malformed Monstrosity among them — shrink the host to
@@ -285,7 +291,7 @@ test('CR 801.2g whole pool: no nontoken mod is trashed by its host death — and
   assert.ok(cards.includes('Malformed Monstrosity'), 'including the card from report #129');
 
   const modTrashed: string[] = [];
-  const bodyNotTrashed: string[] = [];
+  const bodyTrashed: string[] = [];
   let checked = 0;
   for (const name of cards) {
     const h = new Harness(9208);
@@ -301,13 +307,13 @@ test('CR 801.2g whole pool: no nontoken mod is trashed by its host death — and
     checked++;
     const evs = trashEvents(h, mark);
     if (evs.some(t => t.card === name)) modTrashed.push(name);
-    if (!evs.some(t => t.card === 'Good Whale')) bodyNotTrashed.push(name);
+    if (evs.some(t => t.card === 'Good Whale')) bodyTrashed.push(name);
   }
   assert.equal(checked, cards.length, 'every candidate was actually exercised');
   assert.deepEqual(modTrashed, [],
     'CR 720.8a: not one of them is trashed when it is erased with its host');
-  assert.deepEqual(bodyNotTrashed, [],
-    'CT-246 GUARD (engine, not CR 801.2h), whole pool: the body is trashed under every one of them');
+  assert.deepEqual(bodyTrashed, [],
+    'CR 801.2h (owner 2026-10-31), whole pool: the Unstable body is erased, not trashed, under every one of them');
 });
 
 test('CR 720.8 whole pool: every mod trashed on a recall is attributed to the host controller', () => {

@@ -665,12 +665,9 @@ test('CR 111.14: all or nothing — one card in hand cannot pay a doubled [Disca
 // bin") — destroy()'s erase branch fires the same 'died' event, which the
 // existing tests already pin for the modded and stamped ways in (CR 803.8i).
 //
-// ⚠ The owner's 2026-08-24 Unstable-trash call (CT-246; now CR 801.2h) repairs the PROSE of the two tests below without moving
-// their outcome. They used to say "the bin never sees it" — that is no longer
-// how the engine gets there. An Unstable unit that dies now enters the bin, is
-// trashed there, and is swept out by a state-based action, exactly as a dying
-// token is; the assertions still hold because the bin is empty again by the
-// time anyone can look. The word "never" was the load-bearing mistake.
+// CR 801.2h (owner, 2026-10-31, reversing his 2026-08-24 call): an Unstable unit
+// that dies is erased and NOT trashed — it never ends up in a bin. (Between
+// 2026-08-24 and 2026-10-31 the engine binned it, trashed it and swept it out.)
 
 test('Aberrant Statweaver: printed {Unstable} — it dies into the ERASED pile, not the bin (report #89)', () => {
   const h = new Harness(1790);
@@ -685,10 +682,10 @@ test('Aberrant Statweaver: printed {Unstable} — it dies into the ERASED pile, 
     'it does not REST in a bin — {Unstable} replaces the bin entry');
   assert.ok((h.state.players[p]!.erased ?? []).includes('Aberrant Statweaver'),
     'the public erased pile records it (CR 407.1)');
-  // The engine (CT-246): the printed-{Unstable} way in behaves like the other three
-  assert.ok(h.events.concat(e.events).some(ev => ev.type === 'trashed'
-    && ev.data?.['card'] === 'Aberrant Statweaver' && ev.data?.['from'] === 'play'),
-  'and the engine trashed it on the way through (CT-246; CR 801.2h: not trashed)');
+  // CR 801.2h: the printed-{Unstable} way in behaves like the other three — not trashed
+  assert.ok(!h.events.concat(e.events).some(ev => ev.type === 'trashed'
+    && ev.data?.['card'] === 'Aberrant Statweaver'),
+  'and it was not trashed (CR 801.2h, owner 2026-10-31)');
 });
 
 test('Oorblak: printed {Unstable} — erased on death while UNMODDED (report #89)', () => {

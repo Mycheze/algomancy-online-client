@@ -824,39 +824,38 @@
   },
   {
     "key": "zones.bin.unstable",
-    "textHash": "a680af0d63b11b27",
+    "textHash": "f5a39ace1f45af76",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:dischargeItem / destroy",
+        "loc": "client/engine/src/engine.ts:disposeToBin (willSweep / noteTrashed)",
         "agrees": true,
-        "note": "an Unstable card leaving the stack is erased (not binned); a modded unit that dies is binned, trashed, then swept to the erased pile"
+        "note": "An Unstable body is pushed to the bin for the event window and swept to the erased pile; noteTrashed is skipped when willSweep (CR 801.2h). Mods likewise untrashed unless keepBinned (Pull Under)."
+      },
+      {
+        "loc": "client/engine/src/engine.ts:isUnstable / stack twin (CR 803.8k)",
+        "agrees": true,
+        "note": "active zones = play and stack"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/418-cr-zones.test.ts",
-        "pattern": "cr:zones.bin.unstable — a modded unit that dies ends on the erased pile",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "client/engine/test/125-active-zone.test.ts",
-        "pattern": "CR 803.8k: Aberrant Statweaver negated off the stack is ERASED, not binned",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "client/engine/test/125-active-zone.test.ts",
-        "pattern": "CR 803.8k: a printed-Unstable virus whose HOST DIES fizzles to the erased pile",
+        "pattern": "cr:zones.bin.unstable",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/224-mod-trash.test.ts",
-        "pattern": "CT-246 GUARD (engine; CR 801.2h says not trashed): the BODY of an Unstable unit that dies is still trashed",
+        "pattern": "CR 801.2h (owner 2026-10-31): the BODY of an Unstable unit that dies is NOT trashed",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/125-active-zone.test.ts",
+        "pattern": "CR 803.8k: Aberrant Statweaver negated off the stack is ERASED",
         "passed": true,
         "asserts_claim": true
       }
@@ -866,37 +865,23 @@
       {
         "ref": "card: Abyssal Evocation",
         "supports": "yes",
-        "note": "\"(If they would enter a bin, erase them instead.)\""
-      },
-      {
-        "ref": "owner \"Unstable\": \"If an unstable card would enter a bin from an active",
-        "supports": "yes",
-        "note": "\"from an active zone\""
-      },
-      {
-        "ref": "owner \"The ACTIVE ZONES are PLAY ... and the STACK.\"",
-        "supports": "yes",
         "note": ""
       },
       {
-        "ref": "owner 2026-08-24 \"An Unstable card that dies enters a bin, is trashed there, and is only then\"",
+        "ref": "owner register (2026-08-25) x2",
         "supports": "yes",
-        "note": "supports \"still trashed\" on death"
+        "note": "active-zone definition"
       },
       {
-        "ref": "owner 2026-10-22 \"Trash isnt a trigger tho. Its a kind of death thing...\"",
+        "ref": "owner 2026-10-31",
         "supports": "yes",
-        "note": "answering CT-246 (print/Caleb erase-no-trash vs bin-trash-erase): trash is part of death, so a dying Unstable card is trashed and still ends erased"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/cards/printed.json",
         "text": "(If they would enter a bin, erase them instead.)"
-      },
-      {
-        "file": "client/engine/test/418-cr-zones.test.ts",
-        "text": "'and not left in the bin'"
       }
     ],
     "basis_ok": true,
@@ -1863,50 +1848,39 @@
   },
   {
     "key": "zones.changes.mods.exchanged",
-    "textHash": "52f0aa5d9da0d37f",
+    "textHash": "26ac5f97dec498cc",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:exchangeInPlace",
-        "agrees": false,
-        "note": "the exchange sends the Unstable host through the bin: it is trashed, then swept to the erased pile (declared engineDiffers F-U07-12). Erase of host and mods, and no death, agree."
-      },
-      {
-        "loc": "client/engine/src/engine.ts:isUnstable",
+        "loc": "client/engine/src/engine.ts:exchangeInPlace -> disposeToBin",
         "agrees": true,
-        "note": "a modded host is Unstable by derivation"
+        "note": "exchanged Unstable host is swept to the erased pile, no trashed event, no died event"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/42-dark-b.test.ts",
-        "pattern": "engine (CT-246; CR 410.4d",
+        "pattern": "CR 410.4d / 801.2h (owner 2026-10-31): Hooba-Mon exchanges a MODDED host",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/42-dark-b.test.ts",
-        "pattern": "CR 405.4 control: Hooba-Mon",
+        "pattern": "CR 405.4 control: Hooba-Mon exchanges an UNMODDED host",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/42-dark-b.test.ts",
+        "pattern": "CR 410.4d: the mods reach the public ERASED pile",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/418-cr-zones.test.ts",
         "pattern": "cr:zones.changes.mods.exchanged",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "client/engine/test/129-disposal-tail.test.ts",
-        "pattern": "CR 410.7 (iii)",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "client/engine/test/135-exchange-and-zones.test.ts",
-        "pattern": "CR 801.13a: Necromorph",
         "passed": true,
         "asserts_claim": true
       }
@@ -1916,22 +1890,22 @@
       {
         "ref": "Manual p.35",
         "supports": "yes",
-        "note": "verbatim; a modded card is unstable, and when erased it and all its mods are erased"
+        "note": "verbatim; supports 'a modded unit is Unstable'. Note: the page's next lines say a modded card leaving play without dying has its mods put back into the bin (example: to hand); the exchange-to-bin case is settled by the keyword's own bin-replacement definition and the owner calls"
       },
       {
         "ref": "card: Abyssal Evocation",
         "supports": "yes",
-        "note": "verbatim reminder: unstable replaces entering a bin with an erase, so the exchanged host never enters a bin"
+        "note": "verbatim; defines Unstable as the bin replacement"
       },
       {
-        "ref": "owner register@72de434 (modded host Unstable)",
+        "ref": "owner register@72de434 (2026-08-25)",
         "supports": "yes",
-        "note": "fragment, but says what it is used for"
+        "note": "fragment: a modded host is Unstable by derivation"
       },
       {
-        "ref": "owner CT-246 closing note 2026-10-22",
+        "ref": "owner 2026-10-31",
         "supports": "yes",
-        "note": "trash is tied to death; exchange is no death, so the printed erase-instead reading stands for it"
+        "note": "trashing requires ending up in a bin"
       }
     ],
     "quote_spans": [
@@ -1942,10 +1916,6 @@
       {
         "file": "client/engine/src/cards/printed.json",
         "text": "(If they would enter a bin, erase them instead.)"
-      },
-      {
-        "file": "client/engine/test/42-dark-b.test.ts",
-        "text": "assert.deepEqual(order, ['trashed', 'erased'], 'engine ordering (CT-246; CR 410.4d erases unbinned): bin → trashed → swept');"
       }
     ],
     "basis_ok": true,

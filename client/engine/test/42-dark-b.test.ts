@@ -19,7 +19,7 @@ import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import {
-  effStats, ent, give, giveResources, handIdx, logFor, ownAttrs, pass, skipHasteStep, spawn,
+  effStats, ent, give, giveResources, handIdx, logFor, ownAttrs, pass, pick, skipHasteStep, spawn,
   toDeployment, toNextBattle, unitsOf, withE,
 } from './util.ts';
 import type { Action, DecisionOption, EngineEvent, Entity, EntityId, Seat } from '../src/types.ts';
@@ -252,24 +252,22 @@ test('Dropslime: trashed DURING battle, it zaps for everything trashed in that b
   assert.equal(h.state.players[D]!.life, lifeD - 2, "1 already trashed + Dropslime's own = 2 damage");
 });
 
-/* ── PLAYTEST REPORT #93, room ANBB, 2026-08-24 (the Unstable-trash route, CT-246; now CR 801.2h) ───────────────────
+/* ── PLAYTEST REPORT #93, room ANBB, 2026-08-24 — REVERSED 2026-10-31 (CR 801.2h) ───────────
  *
- * The owner: "I'm pretty sure we're doing death and trashing wrong for
+ * The owner, in #93: "I'm pretty sure we're doing death and trashing wrong for
  * Unstable units. Dropslime wouldn't make sense otherwise. But here, it died
- * and I didn't get its trigger or the other one."
+ * and I didn't get its trigger or the other one." Dropslime showed both
+ * halves: discarded from HAND it was trashed and fired; later, modded by a
+ * Wraith ({Unstable}), it died and was erased with no trash and no trigger.
+ * The 2026-08-24 call made the second half trash too (bin, trash, sweep).
  *
- * That game replays FAITHFUL under the engine of the day, and Dropslime
- * demonstrated BOTH halves of the bug by itself:
- *   - discarded from HAND, unmodded → "Ben trashes Dropslime (from hand)."
- *     → trigger fired → 2 damage to Rashi.  Correct, and always was.
- *   - later, in play, grafted a Wraith by Plague Ritual → {Unstable} → blocked,
- *     took lethal → "Dropslime dies — Unstable: it and its 1 mod(s) are
- *     ERASED." → no trash, no trigger, no ledger bump.
- * On that same combat-damage step an unmodded Thoughtripper died, binned,
- * trashed and fired correctly. Two disposals that look identical to a player,
- * behaving differently — which is what the engine's Unstable-trash route removes (CT-246; under CR 801.2h the two do differ).
+ * The owner reversed that on 2026-10-31 (report BPNS #301/#302): "Trashing is
+ * dependant on a CARD going to the BIN from anywhere *other than* the STACK.
+ * Unstable units dying should not count as being Trashed since they don't end
+ * up in the BIN." So the hand half still fires and the Unstable half does not.
+ * The tests below keep #93's fixtures and assert the ruled behaviour.
  */
-test('playtest #93 (CR 801.2h, CT-246): Dropslime fires from HAND *and* dying while Unstable — the same card, both halves', () => {
+test('playtest #93 / CR 801.2h (owner 2026-10-31): Dropslime fires from HAND, but dying while Unstable is not a trash and does not fire', () => {
   const h = new Harness(4290);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -281,7 +279,7 @@ test('playtest #93 (CR 801.2h, CT-246): Dropslime fires from HAND *and* dying wh
   give(h, A, 'Dropslime');                                 // the hand copy, for half one
   attackWith(h, A, [[drop]]);
 
-  // ── half one: discarded from HAND. This half NEVER broke.
+  // ── half one: discarded from HAND. A trash, and it fires.
   const lifeD0 = h.state.players[D]!.life;
   withE(h, e => { e.discardFromHand(A, handIdx(h, A, 'Dropslime')); });
   assert.ok(h.state.decision, 'the trashed trigger fires from the bin and asks for a target');
@@ -290,29 +288,27 @@ test('playtest #93 (CR 801.2h, CT-246): Dropslime fires from HAND *and* dying wh
   assert.equal(h.state.players[D]!.life, lifeD0 - 1,
     'one card trashed this battle — its own discard — so 1 damage');
 
-  // ── half two: the SAME card in play, dying while {Unstable}. This is #93.
+  // ── half two: the SAME card in play, dying while {Unstable}. Not a trash.
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [wall] } });
   pass(h); pass(h);
-  // the Wraith mod donates a death trigger of its own, so answer everything
-  // and steer only Dropslime's damage at the player
   resolveAll(h, o => JSON.stringify(o.value) === JSON.stringify({ player: D }));
+  assert.equal(ent(h, drop), undefined, 'the Unstable Dropslime died');
+  assert.ok(h.events.some(ev => ev.type === 'died' && ev.data?.['card'] === 'Dropslime'),
+    'it DIED — Unstable replaces the bin, not the death');
   const trashed = trashes(h).filter(ev => ev.data?.['card'] === 'Dropslime');
-  assert.equal(trashed.length, 2, 'both halves trashed — hand and Unstable death');
-  assert.equal(trashed[1]!.data!['from'], 'play', 'the second came from PLAY');
-  assert.equal(trashed[1]!.data!['seat'], A, 'and A trashed it: it entered A\'s bin (CR 801.2e)');
-  assert.equal(h.state.players[D]!.life, lifeD0 - 1 - 2,
-    'two cards trashed this battle by now, so the Unstable death zaps for 2 — '
-    + 'before the engine\'s Unstable-trash route (CT-246) it dealt nothing at all, because it never fired — as CR 801.2h prescribes');
-  // and the destination a player SEES is exactly what it always was
+  assert.equal(trashed.length, 1, 'only the hand half trashed — the Unstable death is not a trash');
+  assert.equal(trashed[0]!.data!['from'], 'hand');
+  assert.equal(h.state.players[D]!.life, lifeD0 - 1,
+    'so its "when I am trashed" did not fire again: no second zap');
   assert.equal(h.state.players[A]!.bin.filter(c => c === 'Dropslime').length, 1,
-    'only the DISCARDED copy rests in the bin — the Unstable one was swept out again');
-  assert.ok(h.q.erased(A).includes('Dropslime'), 'the Unstable copy is in the erased pile (CR 407.1)');
-  assert.ok(h.log.some(l => /Dropslime is erased from the bin — Unstable/.test(l)),
-    'and the log tells it in order: dies → bin, trashes, erased');
+    'only the DISCARDED copy rests in the bin');
+  assert.ok(h.q.erased(A).includes('Dropslime'), 'the Unstable copy is in the erased pile (CR 405.5, 407.1)');
+  assert.ok(h.log.some(l => /Dropslime dies → ERASED — Unstable/.test(l)),
+    'and the log sends it straight to ERASED, not to a bin');
 });
 
-test('ANBB (CR 801.2h, CT-246): an Unstable death and an unmodded death on the SAME damage step both trash and both fire', () => {
+test('ANBB / CR 801.2h (owner 2026-10-31): on the SAME damage step the unmodded death trashes and fires, the Unstable death does neither', () => {
   const h = new Harness(4291);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -330,43 +326,100 @@ test('ANBB (CR 801.2h, CT-246): an Unstable death and an unmodded death on the S
   pass(h); pass(h);
   // read the ledger at the END of the damage step, before any queued trigger
   // resolves and starts trashing things of its own
+  assert.ok(!ent(h, drop) && !ent(h, trip), 'both blockers died');
   const names = trashes(h).map(ev => ev.data!['card']);
-  assert.ok(names.includes('Dropslime'), 'the Unstable blocker trashed (engine, CT-246; CR 801.2h says it does not — it used to not)');
-  assert.ok(names.includes('Thoughtripper'), 'and the unmodded one, as it always did');
-  assert.ok(!names.includes('Wraith'), 'the token MOD has no card to bin, so no third trash (CR 410.4c)');
-  assert.equal(h.q.battleCounter(region, 'trashed'), 2,
-    'the per-battle ledger counts BOTH deaths now — this is the number Dropslime reads');
-  // aim Dropslime's zap at a player so it does not kill an attacker and skew
-  // everything downstream
+  assert.ok(!names.includes('Dropslime'), 'the Unstable blocker is NOT trashed (CR 801.2h)');
+  assert.ok(names.includes('Thoughtripper'), 'the unmodded one is, as it always was');
+  assert.ok(!names.includes('Wraith'), 'the token MOD has no card to bin (CR 410.4c)');
+  assert.equal(h.q.battleCounter(region, 'trashed'), 1,
+    'the per-battle ledger counts only the unmodded death — the number Dropslime reads');
   resolveAll(h, o => JSON.stringify(o.value) === JSON.stringify({ player: A }));
   assert.ok(trashes(h).some(ev => ev.data?.['from'] === 'hand' && ev.data?.['seat'] === A),
-    "Thoughtripper's trigger resolved too: A paid the [2] and discarded");
-  // both are gone from play, and each went where its own rule sends it
+    "Thoughtripper's trigger resolved: A paid the [2] and discarded");
+  assert.ok(!trashes(h).some(ev => ev.data?.['card'] === 'Dropslime'),
+    "and Dropslime's own trigger never had a trash to fire on");
   assert.ok(h.state.players[D]!.bin.includes('Thoughtripper'), 'the plain card rests in the bin');
-  assert.ok(!h.state.players[D]!.bin.includes('Dropslime'),
-    'the Unstable one is swept back out — the visible destination never changed');
-  assert.ok(h.q.erased(D).includes('Dropslime'), 'into the public erased pile (CR 407.1)');
+  assert.ok(!h.state.players[D]!.bin.includes('Dropslime'), 'the Unstable one never does');
+  assert.ok(h.q.erased(D).includes('Dropslime'), 'it is in the public erased pile (CR 407.1)');
 });
 
-test('CR 801.2h (CT-246): Muck Rummager sees an Unstable death — "when you trash a card during battle, draw"', () => {
+test('CR 801.2h (owner 2026-10-31): Muck Rummager does NOT draw off an Unstable death, and does off an unmodded one', () => {
   const h = new Harness(4292);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'Muck Rummager');                // 2/3, kills the 1/1 blocker
+  const atk2 = spawn(h, A, 'Muck Rummager');
   spawn(h, D, 'Muck Rummager');                            // D's WATCHER, at home
-  const drop = spawn(h, D, 'Dropslime');
+  const drop = spawn(h, D, 'Dropslime');                   // modded below: {Unstable}
+  const plain = spawn(h, D, 'Dropslime');                  // unmodded: the control
   withE(h, e => { e.augmentWraith(e.entity(drop)!, D); });
-  attackWith(h, A, [[atk]]);
+  attackWith(h, A, [[atk], [atk2]]);
   const handD = handSize(h, D);
   pass(h); pass(h);
-  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [drop] } });
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [drop], 1: [plain] } });
+  pass(h); pass(h);
+  resolveAll(h, o => JSON.stringify(o.value) === JSON.stringify({ player: A }));
+  assert.ok(!ent(h, drop) && !ent(h, plain), 'both blockers died');
+  const dTrashes = trashes(h).filter(ev => ev.data?.['card'] === 'Dropslime' && ev.data?.['seat'] === D);
+  assert.equal(dTrashes.length, 1, 'D trashed ONE Dropslime — the unmodded one; the Unstable one was erased');
+  assert.equal(handSize(h, D), handD + 1,
+    'Muck Rummager drew once — off the unmodded death only (CR 801.2h: an Unstable death is not a trash)');
+});
+
+// Report BPNS #301/#302 (2026-10-31): Wildfire killed a modded — so {Unstable} —
+// Hooba-Nan, and the log said "Debeli trashes Hooba-Nan (from play)". That set
+// off Cerebrox ("Whenever another card is trashed, each other unit gains
+// -1/-1"), which killed the Hooba-Nan tokens, and fed Dropslime's "cards trashed
+// in this battle". The owner ruled (CR 801.2h): an Unstable unit that dies is
+// erased, not trashed — it never ends up in a bin. The discard at the end is
+// the control: the same Cerebrox, in range, does hear a real trash.
+test('report BPNS #301/#302: Wildfire kills a modded Hooba-Nan → it dies and is erased, nothing is trashed, Cerebrox and Dropslime\'s count do not move', () => {
+  const h = new Harness(4298);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const nan = spawn(h, A, 'Hooba-Nan');                    // 5/4
+  withE(h, e => { e.attachMod(e.entity(nan)!, 'Ignis Sprite', A, 'augment'); });
+  assert.ok(new E(h.state).isUnstable(ent(h, nan)!), 'a modded unit is {Unstable} (CR 803.8e)');
+  const brox = spawn(h, D, 'Cerebrox');                    // D's, at home: the battle region
+  giveResources(h, D, 'fire', 5);
+  attackWith(h, A, [[nan]]);                               // Hooba-Nan's attack makes its 1/1s
+  const region = h.state.battle!.region;
+  assert.equal(ent(h, brox)!.region, region, 'premise: Cerebrox stands in the battle region');
+  const tokens = unitsOf(h, A).filter(u => u.id !== nan && u.token);
+  assert.ok(tokens.length > 0, 'premise: Hooba-Nan made 1/1 tokens');
+  const trashed0 = h.q.battleCounter(region, 'trashed');
+  const mark = h.events.length;
+
+  if (h.state.priority === A) pass(h);                     // priority → D
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Wildfire') });
+  pick(h, 4);                                              // X = 4: lethal to a 5/4
+  pick(h, { unit: nan });
   pass(h); pass(h);
   resolveAll(h);
-  assert.ok(trashes(h).some(ev => ev.data?.['card'] === 'Dropslime' && ev.data?.['seat'] === D),
-    'D trashed it — the bin it entered is D\'s');
-  assert.equal(handSize(h, D), handD + 1,
-    'Muck Rummager drew off it. Before the engine\'s Unstable-trash route (CT-246; CR 801.2h says it should not fire) this watcher silently under-triggered '
-    + 'on EVERY modded-unit death, which nobody could report: you cannot see a trigger that does not happen.');
+
+  assert.equal(ent(h, nan), undefined, 'Hooba-Nan is gone');
+  const after = h.events.slice(mark);
+  assert.ok(after.some(ev => ev.type === 'died' && ev.data?.['card'] === 'Hooba-Nan'), 'it DIED (CR 801.2h)');
+  assert.deepEqual(after.filter(ev => ev.type === 'trashed').map(ev => ev.data?.['card']), [],
+    'and NOTHING was trashed: not Hooba-Nan, not its mod, not Wildfire (CR 801.2b)');
+  assert.ok(!h.log.some(l => l.includes('trashes Hooba-Nan')), 'the log line from the report is gone');
+  assert.ok(h.log.some(l => l.includes('Hooba-Nan dies → ERASED — Unstable')), 'the log sends it to ERASED');
+  assert.ok(h.q.erased(A).includes('Hooba-Nan') && h.q.erased(A).includes('Ignis Sprite'),
+    'it and its mod are on the erased pile (CR 405.5, 410.4b)');
+  assert.ok(!h.state.players[A]!.bin.includes('Hooba-Nan'), 'never in a bin');
+  for (const t of tokens) {
+    assert.ok(ent(h, t.id), 'Cerebrox did not trigger: the tokens are alive');
+    assert.deepEqual(effStats(h, t.id), [1, 1], 'and unshrunk');
+  }
+  assert.equal(h.q.battleCounter(region, 'trashed'), trashed0,
+    "Dropslime's \"cards trashed in this battle\" did not move");
+
+  // control: a real trash, same battle, same Cerebrox — it fires and the count moves
+  const idx = give(h, D, 'Good Whale');
+  withE(h, e => { e.discardFromHand(D, idx); });
+  resolveAll(h);
+  assert.equal(h.q.battleCounter(region, 'trashed'), trashed0 + 1, 'control: a discard is counted');
+  assert.ok(tokens.every(t => !ent(h, t.id)), 'control: Cerebrox heard it and its -1/-1 killed the 1/1s');
 });
 
 // ── Fester ────────────────────────────────────────────────────────────
@@ -477,12 +530,12 @@ test('Hooba-Mon: attacking may exchange it for a cheap unit in your bin', () => 
 // ── CR 405.5: Hooba-Mon's exchange obeys the {Unstable} bin replacement ────
 //
 // The three tests below are ONE rule seen from three sides. `exchangeInPlace`
-// sends the outgoing body to a bin FROM PLAY, and in the engine an {Unstable}
-// card making that trip is binned, TRASHED there, and only then swept into the
-// erased pile — the exact route E.destroy takes (CR 410.4d erases it instead; CT-246). Before the fix the card was
-// binned and simply left there, recurrable.
+// sends the outgoing body to a bin FROM PLAY, and an {Unstable} card making
+// that trip is erased instead and NOT trashed (CR 410.4d, 801.2h; owner
+// 2026-10-31) — the exact route E.destroy takes. Before the first fix the card
+// was binned and simply left there, recurrable.
 
-test('engine (CT-246; CR 410.4d erases it unbinned): Hooba-Mon exchanges a MODDED host → the host is trashed, then ERASED (not left in a bin)', () => {
+test('CR 410.4d / 801.2h (owner 2026-10-31): Hooba-Mon exchanges a MODDED host → the host is ERASED and NOT trashed (not left in a bin)', () => {
   const h = new Harness(4290);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -500,21 +553,20 @@ test('engine (CT-246; CR 410.4d erases it unbinned): Hooba-Mon exchanges a MODDE
   pickRef(h, { bin: { seat: A, card: 'Unit Token' } });
   resolveAll(h);
   assert.equal(entsNamed(h, 'Rune Channeler').length, 0, 'the host left play');
-  // engine (CT-246; CR 410.4d differs): it passed THROUGH the bin and was trashed there…
-  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Rune Channeler').length, 1,
-    'a bin entered from play is a trash (CR 801.2) — for an Unstable card that is the engine, not CR 801.2h (CT-246)');
-  // …and the sweep then took it out again, onto the public pile (CR 410.4b)
+  // CR 801.2h: it never ends up in a bin, so it is not trashed…
+  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Rune Channeler').length, 0,
+    'an Unstable card leaving play is erased, not trashed (CR 801.2h, owner 2026-10-31)');
+  // …and it lands on the public pile (CR 410.4b)
   assert.ok(!h.state.players[A]!.bin.includes('Rune Channeler'),
     'the Unstable card does NOT stay in the bin');
   assert.ok(new E(h.state).erased(A).includes('Rune Channeler'),
     'it reaches the public erased pile');
-  // ORDERING, which is the half a "not in the bin" assertion alone would miss:
-  // trash first, erase after. "Erased" here must not mean "skipped the trash".
+  // the whole trash/erase history of the card: one erase, no trash
   const order = h.events
     .filter(ev => (ev.type === 'trashed' || ev.type === 'erased')
       && ev.data!['card'] === 'Rune Channeler')
     .map(ev => ev.type);
-  assert.deepEqual(order, ['trashed', 'erased'], 'engine ordering (CT-246; CR 410.4d erases unbinned): bin → trashed → swept');
+  assert.deepEqual(order, ['erased'], 'erased, and never trashed (CR 410.4d, 801.2h)');
 });
 
 test('CR 405.4 control: Hooba-Mon exchanges an UNMODDED host → it still BINS and stays there', () => {
@@ -690,9 +742,9 @@ test('CR 720.8a: a NONTOKEN mod erased with an exchanged host is not trashed and
   // the same is true of Hooba-Mon, which is a mod on this line as well
   assert.equal(trashes(h).filter(t => t.data!['card'] === 'Hooba-Mon').length, 0,
     'Hooba-Mon is a mod here too, and takes the same route');
-  // and the BODY is untouched by all of this — the Unstable-trash route still governs it (CT-246; CR 801.2h)
-  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Rune Channeler').length, 1,
-    'the boundary (CT-246; CR 801.2h): the {Unstable} body is still binned and still trashed');
+  // and the {Unstable} BODY is not trashed either (CR 801.2h, owner 2026-10-31)
+  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Rune Channeler').length, 0,
+    'CR 801.2h: the {Unstable} body is erased, not trashed');
 });
 
 test('CR 410.4d: the mods reach the public ERASED pile with the Unstable body (CR 410.4b)', () => {
@@ -717,19 +769,17 @@ test('CR 410.4d: the mods reach the public ERASED pile with the Unstable body (C
   const bin = h.state.players[A]!.bin;
   assert.ok(!bin.includes('Hooba-Mon') && !bin.includes('Nothyr'),
     'none of them is left sitting in the bin, recurrable');
-  // ORDERING, the half a "not in the bin" assertion alone would miss: the mod
-  // was trashed on the way IN and swept afterwards, never "skipped the trash"
+  // no trash anywhere on this line: the mod (CR 720.8a) and the body (CR 801.2h)
   const order = h.events
     .filter(ev => (ev.type === 'trashed' || ev.type === 'erased') && ev.data!['card'] === 'Nothyr')
     .map(ev => ev.type);
   assert.deepEqual(order, ['erased'],
-    'CR 720.8a: swept out, and not trashed on the way — a mod erased with its host never had a '
-    + 'presence of its own. The BODY still reads bin → trashed → swept, asserted below.');
+    'CR 720.8a: erased, and not trashed — a mod erased with its host never had a presence of its own');
   const bodyOrder = h.events
     .filter(ev => (ev.type === 'trashed' || ev.type === 'erased')
       && ev.data!['card'] === 'Rune Channeler')
     .map(ev => ev.type);
-  assert.deepEqual(bodyOrder, ['trashed', 'erased'], 'engine ordering for the body, unchanged (CT-246)');
+  assert.deepEqual(bodyOrder, ['erased'], 'CR 801.2h (owner 2026-10-31): the body is erased and not trashed either');
 });
 
 test('CR 410.4c: a TOKEN mod on an exchanged host is ERASED and never binned (CR 720.7c)', () => {

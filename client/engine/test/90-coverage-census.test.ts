@@ -437,8 +437,8 @@ test('CR 405.7 stays solved: the only direct bin splice in src is inside removeF
 // `bin.lastIndexOf(name)` answers a different question, "the last copy of that
 // name in the bin right now", and the two answers diverge the instant the
 // event's copy has left: the trigger goes on the stack, the state-based sweep
-// takes the copy (a token — CR 713.5; an {Unstable} death,
-// which the engine bins and then erases — CR 801.2h erases it instead, CT-246), and on
+// takes the copy (a token — CR 713.5; an {Unstable} death — CR 405.5), or another
+// responder takes it first, and on
 // resolution the name search lands on an INNOCENT older copy. Cthyrian Rector
 // recalled it to hand having already paid a sacrifice; Murkdrop Distiller
 // cached it out of the bin; Biomass Devourer ERASED it out of the game.
@@ -538,8 +538,8 @@ test('CR 405.6: no card responding to a bin-index event re-finds its card by las
 //     classifies the CR 801.2 trash, because `from` IS the zone.
 //   · `E.disposeToBin`             — CR 410.7, the LEAVE-PLAY-FOR-A-BIN disposal
 //     tail. It pushes the body and its nontoken mods itself so it can remember
-//     the slots the bin-copy sweep (CR 405.6) needs, and then runs the engine's bin → trash →
-//     Unstable-erase in that order (CR 405.5 erases instead; CT-246). `E.destroy` used to hold this code; it is
+//     the slots the bin-copy sweep (CR 405.6) needs, and then runs trash (not for an
+//     {Unstable} body, CR 801.2h) → Unstable-erase (CR 405.5) in that order. `E.destroy` used to hold this code; it is
 //     the primitive now, and Hooba-Mon's exchange calls the same one (CT-43).
 //   · `E.leavePlay`                — the documented MODS line: a nontoken mod
 //     of a unit leaving play enters its host controller's bin (CR 410.4a), before the caller decides

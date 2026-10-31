@@ -2259,6 +2259,8 @@ export const CLOSED: TodoEntry[] = [
     // through stripCode, so a comment naming `.bin.push(` cannot false-alarm.
     // BIN_PUSH_EXEMPT is `{}` and the stale-entry assert keeps it that way.
     // The bin-exit sweep had NO live bypass hiding behind its alias hole.
+    //   2026-10-31: the Unstable branch no longer trashes the body (CR 801.2h, owner;
+    // report BPNS #301/#302); the 42-dark-b guard below was retitled to say so.
     //   ⚠ Verified independently, not taken on report: planting
     // `const aliasProbe = …bin; aliasProbe.push('Bubb')` in batch-water-b.ts
     // reddens the sweep by name (`batch-water-b.ts:390 (not in engine.ts)`) —
@@ -2269,7 +2271,7 @@ export const CLOSED: TodoEntry[] = [
       '129-disposal-tail.test.ts::CR 410.7 (iii): an Unstable body is swept with its mods',
       '129-disposal-tail.test.ts::a nontoken mod is binned and trashed the same whether its host dies or is exchanged',
       '90-coverage-census.test.ts::every bin ENTRY goes through',
-      '42-dark-b.test.ts::engine (CT-246; CR 410.4d erases it unbinned): Hooba-Mon exchanges a MODDED host',
+      '42-dark-b.test.ts::CR 410.4d / 801.2h (owner 2026-10-31): Hooba-Mon exchanges a MODDED host',
     ],
     status: 'done',
   },
@@ -7031,8 +7033,8 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       '224-mod-trash.test.ts::CR 720.8a: a nontoken mod erased with its Unstable host is not trashed at all',
       '224-mod-trash.test.ts::CR 720.8: a mod trashed on a recall is trashed by the host controller, not by its owner',
-      '224-mod-trash.test.ts::CR 801.2g whole pool: no nontoken mod is trashed by its host death — and the body always is (CR 801.2h)',
-      '224-mod-trash.test.ts::CT-246 GUARD (CR 801.2h: an Unstable card that dies is still trashed): the BODY of an Unstable unit that dies is trashed, mods or no mods',
+      '224-mod-trash.test.ts::CR 801.2g whole pool: no nontoken mod is trashed by its host death — and the body never is (CR 801.2h)',
+      '224-mod-trash.test.ts::CR 801.2h (owner 2026-10-31): the BODY of an Unstable unit that dies is NOT trashed — it dies and is erased; an unmodded death still trashes',
     ],
     closed:
       'RULED AND FIXED 2026-08-29 (now CR 720.8 and 720.8a). '
@@ -7060,7 +7062,8 @@ export const CLOSED: TodoEntry[] = [
       + 'SURFACED, NOT FIXED, and worth a ruling one day: the BODY trash is attributed to u.owner '
       + 'while its mods are now attributed to u.controller, so a stolen unit (CR 711.1) that dies trashes '
       + 'in its owner name and its mods in its controller name. No card in the pool distinguishes '
-      + 'them today.',
+      + 'them today. '
+      + 'The BODY boundary was REVERSED by the owner 2026-10-31 (report BPNS #301/#302; CR 801.2h): an Unstable body that dies is not trashed either; the two 224 guards were retitled to assert that.',
     status: 'done',
   },
   {
@@ -12230,9 +12233,13 @@ export const CLOSED: TodoEntry[] = [
     detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rules zones.bin.unstable and keywords.actions.trash.unstable-death state print: \"If they would enter a bin, erase them instead.\" Caleb: \"Unstable units still die, they just get erased instead of ending up in the bin\". The engine, under an owner ruling of 2026-08-24 that is still in force, deliberately bins the card, trashes it there (firing \"when I am trashed\", the trash watchers and the per-battle count) and then sweeps it to the erased pile. Filed because print and the designer outrank the engine's trash-through-the-bin reading under the authority order; waits on discrepancies D-U07-3 and D-U18-1.",
     evidence: "Findings F-U07-6 (dups F-U07-10, F-U07-11, F-U18-1, F-U18-3). engine.ts: \"this.noteTrashed(binSeat, u.card, 'play', u);\". Oracle: \"(If they would enter a bin, erase them instead.)\". digital-rules.md: \"**An Unstable card that dies enters a bin, is trashed there, and is only then\". 224-mod-trash.test.ts: \"R137 GUARD: the BODY of an Unstable unit that dies is still trashed, mods or no mods\".",
     fix: "Ask the owner. If print wins: erase an Unstable card that would enter a bin without binning or trashing it, and flip the CT-246 guards in 224 and 35.",
-    proof: () => still('engine/src/engine.ts', "this.noteTrashed(binSeat, u.card, 'play', u);"),
-    closed: "WONTFIX (by design) 2026-10-22, the owner: \"Trash isnt a trigger tho. Its a kind of death thing.\" A dying Unstable card dies, is trashed and is erased, which already matches the print and Caleb; the trash is part of the death, not a bin trigger the erase should pre-empt.",
-    status: 'wontfix',
+    proof: () => still('engine/test/224-mod-trash.test.ts', 'the BODY of an Unstable unit that dies is trashed'),
+    closed: "DONE 2026-10-31, REVERSING the 2026-10-22 call below. The owner, on report BPNS #301/#302: \"Trashing is dependant on a CARD going to the BIN from anywhere *other than* the STACK. Unstable units dying should not count as being Trashed since they don't end up in the BIN. Dying is when a UNIT 'dies' while in PLAY, so Tokens and Unstable units all 'die'.\" Print won: disposeToBin trashes the body only when it stays in the bin, and the guards in 224 and 35 are flipped. Was: WONTFIX (by design) 2026-10-22, the owner: \"Trash isnt a trigger tho. Its a kind of death thing.\" A dying Unstable card dies, is trashed and is erased, which already matches the print and Caleb; the trash is part of the death, not a bin trigger the erase should pre-empt.",
+    guards: [
+      '224-mod-trash.test.ts::the BODY of an Unstable unit that dies is NOT trashed',
+      '42-dark-b.test.ts::report BPNS #301/#302:',
+    ],
+    status: 'done',
   },
   {
     id: 247, area: "engine", severity: "minor",
@@ -13629,10 +13636,10 @@ export const CLOSED: TodoEntry[] = [
     verify: "grep \"801.2h says not trashed\" and \"engine differs\" in client/engine/test.",
     progress: "PARTLY FIXED 2026-10-24 (0aa7c53): 429 and 35 retitled, one 224 title renamed, comments reworded. LEFT: two 224 titles cited in full by card-todo-closed.ts (CT-246) and playtest-ledger-closed.ts; proposed \"CT-246 GUARD (CR 801.2h: an Unstable card that dies is still trashed): the BODY of an Unstable unit that dies is trashed, mods or no mods\" and \"CR 801.2g whole pool: no nontoken mod is trashed by its host death — and the body always is (CR 801.2h)\". Rename and update both ledgers in one change. AUDIT 2026-10-24 (housework; AUDIT-ct-engine.md): REAL, AND ABOUT FIVE TIMES WIDER THAN FILED. As filed: 224-mod-trash.test.ts:97 and :280, plus the :102-104 comment that explains why they were kept (it also matches the proof needle). Same change: card-todo-closed.ts (CT-246's guards cite both titles in full) and playtest-ledger-closed.ts (likewise), and findings F-U07-6 and F-U18-1, whose evidence quotes the :97 title (re-quote or close through the cr scripts). Neither title is bound by a rule example. NOT ON THE TICKET, the same stale phrase \"CR 801.2h differs\" (CR 801.2h now agrees with the engine): four more test titles, 42-dark-b.test.ts:272, :315, :351 and 43-dark-c.test.ts:86, whose ledger citations (playtest-ledger-closed.ts) cite only the suffix, so renaming the prefix is free; and comments or messages at 42-dark-b:255, :693, :695; 43-dark-c:191, :245; 62-death-facts:116, :136; 37-attrs-wight:655; 17-earth-b:668; 229-cosmic-and-control:670; 35-rot-debt-trash:393 (\"CR 801.2h would invert it back\"); engine.ts:6846, :6959. Widen the ticket to \"CR 801.2h differs, everywhere\" and sweep with one grep for '801.2h differs', '801.2h says not trashed' and '801.2h would'.",
     guards: [
-      "224-mod-trash.test.ts::CT-246 GUARD (CR 801.2h: an Unstable card that dies is still trashed): the BODY of an Unstable unit that dies is trashed, mods or no mods",
-      "224-mod-trash.test.ts::CR 801.2g whole pool: no nontoken mod is trashed by its host death — and the body always is (CR 801.2h)",
+      "224-mod-trash.test.ts::CR 801.2h (owner 2026-10-31): the BODY of an Unstable unit that dies is NOT trashed — it dies and is erased; an unmodded death still trashes",
+      "224-mod-trash.test.ts::CR 801.2g whole pool: no nontoken mod is trashed by its host death — and the body never is (CR 801.2h)",
     ],
-    closed: "FIXED 2026-10-25 (c7646286), the whole widened sweep. 224's two titles are renamed as proposed and re-pointed in this file (CT-246) and in playtest-ledger-closed.ts; the 42-dark-b (3) and 43-dark-c (1) title prefixes changed, and their ledger citations quote only the suffix; 16 comments and messages were reworded, two of them in engine.ts. Left as history: CT-121's closed prose in this file still says \"CR 801.2h differs\", which was true when it was written. Findings F-U07-6 and F-U18-1 are the CR pass's to re-quote or close.",
+    closed: "FIXED 2026-10-25 (c7646286), the whole widened sweep. 224's two titles are renamed as proposed and re-pointed in this file (CT-246) and in playtest-ledger-closed.ts; the 42-dark-b (3) and 43-dark-c (1) title prefixes changed, and their ledger citations quote only the suffix; 16 comments and messages were reworded, two of them in engine.ts. Left as history: CT-121's closed prose in this file still says \"CR 801.2h differs\", which was true when it was written. Findings F-U07-6 and F-U18-1 are the CR pass's to re-quote or close. The two 224 titles were retitled again 2026-10-31, when the owner reversed CR 801.2h (an Unstable death is not trashed; report BPNS #301/#302).",
     status: 'done',
   },
   {
@@ -14075,6 +14082,20 @@ export const CLOSED: TodoEntry[] = [
       "329-touch-and-drag.test.ts::§4 EVERY DROP IS A CLICK ROUTE: the plans send nothing themselves",
     ],
     closed: "FIXED 2026-10-25 (5cfe5ab8), docs only. docs/19 now says what the code does: on touch, a tap on a hand card only reads it unless the card is an option of the question asked, and the other route is the drag, whose drop opens the click's own menu; the rail's card menu has no play entry.",
+    status: 'done',
+  },
+  {
+    id: 423, area: "engine", severity: "minor",
+    cards: ["Hooba-Mon", "Necromorph"],
+    title: "an exchanged Unstable (modded) unit is trashed before it is erased; CR 410.4d says it is erased instead of entering the bin and is not trashed",
+    detail: "CR 410.4d (zones.changes.mods.exchanged), as redrafted in CR pass D: \"when it is exchanged out of play, it and all of its mods are erased instead of entering the bin. It is not trashed, because it never enters a bin\". Print decides it (the Unstable reminder: \"(If they would enter a bin, erase them instead.)\"), and the owner's 2026-10-22 call keeps an Unstable card's trash for a death. The engine bins the body, trashes it and then erases it on the exchange route: 42-dark-b asserts \"trashed, then ERASED\" and 129-disposal-tail (iii) the same verbs.",
+    evidence: "CR pass D 2026-10-25 (zero-handoff/PD-cr.md, CT-388): finding F-U07-12, discrepancy D-U07-18.",
+    fix: "In the exchange route (disposeToBin from exchangeInPlace), erase an Unstable body without binning or trashing it. Flip 42-dark-b's \"trashed, erased\" order assert and 129 (iii)'s body verbs, and rebind 410.4d's example; keep the death route (CT-246) as it is. Replay stored games: a Hooba-Mon or Necromorph exchange of a modded unit would stop firing trash watchers (the Dropslime count, Cerebrox).",
+    proof: () => still('engine/test/42-dark-b.test.ts', 'Hooba-Mon exchanges a MODDED host → the host is trashed, then ERASED'),
+    closed: "DONE 2026-10-31 with the owner's reversal of CT-246 (report BPNS #301/#302): \"Unstable units dying should not count as being Trashed since they don't end up in the BIN.\" disposeToBin trashes the body only when it stays in the bin, which fixes the exchange route and the death route together.",
+    guards: [
+      '42-dark-b.test.ts::Hooba-Mon exchanges a MODDED host → the host is ERASED and NOT trashed',
+    ],
     status: 'done',
   },
   {

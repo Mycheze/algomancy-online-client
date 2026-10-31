@@ -612,7 +612,7 @@ card('Biomass Devourer', {
         // CR 405.6's bin identity, the same pair 'trashed' already carried. The old
         // code searched by name (`bin.lastIndexOf(name)`, controller's bin
         // first, then everyone's), which is a different question: once the dead
-        // copy has been swept out — a token, or an {Unstable} death (the engine bins it and then erases it; CR 801.2h never bins it, CT-246)
+        // copy has been swept out — a token, or an {Unstable} death (pushed into the bin for the event window, then erased: CR 405.5)
         // — the last copy of that name is an INNOCENT older one, and this card
         // ERASES what it finds. That is a card leaving the game permanently by
         // mistake, the worst of the three misses this closes, so the miss is

@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:ee9d92716b14774b",
+ "generated_from": "sha256:3b6218e887aa97b1",
  "rules": [
   {
    "num": "100.1",
@@ -10544,14 +10544,15 @@
    "sectionTitle": "Bin",
    "chapterTitle": "4. Zones",
    "parent": "405",
-   "text": "An {Unstable} card that would enter a bin from an active zone is erased instead: it ends on the erased pile, not in the bin. One that dies in play is still trashed (rule 801.2h). See 803.",
+   "text": "An {Unstable} card that would enter a bin from an active zone is erased instead: it ends on the erased pile, not in the bin. Because it never enters a bin, it is not trashed, even when it dies in play (rule 801.2h). See 803.",
    "see": [
     "803",
     "713",
     "400.2a"
    ],
    "examples": [
-    "A unit carrying a mod is {Unstable}. When it dies, it ends on the erased pile and is not left in the bin."
+    "A unit carrying a mod is {Unstable}. When it dies, it ends on the erased pile and is not left in the bin.",
+    "A modded unit that dies is erased and is not trashed."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -11695,7 +11696,7 @@
    "sectionTitle": "Zone Changes",
    "chapterTitle": "4. Zones",
    "parent": "410.4",
-   "text": "An exchange is not a death. But a modded unit is {Unstable}, so when it is exchanged out of play, it and all of its mods are erased instead of entering the bin. It is not trashed, because it never enters a bin: only a death keeps its trash when {Unstable} erases a card (rule 801.2h).",
+   "text": "An exchange is not a death. But a modded unit is {Unstable}, so when it is exchanged out of play, it and all of its mods are erased instead of entering the bin. Because it never enters a bin, it is not trashed.",
    "see": [
     "410.4b",
     "405.5",
@@ -11703,12 +11704,12 @@
     "801.2h"
    ],
    "examples": [
-    "Hooba-Mon exchanges itself while it carries a mod; it is erased, not left in a bin.",
+    "Hooba-Mon, augmented onto a host, exchanges that host: the host is erased, not left in a bin, and is not trashed.",
     "An unmodded Hooba-Mon exchanged the same way stays in the bin."
    ],
    "basis": "mixed",
    "scope": "game",
-   "engineDiffers": true,
+   "engineDiffers": false,
    "discrepancies": [
     "D-U07-18",
     "D-U07-3"
@@ -26283,11 +26284,13 @@
    "sectionTitle": "Modifications, General",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "720.8",
-   "text": "A nontoken mod erased together with its {Unstable} host is not trashed. The host's single trash counts for the whole unit.",
+   "text": "A nontoken mod erased together with its {Unstable} host is not trashed. Neither is the host: the whole unit is erased without entering a bin (rule 801.2h).",
    "see": [
     "405.4"
    ],
-   "examples": [],
+   "examples": [
+    "A modded unit dies: it and its mod are erased, and neither is trashed."
+   ],
    "basis": "owner",
    "scope": "game",
    "engineDiffers": false,
@@ -28614,13 +28617,17 @@
    "sectionTitle": "Keyword Actions",
    "chapterTitle": "8. Keywords",
    "parent": "801.2",
-   "text": "An {Unstable} card that dies in play is still trashed: trashing is part of its death, not something entering a bin causes, and Unstable changes where the card goes, not its death (rule 803.8i). It does not stay in a bin: it is erased, and ends on the erased pile. An {Unstable} card that goes to a bin from an inactive zone (a hand, the deck or a cache) enters the bin and is trashed.",
+   "text": "An {Unstable} card that dies in play is not trashed. It still dies (rule 803.8i), but it is erased instead of entering a bin, and only a card that enters a bin is trashed, so nothing that watches for a card being trashed sees it. When the effect that kills it itself puts it into a bin, as Pull Under does, it stays in that bin and is trashed (rule 803.8m). An {Unstable} card that goes to a bin from an inactive zone (a hand, the deck or a cache) enters the bin normally and is trashed.",
    "see": [
     "405.5",
     "400",
     "803"
    ],
    "examples": [
+    "A modded unit dies: it dies and is erased, and is not trashed. An unmodded unit that dies in the same battle is trashed.",
+    "Wildfire kills a modded Hooba-Nan: it dies and is erased with its mod, and nothing is trashed, so Cerebrox does not trigger and the count of cards trashed this battle does not move.",
+    "Blightwalker dies while {Unstable}: it is erased, and its own \"when I am trashed\" ability does not trigger.",
+    "Pull Under deletes a modded unit: it and its mods go into the caster's bin and are trashed.",
     "Aberrant Statweaver (printed {Unstable}) discarded from a hand goes to the bin and is trashed: the hand is inactive."
    ],
    "basis": "mixed",

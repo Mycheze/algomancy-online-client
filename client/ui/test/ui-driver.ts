@@ -197,7 +197,9 @@ function onPage(id: string): boolean {
  */
 // BL-46: the fix dialog's reason box is a layer's typing box, like the report's
 // BL-28: and the post-game sign-up form's name and password
-const TYPED = new Set(['report-note', 'amend-reason', 'pg-su-user', 'pg-su-pass']);
+// #296: and the profile's change-password box
+const TYPED = new Set(['report-note', 'amend-reason', 'pg-su-user', 'pg-su-pass',
+  'acct-pw-old', 'acct-pw-new', 'acct-pw-again']);
 const FIELDS = new Map<string, { el: Record<string, unknown>; on: Map<string, Listener[]> }>();
 function fieldEl(id: string): Record<string, unknown> | null {
   if (!(String(APP['innerHTML']) + layersHtml()).includes(`id="${id}"`)) return null;

@@ -72,7 +72,7 @@
  *    So the card calls `E.exchangeInPlace` — the primitive Hooba-Mon already
  *    used, lifted out of batch-dark-b for this — which spawns the replacement
  *    into the victim's region and formation slot and disposes the victim
- *    through `E.disposeToBin`: bin, CR 801.13a trash, Unstable sweep (engine route; CR 410.4d erases instead, CT-246), CR 410.5
+ *    through `E.disposeToBin`: bin, CR 801.13a trash, Unstable erase (CR 410.4d; not trashed, CR 801.2h), CR 410.5
  *    token sweep, CR 407.3a erased pile, and a FIRED 'despawned' with no 'died'.
  * ✔ ENTROPIC ENTITY's "a unit with counters on it despawns" reads
  *    `ev.data.counters`: 'died'/'despawned' fire after the entity is already
@@ -115,27 +115,16 @@
  *    needed NO change here at all: the whole card is the printed attribute,
  *    and the layer does the rest.
  *  - ⚠ TRASH TRIGGERS CANNOT CARRY GRAFT RIDERS (Blightwalker's [Switch1]).
- *    The CONCLUSION still holds; the REASON this entry used to give is what CR 801.2h states, but the engine does not follow it (CT-246), so in the engine the reason fails; it is recorded here so nobody re-derives it.
- *
- *    ✘ The old reason (do NOT reuse): "a MODDED unit that dies is ERASED
- *      (Unstable) and never reaches a bin at all, so a card that IS trashed
- *      provably carries no mods" — i.e. the case was unreachable.
- *    ✔ The engine's Unstable-trash route (CT-246; CR 801.2h does not trash) made the case FULLY REACHABLE. `E.disposeToBin` pushes the body
- *      into the bin, fires 'died', calls `noteTrashed(binSeat, u.card,
- *      'play', u)` and only THEN lets the state-based sweep erase it — for
- *      EVERY death, Unstable included. So a modded Blightwalker that dies
- *      does reach a bin and its trash trigger DOES fire.
- *    ✔ The conclusion survives for a different, structural reason:
- *      `E.fireOwnTrashTrigger` anchors the trigger on a DETACHED ghost built
- *      with an explicit `mods: []` (and `budgets: {}`), so no rider can ever
- *      be found on it. Same statement as batch-dark-a.ts's entry for
- *      Afflicting Anima / Maw of Despair, which always carried the right
- *      reason. `graftCause` is kept for fidelity; the donatable graftEffect
- *      (the interesting half) works normally.
- *    ⚠ OPEN QUESTION (for the owner): before the engine's Unstable-trash route (CT-246), "the ghost carries no
- *      mods" was a statement about an impossible case. It is now a real,
- *      silent drop of every graft rider on a modded unit's death-trash, with
- *      no log line. Nobody has asked whether that is still the right answer.
+ *    A modded unit that dies is {Unstable}: erased, not trashed (CR 801.2h, owner
+ *    2026-10-31), so its own trash trigger never fires. The one route left where a
+ *    modded unit is trashed from play is Pull Under (`keepBinned`), and there the
+ *    conclusion holds for a structural reason: `E.fireOwnTrashTrigger` anchors the
+ *    trigger on a DETACHED ghost built with an explicit `mods: []` (and
+ *    `budgets: {}`), so no rider can ever be found on it. Same statement as
+ *    batch-dark-a.ts's entry for Afflicting Anima / Maw of Despair. `graftCause`
+ *    is kept for fidelity; the donatable graftEffect (the interesting half) works
+ *    normally. (From 2026-08-24 to 2026-10-31 an Unstable death WAS trashed, and
+ *    that ghost silently dropped every graft rider on a modded unit's death-trash.)
  *    Once documented as a known limitation in the (since retired) ruling register; see CR 400.5; the park-note audit is 147-comment-conformance.
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
@@ -284,7 +273,7 @@ card('Cthyrian Rector', {
         // identity) by `eventBinSlot`. This used to be a name search of the
         // bin, which answers "the last copy of that name in the bin right
         // now": a different question, and a different card once the trashed
-        // copy has been swept out (a token, or — in the engine — an {Unstable} death; CR 801.2h never bins that card, CT-246). What the search found then was an INNOCENT older copy, which
+        // copy has left the bin (another responder took it first). What the search found then was an INNOCENT older copy, which
         // this card recalled to hand having already made its sacrifice. A miss
         // is "gone" — never "take the other one".
         const slot = eventBinSlot(g, ctx.event);
@@ -508,7 +497,7 @@ card('Murkdrop Distiller', {
         // CR 405.6: "cache IT" is the copy the trash event was about, resolved by
         // the (name, nth) bin identity. `bin.lastIndexOf(name)` used to
         // stand in for it and answers a different question once that copy has
-        // been swept out (token, or — in the engine — an {Unstable} death; CR 801.2h never bins it, CT-246): it finds
+        // left the bin (another responder took it first): it finds
         // an INNOCENT older copy of the same name and would cache that one —
         // a card the player never trashed, moved out of their bin and made
         // playable. A wrong-copy miss is "gone", and "gone" refunds (CR 109.9b
@@ -563,7 +552,7 @@ card('Murkdrop Distiller', {
 // already used, lifted out of batch-dark-b.ts for exactly this reason. It
 // spawns the replacement into the victim's region and formation slot, then
 // disposes the victim through `E.disposeToBin`: bin, CR 801.13a trash, the engine's
-// Unstable sweep (CR 410.4d erases instead, CT-246), CR 410.5 token sweep, CR 407.3a erased pile, and a FIRED 'despawned'
+// Unstable erase (CR 410.4d; not trashed, CR 801.2h), CR 410.5 token sweep, CR 407.3a erased pile, and a FIRED 'despawned'
 // with no 'died' anywhere. The bin removal stays here because it is this
 // card's own targeting (`removeFromBin`, CR 405.7, its 'revived' verb, and the
 // CR 704.5 re-check above), not part of the exchange.

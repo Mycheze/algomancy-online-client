@@ -1681,13 +1681,13 @@ export const CLOSED: LedgerEntry[] = [
       + 'trigger or the other one',
     status: 'fixed',
     guards: [
-      '42-dark-b.test.ts::Dropslime fires from HAND',
-      '42-dark-b.test.ts::an Unstable death and an unmodded death on the SAME damage step',
-      '42-dark-b.test.ts::Muck Rummager sees an Unstable death',
-      '43-dark-c.test.ts::Blightwalker dying while {Unstable} fires its own',
-      '43-dark-c.test.ts::the Rector pays, and finds nothing',
-      '43-dark-c.test.ts::gives the Distiller nothing to cache',
-      '35-rot-debt-trash.test.ts::a modded unit dying is binned, TRASHED, and only then erased',
+      '42-dark-b.test.ts::Dropslime fires from HAND, but dying while Unstable is not a trash',
+      '42-dark-b.test.ts::on the SAME damage step the unmodded death trashes and fires, the Unstable death does neither',
+      '42-dark-b.test.ts::Muck Rummager does NOT draw off an Unstable death',
+      '43-dark-c.test.ts::Blightwalker dying while {Unstable} is erased and does NOT fire its own',
+      '43-dark-c.test.ts::so the Rector does not trigger and the card is erased',
+      '43-dark-c.test.ts::so the Distiller offers nothing and its [once] is untouched',
+      '35-rot-debt-trash.test.ts::a modded unit dying DIES and is erased with its mod, and nothing is trashed',
       '62-death-facts.test.ts::an Unstable death says BIN, like a token',
     ],
     note:
@@ -1723,7 +1723,9 @@ export const CLOSED: LedgerEntry[] = [
       + 'modded unit that dies never reaches a bin"); the answer survives on a new derivation and '
       + 'the prose is repaired \u2014 the tokens-are-not-cards lesson (CR 304.2) recurring within 24 hours. '
       + 'Spells stay out of scope: a virused spell leaving the STACK is erased and not trashed, '
-      + 'because nothing from the stack is ever trashed (CR 801.2b), not because of Unstable.',
+      + 'because nothing from the stack is ever trashed (CR 801.2b), not because of Unstable. '
+      + 'REVERSED by the owner 2026-10-31 (report BPNS #301/#302): an Unstable death is not trashed, so the '
+      + 'Unstable-Dropslime half no longer fires; the from-hand half still does.',
   },
   {
     id: 94, room: 'SMVJ', date: '2026-08-24',
@@ -2843,8 +2845,8 @@ export const CLOSED: LedgerEntry[] = [
     guards: [
       '224-mod-trash.test.ts::CR 720.8a: a nontoken mod erased with its Unstable host is not trashed at all',
       '224-mod-trash.test.ts::CR 720.8: a mod trashed on a recall is trashed by the host controller, not by its owner',
-      '224-mod-trash.test.ts::CR 801.2g whole pool: no nontoken mod is trashed by its host death — and the body always is (CR 801.2h)',
-      '224-mod-trash.test.ts::CT-246 GUARD (CR 801.2h: an Unstable card that dies is still trashed): the BODY of an Unstable unit that dies is trashed, mods or no mods',
+      '224-mod-trash.test.ts::CR 801.2g whole pool: no nontoken mod is trashed by its host death — and the body never is (CR 801.2h)',
+      '224-mod-trash.test.ts::CR 801.2h (owner 2026-10-31): the BODY of an Unstable unit that dies is NOT trashed — it dies and is erased; an unmodded death still trashes',
     ],
     note:
       'ROUND 31. RULED and fixed the same day. CONFIRMED IN THE REPLAY LOG: "Malformed Monstrosity '
@@ -2871,7 +2873,8 @@ export const CLOSED: LedgerEntry[] = [
       + '(Afflicting Anima, Blightwalker, Dropslime, Maw of Despair) stop firing when their host is '
       + 'erased. VERIFIED BY BREAKING TWICE BY THE ORCHESTRATOR: restoring m.owner reddens tests 5, '
       + '6, 7, 8 and 10 by name; making the body skip its trash reddens 1, 2, 4 and 9 AND report #93 '
-      + 'own guard in 35-rot-debt-trash, which is the boundary holding.',
+      + 'own guard in 35-rot-debt-trash, which is the boundary holding. '
+      + 'The body half was REVERSED by the owner 2026-10-31 (report BPNS #301/#302): an Unstable body that dies is not trashed either; the two 224 guards now assert that.',
   },
   {
     id: 130, room: 'DSVQ', date: '2026-08-29',
@@ -5002,5 +5005,64 @@ export const CLOSED: LedgerEntry[] = [
     report: "Karanda (judge), seat 0, agreed fix: back to before Karanda's pass (turn 7 battle). \"oops\"",
     status: 'agreed-fix',
     note: "Took back Karanda's pass in the turn-7 block window [214], which let 14 combat damage through; Tomzy agreed. Replayed, Karanda played Perish instead, sacrificing Maelstrom Charger (which copied it). A response forgotten; no defect.",
+  },
+  {
+    id: 295, room: "AYWA", date: "2026-10-27",
+    report: "Karanda (judge), seat 0, agreed fix: back to before Karanda's All-Consuming Blaze (turn 7 battle). \"oops\"",
+    status: 'agreed-fix',
+    note: "Took back All-Consuming Blaze on mycheze's Spawning Ground [266]-[267]; mycheze agreed. Replayed, Karanda cast Twin Flame on Spawning Ground and Plague Bellower instead. A change of spell; no defect.",
+  },
+  {
+    id: 296, room: "", date: "2026-10-27",
+    report: "Cobsen, account page: I would like a way to set a new password :-)",
+    status: 'fixed',
+    guards: [
+      '731-change-password-route.test.ts::a valid change logs in with the NEW password and not the old',
+      '732-change-password-form.test.ts::a signed-in named account has a Change password box on its own profile',
+      '732-change-password-form.test.ts::Change password posts the old and new password, and shows the answer',
+    ],
+    note: "The server had a change-password route and no page called it. The profile page now has a Change password box (current, new, new again) for a named account; a guest has none. There is still no reset for a forgotten password.",
+  },
+  {
+    id: 297, room: "FMWU", date: "2026-10-29",
+    report: "Nyar, seat 0, agreed fix: back to the start of the step before (turn 4 battle). \"test\"",
+    status: 'agreed-fix',
+    note: "Took back both passes that ended turn 4's battle and Karanda's two spawns [90]-[93]; Karanda agreed. Replayed, Nyar cast Luminous Arc on Nectar Ridge Oracle and Karanda answered with Hush Mush. A forgotten response, filed as a test of the fix button; no defect.",
+  },
+  {
+    id: 298, room: "JGKQ", date: "2026-10-29",
+    report: "Karanda (judge), seat 1, agreed fix: back to before Karanda's resource (turn 3 planning). \"oops\"",
+    status: 'agreed-fix',
+    note: "Took back Karanda's resource, done planning and both haste passes [67]-[70]; Nyar agreed. Karanda went straight on to the further take-back filed as #299. A misplayed resource; no defect.",
+  },
+  {
+    id: 299, room: "JGKQ", date: "2026-10-29",
+    report: "Karanda (judge), seat 1, agreed fix: back to the start of this step (turn 3 planning). \"oops\"",
+    status: 'agreed-fix',
+    note: "Continues #298's run: took back all of turn 3's planning [59]-[66]; Nyar agreed. Replayed, the same bottom cards, recycles and resources, with Karanda activating one more resource. A planning redo; no defect.",
+  },
+  {
+    id: 300, room: "KDMG", date: "2026-10-29",
+    report: "Nyar, seat 0, agreed fix: back to before Nyar's attack (turn 5 battle). \"im stupid\"",
+    status: 'agreed-fix',
+    note: "Took back Nyar's attack with Worldbender and Adversary of the Deep and both passes [127]-[129]; Karanda agreed. Nyar declared the attack again and the battle went on. A misdeclared attack; no defect.",
+  },
+  {
+    id: 301, room: "BPNS", date: "2026-10-31",
+    report: "invi, seat 1, agreed fix: back to before Debeli's pass (turn 7 battle). \"bug?\", then further",
+    status: 'fixed',
+    guards: [
+      '42-dark-b.test.ts::report BPNS #301/#302:',
+    ],
+    note: "Real. Wildfire killed Debeli's Hooba-Nan, which carried a mod and so was Unstable; the engine logged \"Debeli trashes Hooba-Nan (from play)\", which set off Cerebrox's -1/-1 (killing the tokens) and fed Dropslime's count. The owner (2026-10-31) reversed his 2026-08-24 and 2026-10-22 calls: a card is trashed only when it ends up in a bin from anywhere but the stack, so an Unstable unit that dies is erased and not trashed. The players rewound twice and then played the same line; the final game keeps the old result.",
+  },
+  {
+    id: 302, room: "BPNS", date: "2026-10-31",
+    report: "Debeli, seat 0, agreed fix: back to before invi's choice: Hooba-Nan (turn 7 battle). \"bug with erased\", then back further",
+    status: 'fixed',
+    guards: [
+      '42-dark-b.test.ts::report BPNS #301/#302:',
+    ],
+    note: "The same Hooba-Nan trash as #301, filed from the other seat after a further rewind to before Wildfire. Fixed with #301.",
   },
 ];

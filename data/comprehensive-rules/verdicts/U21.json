@@ -2581,49 +2581,52 @@
     "key": "keywords.abilities.unstable.still-dies",
     "textHash": "efd91d3f1b89085d",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U21-r1",
+    "round": 4,
+    "verifier": "U21-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:destroy",
+        "loc": "client/engine/src/engine.ts:disposeToBin (willSweep / noteTrashed)",
         "agrees": true,
-        "note": "'died' fires on every branch; Unstable only redirects the bin to the erased pile"
+        "note": "An Unstable body is pushed to the bin for the event window and swept to the erased pile; noteTrashed is skipped when willSweep (CR 801.2h). Mods likewise untrashed unless keepBinned (Pull Under)."
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/432-cr-keyword-abilities.test.ts",
+        "pattern": "cr:keywords.abilities.unstable.still-dies",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/224-mod-trash.test.ts",
+        "pattern": "CR 801.2h (owner 2026-10-31): the BODY of an Unstable unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U21/u21-verify-probes.test.ts",
-        "title": "keywords.abilities.unstable.still-dies: a modded (Unstable) unit that is destroyed still dies — a death watcher triggers, then it is erased",
+        "file": "client/engine/test/zz-probe-U21-1.test.ts",
+        "test": "probe U21-1: an Unstable (modded) unit's OWN \"When I die\" trigger fires, and it is then erased",
         "passed": true,
-        "demonstrates": "yes"
+        "demonstrates": "yes: a host modded with A Pile of Rubbish dies, its own When I die draw resolves, and it ends erased, not binned"
       }
     ],
     "source_checks": [
       {
-        "ref": "R69",
+        "ref": "owner register (2026-08-22, 2026-08-25)",
         "supports": "yes",
         "note": ""
       },
       {
-        "ref": "R145",
+        "ref": "owner 2026-10-31",
         "supports": "yes",
         "note": ""
       }
     ],
-    "quote_spans": [
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "### 2. Unstable replaces the BIN, not the DEATH"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "So the `died` event fires on every branch, death triggers go off, and other"
-      }
-    ],
+    "quote_spans": [],
     "basis_ok": true,
-    "problem": "Example is illustrative with no bound test; probe (Refuse Reclaimer) demonstrates it.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "keywords.abilities.unstable.until-regroup",

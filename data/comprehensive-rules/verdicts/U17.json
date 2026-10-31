@@ -3985,42 +3985,53 @@
   },
   {
     "key": "effects.mods.trash.erased-with-host",
-    "textHash": "f9668198978197f3",
+    "textHash": "4dbb152f5a4e48c5",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U17-r1",
+    "round": 4,
+    "verifier": "U17-r4",
     "engine": [
       {
-        "loc": "engine.ts:disposeToBin",
+        "loc": "client/engine/src/engine.ts:disposeToBin (willSweep / noteTrashed)",
         "agrees": true,
-        "note": "no trash event for a mod swept with its Unstable host (R244)"
+        "note": "An Unstable body is pushed to the bin for the event window and swept to the erased pile; noteTrashed is skipped when willSweep (CR 801.2h). Mods likewise untrashed unless keepBinned (Pull Under)."
       }
     ],
     "tests_run": [
       {
-        "file": "224-mod-trash.test.ts",
-        "pattern": "R244: a nontoken mod erased with its Unstable host is not trashed at all",
+        "file": "client/engine/test/224-mod-trash.test.ts",
+        "pattern": "CR 720.8a: a nontoken mod erased with its Unstable host",
         "passed": true,
-        "asserts_claim": "yes — a nontoken enemy-applied mod erased with its host is not trashed (the mod is Ignis Sprite, not a Virus)"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/35-rot-debt-trash.test.ts",
+        "pattern": "CR 801.2h (owner 2026-10-31): a modded unit dying DIES",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/224-mod-trash.test.ts",
+        "pattern": "CR 801.2g whole pool",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R244 (its erased-with-host half)",
+        "ref": "owner register (2026-08-29)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner 2026-10-31",
         "supports": "yes",
         "note": ""
       }
     ],
-    "quote_spans": [
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "**2. A nontoken mod erased with its {Unstable} host is not trashed at all.** It"
-      }
-    ],
+    "quote_spans": [],
     "basis_ok": true,
-    "problem": "Minor: the example says 'A Virus'; the bound test uses an enemy-applied Ignis Sprite augment (white-box) — same nontoken-mod behaviour.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.mods.unstable",
