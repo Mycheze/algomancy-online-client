@@ -31,6 +31,12 @@ import re
 MAX_DEFS = 8
 #: terms shorter than this ("X") match too much ordinary text to mean anything
 MIN_TERM_LEN = 3
+#: a term used in more than this share of all chunks (Unit, Card, Spell, Play,
+#: Target, Augment, ...) is the game's basic vocabulary, which the primer and
+#: nearly every passage already use; its one-line definition adds no meaning
+#: and, measured, can mislead: eval item g043 (2026-11-01) read the Augment row
+#: as "Envoy of Lightning grants nothing unless applied as a mod".
+MAX_DF_FRACTION = 0.15
 
 
 def _pattern(term: str) -> re.Pattern:
@@ -76,6 +82,7 @@ class TermIndex:
         texts = [(r.get("text") or "") for r in rows]
         lows = [t.lower() for t in texts]
         self.df = {}
+        self.max_df = MAX_DF_FRACTION * len(texts)
         for term, pat, _r in self.terms:
             head = re.split(r"[\s\-]+", term.lower())[0]
             head = head[:-1] if head.endswith("y") else head
@@ -102,18 +109,20 @@ class TermIndex:
     def definitions_for(self, question: str, hits, covers=None, limit=MAX_DEFS):
         """The glossary rows to append to `hits` ([(score, row)]): terms in the
         question first, then terms in the retrieved cards' rules text, each
-        group rarest first; skipping a row already retrieved and a term whose
+        group rarest first; skipping basic vocabulary (MAX_DF_FRACTION), a row
+        already retrieved and a term whose
         rule a retrieved chunk prints (`covers(row, num)`, core.cr_chunk_covers).
         Returns [(term, row)]."""
         hit_rows = [r for _s, r in hits]
         have = {r["id"] for r in hit_rows}
         by_term = {t: r for t, _p, r in self.terms}
-        q_terms = self.matches(question)
+        common = lambda t: self.df.get(t, 0) > self.max_df
+        q_terms = [t for t in self.matches(question) if not common(t)]
         c_terms = []
         for r in hit_rows:
             if r.get("source_type") == "card":
                 for t in self.matches(card_rules_text(r)):
-                    if t not in c_terms and t not in q_terms:
+                    if t not in c_terms and t not in q_terms and not common(t):
                         c_terms.append(t)
         rare = lambda ts: sorted(ts, key=lambda t: (self.df.get(t, 0), t))
         out = []

@@ -404,7 +404,7 @@ RETRIEVAL_SIG = _sig(TOP_K, retr.BM25_K1, retr.BM25_B, retr.OUTDATED_PENALTY,
                      retr.FUZZY_CUTOFF, retr.FUZZY_WEIGHT, retr.FOUNDATION_FLOOR,
                      sorted(retr.AUTH_BOOST.items()),
                      sorted(retr.FOUNDATION_TYPES),
-                     *(("defs", terms.MAX_DEFS, terms.MIN_TERM_LEN) if os.getenv("ALGO_DEFINITIONS", "on") != "off" else ()))
+                     *(("defs", terms.MAX_DEFS, terms.MIN_TERM_LEN, terms.MAX_DF_FRACTION) if os.getenv("ALGO_DEFINITIONS", "on") != "off" else ()))
 ENGINE_VERSION = f"{ENGINE_DATE}.p{PROMPT_SIG}.c{CORPUS_SIG}.r{RETRIEVAL_SIG}"
 
 # --- indexes & client (loaded once at startup) ---------------------------

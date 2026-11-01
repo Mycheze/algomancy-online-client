@@ -50,7 +50,7 @@ full = core.with_definitions(Q, hits)
 added = {r["id"]: r for _s, r in full[len(hits):]}
 check("with_definitions adds the spell-effect definition (from Null Drone's card text)",
       "cr:glossary.spell-effect" in added)
-check("... and the question's own term (target)", "cr:glossary.target" in added)
+check("basic vocabulary (target, augment) is not defined", "cr:glossary.target" not in added and not any(r["id"] == "cr:glossary.augment" for _s, r in core.with_definitions("With Envoy of Lightning out, is Twin Flame Electric?", core.retriever.search("With Envoy of Lightning out, is Twin Flame Electric?", k=core.TOP_K))))
 check("the original slate is kept, in order, in front", full[:len(hits)] == hits)
 check("each added row is a marked COPY scored 0.0",
       all(s == 0.0 and r.get("definition") for s, r in full[len(hits):])
