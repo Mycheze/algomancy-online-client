@@ -160,7 +160,7 @@
  "augment:Cosmic Devourer#0": "Create a Wraith and gain 1 rot",
  "augment:Cthyrian Culler#0": "Each player discards a card",
  "augment:Cthyrian Rector#0": "Sacrifice {me}, recall the trashed card from your bin",
- "augment:Death Greeter#0": "Each player sacrifices a unit costing at most the spell's cost",
+ "augment:Death Greeter#0": "Each player sacrifices a unit costing {X} or less",
  "augment:Deathglow Strider#0": "Deal {X} damage to {opponent}",
  "augment:Debt Blep#0": "{me} gains +3/+3 until regroup",
  "augment:Debt Plant#0": "Your units gain +{X}/+0 until regroup",
