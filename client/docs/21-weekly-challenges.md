@@ -39,6 +39,14 @@ Discord) asked for a leaderboard per thing optimised. Now:
 - Skill and par are no longer shown. Every run still stamps `raw` and `skill` (nothing
   recomputes a stamp), and nothing ranks by them.
 
+**Changed 2026-11-01 (owner): debt is not free.** A card like "gain debt: the next card costs
+less" bought a turn-2 run of nearly every challenge, because the run ended before the debt came
+due. Now the debt still owed when the goal is met adds the turns it would take to pay off,
+assuming +2 resources a turn and spending the open resources of the final turn first. It is
+part of `turns`, so all four boards see it. The score carries `debt` and `debtTurns`; the board,
+the Goal-met box and the meter show them. Runs stamped before the change were re-scored
+through `var/challenges/rescores.jsonl` (challenge-rescore.ts) — runs.jsonl stays append-only.
+
 ## Scoring
 
 ```
@@ -46,7 +54,10 @@ unique   = distinct card names among the copies used
 extra    = Σ over names max(0, copiesUsed(name) − 2)
 cards    = unique + extra
 elements = |∪ factions of the cards used|      (raw uses max(1, elements))
-turns    = state.turn when the goal is met
+turns    = state.turn when the goal is met + debtTurns
+debtTurns = turns to pay off the debt still owed then: the open resources pay
+           first, then each further turn pays (active resources + 2k) on turn k
+           (debtPayoffTurns; 2 debt, none open → 1; 24 debt on 2, none open → 4)
 raw      = cards × max(1, elements) × turns    — the run's exact cost
 Skill    = par ÷ raw × 100, rounded half up    — HIGHER is better (skillOf)
 ```

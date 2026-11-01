@@ -282,6 +282,10 @@ export interface RunAcc {
   /** the run broke a rule of its goal and cannot meet it any more (oneShot:
    * the dummy lost life and lived); a sentence, and verifyRun's refusal */
   failed?: string;
+  /** the player's debt and resources the moment the goal was met — what the
+   * score's payoff turns are worked out from (`debtPayoffTurns`). Optional, so
+   * a RunAcc kept before it existed still folds */
+  end?: { debt: number; open: number; active: number };
   used: Record<CardName, number>;
   usedInHand: Record<CardName, number>;
   usedInRecycle: Record<CardName, number>;
@@ -583,8 +587,40 @@ export function foldRun(acc: RunAcc, before: GameState, action: Action, after: G
     : g.kind === 'oneShot' ? Number(next.ended === 'dummyDied' && !next.failed)
     : g.kind === 'doubleKO' ? Number(next.bothFell === true)
     : boardValue(g, after);
-  if (!next.failed && next.value >= goalTarget(g)) { next.met = true; next.metTurn = after.turn; }
+  if (!next.failed && next.value >= goalTarget(g)) {
+    next.met = true;
+    next.metTurn = after.turn;
+    next.end = endOf(after);
+  }
   return next;
+}
+
+/** seat 0's debt and resources on a board: debt owed, resources still open,
+ * and resources making mana (open or spent; a dormant one makes none yet) */
+export function endOf(state: GameState): { debt: number; open: number; active: number } {
+  const p = state.players[PLAYER]!;
+  return {
+    debt: Math.max(0, p.debt ?? 0),
+    open: p.resources.filter(r => r.state === 'open').length,
+    active: p.resources.filter(r => r.state !== 'dormant').length,
+  };
+}
+
+/**
+ * Owner, 2026-11-01: a run that meets its goal still owes its debt, so the
+ * turns it would take to pay it off count. The open resources left on the
+ * final turn pay first; then each further turn pays with two more resources
+ * than the turn before (`active` + 2, + 4, …). 2 debt and nothing open: 1
+ * turn. 24 debt on 2 resources, none open: 4 + 6 + 8 + 6, 4 turns. Without
+ * this, "gain debt: the next card costs less" bought a turn-2 run of nearly
+ * every challenge for nothing.
+ */
+export function debtPayoffTurns(debt: number, open: number, active: number): number {
+  let left = debt - Math.max(0, open);
+  let per = Math.max(0, active);
+  let turns = 0;
+  for (; left > 0; turns++) { per += 2; left -= per; }
+  return turns;
 }
 
 export function progress(acc: RunAcc): { value: number; target: number; met: boolean } {
@@ -656,12 +692,18 @@ export function progressLabel(goal: Goal): string {
 
 // ── the score ─────────────────────────────────────────────────────────
 
-/** `raw` = cards × max(1, elements) × turns, the run's exact cost (lower is
+/** `turns` = the turn the goal was met on, plus `debtTurns`, the turns paying
+ * off the `debt` still owed then (both absent on a run stamped before
+ * 2026-11-01, when debt was free; `turns` is then the turn met).
+ * `raw` = cards × max(1, elements) × turns, the run's exact cost (lower is
  * cheaper); `skill` = the shown number, par ÷ raw × 100 rounded half up —
  * HIGHER is better, and the row's reference run scores exactly 100. Both are
  * stamped by the server when it verifies a run and never recomputed. Boards
  * rank by `raw` (exact, so two runs never tie on a rounding). */
-export interface RunScore { unique: number; extra: number; cards: number; elements: number; turns: number; raw: number; skill: number }
+export interface RunScore {
+  unique: number; extra: number; cards: number; elements: number; turns: number; raw: number; skill: number;
+  debt?: number; debtTurns?: number;
+}
 
 /** par ÷ raw × 100, rounded half up, in integers (no float can land a half on
  * the wrong side) */
@@ -679,9 +721,11 @@ export function scoreRun(acc: RunAcc, par: number): RunScore {
   const els = new Set<string>();
   for (const n of names) for (const f of getCard(n).factions ?? []) els.add(f);
   const elements = els.size;
-  const turns = acc.metTurn ?? acc.turn;
+  const end = acc.end ?? { debt: 0, open: 0, active: 0 };
+  const debtTurns = debtPayoffTurns(end.debt, end.open, end.active);
+  const turns = (acc.metTurn ?? acc.turn) + debtTurns;
   const raw = cards * Math.max(1, elements) * turns;
-  return { unique, extra, cards, elements, turns, raw, skill: skillOf(par, raw) };
+  return { unique, extra, cards, elements, turns, raw, skill: skillOf(par, raw), debt: end.debt, debtTurns };
 }
 
 // ── the leaderboards ──────────────────────────────────────────────────

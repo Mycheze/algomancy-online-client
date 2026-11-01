@@ -5375,4 +5375,5 @@ html.touch .crdoc .crshare { opacity: .7; padding: 4px 6px; }
   border: 1px solid var(--accent); border-radius: 10px; padding: 14px 16px; }
 .chbox h3 { margin: 0 0 10px; color: var(--accent); }
 .chbox .chscore { margin: 6px 0 10px; }
+.chbox .chdebt { margin: -4px 0 10px; }
 .chboxbtns { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; margin-top: 12px; }

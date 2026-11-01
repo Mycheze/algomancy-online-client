@@ -241,8 +241,11 @@ const plural = (n: number, one: string): string => `${n} ${one}${n === 1 ? '' : 
 /** "12 cards (2 extra)", the extra copies only when there are any */
 const cardsText = (s: RunScore): string => `${plural(s.cards, 'card')}${s.extra ? ` (${s.extra} extra)` : ''}`;
 
+/** "5 turns (3 paying debt)", the debt turns only when there are any */
+const turnsText = (s: RunScore): string => `${plural(s.turns, 'turn')}${s.debtTurns ? ` (${s.debtTurns} paying debt)` : ''}`;
+
 const scoreLine = (s: RunScore): string =>
-  `${plural(s.turns, 'turn')} · ${cardsText(s)} · ${plural(s.elements, 'element')}`;
+  `${turnsText(s)} · ${cardsText(s)} · ${plural(s.elements, 'element')}`;
 
 /** each board's name, and what it ranks by — the tab's tooltip */
 export const BOARD_LABEL: Record<BoardKind, string> = {
@@ -298,6 +301,7 @@ function weekCardHtml(c: ChallengeView): string {
     ${c.blurb ? `<p>${esc(c.blurb)}</p>` : ''}
     <p class="dim">${esc(timeLeft(c.closes))} · ${c.entrants} entrant${c.entrants === 1 ? '' : 's'}</p>
     <p class="dim">Three first places: fewest turns, fewest cards, fewest elements.</p>
+    <p class="dim">${esc(DEBT_RULE)}</p>
     ${bestHtml(c.id)}
     ${building === c.id ? '' : `<p><button class="primary" data-btn="ch-build" data-id="${esc(c.id)}">Build a deck</button></p>`}
   </div>`;
@@ -310,6 +314,10 @@ const OLDER_TIP = 'The rules have changed since this run was played: replayed to
 const olderHtml = (r: BoardRow): string =>
   r.older ? ` <span class="dim chold" title="${esc(OLDER_TIP)}">played on older rules</span>` : '';
 
+/** "met on turn 2, then 3 turns paying off 24 debt" */
+const debtTip = (s: RunScore): string =>
+  `Met the goal on turn ${s.turns - (s.debtTurns ?? 0)}, then ${plural(s.debtTurns ?? 0, 'turn')} paying off ${s.debt ?? 0} debt.`;
+
 /** "Fastest: Tomzy · Leanest: Tomzy · Purest: Nyar" — a closed week's frozen winners */
 function winnersHtml(b: BoardReply): string {
   if (!b.closed || !b.winners) return '';
@@ -318,6 +326,11 @@ function winnersHtml(b: BoardReply): string {
 }
 
 const CARDS_TIP = 'Each card used counts once, and every copy past the second counts as one more.';
+
+/** Owner, 2026-11-01: debt still owed when the goal is met costs the turns paying it off */
+export const DEBT_RULE = 'Debt you still owe when you meet the goal adds the turns it would take to pay off: '
+  + 'your open resources pay first, then each later turn pays with 2 more resources than the one before.';
+const TURNS_TIP = `The turn you met the goal on, plus any turns paying off debt. ${DEBT_RULE}`;
 
 function boardHtml(c: ChallengeView, past = false): string {
   const b = boards.get(c.id);
@@ -334,9 +347,9 @@ function boardHtml(c: ChallengeView, past = false): string {
       <div class="chtabs" role="tablist">${BOARD_KINDS.map(k => `<button role="tab" aria-selected="${k === tab}" class="${
         k === tab ? 'on' : ''}" data-btn="ch-tab" data-tab="${k}" title="${esc(BOARD_TIP[k])}">${BOARD_LABEL[k]}</button>`).join('')}</div>
       <p class="dim chtabtip">${esc(BOARD_TIP[tab])}</p>
-      <table class="accttable chboard"><thead><tr><th>#</th><th>player</th>${th('turns', 'Turns')}${th('cards', 'Cards', CARDS_TIP)}${th('elements', 'Elements')}${
+      <table class="accttable chboard"><thead><tr><th>#</th><th>player</th>${th('turns', 'Turns', TURNS_TIP)}${th('cards', 'Cards', CARDS_TIP)}${th('elements', 'Elements')}${
         b.closed ? '<th></th>' : ''}</tr></thead>
-      <tbody>${b.boards[tab].map(r => `<tr><td>${r.rank}</td><td>${esc(r.name)}${olderHtml(r)}</td>${td('turns', String(r.score.turns))}${
+      <tbody>${b.boards[tab].map(r => `<tr><td>${r.rank}</td><td>${esc(r.name)}${olderHtml(r)}</td>${td('turns', `${r.score.turns}${r.score.debtTurns ? ` <span class="dim" title="${esc(debtTip(r.score))}">(+${r.score.debtTurns} debt)</span>` : ''}`)}${
         td('cards', `${r.score.cards}${r.score.extra ? ` <span class="dim">(${r.score.extra} extra)</span>` : ''}`)}${td('elements', String(r.score.elements))}${
         b.closed ? `<td class="chrowbtns">${r.deck ? `<button data-btn="ch-try" data-id="${esc(c.id)}" data-run="${esc(r.runId ?? '')}" title="load this deck into the builder">Try this deck</button>` : ''}${
           r.runId ? `<button data-btn="ch-watch" data-run="${esc(r.runId)}">Watch</button>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table>`;

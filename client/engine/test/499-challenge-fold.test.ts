@@ -194,7 +194,7 @@ test('§6 the score: extra copies count, a replayed copy counts once, drawn card
   const plays = h.actions.filter(a => a.type === 'playCard').length;
   assert.equal(plays, 10, 'Species once, the three Sprites three times each');
   assert.deepEqual(acc.used, { [SPECIES]: 1, [SPRITE]: 3, [SPORE]: 3 });
-  assert.deepEqual(scoreRun(acc, exampleDef.par), { unique: 3, extra: 2, cards: 5, elements: 3, turns: 4, raw: 60, skill: 150 });
+  assert.deepEqual(scoreRun(acc, exampleDef.par), { unique: 3, extra: 2, cards: 5, elements: 3, turns: 4, raw: 60, skill: 150, debt: 0, debtTurns: 0 });
 });
 
 test('§7 verifyRun accepts the recorded log and drops what follows the goal', () => {
@@ -204,7 +204,7 @@ test('§7 verifyRun accepts the recorded log and drops what follows the goal', (
   const r = verifyRun(exampleDef, EXAMPLE, JSON.parse(JSON.stringify(h.actions)));
   assert.ok(r.ok, JSON.stringify(r));
   assert.equal(r.actions.length, metAt + 1, 'truncated at the action that met the goal');
-  assert.deepEqual(r.score, { unique: 3, extra: 2, cards: 5, elements: 3, turns: 4, raw: 60, skill: 150 });
+  assert.deepEqual(r.score, { unique: 3, extra: 2, cards: 5, elements: 3, turns: 4, raw: 60, skill: 150, debt: 0, debtTurns: 0 });
   assert.ok(h.actions.some(a => a.seat === DUMMY), 'the log carries the dummy moves too');
 });
 

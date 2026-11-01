@@ -398,7 +398,7 @@ function referenceCell(r: RefResult): string {
     return `<span class="stchip live" title="${esc(r.error)}">no longer verifies</span> ${esc(r.error)}${r.at !== undefined ? ` (action ${r.at})` : ''}`;
   }
   const s = r.score;
-  return `${plural(s.turns, 'turn')} · ${plural(s.cards, 'card')} · ${plural(s.elements, 'element')}
+  return `${plural(s.turns, 'turn')}${s.debtTurns ? ` (+${s.debtTurns} debt)` : ''} · ${plural(s.cards, 'card')} · ${plural(s.elements, 'element')}
     <span class="unk" title="raw = cards × elements × turns; ${r.actions} actions">· raw ${s.raw} · Skill ${s.skill}</span>`;
 }
 

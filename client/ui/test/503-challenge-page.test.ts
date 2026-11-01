@@ -156,7 +156,9 @@ test('§3 the page: goal, time left, my best on each board, four leaderboard tab
   for (const k of ['Fastest', 'Leanest', 'Purest', 'Overall']) assert.match(html, new RegExp(`data-btn="ch-tab" data-tab="${k.toLowerCase()}"[^>]*>${k}</`));
   assert.match(html, /aria-selected="true" class="on" data-btn="ch-tab" data-tab="fastest"/, 'fastest first');
   assert.match(html, /Fewest turns\. Ties go to fewer cards, then fewer elements\./);
-  assert.match(html, /<th>#<\/th><th>player<\/th><th class="chsorted">Turns<\/th><th title="[^"]*">Cards<\/th><th>Elements<\/th>/);
+  assert.match(html, /<th>#<\/th><th>player<\/th><th class="chsorted" title="[^"]*debt[^"]*">Turns<\/th><th title="[^"]*">Cards<\/th><th>Elements<\/th>/,
+    'the Turns header says debt costs turns (owner 2026-11-01)');
+  assert.match(html, /<p class="dim">Debt you still owe when you meet the goal adds the turns it would take to pay off/, 'the rule, on the week card');
   assert.match(html, /<td>1<\/td><td>Ann<\/td><td><b>4<\/b><\/td><td>3 <span class="dim">\(1 extra\)<\/span><\/td><td>2<\/td>/,
     'a row: turns (bold, the sorting column), cards with the extra copies, elements');
 

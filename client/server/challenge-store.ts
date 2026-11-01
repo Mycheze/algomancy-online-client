@@ -22,6 +22,12 @@
  *                is its own file and not a field on the run's line: runs.jsonl
  *                is never rewritten. Like a run's score, a recorded fingerprint
  *                is NEVER recomputed; the first line for a run wins.
+ *   rescores.jsonl  APPEND-ONLY, written by hand with challenge-rescore.ts:
+ *                {runId, rule, score} — a run re-scored because the SCORING
+ *                rule changed (owner 2026-11-01: debt owed at the goal costs
+ *                the turns paying it off), not because the engine did. Read
+ *                at load and laid over the stamped score, the last line for a
+ *                run winning; runs.jsonl itself is never rewritten.
  *
  * ── WHY `actions` IS WRITTEN LAST ────────────────────────────────────────
  *
@@ -132,6 +138,10 @@ let dirOverride: string | null = null;
 const dir = (): string => dirOverride ?? challengesDir();
 const runsFile = (): string => join(dir(), 'runs.jsonl');
 const weeksFile = (): string => join(dir(), 'weeks.json');
+const rescoresFile = (): string => join(dir(), 'rescores.jsonl');
+
+/** one line of rescores.jsonl */
+export interface RescoreRow { runId: string; rule: string; score: RunScore }
 
 interface Mem {
   runs: RunMeta[];
@@ -182,6 +192,19 @@ function db(): Mem {
         else console.error(`[challenges] runs.jsonl: unreadable line at byte ${start}, skipped`);
       }
       start = end + 1;
+    }
+  }
+  // a re-scored run's score replaces its stamp (the header's rescores.jsonl)
+  let rescores = '';
+  try { rescores = readFileSync(rescoresFile(), 'utf8'); } catch { /* none */ }
+  for (const line of rescores.split('\n')) {
+    if (!line.trim()) continue;
+    try {
+      const r = JSON.parse(line) as Partial<RescoreRow>;
+      const meta = typeof r.runId === 'string' ? m.byId.get(r.runId) : undefined;
+      if (meta && typeof r.score?.raw === 'number' && typeof r.score.turns === 'number') meta.score = r.score;
+    } catch {
+      console.error('[challenges] rescores.jsonl: unreadable line, skipped');
     }
   }
   try {
@@ -271,7 +294,8 @@ export function runById(runId: string): RunRow | null {
     const buf = Buffer.alloc(meta.len);
     readSync(fd, buf, 0, meta.len, meta.off);
     const r = JSON.parse(buf.toString('utf8')) as RunRow;
-    return r.runId === runId ? r : null;
+    // the score in force: a re-score (rescores.jsonl) replaces the stamp
+    return r.runId === runId ? { ...r, score: meta.score } : null;
   } catch (err) {
     console.error(`[challenges] could not read run ${runId}:`, err);
     return null;

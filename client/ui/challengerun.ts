@@ -23,7 +23,7 @@
 import type { Action, CardName, EngineEvent, GameState } from '../engine/src/types.ts';
 import { legalActions } from '../engine/src/apply.ts';
 import {
-  BOARD_KINDS, DUMMY_DECK, challengeDeal, dummyMove, foldRun, newRun, progress, progressLabel, runFailed, scoreRun,
+  BOARD_KINDS, DUMMY_DECK, challengeDeal, debtPayoffTurns, dummyMove, endOf, foldRun, newRun, progress, progressLabel, runFailed, scoreRun,
   type BoardKind, type ChallengeDef, type RunAcc, type RunScore,
 } from '../engine/src/challenge.ts';
 import type { BotPolicy } from './bot.ts';
@@ -183,7 +183,11 @@ export class ChallengeRun {
 
   meterText(): string {
     const p = this.progress();
-    return `${progressLabel(this.def.goal)} ${Math.min(p.value, p.target)} / ${p.target} · turn ${this.state.turn} · cards ${this.score().cards}`;
+    // debt costs turns at the end (debtPayoffTurns), so the meter shows what it would cost now
+    const e = endOf(this.state);
+    const owed = debtPayoffTurns(e.debt, e.open, e.active);
+    return `${progressLabel(this.def.goal)} ${Math.min(p.value, p.target)} / ${p.target} · turn ${this.state.turn}${
+      e.debt ? ` · debt ${e.debt} (+${owed} turn${owed === 1 ? '' : 's'})` : ''} · cards ${this.score().cards}`;
   }
 
   private changed(tell = true): void {
@@ -262,7 +266,9 @@ export const statCell = (label: string, value: string | number): string =>
 /** what the run took — turns first, the hardest to cut; extra copies only when there are any */
 export function scoreHtml(s: RunScore): string {
   return `<div class="statgrid chscore">${statCell('Turns', s.turns)}${statCell('Cards', s.cards)}${
-    s.extra ? statCell('Extra copies', s.extra) : ''}${statCell('Elements', s.elements)}</div>`;
+    s.extra ? statCell('Extra copies', s.extra) : ''}${statCell('Elements', s.elements)}</div>${
+    s.debtTurns ? `<p class="dim chdebt">Met on turn ${s.turns - s.debtTurns}, plus ${s.debtTurns} turn${
+      s.debtTurns === 1 ? '' : 's'} to pay off ${s.debt ?? 0} debt.</p>` : ''}`;
 }
 
 const BOARD_NAME: Record<BoardKind, string> = { fastest: 'fastest', leanest: 'leanest', purest: 'purest', overall: 'overall' };
