@@ -791,13 +791,13 @@ order.
 
 <a id="r107.2"></a>**107.2.** An X spell's mana cost is X alone: the player chooses X, and pays X. Its pips are not part of its cost. See rules 111, 702.
 
-<sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 133-x-cost-semantics.test.ts, 32-cast-costs.test.ts · Demonstrated by test: 133-x-cost-semantics.test.ts::CR 107.2 — with no Stasis Sentry an X spell costs exactly X · Key: concepts.numbers.x-cost</sub>
+<sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Tests: 133-x-cost-semantics.test.ts, 32-cast-costs.test.ts · Demonstrated by test: 133-x-cost-semantics.test.ts::CR 107.2 — with no Stasis Sentry an X spell costs exactly X · Key: concepts.numbers.x-cost</sub>
 
 <a id="r107.2a"></a>**107.2a** X is chosen and paid when the spell is cast, before it goes on the stack. Only values the player can pay are offered. Responses see the X already chosen. See rule 702.
 
 > *Example: Wildfire: its caster chooses X from the values they can pay and pays it as the spell is cast, so the spell is on the stack with that X.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 32-cast-costs.test.ts · Example test: 32-cast-costs.test.ts::Wildfire: X is chosen at cast from affordable values, paid, and stored on the item · Key: concepts.numbers.x-cost.chosen-at-cast</sub>
+<sub>Basis: Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 32-cast-costs.test.ts · Example test: 32-cast-costs.test.ts::Wildfire: X is chosen at cast from affordable values, paid, and stored on the item · Key: concepts.numbers.x-cost.chosen-at-cast</sub>
 
 <a id="r107.2b"></a>**107.2b** X may be 0 unless the card says otherwise. Choosing X = 0 is legal even when it makes the effect do nothing.
 
@@ -811,7 +811,7 @@ order.
 
 > *Example: Frosted Denial cannot be cast with no open mana.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Printed: card: Frosted Denial · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 32-cast-costs.test.ts · Example test: 32-cast-costs.test.ts::Frosted Denial: xMin 1 — with no open mana the cast is illegal (X can't be zero) · Key: concepts.numbers.x-cost.cant-be-zero</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: card: Frosted Denial · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 32-cast-costs.test.ts · Example test: 32-cast-costs.test.ts::Frosted Denial: xMin 1 — with no open mana the cast is illegal (X can't be zero) · Key: concepts.numbers.x-cost.cant-be-zero</sub>
 
 <sub>Discrepancies: D-U02-11 (discrepancies.md)</sub>
 
@@ -841,13 +841,15 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Frosted Denial · Designer: RAQ 1396955380000755795#8 · Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 404-raq-fix-tides.test.ts, 396-raq-timing.test.ts · Example test: 404-raq-fix-tides.test.ts::CR 107.4a: an X card that may not be zero is never a Tides pick; one that may be zero still is · Demonstrated by test: 396-raq-timing.test.ts::RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can play · Key: concepts.numbers.free-play.cant-be-zero</sub>
 
-<a id="r107.5"></a>**107.5.** Stasis Sentry gives spells with a base cost of [three] or less a base cost of [three] during battle. On an X spell it raises the X instead of the price: X must be at least 3, and the spell costs exactly X. See rule 111.
+<a id="r107.5"></a>**107.5.** Stasis Sentry gives spells with a base cost of [three] or less a base cost of [three] during battle. On an X spell the player still chooses X freely, and the X chosen is the spell's base cost: an X of three or less makes the spell cost [3] to play, while the spell keeps the X chosen for its targets and everything else that reads X. An X above three costs exactly X. See rule 111.
 
-> *Example: Under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3.*
+> *Example: Under a Stasis Sentry, Torrential Reclamation cast for X = 2 takes two targets and costs [3].*
+
+> *Example: Under a Stasis Sentry, Wildfire cast for X = 1 costs [3] and deals 1.*
 
 > *Example: Under a Stasis Sentry, X = 3 costs [3] and X = 5 costs [5].*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: card: Stasis Sentry · Designer: RAQ 1359629594512068770#0; RAQ 1359629594512068770#1 · Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 133-x-cost-semantics.test.ts · Example tests: 133-x-cost-semantics.test.ts::CR 107.5 (reversing the earlier price reading) — under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3, 133-x-cost-semantics.test.ts::CR 107.5 — the real cast pays it: X=3 costs [3] and X=5 costs [5] under a Stasis Sentry · Key: concepts.numbers.x-minimum</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Printed: card: Stasis Sentry · Designer: RAQ 1359629594512068770#1 · Owner call · adopted 2026-11-01 · Tests: 133-x-cost-semantics.test.ts, 740-sentry-x-price.test.ts · Example tests: 740-sentry-x-price.test.ts::report FXMF #304: Torrential Reclamation at X = 2 under a Stasis Sentry — castable with two allies, two targets, pays [3], 133-x-cost-semantics.test.ts::CR 107.5 (Caleb, 2026-11-01) — under a Stasis Sentry the X menu starts at 0, and X = 1 pays [3] and deals 1, 133-x-cost-semantics.test.ts::CR 107.5 — the real cast pays it: X=3 costs [3] and X=5 costs [5] under a Stasis Sentry · Key: concepts.numbers.x-minimum</sub>
 
 <a id="r107.6"></a>**107.6.** A copy of a spell uses the original's X. The X is not chosen or paid again. See rule 710.
 
@@ -1659,11 +1661,13 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 16-earth-a.test.ts · Demonstrated by test: 16-earth-a.test.ts::Crevice Lurker: CR 111.10h — declining prevents the trigger and does NOT spend its [once] (CR 109.9b) · Key: concepts.costs.modifiers.trigger-tax.once</sub>
 
-<a id="r111.10i"></a>**111.10i** A modifier that gives spells a minimum base cost ("Spells with base cost [three] or less have a base cost of [three]") raises the cost of a spell whose printed cost is a number. For a spell whose cost is X, it instead makes the smallest X that may be chosen equal to that minimum, and the spell costs exactly the X chosen. See rules 107, 702.6.
+<a id="r111.10i"></a>**111.10i** A modifier that gives spells a minimum base cost ("Spells with base cost [three] or less have a base cost of [three]") raises the cost of a spell whose base cost is below that minimum to the minimum. For a spell whose cost is X, the base cost is the X chosen: the modifier raises what the spell costs to play, never the X itself. See rules 107, 702.6.
 
-> *Example: under Stasis Sentry in battle, Wildfire's X menu starts at 3, and X = 3 deals 3.*
+> *Example: under Stasis Sentry in battle, Wildfire cast for X = 1 costs [3] and deals 1.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: card: Stasis Sentry · Designer: RAQ 1359629594512068770#0; RAQ 1359629594512068770#1 · Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 133-x-cost-semantics.test.ts, 19-hybrids.test.ts · Example test: 133-x-cost-semantics.test.ts::CR 107.5 (reversing the earlier price reading) — under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3 · Key: concepts.costs.modifiers.minimum</sub>
+> *Example: under Stasis Sentry in battle, Wildfire cast for X = 4 costs [4].*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: card: Stasis Sentry · Designer: RAQ 1359629594512068770#1 · Owner call · adopted 2026-11-01 · Tests: 133-x-cost-semantics.test.ts, 19-hybrids.test.ts, 740-sentry-x-price.test.ts · Example tests: 740-sentry-x-price.test.ts::CR 107.5: Wildfire at X = 1 under a Stasis Sentry deals 1 and pays [3], 740-sentry-x-price.test.ts::CR 107.5: Wildfire at X = 4 under a Stasis Sentry pays [4] — a base above three is untouched · Key: concepts.costs.modifiers.minimum</sub>
 
 <a id="r111.10j"></a>**111.10j** A spell token's printed cost is 0, so such a modifier makes a spell token cost its minimum.
 
@@ -1681,11 +1685,13 @@ order.
 
 <sub>Discrepancies: D-U04-10, D-U04-3 (discrepancies.md)</sub>
 
-<a id="r111.11"></a>**111.11.** When an effect refers to a card's cost, it means the card's printed cost. Cost modifiers do not change it. The cost of an X spell that is being or has just been cast is the X paid; an X card that is not being cast has a cost of 0. See rules 107, 202.
+<a id="r111.11"></a>**111.11.** When an effect refers to a card's cost, it means the card's printed cost. Cost modifiers do not change it. The cost of an X spell that is being or has just been cast is the X chosen for it, whatever cost modifiers made it cost to play; an X card that is not being cast has a cost of 0. See rules 107, 202.
 
 > *Example: Squish, paid at [4] under Stasis Sentry and Tranquility, is read as a 2-cost spell by Arcane Concentrator.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Designer: RAQ 1353980184042143835#0; RAQ 1396955380000755795#10 · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 390-raq-stack.test.ts, 133-x-cost-semantics.test.ts, 396-raq-timing.test.ts · Example test: 390-raq-stack.test.ts::RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2 · Demonstrated by test: 133-x-cost-semantics.test.ts::CR 111.11 — a card that was never cast has no cost: an X card in hand reads 0 · Key: concepts.costs.reading-cost</sub>
+> *Example: Wildfire cast for X = 2 under Stasis Sentry and Tranquility is paid at [4], and Arcane Concentrator, Channeled Amalgam and Unstable Apparition read it as a 2.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 4 gate test files · Designer: RAQ 1353980184042143835#0; RAQ 1396955380000755795#10 · Owner call · adopted 2026-11-01; Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 390-raq-stack.test.ts, 133-x-cost-semantics.test.ts, 396-raq-timing.test.ts, 740-sentry-x-price.test.ts · Example tests: 390-raq-stack.test.ts::RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2, 740-sentry-x-price.test.ts::RAQ printed cost, X spell: under a Stasis Sentry and a Tranquility, Wildfire at X = 2 paid [4] reads as a 2 to Arcane Concentrator, Channeled Amalgam and Unstable Apparition · Demonstrated by test: 133-x-cost-semantics.test.ts::CR 111.11 — a card that was never cast has no cost: an X card in hand reads 0 · Key: concepts.costs.reading-cost</sub>
 
 <a id="r111.12"></a>**111.12.** Some cards print another way to play or use them, with its own cost: a Prophecy or Ambush banner, or a "Discard me" line. Such a cost is paid like any other cost: its mana is spent and its affinity requirement must be met. See rules 203, 803.
 

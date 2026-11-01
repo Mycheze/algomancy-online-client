@@ -2,7 +2,8 @@
  * RAQ fix round F3 — the stack, targets and last-known state, built from the
  * threads the RAQ audit found broken (ledgers/raq.ts, CT-207/208/209/224).
  * The RAQ is the authority (owner, 2026-10-09): where a thread and one of our
- * own rulings disagreed, the ruling was reversed (CR 101.3): the dead-source formation reading and the Stasis Sentry X-cost reading.
+ * own rulings disagreed, the ruling was reversed (CR 101.3): the dead-source formation reading and the Stasis Sentry X-cost reading
+ * (that one reversed back on 2026-11-01, when Caleb answered it himself; see 740-sentry-x-price).
  *
  * The thread-by-thread reproductions live in 390-raq-stack.test.ts; this file
  * holds the whole-pool sweeps and the pieces 390 does not reach.

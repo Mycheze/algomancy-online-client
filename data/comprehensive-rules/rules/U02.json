@@ -2283,11 +2283,15 @@
     "key": "concepts.numbers.x-minimum",
     "parent": "107",
     "order": 5,
-    "text": "Stasis Sentry gives spells with a base cost of [three] or less a base cost of [three] during battle. On an X spell it raises the X instead of the price: X must be at least 3, and the spell costs exactly X.",
+    "text": "Stasis Sentry gives spells with a base cost of [three] or less a base cost of [three] during battle. On an X spell the player still chooses X freely, and the X chosen is the spell's base cost: an X of three or less makes the spell cost [3] to play, while the spell keeps the X chosen for its targets and everything else that reads X. An X above three costs exactly X.",
     "examples": [
       {
-        "text": "Under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3.",
-        "test": "133-x-cost-semantics.test.ts::CR 107.5 (reversing the earlier price reading) — under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3"
+        "text": "Under a Stasis Sentry, Torrential Reclamation cast for X = 2 takes two targets and costs [3].",
+        "test": "740-sentry-x-price.test.ts::report FXMF #304: Torrential Reclamation at X = 2 under a Stasis Sentry — castable with two allies, two targets, pays [3]"
+      },
+      {
+        "text": "Under a Stasis Sentry, Wildfire cast for X = 1 costs [3] and deals 1.",
+        "test": "133-x-cost-semantics.test.ts::CR 107.5 (Caleb, 2026-11-01) — under a Stasis Sentry the X menu starts at 0, and X = 1 pays [3] and deals 1"
       },
       {
         "text": "Under a Stasis Sentry, X = 3 costs [3] and X = 5 costs [5].",
@@ -2306,10 +2310,6 @@
       ],
       "designer": [
         {
-          "ref": "RAQ 1359629594512068770#0",
-          "quote": "The X value must be at least 3 (which would deal 3 damage), but it can be higher"
-        },
-        {
           "ref": "RAQ 1359629594512068770#1",
           "quote": "but it can be higher if Opponent decides to do so"
         }
@@ -2317,27 +2317,27 @@
       "ours": [],
       "owner": [
         {
-          "quote": "Under Stasis Sentry in battle, an X spell must be cast with **X of at least",
-          "adopted": "2026-10-09",
-          "from": "register@72de434"
+          "quote": "_passer: \"No, you paid 2 +1 extra, but X=2\"",
+          "adopted": "2026-11-01",
+          "from": "owner, chat 2026-11-01: pasted the RAQ exchange in which Nyar asks whether Torrential Reclamation under a Stasis Sentry needs 3 targets (report FXMF #304)"
         },
         {
-          "quote": "three**, and it costs exactly X. It is not cast at a smaller X for a price of",
-          "adopted": "2026-10-09",
-          "from": "register@72de434"
+          "quote": "calebgannon: \"Yeah, you set targets before paying the cost\"",
+          "adopted": "2026-11-01",
+          "from": "owner, chat 2026-11-01: pasted the RAQ exchange in which Nyar asks whether Torrential Reclamation under a Stasis Sentry needs 3 targets (report FXMF #304)"
         }
       ],
       "engine": [],
       "tests": [
-        "133-x-cost-semantics.test.ts"
+        "133-x-cost-semantics.test.ts",
+        "740-sentry-x-price.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Card-specific; it is in 107 because it is the one source on how a cost floor meets an X. The second example title still says \"the owner ruling of 2026-08-25 (“the owner's answers to the 27…”)\": F-U02-1.",
+    "notes": "Card-specific; it is in 107 because it is the one source on how a cost floor meets an X. Reversed 2026-11-01: the 2026-10-09 reading (X itself at least 3, from _passer's 2025 write-up, now outdated) gave way to Caleb's later answer, relayed by the owner.",
     "sourceHashes": {
-      "RAQ 1359629594512068770#0": "2931e75db11a44a64aff5a8458d34b418321d25f6b79937e8d4bc50919b0bd63",
       "RAQ 1359629594512068770#1": "ac56a4ed9d3d59979d3cc64adb2784eded371132ac83b6b0e78e753052637621"
     },
     "rebuttal": "The history entries are not empty: they are {ruling, relation} records (the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) and the owner ruling of 2026-08-25 (“the three cost contexts of an…”)), the shape schema.mjs requires for history; they carry no `ref` field, which is why the verifier read \"history: None\". Kept."

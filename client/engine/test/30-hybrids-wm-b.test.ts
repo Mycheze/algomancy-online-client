@@ -244,10 +244,9 @@ test('Abduct: controller may pay [x] to keep the unit; otherwise control flips (
   const h = new Harness(3008);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
-  // RAQ, 2026-10-09 (now CR 107.5): the cost-3 target used to be a Stasis Sentry, whose
-  // earlier tax reading priced the X = 0 cast at [3]. The RAQ reversed that reading (a Sentry
-  // forces X itself to 3), so a plain cost-3 unit stands in and the test is
-  // about Abduct alone again.
+  // The cost-3 target used to be a Stasis Sentry, which taxes the very X spell
+  // under test (CR 107.5: under a Sentry an X of three or less costs [3]), so a
+  // plain cost-3 unit stands in and the test is about Abduct alone.
   const sentry = spawn(h, A, 'Rune Channeler');               // cost 3 — the real target
   // Report #211: this used to be a cost-0 Unit Token, and that token is what hid
   // the bug — the gate judged Abduct with no X (read as 0), so it was castable

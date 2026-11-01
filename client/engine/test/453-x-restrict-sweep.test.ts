@@ -153,7 +153,7 @@ test('an X-reading spell is offered exactly when some payable X reaches a target
         const region = h.state.battle!.region;
         const openMana = g.openMana(D);
         const want: number[] = [];
-        for (let x = g.xFloor(D, r.card, { region }); x <= openMana; x++) {
+        for (let x = getCard(r.card).xMin ?? 0; x <= openMana; x++) {
           if (g.manaToPlay(D, r.card, { region, x }) > openMana) continue;
           if (fillableAt(g, r.spec, region, D, x)) want.push(x);
         }

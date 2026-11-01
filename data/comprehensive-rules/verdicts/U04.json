@@ -854,21 +854,33 @@
   },
   {
     "key": "concepts.costs.modifiers.minimum",
-    "textHash": "d297aaee289b7afe",
+    "textHash": "76c1b27cd227037c",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U04-r1",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.xFloor / E.manaToPlay",
+        "loc": "client/engine/src/engine.ts:E.manaToPlay",
         "agrees": true,
-        "note": "CostMod xMin raises the X floor; an X spell is billed its chosen X"
+        "note": "base = chosen X (or xMin); CostMod deltas summed"
       }
     ],
     "tests_run": [
       {
-        "file": "133-x-cost-semantics.test.ts",
-        "pattern": "R326 (reverses R157 §20) — under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3",
+        "file": "client/engine/test/740-sentry-x-price.test.ts",
+        "pattern": "CR 107.5: Wildfire at X = 1 under a Stasis Sentry deals 1 and pays [3]",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/740-sentry-x-price.test.ts",
+        "pattern": "CR 107.5: Wildfire at X = 4 under a Stasis Sentry pays [4]",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ printed cost: Arcane Concentrator",
         "passed": true,
         "asserts_claim": true
       }
@@ -878,33 +890,31 @@
       {
         "ref": "card: Stasis Sentry",
         "supports": "yes",
-        "note": "printed"
-      },
-      {
-        "ref": "RAQ 1359629594512068770#0",
-        "supports": "yes",
-        "note": "verbatim _passer"
+        "note": "verbatim"
       },
       {
         "ref": "RAQ 1359629594512068770#1",
-        "supports": "partly",
-        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees"
+        "supports": "yes",
+        "note": "quote is the claim text of covered claim #1"
       },
       {
-        "ref": "R326",
+        "ref": "owner 2026-11-01 relay (_passer, Caleb)",
         "supports": "yes",
-        "note": ""
+        "note": "X stays 2 while price is 3"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/133-x-cost-semantics.test.ts",
-        "text": "assert.deepEqual(h.state.decision!.options.map(o => o.value), [3, 4, 5], 'X = 0, 1 and 2 are not offered');"
+        "file": "client/ledgers/raq.ts",
+        "text": "X above 3 is allowed and costs exactly X."
+      },
+      {
+        "file": "client/engine/test/740-sentry-x-price.test.ts",
+        "text": "assert.deepEqual(wildfire(74002, 1), { paid: 3, dealt: 1 });"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.costs.modifiers.minimum.tokens",
@@ -1298,27 +1308,38 @@
   },
   {
     "key": "concepts.costs.reading-cost",
-    "textHash": "af0e59b23cd03406",
+    "textHash": "9ee429b3e3a22582",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U04-r1",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "cards dsl.printedCost / manaOf (R158)",
+        "loc": "client/engine/src/engine.ts:E.manaToPlay",
         "agrees": true,
-        "note": "readers use printed cost; an X card not being cast reads 0; a cast X spell reads its X"
+        "note": "base = chosen X (or xMin); CostMod deltas summed"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/helpers.ts:manaOf",
+        "agrees": true,
+        "note": "uncast X card reads 0"
       }
     ],
     "tests_run": [
       {
-        "file": "390-raq-stack.test.ts",
+        "file": "client/engine/test/390-raq-stack.test.ts",
         "pattern": "RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "133-x-cost-semantics.test.ts",
-        "pattern": "R157 §1 — a card that was never cast has no cost: an X card in hand reads 0",
+        "file": "client/engine/test/133-x-cost-semantics.test.ts",
+        "pattern": "CR 111.11 — a card that was never cast has no cost",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/740-sentry-x-price.test.ts",
+        "pattern": "RAQ printed cost, X spell: under a Stasis Sentry and a Tranquility",
         "passed": true,
         "asserts_claim": true
       }
@@ -1328,33 +1349,36 @@
       {
         "ref": "RAQ 1353980184042143835#0",
         "supports": "yes",
-        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees"
+        "note": "printed, not taxed"
       },
       {
-        "ref": "RAQ 1396955380000755795#9",
+        "ref": "RAQ 1396955380000755795#10",
         "supports": "yes",
-        "note": ""
+        "note": "Tides budget reads printed cost"
       },
       {
-        "ref": "R157 (its §1)",
+        "ref": "owner register@72de434 (2026-08-25)",
         "supports": "yes",
-        "note": ""
+        "note": "X replaces letter; uncast card known by name = 0"
       },
       {
-        "ref": "R158 (its §1 three contexts)",
+        "ref": "owner 2026-11-01 relay",
         "supports": "yes",
-        "note": ""
+        "note": "X=2 while paying 3"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/390-raq-stack.test.ts",
-        "text": "assert.deepEqual(effStats(h, xx[0]!.id), [2, 2], 'X = the printed 2, not the 4 paid');"
+        "file": "client/ledgers/raq.ts",
+        "text": "Watchers that read \\\"the spell's cost\\\" read the PRINTED cost, not the taxed cost paid"
+      },
+      {
+        "file": "client/engine/test/740-sentry-x-price.test.ts",
+        "text": "a 2/2 — the X chosen, not the [4] paid"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.costs.receipt",

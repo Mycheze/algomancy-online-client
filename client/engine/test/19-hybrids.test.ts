@@ -159,9 +159,10 @@ test('Stasis Sentry: spells with base cost \u2264 [three] cost [three] in battle
   assert.equal(e.manaToPlay(D, pricey), 4, 'a spell already above [three] is untouched');
   // CR 111.10i: an X spell is NOT exempt. With the X still open this is the
   // castability quote, priced at the cheapest legal X (xMin = 0), which the
-  // Sentry raises to [3]. The per-X behaviour lives in 133-x-cost-semantics.
+  // Sentry raises to [3]. The per-X behaviour lives in 133-x-cost-semantics
+  // and 740-sentry-x-price.
   assert.equal(e.manaToPlay(D, 'Torrential Reclamation'), 3,
-    'the smallest X is three, so the cheapest cast is [3]');
+    'X = 0 is raised to [3], so the cheapest cast is [3]');
   assert.equal(e.manaToPlay(D, 'Torrential Reclamation', { x: 5 }), 5,
     'the owner, 2026-08-25: "sort of exempt, but only if X >= 3"');
   assert.equal(e.manaToPlay(D, 'Bubb'), getCard('Bubb').mana as number, 'a unit is not a spell');
@@ -428,10 +429,9 @@ test('Torrential Reclamation: recall X nontoken allies → per recall, sacrifice
   const A = h.state.initiative, D = 1 - A;
   const a1 = spawn(h, A, 'Unit Token');
   const a2 = spawn(h, A, 'Unit Token');
-  // The RAQ ruling of 2026-10-09 (now CR 107.5): the recalled ally used to be a Stasis Sentry, which
-  // under the earlier price reading made this an X = 1 cast paid at [3]. The RAQ reversed that —
-  // a Sentry forces X itself to 3 — so a plain ally stands in, and the test is
-  // about Torrential Reclamation's own X = 1 again.
+  // The recalled ally used to be a Stasis Sentry, which makes this an X = 1 cast
+  // paid at [3] (CR 107.5; 740-sentry-x-price is that case), so a plain ally
+  // stands in and the test is about Torrential Reclamation's own X = 1.
   const sentry = spawn(h, D, 'Good Whale');                   // the recalled ally
   const tokD = spawn(h, D, 'Unit Token');                     // D's forced sacrifice
   giveResources(h, D, 'water', 3);

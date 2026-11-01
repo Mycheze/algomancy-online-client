@@ -5065,4 +5065,19 @@ export const CLOSED: LedgerEntry[] = [
     ],
     note: "The same Hooba-Nan trash as #301, filed from the other seat after a further rewind to before Wildfire. Fixed with #301.",
   },
+  {
+    id: 304, room: "FXMF", date: "2026-10-31",
+    report: "Nyar, seat 0, agreed fixes (one run of eight edits, turn 5 battle): Yagamino's Death Greeter and Unstable Apparition to hand, Nyar's Stasis Sentry, Channeled Amalgam and Eldritch Reclaimer to the bin, Yagamino to 19 life, Torrential Reclamation hand to bin (\"should be castable\"), Nyar to 26 life.",
+    status: 'fixed',
+    guards: [
+      '740-sentry-x-price.test.ts::report FXMF #304:',
+    ],
+    note: "Real. Replayed to [151]: Yagamino held priority after blocks with [10] open and exactly two nontoken allies (Death Greeter, Unstable Apparition) in a battle with Nyar's Stasis Sentry, and Torrential Reclamation was refused (\"no legal targets\"): the engine forced X to 3 or more under a Sentry (the 2026-10-09 reading, CT-224) and X = 3 needs three allies. The players hand-built an X = 2 cast with the edits (both allies recalled, units sacrificed, 2 life). Nyar then asked the RAQ; _passer: \"No, you paid 2 +1 extra, but X=2\", Caleb: \"Yeah, you set targets before paying the cost\". Fixed 2026-11-01: X is chosen freely and only the price of an X of three or less is raised to [3]; the replayed board now offers X = 0, 1 and 2, with X = 2 priced [3]. The game keeps its hand-built result.",
+  },
+  {
+    id: 305, room: "FXMF", date: "2026-10-31",
+    report: "Nyar, seat 0, agreed fix: back to before Yagamino's pass (turn 7 battle), taking back three passes and both Death Greeter sacrifice picks. \"terst\"",
+    status: 'agreed-fix',
+    note: "Not the Sentry bug. Took back [210]-[214]: the passes that let Death Greeter resolve off Yagamino's Tides of the Cosmos, and both sacrifice picks; Yagamino agreed. Replayed, Nyar used the reopened window to cast his own Tides of the Cosmos and Yagamino answered with Null Drone. A missed response; every cost the triggers read was the printed 8. No defect.",
+  },
 ];

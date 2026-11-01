@@ -1469,61 +1469,72 @@
     "key": "concepts.numbers.x-cost",
     "textHash": "5ca61e254f679626",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U02-r1",
+    "round": 4,
+    "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.manaToPlay",
+        "loc": "client/engine/src/engine.ts:E.manaToPlay",
         "agrees": true,
-        "note": "base = chosen X for a mana-X card; pips are not added"
+        "note": "base = chosen X (or xMin); CostMod deltas summed"
       }
     ],
     "tests_run": [
       {
-        "file": "133-x-cost-semantics.test.ts",
-        "pattern": "R157 §20 — with no Stasis Sentry an X spell costs exactly X",
+        "file": "client/engine/test/133-x-cost-semantics.test.ts",
+        "pattern": "CR 107.2 — with no Stasis Sentry an X spell costs exactly X",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/32-cast-costs.test.ts",
+        "pattern": "Wildfire: X is chosen at cast",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/133-x-cost-semantics.test.ts",
+        "pattern": "CR 107.2 — without the Sentry the same casts pay exactly X",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R157 §1",
+        "ref": "owner register@72de434 (2026-08-25) pips",
         "supports": "yes",
-        "note": "\"Pips aren't a relevant part of looking at the cost\""
+        "note": "pips not part of cost"
+      },
+      {
+        "ref": "owner register@72de434 (2026-08-25) X replaces letter",
+        "supports": "yes",
+        "note": "cost is the X paid"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> *\"Pips aren't a relevant part of looking at the cost of a card in Algomancy."
+        "file": "client/engine/src/engine.ts",
+        "text": "const base = c.mana === 'X' ? (opts.x ?? c.xMin ?? 0) : c.mana;"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "const base = c.mana === 'X' ? (opts.x ?? this.xFloor(seat, name, opts)) : c.mana;"
+        "file": "client/engine/test/133-x-cost-semantics.test.ts",
+        "text": "assert.equal(e.manaToPlay(D, 'Wildfire', { x }), x, `X=${x} costs [${x}]`);"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.numbers.x-cost.cant-be-zero",
     "textHash": "dd4af9955f646af7",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U02-r2",
+    "round": 4,
+    "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.xFloor",
+        "loc": "client/engine/src/engine.ts:E.manaXChoices",
         "agrees": true,
-        "note": "floor = printed xMin"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:E.canPayCard",
-        "agrees": true,
-        "note": "needs open mana >= manaToPlay at the floor"
+        "note": "starts at xMin (1 for Frosted Denial)"
       }
     ],
     "tests_run": [
@@ -1531,7 +1542,7 @@
         "file": "client/engine/test/32-cast-costs.test.ts",
         "pattern": "Frosted Denial: xMin 1",
         "passed": true,
-        "asserts_claim": "yes: not offered and refused with zero open mana"
+        "asserts_claim": true
       }
     ],
     "probes": [],
@@ -1539,26 +1550,22 @@
       {
         "ref": "card: Frosted Denial",
         "supports": "yes",
-        "note": ""
+        "note": "verbatim"
       },
       {
-        "ref": "R35 (its spell X half)",
+        "ref": "owner register@72de434 (2026-08-18)",
         "supports": "yes",
-        "note": ""
+        "note": "below smallest legal X the cast is illegal"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
-        "text": "Otherwise, negate that effect. X can't be zero."
+        "file": "client/engine/src/cards/printed.json",
+        "text": "X can't be zero."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "than the smallest legal X (\"X can't be zero\" → 1) — the cast is ILLEGAL."
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "let floor = c.xMin ?? 0;"
+        "file": "client/engine/test/32-cast-costs.test.ts",
+        "text": "'not offered: X ≥ 1 is unaffordable'"
       }
     ],
     "basis_ok": true,
@@ -1568,44 +1575,43 @@
     "key": "concepts.numbers.x-cost.chosen-at-cast",
     "textHash": "ee2eb020da22a996",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U02-r1",
+    "round": 4,
+    "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.collectX",
+        "loc": "client/engine/src/engine.ts:E.collectX / manaXChoices",
         "agrees": true,
-        "note": "X decision raised before the stack push; options only where manaToPlay(x) <= openMana; the answer pays the bill; item.x stored"
+        "note": "X chosen and paid before push; only affordable X offered"
       }
     ],
     "tests_run": [
       {
-        "file": "32-cast-costs.test.ts",
+        "file": "client/engine/test/32-cast-costs.test.ts",
         "pattern": "Wildfire: X is chosen at cast from affordable values, paid, and stored on the item",
         "passed": true,
-        "asserts_claim": "yes: stack empty while X unchosen, options [0..3], X paid, X=3 on label before responses"
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R35",
+        "ref": "owner register@72de434 (2026-08-18)",
         "supports": "yes",
-        "note": "\"X are cast-time payments ... BEFORE the spell reaches the stack ... responses see the fixed X\""
+        "note": "X chosen BEFORE the spell reaches the stack, only affordable values offered; responses-see-X follows and the test asserts the stored X and label"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "X are cast-time payments: the caster picks the sacrifice / the X value (only"
+        "file": "client/engine/test/32-cast-costs.test.ts",
+        "text": "assert.ok(wf.label.includes('X=3'), 'the label announces X to the responder');"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "const min = this.xFloor(item.controller, item.card, { region: item.region });   // R326"
+        "file": "client/engine/test/32-cast-costs.test.ts",
+        "text": "assert.equal(h.state.stack.length, 0, 'not on the stack while X is unchosen');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "reworded, equivalence-checked 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.numbers.x-cost.zero",
@@ -1689,29 +1695,46 @@
   },
   {
     "key": "concepts.numbers.x-minimum",
-    "textHash": "ba24faef1df4dfa0",
+    "textHash": "4dc0f1ebe87a96d7",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U02-r1",
+    "round": 4,
+    "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.xFloor / manaToPlay",
+        "loc": "client/engine/src/engine.ts:E.manaToPlay",
         "agrees": true,
-        "note": "Stasis Sentry xMin 3 in battle; base = chosen X, delta not applied to X spells"
+        "note": "base = chosen X (or xMin); CostMod deltas summed"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:E.manaXChoices",
+        "agrees": true,
+        "note": "X offered from xMin; each X priced with modifiers"
       }
     ],
     "tests_run": [
       {
-        "file": "133-x-cost-semantics.test.ts",
-        "pattern": "R326 (reverses R157 §20) — under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3",
+        "file": "client/engine/test/740-sentry-x-price.test.ts",
+        "pattern": "report FXMF #304: Torrential Reclamation at X = 2",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
       },
       {
-        "file": "133-x-cost-semantics.test.ts",
-        "pattern": "R157 §20 — the real cast pays it: X=3 costs [3] and X=5 costs [5] under a Stasis Sentry",
+        "file": "client/engine/test/133-x-cost-semantics.test.ts",
+        "pattern": "CR 107.5 (Caleb, 2026-11-01) — under a Stasis Sentry the X menu starts at 0",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/133-x-cost-semantics.test.ts",
+        "pattern": "CR 107.5 — the real cast pays it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/133-x-cost-semantics.test.ts",
+        "pattern": "CR 107.5 (Caleb, 2026-11-01) — under a Stasis Sentry X is chosen freely",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
@@ -1719,37 +1742,27 @@
       {
         "ref": "card: Stasis Sentry",
         "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "RAQ 1359629594512068770#0",
-        "supports": "yes",
-        "note": ""
+        "note": "verbatim"
       },
       {
         "ref": "RAQ 1359629594512068770#1",
         "supports": "yes",
-        "note": ""
+        "note": "claim #1 covered: X above 3 allowed, costs exactly X (claim #0 is outdated and not cited)"
       },
       {
-        "ref": "R326",
+        "ref": "owner 2026-11-01 relay (_passer, Caleb)",
         "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "history: None",
-        "supports": "no",
-        "note": "two empty history citations"
+        "note": "X=2 pays 3; targets set before paying — designer outranks the outdated write-up"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "three**, and it costs exactly X. It is not cast at a smaller X for a price of"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] Spells with base cost [three] or less have a base cost of [three] to play during battle."
       },
       {
-        "file": "client/engine/test/133-x-cost-semantics.test.ts",
-        "text": "// RAQ: \"The X value must be at least 3 (which would deal 3 damage)\""
+        "file": "client/ledgers/raq.ts",
+        "text": "_passer: \\\"but it can be higher if Opponent decides to do so\\\""
       }
     ],
     "basis_ok": true,

@@ -23,13 +23,16 @@
  * layer, which is `CostCtx.x` / `CostOpts.x`, and it needs the whole mana bill
  * of an X spell to be settled at `E.collectX` rather than half at `payCard`.
  *
- * ⚠ §20 IS REVERSED (2026-10-09; now CR 107.5). The RAQ, "[Solved] Spells with cost
- * X vs Stasis Sentry" (_passer): the Sentry "forces the Spells with mana cost of
- * X value to be at a minimum 3, but it's not an additional cost … The X value
- * must be at least 3 (which would deal 3 damage)". The RAQ is the authority
- * (owner, 2026-10-09). So under a Sentry an X spell is cast at X >= 3 and pays
- * X — never X = 0 for [3]. The three tests that pinned §20's price are
- * rewritten below and say so in their titles.
+ * §20 WAS REVERSED ON 2026-10-09 AND IS BACK SINCE 2026-11-01 (now CR 107.5). The
+ * 2026-10-09 RAQ round read "[Solved] Spells with cost X vs Stasis Sentry"
+ * (_passer: "The X value must be at least 3") as raising X itself, and made X
+ * start at 3 (CT-224). Then Nyar asked of Torrential Reclamation under a Sentry,
+ * "Does this automatically require 3 targets?"; _passer: "No, you paid 2 +1
+ * extra, but X=2"; Caleb: "Yeah, you set targets before paying the cost". The
+ * designer outranks the write-up (owner, 2026-11-01), so X is chosen freely
+ * again and the Sentry raises the PRICE of a small X to three. The three tests
+ * the reversal flipped say so in their titles; 740-sentry-x-price holds the
+ * guards for the report that brought it back (FXMF #304).
  *
  * Every test drives the real reducer path. Seeds: 13300-13399.
  */
@@ -61,7 +64,7 @@ function battleWithDefenderOnPriority(h: Harness): { A: Seat; D: Seat; atk: numb
 
 // ── §20: Stasis Sentry prices each X ─────────────────────────────────────
 
-test('CR 107.5 (reversing the earlier price reading) — Stasis Sentry raises an X spell\'s smallest X to 3, and X is all it costs', () => {
+test('CR 107.5 (Caleb, 2026-11-01) — under a Stasis Sentry X is chosen freely and only the PRICE of an X of three or less is raised to [3]', () => {
   const h = new Harness(13301);
   const { A, D, atk } = battleWithDefenderOnPriority(h);
   spawn(h, D, 'Stasis Sentry');                     // the battle lands in D's region
@@ -69,17 +72,16 @@ test('CR 107.5 (reversing the earlier price reading) — Stasis Sentry raises an
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   const e = new E(h.state);
   assert.equal(getCard('Wildfire').mana, 'X', 'Wildfire is the X spell under test');
-  assert.equal(e.xFloor(D, 'Wildfire'), 3, 'X must be at least 3');
-  assert.equal(e.xFloor(A, 'Wildfire'), 3, 'for the attacker too (unqualified subject)');
-  assert.equal(e.manaToPlay(D, 'Wildfire', { x: 3 }), 3, 'X=3 costs [3]');
-  assert.equal(e.manaToPlay(D, 'Wildfire', { x: 5 }), 5, 'X=5 costs [5] — "not an additional cost"');
-  assert.equal(e.manaToPlay(D, 'Wildfire'), 3, 'the castability quote prices the cheapest LEGAL X, which is 3');
-  // the printed floor and the Sentry's: the higher one stands
+  for (const x of [0, 1, 2, 3]) {
+    assert.equal(e.manaToPlay(D, 'Wildfire', { x }), 3, `X=${x} costs [3]: "you paid 2 +1 extra, but X=2"`);
+  }
+  assert.equal(e.manaToPlay(A, 'Wildfire', { x: 1 }), 3, 'for the attacker too (unqualified subject)');
+  assert.equal(e.manaToPlay(D, 'Wildfire', { x: 5 }), 5, 'X=5 costs [5] — a base above three is untouched');
+  assert.equal(e.manaToPlay(D, 'Wildfire'), 3, 'the castability quote prices the cheapest cast, X = 0 at [3]');
+  // the printed floor still stands, and the raise reads the chosen X above it
   assert.equal(getCard('Frosted Denial').xMin, 1, '"X can\'t be zero"');
-  assert.equal(e.xFloor(D, 'Frosted Denial'), 3, 'the Sentry\'s 3 beats the printed 1');
+  assert.equal(e.manaToPlay(D, 'Frosted Denial'), 3, 'its cheapest cast, X = 1, costs [3]');
   assert.equal(e.manaToPlay(D, 'Frosted Denial', { x: 4 }), 4, 'X=4 costs [4]');
-  // a non-X spell is still priced up to three, exactly as before
-  assert.equal(e.xFloor(D, 'Fight'), getCard('Fight').xMin ?? 0, 'no X, no floor to raise');
   finishBattle(h);
 });
 
@@ -116,8 +118,8 @@ function castWildfireForX(seed: number, x: number, sentry: boolean): number {
   return spent;
 }
 
-test('CR 107.5 (reversing the earlier price reading) — under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3', () => {
-  // RAQ: "The X value must be at least 3 (which would deal 3 damage)"
+test('CR 107.5 (Caleb, 2026-11-01) — under a Stasis Sentry the X menu starts at 0, and X = 1 pays [3] and deals 1', () => {
+  // _passer: "No, you paid 2 +1 extra, but X=2"; Caleb: "you set targets before paying the cost"
   const h = new Harness(13303);
   const { A, D, atk } = battleWithDefenderOnPriority(h);
   spawn(h, D, 'Stasis Sentry');
@@ -127,17 +129,20 @@ test('CR 107.5 (reversing the earlier price reading) — under a Stasis Sentry t
   pass(h);
   const life = h.state.players[A]!.life;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Wildfire') });
-  assert.deepEqual(h.state.decision!.options.map(o => o.value), [3, 4, 5], 'X = 0, 1 and 2 are not offered');
+  assert.deepEqual(h.state.decision!.options.map(o => o.value), [0, 1, 2, 3, 4, 5], 'every X is offered');
+  assert.deepEqual(h.state.decision!.options.map(o => o.label).slice(0, 4),
+    ['X = 0 — pay [3]', 'X = 1 — pay [3]', 'X = 2 — pay [3]', 'X = 3'], 'and each names its price');
   const before = open(h, D);
-  pick(h, 3);
-  assert.equal(before - open(h, D), 3, 'X = 3 costs exactly [3]');
+  pick(h, 1);
+  assert.equal(before - open(h, D), 3, 'X = 1 costs [3]');
   pick(h, { player: A });
   pass(h); pass(h);
-  assert.equal(h.state.players[A]!.life, life - 3, 'and deals 3');
+  assert.equal(h.state.players[A]!.life, life - 1, 'and deals 1 — X is still 1');
   finishBattle(h);
 });
 
 test('CR 107.5 — the real cast pays it: X=3 costs [3] and X=5 costs [5] under a Stasis Sentry', () => {
+  assert.equal(castWildfireForX(13304, 0, true), 3, 'X = 0 is raised to [3]');
   assert.equal(castWildfireForX(13305, 3, true), 3, 'at exactly three the tax is zero');
   assert.equal(castWildfireForX(13306, 5, true), 5,
     '"They\'re sort of exempt, but only if X => 3" — no flat +3');
@@ -149,7 +154,7 @@ test('CR 107.2 — without the Sentry the same casts pay exactly X', () => {
   assert.equal(castWildfireForX(13309, 5, false), 5);
 });
 
-test('CR 111.10i (reversing the earlier price reading) — the floor gates castability: an X spell needs [3] open, and X starts at 3', () => {
+test('CR 111.10i (Caleb, 2026-11-01) — the raised price gates castability: an X spell needs [3] open, then any X is offered', () => {
   const h = new Harness(13310);
   const { A, D, atk } = battleWithDefenderOnPriority(h);
   spawn(h, D, 'Stasis Sentry');
@@ -160,17 +165,13 @@ test('CR 111.10i (reversing the earlier price reading) — the floor gates casta
   const idx = give(h, D, 'Wildfire');
   assert.equal(open(h, D), 2, 'two open');
   assert.equal(new E(h.state).canPayCard(D, 'Wildfire'), false,
-    'every X below three costs [3], so [2] cannot start the cast at all');
+    'every X up to three costs [3], so [2] cannot start the cast at all');
   assert.throws(() => h.do({ type: 'playCard', seat: D, handIndex: idx }), /cannot pay/i,
     'and the reducer refuses it');
-  // more mana and the menu opens up from three — CR 111.10i: below three is not
-  // offered at all (it used to be offered at a price of [3])
   giveResources(h, D, 'fire', 5);                   // [7] open
   h.do({ type: 'playCard', seat: D, handIndex: idx });
   const menu = h.state.decision!.options.map(o => o.value);
-  assert.deepEqual(menu, [3, 4, 5, 6, 7], 'X starts at 3, and X=7 is offered on [7] open mana');
-  const labels = h.state.decision!.options.map(o => o.label);
-  assert.equal(labels[0], 'X = 3', 'X is all it costs, so no option names a different price');
+  assert.deepEqual(menu, [0, 1, 2, 3, 4, 5, 6, 7], 'X starts at 0, and X=7 is offered on [7] open mana');
   pick(h, 7);
   assert.equal(open(h, D), 0, 'and X=7 really took [7]');
   pick(h, { player: A });

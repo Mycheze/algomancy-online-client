@@ -722,9 +722,8 @@ export const RAQ: RaqEntry[] = [
     claims: [
       { claim: "Under Stasis Sentry in battle an X spell's X must be at least 3 (Wildfire deals at least 3); it is not an additional cost.",
         source: "_passer: \"The X value must be at least 3 (which would deal 3 damage), but it can be higher\"",
-        status: 'covered',
-        guards: ["133-x-cost-semantics.test.ts::under a Stasis Sentry the X menu starts at 3"],
-        note: "Was broken (CT-224); fixed 2026-10-09 (now CR 107.5)." },
+        status: 'outdated',
+        note: "Superseded 2026-11-01 by Caleb, in a later RAQ exchange the owner pasted (not yet in the Discord export): Nyar asked of Torrential Reclamation under a Sentry, \"Does this automatically require 3 targets?\"; _passer: \"No, you paid 2 +1 extra, but X=2\"; calebgannon: \"Yeah, you set targets before paying the cost\". X is chosen freely and only the price of an X of three or less is raised to [3] (CR 107.5). Guarded by 740-sentry-x-price.test.ts (report FXMF #304). CT-224 had implemented this claim on 2026-10-09 and is reversed." },
       { claim: "X above 3 is allowed and costs exactly X.",
         source: "_passer: \"but it can be higher if Opponent decides to do so\"",
         status: 'covered',

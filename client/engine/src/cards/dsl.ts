@@ -1460,14 +1460,12 @@ export interface CostCtx {
  */
 export interface CostMod {
   delta?: (g: E, self: Entity, ctx: CostCtx) => number;
-  /**
-   * CR 111.10i (CT-224): a raised FLOOR for an X spell's X — the smallest X the
-   * caster may choose. Not a price: Stasis Sentry's RAQ (_passer) "forces the
-   * Spells with mana cost of X value to be at a minimum 3, but it's not an
-   * additional cost". Several mods take the HIGHEST floor, never a sum: a
-   * minimum of three twice is still a minimum of three.
-   */
-  xMin?: (g: E, self: Entity, ctx: CostCtx) => number;
+  /* CR 111.10i: there is no X-FLOOR channel here, and that is deliberate. One
+   * existed (`xMin`, CT-224, 2026-10-09) so Stasis Sentry could raise an X
+   * spell's X to three; Caleb reversed that reading (2026-11-01: "you set
+   * targets before paying the cost") and the Sentry went back to `delta`,
+   * raising the PRICE of a chosen X of three or less. Nothing else in the pool
+   * raises an X, so the channel was removed rather than left dead. */
   /**
    * CR 111.10d: extra LIFE the play costs — "Cards played during battle gain
    * [Pay 2 life]" (Arbiter of Armistice). A separate channel from `delta`

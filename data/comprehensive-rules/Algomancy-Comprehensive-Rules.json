@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:3b6218e887aa97b1",
+ "generated_from": "sha256:c333dedae9d03e62",
  "rules": [
   {
    "num": "100.1",
@@ -2399,12 +2399,13 @@
    "sectionTitle": "Numbers, X and Symbols",
    "chapterTitle": "1. Game Concepts",
    "parent": "107",
-   "text": "Stasis Sentry gives spells with a base cost of [three] or less a base cost of [three] during battle. On an X spell it raises the X instead of the price: X must be at least 3, and the spell costs exactly X.",
+   "text": "Stasis Sentry gives spells with a base cost of [three] or less a base cost of [three] during battle. On an X spell the player still chooses X freely, and the X chosen is the spell's base cost: an X of three or less makes the spell cost [3] to play, while the spell keeps the X chosen for its targets and everything else that reads X. An X above three costs exactly X.",
    "see": [
     "111"
    ],
    "examples": [
-    "Under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3.",
+    "Under a Stasis Sentry, Torrential Reclamation cast for X = 2 takes two targets and costs [3].",
+    "Under a Stasis Sentry, Wildfire cast for X = 1 costs [3] and deals 1.",
     "Under a Stasis Sentry, X = 3 costs [3] and X = 5 costs [5]."
    ],
    "basis": "mixed",
@@ -5174,13 +5175,14 @@
    "sectionTitle": "Costs",
    "chapterTitle": "1. Game Concepts",
    "parent": "111.10",
-   "text": "A modifier that gives spells a minimum base cost (\"Spells with base cost [three] or less have a base cost of [three]\") raises the cost of a spell whose printed cost is a number. For a spell whose cost is X, it instead makes the smallest X that may be chosen equal to that minimum, and the spell costs exactly the X chosen.",
+   "text": "A modifier that gives spells a minimum base cost (\"Spells with base cost [three] or less have a base cost of [three]\") raises the cost of a spell whose base cost is below that minimum to the minimum. For a spell whose cost is X, the base cost is the X chosen: the modifier raises what the spell costs to play, never the X itself.",
    "see": [
     "107",
     "702.6"
    ],
    "examples": [
-    "under Stasis Sentry in battle, Wildfire's X menu starts at 3, and X = 3 deals 3."
+    "under Stasis Sentry in battle, Wildfire cast for X = 1 costs [3] and deals 1.",
+    "under Stasis Sentry in battle, Wildfire cast for X = 4 costs [4]."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -5244,13 +5246,14 @@
    "sectionTitle": "Costs",
    "chapterTitle": "1. Game Concepts",
    "parent": "111",
-   "text": "When an effect refers to a card's cost, it means the card's printed cost. Cost modifiers do not change it. The cost of an X spell that is being or has just been cast is the X paid; an X card that is not being cast has a cost of 0.",
+   "text": "When an effect refers to a card's cost, it means the card's printed cost. Cost modifiers do not change it. The cost of an X spell that is being or has just been cast is the X chosen for it, whatever cost modifiers made it cost to play; an X card that is not being cast has a cost of 0.",
    "see": [
     "107",
     "202"
    ],
    "examples": [
-    "Squish, paid at [4] under Stasis Sentry and Tranquility, is read as a 2-cost spell by Arcane Concentrator."
+    "Squish, paid at [4] under Stasis Sentry and Tranquility, is read as a 2-cost spell by Arcane Concentrator.",
+    "Wildfire cast for X = 2 under Stasis Sentry and Tranquility is paid at [4], and Arcane Concentrator, Channeled Amalgam and Unstable Apparition read it as a 2."
    ],
    "basis": "mixed",
    "scope": "game",

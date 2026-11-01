@@ -10940,11 +10940,15 @@ export const CLOSED: TodoEntry[] = [
     evidence: "RAQ audit 2026-10-09. Thread \"[Solved] Spells with cost X vs Stasis Sentry\".",
     fix: "Make Stasis Sentry raise the minimum X (the collectX floor) instead of the price. New ruling reversing the earlier price reading.",
     proof: null,
-    verify: "Under Stasis Sentry in battle, cast Wildfire: X starts at 3 and it deals 3.",
+    verify: "Under Stasis Sentry in battle, cast Wildfire: X starts at 0, and X = 1 costs [3] and deals 1 (since the 2026-11-01 reversal below).",
     guards: [
-      "133-x-cost-semantics.test.ts::under a Stasis Sentry the X menu starts at 3"
+      "133-x-cost-semantics.test.ts::under a Stasis Sentry the X menu starts at 0",
+      "740-sentry-x-price.test.ts::report FXMF #304:",
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round), now CR 107.5, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round), now CR 107.5, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard. "
+      + "REVERSED 2026-11-01 (report FXMF #304): Caleb answered the question himself in a later RAQ exchange the owner pasted — Nyar: \"Does this automatically require 3 targets?\"; _passer: \"No, you paid 2 +1 extra, but X=2\"; calebgannon: \"Yeah, you set targets before paying the cost\". "
+      + "The designer outranks the write-up, so the earlier price reading is back: X is chosen freely, the chosen X is the base cost (CR 202.5), and the Sentry raises a base of three or less to [3]. "
+      + "CostMod.xMin and E.xFloor were removed (nothing else raised an X); the guards above now assert the reversed behaviour.",
     status: "done",
   },
   {

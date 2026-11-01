@@ -1209,11 +1209,15 @@
     "key": "concepts.costs.modifiers.minimum",
     "parent": "concepts.costs.modifiers",
     "order": 7,
-    "text": "A modifier that gives spells a minimum base cost (\"Spells with base cost [three] or less have a base cost of [three]\") raises the cost of a spell whose printed cost is a number. For a spell whose cost is X, it instead makes the smallest X that may be chosen equal to that minimum, and the spell costs exactly the X chosen.",
+    "text": "A modifier that gives spells a minimum base cost (\"Spells with base cost [three] or less have a base cost of [three]\") raises the cost of a spell whose base cost is below that minimum to the minimum. For a spell whose cost is X, the base cost is the X chosen: the modifier raises what the spell costs to play, never the X itself.",
     "examples": [
       {
-        "text": "under Stasis Sentry in battle, Wildfire's X menu starts at 3, and X = 3 deals 3.",
-        "test": "133-x-cost-semantics.test.ts::CR 107.5 (reversing the earlier price reading) — under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3"
+        "text": "under Stasis Sentry in battle, Wildfire cast for X = 1 costs [3] and deals 1.",
+        "test": "740-sentry-x-price.test.ts::CR 107.5: Wildfire at X = 1 under a Stasis Sentry deals 1 and pays [3]"
+      },
+      {
+        "text": "under Stasis Sentry in battle, Wildfire cast for X = 4 costs [4].",
+        "test": "740-sentry-x-price.test.ts::CR 107.5: Wildfire at X = 4 under a Stasis Sentry pays [4] — a base above three is untouched"
       }
     ],
     "see": [
@@ -1229,10 +1233,6 @@
       ],
       "designer": [
         {
-          "ref": "RAQ 1359629594512068770#0",
-          "quote": "The X value must be at least 3 (which would deal 3 damage), but it can be higher"
-        },
-        {
           "ref": "RAQ 1359629594512068770#1",
           "quote": "X above 3 is allowed and costs exactly X."
         }
@@ -1240,15 +1240,21 @@
       "ours": [],
       "owner": [
         {
-          "quote": "three**, and it costs exactly X. It is not cast at a smaller X for a price of",
-          "adopted": "2026-10-09",
-          "from": "register@72de434"
+          "quote": "_passer: \"No, you paid 2 +1 extra, but X=2\"",
+          "adopted": "2026-11-01",
+          "from": "owner, chat 2026-11-01: pasted the RAQ exchange in which Nyar asks whether Torrential Reclamation under a Stasis Sentry needs 3 targets (report FXMF #304)"
+        },
+        {
+          "quote": "calebgannon: \"Yeah, you set targets before paying the cost\"",
+          "adopted": "2026-11-01",
+          "from": "owner, chat 2026-11-01: pasted the RAQ exchange in which Nyar asks whether Torrential Reclamation under a Stasis Sentry needs 3 targets (report FXMF #304)"
         }
       ],
       "engine": [],
       "tests": [
         "133-x-cost-semantics.test.ts",
-        "19-hybrids.test.ts"
+        "19-hybrids.test.ts",
+        "740-sentry-x-price.test.ts"
       ]
     },
     "basis": "mixed",
@@ -1256,7 +1262,6 @@
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "RAQ 1359629594512068770#0": "2931e75db11a44a64aff5a8458d34b418321d25f6b79937e8d4bc50919b0bd63",
       "RAQ 1359629594512068770#1": "ac56a4ed9d3d59979d3cc64adb2784eded371132ac83b6b0e78e753052637621"
     }
   },
@@ -1346,7 +1351,7 @@
     "key": "concepts.costs.reading-cost",
     "parent": "111",
     "order": 11,
-    "text": "When an effect refers to a card's cost, it means the card's printed cost. Cost modifiers do not change it. The cost of an X spell that is being or has just been cast is the X paid; an X card that is not being cast has a cost of 0.",
+    "text": "When an effect refers to a card's cost, it means the card's printed cost. Cost modifiers do not change it. The cost of an X spell that is being or has just been cast is the X chosen for it, whatever cost modifiers made it cost to play; an X card that is not being cast has a cost of 0.",
     "examples": [
       {
         "text": "Squish, paid at [4] under Stasis Sentry and Tranquility, is read as a 2-cost spell by Arcane Concentrator.",
@@ -1355,6 +1360,10 @@
       {
         "text": null,
         "test": "133-x-cost-semantics.test.ts::CR 111.11 — a card that was never cast has no cost: an X card in hand reads 0"
+      },
+      {
+        "text": "Wildfire cast for X = 2 under Stasis Sentry and Tranquility is paid at [4], and Arcane Concentrator, Channeled Amalgam and Unstable Apparition read it as a 2.",
+        "test": "740-sentry-x-price.test.ts::RAQ printed cost, X spell: under a Stasis Sentry and a Tranquility, Wildfire at X = 2 paid [4] reads as a 2 to Arcane Concentrator, Channeled Amalgam and Unstable Apparition"
       }
     ],
     "see": [
@@ -1384,13 +1393,24 @@
           "quote": "| a card known only by name — bin, hand, cache, deck, or a unit standing in play | **0** | `manaOf(name)`, `dsl.printedCost` |",
           "adopted": "2026-08-25",
           "from": "register@72de434"
+        },
+        {
+          "quote": "_passer: \"No, you paid 2 +1 extra, but X=2\"",
+          "adopted": "2026-11-01",
+          "from": "owner, chat 2026-11-01: pasted the RAQ exchange in which Nyar asks whether Torrential Reclamation under a Stasis Sentry needs 3 targets (report FXMF #304)"
+        },
+        {
+          "quote": "calebgannon: \"Yeah, you set targets before paying the cost\"",
+          "adopted": "2026-11-01",
+          "from": "owner, chat 2026-11-01: pasted the RAQ exchange in which Nyar asks whether Torrential Reclamation under a Stasis Sentry needs 3 targets (report FXMF #304)"
         }
       ],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts",
         "133-x-cost-semantics.test.ts",
-        "396-raq-timing.test.ts"
+        "396-raq-timing.test.ts",
+        "740-sentry-x-price.test.ts"
       ]
     },
     "basis": "mixed",

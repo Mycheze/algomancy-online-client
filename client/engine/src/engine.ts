@@ -1446,31 +1446,15 @@ export class E {
    * SIZE, not a cost, and is never passed as `opts.x`. Whatever a token costs
    * is therefore exactly what the modifier layer adds.
    */
-  /**
-   * CR 111.10i: the smallest X `name` may be played with in `region` — its printed
-   * floor (`xMin`, e.g. "X can't be zero"), raised by any cost modifier that
-   * says so (Stasis Sentry in battle). Only a PLAY has an X to choose.
-   */
-  xFloor(seat: Seat, name: CardName, opts: CostOpts = {}): number {
-    const c = this.card(name);
-    let floor = c.xMin ?? 0;
-    if (c.mana !== 'X' || (opts.purpose ?? 'play') !== 'play') return floor;
-    const region = opts.region ?? this.actionRegion(seat);
-    const ctx = { seat, card: c, region, purpose: 'play' as const };
-    for (const { holder, mod } of this.costModsFor(region)) floor = Math.max(floor, mod.xMin?.(this, holder, ctx) ?? 0);
-    return floor;
-  }
-
   manaToPlay(seat: Seat, name: CardName, opts: CostOpts = {}): number {
     const c = this.card(name);
     // CR 202.5: an X card's base cost IS the chosen X — "paying X replaces the
     // letter X on the printed card temporarily". Until it is chosen the
     // printed floor stands in, so the castability gate prices the cheapest
     // legal cast. The chosen X rides into the CostMod layer too (ctx.x), which
-    // is how Stasis Sentry can raise a small X to three without taxing a big
-    // one (CR 107.5, 111.10i).
-    // CR 111.10i: …and the floor is the RAISED one (Stasis Sentry), not just the printed
-    const base = c.mana === 'X' ? (opts.x ?? this.xFloor(seat, name, opts)) : c.mana;
+    // is how Stasis Sentry raises the PRICE of a small X to three without
+    // touching the X itself, and without taxing a big one (CR 107.5, 111.10i).
+    const base = c.mana === 'X' ? (opts.x ?? c.xMin ?? 0) : c.mana;
     const region = opts.region ?? this.actionRegion(seat);
     const ctx = {
       seat, card: c, region, purpose: opts.purpose ?? 'play' as const,
@@ -8988,13 +8972,13 @@ export class E {
 
   /**
    * CR 107.2a, 702.3a — every X `name` could be played with right now: from its
-   * floor (CR 111.10i, raised by a Stasis Sentry) up to the open mana, keeping
+   * printed floor (`xMin`, "X can't be zero") up to the open mana, keeping
    * only the values whose WHOLE bill (CR 202.5, cost modifiers included) is
    * payable. The one list both the castability gate and `collectX`'s menu read,
    * so the gate can never accept a play on an X the menu will not offer.
    */
   manaXChoices(seat: Seat, name: CardName, region: number): number[] {
-    const min = this.xFloor(seat, name, { region });
+    const min = this.card(name).xMin ?? 0;
     const open = this.openMana(seat);
     const out: number[] = [];
     for (let x = min; x <= open; x++) {
@@ -10188,7 +10172,7 @@ export class E {
     if (item.kind !== 'spell' && item.kind !== 'spellUnit') return;
     const c = this.card(item.card);
     if (c.mana !== 'X') return;
-    const min = this.xFloor(item.controller, item.card, { region: item.region });   // CR 111.10i
+    const min = c.xMin ?? 0;
     const payable = this.manaXChoices(item.controller, item.card, item.region);
     // CR 702.3c, 110.7 (report #211): X comes first and the targets after it, so an X
     // that leaves a REQUIRED slot with nothing legal is not a legal declaration —

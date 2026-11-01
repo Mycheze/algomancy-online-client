@@ -194,16 +194,16 @@ card('Origon', {
 //  - "base cost [three] or less" reads the base cost. For a card with a
 //    printed number, "have a base cost of [three]" is a RAISE to three, not a
 //    discount: the delta is `3 - base`, 0 at exactly three, never negative.
-//  - An X SPELL'S X IS RAISED, NOT ITS PRICE — the 2026-10-09 ruling (now CR 107.5), reversing
-//    the earlier floor-of-3 price reading. The RAQ, "[Solved] Spells with cost X vs Stasis Sentry"
-//    (_passer): it "forces the Spells with mana cost of X value to be at a
-//    minimum 3, but it's not an additional cost … The X value must be at least
-//    3 (which would deal 3 damage)". So `xMin` lifts the floor of the X menu
-//    to three and `delta` leaves an X spell alone: Wildfire is cast for X = 3
-//    or more and costs exactly X. (The earlier reading had Wildfire cast at X = 0 for [3],
-//    dealing 0; the RAQ is the authority, owner 2026-10-09.) With this Sentry
-//    out you still need [3] open to begin casting an X spell at all — now
-//    because three is the smallest X there is.
+//  - AN X SPELL'S PRICE IS RAISED, NOT ITS X — the 2026-11-01 ruling (now CR 107.5),
+//    reversing the 2026-10-09 reading (CT-224) that raised the X instead. Nyar, in the RAQ,
+//    of Torrential Reclamation under a Sentry: "Does this automatically require 3 targets?";
+//    _passer: "No, you paid 2 +1 extra, but X=2", and Caleb: "Yeah, you set targets before
+//    paying the cost". So the caster chooses X freely (down to the printed floor); the
+//    chosen X IS the base cost (CR 202.5, `ctx.x`); and a base of three or less is raised
+//    to three like any other spell's. Wildfire at X = 1 deals 1 and costs [3]; at X = 4 it
+//    costs [4]. While X is still open (`ctx.x` undefined: the castability gate, a price
+//    quote) the printed floor stands in, so with this Sentry out an X spell needs [3]
+//    open to begin casting at all — at any X up to three.
 //  - Unqualified subject, so it hits BOTH players, and region-scoped (CR 601.1d)
 //    like every continuous effect.
 card('Stasis Sentry', {
@@ -215,17 +215,11 @@ card('Stasis Sentry', {
       delta: (g, _self, ctx) => {
         if (g.s.phase !== 'battle' || ctx.purpose !== 'play') return 0;
         if (!isPlayedSpellKind(ctx.card.kind)) return 0;                     // CR 111.10c
-        if (ctx.card.mana === 'X') return 0;                                 // CR 107.5: X is raised instead
-        return ctx.card.mana <= 3 ? 3 - ctx.card.mana : 0;
+        // CR 202.5, 107.5: an X spell's base cost is the X chosen; the printed floor
+        // while it is still open (CostCtx.x), so the gate prices the cheapest cast
+        const base = ctx.card.mana === 'X' ? (ctx.x ?? ctx.card.xMin ?? 0) : ctx.card.mana;
+        return base <= 3 ? 3 - base : 0;
       },
-      // The 2026-10-09 ruling (CT-224, now CR 107.5) reverses the earlier price for an X spell. The RAQ,
-      // "[Solved] Spells with cost X vs Stasis Sentry" (_passer): "he forces the
-      // Spells with mana cost of X value to be at a minimum 3, but it's not an
-      // additional cost … The X value must be at least 3 (which would deal 3
-      // damage)". So Wildfire under a Sentry is cast for X = 3 or more and
-      // deals that much — never X = 0 for [3].
-      xMin: (g, _self, ctx) =>
-        g.s.phase === 'battle' && ctx.purpose === 'play' && isPlayedSpellKind(ctx.card.kind) ? 3 : 0,
     }],
   },
 });
