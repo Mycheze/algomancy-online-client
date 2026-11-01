@@ -129,9 +129,10 @@ export interface CardTextBox {
 /**
  * Collapse the scan's line-break markup to one readable line.
  *
- * `{/n}` is a mid-WORD break from the card scans ("be- {/n}comes"), never a
- * clause separator — which is exactly why nothing here splits on it. The
- * hyphen in front of one is a SOFT hyphen and is joined away with it; every
+ * `{/n}` is the printed card's line break. Here every one becomes a space —
+ * this is the ONE-LINE reading (a list row, a stack part, a prompt); the text
+ * BOX keeps the real ones, see `boxClean`. The hyphen in front of a mid-word
+ * one ("be- {/n}comes") is a SOFT hyphen and is joined away with it; every
  * `- ` in the whole printed pool is one of those.
  *
  * Four of them had LOST their `{/n}` in transcription ("adja- cent"), and
@@ -142,6 +143,30 @@ export interface CardTextBox {
  */
 export const clean = (s: string): string =>
   s.replace(/\{\/n\}/g, ' ').replace(/-\s+/g, '').replace(/\s+/g, ' ').trim();
+
+/** the text before a `{/n}` ends a sentence: `.` `)` `]` `!` `?`, past any
+ * closing quote or `{/i}` */
+const ENDS_SENTENCE = /[.)\]!?]["'”’]*(?:\{\/i\})?\s*$/;
+
+/**
+ * Report #316 (EMNR): the printed text for a multi-line BOX. `{/n}` is used
+ * three ways in the oracle — a hyphenated word ("sacri- {/n}fices"), the
+ * scan's wrap in mid-sentence ("you {/n}may put target unit"), and a real
+ * new line ("I spawn with two +1/+1 counters. {/n} [Augment] When I
+ * despawn…"). The text itself tells them apart: a break that follows the end
+ * of a sentence is kept (as `{/n}`, which `formatting()` draws as `<br>`);
+ * every other one is a wrap at the scan's width, not the box's, and joins as
+ * `clean` joins it — so "sacrifices" still reads as one word.
+ */
+export function boxClean(s: string): string {
+  const segs = s.split('{/n}');
+  const paras = [segs[0]!];
+  for (const seg of segs.slice(1)) {
+    if (ENDS_SENTENCE.test(paras[paras.length - 1]!)) paras.push(seg);
+    else paras[paras.length - 1] += ` ${seg}`;
+  }
+  return paras.map(clean).filter(Boolean).join('{/n}');
+}
 
 const SWITCH_RE = /\[switch1?\]/i;
 const AUGMENT_RE = /\[augment\]/i;
@@ -163,7 +188,7 @@ export function switchClause(name: CardName): string {
 export function augmentClause(name: CardName): string {
   const t = textOf(name);
   const m = AUGMENT_RE.exec(t);
-  return m ? clean(t.slice(m.index)) : '';
+  return m ? boxClean(t.slice(m.index)) : '';
 }
 
 /**
@@ -434,12 +459,12 @@ export function prophecyBanner(name: CardName): string {
  * Joined with `{/n}`, which is the marker the upstream oracle file itself uses
  * after the banner ("[1] Prophecy — Two Turns Pass{/n}I can be prophesied from
  * your bin") and which `formatting()` draws as the `<br>` the physical card
- * has between its banner bar and its text box. `clean` is applied to the BODY
- * only, so this is the one `{/n}` in a box line and it is a real line break
- * rather than the mid-word one `clean` exists to join away.
+ * has between its banner bar and its text box. The BODY goes through
+ * `boxClean`, so the printed card's own new lines stay too (report #316)
+ * while its mid-word and mid-sentence wraps are joined away.
  */
 function printedBoxText(name: CardName): string {
-  return [prophecyBanner(name), clean(textOf(name))].filter(Boolean).join('{/n}');
+  return [prophecyBanner(name), boxClean(textOf(name))].filter(Boolean).join('{/n}');
 }
 
 // ── CR D6.10: the TYPE-LINE ATTRIBUTE, in the place a player reads rules text ─
@@ -624,9 +649,9 @@ export function graftComposition(e: E, u: Entity): { head: string; parts: { text
   try { causeIndex = graftCauseIndex(u.card); } catch { return null; }
   if (causeIndex < 0) return null;
   const m = SWITCH_RE.exec(host);
-  const head = clean(m ? host.slice(0, m.index) : host);
+  const head = boxClean(m ? host.slice(0, m.index) : host);
   const parts: { text: string; from: CardName }[] = [];
-  if (m) parts.push({ text: clean(host.slice(m.index)), from: u.card });
+  if (m) parts.push({ text: boxClean(host.slice(m.index)), from: u.card });
   for (const g of grafts) {
     const t = switchClause(g.card);
     if (t) parts.push({ text: t, from: g.card });
@@ -1002,7 +1027,7 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
       // CR 721.1c / CT-349: borrowed off a neighbour's MOD, it is that mod's
       // [Augment] text only — the text the neighbour itself has of it
       lines.push({
-        text: box ? augmentClause(name) : clean(textOf(name)), from: name, origin: 'copy', active: !silenced,
+        text: box ? augmentClause(name) : boxClean(textOf(name)), from: name, origin: 'copy', active: !silenced,
       });
     }
   }
