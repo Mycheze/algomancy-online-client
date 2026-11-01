@@ -5099,6 +5099,8 @@ html.touch #app.board.v2 > .toolbar .scnx { min-height: 32px; min-width: 36px; }
 .lgtimechips, .lgtimepick { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .lgtimechips button, .lgtimepick button { font-size: 12px; padding: 3px 9px; }
 .lgtimepick select { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 3px 6px; }
+.lgstamps td { padding: 3px 6px 3px 0; }
+.lgstampcode { width: 15em; max-width: 42vw; font-family: monospace; font-size: 12px; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 3px 6px; }
 .lgsuggest td { vertical-align: top; }
 .lgpost { width: 100%; box-sizing: border-box; font: 12px/1.4 ui-monospace, monospace; resize: vertical;
   background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 6px; }

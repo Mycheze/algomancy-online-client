@@ -502,10 +502,12 @@ function paint(): void {
       ${s && s.phase === 0 && s.me?.entered ? suggestionsHtml(s) : ''}
       ${s && s.standings.length ? standingsHtml(s) : ''}
       ${s && s.matches.length ? allMatchesHtml(s) : ''}
+      ${stampHtml()}
       ${data?.organizer ? organizerHtml(s) : ''}
     </div>
   </div>`;
   wireGrid();
+  wireStamp();
 }
 
 function seasonCardHtml(s: SeasonView): string {
@@ -652,10 +654,10 @@ function wallValue(ms: number, tz: string): string {
 }
 
 /** a datetime-local value, read as wall time in `tz` and put on the quarter hour; NaN if it is not one */
-function fromWallValue(v: string, tz: string): number {
+function fromWallValue(v: string, tz: string, step = STEP_MIN): number {
   const m = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})/.exec(v);
   if (!m) return Number.NaN;
-  const mins = Math.round((Number(m[2]) * 60 + Number(m[3])) / STEP_MIN) * STEP_MIN;
+  const mins = Math.round((Number(m[2]) * 60 + Number(m[3])) / step) * step;
   return zonedEpoch(m[1]!, mins, tz);
 }
 
@@ -783,6 +785,86 @@ function allMatchesHtml(s: SeasonView): string {
 function disputesHtml(m: SeasonView['matches'][number]): string {
   return (m.disputes ?? []).map(d =>
     `<div class="lgdispute">Disputed by <b>${esc(d.name)}</b> (${esc(d.code)}): ${esc(d.note)}</div>`).join('');
+}
+
+// ── a Discord time code ───────────────────────────────────────────────
+//
+// Owner, 2026-11-01: "a Discord timestamp generator like hammertime.xyz …
+// setting a time in your time zone, then copying the actual code". Discord
+// shows `<t:UNIX:X>` in each READER's own zone, so a time typed here in yours
+// reads right to whoever you message. The field is the "suggest a time" one
+// (wallValue / fromWallValue, read in the league zone), to the minute.
+
+export type StampStyle = 't' | 'T' | 'd' | 'D' | 'f' | 'F' | 'R';
+export const STAMP_STYLES: readonly StampStyle[] = ['t', 'T', 'd', 'D', 'f', 'F', 'R'];
+/** the time the code is for; null = not chosen yet (the next quarter hour) */
+let stampAt: number | null = null;
+
+/** the code Discord turns into a time */
+export const discordCode = (unix: number, style: StampStyle): string => `<t:${unix}:${style}>`;
+
+/** how Discord shows a style, near enough, in `tz` (its own English wording; Intl's here) */
+export function stampPreview(ms: number, style: StampStyle, tz: string, now = Date.now()): string {
+  const f = (o: Intl.DateTimeFormatOptions): string => {
+    try { return new Intl.DateTimeFormat(undefined, { ...o, timeZone: tz }).format(ms); } catch { return new Date(ms).toUTCString(); }
+  };
+  const time: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit' };
+  switch (style) {
+    case 't': return f(time);
+    case 'T': return f({ ...time, second: '2-digit' });
+    case 'd': return f({ day: '2-digit', month: '2-digit', year: 'numeric' });
+    case 'D': return f({ day: 'numeric', month: 'long', year: 'numeric' });
+    case 'f': return f({ day: 'numeric', month: 'long', year: 'numeric', ...time });
+    case 'F': return f({ weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', ...time });
+    case 'R': {
+      const sec = Math.round((ms - now) / 1000);
+      const units: [Intl.RelativeTimeFormatUnit, number][] = [['year', 31_536_000], ['month', 2_592_000], ['day', 86_400], ['hour', 3_600], ['minute', 60]];
+      const [unit, size] = units.find(([, n]) => Math.abs(sec) >= n) ?? ['second', 1];
+      try { return new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' }).format(Math.round(sec / size), unit); }
+      catch { return `${Math.round(sec / size)} ${unit}s`; }
+    }
+  }
+}
+
+const nextQuarter = (now: number): number => Math.ceil(now / (STEP_MIN * 60_000)) * STEP_MIN * 60_000;
+const stampMs = (): number => stampAt ?? nextQuarter(Date.now());
+
+function stampHtml(): string {
+  const tz = viewTz();
+  const at = stampMs();
+  const unix = Math.floor(at / 1000);
+  return `<div class="acctcard lgstamp"><h3>Discord time code</h3>
+    <p class="lgtimepick"><input type="datetime-local" id="lg-stamp-at" step="60" value="${wallValue(at, tz)}">
+      <span class="dim">${esc(tz)} time</span></p>
+    <table class="accttable lgstamps"><tbody>${STAMP_STYLES.map(st => `<tr>
+      <td>${esc(stampPreview(at, st, tz))}</td>
+      <td><input id="lg-stamp-${st}" class="lgstampcode" readonly value="${esc(discordCode(unix, st))}"></td>
+      <td><button data-btn="lg-stamp-copy" data-style="${st}">Copy</button></td></tr>`).join('')}</tbody></table>
+  </div>`;
+}
+
+function wireStamp(): void {
+  const el = document.getElementById('lg-stamp-at') as HTMLInputElement | null;
+  if (!el) return;
+  el.onchange = () => {
+    const at = fromWallValue(el.value, viewTz(), 1);
+    if (Number.isFinite(at)) { stampAt = at; paint(); }
+  };
+}
+
+/** Copy text: the clipboard where the browser allows it, else select the
+ * field it is shown in and copy that (older iOS web apps) — the same two
+ * steps the organizer's "Post for Discord" Copy has always taken. */
+function copyText(text: string, field: HTMLInputElement | HTMLTextAreaElement | null, done: () => void): void {
+  const fallback = (): void => {
+    if (!field) return;
+    field.select();
+    field.setSelectionRange?.(0, field.value.length);
+    try { if (document.execCommand('copy')) done(); } catch { /* the text stays selected to copy by hand */ }
+  };
+  try {
+    void navigator.clipboard.writeText(text).then(done, fallback);
+  } catch { fallback(); }
 }
 
 // ── the organizer ─────────────────────────────────────────────────────
@@ -1122,10 +1204,16 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'lg-copy': {
       const el = document.getElementById('lg-post') as HTMLTextAreaElement | null;
       if (!el) return true;
-      const done = (): void => { msg = 'Copied.'; paint(); };
-      try {
-        void navigator.clipboard.writeText(el.value).then(done, () => { el.select(); document.execCommand('copy'); done(); });
-      } catch { el.select(); }
+      copyText(el.value, el, () => { msg = 'Copied.'; paint(); });
+      return true;
+    }
+    case 'lg-stamp-copy': {
+      const st = btn.dataset['style'] as StampStyle;
+      if (!STAMP_STYLES.includes(st)) return true;
+      const code = discordCode(Math.floor(stampMs() / 1000), st);
+      // pin the time: a default of "the next quarter hour" must not move under the copy
+      stampAt = stampMs();
+      copyText(code, document.getElementById(`lg-stamp-${st}`) as HTMLInputElement | null, () => { msg = `Copied ${code}`; paint(); });
       return true;
     }
     case 'lg-leave':
