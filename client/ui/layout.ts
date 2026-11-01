@@ -99,6 +99,31 @@ export function fitBoard(root: ParentNode, baseCw: number): void {
  * the plan it wrote; the plan never reads the lead, so nothing chases its tail.
  */
 const lastLead = new WeakMap<Element, string>();
+
+/**
+ * The lead, in px: the distance to the seam (`toSeam`), but never more than
+ * the row leaves free of the zone's `room`. `fanstep` is the plan's step when
+ * the zone is fanned (null when it is not).
+ *
+ * A FANNED ROW KEEPS ITS LEAD (owner, 2026-11-01, EMNR: Gember's one unit with
+ * four mods "flickering over to the left, then back" on every action, and
+ * clickable only "waaaay on the other side"). Her band was 83px tall and the
+ * modded card needed 83 at the floor, so at 110% page zoom a fraction of a
+ * pixel tipped the fit from grid to fan and back, paint by paint — and a fan
+ * used to get no lead at all, so one card jumped from the seam to the far
+ * left each time. A fan is measured like any row instead: the first card, then
+ * one step per further card (style.css: each card after the first sits
+ * `--fanstep` past the one before, plus the zone gap). A one-card fan is the
+ * same row as a one-card grid, so the flip moves nothing; a long fan spans the
+ * band and leaves no room for a lead anyway.
+ */
+export function leadPx(toSeam: number, room: number, n: number, cw: number, fanstep: number | null): number {
+  if (!n || !cw) return 0;
+  const step = fanstep === null ? cw + ZONE_GAP : fanstep + ZONE_GAP;
+  const row = cw + (n - 1) * step;
+  return Math.max(0, Math.min(Math.round(toSeam), Math.floor(room - row)));
+}
+
 function theirLead(root: ParentNode): void {
   const lb = root.querySelector?.('.lboard');
   const seam = lb?.querySelector('.lseam');
@@ -109,12 +134,10 @@ function theirLead(root: ParentNode): void {
   const zr = { left: zone.getBoundingClientRect().left, w: zb.w };
   const n = zone.querySelectorAll(':scope > .card, :scope > .slot').length;
   const cw = parseFloat(play.style.getPropertyValue('--cw')) || 0;
+  const fanstep = play.dataset['fitmode'] === 'fan' ? parseFloat(play.style.getPropertyValue('--fanstep')) || 0 : null;
   const cs = getComputedStyle(zone);
   const padL = parseFloat(cs.paddingLeft) || 0;
-  const room = zr.w - chrome(zone, 'h');
-  const row = n * cw + Math.max(0, n - 1) * ZONE_GAP;
-  const lead = !n || !cw || play.dataset['fitmode'] === 'fan' ? 0
-    : Math.max(0, Math.min(Math.round(sr.left - zr.left - padL), Math.floor(room - row)));
+  const lead = leadPx(sr.left - zr.left - padL, zr.w - chrome(zone, 'h'), n, cw, fanstep);
   const key = String(lead);
   if (lastLead.get(zone) === key) return;
   lastLead.set(zone, key);
