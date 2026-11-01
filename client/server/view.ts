@@ -375,7 +375,21 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
   // the engine rewinds to when the answer arrives. It is engine-internal, and
   // it holds both hands and the deck order, so it never leaves the server —
   // not even to the seat that owns the decision.
-  if (v.suspension?.type === 'resolve') delete v.suspension.snapshot;
+  //
+  // Its `answers` go the same way. One effect that asks EACH player in turn
+  // (Rockfall, General Smof, Death Greeter) is one suspension re-run with every
+  // answer so far, so when the second seat is asked, `answers` holds the
+  // first seat's pick before anything is committed — e.g. `{ '0:rf:0': 2 }`,
+  // unit 2. Nothing on screen reads it (no client code touches `answers`; the
+  // engine resumes from the room's own state, never from a view), so it is
+  // emptied for every seat rather than filtered by owner. Whether the second
+  // chooser SHOULD know the first pick is a rules question (owner,
+  // 2026-11-01); this only stops the wire answering it.
+  // server/test/779-each-player-pick-stays-private.test.ts.
+  if (v.suspension?.type === 'resolve') {
+    delete v.suspension.snapshot;
+    v.suspension.answers = {};
+  }
 
   // draft mode: identify the pack this seat is looking at (additive field —
   // older clients ignore it). Only while the draft step is running: once the
