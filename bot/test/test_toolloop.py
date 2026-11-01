@@ -472,6 +472,33 @@ check("a glossary row and a card get no caveats",
       core.friendly_source({"id": "card:X", "source_type": "card", "title": "X", "source": "x",
                             "metadata": {"engineDiffers": True}}) == "Card: X")
 
+# ── against the real bot/tools.py, when it is here ─────────────────────
+print("\n[the real tools module]")
+try:
+    import tools as real_tools
+except Exception as exc:          # T-A's module not merged on this branch
+    real_tools = None
+    print(f"  --  skipped: {exc!r}")
+if real_tools is not None:
+    _txt, rrow = real_tools.dispatch("rule", {"num": "802.17"})
+    line = rrow["text"].splitlines()[1]
+    words = " ".join(line.split()[3:13])           # ten words from the rule's own text
+    c = Fake(calls(tc("rule", {"num": "802.17"})),
+             say(f'The rules say “{words}” (CR 802.17) [cr:802.17]. '
+                 f'They also say "electric damage is always doubled by the client" [cr:802.17].'))
+    (answer, hits, _r), meta = ask(c, stub=real_tools)
+    check("real rule tool: offered schemas are its TOOLS (lookup level)",
+          names(c.calls[0]) == list(real_tools.TOOL_NAMES))
+    check("⭐ real rule tool: a verbatim quote survives, a made-up one is unquoted and uncited",
+          f"“{words}” (CR 802.17) [cr:802.17]" in answer
+          and "also say electric damage is always doubled by the client." in answer
+          and len(meta["quote_fail"]) == 1)
+    legend = [core.friendly_source(r) for _n, r in core.render_citations(answer, hits)[1]]
+    check("real rule tool: the footnote caveat follows the record's engine_differs flag",
+          ("⚠ the client currently does otherwise" in legend[0])
+          == bool(rrow["metadata"].get("engine_differs")))
+    core._tools_mod = core._TOOLS_UNLOADED
+
 # ── the engine version ────────────────────────────────────────────────
 print("\n[ENGINE_VERSION]")
 PROBE = "import core; print(core.ENGINE_VERSION)"
