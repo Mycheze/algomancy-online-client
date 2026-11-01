@@ -5065,4 +5065,39 @@ export const CLOSED: LedgerEntry[] = [
     ],
     note: "The same Hooba-Nan trash as #301, filed from the other seat after a further rewind to before Wildfire. Fixed with #301.",
   },
+  {
+    id: 303, room: "HECF", date: "2026-10-31",
+    report: "invi, seat 1, agreed fix: back to the start of this step (turn 2 planning). \"wrong mana\"",
+    status: 'agreed-fix',
+    note: "Took back all of turn 2's planning [20]-[29]; Nyar agreed. invi recycled Bripp for water, activated that water and one of Swirling Shardform's dormant Shards, and only then recycled Leaping Lillik for metal, with both activations spent (CR 106.4: a Shard counts toward the two). Replayed, invi recycled for metal and water and activated those two. A wrong resource activated; no defect.",
+  },
+  {
+    id: 306, room: "FXMF", date: "2026-10-31",
+    report: "Nyar, feature: Death Greeter should indicate the number of the triggering spell — when the trigger is left alone on the stack it does not tell you what you will need to sacrifice.",
+    status: 'fixed',
+    guards: [
+      '745-death-greeter-cost.test.ts::the Death Greeter trigger says the cost bar',
+      '745-death-greeter-cost.test.ts::the lonely trigger still says it',
+      '745-death-greeter-cost.test.ts::the stack caption on the board says it',
+    ],
+    note: "Real gap. The stack caption's one-line text read \"Each player sacrifices a unit costing at most the spell's cost\" with no number. It now says \"costing 4 or less\", read off the trigger's own event (the X paid on an X spell, CR 111.11), so it stays right after the spell has left the stack. The other three \"that spell's cost\" triggers (Arcane Concentrator, Channeled Amalgam, Unstable Apparition) already showed their number the same way. Display only: the engine's label and log are unchanged.",
+  },
+  {
+    id: 307, room: "KXZR", date: "2026-10-31",
+    report: "invi, seat 0, agreed fix: back to before invi's attack (turn 5 battle). \"wrong placement\"",
+    status: 'agreed-fix',
+    note: "Took back invi's attack [134], declared as two columns (Emberflame Enlightener alone, Dreamfloat Drifter alone) with the Fireball 3 token; Yagamino agreed. Replayed, invi declared the same two units as ONE column, side by side, with the same token. A misplaced attacker, as the reason says; no defect.",
+  },
+  {
+    id: 308, room: "KXZR", date: "2026-10-31",
+    report: "invi, seat 0, agreed fix: back to before Yagamino's pass (turn 5 battle). \"asdf\"",
+    status: 'agreed-fix',
+    note: "Took back Yagamino's pass [147] on an empty stack after invi's pass, which ended the attack window and went to blocks; invi proposed it, Yagamino agreed. Yagamino had just drawn Spell Excavation off Dreamfloat Drifter's trigger [145] and passed with it in hand; replayed, Yagamino cast it at once, then Overwhelm from the bin. Both seats had passed, so moving on was right, and the server journal shows no Pass-all backstop pass. A missed play; no defect.",
+  },
+  {
+    id: 309, room: "XWYT", date: "2026-10-31",
+    report: "invi, seat 0, agreed fix: back to before invi's Abyssal Evocation from the bin (turn 7 battle). \"asdz\"",
+    status: 'agreed-fix',
+    note: "Took back invi's play [250] of the Abyssal Evocation that had just resolved into the bin (slot 6), cast again under its own permission; Yagamino agreed. Replayed, invi played Arc Lightning from the bin (slot 3) instead. The card says \"you may play spells from your bin\", and it is a spell in the bin, so the engine offered a legal play; the wrong card was clicked. No defect.",
+  },
 ];

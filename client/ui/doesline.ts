@@ -363,6 +363,8 @@ export const AMOUNT: Readonly<Record<string, AmountFn>> = {
   'augment:Arcane Concentrator#0': (_e, it) => fixed(eventCardCost(it.event)),
   'augment:Channeled Amalgam#0': (_e, it) => fixed(eventCardCost(it.event)),
   'augment:Unstable Apparition#0': (_e, it) => fixed(eventCardCost(it.event)),
+  // report #306: the bar is the triggering spell's cost, said even once the spell has left
+  'augment:Death Greeter#0': (_e, it) => fixed(eventCardCost(it.event)),
   'augment:Ember of Life#0': (_e, it) => fixed(num(eventData(it)['total']) ?? num(eventData(it)['n'])),
   'spell:Volatile Toxicity': (_e, _it, p) => fixed(p.costPaid?.sacrificed?.defense),
   'graft:Volatile Toxicity': (_e, _it, p) => fixed(p.costPaid?.sacrificed?.defense),
