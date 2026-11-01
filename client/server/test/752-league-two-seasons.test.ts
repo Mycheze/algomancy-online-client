@@ -27,7 +27,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { accountByName, login, register, setLeagueAvailability, setLeagueContact, useAccountsFile, type Account } from '../accounts.ts';
 import { GRID_LEN, phaseLabel, phaseStart } from '../league.ts';
 import {
-  advance, challenge, createSeason, currentSeason, formatOf, isClosed, joinSeason, liveSeasons, matchToOpen,
+  challenge, createSeason, currentSeason, formatOf, isClosed, joinSeason, liveSeasons, matchToOpen,
   overrideResult, seasonById, tick, useLeagueFile, type Season,
 } from '../league-store.ts';
 import { leagueRoutes, type LeagueCtx } from '../api-league.ts';
