@@ -121,16 +121,6 @@ import { CLOSED } from './playtest-ledger-closed.ts';
 /** Everything still open. The closed entries — the bulk of the file until
  *  2026-09-03 — live in playtest-ledger-closed.ts, unchanged and still run. */
 const OPEN: LedgerEntry[] = [
-  {
-    id: 317, room: "EMNR", date: "2026-11-01",
-    report: "mycheze, seat 0: when making an \"each player\" decision, are you supposed to see what your opponent chose, if they chose first?",
-    status: 'partial',
-    guards: [
-      '779-each-player-pick-stays-private.test.ts::Rockfall: the second chooser is served the same thing',
-      '779-each-player-pick-stays-private.test.ts::General Smof: the second sacrificer is served the same thing',
-    ],
-    note: "At [74] the choice on view was Gember's \"Pay [2]\" for Sacrifice Dude, a cost (public) — the sacrifice was mycheze's alone. The general question has no source (CR 500.2 is about turn steps, CR 713.6d only says every choice is made before they die together). A probe found the screen hides the first pick until the effect finishes, but the seat view sent the asked seat suspension.answers holding the other seat's pick — closed 2026-11-01. Owner: whether the pick SHOULD show goes to the rules channel first (CT-471).",
-  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

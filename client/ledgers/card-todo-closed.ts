@@ -14134,4 +14134,22 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-01: the judge box sends its last exchanges (ui/judgehistory.ts, at most 8 turns, refusals left out) and /api/judge forwards them cleaned to the bot's ceilings (server/judge-history.ts; user/assistant only, 8000 chars a turn); a Learn to Play lesson question still stands alone. End to end in e2e/test-malformed.ts section 5, seen red with the old history: [] line.",
     status: 'done',
   },
+  {
+    id: 471, area: "engine", severity: "minor", reportId: 317,
+    cards: ["A Fast Pile of Rocks", "General Smof", "Death Greeter"],
+    title: "each-player choices: should the second chooser see the first pick, and who is asked first?",
+    detail: "Report #317. When one effect asks each player in turn (Rockfall, \"each player sacrifices\"), the screen hides the first pick until the effect finishes (the data leak that carried it was closed 2026-11-01, 779). No source says whether the later chooser may see the earlier pick. The asking order also differs: Rockfall asks via seatsHere() (initiative player first), General Smof / Death Greeter loop presentSeats (region owner first).",
+    evidence: "Report #317 (EMNR); r1101c probe 2026-11-01. Owner: \"Ask the rules channel first\".",
+    fix: "Get the ruling (rules channel), write it into the CR record, then make every each-player loop ask in the one order and show or hide the earlier pick to match.",
+    proof: null,
+    guards: [
+      "781-each-player-initiative-order.test.ts::CR 102.3a: General Smof asks the initiative player first",
+      "781-each-player-initiative-order.test.ts::CR 102.3b: the second sacrificer is told which unit the first chose",
+      "781-each-player-initiative-order.test.ts::CR 102.3b: the second discarder is told only THAT the first chose",
+      "779-each-player-pick-stays-private.test.ts::CR 102.3b: Cthyrian Culler — the second discarder is served the same thing",
+    ],
+    verify: "Rockfall and General Smof with both players holding two units: who is asked first, and does the second see the first's pick?",
+    closed: "FIXED 2026-11-01 (rules channel via the owner, CR 102.3a/102.3b): every each-player loop goes through seatsHere (initiative first; Smof, Spiteful Shadow, Death Greeter, Torrential Reclamation, Maw of Damnation, Insatiable Want, Perish changed), 65 §4 + a source scan forbid raw presentSeats in cards/; ctx.choose declares info open|hidden, an open earlier pick is served and marked (ui/earlier.ts), a hidden one only as made. Seen red: Smof on raw presentSeats (781, 65), Culler info open (779, 782), Smof info hidden (781, 779). Mindburn (unit OR hand card) left hidden pending an owner call.",
+    status: 'done',
+  },
 ];

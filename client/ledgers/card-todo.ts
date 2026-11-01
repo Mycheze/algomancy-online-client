@@ -318,17 +318,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 471, area: "engine", severity: "minor", reportId: 317,
-    cards: ["A Fast Pile of Rocks", "General Smof", "Death Greeter"],
-    title: "each-player choices: should the second chooser see the first pick, and who is asked first?",
-    detail: "Report #317. When one effect asks each player in turn (Rockfall, \"each player sacrifices\"), the screen hides the first pick until the effect finishes (the data leak that carried it was closed 2026-11-01, 779). No source says whether the later chooser may see the earlier pick. The asking order also differs: Rockfall asks via seatsHere() (initiative player first), General Smof / Death Greeter loop presentSeats (region owner first).",
-    evidence: "Report #317 (EMNR); r1101c probe 2026-11-01. Owner: \"Ask the rules channel first\".",
-    fix: "Get the ruling (rules channel), write it into the CR record, then make every each-player loop ask in the one order and show or hide the earlier pick to match.",
-    proof: null,
-    verify: "Rockfall and General Smof with both players holding two units: who is asked first, and does the second see the first's pick?",
-    status: 'open',
-  },
-  {
     id: 472, area: "client", severity: "minor",
     title: "the asked seat's view still carries suspension.pendingKey and .shown; audit them for another seat's information",
     detail: "The 779 fix blanks suspension.answers for every seat. pendingKey is a card-written tag (rf:<seat>, sac:<seat>) and shown is a count of events emitted so far; neither carried a pick in the cards checked, but not every key in the pool was audited, and shown may count another seat's private lines.",

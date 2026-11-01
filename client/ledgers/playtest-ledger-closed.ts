@@ -5177,4 +5177,17 @@ export const CLOSED: LedgerEntry[] = [
     ],
     note: "Real: the does-line paraphrased the printed \"pays [x]\". Abduct now reads \"…unless Gember pays 5\" (the X paid, per the owner's rule that a paid X prints as its number). Same clause on Gravitational Correction, which showed the X glyph; fixed with it. Swept the rest of does-lines: no other clause paraphrases a paid X.",
   },
+  {
+    id: 317, room: "EMNR", date: "2026-11-01",
+    report: "mycheze, seat 0: when making an \"each player\" decision, are you supposed to see what your opponent chose, if they chose first?",
+    status: 'fixed',
+    guards: [
+      '779-each-player-pick-stays-private.test.ts::Rockfall: the second chooser is served the same thing',
+      '779-each-player-pick-stays-private.test.ts::General Smof: the second sacrificer is served the same thing',
+      '779-each-player-pick-stays-private.test.ts::CR 102.3b: Cthyrian Culler — the second discarder is served the same thing',
+      '781-each-player-initiative-order.test.ts::CR 102.3b: the second sacrificer is told which unit the first chose',
+      '782-earlier-picks-shown.test.ts::§1 the second sacrificer is told what the first chose, and the unit is marked',
+    ],
+    note: "Answered by the rules channel (owner, 2026-11-01): \"Hidden information stays hidden (all you know is that your opponent made a choice), but open information is known by both players for the choice\" — MTG's APNAP rule, with the initiative player as the active player. Now CR 102.3a/102.3b: the initiative player is asked first everywhere (7 cards changed order), an earlier pick of open information is named in the prompt and marked on the board, and a pick from a hand or deck shows only that it was made. Before this the screen hid every first pick, and the seat view leaked it.",
+  },
 ];
