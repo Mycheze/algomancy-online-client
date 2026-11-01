@@ -1,4 +1,5 @@
-"""tools.py — the judge's lookup tools: rule, define, card, search. No LLM, no network.
+"""tools.py — the judge's tools: the lookups (rule, define, card, search — in-process, no
+network) and simulate (the online client's engine, over loopback; see "simulate" below). No LLM.
 
 WHY THIS EXISTS
 ---------------
@@ -16,6 +17,8 @@ THE INTERFACE (frozen with core.py's tool loop)
 -----------------------------------------------
     TOOLS                       OpenAI-style function schemas, one per tool
     dispatch(name, args)        -> (text, row)
+    SERVER_TOOLS                the names that need the game server ({"simulate"})
+    server_available()          may those be offered now (gameserver's cached health)
 
 `text` is what the model reads (≤ ~600 tokens, MAX_TEXT_CHARS). `row` is a
 corpus-shaped row (id, source_type, title, text, source, authority,
@@ -113,6 +116,65 @@ TOOLS = [
                       "description": "limit to these sources"}},
             "required": ["query"], "additionalProperties": False}}},
 ]
+
+
+# ── simulate: the engine calculator (judge tools design §1 Phase 2) ──────────
+# The one tool that needs the game server (gameserver.simulate, POST
+# /api/bot/simulate — its JSON contract is FROZEN in the header of
+# client/server/simulate.ts; the server validates strictly and names every
+# problem, so this side only shapes, sends and renders). core offers it only
+# at ALGO_TOOLS=all with ALGO_BOT_TOKEN set and server_available() true.
+#
+# The description says PLAINLY what it cannot model (the list in simulate.ts's
+# header): an engine result is "what the client does", never "what the rules
+# say", and the model must be told where that line is before it calls.
+
+_SIM_REF = ("refs: \"you.0\" = index into that side's play, \"you:Card Name\"; as a target also "
+            "\"you\"/\"opponent\" (a player), \"stack.0\" (bottom first), \"stack:Card Name\"")
+# The nested shapes are given as compact signatures, not full JSON schema: the
+# schema rides on every `all` answer (cached, but still prompt), and the server
+# names every problem in a bad spec anyway — the model gets that back and may
+# call once more. Kept in step with simulate.ts's header by test_simulate.py.
+_SIM_SIDE = {"type": "object", "description": (
+    "{hand:[card], play:[UNIT], resources:{fire:3,…} (open; fire water earth wood metal light dark "
+    "prismite shard), life:30, bin:[card], deckTop:[card] (top first)}. UNIT = \"Card Name\" or "
+    "{card, token?, counters? (net +1/+1), damage?, mods?:[{card, as:\"augment\"|\"graft\"}], "
+    "temp?:{power?, toughness?, attrs?:[\"Balanced\",…]} (until regroup, applied at the start)}")}
+_SIM_STEP = ("{seat?:\"you\"|\"opponent\", do, …}: {do:\"play\", card, targets?:[ref], x?, "
+             "mode?:\"ambush\"|\"discardMe\"} · {do:\"augment\", card, host} · {do:\"graft\", card, host} · "
+             "{do:\"activate\", unit, ability:N, targets?, x?} · {do:\"pass\"} (lets the top of the stack "
+             "resolve) · {do:\"choose\", option:\"<piece of the label>\"} · {do:\"assign\", "
+             "to:{\"opponent.0\":5}} (combat damage split) · {do:\"advance\"}")
+
+SIMULATE_SCHEMA = {"type": "function", "function": {
+    "name": "simulate",
+    "description": (
+        "Run a small board and script through the ONLINE CLIENT's rules engine and see what the "
+        "client does: the steps taken or refused (with the engine's reason), the menus it offered, "
+        "the log and the final state. Cite as the [engine:sN] tag the result heads. It shows what "
+        "the client does, NEVER what the rules say. It cannot model: the rules as written (where a "
+        "rule is marked engine differs, the engine is the wrong side); hidden information or real "
+        "opponent choices beyond your script (unscripted, the opponent passes and does not block, "
+        "and a menu takes its first option, listed under auto); more than 2 players, or the draft; "
+        "deck contents beyond deckTop; the UI (screens, controls, hover, auto-pass); tabletop "
+        "conventions; cards the client lists as broken; past rules (today's engine only); and "
+        "\"when played\" history (units start in play without being played). Turn 1, all "
+        "resources open. " + _SIM_REF + "."),
+    "parameters": {"type": "object", "properties": {
+        "you": _SIM_SIDE, "opponent": _SIM_SIDE,
+        "initiative": {"type": "string", "enum": ["you", "opponent"]},
+        "start": {"type": "string", "enum": ["deployment", "battle"]},
+        "attack": {"type": "array", "items": {"type": "array", "items": {"type": "string"}},
+                   "description": "columns of the initiative side's units, front first; implies start=battle"},
+        "blocks": {"type": "object", "description": "{blocker ref: attacker ref}; default no blocks"},
+        "steps": {"type": "array", "items": {"type": "object"}, "description": "≤30, in order. " + _SIM_STEP},
+        "until": {"type": "string", "enum": ["stackEmpty", "endOfCombat", "regroup", "endOfTurn"]},
+        "showOffered": {"type": "boolean", "description": "list every menu the client offered"}},
+        "required": ["you", "opponent"], "additionalProperties": False}}}
+
+TOOLS.append(SIMULATE_SCHEMA)
+#: the tools that need the game server (core reads this seam; see its offered_tools)
+SERVER_TOOLS = frozenset({"simulate"})
 
 TOOL_NAMES = tuple(t["function"]["name"] for t in TOOLS)
 
@@ -636,11 +698,171 @@ def tool_search(query, types=None) -> tuple[str, dict]:
     return text, main
 
 
+# ── simulate ─────────────────────────────────────────────────────────────────
+
+#: what the model reads of one simulation (~700 tokens; design §1 Phase 2)
+SIM_TEXT_CHARS = 2800
+#: the server's own body cap (simulate.ts LIMITS.bodyBytes)
+SIM_BODY_BYTES = 16 * 1024
+#: the text an unreachable engine gives the model, verbatim (design §3)
+ENGINE_UNAVAILABLE = '{"ok": false, "error": "engine unavailable"}'
+
+_SIM_SEQ = __import__("itertools").count(1)
+
+
+def server_available() -> bool:
+    """core's seam: may simulate be offered right now? (gameserver's cached
+    /api/bot/health; False without ALGO_BOT_TOKEN.)"""
+    import gameserver
+    return gameserver.server_available()
+
+
+def _drop_nulls(v):
+    """A model fills an optional field with null; the server's strict schema
+    would refuse that by name. Absent and null mean the same thing here."""
+    if isinstance(v, dict):
+        return {k: _drop_nulls(x) for k, x in v.items() if x is not None}
+    if isinstance(v, list):
+        return [_drop_nulls(x) for x in v if x is not None]
+    return v
+
+
+def _sim_unit(u: dict) -> str:
+    bits = [f"{u.get('ref', '?')} {u.get('card', '?')} {u.get('stats', '')}".rstrip()]
+    if u.get("printed") and u.get("printed") != u.get("stats"):
+        bits.append(f"(printed {u['printed']})")
+    if u.get("attrs"):
+        bits.append("[" + ", ".join(u["attrs"]) + "]")
+    if u.get("mods"):
+        bits.append("mods " + "+".join(u["mods"]))
+    if u.get("damage"):
+        bits.append(f"damage {u['damage']}")
+    if u.get("counters"):
+        bits.append(f"counters {u['counters']:+d}")
+    if u.get("zone") and u.get("zone") != "play":
+        bits.append(f"→ {u['zone']}")
+    return " ".join(bits)
+
+
+def _sim_step(st: dict) -> str:
+    if st.get("ok"):
+        return f"step {st.get('i')} ok: {st.get('did', '')}"
+    out = f"step {st.get('i')} REFUSED: {st.get('refused', '')}"
+    if st.get("options"):
+        out += " · offered: " + " | ".join(st["options"][:8])
+    if st.get("legal"):
+        out += " · legal then: " + "; ".join(st["legal"][:8])
+    return out
+
+
+def render_simulation(sid: str, res: dict, budget: int = SIM_TEXT_CHARS) -> str:
+    """The model's view of one simulation, ≤ `budget` chars. The board, every
+    step, the final state and the stop reason always; then the menus offered,
+    the silent defaults, the direct patches, hands and bins; the log last,
+    newest lines first (they are the ones the steps produced)."""
+    sha = str(res.get("engine") or "")[:7]
+    head = (f"[engine:{sid}] Online client engine{' build ' + sha if sha else ''} — SIMULATED: what the "
+            "client does, not what the rules say.")
+    fin = res.get("final") or {}
+    life = fin.get("life") or {}
+    mana = fin.get("mana") or {}
+    must = [head, "Board as built: " + _clip(res.get("board") or "", 700)]
+    must += [_sim_step(st) for st in res.get("steps") or []]
+    must.append(f"Final: phase {fin.get('phase', '?')} · life you {life.get('you', '?')}, "
+                f"opponent {life.get('opponent', '?')}"
+                + (f" · mana you {mana['you']}" if mana.get("you") else "")
+                + (f", opponent {mana['opponent']}" if mana.get("opponent") else ""))
+    for u in fin.get("units") or []:
+        must.append("  " + _sim_unit(u))
+    if fin.get("stack"):
+        must.append("  stack (bottom first): " + " | ".join(fin["stack"]))
+    if fin.get("pending"):
+        must.append(f"  waiting on: {fin['pending']}")
+    if res.get("limit"):
+        must.append(f"Stopped early: {res['limit']}")
+    opt = []
+    pos = 100
+    for o in res.get("offered") or []:
+        opt.append((pos, f"Offered at {o.get('at')} to {o.get('seat')} — {o.get('prompt')}: "
+                         + " | ".join(o.get("options") or [])))
+        pos += 1
+    if res.get("auto"):
+        opt.append((200, "Auto (unscripted defaults): " + "; ".join(res["auto"])))
+    if res.get("patched"):
+        opt.append((201, "Set directly, not by a card: " + "; ".join(res["patched"])))
+    hands, bins = fin.get("hands") or {}, fin.get("bins") or {}
+    for side in ("you", "opponent"):
+        if hands.get(side):
+            opt.append((210, f"{side} hand: " + ", ".join(hands[side])))
+        if bins.get(side):
+            opt.append((211, f"{side} bin: " + ", ".join(bins[side])))
+    # priority: menus, auto, patches, hands/bins, then the log newest first
+    # (positions keep it in order). The "Log:" heading only when a line fits.
+    log_lines = [(300 + i, "  " + line) for i, line in enumerate(res.get("log") or [])]
+    text = _fit(must, opt + log_lines[::-1], budget)
+    if log_lines and any(("\n" + line + "\n") in text + "\n" for _p, line in log_lines):
+        text = _fit(must, opt + [(299, "Log:")] + log_lines[::-1], budget)
+    return _clip_block(text, budget)
+
+
+def _engine_row(sid: str, res: dict, text: str, spec: dict) -> dict:
+    """The corpus-shaped row an [engine:sN] citation resolves to. core's
+    footnote reads metadata.engine (the build) and metadata.board (the one-line
+    board, so a reader can check the setup); quotecheck reads metadata.final
+    (stat pairs) and metadata.log (quoted log lines) beside the text."""
+    return {
+        "id": f"engine:{sid}", "source_type": "engine", "title": f"simulation {sid}",
+        "source": "online client engine", "authority": 2,
+        "authority_label": "online client engine (simulated)", "outdated_risk": False,
+        "text": text,
+        "metadata": {"tool": "simulate", "ok": True, "engine": res.get("engine") or "",
+                     "board": res.get("board") or "", "final": res.get("final") or {},
+                     "log": list(res.get("log") or []), "steps": list(res.get("steps") or []),
+                     "auto": list(res.get("auto") or []), "limit": res.get("limit"),
+                     "spec": spec},
+    }
+
+
+def _sim_refusal(res: dict) -> str:
+    lines = [f"simulate: the engine refused the spec — {res.get('error') or 'no reason given'}"]
+    for e in (res.get("errors") or [])[:12]:
+        dym = f" (did you mean: {', '.join(e['didYouMean'])})" if e.get("didYouMean") else ""
+        lines.append(f"- {e.get('at')}: {e.get('error')}{dym}")
+    if res.get("busy"):
+        lines.append("The engine is busy; you may try once more, or answer from the rules.")
+    else:
+        lines.append("Fix the spec and call again, or answer from the rules without it.")
+    return _clip_block("\n".join(lines), SIM_TEXT_CHARS)
+
+
+def tool_simulate(args: dict) -> tuple[str, dict]:
+    """POST the model's spec (with our own id) and render the answer. An
+    unreachable engine is the fixed ENGINE_UNAVAILABLE text and an error row;
+    a refused spec is the server's reasons, also an error row (nothing to
+    cite); a run is the rendered result and one engine row."""
+    import gameserver
+    spec = _drop_nulls({k: v for k, v in args.items() if k != "id"})
+    sid = f"s{next(_SIM_SEQ) % 10_000_000}"
+    spec["id"] = sid
+    if len(json.dumps(spec)) > SIM_BODY_BYTES:
+        return _error(f"simulate: the spec is over {SIM_BODY_BYTES // 1024} KB; use a smaller board")
+    try:
+        res = gameserver.simulate(spec)
+    except gameserver.GameServerDown as exc:
+        print(f"[tools] simulate: engine unavailable ({exc})")
+        return _error(ENGINE_UNAVAILABLE)
+    if not res.get("ok"):
+        return _error(_sim_refusal(res))
+    text = render_simulation(sid, res)
+    return text, _engine_row(sid, res, text, spec)
+
+
 _DISPATCH = {
     "rule": lambda a: tool_rule(a.get("num")),
     "define": lambda a: tool_define(a.get("term")),
     "card": lambda a: tool_card(a.get("name")),
     "search": lambda a: tool_search(a.get("query"), a.get("types")),
+    "simulate": tool_simulate,
 }
 
 

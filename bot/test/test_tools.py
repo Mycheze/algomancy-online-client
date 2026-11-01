@@ -62,13 +62,15 @@ def cites(answer, rows):
 D = tools.data()
 
 # ── TOOLS: the schemas the model is offered ──────────────────────────────────
-check("four tools: rule, define, card, search", tools.TOOL_NAMES == ("rule", "define", "card", "search"))
+check("four lookups, then simulate (the server tool, tested in test_simulate.py)",
+      tools.TOOL_NAMES == ("rule", "define", "card", "search", "simulate")
+      and tools.SERVER_TOOLS == {"simulate"})
 check("each is an OpenAI function schema with an object of required args",
       all(t["type"] == "function" and t["function"]["parameters"]["type"] == "object"
           and t["function"]["parameters"]["required"] and t["function"]["description"]
           for t in tools.TOOLS))
-schema_chars = len(json.dumps(tools.TOOLS))
-check(f"the schemas stay small (~{schema_chars // 4} tokens; they ride on every answer)",
+schema_chars = len(json.dumps([t for t in tools.TOOLS if t["function"]["name"] not in tools.SERVER_TOOLS]))
+check(f"the lookup schemas stay small (~{schema_chars // 4} tokens; they ride on every answer)",
       schema_chars < 2400)
 check("data loads once", tools.data() is D)
 

@@ -7,6 +7,16 @@ run.py — run the judge bot's real pipeline over the gold set, and grade it.
     .venv/bin/python bot/eval/run.py --corpus /path/to/other_corpus.jsonl --label cr-corpus
     .venv/bin/python bot/eval/run.py --retrieval-only --label recall   # free: no model, no judge
     .venv/bin/python bot/eval/run.py --rejudge var/eval/<run>.jsonl --judge-model …
+    .venv/bin/python bot/eval/run.py --tools all --no-judge --label all-r1   # judge tools; grade with grade_pack.py
+
+`--tools off|lookup|all` sets core's ALGO_TOOLS for the run (default off, so
+a .env value never leaks into a run unannounced). `all` needs ALGO_BOT_TOKEN
+and a game server answering /api/bot/simulate (ALGO_GAME_SERVER), and refuses
+to start without them rather than record a run labelled `all` that never
+offered simulate. Each row records the tool calls, the quote check's
+quote_fail / engine_mismatch, the engine build any simulation ran on, and the
+text of every source the answer cited (`cited_sources`) — tool rows are not in
+the corpus, so a grader could not look them up afterwards.
 
 Each item goes through `core.answer_question` exactly as a Discord or web
 question does (retrieval, primer, system prompt, follow-up history, the math-mode
@@ -106,6 +116,9 @@ def parse_args(argv=None):
     ap.add_argument("--fallback", action="store_true", help="keep LLM_FALLBACK_MODEL if set")
     ap.add_argument("--retrieval-only", action="store_true", help="retrieval checks only; no model, no judge")
     ap.add_argument("--no-judge", action="store_true")
+    ap.add_argument("--tools", choices=("off", "lookup", "all"), default="off",
+                    help="core's ALGO_TOOLS for this run: off (default), lookup (rule/define/card/"
+                         "search) or all (+ simulate: needs ALGO_BOT_TOKEN and a game server)")
     ap.add_argument("--judge-model", default="deepseek-v4-pro")
     ap.add_argument("--judge-base-url", default="https://api.deepseek.com")
     ap.add_argument("--judge-key-env", default="DEEPSEEK_API_KEY")
@@ -214,14 +227,34 @@ async def run_item(item, measurable, judge, discord, retrieval_only=False, surfa
     hit_rows = [r for _s, r in hits]
     row["retrieved"] = [r["id"] for r in hit_rows]
     row["retrieval"] = ev.retrieval_check(item, hit_rows, measurable, discord)
+    if not retrieval_only:
+        row.update(tool_fields(meta, hit_rows))
     if row.get("answer"):
         cited = ev.cited_tags(row["answer"])
         row["cited"] = cited
         # resolved exactly as core.render_citations resolves them for players
         row["cited_unresolved"] = [t for t in cited if core.resolve_citation(t, hit_rows) is None]
+        row["cited_sources"] = ev.cited_sources(cited, hit_rows, core.resolve_citation)
     if judge and row.get("answer"):
         row["judge"] = await judge.grade(item, row["answer"], hit_rows)
     return row
+
+
+def tool_fields(meta, hit_rows):
+    """What the judge tools did for one answer (core fills meta; absent keys
+    mean ALGO_TOOLS=off). `engine` is the build every simulation ran on."""
+    out = {"tools_level": meta.get("tools_level", "off"),
+           "tools": meta.get("tools") or [],
+           "tool_rounds": meta.get("tool_rounds", 0),
+           "model_calls": meta.get("model_calls"),
+           "quote_fail": meta.get("quote_fail") or [],
+           "engine_mismatch": meta.get("engine_mismatch") or []}
+    for k in ("tools_error", "tools_skipped"):
+        if meta.get(k):
+            out[k] = meta[k]
+    out["engine"] = sorted({str((r.get("metadata") or {}).get("engine") or "")
+                            for r in hit_rows if r.get("source_type") == "engine"} - {""})
+    return out
 
 
 def spent(row):
@@ -246,6 +279,8 @@ async def main_async(args):
 
     # the open-review-note overlay is live state: off unless asked for
     os.environ["ALGO_CR_NOTES"] = "on" if args.cr_notes else "off"
+    # set BEFORE core is imported: its ENGINE_VERSION carries the tools axis
+    os.environ["ALGO_TOOLS"] = args.tools
     import core
     from retriever import Retriever
     corpus_path = Path(args.corpus) if args.corpus else Path(paths.CORPUS)
@@ -272,6 +307,14 @@ async def main_async(args):
             raise SystemExit(f"no API key: set {key_env or 'LLM_API_KEY / DEEPSEEK_API_KEY'}")
         core.init_client(key, base_url=args.base_url, model=args.model)
     judge = None if (args.retrieval_only or args.no_judge) else make_judge(args)
+    offered = [core.tool_name(t) for t in core.offered_tools(args.tools)] if args.tools != "off" else []
+    engine_sha = None
+    if args.tools == "all" and not (args.retrieval_only or rejudge is not None):
+        if "simulate" not in offered:
+            raise SystemExit("--tools all, but simulate is not offered: set ALGO_BOT_TOKEN and start a game "
+                             "server answering /api/bot/simulate (ALGO_GAME_SERVER, default :5000)")
+        import gameserver
+        engine_sha = gameserver.simulate_engine()
 
     label = args.label or ("recall" if args.retrieval_only else (args.model or core.LLM_MODEL))
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -292,6 +335,7 @@ async def main_async(args):
         "reasoning": args.reasoning, "surface": args.surface, "cr_notes": args.cr_notes, "corpus": str(corpus_path),
         "corpus_sha": ev.sha(corpus_path.read_bytes())[:12], "corpus_chunks": len(rows),
         "engine_version": core.ENGINE_VERSION, "top_k": core.TOP_K,
+        "tools": args.tools, "tools_offered": offered, "engine_sha": engine_sha,
         "gold": str(args.gold), "gold_sha": ev.sha(Path(args.gold).read_bytes())[:12],
         "items": len(gold), "judge_model": judge.model if judge else None,
         "judge_reasoning": args.judge_reasoning if judge else None,
@@ -300,7 +344,8 @@ async def main_async(args):
         "total_cites": sum(len(g.get("must_cite") or []) for g in gold),
     }
     if rejudge is not None:
-        for k in ("model", "base_url", "reasoning", "surface", "corpus", "corpus_sha", "engine_version"):
+        for k in ("model", "base_url", "reasoning", "surface", "corpus", "corpus_sha", "engine_version",
+                  "tools", "tools_offered", "engine_sha"):
             header[k] = rj_head.get(k)
     with out.open("a", encoding="utf-8") as f:
         f.write(json.dumps(header, ensure_ascii=False) + "\n")

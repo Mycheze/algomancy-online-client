@@ -184,7 +184,7 @@ async def main():
         root = _Path(__file__).resolve().parent.parent.parent
         ts = "\n".join((root / "client" / "server" / f).read_text()
                        for f in ("main.ts", "api-bot.ts", "api-cardsearch.ts", "api-league.ts"))
-        for route in ("/api/cardsearch", "/api/queue", "/api/bot/health",
+        for route in ("/api/cardsearch", "/api/queue", "/api/bot/health", "/api/bot/simulate",
                       "/api/bot/queue", "/api/bot/profile", "/api/bot/invite",
                       "/api/league/bot/outbox", "/api/league/bot/ack", "/api/league/bot/status",
                       "/api/league/bot/join", "/api/league/bot/leave", "/api/league/bot/skip"):

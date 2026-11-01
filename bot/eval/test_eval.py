@@ -266,4 +266,123 @@ grades.write_text(json.dumps({"t1": "correct", "t2": "partial"}))
 ag = report.agreement(out, grades)
 check("agreement arithmetic", "exact label: 50% (1/2)" in ag and "| t2 | partial | correct |" in ag)
 
+# ── judge tools: run.py --tools, the run row's tool fields ─────────────────
+check("the default run records tools off", head["tools"] == "off" and head["tools_offered"] == []
+      and items["t1"]["tools_level"] == "off" and items["t1"]["tools"] == [])
+check("⭐ a run row keeps the TEXT of every source the answer cited (tool rows are not in the corpus)",
+      list(items["t1"]["cited_sources"]) == [items["t1"]["cited"][0]]
+      and items["t1"]["cited_sources"][items["t1"]["cited"][0]]["text"])
+out_l = scratch / "lookup.jsonl"
+with contextlib.redirect_stdout(io.StringIO()):
+    runner.main(argv[:argv.index("--out") + 1] + [str(out_l)] + argv[argv.index("--out") + 2:]
+                + ["--tools", "lookup", "--ids", "t1", "--no-judge"])
+hl, il = ev.read_run(out_l)
+check("--tools lookup reaches core: the header and the row say so, lookups offered",
+      hl["tools"] == "lookup" and "rule" in hl["tools_offered"] and "simulate" not in hl["tools_offered"]
+      and il["t1"]["tools_level"] == "lookup")
+check("…and the quote check's fields are recorded", il["t1"]["quote_fail"] == [] and il["t1"]["engine_mismatch"] == [])
+lookup_call = fake.calls[-1]
+check("…and the model was offered the lookup tools", {t["function"]["name"] for t in lookup_call.get("tools") or []}
+      >= {"rule", "define", "card", "search"})
+os.environ.pop("ALGO_BOT_TOKEN", None)
+try:
+    with contextlib.redirect_stdout(io.StringIO()):
+        runner.main(argv[:argv.index("--out") + 1] + [str(scratch / "all.jsonl")] + argv[argv.index("--out") + 2:]
+                    + ["--tools", "all", "--ids", "t1", "--no-judge"])
+    check("--tools all without the engine refuses to start", False)
+except SystemExit as exc:
+    check("⭐ --tools all without the engine refuses to start (no run labelled all that never simulated)",
+          "simulate is not offered" in str(exc))
+os.environ.pop("ALGO_TOOLS", None)
+tf = runner.tool_fields({"tools_level": "all", "tools": [{"name": "simulate", "ok": True}], "tool_rounds": 1,
+                         "quote_fail": [{"tags": ["cr:1"], "quote": "x"}]},
+                        [{"id": "engine:s1", "source_type": "engine", "metadata": {"engine": "abc123"}},
+                         {"id": "cr:1", "source_type": "cr", "metadata": {}}])
+check("tool_fields: level, calls, quote_fail and the engine build the simulation ran on",
+      tf["tools_level"] == "all" and tf["tools"][0]["name"] == "simulate" and tf["engine"] == ["abc123"]
+      and len(tf["quote_fail"]) == 1)
+
+# ── grade_pack: blind shards ────────────────────────────────────────────────
+import grade_pack  # noqa: E402
+
+h_all = {**head, "label": "secret-label-all", "tools": "all"}
+all_rows = [json.dumps(h_all)] + [json.dumps({**r, "tools_level": "all", "quote_fail": [{"tags": ["x:1"], "quote": "made up words"}],
+                                              "tools": [{"name": "simulate"}]})
+                                  for r in items.values()]
+run_all_cfg = scratch / "cfg-all.jsonl"
+run_all_cfg.write_text("\n".join(all_rows) + "\n")
+pack, key = grade_pack.build([out, fake_b, run_all_cfg], "pack1", shard_size=3, seed=5, gold_path=gold_path,
+                             out_root=scratch / "packs", primer="PRIMER-TEXT", corpus_rows=FIXTURE)
+shards = sorted(pack.glob("shard-*.md"))
+text = "\n".join(sh.read_text() for sh in shards)
+check("answered items pooled across runs (2 answered × 3 runs), errors skipped",
+      len(key["items"]) == 6 and len([k for k in key["skipped"] if k["why"] == "error"]) == 3)
+check("shards of the asked size, with the primer once each",
+      len(shards) == 2 and all(sh.read_text().count("PRIMER-TEXT") == 1 for sh in shards))
+check("⭐ blind: no run label, run file or tools level in any shard",
+      "secret-label-all" not in text and "fake" not in text and "cfg-all" not in text and "tools=" not in text)
+check("…and the key, which says, sits OUTSIDE the shard directory",
+      grade_pack.key_path(pack) == pack.parent / "pack1.key.json" and grade_pack.key_path(pack).exists()
+      and not list(pack.glob("*key*")))
+order = [key["items"][b]["run"] for b in sorted(key["items"])]
+check("shuffled: the blind order is not the order the runs were given in",
+      order != [str(p) for p in (out, out, fake_b, fake_b, run_all_cfg, run_all_cfg)])
+bid = next(b for b, m in key["items"].items() if m["item"] == "t1" and m["config"].startswith("tools=off"))
+sh = (pack / f"shard-{key['items'][bid]['shard']}.md").read_text()
+item_md = sh.split(f"## {bid}", 1)[1].split("\n## ", 1)[0]
+check("an item carries the question, the gold record and the evidence",
+      "how much life do you start with" in item_md and "*expected:*" in item_md and "*must_not:* 20" in item_md)
+check("⭐ the answer's tags are renumbered S1, S2 and every cited source's text is shown",
+      "[S1]" in item_md and "[S2]" in item_md and "**S1**" in item_md
+      and "did not resolve to any source" in item_md)
+check("…with the deterministic checks: unresolved, quote check, must_cite",
+      "unresolved (dropped before a reader saw them): 1" in item_md and "must_cite: card: Monke" in item_md)
+bid_all = next(b for b, m in key["items"].items() if m["item"] == "t1" and m["config"].startswith("tools=all"))
+sh_all = (pack / f"shard-{key['items'][bid_all]['shard']}.md").read_text().split(f"## {bid_all}", 1)[1]
+check("a quote-check failure is shown as a fact", "quote check failures" in sh_all and "made up words" in sh_all)
+check("the key keeps what report needs", key["items"][bid_all]["simulate_calls"] == 1
+      and key["items"][bid_all]["quote_fail"] == 1 and key["items"][bid]["cost_usd"] is not None)
+g_t1 = {g["id"]: g for g in GOLD}["t1"]
+r_off = items["t1"]
+src = r_off["cited_sources"]
+chk = grade_pack.checks(r_off, g_t1, src)
+r_cfg = {**r_off, "tools_level": "all", "tools": [{"name": "simulate"}], "engine": ["abc123"], "tool_rounds": 2,
+         "model": "other-model", "reasoning_used": True, "label": "x"}
+check("⭐ blind: the same answer from two configs renders byte-identically",
+      grade_pack.render_item("b1", g_t1, r_off, src, chk) == grade_pack.render_item("b1", g_t1, r_cfg, src, chk))
+check("renumber leaves card text alone", grade_pack.renumber("x [Augment] y [cr:1; card:A] [cr:1]", ["cr:1", "card:A"])
+      == "x [Augment] y [S1; S2] [S1]")
+
+# ── report --grades: merge the Claude-agent grades ──────────────────────────
+ids = sorted(key["items"])
+lines = []
+for b in ids:
+    m = key["items"][b]
+    if m["config"].startswith("tools=all"):
+        lines.append({"id": b, "grade": "correct", "invented": [], "note": "ok"})
+    else:
+        lines.append({"id": b, "grade": "wrong" if m["item"] == "t1" else "correct",
+                      "invented": ["life is 31"] if m["item"] == "t1" else [], "note": ""})
+(pack / "grades-1.jsonl").write_text("\n".join(json.dumps(x) for x in lines[:4]) + "\nnot json\n"
+                                    + json.dumps({"id": ids[0], "grade": "great"}) + "\n")
+(pack / "grades-2.jsonl").write_text("\n".join(json.dumps(x) for x in lines[4:5]) + "\n"
+                                    + json.dumps(lines[0]) + "\n")
+md = report.grades_report(pack)
+row_off = next(l for l in md.splitlines() if l.startswith("| tools=off"))
+row_all = next(l for l in md.splitlines() if l.startswith("| tools=all"))
+n_all = sum(1 for x in lines[:5] if key["items"][x["id"]]["config"].startswith("tools=all"))
+n_off = 5 - n_all
+off_ok = sum(1 for x in lines[:5] if key["items"][x["id"]]["config"].startswith("tools=off") and x["grade"] == "correct")
+check(f"⭐ accuracy per config from the graders' lines ({off_ok}/{n_off} off, {n_all}/{n_all} all)",
+      f"| 2 | {n_off} | **{report._p(off_ok, n_off)}**" in row_off and f"| 1 | {n_all} | **100%**" in row_all)
+check("invented = any claim listed or the invented_rule grade", "life is 31" in md)
+check("the per-run table lists each repeat", md.count("`run.jsonl`") == 1 and md.count("`b.jsonl`") == 1)
+check("⭐ the noise caveat is printed", "Noise." in md and "±5 points" in md)
+check("bad lines are named, not guessed", "grades-1.jsonl:5: not JSON" in md
+      and "unknown grade 'great'" in md and "graded twice" in md)
+check("ungraded items are listed", "Not graded yet: " + ids[5] in md)
+with contextlib.redirect_stdout(io.StringIO()) as buf:
+    report.main(["--grades", str(pack)])
+check("report.py --grades from the command line", "Agent-graded eval: pack1" in buf.getvalue())
+
 print(f"test_eval: all {PASS} checks passed ✅")

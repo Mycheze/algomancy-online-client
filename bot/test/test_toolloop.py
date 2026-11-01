@@ -488,7 +488,8 @@ if real_tools is not None:
                  f'They also say "electric damage is always doubled by the client" [cr:802.17].'))
     (answer, hits, _r), meta = ask(c, stub=real_tools)
     check("real rule tool: offered schemas are its TOOLS (lookup level)",
-          names(c.calls[0]) == list(real_tools.TOOL_NAMES))
+          names(c.calls[0]) == [n for n in real_tools.TOOL_NAMES
+                                if n not in getattr(real_tools, "SERVER_TOOLS", ())])
     check("⭐ real rule tool: a verbatim quote survives, a made-up one is unquoted and uncited",
           f"“{words}” (CR 802.17) [cr:802.17]" in answer
           and "also say electric damage is always doubled by the client." in answer

@@ -230,6 +230,29 @@ def cited_tags(answer: str):
     return out
 
 
+#: the metadata a cited source keeps in a run file: what cite_matches and a
+#: grader need, never an engine result's whole final state
+CITED_META = ("kind", "num", "nums", "url", "thread_id", "engine", "board")
+
+
+def cited_sources(tags, hit_rows, resolve):
+    """{tag: {id, source_type, title, text, cited_num, metadata⊂CITED_META}} for
+    every tag `resolve` (core.resolve_citation) maps to a row; unresolved tags
+    are left out (cited_unresolved names them). Stored in the run row because
+    a tool row (rule/card/engine) is not in the corpus to look up later."""
+    out = {}
+    for t in tags:
+        hit = resolve(t, hit_rows)
+        if hit is None:
+            continue
+        r, num = hit if isinstance(hit, tuple) else (hit, None)
+        meta = r.get("metadata") or {}
+        out[t] = {"id": r.get("id"), "source_type": r.get("source_type"), "title": r.get("title"),
+                  "text": r.get("text") or "", "cited_num": num,
+                  "metadata": {k: meta[k] for k in CITED_META if k in meta}}
+    return out
+
+
 # ── the judge ───────────────────────────────────────────────────────────────
 
 JUDGE_SYSTEM = """You grade answers from an Algomancy rules bot against a gold answer written by \
