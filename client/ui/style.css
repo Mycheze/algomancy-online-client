@@ -4308,7 +4308,9 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .linfo.mine > .lin { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 1fr); }
 .linfo.mine .phicons { margin-left: calc(50px + var(--gap)); }
 .linfo .lend { display: flex; align-items: center; justify-content: flex-end; gap: 14px; min-width: 0; height: 100%; }
-.linfo .lres { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; align-items: center; overflow: hidden; overflow: clip; }
+/* the resources clip, but 3px out: the first card's 1px edge and a wake ring
+   (2px + 1px offset) lost their left side to the clip (report #315, test 777) */
+.linfo .lres { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; align-items: center; overflow-clip-margin: 3px; overflow: hidden; overflow: clip; }
 .linfo .lid, .linfo .lbin, .linfo .lcache, .linfo .phicons { flex: none; }
 .linfo .lid { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; }
 .linfo.mine .lid { align-items: flex-end; }
@@ -4453,7 +4455,10 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .lplay { display: flex; flex-direction: row; gap: var(--gap); align-items: stretch; }
 .lplay.theirs { flex-direction: row-reverse; }
 .lplay .regionmain { flex: 1 1 0; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
-.lplay .regionmain .zone { flex: 1 1 0; min-height: 0; overflow: hidden; align-content: flex-start; }
+/* the clip margin is a card's ring (`.card.candidate` 3px): a unit flush
+   against the zone's edge kept only the inner side of its ring (report #315,
+   test 777). The block round the zone still clips at its own edge. */
+.lplay .regionmain .zone { flex: 1 1 0; min-height: 0; overflow: hidden; overflow: clip; overflow-clip-margin: 3px; align-content: flex-start; }
 /* board round 8: In Play is the full width now. Their cards start at the
    SEAM, where their side of the board begins, and fill rightward, as mine fill
    rightward from the left edge of mine (owner, 2026-10-29); --lead is the gap
@@ -4711,8 +4716,13 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
    ~88px and the whole board, your info block with it, dropped into the gap
    (round 5 — the frame holds still). A tucked dock is a decision's screen and
    still tucks. 1.39 is the scans' aspect (720 × 1000). */
-#app.board.v2 .handdock:not(.tucked) > .zone { min-height: calc(92px * 1.39); }
-@media (max-height: 860px) { #app.board.v2 .handdock:not(.tucked) > .zone { min-height: calc(76px * 1.39); } }
+/* The hand scrolls, and a scroller clips at its padding box: a 3px inset
+   (a card's widest ring) paid back by the margin, so the rings along the top
+   and the first card's left are whole and no card moves (report #315, test
+   777). The floor counts the inset. */
+#app.board.v2 .handdock:not(.tucked) > .zone { padding: 3px 3px 2px 3px; margin: 3px -3px 0 -3px;
+  min-height: calc(92px * 1.39 + 3px); }
+@media (max-height: 860px) { #app.board.v2 .handdock:not(.tucked) > .zone { min-height: calc(76px * 1.39 + 3px); } }
 
 @media (prefers-reduced-motion: reduce) {
   .lboard [data-fitmode="fan"] .zone > .card:hover { transform: none; }
