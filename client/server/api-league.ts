@@ -26,9 +26,9 @@ import { adminFor } from './admin.ts';
 import { MIN_HOURS, sanitizeGrid, validTz, type Outcome } from './league.ts';
 import {
   acceptTime, ackOutbox, advance, allSeasons, canSee, cancelChallenge, challenge, contactOf, createSeason, currentSeason,
-  deleteSeason, joinSeason, leaveSeason, matchOpened, matchToOpen, overrideResult, pendingOutbox, previewNext, repairWeek,
-  seasonById, seasonView, setSkip, suggestTime, updateSeason,
-  type Season,
+  deleteSeason, formatOf, joinSeason, leaveSeason, liveSeasons, matchOpened, matchToOpen, overrideResult, pendingOutbox,
+  previewNext, repairWeek, seasonById, seasonView, setSkip, suggestTime, updateSeason,
+  type LeagueFormat, type Season,
 } from './league-store.ts';
 
 export interface LeagueCtx {
@@ -41,6 +41,9 @@ export interface LeagueCtx {
     a: { userId: string; username: string };
     b: { userId: string; username: string };
     season: string; match: string; rated: boolean;
+    /** the season's format: a live draft lobby, or a constructed room where
+     * each player picks a deck for this game */
+    mode: LeagueFormat;
   }) => { code: string; users: [string | null, string | null] };
   now?: () => number;
 }
@@ -53,6 +56,9 @@ function notFound(res: ServerResponse): true {
 
 const num = (v: unknown): number => (typeof v === 'number' ? v : Number(v));
 const bool = (v: unknown): boolean => v === true || v === 'true' || v === 1;
+/** a format off the wire: absent stays absent (draft), anything else is checked by league-store */
+const fmt = (v: unknown): LeagueFormat | undefined =>
+  (v === undefined || v === null || v === '' ? undefined : String(v).slice(0, 20) as LeagueFormat);
 
 export async function leagueRoutes(
   req: IncomingMessage, res: ServerResponse, path: string, url: URL, ctx: LeagueCtx,
@@ -78,8 +84,11 @@ export async function leagueRoutes(
     json(res, {
       ok: true,
       season: s ? seasonView(s, me, { admin, now }) : null,
+      // the OTHER seasons still running — one month's final shares its week
+      // with the next one's sign-ups, and a player may be in both
+      others: liveSeasons(me, admin).filter(x => x !== s).map(x => seasonView(x, me, { admin, now })),
       seasons: allSeasons().filter(x => canSee(x, me, admin))
-        .map(x => ({ id: x.id, name: x.name, phase: x.phase, weeks: x.weeks, hidden: x.hidden })),
+        .map(x => ({ id: x.id, name: x.name, format: formatOf(x), phase: x.phase, weeks: x.weeks, hidden: x.hidden })),
       signedIn: !!me,
       availability: me?.league?.tz && me.league.grid ? { tz: me.league.tz, grid: me.league.grid } : null,
       contact: contactOf(me),
@@ -125,6 +134,7 @@ export async function leagueRoutes(
         // the week's pairings and the final are made by the league, like the
         // queue's; a sign-up week game two players chose is not rated
         rated: m.week >= 1,
+        mode: formatOf(s),
       });
     } catch (err) {
       console.error(`[league] could not open a room for ${m.id}:`, err);
@@ -132,7 +142,7 @@ export async function leagueRoutes(
       return true;
     }
     matchOpened(s, m, me, opened.code, now);
-    json(res, { ok: true, room: opened.code, seat: opened.users.indexOf(me.id), mode: 'draft' });
+    json(res, { ok: true, room: opened.code, seat: opened.users.indexOf(me.id), mode: formatOf(s) });
     return true;
   }
   // when to play: one suggestion at a time, the other player accepts (league-store.ts)
@@ -156,6 +166,7 @@ async function adminRoute(req: IncomingMessage, res: ServerResponse, path: strin
       start: str(b['start'], 40), weeks: num(b['weeks']), perWeek: num(b['perWeek']),
       auto: bool(b['auto']), hidden: bool(b['hidden']),
       ...(b['lateUntil'] !== undefined ? { lateUntil: num(b['lateUntil']) } : {}),
+      ...(fmt(b['format']) ? { format: fmt(b['format'])! } : {}),
     }, now);
     if (r.ok) console.log(`[league] ${me.username} created season ${r.season.id}`);
     json(res, r.ok ? { ok: true, id: r.season.id } : r);
@@ -170,6 +181,7 @@ async function adminRoute(req: IncomingMessage, res: ServerResponse, path: strin
     for (const k of ['name', 'signupOpens', 'start'] as const) if (b[k] !== undefined) patch[k] = str(b[k], 60);
     for (const k of ['weeks', 'perWeek', 'lateUntil'] as const) if (b[k] !== undefined) patch[k] = num(b[k]);
     for (const k of ['auto', 'hidden', 'hold'] as const) if (b[k] !== undefined) patch[k] = bool(b[k]);
+    if (fmt(b['format'])) patch['format'] = fmt(b['format']);
     const r = updateSeason(s.id, patch, now);
     json(res, r.ok ? { ok: true } : r);
     return true;
@@ -265,6 +277,10 @@ async function botRoute(
       ok: true,
       linked: !!who,
       season: s ? seasonView(s, who, { admin: false, now }) : null,
+      // and the other live seasons this player is IN (an October finalist
+      // signing up for November sees both in /league status)
+      others: who ? liveSeasons(who, false).filter(x => x !== s && x.entrants.some(e => e.userId === who.id && !e.withdrawnAt))
+        .map(x => seasonView(x, who, { admin: false, now })) : [],
       availability: !!(who?.league?.tz && who.league.grid),
     });
     return true;

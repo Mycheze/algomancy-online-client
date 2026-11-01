@@ -43,10 +43,23 @@ export interface Entrant {
   withdrawnAt?: string;
 }
 
+/**
+ * What a season's games are (owner, 2026-11-01). 'draft' is the October
+ * season's: one live draft, random elements. 'constructed' is "casual
+ * constructed": each player brings any deck to each game, the same one or a
+ * different one every time. A row written before the field existed has none,
+ * and reads as draft — `formatOf`, never `s.format`.
+ */
+export type LeagueFormat = 'draft' | 'constructed';
+export const LEAGUE_FORMATS: readonly LeagueFormat[] = ['draft', 'constructed'];
+export const formatOf = (s: { format?: unknown }): LeagueFormat => (s.format === 'constructed' ? 'constructed' : 'draft');
+
 export interface Season extends SeasonClock {
   /** `[a-z0-9-]`, e.g. `2026-10` — also the prefix of every match id */
   id: string;
   name: string;
+  /** absent on a draft season (every season before November 2026): read it with formatOf */
+  format?: LeagueFormat;
   /** opponents per week (capped at entrants − 1 when paired) */
   perWeek: number;
   /** follows its calendar; false = moves only when the organizer advances it */
@@ -192,6 +205,18 @@ export function currentSeason(viewer: Account | undefined, admin: boolean): Seas
   return pick(live) ?? pick(visible);
 }
 
+/**
+ * Every season this viewer can see that is not over, oldest first. Two run at
+ * once for a week each month: the old season's final IS the new one's sign-up
+ * week (owner, 2026-11-01), so a player must be able to play the one and join
+ * the other. `currentSeason` is the newest of these; the page, the banner and
+ * the bot show the rest beside it.
+ */
+export function liveSeasons(viewer: Account | undefined, admin: boolean): Season[] {
+  return db().seasons.filter(s => canSee(s, viewer, admin) && !isClosed(s))
+    .sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
+}
+
 export const activeEntrants = (s: Season): Entrant[] => s.entrants.filter(e => !e.withdrawnAt);
 
 /** The table, over everybody who entered (a withdrawn player keeps the results they played). */
@@ -209,6 +234,8 @@ const recordOf = (rows: StandingRow[], id: string): string => {
 export interface SeasonInput {
   id: string; name: string; signupOpens: string; start: string;
   weeks: number; perWeek: number; auto: boolean; hidden: boolean; lateUntil?: number;
+  /** omitted = draft */
+  format?: LeagueFormat;
 }
 
 type Res<T = object> = ({ ok: true } & T) | { ok: false; error: string };
@@ -224,6 +251,7 @@ function checkInput(i: Partial<SeasonInput>): string | null {
   if (i.lateUntil !== undefined && (!Number.isInteger(i.lateUntil) || i.lateUntil < 1 || i.lateUntil > i.weeks!)) {
     return 'late sign-ups must close by a week of the season';
   }
+  if (i.format !== undefined && !LEAGUE_FORMATS.includes(i.format)) return 'the format is draft or constructed';
   return null;
 }
 
@@ -233,6 +261,9 @@ export function createSeason(i: SeasonInput, now: number): Res<{ season: Season 
   if (seasonById(i.id)) return { ok: false, error: `there is already a season called ${i.id}` };
   const season: Season = {
     id: i.id, name: i.name, signupOpens: iso(Date.parse(i.signupOpens)), start: iso(Date.parse(i.start)),
+    // written only when it is not the default, so a draft season's row is
+    // exactly what it was before formats existed
+    ...(i.format === 'constructed' ? { format: 'constructed' as const } : {}),
     weeks: i.weeks, perWeek: i.perWeek, auto: i.auto, hold: false, hidden: i.hidden,
     lateUntil: Math.min(i.lateUntil ?? 2, i.weeks), phase: -1, createdAt: iso(now),
     entrants: [], matches: [], shorts: {}, log: [],
@@ -245,8 +276,16 @@ export function createSeason(i: SeasonInput, now: number): Res<{ season: Season 
   return { ok: true, season };
 }
 
-/** Change a season. The calendar can only change before week 1 is paired;
- * `hold`, `hidden`, `auto` and the name at any time. */
+/** Why this season's format can no longer change, or null: once any of its
+ * league games has a room, that room was built for the format it had. */
+export function formatProblem(s: Season): string | null {
+  const opened = s.matches.find(m => m.room || m.result);
+  return opened ? 'the format is fixed once a league game has been opened' : null;
+}
+
+/** Change a season. The calendar can only change before week 1 is paired, the
+ * format only before any league game is opened; `hold`, `hidden`, `auto` and
+ * the name at any time. */
 export function updateSeason(id: string, patch: Partial<SeasonInput> & { hold?: boolean }, now: number): Res<{ season: Season }> {
   const s = seasonById(id);
   if (!s) return { ok: false, error: 'no such season' };
@@ -254,9 +293,14 @@ export function updateSeason(id: string, patch: Partial<SeasonInput> & { hold?: 
   if (s.phase >= 1 && calendar.some(k => patch[k] !== undefined)) {
     return { ok: false, error: 'the calendar is fixed once week 1 is paired' };
   }
+  if (patch.format !== undefined && patch.format !== formatOf(s)) {
+    const why = formatProblem(s);
+    if (why) return { ok: false, error: why };
+  }
   const next = { ...s, ...Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined)) } as Season;
   const bad = checkInput(next);
   if (bad) return { ok: false, error: bad };
+  if (next.format === 'constructed') s.format = 'constructed'; else delete s.format;
   s.name = next.name; s.auto = next.auto === true; s.hidden = next.hidden === true;
   s.signupOpens = iso(Date.parse(next.signupOpens)); s.start = iso(Date.parse(next.start));
   s.weeks = next.weeks; s.perWeek = next.perWeek; s.lateUntil = Math.min(next.lateUntil, next.weeks);
@@ -308,7 +352,7 @@ export function joinSeason(s: Season, account: Account, now: number, opts: { byA
   note(s, `${account.username} joined${opts.byAdmin ? ' (added by the organizer)' : ''}`, now);
   const firstWeek = Math.max(1, s.phase + 1);
   send(s, account.id, 'signup', {
-    season: s.name, firstWeek, weeks: s.weeks,
+    season: s.name, format: formatOf(s), firstWeek, weeks: s.weeks,
     firstPairings: Math.floor(phaseStart(s, firstWeek) / 1000),
     late: s.phase >= 1,
   }, now);
@@ -768,7 +812,7 @@ export function advance(s: Season, now: number): Res<{ phase: number; label: str
   const p = s.phase + 1;
   if (p === 0) {
     send(s, null, 'signups-open', {
-      season: s.name, start: unix(phaseStart(s, 1)), weeks: s.weeks, perWeek: s.perWeek,
+      season: s.name, format: formatOf(s), start: unix(phaseStart(s, 1)), weeks: s.weeks, perWeek: s.perWeek,
     }, now);
     note(s, 'sign-ups opened', now);
   } else if (p === 1) {
@@ -943,7 +987,7 @@ export function seasonView(s: Season, viewer: Account | undefined, opts: { admin
     phase: p, label: phaseLabel(s, p), at: iso(phaseStart(s, p)),
   }));
   return {
-    id: s.id, name: s.name, phase: s.phase, label: phaseLabel(s, s.phase),
+    id: s.id, name: s.name, format: formatOf(s), phase: s.phase, label: phaseLabel(s, s.phase),
     weeks: s.weeks, perWeek: s.perWeek, lateUntil: s.lateUntil,
     signupOpens: s.signupOpens, start: s.start, phases,
     auto: s.auto, hold: s.hold, hidden: s.hidden,
@@ -980,6 +1024,7 @@ export function seasonView(s: Season, viewer: Account | undefined, opts: { admin
     } : null,
     ...(opts.admin ? {
       repairProblem: repairProblem(s),
+      formatProblem: formatProblem(s),
       log: s.log.slice(-40),
       outbox: db().outbox.filter(r => r.season === s.id).slice(-60).map(r => ({
         id: r.id, to: r.to ? nameOf(r.to) : '#channel', kind: r.kind, createdAt: r.createdAt,

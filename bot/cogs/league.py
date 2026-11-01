@@ -120,16 +120,20 @@ def render(row, base=None):
         view = discord.ui.View(timeout=None)
         view.add_item(discord.ui.Button(label="Open the league →", style=discord.ButtonStyle.link, url=url))
     season = d.get("season", "the league")
+    # owner, 2026-11-01: a season is a live draft (the default, and every row
+    # written before formats existed) or casual constructed
+    casual = ("Casual constructed: bring any deck, and change it every game if you like. "
+              if d.get("format") == "constructed" else "")
 
     if kind == "signup":
-        text = (f"🏅 You're in **{season}**! "
+        text = (f"🏅 You're in **{season}**! " + casual
                 + (f"You joined late, so your first opponents come in week {d.get('firstWeek')}. " if d.get("late") else "")
                 + f"Your first pairings arrive {_ts(d['firstPairings'], 'F')} ({_ts(d['firstPairings'], 'R')}). "
                 "Can't make a week? `/league skip` before it starts.")
         return {"content": text, "view": view}
 
     if kind == "signups-open":
-        text = (f"🏅 **Sign-ups for {season} are open!** {d.get('weeks')} weeks, "
+        text = (f"🏅 **Sign-ups for {season} are open!** " + casual + f"{d.get('weeks')} weeks, "
                 f"{d.get('perWeek')} opponents a week matched on when you can play, then a final between the top two. "
                 f"This week, play anybody free when you are: up to {d.get('perWeek')} of those games count. "
                 f"Week 1 pairings go up {_ts(d['start'], 'F')}. Join on the site.")
@@ -443,8 +447,15 @@ def status_text(body) -> str:
         return "Your Discord isn't linked to an Algomancy account yet — link it from your profile on the site."
     if not s:
         return "There's no league season right now."
+    # two seasons run at once for a week (one's final is the next one's
+    # sign-up week): the other one this player is in comes first, the
+    # current one after
+    return "\n\n".join([_season_status(o) for o in body.get("others") or []] + [_season_status(s)])
+
+
+def _season_status(s) -> str:
     me = s.get("me") or {}
-    head = f"🏅 **{s['name']}** — {s['label']}."
+    head = f"🏅 **{s['name']}**{' (casual constructed)' if s.get('format') == 'constructed' else ''} — {s['label']}."
     if not me.get("entered"):
         return head + " You're not in it" + (f": {me['joinProblem']}." if me.get("joinProblem") else " — `/league join`.")
     week = max([m["week"] for m in me.get("matches", [])], default=0)

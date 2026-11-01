@@ -17,7 +17,8 @@ import type { Action, ActivateVia, AmendDest, AmendEdit, AmendSource, AmendUnitD
 import { AMEND_DESTS, AMEND_SOURCES, AMEND_UNIT_DESTS } from '../engine/src/types.ts';
 import { amendProblem, amendText } from '../engine/src/amend.ts';
 import { singleCardsOf } from './cardladder.ts';
-import { amendFrozen, apply, checkDeck, checkSingleDeck, makesUnits, decisionBlocks, forcedAction, hiddenSegment, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import { DECK_LIST } from '../engine/src/cards/registry.ts';
+import { amendFrozen, apply, checkDeck, checkSingleCard, checkSingleDeck, makesUnits, decisionBlocks, forcedAction, hiddenSegment, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
 // CR D8.4 — the scenario tester. `dealScenario` IS `createGame` when no scenario
 // id is passed, byte for byte, so every ordinary room is unaffected; when one
 // is passed it applies the scenario's deterministic board mutation. It is
@@ -1996,13 +1997,45 @@ export function singleCards(room: Pick<Room, 'single' | 'decks'>): [CardName, Ca
   return room.single ? singleCardsOf(room.decks) : null;
 }
 
+/**
+ * The stand-in deck of a constructed LEAGUE room before either player has
+ * picked (owner, 2026-11-01: a deck for each game, chosen in the room). Every
+ * other constructed room is created by somebody bringing a deck, so it always
+ * has one to build its waiting state from; a league room is created by the
+ * league, on the first Play, before anybody has chosen. The state built from
+ * this is never dealt to anyone: it is thrown away when the second deck is in.
+ */
+const leaguePlaceholderDeck = (): CardName[] => {
+  const c = checkSingleCard(DECK_LIST[0]);
+  if (!c.ok) throw new Error(`no placeholder deck: ${c.error}`);
+  return c.cards;
+};
+
 /** the decks to build a constructed room's state from: any missing deck is
- * stood in for by the other one (placeholder games are never played) */
-function decksFor(room: Pick<Room, 'decks'>): [CardName[], CardName[]] {
+ * stood in for by the other one (placeholder games are never played) — and a
+ * league room with neither yet by the placeholder above */
+function decksFor(room: Pick<Room, 'decks'> & { league?: RoomLeague | null }): [CardName[], CardName[]] {
   const a = room.decks[0] ?? room.decks[1];
   const b = room.decks[1] ?? room.decks[0];
-  if (!a || !b) throw new Error('a constructed room needs at least one deck');
+  if (!a || !b) {
+    if (room.league) { const p = leaguePlaceholderDeck(); return [p, p]; }
+    throw new Error('a constructed room needs at least one deck');
+  }
   return [a, b];
+}
+
+/**
+ * Does a deck riding on a JOIN register for this seat? The client sends its
+ * selected deck with every join (ui/main.ts sendJoin), which in a friend's
+ * constructed room is the point: you came with a deck. In a constructed
+ * LEAGUE room the deck is chosen for each game, in the room (owner,
+ * 2026-11-01: "change your deck every single game (or not)"), so only the
+ * waiting room's own "Play this deck" — a join marked `pick` — counts.
+ * Otherwise whatever deck was last selected on the home page would be locked
+ * in the moment the League page's Play button landed you in the room.
+ */
+export function takesJoinDeck(room: Pick<Room, 'league'>, pick: boolean): boolean {
+  return !room.league || pick;
 }
 
 /**
@@ -4239,11 +4272,19 @@ export function createLeagueRoom(
   code: string,
   league: RoomLeague,
   rated: boolean,
+  mode: 'draft' | 'constructed' = 'draft',
 ): Room {
   const seed = (Math.random() * 1e9) >>> 0;
   const names: [string, string] = [a.username, b.username];
-  const room = createRoom(code, seed, names, 'draft', undefined, undefined, undefined, MATCH_CLOCK_MS.draft);
-  room.lobby = freshLobby('random');
+  // A CONSTRUCTED season (owner, 2026-11-01) uses the ordinary constructed
+  // waiting room: each seat picks a deck there, the game deals when both are
+  // in. Created with the placeholder (decks stay [null, null]), on the
+  // constructed clock the matchmaker's constructed rooms use. A rated one
+  // moves the CONSTRUCTED rating, because the rating is per room.mode.
+  const room = mode === 'constructed'
+    ? createRoom(code, seed, names, 'constructed', undefined, leaguePlaceholderDeck(), undefined, MATCH_CLOCK_MS.constructed)
+    : createRoom(code, seed, names, 'draft', undefined, undefined, undefined, MATCH_CLOCK_MS.draft);
+  if (mode === 'draft') room.lobby = freshLobby('random');
   room.users = [a.userId, b.userId];
   room.league = { ...league };
   if (rated) room.rated = true;
@@ -4597,13 +4638,16 @@ export function restoreRooms(now = Date.now()): void {
       }
       const decks: [CardName[] | null, CardName[] | null] = [null, null];
       const single = mode === 'constructed' && raw.single === true;
+      const league = sanitizeLeague(raw.league);
       if (mode === 'constructed') {
         for (const s of [0, 1] as const) {
           // CR D8.2: a single-card room holds single-card decks and nothing else
           const c = single ? checkSingleDeck(raw.decks?.[s]) : checkDeck(raw.decks?.[s]);
           if (c.ok) decks[s] = c.cards;
         }
-        if (!decks[0] && !decks[1]) throw new Error('constructed room with no decks');
+        // …except a constructed LEAGUE room nobody has picked a deck in yet,
+        // which waits on the placeholder (createLeagueRoom)
+        if (!decks[0] && !decks[1] && !league) throw new Error('constructed room with no decks');
       }
       const deckIds: [string | null, string | null] = [
         typeof raw.deckIds?.[0] === 'string' ? raw.deckIds[0] : null,
@@ -4629,7 +4673,7 @@ export function restoreRooms(now = Date.now()): void {
       const { state, events, segKey, segSnapshot, heldEvents, heldFrames, segStartIndex, segSeen,
         segIdFloor, segRefs, segPosRefs, skipped } = rebuild(
         raw.seed, names, actions, mode, els,
-        mode === 'constructed' ? decksFor({ decks }) : undefined, scenario, custom?.deal);
+        mode === 'constructed' ? decksFor({ decks, league }) : undefined, scenario, custom?.deal);
       // BL-26 — THE ADDITIVE CASE, and the only place CLOCK_START_MS is still
       // read outside creation. A file written before the setting existed has
       // no `clockStart`, and 60:00 is not a guess for it: it is the bank that
@@ -4652,7 +4696,7 @@ export function restoreRooms(now = Date.now()): void {
         // quietly stop being rated every time the box is deployed
         ...(raw.rated === true ? { rated: true } : {}),
         // …and a league room stays one, or its result would never reach the league
-        ...((): { league?: RoomLeague } => { const lg = sanitizeLeague(raw.league); return lg ? { league: lg } : {}; })(),
+        ...(league ? { league } : {}),
         rematch: [false, false], rematchRoom: null,
         // BL-46: the record survives the restart; a proposal does not
         amendments: sanitizeAmendments(raw.amendments, actions.length), proposal: null, fixCooldown: [0, 0],

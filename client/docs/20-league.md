@@ -518,6 +518,34 @@ brake: a fresh store spends nine.
 - Tests: 376–378 (renumbered from 342–344, which master had taken), 379
   (sign-up week and the room), and the e2e plays a league game over the socket.
 
+**2026-11-01: formats, and two seasons at once.** The owner's calls for
+November:
+
+- **A season has a format** (`Season.format`, read with `formatOf`): `draft`
+  (the default; a row without the field — every season before November — is a
+  draft, and a draft season is still written without it) or `constructed`,
+  "casual constructed": each player picks any deck for EACH game, in the
+  ordinary constructed waiting room. The organizer picks it on the New season
+  form; it can change until a league game has been opened (`formatProblem`).
+- **The constructed league room** (`createLeagueRoom(…, 'constructed')`) is
+  created with no deck — it waits on a placeholder that is never dealt — and
+  takes a deck only from the waiting room's own "Play this deck" (a join
+  marked `pick`; `takesJoinDeck`), never the deck the client sends with every
+  join. Rated exactly as the draft season (weeks and final yes, sign-up week
+  no), which lands on the constructed rating because the rating is per mode.
+  A deckless league room survives a restart.
+- **Two seasons run at once** for a week each month: the old season's final
+  IS the new one's sign-up week. `currentSeason` is still the newest live
+  season; `liveSeasons` is all of them. `GET /api/league` answers `others`
+  (the other live seasons), shown as one line each on the home banner and the
+  League page with the viewer's own Play button; the bot's status carries the
+  other seasons its player is in.
+- **November 2026** is entered as: id `2026-11`, name "November 2026 League",
+  format constructed, automatic, sign-ups open now, week 1 Sun 8 Nov 07:00
+  UTC, 3 weeks, 3 opponents (final 29 Nov – 5 Dec, closes Sun 6 Dec).
+- Tests: server/test 750–752, ui/test 753, e2e/test-league.ts §10,
+  bot/test/test_league.py §7.
+
 **Still not built:** the mid-week `reminder`s, the simulation driver
 `league-sim.ts`, and the league achievements.
 

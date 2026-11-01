@@ -44,6 +44,8 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-01', kind: 'new', text: "Sign-ups are open for the November league: casual constructed. Bring any deck, and change it every game if you like. Week 1 starts Sunday 8 November." },
+  { date: '2026-11-01', kind: 'change', text: 'While the October final is on, the home page and the League page show it next to the November sign-ups, so finalists can play the final and sign up in the same week.' },
   { date: '2026-10-31', kind: 'fix', text: 'A unit that is erased when it dies (an Unstable unit, or one carrying a mod) is no longer trashed. It still dies, but cards that care about trashing no longer see it.' },
   { date: '2026-10-31', kind: 'new', text: 'You can change your password from your profile page.' },
   { date: '2026-10-29', kind: 'new', text: 'A bigger table. Your resources, the phase, your bin and cache and your life now sit on one line just above your hand, the side panel is a slim toolbar on the right, and the gaps between the boxes are thinner.' },

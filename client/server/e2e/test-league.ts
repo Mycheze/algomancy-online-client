@@ -17,11 +17,16 @@
  *    nobody else, the trio method is fixed to random, a concede settles the
  *    match, and the saved room is tagged and rated
  * §8 ⭐ A RESTART keeps the season, the pairings, the result and the unsent rows
+ * §10 ⭐ A CONSTRUCTED SEASON beside the running one (owner, 2026-11-01): the
+ *    page shows both; Play opens a constructed room; the deck a join carries
+ *    does NOT register there, the waiting room's own pick does; the deckless
+ *    room survives a restart; two picks deal; a concede settles the match
  */
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnServer, type ServerHandle } from './test-util.ts';
+import { defaultDecks } from '../decks.ts';
 
 const SCRATCH = mkdtempSync(join(tmpdir(), 'algo-league-e2e-'));
 const BOT = 'league-bot-token';
@@ -232,6 +237,54 @@ try {
   eq((again.json['season']['matches'] as J[]).filter(m => m['result']?.['how'] === 'played').length, 1, 'and the played result');
   const still = (await call('GET', '/api/league/bot/outbox?limit=100', undefined, bot())).json['rows'] as J[];
   ok(pending.every(id => still.some(r => r['id'] === id)), '⭐ the same rows are still waiting for the bot');
+
+  console.log('\n[§10 ⭐ a constructed season beside the running one]');
+  const t0 = Date.now();
+  const con = await call('POST', '/api/league/admin/create', {
+    id: 'e2c', name: 'E2E Constructed', signupOpens: new Date(t0 + 86_400_000).toISOString(),
+    start: new Date(t0 + 14 * 86_400_000).toISOString(), weeks: 2, perWeek: 2, auto: false, hidden: false, format: 'constructed',
+  }, as(org));
+  eq(con.json, { ok: true, id: 'e2c' }, 'a constructed season is created');
+  eq((await call('POST', '/api/league/admin/advance', { id: 'e2c' }, as(org))).json['label'], 'Sign-up week', 'and opens sign-ups');
+  const opp = 'Player1';
+  for (const t of [p1, tokenOf[opp]!]) eq((await call('POST', '/api/league/join', { season: 'e2c' }, as(t))).json, { ok: true }, 'joins the new season while in the old one');
+  const both = (await call('GET', '/api/league', undefined, as(p1))).json;
+  eq([both['season']['id'], both['season']['format'], (both['others'] as J[]).map(o => [o['id'], o['format']])],
+    ['e2c', 'constructed', [['e2e', 'draft']]], '⭐ the page answers the new season AND the one still running');
+  const ch = await call('POST', '/api/league/challenge', { season: 'e2c', opponent: (both['season']['entrants'] as J[]).find(e => e['name'] === opp)!['id'] }, as(p1));
+  ok(ch.json['ok'], `a sign-up week game (${ch.json['match'] ?? ch.json['error']})`);
+  const cp1 = await call('POST', '/api/league/play', { season: 'e2c', match: ch.json['match'] }, as(p1));
+  const cp2 = await call('POST', '/api/league/play', { season: 'e2c', match: ch.json['match'] }, as(tokenOf[opp]!));
+  eq([cp1.json['mode'], cp2.json['room']], ['constructed', cp1.json['room']], '⭐ Play opens ONE constructed room');
+  const CROOM = cp1.json['room'] as string;
+  const [d1, d2] = defaultDecks().filter(d => !d.problems.length);
+  const x = await client(), y = await client();
+  // the client sends its selected deck with every join: here it must not count
+  x.ws.send(JSON.stringify({ t: 'join', room: CROOM, seat: cp1.json['seat'], token: p1, mode: 'constructed', deck: d1!.cards }));
+  await settle();
+  const w1 = [...x.msgs].reverse().find(m => m['waiting'])?.['waiting'] as Msg | undefined;
+  eq([w1?.['league'], w1?.['have']], [true, [false, false]], '⭐ a deck riding on the join is NOT locked in; the room says it is a league room');
+
+  await server.stop();
+  server = await spawnServer(ENV);
+  const x2 = await client(), y2 = await client();
+  x2.ws.send(JSON.stringify({ t: 'join', room: CROOM, seat: cp1.json['seat'], token: p1, mode: 'constructed', deck: d1!.cards, pick: true }));
+  await settle();
+  const w2 = [...x2.msgs].reverse().find(m => m['t'] === 'joined' || m['t'] === 'update');
+  const mine2 = (w2?.['waiting']?.['have'] as boolean[] | undefined)?.[cp1.json['seat'] as number];
+  eq([!!w2?.['waiting'], mine2], [true, true], '⭐ after a restart the deckless room is still there, and "Play this deck" registers');
+  y2.ws.send(JSON.stringify({ t: 'join', room: CROOM, seat: cp2.json['seat'], token: tokenOf[opp], mode: 'constructed', deck: d2!.cards, pick: true }));
+  await settle(800);
+  ok(x2.msgs.some(m => m['view']) && y2.msgs.some(m => m['view']), '⭐ both picks in: the game is dealt to both seats');
+  x2.ws.send(JSON.stringify({ t: 'action', action: { type: 'concede', seat: cp1.json['seat'] } }));
+  await settle(800);
+  const conRow = ((await call('GET', '/api/league?season=e2c', undefined, as(p1))).json['season']['me']['matches'] as J[])
+    .find(m => m['id'] === ch.json['match'])!;
+  eq([conRow['result']?.['how'], conRow['won']], ['played', false], '⭐ the concede settled the constructed league match');
+  const savedCon = JSON.parse(readFileSync(join(SCRATCH, 'games', `${CROOM}.json`), 'utf8')) as J;
+  eq([savedCon['mode'], savedCon['league']?.['match'], savedCon['rated']], ['constructed', ch.json['match'], undefined],
+    'the saved room is constructed, tagged, and (sign-up week) unrated');
+  for (const z of [x, y, x2, y2]) z.ws.close();
 } finally {
   await server.stop();
   rmSync(SCRATCH, { recursive: true, force: true });
