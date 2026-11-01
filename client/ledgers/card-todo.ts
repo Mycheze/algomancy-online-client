@@ -317,16 +317,6 @@ const OPEN: TodoEntry[] = [
     proof: () => still('engine/test/472-counter-thief-and-rot-order.test.ts', 'the player whose unit the counters were for is asked') || still('engine/src/engine.ts', 'and Cosmic Conspirators (each asks its own controller'),
     status: 'open',
   },
-  {
-    id: 470, area: "client", severity: "minor",
-    title: "the in-game judge box always sends an empty history, so a follow-up question loses its thread",
-    detail: "client/server/main.ts /api/judge posts `history: []` to bot/app.py, which already accepts a history. A follow-up such as \"So do they enter the bin?\" is answered with no context.",
-    evidence: "Judge round 2026-11-01 (agent D), reading the 17 live questions since 2026-10-13.",
-    fix: "Send the box's previous question/answer turns (citations stripped, capped) as `history`; the Discord path already threads them.",
-    proof: () => still('server/main.ts', 'history: []'),
-    verify: "Ask the in-game judge a question, then a follow-up that only makes sense with the first: the answer uses the thread.",
-    status: 'open',
-  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

@@ -46,6 +46,7 @@ import {
 } from './battle.ts';
 import type * as bat from './battle.ts';
 import { passLabel } from './nextstep.ts';
+import { judgeHistory, type JudgeTurn } from './judgehistory.ts';
 import { placementWarnings, placeWarnHtml } from './placewarn.ts';
 import {
   buildOfPlan, clearBuild, dropIntoRow, forwardRow, halfRows, hasBuild, leftCols, leftReach, moveInBuild, openLeft,
@@ -4979,7 +4980,7 @@ let judgeOpen = false;
 let judgeBusy = false;
 /** one source in a judge answer's legend, as bot/app.py `_sources_payload` sends it */
 type JudgeSource = { n: number; name: string; authority: string; url?: string | null };
-const judgeLog: { q: string; a: string; cards: { title: string }[]; sources?: JudgeSource[] }[] = [];
+const judgeLog: { q: string; a: string; cards: { title: string }[]; sources?: JudgeSource[]; failed?: boolean }[] = [];
 
 /** one glossary entry as a reference row under a card in the inspector */
 const glossRow = (e: GlossEntry): string =>
@@ -5161,24 +5162,29 @@ function judgeOverlayHtml(): string {
 
 /** One judge question. `context` (CR D8.1) is the Learn to Play lesson the player
  * is reading, so the answer is about it. */
-function judgeRequest(question: string, context?: string): Promise<{ answer: string; cards: { title: string }[]; sources: JudgeSource[] }> {
+function judgeRequest(question: string, context?: string, history: JudgeTurn[] = []): Promise<{ answer: string; cards: { title: string }[]; sources: JudgeSource[]; ok: boolean }> {
   // the judge needs a signed-in caller (the server refuses anonymous spend on
   // the model), so the request carries the session like every other authed
   // one — it did not, and a signed-in player was told to sign in (2026-09-05)
   return fetch('/api/judge', {
     method: 'POST', headers: acct.authHeaders(),
-    body: JSON.stringify(context ? { question, context } : { question }),
-  }).then(r => r.json()).then((r: { answer?: string; cited_cards?: { title: string }[]; sources?: JudgeSource[]; detail?: string }) =>
-    ({ answer: r.answer ?? r.detail ?? 'no answer', cards: r.cited_cards ?? [], sources: Array.isArray(r.sources) ? r.sources : [] }));
+    // CT-470: the box's earlier exchanges ride along, so a follow-up keeps its thread
+    body: JSON.stringify(context ? { question, context } : history.length ? { question, history } : { question }),
+  }).then(async res => {
+    const r = await res.json() as { answer?: string; cited_cards?: { title: string }[]; sources?: JudgeSource[]; detail?: string };
+    return { answer: r.answer ?? r.detail ?? 'no answer', cards: r.cited_cards ?? [], sources: Array.isArray(r.sources) ? r.sources : [], ok: res.ok && !!r.answer };
+  });
 }
 
 function askJudge(question: string): void {
   judgeBusy = true;
   render();
-  judgeRequest(question).then(r => {
-    judgeLog.push({ q: question, a: r.answer, cards: r.cards, sources: r.sources });
+  judgeRequest(question, undefined, judgeHistory(judgeLog)).then(r => {
+    // a refusal (busy, the daily limit, sign in) shows in the box but is not
+    // part of the conversation the next question carries
+    judgeLog.push({ q: question, a: r.answer, cards: r.cards, sources: r.sources, ...(r.ok ? {} : { failed: true }) });
   }).catch(err => {
-    judgeLog.push({ q: question, a: `could not reach the judge: ${err}`, cards: [] });
+    judgeLog.push({ q: question, a: `could not reach the judge: ${err}`, cards: [], failed: true });
   }).finally(() => {
     judgeBusy = false;
     render();

@@ -66,7 +66,8 @@ test('§5 main.ts carries the hooks', () => {
   assert.match(MAIN, /installLessonLayer\(/);
   assert.match(MAIN, /installLearnMenu\(\);/);
   assert.match(MAIN, /data-learn="menu"/, 'the home screen opens the menu');
-  assert.match(MAIN, /JSON\.stringify\(context \? \{ question, context \} : \{ question \}\)/, 'the judge request carries the lesson');
+  // CT-470 (2026-11-01): the body grew a history branch; a lesson question still sends its context and no history
+  assert.match(MAIN, /JSON\.stringify\(context \? \{ question, context \} : history\.length \? \{ question, history \} : \{ question \}\)/, 'the judge request carries the lesson');
 });
 
 test('§6 the round-2 figures render: anatomy anchors, step frames, formations, mods, greyed and crossed cards', async () => {

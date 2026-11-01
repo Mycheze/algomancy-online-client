@@ -14117,4 +14117,21 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-10-25 (CR pass PDI 36aec0c0): 708.6a, 112.9 and 802.10b now say the player who controls both chooses, additions first is the one-click default, and different controllers go by initiative (708.4a); D-U15-4 / D-U04-6 settled.",
     status: 'done',
   },
+  {
+    id: 470, area: "client", severity: "minor",
+    title: "the in-game judge box always sends an empty history, so a follow-up question loses its thread",
+    detail: "client/server/main.ts /api/judge posts `history: []` to bot/app.py, which already accepts a history. A follow-up such as \"So do they enter the bin?\" is answered with no context.",
+    evidence: "Judge round 2026-11-01 (agent D), reading the 17 live questions since 2026-10-13.",
+    fix: "Send the box's previous question/answer turns (citations stripped, capped) as `history`; the Discord path already threads them.",
+    proof: null,
+    verify: "Ask the in-game judge a question, then a follow-up that only makes sense with the first: the answer uses the thread.",
+    guards: [
+      "764-judge-history.test.ts::CT-470: only user and assistant turns with text pass",
+      "764-judge-history.test.ts::CT-470: the last turns are kept, at most the bot ceiling",
+      "763-judge-history.test.ts::CT-470: a failed exchange (unreachable, busy, the daily limit) is not part of the conversation",
+      "763-judge-history.test.ts::CT-470: the judge box sends that history, and marks a refusal as failed",
+    ],
+    closed: "FIXED 2026-11-01: the judge box sends its last exchanges (ui/judgehistory.ts, at most 8 turns, refusals left out) and /api/judge forwards them cleaned to the bot's ceilings (server/judge-history.ts; user/assistant only, 8000 chars a turn); a Learn to Play lesson question still stands alone. End to end in e2e/test-malformed.ts section 5, seen red with the old history: [] line.",
+    status: 'done',
+  },
 ];
