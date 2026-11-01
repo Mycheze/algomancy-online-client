@@ -209,10 +209,13 @@ try {
   ok(page.status === 200, `index.html is served (${page.status})`);
   ok(page.headers.get('cache-control') === 'no-cache', `…revalidated on every load (cache-control: ${page.headers.get('cache-control')})`);
   ok(page.headers.get('x-content-type-options') === 'nosniff', '…with nosniff');
-  const lm = page.headers.get('last-modified') ?? '';
-  ok(!!lm, `…and a Last-Modified to revalidate against (${lm})`);
-  const again = await fetch(`http://localhost:${PORT}/index.html`, { headers: { 'if-modified-since': lm } });
-  ok(again.status === 304, `asked again with If-Modified-Since it is a 304 with no body (got ${again.status})`);
+  // an ETag, not the file's date: the head is written per request (the link
+  // preview, server/linkpreview.ts) from live data — a league's sign-ups, this
+  // week's challenge — that changes while index.html on disk does not
+  const tag = page.headers.get('etag') ?? '';
+  ok(!!tag, `…and an ETag to revalidate against (${tag})`);
+  const again = await fetch(`http://localhost:${PORT}/index.html`, { headers: { 'if-none-match': tag } });
+  ok(again.status === 304, `asked again with If-None-Match it is a 304 with no body (got ${again.status})`);
   const css = await fetch(`http://localhost:${PORT}/style.css`, { headers: { 'accept-encoding': 'gzip' } });
   ok(css.headers.get('content-encoding') === 'gzip' || css.headers.get('content-length') === null,
     `text is gzipped when accepted (content-encoding: ${css.headers.get('content-encoding')})`);

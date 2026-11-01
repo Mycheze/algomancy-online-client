@@ -97,3 +97,7 @@ export const crCommentsFile = (): string => process.env['ALGO_CR_COMMENTS_FILE']
  * (the top ten of each leaderboard), rewritten atomically.
  */
 export const challengesDir = (): string => process.env['ALGO_CHALLENGES_DIR'] ?? join(VAR_DIR, 'challenges');
+/** the drawn link-preview pictures (a deck's fan, server/main.ts /og/deck/).
+ * A cache: every file is rebuilt from the deck on a miss, so losing it costs
+ * one Python run per deck and nothing else. */
+export const ogCacheDir = (): string => process.env['ALGO_OG_CACHE_DIR'] ?? join(VAR_DIR, 'og-cache');

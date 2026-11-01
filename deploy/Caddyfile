@@ -37,13 +37,14 @@ algomancy.online {
 		-Server
 	}
 
-	# Nothing may frame this site — except the site itself framing the
-	# rulebook: the ? rules overlay's Rulebook tab shows the Manual PDF in an
-	# <iframe> (client/ui/assets.ts RULEBOOK_URL), and DENY refuses even a
+	# Nothing may frame this site — except the site itself framing its two
+	# books: the How to play box's Rulebook tab shows the Manual PDF in an
+	# <iframe> (client/ui/assets.ts RULEBOOK_URL), its Comprehensive rules tab
+	# the generated rules page (CR_PAGE_URL), and DENY refuses even a
 	# same-origin frame. client/ui/test/299-front-door.test.ts reads this.
-	@rulebook path /data/rules/Algomancy-Manual.pdf
+	@rulebook path /data/rules/Algomancy-Manual.pdf /comprehensive-rules
 	header @rulebook X-Frame-Options "SAMEORIGIN"
-	@notrulebook not path /data/rules/Algomancy-Manual.pdf
+	@notrulebook not path /data/rules/Algomancy-Manual.pdf /comprehensive-rules
 	header @notrulebook X-Frame-Options "DENY"
 
 	# answered here, before the app — the app has no robots.txt and should

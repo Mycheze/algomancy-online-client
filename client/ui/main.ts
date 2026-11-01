@@ -67,10 +67,10 @@ import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardt
 import { census, diffCensus, HIDDEN_CARD, nameKeys } from './motion.ts';
 import { glossaryHits, GLOSSARY } from './glossary.ts';
 import {
-  focusRulesSearch, helpBoxHtml, installRulesOverlay, jumpToSection, setHelpTab,
+  focusRulesSearch, helpBoxHtml, installRulesOverlay, jumpToSection, setCrAt, setHelpTab,
 } from './rules.ts';
 import { mdToHtml } from './markdown.ts';
-import { installHelpLayer } from './helplayer.ts';
+import { installHelpLayer, openHelp } from './helplayer.ts';
 import { alertTab, installTabAlert } from './tabalert.ts';
 // #124: THE search, not a second one. The card browser and the deck drawer run
 // this same parser over these same rows — see the note above bigCardMenuHtml.
@@ -164,7 +164,7 @@ import * as chal from './challenge.ts';
 import * as chrun from './challengerun.ts';
 import { DUMMY_DECK, challengeDeal, type ChallengeDef } from '../engine/src/challenge.ts';
 import { closeLesson, installLessonLayer, lessonTick } from './lessonlayer.ts';
-import { installLearnMenu } from './learnmenu.ts';
+import { installLearnMenu, openLearnMenu } from './learnmenu.ts';
 import { GAME_LESSONS } from './lessons.ts';
 // BL-06 — test mode's controls. A self-installing panel: it paints outside
 // #app, injects its own styles and claims its own clicks, and it draws nothing
@@ -12723,6 +12723,16 @@ if (params.has('room') && params.get('room')!.trim()) {
     mm.joinFromLink(qParam, params.get('ranked') !== '0', params.get('vs'));
   }
   renderHome();
+  // the shareable ways into the help: `?rules` (the reference), `?rules=book`,
+  // `?rules=cr` (`&at=608.2b` for one rule), `?rules=tutorial` — each a link
+  // with its own preview (server/linkpreview.ts) — and `?learn`, the Learn to
+  // Play menu (`?learn=play` is the game, above)
+  if (params.has('rules')) {
+    setCrAt(params.get('at'));
+    openHelp(params.get('rules') || 'rules');
+  } else if (params.has('learn')) {
+    openLearnMenu();
+  }
 }
 
 // BL-06 — the second of test mode's two lines (see the import above). Every

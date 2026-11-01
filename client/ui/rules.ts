@@ -33,7 +33,7 @@ import {
 import { iconizeText, txtIcon } from './cardtext.ts';
 import { esc } from './util.ts';
 import { TUTORIAL, tutorialListHtml, tutorialSearch } from './tutorial.ts';
-import { RULEBOOK_URL } from './assets.ts';
+import { CR_PAGE_URL, RULEBOOK_URL } from './assets.ts';
 import { DISCORD_INVITE } from './legal.ts';
 
 export interface RulesEntry {
@@ -685,11 +685,12 @@ export function rulesSearch(q: string, sections: readonly RulesSection[] = RULES
 
 /* ── rendering ───────────────────────────────────────────────────────── */
 
-export type HelpTab = 'rules' | 'book' | 'tutorial';
+export type HelpTab = 'rules' | 'book' | 'cr' | 'tutorial';
 
 const TAB_TITLE: Record<HelpTab, string> = {
   rules: 'Rules reference',
   book: 'The rulebook',
+  cr: 'The comprehensive rules',
   tutorial: 'How to use the interface',
 };
 
@@ -742,6 +743,21 @@ export function bookHtml(): string {
   </div>`;
 }
 
+/** The Comprehensive rules tab: every rule, numbered — the generated page
+ * framed like the book, opened at `at` (a rule number) when a link named one.
+ * Owner, 2026-11-01: public, in this box; the review page stays the judges'. */
+export function crHtml(at: string | null): string {
+  const src = CR_PAGE_URL + (at ? `#r${encodeURIComponent(at.replace(/^r/i, ''))}` : '');
+  return `<div class="helpscroll bookscroll">
+    <p class="rulesblurb">Every rule of the game, numbered. These are the unofficial comprehensive rules that this client follows.</p>
+    <div class="bookbar">
+      <a class="bookopen" href="${esc(src)}" target="_blank" rel="noopener">Open the comprehensive rules in a new tab ↗</a>
+      <a href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">Ask the players on Discord ↗</a>
+    </div>
+    <iframe class="bookframe crframe" src="${esc(src)}" title="The Algomancy comprehensive rules"></iframe>
+  </div>`;
+}
+
 /** the overlay's box: tabs, then the search box, the jump bar and the list —
  * or, on the Rulebook tab, the book. The modal scrim around it belongs to
  * whoever shows it: ui/main.ts's on the board, ui/helplayer.ts's off it. */
@@ -751,14 +767,14 @@ export function rulesBoxHtml(tab: HelpTab, q: string): string {
   const placeholder = tab === 'rules'
     ? 'search the rules…'
     : 'search the guide…';
-  const body = tab === 'book' ? bookHtml() : `<input id="rules-q" class="rulesq" type="search" spellcheck="false" autocomplete="off"
+  const body = tab === 'book' ? bookHtml() : tab === 'cr' ? crHtml(crAt) : `<input id="rules-q" class="rulesq" type="search" spellcheck="false" autocomplete="off"
       placeholder="${placeholder}" value="${esc(q)}">
     ${jumpHtml(tab, q)}
     <div class="helpscroll" id="rules-list">${tab === 'rules' ? rulesListHtml(q) : tutorialListHtml(q)}</div>`;
   return `<div class="overlaybox helpbox">
     <div class="helphead">
       <h3>${TAB_TITLE[tab]}</h3>
-      <div class="helptabs">${tabBtn('rules', 'Rules')}${tabBtn('book', 'Rulebook')}${tabBtn('tutorial', 'How to use the interface')}</div>
+      <div class="helptabs">${tabBtn('rules', 'Rules')}${tabBtn('book', 'Rulebook')}${tabBtn('cr', 'Comprehensive rules')}${tabBtn('tutorial', 'How to use the interface')}</div>
     </div>
     ${body}
     <button data-btn="helpclose">Close</button>
@@ -772,14 +788,19 @@ let tab: HelpTab = 'rules';
 
 // (no getters: nothing reads the query or the tab back — the box is redrawn
 // from them by helpBoxHtml below, which is the only consumer)
-export function setHelpTab(t: string | undefined): void { tab = t === 'tutorial' || t === 'book' ? t : 'rules'; }
+export function setHelpTab(t: string | undefined): void {
+  tab = t === 'tutorial' || t === 'book' || t === 'cr' ? t : 'rules';
+}
+/** the rule the Comprehensive rules tab opens at (`?rules=cr&at=608.2b`); null is the top */
+let crAt: string | null = null;
+export function setCrAt(at: string | null): void { crAt = at && /^r?\d{3}(\.\d+[a-z]?)?$/i.test(at) ? at : null; }
 
 /** the box as ui/main.ts draws it, off the tab and query kept here */
 export const helpBoxHtml = (): string => rulesBoxHtml(tab, query);
 
 /** the list, repainted in place for the current query — never a board repaint */
 function patchList(): void {
-  if (tab === 'book') return;   // no search on the book
+  if (tab === 'book' || tab === 'cr') return;   // no search on a framed page
   const list = document.getElementById('rules-list');
   if (list) list.innerHTML = tab === 'rules' ? rulesListHtml(query) : tutorialListHtml(query);
 }

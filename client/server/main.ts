@@ -20,6 +20,7 @@ import { createServer } from 'node:http';
 import { createHash, randomInt } from 'node:crypto';
 import { appendFile, readFile, stat } from 'node:fs/promises';
 import { gzipSync } from 'node:zlib';
+import { existsSync, mkdirSync, readFileSync, statSync } from 'node:fs';
 import { join, dirname, extname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, type WebSocket } from 'ws';
@@ -75,6 +76,15 @@ import { adminRoutes } from './api-admin.ts';
 import { replayRoutes } from './api-replay.ts';
 import { cardStats, cardStatsRoutes } from './api-cardstats.ts';
 import { cardSearchRoutes } from './api-cardsearch.ts';
+import { cardSearchPayload } from './api-cardsearch.ts';
+import { deckTrio, previewFor, withPreview, type PreviewCtx } from './linkpreview.ts';
+import { ogCacheDir } from './statepaths.ts';
+import { execFile } from 'node:child_process';
+import { activeEntrants, canSee, currentSeason, formatOf, isClosed as seasonClosed, seasonById } from './league-store.ts';
+import { finalPhase, phaseLabel } from './league.ts';
+import { currentChallenge, weekWindow } from './challenges.ts';
+import { allRows, rowFor } from '../ui/cardindex.ts';
+import { CR_DOC_HTML, CR_JSON } from '../engine/scripts/paths.mjs';
 import { crReviewRoutes } from './api-crreview.ts';
 import { botRoutes } from './api-bot.ts';
 import { simulateInWorker, warmSimulator } from './simulate-worker.ts';
@@ -244,6 +254,173 @@ function inviteRoom(room: Room): InviteRoom {
 }
 
 // ── static file server ────────────────────────────────────────────────
+
+/** the public origin a link preview names: ALGO_PUBLIC_URL behind the proxy,
+ * else whatever this request came in on (the LAN box, a dev server) */
+function publicOrigin(req: import('node:http').IncomingMessage): string {
+  const pub = (process.env['ALGO_PUBLIC_URL'] ?? '').replace(/\/+$/, '');
+  if (pub) return pub;
+  const proto = String(req.headers['x-forwarded-proto'] ?? '').split(',')[0]!.trim() || 'http';
+  return `${proto}://${req.headers.host ?? 'localhost'}`;
+}
+
+/** where the comprehensive rules page is served. ui/assets.ts CR_PAGE_URL is the
+ * browser's spelling (the server may not import it: 282-dom-free-trio), and
+ * test 771 holds the two equal. */
+const CR_PAGE_URL = '/comprehensive-rules';
+
+/** The comprehensive rules by number, read off the generated .json once per
+ * edition (its mtime). Only what a preview quotes. */
+let crRules: { mtimeMs: number; byNum: Map<string, { num: string; text: string; heading: string }> } | null = null;
+function crRule(num: string): { num: string; text: string; heading: string } | null {
+  try {
+    const m = statSync(CR_JSON).mtimeMs;
+    if (!crRules || crRules.mtimeMs !== m) {
+      const doc = JSON.parse(readFileSync(CR_JSON, 'utf8')) as {
+        rules: { num: string; text: string; title: string | null; sectionTitle: string }[];
+      };
+      crRules = { mtimeMs: m, byNum: new Map(doc.rules.map(r => [r.num, { num: r.num, text: r.text, heading: r.title ?? r.sectionTitle }])) };
+    }
+    return crRules.byNum.get(num) ?? null;
+  } catch { return null; }
+}
+
+/** what a link preview may know — each answer what a signed-out stranger may see */
+function previewCtx(req: import('node:http').IncomingMessage): PreviewCtx {
+  const card = (name: string) => {
+    const r = rowFor(name) ?? allRows().find(x => x.nameLc === name.toLowerCase()) ?? null;
+    if (!r) return null;
+    const file = r.image || r.name.replace(/ /g, '-') + '.jpg';
+    return { name: r.name, type: r.type, scan: '/data/cards/' + encodeURIComponent(file), text: r.text };
+  };
+  return {
+    origin: publicOrigin(req),
+    league: id => {
+      const s = id ? seasonById(id) : currentSeason(undefined, false);
+      if (!s || !canSee(s, undefined, false)) return null;
+      const finished = seasonClosed(s);
+      return {
+        name: s.name, format: formatOf(s), phase: phaseLabel(s, s.phase), players: activeEntrants(s).length,
+        joinable: s.phase >= 0 && s.phase < finalPhase(s) && s.phase < s.lateUntil,
+        announced: s.phase < 0, finished,
+      };
+    },
+    challenge: () => {
+      const def = currentChallenge(challengeNow());
+      return def ? { title: def.title, blurb: def.blurb, closes: weekWindow(def).closes } : null;
+    },
+    room: code => {
+      const room = getRoom(code);
+      if (!room) return null;
+      const v = inviteRoom(room);
+      return {
+        label: v.label,
+        host: room.users[0] ? room.names[0] : null,
+        open: v.free(0) || v.free(1),
+        finished: decidedWinner(room) !== null,
+      };
+    },
+    deck: id => {
+      const d = sharedDeck(id);
+      if (!d) return null;
+      const pic = deckPicture(d);
+      return {
+        // the account that published it, as the decks page says (the `author`
+        // field is a free-text import note that defaults to "you")
+        name: d.name, author: d.owner.username, size: d.cards.length,
+        image: pic ? `/og/deck/${encodeURIComponent(id)}.jpg?v=${pic.key}` : null,
+      };
+    },
+    card,
+    searchCount: q => { try { return cardSearchPayload(q, { limit: 1 }).total; } catch { return null; } },
+    rule: crRule,
+  };
+}
+
+/** A card's scan file name (data/cards/), or null when it has none. */
+function scanFileOf(name: string): string | null {
+  const r = rowFor(name);
+  if (!r) return null;
+  const file = r.image || r.name.replace(/ /g, '-') + '.jpg';
+  return existsSync(join(ART_DIR, file)) ? file : null;
+}
+
+/** The three scans a deck's picture fans (linkpreview.ts deckTrio) and the
+ * cache key they make — the picture changes exactly when they do. */
+function deckPicture(d: { cards: readonly string[]; cover: string | null }): { files: string[]; key: string } | null {
+  const trio = deckTrio(d.cards, d.cover, n => {
+    const r = rowFor(n);
+    return r ? { element: r.factions[0] ?? '', cost: Number(r.cost) || 0, hasScan: scanFileOf(n) !== null } : null;
+  });
+  if (!trio.length) return null;
+  const files = trio.map(n => scanFileOf(n)!);
+  return { files, key: createHash('sha1').update(files.join('|')).digest('hex').slice(0, 12) };
+}
+
+/* A deck's picture is drawn by ui/site-icons.py (Pillow — the bot's venv has
+ * it; nothing in node draws images), once per set of three cards, into
+ * var/og-cache/. At most two draws at once, and one per key: a link pasted in
+ * a busy channel is fetched by every unfurler at the same moment. */
+const PYTHON = process.env['ALGO_PYTHON'] ?? join(HERE, '..', '..', '.venv', 'bin', 'python');
+const drawing = new Map<string, Promise<boolean>>();
+function drawDeckPicture(files: string[], out: string): Promise<boolean> {
+  const running = drawing.get(out);
+  if (running) return running;
+  if (drawing.size >= 2) return Promise.resolve(false);
+  const p = new Promise<boolean>(resolve => {
+    mkdirSync(dirname(out), { recursive: true });
+    execFile(PYTHON, [join(UI_DIR, 'site-icons.py'), 'fan', out, ...files], { timeout: 20_000 }, err => {
+      if (err) console.error(`[og] could not draw ${out}: ${err.message}`);
+      resolve(!err && existsSync(out));
+    });
+  }).finally(() => drawing.delete(out));
+  drawing.set(out, p);
+  return p;
+}
+
+/** index.html, re-read when it changes on disk (a client-only deploy rewrites it) */
+let indexCache: { mtimeMs: number; html: string } | null = null;
+async function indexHtml(): Promise<string> {
+  const file = join(UI_DIR, 'index.html');
+  const m = (await stat(file)).mtimeMs;
+  if (!indexCache || indexCache.mtimeMs !== m) indexCache = { mtimeMs: m, html: await readFile(file, 'utf8') };
+  return indexCache.html;
+}
+
+/** the comprehensive rules page with a preview in its head — 3.8 MB, so the
+ * file is read once per edition and the preview is the only per-request part */
+let crPageCache: { mtimeMs: number; html: string } | null = null;
+async function crPageHtml(p: import('./linkpreview.ts').Preview): Promise<string> {
+  const m = (await stat(CR_DOC_HTML)).mtimeMs;
+  if (!crPageCache || crPageCache.mtimeMs !== m) crPageCache = { mtimeMs: m, html: await readFile(CR_DOC_HTML, 'utf8') };
+  return withPreview(crPageCache.html, p);
+}
+
+/** A page built per request: revalidated by an ETag of what was built (the file's
+ * mtime says nothing once the head varies by URL), gzipped when asked. A few
+ * gzips are kept, so the big rules page is compressed once per edition. */
+const htmlGzips = new Map<string, Buffer>();
+function serveHtml(req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse, html: string): void {
+  const raw = Buffer.from(html, 'utf8');
+  const etag = `"${createHash('sha1').update(raw).digest('hex').slice(0, 16)}"`;
+  const headers: Record<string, string> = {
+    'content-type': 'text/html; charset=utf-8', 'x-content-type-options': 'nosniff',
+    'cache-control': 'no-cache', etag, vary: 'accept-encoding',
+  };
+  if (req.headers['if-none-match'] === etag) { res.writeHead(304, headers); res.end(); return; }
+  let body: Buffer = raw;
+  if (/\bgzip\b/.test(String(req.headers['accept-encoding'] ?? '')) && raw.length > 1024) {
+    let z = htmlGzips.get(etag);
+    if (!z) {
+      if (htmlGzips.size >= 16) htmlGzips.delete(htmlGzips.keys().next().value!);
+      htmlGzips.set(etag, z = gzipSync(raw));
+    }
+    body = z;
+    headers['content-encoding'] = 'gzip';
+  }
+  res.writeHead(200, headers);
+  res.end(req.method === 'HEAD' ? undefined : body);
+}
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -1001,6 +1178,32 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     return;
   }
 
+  // a shared deck's link-preview picture: its cover fanned with two of its
+  // cards, drawn on the first ask and kept (see drawDeckPicture). A deck the
+  // server would not show (private, gone) is a 404, as on /api/deck/.
+  if (path.startsWith('/og/deck/') && path.endsWith('.jpg')) {
+    const d = sharedDeck(path.slice('/og/deck/'.length, -'.jpg'.length));
+    const pic = d ? deckPicture(d) : null;
+    if (!pic) { res.writeHead(404, { 'content-type': 'text/plain' }); return res.end('not found'); }
+    const out = join(ogCacheDir(), `deck-${pic.key}.jpg`);
+    if (existsSync(out) || await drawDeckPicture(pic.files, out)) {
+      return serveFile(req, res, out, url.searchParams.get('v') === pic.key ? 'immutable' : 'revalidate');
+    }
+    // could not draw it (no Python, busy): the cover's own scan says enough
+    return serveFile(req, res, join(ART_DIR, pic.files[0]!), 'revalidate');
+  }
+  // the page itself, with the link preview this URL deserves written into its
+  // head — Discord's unfurler runs no script (server/linkpreview.ts)
+  if (path === '/index.html') {
+    return serveHtml(req, res, withPreview(await indexHtml(), previewFor(url, previewCtx(req))));
+  }
+  // the comprehensive rules as one page — what the How to play box's
+  // Comprehensive rules tab frames (ui/assets.ts CR_PAGE_URL), and its
+  // "open in a new tab". Generated by engine/scripts/cr/; served as it is,
+  // with a link preview of its own.
+  if (path === CR_PAGE_URL) {
+    return serveHtml(req, res, await crPageHtml(previewFor(new URL('/?rules=cr', url), previewCtx(req))));
+  }
   // the rulebook the ? rules overlay frames (ui/assets.ts RULEBOOK_URL) — that
   // ONE file: data/rules/ is the bot's corpus, not a download area. Revalidated,
   // not immutable, because a new edition of the Manual keeps the same name.

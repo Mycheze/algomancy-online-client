@@ -44,6 +44,9 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-01', kind: 'new', text: 'Every card now has a link of its own. Pin a card in the card search and press “copy link”; the link opens the search with that card pinned, and shows the card in a Discord preview.' },
+  { date: '2026-11-01', kind: 'new', text: 'You can now read the full comprehensive rules in How to play, under the new Comprehensive rules tab. A link can also take someone straight to a single rule.' },
+  { date: '2026-11-01', kind: 'new', text: 'When you paste a link to the site into Discord, the preview now matches the page: the league, this week’s challenge, the card search, a deck, a card, a rule or a game invite, each with its own picture and description.' },
   { date: '2026-11-01', kind: 'fix', text: 'The judge now remembers the conversation, so a follow-up question like "and what if it has Flying?" is answered with your earlier questions in mind.' },
   { date: '2026-11-01', kind: 'fix', text: 'Gravitational Correction and Divine Intervention can now move a target onto themselves as they resolve: point a Null Drone at the Correction and it negates nothing. An effect still can never target itself.' },
   { date: '2026-11-01', kind: 'change', text: 'A trigger that reads a spell’s cost, like Death Greeter’s, now names that spell on the stack too: “costing 2 or less (Squish)”.' },

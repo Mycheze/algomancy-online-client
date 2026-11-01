@@ -36,7 +36,7 @@ import {
   withChip, withDisplay, type SearchResult,
 } from './cardsearch.ts';
 import { suggest } from './cardsynonyms.ts';
-import { esc, elIcon } from './util.ts';
+import { copyText, esc, elIcon } from './util.ts';
 
 /** How many tiles are painted before the "show the rest" button. Not a cap on
  * the SEARCH — the count above the grid is always the true total. */
@@ -116,7 +116,18 @@ export function initCards(opts: { app: HTMLElement; rerender: () => void }): voi
   if (fromUrl !== null) q = fromUrl;
   else q = load(QUERY_KEY, '');
   if (url.has('cards')) open = true;
+  // a card's own link, `?card=<name>` (owner, 2026-11-01): the search page
+  // with that card pinned — and a preview of the card itself when the link is
+  // pasted somewhere (server/linkpreview.ts)
+  const pin = url.get('card');
+  if (pin) {
+    const r = rowFor(pin) ?? allRows().find(x => x.nameLc === pin.trim().toLowerCase()) ?? null;
+    if (r) { focus = r.name; open = true; }
+  }
 }
+
+/** the link that opens the search page with `name` pinned */
+export const cardLink = (name: string): string => `${location.origin}/?card=${encodeURIComponent(name)}`;
 
 /** Hand the browser a deck to build, or null to leave deckbuilding mode. */
 export function useDeck(b: DeckBridge | null): void {
@@ -404,6 +415,7 @@ function detailHtml(): string {
       + `<div class="cbfact"><button class="cblink" data-btn="meta-stats-open" data-card="${esc(r.name)}">card stats</button></div>`,
     actions: `<button data-btn="cards-similar" data-card="${esc(r.name)}">find similar</button>
       <button data-btn="cards-rulings" data-card="${esc(r.name)}">rulings</button>
+      <button data-btn="cards-copylink" data-card="${esc(r.name)}" title="a link to this card, to paste in Discord or anywhere">copy link</button>
       ${bridge && r.playable ? `<button class="primary" data-btn="cards-add" data-card="${esc(r.name)}">add to ${esc(bridge.name())}</button>` : ''}`,
   });
 }
@@ -609,6 +621,7 @@ function syncUrl(): void {
     const url = new URL(location.href);
     url.searchParams.set('cards', '1');
     if (q) url.searchParams.set('q', q); else url.searchParams.delete('q');
+    if (focus) url.searchParams.set('card', focus); else url.searchParams.delete('card');
     history.replaceState(null, '', url.toString());
   } catch { /* file:// and the like */ }
 }
@@ -618,6 +631,7 @@ function clearUrl(): void {
     const url = new URL(location.href);
     url.searchParams.delete('cards');
     url.searchParams.delete('q');
+    url.searchParams.delete('card');
     history.replaceState(null, '', url.toString());
   } catch { /* ignore */ }
 }
@@ -718,12 +732,19 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'cards-focus':
       focus = card;
       rulings = null;
+      syncUrl();
       paint();
       return true;
 
     case 'cards-unfocus':
       focus = null;
+      syncUrl();
       paint();
+      return true;
+
+    // the pinned card's own link, to paste anywhere (it unfurls as the card)
+    case 'cards-copylink':
+      copyText(cardLink(card), null, btn, 'link copied \u2713');
       return true;
 
     case 'cards-rulings':
@@ -812,7 +833,7 @@ export function handleKey(e: KeyboardEvent): boolean {
 
   if (e.key === 'Escape') {
     if (helpOpen) { helpOpen = false; paint(); return true; }
-    if (focus) { focus = null; paint(); return true; }
+    if (focus) { focus = null; syncUrl(); paint(); return true; }
     if (typing) { (el as HTMLInputElement).blur(); return true; }
     return false;
   }
@@ -842,6 +863,7 @@ export function handleKey(e: KeyboardEvent): boolean {
       if (cursor < 0) return false;
       focus = rows[cursor]!.name;
       rulings = null;
+      syncUrl();
       paint();
       return true;
     }

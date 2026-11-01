@@ -21,7 +21,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { basename, dirname, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { RULEBOOK_URL } from '../assets.ts';
+import { CR_PAGE_URL, RULEBOOK_URL } from '../assets.ts';
 import { DISCORD_INVITE, footHtml } from '../legal.ts';
 import { helpBoxHtml, rulesBoxHtml, setHelpTab } from '../rules.ts';
 import { flashTitle } from '../tabalert.ts';
@@ -79,9 +79,12 @@ test('§3 the rulebook: a real file, served by exactly one route, frameable by t
     'the server serves the whole of data/rules/ — it is the bot corpus, only the rulebook is public');
   // the edge sends X-Frame-Options: DENY, which refuses even a same-origin frame
   const caddy = read(REPO, 'deploy', 'Caddyfile');
-  assert.match(caddy, new RegExp(`@rulebook path ${esc(RULEBOOK_URL)}\\s*\\n\\s*header @rulebook X-Frame-Options "SAMEORIGIN"`),
-    'deploy/Caddyfile does not let the site frame the rulebook');
-  assert.match(caddy, new RegExp(`@notrulebook not path ${esc(RULEBOOK_URL)}\\s*\\n\\s*header @notrulebook X-Frame-Options "DENY"`),
+  // the two books the How to play box frames: the Manual, and (2026-11-01) the
+  // comprehensive rules page — the same matcher, so the two lists cannot drift
+  const books = `${esc(RULEBOOK_URL)} ${esc(CR_PAGE_URL)}`;
+  assert.match(caddy, new RegExp(`@rulebook path ${books}\\s*\\n\\s*header @rulebook X-Frame-Options "SAMEORIGIN"`),
+    'deploy/Caddyfile does not let the site frame the rulebook and the comprehensive rules');
+  assert.match(caddy, new RegExp(`@notrulebook not path ${books}\\s*\\n\\s*header @notrulebook X-Frame-Options "DENY"`),
     'deploy/Caddyfile no longer denies framing everything else');
 });
 
