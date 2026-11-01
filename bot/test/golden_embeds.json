@@ -17,7 +17,7 @@
   "title": "❓ What happens to damage at regroup?",
   "type": "rich"
  },
- "answer:reasoning": {
+ "answer:model": {
   "color": 5793266,
   "description": "Damage is removed at regroup, and temporary buffs end.",
   "fields": [
@@ -29,7 +29,7 @@
   ],
   "flags": 0,
   "footer": {
-   "text": "Answered by deepseek-flash · 🧠 thinking · rate below to help train the model"
+   "text": "Answered by deepseek-flash · rate below to help train the model"
   },
   "title": "❓ What happens to damage at regroup?",
   "type": "rich"

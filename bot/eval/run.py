@@ -3,16 +3,17 @@
 run.py — run the judge bot's real pipeline over the gold set, and grade it.
 
     .venv/bin/python bot/eval/run.py --label baseline            # prod model, all items, judged
-    .venv/bin/python bot/eval/run.py --model deepseek-v4-pro --reasoning off --label pro
+    .venv/bin/python bot/eval/run.py --model deepseek-v4-pro --label pro
     .venv/bin/python bot/eval/run.py --corpus /path/to/other_corpus.jsonl --label cr-corpus
     .venv/bin/python bot/eval/run.py --retrieval-only --label recall   # free: no model, no judge
     .venv/bin/python bot/eval/run.py --rejudge var/eval/<run>.jsonl --judge-model …
 
 Each item goes through `core.answer_question` exactly as a Discord or web
-question does (retrieval, primer, system prompt, follow-up history, the math-mode
-router, the retry/deadline), with only these swapped: the model/base URL/key
-(`--model --base-url --api-key-env`), the reasoning mode, and the corpus the
-retriever loads. The fallback model is OFF unless `--fallback` is given, so a
+question does (retrieval, primer, system prompt, follow-up history, the
+thinking-off switch, the retry/deadline), with only these swapped: the model/base
+URL/key (`--model --base-url --api-key-env`) and the corpus the retriever loads.
+There is no reasoning mode to choose: since 2026-11-01 every answer, and the
+judge's grading call too, runs with thinking off. The fallback model is OFF unless `--fallback` is given, so a
 run measures one model.
 
 Keys come from the environment only (`--api-key-env NAME` names the variable);
@@ -88,8 +89,6 @@ def parse_args(argv=None):
     ap.add_argument("--base-url", default=None, help="OpenAI-compatible base URL (default: core's)")
     ap.add_argument("--api-key-env", default=None,
                     help="NAME of the env var holding the answering key (default LLM_API_KEY/DEEPSEEK_API_KEY)")
-    ap.add_argument("--reasoning", choices=("off", "on", "auto"), default="auto",
-                    help="core's math-mode router: off, on (always), auto (production)")
     ap.add_argument("--surface", choices=("web", "discord"), default="web",
                     help="core's surface argument: how digital-client conventions are worded. "
                          "web (default) = the in-game judge box and web page, which is what "
@@ -109,7 +108,6 @@ def parse_args(argv=None):
     ap.add_argument("--judge-model", default="deepseek-v4-pro")
     ap.add_argument("--judge-base-url", default="https://api.deepseek.com")
     ap.add_argument("--judge-key-env", default="DEEPSEEK_API_KEY")
-    ap.add_argument("--judge-reasoning", choices=("on", "off"), default="on")
     ap.add_argument("--rejudge", default=None, metavar="RUNFILE",
                     help="judge the answers in an existing run file (writes --out)")
     ap.add_argument("--max-cost", type=float, default=5.0,
@@ -120,9 +118,9 @@ def parse_args(argv=None):
 # ── the judge call ──────────────────────────────────────────────────────────
 
 class Judge:
-    def __init__(self, client, model, base_url, reasoning, cache: ev.JudgeCache):
+    def __init__(self, client, model, base_url, cache: ev.JudgeCache):
         self.client, self.model, self.base_url = client, model, base_url
-        self.reasoning, self.cache = reasoning, cache
+        self.cache = cache
         self.calls = 0
 
     async def grade(self, item, answer, hit_rows=()):
@@ -135,11 +133,9 @@ class Judge:
         hit = self.cache.get(k)
         if hit is not None:
             return {**hit, "cached": True}
-        params = core.request_params(self.base_url, self.reasoning)
-        params["max_tokens"] = 12000 if self.reasoning else 1500
-        params.pop("temperature", None)
-        if not self.reasoning:
-            params["temperature"] = 0.0
+        # core's thinking-off switch for the judge's provider; a verdict is a
+        # short JSON object, graded deterministically.
+        params = {**core.request_params(self.base_url), "max_tokens": 1500, "temperature": 0.0}
         messages = [{"role": "system", "content": ev.JUDGE_SYSTEM},
                     {"role": "user", "content": ev.judge_user_message(
                         item, core.strip_citations(answer), core.PRIMER, hit_rows)}]
@@ -177,7 +173,7 @@ def make_judge(args):
     if not key:
         raise SystemExit(f"judge key env var {args.judge_key_env} is not set")
     client = AsyncOpenAI(api_key=key, base_url=args.judge_base_url, timeout=240, max_retries=2)
-    return Judge(client, args.judge_model, args.judge_base_url, args.judge_reasoning == "on",
+    return Judge(client, args.judge_model, args.judge_base_url,
                  ev.JudgeCache(eval_dir() / "judge-cache.jsonl"))
 
 
@@ -196,13 +192,12 @@ async def run_item(item, measurable, judge, discord, retrieval_only=False, surfa
     else:
         t0 = time.monotonic()
         try:
-            answer, hits, reasoning = await core.answer_question(
+            answer, hits = await core.answer_question(
                 item["question"], list(item.get("history") or []), meta=meta, surface=surface)
-            row.update({"answer": answer, "error": None, "reasoning_used": reasoning})
+            row.update({"answer": answer, "error": None})
         except Exception as exc:
             hits = meta.get("hits") or []
-            row.update({"answer": None, "error": f"{type(exc).__name__}: {exc}"[:400],
-                        "reasoning_used": meta.get("reasoning")})
+            row.update({"answer": None, "error": f"{type(exc).__name__}: {exc}"[:400]})
         row.update({
             "model": meta.get("model"), "provider": meta.get("provider"),
             "latency_ms": meta.get("latency_ms"),
@@ -257,7 +252,6 @@ async def main_async(args):
         if rj_head.get("corpus") and not args.corpus and Path(rj_head["corpus"]).is_file():
             corpus_path = Path(rj_head["corpus"])
             core.retriever = Retriever(corpus_path)
-    core.REASONING_MODE = {"off": "off", "on": "always", "auto": "auto"}[args.reasoning]
     discord = ev.DiscordIndex()
     rows = core.retriever.rows
     measurable = {g["id"]: ev.measurable_cites(g, rows, discord) for g in gold}
@@ -289,19 +283,20 @@ async def main_async(args):
         "mode": "retrieval-only" if args.retrieval_only else ("rejudge" if rejudge else "full"),
         "model": None if args.retrieval_only else core.LLM_MODEL,
         "base_url": None if args.retrieval_only else core.LLM_BASE_URL,
-        "reasoning": args.reasoning, "surface": args.surface, "cr_notes": args.cr_notes, "corpus": str(corpus_path),
+        "surface": args.surface, "cr_notes": args.cr_notes, "corpus": str(corpus_path),
         "corpus_sha": ev.sha(corpus_path.read_bytes())[:12], "corpus_chunks": len(rows),
         "engine_version": core.ENGINE_VERSION, "top_k": core.TOP_K,
         "gold": str(args.gold), "gold_sha": ev.sha(Path(args.gold).read_bytes())[:12],
         "items": len(gold), "judge_model": judge.model if judge else None,
-        "judge_reasoning": args.judge_reasoning if judge else None,
         "rubric": ev.RUBRIC_SIG if judge else None, "rejudge_of": args.rejudge,
         "measurable_cites": sum(len(v) for v in measurable.values()),
         "total_cites": sum(len(g.get("must_cite") or []) for g in gold),
     }
     if rejudge is not None:
-        for k in ("model", "base_url", "reasoning", "surface", "corpus", "corpus_sha", "engine_version"):
+        for k in ("model", "base_url", "surface", "corpus", "corpus_sha", "engine_version"):
             header[k] = rj_head.get(k)
+        if "reasoning" in rj_head:       # a run from before 2026-11-01 named its mode
+            header["reasoning"] = rj_head["reasoning"]
     with out.open("a", encoding="utf-8") as f:
         f.write(json.dumps(header, ensure_ascii=False) + "\n")
 

@@ -67,7 +67,7 @@ class Judge(commands.Cog):
         await start(interaction)
         meta = {}
         try:
-            answer, hits, reasoning = await asyncio.wait_for(
+            answer, hits = await asyncio.wait_for(
                 answer_question(question, history=[], meta=meta, surface="discord"),
                 timeout=ANSWER_TIMEOUT)
         except asyncio.TimeoutError as exc:
@@ -88,11 +88,11 @@ class Judge(commands.Cog):
         rid = store.new_response_id()
         store.log_response(rid, "ask", question, answer, hits, core.LLM_MODEL,
                            user_id=interaction.user.id, channel_id=interaction.channel_id,
-                           reasoning=reasoning, engine_version=core.ENGINE_VERSION, llm=meta)
+                           engine_version=core.ENGINE_VERSION, llm=meta)
         # wait=True so we get a Message back — a WebhookMessage, which
         # subclasses Message and so can still open a thread.
         msg = await interaction.followup.send(
-            embed=answer_embed(question, answer, hits, reasoning, model=meta.get("model")),
+            embed=answer_embed(question, answer, hits, model=meta.get("model")),
             view=feedback_view(rid), wait=True)
         try:
             thread = await msg.create_thread(name=question[:90], auto_archive_duration=60)

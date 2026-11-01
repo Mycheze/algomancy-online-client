@@ -394,8 +394,7 @@ function cardsHtml(cards) {
   return items ? `<div class="cards">${items}</div>` : '';
 }
 
-function feedbackHtml(rid, model, reasoning) {
-  const badge = reasoning ? ' · 🧠 thinking' : '';
+function feedbackHtml(rid, model) {
   return `<div class="meta">
     <div class="fb" data-rid="${rid}">
       <button class="good" data-r="good" title="Helpful">👍</button>
@@ -403,7 +402,7 @@ function feedbackHtml(rid, model, reasoning) {
       <button class="bad" data-r="bad" title="Inaccurate">👎</button>
     </div>
     <button class="followbtn" type="button" title="Ask a question that builds on this answer">↪ Follow up</button>
-    <span class="model">${esc(model || '')}${badge}</span>
+    <span class="model">${esc(model || '')}</span>
   </div>`;
 }
 
@@ -444,7 +443,7 @@ async function ask(question, ctx) {
     // history, so no markup leaks into the model.
     bubble.innerHTML = md(data.answer)
                      + sourcesHtml(data.sources) + cardsHtml(data.cited_cards)
-                     + feedbackHtml(data.response_id, data.model, data.reasoning);
+                     + feedbackHtml(data.response_id, data.model);
     wireFeedback(botEl);
     renderIcons(botEl);
     linkifyCards(botEl);

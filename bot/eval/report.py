@@ -74,8 +74,10 @@ def run_table(path) -> str:
     s = summarise(items)
     G, n = s["grades"], s["graded"]
     out = [f"## {header.get('label', Path(path).stem)}", "",
-           f"`{Path(path).name}` — model **{header.get('model')}**, reasoning {header.get('reasoning')}, "
-           f"surface {header.get('surface') or 'web (pre-surface core)'}, "
+           f"`{Path(path).name}` — model **{header.get('model')}**, "
+           # only a run from before 2026-11-01 (math mode) names a reasoning mode
+           + (f"reasoning {header['reasoning']}, " if header.get("reasoning") else "")
+           + f"surface {header.get('surface') or 'web (pre-surface core)'}, "
            f"corpus `{Path(str(header.get('corpus'))).name}` ({header.get('corpus_chunks')} chunks, "
            f"sha {header.get('corpus_sha')}), engine {header.get('engine_version')}, "
            f"judge {header.get('judge_model')} (rubric {header.get('rubric')}), gold sha {header.get('gold_sha')}.", ""]
@@ -92,7 +94,7 @@ def run_table(path) -> str:
             f"({s['items_any_hit']}/{s['items_meas']} items with a measurable cite) |",
             f"| citations resolving to a retrieved id | {_p(s['cited_total'] - s['cited_unresolved'], s['cited_total'])} "
             f"({s['cited_total'] - s['cited_unresolved']}/{s['cited_total']}; {s['answers_with_cites']}/{s['answers']} answers cite) |",
-            f"| reasoning (math mode) used | {s['reasoning_used']} items |",
+            *([f"| reasoning (math mode) used | {s['reasoning_used']} items |"] if s["reasoning_used"] else []),
             f"| latency p50 / p95 (retrieval + model) | {_fmt_s(s['p50'])} / {_fmt_s(s['p95'])} |",
             f"| mean $/question | {_fmt_usd(s['mean_cost'])} |",
             f"| total answer cost / judge cost | {_fmt_usd(s['total_cost'])} / {_fmt_usd(s['judge_cost'])} |",
