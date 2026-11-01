@@ -348,9 +348,7 @@ something else, switch fully to it.
 - The passages attached to the current question are the authoritative context for THIS \
 answer. Prior answers may have relied on different passages; do not cite from memory.
 
-Style: be concise, use clean markdown, keep answers under ~250 words.
-Order: reason first, verdict last. Do not open with yes/no; work through the rule(s) and card text, \
-then end with one bolded line (**Answer:** …) that states the verdict and agrees with that reasoning."""
+Style: be concise, use clean markdown, keep answers under ~250 words."""
 
 # --- the tools section (judge tools design §2) -------------------------------
 # Appended to the system message ONLY on a call that offers tools, so with
