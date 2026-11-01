@@ -154,8 +154,14 @@ def log_response(response_id, kind, question, answer, hits, model,
     # surface and cr_notes added 2026-10-11: where the answer was read (web |
     # discord), and the ids of the open CR review notes shown to the model with
     # it (crnotes.py) — live data, so the log is the only record of them.
+    # The judge tools (2026-11-01, core._run_tools; absent with ALGO_TOOLS=off):
+    # tools_level, tools [{name, args, ms, ok, chars}], tool_rounds,
+    # model_calls, the quote check's quote_fail / engine_mismatch, and
+    # tools_skipped / tools_error when an answer fell back to no tools.
     for key in ("requested_model", "provider", "latency_ms", "total_ms", "usage",
-                "cost_usd", "cost_basis", "fallback", "attempts", "surface", "cr_notes"):
+                "cost_usd", "cost_basis", "fallback", "attempts", "surface", "cr_notes",
+                "tools_level", "tools", "tool_rounds", "model_calls", "quote_fail",
+                "engine_mismatch", "tools_skipped", "tools_error"):
         if key in llm:
             record[key] = llm[key]
     if error is not None:

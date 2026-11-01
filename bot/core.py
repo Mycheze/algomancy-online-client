@@ -14,6 +14,7 @@ Call `init_client(api_key, ...)` once at startup before `answer_question`.
 
 import hashlib
 import asyncio
+import json
 import os
 import re
 import time
@@ -26,6 +27,7 @@ from openai import AsyncOpenAI
 
 from cards import CardIndex
 import crnotes
+import quotecheck
 import retriever as retr
 import terms
 from retriever import CORPUS, Retriever
@@ -348,6 +350,31 @@ answer. Prior answers may have relied on different passages; do not cite from me
 
 Style: be concise, use clean markdown, keep answers under ~250 words."""
 
+# --- the tools section (judge tools design §2) -------------------------------
+# Appended to the system message ONLY on a call that offers tools, so with
+# ALGO_TOOLS=off the request is byte-identical to the pre-tools one and
+# PROMPT_SIG does not move (its own hash goes into ENGINE_VERSION's `.t`).
+TOOL_PROMPT = """Tools: when the passages lack a rule, a term or a card you need, call a tool. \
+Tool results are sources like the passages: cite them by the tag they head.
+- A rule given as the reason: quote its words exactly, in quotation marks, then its tag — \
+the rules say "…" (CR 700.1a) [cr:700.1a]. Never put in quotation marks words the source \
+does not print.
+- A result marked engine differs, partial, owner call, engine-derived or open question is a \
+lead, not a ruling: name that caveat when you use it.
+- No tool result and no passage: no citation; say it is an inference."""
+# Added only when an engine tool (simulate) is offered. Worded per surface, the
+# way DIGITAL_NOTE is: the judge box is IN the client; Discord may be at a table.
+TOOL_PROMPT_ENGINE = {
+    "web": """- An engine result shows what the online client does, never what the rules say: \
+"here in the client, X happens (simulated) [engine:s1]". If it disagrees with a rule, give both \
+and say which is which. If the engine is unavailable, answer from the rules and say the client \
+could not be checked.""",
+    "discord": """- An engine result shows what the online client does, never what the rules say: \
+"in the online client, X happens (simulated; tabletop may differ) [engine:s1]". If it disagrees \
+with a rule, give both and say which is which. If the engine is unavailable, answer from the \
+rules and say the client could not be checked.""",
+}
+
 # --- engine version stamp ------------------------------------------------
 # Every logged answer is stamped with ENGINE_VERSION so we can tell, after the
 # fact, exactly which rules brain produced it — essential when triaging feedback
@@ -580,8 +607,19 @@ class _Retryable(Exception):
     """An attempt failed in a way worth one more try (or the fallback)."""
 
 
-async def _attempt(client, model, base_url, messages, reasoning, timeout):
+class _ToolsRejected(Exception):
+    """A request carrying `tools` came back 400 (see _run_tools)."""
+
+
+async def _attempt(client, model, base_url, messages, reasoning, timeout,
+                   extra=None, allow_tool_calls=False):
+    """One model call. `extra` (tools, tool_choice) is merged in only when given,
+    so a call without it sends exactly the pre-tools request. With
+    `allow_tool_calls` an empty content is fine when the message carries
+    tool_calls: that is a tool round, not a blank answer."""
     params = {"model": model, "messages": messages, **request_params(base_url, reasoning)}
+    if extra:
+        params.update(extra)
     try:
         resp = await asyncio.wait_for(client.chat.completions.create(**params), timeout)
     except (asyncio.TimeoutError, openai.APITimeoutError):
@@ -591,9 +629,12 @@ async def _attempt(client, model, base_url, messages, reasoning, timeout):
     except openai.APIStatusError as exc:
         if exc.status_code >= 500 or exc.status_code == 429:
             raise _Retryable(f"http {exc.status_code}")
+        if exc.status_code == 400 and extra and extra.get("tools"):
+            raise _ToolsRejected(f"http 400: {exc}")
         raise                      # 4xx: a bad key or request; another try won't help
-    answer = (resp.choices[0].message.content or "").strip()
-    if not answer:
+    msg = resp.choices[0].message
+    answer = (msg.content or "").strip()
+    if not answer and not (allow_tool_calls and _field(msg, "tool_calls")):
         raise _Retryable(f"empty (finish_reason={resp.choices[0].finish_reason})")
     return answer, resp
 
@@ -644,6 +685,309 @@ async def _complete(messages, reasoning, meta, start):
     if attempts and all(a["error"] == "timeout" for a in attempts):
         raise TimeoutError(f"model timed out ({why})")
     raise RuntimeError(f"model gave no answer ({why})")
+
+
+# --- tools: the loop (judge tools design §3) ---------------------------------
+# ALGO_TOOLS = off | lookup | all, read PER CALL like ALGO_DEFINITIONS (the
+# eval's A/B switch and the kill switch). DEFAULT OFF: with it off nothing here
+# runs and answer_question sends exactly the pre-tools request through
+# _complete. "lookup" offers the in-process tools (rule, define, card, search);
+# "all" adds the ones that need the game server (simulate), and only when
+# ALGO_BOT_TOKEN is set — unset means the integration is absent, so the model
+# is never offered a tool that cannot run.
+#
+# The tools themselves live in bot/tools.py (the frozen interface: `TOOLS`, a
+# list of OpenAI-style schemas, and `dispatch(name, args) -> (text, row)`, row
+# corpus-shaped). It is imported lazily and may be absent: then no tool is
+# offered and the answer is the plain one. Optional seams the module MAY add,
+# read with getattr so none is required: SERVER_TOOLS (names needing the game
+# server; default {"simulate"}) and server_available() (a health check —
+# false leaves the server tools out of this answer).
+TOOL_LEVELS = ("off", "lookup", "all")
+SERVER_TOOLS = frozenset({"simulate"})
+TOOL_MAX_ROUNDS = 3              # tool rounds per answer (2 with thinking on)
+TOOL_MAX_ROUNDS_REASONING = 2
+TOOL_MAX_CALLS = 6               # tool calls per answer; parallel calls count one each
+TOOL_MAX_SERVER_CALLS = 2        # of which at most this many simulate
+# A new tool round only starts with this much of LLM_DEADLINE left (a thinking
+# round can take ~20 s); otherwise the next call is the final, tool-free one.
+TOOL_ROUND_MIN_S = 12.0
+TOOL_ROUND_MIN_S_REASONING = 25.0
+TOOL_TIMEOUT_S = 6.0             # wall clock per dispatch (simulate has its own 4 s)
+TOOL_RESULT_MAX_CHARS = 4000     # what one result may put in front of the model
+
+_TOOLS_UNLOADED = object()
+_tools_mod = _TOOLS_UNLOADED
+
+
+def tools_level():
+    """ALGO_TOOLS, read now. Anything unrecognised is "off"."""
+    v = (os.getenv("ALGO_TOOLS") or "off").strip().lower()
+    return v if v in TOOL_LEVELS else "off"
+
+
+def tools_module():
+    """bot/tools.py, imported on first use; None when it is absent or broken
+    (the answer then simply offers no tools)."""
+    global _tools_mod
+    if _tools_mod is _TOOLS_UNLOADED:
+        try:
+            import tools as _t
+            _tools_mod = _t
+        except Exception as exc:          # absent, or its data failed to load
+            print(f"[tools] not available: {exc!r}")
+            _tools_mod = None
+    return _tools_mod
+
+
+def tool_name(schema):
+    return ((schema or {}).get("function") or {}).get("name") or (schema or {}).get("name")
+
+
+def _server_tools(mod):
+    return frozenset(getattr(mod, "SERVER_TOOLS", None) or SERVER_TOOLS)
+
+
+def offered_tools(level=None):
+    """The tool schemas this answer may use, for `level` (default: ALGO_TOOLS now)."""
+    level = tools_level() if level is None else level
+    if level == "off":
+        return []
+    mod = tools_module()
+    if mod is None:
+        return []
+    server = _server_tools(mod)
+    server_ok = None                       # asked once, only if a server tool is listed
+    out = []
+    for schema in getattr(mod, "TOOLS", None) or []:
+        if tool_name(schema) in server:
+            if level != "all" or not os.getenv("ALGO_BOT_TOKEN"):
+                continue
+            if server_ok is None:
+                probe = getattr(mod, "server_available", None)
+                try:
+                    server_ok = bool(probe()) if callable(probe) else True
+                except Exception:
+                    server_ok = False
+            if not server_ok:
+                continue
+        out.append(schema)
+    return out
+
+
+def tool_prompt(offered, surface):
+    """The system-message section for a call offering `offered`."""
+    text = TOOL_PROMPT
+    mod = tools_module()
+    server = _server_tools(mod) if mod is not None else SERVER_TOOLS
+    if any(tool_name(s) in server for s in offered):
+        text += "\n" + TOOL_PROMPT_ENGINE.get(surface, TOOL_PROMPT_ENGINE["web"])
+    return text
+
+
+class _Budget:
+    """ONE retry/fallback budget per answer, not per call: a tool loop makes
+    several model calls, and each having its own retry could double the cost and
+    blow LLM_DEADLINE. The first failure anywhere spends the spare (the fallback
+    model if configured, else one retry of the primary); once on the fallback,
+    every later call of this answer stays there. A second failure gives up."""
+
+    def __init__(self):
+        self.current = ("primary", ai, LLM_MODEL, LLM_BASE_URL)
+        self.spare = (("fallback", ai_fallback, FALLBACK_MODEL, FALLBACK_BASE_URL or LLM_BASE_URL)
+                      if ai_fallback is not None else ("retry", ai, LLM_MODEL, LLM_BASE_URL))
+        self.attempts, self.calls = [], []
+        self.fallback_reason = None
+
+    async def call(self, messages, reasoning, extra, start, allow_tool_calls, rnd):
+        while True:
+            kind, client, model, base = self.current
+            remaining = LLM_DEADLINE - (time.monotonic() - start)
+            if remaining < MIN_ATTEMPT_S:
+                self.give_up()
+            t0 = time.monotonic()
+            try:
+                _answer, resp = await _attempt(client, model, base, messages, reasoning,
+                                               min(MODEL_TIMEOUT, remaining), extra,
+                                               allow_tool_calls)
+            except _Retryable as exc:
+                self.attempts.append({"kind": kind, "model": model, "error": str(exc),
+                                      "ms": round((time.monotonic() - t0) * 1000), "round": rnd})
+                print(f"[llm] {kind} {model} (round {rnd}): {exc}")
+                if self.spare is None:
+                    self.give_up()
+                if self.spare[0] == "fallback":
+                    self.fallback_reason = str(exc)
+                self.current, self.spare = self.spare, None
+                continue
+            ms = round((time.monotonic() - t0) * 1000)
+            self.attempts.append({"kind": kind, "model": model, "error": None, "ms": ms, "round": rnd})
+            usage, reported = read_usage(resp)
+            cost, basis = cost_usd(model, usage, reported=reported)
+            self.calls.append({"model": model, "base": base, "ms": ms, "usage": usage,
+                               "cost": cost, "basis": basis})
+            return resp.choices[0].message
+
+    def give_up(self):
+        why = ("; ".join(f"{a['kind']} {a['model']}: {a['error']}" for a in self.attempts if a["error"])
+               or "no time left")
+        failed = [a for a in self.attempts if a["error"]]
+        if failed and all(a["error"] == "timeout" for a in failed):
+            raise TimeoutError(f"model timed out ({why})")
+        raise RuntimeError(f"model gave no answer ({why})")
+
+    def fill(self, meta):
+        """The log fields, summed over every call of the answer."""
+        meta["attempts"] = self.attempts
+        if not self.calls:
+            return
+        last = self.calls[-1]
+
+        def total(key):
+            vals = [c["usage"].get(key) if c["usage"] else None for c in self.calls]
+            return None if any(v is None for v in vals) else sum(vals)
+
+        costs = [c["cost"] for c in self.calls]
+        meta.update({
+            "model": last["model"],
+            "requested_model": LLM_MODEL,
+            "provider": provider_for(last["base"]),
+            "latency_ms": sum(c["ms"] for c in self.calls),
+            "usage": ({k: total(k) for k in ("prompt", "cached", "completion", "reasoning")}
+                      if any(c["usage"] for c in self.calls) else None),
+            "cost_usd": None if any(c is None for c in costs) else round(sum(costs), 8),
+            "cost_basis": last["basis"],
+            "fallback": ({"from": LLM_MODEL, "reason": self.fallback_reason}
+                         if self.fallback_reason else None),
+            "model_calls": len(self.calls),
+        })
+
+
+def _reasoning_of(msg):
+    rc = _field(msg, "reasoning_content")
+    if rc is None:
+        rc = (getattr(msg, "model_extra", None) or {}).get("reasoning_content")
+    return rc
+
+
+def _assistant_turn(msg, reasoning):
+    """The model's tool-call message, to send back within this answer. With
+    thinking on, its reasoning_content goes back too: DeepSeek's Thinking Mode
+    guide — "the reasoning_content must be fully passed back to the API in all
+    subsequent requests" of a tool conversation, or it answers 400. It is never
+    carried ACROSS questions: history turns are rebuilt from text."""
+    turn = {"role": "assistant", "content": _field(msg, "content") or "",
+            "tool_calls": [{"id": _field(tc, "id"), "type": "function",
+                            "function": {"name": _field(_field(tc, "function"), "name"),
+                                         "arguments": _field(_field(tc, "function"), "arguments") or "{}"}}
+                           for tc in _field(msg, "tool_calls") or []]}
+    if reasoning:
+        rc = _reasoning_of(msg)
+        if rc is not None:
+            turn["reasoning_content"] = rc
+    return turn
+
+
+_ROW_DEFAULTS = {"source": "tool", "source_type": "tool", "authority": 1,
+                 "authority_label": "tool result", "outdated_risk": False}
+
+
+def _tool_row(row):
+    """A dispatch row made safe for render_citations and store.log_response."""
+    if not isinstance(row, dict) or not row.get("id"):
+        return None
+    out = {**_ROW_DEFAULTS, **row}
+    out.setdefault("text", "")
+    out.setdefault("title", out["id"])
+    out.setdefault("metadata", {})
+    return out
+
+
+async def _dispatch(mod, name, args, timeout):
+    """(text, row, ok) for one tool call. Lookups take milliseconds, but run
+    off the event loop anyway (the Discord bot shares it); a dispatch that
+    raises or overruns comes back to the model as an error result."""
+    try:
+        text, row = await asyncio.wait_for(asyncio.to_thread(mod.dispatch, name, args), timeout)
+    except asyncio.TimeoutError:
+        return f"error: {name} timed out", None, False
+    except Exception as exc:
+        return f"error: {name} failed: {exc}", None, False
+    ok = not (isinstance(row, dict) and (row.get("metadata") or {}).get("ok") is False)
+    return str(text), row, ok
+
+
+async def _run_tools(messages, reasoning, meta, start, offered, mod):
+    """The tool loop. Round 0 is today's request plus `tools` (tool_choice
+    auto): a question the slate already covers answers in one call. Each tool
+    round sends the model's calls' results back; after TOOL_MAX_ROUNDS (2 with
+    thinking), TOOL_MAX_CALLS, or when fewer than TOOL_ROUND_MIN_S remain, the
+    next call is the FINAL one, tool_choice "none" — still with `tools`, since
+    the conversation holds tool messages — which must answer.
+    Returns (answer, tool_rows)."""
+    budget = _Budget()
+    max_rounds = TOOL_MAX_ROUNDS_REASONING if reasoning else TOOL_MAX_ROUNDS
+    min_round = TOOL_ROUND_MIN_S_REASONING if reasoning else TOOL_ROUND_MIN_S
+    offered_names = {tool_name(s) for s in offered}
+    server = _server_tools(mod)
+    msgs = list(messages)
+    log, rows = [], []
+    rounds = calls = server_calls = 0
+    try:
+        while True:
+            remaining = LLM_DEADLINE - (time.monotonic() - start)
+            final = rounds >= max_rounds or calls >= TOOL_MAX_CALLS or remaining < min_round
+            extra = {"tools": offered, "tool_choice": "none" if final else "auto"}
+            msg = await budget.call(msgs, reasoning, extra, start, not final, rounds)
+            tcs = _field(msg, "tool_calls") or []
+            if final or not tcs:
+                answer = (_field(msg, "content") or "").strip()
+                break
+            msgs.append(_assistant_turn(msg, reasoning))
+            rounds += 1
+            for tc in tcs:
+                fn = _field(tc, "function")
+                name = _field(fn, "name")
+                raw = _field(fn, "arguments") or "{}"
+                entry = {"name": name, "args": raw[:300], "ms": 0, "ok": False, "chars": 0}
+                t0 = time.monotonic()
+                left = LLM_DEADLINE - (time.monotonic() - start) - MIN_ATTEMPT_S
+                if name not in offered_names:
+                    text = f"error: no tool named {name!r} is available"
+                elif calls >= TOOL_MAX_CALLS:
+                    text = "not run: the tool-call limit for this answer is reached"
+                elif name in server and server_calls >= TOOL_MAX_SERVER_CALLS:
+                    text = f"not run: the {name} limit for this answer is reached"
+                elif left <= 0:
+                    text = "not run: out of time"
+                else:
+                    try:
+                        args = json.loads(raw)
+                        if not isinstance(args, dict):
+                            raise ValueError("arguments must be a JSON object")
+                    except ValueError as exc:
+                        text = f"error: arguments were not valid JSON ({exc})"
+                    else:
+                        entry["args"] = args
+                        calls += 1
+                        server_calls += name in server
+                        text, row, entry["ok"] = await _dispatch(
+                            mod, name, args, min(TOOL_TIMEOUT_S, left))
+                        row = _tool_row(row)
+                        if row is not None:
+                            rows.append(row)
+                text = text[:TOOL_RESULT_MAX_CHARS]
+                entry["ms"] = round((time.monotonic() - t0) * 1000)
+                entry["chars"] = len(text)
+                log.append(entry)
+                msgs.append({"role": "tool", "tool_call_id": _field(tc, "id"), "content": text})
+    finally:
+        budget.fill(meta)
+        meta["tools"] = log
+        meta["tool_rounds"] = rounds
+    if not answer:
+        raise RuntimeError("model gave no answer (empty final message)")
+    return answer, rows
 
 
 # --- RAG plumbing --------------------------------------------------------
@@ -828,7 +1172,44 @@ async def answer_question(question, history, context=None, meta=None, surface="w
     # The thinking switch, token budget and temperature per provider live in
     # PROVIDERS / request_params(); the retry, fallback and deadline in _complete().
     # A blank answer is never returned silently: it is retried, then raised.
-    answer = await _complete(messages, reasoning, meta, start)
+    level = tools_level()
+    offered = offered_tools(level)
+    if offered and reasoning and any(m["role"] == "assistant" for m in history[-MAX_HISTORY:]):
+        # ⚠ DeepSeek's Thinking Mode guide: in a conversation carrying `tools`,
+        # "the reasoning_content must be fully passed back to the API in all
+        # subsequent requests … even for turns where the model did not perform a
+        # tool call", else HTTP 400. A history turn is rebuilt from its text and
+        # has no reasoning to send back, so a thinking follow-up answers without
+        # tools (exactly as it did before tools existed).
+        offered = []
+        meta["tools_skipped"] = "thinking follow-up"
+    if level != "off":
+        meta["tools_level"] = level
+    if not offered:
+        answer = await _complete(messages, reasoning, meta, start)
+    else:
+        tooled = [{"role": "system",
+                   "content": f"{SYSTEM_PROMPT}\n\n{tool_prompt(offered, surface)}\n\n{PRIMER}"},
+                  *messages[1:]]
+        try:
+            answer, tool_rows = await _run_tools(tooled, reasoning, meta, start,
+                                                 offered, tools_module())
+        except _ToolsRejected as exc:
+            # The provider refused the tools request itself (a 400 a retry cannot
+            # fix). Answer the way we did before tools rather than not at all.
+            print(f"[tools] {exc}; answering without tools")
+            meta["tools_error"] = str(exc)[:300]
+            answer = await _complete(messages, reasoning, meta, start)
+        else:
+            hits = list(hits) + [(0.0, r) for r in tool_rows]
+            meta["hits"] = hits
+    if level != "off":
+        # The deterministic quote check (quotecheck.py) — before any front-end
+        # renders citations, so a quote its source does not print never reaches
+        # a reader as verbatim. Gated with the tools so ALGO_TOOLS=off changes
+        # nothing at all.
+        answer, report = quotecheck.check(answer, [r for _s, r in hits], resolve_citation)
+        meta.update(report)
     meta["total_ms"] = round((time.monotonic() - start) * 1000)
     return answer, hits, reasoning
 
@@ -871,11 +1252,79 @@ def cr_link(r):
     return f"{CR_REVIEW_BASE}/?crreview=1&at={quote(at, safe=':.')}" if at else None
 
 
+def _flag(m, *keys):
+    return any(m.get(k) for k in keys)
+
+
+def _basis_set(m):
+    b = m.get("basis")
+    if not b:
+        return set()
+    return {b} if isinstance(b, str) else set(b)
+
+
+def source_caveats(r):
+    """The trust caveats a source's footnote carries (judge tools design §2,
+    rule 3): appended in CODE, so a caveat the model drops still reaches the
+    reader. From the row's metadata — the tool rows' camelCase flags
+    (engineDiffers, openQuestion, verdict, basis) or the corpus chunks'
+    snake_case ones. A corpus chunk holding several rules only knows that ANY
+    of them differs or is open, so those two are shown for a one-rule chunk
+    only; its basis is uniform (build_cr splits pieces by authority).
+    Gated with ALGO_TOOLS: off, every footnote reads as it always did."""
+    if tools_level() == "off" or r.get("source_type") not in ("cr", "tool"):
+        return []
+    m = r.get("metadata") or {}
+    if m.get("kind") == "glossary":
+        return []
+    precise = len(m.get("nums") or [m.get("num")]) <= 1
+    out = []
+    if precise and _flag(m, "engineDiffers", "engine_differs"):
+        out.append("⚠ the client currently does otherwise")
+    verdict = m.get("verdict")
+    if verdict in ("partial", "contradicted", "unsupported"):
+        out.append(f"({verdict})")
+    basis = _basis_set(m)
+    if basis == {"owner"}:
+        out.append("(owner call, unofficial)")
+    elif basis == {"engine"}:
+        out.append("(engine-derived, unconfirmed)")
+    elif basis and basis <= {"owner", "engine"}:
+        out.append("(owner call / engine-derived, unofficial)")
+    if precise and _flag(m, "openQuestion", "open_question"):
+        out.append("(open question)")
+    return out
+
+
+def _engine_source(r):
+    """An engine (simulate) row's footnote: the build it ran on and the one-line
+    board it simulated, so a reader can check the setup. Row shape (bot/tools.py
+    simulate, T-D): source_type "engine", metadata {engine: <sha>, board: "…"}."""
+    m = r.get("metadata") or {}
+    sha = str(m.get("engine") or "")[:7]
+    name = "Online client engine: simulated" + (f" (build {sha})" if sha else "")
+    board = re.sub(r"\s+", " ", str(m.get("board") or "")).strip()
+    if board:
+        name += f" — {board[:140]}{'…' if len(board) > 140 else ''}"
+    return name
+
+
 def friendly_source(r):
-    """A clean, human-readable name for a retrieved chunk's source."""
-    if r["source_type"] == "cr":
+    """A clean, human-readable name for a retrieved chunk's source, with its
+    trust caveats (source_caveats) when tools are on."""
+    if r["source_type"] == "engine":
+        return _engine_source(r)
+    caveats = source_caveats(r)
+    if caveats:
+        return " ".join([_friendly_name(r), *caveats])
+    return _friendly_name(r)
+
+
+def _friendly_name(r):
+    tool_cr = r["source_type"] == "tool" and str(r.get("id", "")).startswith("cr:")
+    if r["source_type"] == "cr" or tool_cr:
         m = r.get("metadata") or {}
-        if m.get("kind") == "glossary":
+        if m.get("kind") == "glossary" or (tool_cr and str(r["id"]).startswith("cr:glossary.")):
             return f"CR glossary: {m.get('term') or r['title']}"
         return f"CR {m.get('num') or r['title']}"
     if r["source_type"] == "card":
@@ -1185,3 +1634,32 @@ def cited_card_paths(answer, hits, limit=10):
         if len(out) >= limit:
             break
     return out
+
+
+# --- the tools axis of the engine version ------------------------------------
+# Computed LAST, after every name above exists: bot/tools.py may import from
+# core, and importing it any earlier would hand it a half-built module.
+# `.t<sig>` hashes what a tools answer adds — the schemas offered at import, the
+# tool prompt, the caps and the quote check — and is ABSENT with ALGO_TOOLS=off,
+# so the default deploy keeps today's stamp. ALGO_TOOLS is also read per call
+# (the eval flips it); each answer logs its own level as `tools_level`.
+def _tools_sig(level=None):
+    level = tools_level() if level is None else level
+    if level == "off":
+        return None
+    offered = offered_tools(level)
+    if not offered:
+        return f"{level}-none"
+    try:
+        qc = Path(quotecheck.__file__).read_bytes()
+    except OSError:
+        qc = b""
+    return _sig(level, json.dumps(offered, sort_keys=True), TOOL_PROMPT,
+                *sorted(TOOL_PROMPT_ENGINE.items()), TOOL_MAX_ROUNDS,
+                TOOL_MAX_ROUNDS_REASONING, TOOL_MAX_CALLS, TOOL_MAX_SERVER_CALLS,
+                TOOL_RESULT_MAX_CHARS, qc)
+
+
+TOOLS_SIG = _tools_sig()
+if TOOLS_SIG:
+    ENGINE_VERSION = f"{ENGINE_VERSION}.t{TOOLS_SIG}"
