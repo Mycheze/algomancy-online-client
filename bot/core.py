@@ -27,6 +27,7 @@ from openai import AsyncOpenAI
 from cards import CardIndex
 import crnotes
 import retriever as retr
+import terms
 from retriever import CORPUS, Retriever
 
 
@@ -169,6 +170,12 @@ combined ability fires: "cause: effect 1 AND effect 2 …", one ability resolvin
 to bottom. A new graft may go at any position below the host's own card; grafts \
 already applied cannot be re-ordered. [Switch] is unbounded (any number of times); \
 [Switch1] is bounded (once per turn).
+- Targets: every target is chosen as the effect is put on the stack. Only words that \
+describe the target limit what can be chosen ("target unit with 5 or less defense"); an \
+"if" clause attached to the action ("delete target unit if it has a -1/-1 counter on it") \
+does not limit the choice — it is checked as the effect resolves. Anything on the stack is \
+an effect. An effect that has lost all of its targets as it resolves fizzles. Once an \
+effect has begun to resolve, it can no longer be targeted, negated or augmented.
 - Square brackets: [Switch], [Switch1], [Augment], [Battle], [Virus], [Haste] and \
 [once] are symbols, never costs. Other bracketed text in a text box is an \
 additional cost or a choice between modes, paid or chosen to play the card.
@@ -265,6 +272,9 @@ graft cards [rulebook23:0026]."
 - Copy each [tag] EXACTLY as it heads its passage ([manual:0023], [card:Temporal Rift], \
 [ruling:raq-1353859961855148103]). Never make up a tag, shorten one, or cite a passage \
 you were not given.
+- Game terms have exact meanings. A passage labelled "definition" is the Comprehensive \
+Rules glossary's meaning of a term used in the question or in a card's text: apply it as \
+written, and never work out what a term covers from the everyday words in it.
 - If you are reasoning or inferring something neither the primer nor the passages state \
 explicitly, present it as an inference ("the rules don't state this directly, but…") and \
 do NOT attach a citation.
@@ -302,7 +312,9 @@ flagging that the rule above it may be WRONG and is waiting to be fixed. It is a
 not a source: never state the note as the rule. Mention the uncertainty, and prefer a \
 higher source if one was retrieved.
 - If neither the primer nor the retrieved passages cover the question, say you don't \
-have that in the rules rather than inventing an answer. A clear "the rules provided \
+have that in the rules rather than inventing an answer. That includes questions about the \
+online client's screens and controls (where something is shown, what to click or tap): \
+describe the interface only as a retrieved passage describes it. A clear "the rules provided \
 don't cover this" is a good answer.
 - The Light & Dark expansion has NO official rules release yet. Its card text was \
 transcribed from card images, and any passage labelled "Light & Dark provisional \
@@ -347,7 +359,7 @@ Style: be concise, use clean markdown, keep answers under ~250 words."""
 # `c…` change (data) at a glance. Bump ENGINE_DATE + add a line to
 # ENGINE_CHANGELOG.md whenever you make a real behavioural change. See that file
 # for the history; responses logged before this field existed have no stamp.
-ENGINE_DATE = "2026-10-11"
+ENGINE_DATE = "2026-11-01"
 
 
 # Prepended to the final user turn in a thread. The earlier turns are context for
@@ -391,7 +403,8 @@ except OSError:
 RETRIEVAL_SIG = _sig(TOP_K, retr.BM25_K1, retr.BM25_B, retr.OUTDATED_PENALTY,
                      retr.FUZZY_CUTOFF, retr.FUZZY_WEIGHT, retr.FOUNDATION_FLOOR,
                      sorted(retr.AUTH_BOOST.items()),
-                     sorted(retr.FOUNDATION_TYPES))
+                     sorted(retr.FOUNDATION_TYPES),
+                     *(("defs", terms.MAX_DEFS, terms.MIN_TERM_LEN, terms.MAX_DF_FRACTION) if os.getenv("ALGO_DEFINITIONS", "on") != "off" else ()))
 ENGINE_VERSION = f"{ENGINE_DATE}.p{PROMPT_SIG}.c{CORPUS_SIG}.r{RETRIEVAL_SIG}"
 
 # --- indexes & client (loaded once at startup) ---------------------------
@@ -658,6 +671,33 @@ DIGITAL_NOTE = {
 }
 
 
+# --- definitions (terms.py) ---------------------------------------------------
+# ALGO_DEFINITIONS=off turns the definition rows off (the eval's A/B switch).
+# It is read per call, so a test or an eval run can flip it after import.
+DEFINITION_LABEL = ("definition — the Comprehensive Rules glossary's meaning of a term used "
+                    "in the question or in a card above")
+_term_index = None
+
+
+def term_index():
+    """The TermIndex over the CURRENT retriever's corpus (the eval swaps
+    `retriever` for another corpus, so this is rebuilt when the rows change)."""
+    global _term_index
+    if _term_index is None or _term_index[0] is not retriever.rows:
+        _term_index = (retriever.rows, terms.TermIndex(retriever.rows))
+    return _term_index[1]
+
+
+def with_definitions(question, hits):
+    """`hits` plus the glossary rows of the terms the question and the
+    retrieved cards use (terms.TermIndex.definitions_for), each a COPY marked
+    `definition` so build_context labels it. Score 0.0: they were not ranked."""
+    if os.getenv("ALGO_DEFINITIONS", "on") == "off":
+        return hits
+    defs = term_index().definitions_for(question, hits, covers=cr_chunk_covers)
+    return list(hits) + [(0.0, {**row, "definition": term}) for term, row in defs]
+
+
 def build_context(hits, surface="web", notes_used=None):
     """The passages block. A CR passage carries its label, its digital-client
     instruction for `surface`, and any open review note (crnotes); the note ids
@@ -666,6 +706,8 @@ def build_context(hits, surface="web", notes_used=None):
     blocks = []
     for _score, r in hits:
         label = r["authority_label"]
+        if r.get("definition"):
+            label = f"{label} — {DEFINITION_LABEL}"
         if r.get("source_type") == "cr" and (r.get("metadata") or {}).get("scope") == "digital":
             label = f"{label} — {note_of}"
         text = r["text"]
@@ -753,6 +795,7 @@ async def answer_question(question, history, context=None, meta=None, surface="w
     # BM25 over the whole corpus is synchronous and sits on the Discord bot's
     # event loop otherwise — every other command waits while it runs.
     hits = await asyncio.to_thread(retriever.search, question, k=TOP_K)
+    hits = await asyncio.to_thread(with_definitions, question, hits)
     notes_used = []
     passages = build_context(hits, surface, notes_used) if hits else "(no relevant passages found)"
     meta["surface"], meta["cr_notes"] = surface, notes_used
