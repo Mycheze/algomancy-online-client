@@ -44,6 +44,9 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-01', kind: 'fix', text: 'Glowing card outlines are no longer cut off at the edge of the hand, the play area and the resource row.' },
+  { date: '2026-11-01', kind: 'fix', text: 'Card text when you hover or zoom a unit keeps the card’s own line breaks, so a second ability starts on its own line again.' },
+  { date: '2026-11-01', kind: 'fix', text: 'Abduct and Gravitational Correction on the stack now say how much the opponent has to pay, e.g. “unless Gember pays 5”.' },
   { date: '2026-11-01', kind: 'fix', text: 'An opponent’s unit carrying several mods no longer jumps to the far left of their side on some screen sizes. It stays where their units start, and you click it where you see it.' },
   { date: '2026-11-01', kind: 'change', text: 'Weekly challenges: debt now counts. Debt you still owe when you meet the goal adds the turns it would take to pay off, so borrowing your way to a turn-2 finish no longer pays. Past runs have been re-scored.' },
   { date: '2026-11-01', kind: 'new', text: 'Every card now has a link of its own. Pin a card in the card search and press “copy link”; the link opens the search with that card pinned, and shows the card in a Discord preview.' },

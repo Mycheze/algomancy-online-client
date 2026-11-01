@@ -5115,4 +5115,66 @@ export const CLOSED: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "Took back invi's play [250] of the Abyssal Evocation that had just resolved into the bin (slot 6), cast again under its own permission; Yagamino agreed. Replayed, invi played Arc Lightning from the bin (slot 3) instead. The card says \"you may play spells from your bin\", and it is a spell in the bin, so the engine offered a legal play; the wrong card was clicked. No defect.",
   },
+  {
+    id: 310, room: "XFXE", date: "2026-11-01",
+    report: "Nyar, seat 0: the Nectar Ridge Oracle drew me a card when the Lurker entered, without asking me to pay the one mana to trigger it — the Lurker's ability is already active as the Oracle triggers.",
+    status: 'by-design',
+    note: "Replayed FAITHFUL (210/210). Nyar spawned Crevice Lurker in turn 3's DEPLOYMENT (\"Start of deployment\" … \"Nyar spawns Crevice Lurker\" → \"Trigger: Nectar Ridge Oracle\"), and the Lurker prints \"Abilities cost [one] more to activate or trigger during battle\". Deployment is its own phase (CR 507), not part of battle (CR 505), so the trigger was untaxed and nothing was asked. In battle the same trigger is taxed and asks (CR 111.10f).",
+  },
+  {
+    id: 311, room: "XFXE", date: "2026-11-01",
+    report: "Nyar, seat 0, agreed fix: move Nyar's Smouldering Inferno from their hand to the top of the deck (turn 3 deployment). \"test\"",
+    status: 'agreed-fix',
+    note: "An edit at [100], filed 17 seconds after #310 at the same point, straight after the Oracle's draw; invi agreed. The reason given is \"test\", and the move was the edit tool doing what it was asked. Undoing a draw that #310 thought should have been asked for is a fair reading, but nothing records it. No defect.",
+  },
+  {
+    id: 312, room: "VSZT", date: "2026-11-01",
+    report: "Nyar, seat 0, agreed fix: back to before Nyar's pass (turn 1 battle), taking back two passes, Nyar's blocks, Luminous Arc on invi's Cinder Scuttler and a pass. \"test\"",
+    status: 'agreed-fix',
+    note: "Took back [16]-[21]; invi agreed. Replayed, the same six actions were played again in the same order (Luminous Arc on the same Cinder Scuttler). A test of the rewind tool, as the reason says; no defect.",
+  },
+  {
+    id: 313, room: "VSZT", date: "2026-11-01",
+    report: "invi, seat 1, agreed fix: back to before invi's Cinder Scuttler (turn 3 deployment). \"missclick\"",
+    status: 'agreed-fix',
+    note: "Took back invi's spawn of Cinder Scuttler [86]; Nyar agreed. Replayed, invi deployed Dreamfloat Drifter and Flamebreath Initiate instead. A misclick, as the reason says; no defect.",
+  },
+  {
+    id: 314, room: "VSZT", date: "2026-11-01",
+    report: "Nyar, seat 0, agreed fix: back to before Nyar's pass (turn 4 after-combat, Mirrorback Ambusher on the stack), taking back two passes. \"test\"",
+    status: 'agreed-fix',
+    note: "Took back [157]-[158], the passes that let invi's Mirrorback Ambusher deal 1 to a Unit Token; invi agreed. Replayed, Nyar cast Soul Tithe on the Ambusher first. Both seats had passed, so resolving was right. A missed response; no defect.",
+  },
+  {
+    id: 315, room: "EMNR", date: "2026-11-01",
+    report: "mycheze, seat 0: with the new UI many elements overlap the border of their section by a pixel or two, cutting off the very edge.",
+    status: 'fixed',
+    guards: [
+      '777-ring-room-at-zone-edges.test.ts::In Play: a unit flush against the zone keeps its whole ring',
+      '777-ring-room-at-zone-edges.test.ts::the resources: the first card keeps its edge and its wake ring',
+      "777-ring-room-at-zone-edges.test.ts::scroller is inset by the ring, and no card moves",
+    ],
+    note: "Measured over 98 slices of EMNR in headless Chrome: a card's ring (playable / candidate / wake) paints outside the card, and In Play, the resources and the hand dock clip at their own edge with the first card flush against it — 2-3px of ring lost top and left, and the first resource's 1px hairline on every board. The clipping zones now leave the widest ring's 3px (overflow-clip-margin; the hand's scroller is inset 3px and the inset cancelled by a margin), with 0px movement of any element at three sizes. Left: the ~8px pulsing glow on an activatable unit is still cut by its section (would need spacing changes).",
+  },
+  {
+    id: 316, room: "EMNR", date: "2026-11-01",
+    report: "mycheze, seat 0: some text boxes when hovering units don't show the card's line breaks, putting everything on one line.",
+    status: 'fixed',
+    guards: [
+      '776-text-box-keeps-printed-lines.test.ts::Powerforge Synergist in play',
+      '776-text-box-keeps-printed-lines.test.ts::hyphenated and mid-sentence wraps still join',
+      '776-text-box-keeps-printed-lines.test.ts::whole pool: no word lost',
+    ],
+    note: "Real. Powerforge Synergist was in play: \"I spawn with two +1/+1 counters. {/n} [Augment] When I despawn…\". The oracle's {/n} is three things — a hyphenated word, the scan wrapping mid-sentence, and a real new line — and the zoom, hover tip, inspector and card panel all flattened every one to a space. The multi-line box now keeps a {/n} that follows the end of a sentence (29 in the pool) and joins the rest as before; one-line readings are unchanged.",
+  },
+  {
+    id: 318, room: "EMNR", date: "2026-11-01",
+    report: "mycheze, seat 0: Abduct's text on the stack says \"unless Gember pays its cost\" but it's actually \"unless Gember pays 5\".",
+    status: 'fixed',
+    guards: [
+      '775-pay-x-says-the-number.test.ts::Abduct on the stack says the X paid',
+      '775-pay-x-says-the-number.test.ts::Gravitational Correction says the X paid',
+    ],
+    note: "Real: the does-line paraphrased the printed \"pays [x]\". Abduct now reads \"…unless Gember pays 5\" (the X paid, per the owner's rule that a paid X prints as its number). Same clause on Gravitational Correction, which showed the X glyph; fixed with it. Swept the rest of does-lines: no other clause paraphrases a paid X.",
+  },
 ];
