@@ -56,7 +56,7 @@ test('report FXMF #306: the Death Greeter trigger says the cost bar of the spell
   pick(h, { player: A });
   const it = greeterItem(h.state);
   assert.ok(it, 'the Greeter triggered on the Wildfire');
-  assert.equal(doesLine(it!, h.state, name(h.state)), 'Each player sacrifices a unit costing 4 or less');
+  assert.equal(doesLine(it!, h.state, name(h.state)), 'Each player sacrifices a unit costing 4 or less (Wildfire)');
 });
 
 test('report FXMF #306: the lonely trigger still says it with the spell gone from under it', () => {
@@ -68,7 +68,7 @@ test('report FXMF #306: the lonely trigger still says it with the spell gone fro
   // Nyar's case: the spell has left the stack (negated, or moved), the trigger stays
   const lonely = { ...h.state, stack: h.state.stack.filter(i => i.id === it.id) } as GameState;
   assert.equal(lonely.stack.length, 1);
-  assert.equal(doesLine(it, lonely, name(lonely)), 'Each player sacrifices a unit costing 2 or less');
+  assert.equal(doesLine(it, lonely, name(lonely)), 'Each player sacrifices a unit costing 2 or less (Wildfire)');
 });
 
 test('report FXMF #306: the stack caption on the board says it, to both seats', () => {
@@ -81,6 +81,6 @@ test('report FXMF #306: the stack caption on the board says it, to both seats', 
     const html = ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat));
     const at = html.indexOf('class="stackdoes"');
     assert.ok(at >= 0, `seat ${seat}: the lead caption has a does-line`);
-    assert.match(html.slice(at, at + 200), /Each player sacrifices a unit costing 3 or less/, `seat ${seat}`);
+    assert.match(html.slice(at, at + 200), /Each player sacrifices a unit costing 3 or less \(Wildfire\)/, `seat ${seat}`);
   }
 });

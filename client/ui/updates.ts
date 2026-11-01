@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-01', kind: 'change', text: 'A trigger that reads a spell’s cost, like Death Greeter’s, now names that spell on the stack too: “costing 2 or less (Squish)”.' },
   { date: '2026-11-01', kind: 'new', text: 'The League page has a Discord time code maker: pick a time in your own zone and copy a code that shows it in each reader’s zone when you paste it into Discord.' },
   { date: '2026-11-01', kind: 'new', text: "Sign-ups are open for the November league: casual constructed. Bring any deck, and change it every game if you like. Week 1 starts Sunday 8 November." },
   { date: '2026-11-01', kind: 'change', text: 'While the October final is on, the home page and the League page show it next to the November sign-ups, so finalists can play the final and sign up in the same week.' },

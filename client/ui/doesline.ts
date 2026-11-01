@@ -21,6 +21,11 @@
  *   {me}               the body the clause runs on (the host of an augment,
  *                      the carrier of a graft, the card itself for a spell)
  *   {you} {opponent}   the item's controller, and the other player
+ *   {spell}            the card the trigger's own event names (a 'spellPlayed'
+ *                      trigger's spell: event.data.card) — read off the event
+ *                      snapshot, so it holds after the spell has left the
+ *                      stack (owner, 2026-11-01, on Death Greeter: "costing 2
+ *                      or less (Squish)")
  *   {X}                the clause's AMOUNT (amountOf, below). The owner's rule,
  *                      2026-09-30: "'Create a Fireball X (currently 4)' for
  *                      things that check on resolution or have an unknown
@@ -66,6 +71,8 @@ export interface SlotContext {
   me: string | null;
   you: string | null;
   opponent: string | null;
+  /** {spell}: the card the item's triggering event names (escaped), or null */
+  spell?: string | null;
   /** the {X} amount — see amountOf */
   amount: Amount | undefined;
   mode: unknown;
@@ -175,7 +182,7 @@ function namedAfter(rest: string, count: number): number[] | null {
 }
 
 /** every slot token a template may use — test/344 holds templates to it */
-export const SLOT_RE = /\{(\d+)(\+|\.controller)?\}|\{(me|you|opponent|X)\}|\{mode:((?:[^{}]|\{[^{}]*\})*)\}/g;
+export const SLOT_RE = /\{(\d+)(\+|\.controller)?\}|\{(me|you|opponent|spell|X)\}|\{mode:((?:[^{}]|\{[^{}]*\})*)\}/g;
 
 /**
  * CT-194: the damage the ITEM deals — "Deal 3 damage", "deal damage equal to",
@@ -256,6 +263,7 @@ export function renderTemplate(tpl: string, c: SlotContext): string | null {
       } else if (m[3] === 'me') v = c.me;
       else if (m[3] === 'you') v = c.you;
       else if (m[3] === 'opponent') v = c.opponent;
+      else if (m[3] === 'spell') v = c.spell ?? null;
       else if (m[3] === 'X') {
         if (c.amount && !c.amount.live) v = String(xNow());
         else { v = 'X'; live = !!c.amount; }
@@ -519,6 +527,9 @@ export function doesLine(item: StackItem, state: GameState, label: (t: TargetRef
   const opp = names.length === 2 ? names[1 - item.controller] ?? null : null;
   const src = item.sourceId !== undefined ? state.entities[item.sourceId] : undefined;
   const me = src?.card ?? item.card ?? null;
+  // {spell}: the event snapshot's card, not a stack lookup — the spell may be gone
+  const evCard = (item.event?.data as Record<string, unknown> | undefined)?.['card'];
+  const spell = typeof evCard === 'string' ? evCard : null;
   const seatOf = (t: TargetRef | undefined): Seat | null => {
     if (!t) return null;
     if ('unit' in t) return state.entities[t.unit]?.controller ?? null;
@@ -544,6 +555,7 @@ export function doesLine(item: StackItem, state: GameState, label: (t: TargetRef
       count: p.targets.length,
       controllerOf: i => { const s = seatOrKnown(p.targets[i]); return s === null ? null : names[s] ?? null; },
       me: me ? text(me) : null, you: you ? text(you) : null, opponent: opp ? text(opp) : null,
+      spell: spell ? text(spell) : null,
       amount: amountOf(item, p, state), mode: p.mode, text,
       damage: damagePricer(item, p, state, label, text),
       amounts: amountPricer(item, p, state, label, text),
