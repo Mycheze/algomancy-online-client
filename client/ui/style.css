@@ -5085,6 +5085,8 @@ html.touch #app.board.v2 > .toolbar .scnx { min-height: 32px; min-width: 36px; }
  * week suggestions, and the organizer's copy-for-Discord post */
 .lgplay { white-space: nowrap; text-align: right; }
 .lgplay button + button { margin-left: 6px; }
+/* a reason ("you already have a game with them this week") wraps; only the buttons keep to one line */
+.lgplay > .dim { white-space: normal; }
 /* when to play (ui/league.ts timeHtml): the time on the table, and the picker */
 .lgtime { margin-bottom: 4px; }
 .lgtime.agreed b { color: var(--glow); }

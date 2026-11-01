@@ -376,7 +376,7 @@ function pairingText(m: { a: Person; b: Person; result: Result | null }): string
     const [w, l] = r.outcome === 'a' ? [m.a, m.b] : [m.b, m.a];
     return `<span><b>${esc(w.name)}</b> <span class="dim">beat</span> ${esc(l.name)}</span>`;
   }
-  return `<span>${esc(m.a.name)} <span class="dim">vs</span> ${esc(m.b.name)}</span><span class="dim">${
+  return `<span>${esc(m.a.name)} <span class="dim">vs</span> ${esc(m.b.name)}</span> <span class="dim">${
     !r ? 'to play' : r.outcome === 'unplayed' ? 'not played' : 'double loss'}</span>`;
 }
 
