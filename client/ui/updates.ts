@@ -44,6 +44,9 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-01', kind: 'new', text: 'The League page has a Discord time code maker: pick a time in your own zone and copy a code that shows it in each reader’s zone when you paste it into Discord.' },
+  { date: '2026-11-01', kind: 'new', text: "Sign-ups are open for the November league: casual constructed. Bring any deck, and change it every game if you like. Week 1 starts Sunday 8 November." },
+  { date: '2026-11-01', kind: 'change', text: 'While the October final is on, the home page and the League page show it next to the November sign-ups, so finalists can play the final and sign up in the same week.' },
   { date: '2026-11-01', kind: 'fix', text: 'Stasis Sentry no longer forces an X spell to X = 3 or more. You choose X freely, and an X of 3 or less costs 3 to play during battle: Torrential Reclamation for X = 2 takes two targets and costs 3.' },
   { date: '2026-11-01', kind: 'change', text: "Death Greeter's trigger on the stack now says how cheap the sacrificed unit must be, such as 'a unit costing 4 or less', even after the spell that set it off has left the stack." },
   { date: '2026-10-31', kind: 'fix', text: 'A unit that is erased when it dies (an Unstable unit, or one carrying a mod) is no longer trashed. It still dies, but cards that care about trashing no longer see it.' },

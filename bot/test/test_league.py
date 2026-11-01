@@ -326,5 +326,30 @@ check("the League cog is loaded", cog is not None)
 check("⭐ build_bot() does not start the delivery loop", running is False)
 check("/league is registered", "league" in names)
 
+# ── §7 ────────────────────────────────────────────────────────────────
+print("[§7 ⭐ a constructed season, and two seasons at once (owner, 2026-11-01)]")
+CASUAL = "Casual constructed: bring any deck"
+for kind in ("signups-open", "signup"):
+    draft_row, con_row = row(kind), row(kind)
+    con_row["data"] = {**con_row["data"], "format": "constructed"}
+    check(f"⭐ {kind}: a constructed season says so", CASUAL in lg.render(con_row, None)["content"])
+    check(f"{kind}: a draft season (or a row with no format) does not", CASUAL not in lg.render(draft_row, None)["content"])
+
+
+def _view(name, label, fmt=None, opp="Bob", week=4):
+    return {"name": name, "label": label, **({"format": fmt} if fmt else {}),
+            "me": {"entered": True, "skips": [], "matches": [
+                {"week": week, "opponent": {"name": opp}, "result": None, "won": None}]}}
+
+
+both = lg.status_text({"linked": True, "season": _view("November 2026 League", "Sign-up week", "constructed", "Cy", 0),
+                       "others": [_view("October 2026", "The final")]})
+check("⭐ status shows the other live season the player is in", "October 2026" in both and "Bob" in both)
+check("⭐ …and the current one, saying it is constructed",
+      "November 2026 League** (casual constructed)" in both and "Cy" in both)
+check("the older season comes first", both.index("October 2026") < both.index("November 2026"))
+check("status with no other season is unchanged in shape",
+      lg.status_text({"linked": True, "season": _view("October 2026", "Week 3 of 3")}).startswith("🏅 **October 2026** — Week 3 of 3."))
+
 print(f"\n{PASS} checks passed" + (f", {FAILED} FAILED ❌" if FAILED else " ✅"))
 raise SystemExit(1 if FAILED else 0)

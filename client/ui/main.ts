@@ -236,7 +236,7 @@ interface NetMsg {
    * collapsed the queue onto it (2026-10-03: in Learn to Play the bot's own
    * push, a moment after the frames, cut every playback off at frame 1). */
   playbackTail?: true;
-  clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; drawn?: { mine: string; theirs: string } }; custom?: lob.CustomRulesInfo; names?: [string, string];
+  clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; league?: true; drawn?: { mine: string; theirs: string } }; custom?: lob.CustomRulesInfo; names?: [string, string];
   /** present on every push of a single card duel */
   single?: true;
   trio?: lob.TrioReveal;
@@ -300,7 +300,7 @@ class NetBackend implements Backend {
   peers: [boolean, boolean] = [false, false];
   joined = false;
   /** constructed lobby: non-null while the room waits for both decks */
-  waiting: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; drawn?: { mine: string; theirs: string } } | null = null;
+  waiting: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; league?: true; drawn?: { mine: string; theirs: string } } | null = null;
   /** CR D8.2: this room is a single card duel — the server says so (every push,
    * and the waiting payload), or the creating link does (`&single=1`) before
    * the room exists. Only ever set. */
@@ -443,12 +443,15 @@ class NetBackend implements Backend {
   /** (re-)join — also called from the waiting screen once a deck is picked.
    * mode + trio only matter when this join creates the room; the selected
    * deck rides along on every join and the server uses it where it matters
-   * (constructed room creation / a waiting seat). */
-  sendJoin(): void {
+   * (constructed room creation / a waiting seat). `pick` marks the waiting
+   * room's own "Play this deck": a constructed LEAGUE room takes a deck only
+   * from that (server/rooms.ts takesJoinDeck), since its deck is chosen per game. */
+  sendJoin(pick = false): void {
     const name = (localStorage.getItem('algoName') ?? '').trim();
     const deck = savedDeck();
     this.ws.send(JSON.stringify({
       t: 'join', room: this.room, seat: this.wantSeat, name,
+      ...(pick ? { pick: true } : {}),
       // accounts: the session token binds this seat to an account server-side,
       // which is what makes the game count toward your stats
       ...(acct.token() ? { token: acct.token() } : {}),
@@ -9452,21 +9455,28 @@ function renderWaiting(): void {
   const deck = savedDeck();
   const mineIn = w.have[me];
   const oppLine = net.peers[opp] ? 'connected — still choosing a deck…' : 'not here yet';
+  // a constructed LEAGUE match (owner, 2026-11-01): a deck for this game, any
+  // deck. Both seats are bound, so there is no code to share — the draft
+  // league lobby says the same (ui/lobby.ts)
+  const league = w.league === true;
   // same furniture as the draft lobby (ui/lobby.ts): it is the same moment in
   // the same room, and the two screens looking different made it read as two
   // different products
   $app.innerHTML = `<div class="lobbypage">
     <div class="lobbyhead">
       <h1 class="homelogo">ALGOMANCY</h1>
-      <h2>Constructed — room <span class="roomcode">${esc(net.room)}</span></h2>
+      <h2>${league ? 'League match' : 'Constructed'} — room <span class="roomcode">${esc(net.room)}</span></h2>
       <div class="headbtns"><button data-btn="gohome">Leave</button></div>
     </div>
 
-    ${shareBar('Send your opponent the room code', net.room, link)}
-    ${roomFriendsHtml(!net.peers[opp])}
+    ${league
+      ? (net.peers[opp] ? '' : '<p class="hint lobbywait">Waiting for your opponent. They join from their own League page — tell them on Discord you are here.</p>')
+      : `${shareBar('Send your opponent the room code', net.room, link)}
+    ${roomFriendsHtml(!net.peers[opp])}`}
 
     ${mineIn ? '' : `<div class="lobbypanel deckpicker">
-      <div class="zonelabel">Your deck</div>
+      <div class="zonelabel">Your deck${league ? ' for this game' : ''}</div>
+      ${league ? '<p class="hint">Any deck. Keep it or change it every game.</p>' : ''}
       ${deckPickerHtml()}
       <button class="cta primary" data-btn="deckjoin" ${deck ? '' : 'disabled'}>Play this deck</button>
     </div>`}
@@ -10510,7 +10520,7 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
     if (text) importDeck({ text }, NET ? render : renderHome);
     return true;
   }
-  if (b === 'deckjoin') { NET?.sendJoin(); return true; }
+  if (b === 'deckjoin') { NET?.sendJoin(true); return true; }
   if (b === 'singlejoin') { if (NET) { NET.singleArmed = true; NET.sendJoin(); } return true; }
   if (b === 'joincode') {
     saveHomeName();

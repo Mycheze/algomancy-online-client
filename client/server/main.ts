@@ -44,7 +44,7 @@ import {
   joinRefusal, joinableRoom, legalInRoom, openSegment, renameSeat, sanitizeClock,
   reserveRoomCode, resolveLobby, roomElementCount, roomLobby, type RoomCustom,
   restoreRooms, roomWaiting, segmentKey, setFullControl, setLobbyMethod, setLobbySubmission,
-  setRoomDeck, singleCards,
+  setRoomDeck, singleCards, takesJoinDeck,
   setSeatUser, settleClock, takeDeferred, undoForSeat, unheldFor, unlockLobby,
   type Room, type SegKey,
   seatVerdict,
@@ -1561,6 +1561,8 @@ function waitingInfo(room: Room, seat: Seat): {
   custom?: CustomInfo;
   /** CR D8.2: a single card duel — the waiting room asks for a card */
   single?: true;
+  /** a constructed LEAGUE room: each player picks this game's deck here */
+  league?: true;
   /** CR D8.2c: the last pair this duel was drawn on, from THIS seat's side —
    * shown until a game is dealt, and the only time the opponent's card is named */
   drawn?: { mine: CardName; theirs: CardName };
@@ -1581,6 +1583,8 @@ function waitingInfo(room: Room, seat: Seat): {
   return {
     have: [!!room.decks[0], !!room.decks[1]],
     clockStart: room.clockStart,
+    // a constructed league room: the waiting room says so, and has no code to share
+    ...(room.league && room.mode === 'constructed' ? { league: true as const } : {}),
     // CR D8.2b: the waiting room asks for a CARD, not a deck. Blind: `have` says
     // that the opponent's card is in, never which — you find out on the table.
     ...(room.single ? { single: true } : {}),
@@ -2037,7 +2041,7 @@ wss.on('connection', ws => {
   ws.on('error', err => console.warn('[ws] socket error:', err instanceof Error ? err.message : err));
   ws.on('message', raw => {
     let msg: { t: string; room?: string; seat?: number; name?: string; mode?: string; els?: string[];
-      token?: string; deck?: unknown; deckId?: unknown; single?: unknown; action?: Action; cols?: unknown; send?: unknown; left?: unknown;
+      token?: string; deck?: unknown; deckId?: unknown; single?: unknown; pick?: unknown; action?: Action; cols?: unknown; send?: unknown; left?: unknown;
       method?: unknown; submission?: unknown; lock?: unknown; want?: unknown;
       /** BL-26: the creator's chosen bank, in ms (0/'off' = no clock). Read
        *  only when this join CREATES the room; sanitizeClock takes it from
@@ -2388,7 +2392,8 @@ wss.on('connection', ws => {
       // CR D8.2e: thirty copies of one card is nobody's saved deck
       const claimed = typeof msg.deckId === 'string' && !room.single ? msg.deckId : null;
       const owned = deckForPlay(account?.id ?? null, claimed);
-      const gameJustStarted = roomWaiting(room) && deckCards
+      // a constructed league room takes only the waiting room's own pick (rooms.ts takesJoinDeck)
+      const gameJustStarted = roomWaiting(room) && deckCards && takesJoinDeck(room, msg.pick === true)
         ? setRoomDeck(room, seat, deckCards, owned ? owned.id : null) : false;
       settleClock(room);   // a connected seat with pending work goes on the clock
       // CT-179: a lobby or a view, decided once (waitingInfo is undefined iff
@@ -3082,7 +3087,7 @@ function openLeagueRoom(req: {
   existing: string | null;
   a: { userId: string; username: string };
   b: { userId: string; username: string };
-  season: string; match: string; rated: boolean;
+  season: string; match: string; rated: boolean; mode: 'draft' | 'constructed';
 }): { code: string; users: [string | null, string | null] } {
   const old = req.existing ? getRoom(req.existing) : undefined;
   if (old && old.league?.match === req.match && !old.closed && old.winner === null && decidedWinner(old) === null) {
@@ -3092,8 +3097,8 @@ function openLeagueRoom(req: {
   const [first, second] = Math.random() < 0.5 ? [req.a, req.b] : [req.b, req.a];
   const code = freshRoomCode();
   reserveRoomCode(code);
-  const room = createLeagueRoom(first, second, code, { season: req.season, match: req.match }, req.rated);
-  console.log(`[league] ${room.code}: ${first.username} vs ${second.username} for ${req.match}${req.rated ? ' (rated)' : ''}`);
+  const room = createLeagueRoom(first, second, code, { season: req.season, match: req.match }, req.rated, req.mode);
+  console.log(`[league] ${room.code}: ${first.username} vs ${second.username} for ${req.match} (${req.mode})${req.rated ? ' (rated)' : ''}`);
   return { code: room.code, users: [...room.users] };
 }
 
