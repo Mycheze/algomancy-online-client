@@ -20,7 +20,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { ent, give, pass, spawn, toDeployment, toNextBattle } from './util.ts';
+import { ent, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
 import type { Seat } from '../src/types.ts';
 
 const ANVIL = 'Triskaidekaphage';        // 0/13, no static, no spawn trigger
@@ -105,5 +105,55 @@ test('CR 102.3b: the second discarder is told only THAT the first chose (a card 
   assert.equal(second.seat, D);
   assert.deepEqual(second.earlier, [{ seat: A, open: false }],
     'a hidden pick carries who chose and nothing else — not even into the engine state');
+  assert.ok(!JSON.stringify(second.earlier).includes('Bubb'));
+});
+
+/** Mindburn: "Each player sacrifices a nontoken unit or discards a card." One
+ * question whose options mix a unit in play (open) and a card in hand
+ * (hidden). Owner, 2026-11-01: show the unit, hide the card. X = 1, cast by
+ * the initiative player in a battle in the other player's region. */
+function mindburnAsked(seed: number): { h: Harness; A: Seat; D: Seat } {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const mine = spawn(h, A, 'Gublin');
+  spawn(h, D, 'Shib');
+  toNextBattle(h, A);
+  for (const s of [A, D]) {
+    h.state.players[s]!.hand = [];
+    give(h, s, 'Immolate'); give(h, s, 'Bubb');
+  }
+  giveResources(h, A, 'fire', 1);
+  giveResources(h, A, 'dark', 1);
+  h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Mindburn') });
+  pick(h, 1);                                                // X = 1
+  pass(h); pass(h);                                          // resolve
+  return { h, A, D };
+}
+
+test('CR 102.3b: Mindburn — a sacrificed unit is shown to the next chooser', () => {
+  const { h, A, D } = mindburnAsked(78104);
+  const first = h.state.decision!;
+  assert.equal(first.seat, A, 'CR 102.3a: the initiative player first');
+  const i = first.options.findIndex(o => /^Sacrifice /.test(o.label));
+  assert.ok(i >= 0, 'A can sacrifice a unit');
+  h.do({ type: 'decide', seat: A, choice: i });
+  const second = h.state.decision!;
+  assert.equal(second.seat, D);
+  assert.deepEqual(second.earlier, [
+    { seat: A, open: true, option: { label: first.options[i]!.label, value: first.options[i]!.value }, kind: first.kind },
+  ]);
+});
+
+test('CR 102.3b: Mindburn — a discarded card is not shown, only that a choice was made', () => {
+  const { h, A, D } = mindburnAsked(78105);
+  const first = h.state.decision!;
+  const i = first.options.findIndex(o => o.label === 'Discard Bubb');
+  assert.ok(i >= 0, 'A can discard Bubb');
+  h.do({ type: 'decide', seat: A, choice: i });
+  const second = h.state.decision!;
+  assert.equal(second.seat, D);
+  assert.deepEqual(second.earlier, [{ seat: A, open: false }]);
   assert.ok(!JSON.stringify(second.earlier).includes('Bubb'));
 });

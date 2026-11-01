@@ -18,6 +18,10 @@ import type {
 import type { E } from '../engine.ts';
 import printedJson from './printed.json' with { type: 'json' };
 
+/** CR 102.3b: whether a ctx.choose pick is open information — fixed for the
+ * question, or decided by the value picked when its options mix the two. */
+export type ChoiceInfo = 'open' | 'hidden' | ((value: unknown) => 'open' | 'hidden');
+
 /** CR 206.2 / CT-244: stats mark a unit, so a card prints power and toughness
  * only when it is a unit or a spell unit. A spell and a spell token print
  * none (the extractor zeroes them), and no surface may show or compare them. */
@@ -292,8 +296,12 @@ export interface EffectCtx {
      * `'hidden'`) for a pick among cards in a hidden zone — a hand, a deck:
      * then the others learn only THAT the choice was made. Display only.
      * 65-effect-conformance §4 requires it on every question of an effect
-     * that asks more than one player. */
-    info?: 'open' | 'hidden';
+     * that asks more than one player.
+     * A question whose options mix the two (Mindburn: a unit in play OR a
+     * card in hand) passes a function of the value picked: the pick is shown
+     * when it is open and only THAT it was made when it is hidden (owner,
+     * 2026-11-01). */
+    info?: ChoiceInfo;
   }) => unknown;
 }
 

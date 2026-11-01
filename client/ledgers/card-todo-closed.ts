@@ -14149,7 +14149,7 @@ export const CLOSED: TodoEntry[] = [
       "779-each-player-pick-stays-private.test.ts::CR 102.3b: Cthyrian Culler — the second discarder is served the same thing",
     ],
     verify: "Rockfall and General Smof with both players holding two units: who is asked first, and does the second see the first's pick?",
-    closed: "FIXED 2026-11-01 (rules channel via the owner, CR 102.3a/102.3b): every each-player loop goes through seatsHere (initiative first; Smof, Spiteful Shadow, Death Greeter, Torrential Reclamation, Maw of Damnation, Insatiable Want, Perish changed), 65 §4 + a source scan forbid raw presentSeats in cards/; ctx.choose declares info open|hidden, an open earlier pick is served and marked (ui/earlier.ts), a hidden one only as made. Seen red: Smof on raw presentSeats (781, 65), Culler info open (779, 782), Smof info hidden (781, 779). Mindburn (unit OR hand card) left hidden pending an owner call.",
+    closed: "FIXED 2026-11-01 (rules channel via the owner, CR 102.3a/102.3b): every each-player loop goes through seatsHere (initiative first; Smof, Spiteful Shadow, Death Greeter, Torrential Reclamation, Maw of Damnation, Insatiable Want, Perish changed), 65 §4 + a source scan forbid raw presentSeats in cards/; ctx.choose declares info open|hidden, an open earlier pick is served and marked (ui/earlier.ts), a hidden one only as made. Seen red: Smof on raw presentSeats (781, 65), Culler info open (779, 782), Smof info hidden (781, 779). Mindburn (unit OR hand card in one question): owner 2026-11-01 \"show the unit, hide the card\" — ctx.choose info may be a function of the pick (781 Mindburn tests; seen red both ways).",
     status: 'done',
   },
 ];

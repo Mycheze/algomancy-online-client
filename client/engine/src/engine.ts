@@ -156,8 +156,9 @@ class PartChoice {
     numeric?: NumericEntry;
     /** one pick of a set ("choose up to two…"): display only, passed through */
     pickSet?: Decision['pickSet'];
-    /** CR 102.3b: is what this question picks among open information? */
-    info?: 'open' | 'hidden';
+    /** CR 102.3b: is what this question picks among open information? A
+     * function decides per pick (a question mixing units and hand cards). */
+    info?: 'open' | 'hidden' | ((value: unknown) => 'open' | 'hidden');
   };
   /** CR 102.3b: the questions of this same part answered before this one */
   earlier: EarlierPick[];
@@ -175,6 +176,8 @@ class PartChoice {
  * chose — the option never enters the state.
  */
 function earlierPick(dec: PartChoice['dec'], value: unknown): EarlierPick {
+  // a question mixing open and hidden options (Mindburn) decides per pick
+  if (typeof dec.info === 'function') dec = { ...dec, info: dec.info(value) };
   if (dec.info !== 'open') return { seat: dec.seat, open: false };
   const same = JSON.stringify(value);
   const hit = dec.options.find(o => JSON.stringify(o.value) === same);

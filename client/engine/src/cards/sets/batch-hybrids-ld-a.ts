@@ -880,12 +880,10 @@ card('Mindburn', {
             ? options[0]!.value
             : ctx.choose(`pick:${round}:${seat}`, {
               kind: 'electricPath', seat,
-              // CR 102.3b: HIDDEN, though half the options are units in play. A
-              // pick that may be a unit (open) or a card in hand (hidden) is not
-              // settled by the 2026-11-01 ruling: showing the unit when one is
-              // sacrificed would tell the other player, by its absence, that a
-              // card was discarded. Kept hidden until the owner rules on it.
-              info: 'hidden',
+              // CR 102.3b: a unit in play is open, a card in hand is hidden —
+              // the next chooser sees which unit was picked, or only that a
+              // choice was made (owner, 2026-11-01).
+              info: v => String(v).startsWith('u:') ? 'open' : 'hidden',
               prompt: `Mindburn (${round + 1} of ${x}): sacrifice a nontoken unit or discard a card`,
               options,
             });
