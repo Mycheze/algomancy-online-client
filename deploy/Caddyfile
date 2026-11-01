@@ -56,6 +56,14 @@ algomancy.online {
 			ROBOTS 200
 	}
 
+	# the judge bot's engine calculator is for the bot on this box only: the
+	# app already 404s it to anything proxied (api-bot.ts directLoopback, which
+	# keys on the X-Forwarded-For this proxy adds); this answers it at the
+	# edge too, so it never reaches the app from outside at all
+	handle /api/bot/simulate* {
+		respond "not found" 404
+	}
+
 	handle {
 		reverse_proxy 127.0.0.1:5000
 	}

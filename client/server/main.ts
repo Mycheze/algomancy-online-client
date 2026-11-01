@@ -76,6 +76,7 @@ import { cardStats, cardStatsRoutes } from './api-cardstats.ts';
 import { cardSearchRoutes } from './api-cardsearch.ts';
 import { crReviewRoutes } from './api-crreview.ts';
 import { botRoutes } from './api-bot.ts';
+import { simulateInWorker, warmSimulator } from './simulate-worker.ts';
 import { linkRoutes } from './api-link.ts';
 import { leagueRoutes } from './api-league.ts';
 import { challengeRoutes } from './api-challenge.ts';
@@ -431,6 +432,9 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     bootId: BOOT_ID,
     startedAt: STARTED_AT,
     events: eventsSince,
+    // the judge bot's engine calculator — a worker thread, never this one
+    simulate: simulateInWorker,
+    warmSimulator,
   })) return;
 
   // …and the player's own half of Discord linking, behind their session token.

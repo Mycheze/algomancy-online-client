@@ -33,7 +33,9 @@
  * for that rule to live, and the rule is the owner's.
  *
  * Two routes write — /api/bot/link/claim and /api/bot/unlink, which each
- * save the account store — and everything else is a read. (This header said
+ * save the account store — and everything else is a read. /api/bot/simulate
+ * (2026-11-01) computes and writes nothing; it is the one route with a second
+ * gate, direct loopback only (see directLoopback below). (This header said
  * "nothing here writes" for a while after the link routes arrived.)
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
@@ -44,6 +46,31 @@ import {
 import { claim } from './link.ts';
 import { bandFor, queueCounts, queued } from './queue.ts';
 import { engineVersion } from './engine-version.ts';
+import type { SimResult } from './simulate.ts';
+
+/** /api/bot/simulate's body cap (simulate.ts LIMITS.bodyBytes says the same;
+ * not imported, so this module does not load the engine) */
+export const SIMULATE_BODY_BYTES = 16 * 1024;
+
+const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
+
+/**
+ * Is this request from a process on THIS box, straight to the socket — not
+ * through the reverse proxy?
+ *
+ * /api/bot/simulate runs the engine on request, so on top of the bot token it
+ * answers only a direct loopback peer. Behind Caddy every request arrives
+ * from loopback too, so loopback alone proves nothing; Caddy always adds
+ * X-Forwarded-For (deploy/Caddyfile says so), and the bot on the same box
+ * never does. Any forwarding header at all means "came through a proxy".
+ * The Caddyfile also answers this path 404 at the edge — belt and braces.
+ */
+export function directLoopback(req: Pick<IncomingMessage, 'headers'> & { socket: { remoteAddress?: string | undefined } }): boolean {
+  if (!LOOPBACK.has(req.socket.remoteAddress ?? '')) return false;
+  const h = req.headers;
+  return h['x-forwarded-for'] === undefined && h['forwarded'] === undefined
+    && h['x-real-ip'] === undefined && h['x-forwarded-host'] === undefined;
+}
 
 /** What main.ts lends these routes: the decision, and the live registries. */
 export interface BotCtx {
@@ -60,6 +87,10 @@ export interface BotCtx {
   events: (from: number, limit?: number) => {
     events: unknown[]; nextSeq: number; dropped: number; truncated: boolean;
   };
+  /** the judge bot's engine calculator (simulate-worker.ts), and a nudge to
+   * boot its worker before the first question needs it */
+  simulate?: (spec: unknown, engine: string) => Promise<SimResult>;
+  warmSimulator?: () => void;
 }
 
 /** Handle a /api/bot/ route. True when the request was ours. */
@@ -82,6 +113,9 @@ export async function botRoutes(
    * game server is slow" look identical from Python, and the bot's own reply
    * to a user is the difference between a sentence and a timeout. */
   if (path === '/api/bot/health') {
+    // the bot polls this before it offers the simulate tool, so it is the
+    // moment to start the engine worker booting (simulate-worker.ts)
+    ctx.warmSimulator?.();
     json(res, {
       ok: true,
       bootId: ctx.bootId,
@@ -90,6 +124,37 @@ export async function botRoutes(
       rooms: ctx.rooms(),
       queue: queueCounts(),
     });
+    return true;
+  }
+
+  /* The judge bot's engine calculator (simulate.ts — its header is the
+   * frozen contract). POST a board and a script; get back what the client
+   * does. Pure: no room, no var/ file. Runs in a worker (simulate-worker.ts),
+   * never on this thread.
+   *
+   * ⚠ TWO GATES, both answered 404 like the token gate above: the token
+   * (already checked), AND a direct loopback peer with no forwarding header.
+   * This is the one bot route that spends real CPU per call, and the bot only
+   * ever calls it from this box. */
+  if (path === '/api/bot/simulate') {
+    if (!directLoopback(req) || !ctx.simulate) {
+      res.writeHead(404, { 'content-type': 'text/plain' });
+      res.end('not found');
+      return true;
+    }
+    if (req.method !== 'POST') {
+      json(res, { ok: false, error: 'POST a simulation spec (see client/server/simulate.ts)' }, 405);
+      return true;
+    }
+    let body: Record<string, unknown>;
+    try {
+      body = await readBody(req, SIMULATE_BODY_BYTES, true);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      json(res, { ok: false, error: `bad request: ${msg}` }, /too large/.test(msg) ? 413 : 400);
+      return true;
+    }
+    json(res, await ctx.simulate(body, engineVersion()));
     return true;
   }
 

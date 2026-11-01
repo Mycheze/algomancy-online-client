@@ -94,6 +94,9 @@ import type {
 import { apply, createGame, IllegalAction } from '../engine/src/apply.ts';
 import { E } from '../engine/src/engine.ts';
 import { getCard } from '../engine/src/cards/dsl.ts';
+// the board patch and the haste-step walk are shared with the judge bot's
+// calculator (simulate.ts), so they live in board.ts — moved, not changed
+import { closeHasteStep, patchSide } from './board.ts';
 
 /** The owner's seat in every scenario room. Not configurable: the runner
  * screen, the bot and the verdict record all name "you" and "the opponent",
@@ -455,63 +458,6 @@ export class ScenarioError extends Error {
     this.name = 'ScenarioError';
     this.scenario = scenario;
   }
-}
-
-/** Put a side's hand, resources and units on the board. Mutates `state`.
- *
- * The hand and the resource pool are REPLACED, not appended to: a scenario
- * says what the board is, and seven random opening cards beside two named ones
- * is noise the owner has to read past on every single card. The deck is left
- * exactly as the seed dealt it — draws still work and still replay. */
-function patchSide(e: E, seat: Seat, side: ScenarioSide, out: EntityId[]): void {
-  const p = e.player(seat);
-  p.hand = [...side.hand];
-  p.resources = [];
-  // ordered by the ResSpec's own key order so two runs push the same pool in
-  // the same order — an object literal's key order is stable in JS, and the
-  // resource ARRAY is indexed by actions, so its order is part of the board.
-  for (const [kind, n] of Object.entries(side.resources)) {
-    for (let i = 0; i < (n ?? 0); i++) p.resources.push({ kind: kind as ResourceKind, state: 'open' });
-  }
-  for (const placed of side.play) {
-    const u = e.spawnUnit(seat, placed.card, e.homeRegion(seat), {
-      ...(placed.token ? { token: true } : {}),
-      ...(placed.counters ? { counters: placed.counters } : {}),
-    });
-    for (const m of placed.mods ?? []) e.attachMod(u, m.card, seat, m.as);
-    out.push(u.id);
-  }
-}
-
-/**
- * CR 504.5: the haste step is ALWAYS offered now, so it stands between
- * `donePlanning` and every battle action in every prologue ever written.
- *
- * Before the haste step became unconditional (CR 504.5) the step only appeared when somebody held a payable haste card,
- * which made its presence a property of the SCENARIO — so the scenario-authoring round made each
- * scenario put its own `doneHaste` in, and warned (correctly, at the time)
- * that `runPrologue` skips nothing. That reasoning is now inverted: the step
- * is unconditional, so a `doneHaste` in a prologue carries no information
- * about the board at all, and requiring 32 prologues to each write two of
- * them would be boilerplate whose only job is to be forgotten.
- *
- * So the SETUP closes it — and only the setup. This is not the engine
- * skipping a step; the step happens, exactly as it does in a real game, and
- * `dealScenario` walks through it the way it walks through everything else on
- * the way to the position the scenario declares. A prologue that closes the
- * step itself still works: this only finishes the seats it left open, and
- * only when the next setup action is something other than `doneHaste`.
- */
-function closeHasteStep(s: GameState, events: EngineEvent[]): GameState {
-  let out = s;
-  while (out.hasteDone) {
-    const seat = out.hasteDone.findIndex(d => !d);
-    if (seat < 0) break;   // cannot happen: an all-done array is nulled by the engine
-    const r = apply(out, { type: 'doneHaste', seat: seat as Seat });
-    out = r.state;
-    events.push(...r.events);
-  }
-  return out;
 }
 
 /** Apply the prologue, refusing to hand back a half-built board. */
