@@ -903,6 +903,24 @@ def _tool_row(row):
     return out
 
 
+def _citable(mod, row):
+    """Every source one result printed that the model may cite. A result can
+    carry several (define: the term and its rule; card: its rulings; search:
+    five hits) under row["extra_rows"]; appending the row alone would leave
+    those tags unresolvable, and render_citations would drop them. An error
+    row (metadata.error) cites nothing. tools.citable_rows is the module's own
+    answer; the fallback here does the same for a module without it."""
+    fn = getattr(mod, "citable_rows", None)
+    if callable(fn):
+        return list(fn(row) or [])
+    if not isinstance(row, dict) or (row.get("metadata") or {}).get("error"):
+        return []
+    out = [{k: v for k, v in row.items() if k != "extra_rows"}]
+    for extra in row.get("extra_rows") or []:
+        out.extend(_citable(None, extra))
+    return out
+
+
 async def _dispatch(mod, name, args, timeout):
     """(text, row, ok) for one tool call. Lookups take milliseconds, but run
     off the event loop anyway (the Discord bot shares it); a dispatch that
@@ -913,7 +931,8 @@ async def _dispatch(mod, name, args, timeout):
         return f"error: {name} timed out", None, False
     except Exception as exc:
         return f"error: {name} failed: {exc}", None, False
-    ok = not (isinstance(row, dict) and (row.get("metadata") or {}).get("ok") is False)
+    m = (row.get("metadata") or {}) if isinstance(row, dict) else {}
+    ok = not (m.get("error") or m.get("ok") is False)
     return str(text), row, ok
 
 
@@ -973,9 +992,10 @@ async def _run_tools(messages, reasoning, meta, start, offered, mod):
                         server_calls += name in server
                         text, row, entry["ok"] = await _dispatch(
                             mod, name, args, min(TOOL_TIMEOUT_S, left))
-                        row = _tool_row(row)
-                        if row is not None:
-                            rows.append(row)
+                        for r in _citable(mod, row):
+                            r = _tool_row(r)
+                            if r is not None:
+                                rows.append(r)
                 text = text[:TOOL_RESULT_MAX_CHARS]
                 entry["ms"] = round((time.monotonic() - t0) * 1000)
                 entry["chars"] = len(text)

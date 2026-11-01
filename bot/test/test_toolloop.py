@@ -127,6 +127,17 @@ def _dispatch(name, args):
             "text": "Towering Colossus becomes 3/1",
             "metadata": {"engine": "abc1234def", "board": "you: Towering Colossus 10/15",
                          "final": {"units": [{"stats": "3/1"}]}}}
+    if name == "define":
+        return "[cr:glossary.spell-effect] … [cr:110.3a] …", {
+            "id": "cr:glossary.spell-effect", "source_type": "cr", "title": "spell effect",
+            "text": "Spell effect: the effect of a spell on the stack.",
+            "metadata": {"kind": "glossary", "term": "spell effect"},
+            "extra_rows": [{"id": "cr:110.3a", "source_type": "cr", "title": "CR 110.3a",
+                            "text": "110.3a A spell effect is an effect.",
+                            "metadata": {"kind": "rule", "num": "110.3a", "nums": ["110.3a"]}}]}
+    if name == "oops":
+        return "oops: no such thing.", {"id": "tool:error", "source_type": "tool",
+                                        "text": "oops: no such thing.", "metadata": {"error": True}}
     if name == "boom":
         raise ValueError("kaboom")
     raise KeyError(name)
@@ -269,6 +280,20 @@ store.log_response("r2", "ask", "q", answer, hits, core.LLM_MODEL, user_id="t", 
                    engine_version=core.ENGINE_VERSION, llm=meta)
 row = json.loads(responses_log().read_text().splitlines()[-1])
 check("…and quote_fail reaches the log row", row["quote_fail"][0]["tags"] == ["cr:603.2"])
+
+print("\n[several sources from one call; error rows cite nothing]")
+STUB.TOOLS += [_schema("define"), _schema("oops")]
+c = Fake(calls(tc("define", {"term": "spell effect"}), tc("oops", {}, 1)),
+         say("A spell effect [cr:glossary.spell-effect] is an effect [cr:110.3a]."))
+(answer, hits, _r), meta = ask(c)
+check("⭐ a result's extra_rows join the hits too, so their tags render",
+      [r["id"] for _s, r in hits[-2:]] == ["cr:glossary.spell-effect", "cr:110.3a"]
+      and len(core.render_citations(answer, hits)[1]) == 2
+      and all("extra_rows" not in r for _s, r in hits))
+check("an error row is not citable, and its call logs ok: false",
+      all(r["id"] != "tool:error" for _s, r in hits)
+      and [t["ok"] for t in meta["tools"]] == [True, False])
+STUB.TOOLS = STUB.TOOLS[:-2]
 
 # ── caps ──────────────────────────────────────────────────────────────
 print("\n[caps]")
