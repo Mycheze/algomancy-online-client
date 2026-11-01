@@ -348,7 +348,7 @@ card('Spirit of Vengeance', {
     label: 'I deal 1 damage to each opponent',
     effect: {
       run: (g, ctx) => {
-        const foes = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
+        const foes = g.seatsHere(ctx.region).filter(s => s !== ctx.controller);
         if (!foes.length) { g.ev('info', 'Spirit of Vengeance: no opponent is present here — no damage.'); return; }
         g.dealEffectDamageAll(ctx, foes.map(s => ({ target: { player: s as Seat }, n: 1 })));   // CR 112.8
       },
@@ -364,11 +364,12 @@ card('Spirit of Vengeance', {
 const eachPlayerSacrifices: EffectDef = {
   run: (g, ctx) => {
     const picks: EntityId[] = [];
-    for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
+    for (const seat of g.seatsHere(ctx.region)) {
       const mine = g.unitsOf(seat as Seat, ctx.region);
       if (!mine.length) continue;
       const id = mine.length === 1 ? mine[0]!.id : ctx.choose(`sac:${seat}`, {
         kind: 'payOrDecline', seat: seat as Seat,
+        info: 'open',   // CR 102.3b: units in play
         prompt: 'Spiteful Shadow: sacrifice which unit?',
         options: mine.map(u => ({ label: u.card, value: u.id })),
       }) as EntityId;

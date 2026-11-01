@@ -59,7 +59,7 @@
  *    cached (see the flagged-text note below); implemented as "the opponent
  *    splits, the caster chooses", the standard split-and-choose shape.
  *  - "EACH PLAYER" (Mindburn, Pale Tormentor, Uglk) is region-scoped (CR 601.4d),
- *    walked in the region's presentSeats order. Bloppert's "the player with the
+ *    walked initiative player first (CR 102.3a, `E.seatsHere`). Bloppert's "the player with the
  *    highest life total" is a global superlative and reads all seats.
  *
  * CR 601.4d (owner, 2026-08-28) — REGION SCOPING IS ABSOLUTE, AND IT IS NOT ONLY
@@ -292,6 +292,7 @@ card('Big Glimpse Card', {
         if (!left.length) break;
         const v = ctx.choose(`split:${k}`, {
           kind: 'payOrDecline', seat: opp,
+          info: 'open',   // CR 102.3b: the seven are revealed
           prompt: `Big Glimpse Card: split the 7 — put a card into pile 1 (${pile1.length} so far)`,
           options: [
             ...left.map(([n, i]) => ({ label: n, value: i as unknown, card: n })),
@@ -305,6 +306,7 @@ card('Big Glimpse Card', {
       const b = revealed.filter((_, i) => !pile1.includes(i));
       const which = ctx.choose('pile', {
         kind: 'payOrDecline', seat: ctx.controller,
+        info: 'open',   // CR 102.3b: the piles are revealed
         prompt: 'Big Glimpse Card: cache which pile? (the other is recycled)',
         options: [
           { label: `Pile 1: ${a.join(', ') || '(empty)'}`, value: 'a' },
@@ -826,6 +828,7 @@ card('Uglk', {
             ? units[0]![1]
             : ctx.choose(`pick:${seat}`, {
               kind: 'electricPath', seat,
+              info: 'open',   // CR 102.3b: a card in a bin
               prompt: "Uglk: put which unit from your bin into play (under your opponent's control)?",
               options: units.map(([n, i]) => ({ label: n, value: i as unknown, card: n })),
             }) as number;
@@ -877,6 +880,12 @@ card('Mindburn', {
             ? options[0]!.value
             : ctx.choose(`pick:${round}:${seat}`, {
               kind: 'electricPath', seat,
+              // CR 102.3b: HIDDEN, though half the options are units in play. A
+              // pick that may be a unit (open) or a card in hand (hidden) is not
+              // settled by the 2026-11-01 ruling: showing the unit when one is
+              // sacrificed would tell the other player, by its absence, that a
+              // card was discarded. Kept hidden until the owner rules on it.
+              info: 'hidden',
               prompt: `Mindburn (${round + 1} of ${x}): sacrifice a nontoken unit or discard a card`,
               options,
             });

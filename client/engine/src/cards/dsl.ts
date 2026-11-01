@@ -285,6 +285,15 @@ export interface EffectCtx {
     /** "Choose up to two…": this pick is one of a set. Display only — see
      * `PickSetHint` in types.ts. Passed straight through onto the Decision. */
     pickSet?: PickSetHint;
+    /** CR 102.3b: `'open'` when what this question picks among is OPEN
+     * information — units in play, cards in a bin, a revealed card, a public
+     * cost ("Pay [2]") — so a later question in the same effect shows the
+     * pick to every player (`Decision.earlier`). Leave it out (or say
+     * `'hidden'`) for a pick among cards in a hidden zone — a hand, a deck:
+     * then the others learn only THAT the choice was made. Display only.
+     * 65-effect-conformance §4 requires it on every question of an effect
+     * that asks more than one player. */
+    info?: 'open' | 'hidden';
   }) => unknown;
 }
 

@@ -1,5 +1,6 @@
-/* 779 — WHEN ONE EFFECT ASKS EACH PLAYER IN TURN, THE SECOND CHOOSER'S WIRE
- * DID NOT CARRY THE FIRST CHOOSER'S PICK.
+/* 779 — WHEN ONE EFFECT ASKS EACH PLAYER IN TURN, WHAT THE LATER CHOOSER IS
+ * SERVED ABOUT THE EARLIER PICK — exactly what CR 102.3b allows, and nothing
+ * through any other field.
  *
  * Rockfall (A Fast Pile of Rocks) and General Smof ask every present player
  * for one of their own units, one seat after the other, and commit nothing
@@ -13,20 +14,27 @@
  *
  * where 2 is the unit the FIRST seat had just chosen. Nothing on screen drew
  * it (no client/ui code reads `answers`), but it was readable in devtools.
+ * That leak was closed first (2026-11-01, report #317), and the question went
+ * to the rules channel. Its answer, relayed by the owner the same day: "Hidden
+ * information stays hidden (all you know is that your opponent made a
+ * choice), but open information is known by both players for the choice."
  *
- * Whether the second chooser SHOULD know the first pick is an open rules
- * question (owner, 2026-11-01: close the leak now, ask the rules channel).
- * So this pins only the wire, not the screen or the asking order.
+ * So the wire now carries the earlier pick ON PURPOSE when it is open — a unit
+ * in play, here — and ONLY in the one field built for it, `decision.earlier`
+ * (the asked seat) / `earlierPicks` (the waiting seat), classified by the
+ * engine. A hidden pick (Cthyrian Culler: each player discards a card) is
+ * served as "seat N chose" and nothing else.
  *
  * THE ASSERTION IS NON-INTERFERENCE, NOT A STRING SEARCH. The first seat's
  * chosen unit is still on the board when the second seat is asked (nothing
  * is committed yet), so its id is legitimately all over the view and
  * grepping for it proves nothing. Instead each scenario is played twice from
- * the same seed, identical except for WHICH unit the first seat picks, and
- * everything the second seat is served at its own prompt — the whole
- * serialized view plus every event of the first seat's answer that reaches
- * it — must be byte-identical. Any field anywhere that encodes the pick
- * makes the two differ.
+ * the same seed, identical except for WHICH unit (or card) the first seat
+ * picks, and everything the second seat is served at its own prompt — the
+ * whole serialized view plus every event of the first seat's answer that
+ * reaches it — is compared. For an open pick the two may differ at the
+ * `earlier` field and nowhere else; for a hidden pick they may not differ at
+ * all.
  *
  * Seeds 77900-77999.
  */
@@ -71,6 +79,19 @@ function diffPaths(a: unknown, b: unknown, at = '$', out: string[] = []): string
 function sameServed(x: string, y: string, why: string): void {
   const d = diffPaths(JSON.parse(x), JSON.parse(y));
   assert.deepEqual(d, [], `${why}:\n  ${d.join('\n  ')}`);
+}
+
+/** CR 102.3b: the served payload with the one sanctioned carrier of the
+ * earlier pick taken out — what must still be identical for an OPEN pick */
+function withoutEarlier(x: string): string {
+  const [view, lines] = JSON.parse(x) as [{ decision?: { earlier?: unknown } | null }, unknown];
+  if (view.decision) delete view.decision.earlier;
+  return JSON.stringify([view, lines]);
+}
+
+/** the earlier picks the asked seat is shown, read off what it was served */
+function earlierServed(x: string): unknown {
+  return (JSON.parse(x) as [{ decision?: { earlier?: unknown } }])[0].decision?.earlier;
 }
 
 interface Asked { first: Seat; second: Seat; servedSecond: string; firstPicked: EntityId }
@@ -123,13 +144,24 @@ function rockfall(which: 0 | 1): { h: Harness; a: Asked } {
   return { h, a: answerFirst(h, which, 'Rockfall') };
 }
 
-test('Rockfall: the second chooser is served the same thing whichever unit the first chose', () => {
+test('Rockfall: the second chooser is served the same thing whichever unit the first chose, except the open pick in decision.earlier', () => {
   const x = rockfall(0), y = rockfall(1);
   assert.notEqual(x.a.firstPicked, y.a.firstPicked, 'the two runs really differ in the first pick');
   assert.equal(x.a.second, y.a.second);
-  sameServed(x.a.servedSecond, y.a.servedSecond,
-    "the second chooser's wire encodes the first chooser's pick");
+  sameServed(withoutEarlier(x.a.servedSecond), withoutEarlier(y.a.servedSecond),
+    "the second chooser's wire encodes the first chooser's pick somewhere other than decision.earlier");
   noAnswersOnTheWire(x.h, x.a, 'Rockfall');
+});
+
+test('CR 102.3b: Rockfall — the second chooser is shown which unit the first chose (open information)', () => {
+  for (const which of [0, 1] as const) {
+    const { a } = rockfall(which);
+    const earlier = earlierServed(a.servedSecond) as { seat: number; open: boolean; option?: { value: unknown } }[];
+    assert.equal(earlier?.length, 1, 'one earlier pick is served');
+    assert.equal(earlier[0]!.seat, a.first);
+    assert.equal(earlier[0]!.open, true);
+    assert.equal(earlier[0]!.option?.value, a.firstPicked, 'the unit the first seat chose, by id');
+  }
 });
 
 // ── General Smof (each player sacrifices a unit) ─────────────────────────
@@ -150,13 +182,69 @@ function smof(which: 0 | 1): { h: Harness; a: Asked } {
   return { h, a: answerFirst(h, which, 'General Smof') };
 }
 
-test('General Smof: the second sacrificer is served the same thing whichever unit the first chose', () => {
+test('General Smof: the second sacrificer is served the same thing whichever unit the first chose, except the open pick in decision.earlier', () => {
   const x = smof(0), y = smof(1);
   assert.notEqual(x.a.firstPicked, y.a.firstPicked, 'the two runs really differ in the first pick');
   assert.equal(x.a.second, y.a.second);
-  sameServed(x.a.servedSecond, y.a.servedSecond,
-    "the second sacrificer's wire encodes the first sacrificer's pick");
+  sameServed(withoutEarlier(x.a.servedSecond), withoutEarlier(y.a.servedSecond),
+    "the second sacrificer's wire encodes the first sacrificer's pick somewhere other than decision.earlier");
   noAnswersOnTheWire(x.h, x.a, 'General Smof');
+});
+
+test('CR 102.3a: General Smof asks the initiative player first', () => {
+  const { h, a } = smof(0);
+  assert.equal(a.first, h.state.initiative);
+});
+
+test('CR 102.3b: the waiting first chooser is shown its own open pick, and whose turn it is', () => {
+  const { h, a } = smof(1);
+  const v = viewFor(h.state, a.first);
+  assert.equal(v.decision, null, 'the question is not the waiting seat\'s');
+  assert.equal(v.pendingAsk?.seat, a.second, 'it is the other seat\'s turn to pick');
+  assert.deepEqual(v.earlierPicks?.map(p => [p.seat, p.open, p.option?.value]), [[a.first, true, a.firstPicked]]);
+});
+
+// ── Cthyrian Culler (each player discards a card): a HIDDEN pick ──────────
+
+function culler(which: 0 | 1): { h: Harness; a: Asked } {
+  const h = new Harness(77903);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const unit = spawn(h, A, 'Cthyrian Culler');
+  spawn(h, D, ANVIL);
+  toNextBattle(h, A);
+  for (const s of [A, D]) {
+    h.state.players[s]!.hand = [];
+    give(h, s, 'Immolate'); give(h, s, 'Tidal Menace'); give(h, s, 'Bubb');
+  }
+  h.do({ type: 'declareAttack', seat: A, columns: [[unit]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  for (let guard = 0; guard < 12 && !h.state.decision; guard++) pass(h);
+  assert.match(h.state.decision?.prompt ?? '', /Cthyrian Culler/, 'the Culler is asking');
+  return { h, a: answerFirst(h, which, 'Cthyrian Culler') };
+}
+
+test('CR 102.3b: Cthyrian Culler — the second discarder is served the same thing whichever card the first chose (a hand is hidden)', () => {
+  const x = culler(0), y = culler(1);
+  assert.notEqual(x.a.firstPicked, y.a.firstPicked, 'the two runs really differ in the first pick');
+  assert.equal(x.a.second, y.a.second);
+  sameServed(x.a.servedSecond, y.a.servedSecond,
+    "the second discarder's wire encodes which card the first discarder chose");
+  assert.deepEqual(earlierServed(x.a.servedSecond), [{ seat: x.a.first, open: false }],
+    'the second discarder is told THAT the first chose, and nothing more');
+  noAnswersOnTheWire(x.h, x.a, 'Cthyrian Culler');
+});
+
+test('CR 102.3b: the waiting seat is served a hidden pick as "chosen" only, even if the engine had filled it in', () => {
+  const { h, a } = culler(0);
+  // belt and braces: the view reduces a hidden entry itself, whatever the engine put there
+  h.state.decision!.earlier = [{ seat: a.first, open: false, option: { label: 'Bubb', value: 2, card: 'Bubb' } }];
+  for (const seat of [a.first, a.second]) {
+    const v = viewFor(h.state, seat);
+    const picks = v.decision?.earlier ?? v.earlierPicks;
+    assert.deepEqual(picks, [{ seat: a.first, open: false }], `seat ${seat}`);
+  }
 });
 
 // ── the fix is a redaction, not a change to the game ─────────────────────

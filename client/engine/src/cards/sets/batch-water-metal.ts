@@ -72,7 +72,7 @@ const eachOpponentLoses3: EffectDef = {
     // CR D7.3b/CT-70: a HOME region out of battle lists only its owner, so this
     // loop legitimately runs zero times. Saying nothing is the defect, not the
     // no-op — Boreal Wanderer below is the same repair.
-    const foes = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
+    const foes = g.seatsHere(ctx.region).filter(s => s !== ctx.controller);
     if (!foes.length) {
       g.ev('info', `${ctx.sourceName}: no opponent is present here — nobody loses 3 life.`);
       return;
@@ -97,7 +97,7 @@ card('Bloated Manablub', {
 // region-scoped like Bloated Manablub.
 const dealTwoToEachOpponent: EffectDef = {
   run: (g, ctx) => {
-    const foes = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
+    const foes = g.seatsHere(ctx.region).filter(s => s !== ctx.controller);
     if (!foes.length) { g.ev('info', `${ctx.sourceName}: no opponent is present here — no damage.`); return; }
     g.dealEffectDamageAll(ctx, foes.map(s => ({ target: { player: s as Seat }, n: 2 })));   // CR 112.8
   },

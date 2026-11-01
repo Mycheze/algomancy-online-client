@@ -1201,6 +1201,7 @@ const insidiousInvite: EffectDef = {
       }
       const pick = ctx.choose(`invite:${seat}`, {
         kind: 'payOrDecline', seat,
+        info: 'hidden',   // CR 102.3b: a card in hand
         prompt: 'Insidious Invitation: play a unit from your hand as if it were [Battle]? (costs still paid)',
         options,
       }) as number;

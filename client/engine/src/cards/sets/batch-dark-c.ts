@@ -141,7 +141,7 @@ const binMatches = (g: E, seat: Seat, ok: (name: string) => boolean): [string, n
 
 /** CR 601.4d: the opponents an effect resolving in `region` can reach */
 const opponentsIn = (g: E, region: number, me: Seat): Seat[] =>
-  g.s.regions[region]!.presentSeats.filter(s => s !== me);
+  g.seatsHere(region).filter(s => s !== me);
 
 /* A local `formationSlot(g, id)` used to sit here ("the formation slot an
  * entity occupies right now"). It was DEAD — zero call sites — left behind
@@ -909,6 +909,7 @@ card('Thoughtripper', {
         if (g.openMana(seat) < 2) { g.ev('info', 'Thoughtripper: cannot pay [2].'); return; }
         const pays = ctx.choose('pay', {
           kind: 'payOrDecline', seat,
+          info: 'open',   // CR 102.3b: paying a cost is public
           prompt: 'Thoughtripper: pay [2] so each opponent discards a card?',
           options: [{ label: 'Pay [2]', value: 1 }, { label: 'Decline', value: 0 }],
         }) as number;
@@ -920,6 +921,7 @@ card('Thoughtripper', {
           const hand = g.player(foe).hand;
           const i = hand.length === 1 ? 0 : ctx.choose(`drop:${foe}`, {
             kind: 'payOrDecline', seat: foe,
+            info: 'hidden',   // CR 102.3b: a card in hand
             prompt: 'Thoughtripper: discard a card',
             options: hand.map((n, idx) => ({ label: n, value: idx, card: n })),
           }) as number;

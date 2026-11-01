@@ -1488,12 +1488,42 @@ export interface DecisionOption {
   spot?: FormationSpot;
 }
 
+/**
+ * CR 102.3a, 102.3b: one choice ALREADY MADE in the effect that is asking now —
+ * the earlier players' picks when an effect has each player choose in turn.
+ *
+ * Owner, 2026-11-01 (the rules channel's answer): "Hidden information stays
+ * hidden (all you know is that your opponent made a choice), but open
+ * information is known by both players for the choice."
+ *
+ * So the engine classifies, and the classification is the card's: a question
+ * declares `info: 'open'` (dsl.ts `EffectCtx.choose`) when what it picks among
+ * is open information — units in play, a bin, a public cost — and anything
+ * else is hidden. A HIDDEN pick is recorded as `{ seat, open: false }` and
+ * NOTHING ELSE: the option is never copied into the state, so no view of it,
+ * redacted or not, can carry what was picked. Display only — nothing may read
+ * this to resolve an answer.
+ */
+export interface EarlierPick {
+  /** who made the choice */
+  seat: Seat;
+  /** CR 102.3b: open information — `option` says what was picked */
+  open: boolean;
+  /** the option picked — present only when `open` */
+  option?: DecisionOption;
+  /** the question's kind, so a client can place `option` on the board */
+  kind?: DecisionKind;
+}
+
 export interface Decision {
   id: number;
   seat: Seat;
   kind: DecisionKind;
   prompt: string;
   options: DecisionOption[];
+  /** CR 102.3b: the choices already made in this same effect, in the order they
+   * were made (see `EarlierPick`). Absent when this is the effect's first. */
+  earlier?: EarlierPick[];
   /** multi-pick decisions (orderTriggers) expect an array of option indices */
   pickOrder?: boolean;
   /** BL-25/CR D7.2: this decision takes COUNTERS off something, and this is the

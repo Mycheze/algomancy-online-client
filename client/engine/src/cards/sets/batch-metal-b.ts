@@ -390,7 +390,7 @@ const linkedExtinction: EffectDef = {
     }
     // CR D7.3/CT-70: the declined-cost branch above announces itself; this loop
     // did not, and CR 601.4d empties it whenever the region holds nobody else.
-    const foes = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
+    const foes = g.seatsHere(ctx.region).filter(s => s !== ctx.controller);
     if (!foes.length) {
       g.ev('info', 'Linked Extinction: no opponent is present here — nobody sacrifices a unit.');
       return;
@@ -489,15 +489,13 @@ card('Omniwield Evoker', {
 // "Each player sacrifices half of their units, rounded up." — mm/4 {Battle}
 // Occult Spell. Region-scoped (CR 601.4d — header): each player present in the
 // effect's region sacrifices ceil(their units there / 2), choosing which,
-// caster first. The count is read per player as their picks begin (CR 107.8).
+// the initiative player first (CR 102.3a). The count is read per player as their picks begin (CR 107.8).
 card('Perish', {
   spellEffect: {
     run: (g, ctx) => {
-      const present = g.s.regions[ctx.region]!.presentSeats.slice();
-      const seats = [
-        ...present.filter(s => s === ctx.controller),
-        ...present.filter(s => s !== ctx.controller),
-      ];
+      // CR 102.3a: the initiative player chooses first, then the other player
+      // (the printed text names no order). This was the caster first.
+      const seats = g.seatsHere(ctx.region);
       // CR 107.8: "amounts are computed at RESOLUTION" — and Perish resolves ONCE, so
       // every player's half is the half they had at that single moment. The
       // count used to be recomputed as each seat's picks began, caster first,
@@ -531,6 +529,7 @@ card('Perish', {
           if (!pool.length) break;
           const id = pool.length === 1 ? pool[0]!.id : ctx.choose(`perish:${seat}:${i}`, {
             kind: 'payOrDecline', seat,
+            info: 'open',   // CR 102.3b: units in play
             prompt: `Perish: sacrifice a unit (${n - i} to go)`,
             options: pool.map(u => ({ label: u.card, value: u.id, card: u.card })),
           }) as EntityId;

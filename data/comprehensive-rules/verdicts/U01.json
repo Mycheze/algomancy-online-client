@@ -1860,6 +1860,126 @@
     "problem": "The bound test has both seats present, so it shows nothing about exclusion. The probe adds the exclusion case."
   },
   {
+    "key": "concepts.players.each-player.choice-order",
+    "textHash": "107b4c5f0bd66b61",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U01-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.seatsHere",
+        "agrees": true,
+        "note": "Present seats ordered initiative first, then non-initiative."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/781-each-player-initiative-order.test.ts",
+        "pattern": "CR 102.3a: General Smof asks the initiative player first",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/65-effect-conformance.test.ts",
+        "pattern": "CR 102.3a",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/779-each-player-pick-stays-private.test.ts",
+        "pattern": "CR 102.3a: General Smof asks the initiative player first",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner",
+        "supports": "yes",
+        "note": "'It's just like magic: [MTG CR 101.4] (and active player = INT in Algomancy).' and 'So the INT player picks their thing ... then NIT picks their thing.' The 'unless the card's text says' carve-out rests on the cross-referenced printed-text-wins rule; 65-effect-conformance keeps an ORDERED_BY_TEXT exemption list (e.g. Insidious Invitation 'Starting with you, players may play a unit from hand')."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return [this.initiative, this.nit].filter(s => present.includes(s));"
+      },
+      {
+        "file": "client/engine/test/65-effect-conformance.test.ts",
+        "text": "'Insidious Invitation': 'Starting with you, players may play a unit from hand',"
+      }
+    ],
+    "scratch_spans": [
+      {
+        "file": "data/comprehensive-rules/build/verify-input/U01-r4.json",
+        "text": "\"quote\": \"So the INT player picks their thing and, if it's open information, it should be highlighted and clear what they've chosen, then NIT picks their thing.\","
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.players.each-player.earlier-choices",
+    "textHash": "c30c4fa4f437384d",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U01-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:earlierPick",
+        "agrees": true,
+        "note": "An open question's pick is copied whole into decision.earlier; a hidden one is reduced to {seat, open:false}."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/781-each-player-initiative-order.test.ts",
+        "pattern": "CR 102.3b: the second sacrificer is told which unit the first chose",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/781-each-player-initiative-order.test.ts",
+        "pattern": "CR 102.3b: the second discarder is told only THAT the first chose",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/779-each-player-pick-stays-private.test.ts",
+        "pattern": "",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner",
+        "supports": "yes",
+        "note": "'Hidden information stays hidden (all you know is that your opponent made a choice), but open information is known by both players for the choice.' and 'If it's hidden information, no indication needs to be given, other than who's turn it is to pick.' Directly support both sentences. No printed or designer source speaks to it."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (dec.info !== 'open') return { seat: dec.seat, open: false };"
+      },
+      {
+        "file": "client/engine/test/781-each-player-initiative-order.test.ts",
+        "text": "assert.deepEqual(second.earlier, [{ seat: A, open: false }],"
+      }
+    ],
+    "scratch_spans": [
+      {
+        "file": "data/comprehensive-rules/build/verify-input/U01-r4.json",
+        "text": "\"quote\": \"It depends on the zone. Hidden information stays hidden (all you know is that your opponent made a choice), but open information is known by both players for the choice.\","
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "concepts.players.enemy",
     "textHash": "582cd1e706015210",
     "verdict": "confirmed",

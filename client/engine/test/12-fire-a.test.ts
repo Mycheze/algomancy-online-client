@@ -985,10 +985,12 @@ test('General Smof: after combat, each present player sacrifices a unit of their
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);                                  // combat, afterCombat trigger pushed
   pass(h); pass(h);                                  // resolve the trigger
-  assert.equal(h.state.decision?.seat, D, 'region owner picks first (presentSeats order)');
-  pick(h, whale);                                    // D sacrifices the whale
-  assert.equal(h.state.decision?.seat, A, 'then the attacker picks');
+  // CR 102.3a (owner, 2026-11-01): the initiative player picks first. This was
+  // the region owner (presentSeats order) until the ruling.
+  assert.equal(h.state.decision?.seat, A, 'the initiative player picks first');
   pick(h, fodder);                                   // A keeps Smof
+  assert.equal(h.state.decision?.seat, D, 'then the player without initiative');
+  pick(h, whale);                                    // D sacrifices the whale
   assert.ok(!ent(h, whale) && !ent(h, fodder), 'both sacrifices committed together');
   assert.ok(h.state.players[D]!.bin.includes('Good Whale'));
   assert.ok(h.state.players[A]!.bin.includes('Conduit of Pain'));

@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-01', kind: 'change', text: 'When a card has each player choose (General Smof, Perish, Rockfall…), the player with initiative now always picks first. A unit they pick is marked for the other player before their turn to pick; a card picked from a hand stays secret.' },
   { date: '2026-11-01', kind: 'fix', text: 'Glowing card outlines are no longer cut off at the edge of the hand, the play area and the resource row.' },
   { date: '2026-11-01', kind: 'fix', text: 'Card text when you hover or zoom a unit keeps the card’s own line breaks, so a second ability starts on its own line again.' },
   { date: '2026-11-01', kind: 'fix', text: 'Abduct and Gravitational Correction on the stack now say how much the opponent has to pay, e.g. “unless Gember pays 5”.' },

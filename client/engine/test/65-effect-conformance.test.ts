@@ -395,6 +395,12 @@ const starvedThrows: string[] = [];
  */
 let starve = false;
 
+/** CR 102.3a, 102.3b (§4): when set, every mid-resolution question the drive
+ * answers is recorded here — who was asked, under which key, and the
+ * information class the question declared. Recording tokens is OFF while it is
+ * set: §4's boards are a re-run of the battle board, not new observations. */
+let asked: { seat: Seat; key: string; info?: 'open' | 'hidden' }[] | null = null;
+
 function driveOne(board: Board, s: Slot): void {
   const g = new E(structuredClone(board.state) as GameState);
   const { A, D, region } = board;
@@ -533,7 +539,10 @@ function driveOne(board: Board, s: Slot): void {
     // 85-silent-branches' rig does. Answering inline rather than suspending is
     // what lets a run REACH COMPLETION, which is what the silence check is
     // about.
-    choose: (_k: string, dec: { options: { value: unknown }[] }) => dec.options[0]?.value,
+    choose: (_k: string, dec: { seat: Seat; info?: 'open' | 'hidden'; options: { value: unknown }[] }) => {
+      asked?.push({ seat: dec.seat, key: _k, ...(dec.info ? { info: dec.info } : {}) });
+      return dec.options[0]?.value;
+    },
   } as unknown as EffectCtx;
 
   const before = g.events.length;
@@ -541,7 +550,7 @@ function driveOne(board: Board, s: Slot): void {
   // CR D7.3a: the starve pass is a THROW hunt, not a creation census — recording
   // stays off so a token spawned on a starved path can never be attributed to
   // an effect as something it "creates".
-  live = !starve; frame = starve ? null : s.def;
+  live = !starve && !asked; frame = starve || asked ? null : s.def;
   try {
     s.def.run(g, ctx);
     completed = true;
@@ -575,7 +584,7 @@ function driveOne(board: Board, s: Slot): void {
   } finally {
     live = false; frame = null;
   }
-  if (starve) return;
+  if (starve || asked) return;
   runs.push({
     label: s.label, board: board.name, completed,
     silent: completed && g.events.length === before, fair, why,
@@ -1121,4 +1130,163 @@ test('CR D7.3a: the sweep is computed from the registry, not from a typed list',
     + 'on the pool. Do not lower this: find out what stopped being enumerated.');
   console.log(`    CR D7.3a: empty-targets sweep drove ${targeting.length} targeting effect slots `
     + `× ${BOARDS.length} boards = ${targeting.length * BOARDS.length} starved runs`);
+});
+
+
+// ── 4. CR 102.3a, 102.3b: EACH PLAYER CHOOSES IN INITIATIVE ORDER ─────────
+//
+// Report #317 (EMNR) and the rules channel's answer, relayed by the owner on
+// 2026-11-01: *"It's just like magic: [MTG CR 101.4] (and active player = INT
+// in Algomancy). So the INT player picks their thing and, if it's open
+// information, it should be highlighted and clear what they've chosen, then
+// NIT picks their thing."*
+//
+// Before the ruling the pool asked in THREE orders: `E.seatsHere` (initiative
+// first — Rockfall), the region's raw `presentSeats` (region owner first —
+// General Smof, Death Greeter, Spiteful Shadow, Maw of Damnation, Torrential
+// Reclamation) and the caster first (Perish). The defect is invisible on any
+// board where those three happen to agree, which on the battle board above is
+// most of them — so this section builds two boards on which they DISAGREE:
+//
+//   initiative = A (the controller), presentSeats = [D, A]  → raw order asks D first
+//   initiative = D,                  presentSeats = [A, D]  → raw AND caster-first ask A first
+//
+// and drives every effect in the registry through `driveOne` on both,
+// recording each question. An effect that asks more than one player must ask
+// the initiative player first, and every one of its questions must DECLARE
+// whether what it picks among is open information (`info`, CR 102.3b) — that
+// declaration is what decides whether the later chooser is shown the pick.
+//
+// Computed, not listed: a new card that walks `presentSeats`, or puts its
+// caster first, fails here the day it is registered.
+
+/** Cards whose PRINTED text orders the players, which CR 101.1 puts above
+ * CR 102.3a. Each quote is checked against the card's printed text below, so
+ * an entry cannot outlive its reason. */
+const ORDERED_BY_TEXT: Record<string, string> = {
+  'Insidious Invitation': 'Starting with you, players may play a unit from hand',
+  // the caster's [2] decides whether the opponents are asked at all
+  'Sacrifice Dude': 'you may pay [2]. If you do, each opponent sacrifices',
+  'Thoughtripper': 'you may pay [2]. If you do, each opponent discards',
+  // the opponent splits, then the caster picks a pile: two different choices, in printed order
+  'Big Glimpse Card': 'Target opponent splits them into two piles. Cache one pile.',
+};
+
+function orderBoards(): Board[] {
+  const b = battleBoard();
+  return ([[b.A, [b.D, b.A]], [b.D, [b.A, b.D]]] as [Seat, Seat[]][]).map(([init, present]) => {
+    const state = structuredClone(b.state) as GameState;
+    state.initiative = init;
+    state.regions[b.region]!.presentSeats = present.slice();
+    return { name: `initiative ${init === b.A ? 'caster' : 'opponent'}, raw order [${present}]`, state, A: b.A, D: b.D, region: b.region };
+  });
+}
+
+interface Asking { label: string; card: string; board: string; init: Seat; asked: { seat: Seat; key: string; info?: 'open' | 'hidden' }[] }
+
+/** drive `list` on both order boards, keeping every run that asked 2+ seats */
+function askSweep(list: Slot[]): Asking[] {
+  const out: Asking[] = [];
+  for (const board of orderBoards()) {
+    for (const s of list) {
+      asked = [];
+      try { driveOne(board, s); } finally {
+        const got = asked; asked = null;
+        if (new Set(got.map(a => a.seat)).size > 1) {
+          out.push({ label: s.label, card: s.card, board: board.name, init: board.state.initiative, asked: got });
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/** the runs that asked somebody before the initiative player */
+const outOfOrder = (runs: Asking[]): Asking[] => runs.filter(r => r.asked[0]!.seat !== r.init);
+
+const control = (label: string, seats: (g: E, ctx: EffectCtx) => Seat[]): Slot => ({
+  card: 'Cull', route: 'spell', index: 0, label,
+  def: {
+    run: (g, ctx) => {
+      for (const seat of seats(g, ctx)) {
+        ctx.choose(`ctl:${seat}`, {
+          kind: 'payOrDecline', seat, prompt: 'control: sacrifice a unit', info: 'open',
+          options: g.unitsOf(seat, ctx.region).map(u => ({ label: u.card, value: u.id })),
+        });
+      }
+      g.ev('info', 'control');
+    },
+  },
+});
+
+test('CR 102.3a positive control: the asking-order sweep can actually SEE a wrong order', () => {
+  // docs/13 §7.4: a sweep that would print "clean" while blind is worth nothing
+  const raw = askSweep([control('control:raw-presentSeats', (g, ctx) => g.s.regions[ctx.region]!.presentSeats.slice() as Seat[])]);
+  assert.equal(raw.length, 2, 'the control asked both seats on both boards');
+  assert.ok(outOfOrder(raw).length > 0,
+    'a loop over the raw presentSeats order was not convicted on either board — the boards do not separate the orders');
+  const casterFirst = askSweep([control('control:caster-first', (g, ctx) =>
+    [ctx.controller, ...g.seatsHere(ctx.region).filter(x => x !== ctx.controller)])]);
+  assert.equal(casterFirst.length, 2, 'the caster-first control asked both seats on both boards');
+  assert.ok(outOfOrder(casterFirst).length > 0,
+    'a caster-first loop was not convicted on either board — the boards never give the opponent initiative');
+  const apnap = askSweep([control('control:seatsHere', (g, ctx) => g.seatsHere(ctx.region))]);
+  assert.equal(apnap.length, 2, 'the initiative-first control asked both seats on both boards');
+  assert.deepEqual(outOfOrder(apnap).map(r => r.board), [], 'the sweep convicted the initiative-first order');
+});
+
+const asking = askSweep(slots);
+
+test('CR 102.3a: an effect that asks each player asks the initiative player first', () => {
+  const bad = outOfOrder(asking).filter(r => !(r.card in ORDERED_BY_TEXT));
+  assert.deepEqual(bad.map(r => `${r.label} @ ${r.board}: ${r.asked.map(a => `seat ${a.seat} (${a.key})`).join(', ')}`), [],
+    'CR 102.3a: these effects ask somebody before the initiative player. Walk the seats with '
+    + '`g.seatsHere(region)` — never `g.s.regions[region].presentSeats` (region owner first) and never '
+    + 'the caster first — unless the card\'s own text orders the players (then add it to ORDERED_BY_TEXT '
+    + 'with the printed words).');
+  console.log(`    CR 102.3a: ${new Set(asking.map(r => r.label)).size} effect slot(s) ask more than one player; `
+    + `${slots.length} slots × 2 boards driven`);
+});
+
+test('CR 102.3b: every question of an effect that asks each player declares open or hidden information', () => {
+  const undeclared = new Set<string>();
+  for (const r of asking) for (const a of r.asked) if (!a.info) undeclared.add(`${r.label}: ${a.key.replace(/\d+/g, 'N')}`);
+  assert.deepEqual([...undeclared].sort(), [],
+    'CR 102.3b: a later chooser is shown an earlier OPEN pick (units in play, a bin, a public cost) and only THAT '
+    + 'a hidden one (a hand, a deck) was made. Say which this question is: `info: \'open\'` or `info: \'hidden\'` '
+    + 'on the ctx.choose call (dsl.ts).');
+});
+
+test('CR 102.3a: every ORDERED_BY_TEXT entry is still printed and still needed', () => {
+  for (const [card, quote] of Object.entries(ORDERED_BY_TEXT)) {
+    const printed = (getCard(card) as unknown as { text?: string }).text ?? '';
+    assert.ok(printed.replace(/\{\/n\}/g, ' ').includes(quote), `${card}: "${quote}" is not in its printed text "${printed}"`);
+    assert.ok(asking.some(r => r.card === card), `${card} no longer asks more than one player — drop it from ORDERED_BY_TEXT`);
+  }
+});
+
+/**
+ * The sweep above sees only the branches its boards reach. The raw order it
+ * convicts has one spelling, so the card layer is also scanned for it:
+ * `regions[r].presentSeats` lists the region's OWNER first and the attacker
+ * after, in the order they arrived — not the initiative order. `E.seatsHere` is
+ * the one door (engine.ts), and no card file reads the field at all.
+ */
+test('CR 102.3a: no card file reads the raw presentSeats order — E.seatsHere is the one door', () => {
+  const dir = new URL('../src/cards/', import.meta.url);
+  const files = [
+    ...readdirSync(dir).filter(f => f.endsWith('.ts')),
+    ...readdirSync(new URL('sets/', dir)).filter(f => f.endsWith('.ts')).map(f => `sets/${f}`),
+  ];
+  const hits: string[] = [];
+  for (const f of files) {
+    readFileSync(new URL(f, dir), 'utf8').split('\n').forEach((text, i) => {
+      if (/^\s*(\*|\/\/)/.test(text)) return;
+      if (/\.presentSeats\b/.test(text)) hits.push(`${f}:${i + 1}  ${text.trim()}`);
+    });
+  }
+  assert.ok(files.length > 20, 'the scan found almost no card files — it is looking in the wrong place');
+  assert.deepEqual(hits, [],
+    'CR 102.3a: walk the players with `g.seatsHere(region)` (initiative player first), never the raw '
+    + '`regions[region].presentSeats` (region owner first).');
 });

@@ -60,10 +60,9 @@ import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets, hasChan
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
-/** "each player" = the seats PRESENT in the effect's region (CR 601.4d), in
- * presentSeats order (region owner first) — the whole table in 1v1 battle. */
-const playersIn = (g: E, region: number): Seat[] =>
-  [...(g.s.regions[region]?.presentSeats ?? [])] as Seat[];
+/** "each player" = the seats PRESENT in the effect's region (CR 601.4d), the
+ * initiative player first (CR 102.3a) — the whole table in 1v1 battle. */
+const playersIn = (g: E, region: number): Seat[] => g.seatsHere(region);
 
 /** The engine's per-battle life ledgers, read together. Both are live:
  * E.gainLife bumps `lifeGained:<seat>` exactly as E.loseLife bumps
@@ -384,6 +383,7 @@ card('Insatiable Want', {
         if (!units.length) continue;
         const chosen = ctx.choose(`sac:${seat}`, {
           kind: 'payOrDecline', seat,
+          info: 'open',   // CR 102.3b: units in play
           prompt: 'Insatiable Want: your life total is even — sacrifice a unit',
           options: units.map(u => ({ label: u.card, value: u.id, card: u.card })),
         });
@@ -686,8 +686,9 @@ card('The Foretold', {});
 // total, rounded up." — lll/6 4/5 Spirit Anima Unit. Symmetrical, which is
 // why it is playable: at 20 life it is a 10-point swing both ways, and the
 // halving never quite kills (except from 1). "Each player" is the seats
-// present in the region (CR 601.4d), in presentSeats order for determinism —
-// and a lethal halving ends the game mid-loop, which is correct.
+// present in the region (CR 601.4d), the initiative player first (CR 102.3a).
+// The halvings are one life batch (CR 104.1a), so a lethal one is judged with
+// the other once both have landed.
 card('Visage of Ruin', {
   augmentText: [{
     type: 'triggered', events: ['attacked', 'blocked'], self: true,

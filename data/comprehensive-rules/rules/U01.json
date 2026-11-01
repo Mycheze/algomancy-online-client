@@ -700,6 +700,95 @@
     "sourceHashes": {}
   },
   {
+    "key": "concepts.players.each-player.choice-order",
+    "parent": "concepts.players.each-player",
+    "order": 1,
+    "text": "When an effect has each player make a choice, the initiative player chooses first and the non-initiative player chooses after them, unless the card's text says in what order the players choose.",
+    "examples": [
+      {
+        "text": "General Smof (\"Each player sacrifices a unit\") attacks in the first battle round, so the battle is in the other player's region. Its controller has the initiative and chooses first; the other player chooses second.",
+        "test": "781-each-player-initiative-order.test.ts::CR 102.3a: General Smof asks the initiative player first, not the owner of the battle region"
+      }
+    ],
+    "see": [
+      "turn.general.initiative",
+      "concepts.golden.printed-text-wins"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "It's just like magic: [MTG CR 101.4] (and active player = INT in Algomancy).",
+          "adopted": "2026-11-01",
+          "from": "owner, chat 2026-11-01: relayed the rules channel's answer to report #317 (EMNR: when one effect asks each player in turn, does the second chooser see the first pick?), with a picture of MTG CR 101.4-101.4c"
+        },
+        {
+          "quote": "So the INT player picks their thing and, if it's open information, it should be highlighted and clear what they've chosen, then NIT picks their thing.",
+          "adopted": "2026-11-01",
+          "from": "owner, chat 2026-11-01: relayed the rules channel's answer to report #317 (EMNR: when one effect asks each player in turn, does the second chooser see the first pick?), with a picture of MTG CR 101.4-101.4c"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "781-each-player-initiative-order.test.ts",
+        "65-effect-conformance.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "The picture is MTG CR 101.4: the active player makes any choices required, then the nonactive player, and then the actions happen simultaneously. The owner maps the active player to the initiative player (INT). Insidious Invitation prints its own order (\"Starting with you, players may play a unit\"), which 101.1 puts first. Before 2026-11-01 the client asked some cards in region-owner order (General Smof, Death Greeter) and Perish caster first.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.players.each-player.earlier-choices",
+    "parent": "concepts.players.each-player",
+    "order": 2,
+    "text": "A player making such a choice knows the choices the players before them have made in it. A choice among cards in a hidden zone, such as a hand or a deck, is the exception: the other players know only that it has been made.",
+    "examples": [
+      {
+        "text": "General Smof: when the second player is asked which unit to sacrifice, they are told which unit the first player chose.",
+        "test": "781-each-player-initiative-order.test.ts::CR 102.3b: the second sacrificer is told which unit the first chose (a unit in play is open)"
+      },
+      {
+        "text": "Cthyrian Culler (\"each player discards a card\"): the second player is told that the first player has chosen a card to discard, and not which card.",
+        "test": "781-each-player-initiative-order.test.ts::CR 102.3b: the second discarder is told only THAT the first chose (a card in hand is hidden)"
+      }
+    ],
+    "see": [
+      "concepts.players.each-player.choice-order"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "It depends on the zone. Hidden information stays hidden (all you know is that your opponent made a choice), but open information is known by both players for the choice.",
+          "adopted": "2026-11-01",
+          "from": "owner, chat 2026-11-01: relayed the rules channel's answer to report #317 (EMNR: when one effect asks each player in turn, does the second chooser see the first pick?), with a picture of MTG CR 101.4-101.4c"
+        },
+        {
+          "quote": "If it's hidden information, no indication needs to be given, other than who's turn it is to pick.",
+          "adopted": "2026-11-01",
+          "from": "owner, chat 2026-11-01: relayed the rules channel's answer to report #317 (EMNR: when one effect asks each player in turn, does the second chooser see the first pick?), with a picture of MTG CR 101.4-101.4c"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "781-each-player-initiative-order.test.ts",
+        "779-each-player-pick-stays-private.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "The picture is MTG CR 101.4a (choices of cards in a hidden zone may be made face down) and 101.4b (a player knows the choices made by the previous players, except as in 101.4a). The owner's 'highlighted and clear what they've chosen' is how the client shows an open pick (prompt line and a marked unit); that display is not a rule here. Mindburn's pick (sacrifice a unit OR discard a card) mixes open and hidden; the client keeps it hidden pending an owner call.",
+    "sourceHashes": {}
+  },
+  {
     "key": "concepts.players.owner",
     "parent": "102",
     "order": 4,

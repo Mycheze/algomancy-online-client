@@ -16,7 +16,7 @@
  */
 import type {
   Attr, BattleState, BinRef, CachedCard, CachedProphecy, CardName, CopyFacet, CopyRef, DamageSubStep,
-  Decision, DecisionOption,
+  Decision, DecisionOption, EarlierPick,
   EffectPart, EngineEvent, Entity, EntityId, EventType, ForeignCard, FormationSpot, GameState, LastKnown, NumericEntry,
   PendingTrigger, Phase, PlayerState, Seat, SpawnFace, StackItem, StateFrame, Suspension, TargetRef, Stamp,
 } from './types.ts';
@@ -156,11 +156,33 @@ class PartChoice {
     numeric?: NumericEntry;
     /** one pick of a set ("choose up to two…"): display only, passed through */
     pickSet?: Decision['pickSet'];
+    /** CR 102.3b: is what this question picks among open information? */
+    info?: 'open' | 'hidden';
   };
-  constructor(key: string, dec: PartChoice['dec']) {
+  /** CR 102.3b: the questions of this same part answered before this one */
+  earlier: EarlierPick[];
+  constructor(key: string, dec: PartChoice['dec'], earlier: EarlierPick[] = []) {
     this.key = key;
     this.dec = dec;
+    this.earlier = earlier;
   }
+}
+
+/**
+ * CR 102.3b: what a later chooser in the same effect is told about one answer
+ * already given. An OPEN question's pick is copied whole (its option, so a
+ * client can light the unit on the board); a hidden one is reduced to WHO
+ * chose — the option never enters the state.
+ */
+function earlierPick(dec: PartChoice['dec'], value: unknown): EarlierPick {
+  if (dec.info !== 'open') return { seat: dec.seat, open: false };
+  const same = JSON.stringify(value);
+  const hit = dec.options.find(o => JSON.stringify(o.value) === same);
+  // a typed number (CR D7.2a) has no option to point at: the number is the pick
+  const option: DecisionOption = hit
+    ? { label: hit.label, value: hit.value, ...(hit.card ? { card: hit.card } : {}) }
+    : { label: String(value), value };
+  return { seat: dec.seat, open: true, option, kind: dec.kind };
 }
 
 /**
@@ -12932,6 +12954,8 @@ export class E {
       // CT-309, CR 109.9b: a "you may … target" declined at the target step, or
       // one that could not be offered, has not spent a bounded use
       if (def.targets?.may && !part.targets.length) part.refunded = true;
+      /** CR 102.3b: the answers this run of the part has been handed back, in order */
+      const made: EarlierPick[] = [];
       const ctx: EffectCtx = {
         controller: item.controller,
         sourceName: item.card ?? item.label,
@@ -13003,8 +13027,11 @@ export class E {
           // part 1's answer already in the shared map and silently reuses a
           // pick that may be dead instead of asking again.
           const k = `${pi}:${key}`;
-          if (k in answers) return answers[k];
-          throw new PartChoice(k, { ...dec, options: dec.options });
+          if (k in answers) {
+            made.push(earlierPick(dec, answers[k]));   // CR 102.3b
+            return answers[k];
+          }
+          throw new PartChoice(k, { ...dec, options: dec.options }, made.slice());
         },
       };
       // CR 802.23c, 802.21b: snapshot the units in play, so the kills this part makes —
@@ -13116,6 +13143,8 @@ export class E {
               ...(sig.dec.numeric !== undefined ? { numeric: sig.dec.numeric } : {}),
               // the picker hint (Wake the Dead, Tides): display only
               ...(sig.dec.pickSet !== undefined ? { pickSet: sig.dec.pickSet } : {}),
+              // CR 102.3b: the choices this effect has already had made
+              ...(sig.earlier.length ? { earlier: sig.earlier } : {}),
             },
           );
         }

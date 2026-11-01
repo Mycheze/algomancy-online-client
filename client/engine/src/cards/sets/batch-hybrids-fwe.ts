@@ -279,7 +279,7 @@ card('Death Greeter', {
       run: (g, ctx) => {
         const cost = eventCardCost(ctx.event);   // CR 111.11: the X paid, on an X spell
         const picks: EntityId[] = [];
-        for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
+        for (const seat of g.seatsHere(ctx.region)) {
           const pool = g.unitsOf(seat as Seat, ctx.region)
             .filter(u => g.costOf(u) <= cost);   // CR 710.1a: a unit in play costs what its FACE costs
           const id = pickUnit(ctx, `sac:${seat}`, seat as Seat, pool,
@@ -408,7 +408,7 @@ card('Torrential Reclamation', {
       const rounds = recalled.length;
       const sacs: EntityId[] = [];
       for (let r = 0; r < rounds; r++) {
-        for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
+        for (const seat of g.seatsHere(ctx.region)) {
           const pool = g.unitsOf(seat as Seat, ctx.region).filter(u =>
             !sacs.includes(u.id) && !recalled.some(p => p.id === u.id));
           const id = pickUnit(ctx, `sac:${r}:${seat}`, seat as Seat, pool,
@@ -540,7 +540,7 @@ card('Molten Tormentor', {
         const n = (ctx.event?.data?.n as number | undefined) ?? 0;
         if (n <= 0) { g.ev('info', 'Molten Tormentor: 0 damage survived — nobody sacrifices.'); return; }
         const picks: EntityId[] = [];
-        for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
+        for (const seat of g.seatsHere(ctx.region)) {
           if (seat === ctx.controller) continue;
           for (let k = 0; k < n; k++) {
             const pool = g.unitsOf(seat as Seat, ctx.region).filter(u => !picks.includes(u.id));
@@ -631,7 +631,7 @@ const collapseSacrifice: EffectDef = {
       return;
     }
     const picks: EntityId[] = [];
-    for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
+    for (const seat of g.seatsHere(ctx.region)) {
       if (seat === ctx.controller) continue;
       let total = 0;
       const chosen: EntityId[] = [];

@@ -55,6 +55,7 @@ import {
 } from './formation.ts';
 import { formationSlotOffer } from './fslot.ts';
 import { boardIndex, imposedCost, isBoard, optionSubjects, pickVerbs } from './boardpick.ts';
+import { earlierNote, earlierUnits } from './earlier.ts';
 import type { Subject } from './boardpick.ts';
 import { EFFECT_ART_TOP, effectFace, lostTargetsForRow, roleSentence, stackBadges, type EffectFace } from './effectface.ts';
 import { doesLine, lastKnown, noteTable, tableMemory } from './doesline.ts';
@@ -2461,6 +2462,20 @@ function pickVerb(key: string): string {
  * the click itself, and glows; any other mod strip is part of its unit */
 const modPickAttrs = (id: EntityId): string =>
   pickable(`mod:${id}`) ? ` data-act="mod" data-id="${id}"` : '';
+/** CR 102.3b: the units an earlier chooser in the asking effect picked, memoised per state */
+let chosenMemo: { st: GameState; units: Map<EntityId, Seat> } | null = null;
+/** "Gember's pick" / "Your pick" across a unit an earlier chooser picked, or '' */
+function chosenTag(id: EntityId): string {
+  if (!chosenMemo || chosenMemo.st !== h.state) chosenMemo = { st: h.state, units: earlierUnits(h.state) };
+  const seat = chosenMemo.units.get(id);
+  if (seat === undefined) return '';
+  return NET && seat === NET.seat ? 'Your pick' : `${h.state.players[seat]!.name}'s pick`;
+}
+/** CR 102.3b: the earlier choosers' picks, as a line at the front of a prompt bar */
+function earlierHtml(): string {
+  const note = earlierNote(h.state, NET ? NET.seat : null);
+  return note ? `<span class="earlier">${esc(note)}</span>` : '';
+}
 /** the option indexes a click on this board element answers */
 const pickIndexes = (key: string): number[] => picks()?.board.get(key) ?? [];
 /** CR D7.1's "this will do nothing" for the option(s) behind a board element */
@@ -3293,12 +3308,15 @@ function cardHtml(name: string, opts: {
   mods?: string; modh?: number;
   /** CT-408: a finger's held cast, as a button on the card (ui/tapgo.ts) */
   go?: string;
+  /** CR 102.3b: an earlier player's open pick in the effect asking now (ui/earlier.ts) */
+  chosen?: boolean;
 } = {}): string {
   // [35] the class list is ui/inspect.ts's cardClasses — `.activatable` is the
   // one class with no behaviour attached to it, so nothing but a test notices
   // when it stops being emitted and the green halo quietly goes away.
   const cls = cardClasses(opts);
   if (opts.mods) cls.push('modded');
+  if (opts.chosen) cls.push('chosen');
   // BL-23: the strip is ONE line. Chips are pushed from a dozen call
   // sites that cannot each know how many others there will be, so the fold
   // decision lives here, in the container — ui/inspect.ts packBadgeLine, where
@@ -3552,7 +3570,8 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
     ...fieldMods(u),
     stats, dmg: u.damage ? `−${u.damage}` : '', badges,
     candidate: !opts.inert && pickable(`unit:${u.id}`),
-    pickTag: opts.inert ? '' : pickVerb(`unit:${u.id}`),
+    pickTag: opts.inert ? '' : (pickVerb(`unit:${u.id}`) || chosenTag(u.id)),
+    chosen: !opts.inert && chosenTag(u.id) !== '',
     selected: opts.selected, carrying: ui.carrying === u.id,
     playable: opts.clickable,
     activatable: canAct,
@@ -6389,10 +6408,10 @@ function promptHtml(): string {
      * lives in ui/inspect.ts `waitingNote`, which is where it is tested (from
      * both sides of the seam: engine/test/50-ui-inspect and, against a real
      * redacted view, server/e2e/test-pending-ask.ts). */
-    return `<div class="promptbar waiting"><span class="who"><span class="livedot">●</span> ${esc(waitingNote(s, castWatch?.casting ?? false, opp))}</span>${err}</div>`;
+    return `<div class="promptbar waiting"><span class="who"><span class="livedot">●</span> ${esc(waitingNote(s, castWatch?.casting ?? false, opp))}</span>${earlierHtml()}${err}</div>`;
   }
   if (s.decision) {
-    const strip = burstStripHtml();
+    const strip = burstStripHtml() + earlierHtml();   // CR 102.3b: what was chosen before you
     const bare = decisionBarHtml(s.decision, err);
     const bar = strip ? bare.replace(/^(\s*<div class="promptbar[^"]*">)/, `$1${strip}`) : bare;
     // CR D2.1/CT-46: ONLINE this is the whole truth and always was — view.ts

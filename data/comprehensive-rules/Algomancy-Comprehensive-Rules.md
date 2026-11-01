@@ -290,6 +290,20 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.19 · Tests: 412-cr-general.test.ts · Example test: 15-water-b.test.ts::Recall: each player recalls a unit and loses 2 life · Key: concepts.players.each-player</sub>
 
+<a id="r102.3a"></a>**102.3a** When an effect has each player make a choice, the initiative player chooses first and the non-initiative player chooses after them, unless the card's text says in what order the players choose. See rules 500.3, 101.1.
+
+> *Example: General Smof ("Each player sacrifices a unit") attacks in the first battle round, so the battle is in the other player's region. Its controller has the initiative and chooses first; the other player chooses second.*
+
+<sub>Basis: Owner call · adopted 2026-11-01 · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Tests: 781-each-player-initiative-order.test.ts, 65-effect-conformance.test.ts · Example test: 781-each-player-initiative-order.test.ts::CR 102.3a: General Smof asks the initiative player first, not the owner of the battle region · Key: concepts.players.each-player.choice-order</sub>
+
+<a id="r102.3b"></a>**102.3b** A player making such a choice knows the choices the players before them have made in it. A choice among cards in a hidden zone, such as a hand or a deck, is the exception: the other players know only that it has been made. See rule 102.3a.
+
+> *Example: General Smof: when the second player is asked which unit to sacrifice, they are told which unit the first player chose.*
+
+> *Example: Cthyrian Culler ("each player discards a card"): the second player is told that the first player has chosen a card to discard, and not which card.*
+
+<sub>Basis: Owner call · adopted 2026-11-01 · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Tests: 781-each-player-initiative-order.test.ts, 779-each-player-pick-stays-private.test.ts · Example tests: 781-each-player-initiative-order.test.ts::CR 102.3b: the second sacrificer is told which unit the first chose (a unit in play is open), 781-each-player-initiative-order.test.ts::CR 102.3b: the second discarder is told only THAT the first chose (a card in hand is hidden) · Key: concepts.players.each-player.earlier-choices</sub>
+
 <a id="r102.4"></a>**102.4.** A card's owner is the player whose card it is. Taking control of a card does not change its owner, and neither does moving it into or out of a player's hand, bin or cache, even another player's, nor applying it as a mod. A card that goes into a draft pack, a deck or a recycle pile leaves its ownership behind there: whoever next takes it out owns it. That holds in constructed too, where each player has a deck and a recycle pile of their own: a stolen card that goes into the thief's deck or recycle pile becomes the thief's. See rules 400.4a, 400.4c.
 
 > *Example: A unit whose control has been taken is recalled: the player it was stolen from is still the card's owner.*
@@ -10802,13 +10816,13 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1843 numbered rules.
+1845 numbered rules.
 
 | basis | rules |
 |---|---|
 | Printed | 453 |
 | Designer | 202 |
-| Owner call | 665 |
+| Owner call | 667 |
 | Engine only | 40 |
 | Mixed | 483 |
 
@@ -10816,7 +10830,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 | verdict | rules |
 |---|---|
-| confirmed | 1836 |
+| confirmed | 1838 |
 | partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
@@ -11430,7 +11444,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1848 rules and 99 sections.
+- New: 1850 rules and 99 sections.
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)
 - Removed: 901.8 `formats.constructed.single-card`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)
 - Removed: 901.8a `formats.constructed.single-card.copies`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)

@@ -22,6 +22,8 @@
     {"num":"102.2","key":"concepts.players.each-opponent","since":"First generation (draft)"},
     {"num":"102.2a","key":"concepts.players.each-opponent.none","since":"First generation (draft)"},
     {"num":"102.3","key":"concepts.players.each-player","since":"First generation (draft)"},
+    {"num":"102.3a","key":"concepts.players.each-player.choice-order","since":"First generation (draft)"},
+    {"num":"102.3b","key":"concepts.players.each-player.earlier-choices","since":"First generation (draft)"},
     {"num":"102.4","key":"concepts.players.owner","since":"First generation (draft)"},
     {"num":"102.4a","key":"concepts.players.owner.token","since":"First generation (draft)"},
     {"num":"102.5","key":"concepts.players.controller","since":"First generation (draft)"},

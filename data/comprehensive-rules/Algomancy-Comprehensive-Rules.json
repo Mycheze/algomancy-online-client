@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:f5f36dfe55be4b51",
+ "generated_from": "sha256:d59bf7e2b08d0580",
  "rules": [
   {
    "num": "100.1",
@@ -418,6 +418,54 @@
     "Recall (\"Each player recalls a unit and loses 2 life\") cast in a battle makes both players present in that battle region lose 2 life."
    ],
    "basis": "printed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "102.3a",
+   "key": "concepts.players.each-player.choice-order",
+   "title": null,
+   "section": "102",
+   "sectionTitle": "Players, Ownership and Control",
+   "chapterTitle": "1. Game Concepts",
+   "parent": "102.3",
+   "text": "When an effect has each player make a choice, the initiative player chooses first and the non-initiative player chooses after them, unless the card's text says in what order the players choose.",
+   "see": [
+    "500.3",
+    "101.1"
+   ],
+   "examples": [
+    "General Smof (\"Each player sacrifices a unit\") attacks in the first battle round, so the battle is in the other player's region. Its controller has the initiative and chooses first; the other player chooses second."
+   ],
+   "basis": "owner",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "102.3b",
+   "key": "concepts.players.each-player.earlier-choices",
+   "title": null,
+   "section": "102",
+   "sectionTitle": "Players, Ownership and Control",
+   "chapterTitle": "1. Game Concepts",
+   "parent": "102.3",
+   "text": "A player making such a choice knows the choices the players before them have made in it. A choice among cards in a hidden zone, such as a hand or a deck, is the exception: the other players know only that it has been made.",
+   "see": [
+    "102.3a"
+   ],
+   "examples": [
+    "General Smof: when the second player is asked which unit to sacrifice, they are told which unit the first player chose.",
+    "Cthyrian Culler (\"each player discards a card\"): the second player is told that the first player has chosen a card to discard, and not which card."
+   ],
+   "basis": "owner",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],

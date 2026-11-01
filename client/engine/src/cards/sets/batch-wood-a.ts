@@ -498,7 +498,7 @@ card('Growing Plague', {
       run: (g, ctx) => {
         // CR D7.3/CT-70: "each OTHER player" is region-scoped (CR 601.4d), so alone in a
         // home region the loop is empty. Announce the empty case.
-        const others = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
+        const others = g.seatsHere(ctx.region).filter(s => s !== ctx.controller);
         if (!others.length) {
           g.ev('info', 'Growing Plague: no other player is present here — nobody draws two cards.');
           return;

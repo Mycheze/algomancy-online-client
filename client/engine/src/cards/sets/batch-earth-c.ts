@@ -72,7 +72,7 @@ import { isEnt } from './helpers.ts';
 
 /** present seats of a region, region-owner order (stable) */
 const presentOpponents = (g: E, region: number, me: Seat): Seat[] =>
-  g.s.regions[region]!.presentSeats.filter(s => s !== me);
+  g.seatsHere(region).filter(s => s !== me);
 
 // ────────────────────────────── the cards ──────────────────────────────
 

@@ -818,7 +818,7 @@ card('Malicious Hardware', {
       run: (g, ctx) => {
         // CR D7.3b/CT-70: CR 601.4d scopes "each opponent" to the effect's region, and a
         // home region out of battle holds only the carrier's controller.
-        const foes = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
+        const foes = g.seatsHere(ctx.region).filter(s => s !== ctx.controller);
         if (!foes.length) {
           g.ev('info', 'Malicious Hardware: no opponent is present here — nobody sacrifices a unit.');
           return;
@@ -852,7 +852,7 @@ card('Maw of Damnation', {
     run: (g, ctx) => {
       for (let round = 0; round < 20; round++) {
         const picks: EntityId[] = [];
-        for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
+        for (const seat of g.seatsHere(ctx.region)) {
           for (let k = 0; k < 2; k++) {
             const pool = g.unitsOf(seat as Seat, ctx.region).filter(u => !picks.includes(u.id));
             const id = pickUnit(ctx, `sac:${round}:${seat}:${k}`, seat as Seat, pool,

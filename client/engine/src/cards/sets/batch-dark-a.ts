@@ -251,6 +251,7 @@ const cullSacrifices: EffectDef = {
       if (!mine.length) continue;
       const id = mine.length === 1 ? mine[0]!.id : ctx.choose(`cull:${seat}`, {
         kind: 'payOrDecline', seat,
+        info: 'open',   // CR 102.3b: units in play
         prompt: 'Cull: sacrifice which unit?',
         options: mine.map(u => ({ label: u.card, value: u.id, card: u.card })),
       }) as EntityId;
@@ -544,6 +545,7 @@ card('Sacrifice Dude', {
         }
         const pays = ctx.choose('pay', {
           kind: 'payOrDecline', seat: ctx.controller,
+          info: 'open',   // CR 102.3b: paying a cost is public
           prompt: 'Sacrifice Dude: pay [2] to make each opponent sacrifice a nontoken unit?',
           options: [{ label: 'Pay [2]', value: true }, { label: 'Decline', value: false }],
         });
@@ -555,6 +557,7 @@ card('Sacrifice Dude', {
           if (!mine.length) continue;
           const id = mine.length === 1 ? mine[0]!.id : ctx.choose(`sac:${seat}`, {
             kind: 'payOrDecline', seat,
+            info: 'open',   // CR 102.3b: units in play
             prompt: 'Sacrifice Dude: sacrifice which nontoken unit?',
             options: mine.map(u => ({ label: u.card, value: u.id, card: u.card })),
           }) as EntityId;

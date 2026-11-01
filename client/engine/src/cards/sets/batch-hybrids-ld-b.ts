@@ -455,7 +455,7 @@ card('Deferral Drone', {
 // (CR 601.4d). Bounded cause + bounded graft ([Switch1], CR 722.5).
 const murkstalkerDrain: EffectDef = {
   run: (g, ctx) => {
-    for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
+    for (const seat of g.seatsHere(ctx.region)) {
       if (seat === ctx.controller) continue;
       g.loseLife(seat as Seat, 3, 'Murkstalker');
     }

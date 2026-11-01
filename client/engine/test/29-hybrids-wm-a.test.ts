@@ -661,9 +661,13 @@ test('Maw of Damnation: each player sacrifices two; 4+ sacrificed → it repeats
   pass(h);                                                    // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Maw of Damnation') });
   pass(h); pass(h);                                           // resolve
+  // CR 102.3a: the initiative player (A) picks first, then D — before the
+  // 2026-11-01 ruling the region owner D was asked first
+  assert.equal(h.state.decision?.seat, A, 'the initiative player picks first');
+  pick(h, a1);                                                // A's first pick (second is forced)
+  assert.equal(h.state.decision?.seat, D);
   pick(h, d1);                                                // D's first pick (round 1)
   pick(h, d2);                                                // D's second pick
-  pick(h, a1);                                                // A's first pick (second is forced)
   // round 1 sacrificed 4 → it repeats: D's d3 is forced, A has nothing → 1 < 4, stop
   assert.ok(h.log.some(m => m.includes('it repeats')), 'the 4-sacrifice round repeated');
   assert.ok(!ent(h, d1) && !ent(h, d2) && !ent(h, d3), 'D lost all three units');

@@ -64,6 +64,7 @@ button:disabled { opacity: .4; cursor: default; }
 @keyframes barnudgea { 50% { border-color: #f0c040; box-shadow: 0 0 0 2px #f0c040, 0 0 16px 4px rgba(240,192,64,.55); } }
 @keyframes barnudgeb { 50% { border-color: #f0c040; box-shadow: 0 0 0 2px #f0c040, 0 0 16px 4px rgba(240,192,64,.55); } }
 .promptbar .who { font-weight: 700; color: var(--accent); }
+.promptbar .earlier { margin-right: 10px; color: var(--target); font-weight: 600; }
 /* board round 8: the main button names where it goes; on the first of a
    window's two passes a small second line says the opponent can still reply
    (ui/nextstep.ts passLabel) */
@@ -298,6 +299,11 @@ button:disabled { opacity: .4; cursor: default; }
 .badge .modpick { outline: 2px solid var(--target); border-radius: 3px; cursor: pointer; }
 .card.selected { outline: 3px solid #7fc0ff; cursor: pointer; }
 .card.carrying { outline: 3px dashed #7fc0ff; }
+/* CR 102.3b: what an earlier player picked in the effect asking now (an open
+   pick — a unit in play): marked, not clickable, so the next chooser can see
+   it (ui/earlier.ts). Dashed so it never reads as a live option. */
+.card.chosen { outline: 3px dashed var(--target); }
+.card.chosen .picktag { background: rgba(20,16,4,.88); color: var(--target); }
 .card.dead { filter: grayscale(1); }
 
 /* battle area */

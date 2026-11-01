@@ -458,18 +458,19 @@ card('Flame Shield', {
 
 // "After combat, [Switch1] Each player sacrifices a unit." — r/2 2/2.
 // "Each player" = the seats present in the battle region (CR 601.4d), in
-// presentSeats order (region owner first); each picks their own sacrifice
+// initiative order (CR 102.3a); each picks their own sacrifice
 // (mid-resolution choices, CR 704.1a model). All choices are gathered before any
 // destruction (plan-then-commit), then committed together — one death batch
 // (CR 713.6, CT-414: Caleb, "Sacrifices are resolved simultaneously").
 const smofSacrifice: EffectDef = {
   run: (g, ctx) => {
     const picks: EntityId[] = [];
-    for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
+    for (const seat of g.seatsHere(ctx.region)) {
       const units = g.unitsOf(seat as Seat, ctx.region);
       if (!units.length) continue;
       const c = ctx.choose(`sac:${seat}`, {
         kind: 'payOrDecline', seat: seat as Seat,
+        info: 'open',   // CR 102.3b: units in play
         prompt: 'General Smof: sacrifice a unit',
         options: units.map(u => ({ label: u.card, value: u.id })),
       });
@@ -498,12 +499,13 @@ card('General Smof', {
 const ghordSacrifice: EffectDef = {
   run: (g, ctx) => {
     const picks: EntityId[] = [];
-    for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
+    for (const seat of g.seatsHere(ctx.region)) {
       if (seat === ctx.controller) continue;
       const units = g.unitsOf(seat as Seat, ctx.region).filter(u => !u.token);
       if (!units.length) continue;
       const c = ctx.choose(`sac:${seat}`, {
         kind: 'payOrDecline', seat: seat as Seat,
+        info: 'open',   // CR 102.3b: units in play
         prompt: 'Ghord: sacrifice a nontoken unit',
         options: units.map(u => ({ label: u.card, value: u.id })),
       });

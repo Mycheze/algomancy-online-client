@@ -214,7 +214,7 @@ card('Good Whale', {});
 // RESOLUTION (hand counts read live), the condition fired at event time.
 const tidewraithEffect: EffectDef = {
   run: (g, ctx) => {
-    const hits = g.s.regions[ctx.region]!.presentSeats
+    const hits = g.seatsHere(ctx.region)
       .map(seat => ({ target: { player: seat as Seat }, n: g.player(seat).hand.length }))
       .filter(h => h.n > 0);
     if (!hits.length) { g.ev('info', 'Astral Tidewraith: every player here is empty-handed — no damage.'); return; }

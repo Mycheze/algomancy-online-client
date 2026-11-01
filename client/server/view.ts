@@ -24,7 +24,7 @@
  * everything.
  */
 import { packCycle } from '../engine/src/engine.ts';
-import type { Action, EngineEvent, EntityId, GameState, Seat, StateFrame } from '../engine/src/types.ts';
+import type { Action, EarlierPick, EngineEvent, EntityId, GameState, Seat, StateFrame } from '../engine/src/types.ts';
 import { decisionBlocks, hiddenSegment, legalActions } from '../engine/src/apply.ts';
 
 /** Placeholder card name for a hidden card (opponent hand / deck). The client
@@ -101,7 +101,24 @@ export interface PendingAsk {
   source?: EntityId;
 }
 
-export type SeatView = GameState & { packInfo?: PackInfo; pendingAsk?: PendingAsk };
+/**
+ * CR 102.3b — the choices already made in the effect that is asking now, for
+ * the seat that is NOT being asked (the asked seat has them on its own
+ * `decision.earlier`). The owner, 2026-11-01: "So the INT player picks their
+ * thing and, if it's open information, it should be highlighted and clear what
+ * they've chosen, then NIT picks their thing."
+ *
+ * The engine decides what is open (`EarlierPick`): a hidden pick is stored as
+ * `{ seat, open: false }` and nothing more. `publicPicks` reduces every hidden
+ * entry to exactly that again on the way out, so a pick the engine ever filled
+ * in by mistake still cannot reach the wire.
+ */
+export type SeatView = GameState & { packInfo?: PackInfo; pendingAsk?: PendingAsk; earlierPicks?: EarlierPick[] };
+
+function publicPicks(picks: EarlierPick[] | undefined): EarlierPick[] | null {
+  if (!picks?.length) return null;
+  return picks.map(p => (p.open && p.option ? p : { seat: p.seat, open: false }));
+}
 
 /**
  * The stub, or null when there is nothing publishable.
@@ -366,8 +383,16 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
   if (v.decision && v.decision.seat !== seat) {
     const ask = pendingAskFor(v, seat, frozenOpp);
     if (ask) v.pendingAsk = ask;
+    // CR 102.3b: the waiting seat sees the open picks made so far — its own
+    // among them — and, with `pendingAsk`, whose turn it is to pick. Not inside
+    // a hidden simultaneous segment, for the reason `pendingAskFor` gives.
+    const earlier = frozenOpp ? null : publicPicks(v.decision.earlier);
+    if (earlier) v.earlierPicks = earlier;
     v.decision = null;
     v.suspension = null;
+  } else if (v.decision?.earlier) {
+    const earlier = publicPicks(v.decision.earlier);
+    if (earlier) v.decision.earlier = earlier; else delete v.decision.earlier;
   }
 
   // A 'resolve' suspension carries a WHOLE unredacted state snapshot —
@@ -382,9 +407,10 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
   // first seat's pick before anything is committed — e.g. `{ '0:rf:0': 2 }`,
   // unit 2. Nothing on screen reads it (no client code touches `answers`; the
   // engine resumes from the room's own state, never from a view), so it is
-  // emptied for every seat rather than filtered by owner. Whether the second
-  // chooser SHOULD know the first pick is a rules question (owner,
-  // 2026-11-01); this only stops the wire answering it.
+  // emptied for every seat rather than filtered by owner. What the second
+  // chooser IS told (CR 102.3b: an open pick, or that a hidden one was made)
+  // travels as `decision.earlier` / `earlierPicks` above, classified by the
+  // engine — never as the raw answer map.
   // server/test/779-each-player-pick-stays-private.test.ts.
   if (v.suspension?.type === 'resolve') {
     delete v.suspension.snapshot;

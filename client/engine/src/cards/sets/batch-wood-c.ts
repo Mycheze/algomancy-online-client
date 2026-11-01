@@ -77,6 +77,7 @@ const chooseUnit = (
   if (candidates.length === 1) return candidates[0]!;
   const id = ctx.choose(key, {
     kind: 'electricPath', seat: chooser, prompt,
+    info: 'open',   // CR 102.3b: units in play are open information
     options: candidates.map(u => ({ label: u.card, value: u.id, card: u.card })),
   }) as EntityId;
   return g.entity(id) ?? null;

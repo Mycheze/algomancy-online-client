@@ -100,7 +100,7 @@ import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
  * always holds both players in 1v1 — but the two readings are not the same
  * clause, and every other batch in the expansion uses this one. */
 const opponentsOf = (g: E, region: number, seat: Seat): Seat[] =>
-  g.s.regions[region]!.presentSeats.filter(s => s !== seat);
+  g.seatsHere(region).filter(s => s !== seat);
 
 /**
  * "My column deals combat damage" (header approximation): the shared engine

@@ -160,6 +160,7 @@ const pickUnit = (
   if (pool.length === 1) return pool[0]!.id;
   return ctx.choose(key, {
     kind: 'electricPath', seat: chooser, prompt,
+    info: 'open',   // CR 102.3b: units in play are open information
     options: pool.map(u => ({ label: u.card, value: u.id, card: u.card })),
   }) as EntityId;
 };
@@ -336,6 +337,7 @@ card('Cthyrian Culler', {
           if (!hand.length) continue;
           const i = hand.length === 1 ? 0 : ctx.choose(`cull:${s}`, {
             kind: 'payOrDecline', seat: s,
+            info: 'hidden',   // CR 102.3b: a card in hand
             prompt: 'Cthyrian Culler: discard a card',
             options: hand.map((name, idx) => ({ label: name, value: idx, card: name })),
           }) as number;
@@ -707,6 +709,7 @@ const plagueRitual: EffectDef = {
       const hand = g.player(s).hand;
       const discard = !hand.length ? null : (hand.length === 1 ? 0 : ctx.choose(`pr:d:${s}`, {
         kind: 'payOrDecline', seat: s,
+        info: 'hidden',   // CR 102.3b: a card in hand
         prompt: 'Plague Ritual: discard a card',
         options: hand.map((name, idx) => ({ label: name, value: idx, card: name })),
       }) as number);
