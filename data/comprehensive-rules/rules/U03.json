@@ -2627,6 +2627,49 @@
     "sourceHashes": {}
   },
   {
+    "key": "concepts.targets.legal.not-itself",
+    "parent": "concepts.targets.legal",
+    "order": 6,
+    "text": "An effect on the stack is never a legal target for itself, whether its targets are being chosen or changed.",
+    "examples": [
+      {
+        "text": "Gravitational Correction, changing the targets of Null Drone, is never offered Null Drone as Null Drone's new target.",
+        "test": "770-retarget-onto-the-changer.test.ts::Gravitational Correction can move Null Drone's target onto Gravitational Correction itself, never onto the Drone"
+      }
+    ],
+    "see": [
+      "concepts.targets.change"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RQ 1487556014617264280",
+          "quote": "No, things can't target themselves"
+        }
+      ],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Nyar: \"With rule 115.5 a) should not be possible.\"",
+          "adopted": "2026-11-01",
+          "from": "owner, chat 2026-11-01: relayed Nyar's answer to invi's question (can Gravitational Correction change a Null Drone's target to the Drone, or to the Correction?) and asked for the fix"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "770-retarget-onto-the-changer.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "Caleb's answer (RQ 1487556014617264280) is to ozei's question whether a Boon of Protection taken with Hexbane Shiitake can have its target changed to itself. Nyar cites MTG 115.5. Units are not effects on the stack: a unit's own ability may choose that unit (110.4a).",
+    "sourceHashes": {
+      "RQ 1487556014617264280": "080e754cbc1bf1d6d401fa15757696238994b0f97654e5fecdf33000942cc6b7"
+    }
+  },
+  {
     "key": "concepts.targets.ally",
     "parent": "110",
     "order": 4,
@@ -3357,6 +3400,47 @@
     "sourceHashes": {
       "RAQ 1354013430805434389#2": "1a5aeab2eaa6794d57c3da50c1178ed79cc7287057e0fde38366204dc60d5af8"
     }
+  },
+  {
+    "key": "concepts.targets.change.onto-changer",
+    "parent": "concepts.targets.change",
+    "order": 3,
+    "text": "An effect that changes another effect's targets is still on the stack while it resolves, so it can be chosen as a new target when it is the kind of effect that target asks for. The other effect is then aimed at an effect that leaves the stack once the change has resolved, and it loses that target when it begins to resolve (rule concepts.targets.recheck).",
+    "examples": [
+      {
+        "text": "Gravitational Correction, changing the targets of a Null Drone aimed at Luminous Arc, can move the Drone's target onto the Gravitational Correction itself; the Drone then negates nothing and the Arc resolves.",
+        "test": "770-retarget-onto-the-changer.test.ts::Gravitational Correction can move Null Drone's target onto Gravitational Correction itself, never onto the Drone"
+      },
+      {
+        "text": "Divine Intervention can do the same to a Null Drone.",
+        "test": "770-retarget-onto-the-changer.test.ts::Divine Intervention can move Null Drone's target onto Divine Intervention itself, never onto the Drone"
+      }
+    ],
+    "see": [
+      "concepts.targets.legal.not-itself",
+      "effects.priority.resolving"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Nyar: \"So b) should be possible. You can change the null drone to target something other then itself on the stack, including the gravitational correction that is currently resolving\"",
+          "adopted": "2026-11-01",
+          "from": "owner, chat 2026-11-01: relayed Nyar's answer to invi's question (can Gravitational Correction change a Null Drone's target to the Drone, or to the Correction?) and asked for the fix"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "770-retarget-onto-the-changer.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "Nyar: \"With almost all niche interactions the rules are modelled after magic\" (MTG: a resolving spell is still on the stack). No RAQ thread or Caleb message speaks to it. Reverses what the client did before 2026-11-01 (it never offered the resolving changer).",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.targets.applying-mods",

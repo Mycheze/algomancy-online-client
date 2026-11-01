@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1846 rules and 99 sections.
+- New: 1848 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -183,6 +183,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 110.3c `concepts.targets.legal.player`
   - 110.3d `concepts.targets.legal.formation`
   - 110.3e `concepts.targets.legal.formation-empty`
+  - 110.3f `concepts.targets.legal.not-itself`
   - 110.4 `concepts.targets.ally`
   - 110.4a `concepts.targets.ally.self`
   - 110.4b `concepts.targets.ally.control`
@@ -198,6 +199,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 110.9 `concepts.targets.change`
   - 110.9a `concepts.targets.change.kept`
   - 110.9b `concepts.targets.change.rescue`
+  - 110.9c `concepts.targets.change.onto-changer`
   - 110.10 `concepts.targets.applying-mods`
   - 110.10a `concepts.targets.applying-mods.virus`
   - 110.11 `concepts.targets.becomes-targeted`

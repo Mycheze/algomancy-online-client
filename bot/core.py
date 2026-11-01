@@ -177,7 +177,9 @@ describe the target limit what can be chosen ("target unit with 5 or less defens
 "if" clause attached to the action ("delete target unit if it has a -1/-1 counter on it") \
 does not limit the choice — it is checked as the effect resolves. Anything on the stack is \
 an effect. An effect that has lost all of its targets as it resolves fizzles. Once an \
-effect has begun to resolve, it can no longer be targeted, negated or augmented.
+effect has begun to resolve, no other effect can be played to target, negate or augment \
+it; but it is still on the stack, so an effect that changes targets can choose itself as \
+another effect's new target while it resolves. No effect can ever target itself.
 - Square brackets: [Switch], [Switch1], [Augment], [Battle], [Virus], [Haste] and \
 [once] are symbols, never costs. Other bracketed text in a text box is an \
 additional cost or a choice between modes, paid or chosen to play the card.

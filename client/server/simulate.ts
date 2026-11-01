@@ -692,6 +692,10 @@ class Sim {
     }
     const name = r.slice('stack:'.length);
     for (let i = s.length - 1; i >= 0; i--) if (s[i]!.card === name || s[i]!.label.includes(name)) return s[i]!.id;
+    // CR 110.9c: the resolving change-the-targets effect is off `state.stack`
+    // but may be offered as a new target ("stack:Gravitational Correction")
+    const res = this.state.resolving;
+    if (res && (res.card === name || res.label.includes(name))) return res.id;
     throw new Refusal(`nothing called ${name} is on the stack (stack: ${s.map(i => i.label).join(' | ') || 'empty'})`);
   }
 
@@ -711,7 +715,9 @@ class Sim {
     if (!isObj(v)) return rawIds && typeof v === 'number' ? this.refOfEntity(v) : null;
     if (typeof v['stack'] === 'number') {
       const i = this.state.stack.findIndex(it => it.id === v['stack']);
-      return i >= 0 ? `stack.${i}` : null;
+      if (i >= 0) return `stack.${i}`;
+      const res = this.state.resolving;   // CR 110.9c: the resolving changer, offered as a new target
+      return res && res.id === v['stack'] ? `stack:${res.card ?? res.label}` : null;
     }
     if (typeof v['unit'] === 'number') return this.refOfEntity(v['unit']);
     if (typeof v['player'] === 'number') return sideOf(v['player'] as Seat);

@@ -6,9 +6,9 @@
  *
  * §1 ⭐ Gravitational Correction redirecting a Null Drone (g116): the "choose
  *    a new target for Null Drone" menu offers the other spells on the stack
- *    and NEVER Null Drone itself or the resolving Gravitational Correction —
- *    and with nothing else to point at, the client says there is nothing to
- *    change rather than offering the effect itself
+ *    AND the resolving Gravitational Correction (CR 110.9c), and NEVER Null
+ *    Drone itself (CR 110.3f) — the owner's adopted answer, 2026-11-01 — and
+ *    with only its own target besides, the Correction is still there to pick
  * §2 ⭐ Balanced + Inverted on a 3/2: the client gives 3/1
  * §3 ⭐ damage across a blocking column: the split menu, and all 10 into the
  *    front unit leaves the one behind untouched
@@ -44,12 +44,12 @@ const gc = (arcs: number) => ({
     ...Array.from({ length: arcs }, () => ({ do: 'play', card: 'Luminous Arc', targets: ['opponent.0'] })),
     { seat: 'opponent', do: 'play', card: 'Null Drone', targets: ['stack:Luminous Arc'] },
     { do: 'play', card: 'Gravitational Correction', x: 2, targets: ['stack:Null Drone'] },
-    ...(arcs > 1 ? [{ seat: 'opponent', do: 'choose', option: 'decline' }] : []),
+    { seat: 'opponent', do: 'choose', option: 'decline' },
   ],
   showOffered: true,
 });
 
-test('§1 ⭐ Gravitational Correction on Null Drone: the new-target menu never offers Null Drone or Gravitational Correction', () => {
+test('§1 ⭐ Gravitational Correction on Null Drone: the new-target menu offers Gravitational Correction and never Null Drone', () => {
   const r = run(gc(2));
   assert.ok(r.steps.every(s => s.ok), JSON.stringify(r.steps));
   // GC itself may aim at Null Drone: a spell unit on the stack is a spell effect
@@ -59,18 +59,27 @@ test('§1 ⭐ Gravitational Correction on Null Drone: the new-target menu never 
     'the ransom is asked of Null Drone\'s controller');
   const nu = menu(r, /choose a new target for Null Drone/);
   assert.equal(nu.seat, 'you');
-  assert.ok(nu.options.length >= 1 && nu.options.every(o => o.startsWith('Luminous Arc')),
-    `only the Arcs are offered: ${nu.options}`);
-  assert.ok(!nu.options.some(o => /Null Drone|Gravitational Correction/.test(o)),
-    '⭐ the effect being changed is not offered as its own new target, and neither is the resolving GC');
-  assert.ok(nu.options.every(o => /\[stack\.\d\]$/.test(o)), 'every option is tagged with its stack ref');
+  assert.equal(nu.options.filter(o => o.startsWith('Luminous Arc')).length, 2, `both Arcs are offered: ${nu.options}`);
+  assert.ok(nu.options.some(o => o.startsWith('Gravitational Correction')),
+    `⭐ CR 110.9c: the resolving Gravitational Correction is offered: ${nu.options}`);
+  assert.ok(!nu.options.some(o => /Null Drone/.test(o)), '⭐ CR 110.3f: the effect being changed is never its own new target');
+  assert.ok(nu.options.every(o => /\[stack(\.\d|:[^\]]+)\]$/.test(o)), `every option is tagged with its stack ref: ${nu.options}`);
   assert.ok(r.auto.some(a => a.includes('choose a new target for Null Drone')), 'the unscripted pick is listed under auto');
 });
 
-test('§1b with only its own target to point at, Null Drone has nothing to change — the effect itself is not a candidate', () => {
+test('§1b with only its own target besides, Null Drone can still be pointed at the resolving Correction — never at itself', () => {
   const r = run(gc(1));
-  assert.ok(!r.offered.some(o => /choose a new target for Null Drone/.test(o.prompt)), 'no new-target menu at all');
-  assert.ok(r.log.some(l => /Null Drone has no target to change/.test(l)), r.log.join('\n'));
+  const nu = menu(r, /choose a new target for Null Drone/);
+  assert.ok(nu.options.some(o => o.startsWith('Gravitational Correction')), `the Correction is offered: ${nu.options}`);
+  assert.ok(!nu.options.some(o => /Null Drone/.test(o)), 'never Null Drone itself');
+  assert.ok(!r.log.some(l => /Null Drone has no target to change/.test(l)), 'there is something to change it to');
+  // and a script can name it: the Drone, pointed at the Correction, negates nothing
+  const spec = gc(1);
+  spec.steps.push({ do: 'choose', option: 'Gravitational Correction' } as never);
+  const p = run(spec);
+  assert.ok(p.steps.every(s => s.ok), JSON.stringify(p.steps));
+  assert.ok(p.log.some(l => /Null Drone fizzles|has already left the stack/.test(l)), p.log.join('\n'));
+  assert.ok(p.log.some(l => /Luminous Arc deals 6/.test(l)), 'the Arc resolves');
 });
 
 /* ══ §2 ═════════════════════════════════════════════════════════════ */

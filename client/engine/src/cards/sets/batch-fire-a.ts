@@ -535,7 +535,8 @@ card('Gravitational Correction', {
   spellEffect: {
     targets: {
       what: 'stackEffect', prompt: 'Gravitational Correction: change the targets of target effect',
-      pickConfirm: noChangeConfirm('Gravitational Correction', (g, item) => hasChangeableTarget(g, item)),   // CT-307
+      pickConfirm: noChangeConfirm('Gravitational Correction',   // CT-307; CR 110.9c: itself counts
+        (g, item, _src, self) => hasChangeableTarget(g, item, undefined, self)),
     },
     run: (g, ctx) => {
       const t = ctx.targets[0];

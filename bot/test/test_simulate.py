@@ -87,7 +87,8 @@ GC_OK = {
          "prompt": "Pay [2] to keep Null Drone's targets?", "options": ["Pay [2]", "Decline"]},
         {"at": "step 4", "seat": "you", "kind": "payOrDecline",
          "prompt": "Gravitational Correction: choose a new target for Null Drone",
-         "options": ["Luminous Arc [stack.0]", "Luminous Arc [stack.1]"]}],
+         "options": ["Luminous Arc [stack.0]", "Luminous Arc [stack.1]",
+                     "Gravitational Correction (X=2) [stack:Gravitational Correction]"]}],
     "log": ["Haste step: haste cards may be played.", "The haste step ends.",
             "Resolving Gravitational Correction (X=2):",
             "Gravitational Correction: You changes 1 of Null Drone's targets.",
@@ -550,9 +551,11 @@ else:
         check("⭐ the GC / Null Drone fixture runs through tools.dispatch", row["source_type"] == "engine"
               and text.startswith(f"[{row['id']}] Online client engine build"))
         menu = re.search(r"choose a new target for Null Drone: (.*)", text)
-        check("⭐ the client's new-target menu offers the Arcs, NEVER Null Drone itself or the resolving GC",
+        # CR 110.3f / 110.9c (owner, 2026-11-01): never the effect itself, but the
+        # resolving Correction IS a legal new target
+        check("⭐ the client's new-target menu offers the Arcs and the resolving GC, NEVER Null Drone itself",
               menu and "Luminous Arc [stack." in menu.group(1)
-              and "Null Drone" not in menu.group(1) and "Gravitational Correction" not in menu.group(1))
+              and "Null Drone" not in menu.group(1) and "Gravitational Correction" in menu.group(1))
         check("…while GC itself could aim at Null Drone (a spell unit is a spell effect)",
               re.search(r"change the targets of target effect: .*Null Drone \[stack\.2\]", text) is not None)
         check("the row carries the real build sha", row["metadata"]["engine"] == gameserver.simulate_engine())

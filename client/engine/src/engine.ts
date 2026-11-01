@@ -9757,6 +9757,27 @@ export class E {
   slotCandidates(
     item: StackItem, pi: number, ti: number,
     targets?: readonly TargetRef[], controller: Seat = item.controller,
+    changer: StackItem | null = this.partItem,
+  ): TargetRef[] {
+    // CR 110.9c (Nyar, 2026-11-01): the effect doing the changing is still on
+    // the stack while it resolves, so it is a legal new target for an effect
+    // that targets effects — Gravitational Correction can move Null Drone's
+    // target onto the Correction itself. `resolveStackAt` has already spliced
+    // it off `s.stack`, so for THIS question only it is put back, on top, and
+    // every reader below (the family walk, a printed restriction reading
+    // `g.s.stack`, `resolveTargetRef`) sees it exactly as it would any other
+    // item. It is never a candidate for its own slots: `item.id` is excluded
+    // (CR 110.3f — no effect on the stack can target itself).
+    // `changer` defaults to the item whose part is running; a cast-time
+    // question (`noChangeConfirm`) passes a stand-in for the changer-to-be.
+    const lift = !!changer && changer !== item && !this.s.stack.includes(changer);
+    if (lift) this.s.stack.push(changer!);
+    try { return this.slotCandidatesOnStack(item, pi, ti, targets, controller); }
+    finally { if (lift) this.s.stack.splice(this.s.stack.lastIndexOf(changer!), 1); }
+  }
+  private slotCandidatesOnStack(
+    item: StackItem, pi: number, ti: number,
+    targets: readonly TargetRef[] | undefined, controller: Seat,
   ): TargetRef[] {
     if (pi === HOST_SLOT) return ti === 0 ? this.virusHostCandidates(item) : [];
     const part = item.parts[pi];
@@ -9878,7 +9899,10 @@ export class E {
       const n = t.bin.nth ?? 0;
       return `${t.bin.card}${n ? ` #${n + 1}` : ''} (${this.pname(t.bin.seat)}'s bin)`;
     }
-    return this.s.stack.find(i => i.id === t.stack)?.label ?? '(gone)';
+    // CR 110.9c: the resolving changer, offered as a new target, is off `s.stack`
+    const it = this.s.stack.find(i => i.id === t.stack)
+      ?? (this.partItem?.id === t.stack ? this.partItem : undefined);
+    return it?.label ?? '(gone)';
   }
   targetStillLegal(t: TargetRef): boolean {
     if ('unit' in t) { const u = this.entity(t.unit); return !!u && !u.absent; }

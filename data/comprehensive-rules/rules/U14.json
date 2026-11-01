@@ -3115,14 +3115,16 @@
     "key": "effects.priority.resolving",
     "parent": "703",
     "order": 6,
-    "text": "Once an effect has begun to resolve, no player can respond to it. It can no longer be targeted, negated or augmented.",
+    "text": "Once an effect has begun to resolve, no player can respond to it: no other effect can then be played to target it, negate it or augment it. It is still on the stack until it has resolved, so an effect that changes targets can choose itself as a new target while it resolves (rule concepts.targets.change.onto-changer).",
     "examples": [
       {
         "text": "while Premonition is resolving, the other player is offered nothing, it is not a legal target, and a negation or a Virus aimed at it is refused.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.resolving — while Premonition is resolving it cannot be targeted, negated, augmented or responded to"
       }
     ],
-    "see": [],
+    "see": [
+      "concepts.targets.change.onto-changer"
+    ],
     "sources": {
       "printed": [],
       "designer": [],
@@ -3137,11 +3139,17 @@
           "quote": "you cannot virus a spell that is RESOLVING.**",
           "adopted": "2026-08-22",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Nyar: \"So b) should be possible. You can change the null drone to target something other then itself on the stack, including the gravitational correction that is currently resolving\"",
+          "adopted": "2026-11-01",
+          "from": "owner, chat 2026-11-01: relayed Nyar's answer to invi's question (can Gravitational Correction change a Null Drone's target to the Drone, or to the Correction?) and asked for the fix"
         }
       ],
       "engine": [],
       "tests": [
-        "425-cr-casting-and-stack.test.ts"
+        "425-cr-casting-and-stack.test.ts",
+        "770-retarget-onto-the-changer.test.ts"
       ]
     },
     "basis": "owner",

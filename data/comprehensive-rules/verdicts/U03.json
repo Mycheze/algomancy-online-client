@@ -2805,6 +2805,70 @@
     "problem": "\"not judged again then\" is true for the retarget; it is still re-judged at resolution (R324)."
   },
   {
+    "key": "concepts.targets.change.onto-changer",
+    "textHash": "ea9e30e8ee844424",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U03-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:slotCandidates",
+        "agrees": true,
+        "note": "lifts the resolving changer back onto the stack for the re-choice question only"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:resolveStackAt",
+        "agrees": true,
+        "note": "the changer is spliced off before it runs, so once it has resolved the Drone's target is gone"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/770-retarget-onto-the-changer.test.ts",
+        "pattern": "Gravitational Correction can move Null Drone's target onto Gravitational Correction itself",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/770-retarget-onto-the-changer.test.ts",
+        "pattern": "Divine Intervention can move Null Drone's target onto Divine Intervention itself",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U03-3.test.ts",
+        "test": "probe U03-3: Null Drone retargeted onto Gravitational Correction fizzles when it begins to resolve",
+        "passed": true,
+        "demonstrates": "yes: after the change, the Drone targets the departed Correction, logs 'Null Drone fizzles' when it resolves, and the Arc is not negated"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "owner: Nyar 'So b) should be possible...including the gravitational correction that is currently resolving'",
+        "supports": "yes",
+        "note": "Nyar is a player, relayed and adopted by the owner on 2026-11-01. No printed or designer source speaks to it. Basis owner is correct."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const lift = !!changer && changer !== item && !this.s.stack.includes(changer);"
+      },
+      {
+        "file": "client/engine/test/770-retarget-onto-the-changer.test.ts",
+        "text": "`the Drone now targets ${changer}`"
+      },
+      {
+        "file": "client/engine/test/770-retarget-onto-the-changer.test.ts",
+        "text": "'nothing negated the Arc'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "concepts.targets.change.rescue",
     "textHash": "47843144be1ac61b",
     "verdict": "confirmed",
@@ -3159,6 +3223,79 @@
       {
         "file": "client/docs/digital-rules.md",
         "text": "| `targetStillLegal` | legal exactly while its battle runs; **emptying it does not remove it**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.legal.not-itself",
+    "textHash": "86a7e0df3b864275",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U03-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushStackTargets",
+        "agrees": true,
+        "note": "skips excludeStackId (the item's own id)"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:slotCandidates",
+        "agrees": true,
+        "note": "re-choice passes item.id as the exclusion; the lifted changer is never a candidate for its own slots"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/770-retarget-onto-the-changer.test.ts",
+        "pattern": "Gravitational Correction can move Null Drone's target onto Gravitational Correction itself",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/770-retarget-onto-the-changer.test.ts",
+        "pattern": "Divine Intervention can move Null Drone's target onto Divine Intervention itself",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U03-1.test.ts",
+        "test": "probe U03-1: casting Null Drone and then Gravitational Correction, neither is offered itself",
+        "passed": true,
+        "demonstrates": "yes: at cast time neither Null Drone nor Gravitational Correction is offered itself as a target"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RQ 1487556014617264280",
+        "supports": "yes",
+        "note": "author calebgannon, standalone answer to ozei's preceding question in `before`: can a stolen Boon of Protection (via Hexbane Shiitake's new-targets choice) have its target changed to itself. Answers the changed-target case; the general wording covers chosen targets too."
+      },
+      {
+        "ref": "owner: Nyar 'With rule 115.5 a) should not be possible.'",
+        "supports": "yes",
+        "note": "(a) = Drone retargeted onto itself; adopted by owner; supporting, the designer source carries it"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "No, things can't target themselves"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "can you change Boon's target to itself?"
+      },
+      {
+        "file": "client/engine/test/770-retarget-onto-the-changer.test.ts",
+        "text": "'(a) the Drone is never offered as its own target'"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "(CR 110.3f — no effect on the stack can target itself)."
       }
     ],
     "basis_ok": true,

@@ -3275,40 +3275,70 @@
   },
   {
     "key": "effects.priority.resolving",
-    "textHash": "e3d1f2eb50af570f",
+    "textHash": "2e5949152147dd91",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:resolveTop",
+        "loc": "client/engine/src/engine.ts:resolveStackAt",
         "agrees": true,
-        "note": "resolving item is held in GameState.resolving, not s.stack, so no target/negate/augment reaches it"
+        "note": "nothing may respond to a resolving item or negate it. The engine stores the item off s.stack ('CR D6.3: it is off the stack') but treats it as still on the stack where it matters: slotCandidates lifts it back for target changes."
+      },
+      {
+        "loc": "client/engine/src/engine.ts:slotCandidates",
+        "agrees": true,
+        "note": "the resolving changer is a legal new target"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "pattern": "cr:effects.priority.resolving",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/770-retarget-onto-the-changer.test.ts",
+        "pattern": "Gravitational Correction can move Null Drone's target onto Gravitational Correction itself",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R78",
+        "ref": "owner register@72de434 'The last response window closed when both players passed; a resolving item is'",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "truncated quote, but read as given it closes the response window"
       },
       {
-        "ref": "R79 (its stack-virus half)",
+        "ref": "owner register@72de434 'you cannot virus a spell that is RESOLVING.**'",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "the augment clause"
+      },
+      {
+        "ref": "owner 2026-11-01 Nyar relay",
+        "supports": "yes",
+        "note": "the resolving Gravitational Correction is 'something other than itself on the stack', so a change can pick it"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "you cannot virus a spell that is RESOLVING.** `doAugment` looks the host up in"
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "text": "assert.deepEqual(h.legal(A), [], 'nothing is offered to the other player');"
+      },
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "text": "assert.equal(refused(h, { type: 'playCard', seat: A, handIndex: hush }), true, 'a negation is refused');"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "// CR D6.3: it is off the stack — nobody may respond to it or negate it now —"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.priority.simultaneous",

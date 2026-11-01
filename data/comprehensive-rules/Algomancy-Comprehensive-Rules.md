@@ -1304,6 +1304,12 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 156-reaping-and-formation.test.ts · Example test: 156-reaping-and-formation.test.ts::Galactic Germination: an EMPTY formation is still a formation · Key: concepts.targets.legal.formation-empty</sub>
 
+<a id="r110.3f"></a>**110.3f** An effect on the stack is never a legal target for itself, whether its targets are being chosen or changed. See rule 110.9.
+
+> *Example: Gravitational Correction, changing the targets of Null Drone, is never offered Null Drone as Null Drone's new target.*
+
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 1 gate test file · Designer: RQ 1487556014617264280 · Owner call · adopted 2026-11-01 · Tests: 770-retarget-onto-the-changer.test.ts · Example test: 770-retarget-onto-the-changer.test.ts::Gravitational Correction can move Null Drone's target onto Gravitational Correction itself, never onto the Drone · Key: concepts.targets.legal.not-itself</sub>
+
 <a id="r110.4"></a>**110.4.** An ally is a unit under your control in the region the effect is happening in. An enemy is a unit not under your control in that region. See rules 102, 601.
 
 <sub>Basis: Owner ruling, adopted 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 243-ally-and-enemy-scope.test.ts · Demonstrated by test: 243-ally-and-enemy-scope.test.ts::CR 110.4 the enemy target is the mirror · Key: concepts.targets.ally</sub>
@@ -1413,6 +1419,14 @@ order.
 > *Example: A spell whose target is about to become illegal is given a legal new target by Enigmatic Warder before it resolves, and then it does not fizzle.*
 
 <sub>Basis: Designer · Verified: confirmed in round 3; verifier ran 2 tests (2 probes it wrote), all passed; 1 gate test file · Designer: RAQ 1354013430805434389#2 · Tests: 414-cr-cards-abilities-targets.test.ts · Example test: 414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.change.rescue — the same spell given a new legal target by Enigmatic Warder resolves instead of fizzling · Key: concepts.targets.change.rescue</sub>
+
+<a id="r110.9c"></a>**110.9c** An effect that changes another effect's targets is still on the stack while it resolves, so it can be chosen as a new target when it is the kind of effect that target asks for. The other effect is then aimed at an effect that leaves the stack once the change has resolved, and it loses that target when it begins to resolve (rule 110.8). See rules 110.3f, 703.6.
+
+> *Example: Gravitational Correction, changing the targets of a Null Drone aimed at Luminous Arc, can move the Drone's target onto the Gravitational Correction itself; the Drone then negates nothing and the Arc resolves.*
+
+> *Example: Divine Intervention can do the same to a Null Drone.*
+
+<sub>Basis: Owner call · adopted 2026-11-01 · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 1 gate test file · Tests: 770-retarget-onto-the-changer.test.ts · Example tests: 770-retarget-onto-the-changer.test.ts::Gravitational Correction can move Null Drone's target onto Gravitational Correction itself, never onto the Drone, 770-retarget-onto-the-changer.test.ts::Divine Intervention can move Null Drone's target onto Divine Intervention itself, never onto the Drone · Key: concepts.targets.change.onto-changer</sub>
 
 <a id="r110.10"></a>**110.10.** Applying an augment, a graft or a Virus to a unit targets that unit. See rule 720.
 
@@ -6266,11 +6280,11 @@ order.
 
 <sub>Discrepancies: D-U14-5 (discrepancies.md)</sub>
 
-<a id="r703.6"></a>**703.6.** Once an effect has begun to resolve, no player can respond to it. It can no longer be targeted, negated or augmented.
+<a id="r703.6"></a>**703.6.** Once an effect has begun to resolve, no player can respond to it: no other effect can then be played to target it, negate it or augment it. It is still on the stack until it has resolved, so an effect that changes targets can choose itself as a new target while it resolves (rule 110.9c). See rule 110.9c.
 
 > *Example: while Premonition is resolving, the other player is offered nothing, it is not a legal target, and a negation or a Virus aimed at it is refused.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.resolving — while Premonition is resolving it cannot be targeted, negated, augmented or responded to · Key: effects.priority.resolving</sub>
+<sub>Basis: Owner call · adopted 2026-11-01; Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Tests: 425-cr-casting-and-stack.test.ts, 770-retarget-onto-the-changer.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.resolving — while Premonition is resolving it cannot be targeted, negated, augmented or responded to · Key: effects.priority.resolving</sub>
 
 <a id="r703.7"></a>**703.7.** Deployment uses the stack, but each player has a stack of their own there, which only that player sees *(Digital client)*; no other player can respond to it or is made to wait on it. No player holds priority in deployment: a player cannot keep priority there or respond to an item on their own deployment stack. Otherwise that stack works exactly as the battle stack does: a player's plays, activated abilities and spell tokens go on it, an ability triggered by an item goes on it above that item and resolves first, and it resolves on its own, top first. See rule 507.
 
@@ -10788,13 +10802,13 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1841 numbered rules.
+1843 numbered rules.
 
 | basis | rules |
 |---|---|
 | Printed | 453 |
-| Designer | 201 |
-| Owner call | 664 |
+| Designer | 202 |
+| Owner call | 665 |
 | Engine only | 40 |
 | Mixed | 483 |
 
@@ -10802,7 +10816,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 | verdict | rules |
 |---|---|
-| confirmed | 1834 |
+| confirmed | 1836 |
 | partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
@@ -11416,7 +11430,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1846 rules and 99 sections.
+- New: 1848 rules and 99 sections.
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)
 - Removed: 901.8 `formats.constructed.single-card`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)
 - Removed: 901.8a `formats.constructed.single-card.copies`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)

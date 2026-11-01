@@ -36,7 +36,7 @@ import { apply, createGame, legalActions } from '../../engine/src/apply.ts';
 import { IllegalAction } from '../../engine/src/engine.ts';
 import { rngNext } from '../../engine/src/rng.ts';
 import { viewFor } from '../../server/view.ts';
-import { give, spawn, toDeployment } from '../../engine/test/util.ts';
+import { give, giveResources, pass, pick, spawn, toDeployment, toNextBattle } from '../../engine/test/util.ts';
 import { boardIndex, isBoard, optionSubjects } from '../boardpick.ts';
 import type { Subject } from '../boardpick.ts';
 import type { Action, Decision, DecisionOption, Entity, GameState, Seat } from '../../engine/src/types.ts';
@@ -315,6 +315,42 @@ test('§2e a player, a stack item and a spell token are all answered where they 
   checkDrawn(s, 'players');
   assert.doesNotMatch(barOf(ui.html()), /data-btn="decide"/, 'no player buttons in the bar');
   clickSends(s, { act: 'player', p: them }, 0, 'clicking a life total picks the player');
+});
+
+test('§2f the resolving Gravitational Correction, offered as a new target, is clicked on the stack strip', () => {
+  // the engine's side is 770: a change-the-targets effect may move a target onto
+  // itself while it resolves. It is off `state.stack` then, drawn as the strip's
+  // resolving row — and that row, not a button, is where the option lives.
+  const h = new Harness(34806);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Monke');
+  const victim = spawn(h, D, 'Monke');
+  giveResources(h, A, 'fire', 10);
+  giveResources(h, D, 'water', 2);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  if (h.state.priority !== A) pass(h);
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
+  pick(h, { unit: victim });
+  const arc = h.state.stack.at(-1)!.id;
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Null Drone') });
+  pick(h, { stack: arc });
+  const drone = h.state.stack.at(-1)!.id;
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Gravitational Correction') });
+  if (h.state.decision?.kind !== 'targets') h.do({ type: 'decide', seat: h.state.decision!.seat, choice: 0 });   // X
+  pick(h, { stack: drone });
+  const gc = h.state.stack.at(-1)!.id;
+  pass(h); pass(h);
+  const pay = h.state.decision!;
+  h.do({ type: 'decide', seat: pay.seat, choice: pay.options.findIndex(o => o.value === false) });   // D declines
+  const s = h.state;
+  assert.equal(s.resolving?.id, gc, 'the Correction is resolving');
+  const i = s.decision!.options.findIndex(o => JSON.stringify(o.value) === JSON.stringify({ stack: gc }));
+  assert.ok(i >= 0, 'the Correction is offered as the Drone\'s new target');
+  const subs = checkDrawn(s, 'retarget onto the changer');
+  assert.deepEqual(subs[i], { at: 'stack', id: gc }, 'it is the resolving row on the strip, not a button');
+  checkClicks(s, subs, 'retarget onto the changer');
 });
 
 /* ═══ §3 THE LINES NOT CROSSED ═════════════════════════════════════════ */

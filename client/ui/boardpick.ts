@@ -87,6 +87,10 @@ export function boardKey(s: BoardSubject): string {
 
 const DECLINE_KEYS = ['doneTargets', 'doneCost', 'doneMods', 'declineCost'];
 
+/** a stack item the strip draws: one waiting on the stack, or the one resolving */
+const stripItem = (s: GameState, id: number) =>
+  s.stack.find(i => i.id === id) ?? (s.resolving?.id === id ? s.resolving : undefined);
+const onStrip = (s: GameState, id: number): boolean => stripItem(s, id) !== undefined;
 const fallback = (o: DecisionOption): Subject => (o.card ? { at: 'card', card: o.card } : { at: 'button' });
 
 /** a unit or spell token the board draws and takes clicks on */
@@ -151,7 +155,9 @@ function objectSubject(s: GameState, dec: Decision, o: DecisionOption, v: Record
   const player = num('player');
   if (player !== null) return { at: 'player', seat: player as Seat };
   const stack = num('stack');
-  if (stack !== null) return s.stack.some(i => i.id === stack) ? { at: 'stack', id: stack } : fallback(o);
+  // the resolving item is drawn on the strip too (rightmost) and is a legal new
+  // target for the change-the-targets effect that is resolving
+  if (stack !== null) return onStrip(s, stack) ? { at: 'stack', id: stack } : fallback(o);
   const cached = v['cached'] as { seat?: unknown; uid?: unknown } | undefined;
   if (cached && typeof cached.seat === 'number' && typeof cached.uid === 'number') {
     return { at: 'cache', seat: cached.seat as Seat, uid: cached.uid };
@@ -246,7 +252,7 @@ function subjectNames(s: GameState, sub: BoardSubject): string[] {
   switch (sub.at) {
     case 'unit': case 'mod': return namesOf(s, sub.id);
     case 'hand': { const c = s.players[sub.seat]?.hand[sub.index]; return c && c !== HIDDEN ? [c] : []; }
-    case 'stack': { const c = s.stack.find(i => i.id === sub.id)?.card; return c ? [c] : []; }
+    case 'stack': { const c = stripItem(s, sub.id)?.card; return c ? [c] : []; }
     default: return [];
   }
 }

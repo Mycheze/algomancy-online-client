@@ -448,10 +448,11 @@ export function rechooseTargets(
  * no slot has another candidate against the targets as they stand, the walk
  * can write nothing, so nothing is lost by not asking.
  */
-export function hasChangeableTarget(g: E, item: StackItem, controller?: Seat): boolean {
+export function hasChangeableTarget(g: E, item: StackItem, controller?: Seat, changer?: StackItem): boolean {
   return g.targetSlots(item).some(({ pi, ti, ref }) => {
     const key = JSON.stringify(ref);
-    return g.slotCandidates(item, pi, ti, undefined, controller).some(c => JSON.stringify(c) !== key);
+    return g.slotCandidates(item, pi, ti, undefined, controller, changer)
+      .some(c => JSON.stringify(c) !== key);
   });
 }
 
@@ -466,12 +467,21 @@ export function hasChangeableTarget(g: E, item: StackItem, controller?: Seat): b
  * Enigmatic Warder), the very predicate its `run` bails out on.
  */
 export function noChangeConfirm(
-  name: string, canChange: (g: E, item: StackItem, sourceId?: EntityId) => boolean,
+  name: string, canChange: (g: E, item: StackItem, sourceId?: EntityId, self?: StackItem) => boolean,
 ): (g: E, t: ResolvedTarget, ctx: TargetCtx) => string | undefined {
   return (g, t, ctx) => {
     if (!('stack' in t)) return undefined;
     const item = g.s.stack.find(i => i.id === t.stack);
-    if (!item || canChange(g, item, ctx.sourceId)) return undefined;
+    // CR 110.9c: the changer will itself be a legal new target once it is on
+    // the stack resolving. It is not on the stack yet, so a stand-in is
+    // judged in its place (id -1: no real item has it). A spell card's change
+    // is a spell; an ability's (Enigmatic Warder) ignores it.
+    const seat = ctx.ally ?? item?.controller ?? 0;
+    const self: StackItem = {
+      id: -1, kind: getCard(name).spellEffect ? 'spell' : 'activated', label: name, card: name,
+      controller: seat, owner: seat, region: ctx.region, negated: false, parts: [],
+    };
+    if (!item || canChange(g, item, ctx.sourceId, self)) return undefined;
     return g.targetSlots(item).length
       ? `None of this effect's targets can be changed, so ${name} will do nothing. Continue?`
       : `This effect has no targets, so ${name} will do nothing. Continue?`;

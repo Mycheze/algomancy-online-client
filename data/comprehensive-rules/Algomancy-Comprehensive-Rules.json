@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:c333dedae9d03e62",
+ "generated_from": "sha256:f5f36dfe55be4b51",
  "rules": [
   {
    "num": "100.1",
@@ -4057,6 +4057,29 @@
    "verdict": "confirmed"
   },
   {
+   "num": "110.3f",
+   "key": "concepts.targets.legal.not-itself",
+   "title": null,
+   "section": "110",
+   "sectionTitle": "Targets",
+   "chapterTitle": "1. Game Concepts",
+   "parent": "110.3",
+   "text": "An effect on the stack is never a legal target for itself, whether its targets are being chosen or changed.",
+   "see": [
+    "110.9"
+   ],
+   "examples": [
+    "Gravitational Correction, changing the targets of Null Drone, is never offered Null Drone as Null Drone's new target."
+   ],
+   "basis": "designer",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
    "num": "110.4",
    "key": "concepts.targets.ally",
    "title": null,
@@ -4397,6 +4420,31 @@
     "A spell whose target is about to become illegal is given a legal new target by Enigmatic Warder before it resolves, and then it does not fizzle."
    ],
    "basis": "designer",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "110.9c",
+   "key": "concepts.targets.change.onto-changer",
+   "title": null,
+   "section": "110",
+   "sectionTitle": "Targets",
+   "chapterTitle": "1. Game Concepts",
+   "parent": "110.9",
+   "text": "An effect that changes another effect's targets is still on the stack while it resolves, so it can be chosen as a new target when it is the kind of effect that target asks for. The other effect is then aimed at an effect that leaves the stack once the change has resolved, and it loses that target when it begins to resolve (rule 110.8).",
+   "see": [
+    "110.3f",
+    "703.6"
+   ],
+   "examples": [
+    "Gravitational Correction, changing the targets of a Null Drone aimed at Luminous Arc, can move the Drone's target onto the Gravitational Correction itself; the Drone then negates nothing and the Arc resolves.",
+    "Divine Intervention can do the same to a Null Drone."
+   ],
+   "basis": "owner",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -21260,8 +21308,10 @@
    "sectionTitle": "The Stack and Priority",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "703",
-   "text": "Once an effect has begun to resolve, no player can respond to it. It can no longer be targeted, negated or augmented.",
-   "see": [],
+   "text": "Once an effect has begun to resolve, no player can respond to it: no other effect can then be played to target it, negate it or augment it. It is still on the stack until it has resolved, so an effect that changes targets can choose itself as a new target while it resolves (rule 110.9c).",
+   "see": [
+    "110.9c"
+   ],
    "examples": [
     "while Premonition is resolving, the other player is offered nothing, it is not a legal target, and a negation or a Virus aimed at it is refused."
    ],

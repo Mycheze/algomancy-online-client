@@ -175,7 +175,8 @@ card('Divine Intervention', {
   spellEffect: {
     targets: {
       what: 'stackEffect', prompt: 'Divine Intervention: change the targets of target effect',
-      pickConfirm: noChangeConfirm('Divine Intervention', (g, item) => hasChangeableTarget(g, item)),   // CT-307
+      pickConfirm: noChangeConfirm('Divine Intervention',   // CT-307; CR 110.9c: itself counts
+        (g, item, _src, self) => hasChangeableTarget(g, item, undefined, self)),
     },
     run: (g, ctx) => {
       const t = ctx.targets[0];
