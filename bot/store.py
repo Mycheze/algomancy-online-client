@@ -109,7 +109,7 @@ def new_response_id():
 
 def log_response(response_id, kind, question, answer, hits, model,
                  *, user_id, channel_id, thread_id=None, history=None,
-                 engine_version=None, llm=None, error=None):
+                 reasoning=False, engine_version=None, llm=None, error=None):
     """Persist one AI answer with its full retrieval context for later training.
 
     `llm` is the dict core.answer_question(meta=...) filled. Its fields are
@@ -120,10 +120,6 @@ def log_response(response_id, kind, question, answer, hits, model,
     (then `requested_model` and `fallback` say so). Rows from before
     2026-10-11 simply lack the new keys.
 
-    `reasoning` (True when "math mode" thinking was on) was written on every
-    row until 2026-11-01, when thinking was removed; newer rows lack it, and a
-    reader treats a missing `reasoning` as false.
-
     `error` is set only by log_failure(); a successful row never has the key."""
     llm = llm or {}
     record = {
@@ -131,6 +127,7 @@ def log_response(response_id, kind, question, answer, hits, model,
         "ts": _now(),
         "kind": kind,                       # "ask" | "followup"
         "model": llm.get("model") or model,
+        "reasoning": reasoning,             # True if "math mode" thinking was on
         "engine_version": engine_version,   # which prompt+primer+corpus produced it
 
         "user_id": _who(user_id),
@@ -177,7 +174,7 @@ def log_failure(kind, question, error, model, *, llm=None, engine_version=None, 
     llm = llm or {}
     rid = new_response_id()
     log_response(rid, kind, question, "", llm.get("hits") or [], model,
-                 engine_version=engine_version,
+                 reasoning=llm.get("reasoning", False), engine_version=engine_version,
                  llm=llm, error=f"{type(error).__name__}: {error}", **where)
     return rid
 

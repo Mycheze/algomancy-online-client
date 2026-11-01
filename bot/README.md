@@ -45,7 +45,7 @@ python3 -m venv ../.venv && ../.venv/bin/pip install -r requirements.txt
 
 Both read the repo-root `.env`. Secrets never go on the command line, which
 would put them in `ps` for every user on the box. `--model <id>` overrides the
-model, which defaults to `deepseek-flash`. The Discord application needs
+model, which defaults to `deepseek-v4-flash`. The Discord application needs
 the Message Content Intent, and the bot must be invited with
 `scope=bot%20applications.commands`: with `scope=bot` alone the command sync
 returns 200 and no command appears anywhere.
@@ -84,7 +84,7 @@ hand; nothing runs it.
     and a floor that keeps the rulebook in every slate
   → the prompt: system prompt + the verified primer + prior turns with their
     citations stripped + the top passages, with the question LAST
-  → one DeepSeek call, with thinking always switched off
+  → one DeepSeek call, reasoning switched on by a router when the question looks like it needs it
   → the answer, with [source:tag] citations rendered as a Sources legend
   → var/logs/responses.jsonl: the answer, every retrieved chunk in full, the history,
     and an engine_version stamp naming the prompt, the corpus hash and the retrieval parameters
@@ -209,7 +209,7 @@ the feature not existing.
 Everything is in [`../.env.example`](../.env.example), with a comment per
 variable. The ones that matter: `LLM_API_KEY` and `DISCORD_TOKEN`;
 `LLM_MODEL` and `LLM_BASE_URL` (any OpenAI-compatible API; DeepSeek's
-`deepseek-flash` by default; every answer is sent with thinking off),
+`deepseek-flash` by default), `LLM_REASONING` (`auto` / `always` / `never`),
 `LLM_TIMEOUT` / `LLM_DEADLINE` (per attempt / whole answer, inside the game
 server's 60 s judge proxy) and the optional `LLM_FALLBACK_MODEL`. Every `LLM_*`
 name falls back to the `DEEPSEEK_*` name it replaced (`DEEPSEEK_API_KEY`,

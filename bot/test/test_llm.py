@@ -4,13 +4,10 @@ test_llm.py — the model call in core.py, offline, against a fake OpenAI client
 Run: `.venv/bin/python bot/test/test_llm.py`. No network, no key.
 
 What it pins, and why each one matters:
-- DeepSeek's thinking switch is sent explicitly OFF on every answer. Without
+- DeepSeek's thinking switch is sent explicitly OFF on the cheap path. Without
   it Flash reasons by default, spends the 900-token budget and answers empty.
-  There is no "math mode" any more (removed 2026-11-01): a stat-arithmetic
-  question goes out exactly like any other, and a leftover LLM_REASONING in
-  the environment changes nothing.
-- The provider table: OpenRouter's `reasoning.effort: none` shape, and the
-  generic entry sending nothing it cannot know.
+- The provider table: OpenRouter's `reasoning.effort` shape, and the generic
+  entry sending nothing it cannot know.
 - usage → tokens and cost on the logged row; cost is null for a model the price
   table does not know (never a guess); a provider-reported cost is believed.
 - The retry/fallback policy: at most two attempts, the fallback used ONCE in
@@ -103,22 +100,24 @@ core.LLM_MODEL, core.LLM_BASE_URL = "deepseek-flash", "https://api.deepseek.com"
 
 # ── the provider table ────────────────────────────────────────────────
 print("\n[the thinking switch, per provider]")
-off = core.request_params("https://api.deepseek.com")
-check("⭐ DeepSeek: thinking explicitly DISABLED",
+off = core.request_params("https://api.deepseek.com", reasoning=False)
+check("⭐ DeepSeek cheap path: thinking explicitly DISABLED",
       off.get("extra_body") == {"thinking": {"type": "disabled"}})
 check("…with temperature 0.2 and the 900-token budget",
-      off["temperature"] == 0.2 and off["max_tokens"] == 900 == core.MAX_TOKENS)
-check("…and no reasoning_effort anywhere",
-      "reasoning_effort" not in off and "reasoning_effort" not in str(off))
-check("no provider entry can switch thinking ON (math mode is gone)",
-      all(set(p) == {"hosts", "off"} for p in core.PROVIDERS.values()))
-check("…and nor can the env: no router knobs are left in core",
-      not any(hasattr(core, n) for n in ("REASONING_MODE", "REASONING_EFFORT",
-                                         "needs_reasoning", "_use_reasoning")))
-ro = core.request_params("https://openrouter.ai/api/v1")
+      off["temperature"] == 0.2 and off["max_tokens"] == 900)
+on = core.request_params("https://api.deepseek.com", reasoning=True, effort="high")
+check("DeepSeek math mode: thinking enabled, effort top-level, no temperature",
+      on["extra_body"] == {"thinking": {"type": "enabled"}}
+      and on["reasoning_effort"] == "high" and "temperature" not in on
+      and on["max_tokens"] == 4000)
+ro = core.request_params("https://openrouter.ai/api/v1", reasoning=False)
 check("OpenRouter off: reasoning.effort = none",
       ro["extra_body"] == {"reasoning": {"effort": "none"}})
-gen = core.request_params("http://127.0.0.1:11434/v1")
+rn = core.request_params("https://openrouter.ai/api/v1", reasoning=True, effort="low")
+check("OpenRouter on: effort + exclude, no temperature",
+      rn["extra_body"] == {"reasoning": {"effort": "low", "exclude": True}}
+      and "temperature" not in rn)
+gen = core.request_params("http://127.0.0.1:11434/v1", reasoning=False)
 check("an unknown host is generic and sends no thinking switch",
       core.provider_for("http://127.0.0.1:11434/v1") == "generic" and "extra_body" not in gen)
 os.environ["LLM_PROVIDER"] = "deepseek"
@@ -156,22 +155,13 @@ check("no usage at all → null", core.cost_usd("deepseek-flash", None) == (None
 # ── an answer, end to end into the log ────────────────────────────────
 print("\n[an answer's row carries latency, tokens and cost]")
 fake = Fake(resp(usage=DS_USAGE))
-(answer, hits), meta = ask(fake)
-check("the answer comes back as (answer, hits)", answer == "an answer" and hits)
+(answer, hits, reasoning), meta = ask(fake)
+check("the answer comes back as the same three-tuple", answer == "an answer" and hits)
 check("the call sent DeepSeek's thinking-off extras",
       fake.calls[0]["extra_body"] == {"thinking": {"type": "disabled"}}
-      and fake.calls[0]["model"] == "deepseek-flash" and fake.calls[0]["max_tokens"] == 900)
-# The question the old router would have sent with thinking ON (a stat block,
-# numbers, combat words), with the old knob set to "always" for good measure.
-os.environ["LLM_REASONING"] = "always"
-math = Fake(resp(usage=DS_USAGE))
-ask(math, q="A 3/3 with +2/+2 takes 4 damage from Fireball — how much damage is left over?")
-del os.environ["LLM_REASONING"]
-check("⭐ a stat-arithmetic question goes out with thinking OFF too",
-      math.calls[0]["extra_body"] == {"thinking": {"type": "disabled"}}
-      and math.calls[0]["max_tokens"] == 900 and "reasoning_effort" not in math.calls[0])
+      and fake.calls[0]["model"] == "deepseek-flash")
 store.log_response("rid-1", "ask", "what is affinity?", answer, hits, core.LLM_MODEL,
-                   user_id="t", channel_id="test",
+                   user_id="t", channel_id="test", reasoning=reasoning,
                    engine_version=core.ENGINE_VERSION, llm=meta)
 row = json.loads(responses_log().read_text().splitlines()[-1])
 check("usage on the row", row["usage"] == {"prompt": 10000, "cached": 8000,
@@ -182,10 +172,8 @@ check("latency (model call) and total, as integer ms",
       isinstance(row["latency_ms"], int) and isinstance(row["total_ms"], int)
       and row["total_ms"] >= row["latency_ms"])
 check("the old fields keep their names", all(k in row for k in (
-    "response_id", "ts", "kind", "model", "engine_version", "user_id",
+    "response_id", "ts", "kind", "model", "reasoning", "engine_version", "user_id",
     "channel_id", "thread_id", "question", "answer", "retrieved", "history")))
-check("`reasoning` is no longer written (old rows keep theirs; missing = false)",
-      "reasoning" not in row)
 check("model = the one that answered; no fallback; one attempt",
       row["model"] == "deepseek-flash" and row["fallback"] is None and len(row["attempts"]) == 1)
 store.log_response("rid-2", "ask", "q", "a", hits, "deepseek-flash", user_id="t",
@@ -195,7 +183,7 @@ check("a caller passing no meta writes the old shape exactly (no new keys)",
       "usage" not in row2 and "cost_usd" not in row2 and row2["model"] == "deepseek-flash")
 
 core.LLM_MODEL = "some-new-model"
-(_a, hits), meta = ask(Fake(resp(usage=DS_USAGE)))
+(_a, hits, _r), meta = ask(Fake(resp(usage=DS_USAGE)))
 check("⭐ an unknown model answers fine and logs cost null",
       meta["cost_usd"] is None and meta["cost_basis"] is None and meta["usage"]["prompt"] == 10000)
 core.LLM_MODEL = "deepseek-flash"
@@ -204,7 +192,7 @@ core.LLM_MODEL = "deepseek-flash"
 print("\n[retry and fallback]")
 primary = Fake(openai.APITimeoutError(request=_req()))
 backup = Fake(resp("from the fallback", usage=DS_USAGE))
-(answer, _h), meta = ask(primary, backup, "deepseek-v4-pro")
+(answer, _h, _r), meta = ask(primary, backup, "deepseek-v4-pro")
 check("⭐ the fallback fires once on a raised timeout",
       answer == "from the fallback" and len(primary.calls) == 1 and len(backup.calls) == 1)
 check("…logged as such: model, requested_model, fallback.reason",
@@ -220,7 +208,7 @@ core.MODEL_TIMEOUT = 0.2
 primary = Fake(("sleep", 5))
 backup = Fake(resp("rescued"))
 start = _time.monotonic()
-(answer, _h), meta = ask(primary, backup, "deepseek-v4-pro")
+(answer, _h, _r), meta = ask(primary, backup, "deepseek-v4-pro")
 check("⭐ a call that HANGS (blank-line keep-alive) is cut by the wall clock",
       answer == "rescued" and meta["fallback"]["reason"] == "timeout"
       and _time.monotonic() - start < 2)
@@ -228,14 +216,14 @@ core.MODEL_TIMEOUT = saved
 
 primary = Fake(openai.InternalServerError("boom", response=httpx.Response(503, request=_req()),
                                           body=None), resp("second try"))
-(answer, _h), meta = ask(primary)
+(answer, _h, _r), meta = ask(primary)
 check("no fallback configured: a 5xx is retried once on the same model",
       answer == "second try" and len(primary.calls) == 2 and meta["fallback"] is None
       and [a["kind"] for a in meta["attempts"]] == ["primary", "retry"]
       and meta["attempts"][0]["error"] == "http 503")
 
 primary = Fake(resp("", finish="length"), resp("filled"))
-(answer, _h), meta = ask(primary)
+(answer, _h, _r), meta = ask(primary)
 check("an empty answer is retried, and the reason recorded",
       answer == "filled" and meta["attempts"][0]["error"] == "empty (finish_reason=length)")
 
@@ -284,7 +272,7 @@ check("⭐ LLM_DEADLINE bounds the whole thing: no second attempt without time f
 core.MODEL_TIMEOUT, core.LLM_DEADLINE, core.MIN_ATTEMPT_S = saved
 
 check("the default budget fits the 60 s judge proxy: 2 × LLM_TIMEOUT ≤ LLM_DEADLINE < 60",
-      2 * 15 <= 55 < 60 and core.LLM_DEADLINE < 60)
+      2 * 25 <= 55 < 60 and core.LLM_DEADLINE < 60)
 
 # ── a failed answer is a row; the footer names who answered ───────────
 print("\n[failure rows and the footer]")
@@ -356,8 +344,8 @@ def probe(**env):
 default = probe()
 old = probe(DEEPSEEK_MODEL="deepseek-v4-flash", DEEPSEEK_TIMEOUT="60")
 new = probe(LLM_MODEL="deepseek-v4-pro", DEEPSEEK_MODEL="deepseek-v4-flash")
-check("default model deepseek-flash, 15 s per attempt",
-      default[0] == "deepseek-flash" and default[1] == 15.0)
+check("default model deepseek-flash, 25 s per attempt",
+      default[0] == "deepseek-flash" and default[1] == 25.0)
 check("⭐ a pre-2026-10-11 .env (DEEPSEEK_MODEL, DEEPSEEK_TIMEOUT) still configures it",
       old[0] == "deepseek-v4-flash" and old[1] == 60.0 and old[3] == "deepseek-v4-flash")
 check("LLM_MODEL beats DEEPSEEK_MODEL at import", new[0] == "deepseek-v4-pro")

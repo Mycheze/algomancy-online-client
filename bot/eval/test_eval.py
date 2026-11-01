@@ -170,12 +170,10 @@ class FakeModel:
 class FakeJudgeClient:
     def __init__(self):
         self.calls = 0
-        self.params = []
         self.chat = NS(completions=self)
 
     async def create(self, **p):
         self.calls += 1
-        self.params.append({k: v for k, v in p.items() if k != "messages"})
         user = p["messages"][-1]["content"]
         assert "BACKGROUND" in user and "PASSAGES" in user and "GOLD RECORD" in user
         return resp(json.dumps({"grade": "correct", "claims": [], "rationale": "fine"}))
@@ -189,7 +187,7 @@ core.init_client = lambda *a, **k: fake           # run.py builds the client thr
 os.environ["ALGO_EVAL_NO_DOTENV"] = "1"
 os.environ["EVAL_FAKE_KEY"] = "x"
 os.environ["EVAL_FAKE_JUDGE_KEY"] = "x"
-runner.make_judge = lambda args: runner.Judge(fj, "fake-judge", "https://api.deepseek.com",
+runner.make_judge = lambda args: runner.Judge(fj, "fake-judge", "https://judge.test", True,
                                               ev.JudgeCache(runner.eval_dir() / "judge-cache.jsonl"))
 out = scratch / "run.jsonl"
 argv = ["--gold", str(gold_path), "--corpus", str(corpus_path), "--out", str(out), "--api-key-env", "EVAL_FAKE_KEY",
@@ -200,15 +198,6 @@ head, items = ev.read_run(out)
 check("header names the run, the corpus and the surface", head["label"] == "fake"
       and head["corpus_chunks"] == len(FIXTURE) and head["surface"] == "web" and head["cr_notes"] is False)
 check("every item has a row", set(items) == {"t1", "t2", "t3"})
-check("no reasoning mode in the header or the rows (math mode removed 2026-11-01)",
-      "reasoning" not in head and "judge_reasoning" not in head
-      and not any("reasoning_used" in r for r in items.values()))
-check("every answer call: no reasoning_effort, the 900-token budget",
-      all("reasoning_effort" not in c and c["max_tokens"] == 900 for c in fake.calls))
-check("the judge's call: thinking OFF, temperature 0, 1500 tokens",
-      fj.params and all(p.get("extra_body") == {"thinking": {"type": "disabled"}}
-                        and p["temperature"] == 0.0 and p["max_tokens"] == 1500
-                        and "reasoning_effort" not in p for p in fj.params))
 check("answer, cost and latency recorded", items["t1"]["answer"].startswith("30")
       and items["t1"]["usage"]["prompt"] == 1000 and items["t1"]["total_ms"] is not None)
 check("cited tag resolves; unknown tag reported", items["t1"]["cited_unresolved"] == ["nope:1"]
@@ -261,13 +250,6 @@ check("retrieval-only makes no model call", len(fake.calls) == n_before and rec[
 md = report.run_table(out)
 check("report shows accuracy over graded items", "**100%** (2/2)" in md)
 check("report shows the category table", "| follow-up | 1 |" in md)
-check("a new run's report names no reasoning mode", "reasoning" not in md.split("| latency")[0])
-old_run = scratch / "old-math-mode.jsonl"
-old_run.write_text("\n".join([json.dumps({**head, "reasoning": "auto"})]
-                             + [json.dumps({**r, "reasoning_used": r["id"] == "t1"}) for r in items.values()]) + "\n")
-old_md = report.run_table(old_run)
-check("a pre-2026-11-01 run still reports its mode and math-mode count",
-      "reasoning auto, " in old_md and "| reasoning (math mode) used | 1 items |" in old_md)
 fake_b = scratch / "b.jsonl"
 rows = [json.dumps(head)] + [json.dumps({**r, "judge": {**r["judge"], "grade": "wrong"}} if r["id"] == "t1" else r)
                              for r in items.values()]

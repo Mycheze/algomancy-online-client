@@ -173,8 +173,8 @@ class AlgoBot(commands.Bot):
             async with message.channel.typing():
                 meta = {}
                 try:
-                    answer, hits = await answer_question(message.content, history,
-                                                         meta=meta, surface="discord")
+                    answer, hits, reasoning = await answer_question(message.content, history,
+                                                                    meta=meta, surface="discord")
                 except Exception as exc:
                     store.log_failure("followup", message.content, exc, core.LLM_MODEL,
                                       llm=meta, engine_version=core.ENGINE_VERSION,
@@ -187,10 +187,11 @@ class AlgoBot(commands.Bot):
             store.log_response(rid, "followup", message.content, answer, hits, core.LLM_MODEL,
                                user_id=message.author.id, channel_id=message.channel.parent_id,
                                thread_id=message.channel.id, history=list(history),
-                               engine_version=core.ENGINE_VERSION, llm=meta)
+                               reasoning=reasoning, engine_version=core.ENGINE_VERSION,
+                               llm=meta)
             history.append({"role": "user", "content": message.content})
             history.append({"role": "assistant", "content": answer})
-            await message.reply(embed=answer_embed(message.content, answer, hits,
+            await message.reply(embed=answer_embed(message.content, answer, hits, reasoning,
                                                    model=meta.get("model")),
                                 view=feedback_view(rid))
             await post_cited_cards(message.channel, answer, hits)

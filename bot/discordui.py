@@ -64,7 +64,7 @@ def cited_card_files(answer, hits, limit=10):
             for n, _title, p in cited_card_paths(answer, hits, limit=limit)]
 
 
-def answer_embed(question, answer, hits, model=None):
+def answer_embed(question, answer, hits, reasoning=False, model=None):
     """`model`: the model that ACTUALLY answered (answer_question's meta["model"]),
     which is the fallback's when LLM_FALLBACK_MODEL ran. Omitted, the footer
     names the configured model."""
@@ -86,7 +86,9 @@ def answer_embed(question, answer, hits, model=None):
         lines = [f"**{n}.** {_source_name(r)} · *{r['authority_label']}*"
                  for n, r in sources]
         e.add_field(name="Sources", value="\n".join(lines)[:1024], inline=False)
-    e.set_footer(text=f"Answered by {model or core.LLM_MODEL} · rate below to help train the model")
+    model = model or core.LLM_MODEL
+    mode = f"{model} · 🧠 thinking" if reasoning else model
+    e.set_footer(text=f"Answered by {mode} · rate below to help train the model")
     return e
 
 

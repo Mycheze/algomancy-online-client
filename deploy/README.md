@@ -134,16 +134,8 @@ A bot change: `sudo systemctl restart algomancy-web algomancy-bot`.
 `DEEPSEEK_TIMEOUT=60` (the old `.env.example` shipped it), delete the line
 before that restart. It still counts as `LLM_TIMEOUT`, now meaning seconds
 *per attempt*, so one attempt eats the whole 55 s `LLM_DEADLINE` and nothing is
-ever retried. The default (15 s, two attempts) is the one that fits inside the
+ever retried. The default (25 s, two attempts) is the one that fits inside the
 game server's 60 s judge proxy. Check with `grep -n TIMEOUT .env`.
-
-⚠ **Once, with the 2026-11-01 removal of "math mode":** delete any
-`LLM_REASONING`, `LLM_REASONING_EFFORT`, `DEEPSEEK_REASONING` or
-`DEEPSEEK_REASONING_EFFORT` line from `.env` (nothing reads them any more), and
-an `LLM_TIMEOUT=25` copied from the old `.env.example` (the default is now 15).
-While there, `DEEPSEEK_MODEL=deepseek-v4-flash` names a retired alias: change it
-to `deepseek-flash`, or delete it (that is the default). Check with
-`grep -nE 'REASONING|TIMEOUT|MODEL' .env`.
 
 ## Badges (who is who on the reports)
 

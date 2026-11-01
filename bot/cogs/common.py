@@ -4,9 +4,9 @@ cogs/common.py — the three things every slash command here needs to agree on.
 Kept in one module rather than decided eleven times, because each of them has
 a failure mode that only shows up in production:
 
-  1. DEFER. Discord gives a command THREE SECONDS to acknowledge. `/ask` takes
-     several seconds (more when the model is retried), a Pillow render takes
-     seconds, and the game server is a network hop. Past three seconds the interaction is dead
+  1. DEFER. Discord gives a command THREE SECONDS to acknowledge. `/ask` with
+     reasoning on takes thirty or more, a Pillow render takes seconds, and the
+     game server is a network hop. Past three seconds the interaction is dead
      and the user sees "The application did not respond" — permanently, with
      no way for the bot to correct it later.
 
