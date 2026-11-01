@@ -342,6 +342,11 @@ sh_all = (pack / f"shard-{key['items'][bid_all]['shard']}.md").read_text().split
 check("a quote-check failure is shown as a fact", "quote check failures" in sh_all and "made up words" in sh_all)
 check("the key keeps what report needs", key["items"][bid_all]["simulate_calls"] == 1
       and key["items"][bid_all]["quote_fail"] == 1 and key["items"][bid]["cost_usd"] is not None)
+_hp = {"tools": "off", "model": "m", "reasoning": "auto", "surface": "web"}
+check("config_of: a different system prompt is a different config (an A/B), the same prompt a repeat",
+      grade_pack.config_of({**_hp, "engine_version": "2026-11-01.paaaa1111.cx.ry"})
+      != grade_pack.config_of({**_hp, "engine_version": "2026-11-01.pbbbb2222.cx.ry"})
+      == grade_pack.config_of({**_hp, "engine_version": "2026-11-02.pbbbb2222.cz.ry.tq"}))
 g_t1 = {g["id"]: g for g in GOLD}["t1"]
 r_off = items["t1"]
 src = r_off["cited_sources"]

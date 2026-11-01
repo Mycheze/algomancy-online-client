@@ -247,9 +247,13 @@ def build(run_paths, name, shard_size=SHARD_SIZE, seed=1, gold_path=ev.GOLD, out
 
 
 def config_of(head: dict) -> str:
-    """What makes two runs the same configuration (repeats of it share this)."""
+    """What makes two runs the same configuration (repeats of it share this).
+    The prompt is part of it: two runs on different system prompts (the `.p`
+    hash in ENGINE_VERSION) are an A/B, not repeats of one config."""
+    psig = re.search(r"\.p([0-9a-f]+)", head.get("engine_version") or "")
     return (f"tools={head.get('tools') or 'off'} model={head.get('model')} "
-            f"reasoning={head.get('reasoning')} surface={head.get('surface') or 'web'}")
+            f"reasoning={head.get('reasoning')} surface={head.get('surface') or 'web'}"
+            + (f" prompt={psig.group(1)}" if psig else ""))
 
 
 def _corpus(head):
