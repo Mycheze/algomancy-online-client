@@ -92,8 +92,8 @@ def snapshot():
               "buffs end [source:glossary:regroup].")
     out["answer"] = ui.answer_embed(q, answer, hits2).to_dict()
     # explicit model= is the path the front-ends take (the model that answered)
-    out["answer:reasoning"] = ui.answer_embed(q, answer, hits2, reasoning=True,
-                                              model="deepseek-flash").to_dict()
+    # (until 2026-11-01 this one also carried the "math mode" thinking badge)
+    out["answer:model"] = ui.answer_embed(q, answer, hits2, model="deepseek-flash").to_dict()
     out["_corpus_rows"] = len(core.retriever.rows)   # non-vacuity: the corpus loaded
 
     # ── colour combos ──

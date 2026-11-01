@@ -320,7 +320,7 @@ check("the prompt says a note is a lead, not a source", "lead" in core.SYSTEM_PR
 
 core.retriever.search = lambda q, k=10, **kw: [(1.0, r6082)]
 meta = {}
-answer, hits, _r = asyncio.run(core.answer_question("q", [], meta=meta, surface="discord"))
+answer, hits = asyncio.run(core.answer_question("q", [], meta=meta, surface="discord"))
 check("answer_question records the surface and the note ids", meta["surface"] == "discord" and meta["cr_notes"] == ["c1", "c2"])
 store.log_response("rid-cr", "ask", "q", answer, hits, "m", user_id="t", channel_id="c", llm=meta)
 logged = json.loads(responses_log().read_text().splitlines()[-1])

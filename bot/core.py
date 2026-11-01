@@ -4,8 +4,8 @@ core.py — the shared Algomancy rules "brain".
 
 This is the framework-agnostic RAG core: retrieval (BM25 over the rules corpus),
 the verified rules primer, the system prompt, the model call (any OpenAI-compatible
-API; DeepSeek by default) with the "math mode" reasoning router, retry/fallback
-and per-call usage/cost measurement, and citation rendering. It knows nothing about Discord or
+API; DeepSeek by default, thinking always switched off), retry/fallback and
+per-call usage/cost measurement, and citation rendering. It knows nothing about Discord or
 HTTP — both `bot.py` (Discord) and `app.py` (web) import from here so there is a
 single brain behind every front-end.
 
@@ -71,12 +71,11 @@ MAX_HISTORY = 8       # how many prior turns to resend as conversation context
 # 10 slots + retriever's FOUNDATION_FLOOR keeps both on the table.
 TOP_K = 10             # chunks retrieved per question
 
-# "Math mode": stat/arithmetic questions (combat damage, buffs, Electric arcing,
-# Fireball-vs-Growth, regroup math) benefit from DeepSeek's thinking mode. We
-# auto-detect them and enable thinking only then, so the cost hits just the
-# questions that need it. LLM_REASONING: "auto" (detect) | "off" | "always".
-REASONING_MODE = _env("REASONING", "auto").lower()
-REASONING_EFFORT = _env("REASONING_EFFORT", "high")
+# No thinking, ever. Until 2026-11-01 a "math mode" router switched DeepSeek's
+# thinking on for questions that looked like stat arithmetic (LLM_REASONING
+# auto|off|always, LLM_REASONING_EFFORT); the owner removed it, and every answer
+# now goes out with thinking explicitly OFF (PROVIDERS below). A leftover
+# LLM_REASONING / DEEPSEEK_REASONING line in a .env is ignored.
 
 # --- time budget ----------------------------------------------------------
 # ⚠ THE GAME SERVER'S /api/judge PROXY GIVES UP AT 60 s (client/server/main.ts,
@@ -92,14 +91,16 @@ REASONING_EFFORT = _env("REASONING_EFFORT", "high")
 # own (max_retries=0), and core makes at most TWO attempts — the primary, then
 # either a retry of it or the fallback model — inside one LLM_DEADLINE.
 #
-# The numbers: a non-thinking answer is ~400 tokens at ~220 tok/s plus ~1 s
-# to first token on a ~10k-token prompt, so ~3 s; a "math mode" answer may
-# think through its whole 4000-token budget, ~20 s. LLM_TIMEOUT=25 s covers
-# that with headroom, and two of them (50 s) plus retrieval sit under a 55 s
-# deadline, which leaves the proxy ~5 s for the response to travel back.
+# The numbers: an answer is ~400 tokens at ~220 tok/s plus ~1 s to first token
+# on a ~10k-token prompt, so ~3 s; one that runs to its whole 900-token cap is
+# ~5 s. LLM_TIMEOUT=15 s is three times that worst case, so a slow-but-alive
+# provider still finishes while a stuck one is abandoned in time for the second
+# attempt. Two of them (30 s) plus retrieval sit well under the 55 s deadline,
+# which leaves the proxy ~5 s for the response to travel back. (Until
+# 2026-11-01 it was 25 s, sized for a thinking answer of up to 4000 tokens.)
 # The deadline wins over the per-attempt figure: a deploy that still sets
 # DEEPSEEK_TIMEOUT=60 gets one attempt clamped to 55 s and no retry.
-MODEL_TIMEOUT = float(_env("TIMEOUT", "25"))
+MODEL_TIMEOUT = float(_env("TIMEOUT", "15"))
 LLM_DEADLINE = float(os.getenv("LLM_DEADLINE") or "55")
 # An attempt is not started with less than this left: it could not finish.
 MIN_ATTEMPT_S = 3.0
@@ -443,43 +444,34 @@ def init_client(api_key, base_url=None, model=None):
 
 # --- providers: the request extras that differ between OpenAI-compatible APIs --
 # Keyed by base-URL host (LLM_PROVIDER forces one, for a proxy or a local box).
-# Each entry answers: what turns thinking OFF, what turns it ON at an effort,
-# and whether `temperature` is sent alongside reasoning.
+# Each entry answers one question: what request extras turn thinking OFF.
+# Every answer is sent with them; nothing here ever turns thinking on.
 #
 # ⚠ DEEPSEEK'S "off" IS NOT OPTIONAL. Flash is a hybrid model that thinks BY
 # DEFAULT (effort high, per the Thinking Mode guide). Not merely leaving
-# thinking unrequested but explicitly disabling it is what keeps the cheap path
+# thinking unrequested but explicitly disabling it is what keeps an answer
 # from spending its whole 900-token budget on hidden reasoning and returning
-# empty content (finish_reason=length). Thinking mode ignores temperature.
+# empty content (finish_reason=length).
 #
 # OpenRouter (openrouter.ai/docs, "Reasoning Tokens"): `reasoning.effort:
-# "none"` disables it; `{effort, exclude: true}` reasons without returning the
-# chain. A model flagged `mandatory` rejects "none" — choose another model.
+# "none"` disables it. A model flagged `mandatory` rejects "none" — choose
+# another model.
 #
-# Anything else gets the generic entry: nothing sent to switch thinking off
-# (there is no standard), top-level `reasoning_effort` to switch it on. A model
-# there that reasons by default shows up as empty answers in the log
-# (attempts[].error = "empty …") — give its host an entry here.
+# Anything else gets the generic entry: nothing sent (there is no standard
+# switch). A model there that reasons by default shows up as empty answers in
+# the log (attempts[].error = "empty …") — give its host an entry here.
 PROVIDERS = {
     "deepseek": {
         "hosts": ("api.deepseek.com",),
         "off": lambda: {"extra_body": {"thinking": {"type": "disabled"}}},
-        "on": lambda effort: {"reasoning_effort": effort,
-                              "extra_body": {"thinking": {"type": "enabled"}}},
-        "temperature_with_reasoning": False,
     },
     "openrouter": {
         "hosts": ("openrouter.ai",),
         "off": lambda: {"extra_body": {"reasoning": {"effort": "none"}}},
-        "on": lambda effort: {"extra_body": {"reasoning": {"effort": effort,
-                                                           "exclude": True}}},
-        "temperature_with_reasoning": False,
     },
     "generic": {
         "hosts": (),
         "off": lambda: {},
-        "on": lambda effort: {"reasoning_effort": effort},
-        "temperature_with_reasoning": False,
     },
 }
 
@@ -496,18 +488,15 @@ def provider_for(base_url):
     return "generic"
 
 
-def request_params(base_url, reasoning, effort=None):
-    """Token budget, temperature and the provider's thinking switch for one call."""
-    p = PROVIDERS[provider_for(base_url)]
-    if reasoning:
-        # Hidden reasoning tokens count against max_tokens, so the budget must
-        # cover the chain-of-thought AND the visible answer.
-        params = {"max_tokens": 4000, **p["on"](effort or REASONING_EFFORT)}
-        if p["temperature_with_reasoning"]:
-            params["temperature"] = 0.2
-    else:
-        params = {"max_tokens": 900, "temperature": 0.2, **p["off"]()}
-    return params
+# An answer is ~400 tokens; 900 is twice that with room for a long one, and
+# still bounds the ~5 s worst case the time budget above is sized from.
+MAX_TOKENS = 900
+
+
+def request_params(base_url):
+    """Token budget, temperature and the provider's thinking-OFF switch for one call."""
+    return {"max_tokens": MAX_TOKENS, "temperature": 0.2,
+            **PROVIDERS[provider_for(base_url)]["off"]()}
 
 
 # --- usage & cost -----------------------------------------------------------
@@ -580,8 +569,8 @@ class _Retryable(Exception):
     """An attempt failed in a way worth one more try (or the fallback)."""
 
 
-async def _attempt(client, model, base_url, messages, reasoning, timeout):
-    params = {"model": model, "messages": messages, **request_params(base_url, reasoning)}
+async def _attempt(client, model, base_url, messages, timeout):
+    params = {"model": model, "messages": messages, **request_params(base_url)}
     try:
         resp = await asyncio.wait_for(client.chat.completions.create(**params), timeout)
     except (asyncio.TimeoutError, openai.APITimeoutError):
@@ -598,7 +587,7 @@ async def _attempt(client, model, base_url, messages, reasoning, timeout):
     return answer, resp
 
 
-async def _complete(messages, reasoning, meta, start):
+async def _complete(messages, meta, start):
     """Up to two attempts inside LLM_DEADLINE (counted from `start`, a
     time.monotonic() taken before retrieval): the primary, then the fallback
     model if one is configured, else the primary once more. Fills `meta` with
@@ -615,7 +604,7 @@ async def _complete(messages, reasoning, meta, start):
             break
         t0 = time.monotonic()
         try:
-            answer, resp = await _attempt(client, model, base, messages, reasoning,
+            answer, resp = await _attempt(client, model, base, messages,
                                           min(MODEL_TIMEOUT, remaining))
         except _Retryable as exc:
             attempts.append({"kind": kind, "model": model, "error": str(exc),
@@ -732,45 +721,8 @@ def strip_citations(text):
     return re.sub(r"[ \t]{2,}", " ", _HIST_CITE_RE.sub("", text)).strip()
 
 
-# --- "math mode" detection ------------------------------------------------
-# Stat block like 1/1, +2/+2, 3/4 — the strongest signal a question is numeric.
-_STAT_RE = re.compile(r"[+\-]?\d+\s*/\s*[+\-]?\d+")
-_NUM_RE = re.compile(r"[+\-]?\d+")
-# Combat/arithmetic vocabulary; presence alongside numbers implies real math.
-_MATH_WORDS = {
-    "damage", "deal", "deals", "dealt", "take", "takes", "power", "toughness",
-    "life", "mana", "cost", "buff", "buffed", "debuff", "excess", "remaining",
-    "leftover", "overkill", "lethal", "survive", "survives", "kill", "kills",
-    "die", "dies", "arc", "arcs", "split", "divide", "spread", "heal", "prevent",
-    "fireball", "growth", "conjure", "electric", "trample", "regroup", "counter",
-}
-_QUANT_PHRASES = ("how much", "how many", "left over", "leftover", "add up",
-                  "end up with", "1/0", "at regroup")
-
-
-def needs_reasoning(question):
-    """Heuristic: does this look like a numeric/combat-math question worth
-    enabling DeepSeek thinking for? Conservative — a false positive just spends
-    a little more on an easy question; a false negative falls back to normal."""
-    ql = question.lower()
-    if _STAT_RE.search(ql):                       # explicit stat/buff block
-        return True
-    nums = len(_NUM_RE.findall(ql))
-    signals = sum(bool(re.search(rf"\b{w}\b", ql)) for w in _MATH_WORDS)
-    signals += sum(p in ql for p in _QUANT_PHRASES)
-    return (nums >= 1 and signals >= 2) or (nums >= 2 and signals >= 1)
-
-
-def _use_reasoning(question):
-    if REASONING_MODE == "always":
-        return True
-    if REASONING_MODE in ("off", "never"):     # .env.example says "never"
-        return False
-    return needs_reasoning(question)
-
-
 async def answer_question(question, history, context=None, meta=None, surface="web"):
-    """Retrieve, call the model, return (answer_text, hits, reasoning_used).
+    """Retrieve, call the model, return (answer_text, hits).
 
     `surface` ("web" | "discord"): where the answer is read — the game server's
     judge box and the bot's web page are "web", every Discord path "discord". It
@@ -781,8 +733,9 @@ async def answer_question(question, history, context=None, meta=None, surface="w
 
     `meta`: pass a dict and it comes back filled with what store.log_response
     takes as `llm=` — the model that actually answered, latency, usage, cost,
-    whether the fallback was used. A dict and not a fourth return value, so the
-    three-tuple every caller unpacks is unchanged."""
+    whether the fallback was used. (Until 2026-11-01 the return was a
+    three-tuple whose last item said whether "math mode" thinking ran; there is
+    no thinking any more, so there is nothing to return.)"""
     if ai is None:
         raise RuntimeError("model client not initialised — call core.init_client() first")
     start = time.monotonic()
@@ -820,17 +773,16 @@ async def answer_question(question, history, context=None, meta=None, surface="w
                     f"{lesson_block(context)}"
                     f"Current question: {question}"),
     })
-    reasoning = _use_reasoning(question)
     # For store.log_failure: a failed answer still records what it retrieved.
-    # (log_response copies only its named keys out of meta, so these two never
-    # reach a successful row twice.)
-    meta["hits"], meta["reasoning"] = hits, reasoning
-    # The thinking switch, token budget and temperature per provider live in
+    # (log_response copies only its named keys out of meta, so this never
+    # reaches a successful row twice.)
+    meta["hits"] = hits
+    # The thinking-off switch, token budget and temperature per provider live in
     # PROVIDERS / request_params(); the retry, fallback and deadline in _complete().
     # A blank answer is never returned silently: it is retried, then raised.
-    answer = await _complete(messages, reasoning, meta, start)
+    answer = await _complete(messages, meta, start)
     meta["total_ms"] = round((time.monotonic() - start) * 1000)
-    return answer, hits, reasoning
+    return answer, hits
 
 
 # --- citation rendering --------------------------------------------------

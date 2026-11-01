@@ -215,9 +215,9 @@ async def api_ask(req: AskRequest):
     history = [{"role": t.role, "content": t.content} for t in req.history]
     meta = {}
     try:
-        answer, hits, reasoning = await core.answer_question(question, history,
-                                                             context=req.context, meta=meta,
-                                                             surface=req.surface)
+        answer, hits = await core.answer_question(question, history,
+                                                  context=req.context, meta=meta,
+                                                  surface=req.surface)
     except Exception as exc:  # surface API/auth errors instead of a silent 500
         store.log_failure("lesson" if req.context else "followup" if history else "ask",
                           question, exc, core.LLM_MODEL, llm=meta,
@@ -233,7 +233,7 @@ async def api_ask(req: AskRequest):
     store.log_response(
         rid, "lesson" if req.context else "followup" if history else "ask", question, answer, hits,
         core.LLM_MODEL, user_id=req.session_id or "web", channel_id="web",
-        history=history, reasoning=reasoning, engine_version=core.ENGINE_VERSION, llm=meta)
+        history=history, engine_version=core.ENGINE_VERSION, llm=meta)
 
     return {
         # Markdown with citation superscripts, icon tokens ([Switch1], [Augment], …)
@@ -244,7 +244,6 @@ async def api_ask(req: AskRequest):
         "answer": display,
         "sources": _sources_payload(sources),
         "cited_cards": cited_cards,
-        "reasoning": reasoning,
         "model": meta.get("model") or core.LLM_MODEL,
     }
 
