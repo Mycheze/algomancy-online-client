@@ -73,7 +73,8 @@ const NO_HOOKS: MatchHooks = {
   dealt: () => {}, lobby: () => {}, moved: () => {}, concede: () => {}, ended: () => {},
 };
 let hooks: MatchHooks = NO_HOOKS;
-export function setMatchHooks(h: Partial<MatchHooks>): void { hooks = { ...NO_HOOKS, ...h }; }
+/** set some hooks, keeping the others (W4 adds `ended` beside main.ts's) */
+export function setMatchHooks(h: Partial<MatchHooks>): void { hooks = { ...hooks, ...h }; }
 
 /**
  * W4's hook (docs/22 §2.5, §6.2): is this match's LEAGUE week over? A league

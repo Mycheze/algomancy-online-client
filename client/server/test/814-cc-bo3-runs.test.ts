@@ -11,6 +11,8 @@
  *   §4 game 3 starts from game 2's configuration (§8 answer 3) and the match
  *      ends 2-1 with a result; a decided match creates no further room
  *   §5 a Bo1 is over after one game
+ *   §6 Risk 4 — a game decided just before a crash, whose match never moved
+ *      on, is moved on by the boot reconcile; running it twice changes nothing
  *
  * Seeds: rooms take random seeds; nothing here depends on a deal.
  */
@@ -95,4 +97,17 @@ test('§5 a Bo1 is over after one game', () => {
   assert.equal(m.result?.winner, 0);
   assert.equal(m.games.length, 1);
   assert.equal(m.room, room.code, 'no second room');
+});
+
+test('§6 a game decided before a crash is moved on at boot, once', () => {
+  const { room, m } = F.start(3);
+  // the crash: the game's end reached the room file, never the match
+  R.applyToRoom(room, { type: 'concede', seat: 1 });
+  assert.equal(m.phase, 'game', 'fixture: the match did not hear of it');
+  M.reconcileMatches();
+  assert.equal(m.phase, 'between', 'the boot reconcile finished the job');
+  const next = m.room;
+  M.reconcileMatches();
+  assert.equal(m.room, next, 'and a second boot makes no second room');
+  assert.equal(m.games.length, 1);
 });
