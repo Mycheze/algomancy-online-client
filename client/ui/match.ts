@@ -438,7 +438,8 @@ export function matchResultHtml(m: MatchSummary, seat: Seat, names: [string, str
   const r = m.result;
   if (!r) return '';
   const won = r.winner === seat;
-  const score = `${m.score[seat]}–${m.score[other(seat)]}`;
+  // the winner's games first, as a result is read out
+  const score = `${m.score[r.winner]}–${m.score[other(r.winner)]}`;
   const how = r.how === 'conceded'
     ? (r.concededBy === seat ? 'You conceded.' : `${esc(names[r.concededBy ?? other(seat)] ?? 'Your opponent')} conceded.`)
     : r.how === 'time' ? (won ? `${esc(names[other(seat)] ?? 'Your opponent')} ran out of time.` : 'You ran out of time.') : '';

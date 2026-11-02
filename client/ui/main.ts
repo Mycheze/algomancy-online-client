@@ -750,7 +750,7 @@ class NetBackend implements Backend {
     if (m.waiting?.match) { this.cc = true; mt.onLobby(m.waiting.match); }
     if (m.t === 'match') {
       if (postGame) postGame = { ...postGame, ...(m.match ? { match: m.match } : {}) };
-      else if (this.waiting && !m.room && m.match) this.matchEnded = m.match;
+      if (this.waiting && !m.room && m.match) this.matchEnded = m.match;
       render();
       return;
     }
