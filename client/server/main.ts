@@ -1820,13 +1820,15 @@ function waitingInfo(room: Room, seat: Seat): {
   const lobby = roomLobby(room);
   const count = roomElementCount(room);
   const blurbs = methodBlurbs(count);
+  // only a match room asks the match store: every other room's lobby stands alone
+  const mi = room.match ? matchLobbyInfo(room, seat) : undefined;
   return {
     have: [!!room.decks[0], !!room.decks[1]],
     clockStart: room.clockStart,
     // a constructed league room: the waiting room says so, and has no code to share
     ...(room.league && room.mode === 'constructed' ? { league: true as const } : {}),
     // docs/22 §5.3: a CC match room — this seat's own deck, never the other's
-    ...((): object => { const mi = matchLobbyInfo(room, seat); return mi ? { match: mi } : {}; })(),
+    ...(mi ? { match: mi } : {}),
     // CR D8.2b: the waiting room asks for a CARD, not a deck. Blind: `have` says
     // that the opponent's card is in, never which — you find out on the table.
     ...(room.single ? { single: true } : {}),
