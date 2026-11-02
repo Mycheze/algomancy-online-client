@@ -52,8 +52,7 @@ const ROOM_DEALERS = ['server/rooms.ts', 'server/scenarios.ts', 'server/stats.ts
   'server/replay-room.ts', 'server/replay-probe.ts', 'ui/replayserver.ts'];
 /** room-file dealers not yet threaded, and whose job it is (docs/22 §7) */
 const PENDING: Record<string, string> = {
-  'server/stats.ts': 'W4', 'server/cardledger.ts': 'W4', 'server/replay-room.ts': 'W4',
-  'server/replay-probe.ts': 'W4', 'ui/replayserver.ts': 'W6',
+  'ui/replayserver.ts': 'W6',
 };
 /** files that deal, but never a CC room — and why */
 const NEVER_CC: Record<string, string> = {

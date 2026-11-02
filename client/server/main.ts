@@ -101,7 +101,8 @@ import { leagueRoutes } from './api-league.ts';
 import { challengeRoutes } from './api-challenge.ts';
 import { sweepChallenges } from './challenge-store.ts';
 import { challengeNow } from './challenges.ts';
-import { recordPlayed as leagueRecordPlayed, tick as leagueTick } from './league-store.ts';
+import { recordPlayed as leagueRecordPlayed, roomModeOf, tick as leagueTick, type LeagueFormat } from './league-store.ts';
+import { installLeagueMatchHooks, openLeagueMatch } from './league-match.ts';
 import { emit, since as eventsSince, BOOT_ID } from './hooks.ts';
 import { CODE_ALPHABET } from './link.ts';
 import { deckForPlay } from './collection.ts';
@@ -2133,6 +2134,10 @@ setMatchHooks({
   },
   concede: (room, seat) => landAction(room, seat, { type: 'concede', seat }),
 });
+// docs/22 §2.6/§6.2 (W4): a decided match reports to the league once and
+// re-folds the ratings (`ended`); a league week's close voids a league match
+// waiting between games or paused
+installLeagueMatchHooks();
 
 /** Push the current rematch state to both seats. */
 function broadcastRematch(room: Room): void {
@@ -3459,8 +3464,13 @@ function openLeagueRoom(req: {
   existing: string | null;
   a: { userId: string; username: string };
   b: { userId: string; username: string };
-  season: string; match: string; rated: boolean; mode: 'draft' | 'constructed';
-}): { code: string; users: [string | null, string | null] } {
+  season: string; match: string; rated: boolean; mode: LeagueFormat;
+}): { code: string; users: [string | null, string | null]; match?: string } {
+  // docs/22 §6.2: a Competitive season's match is a CC MATCH — Play opens its
+  // current room (league-match.ts), and the league remembers the match id
+  if (req.mode === 'competitive') {
+    return openLeagueMatch(req, () => { const c = freshRoomCode(); reserveRoomCode(c); return c; });
+  }
   const old = req.existing ? getRoom(req.existing) : undefined;
   if (old && old.league?.match === req.match && !old.closed && old.winner === null && decidedWinner(old) === null) {
     return { code: old.code, users: [...old.users] };
@@ -3469,7 +3479,7 @@ function openLeagueRoom(req: {
   const [first, second] = Math.random() < 0.5 ? [req.a, req.b] : [req.b, req.a];
   const code = freshRoomCode();
   reserveRoomCode(code);
-  const room = createLeagueRoom(first, second, code, { season: req.season, match: req.match }, req.rated, req.mode);
+  const room = createLeagueRoom(first, second, code, { season: req.season, match: req.match }, req.rated, roomModeOf(req.mode));
   console.log(`[league] ${room.code}: ${first.username} vs ${second.username} for ${req.match} (${req.mode})${req.rated ? ' (rated)' : ''}`);
   return { code: room.code, users: [...room.users] };
 }

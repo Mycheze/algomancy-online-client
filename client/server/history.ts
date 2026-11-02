@@ -19,8 +19,9 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  gameHistory, rebuildProfiles, saveAccounts, stashHistory, type RecordedGame,
+  gameHistory, rebuildProfiles, saveAccounts, stashHistory, type RecordedGame, type RecordedMatchTag,
 } from './accounts.ts';
+import { getMatch, sanitizeMatchLink } from './match-store.ts';
 import { MIN_GAME_ACTIONS, summarizeGame, type GameRecord } from './stats.ts';
 import { concessionWeight, sanitizeConcession, type Concession } from './concession.ts';
 import { singleCardsOf } from './cardladder.ts';
@@ -37,6 +38,16 @@ function disputedSeatsOf(raw: unknown): Seat[] | undefined {
     if (seat === 0 || seat === 1) seats.add(seat);
   }
   return [...seats].sort();
+}
+
+/** docs/22 §2.6: a saved `match` link as a history tag. The room file says
+ * which match and which game; how many games the match is out of is the match
+ * record's (match-store.ts) — and a game 2 or 3 exists only in a best of three. */
+export function matchTagOf(raw: unknown): RecordedMatchTag | undefined {
+  const link = sanitizeMatchLink(raw);
+  if (!link) return undefined;
+  const bestOf = getMatch(link.id)?.bestOf ?? (link.game > 1 ? 3 : undefined);
+  return { id: link.id, game: link.game, ...(bestOf ? { bestOf } : {}) };
 }
 
 /** The saved-room fields we care about, beyond what stats.ts already reads. */
@@ -61,6 +72,9 @@ interface SavedRoom extends GameRecord {
   amendments?: unknown[];
   /** BL-48: who disputed the result (rooms.ts) — only the seats are read, as the tag */
   disputes?: unknown[];
+  /** docs/22 §2.3: a Competitive Constructed game's link to its match (rooms.ts
+   * `Room.match`). The CC `rules` ride on GameRecord, where the summary deals them. */
+  match?: unknown;
   // `winner`, the result stamped at the time, comes from GameRecord — it is
   // what keeps an old game's outcome readable after the rules have moved
 }
@@ -164,6 +178,14 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
       const seats = disputedSeatsOf(raw.disputes) ?? previous?.disputed;
       return seats?.length ? { disputed: seats } : {};
     })(),
+    // docs/22 §2.6: a game of a Competitive match is recorded like any game —
+    // card stats, the profile, achievements and the deck record all count it —
+    // and TAGGED with its match, so the history says "Game 2 of 3" and the
+    // rating fold leaves it to the match's one result (rating.ts isRated)
+    ...((): { match?: RecordedMatchTag } => {
+      const tag = matchTagOf(raw.match) ?? previous?.match;
+      return tag ? { match: tag } : {};
+    })(),
   };
   const isNew = stashHistory(game);
   return { code, game, isNew };
@@ -198,6 +220,9 @@ export function recordLiveGame(room: {
   amendments?: unknown[];
   /** BL-48: the disputes, for the "disputed" tag */
   disputes?: unknown[];
+  /** docs/22 §2.3: a CC game's rules (the summary deals them) and its match link */
+  rules?: unknown;
+  match?: unknown;
 }): ImportedRow {
   const row = importGame(
     {
@@ -227,6 +252,10 @@ export function recordLiveGame(room: {
       ...(room.amendments?.length ? { amendments: room.amendments } : {}),
       // BL-48: and the disputes, in case one lands before the record does
       ...(room.disputes?.length ? { disputes: room.disputes } : {}),
+      // docs/22: a CC game is summarized from the deal it was played with, and
+      // tagged with its match — exactly what its file would say on a re-import
+      ...(room.rules ? { rules: room.rules } : {}),
+      ...(room.match ? { match: room.match } : {}),
     } as SavedRoom,
     room.code,
     new Date().toISOString(),

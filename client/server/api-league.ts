@@ -41,10 +41,10 @@ export interface LeagueCtx {
     a: { userId: string; username: string };
     b: { userId: string; username: string };
     season: string; match: string; rated: boolean;
-    /** the season's format: a live draft lobby, or a constructed room where
-     * each player picks a deck for this game */
+    /** the season's format: a live draft lobby, a constructed room where
+     * each player picks a deck for this game, or (competitive) a CC match */
     mode: LeagueFormat;
-  }) => { code: string; users: [string | null, string | null] };
+  }) => { code: string; users: [string | null, string | null]; match?: string };
   now?: () => number;
 }
 
@@ -127,7 +127,7 @@ export async function leagueRoutes(
     if (!ctx.openRoom) { json(res, { ok: false, error: 'league games are not open on this server' }); return true; }
     const m = r.match;
     const player = (id: string) => ({ userId: id, username: accountById(id)?.username ?? 'someone' });
-    let opened: { code: string; users: [string | null, string | null] };
+    let opened: { code: string; users: [string | null, string | null]; match?: string };
     try {
       opened = ctx.openRoom({
         existing: m.room ?? null, a: player(m.a), b: player(m.b), season: s.id, match: m.id,
@@ -141,7 +141,9 @@ export async function leagueRoutes(
       json(res, { ok: false, error: 'could not open the room — try again' });
       return true;
     }
-    matchOpened(s, m, me, opened.code, now);
+    // docs/22 §6.2: a Competitive league match remembers its CC MATCH, whose
+    // current room the next Play opens — never game 1's room code
+    matchOpened(s, m, me, opened.match ?? opened.code, now);
     json(res, { ok: true, room: opened.code, seat: opened.users.indexOf(me.id), mode: formatOf(s) });
     return true;
   }
