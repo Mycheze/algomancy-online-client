@@ -48,6 +48,10 @@ export interface BinderHost {
   add(name: string): void;
   /** one copy onto the Maybe pile */
   toMaybe?(name: string): void;
+  /** copies in the sideboard — absent = the host has none (the challenge) */
+  side?(name: string): number;
+  /** one copy onto the Sideboard pile (docs/22 §4.5) — the host may refuse it */
+  toSide?(name: string): void;
   /** the full card browser, with this query (or a card's "find similar") */
   fullBrowser(query: string): void;
 }
@@ -84,11 +88,12 @@ function results(): { names: string[]; total: number } {
   return { names: hits.slice(0, shown), total: hits.length };
 }
 
-/** the ×n a tile and the pinned card carry: copies in the deck, red over the cap */
+/** the ×n a tile and the pinned card carry: copies in the deck, red over the
+ * cap — which counts the sideboard's copies too */
 function badge(name: string): string {
   const n = host!.copies(name);
   if (!n) return '';
-  const over = host!.cap !== undefined && n > host!.cap;
+  const over = host!.cap !== undefined && n + (host!.side?.(name) ?? 0) > host!.cap;
   return `<span class="dkn ${over ? 'bad' : 'ddin'}">×${n}</span>`;
 }
 
@@ -102,6 +107,7 @@ function tileHtml(name: string): string {
     <span class="dkbtns">
       <button data-dd="add" data-card="${esc(name)}" aria-label="add a copy">+</button>
       ${h.toMaybe ? `<button data-dd="maybe" data-card="${esc(name)}" aria-label="to Maybe">»</button>` : ''}
+      ${h.toSide ? `<button data-dd="side" data-card="${esc(name)}" aria-label="to the sideboard">SB</button>` : ''}
     </span>
   </div>`;
 }
@@ -123,13 +129,16 @@ function pinHtml(): string {
   const h = host!;
   if (!pinned) return '';
   const n = h.copies(pinned);
+  const s = h.side?.(pinned) ?? 0;
   return `<div class="ddpinbox">
     ${scanHtml(pinned, 'ddpinart')}
     <div class="ddpinside">
       <b>${esc(pinned)}</b>
       ${n ? `<span class="dim">${n} in the deck</span>` : ''}
+      ${s ? `<span class="dim">${s} in the sideboard</span>` : ''}
       <button class="primary" data-dd="add" data-card="${esc(pinned)}">+ Add</button>
       ${h.toMaybe ? `<button data-dd="maybe" data-card="${esc(pinned)}">» Maybe</button>` : ''}
+      ${h.toSide ? `<button data-dd="side" data-card="${esc(pinned)}">+ Sideboard</button>` : ''}
       <button data-dd="similar" data-card="${esc(pinned)}">Find similar</button>
       <button class="dkicon" data-dd="unpin" aria-label="close">✕</button>
     </div>
@@ -255,6 +264,7 @@ function onButton(what: string, el: HTMLElement): void {
     case 'half': full = false; paint(); return;
     case 'add': if (card) h.add(card); return;
     case 'maybe': if (card) h.toMaybe?.(card); return;
+    case 'side': if (card) h.toSide?.(card); return;
     case 'pin': pinned = pinned === card ? null : card; paint(); return;
     case 'unpin': pinned = null; paint(); return;
     case 'similar': if (card) h.fullBrowser(similarQuery(card)); return;

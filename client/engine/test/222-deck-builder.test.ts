@@ -244,7 +244,9 @@ test('§5a the cap withholds the plus everywhere, and greys only where you are s
   // asking, and in the deck it colours a whole deck of two-ofs grey for no
   // reason. Measured: 15 of 15 tiles.
   assert.ok(tileFn.length > 100, 'tile() moved — this test needs updating');
-  assert.match(tileFn, /const atCap = where !== 'maybe' && n >= 2;/,
+  // since docs/22 §4.5 the two copies are counted over the deck AND the
+  // sideboard (`total`, which is `n` on a deck with no sideboard)
+  assert.match(tileFn, /const atCap = where !== 'maybe' && total >= 2;/,
     'the cap itself is unchanged: two copies, anywhere you can add one');
   const grey = /const (\w+) = atCap && where === 'add';/.exec(tileFn);
   assert.ok(grey, 'the greying must be a SEPARATE flag, true only in the add drawer');
