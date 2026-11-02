@@ -1,7 +1,92 @@
 /* Algomancy prototype client — spreadsheet-simulator chic */
+/* THE DESIGN TOKENS. CANONICAL; edit by hand.
+ *
+ * Named by ROLE, not by look: --color-surface, not --grey-2. Every value is
+ * the one the client ALREADY used most (the census:
+ * client/docs/23-ui-inventory/07-design-foundations.md §11), so putting the
+ * tokens in changed nothing on screen; the near-misses that would move
+ * when snapped onto them are a list the owner approves first (design-system
+ * plan, client/docs/23-design-system.md, Phase 1).
+ *
+ * ui/scripts/tokenize-styles.mjs wrote this file once (Phase 1b, 2026-11) and
+ * replaced, in base.css, pages/ and shared/, every literal that is EXACTLY a
+ * --color-*, --text-*, --space-*, --radius-* or --shadow-* value below with
+ * its var(). It reads its map from HERE, so a token added here is one the
+ * next run can use. The game board (board/) is out of scope.
+ *
+ * ⚠ A token is defined here, on :root, and NOWHERE ELSE. Redefining one in a
+ * scope (as .crdoc does with --accent) makes every var() under that scope
+ * paint something else — that is a theme, and it is a decision, not a fix.
+ *
+ * The legacy names (--bg, --panel, --accent, …) still work: those with a role
+ * here are aliases of it; the game's own (elements, inks, printed bars,
+ * --target, --pending, --glow, the board's --cw/--gap/--ringpad) are as they
+ * were. New CSS uses the role names. */
 :root {
-  --bg: #12151a; --panel: #1a1f27; --panel2: #20262f; --line: #2e3742;
-  --text: #d6dde6; --dim: #8794a3; --accent: #d9a441; --danger: #d95454;
+  /* ── colour: the neutrals ── */
+  --color-bg: #12151a;               /* the page */
+  --color-surface-sunken: #0d1014;   /* below the page: wells, inputs (legal.ts's footer today) */
+  --color-surface: #1a1f27;          /* a panel */
+  --color-surface-raised: #20262f;   /* a panel on a panel; the base button */
+  --color-surface-overlay: rgba(20, 24, 30, .9);  /* a translucent floating panel */
+  --color-scrim: rgba(6, 8, 11, .72);             /* the dimmer behind a dialog */
+  --color-border: #2e3742;
+  --color-border-strong: #3b4654;    /* the slate borders (eleven near-copies today) */
+  --color-text: #d6dde6;
+  --color-text-muted: #8794a3;
+  --color-text-on-accent: #12151a;   /* dark ink on a gold or pale fill (the accent, Light's cream) */
+  --color-text-on-fill: #ffffff;     /* ink on a saturated or dark fill: element chips, red badges, captions */
+  /* ── colour: brand and interaction ── */
+  --color-accent: #d9a441;           /* gold: the brand, the page's main action, "on" */
+  --color-link: #7fc0ff;
+  --color-confirm: #3c5a2f;          /* green: button.primary, "confirm" at the table */
+  --color-confirm-border: #5b8747;
+  --color-confirm-hover: #476b37;
+  /* ── colour: status, each with a tinted background ── */
+  --color-success: #6fc36f;          /* the same green as the board's --glow, deliberately not tied to it */
+  --color-success-bg: #1d2b1a;
+  --color-warning: #e8b64c;          /* what the phantom var(--warn, #e8b64c) has been painting */
+  --color-warning-bg: #33270f;
+  --color-danger: #d95454;
+  --color-danger-bg: #2b1a1a;
+  --color-info: #7fb6e0;             /* the rules page's blue */
+  --color-info-bg: #1d3142;
+
+  /* ── type ── */
+  --font-ui: system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
+  /* the printed title face: EB Garamond Bold (ui/fonts/, SIL OFL — OFL.txt
+     beside it), the nearest free cut to the scans' serif */
+  --font-display: 'Card Title', 'EB Garamond', Garamond, 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  /* the scale: seven steps, each the most used size of its band (the body is 13) */
+  --text-11: 11px; --text-12: 12px; --text-13: 13px; --text-14: 14px;
+  --text-16: 16px; --text-22: 22px; --text-26: 26px;
+
+  /* ── space, radius, elevation ── */
+  --space-1: 2px; --space-2: 4px; --space-3: 6px; --space-4: 8px; --space-5: 12px;
+  --space-6: 16px; --space-7: 24px; --space-8: 32px; --space-9: 48px;
+  --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px; --radius-pill: 999px;
+  --shadow-1: 0 3px 10px rgba(0, 0, 0, .7);    /* chips, toasts */
+  --shadow-2: 0 6px 24px rgba(0, 0, 0, .55);   /* menus, popovers */
+  --shadow-3: 0 14px 40px rgba(0, 0, 0, .75);  /* dialogs, the card zoom */
+
+  /* ── layers (today's values; several roles still share one — see the census §6) ── */
+  --z-sticky: 30; --z-dock: 55; --z-overlay: 60; --z-menu: 70;
+  --z-popover: 90; --z-toast: 90; --z-modal: 95; --z-drag: 95;
+
+  /* ── motion ── */
+  --dur-fast: .12s; --dur-base: .18s; --dur-slow: .45s;
+  --ease-out: ease-out; --ease-in-out: ease-in-out;
+  --ease-std: cubic-bezier(.35, .05, .2, 1);   /* anim.ts's FLIP and flights */
+
+  /* ── the legacy names. Aliases where a role above is the same thing ── */
+  --bg: var(--color-bg); --panel: var(--color-surface); --panel2: var(--color-surface-raised);
+  --line: var(--color-border); --text: var(--color-text); --dim: var(--color-text-muted);
+  --accent: var(--color-accent); --danger: var(--color-danger);
+  --card-title: var(--font-display);
+  /* …and the game's own, as they were: --glow (green = legal / next) and
+     --target (gold = targeting) are table roles, not --color-success and
+     --color-accent, even where the values agree. */
   --glow: #6fc36f; --target: #e0b93c;
   /* CR D6.12 "in progress": purple already means resolved, red means answered,
      green means next and gold means targeting — so pending gets the one hue
@@ -23,9 +108,6 @@
      bar, and prints black ink. */
   --bar-fire: #821210; --bar-water: #1e3463; --bar-earth: #824a11; --bar-wood: #2f581e;
   --bar-metal: #565656; --bar-light: #fafafa; --bar-dark: #1a1a1a;
-  /* the printed title face: EB Garamond Bold (ui/fonts/, SIL OFL — OFL.txt
-     beside it), the nearest free cut to the scans' serif */
-  --card-title: 'Card Title', 'EB Garamond', Garamond, 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
   --cw: 78px; /* card thumb width; jpgs are ~63:88 */
   /* board round 8 (owner, 2026-10-27): the game screen's gaps between boxes —
      1–2px, where they were 6–10. ui/layout.ts and ui/fit.ts mirror them. */

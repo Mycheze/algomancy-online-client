@@ -12,7 +12,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readStyles } from './read-styles.ts';
+import { readStyles, resolveTokens } from './read-styles.ts';
 
 const css = readStyles().replace(/\/\*[\s\S]*?\*\//g, '');
 const fonts = [...css.matchAll(/(?<![\w-])font\s*:\s*([^;}]+)/g)].map(m => m[1]!.trim());
@@ -27,7 +27,9 @@ test('a CSS-wide keyword in a font shorthand stands alone', () => {
 });
 
 test('the four rules that had it say what they meant', () => {
-  const body = (sel: string): string => css.match(new RegExp(`(?:^|\\})\\s*${sel.replace(/\./g, '\\.')}\\s*\\{([^}]*)\\}`))?.[1] ?? '';
+  // through resolveTokens: since the design tokens a size may be spelled `var(--text-13)`; what the
+  // rule MEANS is the size it computes to, and a token whose value moved still fails here
+  const body = (sel: string): string => resolveTokens(css.match(new RegExp(`(?:^|\\})\\s*${sel.replace(/\./g, '\\.')}\\s*\\{([^}]*)\\}`))?.[1] ?? '', css);
   assert.match(body('.deckname'), /font-weight: 700; font-size: 19px; line-height: 1\.2/);
   assert.match(body('.rulesq'), /font-family: inherit; font-size: 14px; line-height: 1\.4/);
   assert.match(body('.cbrowname'), /font-weight: 600; font-size: 13px; line-height: 1\.3/);

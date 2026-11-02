@@ -25,7 +25,7 @@
 .adminacts button { font-size: .9em; padding: .15rem .4rem; margin-right: .2rem; }
 .adminacts button.on { background: var(--accent); color: var(--bg, #111); }
 .badgechip.admin { background: var(--bad, #e66); color: var(--bg, #111); }
-.stchip { display: inline-block; font-size: .8em; padding: .05rem .35rem; border-radius: 4px;
+.stchip { display: inline-block; font-size: .8em; padding: .05rem .35rem; border-radius: var(--radius-sm);
   background: rgba(255,255,255,.1); white-space: nowrap; }
 .stchip.fixed { background: rgba(80,200,120,.25); }
 .stchip.live, .stchip.partial { background: rgba(230,120,80,.3); }

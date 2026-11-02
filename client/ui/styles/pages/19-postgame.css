@@ -2,7 +2,7 @@
    An hour of play deserves more than one line in the prompt bar. Who won,
    both players' numbers side by side, and something to press. */
 
-.pgover { display: flex; align-items: center; justify-content: center; padding: 16px; overflow: auto; }
+.pgover { display: flex; align-items: center; justify-content: center; padding: var(--space-6); overflow: auto; }
 .pgbox { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
   padding: 20px 24px; width: min(560px, 100%); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto;
   display: flex; flex-direction: column; gap: 14px; box-shadow: 0 14px 50px rgba(0,0,0,.65); }
@@ -13,14 +13,14 @@
 .pgtitle { font-size: 30px; font-weight: 700; letter-spacing: .02em; line-height: 1.1; }
 .pgbox.won .pgtitle { color: var(--glow); }
 .pgbox.lost .pgtitle { color: var(--text); }
-.pgsub { color: var(--dim); font-size: 12px; margin-top: 6px;
-  display: flex; gap: 4px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.pgsub { color: var(--dim); font-size: var(--text-12); margin-top: var(--space-3);
+  display: flex; gap: var(--space-2); align-items: center; justify-content: center; flex-wrap: wrap; }
 
 /* three columns: your number, what it is, theirs. The label in the middle so
    the two players' figures sit next to each other and can be compared at a
    glance, which is the only reason to put them on one screen. */
-.pgtable { width: 100%; border-collapse: collapse; font-size: 13px; }
-.pgtable th { padding: 4px 8px 8px; font-size: 13px; color: var(--text); font-weight: 700; }
+.pgtable { width: 100%; border-collapse: collapse; font-size: var(--text-13); }
+.pgtable th { padding: var(--space-2) var(--space-4) var(--space-4); font-size: var(--text-13); color: var(--text); font-weight: 700; }
 .pgtable th:first-child { text-align: right; }
 .pgtable th:last-child { text-align: left; }
 .pgtable th.pgwin { color: var(--glow); }
@@ -29,30 +29,30 @@
 .pgnum:first-child { text-align: right; }
 .pgnum:last-child { text-align: left; }
 .pgnum.lead { color: var(--text); font-weight: 700; }
-.pglabel { text-align: center; color: var(--dim); font-size: 11px;
+.pglabel { text-align: center; color: var(--dim); font-size: var(--text-11);
   text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
 .pgel:first-child, .pgcard:first-child { text-align: right; }
 .pgel:last-child, .pgcard:last-child { text-align: left; }
-.pgcard { color: var(--accent); font-size: 12px; }
+.pgcard { color: var(--accent); font-size: var(--text-12); }
 
-.pgunlocked { border: 1px solid var(--accent); border-radius: 6px; padding: 10px 12px;
-  display: flex; flex-direction: column; gap: 8px; }
-.pgunlockedhead { color: var(--accent); font-size: 11px; text-transform: uppercase;
+.pgunlocked { border: 1px solid var(--accent); border-radius: var(--radius-md); padding: 10px 12px;
+  display: flex; flex-direction: column; gap: var(--space-4); }
+.pgunlockedhead { color: var(--accent); font-size: var(--text-11); text-transform: uppercase;
   letter-spacing: .06em; font-weight: 700; }
-.pgach { display: flex; gap: 10px; align-items: center; font-size: 13px; }
-.pgach .achicon { font-size: 22px; filter: none; }
+.pgach { display: flex; gap: 10px; align-items: center; font-size: var(--text-13); }
+.pgach .achicon { font-size: var(--text-22); filter: none; }
 
-.pgnote { color: var(--dim); font-size: 11px; text-align: center; }
+.pgnote { color: var(--dim); font-size: var(--text-11); text-align: center; }
 /* CR D8.5: the weight line on a walkover / early concession — set apart from the
  * "recorded" note under it, because it changes what "recorded" means */
-.pgweight { color: var(--text); font-size: 12px; padding: 6px 8px; border: 1px solid var(--line);
-  border-radius: 4px; }
+.pgweight { color: var(--text); font-size: var(--text-12); padding: var(--space-3) var(--space-4); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); }
 .pgweight.early { border-color: var(--accent); }
 
-.pgbtns { display: flex; flex-direction: column; gap: 8px; }
-.pgbtns button { padding: 10px; font-size: 14px; }
+.pgbtns { display: flex; flex-direction: column; gap: var(--space-4); }
+.pgbtns button { padding: 10px; font-size: var(--text-14); }
 /* they asked first: the button is the answer to a question, so it looks like one */
 .pgwants { border-color: var(--glow); color: var(--glow); animation: livepulse 1.8s ease-in-out infinite; }
-.pgpeek { align-self: center; background: none; border: none; color: var(--dim); font-size: 12px; }
+.pgpeek { align-self: center; background: none; border: none; color: var(--dim); font-size: var(--text-12); }
 .pgpeek:hover { border: none; color: var(--text); text-decoration: underline; }
 
