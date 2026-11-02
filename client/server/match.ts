@@ -84,6 +84,20 @@ export function setMatchHooks(h: Partial<MatchHooks>): void { hooks = { ...hooks
  */
 let leagueWeekClosed: (m: Match) => boolean = () => false;
 export function setLeagueWeekClosed(fn: (m: Match) => boolean): void { leagueWeekClosed = fn; }
+/** …and WHEN it closes (CT-514): "Your matches" and the paused screen give
+ * the earlier of the week's end and the 7-day pause limit */
+let leagueWeekEnd: (m: Match) => number | null = () => null;
+export function setLeagueWeekEnd(fn: (m: Match) => number | null): void { leagueWeekEnd = fn; }
+
+/** when the sweep voids this match if nobody moves it on: a pause lapses after
+ * 7 days, and a league match between games or paused closes with its week */
+export function matchVoidAt(m: Match): number | null {
+  if (m.phase !== 'paused' && m.phase !== 'between') return null;
+  const week = m.league ? leagueWeekEnd(m) : null;
+  const pause = m.phase === 'paused' && typeof m.pause?.pausedAt === 'number' ? m.pause.pausedAt + PAUSE_LIMIT_MS : null;
+  const both = [week, pause].filter((t): t is number => t !== null);
+  return both.length ? Math.min(...both) : null;
+}
 
 // a paused match's waiting room is not the idle sweep's to close (§2.5)
 setRoomHeld(room => {
@@ -512,7 +526,8 @@ export interface MatchLobbyInfo {
   ready: [boolean, boolean];
   /** this seat's own deck — null before it has registered one */
   mine: { registered: MatchConfig; current: MatchConfig; presets: Registered['presets'] } | null;
-  pause?: { offeredBy: Seat | null; pausedAt: number | null; resume: [boolean, boolean] };
+  /** voidAt: when a paused match lapses — 7 days, or its league week's end if sooner */
+  pause?: { offeredBy: Seat | null; pausedAt: number | null; resume: [boolean, boolean]; voidAt: number | null };
   result?: Match['result'];
 }
 
@@ -536,7 +551,7 @@ export function matchLobbyInfo(room: Room, seat: Seat): MatchLobbyInfo | undefin
       current: { main: [...cur.main], side: [...cur.side] },
       presets: reg.presets.map(p => ({ ...p, out: [...p.out], in: [...p.in] })),
     } : null,
-    ...(m.pause ? { pause: { offeredBy: m.pause.offeredBy, pausedAt: m.pause.pausedAt, resume: [...m.pause.resume] as [boolean, boolean] } } : {}),
+    ...(m.pause ? { pause: { offeredBy: m.pause.offeredBy, pausedAt: m.pause.pausedAt, resume: [...m.pause.resume] as [boolean, boolean], voidAt: matchVoidAt(m) } } : {}),
     ...(m.result ? { result: { ...m.result } } : {}),
   };
 }
@@ -564,7 +579,7 @@ export function matchesFor(userId: string): Array<{
     out.push({
       id: m.id, bestOf: m.bestOf, seat, opponent: m.names[other(seat)] ?? '', score: matchScore(m),
       game: m.games.length + 1, phase: m.phase, room: m.room, pausedAt,
-      until: m.between?.until ?? null, voidAt: pausedAt === null ? null : pausedAt + PAUSE_LIMIT_MS,
+      until: m.between?.until ?? null, voidAt: matchVoidAt(m),
     });
   }
   return out.sort((a, b) => a.id < b.id ? -1 : 1);

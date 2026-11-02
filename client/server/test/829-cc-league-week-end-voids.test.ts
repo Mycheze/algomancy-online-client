@@ -13,6 +13,8 @@
  *      match, the played result replaces "unplayed"
  *   §3 ⭐ …and if it does not, the match is voided once that game ends
  *   §4 a casual (non-league) match is no league week's business
+ *   §5 CT-514 — "Your matches" and the paused screen give the week's end as
+ *      the deadline when it comes before the 7-day pause limit
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -106,6 +108,22 @@ test('§0 before the week closes nothing is voided', () => {
   F.M.sweepMatches(Date.now());
   assert.deepEqual([paused.m.phase, between.m.phase, decider.m.phase, live.m.phase], ['paused', 'between', 'game', 'game']);
   assert.equal(LM.leagueWeekClosed(paused.m), false);
+});
+
+test('§5 Your matches and the paused screen give the league week end when it comes first', () => {
+  const p = paused.m.pause!;
+  const was = p.pausedAt;
+  try {
+    p.pausedAt = WEEK2 - 2 * 24 * HOUR;     // the 7 days would run past the week's end
+    const row = (m: typeof paused.m) => F.M.matchesFor(m.users[0]!).find(x => x.id === m.id)!;
+    assert.equal(row(paused.m).voidAt, WEEK2, 'a paused league match lapses with its week');
+    assert.equal(F.M.matchLobbyInfo(F.current(paused.m), 0)?.pause?.voidAt, WEEK2, 'and its paused screen says so');
+    assert.equal(row(between.m).voidAt, WEEK2, 'one waiting between games closes with its week too');
+    p.pausedAt = WEEK2 - 9 * 24 * HOUR;     // …and the 7 days, when they come first
+    assert.equal(row(paused.m).voidAt, WEEK2 - 2 * 24 * HOUR);
+  } finally {
+    p.pausedAt = was;
+  }
 });
 
 test('§1 ⭐ the week closes: a paused and a between league match are voided with no result', () => {

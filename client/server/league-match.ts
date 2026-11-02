@@ -23,9 +23,9 @@
  */
 import type { Seat } from '../engine/src/types.ts';
 import { gameHistory, rebuildProfiles } from './accounts.ts';
-import { leagueMatchSettled, recordPlayed } from './league-store.ts';
+import { leagueMatchDeadline, leagueMatchSettled, recordPlayed } from './league-store.ts';
 import { getMatch, matchOpen, saveMatch, type Match } from './match-store.ts';
-import { reserveMatchId, setLeagueWeekClosed, setMatchHooks, startMatch } from './match.ts';
+import { reserveMatchId, setLeagueWeekClosed, setLeagueWeekEnd, setMatchHooks, startMatch } from './match.ts';
 import { MATCH_CLOCK_MS, createRoom, getRoom, type RoomLeague } from './rooms.ts';
 
 export interface LeagueMatchRequest {
@@ -104,4 +104,5 @@ export const leagueWeekClosed = (m: Match): boolean => !!m.league && leagueMatch
 export function installLeagueMatchHooks(): void {
   setMatchHooks({ ended: m => matchEnded(m) });
   setLeagueWeekClosed(leagueWeekClosed);
+  setLeagueWeekEnd(m => m.league ? leagueMatchDeadline(m.league.match) : null);
 }

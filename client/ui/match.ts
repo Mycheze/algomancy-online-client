@@ -39,7 +39,8 @@ export interface MatchLobbyInfo {
   until: number | null; locked: boolean;
   ready: [boolean, boolean];
   mine: { registered: MatchConfig; current: MatchConfig; presets: SwapPreset[] } | null;
-  pause?: { offeredBy: Seat | null; pausedAt: number | null; resume: [boolean, boolean] };
+  /** voidAt: the server's lapse time — 7 days, or a league week's end if sooner */
+  pause?: { offeredBy: Seat | null; pausedAt: number | null; resume: [boolean, boolean]; voidAt?: number | null };
   result?: MatchResult;
 }
 
@@ -398,7 +399,8 @@ function betweenHtml(v: MatchSeatView, w: MatchLobbyInfo): string {
   const them = esc(w.names[opp] || 'Your opponent');
   if (w.phase === 'paused') {
     const p = w.pause;
-    const until = (p?.pausedAt ?? Date.now()) + PAUSE_DAYS_MS;
+    // the server's deadline (a league week can end before the 7 days)
+    const until = p?.voidAt ?? (p?.pausedAt ?? Date.now()) + PAUSE_DAYS_MS;
     const asked = !!p?.resume[me];
     const here = v.peers[opp];
     return `<div class="lobbypanel ccpaused">

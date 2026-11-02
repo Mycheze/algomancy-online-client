@@ -959,6 +959,17 @@ export function leagueMatchSettled(matchId: string): boolean {
   return false;
 }
 
+/** CT-514 — when this league match's week closes (the moment closeWeek marks
+ * it unplayed, and the CC sweep voids a match between games or paused), or
+ * null once it carries a result or is unknown */
+export function leagueMatchDeadline(matchId: string): number | null {
+  for (const s of db().seasons) {
+    const m = s.matches.find(x => x.id === matchId);
+    if (m) return m.result ? null : phaseStart(s, m.week + 1);
+  }
+  return null;
+}
+
 function resultMessages(s: Season, m: LeagueMatch, now: number): void {
   const out = m.result?.outcome;
   if (out !== 'a' && out !== 'b') return;

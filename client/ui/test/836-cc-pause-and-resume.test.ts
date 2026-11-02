@@ -2,7 +2,8 @@
  *
  *   §1 either seat offers; the offerer can withdraw; the other seat is asked
  *      and can accept or decline — each the wire's own op (§5.8)
- *   §2 paused: "Paused — resume any time before <date>" (seven days on),
+ *   §2 paused: "Paused — resume any time before <date>" (seven days on, or
+ *      the server's earlier deadline: a league week's end — CT-514),
  *      the deck panel gone, Resume — disabled while the opponent is away,
  *      because resuming needs both of them
  *   §3 one seat asked to resume: it says it is waiting, and the other seat
@@ -65,6 +66,11 @@ test('§2 paused: the deadline, no deck panel, Resume needs both here', () => {
   html = lobby(paused, [true, false]);
   assert.match(html, /data-btn="cc-resume" disabled>Resume/, 'the opponent is away');
   assert.match(html, /Bo is not here — you both need to be\./);
+  // CT-514: a league week that ends first is the server's deadline, and the one shown
+  const WEEK_END = PAUSED_AT + 3 * 24 * 3600_000;
+  const byWeek = new Date(WEEK_END).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+  html = lobby({ ...paused, pause: { ...paused.pause, voidAt: WEEK_END } });
+  assert.ok(html.includes(`Paused — resume any time before ${byWeek}.`), 'the league week end, not the seven days');
 });
 
 test('§3 one seat asked: it waits, and the other is told', () => {
