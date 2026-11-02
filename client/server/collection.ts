@@ -21,7 +21,10 @@
  *     find the replacement: refusing to save that is refusing to let anybody
  *     build a deck. Legality (30 minimum, max 2 copies — engine checkDeck) is
  *     reported on every read as `problems` and enforced only where it matters,
- *     which is the moment a deck is brought to a game.
+ *     which is the moment a deck is brought to a game. Competitive
+ *     Constructed legality (the sideboard too — engine/src/matchdeck.ts) is a
+ *     second answer beside it, `ccProblems`: a deck may be playable casually
+ *     and not in CC, or the reverse.
  *
  *  3. THE STARTER FIVE ARE A SEED, NOT A LINK. A new account gets copies of
  *     the five bundled algomancer.cc decks, with their builder's name and link
@@ -31,6 +34,7 @@
  */
 import { randomUUID } from 'node:crypto';
 import { checkDeck } from '../engine/src/apply.ts';
+import { checkMatchDeck, PRESETS_MAX, PRESET_NAME_MAX, type SwapPreset } from '../engine/src/matchdeck.ts';
 import { DECK_LIST } from '../engine/src/cards/registry.ts';
 import { canonicalCardName, getCard } from '../engine/src/cards/dsl.ts';
 import type { CardName, Seat } from '../engine/src/types.ts';
@@ -44,10 +48,27 @@ export interface CollectionDeck {
   name: string;
   /** the deck proper — what gets shuffled. May be illegal while you build. */
   cards: CardName[];
-  /** the maybeboard: cards you are thinking about. No rules apply to it, it is
-   * never shuffled into anything, and it is NOT a sideboard — Algomancy has
-   * none, and calling it one would invite people to expect between-game swaps. */
+  /** the maybeboard: cards you are thinking about. No rules apply to it and it
+   * is never shuffled into anything. It is a shelf, not the sideboard below. */
   maybe: CardName[];
+  /**
+   * THE SIDEBOARD (2026-11-02, docs/22 §4.3): up to 7 cards exchanged with
+   * `cards` between the games of a Competitive Constructed match, the copy cap
+   * counted over both. ABSENT MEANS EMPTY — every deck saved before it
+   * existed — and nothing migrates it. Like `cards` it may be illegal while
+   * you build (eight in it is a deck you are still cutting); `ccProblems`
+   * says so on read. Part of the list: a shared deck shows it.
+   */
+  sideboard?: CardName[];
+  /**
+   * The deck's saved SWAPS (docs/22 §4.6): named presets, each a target
+   * relative to this deck (engine/src/matchdeck.ts applyPreset). Whether one
+   * is usable is computed, never stored — a later edit can make one stale,
+   * and it is kept. A player's own plans: the public view NEVER carries them
+   * (publicdecks.ts) and a copy taken of somebody else's deck has none.
+   * ABSENT = no presets.
+   */
+  swaps?: SwapPreset[];
   /** the card whose art represents this deck in the list (null = pick one) */
   cover: CardName | null;
   /** who built it: the algomancer.cc username for an import, 'you' otherwise */
@@ -151,8 +172,13 @@ export interface DeckRecord {
 
 /** What the client is sent: the deck plus what only the server can say. */
 export interface DeckView extends CollectionDeck {
+  /** always present on the wire: an absent stored sideboard reads as [] */
+  sideboard: CardName[];
   /** empty means it is legal to bring to a game */
   problems: string[];
+  /** empty means it may be registered for a Competitive Constructed match
+   * (engine/src/matchdeck.ts checkMatchDeck — main and sideboard together) */
+  ccProblems: string[];
   record: DeckRecord;
 }
 
@@ -181,6 +207,13 @@ const AUTO_KEY = /^[A-Za-z0-9/_:-]{1,24}$/;
 /** deck-rule problems (30 minimum, max 2 copies) as human-readable lines */
 export function deckProblems(cards: CardName[]): string[] {
   const c = checkDeck(cards);
+  return c.ok ? [] : [c.error];
+}
+
+/** Competitive Constructed problems — the main deck, the sideboard, and the
+ * copy cap over both — as human-readable lines */
+export function ccProblems(cards: CardName[], sideboard: CardName[] = []): string[] {
+  const c = checkMatchDeck(cards, sideboard);
   return c.ok ? [] : [c.error];
 }
 
@@ -271,6 +304,55 @@ function setPiles(deck: CollectionDeck, piles: DeckPile[] | undefined): void {
   if (piles) deck.piles = piles; else delete deck.piles;
 }
 
+const PRESET_ID = /^[A-Za-z0-9_-]{1,16}$/;
+
+/**
+ * The swap presets a client sent (docs/22 §4.6), stored as the PLAYER'S plan.
+ * Undefined means "no presets" (not an array, or an empty one).
+ *
+ *  · at most PRESETS_MAX; a name trimmed to PRESET_NAME_MAX (empty → "Swap n");
+ *    an id that is malformed or a duplicate is replaced with a fresh one;
+ *  · every name canonicalised; an entry naming a card in NEITHER board of this
+ *    deck is dropped, and so is anything that is not a card at all.
+ *
+ * ⚠ IT NEVER MAKES A PRESET VALID. Taking out more copies than the main deck
+ * holds, or leaving it at 29, is stored as sent: rewriting it would be the
+ * server deciding a player's plan, and a stale preset is shown disabled with
+ * its reason (applyPreset). Only sent presets are sanitized — a later edit to
+ * the deck leaves the stored ones alone, stale or not.
+ */
+export function sanitizeSwaps(raw: unknown, cards: readonly CardName[], sideboard: readonly CardName[]): SwapPreset[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const either = new Set<string>([...cards, ...sideboard]);
+  const names = (v: unknown): CardName[] => (Array.isArray(v) ? v.slice(0, MAX_CARDS) : [])
+    .map(c => canonicalCardName(String(c ?? '')))
+    .filter(n => either.has(n));
+  const out: SwapPreset[] = [];
+  const ids = new Set<string>();
+  for (const item of raw.slice(0, PRESETS_MAX)) {
+    if (!isRecord(item)) continue;
+    let id = typeof item['id'] === 'string' ? item['id'] : '';
+    if (!PRESET_ID.test(id) || ids.has(id)) {
+      let n = 1;
+      while (ids.has(`w${n}`) || raw.some(o => isRecord(o) && o['id'] === `w${n}`)) n++;
+      id = `w${n}`;
+    }
+    ids.add(id);
+    out.push({
+      id,
+      name: String(item['name'] ?? '').trim().slice(0, PRESET_NAME_MAX) || `Swap ${out.length + 1}`,
+      out: names(item['out']),
+      in: names(item['in']),
+    });
+  }
+  return out.length ? out : undefined;
+}
+
+/** set or clear the optional field, as setPiles does */
+function setSwaps(deck: CollectionDeck, swaps: SwapPreset[] | undefined): void {
+  if (swaps) deck.swaps = swaps; else delete deck.swaps;
+}
+
 /** The card a deck wears in the list when nobody has chosen one: its most
  * expensive card, which is very nearly always the one it is about. */
 function defaultCover(cards: CardName[]): CardName | null {
@@ -340,6 +422,13 @@ function canonicalizeDeck(d: CollectionDeck): void {
     list.some(n => canonicalCardName(n) !== n) ? list.map(canonicalCardName) : list;
   if (Array.isArray(d.cards)) d.cards = canon(d.cards);
   if (Array.isArray(d.maybe)) d.maybe = canon(d.maybe);
+  if (Array.isArray(d.sideboard)) d.sideboard = canon(d.sideboard);
+  if (Array.isArray(d.swaps)) {
+    for (const p of d.swaps) {
+      if (Array.isArray(p.out)) p.out = canon(p.out);
+      if (Array.isArray(p.in)) p.in = canon(p.in);
+    }
+  }
   if (typeof d.cover === 'string') d.cover = canonicalCardName(d.cover);
   // the arrangement names cards too, and must spell them the way `cards` now does
   if (Array.isArray(d.piles)) for (const p of d.piles) if (Array.isArray(p.cards)) p.cards = canon(p.cards);
@@ -395,7 +484,9 @@ export function collectionView(account: Account): DeckView[] {
   const records = deckRecords(account);
   return decksOf(account).map(d => ({
     ...d,
+    sideboard: d.sideboard ?? [],
     problems: deckProblems(d.cards),
+    ccProblems: ccProblems(d.cards, d.sideboard ?? []),
     record: records[d.id] ?? emptyRecord(),
   }));
 }
@@ -435,6 +526,7 @@ export function createDeck(
   account: Account,
   init: {
     name?: unknown; cards?: unknown; maybe?: unknown;
+    sideboard?: unknown; swaps?: unknown;
     author?: string; url?: string; description?: string; cover?: string;
     /** `createDeck` publishes by default; a caller that is copying rather than
      * creating passes 'private' — nothing else ever overrides this. */
@@ -446,15 +538,19 @@ export function createDeck(
     return { ok: false, error: `You have ${MAX_DECKS} decks saved, which is the limit — delete one you are `
       + 'no longer playing and this will go through.' };
   }
-  const { cards, dropped } = sanitize(init.cards);
+  const { cards, dropped: droppedMain } = sanitize(init.cards);
   const { cards: maybe } = sanitize(init.maybe);
+  const { cards: sideboard, dropped: droppedSide } = sanitize(init.sideboard);
+  const swaps = sanitizeSwaps(init.swaps, cards, sideboard);
+  const dropped = [...droppedMain, ...droppedSide];
   const now = new Date().toISOString();
   // a cover the import named, but only if the card survived sanitising
   const wantCover = String(init.cover ?? '');
   const deck: CollectionDeck = {
     id: randomUUID(),
     name: uniqueName(account, trimName(init.name, 'New deck')),
-    cards, maybe,
+    cards, maybe, sideboard,
+    ...(swaps ? { swaps } : {}),
     cover: POOL.has(wantCover) && cards.includes(wantCover) ? wantCover : defaultCover(cards),
     author: init.author ?? 'you',
     ...(init.url ? { url: init.url } : {}),
@@ -483,20 +579,32 @@ export function updateDeck(
     name?: unknown; cards?: unknown; maybe?: unknown; cover?: unknown;
     visibility?: unknown; description?: unknown;
     piles?: unknown;
+    sideboard?: unknown; swaps?: unknown;
   },
 ): EditResult {
   const deck = deckById(account, id);
   if (!deck) return { ok: false, error: 'no such deck' };
-  let note: string | undefined;
+  const dropped: string[] = [];
   if (patch.name !== undefined) deck.name = uniqueName(account, trimName(patch.name, deck.name), deck.id);
   if (patch.cards !== undefined) {
-    const { cards, dropped } = sanitize(patch.cards);
+    const s = sanitize(patch.cards);
+    const cards = s.cards;
     deck.cards = cards;
-    if (dropped.length) note = unscriptedNote(dropped);
+    dropped.push(...s.dropped);
     // a cover that has just been cut out of the deck stops being the cover
     if (deck.cover && !cards.includes(deck.cover)) deck.cover = defaultCover(cards);
   }
   if (patch.maybe !== undefined) deck.maybe = sanitize(patch.maybe).cards;
+  if (patch.sideboard !== undefined) {
+    const s = sanitize(patch.sideboard);
+    deck.sideboard = s.cards;
+    dropped.push(...s.dropped);
+  }
+  // Swaps are sanitized against the deck AS THIS WRITE LEAVES IT, and only
+  // when sent (null clears them). A `cards` or `sideboard` edit alone leaves
+  // the stored presets as they are — stale ones included (sanitizeSwaps).
+  if (patch.swaps !== undefined) setSwaps(deck, sanitizeSwaps(patch.swaps, deck.cards, deck.sideboard ?? []));
+  const note = dropped.length ? unscriptedNote(dropped) : undefined;
   if (patch.cover !== undefined) {
     const want = canonicalCardName(String(patch.cover ?? ''));
     deck.cover = POOL.has(want) ? want : defaultCover(deck.cards);
@@ -561,6 +669,10 @@ export function duplicateDeck(account: Account, id: string, src?: CollectionDeck
   if (!from) return { ok: false, error: 'no such deck' };
   const r = createDeck(account, {
     name: `${from.name} copy`, cards: from.cards, maybe: from.maybe,
+    // the sideboard is part of the list, so a copy has it; the swaps are the
+    // OWNER'S plans and come only with a copy of your own deck (see piles below)
+    sideboard: from.sideboard ?? [],
+    ...(!src && from.swaps ? { swaps: from.swaps } : {}),
     author: from.author, ...(from.url ? { url: from.url } : {}),
     ...(src ? { visibility: 'private' as DeckVisibility } : {}),
   });
@@ -595,4 +707,21 @@ export function deckForPlay(userId: string | null, id: string | null): { id: str
   if (!deck) return null;
   const c = checkDeck(deck.cards);
   return c.ok ? { id: deck.id, cards: c.cards } : null;
+}
+
+/**
+ * `deckForPlay` for a Competitive Constructed registration (docs/22 §5.1): the
+ * collection's own main deck and sideboard, re-checked with checkMatchDeck,
+ * and its presets — or null when the deck is not the caller's or not CC-legal.
+ * The presets go to their owner's seat only (docs/22 §5.3).
+ */
+export function matchDeckForPlay(userId: string | null, id: string | null):
+  { id: string; main: CardName[]; side: CardName[]; presets: SwapPreset[] } | null {
+  if (!userId || !id) return null;
+  const account = accountById(userId);
+  if (!account) return null;
+  const deck = deckById(account, id);
+  if (!deck) return null;
+  const c = checkMatchDeck(deck.cards, deck.sideboard ?? []);
+  return c.ok ? { id: deck.id, main: c.main, side: c.side, presets: (deck.swaps ?? []).map(p => ({ ...p, out: [...p.out], in: [...p.in] })) } : null;
 }

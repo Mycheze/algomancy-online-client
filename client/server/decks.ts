@@ -52,6 +52,11 @@ export interface DeckInfo {
   cover?: CardName;
   /** the maybeboard — algomancer.cc's `sideboard` lands here */
   maybe?: CardName[];
+  /** the sideboard (deck file v2 only — never algomancer.cc's, see above) */
+  sideboard?: CardName[];
+  /** the deck's saved swaps (deck file v2), names resolved; the collection's
+   * sanitize decides what is kept (server/collection.ts sanitizeSwaps) */
+  swaps?: { name: string; out: CardName[]; in: CardName[] }[];
 }
 
 /** "A Pile of Runes" and "a-pile-of-runes" both normalize to "apileofrunes" */
@@ -111,8 +116,9 @@ interface AlgomancerDeckResponse {
     /** plain text over there, which is valid markdown over here */
     description?: string;
     cards?: { cardId?: string; quantity?: number }[];
-    /** their sideboard is our maybeboard — neither is a sideboard in the
-     * Magic sense, because Algomancy has none */
+    /** their sideboard is our MAYBEBOARD, not our sideboard (docs/22 §4.2,
+     * §8 Q5): it predates sideboards here and people used it as a shelf, and
+     * a list over seven there would make the deck unregistrable */
     sideboard?: { cardId?: string; quantity?: number }[];
   };
   cards?: { id?: string; name?: string }[];
@@ -222,6 +228,13 @@ function deckInfoOf(file: DeckFile, notes: string[] = []): DeckInfo {
   };
   const cards = resolve(expandEntries(file.cards), true);
   const maybe = resolve(expandEntries(file.maybe ?? []), false);
+  // the sideboard is part of the deck, so its misses are reported like the main's
+  const sideboard = resolve(expandEntries(file.sideboard ?? []), true);
+  const swaps = (file.swaps ?? []).map(p => ({
+    name: p.name,
+    out: resolve(expandEntries(p.out), false),
+    in: resolve(expandEntries(p.in), false),
+  }));
   problems.push(...ruleProblems(cards));
   const cover = file.cover ? resolveName(file.cover) : null;
   return {
@@ -234,6 +247,8 @@ function deckInfoOf(file: DeckFile, notes: string[] = []): DeckInfo {
     // wearing art it does not play; collection.ts picks a new one for us
     ...(cover && cards.includes(cover) ? { cover } : {}),
     ...(maybe.length ? { maybe } : {}),
+    ...(sideboard.length ? { sideboard } : {}),
+    ...(swaps.length ? { swaps } : {}),
   };
 }
 
