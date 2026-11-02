@@ -120,10 +120,15 @@ const matchKey = (m: MyMatch): string => `M${m.id}@${m.game}`;
 const shownMatches = (): MyMatch[] => matches.filter(m => m.room !== deps?.room());
 /** …and the ones worth a count: the sideboarding window is running without you */
 const dueMatches = (): MyMatch[] => shownMatches().filter(m => m.phase === 'between' && m.until !== null);
+/** CT-517: a paused match whose opponent is in its room — waiting on you to resume */
+const resumeAsks = (): MyMatch[] => shownMatches().filter(m => m.phase === 'paused' && m.opponentHere === true);
+/** once per pause */
+const resumeKey = (m: MyMatch): string => `MR${m.id}@${m.pausedAt}`;
 
 function saveSeen(): void {
   // only the ones still waiting are worth keeping; the rest have gone
-  const live = new Set([...invites.map(i => i.id), ...notes.map(noteKey), ...times.map(timeKey), ...matches.map(matchKey)]);
+  const live = new Set([...invites.map(i => i.id), ...notes.map(noteKey), ...times.map(timeKey), ...matches.map(matchKey),
+    ...matches.map(resumeKey)]);
   try {
     sessionStorage.setItem(SEEN_KEY, JSON.stringify({
       a: [...announced].filter(id => live.has(id)), d: [...dismissed].filter(id => live.has(id)),
@@ -133,7 +138,7 @@ function saveSeen(): void {
 
 /** what the bell counts: everything waiting on an answer, and league news not yet read */
 const unread = (): number => invites.length + requests.length + times.length + notes.filter(n => !n.read).length
-  + dueMatches().length;
+  + dueMatches().length + resumeAsks().length;
 
 /** a league time, in the player's zone */
 function timeText(unix: number): string {
@@ -233,8 +238,10 @@ function noteHtml(n: LeagueNote, pop: boolean): string {
 /** docs/22 §5.6: an open match, one button from anywhere */
 function matchCardHtml(m: MyMatch): string {
   const l = myMatchLine(m);
+  // CT-517: the other player is in the paused match's room, waiting on you
+  const asks = m.phase === 'paused' && m.opponentHere === true;
   return `<div class="invitecard">
-    <div>Competitive match ${l.text}</div>
+    <div>${asks ? `<b>${esc(m.opponent || 'Your opponent')}</b> wants to resume your match` : `Competitive match ${l.text}`}</div>
     <div class="invbtns"><button class="primary" data-inbox="match-open" data-room="${esc(m.room)}" data-seat="${m.seat}">${l.button}</button></div>
   </div>`;
 }
@@ -329,9 +336,9 @@ function pollMatches(): void {
       if (JSON.stringify(next) === JSON.stringify(matches)) return;
       matches = next;
       // a sideboarding window that started without you is worth a chime
-      const fresh = dueMatches().filter(m => !announced.has(matchKey(m)));
+      const fresh = [...dueMatches().map(matchKey), ...resumeAsks().map(resumeKey)].filter(k => !announced.has(k));
       if (fresh.length && loaded) { playCue('decision'); alertTab('Your match is waiting'); }
-      for (const m of fresh) announced.add(matchKey(m));
+      for (const k of fresh) announced.add(k);
       saveSeen();
       paint();
     })

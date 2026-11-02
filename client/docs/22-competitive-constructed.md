@@ -787,7 +787,7 @@ accepted between-games op pushes both seats a fresh `update` whose `waiting.matc
 | message | when | effect |
 |---|---|---|
 | `{t:'join', room, mode:'constructed', cc:{bestOf:1\|3}, deckId \| (deck, side), token}` | creating join (code from `/api/new`) | makes the match and room 1 (45-min bank, `rules:{sequential}`); registers the creator. Signed in only. `deckId` re-reads the saved deck (`matchDeckForPlay`, with its presets); without it `deck` + `side` are checked with `checkMatchDeck` and carry no presets. |
-| `{t:'join', room, deckId \| (deck, side), token}` | game 1, second seat | registers; the second registration deals game 1 (initiative rolled). Re-sending before the deal re-registers. |
+| `{t:'join', room, deckId \| (deck, side), pick: true, token}` | game 1, second seat | registers; the second registration deals game 1 (initiative rolled). Re-sending before the deal re-registers. **Only a `pick` join registers** (the waiting room's Play this deck): any other join carries the browser's casual deck and registers nothing (CT-518). |
 | `{t:'join', room, token}` | games 2–3 | a deck riding on it is ignored (`takesJoinDeck` is false in a match room). The window opens once both seats are in. |
 | `{t:'cc', op:'config', main, side}` | between | `checkSwap` against the registration; an illegal one is refused and the last legal one stands. Un-readies the seat. |
 | `{t:'cc', op:'preset', preset}` | between | `preset` = a preset id from `mine.presets`, or `'registered'`; `applyPreset`, then as `config`. |
@@ -815,7 +815,10 @@ accepted between-games op pushes both seats a fresh `update` whose `waiting.matc
 - `gameover` gains `match` (the same summary): show the score and **Continue** (to
   `match.room`) in place of Rematch. `{t:'rematch'}` in a match room is refused.
 - `GET /api/matches/mine` (Bearer token) → `{ok, matches:[{id, bestOf, seat, opponent, score,
-  game, phase, room, pausedAt, until, voidAt}]}`, open matches only.
+  game, phase, room, pausedAt, until, voidAt, opponentHere, resumeAsked}]}`, open matches only.
+  `voidAt` is when the sweep would void it: a pause's 7 days, or a league match's week end if
+  sooner (also on `waiting.match.pause.voidAt`). `opponentHere`/`resumeAsked` feed the bell's
+  "<name> wants to resume your match" (CT-517).
 - `{t:'watch', room, token}`: a match room is watched only by a signed-in account that is not
   one of its players, while the match is open. **The client must send `token` on `watch`.**
 - `/api/replay/<code>` of a game of an open match: 404 to its players (admins who are not a seat

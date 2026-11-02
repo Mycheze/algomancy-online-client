@@ -10,6 +10,8 @@
  *   §5 an UNPAUSED waiting room is closed by the idle sweep as any room is,
  *      and its match is voided by the next match sweep
  *   §6 W4's hook: a league match whose week has closed is voided between games
+ *   §7 CT-517: "Your matches" says whether the opponent is in the room and has
+ *      pressed Resume — what the bell's "wants to resume" line is made from
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -93,4 +95,22 @@ test('§6 a league week that closed voids a league match between games', () => {
   M.setLeagueWeekClosed(() => false);
   assert.equal(m.phase, 'void');
   assert.match(m.voided!.why, /league week/);
+});
+
+test('§7 Your matches says the opponent is here and has asked to resume', () => {
+  const { m, room } = between();
+  F.seatUp(room, 0, 1);
+  M.matchOp(room, 1, 'pause', {});
+  M.matchOp(room, 0, 'pause', {});
+  assert.equal(m.phase, 'paused');
+  room.sockets = [null, null];
+  const row = (user: string) => M.matchesFor(user).find(x => x.id === m.id)!;
+  assert.deepEqual([row('u-ann').opponentHere, row('u-ann').resumeAsked], [false, false], 'nobody there');
+  F.seatUp(room, 1);
+  assert.deepEqual([row('u-ann').opponentHere, row('u-ann').resumeAsked], [true, false], 'Bo is back in the room, waiting for Ann');
+  assert.deepEqual([row('u-bo').opponentHere, row('u-bo').resumeAsked], [false, false], 'and Bo is told nothing of himself');
+  F.seatUp(room, 0);
+  assert.deepEqual(M.matchOp(room, 1, 'resume', {}), { ok: true }, 'both here: Bo asks');
+  room.sockets[0] = null;
+  assert.deepEqual([row('u-ann').opponentHere, row('u-ann').resumeAsked], [true, true], 'Ann stepped away: Bo is here and has asked');
 });

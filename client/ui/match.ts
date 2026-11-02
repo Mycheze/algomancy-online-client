@@ -57,6 +57,8 @@ export interface MatchSummary {
 export interface MyMatch {
   id: string; bestOf: 1 | 3; seat: Seat; opponent: string; score: [number, number]; game: number;
   phase: MatchPhase; room: string; pausedAt: number | null; until: number | null; voidAt: number | null;
+  /** CT-517: the opponent is in the match's room / has pressed Resume (absent from an older server) */
+  opponentHere?: boolean; resumeAsked?: boolean;
 }
 
 /** a deck in the collection with its Competitive verdict (ui/decks.ts competitiveDecks) */

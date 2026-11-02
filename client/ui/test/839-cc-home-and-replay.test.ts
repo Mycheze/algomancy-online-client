@@ -7,7 +7,8 @@
  *   §2 "Your matches" (the installed-app rule: no address bar, so a paused
  *      match is one BUTTON away): a row per open match, and its button opens
  *      the match's room as a match room
- *   §3 …and the bell lists it too, one button from any page
+ *   §3 …and the bell lists it too, one button from any page — and a paused
+ *      match whose opponent is in its room says they want to resume (CT-517)
  *   §4 a Competitive replay deals with its rules: the chosen initiative and
  *      the steps in turn — without them it is a different game
  *   §5 a watch carries the token (a match room is watched only by a signed-in
@@ -32,7 +33,9 @@ const deck = (id: string, name: string, side: string[]) => ({
 const LEGAL = deck('dOK', 'Legal deck', N.slice(15, 22));
 const BIG_SIDE = deck('dBAD', 'Big side', N.slice(15, 23));
 const PAUSED_AT = Date.now() - 2 * 86_400_000;
-const MINE = [{ id: 'M839', bestOf: 3, seat: 1, opponent: 'Rashi', score: [0, 1], game: 2, phase: 'paused', room: 'PAUS', pausedAt: PAUSED_AT, until: null, voidAt: PAUSED_AT + 7 * 86_400_000 }];
+const MINE = [{ id: 'M839', bestOf: 3, seat: 1, opponent: 'Rashi', score: [0, 1], game: 2, phase: 'paused', room: 'PAUS', pausedAt: PAUSED_AT, until: null, voidAt: PAUSED_AT + 7 * 86_400_000, opponentHere: false, resumeAsked: false },
+  // CT-517: a second paused match whose opponent is waiting in its room
+  { id: 'M839B', bestOf: 3, seat: 0, opponent: 'Cy', score: [1, 1], game: 3, phase: 'paused', room: 'PAU2', pausedAt: PAUSED_AT, until: null, voidAt: PAUSED_AT + 7 * 86_400_000, opponentHere: true, resumeAsked: true }];
 const FETCHED: string[] = [];
 const g = globalThis as Record<string, unknown>;
 g['__UI_DRIVER_SEARCH'] = '';
@@ -93,6 +96,10 @@ test('§2 Your matches: a row, and one button into the room', () => {
 test('§3 the bell lists the match, with the same button', () => {
   const html = ui.click({ inbox: 'bell' });
   assert.match(html, /Competitive match vs <b>Rashi<\/b>/);
+  assert.match(html, /<b>Cy<\/b> wants to resume your match<\/div>\s*<div class="invbtns"><button class="primary" data-inbox="match-open" data-room="PAU2" data-seat="0">Resume</,
+    'a waiting opponent is named, with the button into the room');
+  assert.doesNotMatch(html, /Rashi<\/b> wants to resume/, 'an opponent who is not there asks nothing');
+  assert.match(html, /data-inbox="bell"[^>]*>🔔<span class="inboxcount">1<\/span>/, 'and the bell counts that one, not the idle pause');
   ui.click({ inbox: 'match-open', room: 'PAUS', seat: '1' });
   assert.equal(location.search, '?ws=1&room=PAUS&seat=1&mode=constructed&cc=1');
 });

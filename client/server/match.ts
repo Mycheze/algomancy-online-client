@@ -569,6 +569,9 @@ export function matchSummary(m: Match): { id: string; bestOf: 1 | 3; score: [num
 export function matchesFor(userId: string): Array<{
   id: string; bestOf: 1 | 3; seat: Seat; opponent: string; score: [number, number]; game: number;
   phase: Match['phase']; room: string; pausedAt: number | null; until: number | null; voidAt: number | null;
+  /** CT-517: the opponent is connected to the match's current room, and (paused)
+   * has pressed Resume — the bell's "<name> wants to resume your match" */
+  opponentHere: boolean; resumeAsked: boolean;
 }> {
   const out = [];
   for (const m of allMatches()) {
@@ -580,6 +583,8 @@ export function matchesFor(userId: string): Array<{
       id: m.id, bestOf: m.bestOf, seat, opponent: m.names[other(seat)] ?? '', score: matchScore(m),
       game: m.games.length + 1, phase: m.phase, room: m.room, pausedAt,
       until: m.between?.until ?? null, voidAt: matchVoidAt(m),
+      opponentHere: !!getRoom(m.room)?.sockets[other(seat)],
+      resumeAsked: m.phase === 'paused' && !!m.pause?.resume[other(seat)],
     });
   }
   return out.sort((a, b) => a.id < b.id ? -1 : 1);
