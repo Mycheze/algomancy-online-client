@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1860 rules and 99 sections.
+- New: 1870 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -1576,6 +1576,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 901.9b `formats.constructed.competitive.sideboard`
   - 901.9c `formats.constructed.competitive.swaps`
   - 901.9d `formats.constructed.competitive.initiative`
+  - 901.9e `formats.constructed.competitive.concede`
   - 902.1 `formats.draft.live-draft`
   - 902.1a `formats.draft.live-draft.standard`
   - 902.2 `formats.draft.elements`
@@ -1861,10 +1862,19 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D8.5b `annexd.modes.concession.early`
   - D8.5c `annexd.modes.concession.normal`
   - D8.5d `annexd.modes.concession.rated-only`
+  - D8.5e `annexd.modes.concession.match`
   - D8.6 `annexd.modes.competitive`
   - D8.6a `annexd.modes.competitive.clock`
   - D8.6b `annexd.modes.competitive.sideboard-window`
   - D8.6c `annexd.modes.competitive.initiative-choice`
+  - D8.6d `annexd.modes.competitive.concede-match`
+  - D8.6e `annexd.modes.competitive.pause`
+  - D8.6f `annexd.modes.competitive.resume`
+  - D8.6g `annexd.modes.competitive.void`
+  - D8.6h `annexd.modes.competitive.league-week`
+  - D8.6i `annexd.modes.competitive.no-peeking`
+  - D8.6j `annexd.modes.competitive.rating`
+  - D8.6k `annexd.modes.competitive.games-counted`
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)
 - Removed: 901.8 `formats.constructed.single-card`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)
 - Removed: 901.8a `formats.constructed.single-card.copies`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)

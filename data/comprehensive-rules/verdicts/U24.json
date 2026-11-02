@@ -3049,6 +3049,140 @@
     "problem": "Owner-only rule supported by its quotes; no match (and so no per-match clock or match loss on time) exists in server/ui, so nothing demonstrates it."
   },
   {
+    "key": "annexd.modes.competitive.concede-match",
+    "textHash": "84c3f51cd1ad00fe",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/server/match.ts:concedeMatch",
+        "agrees": true,
+        "note": "live game: concedeBy + a real concede action, then finish; between/paused/before game 1: finish directly"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/816-cc-concede-game-and-match.test.ts",
+        "pattern": "§2 conceding the match in a game",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/816-cc-concede-game-and-match.test.ts",
+        "pattern": "§3 conceding the match between games",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/816-cc-concede-game-and-match.test.ts",
+        "pattern": "§4 conceding while paused, and before game 1 is dealt",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "engine code + tests (basis engine)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/match.ts",
+        "text": "    m.concedeBy = seat;"
+      },
+      {
+        "file": "client/server/match.ts",
+        "text": "    try { hooks.concede(live, seat); } catch (err) { console.error(`[match] ${m.id}: the concede could not land:`, err); }"
+      },
+      {
+        "file": "client/server/match.ts",
+        "text": "  finish(m, other(seat), 'conceded', now, seat, room);"
+      },
+      {
+        "file": "client/server/main.ts",
+        "text": "    if (msg.t === 'concedeMatch') {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.competitive.games-counted",
+    "textHash": "b18a7e6f4fc3ce8d",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/server/rating.ts:isRated",
+        "agrees": true,
+        "note": "`if (game.match) return false` for every game of a match, whatever the match's outcome"
+      },
+      {
+        "loc": "client/server/accounts.ts:recordGame",
+        "agrees": true,
+        "note": "foldSeat + refreshAchievements run for a match game as for any game"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/824-cc-one-elo-result-per-match.test.ts",
+        "pattern": "§1 a game of a match is never rated",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/824-cc-one-elo-result-per-match.test.ts",
+        "pattern": "§2 ⭐ a rated Bo3 won 2-0",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/826-cc-games-recorded-and-tagged.test.ts",
+        "pattern": "§1 ⭐ every game of a 2-1 Bo3",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/826-cc-games-recorded-and-tagged.test.ts",
+        "pattern": "§2 ⭐ the card stats count every game",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/server/test/zz-probe-U24-2.test.ts",
+        "test": "probe U24-2 a void match: its game counts everywhere but the rating, stays in history, and its replay opens",
+        "passed": true,
+        "demonstrates": "yes: a rated match voided after game 1: the game counts in the profile (1 game, 1 win) and unlocks first-game/first-win, while rating stays 1000 and ratedGames 0"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "engine code + tests (basis engine)",
+        "supports": "yes",
+        "note": "the void case and achievements demonstrated by probe zz-probe-U24-2"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/rating.ts",
+        "text": "  if (game.match) return false;"
+      },
+      {
+        "file": "client/server/accounts.ts",
+        "text": "   * recorded and counted like any game (stats, achievements, the deck record);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "annexd.modes.competitive.initiative-choice",
     "textHash": "cb229454d1ab16d9",
     "verdict": "untested",
@@ -3086,6 +3220,335 @@
     "problem": "Owner-only rule supported by its quotes; no match, ready-up or initiative choice exists in server/ui, so nothing demonstrates it."
   },
   {
+    "key": "annexd.modes.competitive.league-week",
+    "textHash": "d33ca14d71bcf922",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/server/match.ts:sweepMatches",
+        "agrees": true,
+        "note": "leagueWeekClosed voids only phase paused/between; a phase 'game' match is left to play out"
+      },
+      {
+        "loc": "client/server/league-match.ts:matchEnded",
+        "agrees": true,
+        "note": "a decided league match records its played result"
+      },
+      {
+        "loc": "client/server/match.ts:voidMatch",
+        "agrees": true,
+        "note": "a void leaves the played games in history"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/829-cc-league-week-end-voids.test.ts",
+        "pattern": "§1 ⭐ the week closes",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/829-cc-league-week-end-voids.test.ts",
+        "pattern": "§2 ⭐ a game in progress plays out",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/829-cc-league-week-end-voids.test.ts",
+        "pattern": "§3 ⭐ a game at the boundary",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/server/test/zz-probe-U24-2.test.ts",
+        "test": "probe U24-2 a void match: its game counts everywhere but the rating, stays in history, and its replay opens",
+        "passed": true,
+        "demonstrates": "yes: after voidMatch the game is still in the player's recentGames"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "engine code + tests (basis engine)",
+        "supports": "yes",
+        "note": "'games stay in match history' shown by probe zz-probe-U24-2 (a void match's game is still in recentGames)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/match.ts",
+        "text": "      if (leagueWeekClosed(m)) { voidMatch(m, 'its league week closed', now); continue; }"
+      },
+      {
+        "file": "client/server/match.ts",
+        "text": "/** no result: the games already played stay in history as single games */"
+      },
+      {
+        "file": "client/server/league-match.ts",
+        "text": "      if (winner) recordPlayed(m.league.match, winner, codes.at(-1)!, now, { fixed: anyFixed(codes), codes });"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.competitive.no-peeking",
+    "textHash": "de8940f39d972262",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/server/api-replay.ts:replayRoutes",
+        "agrees": true,
+        "note": "a replay of a game of an open match is 404 unless admin"
+      },
+      {
+        "loc": "client/server/main.ts:watch handler",
+        "agrees": true,
+        "note": "an open match's room is watched only by a signed-in non-player"
+      },
+      {
+        "loc": "client/server/match.ts:matchLobbyInfo",
+        "agrees": true,
+        "note": "only `mine` is sent, never the opponent's registration"
+      },
+      {
+        "loc": "client/server/view.ts:viewFor",
+        "agrees": true,
+        "note": "CC blanks the opponent's deck elements"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/821-cc-no-peeking-mid-match.test.ts",
+        "pattern": "§1-§3 the replay and the omniscient watch are refused",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/820-cc-no-leak-over-the-wire.test.ts",
+        "pattern": "§1-§5 no message names the opponent sideboard",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/server/test/zz-probe-U24-2.test.ts",
+        "test": "probe U24-2 a void match: its game counts everywhere but the rating, stays in history, and its replay opens",
+        "passed": true,
+        "demonstrates": "yes: matchStillOpen is truthy mid-match and undefined once the match is void, so the replay and watch guards lift"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "engine code + tests (basis engine)",
+        "supports": "yes",
+        "note": "821 shows the replay opening after the match is over; for 'closed' (void) probe zz-probe-U24-2 shows matchStillOpen returning nothing once the match is void"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/api-replay.ts",
+        "text": "  if (opts.matchOpen?.((raw as { match?: unknown }).match) && !(admin && seat === null)) return notFound(res);"
+      },
+      {
+        "file": "client/server/main.ts",
+        "text": "        if (!who || playsIn(openMatch, who.id)) {"
+      },
+      {
+        "file": "client/server/match-store.ts",
+        "text": "export const matchOpen = (m: Match): boolean => m.phase !== 'over' && m.phase !== 'void';"
+      },
+      {
+        "file": "client/server/view.ts",
+        "text": "  if (v.sequential && v.deckElements) v.deckElements = v.deckElements.map((els, s) => (s === seat ? els : []));"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.competitive.pause",
+    "textHash": "d1952959c3a92112",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/server/match.ts:matchOp",
+        "agrees": true,
+        "note": "pause only via betweenOf (between/paused room); resume keeps current configs, score, banks"
+      },
+      {
+        "loc": "client/server/match.ts:nextGame",
+        "agrees": true,
+        "note": "the next room is created on the carried banks"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/818-cc-bo3-through-a-restart.test.ts",
+        "pattern": "§1-§7 a Bo3 over the wire, paused, restarted",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/819-cc-pause-void-and-idle.test.ts",
+        "pattern": "§1-§4 a pause is agreed",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner: When a game is over, players can agree to pause the match and pick it back up RIGHT where they left it at another time, with a sorta saved game feature.",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner: they can play the final game later and still have the sideboard and clocks and stuff all the same.",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/match.ts",
+        "text": "      // §5.7: exactly where it stood — the configurations, the initiative"
+      },
+      {
+        "file": "client/server/match.ts",
+        "text": "      clockMs: [...m.banks] as [number, number], users: [...m.users] as [string | null, string | null],"
+      },
+      {
+        "file": "client/server/match.ts",
+        "text": "  return m && (m.phase === 'between' || m.phase === 'paused') && m.between?.code === room.code ? m : undefined;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.competitive.rating",
+    "textHash": "a699b908bb80dfc7",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/server/rating.ts:matchRatingRow",
+        "agrees": true,
+        "note": "one constructed row per decided match"
+      },
+      {
+        "loc": "client/server/accounts.ts:matchRatingRows",
+        "agrees": true,
+        "note": "decided matches folded beside the history"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/824-cc-one-elo-result-per-match.test.ts",
+        "pattern": "§2 ⭐ a rated Bo3 won 2-0",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner: Share constructed (Recommended)",
+        "supports": "yes",
+        "note": "the option he chose: 'One constructed rating; a CC match moves it once.'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/rating.ts",
+        "text": "    mode: 'constructed', finished: true, winner, users: [...m.users] as [string | null, string | null],"
+      },
+      {
+        "file": "client/server/accounts.ts",
+        "text": "  const table: RatingTable = foldRatings([...store.history, ...matchRatingRows()]);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.competitive.resume",
+    "textHash": "0e68b2c32e953adf",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/server/match.ts:matchOp",
+        "agrees": true,
+        "note": "pause: refused once locked; offer then the other seat's agreement; resume: both sockets present, both ask; until = now + SIDEBOARD_WINDOW_MS"
+      },
+      {
+        "loc": "client/server/rooms.ts:matchRunning",
+        "agrees": true,
+        "note": "a waiting room runs no clock; the paused window has until = null"
+      },
+      {
+        "loc": "client/server/rooms.ts:idleDue",
+        "agrees": true,
+        "note": "roomHeld -> not closed"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/819-cc-pause-void-and-idle.test.ts",
+        "pattern": "§1-§4 a pause is agreed",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/server/test/zz-probe-U24-1.test.ts",
+        "test": "probe U24-1 banks carry into the next game, and a paused waiting room runs no clock",
+        "passed": true,
+        "demonstrates": "yes: with both seats present and the match paused, clockRunning is [false,false], matchRunning false, the window's until null, and settleClock leaves the banks unchanged"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "engine code + tests (basis engine)",
+        "supports": "yes",
+        "note": "'no clock runs' demonstrated by probe zz-probe-U24-1"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/match.ts",
+        "text": "    if (b.locked) return no('the sideboarding window has closed — the next game is about to start');"
+      },
+      {
+        "file": "client/server/match.ts",
+        "text": "    if (!room.sockets[0] || !room.sockets[1]) return no('both players must be here to resume');"
+      },
+      {
+        "file": "client/server/match.ts",
+        "text": "      b.until = now + SIDEBOARD_WINDOW_MS;"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "  if (roomWaiting(room)) return false;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "annexd.modes.competitive.sideboard-window",
     "textHash": "daf022f3d8a7b645",
     "verdict": "untested",
@@ -3110,6 +3573,63 @@
     ],
     "basis_ok": true,
     "problem": "Owner-only rule supported by its quote; no sideboarding window exists in server/ui, so nothing demonstrates it."
+  },
+  {
+    "key": "annexd.modes.competitive.void",
+    "textHash": "1eb5ecb6473f1a5a",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/server/match.ts:sweepMatches",
+        "agrees": true,
+        "note": "paused >= PAUSE_LIMIT_MS (7 d) -> voidMatch; leagueWeekClosed -> voidMatch when paused or between"
+      },
+      {
+        "loc": "client/server/rating.ts:matchRatingRow",
+        "agrees": true,
+        "note": "a void match has no row: no result"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/819-cc-pause-void-and-idle.test.ts",
+        "pattern": "§1-§4 a pause is agreed",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/829-cc-league-week-end-voids.test.ts",
+        "pattern": "§1 ⭐ the week closes",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner: 7 days, then void",
+        "supports": "yes",
+        "note": "the option he chose reads 'Kept for a week. If not resumed by then it closes with no result. League matches also close at the end of their league week.' The second sentence is as general as his words; its game-in-progress refinement is in annexd.modes.competitive.league-week, which this record cites"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/match.ts",
+        "text": "export const PAUSE_LIMIT_MS = 7 * 24 * 3600_000;"
+      },
+      {
+        "file": "client/server/match.ts",
+        "text": "      if (now - (m.pause?.pausedAt ?? now) >= PAUSE_LIMIT_MS) voidMatch(m, 'paused for 7 days', now);"
+      },
+      {
+        "file": "client/server/match.ts",
+        "text": "      else if (leagueWeekClosed(m)) voidMatch(m, 'its league week closed', now);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "annexd.modes.concession",
@@ -3228,6 +3748,81 @@
     "basis_ok": true,
     "problem": "",
     "carried": "example-label 2026-10-11"
+  },
+  {
+    "key": "annexd.modes.concession.match",
+    "textHash": "1306a1282cb14d36",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/server/rating.ts:matchRatingRow",
+        "agrees": true,
+        "note": "0 games -> walkover {seat: loser, turn 0}; 1 game -> game 1's stamp on the loser; >= 2 -> no stamp (normal)"
+      },
+      {
+        "loc": "client/server/rating.ts:isRated",
+        "agrees": true,
+        "note": "a game with `match` is never rated by itself"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/825-cc-match-concession-weight.test.ts",
+        "pattern": "§1 ⭐ a match decided in or right after game 1",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/825-cc-match-concession-weight.test.ts",
+        "pattern": "§2 ⭐ two or more games weigh normal",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/825-cc-match-concession-weight.test.ts",
+        "pattern": "§3 a match conceded before game 1 was dealt",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/825-cc-match-concession-weight.test.ts",
+        "pattern": "§4 the stamp is on the match loser",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/825-cc-match-concession-weight.test.ts",
+        "pattern": "§5 ⭐ a Bo1 conceded on turn 1",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "engine code + tests (basis engine)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/rating.ts",
+        "text": "  if (m.games.length === 0) concession = { seat: loser, turn: 0 };"
+      },
+      {
+        "file": "client/server/rating.ts",
+        "text": "    if (c) concession = { seat: loser, turn: c.turn };"
+      },
+      {
+        "file": "client/server/rating.ts",
+        "text": "  if (game.match) return false;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "annexd.modes.concession.normal",
@@ -5571,7 +6166,7 @@
   },
   {
     "key": "annexd.reveal.public-zones.deck-elements",
-    "textHash": "1d48627af829a1c6",
+    "textHash": "13c9e0d6ebb4a82e",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U24-r4",
@@ -5579,17 +6174,12 @@
       {
         "loc": "client/server/view.ts:viewFor",
         "agrees": true,
-        "note": "deckElements shipped unredacted to both seats"
+        "note": "deckElements sent for both seats except when `sequential` (CC), where the opponent's entry is blanked"
       },
       {
         "loc": "client/ui/inspect.ts:resourceMenuElements",
         "agrees": true,
-        "note": "reads s.deckElements?.[seat] only, for the menu order"
-      },
-      {
-        "loc": "client/ui/lessons.ts",
-        "agrees": true,
-        "note": "also reads the own seat only"
+        "note": "reads state.deckElements?.[seat] only, to order the resource menu"
       }
     ],
     "tests_run": [
@@ -5600,44 +6190,39 @@
         "asserts_claim": true
       },
       {
-        "file": "client/ui/test/667-draft-any-element-resource.test.ts",
-        "pattern": "",
+        "file": "client/server/test/820-cc-no-leak-over-the-wire.test.ts",
+        "pattern": "§1-§5 no message names the opponent sideboard",
         "passed": true,
-        "asserts_claim": false
-      }
-    ],
-    "probes": [
-      {
-        "file": "client/ui/test/zz-probe-U24-1.test.ts",
-        "test": "probe U24-1: constructed mono-fire recycle menu leads with fire, then Prismite; the rest behind more",
-        "passed": true,
-        "demonstrates": "yes: state.deckElements is [[\"fire\"],[\"water\"]] and the menu leads with the own deck element only"
-      }
-    ],
-    "source_checks": [
-      {
-        "ref": "owner \"**Shipped unredacted**, because redaction lives in `server/view.ts` and the engine cannot\"",
-        "supports": "yes",
-        "note": ""
+        "asserts_claim": true
       },
       {
-        "ref": "owner \"Drop all\" (2026-10-25)",
+        "file": "client/ui/test/667-draft-any-element-resource.test.ts",
+        "pattern": "CR 105.9a / BL-44",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner: **Shipped unredacted**, because redaction lives in `server/view.ts` and the engine cannot",
         "supports": "yes",
-        "note": "showing a constructed deck's elements to both players was dropped, so the client reads only the player's own"
+        "note": "both players' deck elements are in the view"
+      },
+      {
+        "ref": "owner: Drop all",
+        "supports": "yes",
+        "note": "the feature of SHOWING a constructed deck's elements to both players was dropped, so the client reads only its own"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/435-cr-digital-2.test.ts",
-        "text": "assert.deepEqual(viewFor(h.state, viewer, null).deckElements, [['fire'], ['water']], `seat ${viewer} is sent both`);"
+        "file": "client/server/view.ts",
+        "text": "  if (v.sequential && v.deckElements) v.deckElements = v.deckElements.map((els, s) => (s === seat ? els : []));"
       },
       {
         "file": "client/ui/inspect.ts",
-        "text": "const deck: readonly string[] | undefined = s.deckElements?.[seat] ?? s.elements;"
-      },
-      {
-        "file": "client/ui/lessons.ts",
-        "text": "c.state.deckElements?.[c.seat]"
+        "text": "  const deck: readonly string[] | undefined = s.deckElements?.[seat] ?? s.elements;"
       }
     ],
     "basis_ok": true,
