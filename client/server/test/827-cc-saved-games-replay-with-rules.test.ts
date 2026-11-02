@@ -13,7 +13,7 @@
  *   §2 ⭐ replay-room's analysis reproduces every recorded fingerprint
  *   §3 ⭐ the replay probe deals the same board (the same fingerprints), and
  *      refuses rules it cannot read rather than deal the house-rules game
- *   §4 the stats summary replays it whole, and a file whose rules this build
+ *   §4 ⭐ the stats summary replays it whole, and a file whose rules this build
  *      cannot read is summarized as unplayable, never as a standard game
  */
 import { test } from 'node:test';
@@ -21,10 +21,11 @@ import assert from 'node:assert/strict';
 import { readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import type { CardName, Seat } from '../../engine/src/types.ts';
-import { createGame } from '../../engine/src/apply.ts';
+import { createGame, legalActions } from '../../engine/src/apply.ts';
 import { ccFixture } from './cc-match-fixture.ts';
 
 const F = await ccFixture('t827');
+const WALK = 40;
 const CL = await import('../cardledger.ts');
 const RR = await import('../replay-room.ts');
 const P = await import('../replay-probe.ts');
@@ -43,7 +44,18 @@ const CHOSEN: Seat = ROLL === 0 ? 1 : 0;
 // the chooser (game 1's loser, seat 0) readies with the choice
 F.M.matchOp(G2, 1, 'ready', { ready: true });
 F.M.matchOp(G2, 0, 'ready', { ready: true, initiative: CHOSEN });
-F.concede(G2, 1);
+// a real stretch of game: 40 actions, the initiative player's last legal one
+// first — the sequential steps and the battle all hang on who has the
+// initiative, so the same log dealt with the roll is refused along the way
+for (let k = 0; k < WALK && G2.state.winner === null; k++) {
+  const seat = ([G2.state.initiative, G2.state.initiative === 0 ? 1 : 0] as Seat[])
+    .find(s => legalActions(G2.state, s).some(a => a.type !== 'concede'));
+  if (seat === undefined) break;
+  const options = legalActions(G2.state, seat).filter(a => a.type !== 'concede');
+  F.R.applyToRoom(G2, options[options.length - 1]!);
+}
+if (G2.state.winner === null) F.concede(G2, 1);
+else F.M.matchGameDecided(G2);
 const RAW = JSON.parse(readFileSync(join(F.DIR, 'games', `${G2.code}.json`), 'utf8')) as Record<string, unknown> & {
   seed: number; actions: unknown[]; sigs: string[]; rules: unknown;
 };
@@ -53,7 +65,10 @@ test('§0 the game is the one this file needs', () => {
   assert.equal(G2.state.initiative, CHOSEN, 'game 2 was dealt with the chosen initiative');
   assert.notEqual(CHOSEN, ROLL, 'which is NOT what its seed rolls (so a deal without the rules is another game)');
   assert.deepEqual(RAW.rules, { sequential: true, initiative: CHOSEN }, 'its file carries the rules');
-  assert.ok(N >= 1 && RAW.sigs.length === N && RAW.sigs.every(Boolean), 'and a fingerprint per action');
+  assert.ok(N > WALK / 2 && RAW.sigs.length === N && RAW.sigs.every(Boolean), `a real log with a fingerprint per action (${N})`);
+  // non-vacuous: dealt with the roll, this log is another game
+  const plain = ST.summarizeGame({ ...RAW, rules: undefined, code: G2.code } as never);
+  assert.ok(plain.skipped > 0, `dealt WITHOUT its rules the log is refused along the way (${plain.skipped} of ${N})`);
 });
 
 test('§1 ⭐ the card ledger replay verifies to the end and opens with the chosen initiative', () => {
@@ -85,11 +100,11 @@ test('§3 ⭐ the replay probe deals the same board, and refuses rules it cannot
   assert.match(bad.error ?? '', /cannot read/);
 });
 
-test('§4 the stats summary replays it whole; unreadable rules are unplayable', () => {
+test('§4 ⭐ the stats summary replays it whole; unreadable rules are unplayable', () => {
   const s = ST.summarizeGame({ ...RAW, code: G2.code } as never);
-  assert.equal(s.skipped, 0, 'every action applied');
+  assert.equal(s.skipped, 0, '⭐ every action applied: the game that was played');
   assert.equal(s.finished, true);
-  assert.equal(s.winner, 0);
+  assert.equal(s.winner, G2.winner ?? F.R.decidedWinner(G2));
   const bad = ST.summarizeGame({ ...RAW, code: G2.code, rules: { sequential: true, initiative: 'x' } } as never);
   assert.equal(bad.skipped, N, 'nothing dealt: the summary refuses rather than replay another game');
   assert.equal(bad.finished, false);
