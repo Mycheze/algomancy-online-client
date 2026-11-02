@@ -4,7 +4,7 @@
  * The rule is the owner's (2026-11-02, docs/22 §0): "like Magic" — any cards
  * either way between games, the main deck stays at 30 or more, the sideboard
  * holds at most 7, and the copy cap counts main and sideboard together.
- * CR: see W1 (sideboard record)
+ * CR 901.9b, 901.9c
  *
  * PURE, and in its own file rather than in apply.ts on purpose: the engine is
  * never handed a sideboard. `createGame` still receives only the main deck, so
@@ -27,10 +27,10 @@ import { canonicalCardName } from './cards/dsl.ts';
 import { DECK_LIST } from './cards/registry.ts';
 import type { CardName } from './types.ts';
 
-/** a sideboard holds at most this many cards. CR: see W1 (sideboard record) */
+/** a sideboard holds at most this many cards. CR 901.9b */
 export const SIDEBOARD_MAX = 7;
 /** the copy cap, counted over main + sideboard together — checkDeck's number.
- * CR: see W1 (sideboard record) */
+ * CR 901.9b */
 export const MATCH_COPY_CAP = 2;
 
 /** a deck as it is brought to one game of a match */
@@ -95,11 +95,11 @@ export function checkMatchDeck(main: unknown, side: unknown): MatchDeckResult {
   const s = rawSide.map(canonicalCardName);
   const unknown = [...new Set(s.filter(n => !POOL.has(n)))];
   if (unknown.length) return { ok: false, error: `sideboard: not in the scripted pool: ${few(unknown)}` };
-  // CR: see W1 (sideboard record)
+  // CR 901.9b
   if (s.length > SIDEBOARD_MAX) {
     return { ok: false, error: `a sideboard holds at most ${SIDEBOARD_MAX} cards (got ${s.length})` };
   }
-  // CR: see W1 (sideboard record) — the cap counts both boards
+  // CR 901.9b — the cap counts both boards
   const over = [...counts([...m.cards, ...s])].filter(([, c]) => c > MATCH_COPY_CAP).map(([n]) => n);
   if (over.length) {
     return { ok: false, error: `max ${MATCH_COPY_CAP} copies of each card across the main deck and sideboard: ${few(over)}` };
@@ -114,7 +114,7 @@ export function checkMatchDeck(main: unknown, side: unknown): MatchDeckResult {
  * aliases canonicalised — as the registration. Nothing else is asked: any
  * card may cross either way (owner, docs/22 §0), so this accepts every
  * configuration reachable from any other, which is what lets game 3 start
- * from game 2's (§8 Q3). CR: see W1 (sideboard record)
+ * from game 2's (§8 Q3). CR 901.9c
  */
 export function checkSwap(registered: MatchConfig, next: MatchConfig): MatchDeckResult {
   if (!isNameList(next?.main) || !isNameList(next?.side)) {
