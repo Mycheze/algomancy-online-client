@@ -75,7 +75,7 @@ test('§2-§4 an illegal configuration falls back to the last legal one at the l
   assert.equal(info.locked, true);
   assert.equal(info.chooser, 1);
   // §4 locked
-  assert.equal(M.matchOp(room, 0, 'config', REG[0]).ok, false, 'no more sideboarding');
+  assert.equal(M.matchOp(room, 0, 'config', { main: REG[0].main, side: REG[0].side }).ok, false, 'no more sideboarding');
   assert.equal(M.matchOp(room, 0, 'ready', { ready: true, initiative: 0 }).ok, false, 'the winner cannot choose');
   assert.equal(M.matchOp(room, 1, 'ready', { ready: true }).ok, false, 'the loser must choose');
   assert.equal(M.matchOp(room, 0, 'pause', {}).ok, false, 'no pause once locked');

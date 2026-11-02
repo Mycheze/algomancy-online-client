@@ -40,7 +40,7 @@ test('§1-§4 a pause is agreed, held through the idle sweep, resumed where it s
   assert.equal(m.between!.until, null, 'the window stopped');
   M.sweepMatches(t0 + 10 * M.SIDEBOARD_WINDOW_MS);
   assert.equal(m.between!.locked, false, 'a paused window never locks');
-  assert.equal(M.matchOp(room, 0, 'config', REG[0]).ok, false, 'no sideboarding while paused');
+  assert.equal(M.matchOp(room, 0, 'config', { main: REG[0].main, side: REG[0].side }).ok, false, 'no sideboarding while paused');
   // §2 — both leave; days pass
   room.sockets = [null, null];
   const pausedAt = m.pause!.pausedAt!;
