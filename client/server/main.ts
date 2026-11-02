@@ -2727,10 +2727,14 @@ wss.on('connection', ws => {
         ? setRoomDeck(room, seat, deckCards, owned ? owned.id : null) : false;
       // docs/22 §5.1: a CC match's game 1 takes a REGISTRATION (main + side),
       // never the bare deck above (takesJoinDeck is false in every match room);
-      // games 2-3 take nothing off a join at all — they deal from the match
+      // games 2-3 take nothing off a join at all — they deal from the match.
+      // CT-518: a registration is the creating join or the waiting room's own
+      // "Play this deck" (`pick`). Every other join carries whatever deck the
+      // browser last selected — a code typed on the home page sends the
+      // Constructed deck — and a CC-legal one would deal game 1 unchosen.
       if (room.match && account) {
         const m = matchOfRoom(room);
-        const brings = msg.deckId !== undefined || msg.deck !== undefined;
+        const brings = msg.pick === true && (msg.deckId !== undefined || msg.deck !== undefined);
         if (m && room.match.game === 1 && roomWaiting(room) && m.phase === 'game' && (ccReg || brings)) {
           const reg = ccReg ?? registrationFor(account.id, msg.deckId, msg.deck, msg.side);
           if ('error' in reg) send(ws, { t: 'error', msg: reg.error });

@@ -109,7 +109,7 @@ export async function startWireMatch(w: Awaited<ReturnType<typeof ccWire>>, best
   a.send({ t: 'join', room: code, seat: 0, mode: 'constructed', cc: { bestOf }, deckId: ann!.deckId, token: ann!.token, name: 'x' });
   const lobby = await a.next(m => m.t === 'joined');
   const markA = a.msgs.length;
-  b.send({ t: 'join', room: code, deckId: bo!.deckId, token: bo!.token });
+  b.send({ t: 'join', room: code, deckId: bo!.deckId, token: bo!.token, pick: true });
   const jb = await b.next(m => m.t === 'joined' && !!m['view']);
   const ja = await a.next(m => m.t === 'joined' && !!m['view'], markA);
   return { code, a, b, lobby, ja, jb };

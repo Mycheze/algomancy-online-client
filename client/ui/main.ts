@@ -322,8 +322,8 @@ class NetBackend implements Backend {
     const q = new URLSearchParams(location.search);
     return q.has('ccdeck') ? (q.get('bo') === '1' ? 1 : 3) : null;
   })();
-  /** game 1: the saved deck this seat registers (re-sent on a reconnect, which
-   * before the deal re-registers the same deck and after it is ignored) */
+  /** game 1: the saved deck this seat registers (re-sent on a reconnect, where
+   * the server ignores it: only the creating join and a `pick` join register) */
   ccDeck: string | null = new URLSearchParams(location.search).get('ccdeck');
   /** CR D4.6: the server says this seat can undo now (a CC step, before Done) */
   ccUndo = false;
@@ -11284,7 +11284,8 @@ function matchActions(): mt.MatchActions {
     lobby: () => NET?.waiting?.match ?? null,
     seat: () => NET?.seat ?? 0,
     send: msg => NET?.ccSend(msg),
-    register: id => { if (NET) { NET.ccDeck = id; NET.sendJoin(); } },
+    // CT-518: `pick` — only this button registers a deck into a match room
+    register: id => { if (NET) { NET.ccDeck = id; NET.sendJoin(true); } },
     decks: () => (acct.token() ? dk.competitiveDecks() : null),
     fail: msg => { uiError = msg; repaint(); },
     rerender: repaint,
