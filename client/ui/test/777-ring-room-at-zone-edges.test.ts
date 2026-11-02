@@ -31,9 +31,9 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readStyles } from './read-styles.ts';
 
-const CSS = readFileSync(new URL('../style.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+const CSS = readStyles().replace(/\/\*[\s\S]*?\*\//g, '');
 
 /** every rule at the top level of the sheet (not inside an @-block), in order */
 function topRules(): Array<{ sels: string[]; body: string }> {

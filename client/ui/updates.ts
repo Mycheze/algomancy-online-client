@@ -45,6 +45,14 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
   { date: '2026-11-02', kind: 'new', text: 'Competitive matches, best of 1 or 3: a sideboard of up to 7 to swap between games (saved swaps are one tap), 45 minutes each for the whole match, and players plan and deploy in turn. A match can be paused between games.' },
+  { date: '2026-11-02', kind: 'fix', text: 'League sign-up on a phone: swiping over the hours grid scrolls the page again, and a tap marks or clears one hour. The grid also works from the keyboard: Tab to it, move with the arrow keys, press Space to mark.' },
+  { date: '2026-11-02', kind: 'change', text: 'Giving up a weekly challenge run, or dropping a finished run you have not submitted, now asks you to press again first.' },
+  { date: '2026-11-02', kind: 'fix', text: 'Custom rules on the home page work again: banning cards, the + and − steppers, Simple cards only and the Beginner preset had stopped doing anything. Banned cards now sit in a tidy row instead of piling on top of each other.' },
+  { date: '2026-11-02', kind: 'fix', text: 'Find a game is one clean card again instead of a box hanging out of another box, and the Accept button no longer misses a click when the countdown ticks. The countdown no longer jumps ahead after you accept.' },
+  { date: '2026-11-02', kind: 'fix', text: 'The home page no longer wipes what you are typing (your name, a room code, a deck link or list) when someone joins the queue, and signed-in players no longer see “Playing signed out” flash up while the page loads.' },
+  { date: '2026-11-02', kind: 'fix', text: 'Watching a replay, typing in the judge or report box no longer pauses or steps the game, and Escape closes the box instead of leaving the replay.' },
+  { date: '2026-11-02', kind: 'fix', text: 'Hovering a card on your deck page, in the card search or on the metagame pages shows its text again. Return to Lobby works when you opened your decks from a waiting room.' },
+  { date: '2026-11-02', kind: 'fix', text: 'Deck names are big and bold again at the top of the deck page, and card names in the list view are bold. The ladder and the Link Discord button now say when something went wrong instead of showing nothing.' },
   { date: '2026-11-01', kind: 'change', text: 'When a card has each player choose (General Smof, Perish, Rockfall…), the player with initiative now always picks first. A unit they pick is marked for the other player before their turn to pick; a card picked from a hand stays secret.' },
   { date: '2026-11-01', kind: 'fix', text: 'Glowing card outlines are no longer cut off at the edge of the hand, the play area and the resource row.' },
   { date: '2026-11-01', kind: 'fix', text: 'Card text when you hover or zoom a unit keeps the card’s own line breaks, so a second ability starts on its own line again.' },

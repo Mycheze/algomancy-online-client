@@ -20,10 +20,11 @@ import { fileURLToPath } from 'node:url';
 import { moveInBuild, rowsOf } from '../formation.ts';
 import { peekBox, PEEK_W } from '../zoom.ts';
 import type { EntityId } from '../../engine/src/types.ts';
+import { readStyles } from './read-styles.ts';
 
 const read = (f: string): string => readFileSync(fileURLToPath(new URL(f, import.meta.url)), 'utf8');
 const MAIN = read('../main.ts');
-const CSS = read('../style.css');
+const CSS = readStyles();
 const HTML = read('../index.html');
 const e = (n: number): EntityId => n as EntityId;
 

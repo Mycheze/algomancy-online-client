@@ -97,6 +97,9 @@ let dirty = false;
 let preview: Preview | null = null;
 /** a destructive organizer button pressed once, waiting for the second press */
 let arming: string | null = null;
+/** the availability grid's keyboard cell (its data-i), kept across repaints:
+ * the grid is a roving-tabindex grid, so exactly this cell is tabbable */
+let gridFocus: number | null = null;
 let busy = false;
 /** the match whose "suggest a time" form is open */
 let timeOpen: string | null = null;
@@ -599,12 +602,17 @@ function availabilityCardHtml(): string {
     <p><button data-btn="lg-grid-clear">Clear</button>
       <button class="primary" data-btn="lg-grid-save" ${dirty && !busy ? '' : 'disabled'}>${dirty ? 'Save' : 'Saved'}</button></p>
     </div>
-    <div class="lggrid" id="lg-grid">
-      <div></div>${SHOW_DAYS.map(day => `<div class="lgday">${DAY_NAMES[day]}</div>`).join('')}
-      ${Array.from({ length: 24 }, (_, h) => `<div class="lghr">${hourLabel(h)}</div>${SHOW_DAYS.map(day => {
+    <div class="lggrid" id="lg-grid" role="grid" aria-label="Hours you are usually free: arrow keys move, Space marks"
+      aria-multiselectable="true">
+      <div class="lgrow" role="row"><div role="columnheader" aria-label="hour"></div>${SHOW_DAYS.map(day =>
+        `<div class="lgday" role="columnheader">${DAY_NAMES[day]}</div>`).join('')}</div>
+      ${Array.from({ length: 24 }, (_, h) => `<div class="lgrow" role="row"><div class="lghr" role="rowheader">${hourLabel(h)}</div>${SHOW_DAYS.map((day, c) => {
         const i = day * 24 + h;
-        return `<div class="lgcell${d.grid[i] === '1' ? ' on' : ''}" data-i="${i}" title="${DAY_NAMES[day]} ${hourLabel(h)}"></div>`;
-      }).join('')}`).join('')}
+        const on = d.grid[i] === '1';
+        const label = `${DAY_NAMES[day]} ${hourLabel(h)}`;
+        return `<div class="lgcell${on ? ' on' : ''}" role="gridcell" aria-selected="${on}" aria-label="${label}"
+          tabindex="${i === (gridFocus ?? SHOW_DAYS[1]! * 24 + 19) ? 0 : -1}" data-i="${i}" data-c="${c}" data-h="${h}" title="${label}"></div>`;
+      }).join('')}</div>`).join('')}
     </div></div>
   </div>`;
 }
@@ -1060,13 +1068,30 @@ function wireGrid(): void {
     };
   }
   if (!el) return;
+  /* Owner, 2026-11-02 ("tap cells + arrow keys"), and test/906:
+   *  - a MOUSE (or pen) drag paints, as it always did;
+   *  - a FINGER scrolls the page (style.css: touch-action manipulation, and no
+   *    preventDefault for touch), and a TAP toggles one cell — the click that
+   *    follows a tap, which the browser does not send after a scroll;
+   *  - the KEYBOARD: one cell is tabbable (roving tabindex, `gridFocus`), the
+   *    arrows move it, Space or Enter toggles it.
+   * Before, `touch-action: none` meant a thumb landing on the grid (taller than
+   * a phone's screen) could not scroll past it and painted cells instead, and
+   * nothing in the grid could be reached by Tab at all. */
   let painting: '0' | '1' | null = null;
-  const set = (cell: Element | null): void => {
-    if (!painting || !draft || !(cell instanceof HTMLElement) || cell.dataset['i'] === undefined) return;
+  let lastPointer = '';
+  /** the last cell a drag painted — a fast stroke skips cells between
+   * pointermove samples, so the gap is filled in (`line`) */
+  let from: HTMLElement | null = null;
+  const cellAt = (c: number, h: number): HTMLElement | null =>
+    el.querySelector(`.lgcell[data-c="${c}"][data-h="${h}"]`);
+  const put = (cell: HTMLElement, v: '0' | '1'): void => {
+    if (!draft || cell.dataset['i'] === undefined) return;
     const i = Number(cell.dataset['i']);
-    if (draft.grid[i] === painting) return;
-    draft.grid = draft.grid.slice(0, i) + painting + draft.grid.slice(i + 1);
-    cell.classList.toggle('on', painting === '1');
+    if (draft.grid[i] === v) return;
+    draft.grid = draft.grid.slice(0, i) + v + draft.grid.slice(i + 1);
+    cell.classList.toggle('on', v === '1');
+    cell.setAttribute('aria-selected', String(v === '1'));
     dirty = true;
     const n = hoursIn(draft.grid);
     const out = document.getElementById('lg-hours');
@@ -1074,17 +1099,68 @@ function wireGrid(): void {
     const save = document.querySelector('[data-btn="lg-grid-save"]') as HTMLButtonElement | null;
     if (save) { save.disabled = false; save.textContent = 'Save'; }
   };
+  const toggle = (cell: HTMLElement): void => {
+    if (draft) put(cell, draft.grid[Number(cell.dataset['i'])] === '1' ? '0' : '1');
+  };
+  /** every cell from `a` to `b` inclusive, stepping one cell at a time */
+  const line = (a: HTMLElement, b: HTMLElement): HTMLElement[] => {
+    const [c0, h0, c1, h1] = [a.dataset['c'], a.dataset['h'], b.dataset['c'], b.dataset['h']].map(Number) as [number, number, number, number];
+    const n = Math.max(Math.abs(c1 - c0), Math.abs(h1 - h0));
+    const out: HTMLElement[] = [];
+    for (let k = 1; k <= n; k++) {
+      const cell = cellAt(Math.round(c0 + (c1 - c0) * k / n), Math.round(h0 + (h1 - h0) * k / n));
+      if (cell) out.push(cell);
+    }
+    return out;
+  };
+  /** make `cell` the grid's one tabbable cell */
+  const rove = (cell: HTMLElement): void => {
+    for (const other of el.querySelectorAll<HTMLElement>('.lgcell[tabindex="0"]')) other.tabIndex = -1;
+    cell.tabIndex = 0;
+    gridFocus = Number(cell.dataset['i']);
+  };
   el.onpointerdown = e => {
+    lastPointer = e.pointerType;
+    if (e.pointerType === 'touch') return;   // a finger scrolls; its tap is the click below
     const cell = (e.target as HTMLElement).closest('.lgcell') as HTMLElement | null;
     if (!cell || !draft) return;
     e.preventDefault();
     painting = draft.grid[Number(cell.dataset['i'])] === '1' ? '0' : '1';
     el.setPointerCapture?.(e.pointerId);
-    set(cell);
+    from = cell;
+    put(cell, painting);
+    rove(cell);
   };
-  // pointer capture sends every move here; find the cell under the finger
-  el.onpointermove = e => { if (painting) set(document.elementFromPoint(e.clientX, e.clientY)?.closest('.lgcell') ?? null); };
-  el.onpointerup = el.onpointercancel = () => { painting = null; };
+  // pointer capture sends every move here; find the cell under the pointer,
+  // and paint the whole way from the last one
+  el.onpointermove = e => {
+    if (!painting) return;
+    const cell = document.elementFromPoint(e.clientX, e.clientY)?.closest('.lgcell') as HTMLElement | null;
+    if (!cell || !el.contains(cell) || cell === from) return;
+    for (const c of from ? line(from, cell) : [cell]) put(c, painting);
+    from = cell;
+  };
+  el.onpointerup = el.onpointercancel = () => { painting = null; from = null; };
+  el.onclick = e => {
+    if (lastPointer !== 'touch') return;   // a mouse drag has painted already
+    const cell = (e.target as HTMLElement).closest('.lgcell') as HTMLElement | null;
+    if (cell) { toggle(cell); rove(cell); }
+  };
+  el.onkeydown = e => {
+    const cell = (e.target as HTMLElement).closest?.('.lgcell') as HTMLElement | null;
+    if (!cell) return;
+    const c = Number(cell.dataset['c']), h = Number(cell.dataset['h']);
+    const move: Record<string, [number, number]> = {
+      ArrowLeft: [c - 1, h], ArrowRight: [c + 1, h], ArrowUp: [c, h - 1], ArrowDown: [c, h + 1],
+      Home: [0, h], End: [SHOW_DAYS.length - 1, h],
+    };
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(cell); return; }
+    const to = move[e.key];
+    if (!to) return;
+    e.preventDefault();
+    const next = cellAt(to[0], to[1]);
+    if (next) { rove(next); next.focus(); }
+  };
 }
 
 // ── clicks ────────────────────────────────────────────────────────────

@@ -34,10 +34,11 @@ import { resourceSummary } from '../resources.ts';
 import { cardsRect, resSumBox, resSumHtml, resSumRow } from '../ressum.ts';
 import { zoomTarget } from '../zoom.ts';
 import { client } from './ui-driver.ts';
+import { readStyles } from './read-styles.ts';
 
 const ui = await client();
 const MAIN = readFileSync(fileURLToPath(new URL('../main.ts', import.meta.url)), 'utf8');
-const CSS = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url)), 'utf8');
+const CSS = readStyles();
 
 /** planning, seat 0 with a mixed row: 3 water open, 2 fire dormant, 1 dark
  * expended, 1 shard open; seat 1 with an opponent's face-down resource */

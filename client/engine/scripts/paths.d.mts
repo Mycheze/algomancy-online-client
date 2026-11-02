@@ -56,11 +56,14 @@ export const UI_TEST_DIR: string;
 export const SERVER_TEST_DIR: string;
 export const CLIENT_DOCS_DIR: string;
 export const SERVER_E2E_DIR: string;
+export const LEDGERS_DIR: string;
 export const LEAGUE_STORE_TS: string;
 /** the whole browser client — the game server resolves this for itself too */
 export const UI_DIR: string;
 /** the sound cues, one .ogg per ui/sfx.ts Cue; provenance in sfx/NOTICE.md */
 export const SFX_DIR: string;
+/** client/ui/style.css — tests read it only through ui/test/read-styles.ts (guarded by ui/test/910) */
+export const STYLE_CSS: string;
 export const VAR_DIR: string;
 export const ISSUES_JSONL: string;
 export const VERDICTS_JSONL: string;

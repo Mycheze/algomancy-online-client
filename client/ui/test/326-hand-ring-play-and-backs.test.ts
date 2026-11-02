@@ -16,9 +16,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { handOfferBadge } from '../inspect.ts';
+import { readStyles } from './read-styles.ts';
 
 const read = (f: string): string => readFileSync(fileURLToPath(new URL(`../${f}`, import.meta.url)), 'utf8');
-const CSS = read('style.css');
+const CSS = readStyles();
 const MAIN = read('main.ts');
 
 test('§1 no doubled ring on a usable card', () => {

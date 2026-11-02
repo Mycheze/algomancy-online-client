@@ -244,7 +244,7 @@ function composerHtml(): string {
 
 function chipHtml(): string {
   const p = chip!;
-  return `<button class="crchip" data-crl="chip" style="left:${Math.round(p.x)}px;top:${Math.round(p.y)}px">💬 Comment${
+  return `<button class="crselchip" data-crl="chip" style="left:${Math.round(p.x)}px;top:${Math.round(p.y)}px">💬 Comment${
     p.clamped ? ` <span class="crnote">on ${esc(p.label)} only</span>` : ''}</button>`;
 }
 

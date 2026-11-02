@@ -107,6 +107,8 @@ let loading = false;
 /** null until the first load; false once the server has refused us */
 let allowed: boolean | null = null;
 let msg = '';
+/** a server fault (not a refusal) on the last request; cleared by the next answer */
+let fault = '';
 let over: Overview | null = null;
 let accounts: AccountRow[] = [];
 let reports: ReportRow[] = [];
@@ -130,8 +132,13 @@ async function get<T>(path: string): Promise<T | null> {
     // distinguish — which is the point. Anything but 200 is "you are not an
     // admin here", and the page says exactly that and nothing more specific,
     // because it does not know anything more specific.
-    if (!res.ok) { allowed = false; return null; }
-    allowed = true;
+    //
+    // …but ONLY 404 is the refusal. A 500, or a 502 from the proxy while the
+    // server restarts, is a fault, and it used to blank the whole page to
+    // "this account is not an admin" for an admin (test/905).
+    if (res.status === 404) { allowed = false; return null; }
+    if (!res.ok) { fault = `the server answered ${res.status} — try refresh`; return null; }
+    allowed = true; fault = '';
     return await res.json() as T;
   } catch { msg = 'could not reach the server'; return null; }
 }
@@ -141,7 +148,10 @@ async function post(path: string, body: unknown): Promise<Record<string, unknown
     const res = await fetch(path, {
       method: 'POST', headers: acct.authHeaders(), body: JSON.stringify(body),
     });
-    if (!res.ok) { allowed = false; return null; }
+    if (res.status === 404) { allowed = false; return null; }
+    // an action's own failure goes in `msg`, beside the action's other errors,
+    // so the reload that follows it does not wipe it
+    if (!res.ok) { msg = `that did not work: the server answered ${res.status}`; return null; }
     return await res.json() as Record<string, unknown>;
   } catch { msg = 'could not reach the server'; return null; }
 }
@@ -459,6 +469,7 @@ function paint(): void {
     </div>
     <div class="admintabs">${tabs}</div>
     ${msg ? `<p class="adminmsg">${esc(msg)}</p>` : ''}
+    ${fault ? `<p class="adminmsg">${esc(fault)}</p>` : ''}
     ${body}
   </div>`;
 }

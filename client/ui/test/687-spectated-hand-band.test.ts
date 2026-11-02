@@ -16,9 +16,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { readStyles } from './read-styles.ts';
 
 const read = (f: string): string => readFileSync(fileURLToPath(new URL(f, import.meta.url)), 'utf8');
-const CSS = read('../style.css');
+const CSS = readStyles();
 
 test('CT-419: the top line grows while it holds a spectated hand, and only then', () => {
   assert.match(CSS, /\.lboard:has\(> \.linfo\.theirs \.lspect\) \{ --lint: var\(--linspect, (\d+)px\); \}/);

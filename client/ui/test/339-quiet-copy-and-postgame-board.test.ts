@@ -33,10 +33,11 @@ import { ACHIEVEMENTS } from '../../server/achievements.ts';
 import { modeName } from '../account.ts';
 import type { EntityId, GameState, Seat } from '../../engine/src/types.ts';
 import { client } from './ui-driver.ts';
+import { readStyles } from './read-styles.ts';
 
 const ui = await client();
 const MAIN = readFileSync(fileURLToPath(new URL('../main.ts', import.meta.url)), 'utf8');
-const CSS = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url)), 'utf8');
+const CSS = readStyles();
 
 /** the text of the prompt bar, tags stripped */
 const bar = (html: string): string => {

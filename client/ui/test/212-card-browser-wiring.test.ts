@@ -29,6 +29,7 @@ import { fileURLToPath } from 'node:url';
 import '../../engine/src/cards/registry.ts';
 import { FLAGS, KEYS, search } from '../cardsearch.ts';
 import { allRows } from '../cardindex.ts';
+import { readStyles } from './read-styles.ts';
 
 const UI = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (f: string): string => readFileSync(join(UI, f), 'utf8');
@@ -157,7 +158,7 @@ test('the rail offers the seven kinds, the three boxes, and scrolls a long secti
   assert.deepEqual([...boxes.keys()].sort(), ['base', 'kickstarter', 'lightdark']);
   // and the long sections (Attributes, Mechanics, Subtypes) scroll inside
   // themselves rather than running off the bottom of a viewport-high rail
-  const css = read('style.css');
+  const css = readStyles();
   const chips = css.match(/\.cbchips \{[^}]*\}/)?.[0] ?? '';
   assert.match(chips, /max-height/, '.cbchips needs a max-height');
   assert.match(chips, /overflow-y: auto/, '.cbchips must scroll');

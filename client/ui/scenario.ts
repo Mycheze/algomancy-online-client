@@ -73,6 +73,8 @@ let busy = false;
  * a verdict is a record, and the owner should be able to see that it landed
  * without watching for a four-second banner */
 let status = '';
+/** the last filing FAILED: drawn red, not in the success green (test/905) */
+let statusBad = false;
 /** board round 8: on the regions board the panel is a popover off the
  * toolbar's 🧪 (main.ts toolbarHtml). It opens by itself on a scenario's first
  * paint — the brief is the first thing a tester must read — and stays as the
@@ -83,7 +85,7 @@ export function setScenario(next: ScenarioInfo | null): void {
   // a new scenario clears the drafts; the same one keeps them (every server
   // push carries the brief, and a push must not eat what is being typed)
   if (next && info && next.id !== info.id) {
-    detailOpen = false; noteDraft = ''; rulingDraft = ''; clauseDraft = ''; status = '';
+    detailOpen = false; noteDraft = ''; rulingDraft = ''; clauseDraft = ''; status = ''; statusBad = false;
   }
   if (next && next.id !== info?.id) popShown = true;
   info = next;
@@ -148,7 +150,7 @@ export function panelHtml(room: string, closable = false): string {
     </details>
     <div class="scnstamp">stamped with engine <code>${esc(info.engine.slice(0, 10))}</code>
       · room ${esc(room)} · action ${info.actionIndex}</div>
-    ${status ? `<div class="scnstatus">${esc(status)}</div>` : ''}
+    ${status ? `<div class="scnstatus${statusBad ? ' bad' : ''}">${esc(status)}</div>` : ''}
   </div>`;
 }
 
@@ -186,7 +188,7 @@ export function handleButton(btn: HTMLElement, ctx: RunnerCtx): boolean {
 
 function file(verdict: string, ctx: RunnerCtx): void {
   busy = true;
-  status = `filing “${verdict}”…`;
+  status = `filing “${verdict}”…`; statusBad = false;
   ctx.rerender();
   // Note what is NOT in this body: the scenario id, the engine SHA and the
   // action index. All three are read off the room by the server — a verdict
@@ -208,10 +210,10 @@ function file(verdict: string, ctx: RunnerCtx): void {
         noteDraft = ''; rulingDraft = ''; clauseDraft = '';
         detailOpen = false;
       } else {
-        status = `NOT recorded — ${r.error ?? 'the server refused it'}`;
+        status = `NOT recorded — ${r.error ?? 'the server refused it'}`; statusBad = true;
       }
     })
-    .catch(err => { status = `NOT recorded — ${String(err)}`; })
+    .catch(err => { status = `NOT recorded — ${String(err)}`; statusBad = true; })
     .finally(() => { busy = false; ctx.rerender(); });
 }
 

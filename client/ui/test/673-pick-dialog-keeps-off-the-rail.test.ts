@@ -22,8 +22,9 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { railClearance } from '../railclear.ts';
+import { readStyles } from './read-styles.ts';
 
-const CSS = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url)), 'utf8');
+const CSS = readStyles();
 const MAIN = readFileSync(fileURLToPath(new URL('../main.ts', import.meta.url)), 'utf8');
 
 test('CT-369: the pick dialog leaves the rail clear on the right, and only when the rail is beside the table', () => {

@@ -197,6 +197,10 @@ let me: Me | null = null;
 let discordLinking = false;
 /** the live link code, while one is showing */
 let linkCode: { code: string; expiresAt: number } | null = null;
+/** BL-39: why Link Discord did not give a code. Its own message, shown on the
+ * Connections card: it used to go to `authMsg`, which only the sign-in screen
+ * draws, so the profile showed nothing at all (test/905). */
+let linkMsg = '';
 /** which account screen is open, if any */
 let view: 'auth' | 'profile' | null = null;
 /** the auth screen's mode and its message line */
@@ -224,6 +228,9 @@ interface Ladder {
   /** how many players have a rated game at all — the denominator of `rank` */
   rated: number;
   publicAfter: number;
+  /** the fetch failed: say so, rather than drawing an empty board that reads
+   * as "nobody has played yet" (test/905) */
+  failed?: boolean;
 }
 let ladderMode: LadderMode = 'constructed';
 let ladder: Ladder | null = null;
@@ -287,6 +294,12 @@ export const signupNoteHtml = (how: 'claimed' | 'lapsed'): string =>
     ? 'Signed up — this game is the first one on your profile.'
     : 'Signed up. The offer for this game had run out, so your profile starts with your next one.'}</div>`;
 export const currentUser = (): Me | null => me;
+/** A stored token is being checked and has not answered yet. While it is, the
+ * identity bar says so instead of "Playing signed out — Log in / Sign up",
+ * which every signed-in player used to see flash up on every load (300ms of
+ * it on a 300ms link; found 2026-11-02). test/904-home-identity-and-typing. */
+let resolving = false;
+export const resolvingUser = (): boolean => resolving;
 export const screen = (): 'auth' | 'profile' | null => view;
 
 /** Step off the account screen so another page can own the app element
@@ -314,7 +327,7 @@ const ELEMENTS: readonly string[] = ALL_ELEMENTS;
 export function initAccounts(opts: { app: HTMLElement; rerender: () => void }): void {
   $app = opts.app;
   rerenderHost = opts.rerender;
-  if (token()) void refreshMe();
+  if (token()) { resolving = true; void refreshMe(); }
 }
 
 /** Ask the server who we are. A token the server no longer knows is dropped
@@ -324,7 +337,7 @@ async function refreshMe(): Promise<Me | null> {
   if (!t) { me = null; return null; }
   try {
     const res = await fetch('/api/me', { headers: authHeaders(false) });
-    if (res.status === 401) { localStorage.removeItem(TOKEN_KEY); me = null; repaint(); return null; }
+    if (res.status === 401) { localStorage.removeItem(TOKEN_KEY); me = null; resolving = false; repaint(); return null; }
     const body = await res.json() as
       { ok: boolean; me?: Me; discordLinking?: boolean };
     me = body.ok && body.me ? body.me : null;
@@ -334,6 +347,7 @@ async function refreshMe(): Promise<Me | null> {
   } catch {
     // offline: keep whatever profile we already had rather than logging out
   }
+  resolving = false;
   repaint();
   return me;
 }
@@ -368,6 +382,10 @@ const elChip = (el: string | null): string =>
  * a separate label with the same name in it. The logout button that lived
  * here is gone: logging out is on the account page and nowhere else. */
 export function barHtml(): string {
+  if (!me && resolving) {
+    // the same box the signed-out bar is, so nothing jumps when it resolves
+    return `<div class="acctbar out" aria-busy="true"><span class="accthint">Signing in…</span></div>`;
+  }
   if (!me) {
     return `<div class="acctbar out">
       <span class="accthint">Playing signed out — nothing is recorded.</span>
@@ -572,6 +590,7 @@ function connectionsHtml(): string {
              Discord within ten minutes.</div>`
         : `<button class="btn" data-btn="acct-discord-link">Link Discord</button>
            <div class="hint">Get a code here and type it into the bot.</div>`}
+      ${linkMsg ? `<p class="deckmsg">${esc(linkMsg)}</p>` : ''}
     </section>`;
 }
 
@@ -802,6 +821,13 @@ function ladderTab(): string {
       <div class="hint">loading…</div></section>`;
   }
 
+  if (ladder.failed) {
+    return `<section class="acctcard"><h3>Ladder</h3>
+      <div class="elrow">${modes}</div>
+      <p class="deckmsg">Could not load the ladder.</p>
+      <button data-btn="acct-ladder-mode" data-mode="${ladderMode}">Try again</button></section>`;
+  }
+
   const row = (l: LeaderRow, rank: number, mine: boolean): string => `<tr${mine ? ' class="myrow"' : ''}>
     <td class="lrank">${rank}</td>
     <td><span class="fdot ${l.online ? 'on' : ''}"></span></td>
@@ -1002,6 +1028,7 @@ async function loadLadder(): Promise<void> {
   const want = ladderMode;
   try {
     const res = await fetch(`/api/players?mode=${want}`, { headers: authHeaders(false) });
+    if (!res.ok) throw new Error(`status ${res.status}`);
     const body = await res.json() as Partial<Ladder> & { ok: boolean };
     // a slow response for a board the player has since switched away from
     // must not paint over the one they are looking at
@@ -1010,7 +1037,10 @@ async function loadLadder(): Promise<void> {
       mode: want, players: body.players ?? [], you: body.you ?? null,
       rated: body.rated ?? 0, publicAfter: body.publicAfter ?? 5,
     };
-  } catch { ladder = { mode: want, players: [], you: null, rated: 0, publicAfter: 5 }; }
+  } catch {
+    if (want !== ladderMode) return;
+    ladder = { mode: want, players: [], you: null, rated: 0, publicAfter: 5, failed: true };
+  }
   if (view === 'profile' && tab === 'ladder') renderScreen();
 }
 
@@ -1131,13 +1161,16 @@ export function handleButton(btn: HTMLElement): boolean {
     // ── BL-39: Discord linking ──
     case 'acct-discord-link':
       void (async () => {
-        const body = await post('/api/link/discord/code', {}) as
-          { ok: boolean; code?: string; expiresAt?: number; error?: string };
-        if (body.ok && body.code && body.expiresAt) {
-          linkCode = { code: body.code, expiresAt: body.expiresAt };
-        } else {
-          authMsg = body.error ?? 'could not get a code';
-        }
+        try {
+          const body = await post('/api/link/discord/code', {}) as
+            { ok: boolean; code?: string; expiresAt?: number; error?: string };
+          if (body.ok && body.code && body.expiresAt) {
+            linkCode = { code: body.code, expiresAt: body.expiresAt };
+            linkMsg = '';
+          } else {
+            linkMsg = body.error ?? 'could not get a code';
+          }
+        } catch { linkMsg = 'could not reach the server'; }
         renderScreen();
       })();
       return true;
@@ -1146,7 +1179,7 @@ export function handleButton(btn: HTMLElement): boolean {
       void (async () => {
         const body = await post('/api/link/discord/unlink', {}) as
           { ok: boolean; me?: Me };
-        if (body.ok && body.me) { me = body.me; linkCode = null; }
+        if (body.ok && body.me) { me = body.me; linkCode = null; linkMsg = ''; }
         renderScreen();
       })();
       return true;

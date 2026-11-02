@@ -47,11 +47,12 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readStyles } from '../../ui/test/read-styles.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const UI = join(HERE, '..', '..', 'ui');
 const read = (f: string): string => readFileSync(join(UI, f), 'utf8');
-const CSS = read('style.css');
+const CSS = readStyles();
 
 /** comments stripped, so a rule quoted inside prose is never mistaken for one */
 const CSS_CODE = CSS.replace(/\/\*[\s\S]*?\*\//g, '');

@@ -279,28 +279,66 @@ function onMsg(m: Record<string, unknown>): void {
   searching = (m['searching'] as Searching | null) ?? null;
   const next = (m['offer'] as MatchOffer | null) ?? null;
   if (next && !offer) {
-    offerAt = Date.now();
     playCue('decision');   // you are being asked something, and it expires
     alertTab('Match found!');   // …and the player may be in another tab
   }
+  // EVERY message re-bases the countdown, not only the first. The server
+  // sends what is left at the moment it sends (`OFFER_MS - (now - made)`), so
+  // counting a later message's expiresIn from the FIRST message's arrival
+  // took the elapsed time off twice: Accept 7 became "Waiting… 2" the moment
+  // you pressed it.
+  if (next) offerAt = Date.now();
   offer = next;
   error = '';
   ensureTick();
   deps?.rerender();
 }
 
+/** whole seconds left on an offer: `expiresIn` is what remained when the
+ * message that carried it was SENT, so it counts from `offerAt`, the moment
+ * that message arrived — see onMsg */
+const offerSecondsLeft = (o: MatchOffer): number =>
+  Math.max(0, Math.ceil((o.expiresIn - (Date.now() - offerAt)) / 1000));
+
 /**
- * A 1s repaint while something is counting.
+ * A 1s tick while something is counting.
  *
  * The wait timer and the accept countdown both change with no message
  * arriving, and a countdown that only moves when the server happens to say
  * something is worse than none — it is the accept prompt's whole job to look
  * like it is running out.
+ *
+ * ⚠ IT CHANGES THE NUMBERS, NOT THE PAGE. It used to repaint the whole screen
+ * every second, which rebuilt the Accept button under the pointer: a press
+ * that straddled a tick landed on one button and lifted off another, and the
+ * click never happened. A state change (a message) still repaints; the tick
+ * only rewrites the `data-qwait` / `data-qleft` texts in place, and repaints
+ * only if they are not on screen to rewrite. test/902-queue-screen.test.ts.
  */
+export function tickInPlace(root: ParentNode): boolean {
+  const wait = root.querySelectorAll<HTMLElement>('[data-qwait]');
+  const left = root.querySelectorAll<HTMLElement>('[data-qleft]');
+  if (offer) {
+    if (!left.length) return false;
+    const n = String(offerSecondsLeft(offer));
+    for (const el of left) if (el.textContent !== n) el.textContent = n;
+    return true;
+  }
+  if (searching) {
+    if (!wait.length) return false;
+    const w = waitLabel(Date.now() - searching.since);
+    for (const el of wait) if (el.textContent !== w) el.textContent = w;
+    return true;
+  }
+  return true;
+}
+
 function ensureTick(): void {
   const want = !!searching || !!offer;
   if (want && !tickTimer) {
-    tickTimer = window.setInterval(() => { if (open) deps?.rerender(); }, 1000);
+    tickTimer = window.setInterval(() => {
+      if (open && deps && !tickInPlace(deps.app)) deps.rerender();
+    }, 1000);
   } else if (!want && tickTimer) {
     clearInterval(tickTimer);
     tickTimer = 0;
@@ -510,7 +548,7 @@ function searchingHtml(): string {
       <div class="qspin" aria-hidden="true"></div>
       <div class="qsearchtext">
         <b>Joining ${esc(s.vsName ?? 'their')} game…</b>
-        <span class="hint">${esc(MODE_LABEL[s.mode].toLowerCase())} · ${waitLabel(waited)}</span>
+        <span class="hint">${esc(MODE_LABEL[s.mode].toLowerCase())} · <span data-qwait>${waitLabel(waited)}</span></span>
         <span class="hint">waiting for them to accept</span>
       </div>
     </div>
@@ -522,8 +560,8 @@ function searchingHtml(): string {
       <div class="qsearchtext">
         <b>Searching for a ${esc(MODE_LABEL[s.mode].toLowerCase())} game…</b>
         <span class="hint">${s.ranked
-          ? `${esc(bandLabel(s.band))} · ${waitLabel(waited)}`
-          : `anyone · ${waitLabel(waited)}`}</span>
+          ? `${esc(bandLabel(s.band))} · <span data-qwait>${waitLabel(waited)}</span>`
+          : `anyone · <span data-qwait>${waitLabel(waited)}</span>`}</span>
         ${s.ranked && s.band !== null
           ? '<span class="hint">the search widens the longer you wait</span>'
           : s.ranked ? '<span class="hint">wide open now</span>' : ''}
@@ -534,7 +572,7 @@ function searchingHtml(): string {
 
 function offerHtml(): string {
   const o = offer!;
-  const left = Math.max(0, Math.ceil((o.expiresIn - (Date.now() - offerAt)) / 1000));
+  const left = offerSecondsLeft(o);
   return `<div class="overlay qoverlay"><div class="overlaybox qofferbox">
     <h3>Match found</h3>
     <div class="qopponent">
@@ -542,8 +580,8 @@ function offerHtml(): string {
       <span class="hint">${esc(String(o.opponentRating))} · ${esc(MODE_LABEL[o.mode])}</span>
     </div>
     ${o.accepted
-      ? `<div class="qwaiting">Waiting for ${esc(o.opponent)}… <b>${left}</b></div>`
-      : `<button class="cta primary qaccept" data-btn="queue-accept">Accept <span class="qcount">${left}</span></button>`}
+      ? `<div class="qwaiting">Waiting for ${esc(o.opponent)}… <b data-qleft>${left}</b></div>`
+      : `<button class="cta primary qaccept" data-btn="queue-accept">Accept <span class="qcount" data-qleft>${left}</span></button>`}
     <button class="qdecline" data-btn="queue-decline">${o.accepted ? 'Cancel' : 'Decline'}</button>
     ${o.accepted ? '<p class="hint">If they do not answer in time you go back to the front of the queue.</p>' : ''}
   </div></div>`;

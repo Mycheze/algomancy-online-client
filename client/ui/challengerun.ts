@@ -293,6 +293,11 @@ function submitHtml(run: ChallengeRun): string {
   }
 }
 
+/** owner 2026-11-02 ("data-losing only"): Give up throws the run away, so it
+ * asks twice — the league's press-again pattern (league.ts `arming`,
+ * `button.danger`). Any other run button disarms it. test/901. */
+let arming: string | null = null;
+
 /** The meter: a row of the board's own sticky strip (main.ts renders it
  * there), under the turn bar — part of the table's layout, so it covers
  * nothing the board shows, at any width. Only the end panel is a layer. */
@@ -301,7 +306,9 @@ export function meterHtml(run: ChallengeRun): string {
     <span class="chmetertext">${esc(run.meterText())}</span>
     <button data-chal="rewind" title="back to the start of this turn">↺ Turn</button>
     <button data-chal="retry">Retry</button>
-    <button data-chal="giveup">Give up</button>
+    ${arming === 'giveup'
+      ? '<button class="danger" data-chal="giveup">Press again to give up</button>'
+      : '<button data-chal="giveup">Give up</button>'}
   </div>`;
 }
 
@@ -337,13 +344,23 @@ export function paintLayer(): void {
   if (layer) layer.innerHTML = layerHtml(current);
 }
 
+/** the meter is painted by main.ts inside the board; re-draw just it */
+function repaintMeter(run: ChallengeRun): void {
+  const el = document.querySelector('.chmeter');
+  if (el) el.outerHTML = meterHtml(run);
+}
+
 function onButton(b: string): void {
   const run = current;
   if (!run || !hooks) return;
+  if (b !== 'giveup' && arming) { arming = null; repaintMeter(run); }
   switch (b) {
     case 'rewind': hooks.rewind(run); return;
     case 'retry': hooks.retry(run); return;
-    case 'giveup': saveRun(null); hooks.page(); return;
+    case 'giveup':
+      if (arming !== 'giveup') { arming = 'giveup'; repaintMeter(run); return; }
+      arming = null;
+      saveRun(null); hooks.page(); return;
     case 'page': hooks.page(); return;
     case 'signin': hooks.signIn(); return;   // the sign-in form; the page behind it submits the kept run
     case 'resend': run.send(); paintLayer(); return;

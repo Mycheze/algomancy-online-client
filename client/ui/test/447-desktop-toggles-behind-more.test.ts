@@ -21,10 +21,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { readStyles } from './read-styles.ts';
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), 'utf8');
 const MAIN = read('../main.ts');
-const CSS = read('../style.css');
+const CSS = readStyles();
 
 const bar = /function toolbarHtml[\s\S]*?\n}/.exec(MAIN)?.[0] ?? '';
 const groupAt = bar.indexOf('<div class="setgroup');

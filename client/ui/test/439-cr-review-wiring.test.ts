@@ -30,6 +30,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { pageOf } from '../report.ts';
+import { readStyles } from './read-styles.ts';
 
 const UI = dirname(dirname(fileURLToPath(import.meta.url)));
 const src = (f: string): string => readFileSync(join(UI, f), 'utf8');
@@ -82,7 +83,7 @@ test('§2b under 1180px the contents drawer covers the toolbar, so it draws its 
   const p = code(page);
   assert.match(p, /<button class="crtocclose" data-btn="cr-toc">/, 'the drawer carries a cr-toc button');
   assert.match(p, /function tocHtml\(\): string \{\s*const entries = tocEntriesHtml\(\);/, 'on every paint of the rail');
-  const css = src('style.css');
+  const css = readStyles();
   assert.match(css, /\.crtoc \.crtocclose \{ display: none; \}/, 'hidden where the rail is a column');
   assert.match(css, /@media \(max-width: 1179px\) \{[^@]*\.crtoc \.crtocclose \{ display: block;/, 'shown where it is a drawer');
 });

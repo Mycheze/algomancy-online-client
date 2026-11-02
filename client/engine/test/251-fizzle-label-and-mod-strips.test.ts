@@ -67,9 +67,10 @@ import CATALOGUE_JSON from '../src/cards/catalogue.json' with { type: 'json' };
 import type { CatalogueEntry } from '../../ui/cardindex.ts';
 import { MOD_ANCHORS } from '../scripts/paths.mjs';
 import type { Action, EngineEvent, GameState, Seat, StackItem } from '../src/types.ts';
+import { readStyles } from '../../ui/test/read-styles.ts';
 
 const CATALOGUE = CATALOGUE_JSON as unknown as Record<string, CatalogueEntry>;
-const STYLE = readFileSync(new URL('../../ui/style.css', import.meta.url), 'utf8');
+const STYLE = readStyles();
 const MAIN_SRC = readFileSync(new URL('../../ui/main.ts', import.meta.url), 'utf8');
 const CARDS = PRINTED as Record<string, { type?: string; text?: string }>;
 

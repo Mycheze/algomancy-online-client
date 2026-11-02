@@ -24,9 +24,10 @@ import { pass, spawn, toDeployment, toNextBattle } from '../../engine/test/util.
 import type { GameState, Seat } from '../../engine/src/types.ts';
 import { ICONS_DIR } from '../../engine/scripts/paths.mjs';
 import { client } from './ui-driver.ts';
+import { readStyles } from './read-styles.ts';
 
 const read = (f: string): string => readFileSync(fileURLToPath(new URL(f, import.meta.url)), 'utf8');
-const CSS = read('../style.css');
+const CSS = readStyles();
 const LAYOUT = read('../layout.ts');
 const MAIN = read('../main.ts');
 const ui = await client();

@@ -28,18 +28,16 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { Harness } from '../../engine/src/harness.ts';
 import { legalActions } from '../../engine/src/apply.ts';
 import { pass, spawn, toDeployment, toNextBattle } from '../../engine/test/util.ts';
 import type { Action, GameState, Seat } from '../../engine/src/types.ts';
 import { besideBox } from '../infotip.ts';
 import { client } from './ui-driver.ts';
+import { readStyles } from './read-styles.ts';
 
 const ui = await client();
-const read = (f: string): string => readFileSync(fileURLToPath(new URL(f, import.meta.url)), 'utf8');
-const CSS = read('../style.css');
+const CSS = readStyles();
 
 /** the toolbar's markup in `html` */
 function strip(html: string): string {

@@ -78,6 +78,7 @@ import {
 } from '../toast.ts';
 import { HOLD_MS, STAGGER_MS } from '../flash.ts';
 import type { EngineEvent, EventType, GameState } from '../../engine/src/types.ts';
+import { readStyles } from './read-styles.ts';
 
 const ROOT = new URL('../../engine/', import.meta.url).pathname;
 const read = (rel: string): string => readFileSync(ROOT + rel, 'utf8');
@@ -597,7 +598,7 @@ test('[CR D7.4] the tier has a stylesheet of its own', () => {
   // the strip is position: fixed and has to sit in the one free corner —
   // .glimpsenotice owns bottom right and .toast owns bottom centre. Without
   // this it renders in the document flow, which is worse than not rendering.
-  const css = read('../ui/style.css');
+  const css = readStyles();
   assert.match(css, /\.costtoasts \{[^}]*position: fixed/, 'the strip is placed');
   assert.match(css, /\.netmode \.costtoasts \{[^}]*bottom: 178px/,
     'and lifts above the hand dock in net mode, like every other fixed notice');

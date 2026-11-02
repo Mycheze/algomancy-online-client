@@ -27,8 +27,6 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { Harness } from '../../engine/src/harness.ts';
 import { E } from '../../engine/src/engine.ts';
 import { apply, legalActions } from '../../engine/src/apply.ts';
@@ -37,9 +35,10 @@ import { pass, pick, spawn, toDeployment, toNextBattle } from '../../engine/test
 import { sendableRest } from '../battle.ts';
 import { fitSendBox, SEND_SLOT_SPAN, type FitPlan } from '../fit.ts';
 import { client } from './ui-driver.ts';
+import { readStyles } from './read-styles.ts';
 
 const ui = await client();
-const CSS = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url)), 'utf8');
+const CSS = readStyles();
 
 /** round 1's block step: A attacks with `atk` columns, D has `k` units */
 function blockStep(seed: number, k: number, opts: { lure?: boolean } = {}): {

@@ -65,7 +65,6 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { Harness } from '../../engine/src/harness.ts';
 import { E } from '../../engine/src/engine.ts';
 import { legalActions } from '../../engine/src/apply.ts';
@@ -74,6 +73,7 @@ import { viewFor } from '../../server/view.ts';
 import { client } from './ui-driver.ts';
 import { pass, spawn, toDeployment, toNextBattle } from '../../engine/test/util.ts';
 import type { GameState, Seat } from '../../engine/src/types.ts';
+import { readStyles } from './read-styles.ts';
 
 /* ══ derived subject sets ═════════════════════════════════════════════════ */
 
@@ -171,7 +171,7 @@ function stackCards(html: string): { all: string; tag: string; x: string | null 
 
 /* ══ the stylesheet, for the one geometry claim ═══════════════════════════ */
 
-const CSS = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
+const CSS = readStyles();
 /** the body of a CSS rule, by exact selector. Same shape as
  * 70-playtest-round15's `rule()`: the selector must start a line, so a
  * `.foo` rule is not found by matching inside `.bar .foo`. */

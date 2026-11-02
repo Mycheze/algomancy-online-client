@@ -51,8 +51,9 @@ import { boardMenuEntries } from '../../ui/inspect.ts';
 import { client, closeLog, elementFor, openLog } from '../../ui/test/ui-driver.ts';
 import { spawn, toDeployment, toNextBattle } from './util.ts';
 import type { Action, EngineEvent, GameState, Seat } from '../src/types.ts';
+import { readStyles } from '../../ui/test/read-styles.ts';
 
-const CSS = readFileSync(new URL('../../ui/style.css', import.meta.url), 'utf8');
+const CSS = readStyles();
 
 /** a real game, played far enough that its log has plumbing to fold, card
  * names to link and typed events to colour — the three things §3 sweeps. If
