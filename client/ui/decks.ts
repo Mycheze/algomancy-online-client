@@ -320,6 +320,18 @@ export function playableDecks(): { id: string; name: string; author: string; url
     .map(d => ({ id: d.id, name: d.name, author: d.author, ...(d.url ? { url: d.url } : {}), cards: d.cards }));
 }
 
+/** Every deck in the collection with its Competitive Constructed verdict
+ * (checkMatchDeck, as the CC chip), for the Competitive card's picker
+ * (ui/match.ts) — which lists an illegal deck greyed, with this reason.
+ * Null until the collection has loaded. */
+export function competitiveDecks(): { id: string; name: string; error: string | null }[] | null {
+  if (!decks) return null;
+  return decks.map(d => {
+    const c = checkMatchDeck(d.cards, sideOf(d));
+    return { id: d.id, name: d.name, error: c.ok ? null : c.error };
+  });
+}
+
 const SAVE_MS = 500;
 /** decks whose swaps were edited since the last save went out */
 const swapsDirty = new Set<string>();

@@ -18,7 +18,7 @@ const concedeLabel = (sandbox: boolean): string =>
 test('the menu says Leave in a sandbox and Concede in a real game', () => {
   assert.match(concedeLabel(true), /Leave the match/);
   assert.doesNotMatch(concedeLabel(true), /Concede/);
-  assert.match(concedeLabel(false), /Concede the match/, 'positive control: a real game still concedes');
+  assert.match(concedeLabel(false), /Concede game/, 'positive control: a real game still concedes (the game, docs/22 §5.5)');
 });
 
 test('the confirmation says Leave / Stay in a sandbox, and the action underneath is the same concede', () => {

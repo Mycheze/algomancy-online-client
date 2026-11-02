@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-02', kind: 'new', text: 'Competitive matches, best of 1 or 3: a sideboard of up to 7 to swap between games (saved swaps are one tap), 45 minutes each for the whole match, and players plan and deploy in turn. A match can be paused between games.' },
   { date: '2026-11-01', kind: 'change', text: 'When a card has each player choose (General Smof, Perish, Rockfall…), the player with initiative now always picks first. A unit they pick is marked for the other player before their turn to pick; a card picked from a hand stays secret.' },
   { date: '2026-11-01', kind: 'fix', text: 'Glowing card outlines are no longer cut off at the edge of the hand, the play area and the resource row.' },
   { date: '2026-11-01', kind: 'fix', text: 'Card text when you hover or zoom a unit keeps the card’s own line breaks, so a second ability starts on its own line again.' },

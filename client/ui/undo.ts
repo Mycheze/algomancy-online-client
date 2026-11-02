@@ -22,7 +22,15 @@ import { hiddenSegment } from '../engine/src/apply.ts';
 import type { GameState } from '../engine/src/types.ts';
 
 /** a seat at the table (not a spectator, not a replay, not the `?demo` board),
- * inside a step the server undoes */
-export function undoAvailable(s: GameState, net: { readonly spectating: boolean } | null): boolean {
-  return !!net && !net.spectating && hiddenSegment(s) !== null;
+ * inside a step the server undoes.
+ *
+ * Competitive Constructed (docs/22 §8 answer 2, CR D4.6) has no hidden steps —
+ * `hiddenSegment` is null there — and undoes instead inside the acting seat's
+ * own resource, haste or deploy step, until they press Done. What may be taken
+ * back is the server's call (the engine's marks never leave it), so the answer
+ * is the push's own `ccUndo`, never worked out here. */
+export function undoAvailable(s: GameState, net: { readonly spectating: boolean; readonly ccUndo?: boolean } | null): boolean {
+  if (!net || net.spectating) return false;
+  if (s.sequential) return net.ccUndo === true;
+  return hiddenSegment(s) !== null;
 }

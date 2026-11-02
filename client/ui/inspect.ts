@@ -733,6 +733,7 @@ export function planOffer(items: readonly { confirm?: boolean }[]): OfferPlan {
 export type BoardMenuEntry =
   | { kind: 'erased'; seat: Seat; label: string; confirm: boolean }
   | { kind: 'concede'; seat: Seat; label: string; confirm: boolean }
+  | { kind: 'concedeMatch'; seat: Seat; label: string; confirm: boolean }
   | { kind: 'log'; label: string; confirm: boolean }
   | { kind: 'fix'; label: string; confirm: boolean }
   | { kind: 'reveals'; label: string; confirm: boolean };
@@ -752,7 +753,7 @@ export type BoardMenuEntry =
  * `mySeat` is the seat this client drives, or null where the screen drives
  * both (so both are offered) or none at all.
  */
-export function boardMenuEntries(s: GameState, mySeat: Seat | null, opts: { fixes?: boolean; reveals?: number } = {}): BoardMenuEntry[] {
+export function boardMenuEntries(s: GameState, mySeat: Seat | null, opts: { fixes?: boolean; reveals?: number; bestOf3?: boolean } = {}): BoardMenuEntry[] {
   const items: BoardMenuEntry[] = [];
   // CT-124 / report #131: *"the game log would be better to hide by default.
   // Instead of always being on screen, it should be accessible by the
@@ -791,12 +792,19 @@ export function boardMenuEntries(s: GameState, mySeat: Seat | null, opts: { fixe
     // which is exactly when someone might want to stop.
     for (const seat of (mySeat !== null ? [mySeat] : [0, 1]) as Seat[]) {
       // BL-06 / owner 2026-09-05: in test mode "it's not a real match or
-      // anything. So you're just closing it" — the same action, a different word
+      // anything. So you're just closing it" — the same action, a different word.
+      // Owner 2026-11-02 (docs/22 §5.5): it concedes the GAME, and says so in
+      // every room — in a Best of 3 the match goes on to the next game.
       items.push({
         kind: 'concede', seat, confirm: true,
         label: s.sandbox ? '🚪 Leave the match'
-          : mySeat !== null ? '🏳 Concede the match' : `🏳 Concede as ${s.players[seat]!.name}`,
+          : mySeat !== null ? '🏳 Concede game' : `🏳 Concede as ${s.players[seat]!.name}`,
       });
+    }
+    // …and a Competitive Best of 3 also offers the whole match (a socket
+    // message, not an engine action — server/match.ts concedeMatch)
+    if (opts.bestOf3 && mySeat !== null && !s.sandbox) {
+      items.push({ kind: 'concedeMatch', seat: mySeat, confirm: true, label: '🏳 Concede match' });
     }
   }
   return items;
@@ -2458,6 +2466,14 @@ export function waitingNote(s: GameState, casting = false, who = 'opponent'): st
   if (src) return `${w} (${src.card})`;
   if (casting) return `${w} to play a card`;
   if (s.stack.length) return `${w} to respond`;
+  // docs/22 Risk 5: a Competitive game takes its steps in turn — the
+  // initiative player first, then the other (CR 501.4, 507.3) — so the wait
+  // is somebody's STEP, and saying which is what makes it not look stuck
+  if (s.sequential) {
+    if (s.phase === 'deploy') return `${w} to deploy`;
+    if (s.phase === 'planning' && s.hasteDone) return `${w} to finish the haste step`;
+    if (s.phase === 'planning' && s.bottomDone == null) return `${w} to finish planning`;
+  }
   // ⚠ A SOURCELESS STUB ADDS NOTHING TO SAY. `pendingAsk` without a source is
   // "somebody owes an answer" and no more — which "Waiting for Rashi…" already
   // says, and which this client could derive unaided anyway. The

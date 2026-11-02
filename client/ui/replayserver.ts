@@ -51,7 +51,7 @@
  * route reports them; this refuses them by name rather than dealing a plain
  * board under a log written for a different one.
  */
-import type { Action, CardName, Element, EngineEvent, GameMode, GameState, Seat } from '../engine/src/types.ts';
+import type { Action, CardName, Element, EngineEvent, GameMode, GameRules, GameState, Seat } from '../engine/src/types.ts';
 import { apply, createGame, hiddenSegment, IllegalAction } from '../engine/src/apply.ts';
 import type { DraftDeal } from '../engine/src/draftdeal.ts';
 import type { LessonDeal } from '../engine/src/lessondeal.ts';
@@ -72,6 +72,10 @@ export interface ReplayFile {
   winner?: number | null;
   /** a lesson deal (CR D8.1) — a weekly challenge's run is dealt with one */
   lesson?: LessonDeal;
+  /** docs/22 §3.1: a Competitive game's rules — the steps in turn and games
+   * 2-3's chosen initiative. Part of the deal: without it game 2 replays under
+   * the house rules with the ROLLED initiative, a different game. */
+  rules?: GameRules;
 }
 
 type SegKey = ReturnType<typeof hiddenSegment>;
@@ -144,7 +148,7 @@ export class ReplayServer {
       ? { state: structuredClone(dealt.state), events: dealt.events }
       : createGame(
         file.seed, this.names, file.mode ?? 'shared', file.els,
-        decksOf(file), file.custom?.deal as DraftDeal | undefined, file.lesson,
+        decksOf(file), file.custom?.deal as DraftDeal | undefined, file.lesson, file.rules,
       );
     this.state = r.state;
     this.events = [...r.events];

@@ -140,7 +140,7 @@ export const TUTORIAL: readonly TutorialSection[] = [
       {
         label: 'The game log, erased cards, conceding',
         text: 'Right-click bare table, or press ☰ on the toolbar. View game log opens the log; its toggle switches '
-          + 'between the story and every bookkeeping line. The same menu shows each player’s erased cards and — with a confirmation — Concede the match.',
+          + 'between the story and every bookkeeping line. The same menu shows each player’s erased cards and — with a confirmation — Concede game.',
         btns: ['logmode', 'logclose', 'erasedclose', 'concedeyes', 'concedeno'],
       },
     ],
@@ -400,7 +400,7 @@ export const TUTORIAL: readonly TutorialSection[] = [
       },
       {
         label: 'Leaving early',
-        text: 'Right-click bare table, or press ☰ on the toolbar, and choose Concede the match; it asks once before it counts.',
+        text: 'Right-click bare table, or press ☰ on the toolbar, and choose Concede game; it asks once before it counts.',
         btns: ['concedeyes', 'concedeno'],
       },
       {
