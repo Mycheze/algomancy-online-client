@@ -37,10 +37,19 @@
  *      scope (checked below — a scoped redefinition would make the var()
  *      resolve differently under it).
  *
- * IDEMPOTENT. A second run finds nothing to do. RE-RUNNABLE after a re-split:
+ *   3. THE SNAP (Phase 1b-ii, `--snap through`) — a VISIBLE change, small by
+ *      design: the snap list's "through" rows, and only those, onto their
+ *      token (§3b below says exactly which). Run it only AFTER the exact pass.
  *
- *   node client/ui/scripts/split-styles.mjs --rev origin/master
- *   node client/ui/scripts/tokenize-styles.mjs
+ * IDEMPOTENT. A second run finds nothing to do. RE-RUNNABLE after a re-split,
+ * in THIS ORDER — each step reads what the one before wrote:
+ *
+ *   node client/ui/scripts/split-styles.mjs --rev origin/master   # style.css → pieces, word for word
+ *   node client/ui/scripts/tokenize-styles.mjs                    # tokens.css + exact literal → var()
+ *   node client/ui/scripts/tokenize-styles.mjs --snap through     # the approved near-misses → var()
+ *
+ * The second alone is zero-change; the third moves pixels (the snap list's
+ * "through" rows). ui/test/921's ALLOW is banked after the third.
  *
  * Flags:
  *   --check               write nothing; exit 1 if anything would change
@@ -52,6 +61,9 @@
  *                         before Phase 1b-ii snaps anything
  *   --allowlist           print the per-piece colour-literal counts in the
  *                         shape ui/test/921's ALLOW takes
+ *   --snap-flagged <out.json>  with --snap-report: the flagged colour and
+ *                         radius rows (the owner's to decide) as data
+ *   --snap through        also snap the snap list's "through" rows (§3b)
  *   --dir <styles dir>    work on a copy instead of client/ui/styles */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -322,8 +334,10 @@ export const SKIP = [
 const pieceName = (piece) => piece.replace(/(^|\/)\d+-/, '$1');
 const skipped = (piece, selector, prop) => SKIP.find(s => s.piece === pieceName(piece) && s.selector === selector && s.prop === prop);
 
-/** whole-value px tokenising: every px atom on `scale`, the rest 0/auto. Returns the new value or null */
-function pxWhole(value, scale) {
+/** whole-value px tokenising: every px atom has a token (`resolve(n)` → name or null), the rest
+ *  0/auto. Returns the new value or null. `resolve` may be a Map (exact) or a function (a snap). */
+function pxWhole(value, resolve) {
+  const look = resolve instanceof Map ? (n) => resolve.get(n) : resolve;
   const imp = /\s*!important\s*$/i.exec(value);
   const core = imp ? value.slice(0, imp.index) : value;
   const atoms = core.trim().split(/\s+/);
@@ -333,7 +347,7 @@ function pxWhole(value, scale) {
   for (const a of atoms) {
     const m = /^(\d+(?:\.\d+)?)px$/.exec(a);
     if (m) {
-      const name = scale.get(Number(m[1]));
+      const name = look(Number(m[1]));
       if (!name) return null;
       out.push(`var(${name})`);
       hit = true;
@@ -347,16 +361,82 @@ function pxWhole(value, scale) {
   return lead + out.join(' ') + trail + (imp ? imp[0] : '');
 }
 
+/* ── 3b. THE SNAP (Phase 1b-ii, `--snap through`) ───────────────────────
+ * The rows of the snap list the plan lets through without the owner
+ * (client/docs/23-design-system.md, "The snap list": "flag anything over 2px
+ * or a visible colour shift; the rest goes through"):
+ *   colour   a --color-* token at the same alpha, CIE76 ΔE < JND (2.3)
+ *   --text   `font-size: Npx` within 2px of a step
+ *   --space  padding / margin / gap within 2px of the scale — whole value or nothing
+ *   --radius within 2px of its band's radius (≤4 sm, 5–7 md, 8–99 lg, ≥100 pill),
+ *            whole value or nothing
+ * A TIE (10px between 8 and 12, 15px between 14 and 16) goes to the SMALLER
+ * step: a snap grows a box only where the larger step is strictly nearer, so
+ * a tie never makes a line wrap that did not. NEVER snapped: shadows (nor a
+ * colour inside a box-shadow), z-index, and a token's colour at another
+ * alpha — they wait for Phase 5.
+ *
+ * SCOPE: pages/ ONLY. base.css and shared/ style the game table too (the
+ * base `button` is every button on the board; shared/ holds the touch prompt
+ * bar, the pick dialogs, the element chips), and the board is out of the
+ * design system's scope. Their exact matches are tokenised (zero change);
+ * their near-misses wait for Phase 2 (base) and the components (shared). */
+
+/** where a snap may land: the non-game pages */
+export const inSnapScope = (piece) => piece.startsWith('pages/');
+
+/** rules in a pages/ piece that style the GAME TABLE all the same — exact matches are tokenised, never snapped */
+export const SNAP_SKIP = [
+  { piece: 'pages/joinscreen.css', selector: '.card.back', reason: 'the face-down card back, drawn on the board too' },
+];
+const snapSkipped = (piece, selector) => SNAP_SKIP.some(s => s.piece === pieceName(piece) && s.selector === selector);
+
+const JND = 2.3;   // ΔE76 just-noticeable difference
+
+/** the nearest step of `scale` (Map value → name) within `max` px; a tie to the smaller */
+function nearestStep(n, scale, max) {
+  let best = null;
+  for (const [v, name] of [...scale].sort((a, b) => a[0] - b[0])) {
+    const d = Math.abs(v - n);
+    if (d <= max + 1e-9 && (!best || d < best.d - 1e-9)) best = { d, v, name };
+  }
+  return best;
+}
+
+const RADIUS_BAND = (n) => (n <= 4 ? '--radius-sm' : n <= 7 ? '--radius-md' : n < 100 ? '--radius-lg' : '--radius-pill');
+
+function snapRadius(n, map) {
+  const name = RADIUS_BAND(n);
+  const v = [...map.px.radius].find(([, nm]) => nm === name)?.[0];
+  return v !== undefined && Math.abs(v - n) <= 2 ? name : null;
+}
+
+/** the --color-* token a literal snaps to (same alpha, ΔE < JND), the property choosing between equals */
+function snapColour(c, prop, map) {
+  let best = null;
+  for (const key of map.colour.keys()) {
+    const t = key.split(',').map(Number);
+    if (Math.abs(t[3] - c[3]) > 1e-6) continue;
+    const de = deltaE(c, t);
+    if (de < JND && (!best || de < best.de)) best = { de, key };
+  }
+  if (!best) return null;
+  const name = colourToken(map, best.key, prop);
+  return name ? { name, de: best.de } : null;
+}
+
 /**
  * Tokenise one piece. Returns { text, changes: [{ token, prop, selector, before, after }] }.
  * Only ever touches declaration VALUES (never selectors, comments or strings).
  */
-export function tokenizePiece(piece, text, map) {
+export function tokenizePiece(piece, text, map, opts = {}) {
+  const snap = opts.snap === 'through' && inSnapScope(piece);
   const { masked, decls } = declarations(text);
   const edits = [];   // [start, end, replacement]
   const changes = [];
   for (const d of decls) {
     if (skipped(piece, d.selector, d.prop)) continue;
+    const snapHere = snap && !snapSkipped(piece, d.selector);
     const vMasked = masked.slice(d.start, d.end);
     const vText = text.slice(d.start, d.end);
     const local = [];   // [s, e, rep, token] within the value
@@ -364,13 +444,17 @@ export function tokenizePiece(piece, text, map) {
 
     if (d.prop === 'font-size') {
       const m = /^(\s*)(\d+(?:\.\d+)?)px(\s*(?:!important)?\s*)$/i.exec(vMasked);
-      const name = m && map.px.text.get(Number(m[2]));
+      const name = m && (map.px.text.get(Number(m[2])) ?? (snapHere ? nearestStep(Number(m[2]), map.px.text, 2)?.name : null));
       if (name) note(m[1].length, m[1].length + m[2].length + 2, `var(${name})`, name);
     } else if (SPACE_PROP.test(d.prop) || RADIUS_PROP.test(d.prop)) {
       // whole value or nothing; a value with a comment in it (masked ≠ text) is left alone
       if (!vMasked.includes('/') && vMasked === vText) {
-        const scale = SPACE_PROP.test(d.prop) ? map.px.space : map.px.radius;
-        const rep = pxWhole(vMasked, scale);
+        const space = SPACE_PROP.test(d.prop);
+        const scale = space ? map.px.space : map.px.radius;
+        const resolve = !snapHere ? scale
+          : space ? (n) => scale.get(n) ?? nearestStep(n, scale, 2)?.name ?? null
+            : (n) => scale.get(n) ?? snapRadius(n, map);
+        const rep = pxWhole(vMasked, resolve);
         if (rep !== null) {
           const names = [...rep.matchAll(/var\((--[\w-]+)\)/g)].map(t => t[1]);
           local.push([0, vMasked.length, rep, names]);
@@ -398,7 +482,8 @@ export function tokenizePiece(piece, text, map) {
       if (local.some(([s, e]) => a < e && b > s)) continue;
       const c = parseColour(m[0]);
       if (!c) continue;
-      const name = colourToken(map, colourKey(c), d.prop);
+      const name = colourToken(map, colourKey(c), d.prop)
+        ?? (snapHere && d.prop !== 'box-shadow' ? snapColour(c, d.prop, map)?.name : null);
       if (name) note(a, b, `var(${name})`, name);
     }
     if (!local.length) continue;
@@ -434,7 +519,6 @@ export function scopedRedefinitions(pieces) {
 
 /* ── 4. THE SNAP REPORT (report only) ───────────────────────────────────── */
 
-const JND = 2.3;   // ΔE76 just-noticeable difference
 const NEAR_DE = 6;
 
 export function snapReport(pieces, map) {
@@ -450,12 +534,14 @@ export function snapReport(pieces, map) {
     })
     .filter(t => t.c);
   const rows = { colour: new Map(), tint: new Map(), text: new Map(), space: new Map(), radius: new Map(), shadow: new Map(), z: new Map(), far: new Map() };
+  let where = { selector: '', prop: '' };   // the declaration being read, for the rows' `uses`
   const bump = (group, key, info, piece) => {
     const g = rows[group];
-    if (!g.has(key)) g.set(key, { ...info, n: 0, files: new Map() });
+    if (!g.has(key)) g.set(key, { ...info, n: 0, files: new Map(), uses: [] });
     const r = g.get(key);
     r.n++;
     r.files.set(piece, (r.files.get(piece) ?? 0) + 1);
+    r.uses.push({ piece, ...where });
   };
   const nearest = (n, scale) => {
     let best = null;
@@ -466,12 +552,12 @@ export function snapReport(pieces, map) {
     }
     return best;
   };
-  const RADIUS_BAND = (n) => (n <= 4 ? '--radius-sm' : n <= 7 ? '--radius-md' : n < 100 ? '--radius-lg' : '--radius-pill');
   const zToks = Object.entries(toks).filter(([n]) => /^--z-/.test(n)).map(([n, v]) => [Number(v), n]);
 
   for (const [piece, text] of pieces) {
     const { masked, decls } = declarations(text);
     for (const d of decls) {
+      where = { selector: d.selector, prop: d.prop };
       if (d.prop.startsWith('--') && piece === 'tokens.css') continue;
       const v = masked.slice(d.start, d.end);
       const shield = shieldedSpans(v);
@@ -550,6 +636,22 @@ export function snapReport(pieces, map) {
     }
   }
   return rows;
+}
+
+/** the FLAGGED colour and radius rows — the ones that wait for the owner — as data */
+export function snapFlagged(rows, map) {
+  const out = [];
+  for (const r of rows.colour.values()) {
+    if (r.de < JND) continue;
+    out.push({ kind: 'colour', literal: r.literal, token: r.token, tokenValue: map.tokens[r.token], deltaE: Math.round(r.de * 10) / 10,
+      uses: r.n, files: [...r.files.keys()], selectors: r.uses.map(u => `${u.piece}: ${u.selector} { ${u.prop} }`) });
+  }
+  for (const r of rows.radius.values()) {
+    if (r.d <= 2) continue;
+    out.push({ kind: 'radius', literal: r.literal, token: r.token, tokenValue: map.tokens[r.token], deltaPx: r.d,
+      uses: r.n, files: [...r.files.keys()], selectors: r.uses.map(u => `${u.piece}: ${u.selector} { ${u.prop} }`) });
+  }
+  return out;
 }
 
 function snapMarkdown(rows, map, pieces) {
@@ -654,6 +756,9 @@ function main(argv) {
   const arg = (f) => { const i = argv.indexOf(f); return i >= 0 ? argv[i + 1] : null; };
   const check = flag('--check');
   const dir = arg('--dir') ?? STYLES_DIR;
+  const snapMode = arg('--snap');
+  if (snapMode !== null && snapMode !== 'through') throw new Error(`--snap takes one value, "through" (got ${snapMode})`);
+  const opts = { snap: snapMode };
   const order = stylesOrder(dir);
   const read = (p) => readFileSync(join(dir, p), 'utf8');
   const tokPath = join(dir, 'tokens.css');
@@ -670,7 +775,7 @@ function main(argv) {
   const allChanges = [];
   for (const p of pieces) {
     const before = read(p);
-    const { text, changes } = tokenizePiece(p, before, map);
+    const { text, changes } = tokenizePiece(p, before, map, opts);
     if (text !== before) outText.set(p, text);
     allChanges.push(...changes);
   }
@@ -683,7 +788,8 @@ function main(argv) {
   // idempotence: a second pass over the result changes nothing
   for (const p of pieces) {
     const t = outText.get(p) ?? read(p);
-    if (tokenizePiece(p, t, map).changes.length) throw new Error(`not idempotent: a second pass still changes ${p}`);
+    if (tokenizePiece(p, t, map, opts).changes.length) throw new Error(`not idempotent: a second pass still changes ${p}`);
+    if (tokenizePiece(p, t, map).changes.length) throw new Error(`an exact pass after this one still changes ${p}`);
   }
 
   // counts
@@ -697,7 +803,8 @@ function main(argv) {
   const tokChanged = tok.changed;
   const changedFiles = [...outText.keys()].filter(p => p !== 'tokens.css' || tokChanged);
   console.log(`tokenize-styles: ${tokChanged ? 'tokens.css rewritten as the role tokens; ' : ''}`
-    + `${nRep} literal(s) → var() in ${allChanges.length} declaration(s) across ${perFile.size} piece(s)`);
+    + `${nRep} literal(s) → var() in ${allChanges.length} declaration(s) across ${perFile.size} piece(s)`
+    + (snapMode ? ` (exact AND --snap ${snapMode})` : ''));
   if (nRep) {
     for (const [t, n] of [...perToken].sort((a, b) => b[1] - a[1])) console.log(`  ${String(n).padStart(4)}  ${t}`);
   }
@@ -725,7 +832,9 @@ function main(argv) {
 
   if (arg('--snap-report')) {
     const after = order.filter(inScope).map(p => [p, outText.get(p) ?? read(p)]);
-    writeFileSync(arg('--snap-report'), snapMarkdown(snapReport(after, map), map, after));
+    const rows = snapReport(after, map);
+    writeFileSync(arg('--snap-report'), snapMarkdown(rows, map, after));
+    if (arg('--snap-flagged')) writeFileSync(arg('--snap-flagged'), JSON.stringify(snapFlagged(rows, map), null, 1));
     console.log(`tokenize-styles: snap list → ${arg('--snap-report')} (report only; no snap applied)`);
   }
 

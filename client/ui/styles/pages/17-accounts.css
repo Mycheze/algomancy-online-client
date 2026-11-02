@@ -2,10 +2,10 @@
    Same spreadsheet-simulator palette as the board — a profile page that
    looked like a different product would be worse than no profile page. */
 
-.acctbar { display: flex; align-items: center; gap: var(--space-4); margin-bottom: 14px; padding: var(--space-3) var(--space-4);
+.acctbar { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-5); padding: var(--space-3) var(--space-4);
   background: var(--panel2); border: 1px solid var(--line); border-radius: var(--radius-md); font-size: var(--text-12); }
 .acctbar .accthint { color: var(--dim); flex: 1; }
-.acctbar button { padding: 4px 10px; font-size: var(--text-12); }
+.acctbar button { padding: var(--space-2) var(--space-4); font-size: var(--text-12); }
 /* T17/T20 (2026-09-05): signed in, the strip IS a button — the whole box opens
    the account page, and "Playing as" is inside it rather than beside it */
 button.acctbar { cursor: pointer; font: inherit; font-size: var(--text-12); text-align: left; color: var(--text); }
@@ -17,8 +17,8 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 
 /* an element name in the accent of that element — the one bit of colour the
    stats pages get, and it has to survive Light's cream and Metal's grey */
-.acctel { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
-  padding: 1px 6px; border-radius: var(--radius-pill); color: var(--color-text-on-accent); }
+.acctel { font-size: var(--text-11); text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
+  padding: var(--space-1) var(--space-3); border-radius: var(--radius-pill); color: var(--color-text-on-accent); }
 /* the favourite as an icon: no pill behind it, the element's colour as a ring */
 .acctel.icon { background: none; padding: 0; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
 .acctel.icon img { width: 18px; height: 18px; display: block; }
@@ -44,8 +44,8 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 /* the profile page is its own full-width layout, not a 340px join card */
 .acctpage { grid-column: 1 / -1; max-width: 1100px; margin: 0 auto; padding: var(--space-5); width: 100%; }
 .accthead { display: flex; align-items: flex-start; gap: var(--space-6); flex-wrap: wrap;
-  border-bottom: 1px solid var(--line); padding-bottom: 10px; margin-bottom: var(--space-5); }
-.accthead h1 { margin: 0 0 var(--space-2); font-size: var(--text-26); letter-spacing: .04em; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  border-bottom: 1px solid var(--line); padding-bottom: var(--space-4); margin-bottom: var(--space-5); }
+.accthead h1 { margin: 0 0 var(--space-2); font-size: var(--text-26); letter-spacing: .04em; display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
 .accthead .hint { color: var(--dim); font-size: var(--text-12); }
 .accthbtns { margin-left: auto; display: flex; gap: var(--space-4); align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 
@@ -54,12 +54,12 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .accttab.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
 .acctcount { color: var(--dim); font-weight: 400; }
 
-.acctbody { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; align-items: start; }
-.acctcard { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 12px 14px 14px; }
+.acctbody { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-4); align-items: start; }
+.acctcard { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-5) var(--space-5) var(--space-5); }
 .acctcard.wide { grid-column: 1 / -1; }
 /* #296: the change-password box's three rows, closer than a sign-in screen's */
 .pwform .namerow { margin-bottom: var(--space-4); }
-.acctcard h3 { margin: 0 0 10px; color: var(--accent); font-size: var(--text-14);
+.acctcard h3 { margin: 0 0 var(--space-4); color: var(--accent); font-size: var(--text-14);
   text-transform: uppercase; letter-spacing: .06em; }
 .acctcard h4 { margin: var(--space-6) 0 var(--space-4); color: var(--dim); font-size: var(--text-12);
   text-transform: uppercase; letter-spacing: .06em; }
@@ -70,10 +70,10 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .acctcard p { margin: var(--space-4) 0 0; }
 
 .statgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: var(--space-3); }
-.statcell { background: var(--panel2); border: 1px solid var(--line); border-radius: 5px;
+.statcell { background: var(--panel2); border: 1px solid var(--line); border-radius: var(--radius-md);
   padding: var(--space-4) var(--space-3); text-align: center; }
-.statval { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1.1; }
-.statlab { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: .05em; margin-top: 3px; }
+.statval { font-size: var(--text-22); font-weight: 700; color: var(--text); line-height: 1.1; }
+.statlab { font-size: var(--text-11); color: var(--dim); text-transform: uppercase; letter-spacing: .05em; margin-top: var(--space-1); }
 
 /* how much of each element you have actually played, as one bar */
 .elbar { display: flex; height: 14px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--line); }
@@ -89,7 +89,7 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .tcn { color: var(--dim); margin-left: var(--space-3); }
 
 .accttable { width: 100%; border-collapse: collapse; font-size: var(--text-12); }
-.accttable th { text-align: left; color: var(--dim); font-weight: 400; font-size: 10px;
+.accttable th { text-align: left; color: var(--dim); font-weight: 400; font-size: var(--text-11);
   text-transform: uppercase; letter-spacing: .05em; padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line); }
 .accttable td { padding: var(--space-2) var(--space-3); border-bottom: 1px dotted var(--line); }
 .accttable .good { color: var(--glow); }
@@ -103,8 +103,8 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .roomcell { font-family: ui-monospace, monospace; color: var(--dim); }
 /* CR D8.5: a conceded game that did not weigh as a full one — the tag beside its
  * result. A walkover row is dimmed whole: it is in the history, counted nowhere. */
-.constag { display: inline-block; margin-left: var(--space-3); padding: 1px 6px; border-radius: 3px;
-  font-size: 10px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase;
+.constag { display: inline-block; margin-left: var(--space-3); padding: var(--space-1) var(--space-3); border-radius: var(--radius-sm);
+  font-size: var(--text-11); font-weight: 600; letter-spacing: .03em; text-transform: uppercase;
   color: var(--dim); border: 1px solid var(--line); cursor: help; vertical-align: middle; }
 .constag.early { color: var(--accent); border-color: var(--accent); }
 .constag.fixed { color: var(--text); }   /* BL-46: counted, and tagged */
@@ -114,8 +114,8 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .accttable.games .weight-walkover .resultcell { color: var(--dim); font-weight: 500; }
 
 .achgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-4); }
-.ach { display: flex; gap: 10px; background: var(--panel2); border: 1px solid var(--line);
-  border-radius: var(--radius-md); padding: 8px 10px; opacity: .55; }
+.ach { display: flex; gap: var(--space-4); background: var(--panel2); border: 1px solid var(--line);
+  border-radius: var(--radius-md); padding: var(--space-4) var(--space-4); opacity: .55; }
 .ach.got { opacity: 1; border-color: var(--accent); }
 .achicon { font-size: var(--text-22); line-height: 1; filter: grayscale(1); }
 .ach.got .achicon { filter: none; }
@@ -126,14 +126,14 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .achdesc { color: var(--dim); font-size: var(--text-11); margin-top: var(--space-1); }
 .achbar { height: 4px; background: var(--line); border-radius: var(--radius-pill); margin-top: var(--space-3); overflow: hidden; }
 .achbar span { display: block; height: 100%; background: var(--accent); }
-.achprog { font-size: 10px; color: var(--dim); margin-top: var(--space-1); }
+.achprog { font-size: var(--text-11); color: var(--dim); margin-top: var(--space-1); }
 
 /* one section per group: fifty-odd achievements in a single grid is a wall */
-.achgroup + .achgroup { margin-top: 14px; }
+.achgroup + .achgroup { margin-top: var(--space-5); }
 .achgroup h4 { margin: 0 0 var(--space-3); font-size: var(--text-12); text-transform: uppercase;
   letter-spacing: .06em; color: var(--dim); display: flex; gap: var(--space-4); align-items: baseline; }
 /* a ladder's rungs — one pip each, filled for the ones already earned */
-.achpips { display: flex; gap: 3px; margin-top: var(--space-3); }
+.achpips { display: flex; gap: var(--space-1); margin-top: var(--space-3); }
 .achpips span { width: 14px; height: 3px; border-radius: var(--radius-pill); background: var(--line); }
 .achpips span.on { background: var(--accent); }
 /* an unearned secret: present, obviously a thing, and saying nothing */
@@ -146,7 +146,7 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .fname { font-weight: 700; }
 .fstats { color: var(--dim); font-size: var(--text-11); }
 .fspacer { flex: 1; }
-.friendrow button { font-size: var(--text-11); padding: 3px 8px; }
-.fdot { width: 8px; height: 8px; border-radius: 50%; background: #3a444f; flex: none; }
+.friendrow button { font-size: var(--text-11); padding: var(--space-1) var(--space-4); }
+.fdot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-border-strong); flex: none; }
 .fdot.on { background: var(--glow); box-shadow: 0 0 6px var(--glow); }
 

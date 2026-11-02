@@ -2,42 +2,42 @@
    The strip sits above the three home cards and is full width because it
    answers a different question from them: those are "what would you like to
    play", this is "is there anybody to play it with". */
-.queuestrip { display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-  background: var(--panel); border: 1px solid var(--color-border-strong); border-radius: 10px;
-  padding: var(--space-5) var(--space-6); margin-bottom: 14px; }
+.queuestrip { display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap;
+  background: var(--panel); border: 1px solid var(--color-border-strong); border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-6); margin-bottom: var(--space-5); }
 .qstripmain { display: flex; align-items: baseline; gap: var(--space-5); flex: 1 1 auto; flex-wrap: wrap; }
-.qstriptitle { font-size: 15px; font-weight: 700; letter-spacing: .02em; }
+.qstriptitle { font-size: var(--text-14); font-weight: 700; letter-spacing: .02em; }
 .qstripcount { color: var(--dim); font-size: var(--text-12); }
 /* somebody IS waiting — the one state worth an eye-catch on an idle page */
 .qstripcount.live { color: var(--glow); }
-.queuestrip .qstripgo { flex: 0 0 auto; padding: 9px 18px; font-size: var(--text-14);
+.queuestrip .qstripgo { flex: 0 0 auto; padding: var(--space-4) var(--space-6); font-size: var(--text-14);
   border-color: var(--accent); color: var(--accent); }
 
 /* ONE card: the root keeps .joinscreen (the report form reads the page off it)
    but not its frame, or the 520px panel sat in — and stuck out of — a 420px card */
 .joinscreen.queuescreen { max-width: none; width: min(94vw, 520px); background: none; border: 0; padding: 0; }
 .queuescreen .queuepanel { background: var(--panel); border: 1px solid var(--line);
-  border-radius: 10px; padding: 18px 20px 20px;
+  border-radius: var(--radius-lg); padding: 18px 20px 20px;
   display: flex; flex-direction: column; gap: var(--space-5); }
-.queuehead { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.queuehead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
 .queuehead h2 { margin: 0; font-size: 19px; }
-.qback { font-size: var(--text-12); padding: 4px 10px; }
+.qback { font-size: var(--text-12); padding: var(--space-2) var(--space-4); }
 .qcounts { color: var(--dim); font-size: var(--text-12); }
 .qerr { color: var(--danger); }
 .qmodes { gap: var(--space-4); }
 .queuescreen .qdeck { display: flex; flex-direction: column; gap: var(--space-4); }
-.qgo { padding: 12px 14px; font-size: 15px; font-weight: 700; margin-top: var(--space-2); }
+.qgo { padding: var(--space-5) var(--space-5); font-size: var(--text-14); font-weight: 700; margin-top: var(--space-2); }
 
 /* ranked vs open: two labelled choices, not a bare toggle. Which one you are
    in changes who you are handed, so both have to say what they mean. */
 .qranked { display: flex; flex-direction: column; gap: var(--space-4); }
-.qopt { display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
-  text-align: left; padding: 10px 12px; }
+.qopt { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1);
+  text-align: left; padding: var(--space-4) var(--space-5); }
 .qopt.on { border-color: var(--accent); background: var(--panel2); }
 .qopt.on b { color: var(--accent); }
 .qopt .hint { font-size: var(--text-11); }
 
-.qsearching { display: flex; align-items: center; gap: 14px; padding: 10px 0; }
+.qsearching { display: flex; align-items: center; gap: var(--space-5); padding: var(--space-4) 0; }
 .qsearchtext { display: flex; flex-direction: column; gap: var(--space-1); }
 .qspin { width: 22px; height: 22px; flex: 0 0 auto; border-radius: 50%;
   border: 2px solid var(--line); border-top-color: var(--accent);
@@ -46,11 +46,11 @@
 @media (prefers-reduced-motion: reduce) { .qspin { animation-duration: 3s; } }
 
 .qofferbox { width: min(92vw, 380px); text-align: center; align-items: stretch; }
-.qopponent { display: flex; flex-direction: column; gap: 3px; font-size: 17px; }
-.qaccept { padding: 13px 14px; font-size: var(--text-16); font-weight: 700; }
+.qopponent { display: flex; flex-direction: column; gap: var(--space-1); font-size: var(--text-16); }
+.qaccept { padding: var(--space-5) var(--space-5); font-size: var(--text-16); font-weight: 700; }
 .qcount { color: var(--dim); font-weight: 400; margin-left: var(--space-3); }
-.qwaiting { padding: 10px; color: var(--dim); }
-.qdecline { font-size: var(--text-12); padding: 5px 10px; align-self: center; }
+.qwaiting { padding: var(--space-4); color: var(--dim); }
+.qdecline { font-size: var(--text-12); padding: var(--space-2) var(--space-4); align-self: center; }
 .qofferbox .hint { font-size: var(--text-11); }
 
 /* BL-02 — the ladder */
@@ -58,7 +58,7 @@
 .accttable.ladder .lrating b { color: var(--accent); }
 .accttable.ladder tr.myrow { background: var(--panel2); }
 .youstanding { background: var(--panel2); border: 1px solid var(--line); border-left: 3px solid var(--accent);
-  border-radius: var(--radius-md); padding: 9px 12px; display: flex; flex-direction: column; gap: 3px; }
+  border-radius: var(--radius-md); padding: var(--space-4) var(--space-5); display: flex; flex-direction: column; gap: var(--space-1); }
 
 /* BL-42 — the open games on the home strip. A count cannot be clicked; these
    can, and each one is a whole game somebody is already waiting in. */
@@ -72,7 +72,7 @@
 .qopenwhat { opacity: .75; font-size: .9em; }
 .qopenwait { opacity: .5; font-size: .85em; margin-left: auto; }
 .qopenjoin {
-  padding: .2rem .6rem; font-size: .9em; border-radius: 5px; cursor: pointer;
+  padding: .2rem .6rem; font-size: .9em; border-radius: var(--radius-md); cursor: pointer;
   background: var(--accent, #5865F2); color: var(--color-text-on-fill); border: 0;
 }
 .qopenjoin:hover { filter: brightness(1.1); }
@@ -81,6 +81,6 @@
 .pgclaim { display: grid; gap: .4rem; margin: .6rem 0; padding: .6rem;
   border-radius: var(--radius-lg); background: rgba(255,255,255,.05); }
 .pgclaimhead { font-weight: 600; }
-.pgclaim input { padding: .35rem .5rem; border-radius: 5px; }
+.pgclaim input { padding: .35rem .5rem; border-radius: var(--radius-md); }
 .pgclaimerr:empty { display: none; }
 

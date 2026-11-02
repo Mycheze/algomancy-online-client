@@ -41,27 +41,26 @@ import assert from 'node:assert/strict';
 import { colourLiterals, declarations } from '../scripts/css-scan.mjs';
 import { readStylePieces } from './read-styles.ts';
 
-/** colour literals per piece, banked 2026-11-02 after the Phase 1b codemod. May only go down. */
+/** colour literals per piece, banked 2026-11-02 after the Phase 1b codemod and its snap (1b-ii). May only go down. */
 const ALLOW: Record<string, number> = {
-  'pages/joinscreen': 3,
+  'pages/joinscreen': 2,
   'pages/home': 5,
   'shared/element-chips': 9,
-  'pages/accounts': 1,
   'pages/draft-lobby': 3,
   'pages/postgame': 2,
-  'pages/decks': 7,
-  'pages/tabletop': 15,
+  'pages/decks': 5,
+  'pages/tabletop': 14,
   'pages/binder': 7,
-  'pages/deckstrip-curve-affinity': 8,
+  'pages/deckstrip-curve-affinity': 6,
   'pages/cards': 1,
   'pages/queue': 4,
   'pages/admin': 15,
-  'pages/learn': 25,
+  'pages/learn': 23,
   'pages/cardstats': 6,
   'pages/deck-modals': 2,
   'shared/touch': 2,
   'shared/drag': 3,
-  'pages/crreview': 25,
+  'pages/crreview': 22,
   'pages/challenge': 1,
 };
 

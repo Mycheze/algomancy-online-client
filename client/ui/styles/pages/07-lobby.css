@@ -1,13 +1,13 @@
 /* ── constructed deck picker + waiting lobby ────────────────────────── */
 .deckselect { width: 100%; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
-  border-radius: 5px; padding: 7px 8px; font-size: var(--text-13); }
+  border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font-size: var(--text-13); }
 .deckinfo { color: var(--dim); font-size: var(--text-12); }
 .deckinfo a { color: var(--accent); }
 .deckimport input { letter-spacing: normal; font-weight: 400; text-align: left; font-size: var(--text-12); }
-.deckimport button { flex: 0 0 auto; padding: 6px 14px; }
+.deckimport button { flex: 0 0 auto; padding: var(--space-3) var(--space-5); }
 .deckpaste summary { color: var(--dim); font-size: var(--text-12); cursor: pointer; }
 .deckpaste textarea { width: 100%; box-sizing: border-box; margin: var(--space-3) 0; background: var(--panel2);
-  color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: var(--space-3) var(--space-4); font: 12px monospace; }
+  color: var(--text); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font: 12px monospace; }
 .deckmsg { color: var(--accent); font-size: var(--text-12); }
 /* BL-29 — the spectator's standing line. Loud on purpose: an omniscient view
    that ever looked like a player's is the one way this feature could mislead
@@ -20,15 +20,15 @@
    it. Louder than a `.hint` on purpose — this is the only warning on the
    screen that is about something irreversible. */
 .pwwarn { background: var(--panel2); border: 1px solid var(--danger);
-  border-radius: var(--radius-md); padding: 8px 10px; margin: var(--space-4) 0; font-size: var(--text-12);
+  border-radius: var(--radius-md); padding: var(--space-4) var(--space-4); margin: var(--space-4) 0; font-size: var(--text-12);
   line-height: 1.45; color: var(--text); }
 .pwwarn b { color: var(--danger); letter-spacing: .02em; }
 .joinscreen .sharebar { flex-wrap: wrap; margin-bottom: 0; }
 
 /* ── live draft panel (M4) ──────────────────────────────────────────── */
 .draftpanel { background: var(--panel); border: 1px solid var(--accent); border-radius: var(--radius-md);
-  padding: 8px 10px; margin-bottom: var(--space-4); }
-.drafthead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: var(--space-3); }
+  padding: var(--space-4) var(--space-4); margin-bottom: var(--space-4); }
+.drafthead { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-3); }
 .drafthead .who { color: var(--accent); font-weight: 700; }
 .draftpanel .zone { min-height: 40px; }
 .draftpanel .draftkeep { border-left: 3px solid var(--glow); padding-left: var(--space-3); }

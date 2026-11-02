@@ -17,14 +17,14 @@ html.touch { --bdw: 300px; }
 .ttpage { position: fixed; top: 0; left: 0; bottom: 0; right: var(--bdw); z-index: 1;
   display: flex; flex-direction: column; background: var(--bg); --cw: 132px; --ch: 183px; }
 .ttloading { padding: 40px; }
-.tttop { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: var(--space-4) var(--space-5);
+.tttop { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; padding: var(--space-4) var(--space-5);
   background: var(--panel); border-bottom: 1px solid var(--line); }
 .ttback { flex: none; }
 .ttsummary { flex: 1; min-width: 0; }
 .ttsummary .cbdeckbar { position: static; margin: 0; padding: 0; border: 0; background: none; }
 .tttools { display: flex; align-items: center; gap: var(--space-3); flex: none; }
 .ttresort { position: relative; }
-.ttresort > summary { list-style: none; cursor: pointer; padding: 5px 10px; border: 1px solid var(--line);
+.ttresort > summary { list-style: none; cursor: pointer; padding: var(--space-2) var(--space-4); border: 1px solid var(--line);
   border-radius: var(--radius-md); background: var(--panel2); user-select: none; }
 .ttresort > summary::-webkit-details-marker { display: none; }
 .ttmenu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; display: flex; flex-direction: column;
@@ -36,27 +36,27 @@ html.touch { --bdw: 300px; }
 .ttselbar .dkicon { width: 32px; height: 32px; margin-left: auto; }
 .ttbody { flex: 1; min-height: 0; display: flex; }
 /* the page's own scroll boxes, in the page's colours (Firefox drew them white) */
-.tttable, .ttmaybe, .ttbody, .ddresults { scrollbar-color: #3a4553 transparent; scrollbar-width: thin; }
+.tttable, .ttmaybe, .ttbody, .ddresults { scrollbar-color: var(--color-border-strong) transparent; scrollbar-width: thin; }
 .tttable { flex: 1; min-width: 0; overflow: auto; overscroll-behavior: contain; padding: 14px 10px 60px;
   background: radial-gradient(ellipse at 50% 0%, #1e3029 0%, var(--felt) 70%); touch-action: pan-y; }
-.ttrow { display: flex; flex-wrap: wrap; align-items: stretch; row-gap: 18px; }
+.ttrow { display: flex; flex-wrap: wrap; align-items: stretch; row-gap: var(--space-6); }
 .ttpile { width: var(--cw); flex: none; display: flex; flex-direction: column; padding: var(--space-2);
-  border-radius: 10px; transition: background .12s; }
-.ttpilehead { display: flex; align-items: center; gap: 3px; height: 24px; margin-bottom: var(--space-2); cursor: grab;
+  border-radius: var(--radius-lg); transition: background .12s; }
+.ttpilehead { display: flex; align-items: center; gap: var(--space-1); height: 24px; margin-bottom: var(--space-2); cursor: grab;
   touch-action: pan-y; -webkit-user-select: none; user-select: none; }
-.ttgrip { color: var(--dim); font-size: var(--text-12); cursor: grab; padding: 0 1px; }
+.ttgrip { color: var(--dim); font-size: var(--text-12); cursor: grab; padding: 0 var(--space-1); }
 .ttpilename, .ttpilelabel { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  font-weight: 700; font-size: var(--text-13); color: var(--text); padding: 1px 3px; border: 1px solid transparent; border-radius: var(--radius-sm); }
+  font-weight: 700; font-size: var(--text-13); color: var(--text); padding: var(--space-1) var(--space-1); border: 1px solid transparent; border-radius: var(--radius-sm); }
 span.ttpilename { cursor: text; }
 span.ttpilename:hover { border-color: var(--line); }
 input.ttpilename { flex: 1; width: 0; background: var(--panel2); border-color: var(--accent); outline: none; font-family: inherit; }
 .ttpilecount { margin-left: auto; color: var(--dim); font-size: var(--text-12); font-variant-numeric: tabular-nums; }
-.ttpiledel { padding: 0 5px; font-size: var(--text-11); border: none; background: none; color: var(--dim); }
+.ttpiledel { padding: 0 var(--space-2); font-size: var(--text-11); border: none; background: none; color: var(--dim); }
 .ttpiledel:hover { color: var(--danger); }
-.ttovercap { flex: none; color: var(--color-text-on-fill); background: var(--danger); border-radius: var(--radius-lg); padding: 0 5px;
+.ttovercap { flex: none; color: var(--color-text-on-fill); background: var(--danger); border-radius: var(--radius-lg); padding: 0 var(--space-2);
   font-size: var(--text-11); font-weight: 700; line-height: 16px; }
 .ttcapn { position: absolute; top: 2px; right: 22%; z-index: 1; color: var(--color-text-on-fill); background: var(--danger);
-  border-radius: 7px; padding: 0 var(--space-2); font-size: 10px; font-weight: 700; line-height: 14px; pointer-events: none; }
+  border-radius: var(--radius-md); padding: 0 var(--space-2); font-size: var(--text-11); font-weight: 700; line-height: 14px; pointer-events: none; }
 .ttfan { position: relative; flex: none; width: var(--cw); transition: height .09s; }
 .ttcard { position: absolute; left: 0; width: var(--cw); height: var(--ch); z-index: var(--k);
   border-radius: var(--radius-md); cursor: grab; box-shadow: 0 1px 4px rgba(0, 0, 0, .55);
@@ -78,7 +78,7 @@ html:not(.dragging):not(.touch):not(.zoompress) .ttcard:hover { z-index: 500; tr
 .ttcard.ttgone { opacity: 0; }
 .ttgutter { position: relative; width: 18px; flex: none; }
 .ttend { flex: 1 0 calc(var(--cw) + 24px); min-height: calc(var(--ch) + 32px); padding: 32px 4px 4px 20px;
-  border-radius: 10px; display: flex; align-items: flex-start; }
+  border-radius: var(--radius-lg); display: flex; align-items: flex-start; }
 /* the tint, the gap, the new pile's place: the only things a drag lights */
 .ttpage .dropover { outline: none; box-shadow: none; }
 .ttpage .ttpile.dropover { background: rgba(255, 255, 255, .07); }

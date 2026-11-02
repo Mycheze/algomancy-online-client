@@ -10,17 +10,17 @@
   display: flex; flex-direction: column; justify-content: safe center; gap: var(--space-6); }
 .lobbypage .sharebar { margin-bottom: 0; flex-wrap: wrap; }
 .lobbyhead { display: flex; align-items: baseline; gap: var(--space-6); flex-wrap: wrap;
-  border-bottom: 1px solid var(--line); padding-bottom: 14px; }
-.lobbyhead .homelogo { margin: 0; font-size: 24px; text-align: left; }
-.lobbyhead h2 { margin: 0; font-size: 15px; color: var(--text); font-weight: 700; }
+  border-bottom: 1px solid var(--line); padding-bottom: var(--space-5); }
+.lobbyhead .homelogo { margin: 0; font-size: var(--text-22); text-align: left; }
+.lobbyhead h2 { margin: 0; font-size: var(--text-14); color: var(--text); font-weight: 700; }
 .lobbyhead .roomcode { color: var(--accent); letter-spacing: .16em; }
 .lobbyhead .headbtns { margin-left: auto; }
-.lobbyhead .headbtns button { font-size: var(--text-12); padding: 5px 12px; }
+.lobbyhead .headbtns button { font-size: var(--text-12); padding: var(--space-2) var(--space-5); }
 
-.lobbygrid { display: grid; grid-template-columns: minmax(250px, 330px) 1fr; gap: 14px; align-items: stretch; }
+.lobbygrid { display: grid; grid-template-columns: minmax(250px, 330px) 1fr; gap: var(--space-5); align-items: stretch; }
 @media (max-width: 780px) { .lobbygrid { grid-template-columns: 1fr; } }
-.lobbypanel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
-  padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+.lobbypanel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-6) var(--space-6); display: flex; flex-direction: column; gap: var(--space-4); }
 .lobbypanel > .zonelabel { margin-top: 0; }
 .lobbypanel .hint { margin: 0; }
 
@@ -32,21 +32,21 @@
    to select one at a time to find out what it does is a quiz, not a menu */
 .lobbymethods { display: flex; flex-direction: column; gap: var(--space-3); }
 .lobbymethod { display: block; width: 100%; text-align: left; font-size: var(--text-13);
-  padding: 10px 12px; line-height: 1.35; }
-.lobbymethod b { display: block; font-size: 13.5px; }
+  padding: var(--space-4) var(--space-5); line-height: 1.35; }
+.lobbymethod b { display: block; font-size: var(--text-13); }
 .lobbymethod em { display: block; font-style: normal; font-weight: 400; color: var(--dim);
-  font-size: 11.5px; margin-top: 3px; }
+  font-size: var(--text-11); margin-top: var(--space-1); }
 .lobbymethod.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
 
 /* the actual decision on the screen — big enough to be one */
 .lobbyels { display: grid; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); gap: var(--space-3); }
 .lobbyels .elchip { display: flex; align-items: center; justify-content: center;
-  font-size: var(--text-14); padding: 9px 12px; }
+  font-size: var(--text-14); padding: var(--space-4) var(--space-5); }
 .lobbyels .elicon { width: 18px; height: 18px; vertical-align: -4px; }
 
 /* who is ready, and the button that makes it so */
 .lobbyfoot { display: flex; align-items: center; gap: var(--space-6); flex-wrap: wrap;
-  background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: var(--space-5) var(--space-6); }
+  background: var(--panel2); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-5) var(--space-6); }
 .lobbyseats { display: flex; gap: 20px; flex-wrap: wrap; font-size: var(--text-13); }
 .lobbyseat { display: flex; align-items: center; gap: var(--space-4); }
 .lobbyseat .dim { color: var(--dim); }
@@ -54,16 +54,16 @@
 .seatdot.ready { background: var(--glow); box-shadow: 0 0 7px var(--glow); }
 .seatdot.away { background: #454f5c; }
 .lobbygo { margin-left: auto; }
-.lobbygo button { font-size: 15px; font-weight: 700; padding: 10px 24px; }
+.lobbygo button { font-size: var(--text-14); font-weight: 700; padding: var(--space-4) var(--space-7); }
 /* the ranking being built, best first — numbered so the order is the message */
 .ranklist { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; min-height: 30px;
   padding: var(--space-3); border: 1px dashed var(--line); border-radius: var(--radius-md); background: rgba(0,0,0,.15); }
 .ranklist .hint { padding: 0 var(--space-2); }
-.elchip.ranked { position: relative; padding-left: 22px; }
+.elchip.ranked { position: relative; padding-left: var(--space-7); }
 .ranknum { position: absolute; left: 5px; top: 50%; transform: translateY(-50%);
-  font-size: 10px; font-weight: 700; opacity: .85; }
+  font-size: var(--text-11); font-weight: 700; opacity: .85; }
 .lobbyrankbtns { display: flex; gap: var(--space-3); flex-wrap: wrap; }
-.lobbyrankbtns button { font-size: var(--text-12); padding: 4px 10px; }
+.lobbyrankbtns button { font-size: var(--text-12); padding: var(--space-2) var(--space-4); }
 
 /* the home screen's escape hatch: start a fixed trio without a lobby */
 .fixedtrio { border-top: 1px dashed var(--line); padding-top: var(--space-4); }
@@ -81,16 +81,16 @@
 .crsimple { display: flex; align-items: center; gap: var(--space-3); width: 100%; text-align: left; margin: var(--space-2) 0 var(--space-4); }
 .crsimple.on { border-color: var(--accent); }
 .crsimple .dim { margin-left: auto; font-size: var(--text-11); }
-.crknobs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px 10px; margin-bottom: var(--space-4); }
+.crknobs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-2) var(--space-4); margin-bottom: var(--space-4); }
 .crknob { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-12); }
 .crknob span { flex: 1; color: var(--dim); }
 .crknob.changed span { color: var(--text); }
 .crknob b { min-width: 2ch; text-align: center; }
-.crknob button { padding: 0 7px; line-height: 20px; }
+.crknob button { padding: 0 var(--space-3); line-height: 20px; }
 .crbans input, .cradvanced input { width: 100%; box-sizing: border-box; margin: var(--space-2) 0; background: var(--panel2);
-  color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 5px 8px; }
+  color: var(--text); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-2) var(--space-4); }
 .crchips { display: flex; flex-wrap: wrap; gap: var(--space-2); font-size: var(--text-12); }
-.crchip { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1px 4px 1px 8px; }
+.crchip { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-1) var(--space-2) var(--space-1) var(--space-4); }
 .crchip button { padding: 0 var(--space-2); border: 0; background: none; }
 .crsugg { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .crsugg button { font-size: var(--text-11); padding: var(--space-1) var(--space-3); }
@@ -99,7 +99,7 @@
 .crok { color: var(--dim); }
 .crbad { color: var(--danger); }
 .lobbycustom { border: 1px solid var(--accent); border-radius: var(--radius-md); padding: var(--space-4) var(--space-5); margin-bottom: var(--space-5); }
-.lobbycustom ul { margin: var(--space-2) 0; padding-left: 18px; }
+.lobbycustom ul { margin: var(--space-2) 0; padding-left: var(--space-6); }
 
 .constag.custom { border-color: var(--accent); }
 
@@ -111,7 +111,7 @@
   padding: 20px 24px; max-width: 460px; display: flex; flex-direction: column; gap: var(--space-5);
   align-items: center; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,.6); }
 .triobanner { display: flex; gap: var(--space-3); flex-wrap: wrap; justify-content: center; }
-.triobanner .elchip { font-size: 15px; padding: var(--space-3) var(--space-5); }
+.triobanner .elchip { font-size: var(--text-14); padding: var(--space-3) var(--space-5); }
 .triohow { color: var(--accent); font-weight: 700; }
 .triodetail { margin: 0; padding: 0; list-style: none; color: var(--dim); font-size: var(--text-12);
   line-height: 1.6; text-align: left; }

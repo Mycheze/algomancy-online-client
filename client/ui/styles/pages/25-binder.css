@@ -1,14 +1,14 @@
 /* ── THE BINDER (ui/binder.ts): every card, a layer docked beside #app ── */
 #binderlayer .ddpanel { position: fixed; top: 0; right: 0; bottom: 0; width: var(--bdw); z-index: 50;
-  display: flex; flex-direction: column; gap: var(--space-3); padding: 10px; background: var(--panel);
+  display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); background: var(--panel);
   border-left: 1px solid var(--line); box-shadow: -10px 0 30px rgba(0, 0, 0, .45); }
 .ddhead { display: flex; gap: var(--space-3); align-items: center; }
 .ddsearch { flex: 1; min-width: 0; }
 .ddgrab { display: none; }
-.ddchips { display: flex; flex-wrap: wrap; gap: 3px; }
-.ddchips button { padding: 3px 7px; font-size: var(--text-12); }
+.ddchips { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.ddchips button { padding: var(--space-1) var(--space-3); font-size: var(--text-12); }
 .ddchips .ddel .elicon { margin: 0; }
-.ddcount { color: var(--dim); font-size: var(--text-11); display: flex; align-items: center; gap: 10px; }
+.ddcount { color: var(--dim); font-size: var(--text-11); display: flex; align-items: center; gap: var(--space-4); }
 .ddresults { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: var(--space-1); touch-action: pan-y; }
 .ddgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
 .ddtile { cursor: grab; touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
@@ -21,11 +21,11 @@
 .ddpinbox { display: flex; gap: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-3);
   background: var(--panel2); }
 .ddpinart { width: 150px; flex: none; border-radius: var(--radius-md); }
-.ddpinside { display: flex; flex-direction: column; gap: 5px; min-width: 0; flex: 1; align-items: flex-start; }
+.ddpinside { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; flex: 1; align-items: flex-start; }
 .ddpinside .dkicon { width: 28px; height: 28px; margin-top: auto; }
 .ddscrim { display: none; }
 /* a table card carried over the binder: it means "take it out" */
-.ddremove { display: none; margin: -10px -10px 0; padding: 7px 10px; text-align: center; font-size: var(--text-13);
+.ddremove { display: none; margin: -10px -10px 0; padding: var(--space-3) var(--space-4); text-align: center; font-size: var(--text-13);
   color: #f1c9c9; background: rgba(217, 84, 84, .22); }
 #binderlayer .ddpanel.dropover { outline: none; box-shadow: -10px 0 30px rgba(0, 0, 0, .45), inset 0 0 0 999px rgba(217, 84, 84, .07); }
 #binderlayer .ddpanel.dropover .ddremove { display: block; }
@@ -33,7 +33,7 @@
   #binderlayer .ddpanel { top: auto; left: 0; width: auto; height: var(--ddh); border-left: 0;
     border-top: 1px solid var(--line); border-radius: 12px 12px 0 0; box-shadow: 0 -10px 30px rgba(0, 0, 0, .5); }
   #binderlayer .ddpanel.full { height: 88vh; }
-  .ddgrab { display: inline-flex; padding: 4px 10px; }
+  .ddgrab { display: inline-flex; padding: var(--space-2) var(--space-4); }
   .ddgrid { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
   html.ddfull .ddscrim { display: block; position: fixed; inset: 0; z-index: 49; background: rgba(0, 0, 0, .45); }
   .ddpinart { width: 96px; }

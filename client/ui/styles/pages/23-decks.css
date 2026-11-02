@@ -6,7 +6,7 @@
    set so a 30-card deck grouped by mana is one screenful on a laptop. */
 /* 12/22px like every other page — this was `4px 2px`, and on any window
    narrower than 1400px the grid ran to within 2px of the viewport edge */
-.deckpage { max-width: 1400px; margin: 0 auto; padding: 12px 22px 24px; }
+.deckpage { max-width: 1400px; margin: 0 auto; padding: var(--space-5) var(--space-7) var(--space-7); }
 .deckpage h1 { margin: 0; font-size: var(--text-22); letter-spacing: .04em; }
 .deckmain { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: var(--space-5); align-items: start; }
 @media (max-width: 900px) { .deckmain { grid-template-columns: 1fr; } }
@@ -25,11 +25,11 @@
   text-align: left; padding: var(--space-3); background: var(--panel); border: 1px solid var(--line);
   border-radius: var(--radius-lg); cursor: pointer; }
 .deckrow.on { border-color: var(--accent); background: var(--panel2); }
-.deckrowart { width: 46px; height: 46px; border-radius: 5px; overflow: hidden; background: var(--panel2);
+.deckrowart { width: 46px; height: 46px; border-radius: var(--radius-md); overflow: hidden; background: var(--panel2);
   display: block; }
 /* the scan is 63:88 — crop to the art, which is the top of the card */
 .deckrowart img { width: 100%; height: auto; margin-top: -18%; display: block; }
-.deckrowbody { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.deckrowbody { min-width: 0; display: flex; flex-direction: column; gap: var(--space-1); }
 /* the bundled deck names are long and differ only at the end
    ("Single-Box Battle Deck - Water v1.1.0"), so a one-line ellipsis made all
    five rows read identically — two lines is what tells them apart */
@@ -43,7 +43,7 @@
 
 /* ── the open deck ── */
 .deckdetail { min-width: 0; }
-.deckhero { display: grid; grid-template-columns: 132px minmax(0, 1fr) auto; gap: 14px;
+.deckhero { display: grid; grid-template-columns: 132px minmax(0, 1fr) auto; gap: var(--space-5);
   background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-5);
   margin-bottom: var(--space-4); }
 .deckcover { width: 132px; border-radius: var(--radius-md); overflow: hidden; background: var(--panel2);
@@ -55,12 +55,12 @@
 .deckcover img { width: 100%; display: block; aspect-ratio: auto 18 / 25; }
 .deckheroinfo { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
 .deckname { font-family: inherit; font-weight: 700; font-size: 19px; line-height: 1.2; background: var(--panel2); color: var(--text);
-  border: 1px solid transparent; border-radius: 5px; padding: 5px 8px; width: 100%; }
+  border: 1px solid transparent; border-radius: var(--radius-md); padding: var(--space-2) var(--space-4); width: 100%; }
 .deckname:hover { border-color: var(--line); }
 .deckname:focus { border-color: var(--accent); outline: none; }
 .deckfacts { color: var(--dim); display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
-.deckstatus { font-size: var(--text-12); border-radius: 5px; padding: var(--space-2) var(--space-4); }
-.deckstatus.ok { color: var(--glow); background: #1c2a1c; }
+.deckstatus { font-size: var(--text-12); border-radius: var(--radius-md); padding: var(--space-2) var(--space-4); }
+.deckstatus.ok { color: var(--glow); background: var(--color-success-bg); }
 .deckstatus.bad { color: var(--accent); background: #2a2314; }
 .deckrecline { font-size: var(--text-12); }
 .deckrecline a { color: var(--accent); margin-left: var(--space-3); }
@@ -72,11 +72,11 @@
    and the one thing that genuinely needed saying in prose — why ▶ is disabled
    — is the .deckstatus line to their left. */
 .deckacts { display: flex; flex-direction: column; gap: var(--space-3); align-self: start; }
-.dkicon { width: 38px; height: 38px; padding: 0; font-size: 15px; line-height: 1;
+.dkicon { width: 38px; height: 38px; padding: 0; font-size: var(--text-14); line-height: 1;
   display: inline-flex; align-items: center; justify-content: center; flex: none; }
 .dkicon.play { font-size: var(--text-14); }
 .dkicon.primary, .dkicon.play:not(.on):not(:disabled) { border-color: var(--accent); color: var(--accent); }
-.dkicon.play.on { border-color: var(--glow); color: var(--glow); background: #1c2a1c; }
+.dkicon.play.on { border-color: var(--glow); color: var(--glow); background: var(--color-success-bg); }
 .dkicon:disabled { opacity: .4; }
 .sharebar .dkicon, .dkmodalhead .dkicon { width: 30px; height: 30px; font-size: var(--text-13); }
 .deckbody { margin-top: var(--space-4); }
@@ -84,14 +84,14 @@
 /* ── the card grid ── */
 .dktoolbar { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
 .dktoolbar .hint { margin: 0; }
-.dkkind { padding: 3px 9px; font-size: var(--text-12); }
+.dkkind { padding: var(--space-1) var(--space-4); font-size: var(--text-12); }
 .dkkind.on { border-color: var(--accent); color: var(--accent); }
 .dkfilterspacer { flex: 1; }
 
 .dkgroup { margin-bottom: var(--space-5); }
 .dkgrouphead { color: var(--accent); text-transform: uppercase; letter-spacing: .06em;
-  font-size: var(--text-11); border-bottom: 1px solid var(--line); padding-bottom: 3px; margin-bottom: var(--space-3); }
-.dkgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 7px; }
+  font-size: var(--text-11); border-bottom: 1px solid var(--line); padding-bottom: var(--space-1); margin-bottom: var(--space-3); }
+.dkgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: var(--space-3); }
 
 .dktile { position: relative; border-radius: var(--radius-md); overflow: hidden; background: var(--panel2);
   border: 1px solid var(--line); aspect-ratio: 63 / 88; }
@@ -152,7 +152,7 @@
   position: absolute;
   width: calc(100% - var(--d) * var(--dkstep));
   height: calc(100% - var(--d) * var(--dkstep));
-  border-radius: 5px;
+  border-radius: var(--radius-md);
   /* a hairline round every layer plus a shadow under it: the edge is what you
      count, the shadow is what says the edge is a card and not a seam */
   box-shadow: 0 0 0 1px var(--line), -3px 3px 6px rgba(0, 0, 0, .55);
@@ -188,11 +188,11 @@
   right: calc(var(--d) * var(--dkstep) + 3px); z-index: 3; }
 
 .dkn { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,.7); color: var(--color-text-on-fill);
-  border-radius: 9px; padding: 0 5px; font-size: var(--text-11); font-weight: 700; }
+  border-radius: var(--radius-lg); padding: 0 var(--space-2); font-size: var(--text-11); font-weight: 700; }
 .dkn.bad { background: var(--danger); }
 /* the name is the fallback when the scan is missing, and the label when it is
    not — small, on a scrim, at the bottom where the printed name is anyway */
-.dkname { position: absolute; left: 0; right: 0; bottom: 20px; font-size: 10px; line-height: 1.15;
+.dkname { position: absolute; left: 0; right: 0; bottom: 20px; font-size: var(--text-11); line-height: 1.15;
   padding: var(--space-1) var(--space-2); color: var(--color-text-on-fill); background: linear-gradient(transparent, rgba(0,0,0,.8) 40%);
   text-align: center; }
 .dkbtns { position: absolute; left: 0; right: 0; bottom: 0; display: flex;
@@ -203,7 +203,7 @@
 .dkbtns button:hover { background: var(--accent); color: var(--color-text-on-accent); }
 
 .dkadd { margin-top: var(--space-3); }
-.dkdrawer { margin-top: 10px; border: 1px solid var(--accent); border-radius: var(--radius-lg); padding: var(--space-4);
+.dkdrawer { margin-top: var(--space-4); border: 1px solid var(--accent); border-radius: var(--radius-lg); padding: var(--space-4);
   background: var(--panel2); }
 .dkdrawerhead { display: flex; gap: var(--space-3); margin-bottom: var(--space-3); }
 .dksearch { flex: 1; }

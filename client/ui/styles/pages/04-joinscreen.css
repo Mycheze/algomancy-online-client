@@ -9,14 +9,14 @@
   repeating-linear-gradient(45deg, #263042 0 8px, #2e3a4e 8px 16px);
   border: 1px solid var(--line); border-radius: 5px; }
 /* opponent's face-down (dormant) resource of unknown element */
-.res.hidden { background: #333b47; border-style: dashed; }
+.res.hidden { background: var(--color-border); border-style: dashed; }
 /* tiny join screen */
 .joinscreen { max-width: 420px; margin: 60px auto; background: var(--panel); border: 1px solid var(--line);
-  border-radius: 10px; padding: var(--space-7); display: flex; flex-direction: column; gap: 14px; }
+  border-radius: var(--radius-lg); padding: var(--space-7); display: flex; flex-direction: column; gap: var(--space-5); }
 .joinscreen h2 { margin: 0; color: var(--accent); }
 .joinscreen label { display: block; }
 .joinscreen input[type="text"] { font-size: var(--text-16); padding: var(--space-3); margin-left: var(--space-3);
-  background: var(--panel2); border: 1px solid var(--line); border-radius: 5px; color: var(--text); }
+  background: var(--panel2); border: 1px solid var(--line); border-radius: var(--radius-md); color: var(--text); }
 .joinscreen button { font-size: var(--text-16); padding: var(--space-4); }
 .joinscreen .hint { color: var(--dim); font-size: var(--text-12); margin: 0; }
 

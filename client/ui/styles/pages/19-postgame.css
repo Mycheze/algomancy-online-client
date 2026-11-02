@@ -3,9 +3,9 @@
    both players' numbers side by side, and something to press. */
 
 .pgover { display: flex; align-items: center; justify-content: center; padding: var(--space-6); overflow: auto; }
-.pgbox { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+.pgbox { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
   padding: 20px 24px; width: min(560px, 100%); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto;
-  display: flex; flex-direction: column; gap: 14px; box-shadow: 0 14px 50px rgba(0,0,0,.65); }
+  display: flex; flex-direction: column; gap: var(--space-5); box-shadow: 0 14px 50px rgba(0,0,0,.65); }
 .pgbox.won { border-color: var(--glow); }
 .pgbox.lost { border-color: #4a5462; }
 
@@ -24,7 +24,7 @@
 .pgtable th:first-child { text-align: right; }
 .pgtable th:last-child { text-align: left; }
 .pgtable th.pgwin { color: var(--glow); }
-.pgtable td { padding: 3px 8px; border-top: 1px dotted var(--line); }
+.pgtable td { padding: var(--space-1) var(--space-4); border-top: 1px dotted var(--line); }
 .pgnum { width: 34%; font-variant-numeric: tabular-nums; color: var(--dim); }
 .pgnum:first-child { text-align: right; }
 .pgnum:last-child { text-align: left; }
@@ -35,11 +35,11 @@
 .pgel:last-child, .pgcard:last-child { text-align: left; }
 .pgcard { color: var(--accent); font-size: var(--text-12); }
 
-.pgunlocked { border: 1px solid var(--accent); border-radius: var(--radius-md); padding: 10px 12px;
+.pgunlocked { border: 1px solid var(--accent); border-radius: var(--radius-md); padding: var(--space-4) var(--space-5);
   display: flex; flex-direction: column; gap: var(--space-4); }
 .pgunlockedhead { color: var(--accent); font-size: var(--text-11); text-transform: uppercase;
   letter-spacing: .06em; font-weight: 700; }
-.pgach { display: flex; gap: 10px; align-items: center; font-size: var(--text-13); }
+.pgach { display: flex; gap: var(--space-4); align-items: center; font-size: var(--text-13); }
 .pgach .achicon { font-size: var(--text-22); filter: none; }
 
 .pgnote { color: var(--dim); font-size: var(--text-11); text-align: center; }
@@ -50,7 +50,7 @@
 .pgweight.early { border-color: var(--accent); }
 
 .pgbtns { display: flex; flex-direction: column; gap: var(--space-4); }
-.pgbtns button { padding: 10px; font-size: var(--text-14); }
+.pgbtns button { padding: var(--space-4); font-size: var(--text-14); }
 /* they asked first: the button is the answer to a question, so it looks like one */
 .pgwants { border-color: var(--glow); color: var(--glow); animation: livepulse 1.8s ease-in-out infinite; }
 .pgpeek { align-self: center; background: none; border: none; color: var(--dim); font-size: var(--text-12); }
