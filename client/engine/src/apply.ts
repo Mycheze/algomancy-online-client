@@ -221,7 +221,7 @@ export function createGame(
 
   const state: GameState = {
     seed, rngState, actionCount: 0, turn: 0, phase: 'planning',
-    initiative: lesson?.initiative ?? rules?.initiative ?? (initRoll < 0.5 ? 0 : 1), winner: null, nextId: 1,
+    initiative: lesson?.initiative ?? (initRoll < 0.5 ? 0 : 1), winner: null, nextId: 1,
     mode, packs: [[], []], draftDone: null, seenHand: [null, null],
     elements: mode === 'draft' ? trio : [...ALL_ELEMENTS],
     sharedDeck: deck,
@@ -261,6 +261,9 @@ export function createGame(
     triggerQueue: [], triggerOrderedSeats: [], suspension: null, decision: null,
     resolving: null,
   };
+  // Competitive Constructed games 2-3: the seat the previous game's loser chose
+  // (never with a lesson deal, refused above). The roll above was still drawn.
+  if (rules?.initiative !== undefined) state.initiative = rules.initiative;
   const e = new E(state);
   if (mode === 'draft') {
     // Manual p.16: opening hand (4) is dealt together with turn 1's draws (2),
@@ -669,6 +672,9 @@ function doBottomCards(e: E, seat: Seat, handIndices: number[]): void {
 }
 
 function doRecycle(e: E, seat: Seat, handIndex: number, element: ResourceKind): void {
+  e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
+  // Competitive Constructed (CR 501.4, 501.4a): E.planning adds the initiative-first
+  // order; in every other game it is exactly the line above
   e.need(e.planning(seat), 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
   e.need(!e.bottomPending(seat), 'finish your draw phase first');
@@ -690,6 +696,9 @@ function doRecycle(e: E, seat: Seat, handIndex: number, element: ResourceKind): 
 }
 
 function doActivateResource(e: E, seat: Seat, index: number): void {
+  e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
+  // Competitive Constructed (CR 501.4, 501.4a): E.planning adds the initiative-first
+  // order; in every other game it is exactly the line above
   e.need(e.planning(seat), 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
   e.need(!e.bottomPending(seat), 'finish your draw phase first');
@@ -732,6 +741,9 @@ function maybeGrantShard(e: E, seat: Seat, kind: ResourceKind): void {
 }
 
 function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKind): void {
+  e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
+  // Competitive Constructed (CR 501.4, 501.4a): E.planning adds the initiative-first
+  // order; in every other game it is exactly the line above
   e.need(e.planning(seat), 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
   e.need(!e.bottomPending(seat), 'finish your draw phase first');
@@ -785,6 +797,9 @@ function doConcede(e: E, seat: Seat): void {
 }
 
 function doDonePlanning(e: E, seat: Seat): void {
+  e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
+  // Competitive Constructed (CR 501.4, 501.4a): E.planning adds the initiative-first
+  // order; in every other game it is exactly the line above
   e.need(e.planning(seat), 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
   e.need(!e.bottomPending(seat), 'finish your draw phase first');

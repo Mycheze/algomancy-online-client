@@ -2277,7 +2277,7 @@ export interface GameState {
    */
   singleCard?: true;
   /**
-   * Competitive Constructed (doc 22 §3): the resource, haste and deploy steps
+   * CR 901.9a, Competitive Constructed (doc 22 §3): the resource, haste and deploy steps
    * are taken by the initiative player first and then by the other player
    * (CR 501.4, 507.3), each watching the other live, instead of at once and
    * hidden (Annex D1.5). Stamped by `createGame` from `GameRules.sequential`,

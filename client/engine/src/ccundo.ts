@@ -1,4 +1,4 @@
-/* Competitive Constructed — UNDO UNTIL DONE (doc 22 §3.6, §8 answer 2).
+/* CR D4.6 — Competitive Constructed: UNDO UNTIL DONE (doc 22 §3.6, §8 answer 2).
  *
  * The owner, 2026-11-02, choosing "Undo until Done": in a CC resource, haste
  * or deploy step the player taking it may take back their own actions in that

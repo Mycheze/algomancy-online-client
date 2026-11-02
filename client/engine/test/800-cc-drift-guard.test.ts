@@ -15,9 +15,10 @@
  *   · the committed 697 Nyar run,
  *   · a fuzz sample: shared, live draft and constructed walks over legalActions.
  *
- * Proven to fail (2026-11-02): dropping the `!s.sequential ||` guard from the
- * resource-step predicate (E.planning) turns every constructed run red at its
- * first resource-step checkpoint.
+ * Proven to fail (2026-11-02): applying the CC clause to every game — the
+ * `!s.sequential ||` guard dropped from E.planning, E.hasting or E.deploying,
+ * one at a time — turns both tests red (the reference runs and the walks,
+ * the resource-step flip within their first ten steps).
  *
  * NEVER re-bless this golden to make it pass. A red here means an existing
  * game now plays differently; that is a rules change for every saved game and

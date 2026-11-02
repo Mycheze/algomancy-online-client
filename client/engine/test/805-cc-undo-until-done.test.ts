@@ -145,6 +145,7 @@ test('CC undo: a step that opened on a question keeps its answers', () => {
   assert.equal(ccUndoFloor(marks, 0, h.state), 3, 'back to the first free move, not into the answers');
   assert.equal(ccUndoFloor(marks, 1, h.state), marks.length, 'not the other seat\'s step');
   assert.equal(ccUndoFloor([...marks, m({ seat: 1, barrier: 'other' })], 0, h.state), 6, 'an answer by the other seat stops the walk');
+  assert.equal(ccUndoFloor([...marks, m({ seat: 1 })], 0, h.state), 6, 'only my own actions, whatever the mark says');
   const noQuestion = [m({ key: '1:haste:1', seat: 1, barrier: 'done' }), m({ decide: true }), m({})];
   assert.equal(ccUndoFloor(noQuestion, 0, h.state), 1, 'a decide of my own (a target) is mine to take back');
 });

@@ -436,6 +436,85 @@ ANTI-HALLUCINATION CONTRACT" 1a).
 
 Each new behavioural rule needs an executed test (contract 2). §7 assigns them.
 
+**As built by W1 (2026-11-02).** The records are numbered: **901.9** (the CC match), **901.9a**
+(the printed step order), **901.9b** (the sideboard), **901.9c** (swaps), **901.9d** (initiative),
+**D4.6** (undo until Done, §3.6), **D8.6** with **D8.6a** (the match clock), **D8.6b** (the
+sideboarding window) and **D8.6c** (the initiative choice at Ready); **D1.4** and **D1.5** carry the
+CC exception. The owner calls quote his message and his answers of 2026-11-02 (`from: "chat
+2026-11-02"`). Not drafted this round: conceding, pause and void, no peeking, the D3.x and D6.6e
+amendments. Those belong with the code that does them (W3, W4, W6), which should bind its tests as
+examples. The owner-only records have no executed test yet and ship marked untested until then.
+
+### 3.6 Undo until Done — the engine contract (W1, for W3 and W6)
+
+The owner's answer (§8 Q2) is "Undo until Done". The record is D4.6. The engine half is pure, in
+`engine/src/ccundo.ts`, and test 805 pins it. Nothing in a room uses it yet.
+
+**What can happen inside a CC step.** The owner asked whether anything inside these steps can
+draw, shuffle or reveal. This was checked on 2026-11-02.
+
+- **The resource step** has only `recycleForResource`, `activateResource`, `exchangePrismite` and
+  `donePlanning`. None of them draws, shuffles or reveals. A recycle adds a card the player already
+  saw to the bottom of the pile. An affinity Shard is public. Debt is paid inside the Done. So the
+  resource step is always undoable back to its start.
+- **The haste step and deployment** play cards and abilities, and those can draw, search,
+  shuffle, glimpse, cache off a deck or look at a hand. Each of those is a barrier, and the undo
+  stops there.
+- **Bottoming** (draw 4 / bottom 2) is not inside any CC step. It is simultaneous, and no seat owns
+  it (`sequentialStep` is null), so the walk never reaches it.
+
+**The API.**
+
+```ts
+sequentialStep(s): { key: `${turn}:${step}:${seat}`, step: 'plan'|'haste'|'deploy', seat } | null
+ccUndoMark(before, action, after, events): { key, seat, barrier, leftDecision, decide }
+ccUndoFloor(marks, seat, now): number   // the earliest undoable index; marks.length = nothing
+```
+
+- `sequentialStep` gives the open CC step and the one seat taking it. It reads
+  `E.planning`, `E.hasting` and `E.deploying`. It is null outside CC, outside the three steps,
+  while bottoming, and at game over.
+- `ccUndoMark` is computed for **every** applied action, as it lands. It is DERIVED, kept parallel
+  to `room.actions` like `segSeen`, never persisted, and recomputed by `rebuild()`.
+  - `barrier` is null, or one of the reasons the action stands:
+    - `done`: it moved the game out of the step (a Done, a concede);
+    - `other`: it is the other seat's action, which in CC is an answer to a question the step
+      owner's play raised;
+    - `asks`: it left a question for the other seat;
+    - `fix`: an agreed fix;
+    - `random`: the RNG moved;
+    - `deck`: a deck or recycle pile lost a card or was reordered (a card added to the bottom does
+      not count);
+    - `seen`: a `glimpsed` or `revealed` event, or `seenHand` changed.
+- `ccUndoFloor` returns the earliest index an undo may reach. That is the trailing run of
+  `seat`'s own actions with the open step's key, back to the latest barrier.
+  - It returns `marks.length` when it is not `seat`'s step.
+  - If the step opened on a question (the action before it has `leftDecision`), the leading run
+    of answers is the step's business and is not undoable. This is D4.1b's `segmentFloor` rule.
+  - It never goes past a Done, because each Done changes the key.
+
+**What W3 builds (server).**
+
+1. In `applyToRoom` and `rebuild()`, push `ccUndoMark(before, a, after, events)` for every action
+   in a `sequential` room.
+2. Add a CC branch to `undoForSeat` for when `room.state.sequential` is set and `segKey` is null:
+   - Refuse when `ccUndoFloor(...) === actions.length`.
+   - Otherwise splice the **last** action. By construction it is the seat's own. Run every gate
+     that already exists: `amendFloor`, `spliceable`, `undoActionAt` (whose rebuild must re-derive
+     the marks).
+3. Keep the measured floor as well. Run `seenBy(...)` (server/seen.ts) with
+   `{ frozen: null, holding: false }` on CC step actions, which today is measured only inside a
+   hidden segment. Refuse at or before the latest action that showed **either** seat a hidden
+   card, because in CC both players watch every event live. The engine's `seen` and `deck`
+   barriers are the cheap first line of defence, and `seenBy` is the measured one.
+4. The cast-chain branch (an own pending X/cost/target stage) stays as it is.
+5. Send each seat a boolean, "you can undo now" (`ccUndoFloor < len` for that seat), never the
+   marks.
+
+**What W6 builds (UI).** `ui/undo.ts` today shows the button only when `hiddenSegment(s) !==
+null`. Add a CC arm that reads the server's boolean. The opponent sees the take-back on the
+board as it happens. No playback or recap is involved: there is no hidden step.
+
 ---
 
 ## 4. Sideboards

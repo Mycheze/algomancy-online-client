@@ -16590,7 +16590,7 @@ export class E {
 
   /** `seat` may take resource-step actions right now (recycle, activate,
    * exchange a Prismite, done). The house rule: any seat not yet done
-   * (Annex D1.5). Competitive Constructed: only once BOTH have put their cards
+   * (CR D1.5). Competitive Constructed (CR 901.9a): only once BOTH have put their cards
    * back (CR 501.4a: no player begins the resource step until every player has
    * finished the draft step), and the initiative player first, then the other
    * (CR 501.4). The constructed draw-4/bottom-2 itself stays simultaneous
