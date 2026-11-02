@@ -21,15 +21,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { Harness } from '../../engine/src/harness.ts';
 import { legalActions } from '../../engine/src/apply.ts';
 import type { GameState, Seat } from '../../engine/src/types.ts';
 import { BAND } from '../layout.ts';
 import { client } from './ui-driver.ts';
+import { readStyles } from './read-styles.ts';
 
-const read = (f: string): string => readFileSync(fileURLToPath(new URL(f, import.meta.url)), 'utf8');
-const CSS = read('../style.css');
+const CSS = readStyles();
 const ui = await client();
 const paint = (s: GameState, seat: Seat = 0): string => ui.join(s, seat, legalActions(s, seat));
 

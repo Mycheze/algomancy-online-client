@@ -27,6 +27,7 @@ import { legalActions } from '../../engine/src/apply.ts';
 import { toDeployment } from '../../engine/test/util.ts';
 import type { Action, GameState } from '../../engine/src/types.ts';
 import { client } from './ui-driver.ts';
+import { readStyles } from './read-styles.ts';
 
 const ui = await client();
 const read = (f: string): string => readFileSync(fileURLToPath(new URL(f, import.meta.url)), 'utf8');
@@ -94,7 +95,7 @@ test('typing in it then a push: it stays open, and it is the rail\'s own panel (
 });
 
 test('the stylesheet: beside the strip, above the board, under every dialog — and under ⋯', () => {
-  const CSS = read('../style.css');
+  const CSS = readStyles();
   assert.match(CSS, /#app\.board\.v2 > \.toolbar > \.scnpop \{ top: 0; width: min\(340px, calc\(100vw - 70px\)\);/);
   assert.match(CSS, /#app\.board\.v2 > \.toolbar > \.scnpop \{ z-index: 58; \}/);
   assert.match(CSS, /\.toolbar \.tbpop \{ position: absolute; right: calc\(100% \+ 4px\); z-index: 59;/);

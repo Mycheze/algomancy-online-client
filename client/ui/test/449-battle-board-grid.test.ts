@@ -29,9 +29,10 @@ import { legalActions } from '../../engine/src/apply.ts';
 import { pass, spawn, toDeployment, toNextBattle } from '../../engine/test/util.ts';
 import type { GameState, Seat } from '../../engine/src/types.ts';
 import { client } from './ui-driver.ts';
+import { readStyles } from './read-styles.ts';
 
 const ui = await client();
-const CSS = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url)), 'utf8');
+const CSS = readStyles();
 
 /* a round-1 attack by seat 0, blocks with a unit sent, and the round-2 counterattack */
 const h = new Harness(44901);

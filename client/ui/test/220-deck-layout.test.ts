@@ -36,6 +36,7 @@ import {
   GROUPINGS, byCost, deckSections, needsCountBadge, stackLayers,
 } from '../decklayout.ts';
 import type { DeckEntry } from '../decklayout.ts';
+import { readStyles } from './read-styles.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const UI = join(HERE, '..');
@@ -163,7 +164,7 @@ test('§3c a stack is bounded, and the bound is GEOMETRIC', () => {
   // illegal count and is reported as a number anyway.
   assert.equal(stackLayers(40).length, 2, 'capped at two ghosts — three cards total');
   assert.ok(stackLayers(40).every(i => i >= 1));
-  const css = readFileSync(join(UI, 'style.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const css = readStyles().replace(/\/\*[\s\S]*?\*\//g, '');
   const step = Number(/--dkstep:\s*(\d+(?:\.\d+)?)%/.exec(css)?.[1]);
   assert.ok(step > 0, 'the stylesheet must declare the per-copy step');
   const front = 1 - (step / 100) * stackLayers(40).length;
@@ -245,7 +246,7 @@ test('§4c2 a stack is legible AND still one grid cell — both, or neither coun
   //
   // The geometry itself is guarded in detail by 222-deck-builder.test.ts (§1,
   // §2, §3); this is 220 keeping its own claim honest about both halves.
-  const css = readFileSync(join(UI, 'style.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const css = readStyles().replace(/\/\*[\s\S]*?\*\//g, '');
   const step = /--dkstep:\s*(\d+(?:\.\d+)?)%/.exec(css);
   assert.ok(step, 'the layer offset must be a PERCENTAGE of the cell, not a pixel nudge');
   assert.ok(Number(step![1]) >= 10,

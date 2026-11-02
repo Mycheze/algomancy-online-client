@@ -17,9 +17,9 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readStyles } from './read-styles.ts';
 
-const css = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
+const css = readStyles();
 
 /** the body of the rule whose selector list is exactly `sel` */
 const rule = (sel: string): string => {

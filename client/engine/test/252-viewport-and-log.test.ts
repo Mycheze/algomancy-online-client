@@ -100,11 +100,12 @@ import { legalActions } from '../src/apply.ts';
 import { viewFor } from '../../server/view.ts';
 import { client, closeLog, openLog } from '../../ui/test/ui-driver.ts';
 import { toDeployment } from './util.ts';
-import { CARDS_DIR, REPO_ROOT } from '../scripts/paths.mjs';
+import { CARDS_DIR } from '../scripts/paths.mjs';
 import { hoverSurvivesPaint } from '../../ui/hover.ts';
 import type { Seat } from '../src/types.ts';
+import { readStyles } from '../../ui/test/read-styles.ts';
 
-const CSS = readFileSync(join(REPO_ROOT, 'client', 'ui', 'style.css'), 'utf8');
+const CSS = readStyles();
 
 /* ══ §1 — [145] THE LOG MODAL SHOWS THE WHOLE LOG ════════════════════════ */
 

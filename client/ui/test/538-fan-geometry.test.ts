@@ -19,17 +19,14 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import '../../engine/src/cards/registry.ts';
 import {
   CARD_ASPECT, MIN_STRIP, cardHeight, cardWidth, fanHeight, insertIndexAt, previewShift, stripIndexAt, stripOf,
 } from '../piletable.ts';
 import { movePileCard } from '../deckarrange.ts';
+import { readStyles } from './read-styles.ts';
 
-const UI = join(dirname(fileURLToPath(import.meta.url)), '..');
-const CSS = readFileSync(join(UI, 'style.css'), 'utf8');
+const CSS = readStyles();
 
 test('§1 the strip: a fifth of the card, tightened to fit, never under 14px', () => {
   const ch = cardHeight(132);

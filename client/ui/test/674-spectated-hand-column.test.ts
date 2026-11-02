@@ -16,9 +16,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { readStyles } from './read-styles.ts';
 
 const read = (f: string): string => readFileSync(fileURLToPath(new URL(f, import.meta.url)), 'utf8');
-const CSS = read('../style.css');
+const CSS = readStyles();
 const MAIN = read('../main.ts');
 
 test('CT-368: the spectated hand is a stretch of the top seat\'s line, its whole height, never squeezed out', () => {

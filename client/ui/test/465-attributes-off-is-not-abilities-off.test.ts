@@ -22,9 +22,10 @@ import { suppressionBand, TYPE_BAR_HEIGHT } from '../inspect.ts';
 import { rowFor } from '../cardindex.ts';
 import { ent, pass, pick, skipHasteStep, spawn, toDeployment, toNextBattle } from '../../engine/test/util.ts';
 import type { EntityId, Seat } from '../../engine/src/types.ts';
+import { readStyles } from './read-styles.ts';
 
 const MAIN = readFileSync(fileURLToPath(new URL('../main.ts', import.meta.url)), 'utf8');
-const CSS = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url)), 'utf8');
+const CSS = readStyles();
 
 function bandOf(h: Harness, id: EntityId) {
   const u = ent(h, id)!;

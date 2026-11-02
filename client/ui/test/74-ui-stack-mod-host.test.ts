@@ -30,6 +30,7 @@ import { legalActions } from '../../engine/src/apply.ts';
 import { modHostCount, modHostPhrase, modHosts } from '../inspect.ts';
 import type { Action, Seat, StackItem } from '../../engine/src/types.ts';
 import { give, giveResources, pass, pick, spawn, toDeployment, toNextBattle } from '../../engine/test/util.ts';
+import { readStyles } from './read-styles.ts';
 
 const onStack = (h: Harness, card: string): StackItem | undefined =>
   h.state.stack.find(i => i.card === card);
@@ -160,7 +161,7 @@ test('the live position says both kinds, in words', () => {
  * still green. */
 
 const MAIN = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
-const CSS = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
+const CSS = readStyles();
 /** the body of a top-level `function name(...)` in main.ts */
 function fn(name: string): string {
   const at = MAIN.indexOf(`function ${name}(`);

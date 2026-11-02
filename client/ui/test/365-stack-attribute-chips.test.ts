@@ -31,6 +31,7 @@ import type { GameState, Seat, StackItem } from '../../engine/src/types.ts';
 import { ent, giveResources, give, pass, pick, spawn, toDeployment, toNextBattle, tokensOf } from '../../engine/test/util.ts';
 import { viewFor } from '../../server/view.ts';
 import { stackBadges } from '../effectface.ts';
+import { readStyles } from './read-styles.ts';
 
 const labels = (it: StackItem, s: GameState): string[] => stackBadges(it, s).map(b => b.t);
 
@@ -84,7 +85,7 @@ test('a spell shows its printed attribute, a virus riding it adds its attribute 
 
 test('the stack card and its zoom draw the chips, and the stack card styles them', () => {
   const main = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
-  const css = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
+  const css = readStyles();
   assert.match(main, /const chips = stackBadges\(it, h\.state\);/, 'stackBoardHtml asks for them');
   assert.match(main, /<div class="badges stackchips"[^`]*\$\{\s*chips\.map\(badgeSpan\)/,
     'and draws them in the class the zoom swaps for its dice');

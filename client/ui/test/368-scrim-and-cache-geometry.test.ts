@@ -37,14 +37,12 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { client } from './ui-driver.ts';
 import { Harness } from '../../engine/src/harness.ts';
 import { legalActions } from '../../engine/src/apply.ts';
 import type { Seat } from '../../engine/src/types.ts';
+import { readStyles } from './read-styles.ts';
 
-const CSS_PATH = fileURLToPath(new URL('../style.css', import.meta.url));
 
 /* ═══ a small cascade ══════════════════════════════════════════════════ */
 
@@ -360,7 +358,7 @@ function feature(f: string, env: Env, where: string, h?: number): boolean {
 /* ── the cascade ── */
 /** the 1–4 value box shorthands: which slot holds the RIGHT side */
 const RIGHT_OF: Record<string, string> = { 'padding-right': 'padding', 'margin-right': 'margin', right: 'inset' };
-const RULES = parseSheet(readFileSync(CSS_PATH, 'utf8'));
+const RULES = parseSheet(readStyles());
 /** the rules that set each property (a shorthand counts for its longhand) */
 const BY_PROP = new Map<string, Rule[]>();
 for (const r of RULES) {
@@ -578,7 +576,7 @@ test('the dialog scrim stops exactly at the rail on the regions board, at every 
   // board round 8: the table takes the whole window (no 1500px cap), so the
   // rail's edge is the same at every width — and the resolver must have SEEN
   // that cap go, or it is comparing against a margin that is not there
-  assert.match(readFileSync(CSS_PATH, 'utf8'), /#app\.board\.v2 \{[^}]*max-width: none;/, 'the regions board has no width cap');
+  assert.match(readStyles(), /#app\.board\.v2 \{[^}]*max-width: none;/, 'the regions board has no width cap');
   assert.deepEqual([...new Set(es.map(e => e.railLeft))], [52], `the rail's edge is padding + toolbar at every width:\n  ${table(es)}`);
   assert.deepEqual(misses(es), [], `scrim right != rail left:\n  ${table(es)}`);
 });

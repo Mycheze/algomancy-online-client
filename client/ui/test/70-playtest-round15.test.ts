@@ -52,6 +52,7 @@ import { arrowGeometry, HEAD_INSET } from '../anim.ts';
 import { give, giveResources, spawn, toDeployment, toNextBattle } from '../../engine/test/util.ts';
 import { client } from './ui-driver.ts';
 import type { Action, EntityId, GameState, Seat } from '../../engine/src/types.ts';
+import { readStyles } from './read-styles.ts';
 
 /* ── [59] the automatic pass: one decision, made before the paint ──────── */
 
@@ -330,7 +331,7 @@ test('[35] a unit with a legal activated ability is drawn with the .activatable 
 
 /* ── [61] the strips beside a region expand sideways ───────────────────── */
 
-const CSS = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
+const CSS = readStyles();
 
 /** the declarations of one rule, by exact selector */
 function rule(sel: string): string {

@@ -182,6 +182,8 @@ export const SERVER_TEST_DIR = join(REPO_ROOT, 'client', 'server', 'test');
 export const CLIENT_DOCS_DIR = join(REPO_ROOT, 'client', 'docs');
 /** the scripts that spawn the real server */
 export const SERVER_E2E_DIR = join(REPO_ROOT, 'client', 'server', 'e2e');
+/** every work queue (card-todo, backlog, playtest-ledger, …) and the tests that run their proofs */
+export const LEDGERS_DIR = join(REPO_ROOT, 'client', 'ledgers');
 /** the league store: its `OutboxKind` union is every league message, which the
  * bell (ui/leaguenotes.ts, test 491) and the Discord bot (bot/paths.py
  * LEAGUE_STORE_TS) must each have a line for */
@@ -201,6 +203,12 @@ export const UI_DIR = join(REPO_ROOT, 'client', 'ui');
  *  that is silent rather than one that errors — ui/test/316 §7 is the only
  *  thing that would notice. Provenance and the synthesis line: sfx/NOTICE.md */
 export const SFX_DIR = join(UI_DIR, 'sfx');
+/** The stylesheet the browser loads. TESTS NEVER READ THIS PATH THEMSELVES:
+ *  they call `readStyles()` from ui/test/read-styles.ts, which is the one place
+ *  that knows how the stylesheet is laid out on disk (a single file today; the
+ *  concatenated `ui/styles/` files once the design-system split lands).
+ *  ui/test/910 fails on a test that reads it directly. */
+export const STYLE_CSS = join(UI_DIR, 'style.css');
 
 /* ── THE DEPLOY BOX, AND THE RUNTIME STATE THAT ONLY EXISTS THERE ─────────
  *

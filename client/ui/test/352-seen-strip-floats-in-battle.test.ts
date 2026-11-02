@@ -23,8 +23,6 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { Harness } from '../../engine/src/harness.ts';
 import { E } from '../../engine/src/engine.ts';
 import { legalActions } from '../../engine/src/apply.ts';
@@ -32,9 +30,10 @@ import { viewFor } from '../../server/view.ts';
 import { spawn, toDeployment, toNextBattle } from '../../engine/test/util.ts';
 import type { GameState, Seat } from '../../engine/src/types.ts';
 import { client } from './ui-driver.ts';
+import { readStyles } from './read-styles.ts';
 
 const ui = await client();
-const CSS = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url)), 'utf8');
+const CSS = readStyles();
 const ME: Seat = 0, THEM: Seat = 1;
 
 /** deployment with my look at their hand recorded, and then a battle —

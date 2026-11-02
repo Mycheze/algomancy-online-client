@@ -26,8 +26,6 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { getCard } from '../../engine/src/cards/dsl.ts';
 import { nameBarIcon, suppressionNote } from '../inspect.ts';
 import { rowFor } from '../cardindex.ts';
@@ -36,8 +34,9 @@ import { Harness } from '../../engine/src/harness.ts';
 import { legalActions } from '../../engine/src/apply.ts';
 import { spawn, toDeployment, toNextBattle } from '../../engine/test/util.ts';
 import { client } from './ui-driver.ts';
+import { readStyles } from './read-styles.ts';
 
-const CSS = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url)), 'utf8');
+const CSS = readStyles();
 
 test('§1 nameBarIcon: a Virus, Battle or Haste glyph on the name bar, and nothing else', () => {
   for (const n of ['Dune Drifter', 'Jelly', 'Cinder Scuttler', 'Debt Blep']) {
