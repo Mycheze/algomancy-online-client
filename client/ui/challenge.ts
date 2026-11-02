@@ -92,6 +92,10 @@ let pastOpen: string | null = null;
 let building: string | null = null;
 let list: string[] = [];
 let importing = false;
+/** owner 2026-11-02 ("data-losing only"): dropping a kept run asks twice, the
+ * league's press-again pattern (league.ts `arming`, `button.danger`). The key
+ * is `forget:<at>`; any other ch- button disarms it. test/901. */
+let arming: string | null = null;
 /** one step back from a replace (import, clear, try this deck): the list
  * before it, for that challenge, and what to call it. Any other edit drops it. */
 let undo: { id: string; list: string[]; what: string } | null = null;
@@ -381,7 +385,9 @@ function keptHtml(): string {
         ${canSubmit()
           ? (st === 'sending' ? '' : `<button data-btn="ch-send" data-at="${r.at}">Submit</button>`)
           : '<button class="primary" data-btn="ch-signin">Sign in to submit</button>'}
-        <button data-btn="ch-forget" data-at="${r.at}" title="drop this run">✕</button></div>`;
+        ${arming === `forget:${r.at}`
+          ? `<button class="danger" data-btn="ch-forget" data-at="${r.at}">Press again to drop this run</button>`
+          : `<button data-btn="ch-forget" data-at="${r.at}" title="drop this run">✕</button>`}</div>`;
     }).join('')}
   </div>`;
 }
@@ -447,6 +453,7 @@ export function handleButton(btn: HTMLElement): boolean {
   if (!b.startsWith('ch-')) return false;
   const id = btn.dataset['id'] ?? '';
   if (b !== 'ch-import' && b !== 'ch-importdeck') importing = false;
+  if (b !== 'ch-forget') arming = null;
   switch (b) {
     case 'ch-home-play': openChallenge(id || hint?.current?.id); return true;
     case 'ch-close': close(); return true;
@@ -495,7 +502,12 @@ export function handleButton(btn: HTMLElement): boolean {
       if (d) { sending.delete(d.at); sendOne(d); }
       return true;
     }
-    case 'ch-forget': forgetDone(Number(btn.dataset['at'])); paint(); return true;
+    case 'ch-forget': {
+      const key = `forget:${btn.dataset['at'] ?? ''}`;
+      if (arming !== key) { arming = key; paint(); return true; }
+      arming = null;
+      forgetDone(Number(btn.dataset['at'])); paint(); return true;
+    }
     case 'ch-signin': acct.signInThenReturn(); return true;
   }
   return false;

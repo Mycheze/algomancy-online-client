@@ -8061,6 +8061,37 @@ type ViewportSnap = {
   /** #124: the oversized-menu search box was already on screen last paint */
   hadDecSearch: boolean;
 };
+/** The text box (one of `ids`) that owns focus, and where its caret sits — read
+ * before a repaint replaces it, so the rebuilt box can be handed both back.
+ * snapshotViewport (the board) and renderHome (the home screen) share it. */
+function caretIn(ids: readonly string[]): ViewportSnap['keepFocus'] {
+  const box = document.activeElement;
+  return (box instanceof HTMLInputElement || box instanceof HTMLTextAreaElement) && ids.includes(box.id)
+    ? { id: box.id, start: box.selectionStart ?? 0, end: box.selectionEnd ?? 0 }
+    : null;
+}
+
+/** put a caretIn() snapshot back on the rebuilt box, if it is still there */
+function restoreCaret(keep: ViewportSnap['keepFocus']): void {
+  if (!keep) return;
+  const box = document.getElementById(keep.id) as HTMLInputElement | HTMLTextAreaElement | null;
+  if (!box) return;
+  box.focus();
+  box.setSelectionRange(keep.start, keep.end);
+}
+
+/* The home screen's typing boxes that no state remembers. The home screen is
+ * repainted whole by things the player did not do — the matchmaking count
+ * changing (queue.ts's 5s poll), a friend coming online, the profile landing —
+ * and each repaint used to rebuild these four empty, mid-word, and drop the
+ * focus (found 2026-11-02: all four wiped by one queue poll). Their text is
+ * carried across the repaint and the caret put back (caretIn/restoreCaret).
+ * The other boxes on the page keep their own drafts in state (the Custom rules
+ * ban and filter boxes, the single-card search), so only their caret is
+ * carried. test/904-home-identity-and-typing.test.ts. */
+const HOME_TYPED = ['h-name', 'h-code', 'h-deckurl', 'h-decktext'] as const;
+const HOME_CARET: readonly string[] = [...HOME_TYPED, 'cr-ban', 'cr-query', 'sc-q'];
+
 function snapshotViewport(): ViewportSnap {
   // playtest DEYK: "it constantly resets the scroll height, which means you
   // have to scroll down to see your units every time you click something".
@@ -8076,12 +8107,7 @@ function snapshotViewport(): ViewportSnap {
   // rebuilt input neither steals focus nor teleports the caret. CR D7.2a's typed box is the
   // third — a numeric answer is typed, and an opponent's action landing while
   // you type must not eat the digits or the caret.
-  const focusedBox = document.activeElement;
-  const keepFocus = (focusedBox instanceof HTMLInputElement || focusedBox instanceof HTMLTextAreaElement)
-    && (focusedBox.id === 'judge-q'
-      || focusedBox.id === 'num-entry' || focusedBox.id === 'dec-search' || focusedBox.id === 'rules-q')
-    ? { id: focusedBox.id, start: focusedBox.selectionStart ?? 0, end: focusedBox.selectionEnd ?? 0 }
-    : null;
+  const keepFocus = caretIn(['judge-q', 'num-entry', 'dec-search', 'rules-q']);
   const hadJudge = !!document.getElementById('judge-q');
   const hadDecSearch = !!document.getElementById('dec-search');
   return { scroll, keepFocus, hadJudge, hadDecSearch };
@@ -9311,6 +9337,12 @@ function importDeck(body: { url?: string; text?: string }, rerender: () => void)
     }
     saveDeck(r.deck);
     deckMsg = `loaded ${r.deck.name} (${r.deck.cards.length} cards) by ${r.deck.author}`;
+    // the link or list is used up: empty its box BEFORE the repaint, which
+    // otherwise carries typed text across (HOME_TYPED) and would put it back
+    for (const id of ['h-deckurl', 'h-decktext']) {
+      const box = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null;
+      if (box) box.value = '';
+    }
     rerender();
   }).catch(() => { deckMsg = 'could not reach the server'; rerender(); });
 }
@@ -9364,11 +9396,14 @@ function renderHome(): void {
   const fixedPick = ui.homeFixedTrio && ui.homeEls.length === k ? ui.homeEls : null;
   const customVerdict = crp.verdict(null);
   const fixedVerdict = crp.verdict(ui.homeEls.length === k ? ui.homeEls : null);
+  const typed = HOME_TYPED.map(id => (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null)?.value);
+  const pasteOpen = (document.querySelector('.homepage .deckpaste') as HTMLDetailsElement | null)?.open ?? false;
+  const caret = caretIn(HOME_CARET);
   $app.innerHTML = `<div class="homepage">
     <div class="homehead">
       <h1 class="homelogo">ALGOMANCY</h1>
       <div class="homeident">
-        ${user
+        ${user || acct.resolvingUser()
           ? ''
           : `<label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(name)}" placeholder="(optional)"></label>`}
         ${acct.barHtml()}
@@ -9447,6 +9482,13 @@ function renderHome(): void {
   wireDeckPicker(renderHome);
   crp.wirePanel();   // BL-43
   wireSingleDuel();  // CR D8.2
+  // what was typed, and where, survives the repaint (HOME_TYPED)
+  HOME_TYPED.forEach((id, i) => {
+    const box = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null;
+    if (box && typed[i] !== undefined) box.value = typed[i]!;
+  });
+  if (pasteOpen) { const d = document.querySelector('.homepage .deckpaste') as HTMLDetailsElement | null; if (d) d.open = true; }
+  restoreCaret(caret);
   const opts = document.querySelector('[data-homeoptions]') as HTMLDetailsElement | null;
   opts?.addEventListener('toggle', () => { homeOptionsOpen = opts.open; });   // #191
   wireUpdates();
@@ -10049,6 +10091,22 @@ document.addEventListener('mouseover', e => {
     resSumOff();
     armHoverTip(named, (e as MouseEvent).clientX, (e as MouseEvent).clientY);
     return;
+  }
+  // OFF THE BOARD a card's name or tile still gets the long-hover TEXT box: the
+  // deck page, the card browser, the metagame and card stats draw `data-prev`
+  // tiles and rows that are not `.card`s, so the zoom below has nothing to
+  // magnify there. The owner asked for exactly this box on them ("the one that
+  // shows the text … is more useful", decks.ts/cards.ts headers). Board round
+  // 8 (b8f8a662, 2026-10-29) deleted this branch with the classic board and
+  // left those pages with no preview at all; on a board the zoom is still the
+  // only preview. test/907-hover-off-board.test.ts.
+  if (!$app.classList.contains('board') && pointerCanHover()) {
+    const prev = (e.target as HTMLElement).closest?.('[data-prev], [data-previd]') as HTMLElement | null;
+    if (prev) {
+      zoomOff();
+      armHoverTip(prev, (e as MouseEvent).clientX, (e as MouseEvent).clientY);
+      return;
+    }
   }
   hideHoverTip();
   // an info block's resources: the resource window, not the art (ui/ressum.ts)
@@ -12380,7 +12438,11 @@ const inGame = (params.has('room') && !!params.get('room')!.trim()) || params.ha
 // way to repaint. In a game the repaint is a no-op — a profile push arriving
 // mid-game must never paint the home screen over the board.
 acct.initAccounts({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
-dk.initDecks({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
+// …except the deck page, which a constructed WAITING ROOM opens too ("My
+// decks →"): there its Return to Lobby must paint the room again, or the
+// player is stuck on the deck page until they reload (found 2026-11-02).
+// renderNow paints the waiting room while NET.waiting. test/908.
+dk.initDecks({ app: $app, rerender: () => { if (!inGame) renderHome(); else if (NET?.waiting) render(); } });
 tt.initTabletop({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 // a reload on `?table=<deck id>` comes back to the table (docs/19)
 tt.registerTableResolver('deck', dk.tabletopHostFor);

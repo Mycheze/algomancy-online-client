@@ -343,6 +343,14 @@ export function installReplayBar(): void {
    * rather than trusted to be harmless here. */
   document.addEventListener('keydown', e => {
     if (!server) return;
+    // ⚠ NOT WHILE SOMETHING ELSE HAS THE KEYS. This listener is on capture, so
+    // it ran before anything else: typing a space in the judge or report box
+    // toggled play (and its repaint took the half-typed question), the arrows
+    // stepped the game instead of the caret, and Escape inside a dialog quit
+    // the whole replay (found 2026-11-02). A field being typed in keeps every
+    // key; an open dialog keeps them too, so its own Escape closes IT.
+    // test/909-replay-keys.test.ts.
+    if (replayKeysBelongElsewhere(e.target)) return;
     if (e.key === ' ') { e.preventDefault(); e.stopPropagation(); onButton('play', layer!); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); e.stopPropagation(); onButton('back', layer!); }
     else if (e.key === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); onButton('fwd', layer!); }
@@ -350,4 +358,24 @@ export function installReplayBar(): void {
   }, { capture: true });
 
   paint();
+}
+
+/** the selector for a dialog painted over the replay: the judge, help, card
+ * inspector and the rest are `.overlay`s, the report/dispute form a
+ * `.reportscrim` — main.ts's closeTopOverlay is what Escape should reach */
+export const REPLAY_DIALOGS = '.overlay, .reportscrim';
+
+/** Should the replay viewer leave this key alone? Yes when it is aimed at a
+ * field being typed in, or while a dialog is open over the replay. Duck-typed
+ * on `closest` and an injectable document so test/909 can hand it stubs. */
+export function replayKeysBelongElsewhere(
+  target: EventTarget | null,
+  doc: Pick<Document, 'querySelector'> = document,
+): boolean {
+  const el = target as (Element & { isContentEditable?: boolean }) | null;
+  if (el && typeof el.closest === 'function') {
+    if (el.closest('input, textarea, select')) return true;
+    if (el.isContentEditable) return true;
+  }
+  return !!doc.querySelector(REPLAY_DIALOGS);
 }

@@ -42,8 +42,11 @@ test('BL-16 §1 the page asks the SERVER who is an admin, and carries no check o
   // the only thing that sets `allowed` is an HTTP status
   const sets = admin.match(/allowed = (true|false|null)/g) ?? [];
   assert.ok(sets.length >= 2, 'the flag is set from more than one place, or this is measuring nothing');
-  assert.ok(/if \(!res\.ok\) \{ allowed = false/.test(admin),
-    'a non-200 is what makes the page refuse — that is the server speaking');
+  // 2026-11-02: the refusal is the server's 404 — exactly what api-admin.ts
+  // answers a non-admin. A 500 or a proxy 502 is a fault, shown as one, and no
+  // longer blanks an admin's page to "not an admin" (test/905).
+  assert.ok(/if \(res\.status === 404\) \{ allowed = false/.test(admin),
+    'a 404 is what makes the page refuse — that is the server speaking');
   // and NOTHING reads a local claim of adminness
   assert.ok(!/currentUser\(\)[^\n]*\.admin/.test(admin),
     'the page must not read an admin flag off the locally cached profile: /api/me does not '

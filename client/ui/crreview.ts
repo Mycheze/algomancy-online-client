@@ -586,7 +586,7 @@ function commentsTabHtml(): string {
       case 'outdated': return outdated.get(th.root.id) === true;
       case 'orphaned': return th.state === 'orphan';
       case 'mine': return th.root.mine || th.replies.some(r => r.mine);
-      default: return true;
+      default: return false;
     }
   };
   const order = (th: Thread): number => (th.state === 'orphan' ? Infinity : targetIndex.get(th.target) ?? Infinity);
@@ -1128,7 +1128,13 @@ export function handleButton(btn: HTMLElement): boolean {
       else void postOp({ op: 'add', target: target as CrTarget, anchor: null, body: `Reading ${reading}.`, kind: 'answer', reading }).then(showError);
       return true;
     }
-    default: return true;
+    // ⚠ NOT `return true`. The `cr-` prefix is not this page's alone: the home
+    // screen's Custom rules panel (customrulespanel.ts) spells its buttons
+    // cr-ban, cr-step, cr-simple… and main.ts asks this handler first, so a
+    // catch-all here swallowed every one of them and the panel did nothing
+    // (2026-10-10 to 2026-11-02). A name this page does not draw is not ours.
+    // Guarded by test/900-cr-prefix-shared.test.ts.
+    default: return false;
   }
 }
 
