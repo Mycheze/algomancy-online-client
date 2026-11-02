@@ -2629,7 +2629,9 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .dkswapchip.moved { border-color: var(--accent); color: var(--accent); }
 .dkswaprow { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px 0;
   border-top: 1px solid var(--line); }
-.dkswapname { width: 14em; }
+.dkswapname { width: 14em; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 5px; padding: 5px 8px; font: inherit; }
+.dkswapname:focus { border-color: var(--accent); outline: none; }
 .dkswapside { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
 .dkswapside > .zonelabel { margin: 0 2px 0 0; }
 .dkswapbtns { display: flex; gap: 6px; margin-left: auto; }
