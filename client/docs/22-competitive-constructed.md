@@ -776,6 +776,56 @@ The owner uses the site as an installed web app, with no address bar (memory:
 - **League:** a paused league match shows the week's end as its deadline if that comes before
   the 7 days.
 
+### 5.8 The wire, as built (W3, 2026-11-02) — for W6
+
+Everything below is on the existing socket. Refusals come back as `{t:'error', msg}`; every
+accepted between-games op pushes both seats a fresh `update` whose `waiting.match` is §5.3's
+`MatchLobbyInfo` (built in `server/match.ts`).
+
+**Client → server**
+
+| message | when | effect |
+|---|---|---|
+| `{t:'join', room, mode:'constructed', cc:{bestOf:1\|3}, deckId \| (deck, side), token}` | creating join (code from `/api/new`) | makes the match and room 1 (45-min bank, `rules:{sequential}`); registers the creator. Signed in only. `deckId` re-reads the saved deck (`matchDeckForPlay`, with its presets); without it `deck` + `side` are checked with `checkMatchDeck` and carry no presets. |
+| `{t:'join', room, deckId \| (deck, side), token}` | game 1, second seat | registers; the second registration deals game 1 (initiative rolled). Re-sending before the deal re-registers. |
+| `{t:'join', room, token}` | games 2–3 | a deck riding on it is ignored (`takesJoinDeck` is false in a match room). The window opens once both seats are in. |
+| `{t:'cc', op:'config', main, side}` | between | `checkSwap` against the registration; an illegal one is refused and the last legal one stands. Un-readies the seat. |
+| `{t:'cc', op:'preset', preset}` | between | `preset` = a preset id from `mine.presets`, or `'registered'`; `applyPreset`, then as `config`. |
+| `{t:'cc', op:'ready', ready:true\|false, initiative?: 0\|1}` | between | the chooser's Ready **must** carry `initiative` (an absolute seat: their own = "I take it"); the other seat's carries none. Both Ready → dealt at once. After the lock (`locked: true`) only the chooser's `ready` with `initiative` is accepted, and it deals. |
+| `{t:'cc', op:'pause'}` | between, not locked | first = an offer (`pause.offeredBy`); the other seat's = agreement → `phase:'paused'`. |
+| `{t:'cc', op:'unpause'}` | an offer stands | withdraw or decline it. |
+| `{t:'cc', op:'resume'}` | paused | needs both sockets in the room; both must send it. The window restarts at 120 s. |
+| `{t:'concedeMatch'}` | in a game, between, paused, before game 1 deals | one function (`match.ts concedeMatch`). In a game the engine concede lands first. |
+| `{t:'undo'}` | a CC step of yours | **the existing message.** In a `sequential` game it takes back your last action in the open CC step (CR D4.6). The opponent gets the new board and a public "undid their last action" line. |
+
+**Server → client, additions**
+
+- `update`/`joined` with `waiting.match` (§5.3) plus two fields §5.3 did not have: `locked`
+  (the window has locked; the deal waits on the chooser alone) and `clockStart` (the match's
+  bank, for "of 45:00"). `phase` is the match's: `'game'` in game 1's registration room,
+  `'between'`, `'paused'`. `ready` in game 1 means "has registered". `mine` is null until this
+  seat has registered. `pause` carries `{offeredBy, pausedAt, resume:[bool,bool]}`.
+- every in-game push (`baseView`) of a match room: `match: {id, bestOf, score, game, phase,
+  room, result?, voided?}`, and in a CC game `ccUndo: boolean` — "you can undo now". Never the
+  marks.
+- `{t:'match', match: <same summary>, room: <next room code> | null}` to both seats of the game
+  just decided (and of the room the match moved to) when a game ends, when the match ends
+  (`room: null`, `match.phase:'over'`, `match.result`), and when it is voided. The client
+  follows `room` with a plain `join` (the installed-app rule: no URL needed).
+- `gameover` gains `match` (the same summary): show the score and **Continue** (to
+  `match.room`) in place of Rematch. `{t:'rematch'}` in a match room is refused.
+- `GET /api/matches/mine` (Bearer token) → `{ok, matches:[{id, bestOf, seat, opponent, score,
+  game, phase, room, pausedAt, until, voidAt}]}`, open matches only.
+- `{t:'watch', room, token}`: a match room is watched only by a signed-in account that is not
+  one of its players, while the match is open. **The client must send `token` on `watch`.**
+- `/api/replay/<code>` of a game of an open match: 404 to its players (admins who are not a seat
+  still see it).
+
+**Hooks left for W4** (`server/match.ts`): `setLeagueWeekClosed(fn)` — the sweep voids a
+league match between games or paused once `fn(match)` is true; `setMatchHooks({ended})` — called
+once when a match is over or void (the league report and the match row for Elo). `Match.league`
+and `Match.rated` are carried onto every game room the match creates.
+
 ---
 
 ## 6. Lobby and league

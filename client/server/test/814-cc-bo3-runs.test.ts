@@ -60,7 +60,10 @@ test('§1-§4 a Bo3 runs game 1, 2 and 3 with the loser choosing and the banks c
   assert.deepEqual(g2.decks[0], next0.main, 'seat 0 plays the configuration it set');
   assert.deepEqual(g2.decks[1], REG[1].main, 'seat 1 plays its registered main');
 
-  // game 2 to seat 0: 1-1, seat 1 chooses
+  // game 2 to seat 0: 1-1, seat 1 chooses (both step out first, so no clock
+  // runs while the test sets the banks)
+  g2.sockets = [null, null];
+  R.settleClock(g2);
   g2.clockMs = [30 * 60_000, 35 * 60_000];
   F.concede(g2, 1);
   const g3 = F.current(m);
