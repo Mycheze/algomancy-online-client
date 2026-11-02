@@ -4310,6 +4310,134 @@
     "sourceHashes": {}
   },
   {
+    "key": "annexd.modes.competitive",
+    "parent": "D8",
+    "order": 6,
+    "text": "Competitive Constructed (rule formats.constructed.competitive) is played with a match clock and a sideboarding window between games, as below.",
+    "examples": [],
+    "see": [
+      "901"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "The clock becomes a true chess clock in CC with 45 minutes per player, per match, plus 120 seconds for sideboarding (or until they both hit submit and ready)",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02"
+        }
+      ],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "high",
+    "notes": "Owner's message of 2026-11-02.",
+    "sourceHashes": {},
+    "untested": true
+  },
+  {
+    "key": "annexd.modes.competitive.clock",
+    "parent": "annexd.modes.competitive",
+    "order": 1,
+    "text": "Each player has 45 minutes for the whole match, not for each game. A player whose time runs out loses the match.",
+    "examples": [],
+    "see": [
+      "annexd.clocks"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "The clock becomes a true chess clock in CC with 45 minutes per player, per match, plus 120 seconds for sideboarding (or until they both hit submit and ready)",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02"
+        },
+        {
+          "quote": "Lose the match",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02, his answer to: what happens when a player's time runs out?"
+        }
+      ],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "high",
+    "notes": "Owner's message and his answer of 2026-11-02. How the clock runs is D3.2.",
+    "sourceHashes": {},
+    "untested": true
+  },
+  {
+    "key": "annexd.modes.competitive.sideboard-window",
+    "parent": "annexd.modes.competitive",
+    "order": 2,
+    "text": "Between games the players have 120 seconds to change their decks from their sideboards (rule formats.constructed.competitive.swaps), or until both of them are ready, whichever comes first.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "The clock becomes a true chess clock in CC with 45 minutes per player, per match, plus 120 seconds for sideboarding (or until they both hit submit and ready)",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02"
+        }
+      ],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "high",
+    "notes": "Owner's message of 2026-11-02.",
+    "sourceHashes": {},
+    "untested": true
+  },
+  {
+    "key": "annexd.modes.competitive.initiative-choice",
+    "parent": "annexd.modes.competitive",
+    "order": 3,
+    "text": "The player who lost the previous game makes the initiative choice (rule formats.constructed.competitive.initiative) as they ready up for the next game.",
+    "examples": [],
+    "see": [
+      "annexd.general.player-decides"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Loser of last game chooses",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02, his answer to: Who has initiative in games 2 and 3 of a Bo3?"
+        },
+        {
+          "quote": "Just make it a choice right before starting the games, as they ready up",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02, his answer to: if the 120 s sideboarding window ends and the loser has not picked, what happens?"
+        }
+      ],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "high",
+    "notes": "Owner's answers of 2026-11-02.",
+    "sourceHashes": {},
+    "untested": true
+  },
+  {
     "key": "annexd.reveal.beats.journeys",
     "parent": "annexd.reveal.beats",
     "order": 2,

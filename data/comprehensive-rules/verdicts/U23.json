@@ -2506,53 +2506,67 @@
   },
   {
     "key": "annexd.general.hidden-segment",
-    "textHash": "06a558e2bb2ba414",
+    "textHash": "272b024d43f1c066",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U23-r1",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/engine (hiddenSegment) / server/rooms.ts segmentKey",
+        "loc": "client/engine/src/engine.ts:hiddenSegment",
         "agrees": true,
-        "note": "'plan', 'haste', 'deploy'"
+        "note": "planningStep(s) ('plan'|'haste'|'deploy') unless s.sequential, then null"
+      },
+      {
+        "loc": "client/server/rooms.ts:segmentKey",
+        "agrees": true,
+        "note": "thin wrapper over hiddenSegment; the server holds the other seat's plays until the step closes"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "pattern": "cr:annexd.general.hidden-segment",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/804-cc-no-hidden-step.test.ts",
+        "pattern": "CC: hiddenSegment is null in every step",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R18 (its hidden-segment half)",
+        "ref": "owner: register quotes (2026-08-18, 2026-10-04)",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "haste step hidden 'exactly as the planning phase'; 'every hidden step (the resource step,' — deployment as hidden rests on the bound 434 test"
       },
       {
-        "ref": "R18 (its hidden-segment half)",
+        "ref": "owner: CC needs to have the actual, rules complete priority system where there are no true simultanous zones.",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
-      },
-      {
-        "ref": "R310",
-        "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "the CC exception"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "false: the haste step is a **hidden simultaneous segment** — nobody sees the"
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "text": "assert.equal(hiddenSegment(h.state), 'deploy', 'deployment');"
       },
       {
-        "file": "client/docs/digital-rules.md",
+        "file": "client/engine/src/engine.ts",
+        "text": "return s.sequential ? null : planningStep(s);"
+      }
+    ],
+    "scratch_spans": [
+      {
+        "file": "data/comprehensive-rules/build/verify-input/U23-r4.json",
         "text": "other side's haste plays until everyone is done, exactly as the planning phase"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "round: a glimpse waits for the reveal in every hidden step (the resource step,"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.general.hidden-segment.barrier",
@@ -2661,20 +2675,20 @@
   },
   {
     "key": "annexd.general.initiative-order",
-    "textHash": "6433427b2c82ebca",
+    "textHash": "f5484edc54ed5312",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:hiddenSegment / settle (deployIsolate)",
+        "loc": "client/engine/src/engine.ts:E.deploying/E.planning/E.hasting",
         "agrees": true,
-        "note": "the resource step, haste step and deployment run for both seats at once; neither seat waits on the other"
+        "note": "without s.sequential both seats act at once; with it, initiative first"
       },
       {
-        "loc": "client/server/view.ts:viewFor (frozenOpp)",
+        "loc": "client/engine/src/engine.ts:hiddenSegment",
         "agrees": true,
-        "note": "the opponent's half is served as the segment began"
+        "note": "each step hidden outside CC"
       }
     ],
     "tests_run": [
@@ -2683,29 +2697,48 @@
         "pattern": "both seats deploy at once: NIT may act and finish before IT",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/802-cc-resource-step.test.ts",
+        "pattern": "CC resource step: the initiative player first, then the non-initiative player",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "pattern": "cr:annexd.general.hidden-segment",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "owner register@72de434",
+        "ref": "owner: register 2026-10-11 quotes",
         "supports": "yes",
-        "note": "both quotes: runs the steps for both players at once, each unseen until both are done; a deliberate digital convention"
+        "note": "the client runs the steps at once, unseen, as a digital convention"
       },
       {
-        "ref": "Manual p.38 (checked)",
+        "ref": "owner: Keep simultaneous",
         "supports": "yes",
-        "note": "the printed order it departs from: the initiative team deploys before passing to the non-initiative team"
+        "note": "CT-247 answer: keep the house rule"
+      },
+      {
+        "ref": "owner: The INT player always does their planning/haste/deployment first, while NIT watches, then they switch.",
+        "supports": "yes",
+        "note": "CC exception"
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/test/21-fixes.test.ts",
-        "text": "both seats deploy at once: NIT may act and finish before IT"
-      },
+        "text": "test('both seats deploy at once: NIT may act and finish before IT', () => {"
+      }
+    ],
+    "scratch_spans": [
       {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "will deploy units in any order they wish before passing"
+        "file": "data/comprehensive-rules/build/verify-input/U23-r4.json",
+        "text": "This client runs those steps for both players at once, each unseen by the other until both are done."
       }
     ],
     "basis_ok": true,
@@ -5376,6 +5409,87 @@
       {
         "file": "client/ui/test/358-burst-order-ui.test.ts",
         "text": "assert.ok(!net.has({ btn: 'burstundo' }), 'no Undo last pick before the first pick');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.undo.competitive",
+    "textHash": "ff13190496893f5f",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U23-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/ccundo.ts:sequentialStep",
+        "agrees": true,
+        "note": "the open CC step and the seat taking it"
+      },
+      {
+        "loc": "client/engine/src/ccundo.ts:ccUndoMark",
+        "agrees": true,
+        "note": "barriers: done, other, asks, fix, random, deck (draw/search/mill/top/reorder), seen (glimpsed/revealed/seenHand)"
+      },
+      {
+        "loc": "client/engine/src/ccundo.ts:ccUndoFloor",
+        "agrees": true,
+        "note": "only the trailing run of the seat's own actions in the open step, back to the latest barrier"
+      },
+      {
+        "loc": "client/server/rooms.ts:undoForSeat",
+        "agrees": true,
+        "note": "note: the server does not yet call ccUndoFloor (no CC game is offered by server/ui); the rule is demonstrated at the engine seam only"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/805-cc-undo-until-done.test.ts",
+        "pattern": "CC undo: the resource step is undoable back to its start",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/805-cc-undo-until-done.test.ts",
+        "pattern": "CC undo: a draw stands, and everything before it with it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/805-cc-undo-until-done.test.ts",
+        "pattern": "CC undo: each barrier, read off the boards",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/805-cc-undo-until-done.test.ts",
+        "pattern": "CC undo: sequentialStep names the open step",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner: Undo until Done",
+        "supports": "yes",
+        "note": "answer to 'Undo in CC: what should undo be?'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/805-cc-undo-until-done.test.ts",
+        "text": "assert.equal(m.floor(0), m.marks.length, 'the draw stands, and the quiet play before it too');"
+      },
+      {
+        "file": "client/engine/test/805-cc-undo-until-done.test.ts",
+        "text": "assert.equal(m.floor(0), m.marks.length, 'never past a Done');"
+      }
+    ],
+    "scratch_spans": [
+      {
+        "file": "data/comprehensive-rules/build/verify-input/U23-r4.json",
+        "text": "Undo until Done"
       }
     ],
     "basis_ok": true,

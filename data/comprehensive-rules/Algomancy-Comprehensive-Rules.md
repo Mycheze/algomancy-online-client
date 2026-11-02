@@ -10540,6 +10540,36 @@ order.
 
 <a id="r901.8c"></a>**901.8c** [Removed: duplicate of Annex D8.2 (CT-389)] Replaced by D8.2c.
 
+<a id="r901.9"></a>**901.9.** Competitive Constructed is constructed played as a match: either one game, or best of three, which the first player to win two games wins. The rules below add to the rest of rule 901 for it. See rule D8.6. *(Untested: no executed test demonstrates it.)*
+
+<sub>Basis: Owner call · adopted 2026-11-02 · Verified: untested in round 4; verifier ran no tests; no gate test · Key: formats.constructed.competitive</sub>
+
+<a id="r901.9a"></a>**901.9a** In Competitive Constructed the resource step, the haste step and deployment are taken in the printed order: the initiative player takes each of them first while the non-initiative player waits and watches, and then the non-initiative player takes it (rules 501.4 and rule 507.3). The client's simultaneous hidden steps (rule D1.5) do not apply. The draw phase is still taken by both players at once, and the resource step begins only when both players have put their cards back (rules 901.5 and rule 501.4a). See rules 501.4, 507.3, D1.5.
+
+> *Example: Both players put their two cards back at the same time, and either may go first.*
+
+> *Example: A player who has put their cards back is offered nothing until the other player has too.*
+
+> *Example: The non-initiative player can neither recycle a card nor activate a resource until the initiative player presses Done.*
+
+> *Example: In deployment the non-initiative player cannot play a unit until the initiative player is done deploying.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 6 tests, all passed; 3 gate test files · Printed: Manual p.27; Rulebook 2023 p.5; Rulebook 2023 p.5; Manual p.38 · Owner call · adopted 2026-11-02 · Engine: E.planning, E.hasting, E.deploying, legalActions, createGame · Tests: 802-cc-resource-step.test.ts, 803-cc-haste-and-deploy.test.ts, 804-cc-no-hidden-step.test.ts · Example tests: 802-cc-resource-step.test.ts::CC draw phase: both players bottom at once, the non-initiative player may go first, 802-cc-resource-step.test.ts::CC resource step: it opens only when both players have bottomed, 802-cc-resource-step.test.ts::CC resource step: the initiative player first, then the non-initiative player, 803-cc-haste-and-deploy.test.ts::CC deployment: only the initiative player deploys, then the other, and the log says so · Demonstrated by test: 803-cc-haste-and-deploy.test.ts::CC haste step: the initiative player first, then the non-initiative player · Key: formats.constructed.competitive.order</sub>
+
+<a id="r901.9b"></a>**901.9b** In Competitive Constructed each deck may have a sideboard of up to 7 cards. The limit of 2 copies of a card (rule 901.3) counts the deck and its sideboard together. See rule 901.3. *(Untested: no executed test demonstrates it.)*
+
+<sub>Basis: Owner call · adopted 2026-11-02 · Verified: untested in round 4; verifier ran no tests; no gate test · Key: formats.constructed.competitive.sideboard</sub>
+
+<a id="r901.9c"></a>**901.9c** Between the games of a match a player may exchange any cards between their deck and their sideboard, in any numbers, as long as the deck keeps at least 30 cards (rule 901.2) and the sideboard at most 7. No exchange is made before the first game. See rule 901.2. *(Untested: no executed test demonstrates it.)*
+
+<sub>Basis: Owner call · adopted 2026-11-02 · Verified: untested in round 4; verifier ran no tests; no gate test · Key: formats.constructed.competitive.swaps</sub>
+
+<a id="r901.9d"></a>**901.9d** The initiative player of a match's first game is chosen at random, as in any game. In each later game of the match, the player who lost the previous game chooses which player takes the initiative. See rules 103.1c, D8.6c.
+
+> *Example: Whichever player is chosen to take the initiative, both decks are shuffled exactly as they would have been, and the chosen player holds the initiative.*
+
+<sub>Basis: Mixed · Verified: untested in round 4; verifier ran 1 test, passed; 1 gate test file · Owner call · adopted 2026-11-02 · Engine: createGame · Tests: 801-cc-rules-and-initiative.test.ts · Example test: 801-cc-rules-and-initiative.test.ts::CC rules: a chosen initiative keeps the RNG stream, the same shuffle with the chosen seat · Key: formats.constructed.competitive.initiative</sub>
+
 <a id="r902"></a>
 ### 902. Draft and Cube
 
@@ -10816,25 +10846,25 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1845 numbered rules.
+1855 numbered rules.
 
 | basis | rules |
 |---|---|
 | Printed | 453 |
 | Designer | 202 |
-| Owner call | 667 |
+| Owner call | 674 |
 | Engine only | 40 |
-| Mixed | 483 |
+| Mixed | 486 |
 
 ### Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1838 |
+| confirmed | 1840 |
 | partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
-| untested | 0 |
+| untested | 8 |
 | not verified | 1 |
 | text changed | 0 |
 
@@ -11444,7 +11474,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1850 rules and 99 sections.
+- New: 1860 rules and 99 sections.
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)
 - Removed: 901.8 `formats.constructed.single-card`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)
 - Removed: 901.8a `formats.constructed.single-card.copies`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)

@@ -2981,6 +2981,137 @@
     "carried": "example-label 2026-10-11"
   },
   {
+    "key": "annexd.modes.competitive",
+    "textHash": "15e364181ed7ceb2",
+    "verdict": "untested",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner: The clock becomes a true chess clock in CC ... plus 120 seconds for sideboarding",
+        "supports": "yes",
+        "note": "a match clock and a sideboarding window"
+      }
+    ],
+    "quote_spans": [],
+    "scratch_spans": [
+      {
+        "file": "data/comprehensive-rules/build/verify-input/U24-r4.json",
+        "text": "The clock becomes a true chess clock in CC with 45 minutes per player, per match"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Owner-only rule supported by its quote; Competitive Constructed matches, the match clock and the sideboarding window do not exist in server/ui, so nothing demonstrates it."
+  },
+  {
+    "key": "annexd.modes.competitive.clock",
+    "textHash": "ff87afdfa1f8bba4",
+    "verdict": "untested",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:MATCH_CLOCK_MS",
+        "agrees": true,
+        "note": "today's constructed bank is 45 minutes for a single game; no match exists, so a per-match bank and a match loss on time are not implemented"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner: The clock becomes a true chess clock in CC with 45 minutes per player, per match, ...",
+        "supports": "yes",
+        "note": "45 minutes per player per match"
+      },
+      {
+        "ref": "owner: Lose the match",
+        "supports": "yes",
+        "note": "answer to what happens when time runs out"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": "constructed: 45 * 60 * 1000,"
+      }
+    ],
+    "scratch_spans": [
+      {
+        "file": "data/comprehensive-rules/build/verify-input/U24-r4.json",
+        "text": "45 minutes per player, per match"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Owner-only rule supported by its quotes; no match (and so no per-match clock or match loss on time) exists in server/ui, so nothing demonstrates it."
+  },
+  {
+    "key": "annexd.modes.competitive.initiative-choice",
+    "textHash": "cb229454d1ab16d9",
+    "verdict": "untested",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "accepts a chosen initiative seat; no ready-up or loser's choice exists in server/ui"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner: Loser of last game chooses",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner: Just make it a choice right before starting the games, as they ready up",
+        "supports": "yes",
+        "note": "answer to what happens if the loser has not picked when the window ends: the choice is made as they ready up"
+      }
+    ],
+    "quote_spans": [],
+    "scratch_spans": [
+      {
+        "file": "data/comprehensive-rules/build/verify-input/U24-r4.json",
+        "text": "Just make it a choice right before starting the games, as they ready up"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Owner-only rule supported by its quotes; no match, ready-up or initiative choice exists in server/ui, so nothing demonstrates it."
+  },
+  {
+    "key": "annexd.modes.competitive.sideboard-window",
+    "textHash": "daf022f3d8a7b645",
+    "verdict": "untested",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner: ... plus 120 seconds for sideboarding (or until they both hit submit and ready)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [],
+    "scratch_spans": [
+      {
+        "file": "data/comprehensive-rules/build/verify-input/U24-r4.json",
+        "text": "plus 120 seconds for sideboarding (or until they both hit submit and ready)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Owner-only rule supported by its quote; no sideboarding window exists in server/ui, so nothing demonstrates it."
+  },
+  {
     "key": "annexd.modes.concession",
     "textHash": "264032c8603c3082",
     "verdict": "confirmed",

@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:d59bf7e2b08d0580",
+ "generated_from": "sha256:0947edca2127e5a3",
  "rules": [
   {
    "num": "100.1",
@@ -36176,6 +36176,121 @@
    "verdict": "confirmed"
   },
   {
+   "num": "901.9",
+   "key": "formats.constructed.competitive",
+   "title": null,
+   "section": "901",
+   "sectionTitle": "Constructed",
+   "chapterTitle": "9. Multiplayer and Formats",
+   "parent": "901",
+   "text": "Competitive Constructed is constructed played as a match: either one game, or best of three, which the first player to win two games wins. The rules below add to the rest of rule 901 for it.",
+   "see": [
+    "D8.6"
+   ],
+   "examples": [],
+   "basis": "owner",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": true,
+   "verdict": "untested"
+  },
+  {
+   "num": "901.9a",
+   "key": "formats.constructed.competitive.order",
+   "title": null,
+   "section": "901",
+   "sectionTitle": "Constructed",
+   "chapterTitle": "9. Multiplayer and Formats",
+   "parent": "901.9",
+   "text": "In Competitive Constructed the resource step, the haste step and deployment are taken in the printed order: the initiative player takes each of them first while the non-initiative player waits and watches, and then the non-initiative player takes it (rules 501.4 and rule 507.3). The client's simultaneous hidden steps (rule D1.5) do not apply. The draw phase is still taken by both players at once, and the resource step begins only when both players have put their cards back (rules 901.5 and rule 501.4a).",
+   "see": [
+    "501.4",
+    "507.3",
+    "D1.5"
+   ],
+   "examples": [
+    "Both players put their two cards back at the same time, and either may go first.",
+    "A player who has put their cards back is offered nothing until the other player has too.",
+    "The non-initiative player can neither recycle a card nor activate a resource until the initiative player presses Done.",
+    "In deployment the non-initiative player cannot play a unit until the initiative player is done deploying."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "901.9b",
+   "key": "formats.constructed.competitive.sideboard",
+   "title": null,
+   "section": "901",
+   "sectionTitle": "Constructed",
+   "chapterTitle": "9. Multiplayer and Formats",
+   "parent": "901.9",
+   "text": "In Competitive Constructed each deck may have a sideboard of up to 7 cards. The limit of 2 copies of a card (rule 901.3) counts the deck and its sideboard together.",
+   "see": [
+    "901.3"
+   ],
+   "examples": [],
+   "basis": "owner",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": true,
+   "verdict": "untested"
+  },
+  {
+   "num": "901.9c",
+   "key": "formats.constructed.competitive.swaps",
+   "title": null,
+   "section": "901",
+   "sectionTitle": "Constructed",
+   "chapterTitle": "9. Multiplayer and Formats",
+   "parent": "901.9",
+   "text": "Between the games of a match a player may exchange any cards between their deck and their sideboard, in any numbers, as long as the deck keeps at least 30 cards (rule 901.2) and the sideboard at most 7. No exchange is made before the first game.",
+   "see": [
+    "901.2"
+   ],
+   "examples": [],
+   "basis": "owner",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": true,
+   "verdict": "untested"
+  },
+  {
+   "num": "901.9d",
+   "key": "formats.constructed.competitive.initiative",
+   "title": null,
+   "section": "901",
+   "sectionTitle": "Constructed",
+   "chapterTitle": "9. Multiplayer and Formats",
+   "parent": "901.9",
+   "text": "The initiative player of a match's first game is chosen at random, as in any game. In each later game of the match, the player who lost the previous game chooses which player takes the initiative.",
+   "see": [
+    "103.1c",
+    "D8.6c"
+   ],
+   "examples": [
+    "Whichever player is chosen to take the initiative, both decks are shuffled exactly as they would have been, and the chosen player holds the initiative."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "untested"
+  },
+  {
    "num": "902.1",
    "key": "formats.draft.live-draft",
    "title": null,
@@ -37770,14 +37885,16 @@
    "sectionTitle": "General and Precedence",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D1",
-   "text": "A hidden simultaneous segment is a part of the turn in which both players act at once and neither sees what the other does until both are done. The resource step, the haste step and deployment are hidden simultaneous segments.",
+   "text": "A hidden simultaneous segment is a part of the turn in which both players act at once and neither sees what the other does until both are done. The resource step, the haste step and deployment are hidden simultaneous segments, except in Competitive Constructed, where no step is hidden (rule 901.9a).",
    "see": [
     "501",
     "504",
     "507",
     "D6"
    ],
-   "examples": [],
+   "examples": [
+    "In Competitive Constructed none of the three steps is a hidden simultaneous segment."
+   ],
    "basis": "owner",
    "scope": "digital",
    "engineDiffers": false,
@@ -37854,14 +37971,15 @@
    "sectionTitle": "General and Precedence",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D1",
-   "text": "Where the printed rules have the initiative player take the resource step and the haste step first, and the initiative team deploy first (rules 501.4 and rule 507.3), this client runs those steps for both players at once, each hidden from the other (rule D1.4). The non-initiative player neither waits for the initiative player nor sees what they did before acting. This is a house rule of the client.",
+   "text": "Where the printed rules have the initiative player take the resource step and the haste step first, and the initiative team deploy first (rules 501.4 and rule 507.3), this client runs those steps for both players at once, each hidden from the other (rule D1.4). The non-initiative player neither waits for the initiative player nor sees what they did before acting. This is a house rule of the client. In Competitive Constructed the house rule does not apply, and the printed order holds (rule 901.9a).",
    "see": [
     "501",
     "507",
     "D1.4"
    ],
    "examples": [
-    "The non-initiative player is offered plays at once in deployment, and can finish deploying while the initiative player is still acting."
+    "The non-initiative player is offered plays at once in deployment, and can finish deploying while the initiative player is still acting.",
+    "In Competitive Constructed the non-initiative player is offered nothing in the resource step until the initiative player is done."
    ],
    "basis": "owner",
    "scope": "digital",
@@ -39405,6 +39523,31 @@
    "see": [],
    "examples": [],
    "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D4.6",
+   "key": "annexd.undo.competitive",
+   "title": null,
+   "section": "D4",
+   "sectionTitle": "Undo",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D4",
+   "text": "In Competitive Constructed (rule 901.9), the player taking the resource step, the haste step or deployment may undo their own actions in that step, one at a time, until they finish the step. An undo cannot go back past the start of the step, past an action of the other player, or past an action that drew, searched, shuffled or reordered a deck, looked at a hand, or revealed a hidden card.",
+   "see": [
+    "D4.1",
+    "D4.3"
+   ],
+   "examples": [
+    "The initiative player activates a resource, recycles a card and exchanges a Prismite: all three can be undone until they press Done, and none of them after.",
+    "In deployment a player plays a unit, then a unit that draws a card when it spawns: neither can be undone, but a unit played after the draw can."
+   ],
+   "basis": "mixed",
    "scope": "digital",
    "engineDiffers": false,
    "discrepancies": [],
@@ -42291,6 +42434,88 @@
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
+  },
+  {
+   "num": "D8.6",
+   "key": "annexd.modes.competitive",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8",
+   "text": "Competitive Constructed (rule 901.9) is played with a match clock and a sideboarding window between games, as below.",
+   "see": [
+    "901"
+   ],
+   "examples": [],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": true,
+   "verdict": "untested"
+  },
+  {
+   "num": "D8.6a",
+   "key": "annexd.modes.competitive.clock",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8.6",
+   "text": "Each player has 45 minutes for the whole match, not for each game. A player whose time runs out loses the match.",
+   "see": [
+    "D3"
+   ],
+   "examples": [],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": true,
+   "verdict": "untested"
+  },
+  {
+   "num": "D8.6b",
+   "key": "annexd.modes.competitive.sideboard-window",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8.6",
+   "text": "Between games the players have 120 seconds to change their decks from their sideboards (rule 901.9c), or until both of them are ready, whichever comes first.",
+   "see": [],
+   "examples": [],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": true,
+   "verdict": "untested"
+  },
+  {
+   "num": "D8.6c",
+   "key": "annexd.modes.competitive.initiative-choice",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8.6",
+   "text": "The player who lost the previous game makes the initiative choice (rule 901.9d) as they ready up for the next game.",
+   "see": [
+    "D1.2"
+   ],
+   "examples": [],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": true,
+   "verdict": "untested"
   }
  ],
  "glossary": [

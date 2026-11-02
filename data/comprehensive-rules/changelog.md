@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1850 rules and 99 sections.
+- New: 1860 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -1571,6 +1571,11 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 901.8a `formats.constructed.single-card.copies`
   - 901.8b `formats.constructed.single-card.no-draw-phase`
   - 901.8c `formats.constructed.single-card.no-units`
+  - 901.9 `formats.constructed.competitive`
+  - 901.9a `formats.constructed.competitive.order`
+  - 901.9b `formats.constructed.competitive.sideboard`
+  - 901.9c `formats.constructed.competitive.swaps`
+  - 901.9d `formats.constructed.competitive.initiative`
   - 902.1 `formats.draft.live-draft`
   - 902.1a `formats.draft.live-draft.standard`
   - 902.2 `formats.draft.elements`
@@ -1721,6 +1726,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D4.5d `annexd.undo.agreed-fix.rewind`
   - D4.5e `annexd.undo.agreed-fix.proposal`
   - D4.5f `annexd.undo.agreed-fix.counts`
+  - D4.6 `annexd.undo.competitive`
   - D5.1 `annexd.recap.what`
   - D5.1a `annexd.recap.what.no-effect`
   - D5.1b `annexd.recap.what.opponent-frame`
@@ -1855,6 +1861,10 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D8.5b `annexd.modes.concession.early`
   - D8.5c `annexd.modes.concession.normal`
   - D8.5d `annexd.modes.concession.rated-only`
+  - D8.6 `annexd.modes.competitive`
+  - D8.6a `annexd.modes.competitive.clock`
+  - D8.6b `annexd.modes.competitive.sideboard-window`
+  - D8.6c `annexd.modes.competitive.initiative-choice`
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)
 - Removed: 901.8 `formats.constructed.single-card`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)
 - Removed: 901.8a `formats.constructed.single-card.copies`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)

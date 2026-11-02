@@ -1654,6 +1654,11 @@
     {"num":"901.8a","key":"formats.constructed.single-card.copies","since":"First generation (draft)","removed":"duplicate of Annex D8.2 (CT-389)","removedIn":"First generation (draft)","replacedBy":"annexd.modes.single-card-duel"},
     {"num":"901.8b","key":"formats.constructed.single-card.no-draw-phase","since":"First generation (draft)","removed":"duplicate of Annex D8.2 (CT-389)","removedIn":"First generation (draft)","replacedBy":"annexd.modes.single-card-duel.draw"},
     {"num":"901.8c","key":"formats.constructed.single-card.no-units","since":"First generation (draft)","removed":"duplicate of Annex D8.2 (CT-389)","removedIn":"First generation (draft)","replacedBy":"annexd.modes.single-card-duel.no-units"},
+    {"num":"901.9","key":"formats.constructed.competitive","since":"First generation (draft)"},
+    {"num":"901.9a","key":"formats.constructed.competitive.order","since":"First generation (draft)"},
+    {"num":"901.9b","key":"formats.constructed.competitive.sideboard","since":"First generation (draft)"},
+    {"num":"901.9c","key":"formats.constructed.competitive.swaps","since":"First generation (draft)"},
+    {"num":"901.9d","key":"formats.constructed.competitive.initiative","since":"First generation (draft)"},
     {"num":"902","key":"formats.draft","kind":"section","since":"First generation (draft)"},
     {"num":"902.1","key":"formats.draft.live-draft","since":"First generation (draft)"},
     {"num":"902.1a","key":"formats.draft.live-draft.standard","since":"First generation (draft)"},
@@ -1812,6 +1817,7 @@
     {"num":"D4.5d","key":"annexd.undo.agreed-fix.rewind","since":"First generation (draft)"},
     {"num":"D4.5e","key":"annexd.undo.agreed-fix.proposal","since":"First generation (draft)"},
     {"num":"D4.5f","key":"annexd.undo.agreed-fix.counts","since":"First generation (draft)"},
+    {"num":"D4.6","key":"annexd.undo.competitive","since":"First generation (draft)"},
     {"num":"D5","key":"annexd.recap","kind":"section","since":"First generation (draft)"},
     {"num":"D5.1","key":"annexd.recap.what","since":"First generation (draft)"},
     {"num":"D5.1a","key":"annexd.recap.what.no-effect","since":"First generation (draft)"},
@@ -1949,7 +1955,11 @@
     {"num":"D8.5a","key":"annexd.modes.concession.walkover","since":"First generation (draft)"},
     {"num":"D8.5b","key":"annexd.modes.concession.early","since":"First generation (draft)"},
     {"num":"D8.5c","key":"annexd.modes.concession.normal","since":"First generation (draft)"},
-    {"num":"D8.5d","key":"annexd.modes.concession.rated-only","since":"First generation (draft)"}
+    {"num":"D8.5d","key":"annexd.modes.concession.rated-only","since":"First generation (draft)"},
+    {"num":"D8.6","key":"annexd.modes.competitive","since":"First generation (draft)"},
+    {"num":"D8.6a","key":"annexd.modes.competitive.clock","since":"First generation (draft)"},
+    {"num":"D8.6b","key":"annexd.modes.competitive.sideboard-window","since":"First generation (draft)"},
+    {"num":"D8.6c","key":"annexd.modes.competitive.initiative-choice","since":"First generation (draft)"}
   ],
   "aliases": []
 }

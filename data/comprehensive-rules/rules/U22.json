@@ -913,6 +913,230 @@
     "sourceHashes": {}
   },
   {
+    "key": "formats.constructed.competitive",
+    "parent": "901",
+    "order": 9,
+    "text": "Competitive Constructed is constructed played as a match: either one game, or best of three, which the first player to win two games wins. The rules below add to the rest of rule 901 for it.",
+    "examples": [],
+    "see": [
+      "annexd.modes.competitive"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Matches can actually be Best of 3 (not just Bo1 like we have now), so that needs to be made an option",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02"
+        }
+      ],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "Owner's message of 2026-11-02 (Competitive Constructed round, doc 22). 'Best of 3' is read as the first to two game wins, its usual meaning; doc 22 section 0.",
+    "sourceHashes": {},
+    "untested": true
+  },
+  {
+    "key": "formats.constructed.competitive.order",
+    "parent": "formats.constructed.competitive",
+    "order": 1,
+    "text": "In Competitive Constructed the resource step, the haste step and deployment are taken in the printed order: the initiative player takes each of them first while the non-initiative player waits and watches, and then the non-initiative player takes it (rules turn.planning.order and turn.deploy.order). The client's simultaneous hidden steps (rule annexd.general.initiative-order) do not apply. The draw phase is still taken by both players at once, and the resource step begins only when both players have put their cards back (rules formats.constructed.draw-phase and turn.planning.order.sync).",
+    "examples": [
+      {
+        "text": "Both players put their two cards back at the same time, and either may go first.",
+        "test": "802-cc-resource-step.test.ts::CC draw phase: both players bottom at once, the non-initiative player may go first"
+      },
+      {
+        "text": "A player who has put their cards back is offered nothing until the other player has too.",
+        "test": "802-cc-resource-step.test.ts::CC resource step: it opens only when both players have bottomed"
+      },
+      {
+        "text": "The non-initiative player can neither recycle a card nor activate a resource until the initiative player presses Done.",
+        "test": "802-cc-resource-step.test.ts::CC resource step: the initiative player first, then the non-initiative player"
+      },
+      {
+        "text": null,
+        "test": "803-cc-haste-and-deploy.test.ts::CC haste step: the initiative player first, then the non-initiative player"
+      },
+      {
+        "text": "In deployment the non-initiative player cannot play a unit until the initiative player is done deploying.",
+        "test": "803-cc-haste-and-deploy.test.ts::CC deployment: only the initiative player deploys, then the other, and the log says so"
+      }
+    ],
+    "see": [
+      "501.4",
+      "507.3",
+      "D1.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.27",
+          "quote": "IT FIRST, THEN NIT"
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "phases, the initiative team must make all of their plays first while the non-intiative gets to wait"
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "and see what they do before taking their actions."
+        },
+        {
+          "ref": "Manual p.38",
+          "quote": "to the non-initiative team that will all do the same."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "CC needs to have the actual, rules complete priority system where there are no true simultanous zones.",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02"
+        },
+        {
+          "quote": "The INT player always does their planning/haste/deployment first, while NIT watches, then they switch.",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02"
+        }
+      ],
+      "engine": [
+        "E.planning",
+        "E.hasting",
+        "E.deploying",
+        "legalActions",
+        "createGame"
+      ],
+      "tests": [
+        "802-cc-resource-step.test.ts",
+        "803-cc-haste-and-deploy.test.ts",
+        "804-cc-no-hidden-step.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "digitalClause": "The client's simultaneous hidden steps (rule annexd.general.initiative-order) do not apply.",
+    "confidence": "medium",
+    "notes": "The order itself is printed (501.4, 507.3, the same quotes); the owner's call is only that CC drops the D1.5 house rule. The draw phase stays simultaneous because 501.4 makes the draw and draft steps simultaneous and 901.5 combines them; 501.4a's sync gates the resource step. Engine: GameState.sequential (doc 22 section 3).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "formats.constructed.competitive.sideboard",
+    "parent": "formats.constructed.competitive",
+    "order": 2,
+    "text": "In Competitive Constructed each deck may have a sideboard of up to 7 cards. The limit of 2 copies of a card (rule formats.constructed.copies) counts the deck and its sideboard together.",
+    "examples": [],
+    "see": [
+      "901.3"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "CC has sideboards.",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02"
+        },
+        {
+          "quote": "Each deck can have 7 cards (and the whole list can still only have max of 2 copies of a single card)",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02"
+        }
+      ],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "Owner's message of 2026-11-02. No printed or designer source mentions sideboards.",
+    "sourceHashes": {},
+    "untested": true
+  },
+  {
+    "key": "formats.constructed.competitive.swaps",
+    "parent": "formats.constructed.competitive",
+    "order": 3,
+    "text": "Between the games of a match a player may exchange any cards between their deck and their sideboard, in any numbers, as long as the deck keeps at least 30 cards (rule formats.constructed.deck-size) and the sideboard at most 7. No exchange is made before the first game.",
+    "examples": [],
+    "see": [
+      "901.2"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "that can be freely exchanged with the the cards in their mainboard between games (but not before the match starts)",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02"
+        },
+        {
+          "quote": "Like Magic (Recommended)",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02, his answer to: Sideboarding between games: how free are the swaps?"
+        }
+      ],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "Owner's message and his answer of 2026-11-02 ('Like Magic': any cards either way; the main deck's size may change as long as it stays at least 30). Doc 22 section 0.",
+    "sourceHashes": {},
+    "untested": true
+  },
+  {
+    "key": "formats.constructed.competitive.initiative",
+    "parent": "formats.constructed.competitive",
+    "order": 4,
+    "text": "The initiative player of a match's first game is chosen at random, as in any game. In each later game of the match, the player who lost the previous game chooses which player takes the initiative.",
+    "examples": [
+      {
+        "text": "Whichever player is chosen to take the initiative, both decks are shuffled exactly as they would have been, and the chosen player holds the initiative.",
+        "test": "801-cc-rules-and-initiative.test.ts::CC rules: a chosen initiative keeps the RNG stream, the same shuffle with the chosen seat"
+      }
+    ],
+    "see": [
+      "103.1c",
+      "annexd.modes.competitive.initiative-choice"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Loser of last game chooses",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02, his answer to: Who has initiative in games 2 and 3 of a Bo3?"
+        }
+      ],
+      "engine": [
+        "createGame"
+      ],
+      "tests": [
+        "801-cc-rules-and-initiative.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "medium",
+    "notes": "Game 1 random: the engine's initiative roll, as in every constructed game (no printed rule covers constructed; 103.1c is live draft's). Later games: the owner's answer of 2026-11-02.",
+    "sourceHashes": {}
+  },
+  {
     "key": "formats.draft.live-draft",
     "parent": "902",
     "order": 1,
