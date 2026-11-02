@@ -2690,7 +2690,7 @@
     "key": "annexd.clocks.idle-rooms",
     "parent": "D3",
     "order": 4,
-    "text": "A game is closed when nobody has moved in it for an hour, if fewer than five actions have been taken, or for twelve hours otherwise, and nobody (no player and no watcher) has been connected to it for the five-minute reconnect grace. An open tab keeps an idle game open.",
+    "text": "A game is closed when nobody has moved in it for an hour, if fewer than five actions have been taken, or for twelve hours otherwise, and nobody (no player and no watcher) has been connected to it for the five-minute reconnect grace. An open tab keeps an idle game open. The waiting game of a paused Competitive Constructed match is the exception (rule annexd.modes.competitive.pause).",
     "examples": [
       {
         "text": null,
@@ -2703,9 +2703,15 @@
       {
         "text": null,
         "test": "367-idle-rooms-close.test.ts::367 §3 a connected seat or a watcher keeps an idle room open, and an empty one gets a grace to reconnect"
+      },
+      {
+        "text": "A Competitive Constructed match is paused between games. Its waiting game is not closed for idling while the pause lasts, and a waiting game nobody paused is.",
+        "test": "819-cc-pause-void-and-idle.test.ts::§5 an unpaused waiting room idles out as any room does, and voids its match"
       }
     ],
-    "see": [],
+    "see": [
+      "annexd.modes.competitive.pause"
+    ],
     "sources": {
       "printed": [],
       "designer": [],
@@ -2714,13 +2720,14 @@
       "engine": [],
       "tests": [
         "367-idle-rooms-close.test.ts",
-        "434-cr-digital-1.test.ts"
+        "434-cr-digital-1.test.ts",
+        "819-cc-pause-void-and-idle.test.ts"
       ]
     },
     "basis": "engine",
     "scope": "digital",
     "confidence": "high",
-    "notes": "ENGINE-ONLY. D-U23-2. Round 2: the nobody-connected condition was added; the verifier measured rooms.ts idleDue ('if (roomAttended(room)) { room.unattendedSince = null; return false; }', RECONNECT_GRACE_MS = 5 min) and idleWindowMs ('actions < IDLE_FEW_ACTIONS ? IDLE_SHORT_MS : IDLE_LONG_MS;', counted from lastActionAt). Its probe showed an attended room three days idle stays open. The sub-rule kept-open restates the attended half on its own. Engine location: client/server/rooms.ts idleDue, idleWindowMs.",
+    "notes": "ENGINE-ONLY. D-U23-2. Round 2: the nobody-connected condition was added; the verifier measured rooms.ts idleDue ('if (roomAttended(room)) { room.unattendedSince = null; return false; }', RECONNECT_GRACE_MS = 5 min) and idleWindowMs ('actions < IDLE_FEW_ACTIONS ? IDLE_SHORT_MS : IDLE_LONG_MS;', counted from lastActionAt). Its probe showed an attended room three days idle stays open. The sub-rule kept-open restates the attended half on its own. Engine location: client/server/rooms.ts idleDue, idleWindowMs. Amended 2026-11-02 (Competitive Constructed, docs/22): the paused-match exception (server/match.ts setRoomHeld).",
     "sourceHashes": {}
   },
   {

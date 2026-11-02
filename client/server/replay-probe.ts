@@ -229,6 +229,29 @@ export interface ProbeInput {
    * statement about the file; a divergence report would be a false one.
    */
   scenario?: string;
+  /**
+   * docs/22 §2.3 — a Competitive Constructed game's rules: sequential steps,
+   * and in games 2-3 the initiative the previous game's loser chose. Part of
+   * the deal. Passed to `createGame` as its eighth argument; an engine from
+   * before CC takes no such argument and would deal the house-rules game with
+   * the ROLLED initiative, so the probe checks the dealt board honoured them
+   * and refuses by name when it did not (the custom-deal argument below).
+   */
+  rules?: unknown;
+}
+
+/** a file's CC rules as this file can read them without today's modules (it
+ * runs inside historical checkouts): `{sequential: true, initiative?: 0|1}`,
+ * or a reason it cannot be read */
+function probeRules(raw: unknown): { rules?: { sequential: true; initiative?: 0 | 1 } } | { error: string } {
+  if (raw === undefined || raw === null) return {};
+  const r = rec(raw);
+  const keys = Object.keys(r);
+  if (r['sequential'] !== true || keys.some(k => k !== 'sequential' && k !== 'initiative')
+    || (r['initiative'] !== undefined && r['initiative'] !== 0 && r['initiative'] !== 1)) {
+    return { error: 'this room was saved with game rules this probe cannot read' };
+  }
+  return { rules: { sequential: true, ...(r['initiative'] === 0 || r['initiative'] === 1 ? { initiative: r['initiative'] } : {}) } };
 }
 
 /**
@@ -264,6 +287,11 @@ export async function probe(raw: ProbeInput): Promise<ProbeResult> {
       sigs: [], refusals: [],
     };
   }
+  // docs/22 §2.3 — CC rules: read here, honoured-or-refused after the deal
+  const cc = probeRules((raw as { rules?: unknown }).rules);
+  if ('error' in cc) {
+    return { ok: false, error: `${cc.error} — replaying its log under the house rules would report a rules change that did not happen.`, sigs: [], refusals: [] };
+  }
   let engine: Rec;
   try {
     engine = rec(await import('../engine/src/apply.ts'));
@@ -297,9 +325,25 @@ export async function probe(raw: ProbeInput): Promise<ProbeResult> {
 
   let state: unknown;
   try {
-    state = rec(createGame(raw.seed, names, mode, els, decks))['state'];
+    // no deal, no lesson deal: a CC game's rules are the EIGHTH argument
+    // (undefined on every other game, which any vintage of createGame ignores)
+    state = rec(createGame(raw.seed, names, mode, els, decks, undefined, undefined, cc.rules))['state'];
   } catch (err) {
     return { ok: false, error: `createGame refused this file: ${err instanceof Error ? err.message : String(err)}`, sigs: [], refusals: [] };
+  }
+  // an engine from before CC ignores the argument without complaint: the
+  // board says whether it was honoured
+  if (cc.rules) {
+    const st = rec(state);
+    if (st['sequential'] !== true || (cc.rules.initiative !== undefined && st['initiative'] !== cc.rules.initiative)) {
+      return {
+        ok: false,
+        error: 'this room was dealt with Competitive Constructed rules, and this engine did not deal them (an engine '
+          + 'from before CC takes no rules argument) — it would replay the log onto a house-rules deal and report a '
+          + 'rules change that did not happen. Use --as-recorded on this build instead.',
+        sigs: [], refusals: [],
+      };
+    }
   }
 
   const sigs = [signature(state)];

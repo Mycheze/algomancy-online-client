@@ -2077,49 +2077,66 @@
   },
   {
     "key": "annexd.clocks.idle-rooms",
-    "textHash": "485d399714e5ee6b",
+    "textHash": "d9012bc28ae590e7",
     "verdict": "confirmed",
-    "round": 3,
-    "verifier": "U23-r3",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
-      {
-        "loc": "client/server/rooms.ts:idleWindowMs",
-        "agrees": true,
-        "note": "<5 actions -> 1h, else 12h"
-      },
       {
         "loc": "client/server/rooms.ts:idleDue",
         "agrees": true,
-        "note": "attended (seat socket or watcher) never closes; empty must persist RECONNECT_GRACE_MS (5 min) from first empty sweep tick; decided rooms are left to sweepFinished"
+        "note": "attended -> open; held (paused match) -> open; 5-min grace; window 1 h if < 5 actions else 12 h"
       },
       {
-        "loc": "client/server/rooms.ts:closeIdleRoom",
+        "loc": "client/server/match.ts:setRoomHeld callback",
         "agrees": true,
-        "note": "marks closed, keeps file (sandbox dropped)"
+        "note": "held only when the match is paused and this is its between room"
       }
     ],
     "tests_run": [
       {
         "file": "client/server/test/367-idle-rooms-close.test.ts",
-        "pattern": "367 §1|367 §2|367 §3",
+        "pattern": "367 §1 a room with fewer than five actions",
         "passed": true,
-        "asserts_claim": "yes (read, not run: server test excluded by brief); §1 59m stays/61m closes at 4 actions, §2 11h stays/12h closes at 5, §3 seat/watcher keep it, grace before close",
-        "note": "executed at wave end: whole file 8/8 pass"
-      }
-    ],
-    "probes": [
+        "asserts_claim": true
+      },
       {
-        "file": "data/comprehensive-rules/build/probes/U23/idle-rooms.test.ts",
-        "title": "annexd.clocks.idle-rooms: 4 actions -> one hour, 5 actions -> twelve hours (empty room); a room nobody moves in is NOT closed while a seat is connected",
+        "file": "client/server/test/367-idle-rooms-close.test.ts",
+        "pattern": "367 §2 a room with five or more actions",
         "passed": true,
-        "demonstrates": "yes: windows 1h/<5 actions and 12h/>=5, open tab keeps room, grace then close"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/367-idle-rooms-close.test.ts",
+        "pattern": "367 §3 a connected seat or a watcher keeps",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "pattern": "cr:annexd.clocks.idle-rooms",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/819-cc-pause-void-and-idle.test.ts",
+        "pattern": "§5 an unpaused waiting room idles out",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/819-cc-pause-void-and-idle.test.ts",
+        "pattern": "§1-§4 a pause is agreed, held through the idle sweep",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "367-idle-rooms-close.test.ts",
+        "ref": "engine code + tests (basis engine)",
         "supports": "yes",
-        "note": "test header quotes the owner's 2026-10-04 instruction; basis engine honest"
+        "note": "example 4's bound test (819 §5) asserts the unpaused half; the paused half is asserted by 819 §1-§4 ('the idle sweep closes nothing'), also run"
       }
     ],
     "quote_spans": [
@@ -2129,7 +2146,7 @@
       },
       {
         "file": "client/server/rooms.ts",
-        "text": "actions < IDLE_FEW_ACTIONS ? IDLE_SHORT_MS : IDLE_LONG_MS;"
+        "text": "export const IDLE_SHORT_MS = 3600_000;"
       },
       {
         "file": "client/server/rooms.ts",
@@ -2141,12 +2158,19 @@
       },
       {
         "file": "client/server/rooms.ts",
-        "text": "!!room.sockets[0] || !!room.sockets[1] || room.watchers.size > 0;"
+        "text": "  !!room.sockets[0] || !!room.sockets[1] || room.watchers.size > 0;"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "  if (roomHeld(room)) return false;"
+      },
+      {
+        "file": "client/server/match.ts",
+        "text": "  return !!m && m.phase === 'paused' && m.between?.code === room.code;"
       }
     ],
     "basis_ok": true,
-    "problem": "None substantive. Nuance: the sweep never closes a game that already has a winner (decidedWinner) and a sandbox room is deleted rather than kept; the grace is counted from the first sweep tick that sees the room empty.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.clocks.idle-rooms.kept-open",

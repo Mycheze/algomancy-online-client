@@ -1659,6 +1659,7 @@
     {"num":"901.9b","key":"formats.constructed.competitive.sideboard","since":"First generation (draft)"},
     {"num":"901.9c","key":"formats.constructed.competitive.swaps","since":"First generation (draft)"},
     {"num":"901.9d","key":"formats.constructed.competitive.initiative","since":"First generation (draft)"},
+    {"num":"901.9e","key":"formats.constructed.competitive.concede","since":"First generation (draft)"},
     {"num":"902","key":"formats.draft","kind":"section","since":"First generation (draft)"},
     {"num":"902.1","key":"formats.draft.live-draft","since":"First generation (draft)"},
     {"num":"902.1a","key":"formats.draft.live-draft.standard","since":"First generation (draft)"},
@@ -1956,10 +1957,19 @@
     {"num":"D8.5b","key":"annexd.modes.concession.early","since":"First generation (draft)"},
     {"num":"D8.5c","key":"annexd.modes.concession.normal","since":"First generation (draft)"},
     {"num":"D8.5d","key":"annexd.modes.concession.rated-only","since":"First generation (draft)"},
+    {"num":"D8.5e","key":"annexd.modes.concession.match","since":"First generation (draft)"},
     {"num":"D8.6","key":"annexd.modes.competitive","since":"First generation (draft)"},
     {"num":"D8.6a","key":"annexd.modes.competitive.clock","since":"First generation (draft)"},
     {"num":"D8.6b","key":"annexd.modes.competitive.sideboard-window","since":"First generation (draft)"},
-    {"num":"D8.6c","key":"annexd.modes.competitive.initiative-choice","since":"First generation (draft)"}
+    {"num":"D8.6c","key":"annexd.modes.competitive.initiative-choice","since":"First generation (draft)"},
+    {"num":"D8.6d","key":"annexd.modes.competitive.concede-match","since":"First generation (draft)"},
+    {"num":"D8.6e","key":"annexd.modes.competitive.pause","since":"First generation (draft)"},
+    {"num":"D8.6f","key":"annexd.modes.competitive.resume","since":"First generation (draft)"},
+    {"num":"D8.6g","key":"annexd.modes.competitive.void","since":"First generation (draft)"},
+    {"num":"D8.6h","key":"annexd.modes.competitive.league-week","since":"First generation (draft)"},
+    {"num":"D8.6i","key":"annexd.modes.competitive.no-peeking","since":"First generation (draft)"},
+    {"num":"D8.6j","key":"annexd.modes.competitive.rating","since":"First generation (draft)"},
+    {"num":"D8.6k","key":"annexd.modes.competitive.games-counted","since":"First generation (draft)"}
   ],
   "aliases": []
 }

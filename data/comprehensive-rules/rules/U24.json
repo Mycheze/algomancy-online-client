@@ -1027,14 +1027,20 @@
     "key": "annexd.reveal.public-zones.deck-elements",
     "parent": "annexd.reveal.public-zones",
     "order": 5,
-    "text": "In constructed, the view each player is sent carries the elements of both players' decks. The client reads only the player's own, to order that player's resource menu (D6.14b).",
+    "text": "In constructed, the view each player is sent carries the elements of both players' decks (in Competitive Constructed, only the player's own: rule annexd.modes.competitive.no-peeking). The client reads only the player's own, to order that player's resource menu (D6.14b).",
     "examples": [
       {
         "text": "A fire deck plays a water deck in constructed. Each player is sent that one deck is fire and the other water.",
         "test": "435-cr-digital-2.test.ts::cr:annexd.reveal.public-zones.deck-elements — in constructed, the deck elements of both players are in the view each player is sent"
+      },
+      {
+        "text": "In a Competitive Constructed game, neither player is sent the other's deck elements.",
+        "test": "820-cc-no-leak-over-the-wire.test.ts::§1-§5 no message names the opponent sideboard, deck id, swaps or deck elements"
       }
     ],
-    "see": [],
+    "see": [
+      "annexd.modes.competitive.no-peeking"
+    ],
     "sources": {
       "printed": [],
       "designer": [],
@@ -1054,13 +1060,14 @@
       "engine": [],
       "tests": [
         "435-cr-digital-2.test.ts",
-        "667-draft-any-element-resource.test.ts"
+        "667-draft-any-element-resource.test.ts",
+        "820-cc-no-leak-over-the-wire.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-23 shipped the field unredacted and left open whether a deck's elements are public at game start. On 2026-10-25 the owner dropped the roadmap item that would have shown them to both players from turn 1 (\"Drop all\"), so this states what the client does: both views carry them (server/view.ts redacts nothing here), and the UI reads deckElements only for the asking seat (ui/inspect.ts resourceMenuElements, ui/lessons.ts). D-U24-2 closed.",
+    "notes": "The owner ruling of 2026-08-23 shipped the field unredacted and left open whether a deck's elements are public at game start. On 2026-10-25 the owner dropped the roadmap item that would have shown them to both players from turn 1 (\"Drop all\"), so this states what the client does: both views carry them (server/view.ts redacts nothing here), and the UI reads deckElements only for the asking seat (ui/inspect.ts resourceMenuElements, ui/lessons.ts). D-U24-2 closed. Amended 2026-11-02 (Competitive Constructed, docs/22): the CC exception, by test 820 (server/view.ts blanks the opponent entry in a sequential game).",
     "sourceHashes": {}
   },
   {
@@ -4310,6 +4317,48 @@
     "sourceHashes": {}
   },
   {
+    "key": "annexd.modes.concession.match",
+    "parent": "annexd.modes.concession",
+    "order": 5,
+    "text": "A Competitive Constructed match is weighed as a whole, never game by game (rule annexd.modes.competitive.rating). A match decided during or straight after its first game weighs as that game does under rules annexd.modes.concession.walkover, annexd.modes.concession.early and annexd.modes.concession.normal. A match of two or more games weighs as a full game. A match conceded before its first game begins is a walkover. The rating penalty of a walkover falls on the player who lost the match.",
+    "examples": [
+      {
+        "text": "A best of one is conceded on turn 1. As a single game would, it costs the conceder 5 rating points, gives the winner nothing, and counts as no rated game.",
+        "test": "825-cc-match-concession-weight.test.ts::§1 ⭐ a match decided in or right after game 1 weighs as game 1 does (CR D8.5)"
+      },
+      {
+        "text": "A best of three ends on a turn-1 concede of its third game. It is a full result.",
+        "test": "825-cc-match-concession-weight.test.ts::§2 ⭐ two or more games weigh normal, whatever the deciding concede"
+      },
+      {
+        "text": "A player concedes the match before its first game is dealt. That player loses 5 rating points.",
+        "test": "825-cc-match-concession-weight.test.ts::§3 a match conceded before game 1 was dealt is a walkover by the conceder"
+      },
+      {
+        "text": "One player concedes game 1 on turn 1, and the other then concedes the match. The penalty falls on the second player, who lost the match.",
+        "test": "825-cc-match-concession-weight.test.ts::§4 the stamp is on the match loser, whoever conceded game 1"
+      }
+    ],
+    "see": [
+      "annexd.modes.competitive.rating"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "825-cc-match-concession-weight.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY (server/rating.ts matchRatingRow), docs/22 section 2.6: the spec carried D8.5 to a match; no owner words yet. Awaits owner sign-off.",
+    "sourceHashes": {}
+  },
+  {
     "key": "annexd.modes.competitive",
     "parent": "D8",
     "order": 6,
@@ -4436,6 +4485,298 @@
     "notes": "Owner's answers of 2026-11-02.",
     "sourceHashes": {},
     "untested": true
+  },
+  {
+    "key": "annexd.modes.competitive.concede-match",
+    "parent": "annexd.modes.competitive",
+    "order": 4,
+    "text": "A player may also concede the match: during a game, between games, while the match is paused, or before its first game begins. The player who concedes it loses the match. During a game, that game is conceded first, so it is lost as well.",
+    "examples": [
+      {
+        "text": "During a game, a player concedes the match. That game is lost first, as a conceded game, and then the match is over.",
+        "test": "816-cc-concede-game-and-match.test.ts::§2 conceding the match in a game: a real concede in that game, then the match ends"
+      },
+      {
+        "text": "Between games, a player concedes the match. The match is over and the next game is never dealt.",
+        "test": "816-cc-concede-game-and-match.test.ts::§3 conceding the match between games stamps it and closes the waiting room"
+      }
+    ],
+    "see": [
+      "formats.constructed.competitive.concede"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "816-cc-concede-game-and-match.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY (server/match.ts concedeMatch). docs/22 section 0 default (\"A Bo3 also offers Concede match\"), not the owner's words.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.modes.competitive.pause",
+    "parent": "annexd.modes.competitive",
+    "order": 5,
+    "text": "Between games, the two players may agree to pause the match. A paused match picks up later where it stood: the same score, the same decks and sideboards, and the same time left on both clocks.",
+    "examples": [
+      {
+        "text": "Two players at one game all agree to pause, and the server restarts while the match is paused. When both come back and resume, the score, their decks and their clocks are as they were.",
+        "test": "818-cc-bo3-through-a-restart.test.ts::§1-§7 a Bo3 over the wire, paused, restarted, resumed and finished"
+      }
+    ],
+    "see": [
+      "annexd.modes.competitive.resume"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "When a game is over, players can agree to pause the match and pick it back up RIGHT where they left it at another time, with a sorta saved game feature.",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02"
+        },
+        {
+          "quote": "they can play the final game later and still have the sideboard and clocks and stuff all the same.",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "818-cc-bo3-through-a-restart.test.ts",
+        "819-cc-pause-void-and-idle.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "high",
+    "notes": "Owner's message of 2026-11-02.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.modes.competitive.resume",
+    "parent": "annexd.modes.competitive",
+    "order": 6,
+    "text": "Either player may offer to pause until the sideboarding window closes (rule annexd.modes.competitive.sideboard-window), and the match is paused when the other player agrees. No clock runs while it is paused, and its waiting game is not closed for being idle (rule annexd.clocks.idle-rooms). It resumes once both players are present and both ask to resume, with a new sideboarding window.",
+    "examples": [
+      {
+        "text": "A paused match is left for days. The idle sweep does not close its waiting game, and when both players resume, the sideboarding window starts again in full.",
+        "test": "819-cc-pause-void-and-idle.test.ts::§1-§4 a pause is agreed, held through the idle sweep, resumed where it stood, and void at 7 days"
+      }
+    ],
+    "see": [
+      "annexd.modes.competitive.pause"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "819-cc-pause-void-and-idle.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY (server/match.ts matchOp, setRoomHeld). docs/22 section 5.7 as built.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.modes.competitive.void",
+    "parent": "annexd.modes.competitive",
+    "order": 7,
+    "text": "A match that stays paused for 7 days closes with no result. A league match also closes with no result at the end of its league week.",
+    "examples": [
+      {
+        "text": "A match is paused and nobody resumes it for 7 days. It closes, and nobody wins it.",
+        "test": "819-cc-pause-void-and-idle.test.ts::§1-§4 a pause is agreed, held through the idle sweep, resumed where it stood, and void at 7 days"
+      },
+      {
+        "text": "A league week ends while one league match is paused and another is between games. Both close with no result.",
+        "test": "829-cc-league-week-end-voids.test.ts::§1 ⭐ the week closes: a paused and a between league match are voided with no result"
+      }
+    ],
+    "see": [
+      "annexd.modes.competitive.league-week"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "7 days, then void",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02, his answer to: Pausing a match between games: how long can it stay paused before something happens? (the option he chose read: Kept for a week. If not resumed by then it closes with no result. League matches also close at the end of their league week.)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "819-cc-pause-void-and-idle.test.ts",
+        "829-cc-league-week-end-voids.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "high",
+    "notes": "Owner's answer of 2026-11-02: 7 days, then void; the option he chose also closed league matches at the end of their league week.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.modes.competitive.league-week",
+    "parent": "annexd.modes.competitive",
+    "order": 8,
+    "text": "A league match closes at the end of its league week only if it is paused or between games at that moment. A game in progress then is played out: if it decides the match, the result stands; if not, the match closes when that game ends. Either way, the games already played stay in each player's match history.",
+    "examples": [
+      {
+        "text": "A league week ends during the third game of a match tied one game each. The game is played out, and its winner wins the league match.",
+        "test": "829-cc-league-week-end-voids.test.ts::§2 ⭐ a game in progress plays out, and if it decides the match its result stands"
+      },
+      {
+        "text": "A league week ends during the first game of a match. When that game ends the match closes, with no result.",
+        "test": "829-cc-league-week-end-voids.test.ts::§3 ⭐ a game at the boundary that does not decide the match: voided when it ends"
+      }
+    ],
+    "see": [
+      "annexd.modes.competitive.void"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "829-cc-league-week-end-voids.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY (server/match.ts sweepMatches, server/league-match.ts leagueWeekClosed). docs/22 sections 2.5 and 6.2 as built.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.modes.competitive.no-peeking",
+    "parent": "annexd.modes.competitive",
+    "order": 9,
+    "text": "While a match is still being played, neither of its players can open a replay of any of its games or watch any of its games as a spectator. Neither player is ever sent the other's registered deck, sideboard or swaps, and in a game neither is sent the other's deck elements. Once the match is over or closed, its replays are open as any game's are.",
+    "examples": [
+      {
+        "text": "In the middle of a best of three, a player tries to open the replay of game 1, and to watch the match from a second tab. Both are refused until the match is over.",
+        "test": "821-cc-no-peeking-mid-match.test.ts::§1-§3 the replay and the omniscient watch are refused to the players until the match is over"
+      },
+      {
+        "text": "Through a whole best of three, no message to either player names the opponent's sideboard, deck id, swaps or deck elements.",
+        "test": "820-cc-no-leak-over-the-wire.test.ts::§1-§5 no message names the opponent sideboard, deck id, swaps or deck elements"
+      }
+    ],
+    "see": [
+      "annexd.reveal.public-zones.deck-elements"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "820-cc-no-leak-over-the-wire.test.ts",
+        "821-cc-no-peeking-mid-match.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY (server/api-replay.ts, main.ts watch, match.ts matchLobbyInfo, view.ts deckElements). docs/22 section 2.6 and the section 0 default that the opponent never sees a sideboard or swaps.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.modes.competitive.rating",
+    "parent": "annexd.modes.competitive",
+    "order": 10,
+    "text": "A rated Competitive Constructed match moves the constructed rating once, by the result of the match.",
+    "examples": [
+      {
+        "text": "Two players play a rated best of three, and one wins it two games to none. Each rating moves once, and each player has one more rated game.",
+        "test": "824-cc-one-elo-result-per-match.test.ts::§2 ⭐ a rated Bo3 won 2-0 moves each rating once and counts one rated game, while both games count"
+      }
+    ],
+    "see": [
+      "annexd.modes.competitive.games-counted",
+      "annexd.modes.concession.match"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Share constructed (Recommended)",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02, his answer to: Do rated CC matches (the league) share the constructed Elo ladder? (the option he chose read: One constructed rating; a CC match moves it once.)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "824-cc-one-elo-result-per-match.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "high",
+    "notes": "Owner's answer of 2026-11-02: share the constructed ladder; the option he chose read that a CC match moves it once.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.modes.competitive.games-counted",
+    "parent": "annexd.modes.competitive",
+    "order": 11,
+    "text": "A game of a match moves no rating by itself, whether the match ends or closes with no result. Every game of a match counts toward the players' records, statistics and achievements, and toward the card statistics, as any game does.",
+    "examples": [
+      {
+        "text": "A game of a rated match is never rated on its own.",
+        "test": "824-cc-one-elo-result-per-match.test.ts::§1 a game of a match is never rated, and only a decided match has a row"
+      },
+      {
+        "text": "A best of three goes to three games. Each player's profile counts three games, and the card statistics count three games.",
+        "test": "826-cc-games-recorded-and-tagged.test.ts::§1 ⭐ every game of a 2-1 Bo3 is a history row tagged with its match and game"
+      },
+      {
+        "text": "The card statistics of that match count all three of its games.",
+        "test": "826-cc-games-recorded-and-tagged.test.ts::§2 ⭐ the card stats count every game of the match"
+      }
+    ],
+    "see": [
+      "annexd.modes.competitive.rating"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "824-cc-one-elo-result-per-match.test.ts",
+        "826-cc-games-recorded-and-tagged.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY (server/rating.ts isRated, server/history.ts, server/cardstats.ts). docs/22 section 0 default and section 2.6 as built.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.beats.journeys",

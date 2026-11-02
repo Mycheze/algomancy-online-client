@@ -30,7 +30,7 @@ import { amendFrozen, apply, checkDeck, checkSingleCard, checkSingleDeck, makesU
 // scenario, which is exactly the bug docs/14 §2 is written to prevent.
 // BL-06: `isDealId`, not `isScenarioId` — the sandbox is a second kind of
 // deal (see scenarios.ts's SANDBOX_ID), and a saved sandbox room must restore.
-import { dealScenario, isDealId, isSandboxId } from './scenarios.ts';
+import { dealScenario, isDealId, isSandboxId, savedRules } from './scenarios.ts';
 import { legalForSeat, other } from './view.ts';
 import type { HeldFrame, SegmentClose } from './view.ts';
 // The on-disk shapes moved to types.ts so replay-room.ts can name them
@@ -53,6 +53,7 @@ import { canonicalRef, zoneDelta } from './zonedelta.ts';
 import { lastSeen, NOTHING_SEEN, SEEN_REFUSAL, seenBy, type Seen } from './seen.ts';
 import { cardFact, cardOpen, sanitizeFact, sanitizeOpen, type CardFact, type CardOpen } from './cardledger.ts';
 import { gamesDir } from './statepaths.ts';
+import { sanitizeMatchLink } from './match-store.ts';
 // CR D8.5: a conceded game weighs by the turn it was conceded on — stamped here,
 // read by the folds. The type and the sanitizer only; the thresholds stay in
 // concession.ts, which is the one place they are named.
@@ -1396,28 +1397,12 @@ export interface RoomLeague { season: string; match: string }
 export interface RoomMatch { id: string; game: number }
 
 /** A saved `match` link, or null if it is not one. */
-export function sanitizeRoomMatch(raw: unknown): RoomMatch | null {
-  const r = raw as { id?: unknown; game?: unknown } | null;
-  return r && typeof r.id === 'string' && /^M[A-Z0-9]{4,16}$/.test(r.id)
-    && typeof r.game === 'number' && Number.isInteger(r.game) && r.game >= 1 && r.game <= 3
-    ? { id: r.id, game: r.game } : null;
-}
+export const sanitizeRoomMatch = (raw: unknown): RoomMatch | null => sanitizeMatchLink(raw);
 
-/** A saved room's CC rules (docs/22 §2.3). Absent → undefined (a standard
- * game). Anything present that this build cannot read is REFUSED — the log was
- * recorded under those rules, and replaying it under house rules would produce
- * a plausible room describing a game nobody played (restoreCustom's argument). */
-export function restoreRules(raw: unknown, mode: GameMode): GameRules | undefined {
-  if (raw === undefined || raw === null) return undefined;
-  const r = raw as { sequential?: unknown; initiative?: unknown };
-  const keys = typeof raw === 'object' ? Object.keys(raw as object) : ['?'];
-  if (mode !== 'constructed' || r.sequential !== true
-    || keys.some(k => k !== 'sequential' && k !== 'initiative')
-    || (r.initiative !== undefined && r.initiative !== 0 && r.initiative !== 1)) {
-    throw new Error('saved with game rules this build cannot read — refusing to replay its log under the house rules');
-  }
-  return { sequential: true, ...(r.initiative === 0 || r.initiative === 1 ? { initiative: r.initiative } : {}) };
-}
+/** A saved room's CC rules (docs/22 §2.3) — scenarios.ts savedRules, the one
+ * reader every deal of a saved room uses (stats, the card ledger, replay-room
+ * read the same file this does). Re-exported under its old name. */
+export const restoreRules = savedRules;
 
 /** A saved `league` tag, or null if it is not one. */
 export function sanitizeLeague(raw: unknown): RoomLeague | null {

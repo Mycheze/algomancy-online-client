@@ -1137,6 +1137,42 @@
     "sourceHashes": {}
   },
   {
+    "key": "formats.constructed.competitive.concede",
+    "parent": "formats.constructed.competitive",
+    "order": 5,
+    "text": "In a match, a player who concedes a game loses that game (rule concepts.ending.concede), and the match goes on to its next game unless that game decided it.",
+    "examples": [
+      {
+        "text": "In a best of three, a player concedes the first game. Their opponent leads by one game to none, and the second game is set up.",
+        "test": "816-cc-concede-game-and-match.test.ts::§1 conceding a game in an undecided Bo3 goes on to the next game"
+      }
+    ],
+    "see": [
+      "annexd.modes.competitive.concede-match"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Conceding needs to be \"Concede GAME\" not \"Concede MATCH\" and function properly",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "816-cc-concede-game-and-match.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "Owner's message of 2026-11-02: a concede is a concede of the GAME. Conceding the match is the client's (Annex D, engine basis).",
+    "sourceHashes": {}
+  },
+  {
     "key": "formats.draft.live-draft",
     "parent": "902",
     "order": 1,

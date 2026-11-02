@@ -111,7 +111,7 @@ import { issuesFile } from './statepaths.ts';
 // it is the one that matters most: without this import the divergence
 // diff would report every scenario game as diverging from action 0, which is
 // the exact failure mode replay versioning exists to remove.
-import { dealScenario } from './scenarios.ts';
+import { dealScenario, savedRules } from './scenarios.ts';
 import { UNKNOWN_VERSION, isEngineVersion, repoDir } from './engine-version.ts';
 import { digest, probe, signature, type ProbeRefusal } from './replay-probe.ts';
 
@@ -159,6 +159,9 @@ export interface RoomFile {
   custom?: { rules?: unknown; deal?: unknown } | null;
   /** BL-46: the agreed fixes. Absent on every game nobody fixed. */
   amendments?: Amendment[];
+  /** docs/22 §2.3: a Competitive Constructed game's rules — part of its deal
+   * (sequential steps; games 2-3's chosen initiative). Absent on every other game. */
+  rules?: unknown;
 }
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -335,6 +338,14 @@ export function unreplayableReason(raw: RoomFile): string | null {
     if (bad.length === 2) {
       return `neither seat's deck validates (${bad.map(b => `seat ${b.s}: ${(b.c as { error: string }).error}`).join('; ')}),\n`
         + '    so there is no deal to reproduce.';
+    }
+  }
+  // docs/22 §2.3: Competitive Constructed rules this build cannot read — the
+  // deal cannot be reproduced, and re-dealing it under the house rules would be
+  // another game (savedRules refuses; so does this, by name)
+  if (raw.rules !== undefined && raw.rules !== null) {
+    try { savedRules(raw.rules, mode); } catch (err) {
+      return `${err instanceof Error ? err.message : String(err)} (the file's \`rules\`), so the deal cannot be reproduced.`;
     }
   }
   return null;
@@ -671,7 +682,7 @@ export async function delta(file: string, raw: RoomFile, sha: string): Promise<D
 function runOnce(raw: RoomFile): Pick<Analysis, 'events' | 'state' | 'refusals' | 'sigs'> {
   const names = raw.names ?? ['Player 1', 'Player 2'];
   const mode = raw.mode ?? 'shared';
-  let { state, events } = dealScenario(raw.seed, names, mode, trioOf(raw, mode), decksOf(raw, mode), raw.scenario, dealOf(raw, mode));
+  let { state, events } = dealScenario(raw.seed, names, mode, trioOf(raw, mode), decksOf(raw, mode), raw.scenario, dealOf(raw, mode), savedRules(raw.rules, mode));
   const all = [...events];
   const refusals: Refusal[] = [];
   // BL-38 — see Analysis.sigs. Taken here rather than in `probe` because this
@@ -771,7 +782,7 @@ export function reportLines(file: string, raw: RoomFile, an: Analysis, opts: {
   const d = an.divergedAt;
 
   say(`\n═ ${file}`);
-  say(`  mode ${mode}${mode === 'draft' ? ` · trio ${els.join('+')}` : ''}${raw.custom ? ' · custom rules' : ''} · seed ${raw.seed} · ${names.join(' vs ')}`);
+  say(`  mode ${mode}${mode === 'draft' ? ` · trio ${els.join('+')}` : ''}${raw.custom ? ' · custom rules' : ''}${raw.rules ? ' · competitive' : ''} · seed ${raw.seed} · ${names.join(' vs ')}`);
   // CT-45: the count NEVER stands on its own line. Whatever else this says, it
   // says on the same breath whether the replay is still a replay.
   say(`  ${n} actions logged · ${n - an.refusals.length} replayed · ${an.refusals.length} refused`
@@ -1194,7 +1205,7 @@ export function preFixLogs(raw: RoomFile): Action[][] {
 function startState(raw: RoomFile): GameState {
   const names = raw.names ?? ['Player 1', 'Player 2'];
   const mode = raw.mode ?? 'shared';
-  return dealScenario(raw.seed, names, mode, trioOf(raw, mode), decksOf(raw, mode), raw.scenario, dealOf(raw, mode)).state;
+  return dealScenario(raw.seed, names, mode, trioOf(raw, mode), decksOf(raw, mode), raw.scenario, dealOf(raw, mode), savedRules(raw.rules, mode)).state;
 }
 
 /** the boards before each action of `log` (and after the last), up to `n` */

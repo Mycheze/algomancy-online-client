@@ -93,12 +93,19 @@ export interface Match {
 }
 
 const matches = new Map<string, Match>();
-let dir = matchesDir();
+/** where the files go: set by loadMatches, else the env's at FIRST USE — never
+ * read at import, because accounts.ts and history.ts import this store (the
+ * match rows of the rating fold, the history's match tag) and a test that
+ * imports them before pointing ALGO_MATCHES_DIR at a scratch directory must
+ * not have its matches written into the real var/ */
+let dirSet: string | null = null;
+const dirNow = (): string => dirSet ?? matchesDir();
 
 /** Load every saved match. Idempotent; a file that does not parse is skipped
  * with a line (a match is never worth a crash at boot). */
 export function loadMatches(from = matchesDir()): void {
-  dir = from;
+  dirSet = from;
+  const dir = from;
   matches.clear();
   let files: string[];
   try { files = readdirSync(dir).filter(f => f.endsWith('.json')); } catch { return; }
@@ -115,6 +122,7 @@ export function loadMatches(from = matchesDir()): void {
 export function saveMatch(m: Match): void {
   matches.set(m.id, m);
   try {
+    const dir = dirNow();
     mkdirSync(dir, { recursive: true });
     const path = join(dir, `${m.id}.json`);
     const tmp = `${path}.tmp`;
@@ -134,8 +142,19 @@ export function newMatchId(): string {
     const b = randomBytes(10);
     let id = 'M';
     for (let i = 0; i < 10; i++) id += B32[b[i]! & 31];
-    if (!matches.has(id) && !existsSync(join(dir, `${id}.json`))) return id;
+    if (!matches.has(id) && !existsSync(join(dirNow(), `${id}.json`))) return id;
   }
+}
+
+/** A saved room's `match` link ({id, game}), or null if it is not one —
+ * rooms.ts restores `Room.match` with it and history.ts tags a recorded game
+ * with it (here, not in rooms.ts, so the history can read a link without
+ * loading the rooms module). */
+export function sanitizeMatchLink(raw: unknown): { id: string; game: number } | null {
+  const r = raw as { id?: unknown; game?: unknown } | null;
+  return r && typeof r.id === 'string' && /^M[A-Z0-9]{4,16}$/.test(r.id)
+    && typeof r.game === 'number' && Number.isInteger(r.game) && r.game >= 1 && r.game <= 3
+    ? { id: r.id, game: r.game } : null;
 }
 
 /** is it still being played (or waiting to be)? */

@@ -206,6 +206,58 @@
     "problem": "Owner-only rule supported by its quote; no engine or server code plays a match (Bo1/Bo3), so nothing demonstrates it."
   },
   {
+    "key": "formats.constructed.competitive.concede",
+    "textHash": "916a376e73afbd5c",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U22-r4",
+    "engine": [
+      {
+        "loc": "client/server/match.ts:matchGameDecided",
+        "agrees": true,
+        "note": "a conceded game is scored like any decided game; nextGame unless the score reached `need`, or finish()"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/816-cc-concede-game-and-match.test.ts",
+        "pattern": "§1 conceding a game in an undecided Bo3",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/816-cc-concede-game-and-match.test.ts",
+        "pattern": "§5 a decided match refuses a second concede",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner: Conceding needs to be \"Concede GAME\" not \"Concede MATCH\" and function properly",
+        "supports": "yes",
+        "note": "the owner asks that the in-game concede be a game concede that works; the record says exactly that"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/match.ts",
+        "text": "  } else if (score[winner]! >= need) {"
+      },
+      {
+        "file": "client/server/match.ts",
+        "text": "    nextGame(m, room, winner, now);"
+      },
+      {
+        "file": "client/server/match.ts",
+        "text": "  return room.concession ? 'conceded' : 'played';"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "formats.constructed.competitive.initiative",
     "textHash": "01600a43f10fbf4c",
     "verdict": "untested",

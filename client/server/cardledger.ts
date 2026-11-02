@@ -41,7 +41,7 @@ import { canonicalCardName, getCard } from '../engine/src/cards/dsl.ts';
 import { sanitizeDraftDeal } from '../engine/src/draftdeal.ts';
 import { engineVersion } from './engine-version.ts';
 import { digest, signature } from './replay-probe.ts';
-import { dealScenario } from './scenarios.ts';
+import { dealScenario, savedRules } from './scenarios.ts';
 import { canonicalDelta, canonicalRef, parseRef, zoneDelta } from './zonedelta.ts';
 
 // ── what is written into the game file ────────────────────────────────
@@ -307,6 +307,8 @@ export interface LedgerFile {
   decks?: [CardName[] | null, CardName[] | null];
   scenario?: string;
   custom?: { rules?: unknown; deal?: unknown } | null;
+  /** docs/22 §2.3: a CC game's rules, part of its deal (scenarios.ts savedRules) */
+  rules?: unknown;
   refs?: unknown;
   sigs?: unknown;
   cardLog?: unknown;
@@ -395,7 +397,9 @@ function verifiedReplay(raw: LedgerFile, sigs: (string | null)[] | null, refs: (
   let state: GameState;
   try {
     if (raw.custom && !deal) throw new Error('custom rules this build cannot read');
-    state = dealScenario(raw.seed, raw.names ?? ['Player 1', 'Player 2'], mode, els, decks, raw.scenario, deal).state;
+    // docs/22 §2.3: a CC game is dealt with its rules, or it is another game
+    const rules = savedRules(raw.rules, mode);
+    state = dealScenario(raw.seed, raw.names ?? ['Player 1', 'Player 2'], mode, els, decks, raw.scenario, deal, rules).state;
   } catch (err) {
     return { open: { init: 0, hands: [[], []] }, facts: [], validUpTo: 0, why: `could not deal: ${err instanceof Error ? err.message : err}` };
   }

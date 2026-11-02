@@ -132,6 +132,9 @@ export interface RatableGame {
   custom?: unknown;
   /** CR D8.2e: a single card duel — rates the cards (cardladder.ts), never the players */
   single?: unknown;
+  /** docs/22 §2.6: a game of a Competitive match — the MATCH is rated, once
+   * (matchRatingRow), never its games */
+  match?: unknown;
 }
 
 /**
@@ -149,6 +152,12 @@ export function isRated(game: RatableGame): boolean {
   if (game.custom) return false;
   // CR D8.2e: nor a single card duel, which rates CARDS and has its own fold
   if (game.single) return false;
+  // docs/22 §2.6: nor a game of a Competitive match. A rated best of three is
+  // ONE result (the owner's "a CC match moves it once"): its row comes from the
+  // match record (matchRatingRow), and its games would count it two or three
+  // times over. The games still reach every other fold — stats, achievements,
+  // the deck record — exactly as any game does.
+  if (game.match) return false;
   // (b) the format must be one that has a rating at all
   if (ratedMode(game.mode) === null) return false;
   // (c) "a game both seats abandoned moves nobody's rating". A game with no
@@ -231,6 +240,64 @@ export function foldRatings(history: readonly RatableGame[]): RatingTable {
     b.games++;
   }
   return table;
+}
+
+/**
+ * docs/22 §2.6 — THE ONE RESULT OF A COMPETITIVE MATCH, as a row this fold
+ * reads. Structural (match-store.ts's Match fits it), so the fold stays a pure
+ * function of what it is handed and this file still knows no store.
+ */
+export interface RatableMatch {
+  id: string;
+  phase: string;
+  endedAt?: number;
+  rated?: true;
+  users: [string | null, string | null];
+  games: readonly { code: string }[];
+  result?: { winner: Seat; at: number };
+}
+
+/**
+ * The match as one rated game: a STAMPED result (match.ts `finish`), never
+ * re-derived from its games. Null for a match with no result (open, or void —
+ * a void match "closes with no result", owner, 2026-11-02).
+ *
+ * `code` is the match id, whose `M` prefix keeps it from tying with a room
+ * code in `ratingOrder`; `playedAt` is when the match ended.
+ *
+ * CONCESSION WEIGHT (CR D8.5 carried to a match). The weight is the turn a
+ * game was conceded on, and a match is weighed by how much of it was played:
+ *
+ *   no game dealt     a match conceded before game 1 was dealt: nothing was
+ *                     played, so it is a walkover by the conceder (turn 0 —
+ *                     concession.ts: "even less of a game than turn 1")
+ *   one game          the match was decided in or right after game 1 (a Bo1,
+ *                     or a Bo3 conceded after its first game): it weighs as
+ *                     THAT game does (`concessionOf(game 1)`), so a Bo1 rates
+ *                     exactly as a single game always has
+ *   two or more       normal: games were played
+ *
+ * The stamp is put on the MATCH LOSER's seat, whoever conceded game 1: the
+ * fold charges a walkover's penalty to `concession.seat`, and a match lost by
+ * conceding it after its opponent conceded game 1 must not charge the winner.
+ */
+export function matchRatingRow(m: RatableMatch, concessionOf: (code: string) => Concession | undefined): RatableGame | null {
+  if (m.phase !== 'over' || !m.result) return null;
+  const winner = m.result.winner;
+  const loser: Seat = winner === 0 ? 1 : 0;
+  let concession: Concession | undefined;
+  if (m.games.length === 0) concession = { seat: loser, turn: 0 };
+  else if (m.games.length === 1) {
+    const c = concessionOf(m.games[0]!.code);
+    if (c) concession = { seat: loser, turn: c.turn };
+  }
+  return {
+    code: m.id,
+    playedAt: new Date(m.endedAt ?? m.result.at).toISOString(),
+    mode: 'constructed', finished: true, winner, users: [...m.users] as [string | null, string | null],
+    ...(m.rated ? { rated: true } : {}),
+    ...(concession ? { concession } : {}),
+  };
 }
 
 /** A player's standing, for somebody who has never played a rated game. */

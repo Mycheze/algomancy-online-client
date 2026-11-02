@@ -60,7 +60,7 @@ export interface PreviewCtx {
 
 export interface LeaguePreview {
   name: string;
-  format: 'draft' | 'constructed';
+  format: 'draft' | 'constructed' | 'competitive';
   /** "Sign-up week", "Week 2 of 4", "The final", … (league.ts phaseLabel) */
   phase: string;
   players: number;
@@ -179,7 +179,7 @@ export function previewFor(url: URL, ctx: PreviewCtx): Preview {
     const s = ctx.league(want && want !== '1' ? want : null);
     const about = 'Each week you play a few matches at times you arrange with your opponents. Your results go into the standings, and the season ends with a final.';
     if (!s) return make('league', 'The Algomancy League', `${about} Join us!`);
-    const fmt = s.format === 'constructed' ? 'constructed' : 'live draft';
+    const fmt = s.format === 'competitive' ? 'Competitive Constructed' : s.format === 'constructed' ? 'constructed' : 'live draft';
     const title = `${s.name} Algomancy League`;
     if (s.finished) {
       return make('league', title, `The ${s.name} season has finished. ${about} Look for the next season on the League page.`);
