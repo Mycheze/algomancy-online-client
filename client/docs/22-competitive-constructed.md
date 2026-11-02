@@ -800,32 +800,23 @@ rebases onto it. `ui/main.ts` is W6 only. W5 never touches it.
 
 ---
 
-## 8. Open questions for the owner
+## 8. Owner's answers (2026-11-02) — settled
 
-1. **The loser doesn't choose initiative before the 120 s run out.**
-   - (a) The window waits for them. There is no default. The cost is that a stalling loser holds
-     the match, and only the idle close or the void ends it.
-   - (b) **At the lock the loser takes the initiative.** This is recommended. It needs a
-     recorded owner exception to D1.2 ("the client never makes a choice that belongs to a
-     player").
-   - (c) The loser's chess clock runs while they choose. That reverses "no clock between
-     games".
-2. **Undo in CC.** Today undo exists only inside a hidden step (D4.1). CC has none.
-   - (a) **No undo of plays in CC.** Plays are binding, and the agreed fix (D4.5) remains. This
-     is recommended and costs nothing.
-   - (b) Undo of your own actions until you press Done. The cost is a new undo scope outside
-     the segment machinery, and the opponent watches the take-back happen.
-3. **Where sideboarding starts for game 3.**
-   - (a) **From game 2's configuration**, with "Registered deck" one tap away. This is
-     recommended.
-   - (b) From the registered deck every time. That is simpler, but costs a player their game-2
-     swaps if they wanted to keep them.
-4. **CC's ladder.**
-   - (a) **CC moves the constructed rating.** This is today's `RatedMode` and needs no change.
-   - (b) A separate CC ladder. It costs a third `RatedMode`, a leaderboard tab, and a split
-     history.
-5. **algomancer.cc's `sideboard` on import.**
-   - (a) **Keep it going into maybe.** This is the safe reading of a field that predates
-     sideboards here.
-   - (b) Read it as the sideboard. A list over 7 cards there would then make the deck
-     un-registrable until edited.
+1. **Initiative is chosen AS the loser readies up** (owner: "Just make it a choice right before
+   starting the games, as they ready up"). The previous game's loser has two Ready buttons —
+   "Ready — I take the initiative" / "Ready — they take it" — so their Ready carries the choice;
+   the winner has one plain Ready. The deal happens when both are Ready. If the 120 s window locks
+   first, configurations lock (last legal one) and the loser is left with only the two initiative
+   buttons, **untimed**; the deal happens on their click. The client never chooses for them
+   (D1.2 stands, no exception). A stalling loser is ended only by the idle close / 7-day void.
+2. **Undo until Done in CC.** In a CC resource, haste or deploy step, the acting player may undo
+   their own actions in that step until they press Done; the opponent sees the take-back live.
+   This needs a CC undo scope outside the hidden-segment machinery (today's D4.1 undo walks only
+   the open hidden segment, `rooms.ts:2156-2158`): W1 owns the engine side (what an undo may
+   rewind — never past a Done, never past a reveal of hidden information such as a draw, if any
+   such exists inside the step; the agent must check and report), W3 the server/rewind side,
+   W6 the button. A new Annex D record (sibling of D4.1) states it.
+3. **Game 3 sideboarding starts from game 2's configuration**, "Registered deck" one tap away.
+4. **CC moves the constructed rating** (shared ladder, today's `RatedMode`).
+5. **algomancer.cc's `sideboard` still imports into maybe** (orchestrator's call, stated to the
+   owner).
