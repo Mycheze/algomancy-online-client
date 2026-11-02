@@ -340,6 +340,14 @@ export function unreplayableReason(raw: RoomFile): string | null {
         + '    so there is no deal to reproduce.';
     }
   }
+  // docs/22 §2.3: Competitive Constructed rules this build cannot read — the
+  // deal cannot be reproduced, and re-dealing it under the house rules would be
+  // another game (savedRules refuses; so does this, by name)
+  if (raw.rules !== undefined && raw.rules !== null) {
+    try { savedRules(raw.rules, mode); } catch (err) {
+      return `${err instanceof Error ? err.message : String(err)} (the file's \`rules\`), so the deal cannot be reproduced.`;
+    }
+  }
   return null;
 }
 
