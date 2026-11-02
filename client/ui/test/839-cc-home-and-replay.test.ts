@@ -12,6 +12,9 @@
  *      the steps in turn — without them it is a different game
  *   §5 a watch carries the token (a match room is watched only by a signed-in
  *      player who is not in it — the server must know who is asking)
+ *   §6 CT-514 — the match history says which game of the match a row was
+ *   §7 CT-514 — the League page's Play for a Competitive match goes in as a
+ *      match room (`cc=1`), so its join brings no casual deck
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -38,6 +41,7 @@ g['__UI_DRIVER_FETCH'] = async (url: string) => {
   FETCHED.push(url);
   if (url === '/api/decks') return { status: 200, json: async () => ({ ok: true, decks: [LEGAL, BIG_SIDE] }) };
   if (url === '/api/matches/mine') return { ok: true, status: 200, json: async () => ({ ok: true, matches: MINE }) };
+  if (url === '/api/league/play') return { ok: true, status: 200, json: async () => ({ ok: true, room: 'LGCC', seat: 1, mode: 'competitive' }) };
   if (url === '/api/new') return { ok: true, status: 200, json: async () => ({ code: 'NEWC' }) };
   if (url.startsWith('/api/inbox')) return { ok: true, status: 200, json: async () => ({ ok: true }) };
   return new Promise(() => {});
@@ -116,4 +120,23 @@ test('§5 a watch says who is watching', () => {
   const fn = main.slice(main.indexOf('  sendWatch(): void {'));
   const body = fn.slice(0, fn.indexOf('\n  }'));
   assert.match(body, /t: 'watch', room: this\.room, \.\.\.\(acct\.token\(\) \? \{ token: acct\.token\(\) \} : \{\}\)/);
+});
+
+test('§6 the match history says Game 2 of 3', async () => {
+  const { historyRowsHtml } = await import('../account.ts');
+  const row = {
+    code: 'G2CC', playedAt: '2026-11-02T10:00:00Z', mode: 'constructed', els: [], turns: 9, deckId: null,
+    finished: true, diverged: false, result: 'win' as const, opponent: 'Rashi', opponentId: null, life: [12, 0] as [number, number],
+    unitsPlayed: 0, spellsPlayed: 0, damageDealt: 0, favoriteElement: null,
+  };
+  assert.match(historyRowsHtml([{ ...row, match: { id: 'M839', game: 2, bestOf: 3 } }]), /<td>competitive · game 2 of 3<\/td>/);
+  assert.match(historyRowsHtml([{ ...row, match: { id: 'M839', game: 1 } }]), /<td>competitive · game 1<\/td>/, 'no Best of: no "of"');
+  assert.match(historyRowsHtml([row]), /<td>constructed<\/td>/, 'any other game reads as before');
+});
+
+test('§7 the League Play for a Competitive match opens the match room', async () => {
+  const lg = await import('../league.ts');
+  lg.playMatch('2026-12', '2026-12-w1-1');
+  await flush();
+  assert.equal(location.search, '?ws=1&room=LGCC&seat=1&mode=constructed&cc=1');
 });

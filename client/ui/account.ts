@@ -90,6 +90,15 @@ export interface MatchRow {
   amended?: number;
   /** BL-48: somebody disputed the result — the row is tagged, the result stands */
   disputed?: { mine: boolean; theirs: boolean };
+  /** docs/22 §2.6: a game of a Competitive match — which game, of how many
+   * (`bestOf` absent when the server could not say) */
+  match?: { id: string; game: number; bestOf?: 1 | 3 };
+}
+
+/** the format cell: a Competitive match game says which game it was */
+function formatCell(g: MatchRow): string {
+  if (!g.match) return esc(modeName(g.mode));
+  return `competitive · game ${g.match.game}${g.match.bestOf ? ` of ${g.match.bestOf}` : ''}`;
 }
 
 export interface Me {
@@ -924,7 +933,7 @@ export function historyRowsHtml(history: MatchRow[]): string {
   return history.map(g => `<tr class="res-${g.result}${g.concession && g.concession.weight !== 'normal' ? ` weight-${g.concession.weight}` : ''}">
       <td class="resultcell">${g.result === 'win' ? 'WIN' : g.result === 'loss' ? 'loss' : '?'}${concessionTag(g)}${customTag(g)}${fixedTag(g)}${disputedTag(g)}</td>
       <td>${esc(g.opponent)}</td>
-      <td>${esc(modeName(g.mode))}</td>
+      <td>${formatCell(g)}</td>
       <td>${gameElementsHtml(g.els, g.sides)}</td>
       <td>${g.turns}${g.diverged ? '<span class="partial" title="played on an older engine — its numbers are a floor, not a total">+</span>' : ''}</td>
       <td>${g.life[0]}–${g.life[1]}</td>

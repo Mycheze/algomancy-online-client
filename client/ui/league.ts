@@ -1120,8 +1120,12 @@ export function playMatch(season: string, match: string): void {
     // the season's format, as the server says: a constructed league room
     // waits for a deck from each seat (the server's answer, so an old server
     // that never says is a draft)
+    // A Competitive match's room is a MATCH room (`cc=1`, as ui/match.ts
+    // matchLink): its join brings no deck — game 1 registers in the room,
+    // games 2-3 deal from the match (CT-514)
     location.search = `?ws=1&room=${encodeURIComponent(String(r['room']))}`
-      + (seat === 0 || seat === 1 ? `&seat=${seat}` : '') + `&mode=${r['mode'] === 'constructed' || r['mode'] === 'competitive' ? 'constructed' : 'draft'}`;
+      + (seat === 0 || seat === 1 ? `&seat=${seat}` : '') + `&mode=${r['mode'] === 'constructed' || r['mode'] === 'competitive' ? 'constructed' : 'draft'}`
+      + (r['mode'] === 'competitive' ? '&cc=1' : '');
   });
 }
 
