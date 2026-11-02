@@ -1,0 +1,71 @@
+/* ── BL-34/35/36: descriptions, publishing, and the metagame page ───────
+   Everything here reuses the deck page's and browser's own pieces where one
+   exists (.dkgrid, .dktile, .cbdetail, .elchip, .sharebar); what is new is
+   only what had no shape yet. */
+
+/* a card name in prose. It is an <a> with no href on purpose — ui/cardlinks.ts
+   emits no attribute it did not get from the card index, and an href is the
+   one that would turn a description into a redirect. */
+.cardlink { color: var(--accent); text-decoration: none; cursor: pointer;
+  border-bottom: 1px dotted var(--accent); }
+.cardlink:hover { color: var(--glow); border-bottom-color: var(--glow); }
+
+/* inside the deck details box, beside the record. Capped so a long primer
+   cannot push the card grid off the bottom of the window; "read more" is what
+   opens it, and `.on` is the opened state. */
+.deckdesc { margin: 6px 0 0; padding: 8px 10px; background: var(--panel2);
+  border: 1px solid var(--line); border-radius: 7px;
+  max-height: 168px; overflow: auto; }
+.deckdesc.on { max-height: 60vh; }
+.deckdesc.empty { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: none; border-style: dashed; }
+.deckdesc.empty .hint { margin: 0; }
+.deckdescfoot { display: flex; gap: 12px; margin-top: 6px; }
+.deckdescbody { font-size: 14px; line-height: 1.5; }
+.deckdescbody > :first-child { margin-top: 0; }
+.deckdescbody > :last-child { margin-bottom: 0; }
+.deckdescbody p { margin: 0 0 7px; }
+.deckdescbody h3, .deckdescbody h4 { margin: 10px 0 4px; color: var(--accent); }
+.deckdescbody ul, .deckdescbody ol { margin: 0 0 7px; padding-left: 20px; }
+.dkdesctext { width: 100%; box-sizing: border-box; background: var(--panel2); color: var(--text);
+  border: 1px solid var(--line); border-radius: 7px; padding: 8px; font: inherit; line-height: 1.5; }
+
+/* the three visibility choices, as three cards rather than a dropdown: the
+   difference between unlisted and public is a sentence, not a word, and a
+   dropdown has nowhere to put the sentence. */
+.dkvis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 8px; margin: 8px 0 12px; }
+.dkviso { display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+  text-align: left; padding: 9px 11px; border-radius: 8px; }
+.dkviso.on { border-color: var(--accent); color: var(--accent); }
+.dkviso .hint { font-size: 12px; }
+
+/* THE PAGE SHELL. Every page that renders straight into #app brings its own —
+   .homepage, .acctpage, .deckpage and .cbpage each set a max-width, centre
+   themselves and pad their sides. These two were built on .acctscreen, which
+   carries typography and nothing else, so they ran edge to edge: the headings
+   started at x=0 and the card grid was clipped by the right-hand side.
+   The two widths match what is on them — the list is rows, the deck view is a
+   30-card grid with a panel beside it. */
+.metapage { max-width: 1100px; margin: 0 auto; padding: 10px 18px 32px; }
+.metadeck { max-width: 1400px; margin: 0 auto; padding: 10px 18px 32px; }
+
+/* the metagame list */
+.metalist { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.metarow { display: grid; grid-template-columns: 46px minmax(0, 1fr) auto; gap: 11px;
+  align-items: center; width: 100%; text-align: left; padding: 8px 11px; border-radius: 9px; }
+.metarow:hover { border-color: var(--accent); }
+.metacover { width: 46px; height: 46px; border-radius: 6px; overflow: hidden; background: var(--panel2); }
+.metacover img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+.metabody { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.metaname { font-weight: 700; }
+.metaby, .metadesc { font-size: 12px; color: var(--dim); }
+.metadesc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.metarec { text-align: right; white-space: nowrap; font-size: 13px; }
+/* The divider is a heading, not a hiding place: everything under it is still
+   listed, still linkable, and still says how many games it has. */
+.metadivider { margin: 18px 0 4px; padding-top: 10px; border-top: 1px solid var(--line);
+  color: var(--accent); text-transform: uppercase; letter-spacing: .06em; font-size: 11px; }
+.metadivider .hint { text-transform: none; letter-spacing: 0; display: block; margin-top: 3px; }
+.metapage .dkfilters { margin-bottom: 4px; }
+

@@ -1,0 +1,140 @@
+/* ═══ THE REGIONS BOARD — docs/18-board-layout-v2.md (owner's sketch, 2026-09-22).
+   Behind the ▦ board toggle in the side rail (ui/layout.ts); classic is the
+   default and every rule above this line is untouched. Everything here is
+   scoped under `.lboard` or `#app.board.v2` on purpose: test/70 finds the
+   classic strips' rules by a line-anchored `^\s*.invaders\s*{` and must keep
+   finding the ORIGINALS first, so no line below starts with a bare classic
+   selector.
+
+   The middle of the table is two interlocking Ls (board round 8, owner
+   2026-10-27: "more table"): each region is a COLUMN and a full-width FOOT.
+   Theirs is the info line along the top and the right column under it;
+   yours is the left column and the info line along the bottom — which runs
+   on down, in your colour, round the action bar and the hand. Three things
+   hold at once: vertical position says who CONTROLS a card, the L's colour
+   says whose REGION it is in, and the seam between the columns is the
+   crossing every attack makes. The board is pinned between the window's top
+   and the action bar and NEVER SCROLLS: the fit pass (ui/layout.ts) sizes the
+   cards in every [data-fit] zone to its box, and past the floor they fan. */
+
+/* THE GAPS (board round 8, owner: "6–10px gaps sit between every box"): one
+   or two pixels between every box on the game screen. The cards keep clear of
+   the region ring by the blocks' own padding (--ringpad), not by the gaps:
+   the ring's 2.5px stroke and its glow stand inside the tint's edge. */
+#app.board.v2 { gap: var(--gap); padding: var(--gap); max-width: none; }   /* round 8: the table takes the whole window — the 1500px cap left ~200px dead each side at 1920 */
+#app.board.v2 .side { gap: var(--gap); }
+#app.board.v2 .main { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+#app.board.v2 .main > .stickytop { flex: none; position: static; max-height: none; overflow: visible;
+  padding: 0; margin: 0; box-shadow: none; }
+/* with no top bar it is empty in most games: a challenge's meter or the
+   share banner, when there is one, keeps the gap under it */
+#app.board.v2 .main > .stickytop > * { margin-bottom: var(--gap); }
+#app.board.v2 .main > .draftpanel { flex: none; }
+/* the dock's row of cards is a scroll container, but the dock itself is a
+   grid item whose automatic minimum is its content: twelve cards in hand
+   widened the whole table column past the window (headless walk,
+   2026-09-22). Zero it and the row scrolls inside the column as intended. */
+#app.board.v2 .handdock, #app.board.v2 .actionbar { min-width: 0; }
+/* THE FRAME HOLDS STILL (owner, 2026-09-26: the name and life "should be
+   fixed"). Both info lines are pinned to the board's edges and are one fixed
+   height in every phase. There is no top bar on this board any more (round
+   8): its turn, phase and initiative are the phase icons and the ⭐, and its
+   chips stand in the rail's head. The action bar fits its content (owner,
+   2026-09-26: a battle's one line of buttons in a bar "much larger than
+   normal"), and the board moves by its height between phases. */
+#app.board.v2 .actionbar { gap: var(--gap); padding: 0 var(--ringpad) var(--gap); }
+
+.lboard {
+  /* an info line: the name and life over their card backs, a bin and a
+     cache fan as tall as a resource card or more, the resources one card
+     tall — and no taller, in every phase */
+  --linh: 76px;
+  flex: 1 1 0; min-height: 0; min-width: 0;
+  display: grid; position: relative; gap: var(--gap); padding: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* outside a battle the middle collapses to thin bands and the two In Plays
+     share the height — each region is about half the table (owner: "your
+     region gets smaller and takes up approx the bottom 50%") */
+  grid-template-rows:
+    var(--lint, var(--linh))   /* their info line           */
+    minmax(0, 1fr)             /* their In Play             */
+    auto                       /* my Invaders · their battle block */
+    auto                       /* my battle block · theirs  */
+    auto                       /* my battle block · their Invaders */
+    minmax(0, 1fr)             /* my In Play                */
+    var(--linh);               /* my info line              */
+  grid-template-areas:
+    "tinfo  tinfo"
+    "tplay  tplay"
+    "yinv   tfight"
+    "yfight tfight"
+    "yfight tinv"
+    "yplay  yplay"
+    "yinfo  yinfo";
+}
+@media (max-height: 820px) { .lboard { --linh: 70px; } }
+/* a spectator sees the top seat's whole hand in that seat's line (CT-368,
+   CT-419): the one line that grows, so the cards in it can be read */
+.lboard:has(> .linfo.theirs .lspect) { --lint: var(--linspect, 128px); }
+@media (max-height: 820px) { .lboard { --linspect: 104px; } }
+
+/* the two Ls, each two rectangles of tint. Each REGION keeps one colour
+   whoever is looking — region 0 gold, region 1 green (owner, 2026-09-23: so
+   "the green region" means the same place to both players on a call). The
+   green is kept well under --glow so it never reads as "legal".
+   The column (.b) starts where the foot (.a) ends and reaches back over the
+   gap between them: overlapping, the two tints doubled up and read as two
+   places. Your foot runs on down behind the action bar and the hand
+   (#app > .ltail), so it has no bottom corners. */
+:root { --rgn0: #d9a441; --rgn0-tint: rgba(217, 164, 65, .09);
+  --rgn1: #52a877; --rgn1-tint: rgba(74, 158, 104, .10); }
+.lback { z-index: 0; border-radius: 8px; }
+.lback.rc0, #app.board.v2 > .ltail.rc0 { background: var(--rgn0-tint); }
+.lback.rc1, #app.board.v2 > .ltail.rc1 { background: var(--rgn1-tint); }
+.lback.theirs.a { grid-row: 1 / 3; grid-column: 1 / -1; border-bottom-right-radius: 0; }
+.lback.theirs.b { grid-row: 3 / 6; grid-column: 2 / 3; margin-top: calc(-1 * var(--gap)); border-top-left-radius: 0; border-top-right-radius: 0; }
+.lback.mine.a { grid-row: 6 / 8; grid-column: 1 / -1; border-radius: 0 8px 0 0; }
+.lback.mine.b { grid-row: 3 / 6; grid-column: 1 / 2; margin-bottom: calc(-1 * var(--gap)); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.lboard > :not(.lback) { z-index: 1; position: relative; }
+/* your tint behind the action bar and the hand dock, in every phase — even
+   while the ring is on their region mid-battle, so "this is mine" always
+   holds. Under the bar and the dock (z -1: they are not positioned), from the
+   gap above the bar to the window's foot. */
+#app.board.v2 > .ltail { grid-column: 1; grid-row: 2 / -1; z-index: -1; pointer-events: none;
+  margin: calc(-1 * var(--gap)) 0 calc(-1 * var(--gap)); }
+#app.board.v2 .handdock { background: transparent; border-top: 0; border-radius: 0; }
+/* the active region's ring: one border round its whole L (ui/layout.ts
+   ringBoard writes the path). A fixed layer over the table, not a child of
+   the board, because your region's ring runs on down round the action bar
+   and the hand and off the bottom of the window — outside `.main`, which
+   clips. Above the blocks, below nothing that clicks. */
+#app.board.v2 > .lring { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 3;
+  pointer-events: none; overflow: hidden; }   /* hidden: the run-off past the foot grew the page a scroll */
+.lring path { fill: none; stroke-width: 2.5; stroke-linejoin: round; }
+.lring.rc0 path { stroke: var(--rgn0); filter: drop-shadow(0 0 4px rgba(217, 164, 65, .45)); }
+.lring.rc1 path { stroke: var(--rgn1); filter: drop-shadow(0 0 4px rgba(82, 168, 119, .45)); }
+#app.stackfree[data-ring="0"] .stackboard.live { border-color: var(--rgn0); }
+#app.stackfree[data-ring="1"] .stackboard.live { border-color: var(--rgn1); }
+/* no captions on this board (owner, 2026-09-23): the zone names were for
+   planning it — the colour and the shape say whose region, the action bar
+   says what to do. The pieces are the classic board's, so their labels are
+   hidden here rather than taken out of the shared markup. */
+.lboard .sentstrip > .zonelabel { display: none; }
+.lfight.focus .battle > h3 { display: none; }
+/* the seam: every attack crosses it, regroup uncrosses it, nothing else
+   does. It IS the gap between the columns. */
+.lseam { grid-row: 3 / 6; grid-column: 2 / 3; justify-self: start; width: 0; margin-left: calc(-1 * var(--gap));
+  border-left: var(--gap) dashed rgba(214, 221, 230, .22); pointer-events: none; }
+
+.linfo { grid-area: tinfo; } .linfo.mine { grid-area: yinfo; }
+.lplay { grid-area: tplay; } .lplay.mine { grid-area: yplay; }
+.linv { grid-area: tinv; } .linv.mine { grid-area: yinv; }
+.lfight { grid-area: tfight; } .lfight.mine { grid-area: yfight; }
+
+/* every zone is a box that clips; nothing inside may grow the grid. The
+   padding is the buffer between a card and the ring round its region (owner,
+   2026-09-23: the ring ran right up against the cards) */
+.linfo, .lplay, .linv, .lfight { min-height: 0; min-width: 0; overflow: hidden; padding: var(--ringpad); }
+.lplay .regionmain .zone { margin-top: 0; }
+.lboard .zonelabel { margin-top: 2px; }
+

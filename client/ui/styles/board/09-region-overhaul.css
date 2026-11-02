@@ -1,0 +1,232 @@
+/* ── region-board overhaul + playtest round 2 (2026-08-18) ──────────── */
+
+/* B6: the topbar pins to the viewport top */
+/* playtest: the turn strip pins to the top of the table, so the phase never
+   scrolls away mid-battle. The wrapper carries the sticky, not the topbar, and
+   paints an opaque ground so the board slides under it. The "what to do next"
+   bar shared this wrapper until 2026-09-05 — it is `.actionbar` now, below. */
+.stickytop { position: sticky; top: 0; z-index: 45; background: var(--bg);
+  padding-top: 2px; margin-bottom: 8px; box-shadow: 0 4px 10px -4px rgba(0,0,0,.6);
+  max-height: 55vh; overflow-y: auto; }
+.stickytop .promptbar { margin-bottom: 6px; }
+.stickytop > :last-child { margin-bottom: 0; }
+
+/* iPad, 2026-09-05 — THE ACTION BAR IS AT THE BOTTOM. *"It'd be better to have
+   the action bar (to click Pass and Resolve stack and that sorta thing) at the
+   BOTTOM of the screen instead of along the top. It'd be more accessible."*
+   Its own row of the board grid (see #app.board), between the table and the
+   docked hand, so it is exactly as wide as the table and a thumb reaches it.
+   It still never scrolls away — that was the whole reason it was sticky — and
+   a decision with a card row can still be tall, hence the cap + inner scroll.
+   No prompt at all (there always is one, but keep the row honest) and the row
+   collapses rather than leaving an empty gap above the hand. */
+.actionbar { display: flex; flex-direction: column; gap: 6px; max-height: 50vh; overflow-y: auto; }
+.actionbar .promptbar { margin-bottom: 0; }
+.actionbar:not(:has(.promptbar)) { display: none; }
+
+/* A3: missing art never shows a broken-image glyph */
+.artfallback { display: none; }
+.card img.noart { display: none; }
+.card img.noart + .artfallback { display: flex; aspect-ratio: 63 / 88; align-items: center; justify-content: center;
+  text-align: center; background: linear-gradient(160deg, #232a36, #14181f); border: 1px solid var(--line);
+  border-radius: 5px; font-size: 10px; padding: 4px; color: var(--text); overflow: hidden; }
+
+/* A2: decision options rendered as real card scans in the promptbar */
+.deccards { display: flex; gap: 6px; flex-wrap: wrap; max-width: 100%; overflow-x: auto; padding: 2px; }
+/* UZRG: every option is a real button, and the decline is visually LAST and
+   secondary — the player who had just clicked ten times to pay a cost must not
+   find "no thanks" sitting where "yes" was. */
+.decpicks, .decdecline { display: inline-flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.decdecline { margin-left: auto; }
+button.declinebtn { background: transparent; border-style: dashed; color: var(--dim); }
+button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
+
+/* #124 — THE SEARCH OVER AN OVERSIZED CARD MENU (The Everywhere's "name a
+   card": 490 options, drawn as 490 scans in a prompt bar).
+
+   ⚠ THE ROW IS THE WHOLE POINT, so it is laid out to survive being long: the
+   box grows, the toggle and the count do not, and the scans below it are
+   height-capped and scroll INSIDE their own box. The bar is inside `.actionbar`
+   — a menu that grows without bound pushes the entire board off the screen,
+   which is the failure this replaces, not one to reproduce in a nicer font. */
+.decsearch { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 4px 0; }
+.decsearch input { flex: 1 1 220px; min-width: 160px; background: #11151b;
+  border: 1px solid var(--line); border-radius: 5px; color: var(--text);
+  padding: 4px 8px; font: inherit; font-size: 12px; }
+.decsearch input:focus { outline: none; border-color: var(--accent); }
+.decsearch button.on { border-color: var(--accent); color: var(--accent); }
+.decsearch .hint { flex: 0 0 auto; }
+/* the filtered scans: two rows deep at most, then scroll */
+.promptbar .deccards { max-height: 30vh; overflow-y: auto; }
+/* BL-18: every option the engine offered is still takeable, folded away rather
+   than dropped. Closed it costs one line; open it is a plain list of names. */
+.decall { margin-top: 4px; }
+.decall > summary { color: var(--dim); cursor: pointer; font-size: 12px; }
+.decall .decpicks { max-height: 24vh; overflow-y: auto; margin-top: 4px; }
+.decall button { font-size: 11px; padding: 2px 6px; }
+
+/* B1 (reworked, playtest): invaders (enemy units standing in this region) sit
+   as a compact, visually subordinate strip at the SIDE of the region — smaller
+   cards, out of the owner's formation space */
+/* [61] …and it GROWS SIDEWAYS. The width was hard — 140px, a 128px content box
+   between the 6px paddings — against 52px cards with a 4px gap, so a third
+   invader could never sit on the first row and the strip climbed downwards
+   instead, dragging the whole region panel taller with it. Same arithmetic,
+   same cure as .tokenstrip below: a floor that still fits two, a ceiling that
+   keeps the strip subordinate to the formation, and .zone's flex-wrap doing
+   the grouping in between. */
+.invaders { flex: 0 1 auto; width: auto;
+  min-width: 140px; max-width: clamp(140px, 30%, 400px);
+  align-self: flex-start;
+  border: 1px solid rgba(217,84,84,.55); background: rgba(217,84,84,.06); border-radius: 6px;
+  padding: 2px 6px 6px; margin-top: 8px; }
+
+.invaders .invaderzone { gap: 4px; }
+/* ⚠ ONE SELECTOR PER RULE HERE. 70-playtest-round15 §[61] does the strip's
+   fits-three-abreast arithmetic by reading `.invaders .card`'s width out of
+   this file with an anchored regex, so folding a second selector into this
+   line deletes that guard rather than extending it. */
+.invaders .card { width: 52px; }
+.invaders .card img { box-shadow: 0 0 0 1px var(--danger); border-radius: 5px; }
+/* CR D6.13/#138 — the same strip, standing IN the battle panel while the battle is
+   in this region: *"for tokens and things made during combat, they'd look
+   better in the attacking box area"*. It is a `.col` like every other one, so
+   it sits on its controller's side of the vs line (main.ts battleColHtml) —
+   which is the whole reason it is a column and not a strip pinned to the top
+   of the row. Bounded the same way `.invaders` is: it may grow sideways, it
+   may not out-shout the formation next to it. */
+
+/* ZQPC: "the spell tokens shouldn't get smushed in with the units. They should
+   have their own spot, over by the bin." Same weight and shape as the bin and
+   the sent strip — a shelf of ammunition beside the region, not a rank in the
+   formation. A token that has been picked up to RIDE with an attack leaves
+   here and stands in the battle panel's .ridecol instead. */
+/* [61] "Instead of all the spell tokens stacking up vertically when there are
+   many of them, their box can expand and they can be grouped horizontally."
+   It could not: 118px wide with 6px of padding either side is a 106px content
+   box, and two 52px cards with a 4px gap need 108. .zone already wraps — the
+   width simply never let a second card onto the row, so the strip was a
+   column by construction and grew the region panel taller for every token.
+   Fluid now, and the floor is 120px rather than 118 — the two extra pixels are
+   the ones that were missing, so even a squeezed strip fits two abreast. The
+   ceiling is roughly a quarter of the region row: six cards at the widest,
+   which is plenty of ammunition to read at a glance and still leaves
+   .regionmain (flex: 1; min-width: 0) the formation space it is entitled to. */
+
+/* CT-125 (#132) "it's very hard to tell how many you have left and of which
+   sizes they are". One row per BURST GROUP — a group is a card NAME, because
+   that is what apply.ts casts together — count first, then the sizes. Flat and
+   non-overlapping on purpose: it is the .ridechip row's shape, which has
+   answered exactly this question since [69] but only during an attack
+   declaration. It must not add width (the strip's clamp is load-bearing:
+   70-playtest-round15 pins that two 52px cards still fit abreast), so the rows
+   WRAP inside the box the tiles already have. */
+
+.tallyrow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 4px;
+  font-size: 9px; line-height: 1.25; color: var(--dim); }
+.tallyrow .tallyname { color: #cfd8e3; }
+.tallyrow .tallyn { color: var(--target); font-weight: 700; }
+/* the two things that make the question urgent, said in colour: more than one
+   of a name fires as ONE chain, and a group whose Xs differ is the case the
+   report was actually about (apply.ts groups on the name and ignores X). */
+.tallyrow.burst .tallyname { color: var(--target); }
+.tallyrow.mixed .tallyx { color: var(--warn, #e0b93c); font-weight: 600; }
+/* the riding row inside the attack builder — tokens joining this declaration */
+.col.ridecol { border-left: 1px dashed var(--target); padding-left: 8px; }
+.ridecol .collabel { color: var(--target); }
+.ridecol .card { width: 56px; }
+
+/* B2 + playtest: counterattackers in transit, shown in the region they are
+   heading INTO, beside that region's bin. Column-shaped and bin-sized so it
+   reads as a holding pen rather than part of the formation; dimmed and inert
+   until they arrive next round and rejoin the normal rows. */
+.sentstrip { width: 96px; flex-shrink: 0; border: 1px dashed var(--danger); border-radius: 6px;
+  padding: 2px 6px 6px; margin-left: 4px; align-self: flex-start;
+  opacity: .5; filter: grayscale(.55); }
+.sentstrip .zonelabel { color: var(--danger); font-size: 10px; margin-top: 4px; }
+.sentstrip .sentzone { gap: 3px; }
+.sentstrip .card { width: 40px; cursor: default; }
+.sentfoot { color: var(--dim); font-size: 9px; margin-top: 3px; line-height: 1.2; }
+/* CT-383: on the classic board the strip is a grid of 40px cards, --sentcols
+   wide (main.ts sentCols). It was a fixed 96px whose inside (82px) was a pixel
+   short of two cards and a gap, so every sent unit took a row of its own:
+   eleven made a column 700px tall that stretched the region and scrolled the
+   board. min-content: as wide as its columns, the label wrapping inside. */
+
+/* B5: seen-hand memory strip. Round 13: the label was one long inline line
+ * stealing the cards' width — it now stacks above them in two short rows, and
+ * every card carries a ✕ that forgets it. */
+.seenhand { display: flex; flex-direction: column; align-items: stretch; gap: 3px; background: rgba(63,143,217,.08);
+  border: 1px dashed var(--water); border-radius: 6px; padding: 4px 8px; margin: 2px 0 6px; }
+.seenhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+/* CT-174: every card crossed off. The aid does NOT disappear — it collapses to
+   its head and the way back, because vanishing on its own is the report. */
+.seenhand.emptied { opacity: .7; }
+.seenlabel { color: var(--water); font-size: 11px; }
+.seenhint { color: var(--dim); font-size: 9px; line-height: 1.2; }
+.seendismiss { font-size: 9px; padding: 0 4px; line-height: 1.5; }
+.seencards { display: flex; gap: 4px; flex-wrap: wrap; }
+.seenslot { position: relative; display: inline-flex; }
+.seenhand .card { width: 44px; }
+/* the ✕ sits ON the card but is its own hit target: hovering the scan still
+ * previews it and right-clicking still opens the inspector */
+.seenx { position: absolute; top: -3px; right: -3px; z-index: 2; width: 14px; height: 14px; padding: 0;
+  line-height: 12px; text-align: center; font-size: 9px; border-radius: 50%; cursor: pointer;
+  background: rgba(20,24,30,.92); border: 1px solid var(--water); color: var(--water); opacity: .45; }
+.seenslot:hover .seenx { opacity: 1; }
+.seenx:hover { background: var(--danger); border-color: var(--danger); color: #fff; opacity: 1; }
+
+/* C3: the armed "Pass all" is visible and cancelable */
+/* CR D2.2: the caption names WHICH standing pass is running ("passing through the
+   stack" / "passing until the next phase"), so it is longer than the one word
+   it replaced and must not wrap inside the sticky top bar. */
+.passallchip { background: #33270f; border-color: #7a5e1e; color: var(--accent); font-weight: 700;
+  white-space: nowrap; }
+
+/* C4: persistent auto-pass toggle */
+.aptoggle.on { border-color: var(--glow); color: var(--glow); }
+/* CT-183: the full-control readout is a button in the same row, but a click
+   does nothing — it reports a key you hold; the hover text says which */
+.fullctl { cursor: help; }
+
+/* the dialog every overlay uses: a scrim and a box (it began as C2's
+   deployment reveal, which the playback replaced on 2026-10-03) */
+.overlay { position: fixed; inset: 0; z-index: 60; background: rgba(6,8,11,.72);
+  display: flex; align-items: center; justify-content: center; }
+.overlaybox { background: var(--panel); border: 1px solid var(--accent); border-radius: 10px; padding: 18px 22px;
+  width: min(92vw, 560px); max-height: 80vh; display: flex; flex-direction: column; gap: 12px; }
+.overlaybox h3 { margin: 0; color: var(--accent); }
+/* CT-78 — somebody else's glimpse, as a thing you NOTICE.
+   The glimpser gets N full card scans in a modal; the opponent got one line of
+   prose in an 80-line log. Both are "the reveal" and only one looked like one.
+   NON-MODAL on purpose: a glimpse can happen in a battle window you may still
+   have to act in, so this must never be something to dismiss before playing.
+   Since report #224 it stays until its ✕ (a real button: a finger has no other
+   way to put it away) or a newer reveal, so it can no longer float over the
+   board the way a few-second notice could: MEASURED in headless Chrome at
+   1280x800, 1024x768 and 860x700, the old fixed bottom-right box sat on the
+   right end of the hand dock and the action bar. It is a cell of the board's
+   grid instead and covers nothing (the rules below the base box). Its cards
+   read like any other card. CT-302: a card's reveal uses it too, and Tides of
+   the Cosmos shows EIGHT. */
+.glimpsenotice { position: fixed; right: 16px; bottom: 16px; z-index: 60;
+  background: var(--panel); border: 2px solid var(--target); border-radius: 8px;
+  padding: 8px 10px; box-shadow: 0 6px 24px rgba(0,0,0,.55);
+  max-width: min(46vw, 560px); animation: glimpsein .18s ease-out; }
+.glimpsehead { font-size: 11px; color: var(--target); font-weight: 700;
+  letter-spacing: .04em; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+.glimpsex { margin-left: auto; min-width: 28px; min-height: 26px; padding: 2px 8px; font-size: 12px; }
+.glimpsecards { display: flex; gap: 5px; flex-wrap: wrap; }
+.glimpsecards .card { width: 58px; }
+/* on the board: the rail's foot, beside the hand dock (the rail gives up the
+   bottom row while it is there), five cards to a row at the rail's width */
+#app.board > .glimpsenotice { position: static; grid-column: 2; grid-row: 3; align-self: stretch;
+  max-width: none; min-width: 0; box-shadow: none; padding: 6px 8px; }
+#app.board:has(> .glimpsenotice) .side { grid-row: 1 / 3; }
+#app.board > .glimpsenotice .glimpsecards { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+#app.board > .glimpsenotice .glimpsecards .card { width: auto; min-width: 0; }
+@keyframes glimpsein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .glimpsenotice { animation: none; } }
+
+.overlaybox > button { align-self: flex-end; }
+

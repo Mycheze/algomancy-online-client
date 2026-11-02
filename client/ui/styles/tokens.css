@@ -1,0 +1,36 @@
+/* Algomancy prototype client — spreadsheet-simulator chic */
+:root {
+  --bg: #12151a; --panel: #1a1f27; --panel2: #20262f; --line: #2e3742;
+  --text: #d6dde6; --dim: #8794a3; --accent: #d9a441; --danger: #d95454;
+  --glow: #6fc36f; --target: #e0b93c;
+  /* CR D6.12 "in progress": purple already means resolved, red means answered,
+     green means next and gold means targeting — so pending gets the one hue
+     none of them use. A teal that is not --water (#3f8fd9) either, because a
+     resolving card wears it as a border and the seat hairlines are elemental. */
+  --pending: #3fd2c0;
+  /* the seven elements, in ALL_ELEMENTS order. Light & Dark are the yin-yang
+     pair: Light is a warm cream (12.7:1 against --panel2, so it needs DARK ink
+     on it — see --light-ink), Dark is a slate grey, deliberately NOT charcoal,
+     because true charcoal on a #20262f panel is invisible. At #6a7382 it still
+     reads as "the dark one" next to cream while clearing 3:1 against the panel
+     and 4.8:1 for white text on top. */
+  --fire: #d95436; --water: #3f8fd9; --earth: #8a6b3d; --wood: #4e8a3d;
+  --metal: #9aa5b0; --light: #f2ead6; --dark: #6a7382;
+  --light-ink: #2b2417; --dark-ink: #ffffff; --metal-ink: #222222;
+  /* the PRINTED name bar, per element — not the UI chips above: the median
+     colour of each mono card's bar, read off the scans (2026-09-30, ~56 cards
+     an element, the quartiles within a few points). Light is the one white
+     bar, and prints black ink. */
+  --bar-fire: #821210; --bar-water: #1e3463; --bar-earth: #824a11; --bar-wood: #2f581e;
+  --bar-metal: #565656; --bar-light: #fafafa; --bar-dark: #1a1a1a;
+  /* the printed title face: EB Garamond Bold (ui/fonts/, SIL OFL — OFL.txt
+     beside it), the nearest free cut to the scans' serif */
+  --card-title: 'Card Title', 'EB Garamond', Garamond, 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  --cw: 78px; /* card thumb width; jpgs are ~63:88 */
+  /* board round 8 (owner, 2026-10-27): the game screen's gaps between boxes —
+     1–2px, where they were 6–10. ui/layout.ts and ui/fit.ts mirror them. */
+  --gap: 2px; --gap-tight: 1px;
+  /* …and the buffer inside a region's blocks that keeps a card clear of the
+     ring's 2.5px stroke and its glow — padding, not a gap */
+  --ringpad: 5px;
+}

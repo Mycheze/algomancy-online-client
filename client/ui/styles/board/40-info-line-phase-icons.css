@@ -1,0 +1,161 @@
+/* ── THE INFO LINE (board round 8, owner 2026-10-27) ─────────────────────
+      One full-width line per player, one fixed height (`--linh`). Mine, left
+      to right: the resources, which take all the width the line has left ·
+      the phase icons · bin · cache · name and life at the right edge, where
+      they always were. Theirs is the mirror: name and life, their hand's
+      card backs under the name · cache · bin · resources. The cache is not
+      there at all when it holds nothing. The deck line is gone: hover (or
+      tap) the name for every pile as a number (ui/infotip.ts). The line is a
+      size container, so the bin, the cache and a spectator's view of the
+      top hand size themselves off its height. */
+.linfo { display: block; container-type: size; }
+.linfo > .lin { height: 100%; display: flex; align-items: center; gap: 14px; min-width: 0; }
+/* my line: the phase icons in the middle of the window, or as near it as the
+   line allows (owner, 2026-10-27) — the resources take the left track, the
+   bin, cache and name the right (never narrower than they are), and the
+   strip's left margin is the toolbar's width plus its gap, which moves the
+   strip's centre from the table's middle to the window's */
+.linfo.mine > .lin { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 1fr); }
+.linfo.mine .phicons { margin-left: calc(50px + var(--gap)); }
+.linfo .lend { display: flex; align-items: center; justify-content: flex-end; gap: 14px; min-width: 0; height: 100%; }
+/* the resources clip, but 3px out: the first card's 1px edge and a wake ring
+   (2px + 1px offset) lost their left side to the clip (report #315, test 777) */
+.linfo .lres { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; align-items: center; overflow-clip-margin: 3px; overflow: hidden; overflow: clip; }
+.linfo .lid, .linfo .lbin, .linfo .lcache, .linfo .phicons { flex: none; }
+.linfo .lid { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; }
+.linfo.mine .lid { align-items: flex-end; }
+.linfo .lidtop { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; white-space: nowrap; }
+.linfo .lhand { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-width: 0; }
+.linfo .lname { cursor: help; }
+.linfo .lname .pname { white-space: nowrap; }
+/* the initiative star keeps its width when it is somewhere else */
+.linfo .linit.off { visibility: hidden; }
+/* the identity pieces a notch smaller than the classic header's: the life
+   pill, the opponent's card backs — a count to read, not cards to handle */
+.linfo .life { padding: 3px 12px; }
+.linfo .lifenum { font-size: 19px; }
+.linfo .miniback { width: 20px; height: 28px; margin-right: -12px; }
+.linfo .minihand .miniback:last-child { margin-right: 0; }
+.linfo .handcount { font-size: 14px; white-space: nowrap; }
+/* the cache and bin as thumbs (owner, 2026-10-27: "squashed, and too small
+   even when full"): each a STABLE slot the width it needs whether it holds
+   anything or not, so nothing beside it moves, its thumbs as tall as the
+   line allows. The label is master's (the plain zone label), BESIDE the
+   thumbs rather than above them: above, it took 16px of a one-line height
+   and the thumbs came out smaller than the old block's (audit, board round 8). */
+.linfo .regionbin, .linfo .regioncache { border-left: 0; padding: 0 3px; width: auto; max-width: none; min-width: 0;
+  height: 100cqh; display: grid; grid-template-columns: auto auto; grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "lbl fan" "hint fan"; column-gap: 6px; align-items: start; }
+.linfo .regionbin > .zonelabel, .linfo .regioncache > .zonelabel { grid-area: lbl; white-space: nowrap; }
+.linfo .regionbinthumbs, .linfo .regioncache > .cthumbs, .linfo .regioncache > .binempty { grid-area: fan; align-self: center; }
+.linfo .regionbin { --binth: clamp(18px, calc((100cqh - 6px) / 1.4), 48px); }
+.linfo .regioncache { --cacheth: clamp(22px, calc(100cqh / 1.4), 48px);
+  grid-template-columns: auto calc(3 * var(--cacheth) + 12px + 22px); }
+.linfo .regioncache .cthumbs { flex-wrap: nowrap; margin-top: 0; align-items: center; }
+/* the chip sits ON the card's foot: under it, it cost the thumb a third of its
+   height in a one-line slot (FORCED, audit board round 8) */
+.linfo .regioncache .cthumb { position: relative; }
+.linfo .regioncache .cchip { position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%); margin: 0;
+  white-space: nowrap; z-index: 2; }
+.linfo .regionbinthumbs { height: calc(var(--binth) * 1.4 + 6px); width: calc(var(--binth) + 26px); }
+.linfo .regionbinthumbs:has(> .binempty), .linfo .regioncache > .binempty { height: auto; align-self: start; margin-top: 2px; }
+.linfo .regionbinthumbs .card { width: var(--binth); }
+.linfo .regionbinthumbs .card:nth-child(2) { left: 12px; top: 3px; }
+.linfo .regionbinthumbs .card:nth-child(3) { left: 24px; top: 6px; }
+/* "playable as mods" under the label, beside the thumbs */
+.linfo .binmodhint { grid-area: hint; align-self: end; width: 74px; margin: 0; line-height: 1.2; }
+/* a spectator sees the top seat's whole hand: a stretch of the line after the
+   name, as tall as the line, each card as wide as that height allows up to the
+   hand dock's 92px, narrower together when the hand is long (CT-368/419) */
+.linfo .lspect { flex: 1 1 0; min-width: 30%; align-self: stretch; min-height: 0; container-type: size;
+  display: flex; flex-direction: column; }
+.linfo .lspect > .zonelabel { margin-top: 0; flex: none; }
+.linfo .lspect > .zone { flex: 1 1 0; min-height: 0; margin-top: 2px; gap: 4px; flex-wrap: nowrap; overflow: hidden; }
+.linfo .lspect > .zone > .card { flex: 0 1 min(92px, calc((100cqh - 18px) / 1.4)); width: auto; min-width: 0; }
+/* the resources, grouped (main.ts resGroupedHtml): each run of one element
+   in one state is a fan, so ten resources of three kinds take the width of
+   about five. The line is wide now, so the runs SPREAD when there is room:
+   ui/layout.ts writes `--resstep` (how far each card in a run steps from the
+   one before) from the room the line has. Hover raises one. */
+.linfo .lresrow { display: flex; flex-wrap: nowrap; align-items: center; gap: 4px 10px; width: 100%; justify-content: flex-start; }
+.linfo .lresrow .resgroup { display: inline-flex; align-items: center; flex: none; }
+/* master's resource card (30px); ui/layout.ts resLine narrows it only when
+   even the tightest fan does not fit */
+.linfo .lres { --rcw: 30px; }
+.linfo .rescard { width: var(--rcw); }
+.linfo .lresrow .resgroup > .rescard + .rescard { margin-left: calc(var(--resstep, 10px) - var(--rcw)); }
+.linfo .lresrow .resgroup > .rescard:hover { z-index: 2; transform: translateY(-3px); }
+.linfo .lresrow .rescard.muted:hover { transform: scale(.8) translateY(-3px); }
+/* the mana after the resources, on their line (master's one-line form) */
+.linfo .lresrow .resmana { flex: none; color: var(--dim); font-size: 13px; line-height: 1.2; white-space: nowrap; }
+.linfo .lresrow .resmananum { color: var(--text); font-size: 17px; font-weight: 700; vertical-align: -1px; }
+/* round 5 (owner, 2026-09-26: "hard to see and count … they might need 1px
+   borders to help delineate them"): every scan gets a hairline edge — dark on
+   most, light on the two near-black faces (Dark, Shard). A dormant card shows
+   the lavender back whatever its element, so it keeps the dark edge. The edge
+   is on the img, so it turns with an expended card. */
+.linfo .rescard img { box-shadow: 0 0 0 1px rgba(0, 0, 0, .85); }
+.linfo .rescard.dark:not(.dormant) img, .linfo .rescard.shard:not(.dormant) img { box-shadow: 0 0 0 1px #c9ced6; }
+/* a run of two or more says how many: a pill on the fan's top card, never
+   dimmed with an expended or muted run */
+.linfo .lresrow .resgroup { position: relative; }
+.linfo .rescount { position: absolute; right: -5px; bottom: -3px; z-index: 3; min-width: 15px; height: 15px;
+  padding: 0 3px; border-radius: 8px; background: #0b0d11; border: 1px solid #c9ced6; color: #fff;
+  font-size: 10px; font-weight: 700; line-height: 13px; text-align: center; pointer-events: none; }
+/* …and a spread run (no overlap) shows every card, so it needs no pill */
+.linfo .lres[data-spread] .resgroup .rescount { display: none; }
+/* a dormant resource you can activate NOW does not fan: every card a whole
+   target, a notch bigger, glowing (owner: "without having to thread the
+   needle with the mouse"). main.ts resGroupedHtml sorts its run first. */
+.linfo .lresrow .resgroup.wake > .rescard { width: calc(var(--rcw) + 4px); }
+.linfo .lresrow .resgroup.wake > .rescard + .rescard { margin-left: 4px; }
+.linfo .lresrow .resgroup.wake .rescount { display: none; }
+/* the classic `.rescard.dormant` dashed outline comes later in this file at
+   the same weight and was hiding the `canact` ring — here the ring wins, and
+   the back is less dimmed: these are the cards you are being asked to click */
+.linfo .lresrow .resgroup.wake > .rescard.canact { outline: 2px solid var(--glow); outline-offset: 1px; border-radius: 3px; }
+.linfo .lresrow .resgroup.wake > .rescard.canact img { filter: grayscale(.3) brightness(.85); }
+.linfo.inactive { opacity: .85; }
+/* a narrow line (a 1024px window) has no width to spare for the centring
+   nudge, and its resources may not all fit: there the mana leads them, so it
+   is the tail of the resources that clips, never the mana (audit, board
+   round 8 — FORCED: the bin and cache keep their full slots, K1-4) */
+@container (max-width: 1100px) {
+  .linfo.mine .phicons { margin-left: 0; }
+  .linfo .lresrow .resmana { order: -1; display: grid; grid-template-columns: auto auto; column-gap: 4px; align-items: center; }
+  .linfo .lresrow .resmana > .resmananum { grid-row: span 2; }
+  .linfo .lresrow .resmana > .resact { grid-column: 2; }
+  .linfo .lresrow .resmana .ressep { display: none; }
+  .linfo .lresrow { gap: 4px; }
+  /* …and the bin's and cache's labels go back ABOVE their thumbs, as on the
+     old block: beside them they cost the resources ~90px of a 1024px window
+     (the thumbs are smaller for it) */
+  .linfo .regionbin, .linfo .regioncache { grid-template-columns: auto; grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "lbl" "fan" "hint"; }
+  .linfo .regioncache { grid-template-columns: calc(3 * var(--cacheth) + 12px + 22px); }
+  .linfo .regionbin { --binth: clamp(18px, calc((100cqh - 24px) / 1.4), 48px); }
+  .linfo .regionbin.hasmods { --binth: clamp(18px, calc((100cqh - 38px) / 1.4), 48px); }
+  .linfo .regioncache { --cacheth: clamp(22px, calc((100cqh - 18px) / 1.4), 48px); }
+  .linfo .binmodhint { width: auto; white-space: nowrap; align-self: start; }
+  .linfo .regioncache .cchip { font-size: 9px; padding: 0 3px; }
+}
+
+/* ── THE PHASE ICONS (board round 8): the turn's track beside your
+      resources, where you are already looking — main.ts phaseIconsHtml. The
+      current step lit, the battle's four steps as pips under its icon, the
+      turn as a small numeral; hover (tap) for the caption in words. */
+.phicons { display: flex; align-items: center; gap: 2px; padding: 2px 4px; border-radius: 6px;
+  background: rgba(0, 0, 0, .22); cursor: help; }
+.phicons .phturn { min-width: 16px; height: 16px; padding: 0 3px; margin-right: 2px; border-radius: 8px;
+  border: 1px solid var(--line); color: var(--dim); font-size: 10px; font-weight: 700; line-height: 14px; text-align: center; }
+.phicons .phi { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 24px; height: 30px; border-radius: 5px; opacity: .32; }
+.phicons .phi img { width: 18px; height: 18px; display: block; }
+.phicons .phi.cur { opacity: 1; background: rgba(217, 164, 65, .22); box-shadow: inset 0 0 0 1px var(--accent); }
+.phicons .phr { position: absolute; top: 0; right: 1px; font-size: 9px; line-height: 9px; color: var(--text); }
+.phicons .phpips { display: flex; gap: 2px; margin-top: 2px; }
+.phicons .phpips > i { width: 3px; height: 3px; border-radius: 50%; background: rgba(214, 221, 230, .35); }
+.phicons .phpips > i.done { background: rgba(214, 221, 230, .7); }
+.phicons .phpips > i.on { background: var(--accent); box-shadow: 0 0 3px var(--accent); }
+.phicons.over .phi { opacity: .2; }
+

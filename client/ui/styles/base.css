@@ -1,0 +1,19 @@
+@font-face { font-family: 'Card Title'; font-weight: 700; font-style: normal; font-display: swap;
+  src: url('fonts/EBGaramond-Bold.woff2') format('woff2'); }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.4 system-ui, sans-serif; }
+#app { display: grid; grid-template-columns: 1fr 290px; gap: 8px; padding: 8px; max-width: 1500px; margin: 0 auto; }
+.main { min-width: 0; }
+.side { display: flex; flex-direction: column; gap: 8px; }
+
+/* CR D5.5a/CT-123: a LIVE SLOT is a node render() paints EMPTY for a patcher to
+   fill outside any render, so the ⏭ chip and the presence dot stay true while
+   CR D5.4's throttle is holding and a render would be the wrong hammer. An empty
+   one must take up no room — .topbar and .sideid are both flex with a gap. */
+.liveslot:empty { display: none; }
+button { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 5px;
+  padding: 5px 12px; cursor: pointer; font: inherit; }
+button:hover { border-color: var(--accent); }
+button.primary { background: #3c5a2f; border-color: #5b8747; }
+button:disabled { opacity: .4; cursor: default; }
+

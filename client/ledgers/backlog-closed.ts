@@ -792,7 +792,7 @@ export const CLOSED: Entry[] = [
     deps: [],
     touches: [
       'client/ui/main.ts',
-      'client/ui/style.css',
+      'client/ui/styles',
     ],
     notes:
       'Badges are built in cardHtml/unitBadges in ui/main.ts and styled as .badges / .badge '
@@ -1339,7 +1339,7 @@ export const CLOSED: Entry[] = [
     deps: [],
     touches: [
       'client/ui/main.ts',
-      'client/ui/style.css',
+      'client/ui/styles',
     ],
     notes:
       '✔ DONE 2026-08-29. `handDockTucked()` in main.ts is true while a draft pack or the '
@@ -1406,7 +1406,7 @@ export const CLOSED: Entry[] = [
       'client/ui/cardsynonyms.ts',
       'client/ui/decks.ts',
       'client/ui/main.ts',
-      'client/ui/style.css',
+      'client/ui/styles',
       'client/engine/scripts/extract-printed.mjs',
       'client/engine/scripts/audit-cards.mjs',
       'client/engine/scripts/card-audit-known.mjs',
@@ -1496,7 +1496,7 @@ export const CLOSED: Entry[] = [
       'client/ui/cards.ts',
       'client/ui/cardpanel.ts',
       'client/ui/util.ts',
-      'client/ui/style.css',
+      'client/ui/styles',
       'client/ui/test/214-deck-page-wiring.test.ts',
     ],
     notes:
@@ -2160,7 +2160,7 @@ export const CLOSED: Entry[] = [
     ],
     touches: [
       "client/ui/main.ts",
-      "client/ui/style.css",
+      "client/ui/styles",
       "client/ui/test/225-stack-readout.test.ts",
       "client/ui/test/358-burst-order-ui.test.ts",
       "client/ui/test/75-ui-reachability.test.ts",
@@ -2396,7 +2396,7 @@ export const CLOSED: Entry[] = [
       'client/ui/main.ts',
       'client/ui/layout.ts',
       'client/ui/fit.ts',
-      'client/ui/style.css',
+      'client/ui/styles',
       'client/ui/legal.ts',
       'client/ui/tutorial.ts',
       'client/ui/test/317-fit-pass.test.ts',
@@ -2752,7 +2752,7 @@ export const CLOSED: Entry[] = [
     touches: [
       'client/ui/inspect.ts',
       'client/ui/battle.ts',
-      'client/ui/style.css',
+      'client/ui/styles',
     ],
   },
   {
@@ -2801,7 +2801,7 @@ export const CLOSED: Entry[] = [
       'client/docs/07-visual-redesign.md',
       'client/docs/09-visual-clarification.md',
       'client/README.md',
-      'client/ui/style.css',
+      'client/ui/styles',
       'client/ui/main.ts',
     ],
     notes:

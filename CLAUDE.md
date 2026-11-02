@@ -71,6 +71,8 @@ Read it before touching that string.
 | `data/comprehensive-rules/Algomancy-Comprehensive-Rules.{md,html,txt,json}`, `Annex-D-Digital-Conventions.md`, `discrepancies.md`, `owner-questions.md`, `changelog.md` | **generated** by `client/engine/scripts/cr/`. A wrong rule is fixed in its record (`rules/*.json`), re-verified and re-rendered — never in the output. The `.json` is the same document as data, and what the judge bot's corpus (`bot/pipeline/build_cr.py`) is chunked from. |
 | `data/comprehensive-rules/ledger.json` | **committed reviewed state, append-only**: rule key → number. A number is allocated once, never moved or reused; a removed rule is a tombstone. Only the cr scripts write it. |
 | `data/comprehensive-rules/verdicts/` | **committed reviewed state**: decisions nothing can rebuild. Edit only through the cr scripts. Frozen history: the R-numbers in them refer to the retired register (`verdicts/README.md`). |
+| `client/ui/styles/` | **canonical**: the stylesheet, as pieces. `styles/index.css` lists them in cascade order, one `@import` each, and **the order is load-bearing**: the pieces were cut word for word from the old single `style.css`, which was a changelog of overrides. A new piece goes in `index.css` exactly once (test 920). Tests read the CSS only through `client/ui/test/read-styles.ts` (test 910). The design-system plan that is reshaping these files is `client/docs/23-design-system.md`. |
+| `client/ui/bundle.css` | **generated** by `npm --prefix client/ui run build` (`ui/scripts/build-css.mjs`), gitignored like `bundle.js`: the pieces concatenated byte for byte. It is never built with esbuild, which would re-print the CSS. **There is no `style.css` any more** (2026-11). |
 
 ## Things that are not what they look like
 

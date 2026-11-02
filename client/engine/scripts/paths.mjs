@@ -203,12 +203,19 @@ export const UI_DIR = join(REPO_ROOT, 'client', 'ui');
  *  that is silent rather than one that errors — ui/test/316 §7 is the only
  *  thing that would notice. Provenance and the synthesis line: sfx/NOTICE.md */
 export const SFX_DIR = join(UI_DIR, 'sfx');
-/** The stylesheet the browser loads. TESTS NEVER READ THIS PATH THEMSELVES:
- *  they call `readStyles()` from ui/test/read-styles.ts, which is the one place
- *  that knows how the stylesheet is laid out on disk (a single file today; the
- *  concatenated `ui/styles/` files once the design-system split lands).
- *  ui/test/910 fails on a test that reads it directly. */
-export const STYLE_CSS = join(UI_DIR, 'style.css');
+/** The stylesheet's SOURCES: canonical, hand-edited, one directory of `.css`
+ *  pieces (tokens.css, base.css, board/, pages/, shared/) that the build
+ *  concatenates, byte for byte, in the order `styles/index.css` lists them.
+ *  That order IS the cascade — the old single `style.css` was a changelog of
+ *  overrides, and the split (2026-11-02, ui/scripts/split-styles.mjs) kept
+ *  every line where it was. TESTS NEVER READ THESE THEMSELVES: they call
+ *  `readStyles()` from ui/test/read-styles.ts (guarded by ui/test/910). */
+export const STYLES_DIR = join(UI_DIR, 'styles');
+/** the order file: one `@import "<piece>";` per piece, nothing else but comments */
+export const STYLES_INDEX = join(STYLES_DIR, 'index.css');
+/** GENERATED and gitignored, like bundle.js: what index.html links, written by
+ *  `npm --prefix client/ui run build` (ui/scripts/build-css.mjs) */
+export const BUNDLE_CSS = join(UI_DIR, 'bundle.css');
 
 /* ── THE DEPLOY BOX, AND THE RUNTIME STATE THAT ONLY EXISTS THERE ─────────
  *

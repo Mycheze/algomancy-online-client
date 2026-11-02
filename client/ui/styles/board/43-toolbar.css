@@ -1,0 +1,87 @@
+/* ── BOARD ROUND 8: THE TOOLBAR (owner, 2026-10-27: the rail "mostly
+   repeats what hover zoom already does better") ──
+   The right column is a strip of icons, 50px at every width — so there is no
+   narrow-screen drawer any more (2026-09-27 to round 8: the rail slid in over
+   the table under 900px). Every button keeps its data-btn; its words are its
+   hover title, and the few things that only SAY something (the room, the
+   game's chips, the clocks) open an info tip beside the strip (ui/infotip.ts),
+   on a hover or a tap. The toggles (⋯) and a scenario's panel (🧪) are
+   popovers in the strip's own markup, to its left. main.ts toolbarHtml. */
+#app.board.v2 { grid-template-columns: minmax(0, 1fr) 50px; }
+#app.board.v2 > .toolbar { display: flex; flex-direction: column; align-items: stretch; gap: var(--gap);
+  position: relative; top: auto; overflow: visible; padding: 3px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 6px; }
+#app.board.v2 > .toolbar > button, #app.board.v2 > .toolbar > .tbmore > .setbtn {
+  position: relative; flex: 0 1 38px; min-height: 26px; width: 100%; padding: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 18px; line-height: 1; }
+#app.board.v2 > .toolbar .lbl { display: none; }
+#app.board.v2 > .toolbar .tbsub { display: block; font-size: 9px; line-height: 1; margin-top: 2px; letter-spacing: .02em; }
+#app.board.v2 > .toolbar > button.on { border-color: var(--accent); color: var(--accent); }
+#app.board.v2 > .toolbar > .tbfill { flex: 1 1 0; min-height: 0; }
+/* the room: its icon, the opponent's presence as a dot on it, and how many
+   watch. OFFLINE MUST NOT BE MISSED: the button goes red and says so. */
+#app.board.v2 > .toolbar > .tbstat { flex-basis: 48px; min-height: 40px; font-size: 16px; }
+#app.board.v2 > .toolbar > .tbstat .presence { position: absolute; top: 2px; right: 3px; font-size: 11px; line-height: 1; }
+#app.board.v2 > .toolbar > .tbstat .presence.on { color: var(--glow); }
+#app.board.v2 > .toolbar > .tbstat .presence.off { position: static; color: var(--danger); font-size: 0; text-align: center; }
+#app.board.v2 > .toolbar > .tbstat .presence.off .tbsub { font-size: 9px; font-weight: 700; }
+#app.board.v2 > .toolbar > .tbstat:has(.presence.off) { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 18%, var(--panel2));
+  animation: tboffline 1.6s ease-in-out infinite; }
+@keyframes tboffline { 50% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 55%, transparent); } }
+@media (prefers-reduced-motion: reduce) { #app.board.v2 > .toolbar > .tbstat:has(.presence.off) { animation: none; } }
+#app.board.v2 > .toolbar .tbcount { position: absolute; bottom: 1px; right: 2px; font-size: 9px; color: var(--dim); }
+/* the game's chips: the draft's elements two to a row, ⚙ custom, 1× single card */
+#app.board.v2 > .toolbar > .tbgame { flex: 0 0 auto; min-height: 30px; padding: 3px 0; gap: 2px; }
+#app.board.v2 > .toolbar .tbels { display: grid; grid-template-columns: repeat(2, 16px); gap: 2px; justify-content: center; }
+#app.board.v2 > .toolbar .tbels .elicon { width: 16px; height: 16px; }
+#app.board.v2 > .toolbar .tbglyph { font-size: 13px; }
+/* the pass-through stop: the only way out of a standing pass, so it is lit */
+#app.board.v2 > .toolbar > .passallchip { border-color: var(--glow); color: var(--glow); font-size: 16px; }
+/* the clocks: theirs over yours, the running one lit */
+#app.board.v2 > .toolbar > .tbclocks { flex: none; display: flex; flex-direction: column; gap: 2px; padding: 2px 0; cursor: default; }
+#app.board.v2 > .toolbar .tbclocks .clocktime { display: block; text-align: center; font: 600 11px/1.5 ui-monospace, monospace;
+  color: var(--dim); border-radius: 4px; border: 1px solid transparent; font-variant-numeric: tabular-nums; }
+#app.board.v2 > .toolbar .tbclocks .clocktime.run { color: var(--text); background: var(--panel2); border-color: var(--accent); }
+#app.board.v2 > .toolbar .tbclocks .clocktime.warn { color: var(--danger); }
+#app.board.v2 > .toolbar .tbclocks .clocktime.exp { color: var(--danger); text-decoration: line-through; }
+#app.board.v2 > .toolbar > .fcnote { flex: none; text-align: center; font-size: 14px; }
+#app.board.v2 > .toolbar > .tbmore { display: flex; flex-direction: column; flex: 0 1 38px; min-height: 26px; }
+#app.board.v2 > .toolbar > .tbmore > .setbtn { flex: 1 1 auto; font-size: 20px; }
+/* the popovers: to the strip's left, never on it — above the board, under
+   every dialog (.overlay is z 60) */
+#app.board.v2 > .toolbar .tbpop { position: absolute; right: calc(100% + 4px); z-index: 59;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .6); }
+#app.board.v2 > .toolbar > .scnpop { z-index: 58; }   /* ⋯ opens over the scenario's panel */
+/* Learn to Play's 📘 pill (ui/lessonlayer.ts, a layer beside #app) sat at the
+   window's bottom right, which is now the toolbar's ⋯: it keeps left of it */
+body:has(> #app.board.v2) .lessonpill { right: 64px; }
+/* …and steps aside while ⋯ is open, whose foot it would cover (z 76 over 59) */
+body:has(> #app.board.v2 > .toolbar .setgroup.open) .lessonpill { visibility: hidden; }
+#app.board.v2 > .toolbar .setgroup.tbpop { display: none; bottom: 0; width: 220px; padding: 6px;
+  flex-direction: column; gap: 4px; }
+#app.board.v2 > .toolbar .setgroup.tbpop.open { display: flex; }
+#app.board.v2 > .toolbar .setgroup.tbpop button { text-align: left; font-size: 12px; padding: 6px 8px; }
+#app.board.v2 > .toolbar > .scnpop { top: 0; width: min(340px, calc(100vw - 70px)); max-height: calc(100vh - 8px);
+  max-height: calc(100dvh - 8px); display: flex; flex-direction: column; }
+#app.board.v2 > .toolbar > .scnpop > .scnpanel { margin: 0; border: 0; flex: 0 1 auto; min-height: 0; max-height: none; }
+#app.board.v2 > .toolbar .scnhead { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+#app.board.v2 > .toolbar .scnx { margin-left: auto; padding: 0 8px; line-height: 22px; font-size: 13px; }
+html.touch #app.board.v2 > .toolbar .scnx { min-height: 32px; min-width: 36px; }
+/* a short window: the buttons give up height before anything clips */
+@media (max-height: 600px) {
+  #app.board.v2 > .toolbar > button, #app.board.v2 > .toolbar > .tbmore { flex-basis: 30px; min-height: 22px; font-size: 15px; }
+}
+/* …and the reveal notice (report #224), which sat at the rail's foot, cannot
+   live in a 50px strip: it is a row of the table column, above the action
+   bar, the full width and one row of cards. (Under 900px since 2026-09-27,
+   when the rail was a drawer there; at every width since round 8.) */
+#app.board.v2:has(> .glimpsenotice) { grid-template-rows: minmax(0, 1fr) auto auto auto; }
+#app.board.v2:has(> .glimpsenotice) > .side { grid-row: 1 / -1; }
+#app.board.v2 > .glimpsenotice { grid-column: 1; grid-row: 2; }
+#app.board.v2:has(> .glimpsenotice) .actionbar { grid-row: 3; }
+#app.board.v2:has(> .glimpsenotice) .handdock { grid-row: 4; }
+#app.board.v2 > .glimpsenotice .glimpsecards { display: flex; flex-wrap: nowrap; overflow-x: auto; }
+#app.board.v2 > .glimpsenotice .glimpsecards .card { width: 52px; flex: none; }
+

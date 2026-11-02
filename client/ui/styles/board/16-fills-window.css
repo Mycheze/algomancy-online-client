@@ -1,0 +1,126 @@
+/* ── the board fills the window (playtest 2026-08-20) ────────────────
+   Two asks, one layout. The docked hand used to be a viewport-wide fixed bar,
+   so it ran on under the side rail and lined up with nothing; and the rail
+   stopped wherever its content ended, leaving dead space below the log.
+
+   Making the board a full-height grid answers both without arithmetic: the
+   hand is a grid item in the TABLE's column, so it is exactly as wide as the
+   battlefield above it, and the rail spans both rows, so it is exactly as tall
+   as the window. The table scrolls inside its own column; the rail — the
+   focus viewer, the stack and the log, i.e. everything you read WHILE acting —
+   never scrolls away.
+
+   Gated on .board so the home / lobby / connecting screens keep normal flow. */
+#app.board {
+  height: 100vh; height: 100dvh;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  overflow: hidden;
+}
+#app.board .main { grid-column: 1; grid-row: 1; overflow-y: auto; overflow-x: hidden; }
+/* 2026-09-05: the action bar is the middle row — see .actionbar */
+#app.board .actionbar { grid-column: 1; grid-row: 2; }
+#app.board .handdock { grid-column: 1; grid-row: 3; }
+#app.board .side {
+  grid-column: 2; grid-row: 1 / -1;
+  position: static; align-self: stretch;
+  max-height: none; min-height: 0; overflow: hidden;
+}
+
+/* THE SCENARIO PANEL NEEDS ITS OWN SHARE OF THE RAIL, like everything
+ * else in here. `#app.board .side` is `overflow: hidden` ON PURPOSE (the rail
+ * must not scroll away while you act), so every child has to manage its own
+ * height. `.scnpanel` was added after that rule and never got one — so it took
+ * its natural height and the bottom of it simply fell off the screen with no
+ * way to reach it.
+ *
+ * MEASURED in a real browser at 1280x800 before the fix: side scrollHeight
+ * 1162 vs clientHeight 697, panel bottom 1018 against a 713px viewport, and
+ * the ruling textarea's bottom at 970 — 257px below the fold, unreachable,
+ * with `overflow-y: hidden` on the only thing that could have scrolled.
+ *
+ * The owner hit it on his third card and had to report the verdict in chat
+ * instead. THE DETAIL BOX IS THE FEEDBACK CHANNEL: losing it costs the exact
+ * thing this instrument exists to collect (docs/14 §5).
+ *
+ * The split below is about what must never move at 90 seconds per card:
+ *   · head and the four buttons are `flex: none` — always on screen, always
+ *     hittable without aiming or scrolling;
+ *   · the `expect` prose and the detail box each scroll on their own, because
+ *     they are the parts that can be arbitrarily long. */
+#app.board .scnpanel { flex: 0 1 auto; min-height: 0; max-height: 70%; overflow: hidden; }
+#app.board .scnexpect { flex: 0 1 auto; min-height: 3.5em; overflow-y: auto; }
+#app.board .scnhead, #app.board .scnbtns, #app.board .scnstamp { flex: none; }
+#app.board .scndetail { flex: 0 1 auto; min-height: 0; overflow-y: auto; }
+#app.board .scndetail[open] { min-height: 6em; }
+/* CT-124/#131 — WHO ABSORBS THE RAIL'S SLACK NOW.
+   The log panel used to be the column's only `flex: 1 1 0`, and `.side` is
+   `overflow: hidden` on purpose, so removing it would have left the bottom of
+   the rail as dead space — the exact regression the note above records
+   as already fixed once. The focus viewer inherits the job: it was the other
+   thing sized against the log (`max-height: 62%` existed only to leave the log
+   room), and it is the panel that most wants the height anyway — a card scan
+   plus its printed text is the one thing in here that can always use more. */
+
+/* The art is how you recognise the card; the text box is how you play it
+   correctly. The first attempt at that balance (2026-08-21) capped the scan at
+   30vh, which on an ordinary window binds LONG before the 260px width cap and
+   left the card ~59% of its old linear size — small enough that the printed
+   text on the scan stopped being readable, which is the whole point of a
+   preview. The ceiling is a SHORT-WINDOW guard, not the normal case: `min()`
+   lets width govern on any window tall enough for the card at full width
+   (260px wide is ~360px tall), and only bites when the rail genuinely cannot
+   afford it. The panel scrolls either way, so the text box is never lost. */
+
+/* CT-124: the log lives in `.logbox` now, not in the rail — see §log modal. */
+/* nothing is yours to do — the opponent owes an answer (playtest 2026-08-20:
+   this used to render as a priority bar with a Pass button the server refused) */
+.promptbar.waiting { background: #1b2028; border-color: #384352; }
+.promptbar.waiting .who { color: var(--dim); }
+/* #116: "lightly flashing … show me that Rashi is choosing that." A pause the
+   client cannot explain still has to look ALIVE — a dead grey bar over a
+   frozen board reads as a hang, and the report is written by someone who could
+   not tell the two apart. One breathing dot, slow enough to be peripheral, and
+   stopped entirely for anyone who asked not to be animated at. */
+.promptbar.waiting .livedot { color: var(--accent); animation: waitpulse 1.8s ease-in-out infinite; }
+@keyframes waitpulse { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .promptbar.waiting .livedot { animation: none; opacity: .7; }
+}
+/* spent cache entries: present, viewable, out of the way (playtest 2026-08-20) */
+.spentcache { margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 6px; }
+.spentcache > button { background: none; border: none; color: var(--dim); padding: 2px 0; font-size: 12px; }
+.spentcache > button:hover { color: var(--text); }
+.cachezone.dim { opacity: .6; }
+/* the tokens a card creates, shown in its inspector (playtest 2026-08-20) */
+.tokenrow { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0;
+  border-bottom: 1px dotted var(--line); }
+.tokenrow .card { width: 68px; }
+.tokenbody { min-width: 0; }
+.tokenname { font-weight: 700; color: var(--accent); }
+
+/* ── watching the opponent build a formation (playtest 2026-08-20) ────
+   The digital stand-in for seeing someone slide units into columns across the
+   table. Nothing here is committed, so nothing here looks committed: dashed,
+   dimmed, and inert. */
+/* a refused join (unknown room code) — the message is the point of the screen */
+.joinerr { color: var(--danger); font-size: 15px; max-width: 42ch; line-height: 1.5; }
+
+.battle.watching { border-color: #3b4a5e; }
+.battle.watching h3 { color: #8fb4dd; }
+.livedot { color: var(--glow); font-size: 10px; letter-spacing: .1em;
+  animation: livepulse 1.6s ease-in-out infinite; }
+@keyframes livepulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+.pendingcol { display: flex; flex-direction: column; gap: 4px; align-items: center;
+  border: 1px dashed #4a5f7a; border-radius: 6px; padding: 4px; background: rgba(60,90,130,.08); }
+/* CR D6.13/#137 — a half of the battle table holding an UNCOMMITTED build. The
+   pending cards are direct children of the .bhalf now (main.ts pendingColHtml
+   says why: a wrapper broke .bhalf.top's column-reverse and flipped the
+   column's front and back the moment it committed), so the dashed
+   not-yet-real treatment has to dress the half instead of a box inside it.
+   OUTLINE, not border: an outline takes no room, and .bhalf's min-height is a
+   raw calc() over the row count — a border would push a pending column's
+   front 2px off the shared line that whole layout exists to hold. */
+.bhalf.pending { outline: 1px dashed #4a5f7a; outline-offset: 2px; border-radius: 6px;
+  background: rgba(60,90,130,.08); }
+.pendingcol .card, .bhalf.pending .card { opacity: .85; }
+

@@ -1,0 +1,85 @@
+/* ── TABLETOP: DECK STRIP (ui/deckstrip.ts, a weekly challenge's deck) ──
+   Under the scratch table: the deck in deal order, left to right = top to
+   bottom, one card per copy. Card k sits at left = k·Sx and paints over card
+   k−1 by z-index (the piles' rule, turned sideways); the gap preview slides
+   the cards along. The bracket over the first cards is the Turn-1 hand as
+   the engine deals it. The strip's height never changes during a drop. */
+/* the tabletop is a fixed page: the footer's floor under every off-board page
+   (legal.ts, min-height 100dvh − 128px, injected after this sheet and two
+   ids strong) must not stretch it past its own bottom — under 900px that
+   bottom is the binder sheet's top, and the floor pushed the strip (and the
+   table's foot) under the sheet */
+#app > .ttpage { min-height: 0 !important; }
+.ttsummary .ttchnote { margin: 3px 0 0; font-size: 12px; }
+.ttdeck { flex: none; padding: 6px 12px 4px; background: #141f1b; border-top: 1px solid var(--line); }
+.ttdeckhead { display: flex; align-items: center; gap: 4px 10px; flex-wrap: wrap; min-height: 32px; font-size: 13px; }
+.ttdeckhead .chproblem { margin: 0; }
+.ttdeckhead .ttplay { margin-left: auto; padding: 6px 22px; font-weight: 700; }
+.ttdeckhead .ttplay.primary { border-color: var(--accent); color: var(--accent); }
+.ttstripbox { overflow-x: auto; overflow-y: hidden; overscroll-behavior: contain; touch-action: pan-x;
+  scrollbar-color: #3a4553 transparent; scrollbar-width: thin; }
+.ttstripzone { position: relative; box-sizing: border-box; min-width: 100%; width: max-content;
+  padding: 10px var(--cw) 2px 4px; border-radius: 10px; transition: background .12s; }
+.ttpage .ttstripzone.dropover { background: rgba(255, 255, 255, .06); }
+.ttbracket { box-sizing: border-box; height: 14px; margin-bottom: 3px; border: 2px solid var(--accent);
+  border-bottom: 0; border-radius: 7px 7px 0 0; }
+.ttbracket > span { display: inline-block; transform: translateY(-9px); margin-left: 8px; padding: 0 5px;
+  background: #141f1b; color: var(--accent); font-size: 11px; line-height: 14px; white-space: nowrap; }
+.ttbracket.ttnohand { border-color: transparent; }
+.ttstripzone .ttfan { transition: none; }
+.ttstripzone .ttcard { touch-action: pan-x; }
+.ttstripnums { position: relative; height: 15px; margin-top: 2px; }
+.ttstripnums > span { position: absolute; top: 0; padding-left: 4px; color: var(--dim); font-size: 11px;
+  font-variant-numeric: tabular-nums; pointer-events: none; }
+.ttstripempty { position: absolute; left: 18px; top: 45%; pointer-events: none; }
+/* the Report button and the bell sit above the strip, never over its cards
+   (the strip is a card's height and ~90px of head, bracket and numbers) */
+html.binderup:has(.ttdeck) .reportfab, html.binderup:has(.ttdeck) .inboxbell { bottom: 285px; }
+html.touch.binderup:has(.ttdeck) .reportfab, html.touch.binderup:has(.ttdeck) .inboxbell { bottom: 252px; }
+@media (max-width: 1366px) {
+  html.binderup:has(.ttdeck) .reportfab, html.binderup:has(.ttdeck) .inboxbell { bottom: 252px; }
+}
+@media (max-width: 900px) {
+  .ttdeck { padding: 4px 8px 2px; }
+  .ttsummary .ttchnote { display: none; }
+  html.binderup:has(.ttdeck) .reportfab, html.binderup:has(.ttdeck) .inboxbell,
+  html.touch.binderup:has(.ttdeck) .reportfab, html.touch.binderup:has(.ttdeck) .inboxbell { bottom: calc(var(--ddh) + 252px); }
+}
+
+/* ── the curve ── */
+.dkcurve { display: flex; flex-direction: column; gap: 3px; }
+.dkcurverow { display: grid; grid-template-columns: 22px minmax(0, 1fr) 28px; gap: 8px; align-items: center; }
+.dkcurverow.empty { opacity: .55; }
+.dkcurvem { text-align: right; color: var(--dim); font-variant-numeric: tabular-nums; }
+.dkcurven { color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; }
+.dkcurvebar { display: flex; height: 16px; border-radius: 3px; overflow: hidden; background: var(--panel2); }
+.dkcurvebar .seg { display: block; }
+.dkcurvebar .pad { background: transparent; }
+.seg.units { background: #4e7fa8; }
+.seg.spells { background: #9a6fb8; }
+.seg.spellunits { background: #6f9ab8; }
+.dkcurvekey { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; color: var(--dim); font-size: 11px; }
+.dkcurvekey i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; }
+
+/* ── the affinity table ── */
+.dkaff { border-collapse: collapse; width: 100%; margin-bottom: 6px; font-variant-numeric: tabular-nums; }
+.dkaff th, .dkaff td { padding: 3px 8px; text-align: center; border-bottom: 1px solid var(--line); }
+.dkaff th:first-child, .dkaff td:first-child { text-align: right; }
+.dkaff thead th { color: var(--dim); font-weight: 400; font-size: 11px; text-transform: uppercase;
+  letter-spacing: .05em; }
+.dkaff thead th img { width: 13px; height: 13px; vertical-align: -2px; margin-right: 3px; }
+.dkaff .dkmana { color: var(--dim); }
+.dkaff .dknone { color: #3a434f; }
+/* where a requirement first appears — the turn it starts mattering */
+.dkaff .dknew { color: var(--accent); font-weight: 700; }
+.dkaff .dkmaxrow td { border-bottom: none; border-top: 2px solid var(--line); padding-top: 6px; }
+.dkdemand { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.dkdemandrow { display: inline-flex; align-items: center; gap: 5px; }
+.dkdemandrow .costbox { display: inline-flex; gap: 1px; }
+.dkdemandrow img { width: 14px; height: 14px; }
+.dkmodalbox .dkexport { margin-top: 10px; border: 0; padding: 0; }
+.dkexport { margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 8px;
+  background: var(--panel2); }
+.dkexporttext { width: 100%; font: 12px/1.45 ui-monospace, monospace; background: var(--bg);
+  color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; }
+

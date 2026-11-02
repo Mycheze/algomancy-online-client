@@ -11,28 +11,24 @@
  *
  * So the stylesheet's LAYOUT ON DISK is known here and nowhere else.
  *
- *   TODAY      it is one file, `client/ui/style.css` (STYLE_CSS in
- *              engine/scripts/paths.mjs), and readStyles() returns its bytes
- *              exactly as readFileSync would.
- *   THE SPLIT  when style.css becomes several files under `client/ui/styles/`
- *              that esbuild bundles into a gitignored `bundle.css`, change the
- *              BODY OF readStyles() ONLY — return the concatenation of the
- *              styles/ files in the bundle's import order (read the order off
- *              the entry file, never a hand-kept list), name the directory in
- *              paths.mjs beside STYLE_CSS, and every reader follows. Read the
- *              SOURCES, not bundle.css: the bundle is gitignored and absent
- *              in a fresh clone, and a test must not need a build to run.
- *              The callers' regexes assume one text in source order with the
- *              comments still in — keep both true.
+ * SINCE THE SPLIT (design-system Phase 1a, 2026-11-02) the stylesheet is the
+ * pieces under `client/ui/styles/` (STYLES_DIR in engine/scripts/paths.mjs),
+ * and readStyles() returns them concatenated in `styles/index.css` order —
+ * through ui/scripts/styles.mjs, the same code the build writes bundle.css
+ * with, so the text a test sees is byte for byte the file the browser is
+ * served. It reads the SOURCES, not bundle.css: the bundle is gitignored and
+ * absent in a fresh clone, and a test must not need a build to run. The
+ * callers' regexes assume one text in source order with the comments still
+ * in — both stay true.
  *
  * ui/test/910-styles-read-through-helper.test.ts fails on any test that reads
- * the stylesheet without coming through here.
+ * the stylesheet without coming through here; ui/test/920 holds the order
+ * file, the pieces on disk and this function to one another.
  */
-import { readFileSync } from 'node:fs';
-
-import { STYLE_CSS } from '../../engine/scripts/paths.mjs';
+import { STYLES_DIR } from '../../engine/scripts/paths.mjs';
+import { concatStyles } from '../scripts/styles.mjs';
 
 /** the client's whole stylesheet, as text, exactly as the browser is served it */
 export function readStyles(): string {
-  return readFileSync(STYLE_CSS, 'utf8');
+  return concatStyles(STYLES_DIR);
 }

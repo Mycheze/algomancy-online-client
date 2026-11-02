@@ -1,0 +1,152 @@
+/* ── playtest UX fixes (2026-08-18) ─────────────────────────────────── */
+/* dormant resources are clearly face-down: dimmed + desaturated (the .noart
+   plate stands in for a missing scan, so it takes the same treatment) */
+.rescard.dormant img,
+.rescard.dormant .resplate { filter: grayscale(.7) brightness(.55); }
+.rescard.dormant { outline: 1px dashed #444; border-radius: 4px; }
+
+/* +1/+1 (and −1/−1) counter badge on units */
+.card .badge.ctr { border-color: var(--glow); color: var(--glow); font-weight: 700; }
+
+/* DWYV: "×N" on a decision scan that stands for N indistinguishable copies
+   (a bin pick). Deliberately NOT .ctr's glow — this is a count of cards in a
+   zone, not counters on a body, and the two must not read as the same thing. */
+.card .badge.count { border-color: #9aa7b8; color: #cdd6e2; font-weight: 700; }
+
+/* opponent's hidden hand: compact overlapping mini-backs */
+.minihand { display: flex; align-items: center; }
+.miniback { width: 30px; height: 42px; border-radius: 3px; margin-right: -18px;
+  background: var(--cardback, none) center / cover no-repeat, linear-gradient(135deg, #2a3140, #1a1f29);
+  border: 1px solid #3a4356; }
+/* the last back overlaps nothing: the fan ends where the card does, and the
+   count after it is clear of it (the crest used to sit under "hand 3") */
+.minihand .miniback:last-child { margin-right: 0; }
+
+/* bins as real (small) card scans */
+.binzone .card { width: 58px; }
+
+/* context menus never run off screen (clamped in JS too) */
+.menu { max-height: min(70vh, 480px); overflow-y: auto; }
+/* Playtest 2026-08-20: a context menu opened from INSIDE the bin/cache dialog
+   (z 60) rendered behind it at z 50, so clicking a cached card with more than
+   one play mode looked like nothing happened at all — the choices were there,
+   underneath the dialog. The menu is always the most recent thing the player
+   asked for, so it outranks the dialog it was opened from. */
+.menu { z-index: 70; }
+/* …and the card zoom's layer (z 90): round 4 holds the zoomed card while its
+   menu is open, and the menu is what the player is about to click */
+#app.board.v2 .menu { z-index: 95; }
+
+/* the side panel (preview + stack + log) stays on screen while the board scrolls */
+.side { position: sticky; top: 8px; align-self: flex-start; max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); overflow-y: auto; }
+
+/* net mode: your hand docks to the bottom of the TABLE column (see the board
+   layout below — it is a grid item, not a viewport-wide bar) */
+.handdock { background: var(--panel); border-top: 2px solid var(--accent);
+  border-radius: 6px 6px 0 0; padding: 4px 10px 8px; }
+.handdock .zone { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+.handdock .card { width: 92px; }
+/* BL-32 — while you are drafting, or choosing which two to bottom, your hand
+   is already on screen in the draft panel and the dock is a second copy of it
+   sitting on top of the battlefield. Clip it to a strip; the space goes to the
+   table, which is the whole point of the ask.
+
+   ⚠ CLIPPED, NOT HIDDEN. `display:none` (or a zero height) makes
+   getBoundingClientRect measure zero, and ui/anim.ts drops any flight whose
+   endpoint is not `real()` — so every card flying into or out of your hand
+   would silently stop animating. 18px is a real box in a real place. */
+.handdock.tucked .zone { height: 18px; overflow: hidden; padding-bottom: 0; }
+.handdock.tucked .zonelabel { color: var(--dim); }
+/* still reachable, with no state to lose across a repaint */
+.handdock.tucked:hover .zone { height: auto; overflow-x: auto; padding-bottom: 2px; }
+
+/* smaller screens: shrink cards instead of forcing horizontal scrolling */
+@media (max-width: 1100px) {
+  :root { --cw: 62px; }
+  #app { grid-template-columns: 1fr 220px; }
+
+  .handdock .card { width: 74px; }
+}
+.reschip.shard { background: linear-gradient(135deg, #b39ddb, #5e35b1); }
+
+/* base vs effective P/T: live number colored, printed base shown small */
+.card .stats .statup { color: #7fdc7f; }
+.card .stats .statdown { color: #ff8a8a; }
+.card .stats .basestat { display: block; font-size: 9px; font-weight: 400; color: var(--dim); text-align: right; }
+
+/* Composed modded card in the focus viewer: each mod slides under the base,
+   showing the bottom of its scan (the physical table look). Under CR D6.12a these are drawn
+   for a modded STACK ITEM too (#141) — same builder, same picture.
+
+   #146, the owner: "the mods are shown attached to the unit with a TON of
+   extra space in order to fit the badge. That extra space/badge isn't needed.
+   Just have the bottom of the card peek through according to where the
+   augment/graft symbol is."
+
+   So the badge is gone (the card name is the strip's `title` now) and the peek
+   is ONE number, --modpeek: how much of the mod's bottom edge shows, as a
+   fraction of the scan's own height. It was 26% — a quarter of the card,
+   chosen so a 10px badge with a border would fit inside an `overflow:hidden`
+   band. 16% is where the augment/graft symbol sits: measured on the scans, the
+   symbol that opens the ability line lands at 85% down a two-line text box
+   (Pernicious Photosynthesis) and 90% down a one-line one (A Pile of Rubbish),
+   and the frame is bottom-anchored, so a slice starting at 84% catches the
+   symbol and its clause on both and nothing above them.
+
+   The two numbers are one number: the band's height is --modpeek of the scan's
+   height, and the scan is pushed up by exactly the same fraction, or the strip
+   would show the wrong slice. Card scans are 720x1000.
+
+   .16 is now only the FALLBACK. Where the symbol sits is not one place: a
+   card whose [Augment] heads its type line carries it on the type bar, and
+   that bar rides on top of the rules box — anywhere from 21% to 10% up the
+   card — so a fixed 16% cut the type bar off Resonant Form and a dozen more.
+   Each strip sets its own --modpeek inline from the catalogue's `modPeek`
+   (the icon build_anchors.py found on that scan); a card with no anchor
+   falls back to this. */
+.modstrip { --modpeek: .16;
+  position: relative; width: 100%; max-width: 260px; margin: -6px auto 0;
+  aspect-ratio: calc(.72 / var(--modpeek));   /* .72 = 720/1000, the scan's own */
+  overflow: hidden; border-radius: 0 0 10px 10px;
+  box-shadow: 0 -2px 6px rgba(0,0,0,.5); }
+.modstrip img { width: 100%; display: block;
+  transform: translateY(calc(-100% * (1 - var(--modpeek)))); }
+/* the nine art-less cards: the band would be a blank sliver, so name it */
+.modstrip.noart { aspect-ratio: auto; padding: 2px 6px; font-size: 10px; color: var(--dim); }
+.modstrip.noart img { display: none; }
+.modstrip.noart::after { content: attr(title); }
+
+/* THE MODS ON THE TABLE (owner, 2026-10-18 — main.ts fieldMods): the same
+   strips hang under the small table card, so a modded unit stands taller,
+   like the cards on a real table, with no limit ("it's funny when really
+   modded units just get suuuper long"). Strips are cut off the width, so they
+   scale with whatever --cw the fit pass gave the zone (ui/layout.ts reserves
+   the height off `data-modh`).
+
+   ⚠ The card's overlays — the chip strip, the stat plate, the damage marker,
+   the X die, a pick verb — are placed against the CARD, and the card is now
+   taller than its face. A grid puts them all in row 1 with the scan and the
+   strips in row 2: an absolutely placed grid child's containing block is its
+   grid area, so `bottom: 2px` is still the foot of the face and `top: 50%` its
+   middle. Only a modded card is a grid; every other card is drawn as it was. */
+.card.modded { display: grid; grid-template-columns: minmax(0, 1fr); }
+.card.modded > * { grid-area: 1 / 1; }
+.card.modded > .fieldmods { grid-area: 2 / 1; }
+/* tucked UNDER the card: no overlap, a shadow cast down onto the strip */
+.fieldmods .modstrip { max-width: none; margin: 0; border-radius: 0 0 5px 5px; box-shadow: none; }
+/* (::before, because a no-art strip's ::after is its name) */
+.fieldmods .modstrip::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  box-shadow: inset 0 4px 4px -3px rgba(0,0,0,.75); }
+.fieldmods .modstrip.noart { font-size: 8px; padding: 1px 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* a mod that answers the open question ("erase one of my mods") glows and
+   takes the click, as the chip it replaced did */
+.fieldmods .modstrip.modpick { outline: 2px solid var(--target); outline-offset: -2px; cursor: pointer; }
+
+/* the rail: what the card is modded with, by name (the strips show each
+   card's foot, and its name is at its head) */
+.modnames { display: flex; flex-direction: column; gap: 2px; margin: 6px auto 0; max-width: 260px;
+  text-align: left; font-size: 11px; }
+.modname { color: var(--accent); cursor: default; overflow-wrap: anywhere; }
+.modname .txticon { width: 11px; height: 11px; vertical-align: -2px; margin-right: 3px; }
+.modname .modhow { color: var(--dim); font-size: 9px; letter-spacing: .04em; text-transform: uppercase; }
+

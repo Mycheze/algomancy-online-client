@@ -1,0 +1,60 @@
+/* ── resource cards (docs/07 §9.2: literal scans, not dots) ─────────── */
+.rescard { position: relative; width: 34px; border-radius: 3px; flex-shrink: 0; display: inline-block; line-height: 0; }
+/* Report [142]: the same reserved box as `.card img`, and for the same reason — see
+   the long note there. Measured after fixing `.card img` alone: 10 resource
+   cards still collapsed to 0px at paint time and the board was still 46px
+   short, which is 46px of the player's scroll. Same scans, same 720x1000. */
+.rescard img { width: 100%; border-radius: 3px; display: block; aspect-ratio: auto 18 / 25; }
+.rescard.expended { opacity: .45; }
+/* "expended" reads as the physical tap: the card is turned sideways. Light and
+   Dark have no resource SCAN yet, so they render as .noart colour plates with
+   the <img> hidden — the plate has to turn too, or those two elements are the
+   only ones that stay upright when spent (playtest 2026-08-20). */
+.rescard.expended img,
+.rescard.expended .resplate { transform: rotate(90deg) scale(.82); }
+.rescard.dormant { cursor: pointer; }
+.rescard.canact { outline: 2px solid var(--glow); border-radius: 3px; }
+/* CR 106.3b (report #97): a dormant resource cannot be spent, and outside planning
+   it cannot be woken either — but it sits in the same row as the ones that can
+   and gets counted as mana under battle-clock pressure. ui/resources.ts decides
+   WHEN (battle and deployment; planning shows the row normally, because
+   planning is where you click these); this only says what "muted" looks like.
+   Shrunk and half-faded rather than hidden: they are still yours, and a row
+   that changes length between phases is its own miscount. */
+.rescard.muted { opacity: .38; transform: scale(.8); filter: grayscale(.6); }
+.rescard.muted .reschip { opacity: .7; }
+.reschip { position: absolute; right: -3px; bottom: -3px; width: 14px; height: 14px; border-radius: 50%;
+  font: 700 9px/14px system-ui; text-align: center; color: #fff; border: 1px solid #0008; }
+.reschip.fire { background: var(--fire); } .reschip.water { background: var(--water); }
+.reschip.earth { background: var(--earth); } .reschip.wood { background: var(--wood); }
+.reschip.metal { background: var(--metal); color: var(--metal-ink); }
+/* cream needs dark ink for the same reason metal does */
+.reschip.light { background: radial-gradient(circle at 32% 30%, #fffdf3, var(--light)); color: var(--light-ink); border-color: #0009; }
+.reschip.dark { background: radial-gradient(circle at 32% 30%, #8b95a5, #3a4049); color: var(--dark-ink); border-color: #ccd3dc; }
+.reschip.prismite { background: linear-gradient(135deg, #eee, #b8c6ff); color: #223; }
+
+/* Light and Dark have no resource-card SCAN in data/cards/ yet: the <img>
+   404s, main.ts tags the wrapper .noart, and this coloured plate stands in. */
+.rescard .resplate { display: none; }
+.rescard.noart img { display: none; }
+.rescard.noart .resplate { display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 48px; border-radius: 3px; border: 1px solid #0007;
+  font: 700 8px/1 system-ui; text-transform: capitalize; letter-spacing: .02em;
+  background: var(--panel2); color: var(--text); }
+.rescard.noart.fire .resplate { background: var(--fire); color: #fff; }
+.rescard.noart.water .resplate { background: var(--water); color: #fff; }
+.rescard.noart.earth .resplate { background: var(--earth); color: #fff; }
+.rescard.noart.wood .resplate { background: var(--wood); color: #fff; }
+.rescard.noart.metal .resplate { background: var(--metal); color: var(--metal-ink); }
+.rescard.noart.light .resplate { background: linear-gradient(160deg, #fffdf3, var(--light)); color: var(--light-ink); }
+.rescard.noart.dark .resplate { background: linear-gradient(160deg, #7d8797, #3a4049); color: var(--dark-ink); border-color: #99a3b2; }
+
+/* ── presence + share ───────────────────────────────────────────────── */
+.presence.on { color: var(--glow); }
+.presence.off { color: var(--danger); }
+.sharebar { display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--accent);
+  border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; }
+.sharebar b { color: var(--accent); letter-spacing: .1em; }
+.sharelink { flex: 1; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 5px; padding: 4px 8px; font: 12px monospace; min-width: 120px; }
+

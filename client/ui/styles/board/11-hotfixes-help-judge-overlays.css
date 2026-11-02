@@ -1,0 +1,154 @@
+/* ── hotfixes: bins-in-region, help/judge, main-only overlays ───────── */
+/* overlays that leave the side column (focus viewer) usable. The scrim stops
+   at the rail's LEFT edge, worked out from what places the rail: #app is at
+   most 1500px wide and centred (the margin), 8px of padding, then the rail's
+   own column — 290px classic, 250px / 210px on the regions board. A fixed
+   guess (it was clamp(250px, 24vw, 320px)) left an undimmed strip of table
+   beside the rail once the rail was narrowed (owner report, 2026-10-01). */
+.overlay.mainonly { right: calc(max(0px, (100vw - 1500px) / 2) + 298px); }
+#app.board.v2 .overlay.mainonly { right: 52px; }   /* 2px of padding (--gap, board round 8) + the 50px toolbar, at every width — the table has no 1500px cap any more, so no centring margin */
+/* under 1100px the classic rail is a 220px column (#app's 1fr 220px) */
+@media (max-width: 1100px) { .overlay.mainonly { right: 228px; } }
+
+/* the bin lives in its player's region, right side, mini until opened */
+
+.regionmain { flex: 1; min-width: 0; }
+.regionbin { width: 96px; flex-shrink: 0; border-left: 1px dashed var(--line); padding-left: 8px;
+  cursor: pointer; border-radius: 4px; }
+.regionbin:hover { background: var(--panel2); }
+.regionbinthumbs { position: relative; height: 72px; }
+.regionbinthumbs .card { width: 46px; position: absolute; top: 0; }
+.regionbinthumbs .card:nth-child(1) { left: 0; }
+.regionbinthumbs .card:nth-child(2) { left: 14px; top: 4px; }
+.regionbinthumbs .card:nth-child(3) { left: 28px; top: 8px; }
+.binempty { color: var(--dim); font-size: 11px; }
+.binbox .bindialog { max-height: 60vh; overflow-y: auto; }
+.bindialog .card { width: 92px; }
+/* CT-381: a usable bin card and, on touch only, the button that uses it (a
+   finger's tap on the card itself only reads it — report #201) */
+.binentry { display: flex; flex-direction: column; gap: 4px; width: 92px; }
+.binuse { display: none; }
+html.touch .binuse { display: block; width: 100%; padding: 4px 2px; font-size: 12px; }
+/* CT-408: the button a finger's tap leaves on its own spell token (Cast) or a
+   resource (Activate): the tap read the card, the button does it. Only a tap
+   ever draws one (ui/tapgo.ts), so it needs no html.touch gate. Hung over the
+   token's lower art, and under the resource tile, which is too small to hold it. */
+.tapgo { position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%); z-index: 6;
+  background: #3c5a2f; border: 1px solid #5b8747; color: var(--text); font-weight: 700;
+  font-size: 13px; line-height: 1.2; padding: 7px 12px; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,.6); }
+/* under the tile, growing LEFT from its right edge: on the regions board your
+   resources end at the region's right edge, which clips anything past it */
+.rescard .tapgo { bottom: auto; top: calc(100% + 4px); left: auto; right: 0; transform: none; }
+/* the zoom's copy of the token is a picture: its button is not drawn there.
+   The read carries its own, hung under the copy (ui/tapgo.ts zoomGoHtml) and
+   pressed through ui/touch.ts (the zoom layer takes no pointer events) */
+#cardzoom button.tapgo { display: none; }
+#cardzoom .zoomhang.zoomgo { background: none; border: 0; box-shadow: none; padding: 0; min-width: 0; }
+#cardzoom .zoomgo .tapgo { position: static; transform: none; display: inline-block;
+  font-size: 16px; padding: 10px 26px; border-radius: 8px; }
+/* board round 8: a finger's card menu, hung under a tap's read (main.ts
+   readMenuHtml) — the rail drew it under the clicked card until the rail went.
+   Pressed through ui/touch.ts like the button above. */
+#cardzoom .zoommenu { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; text-align: left; }
+#cardzoom .zoomhang > .zoommenu:first-child { margin-top: 0; }
+#cardzoom .zoommenu .zmi { display: block; padding: 8px 10px; min-height: 36px; border-radius: 6px;
+  background: var(--panel2); border: 1px solid var(--line); font-size: 13px; line-height: 1.3; }
+#cardzoom .zoomhang.zoomgo > .zoommenu { padding: 6px; background: rgba(20, 24, 30, .96);
+  border: 1px solid var(--line); border-radius: 8px; margin-top: 6px; }
+
+/* help + judge */
+.helpbox, .judgebox { width: min(92vw, 640px); }
+.helpbox { width: min(94vw, 800px); max-height: 88vh; }
+.helpscroll { overflow-y: auto; min-height: 0; }
+.helpscroll h4 { margin: 10px 0 4px; color: var(--accent); text-transform: uppercase; font-size: 12px; letter-spacing: .08em; }
+.helprow { display: flex; gap: 8px; padding: 3px 0; border-bottom: 1px dotted #232a33; }
+.helprow b { width: 110px; flex-shrink: 0; color: var(--text); }
+.helprow span { color: var(--dim); }
+/* the rules reference (ui/rules.ts): two tabs, a search box, a jump bar, and
+   rows whose heading column is wide enough for "Battle phase — part 1" */
+.helphead { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.helptabs { display: flex; gap: 4px; }
+.helptab { font-size: 12px; padding: 4px 10px; opacity: .75; }
+.helptab.on { opacity: 1; border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.rulesq { width: 100%; box-sizing: border-box; font-family: inherit; font-size: 14px; line-height: 1.4; background: var(--bg); color: var(--text);
+  border: 1px solid var(--line); border-radius: 7px; padding: 8px 11px; }
+.rulesq:focus { outline: none; border-color: var(--accent); }
+.rulesjump { display: flex; flex-wrap: wrap; gap: 4px; }
+.rulesjump button { font-size: 11px; padding: 2px 8px; }
+.helpbox .helpscroll h4 { margin-top: 14px; }
+.helpbox .rulesec:first-child h4 { margin-top: 2px; }
+.rulesblurb { margin: 0 0 6px; color: var(--dim); font-size: 12px; line-height: 1.45; }
+.helpbox .helprow { gap: 12px; padding: 5px 0; line-height: 1.45; }
+.helpbox .helprow b { width: 170px; }
+.helpbox .helprow > span { flex: 1; min-width: 0; }
+.helprow .helpdetail { margin-top: 3px; font-size: 0.92em; opacity: 0.8; }
+.helprow ol { margin: 0; padding-left: 18px; }
+.helprow ol li { margin: 1px 0; }
+.helprow .txticon { vertical-align: -3px; }
+.rulesrc { display: block; margin-top: 2px; font-size: 11px; opacity: .65; }
+.helpempty { color: var(--dim); padding: 14px 0; }
+.ttsteps { margin: 0; padding-left: 20px; color: var(--dim); line-height: 1.5; }
+.ttsteps li { margin: 4px 0; }
+.ttsteps b { color: var(--text); }
+/* the same box OFF the board (ui/helplayer.ts): its own scrim, never .overlay —
+   above the footer and the report pill, below the legal pages (#legalover, 90) */
+.helpscrim { position: fixed; inset: 0; z-index: 80; background: rgba(6,8,11,.72);
+  display: flex; align-items: center; justify-content: center; }
+/* the Rulebook tab: the Manual framed, with a way out to a tab of its own */
+.bookscroll { display: flex; flex-direction: column; gap: 8px; }
+.bookbar { display: flex; gap: 8px; flex-wrap: wrap; }
+.bookbar a { padding: 5px 12px; border: 1px solid var(--line); border-radius: 5px; background: var(--panel2);
+  color: var(--text); text-decoration: none; font-size: 12px; }
+.bookbar a:hover { border-color: var(--accent); }
+.bookbar .bookopen { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.bookframe { width: 100%; height: 62vh; flex-shrink: 0; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+@media (max-width: 700px) {
+  .helpbox .helprow { flex-direction: column; gap: 2px; }
+  .helpbox .helprow b { width: auto; }
+}
+.judgescroll { overflow-y: auto; max-height: 50vh; display: flex; flex-direction: column; gap: 6px; }
+.judgeq { color: var(--accent); font-weight: 700; }
+.judgea { background: var(--panel2); border-radius: 6px; padding: 6px 10px; white-space: normal; }
+.judgea .hint span { text-decoration: underline dotted; cursor: help; }
+/* #82: the judge answers in markdown (ui/markdown.ts renders it). The overlay
+ * is a flat gap-6 column, so the answer's own blocks have to carry their own
+ * rhythm — otherwise a heading reads at body weight and a list loses its dots. */
+.judgea p { margin: 0 0 6px; }
+.judgea > :last-child { margin-bottom: 0; }
+.judgea h3, .judgea h4 { margin: 10px 0 4px; color: var(--accent); }
+.judgea h3 { font-size: 14px; }
+.judgea h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.judgea > h3:first-child, .judgea > h4:first-child { margin-top: 0; }
+.judgea ul, .judgea ol { margin: 0 0 6px; padding-left: 20px; }
+.judgea li { margin: 2px 0; }
+.judgea blockquote { margin: 0 0 6px; padding: 2px 0 2px 10px;
+  border-left: 3px solid var(--accent); color: var(--dim); }
+.judgea blockquote p:last-child { margin-bottom: 0; }
+.judgea code { background: var(--bg); border: 1px solid var(--line); border-radius: 3px;
+  padding: 0 4px; font-size: 12px; }
+.judgerow { display: flex; gap: 8px; flex-wrap: wrap; }
+.judgerow input { flex: 1; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 5px; padding: 6px 10px; }
+
+/* right-click card inspector */
+.inspectbox { width: min(92vw, 620px); }
+.inspectscroll { overflow-y: auto; }
+.inspectscroll h4 { margin: 10px 0 4px; color: var(--accent); text-transform: uppercase; font-size: 12px; letter-spacing: .08em; }
+/* the qualifier after a section heading ("— named in the text") is an aside,
+   not part of the heading — drop it out of the uppercase gold */
+.inspectscroll h4 .hint { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--dim); }
+.inspecttop { display: flex; gap: 12px; align-items: flex-start; }
+.inspecttop img { width: 150px; border-radius: 8px; flex-shrink: 0; }
+/* the inspector's right-hand column is the current text box now, not a
+   paragraph — `pre-wrap` here turned the renderer's own source indentation
+   into real gaps down the middle of the panel */
+.inspecttext { color: var(--text); flex: 1; min-width: 0; }
+.rulingrow { background: var(--panel2); border-left: 3px solid var(--accent); border-radius: 4px;
+  padding: 6px 10px; margin-bottom: 6px; color: var(--text); }
+
+/* real game icons inline (menus, chips, topbar trio) */
+.elicon { width: 16px; height: 16px; vertical-align: -3px; margin-right: 5px; }
+
+.elchip .elicon { margin-right: 6px; }
+

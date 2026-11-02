@@ -1,0 +1,22 @@
+/* ── network mode ─────────────────────────────────────────────────── */
+/* opponent's hidden hand card (a face-down back) */
+/* Every face-down card wears the game's own back, data/cards/Cardback.jpg
+   (owner, 2026-09-27: "Use the official card back image for cards in hand and
+   any face down card scenarios"). main.ts sets --cardback at boot, as an
+   absolute URL; the old weave is what shows if the image is missing. */
+.card.back { aspect-ratio: 63 / 88; background:
+  var(--cardback, none) center / cover no-repeat,
+  repeating-linear-gradient(45deg, #263042 0 8px, #2e3a4e 8px 16px);
+  border: 1px solid var(--line); border-radius: 5px; }
+/* opponent's face-down (dormant) resource of unknown element */
+.res.hidden { background: #333b47; border-style: dashed; }
+/* tiny join screen */
+.joinscreen { max-width: 420px; margin: 60px auto; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+.joinscreen h2 { margin: 0; color: var(--accent); }
+.joinscreen label { display: block; }
+.joinscreen input[type="text"] { font-size: 16px; padding: 6px; margin-left: 6px;
+  background: var(--panel2); border: 1px solid var(--line); border-radius: 5px; color: var(--text); }
+.joinscreen button { font-size: 16px; padding: 8px; }
+.joinscreen .hint { color: var(--dim); font-size: 12px; margin: 0; }
+

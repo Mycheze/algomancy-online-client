@@ -1,0 +1,93 @@
+/* ── the pre-game screens: home, lobby, sign-in ─────────────────────────
+   None of these is the board, and none of them wants the board's layout.
+   #app is a `1fr 290px` grid because the table needs a rail beside it; on a
+   screen with no table that second column is simply dead, so every pre-game
+   card was centred inside the LEFT column — off-centre on screen, with a
+   third of the window unused (playtest 2026-08-21, Bena: "weirdly smushed
+   into the middle"). Off the board, #app is plain block flow and each screen
+   owns its own width. */
+#app:not(.board) { display: block; max-width: none; padding: 0; }
+
+.homelogo { color: var(--accent); letter-spacing: .3em; text-align: center; margin: 6px 0 18px; }
+.namerow { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; color: var(--dim); }
+.namerow input { flex: 1; background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; }
+.homebtns { display: flex; flex-direction: column; gap: 8px; }
+.homebtns button { padding: 9px; font-size: 14px; }
+.homebtns .primary { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.joinrow { display: flex; gap: 8px; }
+/* min-width:0 so the input SHRINKS before the button beside it is pushed out of the card */
+.joinrow input { flex: 1; min-width: 0; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 5px; padding: 6px 8px; letter-spacing: .2em; font-weight: 700; text-align: center; }
+.joinrow button { flex: 1; }
+
+/* ── home screen ───────────────────────────────────────────────────────
+   Three ways in, side by side, each one a card that says what it is before
+   it asks you for anything. They used to be a single stacked column you had
+   to scroll to reach the bottom of; abreast, the whole menu is one screenful
+   and "which of these do I want?" is answered by reading across, not down. */
+
+.homepage { max-width: 1180px; margin: 0 auto; padding: 30px 22px 44px; min-height: 100dvh;
+  display: flex; flex-direction: column; justify-content: safe center; gap: 20px; }
+.homehead { display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--line); padding-bottom: 16px; }
+.homehead .homelogo { margin: 0; font-size: 30px; text-align: left; }
+/* who you are, on the right of the wordmark rather than stacked under it */
+.homeident { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.homeident .acctbar { margin: 0; }
+.homeident .acctbar .accthint { flex: 0 1 auto; }
+.homeident .namerow { margin: 0; font-size: 12px; }
+.homeident .namerow input { width: 150px; flex: 0 0 auto; }
+
+.homegrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(302px, 1fr));
+  gap: 14px; align-items: stretch; }
+.homecard { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 10px; }
+/* the two ways to start a NEW game read as the offer; joining is a reply to
+   someone else's, so it does not need the same weight */
+.homecard.offer { border-color: #3b4654; }
+.homecard h2 { margin: 0; font-size: 17px; color: var(--text); letter-spacing: .02em; font-weight: 700; }
+.homecard .cardsub { margin: 0; color: var(--dim); font-size: 12px; line-height: 1.5; }
+.homecard .spacer { flex: 1 1 auto; min-height: 2px; }
+.homecard .cta { padding: 11px 14px; font-size: 15px; font-weight: 700; }
+.homecard .cta.primary { border-color: var(--accent); color: var(--accent); }
+.homecard .joinrow input { font-size: 17px; padding: 10px 8px; }
+.homecard .joinrow button { flex: 0 0 auto; padding: 10px 18px; font-weight: 700; }
+/* second-tier ways in, under a rule so they read as "or, on your own" */
+.homesep { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 2px;
+  display: flex; flex-direction: column; gap: 8px; }
+.homesolo { display: flex; gap: 8px; flex-wrap: wrap; }
+.homesolo button { flex: 1 1 auto; padding: 9px 12px; white-space: nowrap; }
+.homefoot { color: var(--dim); font-size: 12px; margin: 0; text-align: center; }
+
+/* ── recent updates (ui/updates.ts) ───────────────────────────────────
+   Under the home menu, above the footer: #app's second child, so the menu
+   keeps its one-screenful floor and this is the first thing a scroll finds.
+   One panel, one row per update — date, a kind chip, the line. A second
+   update on the same day leaves its date blank so a day reads as a group. */
+.updates { max-width: 1180px; margin: 0 auto; padding: 6px 22px 40px; box-sizing: border-box; }
+.updates h2 { margin: 0 0 10px; color: var(--dim); font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em; }
+.updlist { list-style: none; margin: 0; padding: 0; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.upd { display: grid; grid-template-columns: 52px 64px minmax(0, 1fr); gap: 12px;
+  align-items: baseline; padding: 9px 16px; border-top: 1px solid var(--line); }
+.upd:first-child { border-top: 0; }
+/* added since this browser last saw the list (updates.ts, SEEN_KEY) */
+.upd.unseen { box-shadow: inset 3px 0 0 var(--accent); background: rgba(217, 164, 65, .05); }
+.updnew { margin-left: 10px; color: var(--accent); font-weight: 600; letter-spacing: 0; text-transform: none; }
+.upd time { color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.updkind { justify-self: start; padding: 1px 8px; border: 1px solid currentColor; border-radius: 999px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.upd.new .updkind { color: var(--accent); background: rgba(217, 164, 65, .1); }
+.upd.fix .updkind { color: var(--glow); background: rgba(111, 195, 111, .1); }
+.upd.change .updkind { color: #6fa8e0; background: rgba(63, 143, 217, .12); }
+.upd p { margin: 0; color: var(--text); font-size: 13px; line-height: 1.5; }
+.updolder summary { margin: 12px 0 10px; color: var(--dim); font-size: 12px; cursor: pointer; }
+.updolder summary:hover { color: var(--text); }
+/* a phone: the line takes the full width under its date and chip */
+@media (max-width: 620px) {
+  .upd { grid-template-columns: auto auto minmax(0, 1fr); gap: 4px 10px; padding: 9px 12px; }
+  .upd p { grid-column: 1 / -1; }
+  .upd time:empty { display: none; }
+}
+

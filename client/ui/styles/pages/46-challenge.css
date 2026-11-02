@@ -1,0 +1,41 @@
+/* ── the weekly challenge (ui/challenge.ts, ui/challengerun.ts, docs/21) ── */
+.chpage .dim { color: var(--dim); }
+.chpage .chgoal { font-size: 15px; font-weight: 700; color: var(--text); }
+.chproblem { color: var(--danger); margin: 8px 0 0; }
+.chpast button.on { border-color: var(--accent); color: var(--accent); }
+.chboardcard { overflow-x: auto; }
+.chtabs { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 2px; }
+.chtabs button.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.chtabtip { margin: 2px 0 6px; }
+.chboard th.chsorted { color: var(--accent); }
+.chwinners { margin: 0 0 8px; }
+.chmine td { padding-top: 2px; padding-bottom: 2px; }
+.chrowbtns { white-space: nowrap; text-align: right; }
+.chrowbtns button { margin-left: 4px; }
+.chkeptrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 4px 0; }
+/* the builder's summary: the ordered list, position 1 on top, read-only (it is
+   built on the tabletop; its deck strip is the TABLETOP: DECK STRIP block) */
+.chimport { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chhand { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; margin-top: 10px; font-size: 12px; }
+.chhandcard { padding: 2px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel2); }
+.chlist { list-style: none; margin: 10px 0 0; padding: 0; max-height: 60vh; overflow-y: auto; }
+.chrow { display: flex; align-items: center; gap: 8px; padding: 3px 4px; border-bottom: 1px dotted var(--line); }
+.chrow .chpos { flex: 0 0 2.4em; text-align: right; color: var(--dim); font-variant-numeric: tabular-nums; }
+.chrow .chname { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chplayrow { margin-top: 12px; display: flex; justify-content: flex-end; }
+.chplayrow .cta { padding: 10px 22px; font-weight: 700; }
+.chplayrow .cta.primary { border-color: var(--accent); color: var(--accent); }
+/* the run's meter: a row of the board's sticky strip, under the turn bar,
+   so it covers nothing (main.ts renders it there) */
+.chmeter { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 6px;
+  padding: 4px 10px; background: var(--panel); border: 1px solid var(--accent); border-radius: 6px; font-size: 13px; }
+.chmeter .chmetertext { font-weight: 700; font-variant-numeric: tabular-nums; margin-right: auto; }
+.chmeter button { padding: 2px 8px; font-size: 12px; }
+.chscrim { position: fixed; inset: 0; z-index: 77; background: rgba(6, 8, 11, .62);
+  display: flex; align-items: center; justify-content: center; padding: 16px; }
+.chbox { width: min(94vw, 460px); max-height: 90vh; overflow-y: auto; background: var(--panel);
+  border: 1px solid var(--accent); border-radius: 10px; padding: 14px 16px; }
+.chbox h3 { margin: 0 0 10px; color: var(--accent); }
+.chbox .chscore { margin: 6px 0 10px; }
+.chbox .chdebt { margin: -4px 0 10px; }
+.chboxbtns { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; margin-top: 12px; }

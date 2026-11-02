@@ -1,12 +1,12 @@
 # `ui/` — the browser client
 
 Everything the player sees: the home screen, the board, the lobby, the deck
-builder, the profile, the tutorial. One `index.html`, one stylesheet, and one
-esbuild bundle built from `main.ts`. It imports the engine; the engine never
+builder, the profile, the tutorial. One `index.html`, one stylesheet built
+from the pieces in `styles/`, and one esbuild bundle built from `main.ts`. It imports the engine; the engine never
 imports it.
 
 ```bash
-npm run build        # main.ts → bundle.js (minified, external source map)
+npm run build        # styles/ → bundle.css (concatenated), main.ts → bundle.js (minified, external source map)
 npm run typecheck    # tsc --noEmit, borrowing ../engine's tsc
 npm test             # node --test test/**/*.test.ts, ~85 files, DOM-free
 npm run check        # all three, which is what the client root's `check` calls
@@ -89,8 +89,19 @@ current text beside it. `test/317` and `test/318` are its guards.
 
 ## Files that are not TypeScript
 
-- `index.html`, `style.css`: the one page and its stylesheet.
-- `bundle.js`, `bundle.js.map`: the build output, gitignored.
+- `index.html`: the one page. It links `bundle.css` and `bundle.js`.
+- `styles/`: the stylesheet's SOURCE, canonical — `tokens.css`, `base.css`,
+  then `board/`, `pages/` and `shared/` pieces, which `styles/index.css` lists
+  one `@import` each in cascade order. The order is load-bearing: they were
+  cut word for word out of the old single `style.css` (2026-11-02,
+  `scripts/split-styles.mjs`), a changelog of overrides, so a piece moved past
+  one it overrides changes the page. A new piece goes into `index.css` exactly
+  once (`test/920`). Tests read the CSS only through `test/read-styles.ts`.
+- `scripts/`: `build-css.mjs` (the CSS half of `npm run build`) and
+  `styles.mjs` (the one concatenation, shared by the build and the tests).
+- `bundle.css`, `bundle.js`, `bundle.js.map`: the build output, gitignored.
+  `bundle.css` is `styles/` concatenated byte for byte — never esbuild, which
+  would re-print it and break the tests that read the CSS as text.
 - `favicon.ico`, `icon-192.png`, `apple-touch-icon.png`, `og-image.jpg`: the
   site icons and the link preview, generated from the game's own glyphs by
   `site-icons.py` (Python, because Pillow; run by hand when the art changes).

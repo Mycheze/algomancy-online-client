@@ -1,0 +1,195 @@
+/* ═══ THE CARD ZOOM — ui/zoom.ts (owner, 2026-09-23). One fixed layer over
+   everything, holding at most one inert copy of the card under the cursor at
+   a readable width. Never takes a click: the real card is under the cursor. */
+#cardzoom { position: fixed; inset: 0; z-index: 90; pointer-events: none; }
+/* CHECKPOINT 4 (owner, 2026-10-29): the card's current text, beside every zoom
+   (main.ts zoomPanelHtml, placed by zoom.ts panelBox) — the box the rail used
+   to show, back where the eye already is */
+#cardzoom > .zoompanel { position: fixed; width: 270px; max-height: calc(100vh - 16px); overflow: hidden;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .6); font-size: 13px; color: var(--text); text-align: left; }
+#cardzoom > .zoompanel.twocol { width: 540px; column-count: 2; column-gap: 10px; }
+#cardzoom > .zoompanel > .textbox { margin: 0; }
+#cardzoom > .zoompanel .modnames { margin: 6px 0 0; max-width: none; }
+#cardzoom > .zoompanel > .abilitybox:first-child { margin-top: 0; border-top: 0; padding-top: 0; }
+#cardzoom > .zoompanel > .xnow:first-child { margin-top: 0; }
+/* ═══ THE RESOURCE WINDOW — ui/ressum.ts (owner, 2026-09-26). Hovering an
+   info block's resources shows how many of each and the mana, beside the row
+   and never over it. Pointer-inert, under the menus (z 95). */
+#ressum { position: fixed; z-index: 89; pointer-events: none; display: none; min-width: 220px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .6); font-size: 13px; color: var(--text); }
+#ressum.on { display: block; }
+#ressum .rshead { color: var(--dim); white-space: nowrap; }
+#ressum .rsmana { color: var(--text); font-size: 22px; font-weight: 700; margin-right: 2px; vertical-align: -2px; }
+#ressum .rstab { border-collapse: collapse; margin-top: 6px; width: 100%; }
+#ressum .rstab th, #ressum .rstab td { padding: 2px 6px; text-align: center; white-space: nowrap; }
+#ressum .rstab thead th { color: var(--dim); font-weight: 400; font-size: 11px; }
+#ressum .rstab tbody th { text-align: left; font-weight: 600; padding-left: 0; }
+#ressum .rstab tbody td { font-size: 15px; font-weight: 700; }
+#ressum .rstab td.rsnil { color: var(--dim); font-weight: 400; }
+#ressum .rstab tbody tr + tr > * { border-top: 1px solid var(--line); }
+#ressum .rsfoot { margin-top: 6px; color: var(--dim); font-size: 11px; }
+/* ═══ THE INFO TIP — ui/infotip.ts (board round 8). A player's piles as
+   numbers off their name, the phase in words off the phase icons: hover, or
+   a tap pins it. The resource window's look, beside the line, never on it. */
+#infotip { position: fixed; z-index: 89; pointer-events: none; display: none; min-width: 150px; max-width: 360px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .6); font-size: 13px; color: var(--text); }
+#infotip.on { display: block; }
+#infotip .tiphead { font-weight: 700; margin-bottom: 4px; }
+#infotip .tiptab { border-collapse: collapse; width: 100%; }
+#infotip .tiptab th { text-align: left; font-weight: 400; color: var(--dim); padding: 1px 12px 1px 0; white-space: nowrap; }
+#infotip .tiptab td { text-align: right; font-weight: 700; font-size: 15px; padding: 1px 0; font-variant-numeric: tabular-nums; }
+#infotip .tiptab tr + tr > * { border-top: 1px solid var(--line); }
+#infotip .tipline { white-space: nowrap; }
+/* the toolbar's windows (board round 8): presence in its colour, the running clock lit */
+#infotip .tipline.wrap { white-space: normal; }
+#infotip .tipline.tipwarn { color: var(--danger); font-weight: 700; }
+#infotip .tipline.tipok { color: var(--glow); }
+#infotip .tipline.dim, #infotip .tipfoot { color: var(--dim); }
+#infotip .tiptab tr.tiprun > * { color: var(--accent); }
+#infotip .tipfoot { margin-top: 6px; color: var(--dim); font-size: 11px; line-height: 1.35; }
+/* the token corner's table (checkpoint 4): name · how many · the sizes, biggest first */
+#infotip .toktab th { color: var(--text); font-weight: 600; font-size: 13px; }
+#infotip .toktab td.tallyn { padding: 1px 10px 1px 0; }
+#infotip .toktab td.tallyx { text-align: left; font-weight: 400; font-size: 13px; color: var(--target); white-space: nowrap; }
+#infotip .tokwhy + .tokwhy { margin-top: 2px; }
+#cardzoom > .zoomcopy { box-shadow: 0 14px 40px rgba(0, 0, 0, .75), 0 0 0 1px rgba(0, 0, 0, .5);
+  border-radius: 10px; will-change: transform; }
+#cardzoom > .zoomcopy img { border-radius: 10px; }
+#cardzoom > .rescard.zoomcopy { opacity: 1; filter: none; }
+
+/* ── round 4 (owner, 2026-09-26) ────────────────────────────────────────
+   Everything below is sized in cqw — hundredths of the COPY's width — so it
+   is the same picture at any zoom width (the box shrinks on a short window)
+   and ignores the mod strips hanging underneath, which make the copy taller
+   but not wider. Card scans are 720 x 1000: 1cqw is 7.2 scan pixels. */
+#cardzoom > .zoomcopy { container-type: inline-size; }
+
+/* "we should draw our modified p/d up in the top right, matching the approx
+   size and location of the actual physical cards." Every frame, base set and
+   Light & Dark, prints it at the right end of the name bar: x 80–92 %,
+   y 5–10 % of the scan. The plate sits over the printed pair, the same size,
+   so the number you read is the live one. The printed base (when it differs,
+   and always on a copy — CR D6.8) drops just under it. */
+#cardzoom > .zoomcopy .stats { top: 6.6cqw; right: 6.6cqw; bottom: auto;
+  min-width: 14cqw; padding: 0 1.8cqw; box-sizing: border-box; text-align: center;
+  font: 700 5.8cqw/7.6cqw Georgia, 'Times New Roman', serif;
+  background: rgba(10, 12, 16, .92); border: .3cqw solid rgba(255, 255, 255, .35); border-radius: 1.4cqw;
+  box-shadow: 0 .6cqw 2cqw rgba(0, 0, 0, .6); }
+/* A {Virus}, {Battle} or {Haste} glyph at the end of the name bar pushes the
+   printed pair ~52 scan px (7.2cqw) left: the plate follows it rather than
+   covering the glyph (inspect.ts nameBarIcon). */
+#cardzoom > .zoomcopy.nbicon .stats { right: 13.8cqw; }
+/* a unit whose abilities or attributes are switched off (main.ts, the zoom
+   decorator): its rules box — from the type bar down, which starts at
+   --tbtop of the scan's height — goes grey, and the banner across it says
+   what is off and what did it. The top is placed in cqw off the card's own
+   139cqw height, because the copy is taller than the card when mods hang
+   below; the grey runs to the copy's BOTTOM, over those mod strips too — an
+   augment's text and attributes joined the unit, and they are off with the
+   rest (owner, 2026-09-27: "The Unaware mod is half visible"). */
+#cardzoom .zoomsupp { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; pointer-events: none;
+  top: calc(var(--tbtop, .813) * 138.9cqw);
+  background: rgba(16, 18, 22, .72); backdrop-filter: grayscale(1); border-radius: 0 0 10px 10px;
+  display: flex; align-items: flex-start; justify-content: center; }
+#cardzoom .zoomsupp > span { margin-top: -3.4cqw; padding: .6cqw 2.4cqw; border-radius: 1.4cqw;
+  font: 700 4.2cqw/1.3 system-ui, sans-serif; color: #ffd0d0; background: rgba(90, 20, 20, .95);
+  border: .3cqw solid rgba(255, 140, 140, .6); white-space: nowrap; max-width: 92%; overflow: hidden; text-overflow: ellipsis; }
+/* Report #208: attributes and abilities are different things. main.ts sets
+   --tbtop/--tbbot from inspect.ts suppressionBand: ATTRIBUTES off greys the
+   type bar alone (a band, so it stops at the bar's bottom edge); ABILITIES
+   off starts below the bar and runs down like the both-off block. */
+#cardzoom .zoomsupp.band-attrs { bottom: auto; border-radius: 0;
+  height: calc((var(--tbbot) - var(--tbtop)) * 138.9cqw); }
+#cardzoom .zoomsupp.band-attrs > span { margin-top: -6.8cqw; font-size: 3.6cqw; }
+#cardzoom .zoomsupp.band-abilities > span { margin-top: .8cqw; }
+#cardzoom > .zoomcopy .stats .basestat { font: 400 3.4cqw/4.4cqw system-ui, sans-serif; text-align: center; }
+
+/* "I'd love for them to almost feel like dice on the card, but only on the
+   art area." The whole list, unfolded (main.ts setZoomDecorator), scattered
+   from the top of the art — below the name bar AND the prophecy banner that
+   hangs under it on some cards (Flzzz: to ~19cqw), well above the type line —
+   as chunky tiles with a bevel, a shadow and a slight tumble. Each keeps the
+   colours its kind already has on the table (.mod, .act, .ctr, .offer…):
+   only the shape changes, so the gradient is a background-IMAGE over the
+   kind's own colour.
+   The box clips (a long list stops above the type line), and a straight box
+   clipped the tumble: a tilted chip's corners and its drop shadow reach past
+   its own square (owner, 2026-10-10: "still get their corners cut off"). So
+   the box is PADDED by that reach and grown outward by the same amount — the
+   chips sit exactly where they did, at 21/5/5cqw with 60cqw of room, and the
+   clip edge is out past anything they paint. ui/test/446 derives the reach
+   from the numbers below; change a tilt or the shadow and it re-checks. */
+#cardzoom .zoomdice { position: absolute; top: 17.8cqw; left: 2cqw; right: 2cqw; max-height: 68.4cqw;
+  padding: 3.2cqw 3cqw 5.2cqw;
+  display: flex; flex-wrap: wrap; gap: 2.4cqw; align-items: center; align-content: flex-start; overflow: hidden; }
+#cardzoom .zoomdice .badge { position: static; flex: none; max-width: 100%;
+  font-size: 4.6cqw; line-height: 1.2; font-weight: 600; padding: 1.3cqw 2.4cqw;
+  border-width: .5cqw; border-radius: 2cqw;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(0, 0, 0, .28));
+  box-shadow: inset 0 .5cqw 0 rgba(255, 255, 255, .16), inset 0 -.7cqw 0 rgba(0, 0, 0, .4),
+    0 1cqw 2.4cqw rgba(0, 0, 0, .65);
+  transform: rotate(-2deg); }
+#cardzoom .zoomdice .badge:nth-child(2n) { transform: rotate(1.6deg); }
+#cardzoom .zoomdice .badge:nth-child(3n) { transform: rotate(-.8deg); }
+#cardzoom .zoomdice .badge .txticon { width: 4.8cqw; height: 4.8cqw; vertical-align: -.9cqw; margin: 0 1cqw 0 0; }
+/* a counter and the damage are the literal dice: square, and the number big */
+#cardzoom .zoomdice .badge.ctr,
+#cardzoom .zoomdice .badge.dmg { display: inline-flex; align-items: center; justify-content: center;
+  min-width: 12cqw; min-height: 12cqw; box-sizing: border-box; font-size: 5.6cqw; font-weight: 800; border-radius: 2.6cqw; }
+#cardzoom .zoomdice .badge.dmg { background-color: var(--danger); border-color: rgba(0, 0, 0, .5); color: #fff; }
+
+/* "Modded cards don't show the attached mods!" — the strips the rail draws,
+   hung under the card at the copy's own width */
+#cardzoom .zoommods .modstrip { max-width: none; }
+/* the strip's scan is sized by .modstrip alone — on a STACK card's copy
+   `.stackcard img` (height 100%, object-fit cover, later in the file) reached
+   in too and drew each strip as a squashed crop (owner, Spellbind on the
+   stack: "totally messed up") */
+#cardzoom .zoommods .modstrip img { height: auto; object-fit: fill; position: static; z-index: auto; border-radius: 0; }
+#cardzoom > .stackcard.zoomcopy.zoommodded { aspect-ratio: auto; }
+#cardzoom > .stackcard.zoomcopy.zoommodded > img { height: auto; }
+/* a stack card's tags are pinned to ITS box, and with strips under it that box
+   runs to the bottom of the last strip — so in the zoom the kind tag becomes a
+   die at the top of the art, like a unit's chips, and the rest scale with it. The name
+   plate is for a card with no art; behind a scan it is only in the way.
+   z-index: the scan is `position: relative; z-index: 1`, and the tag, with
+   none, was painted UNDER it — only its icon (an img, so z 1 too) showed. */
+#cardzoom > .stackcard.zoomcopy:not(.noart) .stackface { display: none; }
+#cardzoom > .stackcard.zoomcopy .stacktag { bottom: auto; top: 21cqw; left: 5cqw; right: auto; z-index: 2;
+  font-size: 4.2cqw; line-height: 1.3; padding: 1.2cqw 2.4cqw; border-radius: 2cqw;
+  border: .5cqw solid #444; box-shadow: 0 1cqw 2.4cqw rgba(0, 0, 0, .65); transform: rotate(-2deg); }
+/* the strips paint OVER the host's scan, as in the rail: on a stack card the
+   scan is positioned (z 1) and hid the top of the first strip's line */
+#cardzoom .zoommods { position: relative; z-index: 1; }
+#cardzoom > .stackcard.zoomcopy .stackx { font-size: 4.2cqw; padding: .3cqw 1.4cqw; }
+#cardzoom > .stackcard.zoomcopy .stackbolt { top: -3.2cqw; font-size: 3.4cqw; padding: .2cqw 1.6cqw; }
+#cardzoom > .stackcard.zoomcopy :is(.stacktag, .stackx, .stackmodhost) .txticon { width: 4cqw; height: 4cqw; vertical-align: -.8cqw; }
+
+/* "Zooming in/hovering a card should maintain the border/highlight the card
+   has." The ring was copied, but at 2px on a card three times the size it read
+   as gone, and `.zoomcopy`'s black drop shadow OVERRODE every ring drawn as a
+   box-shadow (the activatable pulse, the cached violet). So: the ring thicker
+   with the card, and a glow in its own colour where the black shadow was.
+   ⚠ In px, not cqw: these are the container's OWN properties, and cqw there
+   resolves against an ancestor container — there is none, so it fell back to
+   the viewport and drew a 16px ring. Tuned for the 240px zoom (ZOOM_W). */
+#cardzoom > .zoomcopy { --zring: 3px; --zglow: transparent; }
+#cardzoom > .zoomcopy:is(.playable, .candidate, .selected, .carrying, .modhost, .canact) {
+  outline-width: var(--zring); outline-offset: 1px;
+  box-shadow: 0 0 16px 3px var(--zglow), 0 14px 40px rgba(0, 0, 0, .75); }
+#cardzoom > .zoomcopy:is(.playable, .modhost, .canact) { --zglow: rgba(111, 195, 111, .5); }
+#cardzoom > .zoomcopy.playable.nocast { --zglow: color-mix(in srgb, var(--accent) 50%, transparent); }
+#cardzoom > .zoomcopy.candidate { --zglow: rgba(224, 185, 60, .5); }
+#cardzoom > .zoomcopy:is(.selected, .carrying) { --zglow: rgba(127, 192, 255, .5); }
+#cardzoom > .zoomcopy.playable.cached {
+  box-shadow: 0 0 0 6px #b48ce0, 0 14px 40px rgba(0, 0, 0, .75); }
+@keyframes zoomactpulse { 50% { box-shadow: 0 0 7px 3px rgba(111, 195, 111, .7), 0 0 22px 7px rgba(111, 195, 111, .4),
+  0 14px 40px rgba(0, 0, 0, .75); } }
+#cardzoom > .zoomcopy.activatable {
+  box-shadow: 0 0 5px 2px rgba(111, 195, 111, .8), 0 0 14px 5px rgba(111, 195, 111, .3), 0 14px 40px rgba(0, 0, 0, .75);
+  animation: zoomactpulse 1.8s ease-in-out infinite; }
+#cardzoom > .zoomcopy.modhost { animation: none; }
+@media (prefers-reduced-motion: reduce) { #cardzoom > .zoomcopy.activatable { animation: none; } }

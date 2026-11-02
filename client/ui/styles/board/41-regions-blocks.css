@@ -1,0 +1,279 @@
+/* ── the In Play block: the field, with the region's spell tokens beside it on
+      the seam side — the "spawned in combat" corner of the sketch, drawn as a
+      narrow column so it never takes the field's height ──────────────────── */
+.lplay { display: flex; flex-direction: row; gap: var(--gap); align-items: stretch; }
+.lplay.theirs { flex-direction: row-reverse; }
+.lplay .regionmain { flex: 1 1 0; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+/* the clip margin is a card's ring (`.card.candidate` 3px): a unit flush
+   against the zone's edge kept only the inner side of its ring (report #315,
+   test 777). The block round the zone still clips at its own edge. */
+.lplay .regionmain .zone { flex: 1 1 0; min-height: 0; overflow: hidden; overflow: clip; overflow-clip-margin: 3px; align-content: flex-start; }
+/* board round 8: In Play is the full width now. Their cards start at the
+   SEAM, where their side of the board begins, and fill rightward, as mine fill
+   rightward from the left edge of mine (owner, 2026-10-29); --lead is the gap
+   before the first card, written by ui/layout.ts theirLead, giving way as the
+   row grows. Their token corner is at the far left (row-reverse). */
+.lplay.theirs .regionmain .zone { justify-content: flex-start; }
+.lplay.theirs .regionmain .zone > :first-child { margin-left: var(--lead, 0px); }
+/* the corner (.ltok) is its own fit zone, sized in BASE card widths (--cwbase,
+   the table's --cw before any fit pass wrote over it) — never in the field's
+   --cw, or a corner that grew with the field would eat the field it sits
+   beside and the fit pass would chase its own tail. It stretches the full
+   height of the block: the classic strip is `align-self: flex-start`, and
+   with that the token zone inside it had no height at all and the tokens
+   could not be seen or clicked (owner's game, 2026-09-23). */
+.lboard { --cwbase: var(--cw); }
+/* CHECKPOINT 4 (owner, 2026-10-29): the corner holds STACKS (main.ts
+   tokenStackHtml), sized by how many stacks there are, and stands at the
+   band's OUTER end — my right, their left (the band is row-reverse) — where
+   the unit row rarely reaches. Its tally is a hover tip (data-tip="tokens");
+   the ✨ chip just inside it is the finger's way to the same tip. Not
+   clipped: a hovered stack fans out over the band (which clips at its edge). */
+.lplay .ltok { order: 2; flex: 0 0 auto; min-height: 0; display: flex; flex-direction: column;
+  position: relative; overflow: visible; max-width: 45%;
+  width: calc(var(--cwbase) * .8 * var(--tokcols, 1) + 14px * var(--tokcols, 1) + 4px); }
+.lplay .ltok > .tokenzone { flex: 1 1 0; min-height: 0; margin: 0; overflow: visible; gap: 4px;
+  flex-wrap: wrap; align-content: flex-start; justify-content: flex-end; }
+.lplay.theirs .ltok > .tokenzone { justify-content: flex-start; }
+.lplay .ltok > .tokchip { position: absolute; top: 2px; right: 100%; margin-right: 3px; z-index: 2;
+  font-size: 11px; line-height: 1.4; padding: 0 5px; border-radius: 8px; white-space: nowrap;
+  color: var(--target); background: rgba(0, 0, 0, .45); border: 1px solid rgba(255, 255, 255, .15); cursor: help; }
+.lplay.theirs .ltok > .tokchip { right: auto; left: 100%; margin: 0 0 0 3px; }
+/* a stack: its cards one over the next, each --edge in from the one under it */
+.tokstack { position: relative; display: flex; flex: none; }
+.tokstack > .tokslot { flex: none; width: var(--cw); transition: transform .14s ease-out; }
+.tokstack > .tokslot + .tokslot { margin-left: calc(var(--edge) - var(--cw)); }
+.tokstack > .tokcount { position: absolute; right: -3px; bottom: -3px; z-index: 4; pointer-events: none;
+  font-size: max(11px, calc(var(--cw) * .24)); line-height: 1.25; padding: 0 5px; border-radius: 9px;
+  color: #fff; background: rgba(0, 0, 0, .78); border: 1px solid var(--target); }
+/* hovered, a stack fans inward — mine leftward, the top card staying put;
+   theirs rightward, the bottom card staying put — by transform, so nothing
+   else on the board moves */
+.tokstack.many:hover { z-index: 5; }
+.tokstack.many:hover > .tokcount { opacity: 0; }
+.lplay.mine .tokstack.many:hover > .tokslot { transform: translateX(calc(var(--j) * (var(--edge) - var(--cw) - 2px))); }
+.lplay.theirs .tokstack.many:hover > .tokslot { transform: translateX(calc(var(--i) * (var(--cw) + 2px - var(--edge)))); }
+.lplay.battledim { opacity: .8; }
+
+/* ── the Invaders rows and the idle battle bands: one row each ──────────── */
+.linv, .lfight.idle, .lfight.incoming { display: flex; flex-direction: column; }
+.linv .invaders, .lfight .sentstrip { max-width: none; min-width: 0; width: auto; flex: none;
+  border-left: 0; padding-left: 0; }
+.linv .zone, .lfight .sentzone { flex-wrap: nowrap; overflow: hidden; }
+.linv.empty { padding: 0; }
+.lfight.idle { justify-content: center; }
+/* outside a battle the bands are empty: they collapse, and only the grid's
+   gaps keep the two regions apart (the stack window still centres on them) */
+.lboard.idle .lfight.idle { padding: 0; min-height: 0; }
+.lfight.incoming .sentstrip { opacity: .6; }
+/* counterattackers stand on the edge of the block nearest their home: mine
+   at the bottom of their block, theirs at the top of mine */
+.lfight.theirs.incoming, .lfight.theirs.sendhere { justify-content: flex-end; }
+.lfight.mine.incoming, .lfight.mine.sendhere { justify-content: flex-start; }
+
+/* ── the counterattack send box (main.ts counterSendHtml): one long slot in
+      the attacker's block, a formation's width, not a card's ─────────────── */
+.lfight.sendhere { display: flex; flex-direction: column; }
+.lsend { flex: none; padding: 4px 0; }
+/* report #196: it WRAPS — one row ran out of width at ~10 units and pushed the
+   slot out of the clipped row. ui/layout.ts sendPlan sizes the cards to the
+   block's height, counting the slot at its two-card width. */
+.lsend .lsendrow { flex-wrap: wrap; overflow: hidden; margin-top: 0; align-items: stretch; }
+/* …and a fan that wraps gives every card the same footprint, `--fanstep`, the
+   first of each row too, or the rows break where the plan did not put them
+   (ui/fit.ts fitSendBox) */
+.lboard .lfight.sendhere[data-fitmode="fan"] .zone.lsendrow { column-gap: 0; }
+.lboard .lfight.sendhere[data-fitmode="fan"] .zone.lsendrow:not(.tokenzone) > .card {
+  margin-left: 0; margin-right: calc(var(--fanstep) - var(--cw)); }
+.lboard .lfight.sendhere[data-fitmode="fan"] .lsend .zone .slot.lsendslot { min-width: calc(var(--fanstep) * 2); }
+/* basis 0, not auto: an auto basis is the caption's one-line width (~150px),
+   and a wrapping row breaks on that, not on the two cards ui/layout.ts plans */
+.lboard .lsend .zone .slot.lsendslot { flex: 1 1 0; width: auto; min-width: calc(var(--cw) * 2);
+  display: flex; align-items: center; justify-content: center; font-size: 13px; letter-spacing: .04em;
+  text-align: center; overflow: hidden; }
+.lsend.pending .lsendrow { border: 1px dashed var(--line); border-radius: 5px; padding: 3px; }
+
+/* ── the battle block that holds the fight ─────────────────────────────── */
+.lfight.focus { display: flex; flex-direction: column; padding: 0; }
+/* the battle block is the same region as the In Play block beside it — the
+   region's own tint shows through, and the ring round the L is its border */
+.lfight.focus .battle { flex: 1 1 0; min-height: 0; margin: 0; border: 0; border-radius: 0;
+  background: transparent; display: flex; flex-direction: column; overflow: hidden; }
+.lfight.focus .battle h3 { flex: none; margin: 0 0 4px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lfight.focus .battle .cols { flex: 1 1 0; min-height: 0; flex-wrap: nowrap; overflow: hidden; align-items: flex-start; }
+/* closer columns (owner, 2026-09-27: "Formations don't need quite as much
+   space between columns"; round 8: 1–2px between every box): 8px card to
+   card — the gap and each column's padding and border. ui/layout.ts COL_GAP
+   and COL_CHROME are these two numbers. */
+.lboard .lfight.focus .cols { gap: var(--gap); }
+.lboard .lfight.focus .col { padding: 2px; }
+/* "unblocked" / "gone" is as wide as the card it stands for, never wider —
+   at the 40px floor the word used to widen its whole column */
+.lboard .lfight.focus .slot.ghost { width: var(--cw); min-width: 0; padding: 2px 0; font-size: 8px;
+  letter-spacing: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* the invaders of the region being fought in (main.ts fight): a strip down
+   the right of the block, over the bare table the left-packed columns leave
+   (owner, 2026-09-27), each card smaller than the units in the line.
+   ui/layout.ts sideStrip writes its --cw, its width and the overlap. */
+/* CT-192 (report #179): the counterattack tray (main.ts counterTrayHtml) —
+   the sent units still to place, full-size, along the foot of the fight, the
+   edge nearest the builder's home; where a third rank will not stand, beside
+   the columns on the seam side instead (ui/layout.ts stagePlan sets
+   data-stage). `.stagewrap` is the one box both arrangements are fitted in. */
+.lfight.focus .battle > .stagewrap { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.lfight.focus .stagewrap > .stagerow { flex: none; margin-top: 4px; padding: 2px 4px 0; border-top: 1px dashed var(--line); }
+.lfight.focus .stagerow > .collabel { margin: 0 0 2px; font-size: 10px; color: var(--dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lfight.focus .stagerow > .stagezone { flex-wrap: nowrap; margin: 0; overflow: hidden;
+  min-height: calc(var(--cw) * 1.4); }
+.lfight.focus[data-stage="beside"] .stagewrap { flex-direction: row; }
+.lfight.focus[data-stage="beside"] .stagewrap > .stagerow { order: -1; margin: 0 6px 0 0; padding: 3px 6px 0 0;
+  border-top: 0; border-right: 1px dashed var(--line); width: calc(var(--traycols, 1) * (var(--cw) + 10px) + 6px); }
+.lfight.focus[data-stage="beside"] .stagerow > .stagezone { flex-wrap: wrap; row-gap: 4px; }
+.lfight.focus[data-stage="beside"] .stagerow .remind { display: none; }
+.lfight.focus { position: relative; }
+.lfight.focus .linvside { position: absolute; top: var(--gap); bottom: var(--gap); right: var(--gap); width: var(--invw, 36px);
+  display: flex; flex-direction: column; align-items: flex-end; overflow: visible; z-index: 1; }
+.lfight.focus .linvside .invaders { min-width: 0; max-width: none; width: 100%; margin: 0; padding: var(--gap) 4px 0 0;
+  box-sizing: border-box; display: flex; justify-content: flex-end; overflow: visible; }
+
+/* ── CHECKPOINT 4: invaders as a PILE (owner, 2026-10-29) — small cards, each
+      --pilestep past the one under it (ui/fit.ts pileStepFrac); hovering the
+      pile fans it along its row by transform, so nothing else moves:
+      rightward, or leftward in the fight's strip (`fanleft`, at the block's
+      right edge). `open` (a board pick can land in it, or a finger tapped its
+      count) holds it fanned. ─────────────────────────────────────────────── */
+.lboard .invpile { position: relative; display: flex; flex-wrap: nowrap; gap: 0; margin: 0; overflow: visible; }
+.lboard .invpile > .invslot { flex: none; width: var(--cw); transition: transform .14s ease-out; }
+.lboard .invpile > .invslot + .invslot { margin-left: calc(var(--pilestep, 0px) - var(--cw)); }
+.lboard .invpile.many:hover, .lboard .invpile.open { z-index: 6; }
+.lboard .invpile.many:hover > .invslot, .lboard .invpile.open > .invslot {
+  transform: translateX(calc(var(--i) * (var(--cw) + 2px - var(--pilestep, 0px)))); }
+.lboard .invpile.fanleft.many:hover > .invslot, .lboard .invpile.fanleft.open > .invslot {
+  transform: translateX(calc(var(--j) * (var(--pilestep, 0px) - var(--cw) - 2px))); }
+.lboard .invpile > .pilecount { position: absolute; right: -3px; bottom: -3px; z-index: 4;
+  font: inherit; font-size: 11px; line-height: 1.25; padding: 0 5px; border-radius: 9px; cursor: pointer;
+  color: #fff; background: rgba(0, 0, 0, .78); border: 1px solid var(--line); }
+.lboard .invpile.many:hover > .pilecount, .lboard .invpile.open > .pilecount { opacity: 0; }
+.lboard .invpile.open > .pilecount { opacity: .9; right: auto; left: -3px; }
+.lboard .invpile.fanleft.open > .pilecount { left: auto; right: -3px; }
+/* a full card's P/D plate would cover half of a pile card: it scales with it */
+.lboard .invpile .card .stats { font-size: max(8px, calc(var(--cw) * .3)); padding: 0 2px; line-height: 1.2; }
+/* the plate is smaller here, so the reserve beside it is too */
+.lboard .invpile .card:has(> .stats) > .badges { right: calc(max(8px, var(--cw) * .3) * 1.8 + 4px); }
+/* the Invaders row: the pile's row is as tall as its cards, no more */
+.linv .invaders { overflow: visible; }
+.lboard .linv { overflow: visible; }
+
+/* ── card size: the fit pass writes --cw on each [data-fit] zone ──────────
+      The classic strips pin their cards in px; here every card in a zone
+      follows the zone's own --cw. (The bin thumbs keep their fixed fan.) */
+.lboard .zone .card, .lboard .zone .slot { width: var(--cw); }
+/* past the floor the cards FAN: each one steps --fanstep along the row and
+   the rest of it hides under the next; hover or focus raises one. Never a
+   scrollbar, never a "+N" — the owner's choice, 2026-09-22. */
+.lboard [data-fitmode="fan"] .zone:not(.tokenzone) > .card + .card,
+.lboard [data-fitmode="fan"] .zone:not(.tokenzone) > .slot + .slot,
+.lboard .ltok[data-fitmode="fan"] .tokenzone > .tokstack + .tokstack { margin-left: calc(var(--fanstep) - var(--cw)); }
+.lboard .ltok[data-fitmode="fan"] .tokenzone { gap: 0; }
+.lboard [data-fitmode="fan"] .zone > .card:hover,
+.lboard [data-fitmode="fan"] .zone > .card:focus-within { z-index: 6; transform: translateY(-6px); }
+/* 8px = a column's own chrome (6) + the gap (2): each column then starts
+   exactly --fanstep after the one before (ui/fit.ts fitBattle's fan) */
+.lboard [data-fitmode="fan"] .cols > .col + .col { margin-left: calc(var(--fanstep) - var(--cw) - 8px); }
+.lboard [data-fitmode="fan"] .cols > .col:hover { z-index: 6; }
+
+/* ── the stack window sits over the battle block of the region that is NOT
+      the focus (main.ts placeStackFree) ──────────────────────────────────── */
+/* --stack-x/--stack-y are the window's TOP-LEFT, pinned while it is open
+   (main.ts stackPin): it grows down and right, and never re-centres */
+#app.stackfree .stackboard.live { right: auto; left: var(--stack-x, 50%); top: var(--stack-y, 50%);
+  transform: none; }
+
+/* ── CT-191: "their hand, seen" (main.ts lboardHtml seenFloat). The info
+      line is one fixed line, so the strip floats over the In Play block of
+      the region that is NOT the focus, at its outer corner. An absolutely
+      placed grid child takes its GRID AREA as its containing block, so the
+      grid places it and nothing has to be measured. Below the stack window
+      (46). Opaque: it sits on cards. ────────────────────────────────────── */
+.lboard > .lseen { position: absolute; z-index: 4; min-width: 0; max-width: calc(100% - 16px); }
+.lboard > .lseen.theirs { grid-area: tplay; top: 4px; right: 8px; }
+.lboard > .lseen.mine { grid-area: yplay; bottom: 4px; left: 8px; }
+.lboard > .lseen .seenhand { margin: 0; background: var(--panel2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .6); }
+
+/* ── ROUND 7 — THE FIGHT BLOCK GROWS (report #204, owner 2026-10-11) ───────
+      "There are so many moments where there is an absolute ton of unused
+      space on screen, but the units and the 'important' area is all
+      scrunched into the side." In every battle the cards had covered 5–13%
+      of the board: the fight's block was half its width and a fixed share of
+      its height, beside the other region's block, empty in every slice.
+      The owner's shape: the Ls, the tints, the seam and the ring stay, and
+      the fight gets the room it NEEDS (their correction to the first build,
+      which gave it three quarters of the board whatever it held: "it's
+      taking up the space that it doesn't need … the horizontal space should
+      be expanded when needed"). So in a battle the grid is five rows — the
+      bands (info offshoot · In Play) top and bottom, which give the fight
+      the height it can use, and between them the two columns. A fight that
+      fits in half the board keeps the half-and-half split exactly (two
+      tracks); one that needs more (`data-wide`) is three tracks, the bands
+      still split at half so the edges do not move, the idle column the
+      `--lidle` that is left. ui/layout.ts shapeBoard writes the sizes
+      (ui/fit.ts planBattleBoard decides them); the fallbacks only ever show
+      to a test. `data-fight` is whose column holds the fight: mine (left)
+      or theirs. */
+/* ROUND 8: the bands are the two In Plays — full width, each under (over)
+   its own info line — and the middle is the two columns, so the battle grid
+   is the board's seven rows with the bands sized by the plan. The fight's
+   block spans the fight row and the Invaders row on its far side; the idle
+   block the fight row and the other. A fight that needs more than half the
+   width (`data-wide`) pushes the seam aside in the middle only — the feet
+   are the full width whatever the middle does. */
+.lboard.fighting[data-fight] {
+  grid-template-rows: var(--lint, var(--linh)) var(--lbandt, minmax(0, 1fr)) auto minmax(0, 2.5fr) auto
+    var(--lbandb, minmax(0, 1fr)) var(--linh);
+}
+.lboard.fighting[data-fight="mine"][data-wide] { grid-template-columns: minmax(0, 1fr) var(--lidle, 25%); }
+.lboard.fighting[data-fight="theirs"][data-wide] { grid-template-columns: var(--lidle, 25%) minmax(0, 1fr); }
+/* the columns stand in the MIDDLE of the fight, not packed against its left
+   edge — auto margins, which give way to the edge when the row is full (a
+   centred row that overflowed would cut both ends) — in the width the
+   invader strip leaves them */
+.lboard[data-fight] .lfight.focus .cols > :first-child { margin-left: auto; }
+.lboard[data-fight] .lfight.focus .cols > :last-child { margin-right: auto; }
+.lboard[data-fight] .lfight.focus .cols > .col { margin-top: auto; margin-bottom: auto; }
+.lboard[data-fight] .lfight.focus:has(> .linvside) .cols { padding-right: var(--invw, 0px); }
+/* a column's label is no wider than its card (review board, 2026-10-11:
+   "column 5 · side-block" wrapped to two lines, dropping that column's slots
+   below the rest, and widened the column past what the fit planned) */
+.lboard[data-fight] .lfight.focus .col > .collabel { max-width: var(--cw); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; }
+/* the counterattackers heading for the idle column wrap down it (fit `band`),
+   on the edge nearest their home, instead of fanning along one row */
+.lboard.fighting .lfight.incoming .sentstrip { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
+.lboard.fighting .lfight.incoming .sentzone { flex: 1 1 0; min-height: 0; flex-wrap: wrap; align-content: flex-start; }
+.lboard.fighting .lfight.theirs.incoming .sentzone { align-content: flex-end; }
+/* the hand dock is the one thing under the board that is always as tall as
+   it is: no caption over it (the cards say what it is — it keeps its words
+   while it is tucked, when they explain why), and on a short window smaller
+   cards, because every pixel it keeps is a pixel the board does not get */
+#app.board.v2 .handdock:not(.tucked) > .zonelabel { display: none; }
+#app.board.v2 .handdock { padding: var(--gap) var(--ringpad) var(--gap); }
+@media (max-height: 860px) { #app.board.v2 .handdock .card { width: 76px; } }
+/* an EMPTY hand keeps the dock one card tall: at zero cards it collapsed by
+   ~88px and the whole board, your info block with it, dropped into the gap
+   (round 5 — the frame holds still). A tucked dock is a decision's screen and
+   still tucks. 1.39 is the scans' aspect (720 × 1000). */
+/* The hand scrolls, and a scroller clips at its padding box: a 3px inset
+   (a card's widest ring) paid back by the margin, so the rings along the top
+   and the first card's left are whole and no card moves (report #315, test
+   777). The floor counts the inset. */
+#app.board.v2 .handdock:not(.tucked) > .zone { padding: 3px 3px 2px 3px; margin: 3px -3px 0 -3px;
+  min-height: calc(92px * 1.39 + 3px); }
+@media (max-height: 860px) { #app.board.v2 .handdock:not(.tucked) > .zone { min-height: calc(76px * 1.39 + 3px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .lboard [data-fitmode="fan"] .zone > .card:hover { transform: none; }
+}
+

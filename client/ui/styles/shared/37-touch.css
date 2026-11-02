@@ -1,0 +1,145 @@
+/* ── TOUCH (2026-09-27) ───────────────────────────────────────────────
+   Tablets and unfolded foldables (owner: "an iPad or foldable phone").
+   Two layers. The first holds for every pointer, because a mouse loses
+   nothing by it: no grey tap flash, no font boosting, no double-tap zoom on
+   a control, no browser image drag or save-image sheet on a card scan (the
+   peek and ui/drag.ts own those gestures). The second is `html.touch`, set
+   by ui/touch.ts from the first finger actually seen: bigger targets, and
+   the keyboard hints a tablet has no keys for hidden. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { -webkit-tap-highlight-color: transparent; }
+button, [data-btn], [data-act], .card, .rescard, .stackcard { touch-action: manipulation; }
+.card, .rescard, .stackcard { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.card img, .rescard img, .stackcard img, #cardzoom img { -webkit-user-drag: none; -webkit-touch-callout: none; }
+/* DRAG SOURCES (ui/drag.ts). A hand card may still swipe the dock sideways —
+   an upward drag is the one the page keeps. The regions board never scrolls,
+   so a card on it gives every direction to the drag. */
+.handdock .card { touch-action: pan-x; }
+.lboard .card, #app.board.v2 .draftpanel .card { touch-action: none; }
+.touchonly { display: none; }
+html.touch .touchonly { display: inline; }
+html.touch .mouseonly, html.touch .kh { display: none; }
+/* the tucked dock (BL-32), opened by a tap on its label (ui/touch.ts) */
+.handdock.tucked.open .zone { height: auto; overflow-x: auto; padding-bottom: 2px; }
+/* ~40px is the smallest target a fingertip hits first time */
+html.touch .actionbar button, html.touch .promptbar button, html.touch .menu button,
+html.touch .overlay button { min-height: 36px; }
+
+html.touch .menu { gap: 6px; }
+html.touch .menu button { padding: 8px 14px; text-align: left; }
+html.touch .seenx { width: 22px; height: 22px; opacity: .8; }
+html.touch .handdock.tucked .zonelabel { padding: 6px 0; cursor: pointer; }
+/* A TALL NARROW SCREEN (a foldable, a tablet on its side) is short of width,
+   not of height: the 1100px rule's 62px cards left half the board empty. With
+   the height to spare, the cards take some of it back — the fit pass
+   (ui/layout.ts) reads --cw live and still fans them if a zone runs out. */
+@media (max-width: 1100px) and (min-height: 800px) {
+  :root { --cw: 74px; }
+  .handdock .card { width: 86px; }
+}
+/* THE RAIL'S BUTTONS, TWO WAYS (owner, 2026-09-27). One markup, two looks:
+   - a COMPUTER keeps its rail — the buttons with their words, and the full
+     identity lines (owner: "show the same, normal view for computers") —
+     EXCEPT the toggles, which wait behind "⋯ more" (owner, 2026-10-10: "hide
+     many of the top right settings toggles in a deeper settings menu. The
+     stuff that usually doesn't need to be touched during a game"). Rules and
+     the judge are tools you reach for mid-game, not settings: they stay out.
+   - a TOUCH screen or a narrow window gets the compact one the owner asked
+     for on the iPad: ☰ 📝 ↶ as icons, "⋯ more" opening rules, the judge and
+     every toggle (their words back while it is open), and the room / name /
+     presence line as small print.
+   The desktop look is built from the same markup by letting the group's box
+   dissolve (`display: contents`), hiding its toggles until "more" is open,
+   and ordering every button with `order` — the toggles AFTER "more", so
+   opening it adds a row's end and moves nothing you were about to click. */
+.setbtn { order: 7; }
+.setbtn.on { border-color: var(--accent); color: var(--accent); }
+.fcnote { display: inline; order: 8; align-self: center; color: var(--glow); font-size: 12px; }
+.setgroup { display: contents; }
+
+html.touch .setbtn { display: inline-block; order: 13; }
+html.touch .fcnote { display: inline; order: 14; align-self: center; color: var(--glow); font-size: 12px; }
+html.touch .setgroup { display: none; order: 20; }
+html.touch .setgroup.open { display: flex; flex-wrap: wrap; gap: 4px; flex-basis: 100%;
+  padding: 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
+html.touch .setbtn.on { border-color: var(--accent); color: var(--accent); }
+
+@media (max-width: 900px) {
+  .setbtn { display: inline-block; order: 13; }
+  .fcnote { display: inline; order: 14; align-self: center; color: var(--glow); font-size: 12px; }
+  .setgroup { display: none; order: 20; }
+  .setgroup.open { display: flex; flex-wrap: wrap; gap: 4px; flex-basis: 100%;
+    padding: 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
+  .setbtn.on { border-color: var(--accent); color: var(--accent); }
+
+}
+/* THE REMINDERS (owner, same day: "the reminder text probably shouldn't be
+   there and take so much space"): the how-to sentence in a prompt bar or a
+   builder says what the buttons beside it already say. Gone on a tablet or
+   a narrow window; a desktop keeps it for now. */
+html.touch .remind, html.touch .remindrow:not(:has(b)) { display: none; }
+@media (max-width: 1100px) { .remind, .remindrow:not(:has(b)) { display: none; } }
+/* smaller screens, smaller furniture: the bars and pills sized for a 1440px
+   desktop took a quarter of a foldable's height */
+@media (max-width: 900px) {
+  .promptbar { padding: 5px 8px; gap: 8px; min-height: 32px; font-size: 12px; }
+  .actionbar button, .promptbar button { padding: 4px 10px; }
+
+  .lessonpill { font-size: 12px; padding: 5px 12px; }
+}
+/* THE CARD DETAIL ON ONE COLUMN (card browser under 1100px, deck builder
+   under 1000px — a tablet, a foldable). The grid goes to one column and the
+   detail used to come AFTER every result: tap a card, see nothing, scroll a
+   page to find it. It is a sheet on the right instead, over the results, with
+   the × it always had. */
+@media (max-width: 1100px) {
+  .cbmain .cbdetail, .dkwork .cbdetail {
+    position: fixed; top: 8px; right: 8px; bottom: 8px; z-index: 60; width: min(360px, 92vw);
+    max-height: none; box-shadow: -12px 0 32px rgba(0, 0, 0, .55);
+  }
+  .cbmain .cbdetail .cbclose, .dkwork .cbdetail .cbclose { position: sticky; float: right; top: 0; padding: 4px 12px; z-index: 1; }
+}
+/* the deck list stops following the page once it sits above the deck (the
+   one-column deck page), the fix .cbrail already had */
+@media (max-width: 900px) { .decklist { position: static; } }
+/* THE PICK DIALOG (owner, 2026-09-27): the draft step and the constructed
+   bottom-2, over the board instead of squeezed onto it. Below the other
+   dialogs (the judge or the rules can open over it), and wide: it is the
+   whole screen's job while it is up. */
+.overlay.pickover { z-index: 58; }
+.overlaybox.pickbox { width: min(1180px, 96vw); max-height: 94vh; max-height: 94dvh; overflow-y: auto;
+  padding: 10px 14px 14px; gap: 6px; }
+.pickbox .pickbar { display: flex; justify-content: flex-end; }
+/* CT-369: the rail stays usable while the pick is up — above the pick's dim
+   (a click on report used to land on the dim, or on the box's own hide button,
+   and hid the pick instead), with the box centred in the rest of the window
+   (main.ts relayout sets --pick-railclear from ui/railclear.ts). `.pickup` is
+   main.ts's flag for "the pick is up" (a class, not a :has(), so test 368's
+   cascade can read it). At every width since board round 8: the regions
+   board's rail is a 50px toolbar, never a drawer. */
+.overlay.pickover { padding-right: var(--pick-railclear, 0px); }
+.overlaybox.pickbox { max-width: 100%; }
+#app.board.pickup > .side { position: relative; z-index: 59; }
+.pickbox .draftpanel { border: none; background: none; margin: 0; padding: 0; }
+.pickbox .draftpanel .zone { gap: 8px; }
+.pickbox .draftpanel .card { width: clamp(64px, 9.5vw, 118px); }
+/* THE PICK-SET DIALOG (ui/pickset.ts, owner 2026-09-28): Wake the Dead's two
+   bins side by side, Tides of the Cosmos's eight cards in one row. A chosen
+   card wears a thick ring; one that no longer fits is dimmed and inert. */
+.overlay.psover { z-index: 58; }
+.overlaybox.psbox { width: min(1180px, 96vw); max-height: 94vh; max-height: 94dvh; overflow-y: auto;
+  padding: 10px 14px 14px; gap: 8px; }
+.psbox .psbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.psbox .pstitle { color: var(--accent); font-weight: 600; }
+.psbox .pscount { font-weight: 600; margin-right: auto; }
+.psbox .psnote { color: var(--danger); }
+.psbox .pspanes { display: flex; gap: 14px; flex-wrap: wrap; }
+.psbox .pspane { flex: 1 1 300px; min-width: 0; }
+.psbox .pspane .zone { display: flex; flex-wrap: wrap; gap: 8px; min-height: 60px; }
+.psbox .pscard .card { width: clamp(64px, 9.5vw, 118px); }
+.psbox .pscard.on .card { outline: 4px solid #7fc0ff; box-shadow: 0 0 14px rgba(127, 192, 255, .75); }
+.psbox .pscard.off { opacity: .35; filter: grayscale(.6); }
+.psbox .pscard.off .card { cursor: default; }
+.psbox .psfoot { display: flex; justify-content: flex-end; }
+/* the full-control chip is a switch on a touch screen (ui/touch.ts) */
+html.touch [data-chip="fullcontrol"] { cursor: pointer; }

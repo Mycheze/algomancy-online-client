@@ -1,0 +1,32 @@
+.promptbar { background: #262c18; border: 1px solid #4a5b2a; border-radius: 6px; padding: 8px 12px;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 12px; min-height: 38px; flex-wrap: wrap; }
+.promptbar.pending { background: #33270f; border-color: #7a5e1e; }
+/* report D2: "Yes, activate" refused a click or a key — flash it so it is seen.
+   Two names for one flash: the class alternates, so each refusal restarts it.
+   A glow, not a shake, so it needs no reduced-motion variant. */
+.promptbar.nudgea { animation: barnudgea .45s ease-out 2; }
+.promptbar.nudgeb { animation: barnudgeb .45s ease-out 2; }
+@keyframes barnudgea { 50% { border-color: #f0c040; box-shadow: 0 0 0 2px #f0c040, 0 0 16px 4px rgba(240,192,64,.55); } }
+@keyframes barnudgeb { 50% { border-color: #f0c040; box-shadow: 0 0 0 2px #f0c040, 0 0 16px 4px rgba(240,192,64,.55); } }
+.promptbar .who { font-weight: 700; color: var(--accent); }
+.promptbar .earlier { margin-right: 10px; color: var(--target); font-weight: 600; }
+/* board round 8: the main button names where it goes; on the first of a
+   window's two passes a small second line says the opponent can still reply
+   (ui/nextstep.ts passLabel) */
+.promptbar button .btnnote { display: block; font-size: .72em; font-weight: 400; opacity: .8; line-height: 1.1; }
+/* 2026-10-03: the playback — the opponent's hidden step, a board at a time
+   (main.ts playbackBarHtml). Calmer than a question: nothing here is yours to
+   answer, so it wears the region-neutral slate rather than the prompt green. */
+.promptbar.playbar { background: #1f2630; border-color: #3d4a5c; }
+.promptbar.playbar .playstep { color: var(--dim); font-variant-numeric: tabular-nums; }
+.promptbar.playbar .playcap { color: var(--text); }
+/* CR 606.2e {Alluring}: the compulsory block, named in the bar that gates Confirm */
+.promptbar .duty { color: var(--warn, #e8b64c); font-weight: 700; }
+/* [77] the refused-block notice: the engine's reason, the units it took back
+   out of the plan, and the explicit "Reset blockers?" the report asked for.
+   Inline in the bar rather than a modal — the plan it is talking about is
+   still on the board behind it, which is the whole point. */
+.promptbar .blockrefusal { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  border-left: 3px solid var(--danger, #d9534f); padding-left: 8px; margin-right: 8px; }
+
+.pname { font-weight: 700; }

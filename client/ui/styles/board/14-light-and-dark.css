@@ -1,0 +1,193 @@
+/* ═══ Light & Dark (docs/08) ═══════════════════════════════════════════ */
+
+/* ── CR 112.13, 112.15: rot & debt on the player identity row ──────────────────── */
+/* Both sit next to life and BOTH are hidden at zero, so a base-set game's
+   header is byte-identical to what it was before the expansion. */
+.pcount { border-radius: 12px; padding: 2px 10px; font-weight: 700; font-size: 12px;
+  border: 1px solid; cursor: help; }
+.pcount.rot { background: #2a1c22; border-color: #7d3b52; color: #e79ab2; }
+.pcount.debt { background: #2a2418; border-color: #7d6a2f; color: #e2c778; }
+
+/* CR 803.5d: an ordered burst, so far (burstStripHtml) — on its own line in the bar */
+.burststrip { flex-basis: 100%; display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
+.burststrip .burstlabel { align-self: center; font-size: 12px; color: var(--dim); }
+.bursttile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.bursttile .card { width: 52px; }
+.bursttile.now .card { box-shadow: 0 0 0 2px var(--accent); border-radius: 5px; }
+/* BL-47: the trigger order being built — a picked scan stays where it was,
+   dimmed, wearing its place in the order in the Burst strip's number badge */
+.ordertile { position: relative; }
+.ordertile.picked .card { opacity: .45; filter: saturate(.5); cursor: pointer; }
+.ordertile .burstn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 3;
+  min-width: 44px; height: 44px; border-radius: 22px; font-size: 26px; padding: 0 6px;
+  background: var(--accent); color: #1a1406; font-weight: 800; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 3px rgba(0,0,0,.45); pointer-events: none; }
+.orderdone { opacity: .7; }
+.orderdone .burstn { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px;
+  border-radius: 9px; background: var(--accent); color: #1a1406; font-weight: 800; font-size: 12px; }
+.card .badge.orderno { flex: 0 0 auto; background: var(--accent); border-color: var(--accent); color: #1a1406;
+  font-weight: 800; font-size: 11px; }
+.bursttile .burstn { position: absolute; top: -6px; left: -6px; z-index: 3; min-width: 18px; height: 18px;
+  border-radius: 9px; background: var(--accent); color: #1a1406; font-weight: 800; font-size: 12px;
+  display: flex; align-items: center; justify-content: center; }
+.bursttile .burstaim { font-size: 11px; max-width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.burststrip .burstleft { align-self: center; font-size: 12px; color: var(--dim); }
+
+/* the X die (dieHtml): a spell token's X as a die face across its art */
+.xdie { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 46%; aspect-ratio: 1;
+  box-sizing: border-box; padding: 9%; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+  background: linear-gradient(145deg, #fbf7ee, #ddd5c4); border-radius: 20%; pointer-events: none;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .7), inset 0 -3px 0 rgba(0, 0, 0, .18); z-index: 2; }
+.xdie .pip { width: 74%; aspect-ratio: 1; border-radius: 50%; place-self: center;
+  background: radial-gradient(circle at 35% 35%, #444, #111); }
+.xdie .p1 { grid-area: 1 / 1; } .xdie .p2 { grid-area: 1 / 2; } .xdie .p3 { grid-area: 1 / 3; }
+.xdie .p4 { grid-area: 2 / 1; } .xdie .p5 { grid-area: 2 / 2; } .xdie .p6 { grid-area: 2 / 3; }
+.xdie .p7 { grid-area: 3 / 1; } .xdie .p8 { grid-area: 3 / 2; } .xdie .p9 { grid-area: 3 / 3; }
+.xdie.num { display: flex; align-items: center; justify-content: center; padding: 0; container-type: inline-size; }
+.xdie.num span { font-size: 62cqw; font-weight: 800; color: #151515; line-height: 1; }
+
+/* BL-50: the (!) on a card placed where Confirm would be refused (ui/placewarn.ts)
+   — centred where the X die sits; on a spell token it sits above the die */
+.placewarn { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40%; aspect-ratio: 1;
+  box-sizing: border-box; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 35% 30%, #ff6b5a, #c0271a 70%); border: 2px solid #fff3e0;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .7); z-index: 3; container-type: inline-size; cursor: help; }
+.placewarn span { font-size: 70cqw; font-weight: 900; color: #fff; line-height: 1; text-shadow: 0 1px 2px rgba(0, 0, 0, .5); }
+.card:has(.xdie) .placewarn { top: 20%; width: 32%; }
+#cardzoom .placewarn { display: none; }   /* the zoom is for reading the card; the bar says why */
+.promptbar .placewarnline { margin-right: 6px; }
+
+/* ── CR D6.16: the cache — a fourth zone, rendered next to the bin ─────────── */
+/* 2026-10-01 rework: the cards side by side, each wearing ONE chip under it
+   (cacheChip: ⏳ 5/13 · waiting · ✓ free · ⚡ turn), and nothing else */
+.regioncache .cthumbs { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; margin-top: 2px; }
+.regioncache .cthumb { display: flex; flex-direction: column; align-items: center; }
+.regioncache .cthumb .card { width: var(--cacheth, 40px); }
+.regioncache .cmore { align-self: center; font-size: 12px; color: var(--dim); }
+.regioncache.onlyspent { opacity: .6; }
+.cchip { margin-top: 3px; font-size: 11px; font-weight: 700; line-height: 1.1; padding: 1px 5px;
+  border-radius: 8px; white-space: nowrap; background: #232838; color: #c9bff0; border: 1px solid #4b4470; }
+.cchip.proph.on { background: #1d3020; color: #8fe08f; border-color: #3f8a46; }
+.cchip.glimpse.on { background: #2d2716; color: #f0d27a; border-color: #8a7330; }
+.cchip.spent { color: var(--dim); border-color: var(--line); }
+.regioncache { min-width: 96px; flex-shrink: 0; border-left: 1px dashed #5b6ea8; padding-left: 8px;
+  cursor: pointer; border-radius: 4px; }
+.regioncache:hover { background: var(--panel2); }
+.regioncache.hasplay { border-left-color: var(--glow); box-shadow: inset 2px 0 0 var(--glow); }
+.cachebox .hint { text-align: left; max-width: 62ch; margin: 0 auto 8px; }
+.cachezone { align-items: flex-start; gap: 10px; }
+.cacheentry { width: 116px; }
+.cacheentry .card { width: 116px; }
+.cachecond { font-size: 10px; color: #b9abec; line-height: 1.3; margin-top: 3px; }
+.cachecond.met { color: var(--glow); }
+.cachepay { font-size: 10px; color: var(--accent); margin-top: 2px; }
+.cachepay.free { color: var(--glow); font-weight: 700; }
+.cachepay.none { color: var(--dim); }
+
+/* cache badges: the prophecy condition, whether it is fulfilled, the glimpse
+   window, and how the card would be paid for. `.cond` wraps onto its own line
+   under the scan because conditions are sentences, not labels. */
+.card .badge.proph { border-color: #9a8ad9; color: #b9abec; }
+.card .badge.proph.on { border-color: var(--glow); color: var(--glow); }
+.card .badge.glimpse { border-color: #5b9ed9; color: #93c6ef; }
+.card .badge.glimpse.on { border-color: #7fc0ff; color: #cfe6ff; }
+.card .badge.free { border-color: var(--glow); color: #0f1a0f; background: var(--glow); font-weight: 700; }
+.card .badge.paid { border-color: var(--accent); color: var(--accent); }
+.freetag { color: var(--glow); font-weight: 700; }
+
+/* ── {Modular}: mods riding on a stack item ──────────────────────────── */
+.stackmods { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 3px; }
+.stackmods .badge { background: rgba(20,24,30,.9); border: 1px solid var(--accent); color: var(--accent);
+  border-radius: 3px; font-size: 10px; padding: 0 4px; }
+.stackmods .modfrom { color: var(--dim); font-weight: 400; }
+
+/* ── log lines for the new events ────────────────────────────────────── */
+/* #125: "what just happened" is the brightest line, and with a curtain footer
+   under it `:last-child` is no longer that line — main.ts marks the last REAL
+   line instead. Placed BEFORE the tints below for the same reason `:last-child`
+   is: the newest line keeps its own colour when it has one. */
+.logpanel div.logtail { color: var(--text); }
+/* Same tint vocabulary the rest of the client uses: gold = a cost/upkeep,
+   green = something became available, red = damage/loss. The specificity here
+   matches `.logpanel div:last-child`, and these rules come after it, so the
+   newest line keeps its colour too. */
+.logpanel div.ev-cache { color: #b9abec; border-left: 2px solid #6d5fa8; padding-left: 5px; }
+.logpanel div.ev-prophecy { color: var(--glow); border-left: 2px solid var(--glow); padding-left: 5px; font-weight: 700; }
+.logpanel div.ev-rot { color: #e79ab2; border-left: 2px solid #7d3b52; padding-left: 5px; }
+.logpanel div.ev-debt { color: #e2c778; border-left: 2px solid #7d6a2f; padding-left: 5px; }
+.logpanel div.ev-debtpaid { color: #c9b477; border-left: 2px dotted #7d6a2f; padding-left: 5px; }
+.logpanel div.ev-trash { color: #b9a08c; border-left: 2px solid #6b4f3a; padding-left: 5px; }
+.logpanel div.ev-life { color: #9fe0a4; border-left: 2px solid #3f7a45; padding-left: 5px; }
+/* #125: in the "everything" view the plumbing is still plumbing — present and
+   readable, but visibly the second tier, so the two views read as one log at
+   two zoom levels rather than as two different documents. */
+.logpanel div.ev-plumbing { color: #566070; font-size: 11px; }
+.logpanel div.ev-plumbing:last-child { color: #6e7a8c; }
+/* the toggle rides in the panel's own heading, and the count of what is folded
+   away sits at the bottom where the reader ends up — a curtain nobody can see
+   the edge of is indistinguishable from a deletion. */
+.logpanel h3 { display: flex; align-items: baseline; gap: 8px; }
+.logpanel h3 .logmode { margin-left: auto; background: none; border: 1px solid var(--line);
+  border-radius: 4px; color: var(--dim); font: inherit; font-size: 10px; letter-spacing: .06em;
+  padding: 1px 6px; cursor: pointer; text-transform: none; }
+.logpanel h3 .logmode.on { border-color: var(--accent); color: var(--accent); }
+.logpanel div.logcurtain { border-bottom: none; padding-top: 4px; color: var(--dim); }
+.logpanel div.logcurtain button { background: none; border: none; color: var(--dim);
+  font: inherit; font-size: 11px; padding: 0; cursor: pointer; text-decoration: underline dotted; }
+.logpanel div.logcurtain button:hover { color: var(--accent); }
+
+/* ── §log modal (CT-124 / report #131) ────────────────────────────────
+   "it should be accessible by the 'generic' right click menu. 'View game log'
+   will bring up a modal (which is easier to read anyway)".
+
+   EASIER TO READ IS THE POINT, so the box is wide: the panel spent its life in
+   a 290px column where most lines wrapped. It is still `.overlay.mainonly`
+   (see ui/main.ts logOverlayHtml) because every card name in the log is a
+   `data-prev` whose hover preview paints into `#preview` IN THE RAIL — a
+   full-bleed overlay would hide the log's own hover target.
+
+   The panel inside sheds its own chrome: it is no longer a card in a column,
+   it is the contents of a dialog that already has a border, a background and
+   padding of its own. */
+.overlaybox.logbox { width: min(92%, 820px); max-height: 86vh; }
+.logbox .logpanel { flex: 1 1 auto; min-height: 0; max-height: none;
+  background: none; border: none; border-radius: 0; padding: 0; }
+/* the heading, and with it the story/everything toggle, stays reachable while
+   you scroll a long log — the toggle is the modal's only other control */
+.logbox .logpanel h3 { position: sticky; top: 0; background: var(--panel);
+  padding-bottom: 4px; z-index: 1; }
+
+/* playtest: a stack item's focus view shows the ABILITY on the stack, part by
+   part, instead of the whole card — the difference between "here is Mohruung"
+   and "here is what is about to resolve". Composed graft stacks list every
+   contributing card, which is the case that made this necessary. */
+.abilitybox { text-align: left; margin-top: 6px; border-top: 1px solid var(--line); padding-top: 6px; }
+.abhead { color: var(--dim); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+.abrow { font-size: 12px; line-height: 1.35; margin-bottom: 5px; }
+.absrc { display: block; color: var(--accent); font-size: 10px; letter-spacing: .04em; }
+.abtargets { color: var(--target); font-size: 11px; margin-top: 4px; }
+.abneg { color: var(--danger); font-size: 11px; margin-top: 4px; }
+
+/* playtest: the end-of-deployment cache reminder names the cards rather than
+   just counting them — hovering one previews it, so you can decide without
+   opening the cache dialog. */
+.cachenames span { color: var(--accent); cursor: help; border-bottom: 1px dotted var(--accent); }
+
+/* [69] the ride-along picker. It sits INSIDE the prompt bar rather than being
+   a card row of its own: the report asked for "a little dialogue", and a bar
+   the width of the board full of full-size token cards would be a bigger
+   interruption than the accident it is preventing. Each chip is the same
+   clickable token as the one in the strip (data-act="token"), so picking here
+   and picking there are literally the same click. */
+.ridepick { display: inline-flex; flex-wrap: wrap; gap: 4px; vertical-align: middle; margin: 0 4px; }
+.ridechip { display: inline-block; padding: 2px 8px; border-radius: 10px; cursor: pointer;
+  border: 1px solid #7a5e1e; background: #1b2028; color: var(--fg, #e8e6df); font-size: 12px; }
+.ridechip:hover { border-color: var(--accent); }
+.ridechip.on { background: #3d5a20; border-color: var(--glow, #b7e26a); color: #eaf6d8; }
+
+/* CR 721.4a: what an augment would actually donate to a SPELL token, in the
+   mod-in-progress bar — "you can only do this with attributes" (Caleb
+   2025-03-06). A mod of pure rules text is legal on a token and changes
+   nothing, and the player must be able to read that before they commit. */
+.modgift { color: var(--glow); font-size: 12px; margin-top: 4px; }
+

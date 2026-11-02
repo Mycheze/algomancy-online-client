@@ -1,0 +1,211 @@
+/* ── the deck collection (ui/decks.ts) ─────────────────────────────────
+   A two-column page: the decks you own down the left, the open one on the
+   right. The card grid is real card art on purpose — the whole request was
+   "I want to see my decks visually and make cuts" — so a tile is a scan with
+   its controls sitting on top of it rather than a row in a list. Sizes are
+   set so a 30-card deck grouped by mana is one screenful on a laptop. */
+/* 12/22px like every other page — this was `4px 2px`, and on any window
+   narrower than 1400px the grid ran to within 2px of the viewport edge */
+.deckpage { max-width: 1400px; margin: 0 auto; padding: 12px 22px 24px; }
+.deckpage h1 { margin: 0; font-size: 22px; letter-spacing: .04em; }
+.deckmain { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 12px; align-items: start; }
+@media (max-width: 900px) { .deckmain { grid-template-columns: 1fr; } }
+
+.homedecks { margin-top: 6px; }
+
+/* ── the rail ── */
+.decklist { display: flex; flex-direction: column; gap: 6px; position: sticky; top: 8px; }
+.deckmakebtns { display: flex; gap: 6px; flex-wrap: wrap; }
+.deckmakebtns button { flex: 1; }
+.deckimportbox { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.deckimportbox textarea { width: 100%; }
+
+.deckrow { display: grid; grid-template-columns: 46px minmax(0, 1fr) 18px; gap: 8px; align-items: center;
+  text-align: left; padding: 6px; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; cursor: pointer; }
+.deckrow.on { border-color: var(--accent); background: var(--panel2); }
+.deckrowart { width: 46px; height: 46px; border-radius: 5px; overflow: hidden; background: var(--panel2);
+  display: block; }
+/* the scan is 63:88 — crop to the art, which is the top of the card */
+.deckrowart img { width: 100%; height: auto; margin-top: -18%; display: block; }
+.deckrowbody { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+/* the bundled deck names are long and differ only at the end
+   ("Single-Box Battle Deck - Water v1.1.0"), so a one-line ellipsis made all
+   five rows read identically — two lines is what tells them apart */
+.deckrowname { font-weight: 700; overflow: hidden; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2; }
+.deckrowmeta { color: var(--dim); font-size: 11px; }
+.deckrowrec { font-size: 11px; color: var(--text); }
+.deckflag { font-weight: 700; text-align: center; }
+.deckflag.ok { color: var(--glow); }
+.deckflag.bad { color: var(--accent); }
+
+/* ── the open deck ── */
+.deckdetail { min-width: 0; }
+.deckhero { display: grid; grid-template-columns: 132px minmax(0, 1fr) auto; gap: 14px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px;
+  margin-bottom: 8px; }
+.deckcover { width: 132px; border-radius: 6px; overflow: hidden; background: var(--panel2);
+  display: flex; align-items: center; justify-content: center; min-height: 100px; }
+/* Report [142]: reserve the box, same as `.card img` — the deck page is the other half
+   of report [142] ("it happens on most pages, deck building"), and a cover that
+   is 0px tall until it loads shortens the page under `alight()`'s restore in
+   exactly the way it shortens the board under restoreViewport's. */
+.deckcover img { width: 100%; display: block; aspect-ratio: auto 18 / 25; }
+.deckheroinfo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.deckname { font-family: inherit; font-weight: 700; font-size: 19px; line-height: 1.2; background: var(--panel2); color: var(--text);
+  border: 1px solid transparent; border-radius: 5px; padding: 5px 8px; width: 100%; }
+.deckname:hover { border-color: var(--line); }
+.deckname:focus { border-color: var(--accent); outline: none; }
+.deckfacts { color: var(--dim); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.deckstatus { font-size: 12px; border-radius: 5px; padding: 4px 8px; }
+.deckstatus.ok { color: var(--glow); background: #1c2a1c; }
+.deckstatus.bad { color: var(--accent); background: #2a2314; }
+.deckrecline { font-size: 12px; }
+.deckrecline a { color: var(--accent); margin-left: 6px; }
+.deckbtns { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.dkdanger { border-color: var(--danger); color: var(--danger); }
+
+/* the action column: ▶ and ⚙, on the side rather than under the facts. Two
+   square buttons, because the words they used to carry are in their tooltips
+   and the one thing that genuinely needed saying in prose — why ▶ is disabled
+   — is the .deckstatus line to their left. */
+.deckacts { display: flex; flex-direction: column; gap: 6px; align-self: start; }
+.dkicon { width: 38px; height: 38px; padding: 0; font-size: 15px; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.dkicon.play { font-size: 14px; }
+.dkicon.primary, .dkicon.play:not(.on):not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.dkicon.play.on { border-color: var(--glow); color: var(--glow); background: #1c2a1c; }
+.dkicon:disabled { opacity: .4; }
+.sharebar .dkicon, .dkmodalhead .dkicon { width: 30px; height: 30px; font-size: 13px; }
+.deckbody { margin-top: 8px; }
+
+/* ── the card grid ── */
+.dktoolbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.dktoolbar .hint { margin: 0; }
+.dkkind { padding: 3px 9px; font-size: 12px; }
+.dkkind.on { border-color: var(--accent); color: var(--accent); }
+.dkfilterspacer { flex: 1; }
+
+.dkgroup { margin-bottom: 12px; }
+.dkgrouphead { color: var(--accent); text-transform: uppercase; letter-spacing: .06em;
+  font-size: 11px; border-bottom: 1px solid var(--line); padding-bottom: 3px; margin-bottom: 6px; }
+.dkgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 7px; }
+
+.dktile { position: relative; border-radius: 6px; overflow: hidden; background: var(--panel2);
+  border: 1px solid var(--line); aspect-ratio: 63 / 88; }
+.dktile.iscover { border-color: var(--accent); }
+.dktile.overcap { border-color: var(--danger); }
+/* AT THE CAP, IN THE ADD DRAWER ONLY. Two copies is the cap, so the tile stops
+   OFFERING a third everywhere (BL-34) — but the GREY is news only where you are
+   shopping. In the drawer "you already have the most of this" is the answer to
+   the question you are asking; in the deck's own grid it is not, because a deck
+   of two-ofs is what a deck looks like. Shipped without that split, a normal
+   constructed deck rendered entirely in greyscale (measured: 15/15 tiles), and
+   the owner read it as damage: *"the cards are weirdly greyed out, for some
+   reason."* `ui/decks.ts::tile` therefore writes this class only where the card
+   is being shopped for; the withheld `+` still carries the rule everywhere.
+
+   It is not disabled either — the buttons that remain still work and a deck
+   holding three still saves — so it has to read as "nothing more to take here"
+   and not as "broken": dimmed art, normal border. */
+.dktile.atcap .dkart { filter: grayscale(.55) brightness(.72); }
+.dktile.atcap.overcap .dkart { filter: none; }
+.dktile[data-btn] { cursor: pointer; }
+.dkart { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+/* COPIES ARE DRAWN, NOT COUNTED. Owner, 2026-08-29: "instead of showing a x2
+   for cards with 2 copies, actually show two of those cards, just stacked."
+
+   ⚠ A STACKED TILE IS ONE GRID CELL, AND GIVING THE CELL AWAY WAS THE BUG.
+   This shipped wrong twice. The first version offset the copies 4.5px, which
+   was invisible — *"it's impossible to tell which ones are two ofs and which
+   are just single cards"*. The fix for THAT let the cell give way instead
+   (`grid-column: span 2`, `aspect-ratio: auto`), and that broke the page the
+   feature exists for: `.dkgrid` is `repeat(auto-fill, minmax(112px, 1fr))`, so
+   a grid holding both one- and two-track tiles cannot pack, rows go ragged and
+   auto-fill leaves holes. Measured in headless Chrome, before this rewrite: a
+   9-column drawer running 8/9/9/9/9/8/8, a deck of two-ofs wasting a track on
+   every row, and — because `.dkbtns` and `.dkn` are positioned against the TILE
+   — a +/− bar overhanging the card it belongs to by 121.1px.
+
+   So the CELL holds firm and the PILE gives way. Every tile keeps one track,
+   its box, its border and its 63/88 aspect; inside it the layers SHRINK by the
+   stack depth and step up-and-right, so each copy shows an edge you can count
+   at a glance and no layer can reach a neighbouring card.
+
+     --d       how many ghosts are behind the front card. Written by the tile
+               (ui/decks.ts, ui/meta.ts) from stackLayers().length, so the
+               geometry is derived from the depth rather than cased on it.
+     --i       which ghost, counting from the back. Written on each wrapper.
+     --dkstep  one copy's visible edge, as a fraction of the CELL. At the
+               112-128px this grid runs at that is 13-15px per copy — an order
+               of magnitude past the 4.5px that made the feature invisible,
+               without the tile having to widen to hold it.
+
+   The arithmetic closes exactly: a layer is (100% - d·step) and ghost i sits at
+   i·step, so the backmost ghost's far corner lands on the cell's corner and
+   nothing is clipped or spills. */
+.dktile { --d: 0; --dkstep: 13%; }
+.dktile.dkstack > .dkart,
+.dktile.dkstack .dkghostwrap {
+  position: absolute;
+  width: calc(100% - var(--d) * var(--dkstep));
+  height: calc(100% - var(--d) * var(--dkstep));
+  border-radius: 5px;
+  /* a hairline round every layer plus a shadow under it: the edge is what you
+     count, the shadow is what says the edge is a card and not a seam */
+  box-shadow: 0 0 0 1px var(--line), -3px 3px 6px rgba(0, 0, 0, .55);
+}
+.dktile.dkstack > .dkart { left: 0; bottom: 0; z-index: 2; }
+.dktile.dkstack .dkghostwrap {
+  left: calc(var(--i) * var(--dkstep));
+  bottom: calc(var(--i) * var(--dkstep));
+  z-index: 1; overflow: hidden; background: var(--panel2);
+  /* darker the further back, so depth reads at a glance rather than as a
+     misaligned duplicate */
+  filter: brightness(.78);
+}
+.dktile.dkstack .dkghostwrap .dkart { position: static; width: 100%; height: 100%;
+  border: none; border-radius: 0; box-shadow: none; }
+/* The controls and the over-cap number ride the FRONT CARD, which on a stack is
+   inset from the cell by the depth. Left where they were they would hang over
+   the mat beside the pile — the 121px overhang above, in miniature.
+
+   ⚠ AND THEY HAVE TO BE GIVEN A LAYER. THIS WAS THE WORST OF THE REGRESSION AND
+   IT IS NOT A LAYOUT FAULT AT ALL. The front card is positioned with
+   `z-index: 2` and `.dkbtns` is positioned with `z-index: auto`, so on a stacked
+   tile THE ART PAINTED OVER THE CONTROLS. Measured over CDP on the shipped
+   build: `elementFromPoint` at the centre of `−` on a two-of returned the
+   <img>, whose `data-btn` is `deck-focus` — so pressing −, » or ★ on any
+   two-of pinned the card panel instead of cutting, shelving or setting the
+   cover. In a constructed deck, where nearly every card is a two-of, that is
+   nearly every control on the page. Nothing that reads the source could see it:
+   the buttons are emitted, they are the right size, they are simply underneath. */
+.dktile.dkstack .dkbtns { right: calc(var(--d) * var(--dkstep)); z-index: 3; }
+.dktile.dkstack .dkname { right: calc(var(--d) * var(--dkstep)); z-index: 3; }
+.dktile.dkstack .dkn { top: calc(var(--d) * var(--dkstep) + 3px);
+  right: calc(var(--d) * var(--dkstep) + 3px); z-index: 3; }
+
+.dkn { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,.7); color: #fff;
+  border-radius: 9px; padding: 0 5px; font-size: 11px; font-weight: 700; }
+.dkn.bad { background: var(--danger); }
+/* the name is the fallback when the scan is missing, and the label when it is
+   not — small, on a scrim, at the bottom where the printed name is anyway */
+.dkname { position: absolute; left: 0; right: 0; bottom: 20px; font-size: 10px; line-height: 1.15;
+  padding: 2px 4px; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.8) 40%);
+  text-align: center; }
+.dkbtns { position: absolute; left: 0; right: 0; bottom: 0; display: flex;
+  background: rgba(0,0,0,.72); }
+.dkbtns button { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  background: none; border: none; border-radius: 0; color: #fff;
+  padding: 2px 0; font-size: 12px; line-height: 1.3; }
+.dkbtns button:hover { background: var(--accent); color: #12151a; }
+
+.dkadd { margin-top: 6px; }
+.dkdrawer { margin-top: 10px; border: 1px solid var(--accent); border-radius: 8px; padding: 8px;
+  background: var(--panel2); }
+.dkdrawerhead { display: flex; gap: 6px; margin-bottom: 6px; }
+.dksearch { flex: 1; }
+.dkfilters { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
+

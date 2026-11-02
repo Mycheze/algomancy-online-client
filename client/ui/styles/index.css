@@ -1,0 +1,66 @@
+/* THE STYLESHEET'S ORDER — the cascade. CANONICAL; edit by hand.
+ *
+ * The browser gets one file, client/ui/bundle.css (generated, gitignored),
+ * which `npm --prefix client/ui run build` writes as the pieces below
+ * concatenated byte for byte in THIS order (ui/scripts/build-css.mjs). The
+ * tests read the same concatenation (ui/test/read-styles.ts).
+ *
+ * The order is load-bearing. The stylesheet grew as a changelog — later
+ * sections override earlier ones — so these pieces are in the order their
+ * lines had in the old single style.css (split 2026-11-02 by
+ * ui/scripts/split-styles.mjs, word for word). Moving a piece moves rules past
+ * the rules they override. A new piece goes here exactly once, or the build
+ * refuses it (ui/test/920 too).
+ *
+ * A url() inside a piece resolves from client/ui/, where bundle.css is served,
+ * not from the piece's own folder.
+ *
+ * Only comments and @import lines may appear in this file.
+ */
+@import "tokens.css";
+@import "base.css";
+@import "board/02-promptbar.css";
+@import "board/03-life-cards-battle-log.css";
+@import "pages/04-joinscreen.css";
+@import "board/05-resources-presence.css";
+@import "pages/06-home.css";
+@import "pages/07-lobby.css";
+@import "board/08-playtest-ux-fixes.css";
+@import "board/09-region-overhaul.css";
+@import "shared/10-element-chips.css";
+@import "board/11-hotfixes-help-judge-overlays.css";
+@import "board/12-playtest-round3.css";
+@import "board/13-playtest-round4-clocks-report.css";
+@import "board/14-light-and-dark.css";
+@import "board/15-anim-arrows.css";
+@import "board/16-fills-window.css";
+@import "pages/17-accounts.css";
+@import "pages/18-draft-lobby.css";
+@import "pages/19-postgame.css";
+@import "board/20-stack.css";
+@import "board/21-textbox.css";
+@import "board/22-scenario-strip.css";
+@import "pages/23-decks.css";
+@import "pages/24-tabletop.css";
+@import "pages/25-binder.css";
+@import "pages/26-deckstrip-curve-affinity.css";
+@import "pages/27-cards.css";
+@import "pages/28-metagame.css";
+@import "board/29-cost-toasts.css";
+@import "pages/30-queue.css";
+@import "pages/31-admin.css";
+@import "pages/32-learn.css";
+@import "pages/33-single-card-duel.css";
+@import "pages/34-cardstats.css";
+@import "pages/35-deck-modals.css";
+@import "board/36-replaybar.css";
+@import "shared/37-touch.css";
+@import "shared/38-drag.css";
+@import "board/39-regions.css";
+@import "board/40-info-line-phase-icons.css";
+@import "board/41-regions-blocks.css";
+@import "board/42-zoom-ressum-infotip.css";
+@import "board/43-toolbar.css";
+@import "pages/44-league.css";
+@import "pages/45-crreview.css";
+@import "pages/46-challenge.css";

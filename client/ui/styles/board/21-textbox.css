@@ -1,0 +1,95 @@
+/* ── the current text box (ui/cardtext.ts) ──────────────────────────────
+ *
+ * Playtest 2026-08-21, Bena: "the printed card is hardly ever correct." The
+ * scan stays the picture; this is the rules text, and it has to read like a
+ * text box rather than like a debug dump — so it is one panel with a head, a
+ * stat line, an attribute row and one row per clause, and every row carries a
+ * small tag naming the card that clause is printed on.
+ *
+ * Three surfaces render exactly this markup: the side-rail focus viewer, the
+ * long-hover tooltip (.compact — no arithmetic, no state notes) and the
+ * inspector. One stylesheet block so they cannot drift apart.
+ */
+.textbox { text-align: left; background: var(--panel2); border: 1px solid var(--line);
+  border-radius: 6px; padding: 7px 8px; margin-top: 8px; white-space: normal; }
+.textbox.modified { border-color: var(--accent); }
+.tbhead { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--line); padding-bottom: 4px; margin-bottom: 5px; }
+/* the inspector already has the name in its own heading: the badge alone */
+.tbhead.bare { border-bottom: 0; padding-bottom: 0; margin-bottom: 3px; }
+.tbname { font-weight: 700; }
+.tbtype { color: var(--dim); font-size: 11px; }
+/* the badge is the whole point of the panel: this is NOT the printed card */
+.tbbadge { margin-left: auto; background: var(--accent); color: #1a1206;
+  border-radius: 3px; font-size: 9px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; padding: 1px 5px; white-space: nowrap; }
+
+.tbstats { display: flex; align-items: baseline; gap: 8px; font-size: 15px; }
+.tbstats .statup { color: #7fdc7f; }
+.tbstats .statdown { color: #ff8a8a; }
+.tbstats .basestat { color: var(--dim); font-size: 11px; }
+.tbstats .tbdmg { color: var(--danger); font-size: 11px; margin-left: auto; }
+/* the arithmetic, so a surprising number can be READ rather than trusted */
+.tbmath { display: flex; flex-wrap: wrap; gap: 4px 8px; font-size: 10px;
+  color: var(--dim); margin: 2px 0 4px; }
+.tbmath .tbterm b { color: var(--text); font-weight: 600; }
+
+.tbattrs { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
+.tbattr { background: var(--panel); border: 1px solid var(--line); border-radius: 3px;
+  font-size: 10px; padding: 1px 5px; }
+.tbattr em { color: var(--dim); font-style: normal; margin-left: 4px; }
+/* printed on the card, switched off by the board — both facts at once */
+.tbattr.off { text-decoration: line-through; opacity: .5; border-style: dashed; }
+
+.tbsupp { background: #3a1e1e; border: 1px solid var(--danger); border-radius: 4px;
+  color: #ffbcbc; font-size: 11px; padding: 3px 6px; margin: 5px 0; }
+
+.tblines { display: flex; flex-direction: column; gap: 5px; }
+.tbline { border-left: 2px solid var(--line); padding-left: 6px; font-size: 12px; line-height: 1.35; }
+.tbfrom { display: block; font-size: 9px; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--dim); }
+.tbline.tb-augment, .tbline.tb-graft { border-left-color: var(--accent); }
+.tbline.tb-augment .tbfrom, .tbline.tb-graft .tbfrom { color: var(--accent); }
+.tbline.tb-granted { border-left-color: var(--glow); }
+.tbline.tb-granted .tbfrom { color: var(--glow); }
+.tbline.tb-static { border-left-color: #6d5bd0; }
+.tbline.tb-static .tbfrom { color: #9d8bf0; }
+.tbline.tb-note { border-left-color: transparent; }
+/* CT-175: an until-regroup effect with no card text behind it. Amber, because
+   the one thing it is saying is that it LAPSES — the same reading the ⏱ tag
+   gives it. */
+.tbline.tb-until { border-left-color: #c8912f; }
+.tbline.tb-until .tbfrom { color: #e0ae52; }
+/* a clause that is present but doing nothing: struck, not hidden — "it says
+   Flying and Flying is off" is the thing worth showing */
+.tbline.off .tbtext { text-decoration: line-through; opacity: .55; }
+.tbwhy { display: block; font-size: 10px; color: var(--danger); }
+.tbstate { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 10px;
+  color: var(--dim); border-top: 1px solid var(--line); margin-top: 6px; padding-top: 4px; }
+.textbox .txticon { vertical-align: -2px; }
+
+/* the long-hover box: it comes to the cursor rather than making the player
+   look away from the board. Inert to the pointer, so it can never eat a
+   click on the card underneath it. */
+.hovertip { position: fixed; z-index: 90; width: 300px; max-width: 80vw;
+  max-height: 70vh; overflow: hidden; pointer-events: none; opacity: 0;
+  visibility: hidden; transition: opacity 90ms ease-out;
+  filter: drop-shadow(0 6px 18px rgba(0,0,0,.65)); }
+.hovertip.on { opacity: 1; visibility: visible; }
+.hovertip .textbox { margin-top: 0; background: var(--panel); }
+
+/* a card name in PROSE hovers its scan instead of its rules text — the box is
+   sized for a paragraph, a card is sized for a card (ui/cardlinks.ts `art`) */
+.hovertip.art { width: 260px; }
+.hovertip .hovertipart { width: 100%; display: block; border-radius: 8px;
+  aspect-ratio: auto 18 / 25; background: var(--panel2); }
+.textbox.compact { font-size: 12px; }
+
+/* the inspector's attribute reminders inherit the same on/off vocabulary */
+.attrgloss.off { opacity: .5; }
+.attrgloss.off b { text-decoration: line-through; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hovertip { transition: none; }
+}
+

@@ -470,7 +470,7 @@ const OPEN: Entry[] = [
     deps: [],
     touches: [
       'client/docs/23-design-system.md',
-      'client/ui/style.css',
+      'client/ui/styles',
       'client/ui/anim.ts',
       'client/ui/motion.ts',
       'client/ui/flash.ts',

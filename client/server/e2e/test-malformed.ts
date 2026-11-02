@@ -216,7 +216,7 @@ try {
   ok(!!tag, `…and an ETag to revalidate against (${tag})`);
   const again = await fetch(`http://localhost:${PORT}/index.html`, { headers: { 'if-none-match': tag } });
   ok(again.status === 304, `asked again with If-None-Match it is a 304 with no body (got ${again.status})`);
-  const css = await fetch(`http://localhost:${PORT}/style.css`, { headers: { 'accept-encoding': 'gzip' } });
+  const css = await fetch(`http://localhost:${PORT}/bundle.css`, { headers: { 'accept-encoding': 'gzip' } });
   ok(css.headers.get('content-encoding') === 'gzip' || css.headers.get('content-length') === null,
     `text is gzipped when accepted (content-encoding: ${css.headers.get('content-encoding')})`);
   ok((await css.text()).includes('{'), '…and decodes to the stylesheet');
