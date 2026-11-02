@@ -101,6 +101,41 @@ Still open, with the default that applies unless the owner says otherwise:
 
 ## Progress
 
+> **Resume here.** State at the end of 2026-11-02. Work stopped mid-phase-1 at the owner's request.
+
 | Phase | State |
 |---|---|
-| 0 | in progress — worktrees `ds-phase0` (tests helper, bug fixes, docs) and `ds-shots` (screenshot tool) |
+| 0 | **On master** (`292f870b`, `f069203e`, `6777399e`; gate green). **Not deployed.** The owner said "hold and just work locally", so whoever next deploys master ships these. Contents: the inventory and this plan; `readStyles()` for every CSS-reading test (910); the bug fixes with guards 900–909, including Custom rules being dead since 2026-10-10 (crreview swallowed every `cr-` button); and 8 update lines dated 2026-11-02. When it does deploy, **re-date those lines** to the deploy day (323 checks the order). |
+| 1a | **Branch `ds-phase1b`** (worktree `.claude/worktrees/ds-phase1b`), commits `a0afe05e` (split into `client/ui/styles/`, `bundle.css` byte-identical to the old `style.css`) and `af486e6e` (CR verdict U23's span path follows the move). Full gate green on its own. |
+| tool | Same branch, `efc6f506`: `client/server/e2e/ui-shots.mjs` + `ui-fixture.ts` + `pinned-server.mjs` + `ui-shots-compare.mjs`. 83 states × 3 viewports, 524 PNGs. Always compare two runs **on the same fixture dir** (a re-seeded fixture differs in ~80 shots), with `--fuzz 3`. |
+| 1b-i | Same branch, `b507f029`: 65 role tokens in `styles/tokens.css` (the old names still work), `ui/scripts/tokenize-styles.mjs` (exact matches only, pages/shared/base, the board untouched), 921 colour-literal ratchet. Zero visible change (524 shots, 0 differ). **The landing gate for 1a + tool + 1b-i was started and stopped unfinished; run it again before pushing.** |
+| 1b-ii | **Branch `ds-snap`** (`b2c170ac`, on top of `b507f029`): `tokenize-styles.mjs --snap through`. 589 near-values onto the scale, pages/ only, each element ≤2px. It is visible in aggregate (479/524 shots differ), so it is **waiting for the owner**. |
+| 2–5 | Not started. |
+
+### Waiting for the owner
+
+The approval page is https://claude.ai/artifact/KYPv65og6FnFJx9vMx6ozu.
+
+1. Apply the spacing snap (`ds-snap`)? Recommended: yes.
+2. Leave the 17 bigger near-misses as literals and handle them page by page in Phase 4? Recommended: yes, and nothing changes unless the owner objects.
+3. `color-scheme: dark` on `:root` (dark native scrollbars and selects)? Recommended: yes, in Phase 2.
+
+Also already settled: Phase 0's two UX calls. Only data-losing actions ask "press again" (giving up a run, dropping a kept run). The league availability grid uses tap plus arrow keys.
+
+### Landing 1a + tool + 1b-i (the next step)
+
+1. Rebase `ds-phase1b` onto `origin/master`. If `client/ui/style.css` conflicts because another branch edited it, take that branch's added sections into new `styles/pages/*` pieces at the same cascade position (one `@import` each in `styles/index.css`), then `git rm client/ui/style.css`. `node client/ui/scripts/split-styles.mjs --rev <that branch's commit> --check` shows where its sections would cut.
+2. Re-run `node client/ui/scripts/tokenize-styles.mjs` (idempotent). Paste a new allowlist into 921 if it asks.
+3. Check that verdict U23's span still names the piece that holds the `.placewarn` radial-gradient (engine test 409).
+4. Run the full gate (`EXIT=0` in the log, not the notification). Then `git push origin ds-phase1b:master`.
+5. Tell the competitive-constructed session the commit. Its `cc-int` branch adds **two** CSS sections to `style.css` (sideboard/tabletop and the match screen) and will merge them into pieces itself. Delete `split-styles.mjs` only after cc has landed.
+6. Visible-change phases get update lines; 1a, the tool and 1b-i get none.
+
+### Found, not fixed (ticket material)
+
+- On a phone, the report button covers the league page's "Suggest a time".
+- The friends "Everyone here" list shows an empty table on a fetch error.
+- The league grid's help text still says "drag" on touch.
+- The tabletop's rerender has the same `!inGame` guard pattern as the waiting-room deck-page bug; not checked whether it is reachable.
+- ui-shots phone overflow walk: Card stats headers, the past-week "Watch" buttons and admin badge buttons sit past the right edge. Probably inside scrolling tables; look before ticketing.
+- Signed-out home at 1440: the "Challenge" nav button wraps onto its own row.
