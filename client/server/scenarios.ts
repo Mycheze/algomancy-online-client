@@ -512,8 +512,13 @@ export function dealScenario(
   id?: string,
   /** BL-43: a live draft's custom deal, passed straight through to createGame */
   deal?: import('../engine/src/draftdeal.ts').DraftDeal,
+  /** docs/22 §3.1 — a Competitive Constructed game's rules (sequential steps,
+   * games 2–3's chosen initiative), passed straight through to createGame.
+   * Forgetting it deals game 2 under the house rules with the rolled
+   * initiative: a different game. Test 822 scans every deal site for it. */
+  rules?: import('../engine/src/types.ts').GameRules,
 ): { state: GameState; events: EngineEvent[] } {
-  const base = createGame(seed, names, mode, els, decks, deal);
+  const base = createGame(seed, names, mode, els, decks, deal, undefined, rules);
   if (id === undefined) return { state: base.state, events: base.events };
   // BL-06 — the second kind of deal (see SANDBOX_ID above). Before the
   // SCENARIOS lookup, so a sandbox never falls into "no such scenario".

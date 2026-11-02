@@ -197,7 +197,7 @@ const CODE = /^[A-Z0-9]{2,8}$/;
  */
 export async function replayRoutes(
   req: IncomingMessage, res: ServerResponse, path: string,
-  opts: { liveRoom: (code: string) => boolean },
+  opts: { liveRoom: (code: string) => boolean; matchOpen?: (match: unknown) => boolean },
 ): Promise<boolean> {
   if (!path.startsWith('/api/replay/')) return false;
   if (req.method !== 'GET') return notFound(res);
@@ -217,6 +217,11 @@ export async function replayRoutes(
   // Bena, 2026-09-23: your own history, and the admin room can reach any game.
   // Nothing else — a room code is not a capability.
   if (seat === null && !admin) return notFound(res);
+  // docs/22 §2.6 — NO MID-MATCH PEEKING. A saved game holds both decks; while
+  // the Competitive match it belongs to is still open, its file would show a
+  // player the opponent's deck before the next game. Refused — as "no such
+  // game", the rule above — to everybody but an admin who is not a seat.
+  if (opts.matchOpen?.((raw as { match?: unknown }).match) && !(admin && seat === null)) return notFound(res);
 
   json(res, {
     ok: true,
