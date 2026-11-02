@@ -463,11 +463,13 @@ const OPEN: Entry[] = [
       'The work lands in the non-gameplay screens first — home, lobby, account/profile, post-game — and does not re-open the table layout unless something there is actually unreadable',
     ],
     decided: [
+      '2026-11-02 — THE BRIEF GREW: A REAL DESIGN SYSTEM, NOT LIGHT SPRUCING. Owner: "we\'ve been so focused on the game, the other parts of the UI have fallen to the wayside. The homepage, the other basic subpages, the general design system... They\'re all sorta placeholders and have a very specific vibe-coded vibe." Then: "I think we should actually use Storybook for this work so that we can iterate on specific design elements," and, shown the plan, "Aight go ahead and get on it". The plan is client/docs/23-design-system.md (six phases: build the system under today\'s look first, then redesign in Storybook), from the inventory in client/docs/23-ui-inventory/. The 2026-08-25 limit below ("do not read this as licence for a redesign") no longer applies to the non-game pages; the game board stays out of scope.',
       'No reference, no mood board, and the brief is small. Owner, 2026-08-25, asked whether there is a look he wants or whether "less programmer-art" is the whole brief: "It\'s honestly pretty much, just some general light sprucing up is all that\'s needed. Mostly in non gameplay related areas." — so: light, and aimed away from the play area. Do not read this as licence for a redesign, and do not go looking for one in docs/07 (see BL-09).',
     ],
     asks: [],
     deps: [],
     touches: [
+      'client/docs/23-design-system.md',
       'client/ui/style.css',
       'client/ui/anim.ts',
       'client/ui/motion.ts',
