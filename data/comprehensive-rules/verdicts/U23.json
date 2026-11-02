@@ -2906,7 +2906,7 @@
         "note": "bar names the card(s) and the engine's reason"
       },
       {
-        "loc": "client/ui/style.css:.placewarn",
+        "loc": "client/ui/styles/board/14-light-and-dark.css:.placewarn",
         "agrees": true,
         "note": "red radial-gradient (!) badge"
       }
@@ -2938,7 +2938,7 @@
         "text": "blocking with feeble units isn't allowed to be submitted, but you can drag them into the column."
       },
       {
-        "file": "client/ui/style.css",
+        "file": "client/ui/styles/board/14-light-and-dark.css",
         "text": "background: radial-gradient(circle at 35% 30%, #ff6b5a, #c0271a 70%)"
       },
       {
