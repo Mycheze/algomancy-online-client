@@ -128,6 +128,7 @@ export const STORED_GAME: readonly StoredLine[] = [
   { covers: ['amended'], what: 'If you and your opponent agreed to fix the board during the game: how many times. It is shown as a "fixed" tag in your match history; the game counts like any other.' },
   { covers: ['disputed'], what: 'If either of you pressed "Dispute game" after it ended: which seat did. It is shown as a "disputed" tag in your match history; the result stands unless someone who reviews it changes it.' },
   { covers: ['signedUp'], what: 'If you played a game signed out and made your account straight after it: that the seat became yours that way. That one game is the first on your profile.' },
+  { covers: ['match'], what: 'If the game was part of a Competitive match: which match, which game of it, and whether it was a best of one or three. It is shown as "game 2 of 3" in your match history.' },
   { covers: ['concession'], what: 'If the game ended by concession: which seat conceded and on which turn. That decides how much the game weighs — a turn-1 concession is a walkover that counts for nothing, a turn-2 one counts at half rating weight, later ones count in full.' },
 ];
 
