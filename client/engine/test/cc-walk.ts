@@ -12,11 +12,13 @@
  *     which is stronger than `server/replay-probe.ts`'s semantic `signature`
  *     (that one is tested beside it in 800).
  */
+import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { apply, createGame, legalActions, IllegalAction } from '../src/apply.ts';
 import { DECK_LIST } from '../src/cards/registry.ts';
+import { Harness } from '../src/harness.ts';
 import { rngNext } from '../src/rng.ts';
-import type { Action, CardName, EngineEvent, GameMode, GameRules, GameState } from '../src/types.ts';
+import type { Action, CardName, EngineEvent, GameMode, GameRules, GameState, Seat } from '../src/types.ts';
 import { checkInvariants } from './fuzz.ts';
 
 export const h10 = (s: string): string => createHash('sha1').update(s).digest('hex').slice(0, 10);
@@ -121,4 +123,70 @@ export function traceReplay(start: { state: GameState; events: EngineEvent[] }, 
     }
   }
   return state;
+}
+
+/**
+ * CR D2.1a's contract on a CC board: the reducer refuses exactly what
+ * `legalActions` does not offer. The candidates are the HOUSE-RULE lists of
+ * the same board (`sequential` dropped), so every play the CC gate takes away
+ * is tried against the reducer too. Returns the disagreements.
+ */
+export function gateDisagreements(s: GameState): string[] {
+  const out: string[] = [];
+  const twin = structuredClone(s);
+  delete twin.sequential;
+  for (const seat of [0, 1] as const) {
+    const offered = new Set(legalActions(s, seat).map(a => JSON.stringify(a)));
+    const candidates = new Map<string, Action>();
+    for (const a of [...legalActions(twin, seat), ...legalActions(s, seat)]) candidates.set(JSON.stringify(a), a);
+    for (const [k, a] of candidates) {
+      let accepted = true;
+      try { apply(s, a); } catch (err) {
+        if (!(err instanceof IllegalAction)) throw err;
+        if (err.disturbs) continue;   // CR D2.1d: "not yet", decided after the fact
+        accepted = false;
+      }
+      if (accepted !== offered.has(k)) out.push(`seat ${seat} ${accepted ? 'accepted but not offered' : 'offered but refused'}: ${k}`);
+    }
+  }
+  return out;
+}
+
+export const ccDecks = (): [CardName[], CardName[]] => [DECK_LIST.slice(0, 30), DECK_LIST.slice(30, 60)];
+
+/** a CC game (Ann seat 0, Bob seat 1) with seat `int` holding the initiative */
+export const ccGame = (int: Seat = 0, seed = 42, rules: GameRules = { sequential: true }): Harness =>
+  new Harness(seed, ['Ann', 'Bob'], 'constructed', undefined, ccDecks(), undefined, undefined, { ...rules, initiative: int });
+
+/** the distinct action types of a list, in order */
+export const types = (as: readonly Action[]): string[] => [...new Set(as.map(a => a.type))];
+
+/** `a` is refused with a message matching `msg` */
+export function refused(h: Harness, a: Action, msg: RegExp): void {
+  assert.throws(() => h.do(a), (err: unknown) => err instanceof IllegalAction && msg.test(err.message), JSON.stringify(a));
+}
+
+/** a CC game through the draw phase (both bottom their first two) */
+export function ccBottomed(h: Harness): Harness {
+  for (const seat of [0, 1] as Seat[]) if (h.state.bottomDone && !h.state.bottomDone[seat]) h.do({ type: 'bottomCards', seat, handIndices: [0, 1] });
+  return h;
+}
+
+/** ... and through both resource steps, INT first, into the haste step
+ * (from wherever in the resource step the game is) */
+export function ccToHaste(h: Harness): Harness {
+  ccBottomed(h);
+  const int = h.state.initiative;
+  for (const seat of [int, 1 - int]) if (h.state.hasteDone === null && !h.state.planningDone[seat]) h.do({ type: 'donePlanning', seat });
+  return h;
+}
+
+/** ... and through both haste steps and an empty battle phase, into deployment */
+export function ccToDeploy(h: Harness): Harness {
+  if (h.state.phase === 'planning') ccToHaste(h);
+  const int = h.state.initiative;
+  for (const seat of [int, 1 - int]) if (h.state.hasteDone && !h.state.hasteDone[seat]) h.do({ type: 'doneHaste', seat });
+  while (h.state.phase === 'battle') h.do({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
+  assert.equal(h.state.phase, 'deploy');
+  return h;
 }

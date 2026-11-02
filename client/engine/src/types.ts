@@ -45,6 +45,22 @@ export const PHASES = ['planning', 'battle', 'regroup', 'deploy', 'gameover'] as
  * put 2 back on the bottom of your own deck. */
 export type GameMode = 'shared' | 'draft' | 'constructed';
 
+/**
+ * Competitive Constructed (doc 22 §3.1): what a game is dealt with beyond its
+ * mode. `createGame`'s eighth argument; absent on every other game, so every
+ * deal that existed before CC is dealt by exactly the path it always was.
+ */
+export interface GameRules {
+  /** CC: the printed initiative-first order for the resource, haste and
+   * deploy steps (CR 501.4, 507.3) instead of the client's simultaneous house
+   * rule (Annex D1.5). Constructed only. Stamped on the state as `sequential`. */
+  sequential?: true;
+  /** CC games 2-3: the seat the previous game's loser chose to take the
+   * initiative. The initiative roll is still DRAWN (and ignored), so the RNG
+   * stream, and with it every shuffle, is the same function of the seed. */
+  initiative?: Seat;
+}
+
 export type Attr =
   | 'Flying' | 'Deadly' | 'Swift' | 'Sluggish' | 'Tough' | 'Balanced'
   | 'Inverted' | 'Unaware' | 'Powerful' | 'Vulnerable' | 'Feeble' | 'Evasive'
@@ -2260,6 +2276,15 @@ export interface GameState {
    * other game, including every one saved before Single Card Duel existed.
    */
   singleCard?: true;
+  /**
+   * Competitive Constructed (doc 22 §3): the resource, haste and deploy steps
+   * are taken by the initiative player first and then by the other player
+   * (CR 501.4, 507.3), each watching the other live, instead of at once and
+   * hidden (Annex D1.5). Stamped by `createGame` from `GameRules.sequential`,
+   * constructed only; from then on the engine reads THIS, never the options.
+   * Absent on every other game, including every one saved before CC existed.
+   */
+  sequential?: true;
   /**
    * CR 408.2 — THE RECYCLE PILE: everything that has been recycled since the deck
    * was last shuffled, waiting behind the mark.

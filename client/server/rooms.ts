@@ -18,7 +18,7 @@ import { AMEND_DESTS, AMEND_SOURCES, AMEND_UNIT_DESTS } from '../engine/src/type
 import { amendProblem, amendText } from '../engine/src/amend.ts';
 import { singleCardsOf } from './cardladder.ts';
 import { DECK_LIST } from '../engine/src/cards/registry.ts';
-import { amendFrozen, apply, checkDeck, checkSingleCard, checkSingleDeck, makesUnits, decisionBlocks, forcedAction, hiddenSegment, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import { amendFrozen, apply, checkDeck, checkSingleCard, checkSingleDeck, makesUnits, decisionBlocks, forcedAction, hiddenSegment, legalActions, planningStep, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
 // CR D8.4 — the scenario tester. `dealScenario` IS `createGame` when no scenario
 // id is passed, byte for byte, so every ordinary room is unaffected; when one
 // is passed it applies the scenario's deterministic board mutation. It is
@@ -3473,11 +3473,11 @@ export function fixInfo(room: Room, seat: Seat, now = Date.now()): { proposal?: 
 /** a step, as far as "back to the start of this step" means one: the phase
  * and its sub-step, the battle window and round, on this turn */
 function stepKey(s: GameState): string {
-  return [s.turn, s.phase, hiddenSegment(s) ?? '', s.battleRound, s.battle?.region ?? '',
+  return [s.turn, s.phase, planningStep(s) ?? '', s.battleRound, s.battle?.region ?? '',
     s.battle?.round ?? '', s.battle?.step ?? ''].join('|');
 }
 function stepLabel(s: GameState): string {
-  const seg = hiddenSegment(s);
+  const seg = planningStep(s);
   const what = seg === 'plan' ? 'planning' : seg === 'haste' ? 'the haste step' : seg === 'deploy' ? 'deployment'
     : s.phase === 'battle' && s.battle ? `battle (${s.battle.step}${s.battle.round === 2 ? ', counterattack' : ''})`
       : s.phase;
