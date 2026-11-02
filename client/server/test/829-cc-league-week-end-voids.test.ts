@@ -66,7 +66,7 @@ function open(i: number) {
     () => { const c = `WK${++n}X`; F.R.reserveRoomCode(c); return c; });
   const room = F.R.getRoom(r.code)!;
   for (const s of [0, 1] as Seat[]) {
-    const reg = F.M.registerSeat(room, s, room.users[s]!, 'p', F.REG[s]);
+    const reg = F.M.registerSeat(room, s, room.users[s]!, 'p', F.REG[s]!);
     assert.ok(reg.ok);
   }
   return { lm, m: F.S.getMatch(r.match)!, g1: room };

@@ -107,7 +107,7 @@ const TOKEN = (() => { const r = A.login('CcAnn', PASS); assert.ok(r.ok); return
 function register(room: ReturnType<typeof F.current>): void {
   for (const s of [0, 1] as Seat[]) {
     const uid = room.users[s]!;
-    const r = F.M.registerSeat(room, s, uid, A.accountById(uid)!.username, F.REG[s]);
+    const r = F.M.registerSeat(room, s, uid, A.accountById(uid)!.username, F.REG[s]!);
     assert.ok(r.ok, r.ok ? '' : r.why);
   }
 }

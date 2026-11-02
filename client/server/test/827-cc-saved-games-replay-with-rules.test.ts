@@ -93,7 +93,7 @@ test('§2 ⭐ replay-room reproduces every recorded fingerprint', () => {
 
 test('§3 ⭐ the replay probe deals the same board, and refuses rules it cannot read', async () => {
   const r = await P.probe(RAW as never);
-  assert.equal(r.ok, true, r.error);
+  assert.equal(r.ok, true, r.error ?? "");
   assert.deepEqual(r.sigs.slice(1).map(P.digest), RAW.sigs, '⭐ the same fingerprints, action by action');
   const bad = await P.probe({ ...RAW, rules: { sequential: true, mystery: 1 } } as never);
   assert.equal(bad.ok, false);
