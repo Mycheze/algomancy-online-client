@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:6ad2dbaffcd1959a",
+ "generated_from": "sha256:dac2e4e90dd60b0e",
  "rules": [
   {
    "num": "100.1",
@@ -42483,7 +42483,7 @@
     "A player concedes the match before its first game is dealt. That player loses 5 rating points.",
     "One player concedes game 1 on turn 1, and the other then concedes the match. The penalty falls on the second player, who lost the match."
    ],
-   "basis": "engine",
+   "basis": "owner",
    "scope": "digital",
    "engineDiffers": false,
    "discrepancies": [],

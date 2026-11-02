@@ -10858,8 +10858,8 @@ Generated from the records and the verdicts. Nothing here is a rule.
 |---|---|
 | Printed | 453 |
 | Designer | 202 |
-| Owner call | 678 |
-| Engine only | 46 |
+| Owner call | 679 |
+| Engine only | 45 |
 | Mixed | 486 |
 
 ### Verification
@@ -10916,7 +10916,6 @@ Generated from the records and the verdicts. Nothing here is a rule.
 - [D6.9f](#rD6.9f) A prediction made with Prediction Prophet is shown on that card to both players, as a chip on the card and a line in its text box, from when it is made until the start of deployment reads it. A prediction left from an earlier turn is not shown.
 - [D6.9g](#rD6.9g) A triggered ability whose amount is its own column's share of combat damage (Vroot: "When my column deals combat damage, each opponent gains that much life.") shows that share on the stack as its X, the same amount it resolves with, not the total every column dealt.
 - [D6.10f](#rD6.10f) In the card zoom, a unit whose attributes are off has only its type bar greyed; a unit whose abilities are off has its text box below the type bar greyed; a unit with both off has both greyed.
-- [D8.5e](#rD8.5e) A Competitive Constructed match is weighed as a whole, never game by game (rule D8.6j). A match decided during or straight after its first game weighs as that game does under rules D8.5a, rule D8.5b and rule D8.5c. A match of two or more games weighs as a full game. A match conceded before its first game begins is a walkover. The rating penalty of a walkover falls on the player who lost the match.
 - [D8.6d](#rD8.6d) A player may also concede the match: during a game, between games, while the match is paused, or before its first game begins. The player who concedes it loses the match. During a game, that game is conceded first, so it is lost as well.
 - [D8.6f](#rD8.6f) Either player may offer to pause until the sideboarding window closes (rule D8.6b), and the match is paused when the other player agrees. No clock runs while it is paused, and its waiting game is not closed for being idle (rule D3.4). It resumes once both players are present and both ask to resume, with a new sideboarding window.
 - [D8.6h](#rD8.6h) A league match closes at the end of its league week only if it is paused or between games at that moment. A game in progress then is played out: if it decides the match, the result stands; if not, the match closes when that game ends. Either way, the games already played stay in each player's match history.
@@ -10925,7 +10924,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Findings: where the engine differs
 
-83 divergences, filed as 132 findings. A divergence that more than one drafting unit found is listed once, under its first id; divergences that share a CT ticket are listed under it.
+82 divergences, filed as 131 findings. A divergence that more than one drafting unit found is listed once, under its first id; divergences that share a CT ticket are listed under it.
 
 - <a id="F-U01-1"></a><a id="F-U01-3"></a>**F-U01-1** Ownership is lost once a stolen card passes through the thief's hand (CT-233). Rule 102.4. Also found as F-U01-3.
   Zones follow control, so a stolen unit that is recalled goes to the thief's hand. The hand holds a bare card name, so when the thief replays it the new unit's owner defaults to the playing seat, and the engine records the thief as owner. The rulings say ownership never moves ("its OWNER's, always, forever"). The verifier's probe measured owner = thief after the replay. Low impact today because zones follow control, but the owner field no longer means what the ruling says it keeps meaning. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-233): a stolen card keeps its owner through the thief's own hand, bin and cache (551); the routes still open are F-U01-6. Re-checked (F-U01-3): fixed on 2026-10-22 with F-U01-1 (CT-233): 551 keeps the owner through a hand and a bin.
@@ -11085,8 +11084,6 @@ Generated from the records and the verdicts. Nothing here is a rule.
   Reaping's reminder says the source loses Reaping until regroup after drawing. The owner ruling of 2026-08-30 (“{Reaping} draws one card for the…”) says this is deliberately not built because every Reaping printer is a one-shot spell; the round-1 verifier confirmed nothing removes Reaping after a draw. Latent: becomes live the day a unit can carry Reaping. 263 §4 guards the premise. Re-checked: already open as CT-173, which records the clause as measured and deliberately not built (unreachable today).
 - <a id="F-U20-7"></a>**F-U20-7** The engine spreads Electric excess only for damage from effects, never for combat damage (CT-362). Rule 802.17.
   The rule (the designer, 2023) has an Electric unit's excess combat damage jump to adjacent units as effect damage does. The engine reads Electric only on the effect-damage path (engine.ts, the jump chain after `attrsVs(first).has('Electric')`); combat damage never consults it. Unreachable in today's pool: no card can give Electric to a unit that fights, so only a test grant reaches it. Measured by the 2026-10-24 verifier (probe, uncommitted): combatSubStep never reads Electric, so a granted-Electric attacker that overkills its blocker offers no jump, even between blockers the engine itself calls adjacent.
-- <a id="F-U22-1"></a>**F-U22-1** In a CC game the menu still says 'Concede the match' though it concedes only the game. Rule 901.9e.
-  The owner asked for 'Concede GAME' not 'Concede MATCH'. Server-side, an in-game concede in a CC match concedes only that game (816 §1), but the client offers it under the same label as every game, 'Concede the match', with the confirm 'Concede the match?'. The client sends no {t:'concedeMatch'} anywhere, so there is no CC-specific concede-game/concede-match pair in the UI yet. This is wording, not rules behaviour.
 - <a id="F-U23-1"></a><a id="F-U23-6"></a>**F-U23-1** Holding full control does not stop the deployment stack from resolving itself (CT-185). Rule D2.7a. Also found as F-U23-6.
   The owner ruling of 2026-09-01 (“full control is a KEY YOU…”) rules that while full control (Ctrl) is held, nothing resolves automatically, 'even during deployment'. The owner ruling of 2026-09-01 (“full control is a KEY YOU…”) records that clause as not built: the deployment stack drains inside settle(), and the engine has no flag for the hold. Already filed by the owner ruling of 2026-09-01 (“full control is a KEY YOU…”) as CT-185 (owner's call); listed here so the export's marker has a target. The verifier confirmed: the engine has no full-control flag, and CT-185 (a holdStack action) is still open. Re-checked: withdrawn 2026-10-22: the owner ruled that no player holds priority in deployment and closed CT-185 as wontfix, so the clause it tracked is no longer the rule (rule D2.7a now states the call). Re-checked (F-U23-6): withdrawn 2026-10-22: the owner ruled that no player holds priority in deployment and closed CT-185 as wontfix, so the clause it tracked is no longer the rule (rule D2.7a now states the call).
 - <a id="F-U23-2"></a><a id="F-U23-5"></a>**F-U23-2** The automatic pass is latched per state counter, which the owner ruling of 2026-08-29 (“THE CLIENT MAY NOT HOLD A…”)(b) rules out (CT-262). Rule D2.4. Also found as F-U23-5.

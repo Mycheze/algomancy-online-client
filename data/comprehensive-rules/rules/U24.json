@@ -4346,16 +4346,22 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "owner": [],
+      "owner": [
+        {
+          "quote": "Full, as built",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02"
+        }
+      ],
       "engine": [],
       "tests": [
         "825-cc-match-concession-weight.test.ts"
       ]
     },
-    "basis": "engine",
+    "basis": "owner",
     "scope": "digital",
-    "confidence": "medium",
-    "notes": "ENGINE-ONLY (server/rating.ts matchRatingRow), docs/22 section 2.6: the spec carried D8.5 to a match; no owner words yet. Awaits owner sign-off.",
+    "confidence": "high",
+    "notes": "Owner, 2026-11-02 (CT-512), asked whether a match of two or more games weighs full even when its games were turn-1 concessions: 'Full, as built'. Implemented in server/rating.ts matchRatingRow, docs/22 section 2.6.",
     "sourceHashes": {}
   },
   {

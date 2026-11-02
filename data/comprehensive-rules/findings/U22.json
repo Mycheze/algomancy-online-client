@@ -1,18 +1,1 @@
-[
-  {
-    "id": "F-U22-1",
-    "title": "In a CC game the menu still says 'Concede the match' though it concedes only the game",
-    "summary": "The owner asked for 'Concede GAME' not 'Concede MATCH'. Server-side, an in-game concede in a CC match concedes only that game (816 §1), but the client offers it under the same label as every game, 'Concede the match', with the confirm 'Concede the match?'. The client sends no {t:'concedeMatch'} anywhere, so there is no CC-specific concede-game/concede-match pair in the UI yet. This is wording, not rules behaviour.",
-    "evidence": [
-      {
-        "file": "client/ui/inspect.ts",
-        "quote": "          : mySeat !== null ? '🏳 Concede the match' : `🏳 Concede as ${s.players[seat]!.name}`,"
-      },
-      {
-        "file": "client/ui/main.ts",
-        "quote": "    : `<h3>Concede the match?</h3>"
-      }
-    ],
-    "rule": "formats.constructed.competitive.concede"
-  }
-]
+[]
