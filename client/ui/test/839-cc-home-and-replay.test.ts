@@ -79,7 +79,7 @@ test('§2 Your matches: a row, and one button into the room', () => {
   const html = ui.html();
   const row = /<div class="ccmine">[\s\S]*?<\/div>\s*<\/div>/.exec(html)?.[0] ?? '';
   assert.match(row, /Your matches/);
-  assert.match(row, /vs <b>Rashi<\/b> · you lead 1–0 · paused 2 d ago/);
+  assert.match(row, /vs <b>Rashi<\/b> · you lead 1–0 · paused 2 days ago/);
   assert.match(row, /data-btn="cc-open" data-room="PAUS" data-seat="1">Resume</);
   assert.ok(html.indexOf('class="ccmine"') < html.indexOf('class="homegrid"'), 'above the mode cards');
   ui.click({ btn: 'cc-open', room: 'PAUS', seat: '1' });

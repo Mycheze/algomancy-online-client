@@ -5418,3 +5418,34 @@ html.touch .crdoc .crshare { opacity: .7; padding: 4px 6px; }
 .chbox .chscore { margin: 6px 0 10px; }
 .chbox .chdebt { margin: -4px 0 10px; }
 .chboxbtns { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; margin-top: 12px; }
+
+/* ── docs/22: a Competitive match (ui/match.ts) — the home card, Your
+ * matches, the between screen. Touch-first: every control is a button with
+ * room for a finger, nothing here needs hover. ── */
+.ccbo { display: flex; gap: 6px; }
+.ccbo button.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.ccmine { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin: 0 0 14px;
+  display: flex; flex-direction: column; gap: 6px; }
+.ccmine > .zonelabel { margin: 0; }
+.ccmatchrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13px; }
+.ccscore { display: flex; flex-direction: column; gap: 2px; margin: 4px 0 12px; font-size: 13px; }
+.ccscore .ccgame { font-size: 15px; font-weight: 700; }
+.ccscore .cccount { color: var(--accent); font-variant-numeric: tabular-nums; }
+.ccscore .dim { color: var(--dim); }
+.ccpresets { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-bottom: 10px; }
+.ccpreset { display: inline-flex; align-items: center; gap: 6px; }
+.ccpresets button.on { border-color: var(--accent); color: var(--accent); }
+.ccwhy { font-size: 12px; color: var(--dim); }
+.ccboards { display: flex; flex-direction: column; gap: 10px; }
+.ccboard h3 { margin: 0 0 6px; font-size: 14px; }
+.ccchip { padding: 6px 10px; margin: 0 4px 4px 0; font-size: 13px; text-transform: none; min-height: 32px; }
+.ccchip:disabled { opacity: .75; cursor: default; }
+.cclegal { margin: 8px 0 0; }
+.ccready { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 14px 0 0; }
+.ccready > p { flex-basis: 100%; margin: 0; }
+.ccready button { padding: 9px 16px; font-weight: 700; }
+.ccready .lobbyseats { flex-basis: 100%; }
+.ccfoot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 16px 0 0; }
+.ccconcede { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.ccresult { font-size: 15px; margin: 4px 0 12px; }
+.ccresult.won b { color: var(--glow); }

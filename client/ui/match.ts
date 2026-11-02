@@ -243,8 +243,9 @@ export function resetMyMatches(): void { mine = null; mineLoading = false; }
 
 /** one open match, as a line and a button — shared with the bell */
 export function myMatchLine(m: MyMatch, now = Date.now()): { text: string; button: string } {
+  const days = Math.max(0, Math.floor((now - (m.pausedAt ?? now)) / 86_400_000));
   const where = m.phase === 'paused'
-    ? `paused ${Math.max(0, Math.floor((now - (m.pausedAt ?? now)) / 86_400_000))} d ago`
+    ? `paused ${days === 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`}`
     : m.phase === 'between' ? `game ${m.game} of ${m.bestOf} — sideboarding`
       : `game ${m.game} of ${m.bestOf}`;
   return {
@@ -507,9 +508,9 @@ export function handleMatchButton(btn: HTMLElement, a: MatchActions): boolean {
       return true;
     }
     case 'cc-preset':
+      // the server's push of the new deck is the repaint
       draft = null;
       a.send({ t: 'cc', op: 'preset', preset: btn.dataset['preset'] ?? 'registered' });
-      a.rerender();
       return true;
     case 'cc-ready': {
       if (!w) return true;
