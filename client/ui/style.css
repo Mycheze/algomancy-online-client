@@ -2618,6 +2618,23 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .deckstatus { font-size: 12px; border-radius: 5px; padding: 4px 8px; }
 .deckstatus.ok { color: var(--glow); background: #1c2a1c; }
 .deckstatus.bad { color: var(--accent); background: #2a2314; }
+.deckcc { align-self: flex-start; }
+.acctcount.bad { color: var(--danger); font-weight: 700; }
+/* the swaps editor on the sideboard tab (docs/22 §4.6) */
+.dkswaptry { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 12px; margin: 8px 0; }
+@media (max-width: 700px) { .dkswaptry { grid-template-columns: 1fr; } }
+.dkswapcol { display: flex; flex-wrap: wrap; gap: 4px; align-content: flex-start; }
+.dkswapcol > .zonelabel { flex-basis: 100%; margin-top: 0; }
+.dkswapchip { padding: 3px 8px; font-size: 12px; text-transform: none; }
+.dkswapchip.moved { border-color: var(--accent); color: var(--accent); }
+.dkswaprow { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px 0;
+  border-top: 1px solid var(--line); }
+.dkswapname { width: 14em; }
+.dkswapside { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.dkswapside > .zonelabel { margin: 0 2px 0 0; }
+.dkswapbtns { display: flex; gap: 6px; margin-left: auto; }
+.dkswaprow.stale .dkswapside { opacity: .55; }
+.dkswapwhy { flex-basis: 100%; font-size: 12px; color: var(--accent); }
 .deckrecline { font-size: 12px; }
 .deckrecline a { color: var(--accent); margin-left: 6px; }
 .deckbtns { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
@@ -2878,6 +2895,12 @@ html:not(.ttcarrypile) .ttpage .ttend.dropover::before { content: ''; display: b
   padding: 14px 10px 40px; background: #141f1b; border-left: 1px solid var(--line); touch-action: pan-y; }
 .ttmaybepile { min-height: 100%; }
 .ttmaybepile .ttpilelabel { color: var(--dim); text-transform: uppercase; letter-spacing: .06em; font-size: 11px; }
+/* the sideboard (docs/22 §4.5): a pile above Maybe at the same edge, n/7 */
+.ttmaybe.ttedge2 { display: flex; flex-direction: column; gap: 14px; }
+.ttedge2 > .ttmaybepile { flex: 1 0 auto; min-height: 0; }
+.ttsidepile .ttpilelabel { color: var(--dim); text-transform: uppercase; letter-spacing: .06em; font-size: 11px; }
+.ttpilecount.bad { color: var(--danger); font-weight: 700; }
+.ttnote { padding: 6px 12px; font-size: 13px; color: var(--accent); background: #2a2314; }
 html.binderup .reportfab { right: calc(var(--bdw) + 18px); }
 html.binderup .inboxbell { right: calc(var(--bdw) + 124px); }
 @media (max-width: 900px) {

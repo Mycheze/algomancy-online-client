@@ -18,6 +18,7 @@
  *   pile → a gutter / table  a new pile there
  *   pile → binder            that copy out of the deck
  *   pile ↔ Maybe             the maybeboard is a pile at the table's edge
+ *   pile ↔ Sideboard         so is the sideboard (docs/22 §4.5), above it: n/7
  *   a pile's header          the whole pile, to another place in the row
  *
  * Re-sort lays it all out again by cost, type or element, with one Undo. A
@@ -57,7 +58,7 @@ import { esc } from './util.ts';
 
 // ── the host ──────────────────────────────────────────────────────────
 
-export interface TableNext { cards?: string[]; maybe?: string[]; piles?: DeckPile[] | null }
+export interface TableNext { cards?: string[]; maybe?: string[]; sideboard?: string[]; piles?: DeckPile[] | null }
 
 export interface TableHost {
   /** deck: the piles ARE the deck. challenge: the piles are a scratch table
@@ -73,6 +74,13 @@ export interface TableHost {
   cards(): readonly string[];
   /** the maybeboard; absent = no Maybe pile (the challenge) */
   maybe?(): readonly string[];
+  /** the sideboard (docs/22 §4.5); absent = no Sideboard pile (the challenge) */
+  side?(): readonly string[];
+  /** the sideboard's size: its header says n/this, in red over it */
+  sideMax?: number;
+  /** the host's rule over a move, or null: a reason here refuses it, and the
+   * table shows the reason (the copy cap across deck and sideboard) */
+  refuse?(next: TableNext): string | null;
   /** the saved piles; null = never arranged (the deck opens by cost) */
   piles(): readonly DeckPile[] | null;
   /** the deck's cover card, ringed on the table */
@@ -96,6 +104,7 @@ export type Carry =
   | { from: 'binder'; name: string }
   | { from: 'pile'; pile: string; index: number; name: string }
   | { from: 'maybe'; index: number; name: string }
+  | { from: 'side'; index: number; name: string }
   | { from: 'strip'; index: number; name: string }
   | { from: 'head'; pile: string };
 
@@ -113,6 +122,7 @@ export type Place =
   | { at: 'newpile'; pos: number }
   | { at: 'row'; pos: number }
   | { at: 'maybe'; index?: number }
+  | { at: 'side'; index?: number }
   | { at: 'strip'; index?: number }
   | { at: 'binder' }
   | { at: 'auto' }
@@ -137,6 +147,8 @@ let front: { zone: string; index: number } | null = null;
 let undo: { key: string; piles: DeckPile[] | null } | null = null;
 /** a paint asked for while a card was in the air */
 let paintPending = false;
+/** why the host refused the last move — shown until the next one */
+let note: string | null = null;
 /** the last pointer's type: a mouse click pins, a tap picks up */
 let lastPointer = 'mouse';
 /** a pile's rename box, let go of: once, however it was let go of */
@@ -183,7 +195,9 @@ export function place(h: TableHost, carry: Carry | null, to: Place): boolean {
   const deckPiles = h.kind === 'deck';
   const cards = [...h.cards()];
   const maybe = h.maybe ? [...h.maybe()] : null;
+  const side = h.side ? [...h.side()] : null;
   const saved = h.piles();
+  note = null;
   let piles = pilesOf(h);
   let keepUndo = false;
   let landed: { zone: string; index: number } | null = null;
@@ -221,6 +235,9 @@ export function place(h: TableHost, carry: Carry | null, to: Place): boolean {
     if (carry.from === 'maybe') {
       if (!maybe || maybe[carry.index] !== name) return false;
       maybe.splice(carry.index, 1);
+    } else if (carry.from === 'side') {
+      if (!side || side[carry.index] !== name) return false;
+      side.splice(carry.index, 1);
     } else if (carry.from === 'strip') {
       if (cards[carry.index] !== name) return false;
       cards.splice(carry.index, 1);
@@ -248,13 +265,18 @@ export function place(h: TableHost, carry: Carry | null, to: Place): boolean {
       const at = Math.max(0, Math.min(to.index ?? maybe.length, maybe.length));
       maybe.splice(at, 0, name);
       landed = { zone: 'maybe', index: at };
+    } else if (to.at === 'side') {
+      if (!side) return false;
+      const at = Math.max(0, Math.min(to.index ?? side.length, side.length));
+      side.splice(at, 0, name);
+      landed = { zone: 'side', index: at };
     } else if (to.at === 'strip') {
       if (deckPiles) return false;
       const at = Math.max(0, Math.min(to.index ?? cards.length, cards.length));
       cards.splice(at, 0, name);
       landed = { zone: 'strip', index: at };
     } else if (to.at === 'auto') {
-      if (carry.from !== 'binder' && carry.from !== 'maybe') return false;
+      if (carry.from !== 'binder' && carry.from !== 'maybe' && carry.from !== 'side') return false;
       // the reconcile's rule: next to its other copies, else its Re-sort pile
       cards.push(name);
       if (!deckPiles) landed = { zone: 'strip', index: cards.length - 1 };
@@ -279,9 +301,14 @@ export function place(h: TableHost, carry: Carry | null, to: Place): boolean {
   const next: TableNext = {};
   if (!same(cards, h.cards())) next.cards = cards;
   if (maybe && !same(maybe, h.maybe?.())) next.maybe = maybe;
+  if (side && !same(side, h.side?.())) next.sideboard = side;
   if (restore !== undefined) next.piles = restore;
   else if (!same(piles, saved)) next.piles = piles;
   if (!Object.keys(next).length) return false;
+  // the host's rule: refused, nothing moves and the reason shows (a drop's
+  // paint waits for the card to land — `ended` — and a tap's caller paints)
+  const why = h.refuse?.(next) ?? null;
+  if (why) { note = why; paintPending = true; return false; }
   if (!keepUndo) undo = null;
   front = landed;
   h.commit(next);
@@ -316,6 +343,7 @@ function srcKey(c: Carry): string {
     case 'binder': return `binder|${c.name}`;
     case 'pile': return `pile|${c.pile}|${c.index}|${c.name}`;
     case 'maybe': return `maybe|${c.index}|${c.name}`;
+    case 'side': return `side|${c.index}|${c.name}`;
     case 'strip': return `strip|${c.index}|${c.name}`;
     default: return `head|${c.pile}`;
   }
@@ -330,7 +358,7 @@ export function carryOf(src: string | undefined): Carry | null {
     const [pile, i, ...nm] = rest;
     return { from: 'pile', pile: pile!, index: Number(i), name: nm.join('|') };
   }
-  if ((kind === 'maybe' || kind === 'strip') && rest.length >= 2) {
+  if ((kind === 'maybe' || kind === 'side' || kind === 'strip') && rest.length >= 2) {
     const [i, ...nm] = rest;
     return { from: kind, index: Number(i), name: nm.join('|') };
   }
@@ -352,6 +380,7 @@ function validSelection(h: TableHost, piles: DeckPile[]): void {
   if (!c) return;
   const ok = c.from === 'pile' ? piles.find(p => p.id === c.pile)?.cards[c.index] === c.name
     : c.from === 'maybe' ? h.maybe?.()[c.index] === c.name
+      : c.from === 'side' ? h.side?.()[c.index] === c.name
       : c.from === 'strip' ? h.cards()[c.index] === c.name
         : c.from === 'head' ? piles.some(p => p.id === c.pile) : true;
   if (!ok) sel = null;
@@ -375,7 +404,8 @@ function selBarHtml(h: TableHost, piles: DeckPile[]): string {
     <span class="dim">tap where it goes</span>
     ${c.from !== 'binder' ? `<button ${btn('cut')}>Cut</button>` : ''}
     ${h.maybe && c.from !== 'maybe' ? `<button ${btn('tomaybe')}>Maybe</button>` : ''}
-    ${c.from === 'maybe' ? `<button ${btn('todeck')}>To deck</button>` : ''}
+    ${h.side && c.from !== 'side' ? `<button ${btn('toside')}>Sideboard</button>` : ''}
+    ${c.from === 'maybe' || c.from === 'side' ? `<button ${btn('todeck')}>To deck</button>` : ''}
     <button ${btn('newpile')}>New pile</button>
     <button class="dkicon" ${btn('putdown')} aria-label="put it down">✕</button>
   </div>`;
@@ -399,8 +429,11 @@ export function pageHtml(h: TableHost): string {
   validSelection(h, piles);
   const c = selected(h);
   const cards = h.cards();
+  const side = h.side?.() ?? null;
+  // the cap counts the deck and the sideboard together (docs/22 §4.1)
+  const both = side ? [...cards, ...side] : cards;
   const over = new Map<string, number>();
-  if (h.cap !== undefined) for (const n of new Set(cards)) { const k = count(cards, n); if (k > h.cap) over.set(n, k); }
+  if (h.cap !== undefined) for (const n of new Set(both)) { const k = count(both, n); if (k > h.cap) over.set(n, k); }
   const cover = h.cover?.() ?? null;
   /** which card of a pile a finger has picked up */
   const picked = (list: PileCard[]): number | undefined => {
@@ -419,14 +452,25 @@ export function pageHtml(h: TableHost): string {
   };
   const gutter = (i: number): string => `<div class="ttgutter" data-tt-zone="gap|${i}" ${btn('to')}></div>`;
   const maybe = h.maybe?.() ?? null;
-  const maybeHtml = maybe ? (() => {
+  const maybePile = maybe ? (() => {
     const list: PileCard[] = maybe.map((name, k) => ({ name, src: `maybe|${k}|${name}` }));
-    return `<div class="ttmaybe">${pileHtml({
+    return pileHtml({
       zone: 'maybe', name: 'Maybe', cards: list, S: stripOf(list.length, paneH, ch), ch,
       front: front?.zone === 'maybe' ? front.index : undefined, picked: picked(list),
       cls: 'ttmaybepile',
-    })}</div>`;
+    });
   })() : '';
+  // the sideboard: a pile at the same edge, above Maybe, its header n/7
+  const sidePile = side ? (() => {
+    const list: PileCard[] = side.map((name, k) => ({ name, src: `side|${k}|${name}` }));
+    return pileHtml({
+      zone: 'side', name: 'Sideboard', cards: list, S: stripOf(list.length, paneH, ch), ch,
+      front: front?.zone === 'side' ? front.index : undefined, picked: picked(list),
+      over, cls: 'ttsidepile', ...(h.sideMax !== undefined ? { limit: h.sideMax } : {}),
+    });
+  })() : '';
+  const maybeHtml = maybe || side
+    ? `<div class="ttmaybe${side ? ' ttedge2' : ''}">${sidePile}${maybePile}</div>` : '';
   // the page's class is the LAST one (ui/report.ts's pageOf reads it)
   return `<div class="${c ? 'ttholding ' : ''}ttpage" style="--cw:${cw}px;--ch:${ch}px">
     <div class="tttop">
@@ -435,6 +479,7 @@ export function pageHtml(h: TableHost): string {
       ${toolsHtml(h)}
     </div>
     ${selBarHtml(h, piles)}
+    ${note ? `<div class="ttnote" role="status">${esc(note)}</div>` : ''}
     <div class="ttbody">
       <div class="tttable" data-tt-zone="end" ${btn('to')}>
         <div class="ttrow">${piles.map((p, i) => gutter(i) + pileOf(p)).join('')}
@@ -477,6 +522,11 @@ function binderHost(h: TableHost): BinderHost {
     ...(h.cap !== undefined ? { cap: h.cap } : {}),
     add: name => { place(h, { from: 'binder', name }, { at: 'auto' }); },
     ...(h.maybe ? { toMaybe: (name: string) => { place(h, { from: 'binder', name }, { at: 'maybe' }); } } : {}),
+    ...(h.side ? {
+      side: (name: string) => count(h.side!(), name),
+      // a refused one paints, so its reason shows
+      toSide: (name: string) => { if (!place(h, { from: 'binder', name }, { at: 'side' })) paint(); },
+    } : {}),
     fullBrowser: query => h.fullBrowser(query),
   };
 }
@@ -505,6 +555,7 @@ export function openTabletop(h: TableHost): void {
   wanted = null;
   sel = null;
   front = null;
+  note = null;
   if (undo && undo.key !== h.key) undo = null;
   syncUrl();
   if ($app) $app.innerHTML = '';
@@ -547,6 +598,7 @@ function zonePlace(h: TableHost, zone: string): Place | null {
   if (kind === 'gap' && a !== undefined) return { at: 'newpile', pos: Number(a) };
   if (kind === 'end') return { at: 'newpile', pos: pilesOf(h).length };
   if (kind === 'maybe') return { at: 'maybe' };
+  if (kind === 'side') return { at: 'side' };
   if (kind === 'strip') return { at: 'strip' };
   if (kind === 'binder') return { at: 'binder' };
   return null;
@@ -557,11 +609,13 @@ function zonePlace(h: TableHost, zone: string): Place | null {
 function beforeCard(c: Carry, zone: string, k: number): Place | null {
   const [kind, a] = zone.split('|');
   const sameZone = (c.from === 'pile' && kind === 'pile' && c.pile === a)
-    || (c.from === 'maybe' && kind === 'maybe') || (c.from === 'strip' && kind === 'strip');
+    || (c.from === 'maybe' && kind === 'maybe') || (c.from === 'side' && kind === 'side')
+    || (c.from === 'strip' && kind === 'strip');
   const src = sameZone && 'index' in c ? c.index : -1;
   const index = src >= 0 && k > src ? k - 1 : k;
   if (kind === 'pile' && a) return { at: 'pile', pile: a, index };
   if (kind === 'maybe') return { at: 'maybe', index };
+  if (kind === 'side') return { at: 'side', index };
   if (kind === 'strip') return { at: 'strip', index };
   return null;
 }
@@ -639,6 +693,7 @@ export function handleButton(el: HTMLElement): boolean {
     }
     case 'tt-cut': put({ at: 'binder' }); return true;
     case 'tt-tomaybe': put({ at: 'maybe' }); return true;
+    case 'tt-toside': put({ at: 'side' }); return true;
     case 'tt-todeck': put(h.kind === 'deck' ? { at: 'auto' } : { at: 'strip' }); return true;
     case 'tt-newpile': put({ at: 'newpile', pos: pilesOf(h).length }); return true;
     case 'tt-putdown': sel = null; paint(); return true;
@@ -668,6 +723,7 @@ function legalZone(h: TableHost, c: Carry, zone: string): boolean {
   switch (kind) {
     case 'binder': return c.from !== 'binder';
     case 'maybe': return !!h.maybe;
+    case 'side': return !!h.side;
     case 'strip': return h.kind !== 'deck';
     case 'pile': case 'gap': case 'end': return true;
     default: return false;
@@ -686,7 +742,8 @@ function geoOf(zone: HTMLElement, c: Carry): Geo | null {
   const all = Number(zone.dataset['ttN'] ?? fan.children.length);
   const [kind, a] = key.split('|');
   const mine = (c.from === 'pile' && kind === 'pile' && c.pile === a)
-    || (c.from === 'maybe' && kind === 'maybe') || (c.from === 'strip' && kind === 'strip');
+    || (c.from === 'maybe' && kind === 'maybe') || (c.from === 'side' && kind === 'side')
+    || (c.from === 'strip' && kind === 'strip');
   const src = mine && 'index' in c ? c.index : -1;
   return { fan, S, n: all - (src >= 0 ? 1 : 0), src, axis: zone.dataset['ttAxis'] === 'x' ? 'x' : 'y' };
 }
@@ -717,6 +774,7 @@ function placeAt(h: TableHost, c: Carry, zone: HTMLElement, x: number, y: number
       : insertIndexAt(y, r.top, g.S, g.n, ch);
     if (kind === 'pile' && a) return { at: 'pile', pile: a, index };
     if (kind === 'maybe') return { at: 'maybe', index };
+    if (kind === 'side') return { at: 'side', index };
     if (kind === 'strip') return { at: 'strip', index };
   }
   return zonePlace(h, key);
