@@ -190,6 +190,8 @@ export interface ProfileState {
   linkMsg: string;
   friendMsg: string;
   pwMsg: { text: string; ok: boolean } | null;
+  /** why the last favourite-element pick did not take ('' when it did) */
+  favMsg: string;
   /** the all-time scoreboard on the friends tab: null while loading */
   leaders: LeaderRow[] | null;
   /** …and whether its last load failed */
@@ -209,6 +211,7 @@ export interface ProfileView {
   connections: { linked: string | null; code: string | null; linkMsg: string } | null;
   friendMsg: string;
   pwMsg: { text: string; ok: boolean } | null;
+  favMsg: string;
   leaders: LeaderRow[] | null;
   leadersFailed: boolean;
   ladderMode: LadderMode;
@@ -222,7 +225,7 @@ export function profileView(s: ProfileState, now = Date.now()): ProfileView {
   return {
     me: s.me, tab: s.tab, guest: !!s.me.provisional,
     connections: s.discordLinking ? { linked: s.me.discord ?? null, code: live, linkMsg: s.linkMsg } : null,
-    friendMsg: s.friendMsg, pwMsg: s.pwMsg, leaders: s.leaders, leadersFailed: s.leadersFailed,
+    friendMsg: s.friendMsg, pwMsg: s.pwMsg, favMsg: s.favMsg, leaders: s.leaders, leadersFailed: s.leadersFailed,
     ladderMode: s.ladderMode, ladder: s.ladder,
     decks: (s.me.decks ?? []).map(deck => ({ deck, cover: deck.cover ? s.artFor(deck.cover) : null })),
   };
@@ -282,7 +285,7 @@ function elementBarHtml(weights: Record<string, number>): string {
 /** Owner, 2026-09-05: "Allow them to override and choose their favorite in
  * the account stats tab." One icon per element, the chosen one lit; "auto"
  * goes back to the one played most. */
-function favoritePickerHtml(me: Me): string {
+function favoritePickerHtml(me: Me, favMsg: string): string {
   const picked = me.favoritePicked ?? null;
   return `<div class="favpick" role="radiogroup" aria-label="favourite element">
     ${ELEMENTS.map(el => `<button type="button" role="radio" aria-checked="${picked === el}" class="favel ${el}${picked === el ? ' on' : ''}"
@@ -290,7 +293,8 @@ function favoritePickerHtml(me: Me): string {
     <button type="button" role="radio" aria-checked="${picked === null}" class="favel auto${picked === null ? ' on' : ''}"
       data-btn="acct-favorite" data-el="" title="the element you have played most">auto</button>
   </div>
-  <div class="hint">${picked ? `You chose ${picked}.` : `Showing the element you have played most${me.favoriteElement ? ` — ${me.favoriteElement}` : ''}.`}</div>`;
+  <div class="hint">${picked ? `You chose ${picked}.` : `Showing the element you have played most${me.favoriteElement ? ` — ${me.favoriteElement}` : ''}.`}</div>
+  ${favMsg ? statusMessage({ tone: 'error', text: favMsg }) : ''}`;
 }
 
 const stat = (label: string, value: string | number, title = ''): string =>
@@ -308,6 +312,9 @@ const stat = (label: string, value: string | number, title = ''): string =>
 function connectionsHtml(c: ProfileView['connections']): string {
   if (!c) return '';
   const linked = c.linked;
+  // only ever a failure (Link or Unlink did not work): drawn as one, on either face of the card
+  const linkMsg = c.linkMsg;
+  const msg = linkMsg ? statusMessage({ tone: 'error', text: linkMsg }) : '';
   if (linked) {
     return `<section class="acctcard">
       <h3>Connections</h3>
@@ -315,9 +322,9 @@ function connectionsHtml(c: ProfileView['connections']): string {
       <button class="btn" data-btn="acct-discord-unlink">Unlink Discord</button>
       <div class="hint">Lets <code>/profile</code> and <code>/rating</code> find you.
         Unlinking works even if you have lost the Discord account.</div>
+      ${msg}
     </section>`;
   }
-  const linkMsg = c.linkMsg;
   return `<section class="acctcard">
       <h3>Connections</h3>
       ${c.code
@@ -327,7 +334,7 @@ function connectionsHtml(c: ProfileView['connections']): string {
              Discord within ten minutes.</div>`
         : `<button class="btn" data-btn="acct-discord-link">Link Discord</button>
            <div class="hint">Get a code here and type it into the bot.</div>`}
-      ${linkMsg ? `<p class="deckmsg">${esc(linkMsg)}</p>` : ''}
+      ${msg}
     </section>`;
 }
 
@@ -386,7 +393,7 @@ function statsTab(v: ProfileView): string {
       ${elementBarHtml(p.recycled)}
       <div class="hint">Prismites you turned into an element count here too.</div>
       <h4>Favourite element</h4>
-      ${favoritePickerHtml(me)}
+      ${favoritePickerHtml(me, v.favMsg)}
     </section>
     <section class="acctcard">
       <h3>On the table</h3>
@@ -556,7 +563,7 @@ function ladderTab(ladder: Ladder | null, ladderMode: LadderMode): string {
   if (ladder.failed) {
     return `<section class="acctcard"><h3>Ladder</h3>
       <div class="elrow">${modes}</div>
-      <p class="deckmsg">Could not load the ladder.</p>
+      ${statusMessage({ tone: 'error', text: 'Could not load the ladder.' })}
       <button data-btn="acct-ladder-mode" data-mode="${ladderMode}">Try again</button></section>`;
   }
 

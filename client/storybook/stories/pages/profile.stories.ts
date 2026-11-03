@@ -53,7 +53,7 @@ const LEADERS: LeaderRow[] = [
 ];
 
 const base: ProfileState = {
-  me: ME, tab: 'stats', discordLinking: true, linkCode: null, linkMsg: '', friendMsg: '', pwMsg: null,
+  me: ME, tab: 'stats', discordLinking: true, linkCode: null, linkMsg: '', friendMsg: '', pwMsg: null, favMsg: '',
   leaders: LEADERS, leadersFailed: false, ladderMode: 'constructed',
   ladder: { mode: 'constructed', players: LEADERS, you: { ...LEADERS[1]!, rank: 2 }, rated: 14, publicAfter: 5 },
   // no art server in Storybook: the cover falls back to its hidden image
@@ -67,6 +67,7 @@ export default {
 };
 
 export const Stats = {};
+export const StatsFailures = { name: 'Stats, a favourite and an unlink that did not take', args: { favMsg: 'could not reach the server', linkMsg: 'could not unlink', me: { ...ME, discord: 'quill' } } };
 export const Achievements = { args: { tab: 'achievements' } };
 export const Ladder = { args: { tab: 'ladder' } };
 export const LadderLoading = { name: 'Ladder, loading', args: { tab: 'ladder', ladder: null } };
