@@ -5,5 +5,7 @@
 .ui-page-header__title { margin: 0 0 var(--space-2); font-size: var(--text-26); letter-spacing: .04em;
   display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
 .ui-page-header__subtitle { color: var(--color-text-muted); font-size: var(--text-12); }
+/* subtitleAs 'p': a paragraph's own margins (1em at 12px), set here so no page or browser default decides them */
+.ui-page-header__subtitle--p { margin: var(--space-5) 0; }
 .ui-page-header__actions { margin-left: auto; display: flex; gap: var(--space-4); align-items: center;
   flex-wrap: wrap; justify-content: flex-end; }

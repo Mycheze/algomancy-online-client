@@ -30,6 +30,7 @@
   --color-surface-raised: #20262f;   /* a panel on a panel; the base button */
   --color-surface-overlay: rgba(20, 24, 30, .9);  /* a translucent floating panel */
   --color-scrim: rgba(6, 8, 11, .72);             /* the dimmer behind a dialog */
+  --color-scrim-strong: rgba(6, 8, 11, .78);      /* a darker one, behind a full-page reader (the legal pages) */
   --color-border: #2e3742;
   --color-border-strong: #3b4654;    /* the slate borders (eleven near-copies today) */
   --color-text: #d6dde6;
@@ -52,6 +53,9 @@
   --color-danger-bg: #2b1a1a;
   --color-info: #7fb6e0;             /* the rules page's blue */
   --color-info-bg: #1d3142;
+  /* ── colour: data — the card stats' diverging win-rate scale (above even, below even) ── */
+  --color-winrate-up: #4fb3c9;
+  --color-winrate-down: #e07b39;
 
   /* ── type ── */
   --font-ui: system-ui, sans-serif;

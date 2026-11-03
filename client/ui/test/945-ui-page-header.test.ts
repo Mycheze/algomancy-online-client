@@ -17,3 +17,10 @@ test('actions, then the back link last; data-btn passes through', () => {
 test('no actions, no actions box', () => {
   assert.ok(!pageHeader({ title: 'x' }).includes('__actions'));
 });
+
+test('subtitleAs p: the subtitle is a paragraph, with the margin class (league, challenge)', () => {
+  const html = pageHeader({ title: 'League', subtitle: 'Week <2>', subtitleAs: 'p' });
+  assert.match(html, /<p class="ui-page-header__subtitle ui-page-header__subtitle--p">Week &lt;2&gt;<\/p><\/div><\/header>$/);
+  assert.match(pageHeader({ title: 'League', subtitle: 'x' }), /<div class="ui-page-header__subtitle">x<\/div>/, 'the default is the bare line');
+  assert.doesNotMatch(pageHeader({ title: 'League', subtitleAs: 'p' }), /<p/, 'no subtitle, no paragraph');
+});

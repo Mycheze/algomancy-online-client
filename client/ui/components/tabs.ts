@@ -10,7 +10,7 @@
  * gets `data-tab="<id>"`, and the row's `dataBtn` unless the tab names its
  * own — the usual page routes every tab through one data-btn and reads
  * data-tab. A `count` is the muted number after the label (`.acctcount`). */
-import { type Attrs, type Common, attrsHtml, esc, rootAttrs, textOrHtml } from './_shared.ts';
+import { type Attrs, type Common, attrsHtml, classes, esc, rootAttrs, textOrHtml } from './_shared.ts';
 import { buttonClasses } from './button.ts';
 
 export const TABS_VARIANTS = ['plain', 'caps'] as const;
@@ -24,6 +24,8 @@ export interface TabItem {
   /** this tab's own data-btn, instead of the row's */
   dataBtn?: string;
   title?: string;
+  /** extra classes on this tab's button, after the component's (a page's own tab class) */
+  className?: string;
   attrs?: Attrs;
 }
 
@@ -42,7 +44,7 @@ export function tabs(p: TabsProps): string {
     const on = t.id === p.active;
     const count = t.count === undefined ? '' : ` <span class="ui-tabs__count">${esc(t.count)}</span>`;
     return `<button${attrsHtml({
-      class: `${buttonClasses('secondary')} ui-tabs__tab${on ? ' on' : ''}`,
+      class: classes(buttonClasses('secondary'), 'ui-tabs__tab', on && 'on', t.className),
       'data-btn': t.dataBtn ?? p.dataBtn, 'data-tab': t.id,
       type: 'button', role: 'tab', 'aria-selected': on ? 'true' : 'false', title: t.title,
       ...t.attrs,

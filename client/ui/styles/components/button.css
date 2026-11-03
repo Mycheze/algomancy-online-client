@@ -10,6 +10,8 @@
 
 /* the green confirm (button.primary) */
 .ui-button--primary { background: var(--color-confirm); border-color: var(--color-confirm-border); }
+/* …and keeps its green border on hover, as button.primary does (base.css puts it after button:hover) */
+.ui-button--primary:hover { border-color: var(--color-confirm-border); }
 /* the gold page action (.homebtns .primary and its copies) */
 .ui-button--action { border-color: var(--color-accent); color: var(--color-accent); }
 /* "not this one" (.declinebtn) */
