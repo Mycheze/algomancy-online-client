@@ -18,24 +18,27 @@
 set -uo pipefail
 CPUS="${STEWARD_CPUS:-5 11}"
 MAX_C="${STEWARD_TEMP_MAX:-55}"     # hold the package under this (°C)
-FLOOR=800000; CEIL="${STEWARD_MAX_KHZ:-3000000}"; STEP_DN=300000; STEP_UP=100000
+# Tuned 2026-11-03 against the owner's ear: at pkg 51-52 C under load the box was
+# "very quiet"; the first governor (+100 MHz / 3 s up to 3 GHz) overshot to 65 C.
+# So: rise slowly, fall fast, and never above 2 GHz on this core.
+FLOOR=800000; CEIL="${STEWARD_MAX_KHZ:-2000000}"; STEP_DN=400000; STEP_UP=50000
 LOG="${STEWARD_ROOT:-$HOME/algomancy-steward}/logs/thermal.log"
 
 zone() { for z in /sys/class/thermal/thermal_zone*; do [ "$(cat "$z/type")" = x86_pkg_temp ] && { echo "$z/temp"; return; }; done; }
 files() { for c in $CPUS; do echo "/sys/devices/system/cpu/cpu$c/cpufreq/scaling_max_freq"; done; }
-setf() { for f in $(files); do echo "$1" > "$f" 2>/dev/null || return 1; done; }
+setf() { local p; for p in $(files); do echo "$1" > "$p" 2>/dev/null || return 1; done; }
 
 case "${1:-run}" in
-check) for f in $(files); do [ -w "$f" ] || { echo "thermal: $f is not writable — install steward/systemd/algomancy-steward-cpucap.service" >&2; exit 1; }; done; [ -n "$(zone)" ] ;;
+check) for p in $(files); do [ -w "$p" ] || { echo "thermal: $p is not writable — install steward/systemd/algomancy-steward-cpucap.service" >&2; exit 1; }; done; [ -n "$(zone)" ] ;;
 floor) setf $FLOOR ;;
 run)
   Z=$(zone); f=1200000; setf $f || exit 1; n=0
   while true; do
     t=$(( $(cat "$Z") / 1000 ))
     if   [ "$t" -ge "$MAX_C" ];          then f=$(( f - STEP_DN )); [ $f -lt $FLOOR ] && f=$FLOOR
-    elif [ "$t" -le $(( MAX_C - 5 )) ]; then f=$(( f + STEP_UP )); [ $f -gt "$CEIL" ] && f=$CEIL; fi
+    elif [ "$t" -le $(( MAX_C - 6 )) ]; then f=$(( f + STEP_UP )); [ $f -gt "$CEIL" ] && f=$CEIL; fi
     setf $f
-    n=$((n + 1)); [ $((n % 20)) -eq 0 ] && echo "$(date -u +%FT%TZ) pkg=${t}C cap=$((f / 1000))MHz load=$(cut -d' ' -f1 /proc/loadavg)" >> "$LOG"
-    sleep 3
+    n=$((n + 1)); [ $((n % 30)) -eq 0 ] && echo "$(date -u +%FT%TZ) pkg=${t}C cap=$((f / 1000))MHz load=$(cut -d' ' -f1 /proc/loadavg)" >> "$LOG"
+    sleep 2
   done ;;
 esac
