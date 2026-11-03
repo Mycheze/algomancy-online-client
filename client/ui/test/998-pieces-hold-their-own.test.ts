@@ -14,9 +14,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
+import { readStylePieces } from './read-styles.ts';
 
 const UI = new URL('../', import.meta.url);
 const read = (f: string): string => readFileSync(new URL(f, UI), 'utf8');
+/** one piece's text, by the name readStylePieces() lists it under (910: no test spells a .css path) */
+const piece = (name: string): string => {
+  const hit = readStylePieces().find(p => p.piece.split('/').pop()!.split('.')[0] === name);
+  assert.ok(hit, `no style piece named ${name}`);
+  return hit.text;
+};
 const noComments = (css: string): string => css.replace(/\/\*[\s\S]*?\*\//g, '');
 /** every class a piece's selectors name (not its declarations) */
 function selectorClasses(css: string): Set<string> {
@@ -29,8 +36,8 @@ function selectorClasses(css: string): Set<string> {
 }
 
 test('998 §1 the Single Card Duel\'s rules are in its own piece, not card stats\'', () => {
-  const duel = selectorClasses(read('styles/pages/33-single-card-duel.css'));
-  const stats = selectorClasses(read('styles/pages/34-cardstats.css'));
+  const duel = selectorClasses(piece('33-single-card-duel'));
+  const stats = selectorClasses(piece('34-cardstats'));
   for (const c of ['scwarn', 'scdraw']) {
     assert.ok(duel.has(c), `.${c} is in 33-single-card-duel.css`);
     assert.ok(!stats.has(c), `.${c} is not in 34-cardstats.css`);
