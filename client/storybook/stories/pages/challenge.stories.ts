@@ -4,7 +4,7 @@
  * here — their handler is ui/challenge.ts, which a story does not load. */
 import type { RunScore } from '../../../engine/src/challenge.ts';
 import {
-  challengeHomeCardHtml, challengeHomeView, challengeNavHtml, challengePageHtml,
+  challengeGlanceHtml, challengeHomeCardHtml, challengeHomeView, challengeNavHtml, challengePageHtml,
   type BoardReply, type ChallengePageView, type ChallengeReply, type ChallengeView,
 } from '../../../ui/pages/challenge.ts';
 import { runEndHtml, runMeterHtml } from '../../../ui/pages/challengerun.ts';
@@ -61,6 +61,10 @@ export const HomeCard = {
   render: () => `<div style="max-width:320px">${challengeHomeCardHtml(challengeHomeView(DATA, NOW))}</div>`,
 };
 export const HeaderButton = { render: () => challengeNavHtml(challengeHomeView(DATA, NOW)) };
+// the new home's Challenge card body (docs/24): no buttons, the whole card opens the page
+const card = (html: string): string => `<div style="max-width:320px;padding:12px;border:1px dashed var(--color-border)">${html}</div>`;
+export const HomeGlance = { name: 'Home card glance, with your best', render: () => card(challengeGlanceHtml(challengeHomeView(DATA, NOW))) };
+export const HomeGlanceNoRun = { name: 'Home card glance, no run yet', render: () => card(challengeGlanceHtml(challengeHomeView({ ...DATA, mine: {} }, NOW))) };
 
 // ── a run, on the board (ui/pages/challengerun.ts): the meter and the end panels ──
 export const RunMeter = { name: 'Run: the meter', render: () => runMeterHtml({ text: 'Turn 3 · 5 of 5 units · 7 cards · 2 elements', armed: false }) };

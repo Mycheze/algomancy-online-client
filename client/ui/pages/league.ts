@@ -311,6 +311,79 @@ export function leagueNavHtml(v: LeagueNavView): string {
   return `<button class="homedecks${signUp ? ' lgnavjoin' : ''}" data-btn="nav-league">🏅 League${signUp ? ' · sign up' : ''}</button>`;
 }
 
+// ── the home's League card and Join sheet (docs/24, 2026-11-03) ───────
+//
+// The new home has no banner: a League card (the whole card is H1's
+// `nav-league` button, so the glance has NO buttons of its own) and a Join
+// sheet that lists the league matches you can play now with their Play
+// buttons. Both are drawn from the same answer the banner was.
+
+export interface LeagueGlanceView {
+  name: string;
+  /** "Competitive · Week 2 of 3" */
+  phase: string;
+  /** where the viewer stands: entered, sign-ups taking them, sign-ups shut, or nothing to say */
+  status: 'in' | 'open' | 'closed' | '';
+  /** the one date that matters next ('' when none) */
+  next: string;
+}
+
+const GLANCE_STATUS: Record<Exclude<LeagueGlanceView['status'], ''>, string> = {
+  in: "✓ you're in", open: 'Sign-ups open', closed: 'Sign-ups closed',
+};
+
+/** Gather the glance from the server's answer: null while there is no season to show. */
+export function leagueGlanceView(st: LeagueState | null, tz: string): LeagueGlanceView | null {
+  const s = st?.season;
+  if (!s) return null;
+  const status = s.me?.entered ? 'in' : joinable(s) ? 'open'
+    // before sign-ups the next date says when they open; a finished season has a champion
+    : s.phase < 0 || s.champion ? '' : 'closed';
+  return {
+    name: s.name,
+    phase: `${competitive(s) ? 'Competitive' : constructed(s) ? 'Constructed' : 'Draft'} · ${s.label}`,
+    status,
+    next: nextText(s, tz),
+  };
+}
+
+/** The League card's body: '' when there is no season (the card says so itself). Pure, no buttons. */
+export function leagueGlanceHtml(v: LeagueGlanceView | null): string {
+  if (!v) return '';
+  return `<div class="lgglance">
+    <div class="lgglname">${esc(v.name)}</div>
+    <div class="lgglphase">${esc(v.phase)}</div>
+    ${v.status ? `<div class="lgglstate ${v.status}">${GLANCE_STATUS[v.status]}</div>` : ''}
+    ${v.next ? `<div class="lgglnext">${esc(v.next)}</div>` : ''}
+  </div>`;
+}
+
+/** one league match the viewer can play now */
+export interface LeagueJoinRow {
+  season: string; seasonName: string; match: string; opponent: string;
+  /** the agreed time, in the viewer's zone ('' when none is agreed) */
+  when: string;
+}
+
+/** Every match the viewer can press Play on now, in this season and the others still running. */
+export function leagueJoinView(st: LeagueState | null, tz: string): LeagueJoinRow[] {
+  if (!st) return [];
+  return [...(st.season ? [st.season] : []), ...(st.others ?? [])].flatMap(s =>
+    (s.me?.matches ?? []).filter(m => m.playable && !m.result).map(m => ({
+      season: s.id, seasonName: s.name, match: m.id, opponent: m.opponent.name,
+      when: m.time?.agreed ? when(m.time.at, tz) : '',
+    })));
+}
+
+/** The Join sheet's league rows, each with the banner's own Play button; '' when none. Pure. */
+export function leagueJoinRowsHtml(rows: readonly LeagueJoinRow[]): string {
+  if (!rows.length) return '';
+  return `<div class="lgjoinrows">${rows.map(r => `<div class="lgjoinrow">
+    <span>vs <b>${esc(r.opponent)}</b> <span class="dim">· ${esc(r.seasonName)}${r.when ? ` · ${esc(r.when)} ✓` : ''}</span></span>
+    <button class="primary" data-btn="lg-play" data-season="${esc(r.season)}" data-match="${esc(r.match)}">Play</button>
+  </div>`).join('')}</div>`;
+}
+
 // ── the home banner ───────────────────────────────────────────────────
 //
 // The season at a glance, on the home page while one is visible: the dates,

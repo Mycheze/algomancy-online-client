@@ -212,8 +212,14 @@ test('§2 the unofficial notice exists, and is in the footer itself rather than 
   assert.match(src, /insertBefore\(foot, app\.nextSibling\)/,
     'the footer is no longer inserted right after #app');
   // its CSS left legal.ts's injected <style> for styles/pages/48-legal.css (2026-11-03)
-  assert.match(readStyles(), /#legalfoot:not\(\[hidden\]\) ~ \.homepage[^{]*\{\s*min-height: calc\(100dvh - 128px\)/,
+  const css = readStyles().replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(css, /#app:not\(\.board\)[^{]*:has\(\+ #legalfoot:not\(\[hidden\]\)\) > :first-child \{\s*min-height: calc\(100dvh - 128px\)/,
     'the footer is no longer pulled above the fold — the "without hunting" criterion is no longer met');
+  // …except on the home screen. The home's toolbar and bottom bar carry these since 2026-11-03,
+  // docs/24: the bottom bar's "Algomancy Online (Unofficial Client)" button opens the footer's
+  // content, so the home hides the footer and is one window tall — no floor there.
+  assert.match(css, /#app:not\(\.board\):not\(:has\(> \.homepage\)\):has\(\+ #legalfoot/, 'the floor reaches the home screen again');
+  assert.match(css, /#app:has\(> \.homepage\) \+ #legalfoot \{ display: none; \}/, 'the footer shows on the home screen again');
   assert.equal(/legalbar|barHtml/.test(src), false,
     'the top strip is back — the owner asked for it to go (2026-09-05); the footer is the notice');
 });

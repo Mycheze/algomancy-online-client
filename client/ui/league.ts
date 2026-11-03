@@ -21,7 +21,8 @@
 import * as acct from './account.ts';
 import {
   FORMATS, GRID_LEN, PRESETS, SHOW_DAYS, STAMP_STYLES, browserTz, defaultGrid, discordCode, fromWallValue,
-  hoursIn, leagueBannerHtml, leagueHtml, leagueNavHtml, leagueView, nextQuarter, presetHours, viewTz as tzOf, when as whenIn,
+  hoursIn, leagueBannerHtml, leagueGlanceHtml, leagueGlanceView, leagueHtml, leagueJoinRowsHtml, leagueJoinView,
+  leagueNavHtml, leagueView, nextQuarter, presetHours, viewTz as tzOf, when as whenIn,
   type Format, type LeagueState, type Preview, type StampStyle,
 } from './pages/league.ts';
 
@@ -121,6 +122,33 @@ const formatOfVal = (v: string | undefined): Format => (FORMATS as readonly (str
 export function homeBannerHtml(): string {
   askHint();
   return leagueBannerHtml({ st: hint, open: bannerOpen, howOpen, tz: viewTz() });
+}
+
+// ── the new home's League card and Join sheet (docs/24) ──────────────
+// From the banner's answer (`hint`), asked for the first time a home draws.
+
+/** a season to show, or the viewer organizes leagues: the home's League button is live */
+export function hasLeague(): boolean {
+  askHint();
+  return !!hint?.season || hintOrganizer;
+}
+
+/** The League card's body: pages/league.ts leagueGlanceHtml; '' with no season. */
+export function homeGlanceHtml(): string {
+  askHint();
+  return leagueGlanceHtml(leagueGlanceView(hint, viewTz()));
+}
+
+/** your league matches to play now, as rows with Play buttons; '' when none */
+export function joinRowsHtml(): string {
+  askHint();
+  return leagueJoinRowsHtml(leagueJoinView(hint, viewTz()));
+}
+
+/** how many of them — part of the home's Join badge */
+export function joinCount(): number {
+  askHint();
+  return leagueJoinView(hint, viewTz()).length;
 }
 
 function syncUrl(): void {

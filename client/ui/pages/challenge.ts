@@ -129,6 +129,20 @@ export function challengeHomeCardHtml(v: ChallengeHomeView): string {
   </div>`;
 }
 
+/** The new home's Challenge card body (docs/24, 2026-11-03): this week's goal,
+ * the time left and your best. No buttons — the whole card is H1's
+ * `nav-challenge` button. '' with no current week (the card says so itself). */
+export function challengeGlanceHtml(v: ChallengeHomeView): string {
+  const c = v.current;
+  if (!c) return '';
+  const best = v.best;
+  return `<div class="chglance">
+    <div class="chgltitle">${esc(c.title)}</div>
+    <div class="chglgoal">${esc(goalText(c.goal))}</div>
+    <div class="chglmeta">${esc(timeLeft(c.closes, v.now))}${best ? ` · your best: ${plural(best.score.turns, 'turn')} (#${best.rank} fastest)` : ''}</div>
+  </div>`;
+}
+
 /** Gather the home card and header button: from the page's answer or the home's own. */
 export function challengeHomeView(hint: ChallengeReply | null, now: number): ChallengeHomeView {
   const current = hint?.current ?? null;

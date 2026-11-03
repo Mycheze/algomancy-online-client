@@ -1,4 +1,4 @@
-import { updatesHtml, UPDATES, type Update } from '../../../ui/updates.ts';
+import { updatesHtml, updatesListHtml, UPDATES, type Update } from '../../../ui/updates.ts';
 
 /* The Recent updates band under the home menu (ui/updates.ts updatesHtml,
  * which is already `(list, seen) => string`). The live list is the real one. */
@@ -15,3 +15,4 @@ export default {
 export const Live = { name: 'The live list, two new since the last visit', render: () => updatesHtml(UPDATES, UPDATES.length - 2) };
 export const FirstVisit = { name: 'A first visit (nothing marked)', render: () => updatesHtml(MADE_UP, null) };
 export const AllNew = { name: 'Everything new', render: () => updatesHtml(MADE_UP, 0) };
+export const ListAlone = { name: 'The list alone (the home\'s Updates sheet), one new', render: () => updatesListHtml(MADE_UP, MADE_UP.length - 1) };

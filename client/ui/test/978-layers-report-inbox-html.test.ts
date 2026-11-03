@@ -115,12 +115,15 @@ test('978 §7 while the pill is up, the page keeps the corner it sits in clear',
   const css = readStyles().replace(/\/\*[\s\S]*?\*\//g, '');
   const pill = /\.reportfab \{[^}]*\bbottom: (\d+)px;[^}]*padding: 8px/.exec(css);
   assert.ok(pill, 'positive control: the pill is fixed at a bottom offset');
-  const root = /:root:has\(#reportlayer > \.reportfab\) \{([^}]*)\}/.exec(css)?.[1] ?? '';
+  // `:not(:has(#app > .homepage))`: the home's toolbar and bottom bar carry these since
+  // 2026-11-03, docs/24 — the pill is hidden there, so nothing keeps its corner clear (1020)
+  const HOME_OUT = String.raw`:not\(:has\(#app > \.homepage\)\)`;
+  const root = new RegExp(String.raw`:root:has\(#reportlayer > \.reportfab\)${HOME_OUT} \{([^}]*)\}`).exec(css)?.[1] ?? '';
   const clear = Number(/--report-pill-clear: (\d+)px/.exec(root)?.[1] ?? 0);
   // the pill: its offset, 8px padding twice and a line of 13px text — the clearance covers it and leaves a gap
   assert.ok(clear >= Number(pill[1]) + 16 + 18 + 8, `--report-pill-clear ${clear}px does not clear a pill ${pill[1]}px up`);
   assert.match(root, /scroll-padding-bottom: var\(--report-pill-clear\)/, 'a scroll into view stops above the pill');
-  assert.match(css, /:root:has\(#reportlayer > \.reportfab\) > body \{[^}]*padding-bottom: var\(--report-pill-clear\)/,
+  assert.match(css, new RegExp(String.raw`:root:has\(#reportlayer > \.reportfab\)${HOME_OUT} > body \{[^}]*padding-bottom: var\(--report-pill-clear\)`),
     'and the end of the page can scroll out from under it');
   // only while the pill is up: the board has no pill, and nothing here may reach it
   assert.doesNotMatch(css, /(^|[},])\s*body \{[^}]*padding-bottom/, 'no unconditional body padding');

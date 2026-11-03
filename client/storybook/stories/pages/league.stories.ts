@@ -2,7 +2,7 @@
  * drawn from made-up views: no server, no account. The page's own buttons do
  * nothing here — their handler is ui/league.ts, which a story does not load. */
 import {
-  defaultGrid, leagueBannerHtml, leagueHtml, leagueNavHtml,
+  defaultGrid, leagueBannerHtml, leagueGlanceHtml, leagueGlanceView, leagueHtml, leagueJoinRowsHtml, leagueJoinView, leagueNavHtml,
   type LeagueState, type LeagueView, type SeasonView,
 } from '../../../ui/pages/league.ts';
 
@@ -85,4 +85,17 @@ export const HomeBannerSignUp = {
 };
 export const HeaderButton = {
   render: () => `${leagueNavHtml({ season: season({ phase: 0, me: { ...season().me!, entered: false } }), organizer: false })} ${leagueNavHtml({ season: season(), organizer: false })}`,
+};
+
+// ── the new home (docs/24): the League card's body and the Join sheet's rows ──
+const card = (html: string): string => `<div style="max-width:320px;padding:12px;border:1px dashed var(--color-border)">${html}</div>`;
+export const HomeGlance = { name: 'Home card glance, entered', render: () => card(leagueGlanceHtml(leagueGlanceView(state(season()), 'Europe/London'))) };
+export const HomeGlanceSignUp = {
+  name: 'Home card glance, sign-ups open',
+  render: () => card(leagueGlanceHtml(leagueGlanceView(state(season({ phase: 0, label: 'Sign-up week', me: { ...season().me!, entered: false } })), 'Europe/London'))),
+};
+export const HomeGlanceNone = { name: 'Home card glance, no season (draws nothing)', render: () => card(leagueGlanceHtml(leagueGlanceView(state(null), 'Europe/London'))) };
+export const JoinRows = {
+  name: 'Join sheet: league matches to play',
+  render: () => card(leagueJoinRowsHtml(leagueJoinView(state(season(), { others: [season({ id: '2026-10', name: 'October League', phase: 4, label: 'The final' })] }), 'Europe/London'))),
 };

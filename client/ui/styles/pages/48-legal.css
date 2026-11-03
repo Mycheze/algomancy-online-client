@@ -3,19 +3,19 @@
    design-system round (2026-11-03) moved it here, so it is the LAST piece:
    after bundle.css's every other rule, where the injected sheet sat. Both
    live outside #app (legal.ts's header says why). */
-/* .homepage is min-height:100dvh so it can centre itself in the window. The
-   128px taken off it is deliberate and is the only thing here that changes a
-   layout somebody else designed: it leaves the top of the footer showing under
-   the fold, so the unofficial notice and the "buy the game" pitch are
-   something you SEE and choose not to read, rather than something you have to
-   go looking for. The home cards still centre themselves in what is left. */
-#legalfoot:not([hidden]) ~ .homepage, #app:has(+ #legalfoot:not([hidden])) .homepage {
-  min-height: calc(100dvh - 128px); }
-/* …and the same floor under EVERY off-board page (owner, 2026-09-05: on the
-   friends tab "there's very little text on screen, so the footer is WAY too
-   high up"). The page's root is whatever the screen module painted first. */
-#app:not(.board):has(+ #legalfoot:not([hidden])) > :first-child {
+/* The floor under every off-board page: its root is at least the window less
+   128px tall, so the top of the footer shows under the fold — the unofficial
+   notice and the "buy the game" pitch are something you SEE and choose not to
+   read, rather than something you have to go looking for (owner, 2026-09-05:
+   on the friends tab "there's very little text on screen, so the footer is WAY
+   too high up"). The page's root is whatever the screen module painted first.
+   NOT THE HOME SCREEN (docs/24, 2026-11-03): its bottom bar carries the
+   footer's content behind its "Algomancy Online (Unofficial Client)" button,
+   so the footer is hidden there and the home is exactly one window tall —
+   until then .homepage had this floor too (test 267 §2, 1020). */
+#app:not(.board):not(:has(> .homepage)):has(+ #legalfoot:not([hidden])) > :first-child {
   min-height: calc(100dvh - 128px); box-sizing: border-box; }
+#app:has(> .homepage) + #legalfoot { display: none; }
 
 #legalfoot { border-top: 1px solid var(--line); background: var(--color-surface-sunken); }
 /* 1400px, not 1180: the deck builder and the card browser are 1400/1500 wide
