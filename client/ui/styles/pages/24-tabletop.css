@@ -116,7 +116,7 @@ html:not(.ttcarrypile) .ttpage .ttend.dropover::before { content: ''; display: b
 .ttedge2 > .ttmaybepile { flex: 1 0 auto; min-height: 0; }
 .ttsidepile .ttpilelabel { color: var(--dim); text-transform: uppercase; letter-spacing: .06em; font-size: var(--text-11); }
 .ttpilecount.bad { color: var(--danger); font-weight: 700; }
-.ttnote { padding: var(--space-3) var(--space-5); font-size: var(--text-13); color: var(--accent); background: #2a2314; }
+.ttnote { padding: var(--space-3) var(--space-5); font-size: var(--text-13); color: var(--accent); background: var(--color-accent-wash); }
 html.binderup .reportfab { right: calc(var(--bdw) + 18px); }
 html.binderup .inboxbell { right: calc(var(--bdw) + 124px); }
 @media (max-width: 900px) {

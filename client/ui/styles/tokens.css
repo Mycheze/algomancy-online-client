@@ -38,6 +38,7 @@
   --color-text-on-fill: #ffffff;     /* ink on a saturated or dark fill: element chips, red badges, captions */
   /* ── colour: brand and interaction ── */
   --color-accent: #d9a441;           /* gold: the brand, the page's main action, "on" */
+  --color-accent-wash: #2a2314;      /* a dim gold fill behind gold text: a warning note, a deck that is not legal yet */
   --color-link: #7fc0ff;
   --color-confirm: #3c5a2f;          /* green: button.primary, "confirm" at the table */
   --color-confirm-border: #5b8747;

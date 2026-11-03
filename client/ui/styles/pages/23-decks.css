@@ -61,7 +61,7 @@
 .deckfacts { color: var(--dim); display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
 .deckstatus { font-size: var(--text-12); border-radius: var(--radius-md); padding: var(--space-2) var(--space-4); }
 .deckstatus.ok { color: var(--glow); background: var(--color-success-bg); }
-.deckstatus.bad { color: var(--accent); background: #2a2314; }
+.deckstatus.bad { color: var(--accent); background: var(--color-accent-wash); }
 .deckcc { align-self: flex-start; }
 .acctcount.bad { color: var(--danger); font-weight: 700; }
 /* the swaps editor on the sideboard tab (docs/22 §4.6) */
