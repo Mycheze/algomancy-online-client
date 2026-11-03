@@ -8,7 +8,9 @@ The owner's words are kept close to verbatim. Where something is an interpretati
 
 ## Principles for the whole client
 
-1. **Works well on an iPad and a computer, with app-like design patterns.**
+1. **Works well on an iPad and a computer, with app-like design patterns.** **Mid to large screens only.**
+   Owner, 2026-11-03: "Let's not even worry about phones for now. They're too small and would require an actual
+   mobile UX/UI expert." The redesign targets tablet and desktop widths. Don't design phone layouts.
 2. **No page scrolling.** Every page has to be manageable without scrolling up or down. An element may scroll
    inside itself where that makes sense (the card list can scroll), but never the whole page.
 3. **Works full screen, and with every input pair:** taps/clicks, taps/hovers, drags/drags, and dismissing by
@@ -58,6 +60,4 @@ Tapping a whole card goes deeper (opens that page).
 - "No page scrolling" is a layout rule for every page, so it probably belongs in the system: an app shell (top
   bar, main area, bottom bar) with `100dvh` and per-region scrolling. Give it a guard (ui-shots can measure
   document height against the viewport at 1440, 1024 touch and 390).
-- Phone (390px) isn't named in the brief. The client supports it today. Ask the owner how a no-scroll home
-  should behave on a phone before designing it.
 - Every `data-btn` survives a redesign (tests and the tutorial find buttons by them).
