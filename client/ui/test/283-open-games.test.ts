@@ -69,5 +69,6 @@ test('BL-42 §3 ⭐ the searching line never shows a band for a challenge', () =
     + 'to prevent, arriving from the client side');
 });
 
+// the queue's markup is pages/queue.ts since the design-system round (2026-11-03)
 const readSource = (): string =>
-  readFileSync(new URL('../queue.ts', import.meta.url), 'utf8');
+  readFileSync(new URL('../pages/queue.ts', import.meta.url), 'utf8');

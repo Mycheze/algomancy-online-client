@@ -37,6 +37,7 @@ import { chosenDeck, elIcon as elIconOf, esc } from '../util.ts';
 import { caretIn, restoreCaret } from './caret.ts';
 import { chosenClockMs, clockPickHtml, clockPickView, type ClockPickView } from './clockpick.ts';
 import { deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
+import { queueStripHtml, queueStripView } from './queue.ts';
 
 const elIcon = (name: string): string => elIconOf(name, name);
 
@@ -141,7 +142,7 @@ export interface HomeSlots {
   leagueNav: string;      // league.ts navButtonHtml
   challengeNav: string;   // challenge.ts navButtonHtml
   leagueBanner: string;   // league.ts homeBannerHtml — fetches while drawing
-  queueStrip: string;     // queue.ts stripHtml — the matchmaking strip
+  queueStrip: string;     // pages/queue.ts queueStripHtml — the matchmaking strip
   yourMatches: string;    // match.ts yourMatchesHtml — paused/running Competitive matches
   customRules: string;    // customrulespanel.ts panelHtml, with the draft clock inside
   competitiveCard: string; // match.ts competitiveCardHtml
@@ -195,7 +196,7 @@ export function homeView(st: HomeState): HomeView {
   const leagueNav = lg.navButtonHtml();
   const challengeNav = chal.navButtonHtml();
   const leagueBanner = lg.homeBannerHtml();
-  const queueStrip = mm.stripHtml(!!acct.token());
+  const queueStrip = queueStripHtml(queueStripView());
   const yourMatches = mt.yourMatchesHtml();
   const setCount = crp.setCount();
   const customRules = crp.panelHtml(fixedPick, clockPickHtml(clockPickView('draft')));

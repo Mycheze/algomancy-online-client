@@ -185,9 +185,10 @@ import { artUrl, ICON_BASE } from './assets.ts';
 import { caretIn, type CaretSnap } from './pages/caret.ts';
 import { CLOCK_DEFAULT_MS, chosenClockMs } from './pages/clockpick.ts';
 import { connectingHtml } from './pages/connecting.ts';
-import { deckPicker, importDeck, wireDeckPicker } from './pages/deckpicker.ts';
+import { importDeck } from './pages/deckpicker.ts';
 import { paintHome, saveHomeName } from './pages/home.ts';
 import { paintWaiting } from './pages/waiting.ts';
+import { paintQueue } from './pages/queue.ts';
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
 
 /** chess-clock snapshot the server attaches to every state broadcast (#6);
@@ -9165,7 +9166,7 @@ function renderHome(): void {
   // BL-16: …and the admin dashboard, which owns the page outright when open
   if (admin.screen()) { admin.renderScreen(); return; }
   // BL-01: …and the matchmaking queue
-  if (mm.screen()) { mm.renderScreen(); return; }
+  if (mm.screen()) { paintQueue($app, () => { if (!inGame) renderHome(); }); return; }   // pages/queue.ts
   // none does: the home screen itself (pages/home.ts)
   paintHome($app, { els: ui.homeEls, fixedOpen: ui.homeFixedTrio, error: uiError }, renderHome);
 }
@@ -12041,15 +12042,13 @@ chal.initChallenge({ app: $app, rerender: () => { if (!inGame) renderHome(); } }
 admin.initAdmin({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 // the rules review page, at ?crreview=1 or from a judge's or admin's profile
 crr.initCrReview({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
-// BL-01 — the matchmaking queue. It borrows the home screen's deck picker
-// rather than growing a second one: which decks are offered for constructed is
-// a rule with one home (deckPickerHtml), and a queue that offered a different
-// set would be a second answer to the same question.
+// BL-01 — the matchmaking queue. Its page (pages/queue.ts) borrows the home
+// screen's deck picker rather than growing a second one: which decks are
+// offered for constructed is a rule with one home (deckPickerHtml), and a queue
+// that offered a different set would be a second answer to the same question.
 mm.initQueue({
   app: $app,
   rerender: () => { if (!inGame) renderHome(); },
-  deckPickerHtml: deckPicker,   // pages/deckpicker.ts
-  wireDeckPicker,
   chosenDeck: savedDeck,
   token: acct.token,
   rating: (mode: string) => acct.currentUser()?.profile.rating?.[mode] ?? null,
