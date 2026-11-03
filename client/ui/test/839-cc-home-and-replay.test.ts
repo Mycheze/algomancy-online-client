@@ -50,7 +50,8 @@ g['__UI_DRIVER_FETCH'] = async (url: string) => {
   return new Promise(() => {});
 };
 const { home } = await import('./ui-driver.ts');
-const mt = await import('../match.ts');
+// the Competitive card's markup is pages/match.ts since the design-system round (2026-11-03)
+const mp = await import('../pages/match.ts');
 const { ReplayServer } = await import('../replayserver.ts');
 const ui = home();
 const flush = async (): Promise<void> => { for (let i = 0; i < 30; i++) await Promise.resolve(); };
@@ -63,18 +64,19 @@ const card = (html: string): string => {
 };
 
 test('§1 the Competitive card: sign-in, Best of, the CC-legal picker, New match', async () => {
-  const out = mt.competitiveCardHtml(false, null);
+  const out = mp.competitiveCardHtml(mp.competitiveCardView(false, null));
   assert.match(out, /Sign in to play a Competitive match\./);
   assert.match(out, /data-btn="acct-open-auth"/);
   assert.doesNotMatch(out, /cc-new/, 'signed out: no New match');
 
   let html = card(ui.html());
-  assert.match(html, /<button class="on" data-btn="cc-bo" data-bo="3" aria-pressed="true">Best of 3/, 'Bo3 first');
+  // a toggle() since 2026-11-03: `on` ends its class list, aria-pressed and data-bo follow type="button"
+  assert.match(html, /<button class="[^"]*\bon" data-btn="cc-bo" type="button" aria-pressed="true" data-bo="3">Best of 3/, 'Bo3 first');
   assert.match(html, /<option value="dOK" selected>Legal deck<\/option>/);
   assert.match(html, /<option value="dBAD" disabled>Big side — a sideboard holds at most 7 cards \(got 8\)<\/option>/,
     'the illegal deck is greyed, with its reason');
   html = card(ui.click({ btn: 'cc-bo', bo: '1' }));
-  assert.match(html, /<button class="on" data-btn="cc-bo" data-bo="1"/);
+  assert.match(html, /<button class="[^"]*\bon" data-btn="cc-bo"[^>]* data-bo="1"/);
   ui.click({ btn: 'cc-new' });
   await flush();
   assert.equal(location.search, '?ws=1&room=NEWC&seat=0&mode=constructed&bo=1&ccdeck=dOK');

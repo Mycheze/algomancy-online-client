@@ -13,9 +13,10 @@
 import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
 import { currentUser, isGuest, modeName, signupNoteHtml, signupOutcome } from '../account.ts';
 import { button } from '../components/index.ts';
-import { matchResultHtml, scoreWords } from '../match.ts';
+import { scoreWords } from '../match.ts';
 import { concessionNote, elementsLine, matchLength, type GameOver, type SeatStats } from '../postgame.ts';
 import { esc } from '../util.ts';
+import { matchResultHtml } from './match.ts';
 
 export interface PostGameView {
   over: GameOver;

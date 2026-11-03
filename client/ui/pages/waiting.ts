@@ -3,7 +3,7 @@
  *
  *   · a live draft room choosing its trio  → pages/lobby.ts lobbyHtml
  *   · a Single Card Duel room              → singleWaitingHtml, here
- *   · a Competitive Constructed match room → ui/match.ts matchWaitingHtml
+ *   · a Competitive Constructed match room → pages/match.ts matchRoomHtml
  *   · a constructed room (and a constructed LEAGUE match) → constructedWaitingHtml, here
  *
  * Moved out of main.ts in the design-system round, 2026-11-03. main.ts
@@ -13,8 +13,6 @@
  * routed by main.ts handleButton / handlePregameButton.
  */
 import type { Seat } from '../../engine/src/types.ts';
-import * as acct from '../account.ts';
-import * as dk from '../decks.ts';
 import { roomFriendsHtml } from '../inbox.ts';
 import * as lob from '../lobby.ts';
 import * as mt from '../match.ts';
@@ -23,6 +21,7 @@ import { chosenDeck, esc, shareBar } from '../util.ts';
 import { deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
 import { singleCardPickerHtml, singleCardPickerView } from './singlecard.ts';
 import { lobbyHtml, lobbyView } from './lobby.ts';
+import { paintMatchRoom } from './match.ts';
 
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
 
@@ -247,13 +246,10 @@ export function paintWaiting(app: HTMLElement, net: WaitingNet, error: string, r
     return;
   }
   // docs/22 §5.4: a Competitive match's room — game 1's registration, the
-  // between-games screen, a pause — is ui/match.ts's page
+  // between-games screen, a pause — is pages/match.ts
   if (w.match) {
-    app.innerHTML = mt.matchWaitingHtml(
-      { room: net.room, seat: net.seat, names: net.names, peers: net.peers, ended: net.matchEnded },
-      w.match, acct.token() ? dk.competitiveDecks() : null, error);
-    if (acct.token()) dk.ensureCollection(rerender);
-    mt.wireDeckSelect(rerender);
+    paintMatchRoom(app, { room: net.room, seat: net.seat, names: net.names, peers: net.peers, ended: net.matchEnded },
+      w.match, error, rerender);
     return;
   }
   app.innerHTML = constructedWaitingHtml(constructedWaitingView(net, error));

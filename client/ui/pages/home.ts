@@ -39,6 +39,7 @@ import { chosenClockMs, clockPickHtml, clockPickView, type ClockPickView } from 
 import { customRulesHtml, customRulesView } from './customrules.ts';
 import { deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
 import { singleCardPickerHtml, singleCardPickerView } from './singlecard.ts';
+import { competitiveCardHtml, competitiveCardView, yourMatchesHtml, yourMatchesView } from './match.ts';
 import { queueStripHtml, queueStripView } from './queue.ts';
 
 const elIcon = (name: string): string => elIconOf(name, name);
@@ -145,9 +146,9 @@ export interface HomeSlots {
   challengeNav: string;   // challenge.ts navButtonHtml
   leagueBanner: string;   // league.ts homeBannerHtml — fetches while drawing
   queueStrip: string;     // pages/queue.ts queueStripHtml — the matchmaking strip
-  yourMatches: string;    // match.ts yourMatchesHtml — paused/running Competitive matches
+  yourMatches: string;    // pages/match.ts yourMatchesHtml — paused/running Competitive matches
   customRules: string;    // pages/customrules.ts customRulesHtml, with the draft clock inside
-  competitiveCard: string; // match.ts competitiveCardHtml
+  competitiveCard: string; // pages/match.ts competitiveCardHtml
   challengeCard: string;  // challenge.ts homeCardHtml — fetches while drawing
   updates: string;        // updates.ts updatesHtml — the Recent updates band, after .homepage
 }
@@ -199,7 +200,7 @@ export function homeView(st: HomeState): HomeView {
   const challengeNav = chal.navButtonHtml();
   const leagueBanner = lg.homeBannerHtml();
   const queueStrip = queueStripHtml(queueStripView());
-  const yourMatches = mt.yourMatchesHtml();
+  const yourMatches = yourMatchesHtml(yourMatchesView());
   const setCount = crp.setCount();
   const customRules = customRulesHtml(customRulesView(fixedPick, clockPickHtml(clockPickView('draft'))));
   const deckPicker = deckPickerView();
@@ -207,7 +208,7 @@ export function homeView(st: HomeState): HomeView {
     open: homeOptionsOpen, ms: chosenClockMs('constructed'), clock: clockPickView('constructed'),
   };
   const singleDuel: SingleDuelView = { open: singleDuelOpen, card: sc.chosen(), picker: singleCardPickerHtml(singleCardPickerView()) };
-  const competitiveCard = mt.competitiveCardHtml(!!acct.token(), acct.token() ? dk.competitiveDecks() : null);
+  const competitiveCard = competitiveCardHtml(competitiveCardView(!!acct.token(), acct.token() ? dk.competitiveDecks() : null));
   const challengeCard = chal.homeCardHtml();
   const updates = updatesHtml();
   return {
