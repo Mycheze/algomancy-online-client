@@ -620,7 +620,7 @@ function availabilityCardHtml(v: LeagueView): string {
   const min = v.data?.minHours ?? 6;
   return panel({ title: "When you're usually free", wide: true, bodyHtml: `
     <div class="lgavail"><div class="lgavside">
-    <p>Mark the hours you could usually play: pick quick fills, or drag across the grid. Opponents are matched on the hours you share.</p>
+    <p>Mark the hours you could usually play: pick quick fills, or <span class="mouseonly">drag across</span><span class="touchonly">tap hours on</span> the grid. Opponents are matched on the hours you share.</p>
     <div class="lgtzrow"><label>Your Discord name <input id="lg-contact" value="${esc(d.contact)}" maxlength="40"
       spellcheck="false" placeholder="e.g. rashi" autocomplete="off"></label></div>
     <p class="hint">Only other league players see it, so they can message you to arrange a game.</p>

@@ -21,6 +21,10 @@
   .lgpage .acctbody, .lgavail { grid-template-columns: minmax(0, 1fr); }
   .lgpage .lgspan2 { grid-column: auto; }
   .lgavside .lgpresets { flex-direction: row; }
+  /* the floating Report pill (.reportfab: 18px up, ~36px tall) sat over the
+     last buttons on a phone ("Suggest a time"), and the page ended before
+     they could scroll clear of it: room for the pill under the last card */
+  .lgpage { padding-bottom: calc(var(--space-9) + var(--space-7)); }
 }
 .lgtzrow { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin: var(--space-4) 0; }
 .lgtzrow label { display: flex; flex-direction: column; gap: var(--space-1); width: 100%; font-size: var(--text-12); color: var(--dim); }
