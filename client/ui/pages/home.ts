@@ -47,10 +47,11 @@ import * as mt from '../match.ts';
 import * as mm from '../queue.ts';
 import * as sc from '../singlecard.ts';
 import { footHtml } from '../legal.ts';
-import { updatesHtml, wireUpdates } from '../updates.ts';
+import * as inbox from '../inbox.ts';
+import { markUpdatesSeen, updatesListHtml, updatesUnseen, wireUpdates } from '../updates.ts';
 import { ICON_BASE } from '../assets.ts';
 import {
-  appShell, button, chip, icon, iconButton, installSheetEsc, segmented, sheet, shellBar, statusMessage,
+  appShell, button, chip, icon, iconButton, iconButtonBadge, installSheetEsc, segmented, sheet, shellBar, statusMessage,
 } from '../components/index.ts';
 import { chosenDeck, elIcon as elIconOf, esc } from '../util.ts';
 import { caretIn, restoreCaret } from './caret.ts';
@@ -59,7 +60,7 @@ import { customRulesHtml, customRulesView } from './customrules.ts';
 import { deckImportHtml, deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
 import { singleCardPickerHtml, singleCardPickerView } from './singlecard.ts';
 import { ccDeckSelectHtml, competitiveCardView, yourMatchesHtml, yourMatchesView, type CompetitiveCardView } from './match.ts';
-import { queueStripHtml, queueStripView } from './queue.ts';
+import { queueGlanceHtml, queueStripView } from './queue.ts';
 import { identityBarView, type IdentityBarView } from './signin.ts';
 
 const elIcon = (name: string): string => elIconOf(name, name);
@@ -149,10 +150,8 @@ export function closeHomeSheet(): boolean {
   return was;
 }
 
-/* TODO(home-edge): updates.ts markUpdatesSeen() — the update log's "seen"
- * advances when its sheet OPENS (docs/24). Until that branch lands the band's
- * own page-load marking stands, and this is a no-op. */
-function markSeen(): void { /* filled in when home-edge lands */ }
+/** the update log's "seen" advances when its sheet OPENS (docs/24), not when the home loads */
+function markSeen(): void { markUpdatesSeen(); }
 
 /* ── the view ─────────────────────────────────────────────────────────── */
 
@@ -259,19 +258,17 @@ export function homeView(st: HomeState): HomeView {
   const fixedVerdict = crp.verdict(st.els.length === k ? st.els : null);
   const rulesView = customRulesView(fixedPick);
   const signedIn = !!acct.token();
-  // TODO(home-edge): league.ts hasLeague/homeGlanceHtml/joinRowsHtml/joinCount,
-  // challenge.ts hasChallenge/homeGlanceHtml, pages/queue.ts queueGlanceHtml,
-  // inbox.ts inboxUnread/inviteCount/inviteRowsHtml, match.ts myMatchCount,
-  // updates.ts updatesUnseen/updatesListHtml — swapped in when that branch lands
-  const leagueLive = lg.navButtonHtml() !== '';
-  const league = '';
-  const challengeLive = chal.navButtonHtml() !== '';
-  const challenge = '';
-  const queue = queueStripHtml(queueStripView());
-  const invites = '';
+  // the cards beside Play, and what waits behind Join a room (the league and
+  // challenge answers are asked for here, once per token, as the banner did)
+  const leagueLive = lg.hasLeague();
+  const league = lg.homeGlanceHtml();
+  const challengeLive = chal.hasChallenge();
+  const challenge = chal.homeGlanceHtml();
+  const queue = queueGlanceHtml(queueStripView());
+  const invites = inbox.inviteRowsHtml();
   const yourMatches = yourMatchesHtml(yourMatchesView());
-  const leagueMatches = '';
-  const myMatches = yourMatchesView().rows.length;
+  const leagueMatches = lg.joinRowsHtml();
+  const join = inbox.inviteCount() + mt.myMatchCount() + lg.joinCount();
   return {
     account: identityBarView(user, acct.resolvingUser()),
     nameBox: user || acct.resolvingUser() ? null : name,
@@ -291,13 +288,13 @@ export function homeView(st: HomeState): HomeView {
     competitive: competitiveCardView(signedIn, signedIn ? dk.competitiveDecks() : null),
     singleCard: sc.chosen(),
     leagueLive, challengeLive,
-    badges: { alerts: 0, join: myMatches, updates: 0 },
+    badges: { alerts: inbox.inboxUnread(), join, updates: updatesUnseen() },
     slots: {
       league, challenge, queue, invites, yourMatches, leagueMatches,
       customRules: customRulesHtml(rulesView, { bare: true }),
       scpicker: singleCardPickerHtml(singleCardPickerView()),
       info: footHtml(),
-      updates: updatesHtml(),
+      updates: updatesListHtml(),
     },
   };
 }
@@ -650,6 +647,21 @@ function wireInfoHover(app: HTMLElement): void {
   });
 }
 
+/** The Alerts and Join badges, patched in place when the inbox's counts move
+ * (no whole-page repaint for a count). */
+function patchHomeBadges(alerts: number, join: number): void {
+  const bell = document.querySelector('#app > .homepage .homealerts .ui-icon-button__icon');
+  if (bell) {
+    bell.querySelector('.ui-icon-button__badge')?.remove();
+    bell.insertAdjacentHTML('beforeend', iconButtonBadge(alerts));
+  }
+  const joinBtn = document.querySelector('#app > .homepage .homejoin');
+  if (joinBtn) {
+    joinBtn.querySelector('.homejoinbadge')?.remove();
+    if (join > 0) joinBtn.insertAdjacentHTML('beforeend', ` ${chip({ label: String(join), tone: 'accent', shape: 'pill', solid: true, className: 'homejoinbadge' })}`);
+  }
+}
+
 /** Paint the home screen into `app` and wire it. `rerender` is main.ts's
  * renderHome — the router, which comes back here when no other page owns #app. */
 export function paintHome(app: HTMLElement, st: HomeState, rerender: () => void): void {
@@ -683,6 +695,13 @@ export function paintHome(app: HTMLElement, st: HomeState, rerender: () => void)
   if (justOpened === 'join' && lastPointer === 'mouse') codeInput?.focus?.();
   wireInfoHover(app);
   wireUpdates();
+  // the inbox's counts move on its own poll: badge them in place, no repaint
+  // for a count — but an open Join sheet lists the invites, so it is redrawn
+  inbox.onInboxChange(() => {
+    if (!document.getElementById(SHEET_IDS.join) && !document.querySelector('#app > .homepage')) return;
+    if (homeSheet === 'join') { homeRerender?.(); return; }
+    patchHomeBadges(inbox.inboxUnread(), inbox.inviteCount() + mt.myMatchCount() + lg.joinCount());
+  });
   // BL-01: the at-a-glance count. Started HERE rather than at boot because
   // this is the only screen that shows it, and an idle tab on a board should
   // not be asking the server who is queueing every five seconds. Idempotent.

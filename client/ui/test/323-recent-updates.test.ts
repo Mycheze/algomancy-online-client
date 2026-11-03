@@ -92,7 +92,10 @@ test('§5 the home screen shows the list in its Updates sheet, from the bottom b
   const bottom = HOME.slice(HOME.indexOf('function bottomHtml('));
   assert.match(bottom.slice(0, bottom.indexOf('\n}\n')), /endHtml: iconButton\(\{ label: [^]*?opens\('updates'\)/,
     'the bottom bar has no Updates button');
-  assert.match(HOME, /updates: updates(List)?Html\(\),/, 'homeView does not fill the updates slot');
+  assert.match(HOME, /updates: updatesListHtml\(\),/, 'homeView does not fill the updates slot (the list alone: the sheet has its own title)');
+  assert.match(HOME, /if \(homeSheet === 'updates'\) markSeen\(\);/, 'opening the sheet does not mark the list seen');
+  assert.match(HOME, /function markSeen\(\): void \{ markUpdatesSeen\(\); \}/);
+  assert.match(HOME, /badges: \{[^}]*updates: updatesUnseen\(\)/, 'the Updates button does not badge the new ones');
   const paintHome = HOME.slice(HOME.indexOf('export function paintHome('));
   assert.match(paintHome.slice(0, paintHome.indexOf('\n}\n')), /wireUpdates\(\)/, 'paintHome does not wire the disclosure');
 });

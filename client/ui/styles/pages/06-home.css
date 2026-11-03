@@ -170,9 +170,6 @@
 .homeinfosheet .lgdiscord { display: inline-block; padding: var(--space-2) var(--space-5); border: 1px solid var(--color-border);
   border-radius: var(--control-radius); background: var(--color-surface-raised); color: var(--color-text); text-decoration: none; }
 .homeinfosheet .lgdiscord:hover { border-color: var(--color-accent); }
-/* the update log in its sheet: the list without the band's own frame */
-.homeupdsheet .updates { padding: 0; max-width: none; }
-.homeupdsheet .updates h2 { display: none; }
 
 /* narrower than a landscape iPad: Play on top, the three cards in a row under it */
 @media (max-width: 899.98px) {

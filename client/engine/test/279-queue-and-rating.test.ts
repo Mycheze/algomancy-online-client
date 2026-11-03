@@ -176,8 +176,9 @@ test('BL-01 §3 the matchmade clock matches the UI\'s per-format defaults', () =
 /* ══ §4 — the queue actually reaches the player ════════════════════════ */
 
 test('BL-01 §4 the home screen shows the queue, and the post-game button is alive', () => {
-  // the strip is drawn by pages/queue.ts since the design-system round (2026-11-03)
-  assert.match(HOME, /queueStripHtml\(queueStripView\(\)\)/,
+  // the strip is drawn by pages/queue.ts since the design-system round (2026-11-03);
+  // on the new home (docs/24, 2026-11-03) it is the Matchmaking card's glance
+  assert.match(HOME, /queueGlanceHtml\(queueStripView\(\)\)/,
     'the home screen no longer paints the queue strip — the at-a-glance count is the half of '
     + 'this feature a visitor sees without clicking anything');
   assert.match(HOME, /mm\.startCountsPoll\(\)/,

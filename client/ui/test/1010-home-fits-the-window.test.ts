@@ -18,8 +18,9 @@
  *      height) outside the phone fallback, and the two columns' min-height is
  *      capped at 100% of it
  *   §4 the layers around #app hide their own furniture on the home screen —
- *      the legal footer, and the report pill's clearance on <body> — so neither
- *      adds a line of height there (ui/legal.ts, ui/report.ts; their CSS)
+ *      the legal footer and its page floor, and the report pill's clearance on
+ *      <body> — so none of them adds a line of height there (their CSS:
+ *      pages/48-legal, shared/13-report-and-inbox)
  *
  * The other half of the guard is ui-shots: a home__* state whose document is
  * taller than the window at desktop or tablet fails the run (test 1012).
@@ -111,8 +112,7 @@ test('1010 §1 the root is the shell, homepage last, and nothing is drawn after 
   }
 });
 
-// TODO(home-edge): legal.ts's footer floor still sizes .homepage until that branch's 48-legal change lands
-test('1010 §2 nothing gives the shell root a size of its own; body and #app add none', { todo: 'until home-edge lands' }, () => {
+test('1010 §2 nothing gives the shell root a size of its own; body and #app add none', () => {
   const bad = ALL.filter(r => subjectIsHome(r.sel).length && SIZE.test(r.body)).map(r => `${r.media} ${r.sel} { ${r.body.trim()} }`);
   assert.deepEqual(bad, [], 'a rule sizes .homepage itself — the shell is the window, and this adds to it');
   const body = ALL.find(r => r.sel === 'body' && !r.media);
@@ -138,4 +138,18 @@ test('1010 §3 the home main region keeps scrolling inside itself; the columns n
   }
   const grid = desk.find(r => r.sel === '.homemain');
   assert.match(grid?.body ?? '', /min-height:\s*min\(100%,/, '.homemain is capped at its region');
+});
+
+test('1010 §4 the layers hide their furniture on the home screen, so neither adds height there', () => {
+  // the legal footer: hidden whenever #app holds the home
+  assert.ok(ALL.some(r => /#app:has\(> \.homepage\) \+ #legalfoot/.test(r.sel) && /display:\s*none/.test(r.body)),
+    '#legalfoot shows under the home — the page scrolls by the footer\'s height');
+  // the off-board page floor (min-height: 100dvh - 128px on #app's first child) passes over the home
+  const floors = ALL.filter(r => /#app[^{]*>\s*:first-child/.test(r.sel) && /min-height/.test(r.body));
+  assert.ok(floors.length, 'positive control: the off-board floor rule is read');
+  for (const f of floors) assert.match(f.sel, /:not\(:has\(> \.homepage\)\)/, `the page floor applies to the home: ${f.sel}`);
+  // the report pill's clearance on <body> (64px of padding) is not kept on the home
+  const clear = ALL.filter(r => /reportfab/.test(r.sel) && />\s*body/.test(r.sel) && /padding-bottom/.test(r.body));
+  assert.ok(clear.length, 'positive control: the pill clearance rule is read');
+  for (const c of clear) assert.match(c.sel, /:not\(:has\(#app > \.homepage\)\)/, `the pill's clearance pads the home: ${c.sel}`);
 });

@@ -3,7 +3,7 @@ import { clockPickHtml } from '../../../ui/pages/clockpick.ts';
 import { customRulesHtml } from '../../../ui/pages/customrules.ts';
 import { singleCardPickerHtml } from '../../../ui/pages/singlecard.ts';
 import { footHtml } from '../../../ui/legal.ts';
-import { updatesHtml, UPDATES } from '../../../ui/updates.ts';
+import { updatesListHtml, UPDATES } from '../../../ui/updates.ts';
 import {
   CHALLENGE_GLANCE, DECKS, INVITES, LEAGUE_GLANCE, LEAGUE_MATCHES, page, QUEUE_GLANCE, QUEUE_GLANCE_LIVE, RULES_STANDARD,
   YOUR_MATCHES,
@@ -47,7 +47,7 @@ function view(over: Partial<HomeView> = {}): HomeView {
       customRules: customRulesHtml(RULES_STANDARD, { bare: true }),
       scpicker: singleCardPickerHtml({ card: null, art: '', makesUnits: true, copies: 30, draft: '', suggestions: '', deckCount: 528 }),
       info: footHtml(),
-      updates: updatesHtml(UPDATES, UPDATES.length - 2),
+      updates: updatesListHtml(UPDATES, UPDATES.length - 2),
     },
     ...over,
   };
