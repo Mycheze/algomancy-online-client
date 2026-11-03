@@ -1,9 +1,11 @@
 /* BL-01 — the matchmaking queue, client side.
  *
- * The same four-function contract every other non-game page here uses
- * (account.ts, decks.ts, cardindex.ts, meta.ts): init / screen / renderScreen
- * / handleButton, with a `queue-` button prefix. main.ts wires it in three
- * lines and otherwise does not know this exists.
+ * The same contract every other non-game page here uses (account.ts,
+ * decks.ts, cardindex.ts, meta.ts): init / screen / handleButton, with a
+ * `queue-` button prefix. What it DRAWS — the queue screen and the home
+ * screen's strip — is pages/queue.ts (design-system round, 2026-11-03), which
+ * reads this module through queueSnapshot(); main.ts's router calls its
+ * paintQueue() while screen() says the queue is open.
  *
  * ── THE ONE STRUCTURAL THING WORTH KNOWING ───────────────────────────
  *
@@ -24,8 +26,6 @@
  * anybody around?" is the question somebody asks BEFORE deciding whether
  * signing in is worth it.
  */
-import { esc } from './util.ts';
-import { ICON_BASE } from './assets.ts';
 import { playCue } from './audio.ts';
 import { alertTab } from './tabalert.ts';
 
@@ -72,10 +72,6 @@ export interface MatchOffer {
 export interface QueueDeps {
   app: HTMLElement;
   rerender: () => void;
-  /** the constructed deck picker, borrowed from the home screen rather than
-   * rebuilt — one picker, one set of rules about which decks are offered */
-  deckPickerHtml: () => string;
-  wireDeckPicker: (rerender: () => void) => void;
   chosenDeck: () => { id?: string; name: string; cards: string[] } | null;
   /** the signed-in player's session token, or null */
   token: () => string | null;
@@ -427,164 +423,38 @@ function leave(): void {
   ws = null;
 }
 
-// ── the home-screen strip ─────────────────────────────────────────────
+// ── what the page draws (pages/queue.ts) ─────────────────────────────
 
-/**
- * The at-a-glance row, above the three home cards.
- *
- * Full width rather than a fourth card, because it answers a different
- * question from the three below it: those are "what would you like to play",
- * this is "is there anybody to play it with". A count buried as one line
- * inside one of three equal panels is a count nobody reads.
- */
-export function stripHtml(signedIn: boolean): string {
-  return `<div class="queuestrip">
-    <div class="qstripmain">
-      <span class="qstriptitle"><img class="txticon" src="${ICON_BASE}battle.webp" alt="⚔" onerror="this.outerHTML=this.alt"> Matchmaking</span>
-      <span class="qstripcount${counts && counts.total > 0 ? ' live' : ''}">${esc(countsSummary(counts))}</span>
-    </div>
-    <button class="cta primary qstripgo" data-btn="queue-open">Find a game</button>
-    ${openListHtml()}
-  </div>`;
+/** Everything the queue screen and the home strip show, read off this
+ * module's state and its deps in one go. pages/queue.ts draws it; this
+ * module keeps the socket, the poll, the tick and the clicks. */
+export interface QueueSnapshot {
+  counts: QueueCounts | null;
+  openGames: readonly OpenGame[];
+  searching: Searching | null;
+  offer: MatchOffer | null;
+  /** whole seconds left on the offer (see offerSecondsLeft), or 0 */
+  offerLeft: number;
+  error: string;
+  pickMode: QueueMode;
+  pickRanked: boolean;
+  signedIn: boolean;
+  /** why this player cannot queue for pickMode yet, or null */
+  blocker: string | null;
+  /** their rating in pickMode, if signed in */
+  rating: number | null;
 }
 
-/**
- * BL-42 — the games actually on offer, each one clickable.
- *
- * The owner's reason for this replacing a bare count: *"if you don't really
- * care what you play, you can see 'Oh, that person is waiting for ranked live
- * draft. I'd do that, sure' then just click on it and go."* A number cannot be
- * clicked and does not say whether it is a format you want.
- *
- * ⚠ NAMES ARE SHOWN TO LOGGED-OUT VISITORS, which /api/queue used to refuse in
- * capitals. Deliberate, and the same information Discord already publishes.
- */
-function openListHtml(): string {
-  if (!openGames.length) return '';
-  return `<ul class="qopen">${openGames.map(g => `
-    <li class="qopenrow">
-      <span class="qopenwho">${esc(g.username)}</span>
-      <span class="qopenwhat">${esc(MODE_LABEL[g.mode])} · ${g.ranked ? 'ranked' : 'open'}${
-        g.ranked ? ` · ${g.rating}` : ''}</span>
-      <span class="qopenwait">${esc(waitLabel(g.waitedMs))}</span>
-      <button class="qopenjoin" data-btn="queue-join-open" data-id="${esc(g.id)}"
-        >Join${g.mode === 'constructed' ? ' →' : ' →'}</button>
-    </li>`).join('')}</ul>`;
-}
-
-
-// ── the queue screen ──────────────────────────────────────────────────
-
-export function renderScreen(): void {
-  if (!deps) return;
-  // ⚠ ALSO ARMED HERE, not only from renderHome. renderHome returns early
-  // once this screen is open, so a client that landed straight on it
-  // (`?queue=1`, off the post-game button) would never have started the poll
-  // and would sit on "checking who is around…" for ever. Idempotent.
-  startCountsPoll();
-  deps.app.innerHTML = screenHtml();
-  if (pickMode === 'constructed' && !searching && !offer) deps.wireDeckPicker(deps.rerender);
-}
-
-function screenHtml(): string {
+export function queueSnapshot(): QueueSnapshot {
   const signedIn = !!deps?.token();
   const deck = deps?.chosenDeck() ?? null;
-  const blocker = queueBlocker(pickMode, signedIn, !!deck);
-
-  const body = offer ? offerHtml() : searching ? searchingHtml() : pickerHtml(signedIn, blocker);
-
-  return `<div class="joinscreen home queuescreen">
-    <div class="queuepanel">
-      <div class="queuehead">
-        <h2>Find a game</h2>
-        <button class="qback" data-btn="queue-home">← home</button>
-      </div>
-      <div class="qcounts">${esc(countsSummary(counts))}</div>
-      ${error ? `<div class="deckmsg qerr">${esc(error)}</div>` : ''}
-      ${body}
-    </div>
-  </div>`;
-}
-
-function pickerHtml(signedIn: boolean, blocker: string | null): string {
-  const rating = deps?.rating(pickMode) ?? null;
-  return `
-    <div class="zonelabel">Format</div>
-    <div class="elrow qmodes">${MODES.map(m =>
-      `<button class="elchip${m === pickMode ? ' on' : ''}" data-btn="queue-mode" data-mode="${m}">${
-        MODE_LABEL[m]}</button>`).join('')}</div>
-    <p class="cardsub">${pickMode === 'draft'
-      ? 'Once matched you agree the elements in a lobby, then draft from shared packs.'
-      : 'This deck is locked in — a matchmade game deals straight away.'}</p>
-
-    ${pickMode === 'constructed' ? `<div class="qdeck">${deps?.deckPickerHtml() ?? ''}</div>` : ''}
-
-    <div class="zonelabel">Who you play</div>
-    <div class="qranked">
-      ${[true, false].map(r => `<button class="qopt${r === pickRanked ? ' on' : ''}" data-btn="queue-ranked" data-ranked="${r}">
-        <b>${r ? 'Ranked' : 'Whoever’s open'}</b>
-        <span class="hint">${r
-          ? `near your rating${rating === null ? '' : ` · ${rating}`} — the search widens the longer you wait`
-          : 'anyone at all — and it still counts towards your rating'}</span>
-      </button>`).join('')}
-    </div>
-
-    ${blocker ? `<div class="deckmsg">${esc(blocker)}</div>` : ''}
-    <button class="cta primary qgo" data-btn="queue-go" ${blocker ? 'disabled' : ''}>
-      ${blocker ? 'Find a game' : `Find a ${MODE_LABEL[pickMode].toLowerCase()} game`}</button>
-    ${signedIn ? '' : '<p class="hint">Signed out you can still play by room code from the home screen — it just is not recorded.</p>'}`;
-}
-
-function searchingHtml(): string {
-  const s = searching!;
-  const waited = Date.now() - s.since;
-  /* ⚠ A DIRECT CHALLENGE HAS NO BAND, so it must not show one. Printing
-   * "within ±100" next to a search that is deliberately ignoring the band is
-   * exactly the kind of promise-the-server-is-not-keeping that queueStateFor's
-   * own comment exists to prevent. */
-  if (s.vs) {
-    return `
-    <div class="qsearching">
-      <div class="qspin" aria-hidden="true"></div>
-      <div class="qsearchtext">
-        <b>Joining ${esc(s.vsName ?? 'their')} game…</b>
-        <span class="hint">${esc(MODE_LABEL[s.mode].toLowerCase())} · <span data-qwait>${waitLabel(waited)}</span></span>
-        <span class="hint">waiting for them to accept</span>
-      </div>
-    </div>
-    <button data-btn="queue-cancel">Stop</button>`;
-  }
-  return `
-    <div class="qsearching">
-      <div class="qspin" aria-hidden="true"></div>
-      <div class="qsearchtext">
-        <b>Searching for a ${esc(MODE_LABEL[s.mode].toLowerCase())} game…</b>
-        <span class="hint">${s.ranked
-          ? `${esc(bandLabel(s.band))} · <span data-qwait>${waitLabel(waited)}</span>`
-          : `anyone · <span data-qwait>${waitLabel(waited)}</span>`}</span>
-        ${s.ranked && s.band !== null
-          ? '<span class="hint">the search widens the longer you wait</span>'
-          : s.ranked ? '<span class="hint">wide open now</span>' : ''}
-      </div>
-    </div>
-    <button data-btn="queue-cancel">Stop searching</button>`;
-}
-
-function offerHtml(): string {
-  const o = offer!;
-  const left = offerSecondsLeft(o);
-  return `<div class="overlay qoverlay"><div class="overlaybox qofferbox">
-    <h3>Match found</h3>
-    <div class="qopponent">
-      <b>${esc(o.opponent)}</b>
-      <span class="hint">${esc(String(o.opponentRating))} · ${esc(MODE_LABEL[o.mode])}</span>
-    </div>
-    ${o.accepted
-      ? `<div class="qwaiting">Waiting for ${esc(o.opponent)}… <b data-qleft>${left}</b></div>`
-      : `<button class="cta primary qaccept" data-btn="queue-accept">Accept <span class="qcount" data-qleft>${left}</span></button>`}
-    <button class="qdecline" data-btn="queue-decline">${o.accepted ? 'Cancel' : 'Decline'}</button>
-    ${o.accepted ? '<p class="hint">If they do not answer in time you go back to the front of the queue.</p>' : ''}
-  </div></div>`;
+  return {
+    counts, openGames, searching, offer,
+    offerLeft: offer ? offerSecondsLeft(offer) : 0,
+    error, pickMode, pickRanked, signedIn,
+    blocker: queueBlocker(pickMode, signedIn, !!deck),
+    rating: deps?.rating(pickMode) ?? null,
+  };
 }
 
 // ── clicks ────────────────────────────────────────────────────────────

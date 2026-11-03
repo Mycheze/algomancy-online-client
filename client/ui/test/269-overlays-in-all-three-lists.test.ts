@@ -91,10 +91,14 @@ import type { GameState, Seat } from '../../engine/src/types.ts';
 
 const UI = new URL('../', import.meta.url);
 const MAIN = readFileSync(new URL('main.ts', UI), 'utf8');
-/** every module of the browser client, so a slot's markup can be found
- * wherever it is written (`pg.postGameHtml` lives in ui/postgame.ts) */
-const MODULES = readdirSync(UI).filter(f => f.endsWith('.ts'))
-  .map(f => readFileSync(new URL(f, UI), 'utf8'));
+/** every module of the browser client, ui/pages/ included (the page markup
+ * moved there in the design-system round, 2026-11-03: `postGameHtml` lives in
+ * ui/pages/postgame.ts), so a slot's markup can be found wherever it is written */
+const UI_FILES = [
+  ...readdirSync(UI).filter(f => f.endsWith('.ts')),
+  ...readdirSync(new URL('pages/', UI)).filter(f => f.endsWith('.ts')).map(f => `pages/${f}`),
+];
+const MODULES = UI_FILES.map(f => readFileSync(new URL(f, UI), 'utf8'));
 
 /* ── OFF-BOARD MODALS, and why the scrim count has to know about them ──
  *
@@ -112,8 +116,8 @@ const MODULES = readdirSync(UI).filter(f => f.endsWith('.ts'))
  * mention the excluded module's import alias. The day somebody paints the
  * queue from the board, the exclusion becomes a lie and §1 says so.
  */
-const OFF_BOARD = ['queue.ts'];
-const BOARD_SRC = readdirSync(UI).filter(f => f.endsWith('.ts') && !OFF_BOARD.includes(f))
+const OFF_BOARD = ['queue.ts', 'pages/queue.ts'];   // the queue's markup is pages/queue.ts since 2026-11-03
+const BOARD_SRC = UI_FILES.filter(f => !OFF_BOARD.includes(f))
   .map(f => readFileSync(new URL(f, UI), 'utf8'));
 
 /* ══ §1 — the census ═══════════════════════════════════════════════════ */
@@ -233,6 +237,11 @@ test('CT-135 §1 the overlay census is derived from renderNow, and the derivatio
   // an off-board module, that module IS a board overlay source and skipping
   // its scrims would hide it from §2 and §3
   for (const file of OFF_BOARD) {
+    // …and by name: a page is imported by its functions, not as a namespace
+    for (const m of readFileSync(new URL(file, UI), 'utf8').matchAll(/^export function (\w+)\(/gm)) {
+      assert.doesNotMatch(renderTemplate(), new RegExp(`\\b${m[1]}\\(`),
+        `renderNow paints ${m[1]}() from the off-board ui/${file}: it IS a board overlay source now`);
+    }
     const alias = new RegExp(`import \\* as ([A-Za-z_$][\\w$]*) from '\\./${file.replace('.', '\\.')}'`).exec(MAIN)?.[1];
     if (!alias) continue;
     assert.doesNotMatch(renderTemplate(), new RegExp(`\\b${alias}\\.`),

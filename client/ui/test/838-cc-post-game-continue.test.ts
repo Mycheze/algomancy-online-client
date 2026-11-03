@@ -15,8 +15,12 @@ import { Harness } from '../../engine/src/harness.ts';
 import { legalActions } from '../../engine/src/apply.ts';
 import { viewFor } from '../../server/view.ts';
 import { client } from './ui-driver.ts';
-import { postGameHtml, type GameOver } from '../postgame.ts';
+import type { GameOver } from '../postgame.ts';
+import { postGameHtml as drawPostGame, postGameView } from '../pages/postgame.ts';
 import type { Seat } from '../../engine/src/types.ts';
+
+// the screen's markup is pages/postgame.ts since the design-system round (2026-11-03)
+const postGameHtml = (o: GameOver): string => drawPostGame(postGameView(o));
 
 const ui = await client();
 const SEAT: Seat = 1;
@@ -48,7 +52,7 @@ test('§1 the match goes on: the score and Continue in place of Rematch', () => 
   const b = buttons(html);
   assert.equal(b[0], 'pg-continue');
   assert.ok(!b.includes('pg-rematch'), 'no Rematch in a match');
-  assert.match(html, /data-btn="pg-continue" data-room="NEXT">Continue to game 2</);
+  assert.match(html, /data-btn="pg-continue"[^>]* data-room="NEXT">Continue to game 2</);   // a button() since 2026-11-03
   ui.click({ btn: 'pg-continue' });
   assert.equal(location.search, '?ws=1&room=NEXT&seat=1&mode=constructed&cc=1', 'the next room, the same seat, a match room');
 });

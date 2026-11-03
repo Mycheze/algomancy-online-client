@@ -33,10 +33,15 @@ import * as mt from '../match.ts';
 import * as mm from '../queue.ts';
 import * as sc from '../singlecard.ts';
 import { updatesHtml, wireUpdates } from '../updates.ts';
+import { button } from '../components/index.ts';
 import { chosenDeck, elIcon as elIconOf, esc } from '../util.ts';
 import { caretIn, restoreCaret } from './caret.ts';
 import { chosenClockMs, clockPickHtml, clockPickView, type ClockPickView } from './clockpick.ts';
+import { customRulesHtml, customRulesView } from './customrules.ts';
 import { deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
+import { singleCardPickerHtml, singleCardPickerView } from './singlecard.ts';
+import { competitiveCardHtml, competitiveCardView, yourMatchesHtml, yourMatchesView } from './match.ts';
+import { queueStripHtml, queueStripView } from './queue.ts';
 
 const elIcon = (name: string): string => elIconOf(name, name);
 
@@ -99,7 +104,7 @@ export interface SingleDuelView {
   open: boolean;
   /** the card picked so far (ui/singlecard.ts), or null */
   card: string | null;
-  /** ui/singlecard.ts pickerHtml() — a slot, drawn by that module */
+  /** pages/singlecard.ts singleCardPickerHtml() — a slot */
   picker: string;
 }
 
@@ -108,7 +113,7 @@ export function singleDuelHtml(v: SingleDuelView): string {
   return `<details class="fixedtrio singleduel" data-singleduel ${v.open ? 'open' : ''}>
     <summary>…or something sillier: <b>Single Card Duel</b></summary>
     <p class="cardsub">Thirty copies of one card. Your opponent picks theirs blind. It rates
-      the cards, not you — see the <button class="linkbtn" data-btn="meta-ladder">card ladder</button>.</p>
+      the cards, not you — see the ${button({ label: 'card ladder', variant: 'link', className: 'linkbtn', dataBtn: 'meta-ladder' })}.</p>
     ${v.picker}
     <button data-btn="newgame" data-mode="constructed" data-single="1" ${card ? '' : 'disabled'}>
       ${card ? `New single card duel — ${esc(card)}` : 'pick a card first'}</button>
@@ -141,10 +146,10 @@ export interface HomeSlots {
   leagueNav: string;      // league.ts navButtonHtml
   challengeNav: string;   // challenge.ts navButtonHtml
   leagueBanner: string;   // league.ts homeBannerHtml — fetches while drawing
-  queueStrip: string;     // queue.ts stripHtml — the matchmaking strip
-  yourMatches: string;    // match.ts yourMatchesHtml — paused/running Competitive matches
-  customRules: string;    // customrulespanel.ts panelHtml, with the draft clock inside
-  competitiveCard: string; // match.ts competitiveCardHtml
+  queueStrip: string;     // pages/queue.ts queueStripHtml — the matchmaking strip
+  yourMatches: string;    // pages/match.ts yourMatchesHtml — paused/running Competitive matches
+  customRules: string;    // pages/customrules.ts customRulesHtml, with the draft clock inside
+  competitiveCard: string; // pages/match.ts competitiveCardHtml
   challengeCard: string;  // challenge.ts homeCardHtml — fetches while drawing
   updates: string;        // updates.ts updatesHtml — the Recent updates band, after .homepage
 }
@@ -195,16 +200,16 @@ export function homeView(st: HomeState): HomeView {
   const leagueNav = lg.navButtonHtml();
   const challengeNav = chal.navButtonHtml();
   const leagueBanner = lg.homeBannerHtml();
-  const queueStrip = mm.stripHtml(!!acct.token());
-  const yourMatches = mt.yourMatchesHtml();
+  const queueStrip = queueStripHtml(queueStripView());
+  const yourMatches = yourMatchesHtml(yourMatchesView());
   const setCount = crp.setCount();
-  const customRules = crp.panelHtml(fixedPick, clockPickHtml(clockPickView('draft')));
+  const customRules = customRulesHtml(customRulesView(fixedPick, clockPickHtml(clockPickView('draft'))));
   const deckPicker = deckPickerView();
   const options: ConstructedOptionsView = {
     open: homeOptionsOpen, ms: chosenClockMs('constructed'), clock: clockPickView('constructed'),
   };
-  const singleDuel: SingleDuelView = { open: singleDuelOpen, card: sc.chosen(), picker: sc.pickerHtml() };
-  const competitiveCard = mt.competitiveCardHtml(!!acct.token(), acct.token() ? dk.competitiveDecks() : null);
+  const singleDuel: SingleDuelView = { open: singleDuelOpen, card: sc.chosen(), picker: singleCardPickerHtml(singleCardPickerView()) };
+  const competitiveCard = competitiveCardHtml(competitiveCardView(!!acct.token(), acct.token() ? dk.competitiveDecks() : null));
   const challengeCard = chal.homeCardHtml();
   const updates = updatesHtml();
   return {
@@ -240,10 +245,10 @@ export function homeHtml(v: HomeView): string {
           ? ''
           : `<label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(v.nameBox)}" placeholder="(optional)"></label>`}
         ${s.acctBar}
-        ${v.signedIn ? '<button class="homedecks" data-btn="deck-openpage">🗂 My decks</button>' : ''}
-        <button class="homedecks" data-help="rules">📖 How to play</button>
-        <button class="homedecks" data-btn="cards-openpage">🔍 Cards</button>
-        <button class="homedecks" data-btn="meta-openpage">🏆 Metagame</button>
+        ${v.signedIn ? button({ label: '🗂 My decks', className: 'homedecks', dataBtn: 'deck-openpage' }) : ''}
+        ${button({ label: '📖 How to play', className: 'homedecks', attrs: { 'data-help': 'rules' } })}
+        ${button({ label: '🔍 Cards', className: 'homedecks', dataBtn: 'cards-openpage' })}
+        ${button({ label: '🏆 Metagame', className: 'homedecks', dataBtn: 'meta-openpage' })}
         ${s.leagueNav}
         ${s.challengeNav}
       </div>
@@ -264,7 +269,7 @@ export function homeHtml(v: HomeView): string {
           <summary>…or pick the ${k === 3 ? 'trio' : 'elements'} now and skip the lobby</summary>
           <div class="elrow">${ALL_ELEMENTS.map(el =>
             `<button class="elchip ${el}${d.els.includes(el) ? ' on' : ''}" data-btn="eltoggle" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
-            <button data-btn="elrandom" title="pick at random — any of the ${d.setCount}">🎲</button>
+            ${button({ label: '🎲', variant: 'icon', title: `pick at random — any of the ${d.setCount}`, dataBtn: 'elrandom' })}
           </div>
           <button data-btn="newgame" data-mode="draft" data-els="1" ${d.els.length === k && !d.fixedError ? '' : 'disabled'}
             ${d.fixedError && d.els.length === k ? `title="${esc(d.fixedError)}"` : ''}>
@@ -296,13 +301,13 @@ export function homeHtml(v: HomeView): string {
         <div class="joinrow">
           <input id="h-code" placeholder="CODE" maxlength="8" autocapitalize="characters"
             spellcheck="false" style="text-transform:uppercase">
-          <button data-btn="joincode">Join</button>
+          ${button({ label: 'Join', dataBtn: 'joincode' })}
         </div>
         <div class="spacer"></div>
         <div class="homesep">
           <div class="zonelabel">On your own</div>
           <div class="homesolo">
-            <button data-learn="menu">Learn to play</button>
+            ${button({ label: 'Learn to play', attrs: { 'data-learn': 'menu' } })}
           </div>
         </div>
       </div>

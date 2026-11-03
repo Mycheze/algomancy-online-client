@@ -73,7 +73,8 @@ test('BL-28 §1 a signed-out seat is offered the sign-up for the game just playe
   assert.match(html, /Keep this game\?/);
   assert.match(html, /DO NOT FORGET YOUR PASSWORD\. THERE IS NO PASSWORD RESET\./,
     'it creates an account, so it carries the owner warning');
-  assert.match(html, /<button type="button" class="primary" data-btn="pg-signup">/,
+  // a button() since the design-system round (2026-11-03): the green primary, type="button"
+  assert.match(html, /<button class="ui-button ui-button--primary" data-btn="pg-signup" type="button">/,
     'a plain button: a submit button in a form would GET this page with the password in the address');
   assert.deepEqual(kept(), { ticket: 'T-ONE', until: LATER, room: 'UIDRIVER' }, 'the browser keeps the ticket, for this room');
 });

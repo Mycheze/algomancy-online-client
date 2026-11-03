@@ -93,7 +93,7 @@ const pv = (over: Partial<DeckPickerView> = {}): DeckPickerView =>
 test('962 §3 the deck picker in each of its states', () => {
   assert.match(deckPickerHtml(pv()), /<div class="hint">loading the deck list…<\/div>/);
   assert.match(deckPickerHtml(pv({ signedIn: true })),
-    /loading your decks…<\/div><button class="deckmanage" data-btn="deck-openpage">My decks →<\/button>/);
+    /loading your decks…<\/div><button class="ui-button ui-button--secondary deckmanage" data-btn="deck-openpage" type="button">My decks →<\/button>/);
   // signed out, the bundled list plus import-by-link
   const out = deckPickerHtml(pv({ defaults: [EMBER] }));
   assert.match(out, /<option value="" selected disabled>choose a deck…<\/option><option value="d0" >Ember Rush — by Caleb<\/option>/);
@@ -107,7 +107,8 @@ test('962 §3 the deck picker in each of its states', () => {
   const coll = deckPickerHtml(pv({ signedIn: true, mine, current: { id: 'zz', name: 'Gone', author: 'me', cards: [] } }));
   assert.match(coll, /<option value="c0" >A<\/option><option value="c1" >B — by Bo<\/option><option value="stray" selected>Gone \(not in your collection\)/);
   assert.doesNotMatch(coll, /deckimporturl/);
-  assert.match(deckPickerHtml(pv({ msg: 'not playable: <x>' })), /<div class="deckmsg">not playable: &lt;x&gt;<\/div>/);
+  // a statusMessage() since 2026-11-03 (the note tone is .deckmsg's look), still carrying .deckmsg
+  assert.match(deckPickerHtml(pv({ msg: 'not playable: <x>' })), /<div class="ui-status ui-status--note deckmsg" role="status">not playable: &lt;x&gt;<\/div>/);
 });
 
 test('962 §4 the clock picker: Default, a preset, off', () => {

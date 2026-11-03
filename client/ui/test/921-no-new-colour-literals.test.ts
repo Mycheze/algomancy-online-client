@@ -65,6 +65,10 @@ const ALLOW: Record<string, number> = {
   'shared/report-and-inbox': 4,
   'pages/crreview': 22,
   'pages/challenge': 1,
+  // the legal footer's CSS, moved out of legal.ts's injected <style> on 2026-11-03: its
+  // #0d1014 is --color-surface-sunken now; the overlay's rgba(6,8,11,.78) is a darker
+  // scrim than --color-scrim (.72), left as it was (no visible change)
+  'pages/legal': 1,
 };
 
 /** `pages/23-decks.css` → `pages/decks` */

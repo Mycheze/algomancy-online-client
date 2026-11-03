@@ -14,6 +14,11 @@
  * match count and the pool line are patched in place, so the input keeps its
  * focus and a click on the Create button right after typing is not eaten by a
  * repaint that replaced the button under the pointer.
+ *
+ * The panel's markup is pages/customrules.ts since the design-system round
+ * (2026-11-03): this module keeps the rules, their storage, the server-verdict
+ * preview, the cr- clicks and the in-place typing patches (wirePanel), and
+ * hands the page what it shows through panelSnapshot().
  */
 import { DECK_LIST } from '../engine/src/cards/registry.ts';
 import { DEAL_BOUNDS, DEAL_DEFAULTS, DEAL_KNOBS, type DealKnob } from '../engine/src/draftdeal.ts';
@@ -25,9 +30,6 @@ import { esc } from './util.ts';
 
 const STORE_KEY = 'algoCustomRules';
 
-const KNOB_LABEL: Record<DealKnob, string> = {
-  elements: 'Elements', packSize: 'Pack size', openingHand: 'Opening hand', draftDraw: 'Draws per turn', startingLife: 'Starting life',
-};
 const KNOB_STEP: Record<DealKnob, number> = { elements: 1, packSize: 1, openingHand: 1, draftDraw: 1, startingLife: 5 };
 
 const standard = (): CustomRules => ({ ...STANDARD_RULES, bans: [] });
@@ -111,54 +113,38 @@ function poolHtml(): string {
   return v.check ? `<span class="crok">✓ ${esc(v.check.message)}</span>` : '';
 }
 
-/** The panel. `fixedEls` is the home screen's fixed-element pick when it is in
- * use, so the pool line checks exactly those.
- *
- * `extra` is markup the home screen puts at the top of the open panel — the
- * clock picker (#191). It is NOT a custom rule and this module knows nothing
- * about it: a clock never makes a game custom, so it never reaches `rules`,
- * `createPayload` or the summary line. */
-export function panelHtml(fixedEls: readonly string[] | null, extra = ''): string {
+/** Everything the panel shows (pages/customrules.ts draws it). `fixedEls` is
+ * the home screen's fixed-element pick when it is in use, so the pool line
+ * checks exactly those — and the in-place pool line (wirePanel) keeps using
+ * them until the next paint. */
+export interface PanelSnapshot {
+  open: boolean;
+  /** the rules a room would be made with, or null for a standard game */
+  active: CustomRules | null;
+  /** the knobs as set (a standard game's are the defaults) */
+  rules: CustomRules;
+  /** the active rules in a line each (rulesSummary), or [] */
+  summary: string[];
+  advancedOpen: boolean;
+  banDraft: string;
+  /** cards in the pool, and how many of them are simple */
+  deckCount: number;
+  simpleCount: number;
+  /** the typing-driven parts, drawn: wirePanel patches the same three in place */
+  suggestions: string;
+  queryNote: string;
+  pool: string;
+}
+
+export function panelSnapshot(fixedEls: readonly string[] | null): PanelSnapshot {
   lastFixed = fixedEls;
   const active = activeRules();
-  const stepper = (k: DealKnob): string => {
-    const [lo, hi] = DEAL_BOUNDS[k];
-    const val = rules[k];
-    return `<div class="crknob${val !== DEAL_DEFAULTS[k] ? ' changed' : ''}"><span>${KNOB_LABEL[k]}</span>
-      <button data-btn="cr-step" data-knob="${k}" data-d="-1" ${val <= lo ? 'disabled' : ''} aria-label="fewer">−</button>
-      <b>${val}</b>
-      <button data-btn="cr-step" data-knob="${k}" data-d="1" ${val >= hi ? 'disabled' : ''} aria-label="more">+</button></div>`;
+  return {
+    open, active, rules, summary: active ? rulesSummary(active) : [],
+    advancedOpen, banDraft,
+    deckCount: DECK_LIST.length, simpleCount: simpleCount(),
+    suggestions: suggestionsHtml(), queryNote: queryNote(), pool: poolHtml(),
   };
-  return `<details class="customrules" data-customrules ${open ? 'open' : ''}>
-    <summary>Custom rules${active
-      ? ` · <b>${esc(rulesSummary(active).join(' · '))}</b>`
-      : ' <span class="dim">— none set</span>'}</summary>
-    ${extra}
-    <div class="crpresets">
-      <button data-btn="cr-preset" data-preset="beginner"
-        title="the rulebook’s Quick Start: two elements, simple cards only, packs of 5">🌱 Beginner</button>
-      <button data-btn="cr-preset" data-preset="standard" ${active ? '' : 'disabled'}>Back to standard</button>
-    </div>
-    <button class="crsimple${rules.simpleOnly ? ' on' : ''}" data-btn="cr-simple" aria-pressed="${rules.simpleOnly}">
-      <span class="crcheck">${rules.simpleOnly ? '☑' : '☐'}</span> <b>Simple cards only</b>
-      <span class="dim">silver-symbol cards · ${simpleCount()} of ${DECK_LIST.length}</span></button>
-    <div class="crknobs">${DEAL_KNOBS.map(stepper).join('')}</div>
-    <div class="crbans">
-      <div class="zonelabel">Banned cards</div>
-      <div class="crchips">${rules.bans.map(n =>
-        `<span class="crchip">${esc(n)} <button data-btn="cr-unban" data-name="${esc(n)}" aria-label="unban ${esc(n)}">✕</button></span>`).join('')
-        || '<span class="dim">none</span>'}</div>
-      <input id="cr-ban" placeholder="type a card name to ban it" autocomplete="off" value="${esc(banDraft)}">
-      <div id="cr-bansugg" class="crsugg">${suggestionsHtml()}</div>
-    </div>
-    <details class="cradvanced" ${advancedOpen ? 'open' : ''}>
-      <summary>Advanced — card filter</summary>
-      <input id="cr-query" maxlength="${MAX_QUERY_LENGTH}" placeholder="e.g. -set:lightdark" autocomplete="off"
-        spellcheck="false" value="${esc(rules.query)}">
-      <div id="cr-querynote" class="dim">${esc(queryNote())}</div>
-    </details>
-    <div id="cr-pool" class="crpool">${poolHtml()}</div>
-  </details>`;
 }
 
 /** The panel's buttons. Returns true when the click was ours; the caller repaints. */

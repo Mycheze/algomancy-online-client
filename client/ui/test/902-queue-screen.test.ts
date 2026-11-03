@@ -24,7 +24,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { readStyles } from './read-styles.ts';
 
-const src = readFileSync(new URL('../queue.ts', import.meta.url), 'utf8');
+// the module (socket, tick, clicks) and its page (pages/queue.ts: what it draws),
+// read as one — the drawing left ui/queue.ts in the design-system round, 2026-11-03
+const src = readFileSync(new URL('../queue.ts', import.meta.url), 'utf8')
+  + readFileSync(new URL('../pages/queue.ts', import.meta.url), 'utf8');
 const css = readStyles().replace(/\/\*[\s\S]*?\*\//g, '');
 const ruleBody = (sel: string): string => {
   const esc = sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

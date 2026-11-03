@@ -35,8 +35,11 @@ import { readStyles } from './read-styles.ts';
 import { handleButton as reviewHandles } from '../crreview.ts';
 import { handlePanelButton } from '../customrulespanel.ts';
 
-const panelSrc = readFileSync(new URL('../customrulespanel.ts', import.meta.url), 'utf8');
-const panelButtons = [...new Set([...panelSrc.matchAll(/data-btn="(cr-[\w-]+)"/g)].map(m => m[1]!))];
+// the panel's module and its page (pages/customrules.ts, its markup since the
+// design-system round, 2026-11-03); a button() component names its data-btn as `dataBtn: '…'`
+const panelSrc = readFileSync(new URL('../customrulespanel.ts', import.meta.url), 'utf8')
+  + readFileSync(new URL('../pages/customrules.ts', import.meta.url), 'utf8');
+const panelButtons = [...new Set([...panelSrc.matchAll(/(?:data-btn="|dataBtn: ')(cr-[\w-]+)["']/g)].map(m => m[1]!))];
 
 const stub = (btn: string, data: Record<string, string> = {}): HTMLElement =>
   ({ dataset: { btn, ...data } }) as unknown as HTMLElement;
@@ -76,7 +79,7 @@ const rulesFor = (cls: string): string[] =>
     .map(m => m[2]!);
 
 test('the Custom rules panel draws its banned cards as .crchip', () => {
-  assert.match(src('customrulespanel.ts'), /<span class="crchip">/);
+  assert.match(src('pages/customrules.ts'), /<span class="crchip">/);   // its markup since 2026-11-03
   assert.ok(rulesFor('crchip').length >= 1, 'positive control: the panel chip has a rule');
 });
 

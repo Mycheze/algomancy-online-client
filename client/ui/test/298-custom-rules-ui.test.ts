@@ -12,12 +12,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createPayload, elementCount, handlePanelButton, panelHtml, verdict } from '../customrulespanel.ts';
-import { lobbyHtml, type LobbyView } from '../lobby.ts';
+import { createPayload, elementCount, handlePanelButton, verdict } from '../customrulespanel.ts';
+import { customRulesHtml, customRulesView } from '../pages/customrules.ts';
+import { lobbyHtml as drawLobby, lobbyView, type LobbyArgs } from '../pages/lobby.ts';
 import { customTag, historyRowsHtml, type MatchRow } from '../account.ts';
 import { RULES_SECTIONS } from '../rules.ts';
 import { DECK_LIST } from '../../engine/src/cards/registry.ts';
 
+// the panel's markup is pages/customrules.ts since the design-system round (2026-11-03)
+const panelHtml = (fixed: readonly string[] | null): string => customRulesHtml(customRulesView(fixed));
 const click = (b: string, data: Record<string, string> = {}): boolean =>
   handlePanelButton(b, { dataset: data } as unknown as HTMLElement);
 const reset = (): void => { click('cr-preset', { preset: 'standard' }); };
@@ -94,7 +97,9 @@ test('BL-43 ui §5 a banned card is a removable chip', () => {
   assert.equal(createPayload(null), null);
 });
 
-const LOBBY: LobbyView = {
+// the lobby's markup is pages/lobby.ts since the design-system round (2026-11-03)
+const lobbyHtml = (a: LobbyArgs): string => drawLobby(lobbyView(a));
+const LOBBY: LobbyArgs = {
   lobby: { method: 'pick-one', count: 2, methods: [{ id: 'pick-one', label: 'One each', blurb: 'b' }], locked: [false, false], mine: {} },
   seat: 0, names: ['Ann', 'Bob'], peers: [true, true], room: 'ABCD', link: 'http://x/?ws=1&room=ABCD&seat=1&mode=draft',
 };

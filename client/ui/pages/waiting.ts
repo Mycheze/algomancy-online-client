@@ -1,9 +1,9 @@
 /* THE WAITING ROOMS: what a seat sees after joining a room and before the
  * game is dealt. Four kinds, one dispatcher (paintWaiting):
  *
- *   · a live draft room choosing its trio  → ui/lobby.ts lobbyHtml (already pure)
+ *   · a live draft room choosing its trio  → pages/lobby.ts lobbyHtml
  *   · a Single Card Duel room              → singleWaitingHtml, here
- *   · a Competitive Constructed match room → ui/match.ts matchWaitingHtml
+ *   · a Competitive Constructed match room → pages/match.ts matchRoomHtml
  *   · a constructed room (and a constructed LEAGUE match) → constructedWaitingHtml, here
  *
  * Moved out of main.ts in the design-system round, 2026-11-03. main.ts
@@ -13,14 +13,16 @@
  * routed by main.ts handleButton / handlePregameButton.
  */
 import type { Seat } from '../../engine/src/types.ts';
-import * as acct from '../account.ts';
-import * as dk from '../decks.ts';
 import { roomFriendsHtml } from '../inbox.ts';
 import * as lob from '../lobby.ts';
 import * as mt from '../match.ts';
 import * as sc from '../singlecard.ts';
+import { button } from '../components/index.ts';
 import { chosenDeck, esc, shareBar } from '../util.ts';
 import { deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
+import { singleCardPickerHtml, singleCardPickerView } from './singlecard.ts';
+import { lobbyHtml, lobbyView } from './lobby.ts';
+import { paintMatchRoom } from './match.ts';
 
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
 
@@ -104,7 +106,7 @@ export function constructedWaitingHtml(v: ConstructedWaitingView): string {
     <div class="lobbyhead">
       <h1 class="homelogo">ALGOMANCY</h1>
       <h2>${v.league ? 'League match' : 'Constructed'} — room <span class="roomcode">${esc(v.room)}</span></h2>
-      <div class="headbtns"><button data-btn="gohome">Leave</button></div>
+      <div class="headbtns">${button({ label: 'Leave', dataBtn: 'gohome' })}</div>
     </div>
 
     ${v.league
@@ -152,7 +154,7 @@ export interface SingleWaitingView {
   oppName: string | undefined;
   /** the card picked so far (ui/singlecard.ts), or null */
   card: string | null;
-  /** ui/singlecard.ts pickerHtml() — a slot; '' once my card is in */
+  /** pages/singlecard.ts singleCardPickerHtml() — a slot; '' once my card is in */
   picker: string;
   error: string;
 }
@@ -172,7 +174,7 @@ export function singleWaitingView(net: WaitingNet, error: string): SingleWaiting
     myName: net.names[me],
     oppName: net.names[opp],
     card: sc.chosen(),
-    picker: mineIn ? '' : sc.pickerHtml(),
+    picker: mineIn ? '' : singleCardPickerHtml(singleCardPickerView()),
     error,
   };
 }
@@ -185,7 +187,7 @@ export function singleWaitingHtml(v: SingleWaitingView): string {
     <div class="lobbyhead">
       <h1 class="homelogo">ALGOMANCY</h1>
       <h2>Single Card Duel — room <span class="roomcode">${esc(v.room)}</span></h2>
-      <div class="headbtns"><button data-btn="gohome">Leave</button></div>
+      <div class="headbtns">${button({ label: 'Leave', dataBtn: 'gohome' })}</div>
     </div>
 
     ${shareBar('Send your opponent the room code', v.room, v.link)}
@@ -231,12 +233,12 @@ export function paintWaiting(app: HTMLElement, net: WaitingNet, error: string, r
   // a draft room chooses its trio here, before a single card is dealt
   if (w.trio) {
     const link = `${location.origin}/?ws=1&room=${encodeURIComponent(net.room)}&seat=${other(net.seat)}&mode=draft`;
-    app.innerHTML = lob.lobbyHtml({
+    app.innerHTML = lobbyHtml(lobbyView({
       lobby: w.trio, seat: net.seat as 0 | 1, names: net.names,
       peers: net.peers, room: net.room, link,
       friends: roomFriendsHtml(!net.peers[other(net.seat)]),
       ...(w.custom ?? net.custom ? { custom: (w.custom ?? net.custom)! } : {}),
-    });
+    }));
     return;
   }
   if (w.single) {
@@ -245,13 +247,10 @@ export function paintWaiting(app: HTMLElement, net: WaitingNet, error: string, r
     return;
   }
   // docs/22 §5.4: a Competitive match's room — game 1's registration, the
-  // between-games screen, a pause — is ui/match.ts's page
+  // between-games screen, a pause — is pages/match.ts
   if (w.match) {
-    app.innerHTML = mt.matchWaitingHtml(
-      { room: net.room, seat: net.seat, names: net.names, peers: net.peers, ended: net.matchEnded },
-      w.match, acct.token() ? dk.competitiveDecks() : null, error);
-    if (acct.token()) dk.ensureCollection(rerender);
-    mt.wireDeckSelect(rerender);
+    paintMatchRoom(app, { room: net.room, seat: net.seat, names: net.names, peers: net.peers, ended: net.matchEnded },
+      w.match, error, rerender);
     return;
   }
   app.innerHTML = constructedWaitingHtml(constructedWaitingView(net, error));

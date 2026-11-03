@@ -17,7 +17,11 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { matchLength, postGameHtml, type GameOver } from '../postgame.ts';
+import { matchLength, type GameOver } from '../postgame.ts';
+import { postGameHtml as drawPostGame, postGameView } from '../pages/postgame.ts';
+
+// the screen's markup is pages/postgame.ts since the design-system round (2026-11-03)
+const postGameHtml = (o: GameOver): string => drawPostGame(postGameView(o));
 
 const seat = (name: string): GameOver['seats'][0] => ({
   name, cards: {}, unitsPlayed: 0, spellsPlayed: 0, tokensCast: 0, modsApplied: 0,

@@ -5,6 +5,7 @@
  * main.ts renderConnecting() paints it (it also drops the board's baselines
  * and the .board class, which are the board's business). Moved out of main.ts
  * in the design-system round, 2026-11-03. */
+import { backLink } from '../components/index.ts';
 import { esc } from '../util.ts';
 
 export interface ConnectingView {
@@ -18,5 +19,5 @@ export function connectingHtml(v: ConnectingView): string {
   const uiError = v.error;
   return `<div class="joinscreen"><h2>Algomancy</h2>
     <p${uiError ? ' class="joinerr"' : ''}>${uiError ? esc(uiError) : 'Connecting to the server…'}</p>
-    ${uiError ? '<button class="primary" data-btn="gohome">← Back to the home screen</button>' : ''}</div>`;
+    ${uiError ? backLink({ dataBtn: 'gohome', label: 'Back to the home screen', arrow: true }) : ''}</div>`;
 }

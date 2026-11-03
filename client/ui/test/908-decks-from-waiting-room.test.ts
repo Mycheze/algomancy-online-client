@@ -19,7 +19,8 @@ const picker = readFileSync(new URL('../pages/deckpicker.ts', import.meta.url), 
 const waiting = readFileSync(new URL('../pages/waiting.ts', import.meta.url), 'utf8');
 
 test('positive control: the waiting room offers the deck page, and its close calls the host rerender', () => {
-  assert.match(picker, /<button class="deckmanage" data-btn="deck-openpage">My decks →<\/button>/);
+  // a button() since the design-system round (2026-11-03)
+  assert.match(picker, /button\(\{ label: 'My decks →', className: 'deckmanage', dataBtn: 'deck-openpage' \}\)/);
   assert.match(waiting, /\$\{deckPickerHtml\(v\.deckPicker\)\}/, 'the constructed waiting room draws the picker');
   const close = decks.slice(decks.indexOf("case 'deck-close':"), decks.indexOf('return true;', decks.indexOf("case 'deck-close':")));
   assert.match(close, /rerenderHost\(\)/);

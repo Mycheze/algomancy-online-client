@@ -11,6 +11,7 @@
  * chooseDeck), because the decks page writes it too. */
 import * as acct from '../account.ts';
 import * as dk from '../decks.ts';
+import { button, statusMessage } from '../components/index.ts';
 import { chooseDeck, chosenDeck, esc, type ChosenDeck } from '../util.ts';
 
 /** the bundled default decks — fetched once from the server */
@@ -71,7 +72,7 @@ export function deckPickerHtml(v: DeckPickerView): string {
   const mine = v.mine;
   const msg = v.msg;
   const manage = v.signedIn
-    ? '<button class="deckmanage" data-btn="deck-openpage">My decks →</button>'
+    ? button({ label: 'My decks →', className: 'deckmanage', dataBtn: 'deck-openpage' })
     : '';
 
   if (mine.length) {
@@ -88,13 +89,13 @@ export function deckPickerHtml(v: DeckPickerView): string {
         ${cur ? '' : '<option value="" selected disabled>choose a deck…</option>'}${opts}${strayOpt}
       </select>
       ${info}${manage}
-      ${msg ? `<div class="deckmsg">${esc(msg)}</div>` : ''}`;
+      ${msg ? statusMessage({ tone: 'note', className: 'deckmsg', text: msg }) : ''}`;
   }
 
   const defaults = v.defaults;
   if (!defaults) {
     return `<div class="hint">${v.signedIn ? 'loading your decks…' : 'loading the deck list…'}</div>${
-      msg ? `<div class="deckmsg">${esc(msg)}</div>` : ''}${manage}`;
+      msg ? statusMessage({ tone: 'note', className: 'deckmsg', text: msg }) : ''}${manage}`;
   }
   const isDefault = !!cur && defaults.some(d => d.name === cur.name && d.url === cur.url);
   const opts = defaults.map((d, i) =>
@@ -111,13 +112,13 @@ export function deckPickerHtml(v: DeckPickerView): string {
     ${info}${manage}
     <div class="joinrow deckimport">
       <input id="h-deckurl" placeholder="algomancer.cc deck link" spellcheck="false">
-      <button data-btn="deckimporturl">Load</button>
+      ${button({ label: 'Load', dataBtn: 'deckimporturl' })}
     </div>
     <details class="deckpaste"><summary>…or paste a deck list</summary>
       <textarea id="h-decktext" rows="6" spellcheck="false" placeholder="1 Ignis Sprite&#10;2 Overwhelm&#10;…"></textarea>
-      <button data-btn="deckimporttext">Use pasted list</button>
+      ${button({ label: 'Use pasted list', dataBtn: 'deckimporttext' })}
     </details>
-    ${msg ? `<div class="deckmsg">${esc(msg)}</div>` : ''}`;
+    ${msg ? statusMessage({ tone: 'note', className: 'deckmsg', text: msg }) : ''}`;
 }
 
 /** the picker as it stands now — what ui/queue.ts is handed as `deckPickerHtml` */
