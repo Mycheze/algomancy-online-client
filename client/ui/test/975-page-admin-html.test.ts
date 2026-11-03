@@ -29,7 +29,7 @@ function view(over: Partial<AdminView> = {}): AdminView {
       mark: 'real', markedBy: 'ops' }],
     gameRows: [{ code: 'G1', playedAt: '2026-11-01T10:00:00Z', mode: 'draft', els: ['fire'], finished: true, diverged: false,
       winner: 1, turns: 8, minutes: 20, players: ['Ann', 'Bo'], known: [true, true], rated: false, custom: false }],
-    roomRows: [{ code: 'R1', mode: 'draft', names: ['Ann', 'Bo'], connected: [true, false], users: ['a', null], turn: 2,
+    roomRows: [{ code: 'QXRM', mode: 'draft', names: ['Ann', 'Bo'], connected: [true, false], users: ['a', null], turn: 2,
       phase: 'main', winner: null, actions: 9, minutes: 4, watchers: 0, rated: false }],
     calendar: { now: 0, rows: [], runsOutAt: null, weeksLeft: 0, upcoming: 0 },
     onlyUnmarked: false,

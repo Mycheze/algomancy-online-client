@@ -11,7 +11,7 @@ const dialog = (over: Partial<ReportDialogView> = {}): ReportDialogView =>
 
 const LIST: InboxListView = {
   bellMsg: '',
-  matches: [{ room: 'R1', seat: 1, asks: true, opponent: 'Nyar', text: 'vs <b>Nyar</b> · 1–0 · paused today', button: 'Resume' }],
+  matches: [{ room: 'QXRM', seat: 1, asks: true, opponent: 'Nyar', text: 'vs <b>Nyar</b> · 1–0 · paused today', button: 'Resume' }],
   invites: [{ id: 'i1', from: 'Karanda', label: 'a constructed game' }],
   times: [{ season: 's1', seasonName: 'November', match: 'm1', from: 'Tomzy', when: 'Sat 7 Nov, 18:00' }],
   requests: [{ id: 'u9', username: 'Fennick' }],

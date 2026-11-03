@@ -66,7 +66,7 @@ test('978 §3 the dispute form, and the error line', () => {
 const NOTE: NoteCardView = { key: 'L7', season: 's1', match: 'm1', read: false, html: 'Your match with <b>Bo</b> is in an hour', action: 'play' };
 const LIST: InboxListView = {
   bellMsg: '',
-  matches: [{ room: 'R1', seat: 1, asks: true, opponent: 'Bo', text: 'vs <b>Bo</b>', button: 'Resume' }],
+  matches: [{ room: 'QXRM', seat: 1, asks: true, opponent: 'Bo', text: 'vs <b>Bo</b>', button: 'Resume' }],
   invites: [{ id: 'i1', from: 'Ann <x>', label: 'a draft' }],
   times: [{ season: 's1', seasonName: 'October', match: 'm1', from: 'Bo', when: 'Sat 7 Nov, 18:00' }],
   requests: [{ id: 'u9', username: 'Cy' }],
