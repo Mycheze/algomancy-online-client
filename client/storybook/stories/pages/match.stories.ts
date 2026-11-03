@@ -5,9 +5,9 @@ import {
 import type { MatchLobbyInfo } from '../../../ui/match.ts';
 import { FRIENDS, page } from './_page.ts';
 
-// real cards, two copies each: a preset is checked against the pool
+// real cards, two copies each, and a full sideboard of seven (the table draws their scans)
 const MAIN = Array.from({ length: 30 }, (_, i) => DECK_LIST[i % 15]!);
-const SIDE = [DECK_LIST[20]!, DECK_LIST[21]!, DECK_LIST[22]!];
+const SIDE = DECK_LIST.slice(20, 27);
 const CFG = { main: MAIN, side: SIDE };
 const NOW = Date.UTC(2026, 10, 3, 20, 0);
 
@@ -52,10 +52,29 @@ export const Registration = {
   name: 'Game 1: register a deck',
   render: () => page(matchRoomHtml(room({ w: lobby({ game: 1, phase: 'game', score: [0, 0], mine: null, ready: [false, false] }), decks: DECKS, pick: DECKS[0]!, peers: [true, false] }))),
 };
-export const Between = { name: 'Between games: sideboarding', render: () => page(matchRoomHtml(room())) };
+// the sideboarding table (owner 2026-11-03, "like MTGO"): the deck as the tabletop's piles, the sideboard above
+const DESK = { cw: 132, ch: 183, paneH: 540 };
+export const Between = {
+  name: 'Between games: sideboarding (a full sideboard, the opponent ready)',
+  render: () => page(matchRoomHtml(room({ table: DESK }))),
+};
+export const BetweenTouch = { name: 'Between games: sideboarding (iPad size)', render: () => page(matchRoomHtml(room())) };
+export const OpponentNotReady = {
+  name: 'Between games: the opponent is still sideboarding',
+  render: () => page(matchRoomHtml(room({ table: DESK, w: lobby({ ready: [false, false] }) }))),
+};
 export const IllegalDraft = {
-  name: 'Between games: a half-made swap',
-  render: () => page(matchRoomHtml(room({ shown: { main: MAIN.slice(1), side: [...SIDE, MAIN[0]!] } }))),
+  name: 'Between games: a half-made swap (8 in the sideboard)',
+  render: () => page(matchRoomHtml(room({ table: DESK, shown: { main: MAIN.slice(1), side: [...SIDE, MAIN[0]!] } }))),
+};
+export const ShortDeck = {
+  name: 'Between games: a deck under 30',
+  render: () => page(matchRoomHtml(room({ table: DESK, w: lobby({ mine: { registered: { main: [...MAIN, SIDE[0]!], side: SIDE.slice(1) }, current: CFG } }),
+    shown: { main: MAIN.slice(2), side: [...SIDE.slice(1), MAIN[0]!, MAIN[1]!] } }))),
+};
+export const EmptySideboard = {
+  name: 'Between games: an empty sideboard',
+  render: () => page(matchRoomHtml(room({ table: DESK, w: lobby({ mine: { registered: { main: MAIN, side: [] }, current: { main: MAIN, side: [] } } }) }))),
 };
 export const LoserChooses = { name: 'Between games: you lost, you choose', render: () => page(matchRoomHtml(room({ w: lobby({ chooser: 0, score: [0, 1] }) }))) };
 export const Locked = { name: 'Sideboarding over: who takes the initiative?', render: () => page(matchRoomHtml(room({ w: lobby({ chooser: 0, locked: true }) }))) };

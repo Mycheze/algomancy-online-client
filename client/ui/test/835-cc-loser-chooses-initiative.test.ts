@@ -73,7 +73,9 @@ test('§3 after the lock the loser sees only the two initiative buttons, untimed
   assert.doesNotMatch(html, />Ready</, 'no Ready');
   assert.doesNotMatch(html, /data-btn="cc-preset"/, 'no swaps');
   assert.doesNotMatch(html, /data-btn="cc-pause"/, 'no pause offer');
-  for (const m of html.matchAll(/<button class="ccchip"[^>]*>/g)) assert.match(m[0], /disabled/, 'the deck is shown, not editable');
+  // the table is still drawn, its cards take no tap (owner 2026-11-03: sideboarding on the tabletop)
+  assert.match(html, /data-cc-zone="main"[\s\S]*data-card=/, 'the deck is shown');
+  assert.doesNotMatch(html, /data-btn="cc-move"/, '…not editable');
   ui.sent();
   ui.click({ btn: 'cc-ready', init: '0' });
   assert.deepEqual(ui.sent(), [{ t: 'cc', op: 'ready', ready: true, initiative: 0 }]);

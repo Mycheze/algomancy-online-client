@@ -16,8 +16,12 @@
  * deals the last legal one" can never cost a player a half-made swap they did
  * not see.
  *
- * Touch-first (a 120 s window on an iPad): every move is one tap on a visible
- * button; nothing here needs hover or a right-click.
+ * Touch-first (a 120 s window on an iPad): every move is one tap on a card;
+ * nothing here needs hover or a right-click. Since 2026-11-03 (owner: "I wanted
+ * something like MTGO. Your deck laid out below, on the table … then the
+ * sideboard above and you slide cards in and out") the between screen is a
+ * card table — the tabletop's piles of real scans — and a card can also be
+ * DRAGGED across; the drop is the tap's own `moveCopy`.
  *
  * What these screens DRAW is pages/match.ts since the design-system round
  * (2026-11-03): this module keeps the wire types, the draft, the home card's
@@ -26,6 +30,9 @@
  */
 import { checkSwap, type MatchConfig } from '../engine/src/matchdeck.ts';
 import type { Seat } from '../engine/src/types.ts';
+import { addDragProvider, type DragPlan, type DragProvider } from './drag.ts';
+import { installPressZoom } from './presszoom.ts';
+import { PEEK_MS } from './touch.ts';
 import { esc } from './util.ts';
 import { chosenMatchClockMs } from './pages/clockpick.ts';
 
@@ -144,6 +151,25 @@ function moved(cfg: MatchConfig, from: 'main' | 'side', card: string): MatchConf
     : { main: [...cfg.main, card], side: src };
 }
 
+/**
+ * THE ONE MOVE of the sideboarding table: one copy of `card` off `from`, onto
+ * the other zone. A tap on a card calls it (`cc-move`) and so does a drop
+ * (the drag provider below) — one intent, two routes, so a drag can never do
+ * what a tap could not. True when the copy moved.
+ */
+function moveCopy(a: MatchActions, from: 'main' | 'side', card: string): boolean {
+  const w = a.lobby();
+  if (!w?.mine || w.locked || w.phase !== 'between') return false;
+  const next = moved(shown(w)!, from, card);
+  if (!next) return false;
+  draft = { key: keyOf(w), cfg: next };
+  // only a legal configuration goes to the server — it would refuse the
+  // rest and keep the last legal one, which is what the lock deals
+  if (checkSwap(w.mine.registered, next).ok) a.send({ t: 'cc', op: 'config', main: next.main, side: next.side });
+  a.rerender();
+  return true;
+}
+
 // ── the home card ────────────────────────────────────────────────────
 
 /** the deck the card and the game-1 room offer first: the last pick if it is
@@ -255,18 +281,9 @@ export function handleMatchButton(btn: HTMLElement, a: MatchActions): boolean {
       if (pick) a.register(pick.id);
       return true;
     }
-    case 'cc-move': {
-      if (!w?.mine || w.locked) return true;
-      const from = btn.dataset['from'] === 'side' ? 'side' : 'main';
-      const next = moved(shown(w)!, from, btn.dataset['card'] ?? '');
-      if (!next) return true;
-      draft = { key: keyOf(w), cfg: next };
-      // only a legal configuration goes to the server — it would refuse the
-      // rest and keep the last legal one, which is what the lock deals
-      if (checkSwap(w.mine.registered, next).ok) a.send({ t: 'cc', op: 'config', main: next.main, side: next.side });
-      a.rerender();
+    case 'cc-move':
+      moveCopy(a, btn.dataset['from'] === 'side' ? 'side' : 'main', btn.dataset['card'] ?? '');
       return true;
-    }
     case 'cc-reset':
       // back to the deck as registered (docs/22 §8 Q3: one tap away) — an
       // ordinary configuration; the server's push of it is the repaint
@@ -289,6 +306,68 @@ export function handleMatchButton(btn: HTMLElement, a: MatchActions): boolean {
     case 'cc-concede-yes': concedeAsk = false; a.send({ t: 'concedeMatch' }); a.rerender(); return true;
   }
   return false;
+}
+
+// ── the sideboarding table's drag (owner 2026-11-03: "like MTGO") ─────
+
+/** the click handler's actions, handed over by main.ts at boot */
+let tableActions: (() => MatchActions) | null = null;
+
+/**
+ * Drag a card between the deck and the sideboard — ui/drag.ts's machinery,
+ * a provider beside the game's and the tabletop's, with the tabletop's feel:
+ * a finger holds before it lifts (the deck pane scrolls under it), a mouse
+ * press lifts at once, and a card carried to an edge scrolls the pane. The
+ * only zone that lights is the OTHER one, and a drop on it is `moveCopy`,
+ * the tap's own function. A drop anywhere else flies the card home.
+ */
+export const sideboardDrag: DragProvider = {
+  holdMs: PEEK_MS,
+  edgeScroll: true,
+  pressLift: true,
+  sourceOf(el) {
+    // a card of the table: `data-cc-zone` is drawn there and nowhere else
+    if (!tableActions || !el?.closest || !el.closest('[data-cc-zone]')) return null;
+    const card = el.closest('[data-card]') as HTMLElement | null;
+    return card?.dataset['btn'] === 'cc-move' ? card : null;
+  },
+  plan(src): DragPlan | null {
+    const a = tableActions?.();
+    const w = a?.lobby();
+    if (!a || !w?.mine || w.locked || w.phase !== 'between') return null;
+    const from = src.dataset['from'] === 'side' ? 'side' : 'main';
+    const card = src.dataset['card'] ?? '';
+    return {
+      targets: [],
+      zoneAt(el) {
+        const z = el?.closest?.('[data-cc-zone]') as HTMLElement | null;
+        return z && z.dataset['ccZone'] !== from ? z : null;
+      },
+      drop: () => moveCopy(a, from, card),
+    };
+  },
+  started() { /* nothing hovers here */ },
+  // a push that landed under the card was held back (main.ts render waits on
+  // dragActive): paint it now — and after a drop, the moved card's own paint
+  ended() { tableActions?.().rerender(); },
+  refind(src) {
+    const k = src.dataset['ttSrc'];
+    return k ? document.querySelector<HTMLElement>(`[data-cc-zone] [data-tt-src="${CSS.escape(k)}"]`) : null;
+  },
+};
+
+/** main.ts, at boot: the drag above, the press-to-read zoom, and a repaint
+ * when the window changes size (the cards and strips follow it) */
+export function installSideboardTable(actions: () => MatchActions): void {
+  if (tableActions) return;
+  tableActions = actions;
+  addDragProvider(sideboardDrag);
+  installPressZoom();
+  if (typeof addEventListener === 'function' && typeof document !== 'undefined') {
+    addEventListener('resize', () => {
+      if (typeof document.querySelector === 'function' && document.querySelector('.ccsbtable')) actions().rerender();
+    });
+  }
 }
 
 // ── the countdown ────────────────────────────────────────────────────
