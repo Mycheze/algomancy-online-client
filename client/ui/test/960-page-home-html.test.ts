@@ -1,20 +1,31 @@
-/* 960 — THE HOME SCREEN, DRAWN WITHOUT A PAGE (design-system round, 2026-11-03).
+/* 960 — THE HOME SCREEN, DRAWN WITHOUT A PAGE.
  *
- * The home screen left main.ts for pages/home.ts, split the way docs/23
- * § Target structure asks: homeView() gathers, homeHtml(view) draws. This
- * file drives homeHtml with made-up views and no DOM at all — node has no
- * `document`, so a homeHtml that reached for one would throw here.
+ * pages/home.ts homeHtml(view) is pure (the page contract, docs/23); this file
+ * drives it with made-up views and no DOM at all — node has no `document`, so a
+ * homeHtml that reached for one would throw here.
  *
- * §1 signed out: the "Your name" box, no My decks button
- * §2 signed in: no name box, the My decks button, the identity bar slot
- * §3 every data-btn the home screen's handlers and tests rely on is drawn
- * §4 the slots land where they did: the updates band after .homepage closes
- * §5 the New buttons' disabled states follow the view
- * §6 the Options fold and Single Card Duel fold remember being opened
+ * Rewritten for the new home layout (client/docs/24-redesign/, 2026-11-03): an
+ * app shell with a toolbar, the Play card (Draft | Constructed, the settings
+ * rows, Join a room and Create room), three cards beside it, a bottom bar, and
+ * sheets drawn from state. The old file pinned the old markup (the header row,
+ * the five-card grid, the folds, the updates band after .homepage); what it
+ * pinned about BEHAVIOUR — every data-btn drawn, the name box only signed out,
+ * the Create buttons' disabled states — is pinned again below, against the new
+ * places. var/records/ds-round-2026-11-03-home-page.md has the old → new map.
+ *
+ * §0 no DOM; the root is the app shell with `homepage` LAST (report.ts, 287)
+ * §1 who you are: the name box only signed out; the account in the toolbar
+ * §2 the toolbar's buttons, in the top bar
+ * §3 Draft: the clock, the elements (room | now), custom rules, Create room
+ * §4 Constructed: Casual and Competitive, signed in and out
+ * §5 the three cards beside Play open their pages; inner buttons survive
+ * §6 the sheets: one at a time, from the view, each dismissable
+ * §7 badges: Alerts, Join, Updates — and none at zero
+ * §8 every data-btn the OLD home drew is still reachable from the new one
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { homeHtml, constructedOptionsHtml, singleDuelHtml, type HomeView } from '../pages/home.ts';
+import { homeHtml, HOME_SHEETS, type HomeView } from '../pages/home.ts';
 import type { DeckPickerView } from '../pages/deckpicker.ts';
 
 const PICKER: DeckPickerView = {
@@ -22,107 +33,241 @@ const PICKER: DeckPickerView = {
   defaults: [{ name: 'Ember Rush', author: 'Caleb', url: 'https://algomancer.cc/d/1', cards: Array(30).fill('X') }],
   msg: '',
 };
+const ME = { username: 'Quil <lon>', favoriteElement: 'water', games: 6, wins: 4, losses: 2, unresolved: 1, streak: 3 };
+const CC = [{ id: 'dOK', name: 'Legal', error: null }, { id: 'dBAD', name: 'Big side', error: 'too many' }];
 
 /** a view with every slot stubbed by a marker, so where each lands can be read */
 function view(over: Partial<HomeView> = {}): HomeView {
   return {
+    account: { resolving: false, me: null },
     nameBox: '',
     signedIn: false,
-    draft: { k: 3, els: [], fixedOpen: false, setCount: 35, fixedError: undefined, customError: undefined, custom: false },
+    mode: 'draft',
+    format: 'casual',
+    sheet: null,
+    draft: { k: 3, els: [], fixedOpen: false, setCount: 35, fixedError: undefined, customError: undefined, custom: false, rulesSummary: [] },
+    clock: { mode: 'draft', auto: true, now: 60 * 60_000, byModeMin: 60 },
     error: '',
     deckPicker: PICKER,
-    options: { open: false, ms: 45 * 60_000, clock: { mode: 'constructed', auto: true, now: 45 * 60_000, byModeMin: 45 } },
     hasDeck: false,
-    singleDuel: { open: false, card: null, picker: '<!--SLOT:scpicker-->' },
+    competitive: { signedIn: false, decks: null, bestOf: 3, pick: null },
+    singleCard: null,
+    leagueLive: true,
+    challengeLive: true,
+    badges: { alerts: 0, join: 0, updates: 0 },
     slots: {
-      acctBar: '<!--SLOT:acctBar-->', leagueNav: '<!--SLOT:leagueNav-->', challengeNav: '<!--SLOT:challengeNav-->',
-      leagueBanner: '<!--SLOT:leagueBanner-->', queueStrip: '<!--SLOT:queueStrip-->', yourMatches: '<!--SLOT:yourMatches-->',
-      customRules: '<!--SLOT:customRules-->', competitiveCard: '<!--SLOT:competitiveCard-->',
-      challengeCard: '<!--SLOT:challengeCard-->', updates: '<!--SLOT:updates-->',
+      league: '<!--SLOT:league-->', challenge: '<!--SLOT:challenge-->', queue: '<!--SLOT:queue-->',
+      invites: '<!--SLOT:invites-->', yourMatches: '<!--SLOT:yourMatches-->', leagueMatches: '<!--SLOT:leagueMatches-->',
+      customRules: '<!--SLOT:customRules-->', scpicker: '<!--SLOT:scpicker-->', info: '<!--SLOT:info-->', updates: '<!--SLOT:updates-->',
     },
     ...over,
   };
 }
+const signedIn = (over: Partial<HomeView> = {}): HomeView => view({
+  account: { resolving: false, me: ME }, nameBox: null, signedIn: true,
+  deckPicker: { ...PICKER, signedIn: true, mine: PICKER.defaults!, defaults: null },
+  competitive: { signedIn: true, decks: CC, bestOf: 3, pick: CC[0]! },
+  ...over,
+});
+const cons = (v: HomeView, format: HomeView['format'] = 'casual'): HomeView =>
+  ({ ...v, mode: 'constructed', format, clock: { mode: 'constructed', auto: true, now: 45 * 60_000, byModeMin: 45 } });
 
 const btns = (html: string): string[] => [...html.matchAll(/data-btn="([^"]+)"/g)].map(m => m[1]!);
+/** the region of the shell: top bar, main, bottom bar */
+const region = (html: string, r: 'top' | 'main' | 'bottom'): string => {
+  const tag = r === 'top' ? 'header' : r === 'main' ? 'main' : 'footer';
+  const at = html.indexOf(`<${tag} class="ui-app-shell__${r}">`);
+  assert.ok(at >= 0, `no ${r} region`);
+  return html.slice(at, html.indexOf(`</${tag}>`, at));
+};
+/** the markup of the button whose data-btn (and optional data attribute) is given */
+const buttonOf = (html: string, b: string, extra = ''): string =>
+  new RegExp(`<button[^>]*data-btn="${b}"[^>]*${extra}[^>]*>[^]*?</button>`).exec(html)?.[0] ?? '';
 
-test('960 §0 positive control: there is no DOM here', () => {
+test('960 §0 positive control: there is no DOM here; the root is the app shell, homepage last', () => {
   assert.equal(typeof (globalThis as Record<string, unknown>)['document'], 'undefined',
     'a document global exists, so this file would not notice homeHtml reaching for it');
-  assert.match(homeHtml(view()), /^<div class="homepage">/);
-});
-
-test('960 §1 signed out: the name box (escaped), and no My decks button', () => {
-  const html = homeHtml(view({ nameBox: 'Ann <&>' }));
-  assert.match(html, /<input id="h-name" maxlength="24" value="Ann &lt;&amp;&gt;"/);
-  assert.doesNotMatch(html, /homedecks" data-btn="deck-openpage"/);
-});
-
-test('960 §2 signed in (or still resolving): no name box; signed in: the My decks button', () => {
-  const resolving = homeHtml(view({ nameBox: null }));
-  assert.doesNotMatch(resolving, /id="h-name"/, 'a null nameBox draws no box (the "signing in" moment)');
-  const html = homeHtml(view({ nameBox: null, signedIn: true }));
-  assert.doesNotMatch(html, /id="h-name"/);
-  // a button() since 2026-11-03, still carrying .homedecks
-  assert.match(html, /<button class="ui-button ui-button--secondary homedecks" data-btn="deck-openpage" type="button">🗂 My decks<\/button>/);
-  assert.ok(html.indexOf('<!--SLOT:acctBar-->') < html.indexOf('data-btn="deck-openpage"'),
-    'the identity bar comes before the nav buttons');
-});
-
-test('960 §3 every data-btn the home handlers answer is drawn', () => {
-  const html = homeHtml(view({ draft: { ...view().draft, fixedOpen: true } }));
-  const have = new Set(btns(html));
-  for (const b of ['cards-openpage', 'meta-openpage', 'eltoggle', 'elrandom', 'newgame', 'joincode',
-    'deckimporturl', 'deckimporttext', 'clockpick', 'meta-ladder']) {
-    assert.ok(have.has(b), `data-btn="${b}" is missing from the home screen`);
-  }
-  // three ways to start a game: fixed draft, draft, constructed, single card
-  const modes = [...html.matchAll(/data-btn="newgame" data-mode="(\w+)"([^>]*)/g)].map(m => `${m[1]}${/data-els/.test(m[2]!) ? '+els' : ''}${/data-single/.test(m[2]!) ? '+single' : ''}`);
-  assert.deepEqual(modes, ['draft+els', 'draft', 'constructed', 'constructed+single']);
-  assert.match(html, /data-help="rules"/, 'the How to play button');
-  assert.match(html, /data-learn="menu"/, 'the Learn to play button');
-  assert.match(html, /id="h-code"/);
-});
-
-test('960 §4 the slots land in their places, the updates band after .homepage', () => {
   const html = homeHtml(view());
-  const order = ['acctBar', 'leagueNav', 'challengeNav', 'leagueBanner', 'queueStrip', 'yourMatches',
-    'customRules', 'scpicker', 'competitiveCard', 'challengeCard', 'updates'].map(s => html.indexOf(`<!--SLOT:${s}-->`));
-  assert.ok(order.every(i => i >= 0), 'a slot is not drawn at all');
-  assert.deepEqual([...order].sort((a, b) => a - b), order, 'the slots are drawn out of order');
-  const grid = html.indexOf('<div class="homegrid">');
-  assert.ok(html.indexOf('<!--SLOT:customRules-->') > grid && html.indexOf('<!--SLOT:challengeCard-->') > grid,
-    'the custom rules panel and the challenge card are inside the card grid');
-  assert.match(html, /<\/div>\s*<!--SLOT:updates-->$/, 'the updates band is last, after .homepage closes');
+  assert.match(html, /^<div class="ui-app-shell homepage">/, 'report.ts names the page from the LAST class of #app\'s first div');
+  for (const r of ['top', 'main', 'bottom'] as const) region(html, r);
 });
 
-test('960 §5 the New buttons follow the view', () => {
-  const noDeck = homeHtml(view());
-  assert.match(noDeck, /data-mode="constructed" disabled>\s*New constructed game — pick a deck first/);
-  const deck = homeHtml(view({ hasDeck: true }));
-  assert.match(deck, /data-mode="constructed" >\s*New constructed game<\/button>/);
-  // a fixed pick: complete and accepted, complete and refused, incomplete
-  const pick = (els: string[], fixedError?: string): string =>
-    homeHtml(view({ draft: { ...view().draft, els, fixedError } }));
-  assert.match(pick(['fire', 'wood', 'water']), /data-els="1" \s*>\s*Start with fire \+ wood \+ water/);
-  assert.match(pick(['fire', 'wood', 'water'], 'no <trio>'), /data-els="1" disabled\s*title="no &lt;trio&gt;"/);
-  assert.match(pick(['fire']), /data-els="1" disabled[^>]*>\s*pick 3 of the \d+ \(1\/3\)/);
-  // the custom rules verdict on the plain draft button
-  const refused = homeHtml(view({ draft: { ...view().draft, customError: 'too few' } }));
-  assert.match(refused, /class="cta primary" data-btn="newgame" data-mode="draft" disabled title="too few"/);
-  assert.match(homeHtml(view({ draft: { ...view().draft, custom: true } })), /New custom live draft/);
-  // the last refusal shows on the Live draft card
-  assert.match(homeHtml(view({ error: 'the server <refused>' })), /<p class="ui-status ui-status--note deckmsg" role="status">the server &lt;refused&gt;<\/p>/);
+test('960 §1 the name box only signed out (escaped); the account in the toolbar centre', () => {
+  const out = homeHtml(view({ nameBox: 'Ann <&>' }));
+  assert.match(out, /<input id="h-name" maxlength="24" value="Ann &lt;&amp;&gt;"/);
+  assert.match(region(out, 'top'), /<button class="homeacct out" data-btn="acct-open-auth"[^>]*>[^]*Sign in[^]*playing as a guest/);
+  const resolving = homeHtml(view({ nameBox: null, account: { resolving: true, me: null } }));
+  assert.doesNotMatch(resolving, /id="h-name"/, 'a null nameBox draws no box (the "signing in" moment)');
+  assert.match(resolving, /class="homeacct busy" aria-busy="true"[^]*Signing in…/);
+  assert.doesNotMatch(resolving, /acct-open-auth/, 'no Sign in flashes while a stored token resolves');
+  const html = homeHtml(signedIn());
+  assert.doesNotMatch(html, /id="h-name"/);
+  const acct = buttonOf(region(html, 'top'), 'acct-open-profile');
+  assert.match(acct, /Quil &lt;lon&gt;/, 'the name, escaped');
+  assert.match(acct, /4W–2L · 1 unrecorded · 🔥3/, 'the record line');
+  assert.match(acct, /<img src="\/data\/icons\/water\.webp"/, 'the favourite element is the avatar');
 });
 
-test('960 §6 the two folds draw open when the view says so', () => {
-  const opts = view().options;
-  assert.match(constructedOptionsHtml(opts), /data-homeoptions >/);
-  assert.match(constructedOptionsHtml({ ...opts, open: true }), /data-homeoptions open>/);
-  assert.match(constructedOptionsHtml({ ...opts, ms: 0 }), /— clock off/);
-  assert.match(constructedOptionsHtml(opts), /— clock 45m/);
-  const sd = view().singleDuel;
-  assert.match(singleDuelHtml({ ...sd, open: true }), /data-singleduel open>/);
-  assert.match(singleDuelHtml(sd), /data-single="1" disabled>\s*pick a card first/);
-  assert.match(singleDuelHtml({ ...sd, card: 'Ignis <Sprite>' }), /New single card duel — Ignis &lt;Sprite&gt;/);
+test('960 §2 the toolbar: Decks Cards Metagame | account | Learn Test Rules Alerts Report', () => {
+  for (const v of [view(), signedIn()]) {
+    const top = region(homeHtml(v), 'top');
+    const order = ['data-btn="deck-openpage"', 'data-btn="cards-openpage"', 'data-btn="meta-openpage"', 'class="homeacct',
+      'data-learn="menu"', 'data-sbx="open"', 'data-help="rules"', 'homealerts', 'data-report="open"'].map(a => top.indexOf(a));
+    assert.ok(order.every(i => i >= 0), `a toolbar button is missing: ${order}`);
+    assert.deepEqual([...order].sort((a, b) => a - b), order, 'the toolbar is out of order');
+    assert.match(top, /data-sbx="open"[^>]*>[^]*?<span class="homesbxnote" data-sbx-label><\/span>/,
+      'test mode writes its "dealing…" into a label span, not over the icon');
+    assert.equal((top.match(/class="ui-icon-button /g) ?? []).length, 8, 'eight icon buttons, one style');
+  }
+  assert.match(region(homeHtml(signedIn()), 'top'), /class="ui-icon-button ui-icon-button--stack homealerts" type="button"[^>]* data-inbox="bell"/,
+    'signed in, Alerts is the bell');
+  assert.match(region(homeHtml(view()), 'top'), /homealerts" data-btn="home-sheet"[^>]*data-sheet="alerts-signin"/,
+    'signed out, Alerts says to sign in');
+});
+
+test('960 §3 Draft: clock, elements, custom rules, Create room', () => {
+  const html = homeHtml(view());
+  const main = region(html, 'main');
+  assert.equal((main.match(/data-btn="clockpick"[^>]*data-clockfor="draft"/g) ?? []).length, 4, 'Default Off 45m 60m');
+  assert.match(main, /class="ui-segmented__option on" data-btn="clockpick" type="button" data-value="auto"/);
+  assert.match(main, /data-btn="home-els"[^>]*aria-pressed="true"[^>]*data-pick="room"/, 'first visit: choose in the room');
+  assert.doesNotMatch(main, /data-btn="eltoggle"/, 'no chips until Pick now');
+  assert.match(buttonOf(main, 'home-sheet', 'data-sheet="rules"'), /Change…/);
+  assert.match(main, /None — the standard game/);
+  assert.match(buttonOf(main, 'newgame', 'data-mode="draft"'), /^<button class="ui-button ui-button--action homecreate" data-btn="newgame" type="button" data-mode="draft">Create room</);
+  assert.ok(main.indexOf('data-btn="home-sheet"') < main.lastIndexOf('data-sheet="join"'), 'positive control');
+  assert.ok(main.indexOf('data-sheet="join"') < main.indexOf('data-btn="newgame"'), 'Join a room sits left of Create');
+
+  // Pick now: seven chips and the die; Create is live only with k picked
+  const pick = (els: string[], over: Partial<HomeView['draft']> = {}): string =>
+    homeHtml(view({ draft: { ...view().draft, fixedOpen: true, els, ...over } }));
+  const now = pick(['fire', 'wood', 'water']);
+  assert.equal((now.match(/data-btn="eltoggle"/g) ?? []).length, 7);
+  assert.match(now, /data-btn="elrandom"/);
+  assert.match(now, /class="elchip fire on" data-btn="eltoggle" data-el="fire"/);
+  assert.match(buttonOf(now, 'newgame', 'data-els="1"'), /type="button" data-mode="draft" data-els="1">Create room · Fire \+ Wood \+ Water</);
+  assert.equal((now.match(/data-btn="newgame"/g) ?? []).length, 1, 'one Create button');
+  assert.match(buttonOf(pick(['fire']), 'newgame'), / disabled data-mode="draft" data-els="1">Pick 3 elements \(1\/3\)</);
+  assert.match(buttonOf(pick(['fire', 'wood', 'water'], { fixedError: 'no <trio>' }), 'newgame'), /title="no &lt;trio&gt;" disabled data-mode="draft" data-els="1">/);
+  // custom rules: the summary, the label, and the verdict on the room button
+  const custom = homeHtml(view({ draft: { ...view().draft, custom: true, rulesSummary: ['Packs of <5>'] } }));
+  assert.match(custom, /<b>Packs of &lt;5&gt;<\/b>/);
+  assert.match(buttonOf(custom, 'newgame'), />Create custom room</);
+  assert.match(buttonOf(homeHtml(view({ draft: { ...view().draft, customError: 'too few' } })), 'newgame'), /title="too few" disabled data-mode="draft">Create room</);
+  // the last refusal, above the buttons, escaped
+  const refused = homeHtml(view({ error: 'the server <refused>' }));
+  assert.match(refused, /<p class="ui-status ui-status--note deckmsg" role="status">the server &lt;refused&gt;<\/p>/);
+  assert.ok(refused.indexOf('deckmsg') < refused.indexOf('class="homeactions"'));
+});
+
+test('960 §4 Constructed: Casual and Competitive', () => {
+  // casual, signed out: the bundled decks, Import… opens a sheet, Single Card Duel is a quiet link
+  const out = homeHtml(cons(view()));
+  assert.match(out, /data-btn="home-mode"[^>]*aria-pressed="true"[^>]*data-mode="constructed"/);
+  assert.match(out, /data-btn="home-format"[^>]*aria-pressed="true"[^>]*data-format="casual"/);
+  assert.equal((out.match(/data-btn="clockpick"[^>]*data-clockfor="constructed"/g) ?? []).length, 4);
+  assert.match(out, /<select id="h-deck"/);
+  assert.doesNotMatch(out, /id="h-deckurl"/, 'the import boxes are in the Import sheet now');
+  assert.match(buttonOf(out, 'home-sheet', 'data-sheet="import"'), /Import a deck…/);
+  assert.match(buttonOf(out, 'home-sheet', 'data-sheet="single"'), /Single Card Duel/);
+  assert.match(buttonOf(out, 'newgame'), /type="button" disabled data-mode="constructed">Pick a deck first</);
+  assert.match(buttonOf(homeHtml(cons(view({ hasDeck: true }))), 'newgame'), /data-mode="constructed">Create room</);
+  // signed in: My decks, no Import
+  const mine = homeHtml(cons(signedIn({ hasDeck: true })));
+  assert.match(mine, /data-btn="deck-openpage"[^>]*>My decks →/);
+  assert.doesNotMatch(mine, /data-sheet="import"/);
+  // competitive: Best of (3 first), the fixed clock, the CC picker, Create match
+  const cc = homeHtml(cons(signedIn(), 'competitive'));
+  assert.match(cc, /data-btn="cc-bo" type="button" data-value="3" aria-pressed="true" data-bo="3">3 games</);
+  assert.match(cc, /data-btn="cc-bo" type="button" data-value="1" aria-pressed="false" data-bo="1">1 game</);
+  assert.doesNotMatch(cc, /data-btn="clockpick"/, 'the server fixes a match clock');
+  assert.match(cc, /45 minutes each, for the whole match/);
+  assert.match(cc, /<option value="dOK" selected>Legal<\/option>/);
+  assert.match(cc, /<option value="dBAD" disabled>Big side — too many<\/option>/);
+  assert.match(buttonOf(cc, 'cc-new'), />Create match</);
+  assert.doesNotMatch(cc, /data-btn="newgame"/);
+  assert.match(buttonOf(homeHtml(cons(signedIn({ competitive: { signedIn: true, decks: [CC[1]!], bestOf: 1, pick: null } }), 'competitive')), 'cc-new'),
+    /type="button" disabled>Pick a deck first</);
+  // competitive signed out: it says so, with the sign-in, instead of disappearing
+  const ccOut = homeHtml(cons(view(), 'competitive'));
+  assert.match(ccOut, /Competitive matches need an account/);
+  assert.match(region(ccOut, 'main'), /data-btn="acct-open-auth"/);
+  assert.doesNotMatch(ccOut, /cc-new|cc-bo|newgame/);
+  assert.match(ccOut, /data-sheet="join"/, 'joining still works');
+});
+
+test('960 §5 League, Challenge and Matchmaking open their pages; Join buttons inside still work', () => {
+  const html = homeHtml(view({ slots: { ...view().slots, queue: '<button data-btn="queue-join-open" data-id="g1">Join →</button>' } }));
+  for (const [b, slot] of [['nav-league', 'league'], ['nav-challenge', 'challenge'], ['queue-open', 'queue']] as const) {
+    const card = new RegExp(`<section class="homeside[^"]*"[^>]*>[^]*?<!--SLOT:${slot}-->|<section class="homeside[^"]*"[^>]*>[^]*?queue-join-open`).exec(html)?.[0];
+    assert.ok(card, `no card for ${slot}`);
+    assert.match(html, new RegExp(`<button class="homesideopen" data-btn="${b}" aria-label="[^"]+"></button>`), `${b} is the card's button`);
+  }
+  assert.ok(html.indexOf('data-btn="queue-join-open"') < html.indexOf('data-btn="queue-open"'),
+    'the open games sit in the card, under its stretched button in the markup');
+  const none = homeHtml(view({ leagueLive: false, challengeLive: false, slots: { ...view().slots, league: '', challenge: '' } }));
+  assert.doesNotMatch(none, /nav-league|nav-challenge/, 'nothing to open: no button');
+  assert.match(none, /No league running right now\./);
+  assert.match(none, /No challenge this week\./);
+  assert.match(none, /data-btn="queue-open"/, 'matchmaking is always open');
+});
+
+test('960 §6 the sheets: one at a time, from the view, each dismissable', () => {
+  assert.doesNotMatch(homeHtml(view()), /data-sheet(?!=)/, 'no sheet drawn while none is open');
+  const want: Record<string, RegExp[]> = {
+    join: [/id="h-code"/, /data-btn="joincode"/, /<!--SLOT:invites-->/, /<!--SLOT:yourMatches-->/, /<!--SLOT:leagueMatches-->/],
+    info: [/ui-sheet--anchor-bottom-left/, /<!--SLOT:info-->/],
+    updates: [/ui-sheet--anchor-bottom-right/, /<!--SLOT:updates-->/],
+    rules: [/<!--SLOT:customRules-->/, /data-btn="home-sheet-close"[^>]*>Done</],
+    import: [/id="h-deckurl"/, /data-btn="deckimporturl"/, /id="h-decktext"/, /data-btn="deckimporttext"/],
+    single: [/<!--SLOT:scpicker-->/, /data-btn="meta-ladder"/, /data-btn="newgame" type="button" disabled data-mode="constructed" data-single="1">Pick a card first/],
+    'alerts-signin': [/Sign in to get friend invites/, /data-btn="acct-open-auth"/],
+  };
+  assert.deepEqual(Object.keys(want).sort(), [...HOME_SHEETS].sort(), 'a sheet is not checked here');
+  for (const name of HOME_SHEETS) {
+    const html = homeHtml(signedIn({ sheet: name }));
+    assert.equal((html.match(/<div class="ui-sheet /g) ?? []).length, 1, `${name}: one sheet`);
+    for (const re of want[name]!) assert.match(html, re, `${name}: ${re}`);
+    assert.match(html, /<div class="ui-sheet__scrim" data-btn="home-sheet-close"/, `${name}: the scrim dismisses`);
+    assert.match(html, /<button class="ui-sheet__close" type="button" data-btn="home-sheet-close"/, `${name}: the ✕ dismisses`);
+    assert.ok(html.indexOf('class="ui-sheet ') > html.indexOf('<main') && html.indexOf('class="ui-sheet ') < html.indexOf('</main>'),
+      `${name}: the sheet is inside #app (the ui-driver sees only #app)`);
+  }
+  assert.match(homeHtml(view({ sheet: 'join', slots: { ...view().slots, invites: '', yourMatches: '', leagueMatches: '' } })),
+    /Nothing waiting for you — ask for a code\./);
+  assert.match(homeHtml(view({ sheet: 'single', singleCard: 'Ignis <Sprite>' })), /data-single="1">Create duel · Ignis &lt;Sprite&gt;</);
+  assert.match(homeHtml(view({ sheet: 'info' })), /class="ui-icon-button ui-icon-button--inline on homeinfo"/, 'its button shows it is open');
+});
+
+test('960 §7 the badges, and none at zero', () => {
+  const zero = homeHtml(signedIn());
+  assert.doesNotMatch(zero, /ui-icon-button__badge|homejoinbadge/);
+  assert.match(zero, /<span class="ui-icon-button__label">Updates<\/span>/);
+  const some = homeHtml(signedIn({ badges: { alerts: 4, join: 2, updates: 3 } }));
+  assert.match(some, /homealerts[^>]*>[^]*?<span class="ui-icon-button__badge">4<\/span>/, 'Alerts counts the bell');
+  assert.match(buttonOf(some, 'home-sheet', 'data-sheet="join"'), /homejoinbadge[^>]*>2</, 'Join counts what waits');
+  assert.match(some, /<span class="ui-icon-button__label">Updates · 3 new<\/span>/, 'Updates says how many are new');
+});
+
+test('960 §8 every data-btn the old home drew is still reachable from the new one', () => {
+  // the old home's list (960 §3 before 2026-11-03, plus what its slots drew):
+  // each one must be on the new home in SOME state — a tab, a format or a sheet
+  const OLD = ['cards-openpage', 'meta-openpage', 'deck-openpage', 'acct-open-auth', 'acct-open-profile', 'eltoggle', 'elrandom',
+    'newgame', 'joincode', 'deckimporturl', 'deckimporttext', 'clockpick', 'meta-ladder', 'nav-league', 'nav-challenge',
+    'queue-open', 'cc-bo', 'cc-new'];
+  const states: HomeView[] = [
+    view(), signedIn(), view({ draft: { ...view().draft, fixedOpen: true } }), cons(view()), cons(signedIn(), 'competitive'),
+    ...HOME_SHEETS.map(s => signedIn({ sheet: s })), view({ sheet: 'import' }),
+  ];
+  const seen = new Set(states.flatMap(s => btns(homeHtml(s))));
+  for (const b of OLD) assert.ok(seen.has(b), `data-btn="${b}" can no longer be reached on the home screen`);
+  const all = states.map(homeHtml).join('');
+  for (const a of ['data-help="rules"', 'data-learn="menu"', 'data-sbx="open"', 'data-report="open"', 'data-inbox="bell"'])
+    assert.ok(all.includes(a), `${a} is gone from the home screen`);
+  // the four kinds of New game, each still drawn: draft, draft with fixed elements, constructed, single card
+  const modes = new Set([...all.matchAll(/data-btn="newgame" type="button"(?: title="[^"]*")?(?: disabled)? data-mode="(\w+)"( data-els="1")?( data-single="1")?/g)]
+    .map(m => `${m[1]}${m[2] ? '+els' : ''}${m[3] ? '+single' : ''}`));
+  assert.deepEqual([...modes].sort(), ['constructed', 'constructed+single', 'draft', 'draft+els']);
+  for (const id of ['h-name', 'h-code', 'h-deck', 'h-deckurl', 'h-decktext', 'cc-deck'])
+    assert.ok(all.includes(`id="${id}"`), `#${id} is gone`);
 });

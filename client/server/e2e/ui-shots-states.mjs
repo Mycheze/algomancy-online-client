@@ -18,6 +18,9 @@
  *   css           a stylesheet added before the picture — a MASK, named in the
  *                 manifest; same rule
  *   viewports     only these
+ *   noScroll      the page must fit the window at desktop and tablet: a
+ *                 document taller (or wider) than the viewport is a problem
+ *                 and ui-shots exits 1 (the home screen, docs/24)
  *
  * A failed step is recorded in the manifest and the picture is still taken,
  * so a selector that rots shows up as a ✗ line rather than a silent skip.
@@ -35,15 +38,28 @@ export function SCENARIOS(fx) {
   const me = { as: 'me' }, admin = { as: 'admin' };
 
   // ── home and the chrome on every page ──
-  add('home', 'signed-out', '/');
-  add('home', 'signed-in', '/', me);
-  add('home', 'folds-open', '/', { ...me, steps: [
-    { eval: `(() => { document.querySelectorAll('#app details').forEach(d => { d.open = true; }); return true; })()`, settle: 200 },
-  ] });
+  // The home is one window (client/docs/24-redesign/, 2026-11-03): `noScroll`
+  // makes ui-shots fail a home state whose page scrolls at desktop or tablet
+  // (ui-shots-overflow.mjs pageScrolls). Its tabs and sheets are states of
+  // their own, each reached the way a player would (a click on the toolbar,
+  // the Play card or the bottom bar).
+  const home = (state, o = {}) => add('home', state, '/', { noScroll: true, ...o });
+  const sheetBtn = name => `[data-btn="home-sheet"][data-sheet="${name}"]`;
+  const constructedTab = { click: '[data-btn="home-mode"][data-mode="constructed"]' };
+  home('signed-out');
+  home('signed-in', me);
+  home('constructed', { ...me, steps: [constructedTab] });
+  home('competitive', { ...me, steps: [constructedTab, { click: '[data-btn="home-format"][data-format="competitive"]' }] });
+  home('pick-now', { ...me, steps: [{ click: '[data-btn="home-els"][data-pick="now"]' }] });
+  home('join-open', { ...me, steps: [{ click: sheetBtn('join') }] });
+  home('info-open', { steps: [{ click: sheetBtn('info') }] });
+  home('updates-open', { ...me, steps: [{ click: sheetBtn('updates') }] });
+  home('customrules-open', { ...me, steps: [{ click: sheetBtn('rules') }] });
   add('auth', 'sign-up', '/', { steps: [{ click: btn('acct-open-auth') }], pages: 1 });
   add('auth', 'log-in', '/', { steps: [{ click: btn('acct-open-auth') }, { click: btn('acct-toggle-mode') }], pages: 1 });
+  // the legal pages open from the client info sheet (the bottom bar's left)
   for (const l of ['about', 'ai', 'privacy', 'terms']) {
-    add('legal', l, '/', { steps: [{ click: `[data-legal="${l}"]` }], pages: 1 });
+    add('legal', l, '/', { steps: [{ click: sheetBtn('info') }, { click: `[data-legal="${l}"]` }], pages: 1 });
   }
   add('report', 'dialog', '/', { ...me, steps: [{ click: '[data-report="open"]' }], pages: 1 });
   add('report', 'bug', '/', { ...me, steps: [{ click: '[data-report="open"]' }, { click: '.reportbox [role="radio"]', text: '^Bug$' }], pages: 1 });
@@ -132,9 +148,10 @@ export function SCENARIOS(fx) {
   add('queue', 'signed-out', '/?queue=1');
   // near the end: opening the bell marks the notes read, which changes the
   // unread count every later page shows
-  add('home', 'bell-open', '/', { ...me, steps: [{ click: '[data-inbox="bell"]' }], pages: 1 });
+  home('bell-open', { ...me, steps: [{ click: '[data-inbox="bell"]' }], pages: 1 });
   // last: it creates a room on the server (seeded code, so the same one each run)
   add('waiting', 'constructed', '/', { ...me, steps: [
+    constructedTab,
     pick('#h-deck', '/Ember Rush/'),
     { click: '[data-btn="newgame"][data-mode="constructed"]:not([data-single])', settle: 1500 },
   ], check: '#app', pages: 1 });
@@ -145,7 +162,7 @@ export function SCENARIOS(fx) {
   //    would show on the shared states' home and profile pictures.
   if (fx.cc) {
     const ccDeck = [...decks, { click: btn('deck-open'), text: 'Competitive' }];
-    add('home', 'cc-your-matches', '/', me);
+    home('cc-your-matches', me);
     add('decks', 'cc-sideboard', '/', { ...me, steps: [...ccDeck, { click: tab('deck-tab', 'side') }] });
     add('decks', 'cc-swap-new', '/', { ...me, steps: [...ccDeck, { click: tab('deck-tab', 'side') }, { click: btn('deck-swap-new') }] });
     add('tabletop', 'cc-sideboard', `/?table=${fx.cc.deck}`, { ...me, pages: 1 });
@@ -153,6 +170,8 @@ export function SCENARIOS(fx) {
       { ...me, steps: [{ settle: 1500 }], check: '#app' });
     // last: it creates a match room (seeded code, so the same one each run)
     add('match', 'registration', '/', { ...me, steps: [
+      constructedTab,
+      { click: '[data-btn="home-format"][data-format="competitive"]' },
       pick('#cc-deck', '/Competitive/'),
       { click: btn('cc-new'), settle: 1500 },
     ], check: '#app', pages: 1 });

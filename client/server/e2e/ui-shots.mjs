@@ -21,7 +21,9 @@
  * Output: <out>/<page>__<state>__<viewport>.png (and …-p2.png, -p3.png for the
  * next screenfuls of a page taller than the window, scrolled, never resized),
  * plus <out>/manifest.json: every shot's url, steps, scroll size, the
- * overflow walk's findings, and whether the frame settled.
+ * overflow walk's findings, and whether the frame settled. A state marked
+ * `noScroll` (the home screen) whose page scrolls at desktop or tablet is a
+ * problem, and the run exits 1.
  *
  * ── what makes two runs byte-identical ─────────────────────────────────────
  *
@@ -58,7 +60,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { SHOTS_NOW, buildFixture, copyFixtureVar, fixtureEnv } from './ui-fixture.ts';
-import { overflowJs } from './ui-shots-overflow.mjs';
+import { NO_SCROLL_VIEWPORTS, overflowJs, pageScrolls } from './ui-shots-overflow.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 // ws is the server's own dependency, and CommonJS
@@ -423,6 +425,7 @@ async function main() {
 
   const manifest = { fixture: fixtureDir, frozenAt: SHOTS_NOW, viewports: {}, shots: {} };
   const problems = [];
+  let noScrollFailed = false;
   const t0 = Date.now();
   try {
     for (const vpName of vps) {
@@ -453,6 +456,12 @@ async function main() {
           const ov = await P.ev(overflowJs(P.vp.w)).catch(() => null);
           entry.scroll = ov ? { w: ov.scrollW, h: ov.scrollH } : null;
           entry.overflow = ov ? { horizontal: ov.scrollW > ov.W, bad: ov.bad } : null;
+          // the home is one window: its page must not scroll (docs/24)
+          if (s.noScroll && NO_SCROLL_VIEWPORTS.includes(vpName) && (!ov || pageScrolls(ov))) {
+            entry.pageScrolls = ov ? { w: ov.scrollW, h: ov.scrollH, W: ov.W, H: ov.H } : 'not measured';
+            problems.push(`${name}: the page scrolls (${ov ? `${ov.scrollW}×${ov.scrollH} in a ${ov.W}×${ov.H} window` : 'not measured'}) — it must fit the window`);
+            noScrollFailed = true;
+          }
           // screenfuls: scroll the document, never resize the window
           const screens = Math.max(1, Math.min(pages, s.pages ?? pages, ov ? Math.ceil(ov.scrollH / ov.H) : 1));
           for (let k = 0; k < screens; k++) {
@@ -490,6 +499,7 @@ async function main() {
   const files = Object.values(manifest.shots).reduce((a, e) => a + e.files.length, 0);
   console.log(`\n${Object.keys(manifest.shots).length} states, ${files} PNGs in ${((Date.now() - t0) / 1000).toFixed(0)}s → ${outDir}`);
   if (problems.length) console.log(`${problems.length} problem(s):\n  ${problems.join('\n  ')}`);
+  if (noScrollFailed) { console.log('✗ a page that must fit the window scrolls (noScroll) — see the problems above'); process.exitCode = 1; }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

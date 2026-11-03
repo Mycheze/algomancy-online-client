@@ -54,8 +54,10 @@ function legalityLine(registered: MatchConfig, cfg: MatchConfig): string | null 
 
 /* ── the home card ────────────────────────────────────────────────────── */
 
-/** the CC-legal picker: an illegal deck is listed greyed, with its reason */
-function deckSelectHtml(decks: CcDeck[] | null, pick: CcDeck | null): string {
+/** the CC-legal picker: an illegal deck is listed greyed, with its reason.
+ * Exported for the home's Play card (docs/24, 2026-11-03), which draws it in
+ * its Deck row when Constructed is on Competitive. */
+export function ccDeckSelectHtml(decks: CcDeck[] | null, pick: CcDeck | null): string {
   if (!decks) return '<div class="hint">loading your decks…</div>';
   if (!decks.length) return '<div class="hint">No decks yet — build one under 🗂 My decks.</div>';
   const opts = decks.map(d => d.error
@@ -100,7 +102,7 @@ export function competitiveCardHtml(v: CompetitiveCardView): string {
     <div class="ccbo" role="group" aria-label="match length">
       ${([3, 1] as const).map(n => toggle({ label: `Best of ${n}`, on: v.bestOf === n, strong: true, dataBtn: 'cc-bo', attrs: { 'data-bo': n } })).join('')}
     </div>
-    ${deckSelectHtml(v.decks, pick)}
+    ${ccDeckSelectHtml(v.decks, pick)}
     <div class="spacer"></div>
     <button class="cta primary" data-btn="cc-new" ${pick ? '' : 'disabled'}>New match${pick ? '' : ' — pick a deck first'}</button>
   </div>`;
@@ -289,7 +291,7 @@ function registerHtml(v: MatchRoomView): string {
     ${w.mine ? '' : `<div class="lobbypanel deckpicker">
       <div class="zonelabel">Your deck for the match</div>
       <p class="hint">Main deck and sideboard. You can swap between games, never before game 1.</p>
-      ${deckSelectHtml(v.decks, pick)}
+      ${ccDeckSelectHtml(v.decks, pick)}
       <button class="cta primary" data-btn="cc-register" ${pick ? '' : 'disabled'}>Play this deck</button>
     </div>`}
     <div class="lobbyfoot"><div class="lobbyseats">

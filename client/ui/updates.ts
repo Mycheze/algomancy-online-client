@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-03', kind: 'change', text: 'A new home screen that fits on one screen: one Play card for drafts and constructed games (Competitive included), League, Challenge and Matchmaking beside it, and everything else in the toolbar along the top.' },
   { date: '2026-11-03', kind: 'new', text: 'Competitive matches, best of 1 or 3: a sideboard of up to 7 to swap between games (saved swaps are one tap), 45 minutes each for the whole match, and players plan and deploy in turn. A match can be paused between games.' },
   { date: '2026-11-03', kind: 'fix', text: 'The Report button no longer covers the bottom of a page or a button like the League page’s “Suggest a time”: pages now leave room for it.' },
   { date: '2026-11-03', kind: 'fix', text: 'League page: on a touch screen the availability help says to tap the hours, and on a phone the “Suggest a time” box fits the screen.' },

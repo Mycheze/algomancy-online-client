@@ -50,7 +50,9 @@ test('a token being checked is drawn as signing in, not as signed out', () => {
   assert.equal((refresh.match(/resolving = false;/g) ?? []).length, 2, 'cleared on a 401 and on every other way out');
   assert.ok(refresh.lastIndexOf('resolving = false;') < refresh.lastIndexOf('repaint();'), 'before the repaint that shows the answer');
   assert.match(fn(home, 'export function homeView'), /nameBox: user \|\| acct\.resolvingUser\(\) \? null : name,/, 'no "Your name" box while it resolves');
-  assert.match(fn(home, 'export function homeHtml'), /\$\{v\.nameBox === null\s*\? ''/, '…and homeHtml draws none for a null nameBox');
+  // new home layout, docs/24, 2026-11-03: the name box sits in the Play card's foot (playHtml, which homeHtml draws)
+  assert.match(fn(home, 'function playHtml'), /\$\{v\.nameBox === null\s*\? ''/, '…and homeHtml draws none for a null nameBox');
+  assert.match(fn(home, 'export function homeHtml'), /playHtml\(v\)/, 'positive control: homeHtml draws the Play card');
 });
 
 test('the home paint carries the typed boxes and the caret across its repaint', () => {

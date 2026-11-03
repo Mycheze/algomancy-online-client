@@ -67,7 +67,7 @@ export function deckPickerView(): DeckPickerView {
  * and then refuses the game is a worse way to say "not yet" than not offering
  * it. The decks page says which ones those are and why.
  */
-export function deckPickerHtml(v: DeckPickerView): string {
+export function deckPickerHtml(v: DeckPickerView, o: { importHtml?: string } = {}): string {
   const cur = v.current;
   const mine = v.mine;
   const msg = v.msg;
@@ -110,15 +110,23 @@ export function deckPickerHtml(v: DeckPickerView): string {
       ${cur ? '' : '<option value="" selected disabled>choose a deck…</option>'}${opts}${customOpt}
     </select>
     ${info}${manage}
-    <div class="joinrow deckimport">
+    ${o.importHtml ?? deckImportHtml()}
+    ${msg ? statusMessage({ tone: 'note', className: 'deckmsg', text: msg }) : ''}`;
+}
+
+/** The signed-out picker's two ways to bring a deck of your own: an
+ * algomancer.cc link and a pasted list. Drawn under the picker by default; the
+ * home screen (docs/24, 2026-11-03) passes `importHtml` to deckPickerHtml
+ * instead and draws this in its Import sheet. Pure. */
+export function deckImportHtml(): string {
+  return `<div class="joinrow deckimport">
       <input id="h-deckurl" placeholder="algomancer.cc deck link" spellcheck="false">
       ${button({ label: 'Load', dataBtn: 'deckimporturl' })}
     </div>
     <details class="deckpaste"><summary>…or paste a deck list</summary>
       <textarea id="h-decktext" rows="6" spellcheck="false" placeholder="1 Ignis Sprite&#10;2 Overwhelm&#10;…"></textarea>
       ${button({ label: 'Use pasted list', dataBtn: 'deckimporttext' })}
-    </details>
-    ${msg ? statusMessage({ tone: 'note', className: 'deckmsg', text: msg }) : ''}`;
+    </details>`;
 }
 
 /** the picker as it stands now — what ui/queue.ts is handed as `deckPickerHtml` */

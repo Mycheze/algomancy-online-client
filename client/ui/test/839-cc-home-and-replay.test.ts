@@ -5,8 +5,9 @@
  *      its reason, and New match opens the room as its creator with the Best
  *      of and the deck
  *   §2 "Your matches" (the installed-app rule: no address bar, so a paused
- *      match is one BUTTON away): a row per open match, and its button opens
- *      the match's room as a match room
+ *      match is one BUTTON away): the Join a room button counts them, its
+ *      sheet has a row per open match, and its button opens the match's room
+ *      as a match room
  *   §3 …and the bell lists it too, one button from any page — and a paused
  *      match whose opponent is in its room says they want to resume (CT-517)
  *   §4 a Competitive replay deals with its rules: the chosen initiative and
@@ -57,10 +58,14 @@ const ui = home();
 const flush = async (): Promise<void> => { for (let i = 0; i < 30; i++) await Promise.resolve(); };
 await flush();
 
+// new home layout, docs/24, 2026-11-03: Competitive is no card of its own any
+// more but Constructed's second format on the Play card — Constructed, then
+// Competitive, then the rows (Best of, the fixed clock, the CC deck picker)
+// and Create match. The view and pieces are still pages/match.ts's.
 const card = (html: string): string => {
-  const at = html.indexOf('class="homecard offer cccard"');
-  assert.ok(at >= 0, 'no Competitive card on the home screen');
-  return html.slice(at, html.indexOf('</div>\n', html.indexOf('data-btn="cc-new"', at)));
+  const at = html.indexOf('<section class="homeplay"');
+  assert.ok(at >= 0, 'no Play card on the home screen');
+  return html.slice(at, html.indexOf('</section>', at));
 };
 
 test('§1 the Competitive card: sign-in, Best of, the CC-legal picker, New match', async () => {
@@ -69,28 +74,34 @@ test('§1 the Competitive card: sign-in, Best of, the CC-legal picker, New match
   assert.match(out, /data-btn="acct-open-auth"/);
   assert.doesNotMatch(out, /cc-new/, 'signed out: no New match');
 
-  let html = card(ui.html());
-  // a toggle() since 2026-11-03: `on` ends its class list, aria-pressed and data-bo follow type="button"
-  assert.match(html, /<button class="[^"]*\bon" data-btn="cc-bo" type="button" aria-pressed="true" data-bo="3">Best of 3/, 'Bo3 first');
+  ui.click({ btn: 'home-mode', mode: 'constructed' });
+  let html = card(ui.click({ btn: 'home-format', format: 'competitive' }));
+  // a segmented() option since 2026-11-03: `on`, then data-btn, type, data-value, aria-pressed, data-bo
+  assert.match(html, /<button class="ui-segmented__option on" data-btn="cc-bo" type="button" data-value="3" aria-pressed="true" data-bo="3">3 games/, 'Bo3 first');
   assert.match(html, /<option value="dOK" selected>Legal deck<\/option>/);
   assert.match(html, /<option value="dBAD" disabled>Big side — a sideboard holds at most 7 cards \(got 8\)<\/option>/,
     'the illegal deck is greyed, with its reason');
   html = card(ui.click({ btn: 'cc-bo', bo: '1' }));
-  assert.match(html, /<button class="[^"]*\bon" data-btn="cc-bo"[^>]* data-bo="1"/);
+  assert.match(html, /<button class="ui-segmented__option on" data-btn="cc-bo"[^>]* data-bo="1"/);
   ui.click({ btn: 'cc-new' });
   await flush();
   assert.equal(location.search, '?ws=1&room=NEWC&seat=0&mode=constructed&bo=1&ccdeck=dOK');
   ui.click({ btn: 'cc-bo', bo: '3' });
+  ui.click({ btn: 'home-format', format: 'casual' });
+  ui.click({ btn: 'home-mode', mode: 'draft' });
 });
 
 test('§2 Your matches: a row, and one button into the room', () => {
   assert.ok(FETCHED.includes('/api/matches/mine'));
-  const html = ui.html();
+  // the Join a room button counts it, and its sheet lists it (docs/24, 2026-11-03)
+  assert.match(ui.html(), /data-btn="home-sheet"[^>]*data-sheet="join">Join a room <span class="[^"]*homejoinbadge"[^>]*>2</,
+    'a paused match is not hidden behind the Join button');
+  const html = ui.click({ btn: 'home-sheet', sheet: 'join' });
   const row = /<div class="ccmine">[\s\S]*?<\/div>\s*<\/div>/.exec(html)?.[0] ?? '';
   assert.match(row, /Your matches/);
   assert.match(row, /vs <b>Rashi<\/b> · you lead 1–0 · paused 2 days ago/);
   assert.match(row, /data-btn="cc-open" data-room="PAUS" data-seat="1">Resume</);
-  assert.ok(html.indexOf('class="ccmine"') < html.indexOf('class="homegrid"'), 'above the mode cards');
+  assert.ok(html.indexOf('class="ccmine"') > html.indexOf('id="home-join"'), 'in the Join sheet');
   ui.click({ btn: 'cc-open', room: 'PAUS', seat: '1' });
   assert.equal(location.search, '?ws=1&room=PAUS&seat=1&mode=constructed&cc=1');
 });

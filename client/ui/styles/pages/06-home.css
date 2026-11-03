@@ -19,29 +19,11 @@
 .joinrow input { flex: 1; min-width: 0; letter-spacing: .2em; font-weight: 700; text-align: center; }
 .joinrow button { flex: 1; }
 
-/* ── home screen ───────────────────────────────────────────────────────
-   Three ways in, side by side, each one a card that says what it is before
-   it asks you for anything. They used to be a single stacked column you had
-   to scroll to reach the bottom of; abreast, the whole menu is one screenful
-   and "which of these do I want?" is answered by reading across, not down. */
-
-.homepage { max-width: 1180px; margin: 0 auto; padding: 30px 22px 44px; min-height: 100dvh;
-  display: flex; flex-direction: column; justify-content: safe center; gap: 20px; }
-.homehead { display: flex; align-items: center; gap: var(--space-6); flex-wrap: wrap;
-  border-bottom: 1px solid var(--line); padding-bottom: var(--space-6); }
-.homehead .homelogo { margin: 0; font-size: 30px; text-align: left; }
-/* who you are, on the right of the wordmark rather than stacked under it */
-.homeident { margin-left: auto; display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
-.homeident .acctbar { margin: 0; }
-.homeident .acctbar .accthint { flex: 0 1 auto; }
-.homeident .namerow { margin: 0; font-size: var(--text-12); }
-/* 120px, not 150: at 150 the signed-out row (name, the account bar, five nav
-   buttons) ran ~6px past 1136px at a 1440 window and "Challenge" wrapped onto a
-   row of its own (docs/23 Found, fixed 2026-11-03) */
-.homeident .namerow input { width: 120px; flex: 0 0 auto; }
-
-.homegrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(302px, 1fr));
-  gap: var(--space-5); align-items: stretch; }
+/* ── what the other pre-game screens borrow from the old home ─────────
+   The waiting rooms, the draft lobby, the Competitive match room and the
+   legacy home cards (a challenge card, the Competitive card in its story)
+   still draw .homecard / .cardsub / .spacer / .cta. The home screen itself
+   no longer does (docs/24, below). */
 .homecard { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
   padding: var(--space-6) var(--space-6) var(--space-6); display: flex; flex-direction: column; gap: var(--space-4); }
 /* the two ways to start a NEW game read as the offer; joining is a reply to
@@ -54,12 +36,160 @@
 .homecard .cta.primary { border-color: var(--accent); color: var(--accent); }
 .homecard .joinrow input { font-size: var(--text-16); padding: var(--space-4) var(--space-4); }
 .homecard .joinrow button { flex: 0 0 auto; padding: var(--space-4) var(--space-6); font-weight: 700; }
-/* second-tier ways in, under a rule so they read as "or, on your own" */
-.homesep { border-top: 1px dashed var(--line); padding-top: var(--space-5); margin-top: var(--space-1);
-  display: flex; flex-direction: column; gap: var(--space-4); }
-.homesolo { display: flex; gap: var(--space-4); flex-wrap: wrap; }
-.homesolo button { flex: 1 1 auto; padding: var(--space-4) var(--space-5); white-space: nowrap; }
 .homefoot { color: var(--dim); font-size: var(--text-12); margin: 0; text-align: center; }
+
+/* ── the home screen (client/docs/24-redesign/, 2026-11-03) ────────────
+   One window and no page scroll: the app shell (components/app-shell.css)
+   is the root, exactly the window's height; its main region scrolls inside
+   itself if it ever must. Nothing here may give .homepage a height, a margin
+   or a padding of its own (test 1010 reads this piece for that). The toolbar
+   along the top, the PLAY card with three lighter cards beside it, a bottom
+   bar; everything else opens as a sheet. */
+
+/* the main region centres the two columns; `margin: auto` in a flex box
+   gives up its space before it would push anything out of view */
+.homepage .ui-app-shell__main { display: flex; padding: var(--space-7) var(--space-7); }
+.homemain { margin: auto; width: 100%; max-width: 1120px; min-height: min(100%, 600px);
+  display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(260px, 1fr); gap: var(--space-7); align-items: stretch; }
+
+/* the toolbar: Decks Cards Metagame · the account · Learn Test Rules Alerts Report */
+.homepage .hometools { padding-left: var(--space-6); padding-right: var(--space-6); }
+.homeacct { display: inline-flex; align-items: center; gap: var(--space-4); min-height: var(--icon-button-min-h);
+  max-width: 280px; padding: var(--space-2) var(--space-6) var(--space-2) var(--space-3);
+  background: var(--color-surface-raised); color: var(--color-text); border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill); font: inherit; text-align: left; cursor: pointer; }
+.homeacct:hover { border-color: var(--color-accent); }
+.homeacct.busy { cursor: default; opacity: .7; }
+.homeacct.out { border-style: dashed; }
+.homeav { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 36px; height: 36px;
+  border-radius: var(--radius-pill); background: var(--color-surface-sunken); color: var(--color-accent);
+  font-size: var(--text-16); font-weight: 700; overflow: hidden; }
+.homeav > svg { width: 20px; height: 20px; }
+.homeav > img { width: 28px; height: 28px; object-fit: contain; }
+.homeaccttext { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.homeacctname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-14); font-weight: 700; }
+.homeacctrec { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-text-muted); font-size: var(--text-11); }
+/* test mode's "dealing…" / what went wrong (ui/sandbox.ts writes it): a small
+   note hanging under the Test button, so the icon and caption stay put */
+.homesbxnote { position: absolute; top: calc(100% + 22px); left: 50%; transform: translateX(-50%); z-index: var(--z-popover);
+  padding: var(--space-2) var(--space-4); background: var(--color-surface-overlay); color: var(--color-text);
+  border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-1);
+  font-size: var(--text-12); white-space: nowrap; pointer-events: none; }
+.homesbxnote:empty { display: none; }
+
+/* the PLAY card: the one strong surface on the page */
+.homeplay { display: flex; flex-direction: column; gap: var(--space-6); min-width: 0;
+  padding: var(--space-7) var(--space-7) var(--space-6); background: var(--color-surface);
+  border: 1px solid var(--color-border-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow-2); }
+.homeplayhead { display: flex; flex-direction: column; gap: var(--space-5); }
+.homeplayhead h1 { margin: 0; color: var(--color-text); font-size: var(--text-26); font-weight: 700; letter-spacing: .02em; }
+.homeplaysub { margin: 0; color: var(--color-text-muted); font-size: var(--text-13); }
+.homerows { display: flex; flex-direction: column; gap: var(--space-6); flex: 1 1 auto; }
+.homerow { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+.homerowlabel { padding-top: var(--space-3); color: var(--color-text-muted); font-size: var(--text-13); font-weight: 600; }
+.homerowctl { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); min-width: 0; }
+.homerowhint { color: var(--color-text-muted); font-size: var(--text-12); line-height: 1.45; }
+.homefixed { display: inline-block; padding-top: var(--space-3); color: var(--color-text); font-size: var(--text-13); }
+
+/* the clock, as one segmented control and its line */
+.homepage .clockpick--seg { margin: 0; gap: var(--space-5); }
+.homepage .clockpick--seg .clockpickhint { margin: 0; font-size: var(--text-12); color: var(--color-text-muted); }
+/* "Pick now": the seven chips and the die */
+.homepage .homeels { gap: var(--space-3); }
+.homepage .homeels .elchip { padding: var(--space-2) var(--space-4); }
+/* Custom rules: what is set, and the sheet's button */
+.homerules { display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap; }
+.homerulessum b { color: var(--color-accent); font-weight: 600; }
+/* the deck row: the picker full width, the info line and My decks under it */
+.homepage .homerowctl .deckselect { width: 100%; max-width: 420px; }
+.homepage .homerowctl .deckmanage { padding: var(--space-2) var(--space-5); font-size: var(--text-12); }
+.homepage .homerowctl .deckinfo:empty { display: none; }
+.homesilly { margin-top: calc(-1 * var(--space-3)); padding-left: calc(104px + var(--space-6)); font-size: var(--text-12); color: var(--color-text-muted); }
+.homesilly .homesillybtn { color: var(--color-text-muted); }
+.homesilly .homesillybtn:hover { color: var(--color-accent); }
+.homeneedacct { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-5);
+  padding: var(--space-6); background: var(--color-surface-sunken); border-radius: var(--radius-lg); }
+.homeneedacct p { margin: 0; color: var(--color-text); }
+
+/* the foot of the card: your name (signed out), a refusal, Join and Create */
+.homeplayfoot { display: flex; flex-direction: column; gap: var(--space-5); padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border); }
+.homename { display: flex; align-items: center; gap: var(--space-5); color: var(--color-text-muted); font-size: var(--text-13); }
+.homename input { flex: 0 1 220px; min-width: 0; }
+.homeplayfoot .deckmsg { margin: 0; }
+.homeactions { display: flex; gap: var(--space-5); align-items: stretch; }
+.homepage .homejoin { flex: 0 0 auto; display: inline-flex; align-items: center; gap: var(--space-4);
+  padding: var(--space-5) var(--space-7); font-size: var(--text-14); }
+.homepage .homecreate { flex: 1 1 auto; min-width: 0; padding: var(--space-5) var(--space-7);
+  background: var(--color-accent); color: var(--color-text-on-accent); border-color: var(--color-accent);
+  font-size: var(--text-16); font-weight: 700; }
+.homepage .homecreate:hover { background: var(--color-accent); filter: brightness(1.08); }
+.homepage .homecreate:disabled { background: transparent; color: var(--color-text-muted); border-color: var(--color-border); filter: none; }
+
+/* the three cards beside Play: lighter, and each one is a button as a whole
+   (the stretched .homesideopen), with Matchmaking's Join buttons above it */
+.homesides { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }
+.homeside { position: relative; flex: 1 1 0; display: flex; flex-direction: column; gap: var(--space-4); min-height: 0;
+  padding: var(--space-6); background: var(--color-surface-sunken); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); overflow: hidden; transition: border-color var(--dur-fast) var(--ease-out); }
+.homeside--queue { flex: .8 1 0; }
+.homeside:has(> .homesideopen:hover) { border-color: var(--color-accent); background: var(--color-surface); }
+.homesidetitle { display: flex; align-items: center; gap: var(--space-4); margin: 0; color: var(--color-text); font-size: var(--text-16); }
+.homesidetitle > svg { width: 20px; height: 20px; flex: none; color: var(--color-accent); }
+.homesidetitle > svg:last-child:not(:first-child) { margin-left: auto; color: var(--color-text-muted); }
+.homeside.off .homesidetitle > svg { color: var(--color-text-muted); }
+.homesidebody { min-height: 0; overflow: hidden; color: var(--color-text-muted); font-size: var(--text-13); line-height: 1.45; }
+.homesidebody button, .homesidebody a { position: relative; z-index: 1; }
+.homesideempty { margin: 0; color: var(--color-text-muted); }
+.homesideopen { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; background: transparent;
+  border: 0; border-radius: inherit; cursor: pointer; }
+.homesideopen:hover { border: 0; }
+
+/* the bottom bar: the client's name (its info sheet) and the update log */
+.homepage .homebottom { min-height: 52px; padding-top: var(--space-1); padding-bottom: var(--space-1); }
+.homepage .homebottom .ui-icon-button { min-height: 40px; }
+
+/* ── the home's sheets ── */
+.homesheet .ui-sheet__body { display: flex; flex-direction: column; gap: var(--space-5); }
+.homesheetnote { margin: 0; color: var(--color-text-muted); font-size: var(--text-12); line-height: 1.5; }
+.homecodelabel { color: var(--color-text-muted); font-size: var(--text-12); font-weight: 600; }
+.homecode input { flex: 1; min-width: 0; font-size: var(--text-16); padding: var(--space-4); letter-spacing: .2em; font-weight: 700; text-align: center; }
+.homecode .ui-button { flex: 0 0 auto; padding: var(--space-4) var(--space-7); font-weight: 700; }
+.homejoinsec { display: flex; flex-direction: column; gap: var(--space-4); padding-top: var(--space-5); border-top: 1px solid var(--color-border); }
+.homejoinsec .zonelabel { margin: 0; }
+.homejoinsec .ccmine { margin: 0; padding: 0; background: none; border: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+.homejoinnone { margin: 0; padding-top: var(--space-5); border-top: 1px solid var(--color-border); color: var(--color-text-muted); }
+/* the Custom rules panel, drawn open with no fold of its own */
+.homepage .customrules--bare { margin: 0; padding: 0; border: 0; }
+/* the client info: legal.ts footHtml, which #legalfoot styles under its id */
+.homeinfosheet .lgfootwrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-7); }
+.homeinfosheet h3 { margin: 0 0 var(--space-4); color: var(--color-accent); font-size: var(--text-16); }
+.homeinfosheet p { margin: 0 0 var(--space-4); color: var(--color-text-muted); font-size: var(--text-12); line-height: 1.55; }
+.homeinfosheet .lgnotice { color: var(--color-text); font-weight: 700; }
+.homeinfosheet .lgpages { display: flex; gap: var(--space-4); flex-wrap: wrap; margin: var(--space-5) 0; }
+.homeinfosheet .lgdiscord { display: inline-block; padding: var(--space-2) var(--space-5); border: 1px solid var(--color-border);
+  border-radius: var(--control-radius); background: var(--color-surface-raised); color: var(--color-text); text-decoration: none; }
+.homeinfosheet .lgdiscord:hover { border-color: var(--color-accent); }
+/* the update log in its sheet: the list without the band's own frame */
+.homeupdsheet .updates { padding: 0; max-width: none; }
+.homeupdsheet .updates h2 { display: none; }
+
+/* narrower than a landscape iPad: Play on top, the three cards in a row under it */
+@media (max-width: 899.98px) {
+  .homemain { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .homesides { flex-direction: row; }
+  .homeside, .homeside--queue { flex: 1 1 0; }
+}
+/* a phone: stacked, the page scrolls (docs/24: not designed for, not broken) */
+@media (max-width: 759.98px), (max-height: 599.98px) {
+  .homepage .ui-app-shell__main { display: block; padding: var(--space-6); }
+  .homesides { flex-direction: column; }
+  .homeside, .homeside--queue { flex: none; }
+  .homerow { grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
+  .homesilly { padding-left: 0; }
+  .homeactions { flex-wrap: wrap; }
+  .homepage .ui-app-shell__bar { justify-content: center; }
+}
 
 /* ── recent updates (ui/updates.ts) ───────────────────────────────────
    Under the home menu, above the footer: #app's second child, so the menu

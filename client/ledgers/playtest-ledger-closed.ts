@@ -4048,11 +4048,11 @@ export const CLOSED: LedgerEntry[] = [
     report: "Owner, from the home page: \"The clock setting should be in the custom rules area, not taking up space up above\"",
     status: 'fixed',
     guards: [
-      "366-clock-in-options.test.ts::366 the clock chips sit inside the draft custom rules and the constructed options",
+      "366-clock-in-options.test.ts::366 the clock chips are the Play card Clock row, and Custom rules has none",
       "366-clock-in-options.test.ts::366 changing the clock does not make the game custom",
     ],
     note:
-      "The owner chose (2026-10-04): inside Custom rules on the Live draft card AND a small closed Options fold on the Constructed card, one shared setting; the top row is gone. The clock still never makes a game custom - it stays out of the rules object and the panel summary.",
+      "The owner chose (2026-10-04): inside Custom rules on the Live draft card AND a small closed Options fold on the Constructed card, one shared setting; the top row is gone. The clock still never makes a game custom - it stays out of the rules object and the panel summary. 2026-11-03 (new home, docs/24): the Play card's settings are rows, so the clock is the Clock row of the Draft and Constructed tabs, still one setting and still nothing above the card; Custom rules is a sheet without it.",
   },
   {
     id: 192, room: "KEMX", date: "2026-10-04",

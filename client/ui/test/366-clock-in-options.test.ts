@@ -1,15 +1,19 @@
-/* 366 — #191: THE CLOCK LIVES IN THE OPTIONS, NOT IN A ROW OF ITS OWN.
+/* 366 — #191: THE CLOCK IS A ROOM SETTING, NOT A ROW OF ITS OWN — AND NEVER A CUSTOM RULE.
  *
- * Owner: "The clock setting should be in the custom rules area, not taking up
- * space up above." His settled choice: the clock goes inside Custom rules on
- * the Live draft card AND into a matching small closed "Options" fold on the
- * Constructed card, both sharing the one `algoClockMs` setting, and the row
- * above the cards goes.
+ * Owner, #191: "The clock setting should be in the custom rules area, not
+ * taking up space up above." Until 2026-11-03 it sat inside Custom rules on the
+ * Live draft card and in a small closed "Options" fold on the Constructed card.
+ *
+ * New home layout, docs/24, 2026-11-03: the Play card's settings are rows
+ * (Clock, Elements, Custom rules… for a draft; Format, Clock, Deck for
+ * constructed), so the clock is the Clock ROW of whichever tab is showing and
+ * Custom rules is a sheet of its own without it (the decisions record,
+ * var/records/ds-round-2026-11-03-home-decisions.md). It still takes no space
+ * above the card, and both tabs still share the one `algoClockMs` setting.
  *
  * The hard constraint is the one a careless move breaks silently: a custom
  * rules game COUNTS TOWARD NOTHING, so the clock must not make a game custom.
- * It sits inside the panel as markup the home screen hands in; it never
- * reaches the rules object, `createPayload`, or the "— none set" summary.
+ * It never reaches the rules object, `createPayload`, or the rules summary.
  *
  * Driven, not read: the home screen is painted by the real ui/main.ts with no
  * room in the URL, and the chips are clicked through its real handler.
@@ -38,32 +42,35 @@ function block(html: string, open: RegExp, tag: string): string {
   }
   return html.slice(m.index);
 }
-const draftPanel = (h: string): string => block(h, /<details class="customrules"/, 'details');
-const consOptions = (h: string): string => block(h, /<details class="fixedtrio homeoptions"/, 'details');
-const homegrid = (h: string): string => block(h, /<div class="homegrid"/, 'div');
-const onChip = (h: string): string | null => /class="elchip on"\s+data-btn="clockpick" data-ms="([^"]+)"/.exec(h)?.[1] ?? null;
-const summary = (h: string): string => /<summary>([^]*?)<\/summary>/.exec(h)?.[1] ?? '';
+const playCard = (h: string): string => block(h, /<section class="homeplay"/, 'section');
+const clockRow = (h: string): string => block(h, /<div class="clockpick clockpick--seg"/, 'div');
+const onChip = (h: string): string | null =>
+  /class="ui-segmented__option on" data-btn="clockpick" type="button" data-value="([^"]+)"/.exec(h)?.[1] ?? null;
+const rulesRow = (h: string): string => /<span class="homerulessum">([^]*?)<\/span>\s*<button/.exec(h)?.[1] ?? '';
 
-test('366 the clock chips sit inside the draft custom rules and the constructed options, not above the cards', () => {
-  const html = ui.html();
-  assert.match(html, /class="homepage"/, 'positive control: the home screen really was painted');
-  const grid = homegrid(html);
-  assert.ok(grid, 'no homegrid on the home screen');
-  // every clock chip on the page is inside the card grid — none in a row above it
+test('366 the clock chips are the Play card Clock row, and Custom rules has none', () => {
+  let html = ui.html();
+  assert.match(html, /class="ui-app-shell homepage"/, 'positive control: the home screen really was painted');
+  const play = playCard(html);
+  assert.ok(play, 'no Play card on the home screen');
   const all = [...html.matchAll(/data-btn="clockpick"/g)].length;
-  const inGrid = [...grid.matchAll(/data-btn="clockpick"/g)].length;
-  assert.ok(all > 0, 'no clock picker on the home screen at all');
-  assert.equal(inGrid, all, 'a clock chip is drawn outside the cards — the row above them is back');
+  assert.equal(all, 4, 'Default, Off, 45m and 60m — once');
+  assert.equal([...play.matchAll(/data-btn="clockpick"/g)].length, all, 'a clock chip is drawn outside the Play card');
+  assert.match(clockRow(play), /data-clockpick="draft"/, 'the Draft tab draws the draft clock');
+  assert.match(play, /<div class="homerowlabel">Clock<\/div>/, 'under its own label');
 
-  const panel = draftPanel(html);
-  const opts = consOptions(html);
-  assert.match(panel, /data-clockpick="draft"/, 'the Live draft custom rules panel has no clock');
-  assert.match(opts, /data-clockpick="constructed"/, 'the Constructed card has no Options fold with the clock in it');
-  assert.equal(all, [...panel.matchAll(/data-btn="clockpick"/g)].length + [...opts.matchAll(/data-btn="clockpick"/g)].length,
-    'a clock chip is somewhere other than the two folds');
-  // both folds start closed — the owner said small and out of the way
-  assert.match(panel, /^<details class="customrules" data-customrules >/, 'Custom rules must start closed');
-  assert.match(opts, /^<details class="fixedtrio homeoptions" data-homeoptions >/, 'Options must start closed');
+  // the Custom rules sheet: the rules, and no clock
+  html = ui.click({ btn: 'home-sheet', sheet: 'rules' });
+  const sheet = block(html, /<div class="ui-sheet /, 'div');
+  assert.match(sheet, /data-customrules/, 'positive control: the Custom rules sheet opened');
+  assert.doesNotMatch(sheet, /data-btn="clockpick"/, 'the clock is back inside Custom rules');
+  ui.click({ btn: 'home-sheet-close' });
+
+  // the Constructed tab draws its own, and only its own
+  html = ui.click({ btn: 'home-mode', mode: 'constructed' });
+  assert.match(clockRow(playCard(html)), /data-clockpick="constructed"/);
+  assert.equal([...html.matchAll(/data-btn="clockpick"/g)].length, 4);
+  ui.click({ btn: 'home-mode', mode: 'draft' });
 });
 
 test('366 changing the clock does not make the game custom', () => {
@@ -75,37 +82,37 @@ test('366 changing the clock does not make the game custom', () => {
   assert.equal(crp.activeRules(), null);
   assert.equal(crp.verdict(null).rules, null);
   const html = ui.html();
-  const s = summary(draftPanel(html));
-  assert.match(s, /none set/, `the Custom rules summary reflects the clock: ${s}`);
-  assert.doesNotMatch(s, /clock|⏱|Off/i, `the Custom rules summary mentions the clock: ${s}`);
-  assert.match(html, /data-btn="newgame" data-mode="draft"[^>]*>\s*New live draft/,
-    'the Create button calls it a custom live draft');
+  const s = rulesRow(html);
+  assert.match(s, /None/, `the Custom rules row reflects the clock: ${s}`);
+  assert.doesNotMatch(s, /clock|⏱|Off/i, `the Custom rules row mentions the clock: ${s}`);
+  assert.match(html, /data-btn="newgame" type="button" data-mode="draft">Create room</,
+    'the Create button calls it a custom room');
   ui.click({ btn: 'clockpick', ms: 'auto' });
 });
 
-test('366 both pickers read and write the one clock setting', () => {
+test('366 both tabs read and write the one clock setting', () => {
   ui.click({ btn: 'clockpick', ms: 'auto' });
   assert.equal(localStorage.getItem('algoClockMs'), null, 'Default removes the key');
   let html = ui.html();
-  assert.equal(onChip(draftPanel(html)), 'auto');
-  assert.equal(onChip(consOptions(html)), 'auto');
+  assert.equal(onChip(clockRow(html)), 'auto');
+  assert.match(clockRow(html), /60m each/, 'Default on a draft is 60 minutes');
 
-  // picked from the DRAFT panel, shown in the constructed fold too
+  // picked on the DRAFT tab, shown on the Constructed tab too
   const sixty = String(60 * 60_000);
   ui.click({ btn: 'clockpick', ms: sixty, clockfor: 'draft' });
-  html = ui.html();
   assert.equal(localStorage.getItem('algoClockMs'), sixty);
-  assert.equal(onChip(draftPanel(html)), sixty);
-  assert.equal(onChip(consOptions(html)), sixty, 'the constructed fold shows a different clock from the draft panel');
-  assert.match(summary(consOptions(html)), /clock 60m/, 'the closed Options fold does not say which clock is set');
+  assert.equal(onChip(clockRow(ui.html())), sixty);
+  html = ui.click({ btn: 'home-mode', mode: 'constructed' });
+  assert.equal(onChip(clockRow(html)), sixty, 'the Constructed tab shows a different clock from the Draft tab');
 
-  // picked from the CONSTRUCTED fold, shown in the draft panel too
+  // picked on the CONSTRUCTED tab, shown on the Draft tab too
   ui.click({ btn: 'clockpick', ms: '0', clockfor: 'constructed' });
-  html = ui.html();
-  assert.equal(onChip(draftPanel(html)), '0');
-  assert.equal(onChip(consOptions(html)), '0');
-  assert.match(summary(consOptions(html)), /clock off/);
+  assert.match(clockRow(ui.html()), /no clock — nobody can lose on time/);
+  html = ui.click({ btn: 'home-mode', mode: 'draft' });
+  assert.equal(onChip(clockRow(html)), '0');
+  ui.click({ btn: 'home-mode', mode: 'constructed' });
   ui.click({ btn: 'clockpick', ms: 'auto', clockfor: 'constructed' });
-  assert.equal(localStorage.getItem('algoClockMs'), null, 'Default from the constructed fold removes the key too');
-  assert.match(summary(consOptions(ui.html())), /clock 45m/, 'Default on the constructed card is 45 minutes');
+  assert.equal(localStorage.getItem('algoClockMs'), null, 'Default from the Constructed tab removes the key too');
+  assert.match(clockRow(ui.html()), /45m each/, 'Default on the Constructed tab is 45 minutes');
+  ui.click({ btn: 'home-mode', mode: 'draft' });
 });
