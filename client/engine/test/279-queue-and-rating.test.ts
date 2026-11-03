@@ -10,7 +10,7 @@
  * §2 who may queue, and why not — the constructed gate is the same gate the
  *    home screen already applies, and the signed-out refusal is a sentence
  * §3 ⭐ THE CLOCK-DEFAULT LOCK. `MATCH_CLOCK_MS` (server/rooms.ts) and
- *    `CLOCK_DEFAULT_BY_MODE` (ui/main.ts) are the same table written twice,
+ *    `CLOCK_DEFAULT_BY_MODE` (ui/pages/clockpick.ts) are the same table written twice,
  *    because the browser bundle cannot import from server/. Two copies of a
  *    number is exactly the thing this repo has already been bitten by, and
  *    the failure here is silent and asymmetric: change the UI's copy and a
@@ -30,6 +30,10 @@ import {
 } from '../../ui/queue.ts';
 
 const MAIN = readFileSync(new URL('../../ui/main.ts', import.meta.url), 'utf8');
+// the home screen and the clock picker left main.ts for ui/pages/ in the
+// design-system round (2026-11-03); the router (renderHome's screen chain) stayed
+const HOME = readFileSync(new URL('../../ui/pages/home.ts', import.meta.url), 'utf8');
+const CLOCK = readFileSync(new URL('../../ui/pages/clockpick.ts', import.meta.url), 'utf8');
 const POSTGAME = readFileSync(new URL('../../ui/postgame.ts', import.meta.url), 'utf8');
 
 /* ══ §1 — how the queue reads ══════════════════════════════════════════ */
@@ -143,8 +147,8 @@ test('BL-01 §3 the matchmade clock matches the UI\'s per-format defaults', () =
    * client would go on displaying 45m while the server dealt something else,
    * and nothing in either suite would notice.
    */
-  const table = /const CLOCK_DEFAULT_BY_MODE: Record<string, number> = \{([^}]*)\}/.exec(MAIN);
-  assert.ok(table, 'CLOCK_DEFAULT_BY_MODE has moved or been renamed in ui/main.ts — this lock '
+  const table = /const CLOCK_DEFAULT_BY_MODE: Record<string, number> = \{([^}]*)\}/.exec(CLOCK);
+  assert.ok(table, 'CLOCK_DEFAULT_BY_MODE has moved or been renamed in ui/pages/clockpick.ts — this lock '
     + 'is now checking nothing, which is worse than not having it');
 
   const read = (mode: string): number => {
@@ -170,10 +174,10 @@ test('BL-01 §3 the matchmade clock matches the UI\'s per-format defaults', () =
 /* ══ §4 — the queue actually reaches the player ════════════════════════ */
 
 test('BL-01 §4 the home screen shows the queue, and the post-game button is alive', () => {
-  assert.match(MAIN, /mm\.stripHtml\(/,
+  assert.match(HOME, /mm\.stripHtml\(/,
     'the home screen no longer paints the queue strip — the at-a-glance count is the half of '
     + 'this feature a visitor sees without clicking anything');
-  assert.match(MAIN, /mm\.startCountsPoll\(\)/,
+  assert.match(HOME, /mm\.startCountsPoll\(\)/,
     'nothing refreshes the count, so it is whatever it was when the page loaded');
   assert.match(MAIN, /if \(mm\.screen\(\)\)/,
     'the queue screen is not in renderHome\'s screen chain, so it can never be shown');

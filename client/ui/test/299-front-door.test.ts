@@ -34,6 +34,8 @@ const read = (...p: string[]): string => readFileSync(join(...p), 'utf8');
 const INDEX = read(UI_DIR, 'index.html');
 const SERVER = read(UI_DIR, '..', 'server', 'main.ts');
 const MAIN = read(UI_DIR, 'main.ts');
+// the home screen's markup is pages/home.ts since the design-system round (2026-11-03)
+const HOME = read(UI_DIR, 'pages', 'home.ts');
 const esc = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** the extensions server/main.ts's MIME table types — anything else is a 404 */
@@ -112,8 +114,8 @@ test('§5 the Discord invite is the one his site links, and the footer carries i
 });
 
 test('§6 the help box is reachable off the board, from a layer that is not a board overlay', () => {
-  const home = MAIN.match(/function renderHome\(\): void \{[^]*?\n\}\n/)?.[0] ?? '';
-  assert.ok(home.length > 1000, 'could not find renderHome');
+  const home = HOME.match(/export function homeHtml\(v: HomeView\): string \{[^]*?\n\}\n/)?.[0] ?? '';
+  assert.ok(home.length > 1000, 'could not find homeHtml');
   assert.match(home, /data-help="rules"/, 'the home screen has no "How to play" button');
   assert.match(MAIN, /\ninstallHelpLayer\(\);/, 'main.ts never installs the help layer');
   const layer = read(UI_DIR, 'helplayer.ts');

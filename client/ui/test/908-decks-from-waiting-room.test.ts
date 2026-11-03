@@ -1,6 +1,6 @@
 /* The deck page opened from a constructed waiting room can be closed.
  *
- * The waiting room's deck picker offers "My decks →" (main.ts deckPickerHtml),
+ * The waiting room's deck picker offers "My decks →" (pages/deckpicker.ts deckPickerHtml),
  * which opens the full deck page in place. Its only exit, "Return to Lobby"
  * (decks.ts `deck-close`), closes the module and calls the rerender main.ts
  * gave it — and that rerender was `if (!inGame) renderHome()`, a no-op in any
@@ -14,9 +14,13 @@ import { readFileSync } from 'node:fs';
 
 const main = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
 const decks = readFileSync(new URL('../decks.ts', import.meta.url), 'utf8');
+// the picker left main.ts for pages/ in the design-system round (2026-11-03)
+const picker = readFileSync(new URL('../pages/deckpicker.ts', import.meta.url), 'utf8');
+const waiting = readFileSync(new URL('../pages/waiting.ts', import.meta.url), 'utf8');
 
 test('positive control: the waiting room offers the deck page, and its close calls the host rerender', () => {
-  assert.match(main, /<button class="deckmanage" data-btn="deck-openpage">My decks →<\/button>/);
+  assert.match(picker, /<button class="deckmanage" data-btn="deck-openpage">My decks →<\/button>/);
+  assert.match(waiting, /\$\{deckPickerHtml\(v\.deckPicker\)\}/, 'the constructed waiting room draws the picker');
   const close = decks.slice(decks.indexOf("case 'deck-close':"), decks.indexOf('return true;', decks.indexOf("case 'deck-close':")));
   assert.match(close, /rerenderHost\(\)/);
   assert.match(main, /if \(NET\?\.waiting\) \{ hideHoverTip\(\); renderWaiting\(\); return false; \}/, 'renderNow paints the room');
