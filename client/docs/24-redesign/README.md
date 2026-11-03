@@ -1,6 +1,14 @@
 # 24: The redesign brief (owner, 2026-11-03)
 
-> **STATUS: parked until the design-system round (docs/23) and Competitive Constructed have landed on master.**
+> **STATUS: the HOME SCREEN is BUILT** (2026-11-03 evening, branch `ds-int`), un-parked by the owner so it is
+> playtested with Competitive Constructed and lands with it. The other pages are not redesigned yet.
+> Every decision taken for the owner to veto: `var/records/ds-round-2026-11-03-home-decisions.md` plus
+> "Decisions I made" in `var/records/ds-round-2026-11-03-home-page.md` (both summarised on the review page,
+> https://claude.ai/artifact/F2yspLwyjmMdMBg9HdKS1u). Not built: the draft card-pool setting (it needs a server
+> change: the lobby draws from all seven elements) and the sketch's 20m/40m clock chips (Off/45m/60m are the
+> owner's settled presets, test 271).
+>
+> Earlier: parked until the design-system round (docs/23) and Competitive Constructed had landed on master.
 > Owner, 2026-11-03: "save it to do once everything actually lands". This is the first brief for the
 > redesign proper, the step after docs/23's Phase 5: change the look on top of the system.
 
