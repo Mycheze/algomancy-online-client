@@ -196,6 +196,7 @@ land_approved() {
   local ref item glog rc
   for ref in $(g for-each-ref --format='%(refname:short)' refs/remotes/origin/steward-approved/); do
     item="${ref#origin/steward-approved/}"
+    governor_on || return 0
     log "landing approved $item"
     clean_tree "$ref"
     if ! g rebase -q origin/master >/dev/null 2>&1; then
@@ -223,6 +224,7 @@ land_approved() {
 # ── 2. the night's item ──────────────────────────────────────────────────
 work_one() {
   clean_tree origin/master
+  governor_on || return 0
   deps
   npm --prefix "$REPO/client/ui" run build >/dev/null 2>&1
 
@@ -326,6 +328,18 @@ EOF
     sha="$(g rev-parse --short HEAD)" run="$rlog" minutes="$(( ( $(date +%s) - START ) / 60 ))"
   notify "$item → $final: $title${branch:+ (branch $branch)}"
   clean_tree
+}
+
+# heavy work (deps, the gate, claude) only under the thermal governor
+governor_on() {
+  [ -n "${GOV_PID:-}" ] && return 0
+  if ! STEWARD_ROOT="$ROOT" "$REPO/steward/thermal.sh" check 2>>"$LOGS/runner.log"; then
+    log "thermal cap not installed — refusing heavy work (the box must stay silent)"; return 1
+  fi
+  STEWARD_ROOT="$ROOT" "$REPO/steward/thermal.sh" run & GOV_PID=$!
+  cp "$REPO/steward/thermal.sh" "$BIN/thermal.sh"
+  trap 'kill $GOV_PID 2>/dev/null; "$BIN/thermal.sh" floor' EXIT
+  sleep 1
 }
 
 main() {

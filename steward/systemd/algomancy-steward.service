@@ -11,10 +11,11 @@ ExecStartPre=/bin/cp %h/algomancy-steward/repo/steward/run-once.sh %h/algomancy-
 ExecStart=/bin/bash %h/algomancy-steward/bin/run-once.sh
 Environment=PATH=%h/.local/bin:%h/.local/node/bin:/usr/local/bin:/usr/bin:/bin
 # SILENCE: the owner's one hard requirement for this box is that the fans never
-# spin up. Two of twelve cores, lowest priority, idle I/O. This box delegates no
+# spin up. ONE physical core (cpu5 + its hyperthread 11; the box is an i7-10750H
+# laptop, 6c/12t), lowest priority, idle I/O. This box delegates no
 # cpu controller to user units, so a CPUQuota= would be ignored; affinity is
 # applied by the service manager itself and needs no cgroup.
-CPUAffinity=10 11
+CPUAffinity=5 11
 Nice=19
 IOSchedulingClass=idle
 MemoryMax=8G

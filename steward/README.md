@@ -28,7 +28,8 @@ review is a few minutes of `steward/review.sh`.
 | `review.sh` | **the owner's end**, on the laptop |
 | `vps-fetch.sh` | the agent's one read-only window onto the live server (game files) |
 | `claude-settings.json` | the agent's permissions: no push, fetch, ssh, sudo, full gate |
-| `systemd/` | the user units |
+| `thermal.sh` | the governor that keeps the box silent (see Install §4) |
+| `systemd/` | the user units, and the one root unit (the CPU cap) |
 
 ### What ships without the owner (the owner's rule, 2026-11-03)
 
@@ -94,7 +95,16 @@ Done on 2026-11-03; kept here so it can be redone.
    STEWARD_TZ=Europe/Prague
    STEWARD_WEBHOOK=           # optional: a Discord webhook URL for one line per event
    ```
-4. Units:
+4. **The one root step — the thermal cap.** The box is an i7-10750H laptop;
+   one pinned core at turbo went 46 → 89 °C in 15 s on 2026-11-03. Pinning
+   limits how much runs, not how hot a core gets, so `thermal.sh` holds the
+   package under 55 °C by moving cpu5/cpu11's frequency ceiling, and the runner
+   refuses heavy work if it cannot:
+   ```bash
+   sudo cp ~/algomancy-steward/repo/steward/systemd/algomancy-steward-cpucap.service /etc/systemd/system/
+   sudo systemctl daemon-reload && sudo systemctl enable --now algomancy-steward-cpucap
+   ```
+5. Units:
    ```bash
    mkdir -p ~/.config/systemd/user ~/algomancy-steward/bin
    cp ~/algomancy-steward/repo/steward/systemd/* ~/.config/systemd/user/
@@ -108,8 +118,8 @@ Done on 2026-11-03; kept here so it can be redone.
   that may exist.** They are pending review, not unlanded rounds. A landed or
   rejected one is archived at `refs/archive/steward/<item>` and deleted.
 - **The agent never runs the full gate**; the runner does, once per item, on
-  two pinned cores (~30–40 min). The box must stay silent — that is the
-  owner's one hard requirement for it.
+  one pinned, frequency-governed core. The box must stay silent — that is the
+  owner's one hard requirement for it — so the gate is slow there, and that is fine.
 - **The guard rails are rails, not a sandbox.** The agent runs as `bena` with
   the box's keys on disk. What stops it pushing is a refusing
   `GIT_SSH_COMMAND` and denied commands, plus the fact that the runner, not

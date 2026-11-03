@@ -1,0 +1,18 @@
+# ROOT unit, installed once on the home box (the only root step the steward needs):
+#   sudo cp ~/algomancy-steward/repo/steward/systemd/algomancy-steward-cpucap.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now algomancy-steward-cpucap
+# At boot it caps the steward's two CPUs (cpu5 + its hyperthread cpu11) low and
+# hands exactly those two scaling_max_freq files to bena, so steward/thermal.sh
+# can hold the package temperature under its target without sudo. Nothing else
+# on the box changes. Undo: disable it and reboot (or write the max back).
+[Unit]
+Description=Algomancy steward: low CPU cap on cpu5/cpu11, writable by bena (keeps the box silent)
+After=sysinit.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'for c in 5 11; do f=/sys/devices/system/cpu/cpu$$c/cpufreq; echo 800000 > $$f/scaling_max_freq; echo power > $$f/energy_performance_preference 2>/dev/null; chown bena:bena $$f/scaling_max_freq; done'
+
+[Install]
+WantedBy=multi-user.target
