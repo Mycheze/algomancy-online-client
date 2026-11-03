@@ -82,7 +82,7 @@ test('§4 the match ends between games: the result and the way home', () => {
     t: 'joined', room: 'NEXT', seat: SEAT, peers: [true, true], names: ['Ann', 'Bo'], waiting: { have: [true, true], match: {
       id: 'M838', bestOf: 3, game: 2, score: [0, 1], names: ['Ann', 'Bo'], banks: [1, 1], clockStart: 2700_000,
       phase: 'between', chooser: 0, initiative: null, until: null, locked: false, ready: [false, false],
-      mine: { registered: { main: [], side: [] }, current: { main: [], side: [] }, presets: [] },
+      mine: { registered: { main: [], side: [] }, current: { main: [], side: [] } },
     } },
   });
   const html = ui.push({ t: 'match', room: null, match: { ...MOVED, phase: 'over', result: { winner: 1, how: 'conceded', at: 1, concededBy: 0 } } });

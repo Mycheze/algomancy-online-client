@@ -2,8 +2,8 @@
  *
  *   §1 it opens only when BOTH seats are in the room, and runs 120 s
  *   §2 a configuration is checked with checkSwap: an illegal one is refused and
- *      the last legal one stands; a preset applies absolutely; a changed deck
- *      un-readies its seat
+ *      the last legal one stands; a changed deck un-readies its seat; the
+ *      saved-swap op is gone (owner, 2026-11-03) and is refused
  *   §3 at 120 s it LOCKS: the last legal configurations are what is dealt —
  *      but with no initiative choice made, nothing is dealt: the loser is left
  *      with the choice alone, untimed, and nothing chooses for them however
@@ -39,16 +39,18 @@ test('§1 the window opens when both seats are in, and runs 120 s', () => {
 });
 
 test('§2-§4 an illegal configuration falls back to the last legal one at the lock; the loser alone chooses, untimed', () => {
-  const preset = { id: 'p1', name: 'side in', out: REG[1].main.slice(0, 2), in: REG[1].side.slice(0, 2) };
-  const { m, room } = between([REG[0], { ...REG[1], presets: [preset] }]);
+  const { m, room } = between();
   F.seatUp(room, 0, 1);
   const t0 = Date.now();
   M.sweepMatches(t0);
-  // seat 1 (the loser) uses its preset — legal
-  assert.deepEqual(M.matchOp(room, 1, 'preset', { preset: 'p1' }), { ok: true });
+  // there are no saved swaps to apply any more
+  assert.equal(M.matchOp(room, 1, 'preset', { preset: 'registered' }).ok, false, 'the preset op is gone');
+  // seat 1 (the loser) swaps two in, two out — legal
+  const twoForTwo = { main: [...REG[1].main.slice(2), ...REG[1].side.slice(0, 2)], side: [...REG[1].side.slice(2), ...REG[1].main.slice(0, 2)] };
+  assert.deepEqual(M.matchOp(room, 1, 'config', twoForTwo), { ok: true });
   const legal = m.current[1]!;
   assert.equal(legal.main.length, 30, 'two out, two in');
-  assert.ok(legal.side.includes(REG[1].main[0]!), 'the preset moved the cards out');
+  assert.ok(legal.side.includes(REG[1].main[0]!), 'the cards went out');
   // then an illegal one: 29 cards in main
   const short = { main: legal.main.slice(1), side: [...legal.side, legal.main[0]!] as CardName[] };
   const refused = M.matchOp(room, 1, 'config', short);

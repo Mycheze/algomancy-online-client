@@ -8,6 +8,19 @@ then they switch. A chess clock of 45 minutes per player **per match**, plus 120
 "Concede game", not "Concede match", and it must work. A match may be paused between games by
 mutual agreement and resumed later exactly where it stood.*
 
+> **2026-11-03 — saved swap presets were TAKEN OUT** (owner, after the first playtest: *"Let's
+> actually entirely remove the 'Swaps' thing for now. That can come later, but the UX is terrible
+> for it and we should plan it better. Rip it out for now."*). Everything below about presets —
+> `SwapPreset`, `applyPreset`, the deck's `swaps` field, the Swaps section of the sideboard tab,
+> the between screen's presets row and `{t:'cc', op:'preset'}` — describes what was built on
+> 11-02 and removed on 11-03; it is kept as the record for when presets are planned again.
+> What stays is the sideboard itself and sideboarding **by hand** between games (§5.4), with one
+> "Back to the registered deck" button (§8 Q3). A deck or a match file saved with `swaps` /
+> `presets` still loads; the field is ignored, and a deck drops it at its next save. The same
+> day the Sideboard became the deck page's **second** tab, with a link to it under the main
+> list ("Sideboard · n cards →" / "Add a sideboard →"), and the Sideboard tab gained its own
+> add-cards drawer.
+
 This is the design. **Nothing is built yet.** §0 is settled and is not reopened here. §8 holds
 the questions that are still the owner's. Every claim about today's code cites `file:line`
 (paths under `client/` unless they start `data/`), as of master `ba32fcf4`.
@@ -607,7 +620,7 @@ and **never its swaps**: presets are a player's own plans. The privacy page line
   - Every drop is a click route (docs/19 § "The tabletop deck builder"). The binder's + gains
     "to sideboard".
 
-### 4.6 Swap presets
+### 4.6 Swap presets — REMOVED 2026-11-03 (see the note at the top; kept as the record)
 
 ```ts
 interface SwapPreset { id: string; name: string;     // ≤ 40 chars, ≤ 12 presets per deck
@@ -720,7 +733,8 @@ waiting room's branch in `ui/main.ts`. The match-specific DOM stays in `match.ts
   - At the lock, an illegal configuration falls back to the **last legal one**. A player never
     starts a game with an illegal deck, and never loses one to a slow tap.
 - **Presets row:** "Registered deck", then one button per preset (disabled with its reason when
-  invalid, §4.6).
+  invalid, §4.6). *Removed 2026-11-03: only "Back to the registered deck" is left, sent as an
+  ordinary `config`.*
 - **Ready / Not ready.** The opponent shows only as a ready dot.
 - **Footer:** "Offer pause" (or "Accept pause?" for the other seat) and "Concede match".
 
@@ -790,7 +804,7 @@ accepted between-games op pushes both seats a fresh `update` whose `waiting.matc
 | `{t:'join', room, deckId \| (deck, side), pick: true, token}` | game 1, second seat | registers; the second registration deals game 1 (initiative rolled). Re-sending before the deal re-registers. **Only a `pick` join registers** (the waiting room's Play this deck): any other join carries the browser's casual deck and registers nothing (CT-518). |
 | `{t:'join', room, token}` | games 2–3 | a deck riding on it is ignored (`takesJoinDeck` is false in a match room). The window opens once both seats are in. |
 | `{t:'cc', op:'config', main, side}` | between | `checkSwap` against the registration; an illegal one is refused and the last legal one stands. Un-readies the seat. |
-| `{t:'cc', op:'preset', preset}` | between | `preset` = a preset id from `mine.presets`, or `'registered'`; `applyPreset`, then as `config`. |
+| ~~`{t:'cc', op:'preset', preset}`~~ | between | *Removed 2026-11-03 — refused as an unknown request.* Was: `preset` = a preset id from `mine.presets`, or `'registered'`; `applyPreset`, then as `config`. |
 | `{t:'cc', op:'ready', ready:true\|false, initiative?: 0\|1}` | between | the chooser's Ready **must** carry `initiative` (an absolute seat: their own = "I take it"); the other seat's carries none. Both Ready → dealt at once. After the lock (`locked: true`) only the chooser's `ready` with `initiative` is accepted, and it deals. |
 | `{t:'cc', op:'pause'}` | between, not locked | first = an offer (`pause.offeredBy`); the other seat's = agreement → `phase:'paused'`. |
 | `{t:'cc', op:'unpause'}` | an offer stands | withdraw or decline it. |

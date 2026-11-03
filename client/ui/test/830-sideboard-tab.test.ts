@@ -1,16 +1,17 @@
 /* THE SIDEBOARD TAB AND THE COMPETITIVE CHIP (docs/22 §4.5) — ui/decks.ts,
  * driven through the real client.
  *
- *   §1 the deck page has a sideboard tab between the maybeboard and the
- *      games, counting n/7, and a Competitive chip beside the legality line
+ *   §1 the deck page has a sideboard tab, second (owner, 2026-11-03; test
+ *      1051), counting n/7, and a Competitive chip beside the legality line
  *   §2 the tab draws the sideboard as tiles: − and « on every one, + only
  *      under the copy cap counted across BOTH boards
  *   §3 a copy moves to the sideboard and back; an eighth card turns the
  *      chip red with its reason and the count red
  *   §4 the cap across both boards refuses a move that would break it, with
  *      the reason; a move between the boards never is
- *   §5 the save carries the sideboard, and not the swaps nobody edited
- *   §6 the export file carries the sideboard and the swaps
+ *   §5 the save carries the sideboard — and never `swaps`, even from a reply
+ *      that still has them (saved swaps were taken out on 2026-11-03)
+ *   §6 the export file carries the sideboard, and no swaps
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -21,6 +22,7 @@ const MAIN = N.slice(0, 16).flatMap(n => [n, n]);            // 32 cards
 const SIDE = N.slice(16, 23);                                // 7 singles
 const DECK = {
   id: 'd830', name: 'Side deck', cards: MAIN, maybe: [], sideboard: SIDE,
+  // a deck saved while swaps existed — an older reply may still carry them
   swaps: [{ id: 'w1', name: 'vs control', out: [N[0]], in: [N[16]] }],
   cover: null, author: 'you', createdAt: '2026-11-02T00:00:00Z', updatedAt: '2026-11-02T00:00:00Z',
   problems: [], ccProblems: [],
@@ -44,7 +46,7 @@ ui.click({ btn: 'deck-openpage' });
 await flush();
 
 /** the tab buttons' data-tab values, in order */
-const tabs = (html: string): string[] => [...html.matchAll(/data-btn="deck-tab" data-tab="(\w+)"/g)].map(m => m[1]!);
+const tabs = (html: string): string[] => [...html.matchAll(/class="accttab[^"]*" data-btn="deck-tab" data-tab="(\w+)"/g)].map(m => m[1]!);
 /** the tile for `name` in the grid on screen, as markup */
 const tileOf = (html: string, name: string): string => {
   const at = html.indexOf(`data-btn="deck-focus" data-card="${name}"`);
@@ -53,9 +55,9 @@ const tileOf = (html: string, name: string): string => {
 };
 const chip = (html: string): string => /<span class="deckstatus (?:ok|bad) deckcc"[^>]*>[^<]*<\/span>/.exec(html)?.[0] ?? '';
 
-test('§1 a sideboard tab between maybeboard and games, and a Competitive chip', () => {
+test('§1 a sideboard tab, second, and a Competitive chip', () => {
   const html = ui.html();
-  assert.deepEqual(tabs(html), ['cards', 'mana', 'maybe', 'side', 'games']);
+  assert.deepEqual(tabs(html), ['cards', 'side', 'mana', 'maybe', 'games']);
   assert.match(html, /data-tab="side">sideboard <span class="acctcount">7\/7<\/span>/, 'counting n/7');
   assert.match(chip(html), /class="deckstatus ok deckcc">Competitive ✓/, 'a 32 + 7 deck is Competitive legal');
 });
@@ -113,15 +115,15 @@ test('§4 the cap across both boards refuses, with the reason; a move between th
   ui.click({ btn: 'deck-side-less', card: SIDE[1]! });
 });
 
-test('§5 the save carries the sideboard, and leaves the swaps alone', () => {
+test('§5 the save carries the sideboard, and never swaps', () => {
   ui.tick();
   const last = POSTS.filter(p => p.url === '/api/decks/update').at(-1);
   assert.ok(last, 'an edit was saved');
   assert.deepEqual([...(last!.body['sideboard'] as string[])].sort(), [...SIDE].sort(), 'the sideboard as it stands');
-  assert.ok(!('swaps' in last!.body), 'swaps nobody edited are not re-sent (a stale one stays as it was)');
+  assert.ok(!('swaps' in last!.body), 'saved swaps are gone: never sent');
 });
 
-test('§6 the export file carries the sideboard and the swaps', () => {
+test('§6 the export file carries the sideboard, and no swaps', () => {
   ui.click({ btn: 'deck-settings' });
   const html = ui.click({ btn: 'deck-export', format: 'file' });
   const text = /<textarea class="dkexporttext"[^>]*>([\s\S]*?)<\/textarea>/.exec(html)![1]!
@@ -129,6 +131,7 @@ test('§6 the export file carries the sideboard and the swaps', () => {
   const file = JSON.parse(text) as { version: number; sideboard?: { name: string }[]; swaps?: { name: string }[] };
   assert.equal(file.version, 2);
   assert.deepEqual(file.sideboard?.map(e => e.name).sort(), [...SIDE].sort());
-  assert.deepEqual(file.swaps?.map(s => s.name), ['vs control']);
-  assert.match(html, /sideboard, swaps/, 'and says so');
+  assert.ok(!('swaps' in file), 'no swaps in the file');
+  assert.match(html, /cover, sideboard, maybeboard/, 'and the hint does not promise them');
+  assert.doesNotMatch(html, /deck-swap|deck-try|Save as a swap/, 'nor anywhere on the page');
 });

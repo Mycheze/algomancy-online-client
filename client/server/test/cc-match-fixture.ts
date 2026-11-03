@@ -27,8 +27,8 @@ export async function ccFixture(tag: string) {
   const twice = (names: CardName[]): CardName[] => names.flatMap(n => [n, n]);
   /** seat s's registration: a 30-card main (15 × 2) and a 3-card side */
   const REG: [Registered, Registered] = [
-    { main: twice(pool.slice(0, 15)), side: pool.slice(30, 33), deckId: null, presets: [] },
-    { main: twice(pool.slice(15, 30)), side: pool.slice(33, 36), deckId: null, presets: [] },
+    { main: twice(pool.slice(0, 15)), side: pool.slice(30, 33), deckId: null },
+    { main: twice(pool.slice(15, 30)), side: pool.slice(33, 36), deckId: null },
   ];
   let n = 0;
   const codes: string[] = [];

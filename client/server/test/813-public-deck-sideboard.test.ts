@@ -1,12 +1,12 @@
-/* A SHARED DECK SHOWS ITS SIDEBOARD AND NEVER ITS SWAPS (docs/22 §4.3).
+/* A SHARED DECK SHOWS ITS SIDEBOARD (docs/22 §4.3).
  *
  * The sideboard is part of the list, so the share link, the profile shelf and
- * the meta page show it. The swap presets are the owner's own plans for a
- * match: they are in no public view, under any name, and a copy taken of
- * somebody else's deck has none — while a copy of your own keeps them (812).
+ * the meta page show it. Saved swap presets were taken out on 2026-11-03; a
+ * deck stored with them before that still carries the field until its next
+ * save, and it must reach no public view, under any name (812 has the rest).
  *
  *  §1 sharedDeck, publicDecksOf and metaList carry the sideboard
- *  §2 none of them carries the swaps — not the field, not a preset name
+ *  §2 none of them carries an old deck's swaps — not the field, not a name
  *  §3 take (duplicateDeck with the shared source) copies the side, not the swaps
  */
 import { test } from 'node:test';
@@ -38,7 +38,9 @@ const SECRET = 'my secret plan vs Bena';
 const made = createDeck(owner, { name: 'shared one', cards: MAIN, sideboard: SIDE });
 if (!made.ok) throw new Error(made.error);
 const ID = made.deck.id;
-updateDeck(owner, ID, { visibility: 'public', swaps: [{ id: 'p1', name: SECRET, out: [MAIN[0]], in: [SIDE[0]] }] });
+updateDeck(owner, ID, { visibility: 'public' });
+// stored as a 2026-11-02 build left it
+(made.deck as unknown as Record<string, unknown>)['swaps'] = [{ id: 'p1', name: SECRET, out: [MAIN[0]], in: [SIDE[0]] }];
 
 const views = () => [
   ['sharedDeck', sharedDeck(ID)],

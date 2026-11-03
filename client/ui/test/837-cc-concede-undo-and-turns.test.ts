@@ -63,7 +63,7 @@ test('§2 the between screen: Concede match asks, then sends', () => {
     t: 'joined', room: 'UIDRIVER', seat: 0, peers: [true, true], names: ['Ann', 'Bob'], waiting: { have: [true, true], match: {
       id: 'M837', bestOf: 3, game: 2, score: [0, 1], names: ['Ann', 'Bob'], banks: [1, 1], clockStart: 2700_000,
       phase: 'between', chooser: 0, initiative: null, until: Date.now() + 60_000, locked: false, ready: [false, false],
-      mine: { registered: { main: MAIN, side: SIDE }, current: { main: MAIN, side: SIDE }, presets: [] },
+      mine: { registered: { main: MAIN, side: SIDE }, current: { main: MAIN, side: SIDE } },
     } },
   });
   ui.sent();

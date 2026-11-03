@@ -64,22 +64,8 @@
 .deckstatus.bad { color: var(--accent); background: var(--color-accent-wash); }
 .deckcc { align-self: flex-start; }
 .acctcount.bad { color: var(--danger); font-weight: 700; }
-/* the swaps editor on the sideboard tab (docs/22 §4.6) */
-.dkswaptry { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: var(--space-5); margin: var(--space-4) 0; }
-@media (max-width: 700px) { .dkswaptry { grid-template-columns: 1fr; } }
-.dkswapcol { display: flex; flex-wrap: wrap; gap: var(--space-2); align-content: flex-start; }
-.dkswapcol > .zonelabel { flex-basis: 100%; margin-top: 0; }
-.dkswapchip { padding: var(--space-1) var(--space-4); font-size: var(--text-12); text-transform: none; }
-.dkswapchip.moved { border-color: var(--accent); color: var(--accent); }
-.dkswaprow { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-4); align-items: center; padding: var(--space-4) 0;
-  border-top: 1px solid var(--line); }
-.dkswapname { width: 14em; padding: var(--space-2) var(--space-4); font: inherit; }
-.dkswapname:focus { border-color: var(--accent); outline: none; }
-.dkswapside { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
-.dkswapside > .zonelabel { margin: 0 var(--space-1) 0 0; }
-.dkswapbtns { display: flex; gap: var(--space-3); margin-left: auto; }
-.dkswaprow.stale .dkswapside { opacity: .55; }
-.dkswapwhy { flex-basis: 100%; font-size: var(--text-12); color: var(--accent); }
+/* under the main list: the way to the sideboard tab (owner, 2026-11-03) */
+.dksidelink { margin-top: var(--space-4); }
 .deckrecline { font-size: var(--text-12); }
 .deckrecline a { color: var(--accent); margin-left: var(--space-3); }
 .deckbtns { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-1); }

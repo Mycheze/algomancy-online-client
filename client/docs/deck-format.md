@@ -35,7 +35,7 @@ this, and it is exactly what the paste box accepts:
 ```
 
 What it cannot carry is the description, the cover card, the sideboard and the
-maybeboard as separate lists, the saved sideboard swaps, or where the deck came
+maybeboard as separate lists, or where the deck came
 from. That is what the deck file is for.
 
 ## Three rules the format rests on
@@ -111,23 +111,6 @@ It is advisory only because nobody's win rate means anything on your games.
       "quantity": 1
     }
   ],
-  "swaps": [
-    {
-      "name": "vs. control",
-      "out": [
-        {
-          "name": "Soul Swallower",
-          "quantity": 1
-        }
-      ],
-      "in": [
-        {
-          "name": "Ignis Sprite",
-          "quantity": 2
-        }
-      ]
-    }
-  ],
   "description": "Single-box deck focusing on Fire.\n\nSacrifice the small things, then **swing**.",
   "author": "aramsunat",
   "cover": "Smouldering Inferno",
@@ -165,7 +148,6 @@ an importer that applies `description: ""` blanks a description that was fine.
 | `cards` | entry[] | the deck proper. One entry per distinct card |
 | `sideboard` | entry[] | the **sideboard** — see below. Since version 2 |
 | `maybe` | entry[] | the **maybeboard** — see below |
-| `swaps` | swap[] | saved sideboard swaps — see below. Since version 2 |
 | `description` | string | markdown. algomancer.cc's plain text is valid markdown |
 | `author` | string | who built it |
 | `cover` | string | card name — the art that represents the deck. This is the field that means something |
@@ -192,18 +174,6 @@ algomancer.cc's `deck.sideboard` is read as `maybe`, not as `sideboard`: it
 predates sideboards here and people used it as a maybeboard, and a list over
 seven there would make the deck unregistrable. So is the `sideboard` of a flat
 file that says it is `version` 1 — that is how a version-1 reader read it.
-
-### Swaps
-
-A **swap** is `{"name": "vs. control", "out": entry[], "in": entry[]}`: the
-cards that go from the main deck to the sideboard, and the ones that come back
-the other way, both counted against the deck **as written in the file** — never
-against whatever was played last. `out` and `in` need not be the same size; the
-main deck may grow or shrink, as long as it stays at 30 or more and the
-sideboard at 7 or fewer. A swap that no longer fits the deck (it takes out a
-card the deck lost) is still carried; a reader shows it as unusable rather than
-rewriting it. A swap has no id — a reader issues its own. Swaps are the deck
-owner's own plans: a system exporting somebody else's deck leaves them out.
 
 ### Visibility does not transfer, and neither does the record
 
@@ -232,9 +202,12 @@ one — is ignored, never an error.
 ## Versions
 
 - **1** — the original format.
-- **2** (2026-11-02) — `sideboard` and `swaps`. A version-1 reader handed a
-  version-2 file reads a flat `sideboard` into its maybeboard and ignores
-  `swaps`: the main deck survives, nothing is refused. That change of meaning
+- **2** (2026-11-02) — `sideboard`. A version-1 reader handed a
+  version-2 file reads a flat `sideboard` into its maybeboard: the main deck
+  survives, nothing is refused. (A file written on 2026-11-02 or 3 may also
+  carry a `swaps` list of saved sideboard swaps; the feature was taken out to
+  be planned again, and a reader ignores the field like any other it does not
+  know.) That change of meaning
   for the `sideboard` key is why the number moved; adding a field alone would
   not have moved it.
 

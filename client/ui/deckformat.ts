@@ -15,9 +15,10 @@
  *
  * VERSION 2 (2026-11-02, docs/22 §4.2) added the SIDEBOARD — up to seven cards
  * swapped with the main deck between the games of a Competitive Constructed
- * match — and the deck's saved SWAPS. A version-1 reader meeting a v2 file
- * reads a flat `sideboard` into its maybeboard, which is a harmless
- * degradation, and drops `swaps` as an unknown field.
+ * match. A version-1 reader meeting a v2 file reads a flat `sideboard` into
+ * its maybeboard, which is a harmless degradation. (A v2 file written before
+ * 2026-11-03 may carry saved `swaps`; they were taken out, and a reader drops
+ * the field as it drops any unknown one.)
  *
  * THREE COMMITMENTS, because this file is about to be read by somebody who
  * does not work on this codebase (algomancer.cc — see client/docs/deck-format.md,
@@ -73,7 +74,6 @@
  */
 import { analyzeDeck } from './deckstats.ts';
 import { rowFor } from './cardindex.ts';
-import { PRESETS_MAX, PRESET_NAME_MAX } from '../engine/src/matchdeck.ts';
 
 /** The `format` field. A file without it is still read (see the header); a
  * file with a DIFFERENT one is refused, because it is somebody else's format
@@ -98,13 +98,6 @@ export interface DeckFileEntry {
   quantity: number;
 }
 
-/** One saved swap, as a file carries it. */
-export interface DeckFileSwap {
-  name: string;
-  out: DeckFileEntry[];
-  in: DeckFileEntry[];
-}
-
 /** A deck as a file. Everything but `format`, `version`, `name` and `cards` is
  * optional: a writer omits what it does not have rather than writing a blank. */
 export interface DeckFile {
@@ -122,12 +115,6 @@ export interface DeckFile {
    * nested `deck.sideboard` is read into THIS field, not into `sideboard`:
    * theirs predates sideboards here and people used it as a maybeboard. */
   maybe?: DeckFileEntry[];
-  /** the deck's saved swaps (v2): each a name, the cards that go out of the
-   * main deck to the sideboard and the ones that come in, both RELATIVE TO THE
-   * DECK AS WRITTEN (docs/22 §4.6). A player's own plans — a system exporting
-   * somebody else's deck leaves them out. No id: an id is the exporting
-   * system's, and the reader issues its own. */
-  swaps?: DeckFileSwap[];
   /** what the deck is and how to play it. Markdown here; algomancer.cc's own
    * descriptions are plain text, which is valid markdown. */
   description?: string;
@@ -168,8 +155,6 @@ export interface DeckSource {
   cards: readonly string[];
   sideboard?: readonly string[];
   maybe?: readonly string[];
-  /** the owner's saved swaps. A view of somebody else's deck has none. */
-  swaps?: readonly { name: string; out: readonly string[]; in: readonly string[] }[];
   cover?: string | null;
   author?: string;
   description?: string;
@@ -224,8 +209,6 @@ export function buildDeckFile(deck: DeckSource, opts: BuildOpts = {}): DeckFile 
   const artFile = opts.artFile ?? artFileFor;
   const maybe = entriesOf(deck.maybe ?? []);
   const sideboard = entriesOf(deck.sideboard ?? []);
-  const swaps: DeckFileSwap[] = (deck.swaps ?? [])
-    .map(p => ({ name: p.name, out: entriesOf(p.out), in: entriesOf(p.in) }));
   return {
     format: DECK_FORMAT,
     version: DECK_FORMAT_VERSION,
@@ -233,7 +216,6 @@ export function buildDeckFile(deck: DeckSource, opts: BuildOpts = {}): DeckFile 
     cards: entriesOf(deck.cards),
     ...(sideboard.length ? { sideboard } : {}),
     ...(maybe.length ? { maybe } : {}),
-    ...(swaps.length ? { swaps } : {}),
     ...(deck.description?.trim() ? { description: deck.description } : {}),
     ...(deck.author ? { author: deck.author } : {}),
     ...(cover ? { cover } : {}),
@@ -298,25 +280,6 @@ const entriesFrom = (raw: unknown, slugs: Map<string, string>): DeckFileEntry[] 
     .map(x => entryOf(x, slugs))
     .filter((x): x is DeckFileEntry => x !== null);
 
-/** The saved swaps, read as loosely as entries are: a swap with no name gets
- * one, and one that moves nothing is still read (the reader's store decides
- * what to keep). Capped at PRESETS_MAX. Whether a swap is USABLE is never the
- * file's business — that is computed against the deck (engine/src/matchdeck.ts). */
-function swapsFrom(raw: unknown, slugs: Map<string, string>): DeckFileSwap[] {
-  if (!Array.isArray(raw)) return [];
-  const out: DeckFileSwap[] = [];
-  for (const x of raw.slice(0, PRESETS_MAX)) {
-    if (!x || typeof x !== 'object' || Array.isArray(x)) continue;
-    const o = x as Record<string, unknown>;
-    out.push({
-      name: str(o['name'], PRESET_NAME_MAX).trim() || `Swap ${out.length + 1}`,
-      out: entriesFrom(o['out'], slugs),
-      in: entriesFrom(o['in'], slugs),
-    });
-  }
-  return out;
-}
-
 const VISIBILITIES: readonly string[] = ['private', 'unlisted', 'public'];
 
 /**
@@ -377,7 +340,6 @@ export function parseDeckFile(text: string): ParseResult {
   const shelfOnly = isAlgomancer || (Number.isFinite(version) && version < 2);
   const maybe = entriesFrom(shelfOnly ? deck['maybe'] ?? deck['sideboard'] : deck['maybe'], slugs);
   const sideboard = shelfOnly ? [] : entriesFrom(deck['sideboard'], slugs);
-  const swaps = isAlgomancer ? [] : swapsFrom(deck['swaps'], slugs);
 
   const user = o['user'] as Record<string, unknown> | undefined;
   const author = str(deck['author'], 120).trim()
@@ -394,7 +356,6 @@ export function parseDeckFile(text: string): ParseResult {
     cards,
     ...(sideboard.length ? { sideboard } : {}),
     ...(maybe.length ? { maybe } : {}),
-    ...(swaps.length ? { swaps } : {}),
     ...(str(deck['description'], 20_000).trim() ? { description: str(deck['description'], 20_000) } : {}),
     ...(author ? { author } : {}),
     ...(str(deck['cover'], 200).trim() ? { cover: str(deck['cover'], 200).trim() } : {}),

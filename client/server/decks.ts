@@ -54,9 +54,6 @@ export interface DeckInfo {
   maybe?: CardName[];
   /** the sideboard (deck file v2 only — never algomancer.cc's, see above) */
   sideboard?: CardName[];
-  /** the deck's saved swaps (deck file v2), names resolved; the collection's
-   * sanitize decides what is kept (server/collection.ts sanitizeSwaps) */
-  swaps?: { name: string; out: CardName[]; in: CardName[] }[];
 }
 
 /** "A Pile of Runes" and "a-pile-of-runes" both normalize to "apileofrunes" */
@@ -230,11 +227,6 @@ function deckInfoOf(file: DeckFile, notes: string[] = []): DeckInfo {
   const maybe = resolve(expandEntries(file.maybe ?? []), false);
   // the sideboard is part of the deck, so its misses are reported like the main's
   const sideboard = resolve(expandEntries(file.sideboard ?? []), true);
-  const swaps = (file.swaps ?? []).map(p => ({
-    name: p.name,
-    out: resolve(expandEntries(p.out), false),
-    in: resolve(expandEntries(p.in), false),
-  }));
   problems.push(...ruleProblems(cards));
   const cover = file.cover ? resolveName(file.cover) : null;
   return {
@@ -248,7 +240,6 @@ function deckInfoOf(file: DeckFile, notes: string[] = []): DeckInfo {
     ...(cover && cards.includes(cover) ? { cover } : {}),
     ...(maybe.length ? { maybe } : {}),
     ...(sideboard.length ? { sideboard } : {}),
-    ...(swaps.length ? { swaps } : {}),
   };
 }
 

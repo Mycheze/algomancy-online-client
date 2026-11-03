@@ -22,7 +22,7 @@ const info = (over: Record<string, unknown> = {}): Record<string, unknown> => ({
   id: 'M835', bestOf: 3, game: 2, score: [0, 1], names: ['Ann', 'Bo'],
   banks: [40 * 60_000, 39 * 60_000], clockStart: 45 * 60_000,
   phase: 'between', chooser: 0, initiative: null, until: Date.now() + 90_000, locked: false, ready: [false, false],
-  mine: { registered: { main: MAIN, side: SIDE }, current: { main: MAIN, side: SIDE }, presets: [] },
+  mine: { registered: { main: MAIN, side: SIDE }, current: { main: MAIN, side: SIDE } },
   ...over,
 });
 const lobby = (seat: 0 | 1, over: Record<string, unknown> = {}): string => ui.push({

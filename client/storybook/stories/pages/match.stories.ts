@@ -16,7 +16,7 @@ function lobby(over: Partial<MatchLobbyInfo> = {}): MatchLobbyInfo {
     id: 'M1', bestOf: 3, game: 2, score: [1, 0], names: ['Ann', 'Bo'],
     banks: [38 * 60_000, 41 * 60_000 + 5_000], clockStart: 45 * 60_000,
     phase: 'between', chooser: null, initiative: null, until: NOW + 95_000, locked: false, ready: [false, true],
-    mine: { registered: CFG, current: CFG, presets: [{ id: 'p1', name: 'vs control', out: [MAIN[0]!], in: [SIDE[0]!] }] },
+    mine: { registered: CFG, current: CFG },
     ...over,
   };
 }

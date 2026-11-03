@@ -1,17 +1,18 @@
-/* THE DECK FILE, VERSION 2 — the sideboard and the swaps (ui/deckformat.ts,
+/* THE DECK FILE, VERSION 2 — the sideboard (ui/deckformat.ts,
  * read by server/decks.ts; docs/deck-format.md, docs/22 §4.2).
  *
  * 311 holds the format to everything it promised at version 1. This is what
  * version 2 adds:
  *
- *  §1 a deck exported with a sideboard and swaps imports back with both,
- *     through the REAL importer
+ *  §1 a deck exported with a sideboard imports back with it, through the
+ *     REAL importer — and a file written while saved swaps existed (2026-11-02,
+ *     taken out 2026-11-03) still imports, its `swaps` ignored
  *  §2 a version-1 reader degrades: the sideboard lands in its maybeboard and
  *     the main deck survives; a file that says version 1 is read that way here
  *  §3 algomancer.cc's nested `deck.sideboard` still goes into maybe, never
  *     into the sideboard (owner, docs/22 §8 Q5)
- *  §4 nothing empty is written, and a swap carries no id
- *  §5 an unscripted sideboard card is reported; one in a swap is dropped quietly
+ *  §4 nothing empty is written, and no `swaps` ever is
+ *  §5 an unscripted sideboard card is reported
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -31,13 +32,13 @@ const v2Deck = () => ({
   cards: base.cards,
   sideboard: SIDE,
   maybe: ['Rune Channeler'],
-  swaps: [
-    { name: 'vs. control', out: [base.cards[0]!, base.cards[1]!], in: [SIDE[0]!] },
-    { name: 'vs. aggro', out: [base.cards[2]!], in: [SIDE[1]!, SIDE[2]!] },
-  ],
 });
+/** what a 2026-11-02 build wrote: the same file with saved swaps in it */
+const OLD_SWAPS = [
+  { name: 'vs. control', out: [{ name: base.cards[0]!, quantity: 1 }], in: [{ name: SIDE[0]!, quantity: 1 }] },
+];
 
-test('§1 a deck with a sideboard and swaps survives export and import', () => {
+test('§1 a deck with a sideboard survives export and import; old swaps are ignored', () => {
   const file = buildDeckFile(v2Deck(), { now: '2026-11-02T00:00:00.000Z' });
   assert.equal(file.version, 2);
   assert.equal(DECK_FORMAT_VERSION, 2);
@@ -46,12 +47,13 @@ test('§1 a deck with a sideboard and swaps survives export and import', () => {
   assert.deepEqual(sorted(back.cards), sorted(base.cards), 'the main deck');
   assert.deepEqual(sorted(back.sideboard ?? []), sorted(SIDE), 'THE SIDEBOARD');
   assert.deepEqual(back.maybe, ['Rune Channeler'], 'the maybeboard stays its own list');
-  assert.equal(back.swaps?.length, 2);
-  const [ctl, agg] = back.swaps!;
-  assert.equal(ctl!.name, 'vs. control');
-  assert.deepEqual(sorted(ctl!.out), sorted([base.cards[0]!, base.cards[1]!]));
-  assert.deepEqual(ctl!.in, [SIDE[0]]);
-  assert.deepEqual(sorted(agg!.in), sorted([SIDE[1]!, SIDE[2]!]));
+  assert.ok(!('swaps' in back));
+  // a file from the build that had saved swaps: everything else reads as before
+  const old = importDeckPaste(JSON.stringify({ ...JSON.parse(deckFileText(file)), swaps: OLD_SWAPS }));
+  assert.deepEqual(old.problems, []);
+  assert.deepEqual(sorted(old.cards), sorted(base.cards));
+  assert.deepEqual(sorted(old.sideboard ?? []), sorted(SIDE));
+  assert.ok(!('swaps' in old), 'its swaps are not read');
 });
 
 test('§2 a version 1 reader degrades the sideboard to its maybeboard', () => {
@@ -87,22 +89,21 @@ test('§3 algomancer.cc deck.sideboard still imports into maybe', () => {
   const info = importDeckFile(JSON.stringify(payload));
   assert.deepEqual(info.maybe, ['Rune Channeler'], 'their sideboard is our maybeboard');
   assert.equal(info.sideboard, undefined, 'never our sideboard');
-  assert.equal(info.swaps, undefined, 'and nothing of ours is read out of their payload');
+  assert.ok(!('swaps' in info), 'and nothing else is read out of their payload');
 });
 
-test('§4 nothing empty is written, and a swap carries no id', () => {
+test('§4 nothing empty is written, and no swaps ever are', () => {
   const bare = buildDeckFile({ name: 'x', cards: base.cards });
   assert.ok(!('sideboard' in bare) && !('swaps' in bare));
-  const file = buildDeckFile({ ...v2Deck(), swaps: [{ id: 'w1', name: 'n', out: [base.cards[0]!], in: [] } as never] });
+  // a stored deck that still carries swaps from 2026-11-02 exports without them
+  const file = buildDeckFile({ ...v2Deck(), swaps: [{ id: 'w1', name: 'n', out: [base.cards[0]!], in: [] }] } as never);
   assert.equal(file.format, DECK_FORMAT);
-  assert.deepEqual(Object.keys(file.swaps![0]!), ['name', 'out', 'in'], 'the exporting system\'s id stays home');
+  assert.ok(!('swaps' in file));
 });
 
-test('§5 an unscripted sideboard card is a note; in a swap it is dropped quietly', () => {
-  const file = buildDeckFile({ ...v2Deck(), sideboard: [...SIDE.slice(0, 6), 'Not A Real Card'],
-    swaps: [{ name: 's', out: ['Not A Real Card'], in: [SIDE[0]!] }] });
+test('§5 an unscripted sideboard card is a note', () => {
+  const file = buildDeckFile({ ...v2Deck(), sideboard: [...SIDE.slice(0, 6), 'Not A Real Card'] });
   const back = importDeckFile(deckFileText(file));
   assert.deepEqual(back.problems, ['not in the scripted pool: Not A Real Card']);
   assert.equal(back.sideboard?.length, 6);
-  assert.deepEqual(back.swaps?.[0], { name: 's', out: [], in: [SIDE[0]] });
 });

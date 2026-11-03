@@ -9,7 +9,7 @@
  * §1 the Competitive card: signed out, signed in with a legal and an illegal deck, no legal deck
  * §2 Your matches: nothing without a match, a row and its button with one
  * §3 game 1: register a deck; the deck is in
- * §4 between games: score, clocks, countdown, presets, the boards, the legality line, Ready
+ * §4 between games: score, clocks, countdown, the reset, the boards, the legality line, Ready
  * §5 paused, and a match that ended while the page waited
  * §6 names, rooms and card names are escaped
  */
@@ -34,7 +34,7 @@ function lobby(over: Partial<MatchLobbyInfo> = {}): MatchLobbyInfo {
     banks: [38 * 60_000, 41 * 60_000 + 5_000], clockStart: 45 * 60_000,
     phase: 'between', chooser: null, initiative: null, until: 1_000_000 + 90_000, locked: false,
     ready: [false, false],
-    mine: { registered: CFG, current: CFG, presets: [{ id: 'p1', name: 'vs control', out: [MAIN[0]!], in: [SIDE[0]!] }] },
+    mine: { registered: CFG, current: CFG },
     ...over,
   };
 }
@@ -108,12 +108,12 @@ test('973 §3 game 1: register a deck, then it is in', () => {
   assert.match(inn, /Ann \(you\) — <b class="lockedin">deck is in<\/b>/);
 });
 
-test('973 §4 between games: score, clocks, countdown, presets, boards, legality, Ready', () => {
+test('973 §4 between games: score, clocks, countdown, reset, boards, legality, Ready', () => {
   const html = matchRoomHtml(room());
   assert.match(html, /Game 2 of 3 — you lead 1–0 · <span class="cccount" data-cc-until="1090000">1:30<\/span> to sideboard/);
   assert.match(html, /Your clock <b>38:00<\/b> · Bo <b>41:05<\/b>/);
-  assert.match(html, /<button class="on" data-btn="cc-preset" data-preset="registered" >Registered deck<\/button>/);
-  assert.match(html, /data-btn="cc-preset" data-preset="p1" >vs control/);
+  assert.match(html, /<button data-btn="cc-reset" disabled>Back to the registered deck<\/button>/, 'already the registered deck');
+  assert.doesNotMatch(html, /cc-preset/, 'no saved swaps (owner, 2026-11-03)');
   assert.match(html, /Main <span class="acctcount">30<\/span>/);
   assert.match(html, new RegExp(`data-btn="cc-move" data-from="main" data-card="${MAIN[0]!.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
   assert.doesNotMatch(html, /cclegal/, 'a legal deck: no legality line');
@@ -124,6 +124,7 @@ test('973 §4 between games: score, clocks, countdown, presets, boards, legality
   const bad = matchRoomHtml(room({ shown: short }));
   assert.match(bad, /<p class="ui-status ui-status--note deckmsg cclegal" role="status">Main deck needs 30 — you have 29\.<\/p>/);
   assert.match(bad, /data-btn="cc-ready" disabled>Ready<\/button> <span class="dim">Fix the deck to ready up\./);
+  assert.match(bad, /<button data-btn="cc-reset" >Back to the registered deck<\/button>/, 'moved away: one tap back');
 
   const loser = matchRoomHtml(room({ w: lobby({ chooser: 0 }) }));
   assert.match(loser, /data-init="0" >Ready — I take the initiative</);
@@ -149,7 +150,7 @@ test('973 §5 paused; and a match that ended while the page waited', () => {
 });
 
 test('973 §6 names, rooms and cards are escaped', () => {
-  const w = lobby({ names: ['<A>', '<B>'], mine: { registered: { main: [card('<x>'), ...MAIN.slice(1)], side: SIDE }, current: { main: [card('<x>'), ...MAIN.slice(1)], side: SIDE }, presets: [] } });
+  const w = lobby({ names: ['<A>', '<B>'], mine: { registered: { main: [card('<x>'), ...MAIN.slice(1)], side: SIDE }, current: { main: [card('<x>'), ...MAIN.slice(1)], side: SIDE } } });
   const html = matchRoomHtml(room({ w, shown: w.mine!.current, room: '<R>', error: '<e>' }));
   assert.doesNotMatch(html, /<B>|<R>|<e>|<x>/);
   assert.match(html, /&lt;e&gt;/);

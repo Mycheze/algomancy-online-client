@@ -25,7 +25,7 @@
  *            freezes the browser's Date there)
  *
  * --cc adds the Competitive Constructed world (docs/22), which the shared
- * fixture predates: a deck with a sideboard and a swap preset, and a Best of
+ * fixture predates: a deck with a sideboard, and a Best of
  * three paused between games 1 and 2 (so "Your matches" lists it and its room
  * shows the between-games screen). Off by default, so a rebuild of the
  * shared fixture without it seeds exactly what it did before; it runs LAST in
@@ -104,7 +104,7 @@ export interface FixtureInfo {
   challenge: { current: string; past: string };
   /** --cc only: the Competitive Constructed world (absent from the shared fixture) */
   cc?: {
-    /** the signed-in player's deck with a sideboard and a swap preset */
+    /** the signed-in player's deck with a sideboard */
     deck: string;
     /** the Best of three, game 1 won by the signed-in player, paused between games */
     match: string;
@@ -462,13 +462,7 @@ export async function buildFixture(outDir: string, opts: { cc?: boolean } = {}):
       const meMain = defs[0]!.cards, frMain = defs[2]!.cards;
       const meSide = sideFor(meMain, [...defs[1]!.cards, ...defs[3]!.cards], 5);
       const frSide = sideFor(frMain, [...defs[3]!.cards, ...defs[1]!.cards], 3);
-      const ccMe = await mk(NAMES.me, 'Ember Rush (Competitive)', meMain, {
-        sideboard: meSide,
-        swaps: [
-          { id: 'fx-swap-control', name: 'Against control', out: meMain.slice(0, 2), in: meSide.slice(0, 2) },
-          { id: 'fx-swap-wide', name: 'Against go-wide', out: [meMain[4]!], in: [meSide[2]!] },
-        ],
-      });
+      const ccMe = await mk(NAMES.me, 'Ember Rush (Competitive)', meMain, { sideboard: meSide });
       const ccFr = await mk(NAMES.friend, 'Undertow (Competitive)', frMain, { sideboard: frSide });
       const code = (await get('/api/new'))['code'] as string;
       const a = await new Sock().open();

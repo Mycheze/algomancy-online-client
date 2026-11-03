@@ -3,7 +3,7 @@
  * Everything a Competitive match draws outside the board: the home screen's
  * Competitive card and its "Your matches" row, the game-1 waiting room where
  * each seat registers a deck, and the BETWEEN screen — score, frozen clocks,
- * the sideboarding window, the presets, Ready (the previous game's loser
+ * the sideboarding window, Ready (the previous game's loser
  * readies WITH the initiative choice: owner, docs/22 §8 answer 1), pause and
  * resume, and Concede match. ui/main.ts gains only the dispatch.
  *
@@ -24,7 +24,7 @@
  * choices, the "Your matches" fetch, the cc- clicks and the countdown, and the
  * page reads them through matchState(), shown() and pickOf().
  */
-import { checkSwap, type MatchConfig, type SwapPreset } from '../engine/src/matchdeck.ts';
+import { checkSwap, type MatchConfig } from '../engine/src/matchdeck.ts';
 import type { Seat } from '../engine/src/types.ts';
 import { esc } from './util.ts';
 
@@ -42,7 +42,7 @@ export interface MatchLobbyInfo {
   chooser: Seat | null; initiative: Seat | null;
   until: number | null; locked: boolean;
   ready: [boolean, boolean];
-  mine: { registered: MatchConfig; current: MatchConfig; presets: SwapPreset[] } | null;
+  mine: { registered: MatchConfig; current: MatchConfig } | null;
   /** voidAt: the server's lapse time — 7 days, or a league week's end if sooner */
   pause?: { offeredBy: Seat | null; pausedAt: number | null; resume: [boolean, boolean]; voidAt?: number | null };
   result?: MatchResult;
@@ -261,10 +261,12 @@ export function handleMatchButton(btn: HTMLElement, a: MatchActions): boolean {
       a.rerender();
       return true;
     }
-    case 'cc-preset':
-      // the server's push of the new deck is the repaint
+    case 'cc-reset':
+      // back to the deck as registered (docs/22 §8 Q3: one tap away) — an
+      // ordinary configuration; the server's push of it is the repaint
+      if (!w?.mine || w.locked) return true;
       draft = null;
-      a.send({ t: 'cc', op: 'preset', preset: btn.dataset['preset'] ?? 'registered' });
+      a.send({ t: 'cc', op: 'config', main: [...w.mine.registered.main], side: [...w.mine.registered.side] });
       return true;
     case 'cc-ready': {
       if (!w) return true;

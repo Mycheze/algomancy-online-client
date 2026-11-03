@@ -147,6 +147,10 @@ export interface PileView {
   deletable?: boolean;
   /** the most it may hold (the sideboard's 7): the count reads n/limit, red over it */
   limit?: number;
+  /** EMPTY, it keeps one card's room, outlined: somewhere to drop. The
+   * sideboard's — an empty one was a 36px header over the Maybe pile, so a
+   * card dropped "on the sideboard" landed in Maybe (owner, 2026-11-03) */
+  slot?: boolean;
 }
 
 /** One pile: its header, then its fan. */
@@ -170,7 +174,8 @@ export function pileHtml(p: PileView): string {
         class="ttpilecount${p.limit !== undefined && n > p.limit ? ' bad' : ''}">${n}${p.limit !== undefined ? `/${p.limit}` : ''}</span>${p.deletable && p.head !== undefined
         ? `<button class="ttpiledel" data-btn="tt-delpile" data-tt-pile="${esc(p.head)}" aria-label="delete pile">✕</button>` : ''}
     </header>
-    <div class="ttfan" style="height:${fanHeight(n, p.S, p.ch)}px">${p.cards.map((c, k) =>
+    <div class="ttfan${n === 0 && p.slot ? ' ttslot' : ''}" style="height:${
+      n === 0 && p.slot ? p.ch : fanHeight(n, p.S, p.ch)}px">${p.cards.map((c, k) =>
       `<div class="ttcard${k === p.front ? ' ttfront' : ''}${k === p.picked ? ' ttpicked' : ''}${
         p.cover && c.name === p.cover ? ' iscover' : ''}" style="--k:${k};top:${k * p.S}px"
         data-btn="tt-card" data-tt-src="${esc(c.src)}" data-tt-i="${k}" data-card="${esc(c.name)}" data-zoom>${

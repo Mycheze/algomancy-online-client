@@ -164,7 +164,6 @@ export function SCENARIOS(fx) {
     const ccDeck = [...decks, { click: btn('deck-open'), text: 'Competitive' }];
     home('cc-your-matches', me);
     add('decks', 'cc-sideboard', '/', { ...me, steps: [...ccDeck, { click: tab('deck-tab', 'side') }] });
-    add('decks', 'cc-swap-new', '/', { ...me, steps: [...ccDeck, { click: tab('deck-tab', 'side') }, { click: btn('deck-swap-new') }] });
     add('tabletop', 'cc-sideboard', `/?table=${fx.cc.deck}`, { ...me, pages: 1 });
     add('match', 'between-paused', `/?ws=1&room=${fx.cc.room}&seat=${fx.cc.seat}&mode=constructed`,
       { ...me, steps: [{ settle: 1500 }], check: '#app' });

@@ -466,7 +466,7 @@ export function pageHtml(h: TableHost): string {
     return pileHtml({
       zone: 'side', name: 'Sideboard', cards: list, S: stripOf(list.length, paneH, ch), ch,
       front: front?.zone === 'side' ? front.index : undefined, picked: picked(list),
-      over, cls: 'ttsidepile', ...(h.sideMax !== undefined ? { limit: h.sideMax } : {}),
+      over, cls: 'ttsidepile', slot: true, ...(h.sideMax !== undefined ? { limit: h.sideMax } : {}),
     });
   })() : '';
   const maybeHtml = maybe || side
