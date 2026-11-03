@@ -15,8 +15,7 @@
  *    help text said "drag across the grid" on a touch screen too. It says
  *    "drag across" to a mouse and "tap hours on" to a finger, by the global
  *    .mouseonly/.touchonly switch on html.touch
- * §5 BUG (inventory, 2026-11-02): on a phone the floating Report pill
- *    covered "Suggest a time": the page leaves room under its last card
+ * §5 moved: the Report pill covering "Suggest a time" is fixed for every page (978 §7)
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -133,13 +132,5 @@ test('985 §4 the grid help text follows the input method: drag to a mouse, tap 
   assert.match(css, /html\.touch \.mouseonly[^{]*\{\s*display:\s*none/, 'a finger never sees the mouse words');
 });
 
-test('985 §5 on a phone the page leaves room for the Report pill under its last card', () => {
-  const css = readStyles().replace(/\/\*[\s\S]*?\*\//g, '');
-  const pill = /\.reportfab\s*\{[^}]*bottom:\s*(\d+)px/.exec(css);
-  assert.ok(pill, 'positive control: the pill sits a fixed distance up');
-  const phone = [...css.matchAll(/@media \(max-width: 760px\) \{([^@]*?)\n\}/g)].map(m => m[1]!).find(b => /\.lgpage\s*\{\s*padding-bottom/.test(b));
-  assert.ok(phone, 'the league page has a phone rule for the room under it');
-  const room = /\.lgpage\s*\{\s*padding-bottom:\s*calc\(var\(--space-9\) \+ var\(--space-7\)\)/.test(phone!) ? 48 + 24 : 0;
-  // the pill is 18px up and about 36px tall: its top edge is ~54px above the bottom
-  assert.ok(room >= Number(pill![1]) + 36, `the room under the page (${room}px) clears the pill`);
-});
+// 985 §5 (a league-only phone padding for the Report pill) is gone: the pill now keeps the
+// corner clear on EVERY page while it is up (shared/13-report-and-inbox.css, guarded by 978 §7).
