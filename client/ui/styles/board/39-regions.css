@@ -39,10 +39,26 @@
    fixed"). Both info lines are pinned to the board's edges and are one fixed
    height in every phase. There is no top bar on this board any more (round
    8): its turn, phase and initiative are the phase icons and the ⭐, and its
-   chips stand in the rail's head. The action bar fits its content (owner,
-   2026-09-26: a battle's one line of buttons in a bar "much larger than
-   normal"), and the board moves by its height between phases. */
-#app.board.v2 .actionbar { gap: var(--gap); padding: 0 var(--ringpad) var(--gap); }
+   chips stand in the rail's head.
+   THE ACTION BAR IS ONE HEIGHT (owner, 2026-11-03: "the action bar should have
+   a constant height so that, when it needs another row, it doesn't constantly
+   move the whole UI up and down. Just give it the height it needs at all
+   times." — this replaces 2026-09-26's "fits its content"). The row is two
+   rows of buttons tall, measured over 280 distinct bars from 60 random games
+   (var/records/board-r1-2026-11-03.md): 81px with a mouse, 87px on touch,
+   whose buttons are 36px. Every bar of one or two rows fills that slot, the
+   last bar stretching so its box never changes size, its lines centred. The
+   few that need more (a row of card scans, a long list of X values) stand UP
+   out of the slot over the foot of the table — flex-end overflows at the top —
+   so the board under them still does not move; past half the window they
+   scroll inside themselves. test/1060 §3. */
+#app.board.v2 { --actionbar-h: 81px; }
+html.touch #app.board.v2 { --actionbar-h: 87px; }
+#app.board.v2 .actionbar { gap: var(--gap); padding: 0 var(--ringpad) var(--gap);
+  height: var(--actionbar-h); max-height: none; overflow: visible; justify-content: flex-end;
+  position: relative; z-index: 46; }
+#app.board.v2 .actionbar > .promptbar { flex: none; max-height: 50vh; overflow-y: auto; }
+#app.board.v2 .actionbar > .promptbar:last-child { flex: 1 0 auto; align-content: center; }
 
 .lboard {
   /* an info line: the name and life over their card backs, a bin and a

@@ -2949,7 +2949,7 @@ export const CLOSED: LedgerEntry[] = [
       '233-burst-count-and-size.test.ts::§1a every burst name you hold gets its own row, named, counted',
       '233-burst-count-and-size.test.ts::§1b a group of one name at different sizes prints every size — the report verbatim',
       '233-burst-count-and-size.test.ts::§2b every buried card wears its X where the overlap cannot reach it',
-      '233-burst-count-and-size.test.ts::§2c the depth chip counts the run, so you can see how many are left',
+      '233-burst-count-and-size.test.ts::§2c the run chip counts the run, so you can see how many are left',
     ],
     note:
       'ROUND 32. RULED AND FIXED 2026-08-29 (now CR D6.9d). THE SIZE IS X, not mana or power/defense — '

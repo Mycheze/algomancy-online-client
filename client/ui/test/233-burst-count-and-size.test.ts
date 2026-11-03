@@ -441,16 +441,18 @@ test('§2b every buried card wears its X where the overlap cannot reach it', asy
     'the badge must be anchored to the LEFT edge — the part of a buried card that survives');
 });
 
-test('§2c the depth chip counts the run, so you can see how many are left', async () => {
+// owner 2026-11-03: the 'N deep' tag goes — the run it carried stays, as its own chip (stackruns)
+test('§2c the run chip counts the run, so you can see how many are left', async () => {
   const xs = [1, 1, 3, 7, 2, 5];
   const name = BURST.find(b => MINTERS.get(b)!.length >= 2) ?? BURST[0]!;
   const { s, seat } = chainOnStack(23312, name, xs);
   const html = await paint(s, seat);
-  const depth = html.match(/<span class="stackdepth"[^>]*>([\s\S]*?)<\/span>/);
-  assert.ok(depth, 'the stack is deeper than one, so the depth chip is there');
+  const depth = html.match(/<span class="stackruns"[^>]*>([\s\S]*?)<\/span>/);
+  assert.ok(depth, 'a run is on the stack, so its chip is there');
   assert.match(depth![1]!, new RegExp(`${name} ×${xs.length}`),
     'the only aggregate was "N deep", which counts the stack and not the run');
-  const title = html.match(/<span class="stackdepth" title="([^"]*)"/)![1]!;
+  assert.doesNotMatch(html, /\d+ deep/, 'and the "N deep" tag is gone');
+  const title = html.match(/<span class="stackruns" title="([^"]*)"/)![1]!;
   for (const x of new Set(xs)) {
     assert.match(title, new RegExp(`X=${x}`), `the run breakdown names X=${x}`);
   }
@@ -472,7 +474,7 @@ test('§2d a stack with no repeats claims no run — the chip does not invent on
   h.do({ type: 'castSpellToken', seat: D, entityId: ids[0]! });
   answerAll(h);
   const html = await paint(h.state, D);
-  const depth = html.match(/<span class="stackdepth"[^>]*>([\s\S]*?)<\/span>/);
+  const depth = html.match(/<span class="stackruns"[^>]*>([\s\S]*?)<\/span>/);
   if (depth) {
     assert.equal(/×\d/.test(depth[1]!), false,
       `a stack of one of each is not a run, but the chip claims one: ${depth[1]}`);

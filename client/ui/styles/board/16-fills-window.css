@@ -74,7 +74,7 @@
 /* CT-124: the log lives in `.logbox` now, not in the rail — see §log modal. */
 /* nothing is yours to do — the opponent owes an answer (playtest 2026-08-20:
    this used to render as a priority bar with a Pass button the server refused) */
-.promptbar.waiting { background: #1b2028; border-color: #384352; }
+.promptbar.waiting { background: var(--color-surface); border-color: var(--color-border); border-top-color: var(--color-border-strong); }
 .promptbar.waiting .who { color: var(--dim); }
 /* #116: "lightly flashing … show me that Rashi is choosing that." A pause the
    client cannot explain still has to look ALIVE — a dead grey bar over a

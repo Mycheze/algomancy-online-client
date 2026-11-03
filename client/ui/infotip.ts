@@ -99,6 +99,11 @@ function place(el: HTMLElement, html: string): void {
   if (!host || typeof el.getBoundingClientRect !== 'function') return;
   host.innerHTML = html;
   host.classList.add('on');
+  // measure it with the whole window to grow into: left where the last
+  // window stood (near the right edge, say), a line that may wrap would wrap
+  // early and the box be measured narrow (owner, 2026-11-03; test/1060 §1)
+  host.style.left = '0px';
+  host.style.top = '0px';
   const strip = el.closest?.('.toolbar');
   if (strip) {
     const at = besideBox(el.getBoundingClientRect(), strip.getBoundingClientRect().left,

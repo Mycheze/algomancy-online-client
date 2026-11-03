@@ -802,8 +802,11 @@ test('[CR D7.4] one of the thirty-eight now has a surface, and the client really
 
   const src = read('../ui/main.ts');
   assert.match(src, /function tokenLossBarHtml\(\)/, 'the CR D7.4a notice has a builder');
-  assert.match(src, /\$\{tokenLossBarHtml\(\)\}\s*\n\s*\$\{promptHtml\(\)\}/,
+  // (owner 2026-11-03: the board toast goes; notices live in the action bar —
+  // the prompt slot is the prompt with its notice line, promptWithNotice)
+  assert.match(src, /\$\{tokenLossBarHtml\(\)\}\s*\n\s*\$\{promptWithNotice\(\)\}/,
     'and it is in the prompt slot, above the live question rather than instead of it');
+  assert.match(src, /function promptWithNotice\(\): string \{\n\s*const prompt = promptHtml\(\);/, '…which is the live question');
   // ONE feed, since the hotseat client went: `absorbTokenLoss(evs)` used to sit
   // beside this in `act()`'s local-apply arm, which existed only because a
   // Harness could be the backend. Every event now arrives over the socket.

@@ -1,5 +1,20 @@
-/* CR D7.4 / CT-142 — THE COST TOAST: one shared channel for "you paid for that
+/* CR D7.4 / CT-142 — THE COST NOTICE: one shared channel for "you paid for that
  * and it did not happen".
+ *
+ * ── 2026-11-03: THE TOAST WENT; THE NOTICE LIVES IN THE ACTION BAR
+ *
+ * The owner: *"the weird toast icon that pops up for actions that can't happen
+ * for no targets or something. It's a weird notification that pops up in a
+ * weird spot and nothing else does it. It then goes away quickly. It's really
+ * not needed at all and should probably just be removed entirely and replaced
+ * with something else."* So the corner strip and its timers are gone. The RULE
+ * below is unchanged — which events earn a notice is still derived, not listed
+ * — but what it feeds is a status line INSIDE the action bar (barNoticeHtml),
+ * the place the player already looks, and it stays until the player's next
+ * action or the bar's next prompt (main.ts barNoticeLine), not for a second and
+ * a half. The client's own "why not" sentences (a dark hand card's reason, the
+ * line closing ranks) ride the same line. The history below is kept as it was
+ * written: where it says "toast", read "notice".
  *
  * ── WHERE THIS COMES FROM
  *
@@ -101,7 +116,7 @@
  * redacted the batch, so an event that reaches this client is one this client
  * was allowed to be told, and it is a public log line either way.
  */
-import { beatKeys, fizzledIds, HOLD_MS, negatedIds, STAGGER_MS } from './flash.ts';
+import { beatKeys, fizzledIds, negatedIds } from './flash.ts';
 import { tokenLossNotice } from './inspect.ts';
 import { esc } from './util.ts';
 import type { EngineEvent, EventType } from '../engine/src/types.ts';
@@ -142,9 +157,6 @@ export const ZONE_CHANGE: ReadonlySet<string> = new Set<EventType>([
  * would arrive with no label, or with the wrong one. */
 export const COST_TOAST_HEAD = '⚠ this did nothing';
 
-/** how many rows are drawn at once; the rest are counted, never dropped */
-export const COST_TOAST_MAX = 4;
-
 /** one coalesced notice: the engine's own sentence, and how many times it
  * landed in the batch */
 export interface CostToast {
@@ -158,8 +170,9 @@ export interface CostToast {
   n: number;
 }
 
-/** a toast that is up, and the clock reading it comes down at */
-export interface LiveCostToast extends CostToast { until: number }
+/** a notice on the action bar's line: a cost notice wears COST_TOAST_HEAD;
+ * the client's own sentences (main.ts noteBar) wear none */
+export interface BarNotice extends CostToast { head?: string }
 
 /** the CR D6.6c erased pile: `E.ev()` files an 'erased' event's card names on the
  * seat's public erased list, and `erasedDialogHtml` draws that list. So an
@@ -207,71 +220,36 @@ export function costToasts(events: readonly EngineEvent[]): CostToast[] {
 }
 
 /**
- * Fold a batch into the live stack.
- *
- * Expired rows are dropped first, so the queue cannot grow without bound
- * across a long game. A sentence that is ALREADY up is merged rather than
- * duplicated — its count grows and its clock restarts — because two rows
- * saying the same thing is the noise the coalescing exists to prevent.
- *
- * The stagger is `STAGGER_MS` per NEW row, so a resolution that costs the
- * player four different things does not put four rows up and take them all
- * away in the same frame.
+ * Fold new notices into the ones on the line. A sentence already there is
+ * merged — its count grows and it moves to the end, the newest — because two
+ * rows saying the same thing is the noise the coalescing exists to prevent.
+ * Nothing here expires: the line is cleared by what the player does next
+ * (main.ts), never by a clock.
  */
-export function queueCostToasts(
-  live: readonly LiveCostToast[], events: readonly EngineEvent[], now: number,
-): LiveCostToast[] {
-  const out = live.filter(t => t.until > now).map(t => ({ ...t }));
-  let added = 0;
-  for (const t of costToasts(events)) {
-    added++;
-    const until = now + HOLD_MS + added * STAGGER_MS;
-    const seen = out.find(o => o.key === t.key);
-    if (seen) { seen.n += t.n; seen.until = Math.max(seen.until, until); continue; }
-    out.push({ ...t, until });
+export function foldNotices(live: readonly BarNotice[], add: readonly BarNotice[]): BarNotice[] {
+  const out = live.map(t => ({ ...t }));
+  for (const t of add) {
+    const at = out.findIndex(o => o.key === t.key);
+    if (at >= 0) { const [seen] = out.splice(at, 1); out.push({ ...seen!, n: seen!.n + t.n }); continue; }
+    out.push({ ...t });
   }
   return out;
 }
 
-/** what is on screen right now: the newest `COST_TOAST_MAX`, and how many live
- * rows did not fit. Never a silent truncation — the caller draws the count. */
-export function visibleCostToasts(
-  live: readonly LiveCostToast[], now: number,
-): { shown: LiveCostToast[]; more: number } {
-  const up = live.filter(t => t.until > now);
-  const shown = up.slice(Math.max(0, up.length - COST_TOAST_MAX));
-  return { shown, more: up.length - shown.length };
-}
-
-/** the next clock reading at which the stack changes, or null if it never
- * does. Same shape and same job as `nextFlashWake` — one repaint, scheduled,
- * so a notice about a moment cannot outlive the moment by minutes just
- * because nothing else happened to repaint the board. */
-export function nextCostToastWake(live: readonly LiveCostToast[], now: number): number | null {
-  let best: number | null = null;
-  for (const t of live) {
-    if (t.until <= now) continue;
-    if (best === null || t.until < best) best = t.until;
-  }
-  return best;
-}
-
 /**
- * The strip itself. A string, like every other piece of markup in this client;
- * the caller drops it into the page.
- *
- * Whole-strip click to dismiss, exactly like the glimpse notice — there is
- * nothing to choose here, so a per-row button would be four buttons that all
- * do the same nothing.
+ * The line itself, for the action bar: the NEWEST notice, its count, and how
+ * many earlier ones it stands in front of — never a silent truncation (every
+ * cost notice is in the log as well). Click to put it away: there is
+ * nothing here to choose.
  */
-export function costToastHtml(live: readonly LiveCostToast[], now: number): string {
-  const { shown, more } = visibleCostToasts(live, now);
-  if (!shown.length) return '';
-  const rows = shown.map(t => `<div class="costtoast"><b class="costtoasthead">${COST_TOAST_HEAD}</b>`
-    + `<span class="costtoastmsg">${esc(t.msg)}</span>`
-    + (t.n > 1 ? `<i class="costtoastn">×${t.n}</i>` : '')
-    + '</div>').join('');
-  const tail = more > 0
-    ? `<div class="costtoastmore">+${more} more — all of it is in the log</div>` : '';
-  return `<div class="costtoasts" data-btn="costtoastclose" title="nothing here can be undone — click to dismiss">${rows}${tail}</div>`;
+export function barNoticeHtml(live: readonly BarNotice[]): string {
+  const t = live[live.length - 1];
+  if (!t) return '';
+  const more = live.length - 1;
+  return `<div class="barnotice" role="status" data-btn="noticeclose" title="click to put this away">`
+    + (t.head ? `<b class="barnoticehead">${esc(t.head)}</b>` : '')
+    + `<span class="barnoticemsg">${esc(t.msg)}</span>`
+    + (t.n > 1 ? `<i class="barnoticen">×${t.n}</i>` : '')
+    + (more > 0 ? `<span class="barnoticemore">+${more} earlier</span>` : '')
+    + '</div>';
 }

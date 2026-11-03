@@ -71,7 +71,8 @@ test('§3 committed, a side-block column says there is no attacker in it', () =>
   h.do({ type: 'declareBlocks', seat: D, blocks: { 2: [mine[0]!] } });
   ui.join(h.state, D, legalActions(h.state, D));
   assert.match(ui.html(), /column 3 · side-block/);
-  assert.match(ui.html(), /no attacker/, 'not "gone": nobody ever stood there');
+  // owner 2026-11-03: the faint labels go — a marked empty slot named in its aria-label
+  assert.match(ui.html(), /class="slot ghost noatk"[^>]*aria-label="no attacker"/, 'not "gone": nobody ever stood there');
 });
 
 test('§4 an in-progress side-block keeps its distance from the end of the line as the line moves', () => {

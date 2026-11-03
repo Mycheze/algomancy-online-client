@@ -9,7 +9,12 @@
   background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, .6); font-size: 13px; color: var(--text); text-align: left; }
 #cardzoom > .zoompanel.twocol { width: 540px; column-count: 2; column-gap: 10px; }
-#cardzoom > .zoompanel > .textbox { margin: 0; }
+/* ONE box (owner, 2026-11-03: the text sat in a second rounded box inset in the
+   first). The panel is the box; the text box inside it gives up its own frame,
+   ground and inset, keeping its head rule, stat line and clause rules. A
+   changed card's orange edge goes to the panel (test/1060 §2). */
+#cardzoom > .zoompanel > .textbox { margin: 0; border: 0; border-radius: 0; background: none; padding: 1px 2px; }
+#cardzoom > .zoompanel:has(> .textbox.modified) { border-color: var(--accent); }
 #cardzoom > .zoompanel .modnames { margin: 6px 0 0; max-width: none; }
 #cardzoom > .zoompanel > .abilitybox:first-child { margin-top: 0; border-top: 0; padding-top: 0; }
 #cardzoom > .zoompanel > .xnow:first-child { margin-top: 0; }
@@ -42,7 +47,11 @@
 #infotip .tiptab th { text-align: left; font-weight: 400; color: var(--dim); padding: 1px 12px 1px 0; white-space: nowrap; }
 #infotip .tiptab td { text-align: right; font-weight: 700; font-size: 15px; padding: 1px 0; font-variant-numeric: tabular-nums; }
 #infotip .tiptab tr + tr > * { border-top: 1px solid var(--line); }
-#infotip .tipline { white-space: nowrap; }
+/* a line wraps rather than running out of the box (owner, 2026-11-03: the phase
+   caption's last word stood past the edge) — the box is capped at 360px, so a
+   nowrap line longer than that used to overflow it; a short one is one line
+   either way, the box being as wide as its longest line (test/1060 §1) */
+#infotip .tipline { white-space: normal; }
 /* the toolbar's windows (board round 8): presence in its colour, the running clock lit */
 #infotip .tipline.wrap { white-space: normal; }
 #infotip .tipline.tipwarn { color: var(--danger); font-weight: 700; }

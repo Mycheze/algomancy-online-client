@@ -1411,7 +1411,7 @@
     "key": "annexd.display.live-values.x-forecast",
     "parent": "annexd.display.live-values",
     "order": 3,
-    "text": "When a card on the stack reads its X from the board at resolution, and the card itself declares how to forecast that X, the stack shows what X would be right now, worded as a forecast. A declared mode narrows the forecast to that mode. If X was paid, the paid X is shown and no forecast is. A board-read X with no declared forecast shows none (see annexd.display.live-values.x-not-forecast).",
+    "text": "When a card on the stack reads an amount from the board at resolution, and the card itself declares how to forecast it, the stack shows what it would be right now. A card that prints an X shows it as X, worded as a forecast; a card that prints no X shows only the count, in the card's own terms. A declared mode narrows the forecast to that mode. If X was paid, the paid X is shown and no forecast is. A board-read X with no declared forecast shows none (see annexd.display.live-values.x-not-forecast).",
     "examples": [
       {
         "text": "Retribution Thing is on the stack. It shows the X it would deal now.",
@@ -1424,6 +1424,10 @@
       {
         "text": "Retribution Thing was cast in the life-lost mode. The stack shows only that mode's forecast.",
         "test": "225-stack-readout.test.ts::§1b the declared mode narrows the forecast to the half that was chosen"
+      },
+      {
+        "text": "Mischievous Reclaimer (\"When the second ally dies in this battle, Draw a card.\") after one ally has died shows 1/2, not an X.",
+        "test": "1060-board-legibility.test.ts::§7 a live count wears an X only where the card prints one, and the zoom never explains the card"
       }
     ],
     "see": [
@@ -1453,17 +1457,23 @@
           "quote": "1. **The forecast is the card's own answer, not the client's.** The number comes",
           "adopted": "2026-08-29",
           "from": "register@72de434"
+        },
+        {
+          "quote": "It's not X, there's no X on the card.",
+          "adopted": "2026-11-03",
+          "from": "chat 2026-11-03"
         }
       ],
       "engine": [],
       "tests": [
-        "225-stack-readout.test.ts"
+        "225-stack-readout.test.ts",
+        "1060-board-legibility.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "high",
-    "notes": "",
+    "notes": " 2026-11-03: the owner's rule that the letter X appears only on a card that prints one; the counting cards' terms are ui/livecount.ts COUNT_TERMS.",
     "sourceHashes": {}
   },
   {
@@ -3123,11 +3133,11 @@
     "key": "annexd.confirm.not-only-log.toast",
     "parent": "annexd.confirm.not-only-log",
     "order": 2,
-    "text": "Any other announcement that a card or a cost the player spent did nothing is shown briefly near the board, under the label \"⚠ this did nothing\", with the game's own sentence beside it. Both players see it, and it is also in the log.",
+    "text": "Any other announcement that a card or a cost the player spent did nothing is shown as a line in the action bar, under the label \"⚠ this did nothing\", with the game's own sentence beside it. It stays until that player's next action or the bar's next prompt. Both players see it, and it is also in the log.",
     "examples": [
       {
-        "text": "A spell resolves with nothing to aim at. A toast says so on the screen.",
-        "test": "256-cost-toasts.test.ts::[CR D7.4] a spell that resolves with nothing to aim at produces a toast, end to end"
+        "text": "A spell resolves with nothing to aim at. A line in the action bar says so.",
+        "test": "256-cost-toasts.test.ts::[CR D7.4] the client puts a costly absence on the screen and not only in the log"
       },
       {
         "text": null,
@@ -3154,24 +3164,35 @@
           "quote": "- **Q2, card-text announcements: IN.** The five pool sites are toasted, as built.",
           "adopted": "2026-08-30",
           "from": "register@72de434"
+        },
+        {
+          "quote": "It's a weird notification that pops up in a weird spot and nothing else does it. It then goes away quickly.",
+          "adopted": "2026-11-03",
+          "from": "chat 2026-11-03"
+        },
+        {
+          "quote": "It's really not needed at all and should probably just be removed entirely and replaced with something else.",
+          "adopted": "2026-11-03",
+          "from": "chat 2026-11-03"
         }
       ],
       "engine": [],
       "tests": [
-        "256-cost-toasts.test.ts"
+        "256-cost-toasts.test.ts",
+        "1060-board-legibility.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "engine",
     "scope": "digital",
     "confidence": "high",
-    "notes": "",
+    "notes": "2026-11-03: the corner toast was removed at the owner's word and the notice moved into the action bar. The owner asked only that the toast be replaced; where it went and how long it stays are the client's (main.ts barNoticeLine, test 256 and 1060 §5), hence basis engine (client code and its tests; Annex D counts client source), with the owner's call that removed the toast beside it.",
     "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.not-only-log.coalesce",
     "parent": "annexd.confirm.not-only-log",
     "order": 3,
-    "text": "Identical announcements from one resolution are shown once with a count. At most four are drawn at a time; the rest are counted and pointed to the log. None is dropped silently.",
+    "text": "Identical announcements are shown once with a count. The line shows the newest; the earlier ones are counted beside it. None is dropped silently.",
     "examples": [
       {
         "text": "Three identical \"this did nothing\" sentences in one batch show as one row marked ×3.",
@@ -3190,20 +3211,21 @@
           "from": "register@72de434"
         },
         {
-          "quote": "  a `×N`; distinct ones stack, at most 4 drawn, the rest counted in a",
-          "adopted": "2026-08-30",
-          "from": "register@72de434"
+          "quote": "It's a weird notification that pops up in a weird spot and nothing else does it. It then goes away quickly.",
+          "adopted": "2026-11-03",
+          "from": "chat 2026-11-03"
         }
       ],
       "engine": [],
       "tests": [
-        "256-cost-toasts.test.ts"
+        "256-cost-toasts.test.ts",
+        "1060-board-legibility.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "engine",
     "scope": "digital",
     "confidence": "high",
-    "notes": "",
+    "notes": "2026-11-03: the four-row cap went with the corner toast. The line drawing the newest and counting the rest is the client's (toast.ts barNoticeHtml, test 256), hence basis engine (client code and its tests; Annex D counts client source), with the owner's call that removed the toast beside it.",
     "sourceHashes": {}
   },
   {

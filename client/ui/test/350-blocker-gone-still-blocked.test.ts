@@ -11,8 +11,13 @@
  *
  * `BattleState.blocks`: KEY PRESENCE is the sticky "blocked" flag.
  *
- * §1  regions board: the emptied column reads "blocker gone", the
- *     column nobody blocked still reads "unblocked"
+ * §1  regions board: the emptied column is marked "blocker gone", the
+ *     column nobody blocked is still marked "unblocked"
+ *
+ * Owner 2026-11-03: the faint labels go. The two are no longer WORDS on the
+ * table but marked empty slots (main.ts ghostSlotHtml: `blockgone` struck
+ * through, `through` an arrow out of the slot), each named in its aria-label;
+ * this file reads the marker classes and names (test/1060 §4 keeps the words off).
  * §2  classic board (▦ turned back): the same, from the same builder
  * §3  the attacker sees it too — it is their damage that is not going through
  */
@@ -67,14 +72,14 @@ test('§1 regions board: an emptied block reads blocked, not unblocked', () => {
   const html = view(D, state);
   assert.match(html, /class="lboard/, 'the premise: the regions board is drawn');
   const c1 = colChunk(html, 0), c2 = colChunk(html, 1);
-  assert.doesNotMatch(c1, />unblocked</, 'column 1 was blocked — its blocker leaving does not unblock it');
-  assert.match(c1, /blockgone[^>]*>blocker gone</);
-  assert.match(c2, />unblocked</, 'column 2 nobody blocked, and it still says so');
+  assert.doesNotMatch(c1, /class="slot ghost through"/, 'column 1 was blocked — its blocker leaving does not unblock it');
+  assert.match(c1, /class="slot ghost blockgone"[^>]*aria-label="blocker gone/);
+  assert.match(c2, /class="slot ghost through"[^>]*aria-label="unblocked/, 'column 2 nobody blocked, and it still says so');
 });
 
 test('§3 the attacker is told the same thing', () => {
   const { state, A } = blockerGone(35003);
   const html = view(A, state);
-  assert.match(colChunk(html, 0), />blocker gone</);
-  assert.match(colChunk(html, 1), />unblocked</);
+  assert.match(colChunk(html, 0), /class="slot ghost blockgone"[^>]*aria-label="blocker gone/);
+  assert.match(colChunk(html, 1), /class="slot ghost through"[^>]*aria-label="unblocked/);
 });

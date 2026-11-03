@@ -226,7 +226,7 @@
   justify-content: center; font-size: 11px; max-width: 100%; }
 .stackcaption .stackverb { color: var(--dim); text-transform: uppercase;
   letter-spacing: .06em; font-size: 9px; font-weight: 700; }
-.stackcaption .by, .stackcaption .stackdepth { color: var(--dim); }
+.stackcaption .by, .stackcaption .stackruns { color: var(--dim); }
 /* who does what (TargetSpec.roles): its own line, the targets in the targeting
    gold and the jobs between them in plain text */
 .stackcaption .stackroles { flex-basis: 100%; text-align: center; }
@@ -237,7 +237,9 @@
 .stackcaption .stackdoes em { font-style: normal; color: var(--target); }
 .stackcaption .stackdoes .txticon { width: 13px; height: 13px; vertical-align: -2px; }
 #cardzoom .zoomhang .stackdoes { font-size: 14px; }
-.stackcaption .stackdepth { font-size: 10px; }
+/* a burst chain's run, "Fireball ×3" (CT-125); the "N deep" it rode beside
+   went on 2026-11-03 (owner: "Get rid of it please") */
+.stackcaption .stackruns { font-size: 10px; }
 /* the verb is plain words (FOUR COLOURS above); only the grey of a thing
    that came to nothing is shared with its card */
 .stackcaption:is(.st-answered, .st-fizzled) .stackverb { color: #7c8593; }

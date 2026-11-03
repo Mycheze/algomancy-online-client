@@ -6,7 +6,8 @@
  * and on either board a click on the dark card still did nothing at all.
  *
  * Now a mouse click on a dark hand card says the reason as a toast, on either
- * board; the classic board's hover box carries it as its last line; and a
+ * board (owner 2026-11-03: the board toast goes; notices live in the action bar
+ * — the reason is the bar's notice line now, and it waits there); the classic board's hover box carries it as its last line; and a
  * finger's tap still only reads (#201), its zoom carrying the reason as before
  * (the headless-Chrome check of that is in the round's report).
  *
@@ -45,7 +46,7 @@ function battle(seed: number, fire: number): { h: Harness; D: Seat; i: number } 
 }
 
 function show(h: Harness, seat: Seat): void {
-  ui.tick();   // the last test's toast runs out (its 4s timer)
+  ui.tick();
   ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat));
   ui.sent();
 }
@@ -53,7 +54,8 @@ function show(h: Harness, seat: Seat): void {
 const mouse = (want: Record<string, string | number>): void => {
   ui.pointer('pointerdown', want, { pointerType: 'mouse', pointerId: 2, isPrimary: true });
 };
-const toast = (html: string): string | null => /<div class="toast">([^<]*)<\/div>/.exec(html)?.[1] ?? null;
+/** the reason, as the action bar's notice line says it (null: no line) */
+const toast = (html: string): string | null => /<span class="barnoticemsg">([^<]*)<\/span>/.exec(html)?.[1] ?? null;
 
 // the classic board's half went with the classic board (board round 8)
 for (const regions of [true]) {
@@ -92,7 +94,7 @@ test('CT-371: the click and the zoom ask the same helper', () => {
   assert.match(main, /: handBlockLine\(handBlockReason\(q\(\), p, i, legalFor\(p\)\)\);/, 'and it is the CT-288 question');
   assert.match(main, /const why = handWhy\(p, i\);\n\s*if \(why\) copy\.insertAdjacentHTML\('beforeend', `<div class="zoomhang handwhy">/,
     'the zoom asks it');
-  assert.match(main, /if \(!items\.length\) \{ const why = handWhy\(p, i\); if \(why\) showToast\(why\); \}/,
+  assert.match(main, /if \(!items\.length\) \{ const why = handWhy\(p, i\); if \(why\) noteBar\(why\); \}/,
     'the click asks it when nothing is offered');
   // (the classic board's hover box asked it too; it went with the classic board, board round 8)
 });

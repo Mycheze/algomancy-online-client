@@ -61,7 +61,8 @@ import { EFFECT_ART_TOP, effectFace, lostTargetsForRow, roleSentence, stackBadge
 import { doesLine, lastKnown, noteTable, tableMemory } from './doesline.ts';
 import { glimpseHeadline, glimpseNotice, revealRecords, revealView } from './reveal.ts';
 import { dismissNotice, installRevealsLayer, isRevealsOpen, loadReveals, noticeReveal, openReveals, recordReveals, revealCount } from './reveallog.ts';
-import { costToastHtml, nextCostToastWake, queueCostToasts, type LiveCostToast } from './toast.ts';
+import { barNoticeHtml, COST_TOAST_HEAD, costToasts, foldNotices, type BarNotice } from './toast.ts';
+import { liveChip, liveLines, printsX } from './livecount.ts';
 import type { SpotTarget } from './fslot.ts';
 import { entityTextBox, iconizeText, predictionOf, printedTextBox, textBoxFor, txtIcon, attrReminders} from './cardtext.ts';
 import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
@@ -971,7 +972,7 @@ class NetBackend implements Backend {
         const msg = m.msg ?? 'error';
         this.log.push(`(the client answered for you and the server declined: ${msg})`);
         this.logTypes.push(undefined);
-        showToast(`the client answered for you and the server declined: ${msg}`);
+        noteBar(`the client answered for you and the server declined: ${msg}`);   // the log line is above
         render(); return;
       }
       uiError = m.msg ?? 'error'; playCue('error'); render(); return;
@@ -1685,8 +1686,15 @@ function tokenLossBarHtml(): string {
  * sentences by name, deliberately: a twentieth added next month must surface
  * without anybody editing this file.
  */
-let costToastsUp: LiveCostToast[] = [];
-let costToastTimer: ReturnType<typeof setTimeout> | null = null;
+/** THE ACTION BAR'S NOTICE LINE (owner, 2026-11-03: the corner toast goes —
+ * "It's a weird notification that pops up in a weird spot ... It then goes
+ * away quickly"). What a resolution cost somebody, and the client's own "why
+ * not" sentences (noteBar), wait on a line inside the action bar until the
+ * player's next action (act) or the bar's next prompt (barNoticeLine) — or a
+ * click on the line. `barNoticesUnder` is the prompt the line was first drawn
+ * under; null until it has been drawn. test/1060 §5. */
+let barNotices: BarNotice[] = [];
+let barNoticesUnder: string | null = null;
 
 /** note whatever this batch cost the player. Called from the two places
  * `absorbTokenLoss` is, and for the same reason — on the NET side that is
@@ -1694,19 +1702,37 @@ let costToastTimer: ReturnType<typeof setTimeout> | null = null;
  * when it arrives, so a held batch's toasts land with the board that explains
  * them and never ahead of it. */
 function absorbCostToasts(events: readonly EngineEvent[]): void {
-  costToastsUp = queueCostToasts(costToastsUp, events, Date.now());
-  scheduleCostToastWake();
+  const add = costToasts(events).map(t => ({ ...t, head: COST_TOAST_HEAD }));
+  if (!add.length) return;
+  barNotices = foldNotices(barNotices, add);
+  barNoticesUnder = null;
 }
 
-/** one scheduled repaint, at the moment the strip next changes. Without it a
- * notice about one resolution can sit over the board for minutes purely
- * because nothing else happened to repaint, which is not good enough for a
- * row that appears several at a time. */
-function scheduleCostToastWake(): void {
-  if (costToastTimer !== null) { clearTimeout(costToastTimer); costToastTimer = null; }
-  const at = nextCostToastWake(costToastsUp, Date.now());
-  if (at === null) return;
-  costToastTimer = setTimeout(() => { costToastTimer = null; render(); }, Math.max(16, at - Date.now()));
+/** a sentence of the client's own for the notice line — what the corner toast
+ * used to say. `log` also files it in the battle log, for the ones that are
+ * something that HAPPENED (a dark card's reason is asked for, not an event). */
+function noteBar(msg: string, opts: { log?: boolean } = {}): void {
+  barNotices = foldNotices(barNotices, [{ key: `client ${msg}`, msg, n: 1 }]);
+  barNoticesUnder = null;
+  if (opts.log && NET) { NET.log.push(`(${msg})`); NET.logTypes.push(undefined); }
+}
+
+/** the line, for the action bar: drawn under the prompt it arrived with, and
+ * gone the first time the bar asks something else (digits aside — a live
+ * count in the prompt is not a new question) */
+/** the bar's prompt, with the notice line above it (the prompt stays the
+ * bar's LAST child, the one that fills its fixed height) */
+function promptWithNotice(): string {
+  const prompt = promptHtml();
+  return `${barNoticeLine(prompt)}${prompt}`;
+}
+
+function barNoticeLine(prompt: string): string {
+  if (!barNotices.length) return '';
+  const under = prompt.replace(/\d+/g, '#');
+  if (barNoticesUnder === null) barNoticesUnder = under;
+  else if (barNoticesUnder !== under) { barNotices = []; barNoticesUnder = null; return ''; }
+  return barNoticeHtml(barNotices);
 }
 
 /** the pending repaint that ends the current beat */
@@ -1717,7 +1743,7 @@ let flashTimer: ReturnType<typeof setTimeout> | null = null;
  * not something somebody just did, and must not replay old beats. */
 function flashReset(): void {
   tokenLossUp = null;   // CR D7.4a: a resync is not somebody losing their tokens
-  costToastsUp = [];    // CR D7.4: nor anything a resolution cost somebody
+  barNotices = []; barNoticesUnder = null;   // CR D7.4: nor anything a resolution cost somebody
   // (the reveal notice is not dropped here: it waits for the viewer, report #224)
   flashQueue = [];
   beatQueue = [];       // CR D5.4: and the narrative beats holding back log lines
@@ -2310,6 +2336,7 @@ function act(a: Action): void {
   // CR 703.2a / CT-253: Ctrl held or the hold toggle on — the action asks to
   // keep priority. Here, at the one door, so no route can send without it.
   if (holdPriorityOn() && h.state.phase === 'battle') a = withHoldPriority(a);
+  barNotices = []; barNoticesUnder = null;   // the player's next action puts the notice line away
   NET.do(a);
   uiError = '';
 }
@@ -3098,13 +3125,6 @@ setInterval(() => {
 // layer of its own beside #app now (installReport, at boot), with its own
 // clicks and its own Escape; the rail button below is the only thing left
 // here, and all it does is open that layer with the room and the seat.
-let toastMsg: string | null = null;
-let toastTimer = 0;
-function showToast(msg: string): void {
-  toastMsg = msg;
-  clearTimeout(toastTimer);
-  toastTimer = window.setTimeout(() => { toastMsg = null; render(); }, 4000);
-}
 /** #5 / #85: the value(s) a card reading a hidden battle ledger would use if it
  * resolved right now. Both hooks are pure per-card queries the engine never
  * calls — see engine/src/cards/dsl.ts.
@@ -3205,33 +3225,27 @@ function stackPreviewX(it: StackItem): XPreviewRow[] {
  * chip is a few pixels wide; the labels ride in the focus viewer. */
 const stackPreviewXMark = (it: StackItem): string => {
   const rows = stackPreviewX(it);
-  return rows.length ? `X=${[...new Set(rows.map(r => r.x))].join('/')}` : '';
+  if (!rows.length || !it.card) return '';
+  return printsX(it.card) ? `X=${[...new Set(rows.map(r => r.x))].join('/')}` : liveChip(it.card, rows) ?? '';
 };
 
-/** The ONE number the chip shows when a card has several rows (owner,
- * 2026-09-27, MBRE): the row the card marks, else the highest. Several bare
- * numbers read as nothing — Gember held Soul Siphon through an after-combat
- * step at `6 · 0`, waiting for "the X" to leave zero. The highest is the value
- * the player can choose to get (the target, the mode); the rail lists every
- * row with its label. */
-const xHeadline = (rows: XPreviewRow[]): XPreviewRow =>
-  rows.find(r => r.headline) ?? rows.reduce((a, b) => (b.x > a.x ? b : a));
+/** the corner chip (#5): ONE short text — "X=3" on a card that prints an X,
+ * the count in a counting card's own terms otherwise (ui/livecount.ts, owner
+ * 2026-11-03: no X where the card has none) — and the rows on hover only when
+ * there are several to tell apart */
+const xBadge = (name: string, rows: XPreviewRow[]): Badge | null => {
+  const t = liveChip(name, rows);
+  if (!t) return null;
+  const lines = liveLines(name, rows);
+  return { t, ctr: true, ...(lines.length > 1 ? { title: lines.join('\n') } : {}) };
+};
 
-/** the corner chip: #5's original "X=3 now" wording, always one number — the
- * chip is a few pixels wide and a label does not fit — and every row rides in
- * the tooltip. */
-const xBadge = (rows: XPreviewRow[]): Badge => ({
-  t: `X=${xHeadline(rows).x} now`,
-  ctr: true,
-  title: rows.map(r => (r.label ? `${r.label}: ${r.x}` : `X = ${r.x}`)).join('\n'),
-});
-
-/** the same rows spelled out where there IS room (the focus viewer, the
- * inspector). Same `.xnow` presentation the stack viewer already uses for a
- * committed item's X — one idea, one look. */
-const xRowsHtml = (rows: XPreviewRow[]): string => rows.map(r =>
-  `<div class="xnow">X = ${r.x} right now${
-    r.label ? ` <span class="hint">— ${iconizeText(r.label)}</span>` : ''}</div>`).join('');
+/** the same where there IS room (the zoom, the inspector, the stack viewer):
+ * the bare count or one "X = N" per row — never a sentence about the card
+ * (owner 2026-11-03: "it spells out how the card works … despite the card
+ * being very clear") */
+const xRowsHtml = (name: string, rows: XPreviewRow[], opts: { forecast?: boolean } = {}): string =>
+  liveLines(name, rows, opts).map(l => `<div class="xnow">${esc(l)}</div>`).join('');
 
 // ── rendering ─────────────────────────────────────────────────────────
 /** one chip's markup — the table strip's, and the zoom's dice (round 4) */
@@ -3580,7 +3594,8 @@ function handBadges(n: CardName, offers: ReturnType<typeof handOffers>, xrows: X
   // first in push order and rank 0 (it carries a `cls`), so the one chip that
   // says what a click will DO is the last thing packBadgeLine folds away
   if (offer) badges.push(offer);
-  if (xrows) badges.push(xBadge(xrows));
+  const xb = xrows ? xBadge(n, xrows) : null;
+  if (xb) badges.push(xb);
   // CR 803.7: this card can be prophesied RIGHT NOW — the banner cost, up front
   if (offers.includes('prophesy')) {
     let mana: number | undefined;
@@ -3854,8 +3869,10 @@ function tokenTipHtml(tokens: readonly Entity[]): string {
     rows.map(t => `<tr class="tallyrow${t.burst && t.n > 1 ? ' burst' : ''}${t.burst && t.sizes.length > 1 ? ' mixed' : ''}"><th class="tallyname">${
       esc(t.name)}</th><td class="tallyn">×${t.n}</td><td class="tallyx">${esc(sizes(t))}</td></tr>`).join('')
   }</tbody></table>${rows.map(t => {
-    const why = !t.burst ? `Each ${t.name} is cast on its own.`
-      : t.n > 1 ? `Burst: clicking a ${t.name} casts all ${t.n} at once, as one chain${t.sizes.length > 1 ? ', of different sizes' : ''}.`
+    // only what a click does that is NOT the default (owner 2026-11-03:
+    // superfluous popup text goes — the non-burst token's line restating the default went)
+    const why = t.burst && t.n > 1
+      ? `Burst: clicking a ${t.name} casts all ${t.n} at once, as one chain${t.sizes.length > 1 ? ', of different sizes' : ''}.`
       : '';
     return why ? `<div class="tipfoot tokwhy">${esc(why)}</div>` : '';
   }).join('')}`;
@@ -4016,15 +4033,6 @@ function recycledLeft(s: GameState, seat: Seat): number {
     ? (s.recycled?.[seat]?.length ?? 0)
     : (s.sharedRecycled?.length ?? 0);
 }
-function deckTitle(s: GameState, seat: Seat): string {
-  const pile = recycledLeft(s, seat);
-  const shared = s.mode !== 'constructed' ? ' (shared)' : '';
-  return esc(pile
-    ? `${deckLeft(s, seat)} left in the deck${shared}, and ${pile} recycled card(s) behind `
-      + 'the mark. When anything reaches the mark they are shuffled in. Nobody may look at either.'
-    : `${deckLeft(s, seat)} left in the deck${shared}. Recycled cards wait behind the mark and `
-      + 'are shuffled in when anything reaches it.');
-}
 
 /** CR 608.3b: what the sub-step after this boundary window will be, in words. */
 function damageWindowWhatsNext(s: GameState): string {
@@ -4139,7 +4147,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
     ? pl.hand.every(n => n === HIDDEN_CARD)
     : !!NET && p !== NET.seat;
   const miniHand = hiddenHand
-    ? `<span class="minihand" data-animzone="hand:${p}" title="hand: ${pl.hand.length} cards">${nameKeys(pl.hand, `h${p}:`).map(k => `<span class="miniback" data-anim="${k}"></span>`).join('')}</span><span class="handcount">${
+    ? `<span class="minihand" data-animzone="hand:${p}">${nameKeys(pl.hand, `h${p}:`).map(k => `<span class="miniback" data-anim="${k}"></span>`).join('')}</span><span class="handcount">${
         pl.hand.length ? `hand ${pl.hand.length}` : '0 cards in hand'}</span>`
     : '';
   // round 13: the label used to be one long inline sentence that explained
@@ -4248,7 +4256,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
     pnameFixed: `<span class="pname">${esc(pl.name)}<span class="linit${s.initiative === p ? '' : ' off'}"${
       s.initiative === p ? ' title="has the initiative"' : ''}> ⭐</span></span>`,
     life: `<span class="life${pickable(`player:${p}`) ? ' candidate' : ''}" data-act="player" data-p="${p}"
-        data-animzone="life:${p}" title="${esc(pl.name)}'s life total — bring it to 0 to win"
+        data-animzone="life:${p}"
         ><span class="lifeheart">♥</span><span class="lifenum">${pl.life - (lifeHeldNow.get(p) ?? 0)}</span>${playerPickNote(p)}</span>`,
     counters,
     resGrouped: resGroupedHtml(e, p),
@@ -5084,7 +5092,7 @@ function inspectorHtml(): string {
     <div class="inspectscroll">
       <div class="inspecttop"><img src="${art(name)}" alt="" onerror="this.style.display='none'">
         <div class="inspecttext">${textBoxHtml(box, { noTitle: true })}</div></div>
-      ${xRows ? `<h4>X right now</h4>${xRowsHtml(xRows)}` : ''}
+      ${xRows && liveLines(name, xRows).length ? `<h4>This battle</h4>${xRowsHtml(name, xRows)}` : ''}
       <h4>Attributes${u ? ' (current, shared/granted included)' : ' (printed)'}</h4>
       ${attrRows}
       ${tokenRows ? `<h4>Tokens it creates</h4>${tokenRows}` : ''}
@@ -5294,8 +5302,8 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
       ? (iBlock ? blockBuilderHtml(ci) : pendingColHtml(NET?.building?.cols[ci] ?? []))
       : blockers.map(id => h.state.entities[id] ? unitHtml(h.state.entities[id]!) : '').join('');
     // the "nothing here" markers are a thin strip, not a card-sized hole: the
-    // half already reserves the height it needs, so the label only has to say
-    // the word
+    // half already reserves the height it needs, so the marker only has to be
+    // seen (ghostSlotHtml)
     const atkCards = col.map(id => h.state.entities[id] ? unitHtml(h.state.entities[id]!) : '').join('');
     // #107: a `behind` spot lands beside the one unit standing there; a `hole`
     // spot lands where the "gone" marker was, because a hole IS an empty
@@ -5305,7 +5313,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     // CR 606.4: a side-block's column never had an attacker in it — not "gone"
     const sideCol = !!b.sideCols?.includes(ci);
     const atkSide = atkDrop ? atkCards + fsSlot(atkDrop)
-      : (atkCards || (sideCol ? '<div class="slot ghost">no attacker</div>' : '<div class="slot ghost">gone</div>'));
+      : (atkCards || ghostSlotHtml(sideCol ? 'noatk' : 'atkgone'));
     const blkDrop = fsMine(b.defender) ? fsCol.get(ci) : undefined;
     // CT-190 / report #176: BLOCKED IS KEY PRESENCE, NOT A NON-EMPTY LIST
     // (BattleState.blocks; CR 606.3a). A block whose blocker has since left — a
@@ -5313,9 +5321,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     // drawn as one, not as the "unblocked" a column nobody answered gets.
     const blockedEmpty = b.step !== 'blocks' && Object.hasOwn(b.blocks, ci);
     const blkSide = blkDrop ? blockBuild + fsSlot(blkDrop)
-      : (blockBuild || (blockedEmpty
-        ? '<div class="slot ghost blockgone" title="the blocker left, but the column stays blocked — no damage gets through">blocker gone</div>'
-        : '<div class="slot ghost">unblocked</div>'));
+      : (blockBuild || ghostSlotHtml(blockedEmpty ? 'blockgone' : 'through'));
     return battleColHtml({
       label: `column ${ci + 1}${sideCol ? ' · side-block' : ''}`, flip, atk: atkSide, blk: blkSide,
       blkPending: watchingBlocks && !!NET?.building?.cols[ci]?.length,
@@ -5339,7 +5345,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     const watched = NET?.building?.left?.[-ci - 1] ?? [];
     return battleColHtml({
       label: 'side-block · left', flip, cls: 'sidecol',
-      atk: '<div class="slot ghost">no attacker</div>',
+      atk: ghostSlotHtml('noatk'),
       blk: iBlock ? blockBuilderHtml(ci) : pendingColHtml(watched),
       blkPending: watchingBlocks && !!watched.length,
       sides: { atk: b.attacker, blk: b.defender },
@@ -5349,7 +5355,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     const ci = b.columns.length + k;
     return battleColHtml({
       label: `column ${ci + 1} · side-block`, flip, cls: 'sidecol',
-      atk: '<div class="slot ghost">no attacker</div>',
+      atk: ghostSlotHtml('noatk'),
       blk: iBlock ? blockBuilderHtml(ci) : pendingColHtml(NET?.building?.cols[ci] ?? []),
       blkPending: watchingBlocks && !!NET?.building?.cols[ci]?.length,
       sides: { atk: b.attacker, blk: b.defender },
@@ -5499,6 +5505,30 @@ function counterSendHtml(): string {
  * cannot be added that disagrees. `atk`/`blk` are the two sides by MEANING,
  * never by position; position is this function's business and nobody else's.
  */
+/**
+ * THE EMPTY HALVES OF A BATTLE COLUMN, as shapes (owner, 2026-11-03: the faint
+ * "unblocked" and "blocker gone" were so faint you could not tell they were
+ * text — "Better to remove it and represent in other ways"). No word on the
+ * table: each is an empty slot the size the word's strip was, marked so it
+ * reads at a glance and on a finger (no hover-only meaning), its name in
+ * `title` and `aria-label` (test/1060 §4):
+ *   through    nobody blocks it — an arrow out of the slot, away from the
+ *              fight, toward the player it hits
+ *   blockgone  blocked, and the blocker has left (CT-190; still blocked, CR
+ *              606.3a) — the slot struck through, and no arrow: nothing gets by
+ *   atkgone    the attacker has left — struck through the same way
+ *   noatk      a side-block's column: nobody ever stood there — just empty
+ */
+const GHOST_SLOT = {
+  through: 'unblocked: its damage goes through',
+  blockgone: 'blocker gone: the blocker left, but the column stays blocked, so no damage gets through',
+  atkgone: 'attacker gone',
+  noatk: 'no attacker',
+} as const;
+function ghostSlotHtml(kind: keyof typeof GHOST_SLOT): string {
+  return `<div class="slot ghost ${kind}" role="img" aria-label="${GHOST_SLOT[kind]}" title="${GHOST_SLOT[kind]}"></div>`;
+}
+
 function battleColHtml(o: {
   label: string; flip: boolean; atk: string; blk: string;
   /** the half holds an UNCOMMITTED build (the opponent's, live) */
@@ -5571,7 +5601,7 @@ function watchingHtml(who: string, doing: string, flip: boolean): string {
         atk: pendingColHtml(c), atkPending: true,
         // what the committed table puts opposite an undefended column, so the
         // half opposite does not appear out of nowhere when it commits
-        blk: '<div class="slot ghost">unblocked</div>',
+        blk: ghostSlotHtml('through'),
         // the same formation marks the committed table carries, so an arrow
         // at a formation lands the same in both views
         ...(h.state.battle ? { sides: { atk: h.state.battle.attacker, blk: h.state.battle.defender } } : {}),
@@ -6864,9 +6894,8 @@ function previewStackHtml(id: number, opts: { noFace?: boolean } = {}): string {
   // never committed one. Worded as a forecast ("right now"), because that is
   // what it is — the ledger can still move before it resolves — and in exactly
   // the `.xnow` presentation the hand chip and the inspector already use.
-  const soonX = stackPreviewX(it).map(r =>
-    `<div class="xnow">X = ${r.x} right now${
-      r.label ? ` <span class="hint">— ${iconizeText(r.label)}</span>` : ''}</div>`).join('');
+  // a forecast, said as one (CR annexd x-forecast): the ledger can still move
+  const soonX = it.card ? xRowsHtml(it.card, stackPreviewX(it), { forecast: true }) : '';
   // CR 702.5 (report #81, EGCW): the declared MODE rides on the stack so the
   // opponent can price their response. Choosing it at cast time is only half
   // the fix — an unreadable declaration leaves them responding blind, which is
@@ -6906,7 +6935,7 @@ function previewStackHtml(id: number, opts: { noFace?: boolean } = {}): string {
       ${rows || `<div class="hint">${iconizeText(it.label)}</div>`}
       ${modChips}
       ${targets ? `<div class="abtargets">→ ${targets}</div>` : ''}
-      ${it.negated ? '<div class="abneg">fizzled — it left the stack and will do nothing</div>' : ''}
+      ${it.negated ? '<div class="abneg">fizzled</div>' : ''}
       ${modHostCache.stack.has(it.id)
         // CR 723.4: the other place the player looks at a stack item. The glow is
         // on the strip; the viewer says what it means in words.
@@ -7221,11 +7250,8 @@ function stackBoardHtml(): string {
     <div class="stackrow" style="--stackstep:${step.toFixed(3)}">${cards}</div>
     <div class="${captionClass(cap)}" data-anim-follow="s${cap.row.item.id}">
       ${captionBody(cap)}
-      ${rows.length > 1 ? `<span class="stackdepth" title="${esc((cap.pending
-        ? 'one of these is resolving right now — the rest are still waiting'
-        : 'the stack resolves from the right — the raised card goes first')
-        + (runs.length ? ` · ${runs.map(t => `${t.name} ×${t.n}: ${sizesText(t)}`).join(' · ')}` : ''))
-        }">${rows.length} deep ↢${runs.map(t => ` · ${esc(t.name)} ×${t.n}`).join('')}</span>` : ''}
+      ${runs.length ? `<span class="stackruns" title="${esc(runs.map(t => `${t.name} ×${t.n}: ${sizesText(t)}`).join(' · '))
+        }">${runs.map(t => `${esc(t.name)} ×${t.n}`).join(' · ')}</span>` : ''}
     </div>
   </div>`;
 }
@@ -7423,8 +7449,7 @@ function toolTipHtml(kind: string): string | null {
     const row = (seat: Seat, who: string): string =>
       `<tr${clockSnap!.running[seat] ? ' class="tiprun"' : ''}><th>${who}</th><td>${fmtClock(clockDisplayMs(seat))}</td></tr>`;
     return `<div class="tiphead">⏱ chess clocks</div><table class="tiptab"><tbody>${
-      row(other(NET.seat), esc(h.state.players[other(NET.seat)]!.name))}${row(NET.seat, NET.spectating ? esc(h.state.players[NET.seat]!.name) : 'you')}</tbody></table>${
-      '<div class="tipfoot">display only — the server keeps the time</div>'}`;
+      row(other(NET.seat), esc(h.state.players[other(NET.seat)]!.name))}${row(NET.seat, NET.spectating ? esc(h.state.players[NET.seat]!.name) : 'you')}</tbody></table>`;
   }
   return null;
 }
@@ -7830,7 +7855,7 @@ function ensureBlockKeys(): void {
   ui.backOnly = pruneBackOnly(ui.columns, ui.backOnly);
   if (r.dropped.length) {
     const n = r.dropped.length;
-    showToast(`the line closed ranks — the column you were blocking is gone, so ${n === 1 ? 'your blocker is' : `your ${n} blockers are`} free to place again`);
+    noteBar(`the line closed ranks — the column you were blocking is gone, so ${n === 1 ? 'your blocker is' : `your ${n} blockers are`} free to place again`, { log: true });
     playCue('error');
   }
 }
@@ -7907,7 +7932,7 @@ function renderNow(): boolean {
     <div class="actionbar">
       ${pickShowHtml()}
       ${tokenLossBarHtml()}
-      ${promptHtml()}
+      ${promptWithNotice()}
     </div>
     ${toolbarHtml({ canUndo, autoPref, bluffPref, fullPref })}
     ${NET ? `<div class="handdock${handDockTucked() ? ' tucked' : ''}"><div class="zonelabel">${handLabel('Your hand', h.state.players[botSeat]!.hand.length)}${handDockTucked() ? ' — tucked away while you choose; <span class="mouseonly">hover</span><span class="touchonly">tap here</span> to look' : ''}</div>
@@ -7929,8 +7954,7 @@ function renderNow(): boolean {
     ${pendingTrio ? `<div class="overlay trioover">${revealHtml(pendingTrio)}</div>` : ''}
     ${postGame && !postGameHidden ? postGameHtml(postGameView(postGame)) : ''}
     ${glimpseNoticeHtml()}
-    ${costToastHtml(costToastsUp, Date.now())}
-    ${toastMsg ? `<div class="toast">${esc(toastMsg)}</div>` : ''}`;
+`;
   restoreViewport(snap);
   // [142]: …and the hover, which is the other thing every paint used to
   // throw away. After restoreViewport, because "did the card move?" is a
@@ -9716,8 +9740,8 @@ function tipFor(el: HTMLElement): string | null {
   return countsTipHtml({
     name: esc(pl.name), hand: pl.hand.length, deck: deckLeft(s, p), recycled: recycledLeft(s, p),
     bin: pl.bin.length, cache: cacheOf(p).length, shared: s.mode !== 'constructed',
-    // CR 408.2c: the mark, in words (it was the deck line's title)
-    note: deckTitle(s, p),
+    // (owner 2026-11-03: superfluous popup text goes — the table already says
+    // deck and recycle pile; the paragraph about the mark under it is gone)
     ...(s.mode === 'draft' ? { pack: s.packs[p]?.length ?? 0 } : {}),
   });
 }
@@ -9870,7 +9894,7 @@ function zoomPanelHtml(src: HTMLElement): string | null {
   const name = src.dataset['prev'];
   if (!name || name === HIDDEN_CARD) return null;
   const xrows = src.dataset['act'] === 'hand' ? xPreviewFor(name, Number(src.dataset['p']) as Seat) : null;
-  return `${xrows ? xRowsHtml(xrows) : ''}${textBoxHtml(printedTextBox(name))}`;
+  return `${xrows ? xRowsHtml(name, xrows) : ''}${textBoxHtml(printedTextBox(name))}`;
 }
 
 /* BOARD ROUND 8 — A FINGER'S CARD MENU. The rail drew the card menu (details
@@ -10443,7 +10467,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   glimpseclose: () => { dismissNotice(); },
   // CR D7.4a: the tokens are gone either way, so this only puts the notice away
   tokenlossclose: () => { tokenLossUp = null; },
-  costtoastclose: () => { costToastsUp = []; },
+  noticeclose: () => { barNotices = []; barNoticesUnder = null; },
   autopasstoggle: () => {
     localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
     cancelAutoPass();
@@ -11282,7 +11306,7 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: boo
   // a drag onto the table plays; a drag onto a host is the mod (see dragCardPlan)
   if (!opts.noMods) items.push(...modMenuItems(p, 'hand', i, name, modActions));
   // CT-371: a dark card's click used to do nothing at all; it says why
-  if (!items.length) { const why = handWhy(p, i); if (why) showToast(why); }
+  if (!items.length) { const why = handWhy(p, i); if (why) noteBar(why); }
   offer(items, e);
 }
 
@@ -12235,7 +12259,7 @@ if (params.has('room') && params.get('room')!.trim()) {
   // page. Everything from here on is the ordinary NET path, bot hidden and all.
   const solo = learn.startSolo(params.get('el'), {
     fresh: params.get('new') === '1',
-    onBotStuck: why => showToast(`the Tutorial Bot got stuck: ${why}`),
+    onBotStuck: why => noteBar(`the Tutorial Bot got stuck: ${why}`, { log: true }),
   });
   // a reload continues this game rather than dealing another
   if (params.get('new') === '1') history.replaceState(null, '', `?learn=play&el=${solo.progress.element}`);
@@ -12246,7 +12270,7 @@ if (params.has('room') && params.get('room')!.trim()) {
 } else if (params.get('challenge') === 'play') {
   // docs/21 — a weekly challenge run: the Learn to Play room with the
   // challenge's deal and the dummy. No saved run (a stale link): the page.
-  const run = chrun.startRun(params.get('id'), { onBotStuck: why => showToast(`the dummy got stuck: ${why}`) });
+  const run = chrun.startRun(params.get('id'), { onBotStuck: why => noteBar(`the dummy got stuck: ${why}`, { log: true }) });
   if (!run) {
     location.search = '?challenge';
   } else {

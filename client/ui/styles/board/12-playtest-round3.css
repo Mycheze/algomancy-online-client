@@ -65,9 +65,23 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 /* a "gone" / "unblocked" / "…" marker: says the word, takes no card of room */
 .slot.ghost { height: auto; min-height: 0; padding: 2px 8px; border-style: dotted;
   font-size: 9px; letter-spacing: .04em; opacity: .8; width: auto; min-width: var(--cw); }
-/* CT-190: a declared block whose blocker left — still blocked (CR 606.3a), so it
-   must not read like the "unblocked" marker beside it */
-.slot.ghost.blockgone { border-style: dashed; border-color: var(--dim); opacity: 1; }
+/* THE EMPTY HALVES AS SHAPES (owner, 2026-11-03: the faint words go — main.ts
+   ghostSlotHtml, test/1060 §4). No text, so the strip is given the height the
+   word's line gave it (a 1.4 line, 2px padding and a 1px border each way, at
+   the strip's own font size: 9px, 8px in the fight); the mark is drawn, at full strength, in the panel's
+   own text colours:
+     .through   unblocked — a chevron out of the slot, away from the fight
+     .blockgone blocked, blocker gone (CT-190, still blocked: CR 606.3a) and
+     .atkgone   the attacker gone — the slot struck through, no arrow
+     .noatk     a side-block's column, nobody ever there — just empty */
+.slot.ghost.through, .slot.ghost.blockgone, .slot.ghost.atkgone, .slot.ghost.noatk {
+  height: calc(1.4em + 6px); opacity: 1; border-color: var(--dim); color: var(--text); }
+.slot.ghost.through::before { content: ''; width: 7px; height: 7px; border: solid currentColor;
+  border-width: 0 2px 2px 0; transform: translateY(-2px) rotate(45deg); }
+.bhalf.top > .slot.ghost.through::before { transform: translateY(2px) rotate(-135deg); }
+.slot.ghost.blockgone, .slot.ghost.atkgone { border-style: dashed;
+  background: linear-gradient(to top right, transparent calc(50% - 1px), var(--dim) calc(50% - 1px),
+    var(--dim) calc(50% + 1px), transparent calc(50% + 1px)); }
 /* #107/CT-94 — the drop targets for a formation placement question. The whole
    complaint was that the battlefield was inert while the only way to answer
    sat in the bar, so these have to read as INVITATIONS: solid, lit, moving.

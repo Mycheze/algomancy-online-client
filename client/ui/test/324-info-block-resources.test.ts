@@ -191,15 +191,19 @@ test('§5 board round 8: the info is ONE line — resources take what is left, t
   assert.match(CSS, /\.lboard \{[^}]*--linh: \d+px;/);
 });
 
-test('§5 the frame round the board: no top bar on this board, an action bar that fits its content', () => {
+test('§5 the frame round the board: no top bar on this board, an action bar of one height', () => {
   // board round 8 deleted the top bar with the classic board: the phases are
   // icons on your info line, the chips are on the toolbar
   const ui2 = MAIN.slice(MAIN.indexOf('<div class="stickytop">'), MAIN.indexOf('<div class="actionbar">'));
   assert.ok(ui2.length > 0, 'the frame is where this test looks');
   assert.doesNotMatch(ui2, /class="topbar"/, 'no top bar');
   // the action bar's floor lasted one round (owner, 2026-09-26: "much larger
-  // than normal" in a battle) — the bar is as tall as what it holds
+  // than normal" in a battle), and the bar was as tall as what it held — until
+  // the owner, 2026-11-03: "the action bar should have a constant height so
+  // that, when it needs another row, it doesn't constantly move the whole UI up
+  // and down". Still no floor: ONE height, the one test/1060 §3 pins
   assert.doesNotMatch(CSS, /#app\.board\.v2 \.actionbar[^{]*\{[^}]*min-height/);
+  assert.match(CSS, /#app\.board\.v2 \.actionbar \{[^}]*height: var\(--actionbar-h\);/);
 });
 
 // CT-336's lesson, kept: a line that cuts its overflow does it with `clip`,

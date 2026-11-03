@@ -115,17 +115,20 @@ const handChip = (html: string, card: string): string => {
   const at = html.indexOf(`data-prev="${card}"`);
   assert.ok(at >= 0, `the premise: ${card} is drawn`);
   const card_ = html.slice(at, html.indexOf('</div></div>', at) + 12);
-  return /X[^<"]*now/.exec(card_)?.[0] ?? '';
+  // the live chip (a `.badge ctr`): "X=N", or a counting card's own terms
+  return /<span class="badge ctr"[^>]*>([^<]*)<\/span>/.exec(card_)?.[1] ?? '';
 };
 
+// owner 2026-11-03: no X where the card has none; the zoom does not explain the card — the chip
+// is "X=N" (no "now") on a card that prints an X, and a counting card's own terms otherwise
 test('§4 the hand chip headlines the highest row — the player who lost it, or the one who dealt it', () => {
   const { h, A, D } = bled(2953);
   give(h, D, 'Soul Siphon');
   give(h, A, 'Soul Siphon');
   // the defender lost 7: their own row is the high one
-  assert.equal(handChip(screen(h, D), 'Soul Siphon'), 'X=7 now');
+  assert.equal(handChip(screen(h, D), 'Soul Siphon'), 'X=7');
   // the attacker lost nothing, and can still target the defender for 7
-  assert.equal(handChip(screen(h, A), 'Soul Siphon'), 'X=7 now');
+  assert.equal(handChip(screen(h, A), 'Soul Siphon'), 'X=7');
   assert.doesNotMatch(screen(h, D), /X now: /, 'never the bare list of numbers');
 });
 
@@ -137,7 +140,8 @@ test('§4 a card whose rows are facts headlines its own: The Silent shows what y
   const region = h.state.battle!.region;
   const ctrs = (h.state.battleCounters[region] ??= {});
   ctrs[`spellsPlayed:${A}`] = 1;
-  assert.equal(handChip(screen(h, D), 'The Silent'), 'X=0 now', 'what YOU pay, not the higher 2');
+  // The Silent prints no X: its chip is the surcharge in its own terms
+  assert.equal(handChip(screen(h, D), 'The Silent'), '+0 to play', 'what YOU pay, not the higher 2');
 });
 
 test('§4 a hand card carries its seat for the rail, never a frozen copy of the rows', () => {
