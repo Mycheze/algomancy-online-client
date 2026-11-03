@@ -12,8 +12,7 @@
 
 .cbbar { display: flex; gap: var(--space-3); align-items: center; margin: var(--space-4) 0 var(--space-2); flex-wrap: wrap; }
 .cbq { flex: 1; min-width: 0; font: 15px/1.4 ui-monospace, monospace;
-  background: var(--bg); color: var(--text); border: 1px solid var(--line);
-  border-radius: var(--radius-md); padding: var(--space-4) var(--space-5); }
+  background: var(--bg); padding: var(--space-4) var(--space-5); }
 .cbq:focus { outline: none; border-color: var(--accent); }
 .cbclear { padding: var(--space-2) var(--space-4); }
 .cberr { color: var(--danger); font-size: var(--text-12); margin: var(--space-1) var(--space-1) var(--space-2); }
@@ -24,8 +23,7 @@
 
 .cbtools { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap;
   font-size: var(--text-12); color: var(--dim); margin-bottom: var(--space-4); }
-.cbtools select { background: var(--panel2); color: var(--text);
-  border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-1) var(--space-2); }
+.cbtools select { padding: var(--space-1) var(--space-2); }
 .cbspacer { flex: 1; }
 .cbviews button { padding: var(--space-1) var(--space-4); font-size: var(--text-12); }
 .cbviews button.on { border-color: var(--accent); color: var(--accent); }

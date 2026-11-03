@@ -99,8 +99,7 @@ html.touch .crdoc .crshare { opacity: .7; padding: var(--space-2) var(--space-3)
    after every paint; its results drop down under it */
 .crsearchslot { flex: 1 1 220px; min-width: 160px; max-width: 460px; }
 .crsearch { position: relative; }
-.crsinput { width: 100%; box-sizing: border-box; background: var(--bg); color: var(--text); border: 1px solid var(--line);
-  border-radius: var(--radius-md); padding: var(--space-2) var(--space-4); font: inherit; }
+.crsinput { width: 100%; box-sizing: border-box; background: var(--bg); padding: var(--space-2) var(--space-4); font: inherit; }
 .crsinput:focus { outline: none; border-color: var(--accent); }
 .crsresults { position: absolute; top: calc(100% + 4px); left: 0; right: 0; min-width: min(420px, calc(100vw - 32px)); z-index: 35;
   max-height: 65vh; overflow-y: auto; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-md);
@@ -122,8 +121,7 @@ html.touch .crdoc .crshare { opacity: .7; padding: var(--space-2) var(--space-3)
 .crcomposer { position: fixed; right: 24px; top: 90px; width: min(420px, calc(100vw - 32px)); background: var(--panel);
   border: 1px solid var(--accent); border-radius: var(--radius-lg); padding: var(--space-5) var(--space-5); display: flex; flex-direction: column; gap: var(--space-4);
   box-shadow: 0 6px 24px rgba(0,0,0,.5); }
-.crcomposer textarea { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4); font: inherit; resize: vertical; }
+.crcomposer textarea { width: 100%; background: var(--bg); font: inherit; resize: vertical; }
 .crhead { font-size: var(--text-13); }
 .crrow { display: flex; align-items: center; gap: var(--space-4); }
 .crerr { color: var(--danger); }
@@ -159,7 +157,7 @@ html.touch .crdoc .crshare { opacity: .7; padding: var(--space-2) var(--space-3)
 }
 .crdoc h2 { font: 600 22px/1.3 Georgia, serif; margin: 28px 0 12px; padding-top: var(--space-5); border-top: 1px solid var(--line); }
 .crdoc h2:first-child { margin-top: 0; }
-.crdoc h3 { font-size: var(--text-16); margin: 28px 0 8px; }
+.crdoc h3 { margin: 28px 0 8px; }
 .crdoc h4 { font-size: var(--text-14); margin: 20px 0 6px; }
 .crdoc .front { border: 1px solid var(--line); background: var(--surface); padding: var(--space-2) var(--space-6); border-radius: var(--radius-md); font-size: var(--text-14); }
 .crdoc code, .crdoc .num, .crdoc .meta, .crdoc .tb, .crdoc .sk { font-family: var(--font-mono); }

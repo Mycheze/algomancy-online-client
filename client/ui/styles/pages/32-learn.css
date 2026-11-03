@@ -9,7 +9,7 @@
   box-shadow: 0 12px 40px rgba(0,0,0,.55); }
 .learnbox { width: min(94vw, 600px); }
 .lhead { display: flex; align-items: baseline; gap: var(--space-4); }
-.lhead h3 { margin: 0; flex: 1; font-size: var(--text-16); }
+.lhead h3 { margin: 0; flex: 1; }
 .lnum { color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: var(--text-11); letter-spacing: .08em; white-space: nowrap; }
 .lheadbtns button, .lhead > button { font-size: var(--text-12); padding: var(--space-1) var(--space-4); }
 .lscroll { overflow-y: auto; min-height: 0; padding-right: var(--space-2); }
@@ -55,8 +55,8 @@ a.lcard { color: var(--accent); text-decoration: underline dotted; cursor: help;
 .lja > :last-child { margin-bottom: 0; }
 .ljcards { font-size: var(--text-12); color: var(--dim); margin-top: var(--space-2); }
 .ljask { display: flex; gap: var(--space-3); }
-.ljask input { flex: 1; min-width: 0; font-family: inherit; font-size: var(--text-14); line-height: 1.4; background: var(--bg); color: var(--text);
-  border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-2) var(--space-4); }
+.ljask input { flex: 1; min-width: 0; font-family: inherit; font-size: var(--text-14); line-height: 1.4; background: var(--bg);
+  padding: var(--space-2) var(--space-4); }
 .lfoot { display: flex; align-items: center; gap: var(--space-4); }
 .lfootbtns { margin-left: auto; display: flex; gap: var(--space-3); flex-wrap: wrap; justify-content: flex-end; }
 .lprimary { border-color: var(--accent) !important; color: var(--accent); font-weight: 700; }

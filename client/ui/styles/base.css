@@ -1,7 +1,47 @@
+/* THE BASE LAYER. CANONICAL; edit by hand.
+ *
+ * What an element looks like before any page styles it: the document, body
+ * text, headings, links, the .hint and .dim helper text, the one small-caps
+ * label (.eyebrow), the form controls and the keyboard-focus ring. Built from
+ * tokens.css only (design-system Phase 2, client/docs/23-design-system.md).
+ * Before this layer every page wrote its own copy of each; a page piece may
+ * not re-declare one of these bare any more (ui/test/925).
+ *
+ * ⚠ TWO RULES FOR EVERYTHING BELOW THE BUTTON BLOCK
+ *
+ * 1. :where() — zero specificity. A base rule must lose to ANY page rule
+ *    that targets the same element, so a page's deliberate difference
+ *    (`.acctcard h3 { color: var(--accent) }`, `.cbq:focus { outline: none }`)
+ *    still wins without having to out-shout the base. Write a new base rule
+ *    as `:where(<selector>)`, never as a bare selector.
+ *
+ * 2. Not the game board. The board renders inside the same #app, and it is
+ *    out of the design system's scope (it keeps its own look, styles/board/).
+ *    Every rule that would paint an element the board also uses ends in
+ *    `:where(:not(#app.board *))`, so nothing under the running game changes.
+ *    The dialogs that open over every page (report, inbox, help) are pages
+ *    for this purpose: they get the base.
+ *
+ * The button block (button, .primary, :disabled) is older than this layer and
+ * keeps its plain specificity; the components round (Phase 3) replaces it. */
 @font-face { font-family: 'Card Title'; font-weight: 700; font-style: normal; font-display: swap;
   src: url('fonts/EBGaramond-Bold.woff2') format('woff2'); }
+
+/* ── the document ──
+   color-scheme: dark — the browser's own parts (scrollbars, a select's
+   list, a checkbox, an unstyled input, the date picker) are drawn for a dark
+   page, not as white boxes on it (owner's recommendation, 2026-11-02). */
+:root { color-scheme: dark; }
+/* …but a framed document (the rulebook PDF, the comprehensive rules) keeps
+   the scheme it had: a frame inherits the page's preference, and the CR
+   document has a dark theme it would switch to. Whether it should is a
+   design call (the redesign's), not a side effect of this line. */
+:where(iframe) { color-scheme: normal; }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.4 system-ui, sans-serif; }
+/* no font boosting on a phone; no grey flash on a tap (moved from shared/touch) */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { margin: 0; background: var(--color-bg); color: var(--color-text); font: var(--text-13)/1.4 var(--font-ui);
+  -webkit-tap-highlight-color: transparent; }
 #app { display: grid; grid-template-columns: 1fr 290px; gap: var(--space-4); padding: var(--space-4); max-width: 1500px; margin: 0 auto; }
 .main { min-width: 0; }
 .side { display: flex; flex-direction: column; gap: var(--space-4); }
@@ -17,3 +57,42 @@ button:hover { border-color: var(--accent); }
 button.primary { background: var(--color-confirm); border-color: var(--color-confirm-border); }
 button:disabled { opacity: .4; cursor: default; }
 
+/* ── text ── */
+/* headings: a step of the type scale each, bold. Only the size and weight —
+   every page sets its own margins and colour, so the browser's margins
+   (em, so they follow the size) stay. h2 keeps the browser's 1.5em
+   (19.5px at the 13px body), between the scale's 16 and 22: the redesign
+   picks its step, here, once. */
+:where(h1, h2, h3, h4):where(:not(#app.board *)) { font-weight: 700; }
+:where(h1):where(:not(#app.board *)) { font-size: var(--text-26); }
+:where(h2):where(:not(#app.board *)) { font-size: 1.5em; }
+:where(h3):where(:not(#app.board *)) { font-size: var(--text-16); }
+:where(h4):where(:not(#app.board *)) { font-size: var(--text-13); }
+
+/* links: the one link colour. Without it an unstyled link is the browser's
+   blue, which under color-scheme: dark is a lilac */
+:where(a):where(:not(#app.board *)) { color: var(--color-link); }
+
+/* helper text: a sentence that explains, quieter than the text it explains
+   (.hint), and any quieter span or cell (.dim). Colour only — size, margin
+   and layout stay the page's. */
+:where(.hint, .dim):where(:not(#app.board *)) { color: var(--color-text-muted); }
+
+/* THE small-caps label — a section's name over its content, a column head,
+   a zone's caption. The idiom every page spelled out for itself at six sizes
+   and six trackings (census §3); .zonelabel (board/03) is the same thing with
+   a top margin. New markup uses this class. */
+:where(.eyebrow) { color: var(--color-text-muted); font-size: var(--text-11); text-transform: uppercase; letter-spacing: .08em; }
+
+/* ── form controls ──
+   The recipe ~15 pages each re-declared: a raised field with a hairline
+   border. Checkboxes, radios and ranges stay native (dark, from color-scheme
+   above); `accent-color` is the one line that would recolour them. */
+:where(input:not([type=checkbox], [type=radio], [type=range], [type=color], [type=file], [type=button], [type=submit], [type=reset], [type=image], [type=hidden]), select, textarea):where(:not(#app.board *)) {
+  background: var(--color-surface-raised); color: var(--color-text); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+
+/* ── keyboard focus ──
+   One ring, on keyboard focus only (a mouse click on a button shows none). A
+   page that draws its own focus (a border colour, `outline: none`) wins. */
+:where(:focus-visible):where(:not(#app.board *)) { outline: 2px solid var(--color-accent); outline-offset: 2px; }

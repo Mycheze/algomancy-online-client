@@ -6,8 +6,7 @@
    peek and ui/drag.ts own those gestures). The second is `html.touch`, set
    by ui/touch.ts from the first finger actually seen: bigger targets, and
    the keyboard hints a tablet has no keys for hidden. */
-html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-body { -webkit-tap-highlight-color: transparent; }
+/* (the first layer's no-boost and no-tap-flash are document rules: base.css) */
 button, [data-btn], [data-act], .card, .rescard, .stackcard { touch-action: manipulation; }
 .card, .rescard, .stackcard { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .card img, .rescard img, .stackcard img, #cardzoom img { -webkit-user-drag: none; -webkit-touch-callout: none; }
