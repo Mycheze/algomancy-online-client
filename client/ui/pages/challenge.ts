@@ -27,6 +27,9 @@ import {
   BOARD_KINDS, TROPHY_KINDS, goalText, setupLines, type BoardKind, type ChallengeDef, type RunScore,
 } from '../../engine/src/challenge.ts';
 import { builderHtml, type BuilderView } from '../challengebuild.ts';
+import { pageHeader } from '../components/page-header.ts';
+import { panel } from '../components/panel.ts';
+import { tabs } from '../components/tabs.ts';
 import { canSubmit, doneRuns, type DoneRun, type SubmitReply } from '../challengerun.ts';
 import { esc } from '../util.ts';
 
@@ -171,19 +174,17 @@ export function challengePageHtml(v: ChallengePageView): string {
   const cur = data?.current ?? null;
   const b = v.building;
   return `<div class="metapage chpage">
-    <div class="accthead">
-      <div><h1>Weekly challenge</h1>
-        <p class="hint">Build a deck in order, then reach the goal using as few cards, elements and turns as you can.</p></div>
-      <div class="accthbtns"><button data-btn="ch-close">Back</button></div>
-    </div>
+    ${pageHeader({ title: 'Weekly challenge',
+      subtitleHtml: '<p class="hint">Build a deck in order, then reach the goal using as few cards, elements and turns as you can.</p>',
+      back: { dataBtn: 'ch-close', label: 'Back', variant: 'secondary' } })}
     ${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
     ${loading && !data ? '<p class="dim">Loading…</p>' : ''}
     <div class="acctbody">
       ${keptHtml(v)}
-      ${b ? `${b.id !== cur?.id ? `<div class="acctcard wide"><h3>${esc(b.title)}</h3><p class="chgoal">${esc(goalText(b.goal))}</p>${
-        b.closed ? '<p class="dim">This week is closed. A run still goes on its leaderboard.</p>' : ''}</div>` : ''}
+      ${b ? `${b.id !== cur?.id ? panel({ title: b.title, wide: true, bodyHtml: `<p class="chgoal">${esc(goalText(b.goal))}</p>${
+        b.closed ? '<p class="dim">This week is closed. A run still goes on its leaderboard.</p>' : ''}` }) : ''}
         ${v.builder ? builderHtml(v.builder) : ''}` : ''}
-      ${data && !cur ? '<div class="acctcard"><h3>No challenge this week</h3><p>Check back on Sunday.</p></div>' : ''}
+      ${data && !cur ? panel({ title: 'No challenge this week', bodyHtml: '<p>Check back on Sunday.</p>' }) : ''}
       ${cur ? weekCardHtml(cur, v) : ''}
       ${cur ? boardHtml(cur, v) : ''}
       ${data ? pastHtml(data, v) : ''}
@@ -194,13 +195,12 @@ export function challengePageHtml(v: ChallengePageView): string {
 function bestHtml(id: string, v: ChallengePageView): string {
   const m = v.data?.mine?.[id];
   if (!m) return '';
-  return `<h4>Your best</h4><table class="accttable chmine"><tbody>${BOARD_KINDS.map(k => `<tr>
+  return `<h4>Your best</h4><table class="ui-table chmine"><tbody>${BOARD_KINDS.map(k => `<tr>
     <td>${BOARD_LABEL[k]}</td><td><b>#${m[k].rank}</b></td><td class="dim">${esc(scoreLine(m[k].score))}</td></tr>`).join('')}</tbody></table>`;
 }
 
 function weekCardHtml(c: ChallengeView, v: ChallengePageView): string {
-  return `<div class="acctcard chweek">
-    <h3>${esc(c.title)}</h3>
+  return panel({ title: c.title, className: 'chweek', bodyHtml: `
     <p class="chgoal">${esc(goalText(c.goal))}</p>
     ${setupLines(c.setup).map(l => `<p class="chsetup">${esc(l)}</p>`).join('')}
     ${c.blurb ? `<p>${esc(c.blurb)}</p>` : ''}
@@ -209,7 +209,7 @@ function weekCardHtml(c: ChallengeView, v: ChallengePageView): string {
     <p class="dim">${esc(DEBT_RULE)}</p>
     ${bestHtml(c.id, v)}
     ${v.building?.id === c.id ? '' : `<p><button class="primary" data-btn="ch-build" data-id="${esc(c.id)}">Build a deck</button></p>`}
-  </div>`;
+  ` });
 }
 
 /** Owner, 2026-10-23: "Flag it, still ranked". A run the rules have moved
@@ -250,10 +250,10 @@ function boardHtml(c: ChallengeView, v: ChallengePageView, past = false): string
       `<th${k === first ? ' class="chsorted"' : ''}${tip ? ` title="${esc(tip)}"` : ''}>${label}</th>`;
     const td = (k: 'turns' | 'cards' | 'elements', val: string): string => `<td>${k === first ? `<b>${val}</b>` : val}</td>`;
     body = `${winnersHtml(b)}
-      <div class="chtabs" role="tablist">${BOARD_KINDS.map(k => `<button role="tab" aria-selected="${k === tab}" class="${
-        k === tab ? 'on' : ''}" data-btn="ch-tab" data-tab="${k}" title="${esc(BOARD_TIP[k])}">${BOARD_LABEL[k]}</button>`).join('')}</div>
+      ${tabs({ className: 'chtabs', dataBtn: 'ch-tab', active: tab,
+        items: BOARD_KINDS.map(k => ({ id: k, label: BOARD_LABEL[k], title: BOARD_TIP[k] })) })}
       <p class="dim chtabtip">${esc(BOARD_TIP[tab])}</p>
-      <table class="accttable chboard"><thead><tr><th>#</th><th>player</th>${th('turns', 'Turns', TURNS_TIP)}${th('cards', 'Cards', CARDS_TIP)}${th('elements', 'Elements')}${
+      <table class="ui-table chboard"><thead><tr><th>#</th><th>player</th>${th('turns', 'Turns', TURNS_TIP)}${th('cards', 'Cards', CARDS_TIP)}${th('elements', 'Elements')}${
         b.closed ? '<th></th>' : ''}</tr></thead>
       <tbody>${b.boards[tab].map(r => `<tr><td>${r.rank}</td><td>${esc(r.name)}${olderHtml(r)}</td>${td('turns', `${r.score.turns}${r.score.debtTurns ? ` <span class="dim" title="${esc(debtTip(r.score))}">(+${r.score.debtTurns} debt)</span>` : ''}`)}${
         td('cards', `${r.score.cards}${r.score.extra ? ` <span class="dim">(${r.score.extra} extra)</span>` : ''}`)}${td('elements', String(r.score.elements))}${
@@ -261,25 +261,26 @@ function boardHtml(c: ChallengeView, v: ChallengePageView, past = false): string
           r.runId ? `<button data-btn="ch-watch" data-run="${esc(r.runId)}">Watch</button>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table>`;
   }
   const head = past ? `${esc(c.title)} <span class="dim">· week of ${esc(c.week)}</span>` : 'Leaderboard';
-  return `<div class="acctcard${b && b !== 'loading' && b !== 'error' && b.closed ? ' wide' : ''} chboardcard"><h3>${head}</h3>${body}</div>`;
+  return panel({ wide: !!b && b !== 'loading' && b !== 'error' && b.closed, className: 'chboardcard',
+    bodyHtml: `<h3 class="ui-panel__title">${head}</h3>${body}` });
 }
 
 function pastHtml(d: ChallengeReply, v: ChallengePageView): string {
   const pastOpen = v.pastOpen;
   if (!d.past.length) return '';
-  return `<div class="acctcard wide"><h3>Past weeks</h3>
-    <table class="accttable chpast"><tbody>${d.past.map(c => `<tr>
+  return `${panel({ title: 'Past weeks', wide: true, bodyHtml: `
+    <table class="ui-table chpast"><tbody>${d.past.map(c => `<tr>
       <td>${esc(c.week)}</td><td><b>${esc(c.title)}</b> <span class="dim">${esc(goalText(c.goal))}</span></td>
       <td class="dim">${c.entrants} entrant${c.entrants === 1 ? '' : 's'}</td>
       <td class="chrowbtns"><button class="${pastOpen === c.id ? 'on' : ''}" data-btn="ch-past" data-id="${esc(c.id)}">Leaderboard</button>
         <button data-btn="ch-build" data-id="${esc(c.id)}">Build</button></td></tr>`).join('')}</tbody></table>
-  </div>${pastOpen ? ((): string => { const c = d.past.find(x => x.id === pastOpen); return c ? boardHtml(c, v, true) : ''; })() : ''}`;
+  ` })}${pastOpen ? ((): string => { const c = d.past.find(x => x.id === pastOpen); return c ? boardHtml(c, v, true) : ''; })() : ''}`;
 }
 
 function keptHtml(v: ChallengePageView): string {
   const { arming } = v;
   if (!v.kept.length) return '';
-  return `<div class="acctcard wide chkept"><h3>Finished runs</h3>
+  return panel({ title: 'Finished runs', wide: true, className: 'chkept', bodyHtml: `
     ${v.kept.map(({ run: r, st }) => {
       return `<div class="chkeptrow"><b>${esc(r.title)}</b> <span class="dim">${esc(scoreLine(r.score))}</span>
         ${st === 'sending' ? '<span class="dim">Submitting…</span>'
@@ -291,7 +292,7 @@ function keptHtml(v: ChallengePageView): string {
           ? `<button class="danger" data-btn="ch-forget" data-at="${r.at}">Press again to drop this run</button>`
           : `<button data-btn="ch-forget" data-at="${r.at}" title="drop this run">✕</button>`}</div>`;
     }).join('')}
-  </div>`;
+  ` });
 }
 
 // ── gathering ─────────────────────────────────────────────────────────

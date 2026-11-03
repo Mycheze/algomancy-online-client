@@ -20,6 +20,8 @@
  * seasonView); nothing here re-derives a standing or a pairing.
  */
 import { trophyChipHtml } from '../account.ts';
+import { pageHeader } from '../components/page-header.ts';
+import { panel } from '../components/panel.ts';
 import { esc } from '../util.ts';
 import { wallClock, zonedEpoch } from '../zonetime.ts';
 
@@ -533,18 +535,15 @@ export function leagueHtml(v: LeagueView): string {
   const { data, msg, loading } = v;
   const s = data?.season ?? null;
   return `<div class="metapage lgpage">
-    <div class="accthead">
-      <div><h1>🏅 League</h1>
-        <p class="hint">${esc(pageHint(s))}</p></div>
-      <div class="accthbtns"><button data-btn="lg-close">Back</button></div>
-    </div>
+    ${pageHeader({ title: '🏅 League', subtitleHtml: `<p class="hint">${esc(pageHint(s))}</p>`,
+      back: { dataBtn: 'lg-close', label: 'Back', variant: 'secondary' } })}
     ${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
     ${data && data.seasons.length > 1 ? `<div class="cbtools">${data.seasons.map(x =>
       `<button class="${s?.id === x.id ? 'on' : ''}" data-btn="lg-season" data-id="${esc(x.id)}">${esc(x.name)}${x.hidden ? ' 🔒' : ''}</button>`).join('')}</div>` : ''}
     ${loading && !data ? '<p class="dim">Loading…</p>' : ''}
     ${(data?.others ?? []).map(o => otherHtml(o, v.tz)).join('')}
     <div class="acctbody">
-      ${data && !s ? `<div class="acctcard wide"><h3>No season yet</h3><p>There is no league season running right now. Watch the Discord for the next one.</p></div>` : ''}
+      ${data && !s ? panel({ title: 'No season yet', wide: true, bodyHtml: '<p>There is no league season running right now. Watch the Discord for the next one.</p>' }) : ''}
       ${s ? seasonCardHtml(s, v) : ''}
       ${s ? entryCardHtml(s, v) : ''}
       ${data?.signedIn ? availabilityCardHtml(v) : ''}
@@ -563,8 +562,8 @@ function seasonCardHtml(s: SeasonView, v: LeagueView): string {
   const fin = s.phases.find(p => p.phase === s.weeks + 1);
   const end = s.phases.find(p => p.phase === s.weeks + 2);
   const active = s.entrants.filter(e => !e.withdrawn).length;
-  return `<div class="acctcard lgspan2">
-    <h3>${esc(s.name)} ${s.hidden ? '<span class="lgtag">hidden</span>' : ''}${s.hold ? '<span class="lgtag">on hold</span>' : ''}</h3>
+  return panel({ className: 'lgspan2', bodyHtml: `
+    <h3 class="ui-panel__title">${esc(s.name)} ${s.hidden ? '<span class="lgtag">hidden</span>' : ''}${s.hold ? '<span class="lgtag">on hold</span>' : ''}</h3>
     <div class="statgrid">
       <div class="statcell"><div class="statval lgphase">${esc(s.label)}</div><div class="statlab">now</div></div>
       <div class="statcell"><div class="statval">${active}</div><div class="statlab">players</div></div>
@@ -577,20 +576,20 @@ function seasonCardHtml(s: SeasonView, v: LeagueView): string {
     ${s.champion ? `<p>🏆 Champion: <b>${esc(s.champion.name)}</b></p>` : ''}
     <p class="hint">Weeks run Sunday to Saturday. ${matchLine(s)} Your opponents are here each week: suggest a time below (or message them on Discord), then both press Play.
       A match nobody plays by the end of its week counts for neither player.</p>
-  </div>`;
+  ` });
 }
 
 function entryCardHtml(s: SeasonView, v: LeagueView): string {
   const { data, arming, busy } = v;
   if (!data?.signedIn) {
-    return `<div class="acctcard"><h3>Join</h3><p>Sign in to join the league.</p>
-      <button class="primary" data-btn="acct-open-auth">Log in / Sign up</button></div>`;
+    return panel({ title: 'Join', bodyHtml: `<p>Sign in to join the league.</p>
+      <button class="primary" data-btn="acct-open-auth">Log in / Sign up</button>` });
   }
   const me = s.me!;
   if (me.entered) {
     const future = Array.from({ length: s.weeks }, (_, i) => i + 1).filter(k => k > s.phase);
     const out = s.phase >= 1 && s.phase <= s.weeks && me.skips.includes(s.phase);
-    return `<div class="acctcard"><h3>You're in</h3>
+    return panel({ title: "You're in", bodyHtml: `
       ${out ? `<p>You are sitting week ${s.phase} out and its pairings are out. Want to play after all? Ask the organizer to put you back in.</p>` : ''}
       ${future.length ? `<p>Can't play a week? Sit it out before its pairings go out, and nobody is left waiting for you.</p>
         <div class="lgskips">${future.map(k => {
@@ -602,24 +601,24 @@ function entryCardHtml(s: SeasonView, v: LeagueView): string {
         }).join('')}</div>` : ''}
       ${s.phase < s.weeks + 2 ? `<p><button data-btn="lg-leave" class="${arming === 'leave' ? 'danger' : ''}">${
         arming === 'leave' ? 'Press again to leave the league' : 'Leave the league'}</button></p>` : ''}
-    </div>`;
+    ` });
   }
   const problem = me.joinProblem;
-  return `<div class="acctcard"><h3>Join</h3>
+  return panel({ title: 'Join', bodyHtml: `
     ${problem
       ? `<p>${esc(problem[0]!.toUpperCase() + problem.slice(1))}${/Discord name|usually free|hours/.test(problem) ? ' (below)' : ''}.</p>`
       : `<p>You are all set. ${s.phase <= 0 ? 'Join, then play anybody free when you are this week. Pairings start with week 1.'
         : 'Press the button and your pairings arrive with the next week.'}</p>`}
     <button class="primary" data-btn="lg-join" ${problem || busy ? 'disabled' : ''}>Join ${esc(s.name)}</button>
     ${me.withdrawn ? '<p class="hint">You left this season; joining again keeps the results you already played.</p>' : ''}
-  </div>`;
+  ` });
 }
 
 function availabilityCardHtml(v: LeagueView): string {
   const { draft: d, zones, dirty, busy, gridFocus } = v;
   const hrs = hoursIn(d.grid);
   const min = v.data?.minHours ?? 6;
-  return `<div class="acctcard wide"><h3>When you're usually free</h3>
+  return panel({ title: "When you're usually free", wide: true, bodyHtml: `
     <div class="lgavail"><div class="lgavside">
     <p>Mark the hours you could usually play: pick quick fills, or drag across the grid. Opponents are matched on the hours you share.</p>
     <div class="lgtzrow"><label>Your Discord name <input id="lg-contact" value="${esc(d.contact)}" maxlength="40"
@@ -649,7 +648,7 @@ function availabilityCardHtml(v: LeagueView): string {
           tabindex="${i === (gridFocus ?? SHOW_DAYS[1]! * 24 + 19) ? 0 : -1}" data-i="${i}" data-c="${c}" data-h="${h}" title="${label}"></div>`;
       }).join('')}</div>`).join('')}
     </div></div>
-  </div>`;
+  ` });
 }
 
 function hourLabel(h: number): string {
@@ -665,9 +664,9 @@ function myMatchesHtml(s: SeasonView, v: LeagueView): string {
   const { arming, timeOpen } = v;
   const me = s.me!;
   const weeks = [...new Set(me.matches.map(m => m.week))].sort((a, b) => b - a);
-  return `<div class="acctcard wide"><h3>Your matches</h3>
+  return panel({ title: 'Your matches', wide: true, bodyHtml: `
     ${weeks.map(k => `<h4>${weekName(s, k)}</h4>
-      <table class="accttable lgmatches"><tbody>${me.matches.filter(m => m.week === k).map(m => `<tr>
+      <table class="ui-table lgmatches"><tbody>${me.matches.filter(m => m.week === k).map(m => `<tr>
         <td>vs <b>${esc(m.opponent.name)}</b>${m.opponent.contact
           ? `<br><span class="dim">Discord: </span>${esc(m.opponent.contact)}` : ''}</td>
         <td class="lgplay">${m.playable ? `<button class="primary" data-btn="lg-play" data-season="${esc(s.id)}" data-match="${esc(m.id)}">Play</button>
@@ -680,7 +679,7 @@ function myMatchesHtml(s: SeasonView, v: LeagueView): string {
       </tr>`).join('')}</tbody></table>`).join('')}
     <p class="hint">Times are in ${esc(v.tz)}. Play opens your match room; your opponent joins from their own
       League page. Nothing is dealt until you are both there, and the elements are drawn at random.</p>
-  </div>`;
+  ` });
 }
 
 /** the shared hours still to come — a window already over is no use to anybody */
@@ -746,10 +745,10 @@ function timeFormHtml(s: SeasonView, m: MyMatch, v: LeagueView): string {
 function suggestionsHtml(s: SeasonView, v: LeagueView): string {
   const me = s.me!;
   const used = me.matches.filter(m => m.week === 0).length;
-  return `<div class="acctcard wide"><h3>Free when you are</h3>
+  return panel({ title: 'Free when you are', wide: true, bodyHtml: `
     <p>Sign-up week has no pairings. Play anybody here instead: up to ${me.week0Cap} games count in the standings
       (you have ${used}), one per opponent. Message them on Discord, then start the game and both press Play.</p>
-    ${me.suggestions.length ? `<table class="accttable lgsuggest"><tbody>${me.suggestions.map(x => `<tr>
+    ${me.suggestions.length ? `<table class="ui-table lgsuggest"><tbody>${me.suggestions.map(x => `<tr>
       <td><b>${esc(x.name)}</b>${x.contact ? `<br><span class="dim">Discord: </span>${esc(x.contact)}` : ''}</td>
       <td>${x.days ? `<span class="dim">free together:</span> ${x.windows.map(w => windowText(w, v.tz)).map(esc).join(' · ')}`
         : '<span class="dim">no shared hours left this week</span>'}</td>
@@ -757,15 +756,15 @@ function suggestionsHtml(s: SeasonView, v: LeagueView): string {
         : `<button data-btn="lg-challenge" data-id="${esc(x.id)}">Start a league game</button>`}</td>
     </tr>`).join('')}</tbody></table>` : '<p class="dim">Nobody else has joined yet.</p>'}
     <p class="hint">Times are in ${esc(v.tz)}.</p>
-  </div>`;
+  ` });
 }
 
 function standingsHtml(s: SeasonView, v: LeagueView): string {
   // before week 1 the table is everybody at 0–0: say who is in instead
   if (s.phase <= 0) {
     const ins = s.entrants.filter(e => !e.withdrawn);
-    return `<div class="acctcard wide"><h3>Signed up (${ins.length})</h3>
-      <p class="lgbnames">${ins.map(e => `<span>${esc(e.name)}</span>`).join('')}</p></div>`;
+    return panel({ title: `Signed up (${ins.length})`, wide: true,
+      bodyHtml: `<p class="lgbnames">${ins.map(e => `<span>${esc(e.name)}</span>`).join('')}</p>` });
   }
   const withdrawn = new Set(s.entrants.filter(e => e.withdrawn).map(e => e.id));
   // a CLOSED season names its champion and finalist with the chip their
@@ -777,30 +776,30 @@ function standingsHtml(s: SeasonView, v: LeagueView): string {
     if (place && s.phase >= s.weeks + 2) return v.chips[place];
     return s.champion?.id === id ? ' 🏆' : '';
   };
-  return `<div class="acctcard"><h3>Standings</h3>
-    <table class="accttable"><thead><tr><th>#</th><th>player</th><th>W–L</th><th>pts</th><th title="opponents' match-win percentage — the tiebreak">OMW</th></tr></thead>
+  return panel({ title: 'Standings', bodyHtml: `
+    <table class="ui-table"><thead><tr><th>#</th><th>player</th><th>W–L</th><th>pts</th><th title="opponents' match-win percentage — the tiebreak">OMW</th></tr></thead>
     <tbody>${s.standings.map(r => `<tr class="${withdrawn.has(r.id) ? 'dim' : ''}">
       <td>${r.rank}</td><td>${esc(r.name)}${mark(r.id)}</td>
       <td>${r.w}–${r.l}${r.unplayed ? ` <span class="dim" title="matches not played">(${r.unplayed})</span>` : ''}</td>
       <td>${r.points}</td><td>${r.w + r.l + r.unplayed ? `${Math.round(r.omw * 100)}%` : '–'}</td></tr>`).join('')}</tbody></table>
     <p class="hint">3 points a win. Ties go to opponents' match-win percentage, then head to head.</p>
-  </div>`;
+  ` });
 }
 
 function allMatchesHtml(s: SeasonView, v: LeagueView): string {
   const weeks = [...new Set(s.matches.map(m => m.week))].sort((a, b) => b - a);
   const org = v.data?.organizer === true;
   // the organizer's result controls need the width; a player's view sits beside the table
-  return `<div class="acctcard ${org ? 'wide' : 'lgspan2'}"><h3>Matches</h3>
+  return panel({ title: 'Matches', wide: org, className: org ? undefined : 'lgspan2', bodyHtml: `
     ${weeks.map(k => `<h4>${weekName(s, k)}</h4>
-      <table class="accttable"><tbody>${s.matches.filter(m => m.week === k).map(m => `<tr>
+      <table class="ui-table"><tbody>${s.matches.filter(m => m.week === k).map(m => `<tr>
         <td>${esc(m.a.name)} vs ${esc(m.b.name)}</td><td>${resultText(m)}${disputesHtml(m)}</td>
         ${org ? `<td class="lgorg"><select id="lg-ov-${esc(m.id)}">
           <option value="">set…</option><option value="a">${esc(m.a.name)} won</option><option value="b">${esc(m.b.name)} won</option>
           <option value="unplayed">not played</option><option value="double-loss">double loss</option><option value="clear">reopen</option>
         </select><button data-btn="lg-override" data-match="${esc(m.id)}">set</button></td>` : ''}
       </tr>`).join('')}</tbody></table>`).join('')}
-  </div>`;
+  ` });
 }
 
 /** BL-48 — the organizer's line under a disputed match: who, and what they
@@ -814,14 +813,14 @@ function stampHtml(v: LeagueView): string {
   const tz = v.tz;
   const at = v.stampAt;
   const unix = Math.floor(at / 1000);
-  return `<div class="acctcard lgstamp"><h3>Discord time code</h3>
+  return panel({ title: 'Discord time code', className: 'lgstamp', bodyHtml: `
     <p class="lgtimepick"><input type="datetime-local" id="lg-stamp-at" step="60" value="${wallValue(at, tz)}">
       <span class="dim">${esc(tz)} time</span></p>
-    <table class="accttable lgstamps"><tbody>${STAMP_STYLES.map(st => `<tr>
+    <table class="ui-table lgstamps"><tbody>${STAMP_STYLES.map(st => `<tr>
       <td>${esc(stampPreview(at, st, tz, v.now))}</td>
       <td><input id="lg-stamp-${st}" class="lgstampcode" readonly value="${esc(discordCode(unix, st))}"></td>
       <td><button data-btn="lg-stamp-copy" data-style="${st}">Copy</button></td></tr>`).join('')}</tbody></table>
-  </div>`;
+  ` });
 }
 
 // ── the organizer ─────────────────────────────────────────────────────
@@ -846,7 +845,7 @@ function organizerHtml(s: SeasonView | null, v: LeagueView): string {
   const now = v.now;
   const start = nextSundayUtc(now);
   const next = s ? s.phases.find(p => p.phase === s.phase + 1) : null;
-  return `<div class="acctcard wide lgorgcard"><h3>Organizer</h3>
+  return panel({ title: 'Organizer', wide: true, className: 'lgorgcard', bodyHtml: `
     ${s ? `
       <p>${esc(s.name)} (${formatWords(s.format)}) is at <b>${esc(s.label)}</b>. ${s.auto
         ? `It moves on by itself${s.hold ? ' — <b>but it is on hold</b>' : ''}${next ? `: next is <b>${esc(next.label)}</b> at ${when(next.at, tz)}` : ''}.`
@@ -867,7 +866,7 @@ function organizerHtml(s: SeasonView | null, v: LeagueView): string {
         <span class="dim">(skips the Discord-name, hours and late-entry checks)</span></p>
       ${preview ? previewHtml(preview, tz) : ''}
       ${postHtml(s, v)}
-      ${s.outbox?.length ? `<h4>Discord messages</h4><table class="accttable lgout"><tbody>${s.outbox.slice().reverse().slice(0, 25).map(r => `<tr>
+      ${s.outbox?.length ? `<h4>Discord messages</h4><table class="ui-table lgout"><tbody>${s.outbox.slice().reverse().slice(0, 25).map(r => `<tr>
         <td>${esc(r.kind)}</td><td>${esc(r.to)}</td><td class="dim">${when(r.createdAt, tz)}</td>
         <td>${r.failed ? `⚠ ${esc(r.failed)}` : r.sentAt ? '✓ sent' : '<span class="dim">waiting</span>'}</td></tr>`).join('')}</tbody></table>` : ''}
       ${s.log?.length ? `<details><summary>Log</summary><ul class="lglog">${s.log.slice().reverse().map(l =>
@@ -891,7 +890,7 @@ function organizerHtml(s: SeasonView | null, v: LeagueView): string {
       <p class="hint">Week boundaries are a whole week apart from week 1's start. Sunday 07:00 UTC (midnight Saturday, US Pacific) is the default.</p>
       <button class="primary" data-btn="lg-create">Create season</button>
     </details>
-  </div>`;
+  ` });
 }
 
 /** The running week, paired again: a player who sat it out by mistake goes
@@ -920,7 +919,7 @@ function postHtml(s: SeasonView, v: LeagueView): string {
 
 function previewHtml(p: Preview, tz: string): string {
   return `<h4>Week ${p.week} would be</h4>
-    <table class="accttable"><tbody>${p.edges.map(e => `<tr class="${e.score < 2 ? 'lgweak' : ''}">
+    <table class="ui-table"><tbody>${p.edges.map(e => `<tr class="${e.score < 2 ? 'lgweak' : ''}">
       <td>${esc(e.a)} vs ${esc(e.b)}</td><td>${e.score} day${e.score === 1 ? '' : 's'} shared</td>
       <td class="dim">${e.windows.slice(0, 2).map(w => windowText(w, tz)).map(esc).join(' · ')}</td></tr>`).join('')}</tbody></table>
     <p class="hint">${p.short ? `${esc(p.short)} has one opponent fewer this week. ` : ''}Rows in red share fewer than two days — they

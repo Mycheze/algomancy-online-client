@@ -152,9 +152,11 @@ test('§3 the page: goal, time left, my best on each board, four leaderboard tab
   assert.doesNotMatch(html, /Skill|\bpar\b/i, 'no Skill and no par on the page');
   assert.match(html, /<h4>Your best<\/h4>.*<td>Fastest<\/td><td><b>#2<\/b><\/td><td class="dim">4 turns · 3 cards \(1 extra\) · 2 elements<\/td>/s);
   assert.match(html, /<td>Purest<\/td><td><b>#3<\/b><\/td>/, 'a rank on every board');
-  assert.match(html, /<h3>Leaderboard<\/h3>/);
+  // a ui-panel title since the design-system round (2026-11-03): <h3 class="ui-panel__title">
+  assert.match(html, /<h3[^>]*>Leaderboard<\/h3>/);
   for (const k of ['Fastest', 'Leanest', 'Purest', 'Overall']) assert.match(html, new RegExp(`data-btn="ch-tab" data-tab="${k.toLowerCase()}"[^>]*>${k}</`));
-  assert.match(html, /aria-selected="true" class="on" data-btn="ch-tab" data-tab="fastest"/, 'fastest first');
+  // the tabs are the ui-tabs component since the design-system round (2026-11-03): its attribute order
+  assert.match(html, /class="[^"]*\bon" data-btn="ch-tab" data-tab="fastest"[^>]*aria-selected="true"/, 'fastest first');
   assert.match(html, /Fewest turns\. Ties go to fewer cards, then fewer elements\./);
   assert.match(html, /<th>#<\/th><th>player<\/th><th class="chsorted" title="[^"]*debt[^"]*">Turns<\/th><th title="[^"]*">Cards<\/th><th>Elements<\/th>/,
     'the Turns header says debt costs turns (owner 2026-11-01)');
@@ -164,7 +166,7 @@ test('§3 the page: goal, time left, my best on each board, four leaderboard tab
 
   r.ch.handleButton(button(html, { btn: 'ch-tab', tab: 'leanest' }));
   const lean = r.app.innerHTML;
-  assert.match(lean, /aria-selected="true" class="on" data-btn="ch-tab" data-tab="leanest"/);
+  assert.match(lean, /class="[^"]*\bon" data-btn="ch-tab" data-tab="leanest"[^>]*aria-selected="true"/);
   assert.match(lean, /<td>1<\/td><td>Bo<\/td><td>5<\/td><td><b>2<\/b><\/td><td>1<\/td>/, 'leanest: its own order, cards bold');
   r.ch.handleButton(button(lean, { btn: 'ch-tab', tab: 'overall' }));
   assert.match(r.app.innerHTML, /turns² × cards × √elements\. No trophy\./);
@@ -181,7 +183,7 @@ test('§4 a closed week: Try this deck loads it into the builder, Watch goes to 
   await settle();
   const html = r.app.innerHTML;
   assert.match(html, /Winners · Fastest: <b>Ann<\/b> · Leanest: <b>Bo<\/b> · Purest: <b>Bo<\/b>/, 'three winners; overall has none');
-  assert.match(html, /<h3>Week old <span class="dim">· week of 2026-10-11<\/span><\/h3>/, 'a past board names its week');
+  assert.match(html, /<h3[^>]*>Week old <span class="dim">· week of 2026-10-11<\/span><\/h3>/, 'a past board names its week');
   r.store.set('algoChallengeDecks', JSON.stringify({ old: [units[3]!] }));
   r.ch.handleButton(button(html, { btn: 'ch-try', id: 'old', run: 'run-ann-1' }));
   assert.deepEqual([...r.ch.builderList()], OLD_DECK);

@@ -25,6 +25,7 @@ import { checkChallengeDeck, newChallengeGame, type ChallengeDef } from '../engi
 import type { DeckBridge } from './cards.ts';
 import type { DeckSummary } from './cardpanel.ts';
 import type { DeckPile } from './deckarrange.ts';
+import { panel } from './components/panel.ts';
 import { analyzeDeck } from './deckstats.ts';
 import { esc } from './util.ts';
 
@@ -206,8 +207,7 @@ export function builderHtml(v: BuilderView): string {
       <span class="chpos">${bl.n > 1 ? `${bl.start + 1}–${bl.start + bl.n}` : bl.start + 1}</span>
       <span class="chname" data-prev="${esc(bl.name)}">${esc(bl.name)}</span>
     </li>`).join('');
-  return `<div class="acctcard wide chbuild">
-    <h3>Your deck</h3>
+  return panel({ title: 'Your deck', wide: true, className: 'chbuild', bodyHtml: `
     <p class="hint">Dealt in this order, 1 on top.</p>
     <div class="cbtools">
       <button class="primary" data-btn="ch-tabletop">Build on the table</button>
@@ -227,5 +227,5 @@ export function builderHtml(v: BuilderView): string {
     <div class="chplayrow">
       <button class="cta primary" data-btn="ch-play" ${problem ? 'disabled' : ''}>Play</button>
     </div>
-  </div>`;
+  ` });
 }
