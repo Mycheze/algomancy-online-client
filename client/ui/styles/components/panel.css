@@ -1,0 +1,12 @@
+/* ── ui-panel (ui/components/panel.ts) ────────────────────────────────
+   .acctcard, its title and its prose spacing (census §8c). */
+.ui-panel { background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); padding: var(--space-5); }
+.ui-panel__title { margin: 0 0 var(--space-4); color: var(--color-accent); font-size: var(--text-14);
+  text-transform: uppercase; letter-spacing: .06em; }
+.ui-panel p, .ui-panel li { line-height: 1.5; }
+.ui-panel p { margin: var(--space-4) 0 0; }
+.ui-panel--inset { background: var(--color-surface-raised); }
+.ui-panel--emphasis { border-color: var(--color-accent); }
+.ui-panel--roomy { border-radius: var(--radius-lg); padding: var(--space-6); }
+.ui-panel--wide { grid-column: 1 / -1; }

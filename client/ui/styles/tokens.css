@@ -115,4 +115,18 @@
   /* …and the buffer inside a region's blocks that keeps a card clear of the
      ring's 2.5px stroke and its glow — padding, not a gap */
   --ringpad: 5px;
+
+  /* ── the components' own (design-system Phase 3, ui/components/) ──
+     Today's recipes that no scale step above holds exactly. A component
+     reproduces the look it replaces (so swapping it into a page changes
+     nothing), and these are the values that look needs. Named --control-*,
+     --dialog-*, --toast-* on purpose: ui/scripts/tokenize-styles.mjs swaps in
+     only --color/--text/--space/--radius/--shadow, so a re-run never spreads
+     these into the pages. The redesign snaps them, one at a time. */
+  --control-radius: 5px;       /* the base button and the input recipe (census §8a/§8b) */
+  --control-pad-y: 5px;        /* the base button's 5px 12px */
+  --dialog-radius: 10px;       /* .overlaybox, the dialog every overlay uses */
+  --dialog-pad: 18px 22px;     /* .overlaybox */
+  --toast-pad: 10px 18px;      /* .toast, the green one */
+  --toast-bottom: 18px;        /* .toast: how far above the window's foot */
 }

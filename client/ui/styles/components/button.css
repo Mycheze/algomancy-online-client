@@ -1,0 +1,23 @@
+/* ── ui-button (ui/components/button.ts) ──────────────────────────────
+   Today's base `button` (base.css) under its own class, so it reads the same
+   on an <a> and does not depend on the element rule. Variants: census §8a. */
+.ui-button { display: inline-block; background: var(--color-surface-raised); color: var(--color-text);
+  border: 1px solid var(--color-border); border-radius: var(--control-radius);
+  padding: var(--control-pad-y) var(--space-5); cursor: pointer; font: inherit; text-decoration: none; }
+.ui-button:hover { border-color: var(--color-accent); }
+.ui-button:disabled, .ui-button[aria-disabled="true"] { opacity: .4; cursor: default; }
+.ui-button--sm { padding: var(--space-2) var(--space-4); font-size: var(--text-12); }
+
+/* the green confirm (button.primary) */
+.ui-button--primary { background: var(--color-confirm); border-color: var(--color-confirm-border); }
+/* the gold page action (.homebtns .primary and its copies) */
+.ui-button--action { border-color: var(--color-accent); color: var(--color-accent); }
+/* "not this one" (.declinebtn) */
+.ui-button--ghost { background: transparent; border-style: dashed; color: var(--color-text-muted); }
+.ui-button--ghost:hover { border-color: var(--color-danger); color: var(--color-danger); }
+/* destructive (.dkdanger and eight copies) */
+.ui-button--danger { border-color: var(--color-danger); color: var(--color-danger); }
+/* a button that reads as a link (.linkbtn) */
+.ui-button--link { background: none; border: none; padding: 0; color: var(--color-accent); text-decoration: underline dotted; }
+/* .ui-button--icon has no rule of its own: today's ✕ and ↻ buttons are the
+   base button with a glyph in it. The class is the hook a redesign styles. */
