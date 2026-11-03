@@ -37,7 +37,8 @@ const src = (f: string): string => readFileSync(join(UI, f), 'utf8');
 const main = src('main.ts');
 const page = src('crreview.ts');
 const layer = src('crlayer.ts');
-const account = src('account.ts');
+// the profile's markup is ui/pages/profile.ts since the design-system round (2026-11-03)
+const account = src('account.ts') + src('pages/profile.ts');
 
 /** comments out — a comment that names a thing is documentation, not code */
 const code = (s: string): string =>
@@ -169,10 +170,10 @@ test('§6 the URL is written with replaceState, never pushState', () => {
 
 test('§7 the way in: a profile button for an owner or judge badge, and a sign-in that comes back', () => {
   const a = code(account);
-  const btns = a.match(/[^\n]*data-btn="nav-crreview"[^\n]*/g) ?? [];
+  const btns = a.match(/[^\n]*(?:data-btn="|dataBtn: ')nav-crreview['"][^\n]*/g) ?? [];
   assert.equal(btns.length, 1, 'one Rules review button, on the profile');
   // run the line's own condition over four profiles the server could send
-  const cond = /\$\{([^?]*(?:\?\.[^?]*)*)\? '<button data-btn="nav-crreview"/.exec(btns[0]!)?.[1];
+  const cond = /^\s*([^?]*(?:\?\.[^?]*)*)\? button\(\{[^\n]*dataBtn: 'nav-crreview'/.exec(btns[0]!)?.[1];
   assert.ok(cond && /\bme\b/.test(cond), `positive control: the condition was found (${cond})`);
   const drawnFor = new Function('me', `return !!(${cond});`) as (me: unknown) => boolean;
   assert.equal(drawnFor({ admin: false, badge: null }), false, 'a plain account: no button');
@@ -182,7 +183,7 @@ test('§7 the way in: a profile button for an owner or judge badge, and a sign-i
   assert.equal(drawnFor({ admin: false, badge: { judge: 2, since: '2026-10-01' } }), true, 'a judge badge draws it');
   assert.equal(drawnFor({ admin: false, badge: { owner: true, since: '2026-10-01' } }), true, 'an owner badge draws it');
   assert.ok(!/\badmin\b/.test(cond!), 'the admin flag plays no part in it');
-  assert.ok(!/nav-crreview/.test(code(['league.ts', 'lobby.ts', 'legal.ts', 'report.ts', 'admin.ts'].map(src).join('\n'))),
+  assert.ok(!/nav-crreview/.test(code(['league.ts', 'lobby.ts', 'legal.ts', 'report.ts', 'pages/admin.ts'].map(src).join('\n'))),
     'no other page offers it');
   assert.match(a, /export function signInThenReturn\(\): void \{/);
   assert.match(a, /if \(returnAfterAuth\) \{ returnAfterAuth = false; view = null; rerenderHost\(\); return; \}/,

@@ -54,12 +54,15 @@ const ALLOW: Record<string, number> = {
   'pages/deckstrip-curve-affinity': 6,
   'pages/cards': 1,
   'pages/queue': 4,
-  'pages/admin': 15,
+  'pages/admin': 14,
   'pages/learn': 23,
   'pages/cardstats': 6,
   'pages/deck-modals': 2,
   'shared/touch': 2,
   'shared/drag': 3,
+  // moved out of board/ (exempt) in the design-system round, 2026-11-03: the report pill's,
+  // the bell's and the bell list's shadows, which no --shadow-* step equals. Not new colours.
+  'shared/report-and-inbox': 4,
   'pages/crreview': 22,
   'pages/challenge': 1,
 };

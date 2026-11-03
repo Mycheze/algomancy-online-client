@@ -62,7 +62,8 @@ async function profile(): Promise<string> {
   ui.click({ btn: 'acct-open-profile' });
   await settle(); await settle();
   const html = ui.html();
-  assert.match(html, /<div class="accthead">/, 'the profile did not paint');
+  // the header is the ui-page-header component since the design-system round (2026-11-03); it keeps .accthead
+  assert.match(html, /<header class="ui-page-header accthead">/, 'the profile did not paint');
   return html;
 }
 const box = (html: string): string => /<section class="acctcard pwform">([\s\S]*?)<\/section>/.exec(html)?.[1] ?? '';

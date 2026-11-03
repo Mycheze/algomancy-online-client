@@ -31,21 +31,22 @@
  * (ui/queue.ts's header). Every poll is also what marks the player as on the
  * site for their friends.
  */
-import { esc, elIcon } from './util.ts';
+import { esc } from './util.ts';
 import { playCue } from './audio.ts';
 import { alertTab } from './tabalert.ts';
 import { noteLine, type LeagueNote } from './leaguenotes.ts';
 import { matchLink, myMatchLine, type MyMatch } from './match.ts';
+import {
+  inboxLayerHtml, roomFriendsBodyHtml, roomFriendsHtml as roomFriendsPanelHtml,
+  type FriendStatus, type InboxListView, type NoteCardView, type RoomFriendsView, type RoomFriendView as RoomFriend,
+} from './pages/inbox.ts';
 
 // ── types off the wire (server/api-inbox.ts) ─────────────────────────
 
 export interface InviteView { id: string; from: string; room: string; seat: number; mode: string; label: string; at: number }
 export interface RequestView { id: string; username: string }
-export type FriendStatus = 'online' | 'playing' | 'offline';
-export interface RoomFriend {
-  id: string; username: string; favoriteElement: string | null;
-  status: FriendStatus; invite: 'sent' | 'declined' | null;
-}
+/** a friend in the waiting room's panel — the shape ui/pages/inbox.ts draws */
+export type { FriendStatus, RoomFriend };
 /** a league match time the other player suggested, waiting on this one */
 export interface TimeAsk { season: string; seasonName: string; match: string; from: string; at: number }
 
@@ -158,27 +159,8 @@ const onBoard = (): boolean => !!appEl()?.classList?.contains('board');
 
 // ── the room's friends panel ─────────────────────────────────────────
 
-const STATUS_WORD: Record<FriendStatus, string> = { online: 'online', playing: 'in a game', offline: 'offline' };
-
-function friendRowHtml(f: RoomFriend): string {
-  const btn = f.invite === 'sent'
-    ? `<button data-inbox="invite" data-id="${esc(f.id)}" disabled>Invited ✓</button>`
-    : `<button ${f.status === 'offline' ? '' : 'class="primary" '}data-inbox="invite" data-id="${esc(f.id)}">${f.invite === 'declined' ? 'Ask again' : 'Invite'}</button>`;
-  return `<div class="roomfriend ${f.status}">
-    <span class="fdot ${f.status === 'offline' ? '' : 'on'}${f.status === 'playing' ? ' busy' : ''}"></span>
-    ${f.favoriteElement ? `<span class="acctel icon ${esc(f.favoriteElement)}">${elIcon(f.favoriteElement)}</span>` : ''}
-    <span class="rfname">${esc(f.username)}</span>
-    <span class="rfstatus">${f.invite === 'declined' ? 'said no' : STATUS_WORD[f.status]}</span>
-    ${btn}
-  </div>`;
-}
-
-function panelBody(): string {
-  if (!loaded) return '<p class="hint">…</p>';
-  if (!friends.length) return '<p class="hint">Add friends on your profile and they show up here.</p>';
-  return friends.map(friendRowHtml).join('')
-    + (panelMsg ? `<p class="deckmsg">${esc(panelMsg)}</p>` : '');
-}
+/** the panel's view: what ui/pages/inbox.ts draws */
+const panelView = (): RoomFriendsView => ({ loaded, friends, msg: panelMsg });
 
 /**
  * The "Invite a friend" panel for a waiting room. `open` is false once the
@@ -187,97 +169,54 @@ function panelBody(): string {
  */
 export function roomFriendsHtml(open: boolean): string {
   if (!open || !deps?.token()) return '';
-  return `<div class="lobbypanel roomfriends"><div class="zonelabel">Invite a friend</div>
-    <div id="roomfriends">${panelBody()}</div></div>`;
+  return roomFriendsPanelHtml(panelView());
 }
 
 /** rewrite the panel's insides, if a room is showing one (see the header) */
 function paintPanel(): void {
   const box = typeof document !== 'undefined' && typeof document.getElementById === 'function'
     ? document.getElementById('roomfriends') : null;
-  if (box) box.innerHTML = panelBody();
+  if (box) box.innerHTML = roomFriendsBodyHtml(panelView());
 }
 
 // ── the layer: bell, list, popup ─────────────────────────────────────
 
-function inviteCardHtml(i: InviteView, pop: boolean): string {
-  return `<div class="invitecard">
-    ${pop ? `<button class="invx" data-inbox="hide" data-id="${esc(i.id)}" title="keep it in the bell">✕</button>` : ''}
-    <div><b>${esc(i.from)}</b> invites you to ${esc(i.label)}.</div>
-    <div class="invbtns">
-      <button class="primary" data-inbox="join" data-id="${esc(i.id)}">Join</button>
-      <button data-inbox="decline" data-id="${esc(i.id)}">No thanks</button>
-    </div>
-  </div>`;
-}
-
-function timeAskHtml(t: TimeAsk): string {
-  return `<div class="invitecard">
-    <div><b>${esc(t.from)}</b> suggests playing your ${esc(t.seasonName)} match
-      <b>${esc(timeText(t.at / 1000))}</b> <span class="dim">(your time)</span>.</div>
-    <div class="invbtns">
-      <button class="primary" data-inbox="time-accept" data-season="${esc(t.season)}" data-match="${esc(t.match)}">Accept</button>
-      <button data-inbox="league" data-season="${esc(t.season)}">Suggest another</button>
-    </div>
-  </div>`;
-}
-
-function noteHtml(n: LeagueNote, pop: boolean): string {
+/** a league note as the bell draws it: its sentence, in the player's zone */
+function noteCard(n: LeagueNote): NoteCardView {
   const { html, action } = noteLine(n, timeText);
   const match = typeof n.data['match'] === 'string' ? n.data['match'] : '';
-  const btn = action === 'play' && match
-    ? `<button class="primary" data-inbox="league-play" data-season="${esc(n.season)}" data-match="${esc(match)}">Play</button>`
-    : action ? `<button data-inbox="league" data-season="${esc(n.season)}">League page</button>` : '';
-  return `<div class="invitecard leaguenote${n.read ? '' : ' unread'}">
-    ${pop ? `<button class="invx" data-inbox="hide" data-id="${esc(noteKey(n))}" title="keep it in the bell">✕</button>` : ''}
-    <div>${html}</div>
-    ${btn ? `<div class="invbtns">${btn}</div>` : ''}
-  </div>`;
+  return { key: noteKey(n), season: n.season, match, read: n.read, html, action };
 }
 
-/** docs/22 §5.6: an open match, one button from anywhere */
-function matchCardHtml(m: MyMatch): string {
-  const l = myMatchLine(m);
-  // CT-517: the other player is in the paused match's room, waiting on you
-  const asks = m.phase === 'paused' && m.opponentHere === true;
-  return `<div class="invitecard">
-    <div>${asks ? `<b>${esc(m.opponent || 'Your opponent')}</b> wants to resume your match` : `Competitive match ${l.text}`}</div>
-    <div class="invbtns"><button class="primary" data-inbox="match-open" data-room="${esc(m.room)}" data-seat="${m.seat}">${l.button}</button></div>
-  </div>`;
-}
-
-function listHtml(): string {
-  const rows = [
-    ...shownMatches().map(matchCardHtml),
-    ...invites.map(i => inviteCardHtml(i, false)),
-    ...times.map(timeAskHtml),
-    ...requests.map(r => `<div class="invitecard">
-      <div><b>${esc(r.username)}</b> wants to be friends.</div>
-      <div class="invbtns">
-        <button class="primary" data-inbox="friend-accept" data-id="${esc(r.id)}">Accept</button>
-        <button data-inbox="friend-decline" data-id="${esc(r.id)}">Decline</button>
-      </div>
-    </div>`),
-    ...(notes.length ? [`<div class="zonelabel">League</div>`, ...notes.map(n => noteHtml(n, false))] : []),
-  ];
-  return `<div class="inboxlist">
-    <div class="zonelabel">Notifications</div>
-    ${bellMsg ? `<p class="inboxdone">${bellMsg}</p>` : ''}
-    ${rows.length ? rows.join('') : '<p class="hint">Nothing new.</p>'}
-  </div>`;
+/** the list's view: every card, each with what other modules draw already drawn */
+function listView(): InboxListView {
+  return {
+    bellMsg,
+    matches: shownMatches().map(m => {
+      const l = myMatchLine(m);
+      // CT-517: the other player is in the paused match's room, waiting on you
+      return { room: m.room, seat: m.seat, asks: m.phase === 'paused' && m.opponentHere === true,
+        opponent: m.opponent, text: l.text, button: l.button };
+    }),
+    invites,
+    times: times.map(t => ({ season: t.season, seasonName: t.seasonName, match: t.match, from: t.from,
+      when: timeText(t.at / 1000) })),
+    requests,
+    notes: notes.map(noteCard),
+  };
 }
 
 function paint(): void {
   if (!layer) return;
   if (!deps?.token() || onBoard() || deps.quiet()) { if (layer.innerHTML) layer.innerHTML = ''; return; }
-  const n = unread();
-  const pops = panelOpen ? [] : [
-    ...invites.filter(i => !dismissed.has(i.id)).map(i => inviteCardHtml(i, true)),
-    ...reminders().filter(r => !dismissed.has(noteKey(r))).map(r => noteHtml(r, true)),
-  ];
-  layer.innerHTML = `<button class="inboxbell${n ? ' lit' : ''}" data-inbox="bell" title="notifications">🔔${n ? `<span class="inboxcount">${n}</span>` : ''}</button>`
-    + (panelOpen ? listHtml() : '')
-    + (pops.length ? `<div class="invitepops">${pops.join('')}</div>` : '');
+  layer.innerHTML = inboxLayerHtml({
+    unread: unread(),
+    list: panelOpen ? listView() : null,
+    pops: {
+      invites: invites.filter(i => !dismissed.has(i.id)),
+      reminders: reminders().filter(r => !dismissed.has(noteKey(r))).map(noteCard),
+    },
+  });
 }
 
 // ── the poll ──────────────────────────────────────────────────────────

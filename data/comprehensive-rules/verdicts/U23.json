@@ -4775,7 +4775,7 @@
         "note": "no fold reads it — profile, achievements, rating and card stats count the game"
       },
       {
-        "loc": "client/server/history.ts / admin.ts / client/ui/account.ts",
+        "loc": "client/server/history.ts / admin.ts / client/ui/pages/profile.ts",
         "agrees": true,
         "note": "the tag is shown in the match history and admin games list"
       },
@@ -4834,7 +4834,7 @@
         "text": "if (winner) leagueRecordPlayed(room.league.match, winner, room.code, Date.now(), { fixed: room.amendments.length > 0 });"
       },
       {
-        "file": "client/ui/account.ts",
+        "file": "client/ui/pages/profile.ts",
         "text": "if (!g.amended) return '';"
       }
     ],

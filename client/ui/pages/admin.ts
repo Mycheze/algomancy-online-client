@@ -6,6 +6,14 @@
  * element, `renderScreen()` paints it, `handleButton()` is offered every click
  * (everything here is prefixed `admin-`), and the state lives in this file.
  *
+ * Moved from ui/admin.ts to ui/pages/ in the design-system round (2026-11-03)
+ * and split by the page contract (pages/README.md): adminView() gathers the
+ * state, adminHtml(view) draws it from the ui- components (buttons, tabs, the
+ * error line), paintAdmin() puts it on #app. The tables and chips keep the
+ * page's own markup: `.admintable` is denser than ui-table (no capitals, solid
+ * row lines) and `.stchip` is a tinted fill, not ui-chip's outlined tag — a
+ * redesign's call, not a conversion's.
+ *
  * THE URL IS THE PAGE: `?admin=1`, written with replaceState like every other
  * page here. There is no link to it anywhere in the client — not in a menu,
  * not in a footer, not behind a role check. You reach it by typing the query
@@ -33,21 +41,22 @@
  * version of the question an operator has: "is this fixed in what these people
  * are playing right now?"
  */
-import * as acct from './account.ts';
-import { esc } from './util.ts';
-import { goalText, setupLines, type ChallengeSetup, type Goal, type RunScore } from '../engine/src/challenge.ts';
+import * as acct from '../account.ts';
+import { esc } from '../util.ts';
+import { goalText, setupLines, type ChallengeSetup, type Goal, type RunScore } from '../../engine/src/challenge.ts';
+import { button, statusMessage, tabs } from '../components/index.ts';
 
 /* ── the shapes the server sends (server/admin.ts) ─────────────────── */
 
-interface Badge { owner?: true; judge?: 1 | 2 | 3; since: string }
+export interface Badge { owner?: true; judge?: 1 | 2 | 3; since: string }
 
-interface AccountRow {
+export interface AccountRow {
   id: string; username: string; createdAt: string; admin: boolean;
   badge?: Badge | null; games: number; wins: number;
   lastPlayed: string | null; friends: number; decks: number; discord: string | null;
 }
 
-interface ReportRow {
+export interface ReportRow {
   id: number; ledgerId: number | null; ts: string; room: string; seat: number | null; note: string;
   actionIndex: number | null; kind?: string; severity?: string | null;
   page?: string; by?: { name: string; owner?: boolean; judge?: number } | null;
@@ -55,7 +64,7 @@ interface ReportRow {
   mark: 'real' | 'not' | null; markedBy: string | null;
 }
 
-interface GameRow {
+export interface GameRow {
   code: string; playedAt: string; mode: string; els: string[];
   /** a game that is not a draft: each seat's colours, by seat */
   sides?: [string[], string[]];
@@ -68,52 +77,52 @@ interface GameRow {
   disputed?: number;
 }
 
-interface RoomRow {
+export interface RoomRow {
   code: string; mode: string; names: [string, string];
   connected: [boolean, boolean]; users: [string | null, string | null];
   turn: number; phase: string; winner: number | null; actions: number;
   minutes: number; watchers: number; rated: boolean;
 }
 
-interface Overview {
+export interface Overview {
   me: string; admins: number; accounts: number; games: number; rooms: number;
   reports: { total: number; unmarked: number; real: number; not: number; live: number; unfetched: number };
 }
 
 /** server/admin-challenges.ts — one weekly-challenge calendar row */
-type RefResult =
+export type RefResult =
   | { state: 'ok'; score: RunScore; actions: number }
   | { state: 'failed'; error: string; at?: number }
   | { state: 'missing' }
   | { state: 'pending' };
 
-interface ChallengeRow {
+export interface ChallengeRow {
   id: string; week: string; title: string; blurb: string; goal: Goal; seed: number; par: number; setup?: ChallengeSetup;
   opens: number; closes: number; status: 'closed' | 'open' | 'upcoming';
   opensInDays?: number; ref: RefResult; runs?: number; players?: number;
 }
 
-interface ChallengeCal {
+export interface ChallengeCal {
   now: number; rows: ChallengeRow[]; runsOutAt: number | null; weeksLeft: number; upcoming: number;
 }
 
-type Tab = 'reports' | 'accounts' | 'games' | 'rooms' | 'challenges';
+export type Tab = 'reports' | 'accounts' | 'games' | 'rooms' | 'challenges';
 
 /* ── module state ─────────────────────────────────────────────────────── */
 
 let open = false;
-let tab: Tab = 'reports';
-let loading = false;
+let shownTab: Tab = 'reports';
+let fetching = false;
 /** null until the first load; false once the server has refused us */
 let allowed: boolean | null = null;
 let msg = '';
 /** a server fault (not a refusal) on the last request; cleared by the next answer */
 let fault = '';
 let over: Overview | null = null;
-let accounts: AccountRow[] = [];
-let reports: ReportRow[] = [];
-let games: GameRow[] = [];
-let rooms: RoomRow[] = [];
+let accountList: AccountRow[] = [];
+let reportList: ReportRow[] = [];
+let gameList: GameRow[] = [];
+let roomList: RoomRow[] = [];
 let cal: ChallengeCal | null = null;
 /** reports filter: show only the ones nobody has judged yet */
 let unmarkedOnly = false;
@@ -157,28 +166,28 @@ async function post(path: string, body: unknown): Promise<Record<string, unknown
 }
 
 async function load(): Promise<void> {
-  loading = true; paint();
+  fetching = true; paint();
   const ov = await get<{ ok: boolean } & Overview>('/api/admin/overview');
   if (ov) over = ov;
   if (allowed) {
-    if (tab === 'accounts') {
+    if (shownTab === 'accounts') {
       const r = await get<{ accounts: AccountRow[] }>('/api/admin/accounts');
-      if (r) accounts = r.accounts;
-    } else if (tab === 'reports') {
+      if (r) accountList = r.accounts;
+    } else if (shownTab === 'reports') {
       const r = await get<{ reports: ReportRow[] }>('/api/admin/reports');
-      if (r) reports = r.reports;
-    } else if (tab === 'games') {
+      if (r) reportList = r.reports;
+    } else if (shownTab === 'games') {
       const r = await get<{ games: GameRow[] }>('/api/admin/games');
-      if (r) games = r.games;
-    } else if (tab === 'challenges') {
+      if (r) gameList = r.games;
+    } else if (shownTab === 'challenges') {
       const r = await get<{ ok: boolean } & ChallengeCal>('/api/admin/challenges');
       if (r) cal = r;
     } else {
       const r = await get<{ rooms: RoomRow[] }>('/api/admin/rooms');
-      if (r) rooms = r.rooms;
+      if (r) roomList = r.rooms;
     }
   }
-  loading = false; paint();
+  fetching = false; paint();
 }
 
 /* ── opening and closing ──────────────────────────────────────────────── */
@@ -241,7 +250,7 @@ function badgeChips(b: Badge | null | undefined): string {
   return out.join(' ');
 }
 
-function accountsHtml(): string {
+function accountsHtml(accounts: AccountRow[], over: Overview | null): string {
   const rows = accounts.map(a => `
     <tr>
       <td><b>${esc(a.username)}</b> ${badgeChips(a.badge)}${a.admin ? ' <span class="badgechip admin">admin</span>' : ''}</td>
@@ -251,12 +260,10 @@ function accountsHtml(): string {
       <td>${a.lastPlayed ? day(a.lastPlayed) : '—'}</td>
       <td>${a.discord ? esc(a.discord) : '—'}</td>
       <td class="adminacts">
-        <button data-btn="admin-judge" data-name="${esc(a.username)}" data-level="0">none</button>
-        <button data-btn="admin-judge" data-name="${esc(a.username)}" data-level="1">L1</button>
-        <button data-btn="admin-judge" data-name="${esc(a.username)}" data-level="2">L2</button>
-        <button data-btn="admin-judge" data-name="${esc(a.username)}" data-level="3">L3</button>
-        <button data-btn="admin-flag" data-name="${esc(a.username)}" data-want="${a.admin ? '0' : '1'}"
-          >${a.admin ? 'revoke admin' : 'make admin'}</button>
+        ${(['none', 'L1', 'L2', 'L3'] as const).map((label, level) =>
+    button({ label, dataBtn: 'admin-judge', attrs: { 'data-name': a.username, 'data-level': level } })).join('\n        ')}
+        ${button({ label: a.admin ? 'revoke admin' : 'make admin', dataBtn: 'admin-flag',
+    attrs: { 'data-name': a.username, 'data-want': a.admin ? '0' : '1' } })}
       </td>
     </tr>`).join('');
   return `<p class="adminnote">${accounts.length} account(s) · ${over?.admins ?? '?'} admin(s).
@@ -277,7 +284,7 @@ function statusChip(r: ReportRow): string {
   return `<span class="stchip ${esc(r.status)}" title="${esc(t)}">${esc(label)}</span>`;
 }
 
-function reportsHtml(): string {
+function reportsHtml(reports: ReportRow[], over: Overview | null, unmarkedOnly: boolean): string {
   const shown = unmarkedOnly ? reports.filter(r => !r.mark) : reports;
   const rows = shown.map(r => `
     <tr class="${r.mark === 'not' ? 'dim' : ''}">
@@ -289,12 +296,12 @@ function reportsHtml(): string {
       <td class="notecell">${esc(r.note)}</td>
       <td>${statusChip(r)}</td>
       <td class="adminacts">
-        <button class="${r.mark === 'real' ? 'on' : ''}" data-btn="admin-mark"
-          data-ts="${esc(r.ts)}" data-mark="real" title="real, worth doing">👍</button>
-        <button class="${r.mark === 'not' ? 'on' : ''}" data-btn="admin-mark"
-          data-ts="${esc(r.ts)}" data-mark="not" title="not a bug / won't do">👎</button>
-        ${r.mark ? `<button data-btn="admin-mark" data-ts="${esc(r.ts)}" data-mark=""
-          title="clear — set by ${esc(r.markedBy ?? '')}">✕</button>` : ''}
+        ${button({ label: '👍', className: r.mark === 'real' ? 'on' : undefined, dataBtn: 'admin-mark',
+    title: 'real, worth doing', attrs: { 'data-ts': r.ts, 'data-mark': 'real' } })}
+        ${button({ label: '👎', className: r.mark === 'not' ? 'on' : undefined, dataBtn: 'admin-mark',
+    title: 'not a bug / won\'t do', attrs: { 'data-ts': r.ts, 'data-mark': 'not' } })}
+        ${r.mark ? button({ label: '✕', dataBtn: 'admin-mark', title: `clear — set by ${r.markedBy ?? ''}`,
+    attrs: { 'data-ts': r.ts, 'data-mark': '' } }) : ''}
       </td>
     </tr>`).join('');
   const s = over?.reports;
@@ -310,7 +317,7 @@ function reportsHtml(): string {
     <tbody>${rows || '<tr><td colspan="8">no reports</td></tr>'}</tbody></table></div>`;
 }
 
-function gamesHtml(): string {
+function gamesHtml(games: GameRow[]): string {
   const untimed = games.filter(g => g.minutes === null).length;
   const rows = games.map(g => {
     // a name that came off a live account prints plain; one recovered from the
@@ -357,7 +364,7 @@ function gamesHtml(): string {
     <tbody>${rows || '<tr><td colspan="8">no games recorded</td></tr>'}</tbody></table></div>`;
 }
 
-function roomsHtml(): string {
+function roomsHtml(rooms: RoomRow[]): string {
   const rows = rooms.map(r => {
     const seat = (i: 0 | 1): string =>
       `${esc(r.names[i])}${r.users[i] ? '' : ' <i>(guest)</i>'}` +
@@ -412,7 +419,7 @@ function referenceCell(r: RefResult): string {
     <span class="unk" title="raw = cards × elements × turns; ${r.actions} actions">· raw ${s.raw} · Skill ${s.skill}</span>`;
 }
 
-function challengesHtml(): string {
+function challengesHtml(cal: ChallengeCal | null): string {
   if (!cal) return '<p class="adminnote">no calendar</p>';
   const rows = cal.rows.map(c => `
     <tr class="${c.status === 'closed' ? 'dim' : ''}">
@@ -439,39 +446,81 @@ function challengesHtml(): string {
     <tbody>${rows || '<tr><td colspan="8">no challenges</td></tr>'}</tbody></table></div>`;
 }
 
+/* ── the page contract (client/ui/pages/README.md) ─────────────────────
+ * adminView() gathers this module's state; adminHtml(view) draws it and
+ * touches nothing else; paintAdmin() puts it on #app. */
+
+/** the tabs, in the order the page shows them */
+export const ADMIN_TABS: [Tab, string][] = [
+  ['reports', 'Reports'], ['accounts', 'Accounts'], ['games', 'Games'], ['rooms', 'Live rooms'],
+  ['challenges', 'Challenges'],
+];
+
+export interface AdminView {
+  /** null until the first answer; false once the server has refused us */
+  access: boolean | null;
+  current: Tab;
+  isLoading: boolean;
+  /** an action's own failure (or "could not reach the server") */
+  actionMsg: string;
+  /** a server fault on the last request */
+  faultMsg: string;
+  overview: Overview | null;
+  accountRows: AccountRow[];
+  reportRows: ReportRow[];
+  gameRows: GameRow[];
+  roomRows: RoomRow[];
+  calendar: ChallengeCal | null;
+  onlyUnmarked: boolean;
+}
+
+/* The view's names differ from the module's `let`s on purpose: test 962
+ * holds every exported …Html in pages/ to reading its view and never the
+ * module state, and it tells the two apart by name. */
+export function adminView(): AdminView {
+  return {
+    access: allowed, current: shownTab, isLoading: fetching, actionMsg: msg, faultMsg: fault, overview: over,
+    accountRows: accountList, reportRows: reportList, gameRows: gameList, roomRows: roomList, calendar: cal,
+    onlyUnmarked: unmarkedOnly,
+  };
+}
+
+export function adminHtml(v: AdminView): string {
+  const close = button({ label: 'close', dataBtn: 'admin-close' });
+  if (v.access === false) {
+    return `<div class="adminpage"><div class="adminhead">
+      <h1>Admin</h1>${close}</div>
+      <p class="adminnote">This account is not an admin on this server, or you are not signed in.
+      Nothing else on this page is available.</p></div>`;
+  }
+  const body = v.isLoading ? '<p class="adminnote">loading…</p>'
+    : v.current === 'accounts' ? accountsHtml(v.accountRows, v.overview)
+      : v.current === 'reports' ? reportsHtml(v.reportRows, v.overview, v.onlyUnmarked)
+        : v.current === 'games' ? gamesHtml(v.gameRows)
+          : v.current === 'challenges' ? challengesHtml(v.calendar) : roomsHtml(v.roomRows);
+  return `<div class="adminpage">
+    <div class="adminhead">
+      <h1>Admin</h1>
+      <span class="adminwho">${v.overview ? `signed in as ${esc(v.overview.me)}` : ''}</span>
+      ${button({ label: 'refresh', dataBtn: 'admin-refresh' })}
+      ${close}
+    </div>
+    ${tabs({ items: ADMIN_TABS.map(([id, label]) => ({ id, label })), active: v.current, dataBtn: 'admin-tab', className: 'admintabs' })}
+    ${v.actionMsg ? statusMessage({ tone: 'error', text: v.actionMsg, className: 'adminmsg' }) : ''}
+    ${v.faultMsg ? statusMessage({ tone: 'error', text: v.faultMsg, className: 'adminmsg' }) : ''}
+    ${body}
+  </div>`;
+}
+
+export function paintAdmin(app: HTMLElement): void {
+  app.className = 'admin';
+  app.innerHTML = adminHtml(adminView());
+}
+
 function paint(): void {
   const app = $app ?? document.getElementById('app');
   if (!app || !open) return;
-  app.className = 'admin';
-  if (allowed === false) {
-    app.innerHTML = `<div class="adminpage"><div class="adminhead">
-      <h1>Admin</h1><button data-btn="admin-close">close</button></div>
-      <p class="adminnote">This account is not an admin on this server, or you are not signed in.
-      Nothing else on this page is available.</p></div>`;
-    return;
-  }
-  const tabs = ([
-    ['reports', 'Reports'], ['accounts', 'Accounts'], ['games', 'Games'], ['rooms', 'Live rooms'],
-    ['challenges', 'Challenges'],
-  ] as [Tab, string][]).map(([k, label]) =>
-    `<button class="admintab${tab === k ? ' on' : ''}" data-btn="admin-tab" data-tab="${k}">${label}</button>`).join('');
-  const body = loading ? '<p class="adminnote">loading…</p>'
-    : tab === 'accounts' ? accountsHtml()
-      : tab === 'reports' ? reportsHtml()
-        : tab === 'games' ? gamesHtml()
-          : tab === 'challenges' ? challengesHtml() : roomsHtml();
-  app.innerHTML = `<div class="adminpage">
-    <div class="adminhead">
-      <h1>Admin</h1>
-      <span class="adminwho">${over ? `signed in as ${esc(over.me)}` : ''}</span>
-      <button data-btn="admin-refresh">refresh</button>
-      <button data-btn="admin-close">close</button>
-    </div>
-    <div class="admintabs">${tabs}</div>
-    ${msg ? `<p class="adminmsg">${esc(msg)}</p>` : ''}
-    ${fault ? `<p class="adminmsg">${esc(fault)}</p>` : ''}
-    ${body}
-  </div>`;
+  paintAdmin(app);
 }
 
 export function renderScreen(): void { paint(); }
@@ -484,7 +533,7 @@ export function handleButton(btn: HTMLElement): boolean {
   if (b === 'admin-close') { close(); return true; }
   if (b === 'admin-refresh') { void load(); return true; }
   if (b === 'admin-tab') {
-    tab = (btn.dataset['tab'] as Tab) ?? 'reports';
+    shownTab = (btn.dataset['tab'] as Tab) ?? 'reports';
     void load();
     return true;
   }
@@ -498,14 +547,14 @@ export function handleButton(btn: HTMLElement): boolean {
     const mark = raw === 'real' || raw === 'not' ? raw : null;
     // clicking the mark a report already carries clears it, so the same button
     // is both "say yes" and "take it back" — one control, no second ✕ to find
-    const cur = reports.find(r => r.ts === ts)?.mark ?? null;
+    const cur = reportList.find(r => r.ts === ts)?.mark ?? null;
     void post('/api/admin/mark', { ts, mark: cur === mark ? null : mark }).then(() => load());
     return true;
   }
   if (b === 'admin-judge') {
     const name = btn.dataset['name'] ?? '';
     const level = Number(btn.dataset['level'] ?? '0');
-    const who = accounts.find(a => a.username === name);
+    const who = accountList.find(a => a.username === name);
     // the owner mark is preserved: this control is about the JUDGE level, and
     // silently dropping somebody's owner flag because a judge button was
     // clicked would be a second effect nobody asked for

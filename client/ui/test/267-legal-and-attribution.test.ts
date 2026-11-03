@@ -374,7 +374,8 @@ test('§6 the card art and the IP are attributed', () => {
  * function with one flag — so a change that shows it on both, or on neither,
  * is one character wide and invisible unless both halves are asserted.
  */
-const ACCOUNT_UI = path.join(UI_DIR, 'account.ts');
+// the sign-in screen's markup is ui/pages/signin.ts since the design-system round (2026-11-03)
+const ACCOUNT_UI = path.join(UI_DIR, 'pages', 'signin.ts');
 
 test('§7 account creation carries the warning, in the owner\'s own words', () => {
   const src = read(ACCOUNT_UI);
@@ -399,7 +400,7 @@ test('§7 …and it is on the CREATE screen, not the log-in one', () => {
     + 'arriving after the moment it is about; shown on neither it is not shown at all');
   // positive control: `isRegister` really is the create/log-in discriminator,
   // so the gate above means what this test says it means
-  assert.match(src, /const isRegister = authMode === 'register'/,
+  assert.match(src, /const isRegister = v\.mode === 'register'/,
     'the flag this is gated on is no longer the one that picks the screen');
   assert.match(src, /isRegister \? 'Create account' : 'Log in'/,
     '…and no longer the one that labels the button, so "create screen" is now a guess');

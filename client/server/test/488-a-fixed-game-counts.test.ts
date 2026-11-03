@@ -87,7 +87,8 @@ test('§3 the match history and the admin games list show the tag', () => {
   assert.equal(recentGames(ann.id).find(r => r.code === 'FXD2')!.amended, undefined);
   const admin = gameRows().find(r => r.code === 'FXD4')!;
   assert.equal(admin.amended, 1);
-  const ui = readFileSync(join(HERE, '..', '..', 'ui', 'account.ts'), 'utf8');
+  // the history rows are ui/pages/profile.ts since the design-system round (2026-11-03)
+  const ui = readFileSync(join(HERE, '..', '..', 'ui', 'pages', 'profile.ts'), 'utf8');
   assert.match(ui, /\$\{customTag\(g\)\}\$\{fixedTag\(g\)\}/, 'the games tab draws fixedTag beside the other tags');
 });
 

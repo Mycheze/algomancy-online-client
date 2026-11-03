@@ -62,16 +62,16 @@ async function profile(): Promise<string> {
   ui.click({ btn: 'acct-open-profile' });
   await settle(); await settle();
   const html = ui.html();
-  assert.match(html, /<div class="accthead">/, 'the profile did not paint');
+  assert.match(html, /class="[^"]*\baccthead\b/, 'the profile did not paint');
   return html;
 }
-const BTN = /<button data-btn="nav-storybook"[^>]*>🎨 Design \(Storybook\)<\/button>/;
+const BTN = /<button [^>]*data-btn="nav-storybook"[^>]*>🎨 Design \(Storybook\)<\/button>/;
 
 test('§1 an admin has a Design (Storybook) button on the profile, beside Admin', async () => {
   who = admin;
   const html = await profile();
   assert.match(html, BTN);
-  assert.match(html, /data-btn="nav-admin"[^]*?<\/button>\s*<button data-btn="nav-storybook"/, 'beside the Admin button');
+  assert.match(html, /data-btn="nav-admin"[^]*?<\/button>\s*<button [^>]*data-btn="nav-storybook"/, 'beside the Admin button');
 });
 
 test('§2 a player has no button, and neither has an owner/judge badge without the admin flag', async () => {
@@ -91,5 +91,5 @@ test('§3 the button opens a window in the click, gets a ticket with the session
   assert.deepEqual(POSTS, [{ url: '/api/storybook/ticket', auth: 'Bearer tok' }]);
   assert.deepEqual(replaced, ['/storybook/?ticket=T1'], 'the window goes to the ticket URL the server answered');
   assert.equal(popup.opener, null, 'Storybook gets no handle on the game page');
-  assert.match(ui.html(), /<div class="accthead">/, 'the profile stays where it was');
+  assert.match(ui.html(), /class="[^"]*\baccthead\b/, 'the profile stays where it was');
 });

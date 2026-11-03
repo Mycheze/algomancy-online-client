@@ -142,7 +142,6 @@ import * as dk from './decks.ts';
 import * as cb from './cards.ts';
 import * as meta from './meta.ts';
 import * as lg from './league.ts';
-import * as admin from './admin.ts';
 // the Comprehensive Rules review page (?crreview), and its layer beside #app
 import * as crr from './crreview.ts';
 // the admin's "Design (Storybook)" button: a ticket, then /storybook/ in a new window
@@ -184,6 +183,7 @@ import { artUrl, ICON_BASE } from './assets.ts';
 // the non-game pages (docs/23 § Target structure: pageView() + pure pageHtml()).
 // Imported LAST on purpose: they import only modules imported above, so every
 // one of those has already been evaluated and the boot order is unchanged.
+import * as admin from './pages/admin.ts';
 import { caretIn, type CaretSnap } from './pages/caret.ts';
 import { CLOCK_DEFAULT_MS, chosenClockMs } from './pages/clockpick.ts';
 import { connectingHtml } from './pages/connecting.ts';
