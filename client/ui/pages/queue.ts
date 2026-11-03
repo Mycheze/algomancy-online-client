@@ -56,6 +56,19 @@ export function queueStripHtml(v: QueueStripView): string {
 }
 
 /**
+ * The new home's Matchmaking card body (docs/24, 2026-11-03): who is around,
+ * and the open games with their own Join buttons. No "Find a game" — the
+ * whole card is H1's `queue-open` button, the Join buttons sit inside it.
+ */
+export function queueGlanceHtml(v: QueueStripView): string {
+  const counts = v.counts;
+  return `<div class="qglance">
+    <span class="qglcount${counts && counts.total > 0 ? ' live' : ''}">${esc(countsSummary(counts))}</span>
+    ${openListHtml(v.openGames)}
+  </div>`;
+}
+
+/**
  * BL-42 — the games actually on offer, each one clickable.
  *
  * The owner's reason for this replacing a bare count: *"if you don't really

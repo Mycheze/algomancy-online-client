@@ -37,8 +37,8 @@ import { alertTab } from './tabalert.ts';
 import { noteLine, type LeagueNote } from './leaguenotes.ts';
 import { matchLink, myMatchLine, type MyMatch } from './match.ts';
 import {
-  inboxLayerHtml, roomFriendsBodyHtml, roomFriendsHtml as roomFriendsPanelHtml,
-  type FriendStatus, type InboxListView, type NoteCardView, type RoomFriendsView, type RoomFriendView as RoomFriend,
+  inboxLayerHtml, inviteRowsHtml as inviteRowsPageHtml, roomFriendsBodyHtml, roomFriendsHtml as roomFriendsPanelHtml,
+  type FriendStatus, type InviteCardView, type InboxListView, type NoteCardView, type RoomFriendsView, type RoomFriendView as RoomFriend,
 } from './pages/inbox.ts';
 
 // ── types off the wire (server/api-inbox.ts) ─────────────────────────
@@ -206,7 +206,40 @@ function listView(): InboxListView {
   };
 }
 
+// ── what the home's toolbar and Join sheet read (docs/24) ─────────────
+
+/** The bell's count — what the home's Alerts button badges. 0 signed out
+ * (what a signed-out poll left behind is not this viewer's). */
+export function inboxUnread(): number { return deps?.token() ? unread() : 0; }
+
+/** the friend invites waiting on an answer — part of the home's Join badge */
+export function inviteCount(): number { return deps?.token() ? invites.length : 0; }
+
+/** the pending invites, as ui/pages/inbox.ts inviteRowsHtml draws them */
+export function inviteRowsView(): InviteCardView[] {
+  return deps?.token() ? invites.map(i => ({ id: i.id, from: i.from, label: i.label })) : [];
+}
+
+/** the pending invites as rows with their Join / No thanks buttons ('' when none) */
+export function inviteRowsHtml(): string { return inviteRowsPageHtml(inviteRowsView()); }
+
+/* ONE LISTENER SLOT: the home screen, which repaints itself when the counts it
+ * badges move. Called only when inboxUnread() or inviteCount() actually CHANGES
+ * (checked at every paint of the layer, which follows every poll and click),
+ * never merely because the layer painted — so the home's repaint, which can
+ * paint this layer again, cannot loop. Registering again replaces it. */
+let changed: (() => void) | null = null;
+let lastCounts = '';
+export function onInboxChange(cb: () => void): void { changed = cb; }
+function noteCounts(): void {
+  const now = `${inboxUnread()}|${inviteCount()}`;
+  if (now === lastCounts) return;
+  lastCounts = now;
+  changed?.();
+}
+
 function paint(): void {
+  noteCounts();
   if (!layer) return;
   if (!deps?.token() || onBoard() || deps.quiet()) { if (layer.innerHTML) layer.innerHTML = ''; return; }
   layer.innerHTML = inboxLayerHtml({

@@ -38,3 +38,9 @@
 .chbox .chscore { margin: var(--space-3) 0 var(--space-4); }
 .chbox .chdebt { margin: -4px 0 10px; }
 .chboxbtns { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: flex-end; margin-top: var(--space-5); }
+
+/* the new home's Challenge card body (pages/challenge.ts challengeGlanceHtml, docs/24) */
+.chglance { display: flex; flex-direction: column; gap: var(--space-2); }
+.chgltitle { color: var(--accent); font-weight: 700; font-size: var(--text-12); text-transform: uppercase; letter-spacing: .06em; }
+.chglgoal { font-weight: 700; font-size: var(--text-14); color: var(--text); }
+.chglmeta { color: var(--dim); font-size: var(--text-13); }

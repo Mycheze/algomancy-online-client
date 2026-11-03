@@ -45,7 +45,7 @@ import {
 } from './challengerun.ts';
 import { chosenDeck, esc } from './util.ts';
 import {
-  allViews, challengeHomeCardHtml, challengeHomeView, challengeNavHtml, challengePageHtml, challengePageView,
+  allViews, challengeGlanceHtml, challengeHomeCardHtml, challengeHomeView, challengeNavHtml, challengePageHtml, challengePageView,
   type BoardReply, type ChallengeReply, type ChallengeView,
 } from './pages/challenge.ts';
 
@@ -228,6 +228,18 @@ export function navButtonHtml(): string {
 export function homeCardHtml(): string {
   askHint();
   return challengeHomeCardHtml(challengeHomeView(hint, Date.now() + skew));
+}
+
+/** The new home's Challenge card body: pages/challenge.ts challengeGlanceHtml; '' with no current week. */
+export function homeGlanceHtml(): string {
+  askHint();
+  return challengeGlanceHtml(challengeHomeView(hint, Date.now() + skew));
+}
+
+/** a current or a past week to show: the home's Challenge button is live */
+export function hasChallenge(): boolean {
+  askHint();
+  return challengeHomeView(hint, Date.now() + skew).any;
 }
 
 // ── the page ──────────────────────────────────────────────────────────
