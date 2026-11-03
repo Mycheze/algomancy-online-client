@@ -5190,4 +5190,10 @@ export const CLOSED: LedgerEntry[] = [
     ],
     note: "Answered by the rules channel (owner, 2026-11-01): \"Hidden information stays hidden (all you know is that your opponent made a choice), but open information is known by both players for the choice\" — MTG's APNAP rule, with the initiative player as the active player. Now CR 102.3a/102.3b: the initiative player is asked first everywhere (7 cards changed order), an earlier pick of open information is named in the prompt and marked on the board, and a pick from a hand or deck shows only that it was made. Before this the screen hid every first pick, and the seat view leaked it.",
   },
+  {
+    id: 320, room: "KFCS", date: "2026-11-03",
+    report: "Gember, seat 0, agreed fix: back to before Gember's choice: Tidal Reversion (Gember's bin) (turn 6 battle). \"im dumb and a click before deciding it\"",
+    status: 'agreed-fix',
+    note: "Took back Gember's choice [264] of Tidal Reversion as Spell Excavation's target (\"you may play target spell from your bin until regroup\"); mycheze agreed. Replayed, Gember chose Recall from the bin instead [264]. The engine offered all five bin spells, as the card says; the wrong one was clicked. A misclick, as the reason says; no defect. (What happened to that Recall next is #321.)",
+  },
 ];

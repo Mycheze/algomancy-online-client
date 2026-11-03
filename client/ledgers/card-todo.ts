@@ -137,7 +137,7 @@ export interface TodoEntry {
 }
 import '../engine/src/cards/registry.ts';
 import { CLOSED } from './card-todo-closed.ts';
-import { still } from './card-todo-helpers.ts';
+import { body, still, text } from './card-todo-helpers.ts';
 
 // ── proofs for the comprehensive-rules findings (CT-226 on) ─────────────
 // Each finding was re-checked against HEAD before it was filed. A proof
@@ -376,6 +376,62 @@ const OPEN: TodoEntry[] = [
     fix: "Accept [[Name]] in cardlinks as a link to Name and drop the brackets; keep plain names linking as they do.",
     proof: null,
     verify: "Write [[Bumblecrab]] in a description: does it show as a link with no brackets?",
+    status: 'open',
+  },
+  // ── the report triage of 2026-11-03 (reports #319-#325; the steward; filed as CT-520..522, renumbered 526..528 on landing) ───────
+  {
+    id: 526, area: "client", severity: "minor",
+    cards: ["Thoughtripper", "Reclaimer of Secrets", "Tempest Oracle", "Blightwalker", "Rotling", "Swarmling"],
+    title: "a \"you may pay [N]\" trigger's stack line states the effect as certain before the payment is decided",
+    detail: "Thoughtripper prints \"you may pay [2]: each opponent discards a card\"; its does-line is \"{opponent} discards a card\", so while it waits on the stack it reads as if the opponent will discard, though its controller has not yet chosen to pay. Seven of the nine \"you may pay\" triggers in the pool drop the condition: Reclaimer of Secrets (\"Recall {0}\"), Tempest Oracle, Blightwalker, Rotling, Thoughtripper and both Swarmling triggers. Afflicting Anima and Sacrifice Dude already say it (\"… if you pay 1\", \"… if you pay 2\").",
+    evidence: "Report #319 (KFCS @143, mycheze, owner): \"Helper text while Thoughtripper trigger on the stack says 'Gember WILL discard' but I haven't paid or not yet.\" Replayed: the board at 143 has Thoughtripper's trigger on the stack. Swept allCardNames() for labels matching /may pay/ against ui/does-lines.json (2026-11-03): the seven above have no condition in their line.",
+    fix: "Give each of the seven lines the condition in the register the two correct ones use (\"… if you pay 2\"), and add a ui test that walks every ability whose label says \"may pay\" and fails on a does-line without \"if you pay\" (or an agreed equivalent) — 344 walks the templates but asks nothing about optional costs.",
+    proof: () => still('ui/does-lines.json', '"ability:Thoughtripper#0": "{opponent} discards a card"'),
+    reportId: 319,
+    status: 'open',
+  },
+  {
+    id: 527, area: "client", severity: "minor",
+    cards: ["Spell Excavation", "Recall"],
+    title: "a player passed seven windows with a Spell Excavation'd Recall playable and says they were never given priority to play it",
+    detail: "KFCS turn 6 battle: Gember cast Spell Excavation on Recall [263-264] (\"you may play target spell from your bin until regroup\"). From [268] to [282] the engine offered seat 0 playFromBin on both Recalls (bin 7 and 8) at every one of Gember's seven priority windows, and Gember passed each one; ui/main.ts binUsableIndexes glows exactly those bin entries. The players then agreed a 2-life edit on each side to make up for it. The room file cannot say whether those passes were clicks or a standing Pass all: under 'all' mode passAllRelease deliberately asks no change clause (CR D2.2), so an option granted mid-phase would not hand priority back.",
+    evidence: "Report #321 (KFCS @283, agreed edit, mycheze proposed, Gember agreed): \"Gember didn't get to play Recall from her bin during that turn for some reason. She spell extracted it but didn't get priority to play it.\" legalActions replayed at each of [266]-[282] (2026-11-03).",
+    fix: "First find out: re-create the board (Spell Excavation resolving under a Pass all armed earlier in the battle) and see whether the chip passes through the new bin play. If it does, the question for the owner is whether an option your OWN resolving spell grants should release Pass all; if it does not, the problem is how visible a playable bin card is (a glow inside a pile) — ask the players which.",
+    proof: null,
+    verify: "Arm Pass all in a battle, cast Spell Excavation on a spell in your bin, let it resolve: are you given priority with the bin card playable?",
+    reportId: 321,
+    status: 'open',
+  },
+  {
+    id: 528, area: "client", severity: "minor",
+    title: "casting a Burst token asks you to pick the token you just clicked again, and places the last one for you",
+    detail: "CR 803.5d: the caster orders a Burst group one token at a time. Clicking a token sends castSpellToken {entityId, ordered: true}, but doCastSpellToken calls burstStep with no `picked`, so the clicked token is ignored and the first prompt asks which token resolves first — the player clicks the same token a second time. burstStep also takes the last remaining token without asking (\"else the only one left\"). The owner wants the clicked token to BE the first pick, and the last one clicked rather than placed for them.",
+    evidence: "Report #322 (DQTX @134, mycheze, owner): \"the UI should force you to click on the first one again, it should automatically just assume the one you clicked is the first one you're casting. And the final one shouldn't be automatically selected. It throws off the whole sequence of actions.\" Replayed: [129] castSpellToken 46 ordered, then [130] the burstPick prompt.",
+    fix: "Pass the clicked entityId to burstStep as the first `picked`; decide with the owner whether the last token is then a one-option prompt or a click on the board, update 358-burst-order(-ui) and CR 803.5d's record if the wording changes. Replays: an old log's extra [130]-style pick would then be one decide too many — check replay-room on the logged games before landing.",
+    proof: () => still('engine/src/apply.ts', 'burstStep(e, seat, region, then, [], group.map(t => t.id));'),
+    reportId: 322,
+    status: 'open',
+  },
+  {
+    id: 523, area: "client", severity: "minor",
+    title: "a clock is seen ticking while its player is on Pass all; which window it was is not known",
+    detail: "CR D3.2b: a player's clock does not run in a priority window their standing pass is answering. server/rooms.ts clockRunning honours it only where settlePassAll stamped the window: inPassWindow (no decision, the seat has priority, pass legal), the arm not released, no report dialog open, no proposal. Anything else is billed by design — a decision, a declaration, a deploy step — and the arm comes off at the phase change. The report does not say which window ticked. SHXD was game 3 of a Competitive match whose banks carry between games, and Gember lost it on time (clockMs [0, 539039]) at turn 4's planning.",
+    evidence: "Report #323 (SHXD @109, mycheze, owner): \"When 'all passing' your clock still ticks down and it shouldn't.\" Report #325, two minutes after the game ended on time, disputes the result: \"We don't really want this to count.\"",
+    fix: "Reproduce in a server test with a clocked room: arm Pass all in battle and walk the windows (opponent's stack items, the attack and block declarations, the battle-end pass, a deploy step), recording clockRun for the armed seat at each. Every billed window that is a pure pass window is the bug; the rest go to the owner as \"billed by design under D3.2b — should it be?\"",
+    proof: null,
+    verify: "Play a clocked game, arm Pass all at the start of a battle, and watch your own clock through the battle.",
+    reportId: 323,
+    status: 'open',
+  },
+  {
+    id: 524, area: "client", severity: "minor",
+    title: "a game lost on time has no way back to the post-game summary once you view the board",
+    detail: "The post-game screen's \"view the final board\" (pg-close) hides it; the only way back is the prompt bar's \"Post-game summary\" button (pg-reopen), which ui/main.ts promptHtml renders only inside `if (s.phase === 'gameover')`. A game decided outside the state — a loss on time (BL-27, server decidedOutsideState) — never reaches phase 'gameover', so the bar shows the ordinary prompt and the summary is gone until a reload. SHXD ended on time at turn 4's planning step.",
+    evidence: "Report #324 (SHXD @113, mycheze, owner): \"There's no way to get back to the 'Game Over' summary after you 'View Board'.\" Replayed: SHXD's final state is turn 4, phase planning, Gember's clock 0.",
+    fix: "Key the bar's game-over branch (and the reopen button) on postGame being set, not on the state's phase, so a time loss and any other result decided off the state behave like a played-out one; a ui test rendering the bar with postGame set over a non-gameover state.",
+    proof: () => body('ui/main.ts', "if (s.phase === 'gameover') {", 'Playtest 2026-08-20').includes('data-btn="pg-reopen"')
+      && text('ui/main.ts').split('data-btn="pg-reopen"').length === 2,
+    reportId: 324,
     status: 'open',
   },
 ];
