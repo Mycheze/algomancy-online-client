@@ -17,3 +17,7 @@ export const Boxed = { args: { tone: 'error', boxed: true, text: 'That password 
 export const AllTones = {
   render: () => stack([false, true].flatMap(boxed => STATUS_TONES.map(tone => statusMessage({ tone, boxed, text: `${tone}${boxed ? ', boxed' : ''}` }))), 8),
 };
+export const Paragraph = {
+  name: 'As a paragraph (the home and waiting-room error line)',
+  render: () => `<div>Above.${statusMessage({ tag: 'p', className: 'deckmsg', text: 'The server refused that name.' })}Below.</div>`,
+};

@@ -11,7 +11,11 @@
  *
  * An error is `role="alert"` (read out at once), the rest `role="status"`.
  * `boxed` puts it on its tone's tinted background with a border, for a
- * message that must not read as part of the content around it. */
+ * message that must not read as part of the content around it.
+ *
+ * `tag: 'p'` draws it as a paragraph, keeping a paragraph's margins (the
+ * browser's 1em): the home screen's and the waiting rooms' error line was a
+ * `<p class="deckmsg">`, and its place on the page is those margins. */
 import { type Common, rootAttrs, textOrHtml } from './_shared.ts';
 
 export const STATUS_TONES = ['ok', 'warn', 'error', 'info', 'note'] as const;
@@ -22,10 +26,13 @@ export interface StatusProps extends Common {
   textHtml?: string;
   tone?: StatusTone;
   boxed?: boolean;
+  /** the element: 'div' (default) or 'p', which keeps a paragraph's margins */
+  tag?: 'div' | 'p';
 }
 
 export function statusMessage(p: StatusProps): string {
   const tone = p.tone ?? 'note';
   const own = `ui-status ui-status--${tone}${p.boxed ? ' ui-status--boxed' : ''}`;
-  return `<div${rootAttrs(own, p, { role: tone === 'error' ? 'alert' : 'status' })}>${textOrHtml(p.text, p.textHtml)}</div>`;
+  const tag = p.tag ?? 'div';
+  return `<${tag}${rootAttrs(own, p, { role: tone === 'error' ? 'alert' : 'status' })}>${textOrHtml(p.text, p.textHtml)}</${tag}>`;
 }

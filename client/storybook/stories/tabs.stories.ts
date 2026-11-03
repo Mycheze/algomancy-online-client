@@ -17,3 +17,7 @@ export default {
 
 export const Plain = {};
 export const Caps = { name: 'Caps (the profile)', args: { variant: 'caps' } };
+export const TabClass = {
+  name: 'A tab with its own class',
+  args: { items: ITEMS.map(i => ({ ...i, className: 'accttab' })), variant: 'caps' },
+};

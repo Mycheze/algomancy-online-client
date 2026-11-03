@@ -21,3 +21,17 @@ export const Default = {};
 export const WithCaption = { args: { caption: 'Your last three games' } };
 export const Empty = { args: { rows: [], emptyText: 'No games yet. Play one from the home screen.' } };
 export const Scrolling = { name: 'Scrolling (narrow)', render: (args: TableProps) => `<div style="max-width:260px">${table({ ...args, scroll: true })}</div>` };
+export const Headless = {
+  name: 'Headless (the league\'s lists)',
+  args: { headless: true, columns: [{ key: 'pair', label: '' }, { key: 'res', label: '' }, { key: 'when', label: '', className: 'dim' }],
+    rows: [{ cells: { pair: 'Nyar vs Tomzy', res: 'Nyar won', when: 'Mon 3 Nov' } }, { cells: { pair: 'Karanda vs Ann', res: 'not played', when: '–' } }] },
+};
+export const HeaderTooltips = {
+  name: 'Header tooltips and a marked column',
+  args: {
+    columns: [{ key: 'rank', label: '#' }, { key: 'player', label: 'player' },
+      { key: 'turns', label: 'Turns', title: 'The turn you met the goal on, plus any turns paying off debt.', headClassName: 'chsorted' },
+      { key: 'omw', label: 'OMW', title: "opponents' match-win percentage — the tiebreak" }],
+    rows: [{ cells: { rank: 1, player: 'Ann', turns: { html: '<b>4</b>' }, omw: '62%' } }, { cells: { rank: 2, player: 'Bob', turns: { html: '<b>5</b>' }, omw: '48%' } }],
+  },
+};

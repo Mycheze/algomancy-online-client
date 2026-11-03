@@ -65,7 +65,7 @@
 .cswrbar { position: relative; display: block; height: 10px; background: var(--panel2); border-radius: var(--radius-md); }
 .cswrmid { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--dim); }
 .cswrfill { position: absolute; top: 1px; bottom: 1px; border-radius: var(--radius-sm); }
-.cswrfill.up { background: #4fb3c9; } .cswrfill.down { background: #e07b39; }
+.cswrfill.up { background: var(--color-winrate-up); } .cswrfill.down { background: var(--color-winrate-down); }
 .cssharecell { width: 150px; }
 .cssharecell small { color: var(--dim); margin-left: var(--space-2); }
 .csshare { display: inline-block; vertical-align: middle; width: 100px; height: 8px; border-radius: var(--radius-sm); background: var(--panel2); overflow: hidden; }

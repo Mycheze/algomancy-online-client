@@ -48,7 +48,7 @@ const ALLOW: Record<string, number> = {
   'shared/element-chips': 9,
   'pages/draft-lobby': 3,
   'pages/postgame': 2,
-  'pages/decks': 5,
+  'pages/decks': 4,
   'pages/tabletop': 14,
   'pages/binder': 7,
   'pages/deckstrip-curve-affinity': 6,
@@ -56,7 +56,7 @@ const ALLOW: Record<string, number> = {
   'pages/queue': 4,
   'pages/admin': 14,
   'pages/learn': 23,
-  'pages/cardstats': 6,
+  'pages/cardstats': 4,
   'pages/deck-modals': 2,
   'shared/touch': 2,
   'shared/drag': 3,
@@ -65,10 +65,6 @@ const ALLOW: Record<string, number> = {
   'shared/report-and-inbox': 4,
   'pages/crreview': 22,
   'pages/challenge': 1,
-  // the legal footer's CSS, moved out of legal.ts's injected <style> on 2026-11-03: its
-  // #0d1014 is --color-surface-sunken now; the overlay's rgba(6,8,11,.78) is a darker
-  // scrim than --color-scrim (.72), left as it was (no visible change)
-  'pages/legal': 1,
 };
 
 /** `pages/23-decks.css` → `pages/decks` */

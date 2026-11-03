@@ -17,7 +17,7 @@ import { roomFriendsHtml } from '../inbox.ts';
 import * as lob from '../lobby.ts';
 import * as mt from '../match.ts';
 import * as sc from '../singlecard.ts';
-import { button } from '../components/index.ts';
+import { button, statusMessage } from '../components/index.ts';
 import { chosenDeck, esc, shareBar } from '../util.ts';
 import { deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
 import { singleCardPickerHtml, singleCardPickerView } from './singlecard.ts';
@@ -133,7 +133,7 @@ export function constructedWaitingHtml(v: ConstructedWaitingView): string {
       </div>
     </div>
 
-    ${v.error ? `<p class="deckmsg">${esc(v.error)}</p>` : ''}
+    ${v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''}
     <p class="homefoot">Deals when both decks are in.</p>
   </div>`;
 }
@@ -219,7 +219,7 @@ export function singleWaitingHtml(v: SingleWaitingView): string {
       </div>
     </div>
 
-    ${v.error ? `<p class="deckmsg">${esc(v.error)}</p>` : ''}
+    ${v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''}
     <p class="homefoot">Deals when both cards are in.</p>
   </div>`;
 }

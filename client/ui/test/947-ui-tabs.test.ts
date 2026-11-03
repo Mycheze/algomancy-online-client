@@ -18,3 +18,9 @@ test('a tablist; the active tab is on; data-btn and data-tab on each', () => {
 test('every variant', () => {
   for (const variant of TABS_VARIANTS) assert.match(tabs({ items, active: 'stats', variant }), new RegExp(`^<div class="ui-tabs ui-tabs--${variant}"`));
 });
+
+test('a tab\'s own className goes after the component\'s classes, before on', () => {
+  const html = tabs({ items: [{ id: 'a', label: 'A', className: 'accttab' }, { id: 'b', label: 'B', className: 'accttab x' }], active: 'b' });
+  assert.match(html, /<button class="ui-button ui-button--secondary ui-tabs__tab accttab" data-tab="a"/);
+  assert.match(html, /<button class="ui-button ui-button--secondary ui-tabs__tab on accttab x" data-tab="b"[^>]*aria-selected="true"/);
+});

@@ -150,7 +150,7 @@ test('§3 the page: goal, time left, my best on each board, four leaderboard tab
   assert.match(html, /4d 3h left · 7 entrants/);
   assert.match(html, /Three first places: fewest turns, fewest cards, fewest elements\./);
   assert.doesNotMatch(html, /Skill|\bpar\b/i, 'no Skill and no par on the page');
-  assert.match(html, /<h4>Your best<\/h4>.*<td>Fastest<\/td><td><b>#2<\/b><\/td><td class="dim">4 turns · 3 cards \(1 extra\) · 2 elements<\/td>/s);
+  assert.match(html, /<h4 class="ui-panel__subheading">Your best<\/h4>.*<td>Fastest<\/td><td><b>#2<\/b><\/td><td class="dim">4 turns · 3 cards \(1 extra\) · 2 elements<\/td>/s);
   assert.match(html, /<td>Purest<\/td><td><b>#3<\/b><\/td>/, 'a rank on every board');
   // a ui-panel title since the design-system round (2026-11-03): <h3 class="ui-panel__title">
   assert.match(html, /<h3[^>]*>Leaderboard<\/h3>/);
@@ -158,7 +158,8 @@ test('§3 the page: goal, time left, my best on each board, four leaderboard tab
   // the tabs are the ui-tabs component since the design-system round (2026-11-03): its attribute order
   assert.match(html, /class="[^"]*\bon" data-btn="ch-tab" data-tab="fastest"[^>]*aria-selected="true"/, 'fastest first');
   assert.match(html, /Fewest turns\. Ties go to fewer cards, then fewer elements\./);
-  assert.match(html, /<th>#<\/th><th>player<\/th><th class="chsorted" title="[^"]*debt[^"]*">Turns<\/th><th title="[^"]*">Cards<\/th><th>Elements<\/th>/,
+  // the ui-table component since 2026-11-03: every header cell is scope="col"
+  assert.match(html, /<th scope="col">#<\/th><th scope="col">player<\/th><th class="chsorted" scope="col" title="[^"]*debt[^"]*">Turns<\/th><th scope="col" title="[^"]*">Cards<\/th><th scope="col">Elements<\/th>/,
     'the Turns header says debt costs turns (owner 2026-11-01)');
   assert.match(html, /<p class="dim">Debt you still owe when you meet the goal adds the turns it would take to pay off/, 'the rule, on the week card');
   assert.match(html, /<td>1<\/td><td>Ann<\/td><td><b>4<\/b><\/td><td>3 <span class="dim">\(1 extra\)<\/span><\/td><td>2<\/td>/,

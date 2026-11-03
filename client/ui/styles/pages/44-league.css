@@ -11,10 +11,6 @@
 /* three columns: the season beside your entry, the table beside the matches */
 .lgpage .acctbody { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .lgpage .lgspan2 { grid-column: span 2; }
-/* a panel's sub-heading (a week's name over its table): .acctcard h4's recipe,
-   which ui-panel has no part for yet */
-.lgpage .ui-panel h4 { margin: var(--space-6) 0 var(--space-4); color: var(--dim); font-size: var(--text-12);
-  text-transform: uppercase; letter-spacing: .06em; }
 /* the week grid fills its card; its controls stand in a column beside it */
 .lgavail { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 14px 28px; align-items: start; }
 .lgavside > p:first-child { margin-top: 0; }

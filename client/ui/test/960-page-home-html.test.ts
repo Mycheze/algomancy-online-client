@@ -112,7 +112,7 @@ test('960 §5 the New buttons follow the view', () => {
   assert.match(refused, /class="cta primary" data-btn="newgame" data-mode="draft" disabled title="too few"/);
   assert.match(homeHtml(view({ draft: { ...view().draft, custom: true } })), /New custom live draft/);
   // the last refusal shows on the Live draft card
-  assert.match(homeHtml(view({ error: 'the server <refused>' })), /<p class="deckmsg">the server &lt;refused&gt;<\/p>/);
+  assert.match(homeHtml(view({ error: 'the server <refused>' })), /<p class="ui-status ui-status--note deckmsg" role="status">the server &lt;refused&gt;<\/p>/);
 });
 
 test('960 §6 the two folds draw open when the view says so', () => {

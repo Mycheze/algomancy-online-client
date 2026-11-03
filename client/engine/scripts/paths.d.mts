@@ -70,6 +70,8 @@ export const STYLES_INDEX: string;
 export const BUNDLE_CSS: string;
 /** client/ui/components/ — the design system's components, one pure `<name>.ts` each (guarded by ui/test/940) */
 export const UI_COMPONENTS_DIR: string;
+/** client/ui/pages/ — the non-game pages, one module each (guarded by ui/test/992) */
+export const UI_PAGES_DIR: string;
 /** client/storybook/ — its own package; the gate never waits on it */
 export const STORYBOOK_DIR: string;
 /** client/storybook/stories/ — one `<component>.stories.ts` per component */

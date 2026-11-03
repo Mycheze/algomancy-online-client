@@ -61,7 +61,7 @@ test('986 §1 loading, no week, a week with its board', () => {
   const html = challengePageHtml(view());
   assert.match(html, /class="ui-page-header"/, 'the header is the page-header component');
   assert.match(html, /3d 2h left · 2 entrants/, 'time left on the server clock the view carries');
-  assert.match(html, /<h4>Your best<\/h4>/);
+  assert.match(html, /<h4 class="ui-panel__subheading">Your best<\/h4>/);
   for (const b of ['ch-close', 'ch-build', 'ch-tab', 'ch-past']) assert.ok(btns(html).has(b), b);
   const built = challengePageHtml(view({ building: CUR, builder: { def: CUR, list: [], decks: [], importing: true, undo: 'Cleared.' } }));
   for (const b of ['ch-tabletop', 'ch-import', 'ch-undo', 'ch-play']) assert.ok(btns(built).has(b), b);

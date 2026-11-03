@@ -25,3 +25,8 @@ export const WithActions = {
   },
 };
 export const PlainBack = { name: 'With a plain "Back"', args: { title: '🏅 League', subtitle: 'Season 3 · week 2 of 4', back: { dataBtn: 'lg-close', label: 'Back', variant: 'secondary' } } };
+export const ParagraphSubtitle = {
+  name: 'Subtitle as a paragraph (league, challenge)',
+  args: { title: 'Weekly challenge', subtitle: 'Build a deck in order, then reach the goal using as few cards, elements and turns as you can.',
+    subtitleAs: 'p', back: { dataBtn: 'ch-close', label: 'Back', variant: 'secondary' } },
+};

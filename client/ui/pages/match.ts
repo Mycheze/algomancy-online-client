@@ -17,7 +17,7 @@
 import { applyPreset, checkSwap, SIDEBOARD_MAX, type MatchConfig } from '../../engine/src/matchdeck.ts';
 import type { Seat } from '../../engine/src/types.ts';
 import * as acct from '../account.ts';
-import { button, toggle } from '../components/index.ts';
+import { button, statusMessage, toggle } from '../components/index.ts';
 import * as dk from '../decks.ts';
 import { roomFriendsHtml } from '../inbox.ts';
 import {
@@ -333,7 +333,7 @@ function betweenHtml(v: MatchRoomView): string {
         <div class="ccboard"><h3>Main <span class="acctcount${cfg.main.length < 30 ? ' bad' : ''}">${cfg.main.length}</span></h3>${boardHtml(cfg, 'main', live)}</div>
         <div class="ccboard"><h3>Sideboard <span class="acctcount${cfg.side.length > SIDEBOARD_MAX ? ' bad' : ''}">${cfg.side.length}/${SIDEBOARD_MAX}</span></h3>${boardHtml(cfg, 'side', live)}</div>
       </div>
-      ${why ? `<p class="deckmsg cclegal">${esc(why)}</p>` : ''}
+      ${why ? statusMessage({ tag: 'p', className: 'deckmsg cclegal', text: why }) : ''}
     </div>
     ${readyHtml(v, !why)}
     <div class="ccfoot">${pauseHtml(v)} ${concedeHtml(v.concedeAsk)}</div>`;
@@ -370,7 +370,7 @@ export function matchRoomHtml(v: MatchRoomView): string {
   return `<div class="lobbypage ccpage">
     ${headerHtml(v)}
     ${body}
-    ${v.error ? `<p class="deckmsg">${esc(v.error)}</p>` : ''}
+    ${v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''}
   </div>`;
 }
 
