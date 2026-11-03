@@ -13,3 +13,7 @@
 .scpick .joinrow button { flex: none; width: auto; }
 .metatabs button.on { border-color: var(--accent); color: var(--accent); }
 
+/* the waiting room's "Draw — pick again" panel (pages/waiting.ts). It sat at the end of
+   34-cardstats.css after the split; nothing between there and here matches it. */
+.scdraw { border-color: var(--accent); }
+.scdraw p { margin: var(--space-3) 0 0; }

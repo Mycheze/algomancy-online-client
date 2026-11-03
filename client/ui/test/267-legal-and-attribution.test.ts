@@ -42,6 +42,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import { REPO_ROOT } from '../../engine/scripts/paths.mjs';
+import { readStyles } from './read-styles.ts';
 import {
   BROWSER_KEYS, BUY_PHYSICAL, BUY_PNP, STORED_ACCOUNT, STORED_FILES, STORED_GAME,
   STORED_SESSION, UNOFFICIAL, DISCORD_INVITE, footHtml, installLegal, type StoredLine,
@@ -210,7 +211,8 @@ test('§2 the unofficial notice exists, and is in the footer itself rather than 
   const src = read(LEGAL_TS);
   assert.match(src, /insertBefore\(foot, app\.nextSibling\)/,
     'the footer is no longer inserted right after #app');
-  assert.match(src, /100dvh - 128px/,
+  // its CSS left legal.ts's injected <style> for styles/pages/48-legal.css (2026-11-03)
+  assert.match(readStyles(), /#legalfoot:not\(\[hidden\]\) ~ \.homepage[^{]*\{\s*min-height: calc\(100dvh - 128px\)/,
     'the footer is no longer pulled above the fold — the "without hunting" criterion is no longer met');
   assert.equal(/legalbar|barHtml/.test(src), false,
     'the top strip is back — the owner asked for it to go (2026-09-05); the footer is the notice');

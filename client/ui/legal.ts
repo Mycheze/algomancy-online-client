@@ -9,8 +9,8 @@
  *
  *  1. THE UNOFFICIAL NOTICE IS NOT ON A PAGE YOU CLICK TO. It is in the
  *     footer, in the document itself, on every screen that is not the board —
- *     and the footer's top edge is pulled ABOVE the fold (the 128px in the CSS
- *     below), so `doneWhen`'s "a signed-out visitor sees it without hunting"
+ *     and the footer's top edge is pulled ABOVE the fold (the 128px in its CSS,
+ *     styles/pages/48-legal.css), so `doneWhen`'s "a signed-out visitor sees it without hunting"
  *     holds without a strip across the top of every page. There WAS such a
  *     strip until 2026-09-05 (the owner: "I don't like the top bar with all
  *     the information, the footer is more than enough"); the footer carried
@@ -37,9 +37,9 @@
  * `#app.innerHTML` on every frame and cannot touch what is not inside it. Its
  * buttons carry `data-legal`, never `data-btn`, so `main.ts`'s global click
  * listener does not see them at all (it asks `closest('[data-btn]')` first and
- * returns when there is no game). The styles are injected from here rather than
- * added to `style.css` for the same reason: this thing should be removable, or
- * replaceable, in one file.
+ * returns when there is no game). Its styles were injected from here until the
+ * design-system round (2026-11-03); they are styles/pages/48-legal.css now, the
+ * LAST piece of the stylesheet, where the injected sheet used to land.
  *
  * THE STORAGE LIST IS DERIVED, NOT TYPED OUT. A privacy policy that lists what
  * is stored is a promise about a data structure, and a promise about a data
@@ -445,75 +445,6 @@ export function footHtml(): string {
   </div>`;
 }
 
-const CSS = `
-/* .homepage is min-height:100dvh so it can centre itself in the window. The
-   128px taken off it is deliberate and is the only thing here that changes a
-   layout somebody else designed: it leaves the top of the footer showing under
-   the fold, so the unofficial notice and the "buy the game" pitch are
-   something you SEE and choose not to read, rather than something you have to
-   go looking for. The home cards still centre themselves in what is left. */
-#legalfoot:not([hidden]) ~ .homepage, #app:has(+ #legalfoot:not([hidden])) .homepage {
-  min-height: calc(100dvh - 128px); }
-/* …and the same floor under EVERY off-board page (owner, 2026-09-05: on the
-   friends tab "there's very little text on screen, so the footer is WAY too
-   high up"). The page's root is whatever the screen module painted first. */
-#app:not(.board):has(+ #legalfoot:not([hidden])) > :first-child {
-  min-height: calc(100dvh - 128px); box-sizing: border-box; }
-
-#legalfoot { border-top: 1px solid var(--line); background: #0d1014; }
-/* 1400px, not 1180: the deck builder and the card browser are 1400/1500 wide
-   and the footer's edges used to sit visibly inside theirs */
-#legalfoot .lgfootwrap { max-width: 1400px; margin: 0 auto; padding: 26px 22px 34px;
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 26px; }
-#legalfoot h3 { margin: 0 0 8px; color: var(--accent); font-size: 16px; }
-#legalfoot p { margin: 0 0 9px; color: var(--dim); line-height: 1.55; font-size: 12px; }
-#legalfoot .lgnotice { color: var(--text); font-weight: 700; }
-#legalfoot .lgpages { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
-/* the Discord link sits among the buttons, so it is dressed as one */
-#legalfoot .lgdiscord { display: inline-block; padding: 5px 12px; border: 1px solid var(--line);
-  border-radius: 5px; background: var(--panel2); color: var(--text); text-decoration: none; }
-#legalfoot .lgdiscord:hover { border-color: var(--accent); }
-
-.lgbuys { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
-.lgbuy { display: inline-block; padding: 9px 14px; border: 1px solid var(--line);
-  border-radius: 7px; color: var(--text); text-decoration: none; font-weight: 700; font-size: 13px; }
-.lgbuy:hover { border-color: var(--accent); }
-.lgbuy.primary { border-color: var(--accent); color: var(--accent); }
-.lgdim { color: var(--dim); font-size: 11.5px; }
-
-/* THE PANEL SCROLLS, NOT THE OVERLAY. The tab row has to stay reachable on a
-   page this long, and 'position: sticky' inside a padded scroll container puts
-   it at the padding edge rather than the top — the row above it stays visible
-   and scrolls out over the header. Making the body the scroller is the version
-   with no browser disagreement in it, and it keeps the scrim clickable. */
-#legalover { position: fixed; inset: 0; z-index: 90; background: rgba(6,8,11,.78);
-  display: flex; align-items: flex-start; justify-content: center; overflow: hidden; padding: 4vh 16px; }
-#legalover .lgpanel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
-  max-width: 760px; width: 100%; max-height: 92vh; display: flex; flex-direction: column; min-height: 0; }
-#legalover .lghead { flex: none; background: var(--panel); border-bottom: 1px solid var(--line);
-  border-radius: 12px 12px 0 0; padding: 12px 22px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-#legalover .lghead .lgtabs { display: flex; gap: 6px; flex-wrap: wrap; }
-#legalover .lghead button[data-legal].on { border-color: var(--accent); color: var(--accent); }
-#legalover .lgclose { margin-left: auto; }
-#legalover .lgbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 4px 22px 26px; }
-#legalover h2 { font-size: 15px; color: var(--accent); margin: 22px 0 8px;
-  letter-spacing: .04em; text-transform: uppercase; }
-#legalover h2:first-child { margin-top: 14px; }
-#legalover p { margin: 0 0 10px; line-height: 1.62; color: var(--text); font-size: 13px; }
-#legalover a { color: var(--accent); }
-#legalover .lgloud { background: var(--panel2); border-left: 3px solid var(--accent);
-  border-radius: 0 6px 6px 0; padding: 10px 13px; }
-#legalover .lgstore { list-style: none; margin: 0 0 14px; padding: 0;
-  display: flex; flex-direction: column; gap: 7px; }
-#legalover .lgstore li { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 12px;
-  background: var(--panel2); border: 1px solid var(--line); border-radius: 7px; padding: 8px 11px; }
-#legalover .lgkeys { display: flex; flex-wrap: wrap; gap: 4px 8px; align-content: flex-start; }
-#legalover .lgstore code { color: var(--accent); font-size: 11.5px; word-break: break-all; }
-#legalover .lgstore span { color: var(--dim); font-size: 12.5px; line-height: 1.5; }
-@media (max-width: 620px) {
-  #legalover .lgstore li { grid-template-columns: 1fr; gap: 3px; }
-}
-`;
 
 // ── installation ──────────────────────────────────────────────────────
 
@@ -547,14 +478,11 @@ export function installLegal(): void {
   // So the test is what we are ABOUT to use, not a proxy for it. Nothing here
   // is load-bearing for the game — a document that cannot host the layer
   // simply does not get it.
+  // (The stylesheet is in bundle.css now, not appended here; the bail stays, so
+  // a headless document still gets no footer, as before.)
   if (!document.head || typeof document.head.appendChild !== 'function') return;
   if (!app.parentNode) return;
   installed = true;
-
-  const style = document.createElement('style');
-  style.id = 'legal-css';
-  style.textContent = CSS;
-  document.head.appendChild(style);
 
   const foot = document.createElement('footer');
   foot.id = 'legalfoot';

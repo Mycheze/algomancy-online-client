@@ -100,6 +100,4 @@
   .csbar { grid-template-columns: 7.5em 1fr auto; }
 }
 .scwarn { font-size: var(--text-12); color: var(--danger); }
-.scdraw { border-color: var(--accent); }
-.scdraw p { margin: var(--space-3) 0 0; }
 
