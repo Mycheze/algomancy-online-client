@@ -12151,6 +12151,9 @@ installDrag({
   started: () => { peekEnd(); zoomOff(); resSumOff(); hideHoverTip(); setHoverArrows(null); },
   ended: () => { if (dragPaintPending) render(); },
 });
+// docs/22 §5.4: the Competitive sideboarding table drags too — its drop is
+// the tap's own move (ui/match.ts moveCopy)
+mt.installSideboardTable(matchActions);
 // the ? rules overlay off the board — home, cards, decks, metagame, account —
 // as its own layer, opened by any [data-help] (ui/helplayer.ts)
 installHelpLayer();

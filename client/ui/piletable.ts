@@ -151,6 +151,13 @@ export interface PileView {
    * sideboard's — an empty one was a 36px header over the Maybe pile, so a
    * card dropped "on the sideboard" landed in Maybe (owner, 2026-11-03) */
   slot?: boolean;
+  /** whose taps the pile takes, when it is not the deck builder's (whose cards
+   * are `tt-card` and whose box is a `tt-to`): the Competitive sideboarding
+   * table (ui/pages/match.ts, docs/22 §5.4) draws its deck with this pile, and
+   * there one tap on a card moves that copy across — `cc-move` with
+   * `data-from`. `card: null` = the cards take no tap at all (shown, not
+   * editable); the box never does. */
+  tap?: { card: string | null; from?: string };
 }
 
 /** One pile: its header, then its fan. */
@@ -167,7 +174,10 @@ export function pileHtml(p: PileView): string {
   // the grip: a finger taps it to pick the pile up (a mouse drags the header)
   const grip = p.head !== undefined
     ? `<span class="ttgrip" data-btn="tt-head" data-tt-pile="${esc(p.head)}" aria-label="move this pile">⠿</span>` : '';
-  return `<section class="ttpile${p.cls ? ` ${p.cls}` : ''}" data-tt-zone="${esc(p.zone)}" data-tt-s="${p.S}" data-tt-n="${n}" data-btn="tt-to">
+  // the card's tap: the builder's, or the host's own (`tap`)
+  const cardBtn = !p.tap ? 'data-btn="tt-card" '
+    : `${p.tap.card ? `data-btn="${esc(p.tap.card)}" ` : ''}${p.tap.from ? `data-from="${esc(p.tap.from)}" ` : ''}`;
+  return `<section class="ttpile${p.cls ? ` ${p.cls}` : ''}" data-tt-zone="${esc(p.zone)}" data-tt-s="${p.S}" data-tt-n="${n}"${p.tap ? '' : ' data-btn="tt-to"'}>
     <header class="ttpilehead"${p.head !== undefined ? ` data-tt-head="${esc(p.head)}"` : ''}>
       ${grip}${title}${overHere.length ? `<span class="ttovercap" title="${esc(overHere.map(nm =>
         `${nm} ×${p.over!.get(nm)}`).join(', '))}">×${Math.max(...overHere.map(nm => p.over!.get(nm)!))}</span>` : ''}<span
@@ -178,7 +188,7 @@ export function pileHtml(p: PileView): string {
       n === 0 && p.slot ? p.ch : fanHeight(n, p.S, p.ch)}px">${p.cards.map((c, k) =>
       `<div class="ttcard${k === p.front ? ' ttfront' : ''}${k === p.picked ? ' ttpicked' : ''}${
         p.cover && c.name === p.cover ? ' iscover' : ''}" style="--k:${k};top:${k * p.S}px"
-        data-btn="tt-card" data-tt-src="${esc(c.src)}" data-tt-i="${k}" data-card="${esc(c.name)}" data-zoom>${
+        ${cardBtn}data-tt-src="${esc(c.src)}" data-tt-i="${k}" data-card="${esc(c.name)}" data-zoom>${
         scanHtml(c.name, 'ttart')}${p.over?.has(c.name) ? `<span class="ttcapn">×${p.over.get(c.name)}</span>` : ''}</div>`).join('')}</div>
   </section>`;
 }

@@ -725,6 +725,15 @@ waiting room's branch in `ui/main.ts`. The match-specific DOM stays in `match.ts
 - **Header:** score ("Game 2 of 3 — you lead 1–0"), both banks frozen, and the countdown.
 - **The loser's prompt** sits above everything. Two buttons, never a default highlight (D1.2g).
   The winner sees "Rashi is choosing who takes the initiative…", and then the answer.
+- *Rebuilt 2026-11-03 (owner, after the first live try: "I wanted something like MTGO. Your deck
+  laid out below, on the table we spent so much time building, then the sideboard above and you
+  slide cards in and out"):* the screen is a **card table** the size of the window. The deck lies
+  below as the tabletop's piles of scans (by cost), the sideboard is a row of whole cards above it,
+  and a card goes across by one tap or by a drag (the tabletop's drag, ui/drag.ts); the drop is the
+  tap's own move. A bar on top holds the score, the countdown, both clocks, the opponent's ready
+  dot, pause and concede; a bar at the bottom holds the counts ("Deck 30 · Sideboard 7/7"), the
+  verdict, "Back to the registered deck" and Ready. The wire is unchanged. What follows is the
+  first build's panel, kept as the record:
 - **The panel:** two lists, *Main (31)* and *Sideboard (6/7)*, grouped as the builder groups
   them. **One tap moves a copy across.** No drag is needed, though drag works too
   (docs/19: "Every drop and every tap is…"). It is a touch-first screen: a 120-s window on an

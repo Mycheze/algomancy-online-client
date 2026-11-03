@@ -9,7 +9,9 @@
  * §1 the Competitive card: signed out, signed in with a legal and an illegal deck, no legal deck
  * §2 Your matches: nothing without a match, a row and its button with one
  * §3 game 1: register a deck; the deck is in
- * §4 between games: score, clocks, countdown, the reset, the boards, the legality line, Ready
+ * §4 between games: score, clocks, countdown, the reset, the table's two zones, the legality line, Ready
+ *    (owner 2026-11-03: sideboarding on the tabletop — the deck as piles below, the sideboard above;
+ *    the chip lists §4 used to read are gone, 1060–1062 hold the table)
  * §5 paused, and a match that ended while the page waited
  * §6 names, rooms and card names are escaped
  */
@@ -52,7 +54,9 @@ const btns = (html: string): string[] => [...html.matchAll(/data-btn="([^"]+)"/g
 
 test('973 §0 positive control: there is no DOM here', () => {
   assert.equal(typeof (globalThis as Record<string, unknown>)['document'], 'undefined');
-  assert.match(matchRoomHtml(room()), /^<div class="lobbypage ccpage">/);
+  assert.match(matchRoomHtml(room({ w: lobby({ game: 1, phase: 'game', mine: null }) })), /^<div class="lobbypage ccpage">/);
+  // between games the page is the sideboarding table; `ccpage` stays its LAST class (report.ts pageOf)
+  assert.match(matchRoomHtml(room()), /^<div class="ccsbtable ccpage" style="--cw:108px;--ch:150px">/);
 });
 
 test('973 §1 the Competitive card', () => {
@@ -114,8 +118,10 @@ test('973 §4 between games: score, clocks, countdown, reset, boards, legality, 
   assert.match(html, /Your clock <b>38:00<\/b> · Bo <b>41:05<\/b>/);
   assert.match(html, /<button data-btn="cc-reset" disabled>Back to the registered deck<\/button>/, 'already the registered deck');
   assert.doesNotMatch(html, /cc-preset/, 'no saved swaps (owner, 2026-11-03)');
-  assert.match(html, /Main <span class="acctcount">30<\/span>/);
-  assert.match(html, new RegExp(`data-btn="cc-move" data-from="main" data-card="${MAIN[0]!.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
+  assert.match(html, /<b>Deck<\/b> <span class="ttpilecount">30<\/span>/);
+  assert.match(html, /<b>Sideboard<\/b> <span class="ttpilecount">2\/7<\/span>/);
+  assert.match(html, /Deck <b class="">30<\/b>\s*· Sideboard <b class="">2\/7<\/b><\/span>\s*<span class="ccsbok">✓ Legal<\/span>/);
+  assert.match(html, new RegExp(`data-btn="cc-move" data-from="main" data-tt-src="main\\|[^"]*" data-tt-i="\\d+" data-card="${MAIN[0]!.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
   assert.doesNotMatch(html, /cclegal/, 'a legal deck: no legality line');
   assert.match(html, /<button data-btn="cc-ready" >Ready<\/button>/);
   for (const b of ['cc-pause', 'cc-concede']) assert.ok(btns(html).includes(b), b);

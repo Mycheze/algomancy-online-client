@@ -2,6 +2,12 @@
  * driven through the real client with the server's own payload shape
  * (server/match.ts matchLobbyInfo).
  *
+ * Since 2026-11-03 (owner: "I wanted something like MTGO. Your deck laid out
+ * below, on the table … then the sideboard above") the screen is a card table:
+ * the deck as the tabletop's piles, the sideboard as a row of cards, each a
+ * zone (`data-cc-zone`). The chip lists these sections used to read are gone;
+ * what they assert is unchanged. 1060–1062 hold the table itself.
+ *
  *   §1 the header: the format, the score from this seat's side, both frozen
  *      clocks and the countdown
  *   §2 ONE TAP MOVES ONE COPY across, by mouse or by finger; the in-between
@@ -36,11 +42,11 @@ const lobby = (over: Record<string, unknown> = {}, t = 'update'): string => ui.p
   t, room: 'UIDRIVER', seat: 0, waiting: { have: [true, true], match: info(over) }, peers: [true, true], names: ['Ann', 'Bo'],
 });
 const cc = (): Record<string, unknown>[] => ui.sent().filter(m => m['t'] === 'cc');
-/** a board's chips, as "name ×n" */
+/** a zone of the table: the sideboard's row runs to the deck, the deck's piles to the bottom bar */
 const board = (html: string, which: 'Main' | 'Sideboard'): string => {
-  const at = html.indexOf(`<h3>${which} `);
-  assert.ok(at >= 0, `no ${which} list on screen`);
-  return html.slice(at, html.indexOf('</div>', at));
+  const at = html.indexOf(`data-cc-zone="${which === 'Main' ? 'main' : 'side'}"`);
+  assert.ok(at >= 0, `no ${which} zone on screen`);
+  return html.slice(at, html.indexOf(which === 'Main' ? '<footer' : 'data-cc-zone="main"', at));
 };
 const readyBtn = (html: string): string => /<button data-btn="cc-ready"[^>]*>Ready<\/button>/.exec(html)?.[0] ?? '';
 
@@ -58,7 +64,7 @@ test('§1 the header: format, score, both frozen clocks, the countdown', () => {
 
 test('§2 one tap moves one copy; an illegal deck is not sent and Ready waits', () => {
   let html = ui.click({ btn: 'cc-move', from: 'main', card: N[0]! });
-  assert.match(board(html, 'Main'), /<span class="acctcount bad">29<\/span>/);
+  assert.match(board(html, 'Main'), /<b>Deck<\/b> <span class="ttpilecount bad">29<\/span>/);
   assert.match(html, /Main deck needs 30 — you have 29\./, 'the legality line says why');
   assert.match(readyBtn(html), /disabled/, 'Ready is disabled while the deck is illegal');
   assert.deepEqual(cc(), [], 'an illegal configuration never goes to the server');
@@ -90,7 +96,7 @@ test('§3 one tap back to the registered deck, sent as an ordinary config', () =
 
 test('§4 the opponent is a ready dot and a name, never a deck', () => {
   let html = lobby();
-  assert.equal((html.match(/class="ccboard"/g) ?? []).length, 2, 'two lists, both mine');
+  assert.equal((html.match(/data-cc-zone="/g) ?? []).length, 2, 'two zones, both mine');
   assert.match(html, /<i class="seatdot"><\/i>\s*<span>Bo<\/span>/, 'not ready: a plain dot');
   html = lobby({ ready: [false, true] });
   assert.match(html, /<i class="seatdot ready"><\/i>\s*<span>Bo — ready<\/span>/);
