@@ -67,3 +67,16 @@
 .reportchoices button[data-severity="gamebreaking"].on { border-color: var(--danger); color: var(--danger); background: var(--color-danger-bg); }
 .reportbox .judgerow { align-items: center; }
 .reporthint { flex: 1; text-align: right; color: var(--dim); font-size: var(--text-11); }
+
+/* THE CORNER THE PILL AND THE BELL SIT IN. They are fixed over the bottom
+   right of every page that is not a board, so whatever scrolls under them is
+   covered — on a phone, the league's "Suggest a time" (design-system round,
+   2026-11-03). While the pill is up the page keeps that corner clear: the
+   document ends --report-pill-clear below its last line, so the end of any
+   page can scroll out from under them, and a scroll that brings something
+   into view (a tap's focus, scrollIntoView, Tab) stops that far above the
+   window's foot. The number is the pill's 18px offset, its ~34px height and
+   a gap. A page with a fixed bar of its own at the bottom can read the same
+   variable (it is unset while no pill is showing, so `var(…, 0px)`). */
+:root:has(#reportlayer > .reportfab) { --report-pill-clear: 64px; scroll-padding-bottom: var(--report-pill-clear); }
+:root:has(#reportlayer > .reportfab) > body { padding-bottom: var(--report-pill-clear); }

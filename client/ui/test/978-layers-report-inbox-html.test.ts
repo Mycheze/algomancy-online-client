@@ -12,10 +12,14 @@
  * §4 the bell: the count, the list with every kind of card, the popups only while the list is shut
  * §5 the waiting room's friends panel: loading, nobody, the rows and their invite buttons
  * §6 text off the server is escaped, and a card's trusted sentence is not
+ * §7 while the pill is up the page keeps its corner clear (the league's
+ *    "Suggest a time" sat under it on a phone): the page ends, and scrolls
+ *    into view, at least the pill's offset + height above the window's foot
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { reportLayerHtml, type ReportDialogView } from '../pages/report.ts';
+import { readStyles } from './read-styles.ts';
 import { inboxLayerHtml, roomFriendsBodyHtml, roomFriendsHtml, type InboxListView, type NoteCardView } from '../pages/inbox.ts';
 
 const dialog = (over: Partial<ReportDialogView> = {}): ReportDialogView =>
@@ -105,4 +109,19 @@ test('978 §6 server text is escaped; a card\'s trusted sentence is not', () => 
   const open = inboxLayerHtml({ unread: 0, list: LIST, pops: { invites: [], reminders: [] } });
   assert.match(open, /<b>Ann &lt;x&gt;<\/b> invites you to a draft\./);
   assert.match(open, /Your match with <b>Bo<\/b> is in an hour/, 'noteLine\'s sentence is markup already');
+});
+
+test('978 §7 while the pill is up, the page keeps the corner it sits in clear', () => {
+  const css = readStyles().replace(/\/\*[\s\S]*?\*\//g, '');
+  const pill = /\.reportfab \{[^}]*\bbottom: (\d+)px;[^}]*padding: 8px/.exec(css);
+  assert.ok(pill, 'positive control: the pill is fixed at a bottom offset');
+  const root = /:root:has\(#reportlayer > \.reportfab\) \{([^}]*)\}/.exec(css)?.[1] ?? '';
+  const clear = Number(/--report-pill-clear: (\d+)px/.exec(root)?.[1] ?? 0);
+  // the pill: its offset, 8px padding twice and a line of 13px text — the clearance covers it and leaves a gap
+  assert.ok(clear >= Number(pill[1]) + 16 + 18 + 8, `--report-pill-clear ${clear}px does not clear a pill ${pill[1]}px up`);
+  assert.match(root, /scroll-padding-bottom: var\(--report-pill-clear\)/, 'a scroll into view stops above the pill');
+  assert.match(css, /:root:has\(#reportlayer > \.reportfab\) > body \{[^}]*padding-bottom: var\(--report-pill-clear\)/,
+    'and the end of the page can scroll out from under it');
+  // only while the pill is up: the board has no pill, and nothing here may reach it
+  assert.doesNotMatch(css, /(^|[},])\s*body \{[^}]*padding-bottom/, 'no unconditional body padding');
 });
