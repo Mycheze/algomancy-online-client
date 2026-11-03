@@ -22,6 +22,7 @@ import { printsStats } from '../../engine/src/cards/dsl.ts';   // CR 206.2
 import { FLAGS, KEYS, SORTS, VIEWS, chipState, type SearchResult } from '../cardsearch.ts';
 import { suggest } from '../cardsynonyms.ts';
 import { esc, elIcon } from '../util.ts';
+import { pageHeader } from '../components/page-header.ts';
 import type { CardsState, DeckBridge } from '../cards.ts';
 
 /** How many tiles are painted before the "show the rest" button. Not a cap on
@@ -417,16 +418,12 @@ function barHtml(v: CardsView): string {
 
 export function cardsHtml(v: CardsView): string {
   return `<div class="cbpage">
-    <div class="accthead">
-      <div>
-        <h1>Cards</h1>
-        <div class="hint">The ${v.cardCount} cards. Tokens and
-          reference cards: <button class="cblink" data-btn="cards-try" data-q="class:all">class:all</button>.</div>
-      </div>
-      <div class="accthbtns">
-        <button class="primary" data-btn="cards-close">${v.deck ? 'Back to the deck' : 'Return to Lobby'}</button>
-      </div>
-    </div>
+    ${pageHeader({
+    title: 'Cards',
+    subtitleHtml: `The ${v.cardCount} cards. Tokens and
+          reference cards: <button class="cblink" data-btn="cards-try" data-q="class:all">class:all</button>.`,
+    back: { dataBtn: 'cards-close', label: v.deck ? 'Back to the deck' : 'Return to Lobby' },
+  })}
     ${deckSideHtml(v)}
     ${barHtml(v)}
     ${helpHtml(v)}
