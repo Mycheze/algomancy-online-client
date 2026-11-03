@@ -58,6 +58,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { SHOTS_NOW, buildFixture, copyFixtureVar, fixtureEnv } from './ui-fixture.ts';
+import { overflowJs } from './ui-shots-overflow.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 // ws is the server's own dependency, and CommonJS
@@ -352,31 +353,8 @@ export async function launch(vpName, { chrome = '/usr/bin/google-chrome', verbos
   return P;
 }
 
-/** buttons/inputs past the window's edges or clipped by an overflow ancestor,
- * and the page's horizontal overflow (shots.mjs's walk, kept) */
-const OVERFLOW_JS = `(() => {
-  const W = innerWidth, out = [];
-  for (const b of document.querySelectorAll('button, a, input, select, textarea')) {
-    const r = b.getBoundingClientRect();
-    if (r.width === 0 || r.height === 0) continue;
-    const why = [];
-    if (r.left < 0) why.push('left<0');
-    if (r.right > W + 0.5) why.push('right>W');
-    let p = b.parentElement;
-    while (p && p !== document.body) {
-      const cs = getComputedStyle(p);
-      if (/hidden|clip/.test(cs.overflowX)) {
-        const pr = p.getBoundingClientRect();
-        if (r.right > pr.right + 1 || r.left < pr.left - 1) why.push('clipped by .' + String(p.className).split(' ')[0]);
-        break;
-      }
-      p = p.parentElement;
-    }
-    if (why.length) out.push({ text: (b.textContent || b.value || b.placeholder || '').trim().slice(0, 30), cls: String(b.className).slice(0, 40), why: why.join(',') });
-  }
-  const de = document.documentElement;
-  return { scrollW: de.scrollWidth, scrollH: de.scrollHeight, W, H: innerHeight, bad: out.slice(0, 20) };
-})()`;
+/* the overflow walk (buttons/inputs past the window or clipped, and the page's
+ * own sideways overflow) is ui-shots-overflow.mjs, so a test can run it */
 
 // ── the run ─────────────────────────────────────────────────────────────
 
@@ -472,7 +450,7 @@ async function main() {
           let failed;
           try { failed = await runState(P, server.base, fx, s); } catch (e) { failed = String(e?.message ?? e).slice(0, 300); }
           if (failed) entry.failed = failed;
-          const ov = await P.ev(OVERFLOW_JS).catch(() => null);
+          const ov = await P.ev(overflowJs(P.vp.w)).catch(() => null);
           entry.scroll = ov ? { w: ov.scrollW, h: ov.scrollH } : null;
           entry.overflow = ov ? { horizontal: ov.scrollW > ov.W, bad: ov.bad } : null;
           // screenfuls: scroll the document, never resize the window
