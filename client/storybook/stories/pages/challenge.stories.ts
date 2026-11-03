@@ -1,11 +1,14 @@
 /* The weekly challenge page, its home card and its header button
- * (ui/pages/challenge.ts), drawn from made-up views. The buttons do nothing
+ * (ui/pages/challenge.ts), and a run's meter and end panels
+ * (ui/pages/challengerun.ts), drawn from made-up views. The buttons do nothing
  * here — their handler is ui/challenge.ts, which a story does not load. */
 import type { RunScore } from '../../../engine/src/challenge.ts';
 import {
   challengeHomeCardHtml, challengeHomeView, challengeNavHtml, challengePageHtml,
   type BoardReply, type ChallengePageView, type ChallengeReply, type ChallengeView,
 } from '../../../ui/pages/challenge.ts';
+import { runEndHtml, runMeterHtml } from '../../../ui/pages/challengerun.ts';
+import { frame } from '../_helpers.ts';
 
 const NOW = Date.UTC(2026, 10, 10, 18);
 const DAY = 86_400_000;
@@ -58,3 +61,14 @@ export const HomeCard = {
   render: () => `<div style="max-width:320px">${challengeHomeCardHtml(challengeHomeView(DATA, NOW))}</div>`,
 };
 export const HeaderButton = { render: () => challengeNavHtml(challengeHomeView(DATA, NOW)) };
+
+// ── a run, on the board (ui/pages/challengerun.ts): the meter and the end panels ──
+export const RunMeter = { name: 'Run: the meter', render: () => runMeterHtml({ text: 'Turn 3 · 5 of 5 units · 7 cards · 2 elements', armed: false }) };
+export const RunMeterArmed = { name: 'Run: the meter, Give up armed', render: () => runMeterHtml({ text: 'Turn 3 · 5 of 5 units', armed: true }) };
+export const RunGoalMet = {
+  name: 'Run: goal met, placed',
+  render: () => frame(runEndHtml({ kind: 'done', score: sc(4, 9, 2, 1),
+    submit: { s: 'done', reply: { ok: true, newBest: ['fastest'], ranks: { fastest: 1, leanest: 4, purest: 2, overall: 1 } } } }), 420),
+};
+export const RunGoalMetSignedOut = { name: 'Run: goal met, signed out', render: () => frame(runEndHtml({ kind: 'done', score: sc(5, 8, 2), submit: { s: 'guest' } }), 420) };
+export const RunFailed = { name: 'Run: failed', render: () => frame(runEndHtml({ kind: 'failed', why: 'The dummy reached 0 cards in its deck before your goal was met.' }), 320) };

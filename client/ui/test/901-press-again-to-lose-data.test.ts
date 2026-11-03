@@ -28,7 +28,9 @@ test('Give up arms first, and only the second press drops the run', () => {
   const act = body.indexOf('saveRun(null)');
   assert.ok(arm > 0 && act > arm, 'arm, return, then act');
   assert.match(body.slice(arm, act), /return; \}/);
-  assert.match(src, /<button class="danger" data-chal="giveup">Press again to give up<\/button>/);
+  // the meter's markup moved to pages/challengerun.ts in the design-system round (2026-11-03)
+  assert.match(read('pages/challengerun.ts'), /<button class="danger" data-chal="giveup">Press again to give up<\/button>/);
+  assert.match(src, /armed: arming === 'giveup'/, 'the meter is armed by the run module');
   assert.match(src, /if \(b !== 'giveup' && arming\) \{ arming = null;/, 'any other run button disarms');
 });
 
