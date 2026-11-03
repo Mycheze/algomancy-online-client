@@ -38,7 +38,8 @@ test('dropping a kept run arms first, and only the second press forgets it', () 
   const arm = body.indexOf('if (arming !== key) { arming = key;');
   const act = body.indexOf('forgetDone(');
   assert.ok(arm > 0 && act > arm, 'arm, return, then act');
-  assert.match(src, /<button class="danger" data-btn="ch-forget" data-at="\$\{r\.at\}">Press again to drop this run<\/button>/);
+  // the markup moved to pages/challenge.ts in the design-system round (2026-11-03)
+  assert.match(read('pages/challenge.ts'), /<button class="danger" data-btn="ch-forget" data-at="\$\{r\.at\}">Press again to drop this run<\/button>/);
   assert.match(src, /if \(b !== 'ch-forget'\) arming = null;/, 'any other ch- button disarms');
 });
 
