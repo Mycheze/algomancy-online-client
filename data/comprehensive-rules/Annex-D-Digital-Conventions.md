@@ -882,13 +882,15 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner ruling, adopted 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 259-card-text-surface.test.ts · Example test: 259-card-text-surface.test.ts::CT-163: the box of the card that named says WHICH card it named · Key: annexd.display.live-values.named-card</sub>
 
-<a id="rD6.9c"></a>**D6.9c** When a card on the stack reads its X from the board at resolution, and the card itself declares how to forecast that X, the stack shows what X would be right now, worded as a forecast. A declared mode narrows the forecast to that mode. If X was paid, the paid X is shown and no forecast is. A board-read X with no declared forecast shows none (see rule D6.9e). See rule D6.9e.
+<a id="rD6.9c"></a>**D6.9c** When a card on the stack reads an amount from the board at resolution, and the card itself declares how to forecast it, the stack shows what it would be right now. A card that prints an X shows it as X, worded as a forecast; a card that prints no X shows only the count, in the card's own terms. A declared mode narrows the forecast to that mode. If X was paid, the paid X is shown and no forecast is. A board-read X with no declared forecast shows none (see rule D6.9e). See rule D6.9e.
 
 > *Example: Retribution Thing is on the stack. It shows the X it would deal now.*
 
 > *Example: Retribution Thing was cast in the life-lost mode. The stack shows only that mode's forecast.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-29 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 1 gate test file · Tests: 225-stack-readout.test.ts · Example tests: 225-stack-readout.test.ts::§1a Retribution Thing wears its X on the stack, and it is the number it will deal, 225-stack-readout.test.ts::§1b the declared mode narrows the forecast to the half that was chosen · Demonstrated by test: 225-stack-readout.test.ts::§1c a paid X still wins — the forecast never doubles it · Key: annexd.display.live-values.x-forecast</sub>
+> *Example: Mischievous Reclaimer ("When the second ally dies in this battle, Draw a card.") after one ally has died shows 1/2, not an X.*
+
+<sub>Basis: Owner call · adopted 2026-11-03; Owner ruling, adopted 2026-08-29 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 6 tests (a probe it wrote), all passed; 2 gate test files · Tests: 225-stack-readout.test.ts, 1060-board-legibility.test.ts · Example tests: 225-stack-readout.test.ts::§1a Retribution Thing wears its X on the stack, and it is the number it will deal, 225-stack-readout.test.ts::§1b the declared mode narrows the forecast to the half that was chosen, 1060-board-legibility.test.ts::§7 a live count wears an X only where the card prints one, and the zoom never explains the card · Demonstrated by test: 225-stack-readout.test.ts::§1c a paid X still wins — the forecast never doubles it · Key: annexd.display.live-values.x-forecast</sub>
 
 <a id="rD6.9d"></a>**D6.9d** Spell tokens in play are counted by name, with the X of each, because casting one burst token casts every token of that name (see 803). Each spell token shows its X as a large die face. See rule 803.
 
@@ -1225,17 +1227,17 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner ruling, adopted 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 2 gate test files · Tests: 244-log-is-not-the-only-surface.test.ts, 165-token-loss-warning.test.ts · Example test: 244-log-is-not-the-only-surface.test.ts::[CR D7.4a] the loss is put in front of the player who lost it, in the promptbar area · Demonstrated by test: 244-log-is-not-the-only-surface.test.ts::[CR D7.4a] a net client is not shown the opponent loss, and the notice goes stale at the next battle · Key: annexd.confirm.not-only-log.token-loss</sub>
 
-<a id="rD7.4b"></a>**D7.4b** Any other announcement that a card or a cost the player spent did nothing is shown briefly near the board, under the label "⚠ this did nothing", with the game's own sentence beside it. Both players see it, and it is also in the log.
+<a id="rD7.4b"></a>**D7.4b** Any other announcement that a card or a cost the player spent did nothing is shown as a line in the action bar, under the label "⚠ this did nothing", with the game's own sentence beside it. It stays until that player's next action or the bar's next prompt. Both players see it, and it is also in the log.
 
-> *Example: A spell resolves with nothing to aim at. A toast says so on the screen.*
+> *Example: A spell resolves with nothing to aim at. A line in the action bar says so.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 256-cost-toasts.test.ts · Example test: 256-cost-toasts.test.ts::[CR D7.4] a spell that resolves with nothing to aim at produces a toast, end to end · Demonstrated by test: 256-cost-toasts.test.ts::[CR D7.4] an ordinary resolution produces no toast at all · Key: annexd.confirm.not-only-log.toast</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 2 gate test files · Owner call · adopted 2026-11-03; Owner ruling, adopted 2026-08-30 (quoted from the retired ruling register) · Tests: 256-cost-toasts.test.ts, 1060-board-legibility.test.ts · Example test: 256-cost-toasts.test.ts::[CR D7.4] the client puts a costly absence on the screen and not only in the log · Demonstrated by test: 256-cost-toasts.test.ts::[CR D7.4] an ordinary resolution produces no toast at all · Key: annexd.confirm.not-only-log.toast</sub>
 
-<a id="rD7.4c"></a>**D7.4c** Identical announcements from one resolution are shown once with a count. At most four are drawn at a time; the rest are counted and pointed to the log. None is dropped silently.
+<a id="rD7.4c"></a>**D7.4c** Identical announcements are shown once with a count. The line shows the newest; the earlier ones are counted beside it. None is dropped silently.
 
 > *Example: Three identical "this did nothing" sentences in one batch show as one row marked ×3.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 256-cost-toasts.test.ts · Example test: 256-cost-toasts.test.ts::[CR D7.4] identical sentences in one batch coalesce into one row with a count · Key: annexd.confirm.not-only-log.coalesce</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Owner call · adopted 2026-11-03; Owner ruling, adopted 2026-08-30 (quoted from the retired ruling register) · Tests: 256-cost-toasts.test.ts, 1060-board-legibility.test.ts · Example test: 256-cost-toasts.test.ts::[CR D7.4] identical sentences in one batch coalesce into one row with a count · Key: annexd.confirm.not-only-log.coalesce</sub>
 
 <a id="rD7.5"></a>**D7.5.** When the server refuses something, the player is told, whatever screen they are on: the connecting screen, a waiting room before the game starts, or the board. Joining with a code for which no game exists says that no game has that code. Joining with the code of a finished game the server no longer holds open says instead that the game is over and who won.
 

@@ -625,91 +625,165 @@
   },
   {
     "key": "annexd.confirm.not-only-log.coalesce",
-    "textHash": "b92d0b601f7255a4",
+    "textHash": "c88d723f2f42a2e0",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U24-r1",
+    "round": 4,
+    "verifier": "U24-r4",
     "engine": [
       {
-        "loc": "client/ui/toast.ts:costToastHtml/visibleCostToasts",
+        "loc": "client/ui/toast.ts:costToasts",
         "agrees": true,
-        "note": "×N coalescing and +N more line"
+        "note": "identical sentences in a batch fold into one row with n"
+      },
+      {
+        "loc": "client/ui/toast.ts:foldNotices",
+        "agrees": true,
+        "note": "a repeat on the line counts up and moves to the end (newest)"
+      },
+      {
+        "loc": "client/ui/toast.ts:barNoticeHtml",
+        "agrees": true,
+        "note": "draws the newest, ×n, and '+N earlier'"
       }
     ],
     "tests_run": [
       {
-        "file": "256-cost-toasts.test.ts",
-        "pattern": "[R276] identical sentences in one batch coalesce into one row with a count",
+        "file": "client/ui/test/256-cost-toasts.test.ts",
+        "pattern": "[CR D7.4] identical sentences in one batch coalesce",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/256-cost-toasts.test.ts",
+        "pattern": "[CR D7.4] a repeat of a notice on the line counts up",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/256-cost-toasts.test.ts",
+        "pattern": "[CR D7.4] the line draws the newest and counts the rest",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/256-cost-toasts.test.ts",
+        "pattern": "[CR D7.4] distinct losses fold into the line in order",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R276",
+        "ref": "owner register@72de434 'Several in one resolution: identical sentences coalesce into one row with'",
         "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "note": ""
       },
       {
-        "ref": "R276",
-        "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "ref": "owner chat 2026-11-03 'It's a weird notification that pops up in a weird spot ...'",
+        "supports": "partial",
+        "note": "verbatim (toast.ts header) but it is the complaint that moved the notice into the bar line; it supports none of the coalescing sentences"
       }
     ],
     "quote_spans": [
       {
         "file": "client/ui/toast.ts",
-        "text": "    ? `<div class=\"costtoastmore\">+${more} more — all of it is in the log</div>` : '';"
+        "text": "    + (t.n > 1 ? `<i class=\"barnoticen\">×${t.n}</i>` : '')"
+      },
+      {
+        "file": "client/ui/toast.ts",
+        "text": "    + (more > 0 ? `<span class=\"barnoticemore\">+${more} earlier</span>` : '')"
+      },
+      {
+        "file": "client/ui/test/256-cost-toasts.test.ts",
+        "text": "  assert.equal(got[0]!.n, 3, 'with the count on it, so nothing is hidden by the folding');"
       }
     ],
-    "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "basis_ok": false,
+    "problem": "Text is true and demonstrated. basis is 'engine' but the record cites owner calls as its sources (sources.engine is empty); 'mixed' would match. The second owner quote supports nothing in this record."
   },
   {
     "key": "annexd.confirm.not-only-log.toast",
-    "textHash": "384fb104c4f055d4",
+    "textHash": "f06ea4c65eb65042",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U24-r1",
+    "round": 4,
+    "verifier": "U24-r4",
     "engine": [
       {
-        "loc": "client/ui/toast.ts:costToast",
+        "loc": "client/ui/toast.ts:COST_TOAST_HEAD",
         "agrees": true,
-        "note": "no seat filter; both seats see it"
+        "note": "'⚠ this did nothing'"
+      },
+      {
+        "loc": "client/ui/main.ts:barNoticeLine",
+        "agrees": true,
+        "note": "cleared when the bar's prompt changes"
+      },
+      {
+        "loc": "client/ui/main.ts:act",
+        "agrees": true,
+        "note": "barNotices cleared on the player's next action"
+      },
+      {
+        "loc": "client/ui/toast.ts:costToasts",
+        "agrees": true,
+        "note": "no seat filter: both seats; server/view.ts visibleToSeat only withholds privateTo events"
       }
     ],
     "tests_run": [
       {
-        "file": "256-cost-toasts.test.ts",
-        "pattern": "[R276] a spell that resolves with nothing to aim at produces a toast, end to end",
+        "file": "client/ui/test/256-cost-toasts.test.ts",
+        "pattern": "[CR D7.4] the client puts a costly absence on the screen",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
       },
       {
-        "file": "256-cost-toasts.test.ts",
-        "pattern": "[R276] an ordinary resolution produces no toast at all",
+        "file": "client/ui/test/256-cost-toasts.test.ts",
+        "pattern": "[CR D7.4] an ordinary resolution produces no toast at all",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/256-cost-toasts.test.ts",
+        "pattern": "[CR D7.4] the log still carries every one of them",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/1060-board-legibility.test.ts",
+        "pattern": "§5 no game notice draws a toast",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/ui/test/zz-probe-U24-2.test.ts",
+        "test": "probe U24-2: a cost notice is drawn in the action bar for both seats",
+        "passed": true,
+        "demonstrates": "yes: the same batch draws the labelled notice with the engine sentence for seat 0 and seat 1"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "R276",
+        "ref": "owner register@72de434 'Q5, the wording: CHANGED. The shared label is ⚠ this did nothing'",
         "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "note": ""
       },
       {
-        "ref": "R276",
+        "ref": "owner register@72de434 'client was allowed to be told, and it is a public log line'",
         "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "note": "both seats / in the log"
       },
       {
-        "ref": "R276",
+        "ref": "owner register@72de434 'Q2, card-text announcements: IN.'",
         "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "note": "card announcements included"
+      },
+      {
+        "ref": "owner chat 2026-11-03 'It's a weird notification ... goes away quickly.' / 'should probably just be removed entirely and replaced with something else.'",
+        "supports": "yes",
+        "note": "why the corner toast became a waiting line in the action bar"
       }
     ],
     "quote_spans": [
@@ -718,13 +792,20 @@
         "text": "export const COST_TOAST_HEAD = '⚠ this did nothing';"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "either way. **Both seats see every toast.**"
+        "file": "client/ui/toast.ts",
+        "text": " * Both seats, unfiltered — deliberately. Six of these announcements carry a"
+      },
+      {
+        "file": "client/ui/main.ts",
+        "text": "  barNotices = []; barNoticesUnder = null;   // the player's next action puts the notice line away"
+      },
+      {
+        "file": "client/ui/main.ts",
+        "text": "  else if (barNoticesUnder !== under) { barNotices = []; barNoticesUnder = null; return ''; }"
       }
     ],
-    "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "basis_ok": false,
+    "problem": "Text is true and demonstrated (a click on the line also dismisses it, which the text does not mention but does not contradict). basis is 'engine' but the record cites owner calls as its sources; 'mixed' would match."
   },
   {
     "key": "annexd.confirm.not-only-log.token-loss",
@@ -1850,31 +1931,42 @@
   },
   {
     "key": "annexd.display.live-values.x-forecast",
-    "textHash": "590e91aa973aa630",
+    "textHash": "03ff5bb7958c5a00",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U24-r2",
+    "round": 4,
+    "verifier": "U24-r4",
     "engine": [
       {
         "loc": "client/ui/main.ts:stackPreviewX",
         "agrees": true,
-        "note": "empty if stackItemX has a committed X; narrows by declared mode (and declared player target) when exactly one row matches; else all rows"
+        "note": "forecast from the card's own xPreviewRows/xPreview hook; returns [] when stackItemX has a committed X; narrows by declared mode (and by declared player target)"
       },
       {
-        "loc": "client/ui/main.ts:xPreviewFor",
+        "loc": "client/ui/main.ts:stackPreviewXMark",
         "agrees": true,
-        "note": "forecast from CardBehavior.xPreviewRows/xPreview only"
+        "note": "strip chip: X=n on a card that prints X, liveChip (own terms) otherwise"
       },
       {
-        "loc": "client/ui/main.ts stack focus viewer",
+        "loc": "client/ui/livecount.ts:liveLines",
         "agrees": true,
-        "note": "worded 'X = n right now'"
+        "note": "the stack viewer passes forecast:true, wording an X card's line 'X = 7 now'"
+      },
+      {
+        "loc": "client/ui/livecount.ts:COUNT_TERMS",
+        "agrees": true,
+        "note": "Mischievous Reclaimer -> min(x,2)/2"
       }
     ],
     "tests_run": [
       {
         "file": "client/ui/test/225-stack-readout.test.ts",
-        "pattern": "§1a Retribution Thing wears its X on the stack",
+        "pattern": "§1a Retribution Thing wears its X",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/225-stack-readout.test.ts",
+        "pattern": "§1b the declared mode narrows",
         "passed": true,
         "asserts_claim": true
       },
@@ -1886,17 +1978,50 @@
       },
       {
         "file": "client/ui/test/225-stack-readout.test.ts",
-        "pattern": "§1b the declared mode narrows the forecast",
+        "pattern": "§1d CENSUS",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/1060-board-legibility.test.ts",
+        "pattern": "§7 a live count wears an X only where the card prints one",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/ui/test/zz-probe-U24-1.test.ts",
+        "test": "probe U24-1: a board-read X with no forecast hook shows no X on the stack (not X=0)",
+        "passed": true,
+        "demonstrates": "yes: the last sentence (a board-read X with no declared forecast shows none) — no stackx chip for Burden of Life / Exhume / Spewing Mushroom, with Retribution Thing as positive control"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "R246",
+        "ref": "owner register@72de434 'is PUBLIC while the card is on the stack, and is shown as a FORECAST.'",
         "supports": "yes",
-        "note": "forecast public, committed X silences it, declared mode narrows, card's own answer"
+        "note": "owner quote is its own evidence; matches main.ts #130 block and the forecast wording in the stack viewer"
+      },
+      {
+        "ref": "owner register@72de434 'A committed X silences the forecast.'",
+        "supports": "yes",
+        "note": "§1c"
+      },
+      {
+        "ref": "owner register@72de434 'A declared MODE narrows the forecast.'",
+        "supports": "yes",
+        "note": "§1b"
+      },
+      {
+        "ref": "owner register@72de434 'The forecast is the card's own answer, not the client's.'",
+        "supports": "yes",
+        "note": "xPreviewFor reads the card hook"
+      },
+      {
+        "ref": "owner chat 2026-11-03 'It's not X, there's no X on the card.'",
+        "supports": "yes",
+        "note": "quoted in livecount.ts header; supports 'a card that prints no X shows only the count, in its own terms'"
       }
     ],
     "quote_spans": [
@@ -1905,13 +2030,24 @@
         "text": "  if (stackItemX(it).length) return [];   // it already committed a number"
       },
       {
-        "file": "client/ui/main.ts",
-        "text": "    `<div class=\"xnow\">X = ${r.x} right now${"
+        "file": "client/ui/livecount.ts",
+        "text": "  if (printsX(name)) return `X=${xHeadline(rows).x}`;"
+      },
+      {
+        "file": "client/ui/livecount.ts",
+        "text": " * x-forecast) words an X as a forecast — \"X = 7 now\" — beside the paid X it"
+      },
+      {
+        "file": "client/ui/livecount.ts",
+        "text": " * dead this battle (it draws on the 2nd)\": *\"It's not X, there's no X on the"
+      },
+      {
+        "file": "client/ui/test/1060-board-legibility.test.ts",
+        "text": "  assert.equal(liveChip('Mischievous Reclaimer', [row(1)]), '1/2', '\"the second ally dies\": one of two');"
       }
     ],
     "basis_ok": true,
-    "problem": "Unstated extra: a declared player target narrows the forecast the same way (Soul Siphon). Not a wrong statement.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.display.live-values.x-not-forecast",

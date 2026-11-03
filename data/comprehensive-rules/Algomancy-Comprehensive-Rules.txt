@@ -6925,8 +6925,8 @@ Basis
 |---|---|
 | Printed | 453 |
 | Designer | 202 |
-| Owner call | 679 |
-| Engine only | 45 |
+| Owner call | 677 |
+| Engine only | 47 |
 | Mixed | 486 |
 
 Verification
@@ -6983,6 +6983,8 @@ Engine-only rules (awaiting the owner's sign-off)
 - D6.9f A prediction made with Prediction Prophet is shown on that card to both players, as a chip on the card and a line in its text box, from when it is made until the start of deployment reads it. A prediction left from an earlier turn is not shown.
 - D6.9g A triggered ability whose amount is its own column's share of combat damage (Vroot: "When my column deals combat damage, each opponent gains that much life.") shows that share on the stack as its X, the same amount it resolves with, not the total every column dealt.
 - D6.10f In the card zoom, a unit whose attributes are off has only its type bar greyed; a unit whose abilities are off has its text box below the type bar greyed; a unit with both off has both greyed.
+- D7.4b Any other announcement that a card or a cost the player spent did nothing is shown as a line in the action bar, under the label "(!) this did nothing", with the game's own sentence beside it. It stays until that player's next action or the bar's next prompt. Both players see it, and it is also in the log.
+- D7.4c Identical announcements are shown once with a count. The line shows the newest; the earlier ones are counted beside it. None is dropped silently.
 - D8.6d A player may also concede the match: during a game, between games, while the match is paused, or before its first game begins. The player who concedes it loses the match. During a game, that game is conceded first, so it is lost as well.
 - D8.6f Either player may offer to pause until the sideboarding window closes (rule D8.6b), and the match is paused when the other player agrees. No clock runs while it is paused, and its waiting game is not closed for being idle (rule D3.4). It resumes once both players are present and both ask to resume, with a new sideboarding window.
 - D8.6h A league match closes at the end of its league week only if it is paused or between games at that moment. A game in progress then is played out: if it decides the match, the result stands; if not, the match closes when that game ends. Either way, the games already played stay in each player's match history.

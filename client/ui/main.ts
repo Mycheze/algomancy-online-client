@@ -62,6 +62,7 @@ import { doesLine, lastKnown, noteTable, tableMemory } from './doesline.ts';
 import { glimpseHeadline, glimpseNotice, revealRecords, revealView } from './reveal.ts';
 import { dismissNotice, installRevealsLayer, isRevealsOpen, loadReveals, noticeReveal, openReveals, recordReveals, revealCount } from './reveallog.ts';
 import { barNoticeHtml, COST_TOAST_HEAD, costToasts, foldNotices, type BarNotice } from './toast.ts';
+import { liveChip, liveLines, printsX } from './livecount.ts';
 import type { SpotTarget } from './fslot.ts';
 import { entityTextBox, iconizeText, predictionOf, printedTextBox, textBoxFor, txtIcon, attrReminders} from './cardtext.ts';
 import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
@@ -3224,33 +3225,27 @@ function stackPreviewX(it: StackItem): XPreviewRow[] {
  * chip is a few pixels wide; the labels ride in the focus viewer. */
 const stackPreviewXMark = (it: StackItem): string => {
   const rows = stackPreviewX(it);
-  return rows.length ? `X=${[...new Set(rows.map(r => r.x))].join('/')}` : '';
+  if (!rows.length || !it.card) return '';
+  return printsX(it.card) ? `X=${[...new Set(rows.map(r => r.x))].join('/')}` : liveChip(it.card, rows) ?? '';
 };
 
-/** The ONE number the chip shows when a card has several rows (owner,
- * 2026-09-27, MBRE): the row the card marks, else the highest. Several bare
- * numbers read as nothing — Gember held Soul Siphon through an after-combat
- * step at `6 · 0`, waiting for "the X" to leave zero. The highest is the value
- * the player can choose to get (the target, the mode); the rail lists every
- * row with its label. */
-const xHeadline = (rows: XPreviewRow[]): XPreviewRow =>
-  rows.find(r => r.headline) ?? rows.reduce((a, b) => (b.x > a.x ? b : a));
+/** the corner chip (#5): ONE short text — "X=3" on a card that prints an X,
+ * the count in a counting card's own terms otherwise (ui/livecount.ts, owner
+ * 2026-11-03: no X where the card has none) — and the rows on hover only when
+ * there are several to tell apart */
+const xBadge = (name: string, rows: XPreviewRow[]): Badge | null => {
+  const t = liveChip(name, rows);
+  if (!t) return null;
+  const lines = liveLines(name, rows);
+  return { t, ctr: true, ...(lines.length > 1 ? { title: lines.join('\n') } : {}) };
+};
 
-/** the corner chip: #5's original "X=3 now" wording, always one number — the
- * chip is a few pixels wide and a label does not fit — and every row rides in
- * the tooltip. */
-const xBadge = (rows: XPreviewRow[]): Badge => ({
-  t: `X=${xHeadline(rows).x} now`,
-  ctr: true,
-  title: rows.map(r => (r.label ? `${r.label}: ${r.x}` : `X = ${r.x}`)).join('\n'),
-});
-
-/** the same rows spelled out where there IS room (the focus viewer, the
- * inspector). Same `.xnow` presentation the stack viewer already uses for a
- * committed item's X — one idea, one look. */
-const xRowsHtml = (rows: XPreviewRow[]): string => rows.map(r =>
-  `<div class="xnow">X = ${r.x} right now${
-    r.label ? ` <span class="hint">— ${iconizeText(r.label)}</span>` : ''}</div>`).join('');
+/** the same where there IS room (the zoom, the inspector, the stack viewer):
+ * the bare count or one "X = N" per row — never a sentence about the card
+ * (owner 2026-11-03: "it spells out how the card works … despite the card
+ * being very clear") */
+const xRowsHtml = (name: string, rows: XPreviewRow[], opts: { forecast?: boolean } = {}): string =>
+  liveLines(name, rows, opts).map(l => `<div class="xnow">${esc(l)}</div>`).join('');
 
 // ── rendering ─────────────────────────────────────────────────────────
 /** one chip's markup — the table strip's, and the zoom's dice (round 4) */
@@ -3599,7 +3594,8 @@ function handBadges(n: CardName, offers: ReturnType<typeof handOffers>, xrows: X
   // first in push order and rank 0 (it carries a `cls`), so the one chip that
   // says what a click will DO is the last thing packBadgeLine folds away
   if (offer) badges.push(offer);
-  if (xrows) badges.push(xBadge(xrows));
+  const xb = xrows ? xBadge(n, xrows) : null;
+  if (xb) badges.push(xb);
   // CR 803.7: this card can be prophesied RIGHT NOW — the banner cost, up front
   if (offers.includes('prophesy')) {
     let mana: number | undefined;
@@ -3873,8 +3869,10 @@ function tokenTipHtml(tokens: readonly Entity[]): string {
     rows.map(t => `<tr class="tallyrow${t.burst && t.n > 1 ? ' burst' : ''}${t.burst && t.sizes.length > 1 ? ' mixed' : ''}"><th class="tallyname">${
       esc(t.name)}</th><td class="tallyn">×${t.n}</td><td class="tallyx">${esc(sizes(t))}</td></tr>`).join('')
   }</tbody></table>${rows.map(t => {
-    const why = !t.burst ? `Each ${t.name} is cast on its own.`
-      : t.n > 1 ? `Burst: clicking a ${t.name} casts all ${t.n} at once, as one chain${t.sizes.length > 1 ? ', of different sizes' : ''}.`
+    // only what a click does that is NOT the default (owner 2026-11-03:
+    // superfluous popup text goes — the non-burst token's line restating the default went)
+    const why = t.burst && t.n > 1
+      ? `Burst: clicking a ${t.name} casts all ${t.n} at once, as one chain${t.sizes.length > 1 ? ', of different sizes' : ''}.`
       : '';
     return why ? `<div class="tipfoot tokwhy">${esc(why)}</div>` : '';
   }).join('')}`;
@@ -4035,15 +4033,6 @@ function recycledLeft(s: GameState, seat: Seat): number {
     ? (s.recycled?.[seat]?.length ?? 0)
     : (s.sharedRecycled?.length ?? 0);
 }
-function deckTitle(s: GameState, seat: Seat): string {
-  const pile = recycledLeft(s, seat);
-  const shared = s.mode !== 'constructed' ? ' (shared)' : '';
-  return esc(pile
-    ? `${deckLeft(s, seat)} left in the deck${shared}, and ${pile} recycled card(s) behind `
-      + 'the mark. When anything reaches the mark they are shuffled in. Nobody may look at either.'
-    : `${deckLeft(s, seat)} left in the deck${shared}. Recycled cards wait behind the mark and `
-      + 'are shuffled in when anything reaches it.');
-}
 
 /** CR 608.3b: what the sub-step after this boundary window will be, in words. */
 function damageWindowWhatsNext(s: GameState): string {
@@ -4158,7 +4147,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
     ? pl.hand.every(n => n === HIDDEN_CARD)
     : !!NET && p !== NET.seat;
   const miniHand = hiddenHand
-    ? `<span class="minihand" data-animzone="hand:${p}" title="hand: ${pl.hand.length} cards">${nameKeys(pl.hand, `h${p}:`).map(k => `<span class="miniback" data-anim="${k}"></span>`).join('')}</span><span class="handcount">${
+    ? `<span class="minihand" data-animzone="hand:${p}">${nameKeys(pl.hand, `h${p}:`).map(k => `<span class="miniback" data-anim="${k}"></span>`).join('')}</span><span class="handcount">${
         pl.hand.length ? `hand ${pl.hand.length}` : '0 cards in hand'}</span>`
     : '';
   // round 13: the label used to be one long inline sentence that explained
@@ -4267,7 +4256,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
     pnameFixed: `<span class="pname">${esc(pl.name)}<span class="linit${s.initiative === p ? '' : ' off'}"${
       s.initiative === p ? ' title="has the initiative"' : ''}> ⭐</span></span>`,
     life: `<span class="life${pickable(`player:${p}`) ? ' candidate' : ''}" data-act="player" data-p="${p}"
-        data-animzone="life:${p}" title="${esc(pl.name)}'s life total — bring it to 0 to win"
+        data-animzone="life:${p}"
         ><span class="lifeheart">♥</span><span class="lifenum">${pl.life - (lifeHeldNow.get(p) ?? 0)}</span>${playerPickNote(p)}</span>`,
     counters,
     resGrouped: resGroupedHtml(e, p),
@@ -5103,7 +5092,7 @@ function inspectorHtml(): string {
     <div class="inspectscroll">
       <div class="inspecttop"><img src="${art(name)}" alt="" onerror="this.style.display='none'">
         <div class="inspecttext">${textBoxHtml(box, { noTitle: true })}</div></div>
-      ${xRows ? `<h4>X right now</h4>${xRowsHtml(xRows)}` : ''}
+      ${xRows && liveLines(name, xRows).length ? `<h4>This battle</h4>${xRowsHtml(name, xRows)}` : ''}
       <h4>Attributes${u ? ' (current, shared/granted included)' : ' (printed)'}</h4>
       ${attrRows}
       ${tokenRows ? `<h4>Tokens it creates</h4>${tokenRows}` : ''}
@@ -6905,9 +6894,8 @@ function previewStackHtml(id: number, opts: { noFace?: boolean } = {}): string {
   // never committed one. Worded as a forecast ("right now"), because that is
   // what it is — the ledger can still move before it resolves — and in exactly
   // the `.xnow` presentation the hand chip and the inspector already use.
-  const soonX = stackPreviewX(it).map(r =>
-    `<div class="xnow">X = ${r.x} right now${
-      r.label ? ` <span class="hint">— ${iconizeText(r.label)}</span>` : ''}</div>`).join('');
+  // a forecast, said as one (CR annexd x-forecast): the ledger can still move
+  const soonX = it.card ? xRowsHtml(it.card, stackPreviewX(it), { forecast: true }) : '';
   // CR 702.5 (report #81, EGCW): the declared MODE rides on the stack so the
   // opponent can price their response. Choosing it at cast time is only half
   // the fix — an unreadable declaration leaves them responding blind, which is
@@ -6947,7 +6935,7 @@ function previewStackHtml(id: number, opts: { noFace?: boolean } = {}): string {
       ${rows || `<div class="hint">${iconizeText(it.label)}</div>`}
       ${modChips}
       ${targets ? `<div class="abtargets">→ ${targets}</div>` : ''}
-      ${it.negated ? '<div class="abneg">fizzled — it left the stack and will do nothing</div>' : ''}
+      ${it.negated ? '<div class="abneg">fizzled</div>' : ''}
       ${modHostCache.stack.has(it.id)
         // CR 723.4: the other place the player looks at a stack item. The glow is
         // on the strip; the viewer says what it means in words.
@@ -7262,11 +7250,8 @@ function stackBoardHtml(): string {
     <div class="stackrow" style="--stackstep:${step.toFixed(3)}">${cards}</div>
     <div class="${captionClass(cap)}" data-anim-follow="s${cap.row.item.id}">
       ${captionBody(cap)}
-      ${rows.length > 1 ? `<span class="stackdepth" title="${esc((cap.pending
-        ? 'one of these is resolving right now — the rest are still waiting'
-        : 'the stack resolves from the right — the raised card goes first')
-        + (runs.length ? ` · ${runs.map(t => `${t.name} ×${t.n}: ${sizesText(t)}`).join(' · ')}` : ''))
-        }">${rows.length} deep ↢${runs.map(t => ` · ${esc(t.name)} ×${t.n}`).join('')}</span>` : ''}
+      ${runs.length ? `<span class="stackruns" title="${esc(runs.map(t => `${t.name} ×${t.n}: ${sizesText(t)}`).join(' · '))
+        }">${runs.map(t => `${esc(t.name)} ×${t.n}`).join(' · ')}</span>` : ''}
     </div>
   </div>`;
 }
@@ -7464,8 +7449,7 @@ function toolTipHtml(kind: string): string | null {
     const row = (seat: Seat, who: string): string =>
       `<tr${clockSnap!.running[seat] ? ' class="tiprun"' : ''}><th>${who}</th><td>${fmtClock(clockDisplayMs(seat))}</td></tr>`;
     return `<div class="tiphead">⏱ chess clocks</div><table class="tiptab"><tbody>${
-      row(other(NET.seat), esc(h.state.players[other(NET.seat)]!.name))}${row(NET.seat, NET.spectating ? esc(h.state.players[NET.seat]!.name) : 'you')}</tbody></table>${
-      '<div class="tipfoot">display only — the server keeps the time</div>'}`;
+      row(other(NET.seat), esc(h.state.players[other(NET.seat)]!.name))}${row(NET.seat, NET.spectating ? esc(h.state.players[NET.seat]!.name) : 'you')}</tbody></table>`;
   }
   return null;
 }
@@ -9756,8 +9740,8 @@ function tipFor(el: HTMLElement): string | null {
   return countsTipHtml({
     name: esc(pl.name), hand: pl.hand.length, deck: deckLeft(s, p), recycled: recycledLeft(s, p),
     bin: pl.bin.length, cache: cacheOf(p).length, shared: s.mode !== 'constructed',
-    // CR 408.2c: the mark, in words (it was the deck line's title)
-    note: deckTitle(s, p),
+    // (owner 2026-11-03: superfluous popup text goes — the table already says
+    // deck and recycle pile; the paragraph about the mark under it is gone)
     ...(s.mode === 'draft' ? { pack: s.packs[p]?.length ?? 0 } : {}),
   });
 }
@@ -9910,7 +9894,7 @@ function zoomPanelHtml(src: HTMLElement): string | null {
   const name = src.dataset['prev'];
   if (!name || name === HIDDEN_CARD) return null;
   const xrows = src.dataset['act'] === 'hand' ? xPreviewFor(name, Number(src.dataset['p']) as Seat) : null;
-  return `${xrows ? xRowsHtml(xrows) : ''}${textBoxHtml(printedTextBox(name))}`;
+  return `${xrows ? xRowsHtml(name, xrows) : ''}${textBoxHtml(printedTextBox(name))}`;
 }
 
 /* BOARD ROUND 8 — A FINGER'S CARD MENU. The rail drew the card menu (details

@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:a8485b7a37f4bdbc",
+ "generated_from": "sha256:622620d0b86164cc",
  "rules": [
   {
    "num": "100.1",
@@ -40785,13 +40785,14 @@
    "sectionTitle": "Reveal Timing of Simultaneous Steps",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D6.9",
-   "text": "When a card on the stack reads its X from the board at resolution, and the card itself declares how to forecast that X, the stack shows what X would be right now, worded as a forecast. A declared mode narrows the forecast to that mode. If X was paid, the paid X is shown and no forecast is. A board-read X with no declared forecast shows none (see rule D6.9e).",
+   "text": "When a card on the stack reads an amount from the board at resolution, and the card itself declares how to forecast it, the stack shows what it would be right now. A card that prints an X shows it as X, worded as a forecast; a card that prints no X shows only the count, in the card's own terms. A declared mode narrows the forecast to that mode. If X was paid, the paid X is shown and no forecast is. A board-read X with no declared forecast shows none (see rule D6.9e).",
    "see": [
     "D6.9e"
    ],
    "examples": [
     "Retribution Thing is on the stack. It shows the X it would deal now.",
-    "Retribution Thing was cast in the life-lost mode. The stack shows only that mode's forecast."
+    "Retribution Thing was cast in the life-lost mode. The stack shows only that mode's forecast.",
+    "Mischievous Reclaimer (\"When the second ally dies in this battle, Draw a card.\") after one ally has died shows 1/2, not an X."
    ],
    "basis": "owner",
    "scope": "digital",
@@ -41876,12 +41877,12 @@
    "sectionTitle": "Confirmations and Misclicks",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D7.4",
-   "text": "Any other announcement that a card or a cost the player spent did nothing is shown briefly near the board, under the label \"⚠ this did nothing\", with the game's own sentence beside it. Both players see it, and it is also in the log.",
+   "text": "Any other announcement that a card or a cost the player spent did nothing is shown as a line in the action bar, under the label \"⚠ this did nothing\", with the game's own sentence beside it. It stays until that player's next action or the bar's next prompt. Both players see it, and it is also in the log.",
    "see": [],
    "examples": [
-    "A spell resolves with nothing to aim at. A toast says so on the screen."
+    "A spell resolves with nothing to aim at. A line in the action bar says so."
    ],
-   "basis": "owner",
+   "basis": "engine",
    "scope": "digital",
    "engineDiffers": false,
    "discrepancies": [],
@@ -41897,12 +41898,12 @@
    "sectionTitle": "Confirmations and Misclicks",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D7.4",
-   "text": "Identical announcements from one resolution are shown once with a count. At most four are drawn at a time; the rest are counted and pointed to the log. None is dropped silently.",
+   "text": "Identical announcements are shown once with a count. The line shows the newest; the earlier ones are counted beside it. None is dropped silently.",
    "see": [],
    "examples": [
     "Three identical \"this did nothing\" sentences in one batch show as one row marked ×3."
    ],
-   "basis": "owner",
+   "basis": "engine",
    "scope": "digital",
    "engineDiffers": false,
    "discrepancies": [],

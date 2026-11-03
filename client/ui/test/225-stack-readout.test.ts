@@ -48,6 +48,7 @@ import { E } from '../../engine/src/engine.ts';
 import { apply, legalActions, IllegalAction } from '../../engine/src/apply.ts';
 import { allCardNames, getCard } from '../../engine/src/cards/dsl.ts';
 import { viewFor } from '../../server/view.ts';
+import { liveChip, printsX } from '../livecount.ts';
 import { client } from './ui-driver.ts';
 import { give, giveResources, pass, spawn, toDeployment, toNextBattle } from '../../engine/test/util.ts';
 import type { Action, GameState, Seat, StackItem } from '../../engine/src/types.ts';
@@ -173,7 +174,12 @@ test('§1d CENSUS — every card that can forecast an X forecasts it ON THE STAC
     };
     s.stack.push(item);
     const html = await screen(s, D);
-    if (!/X=/.test(html)) silent.push(name);
+    // owner 2026-11-03: no X where the card has none — a card that prints an X
+    // says "X=" on the stack, a counting card its count in its own terms
+    // (ui/livecount.ts), and one whose count tells nothing says nothing
+    const want = printsX(name) ? 'X=' : liveChip(name, rows.length ? rows : [{ label: '', x: one as number }]);
+    if (want === null) continue;
+    if (!html.includes(want)) silent.push(`${name} (wants "${want}")`);
   }
   assert.deepEqual(silent, [],
     'these cards can say what their X is and the stack does not print it');

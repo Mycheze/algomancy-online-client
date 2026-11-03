@@ -79,15 +79,14 @@ test('CR 408.2 recycling does NOT inflate the deck count — that is the whole p
   assert.match(after, /recycled 5/, 'they are all accounted for in the other number');
 });
 
-test('§4 the counts explain the mark, in words, where an operator-free player is', () => {
+// owner 2026-11-03: superfluous popup text goes. The counts window used to end
+// with a paragraph about the mark ("… When anything reaches the mark they are
+// shuffled in. Nobody may look at either."); its table already says deck and
+// recycle pile, and the rule lives on the rules reference (glossary: Recycle).
+test('§4 the counts window is the table alone: no paragraph about the mark under it', () => {
   deckLine(ui.show(withPile(3023, 2)));
-  const m = /<div class="tipfoot">([\s\S]*?)<\/div>/.exec(lastTip);
-  assert.ok(m, 'the counts window carries the note');
-  const title = m![1]!;
-  assert.match(title, /mark/i, 'it names the mark');
-  assert.match(title, /shuffled/i, 'and says what happens when the deck runs out');
-  assert.match(title, /look/i,
-    'and that nobody may look at them — the half of the ask that is a RULE, not a number');
+  assert.match(lastTip, /<th>recycle pile<\/th><td>2<\/td>/, 'the pile is counted in the table');
+  assert.doesNotMatch(lastTip, /class="tipfoot"/, 'and nothing is written under it');
 });
 
 test('CR 408.2c the pile the client is handed is card BACKS — the count is public, the cards are not', () => {

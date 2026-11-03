@@ -7291,7 +7291,7 @@ export const CLOSED: TodoEntry[] = [
       '233-burst-count-and-size.test.ts::§1c the tiles are ordered so a burst group is contiguous and reads BIGGEST first',
       '233-burst-count-and-size.test.ts::§1f a spell token that is NOT burst gets a row that does not claim the chain',
       '233-burst-count-and-size.test.ts::§2b every buried card wears its X where the overlap cannot reach it',
-      '233-burst-count-and-size.test.ts::§2c the depth chip counts the run, so you can see how many are left',
+      '233-burst-count-and-size.test.ts::§2c the run chip counts the run, so you can see how many are left',
       '233-burst-count-and-size.test.ts::§0a the spell-token KIND is a superset of burst — the container is not the rule',
     ],
     closed:
@@ -8139,7 +8139,8 @@ export const CLOSED: TodoEntry[] = [
       '256-cost-toasts.test.ts::[CR D7.4] the derived tier-1 population, and every member of it earns a toast',
       '256-cost-toasts.test.ts::[CR D7.4] the whole tier, as one number, over engine and pool together',
       '256-cost-toasts.test.ts::[CR D7.4] the client puts a costly absence on the screen and not only in the log',
-      '256-cost-toasts.test.ts::[CR D7.4] the overflow is counted and pointed at the log, never dropped in silence',
+      // owner 2026-11-03: the board toast goes; notices live in the action bar (the strip's cap went with it)
+      '256-cost-toasts.test.ts::[CR D7.4] the line draws the newest and counts the rest, never dropping them in silence',
       '256-cost-toasts.test.ts::[CR D7.4] the log still carries every one of them',
     ],
     closed:

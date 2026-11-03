@@ -191,3 +191,50 @@ test('§5 no game notice draws a toast: each is a line inside the action bar, an
   assert.ok(ui.actions().length > 0, 'the pass was sent');
   assert.doesNotMatch(bar(ui.update(view, legal)), /class="barnotice"/, 'gone with the player\'s next action');
 });
+
+test('§6 superfluous popup text stays gone, and the stack wears no "N deep" tag', () => {
+  // owner 2026-11-03: "All the extra weirdly AI generated, superfluous text was
+  // supposed to have been gotten rid of forever ago." — and "Same with the
+  // little '4 deep' tag on the stack. Get rid of it please."
+  for (const [gone, what] of [
+    [/the mark\. When anything reaches the mark|Nobody may look at either/, 'the paragraph under the player summary'],
+    [/server keeps the time/, 'the clocks\' footnote'],
+    [/is cast on its own\./, 'the token corner\'s line for a non-burst token'],
+    [/bring it to 0 to win/, 'the life total\'s tooltip'],
+    [/title="hand: \$\{/, 'the mini hand\'s tooltip restating its count'],
+    [/left the stack and will do nothing/, 'the stack viewer\'s gloss on "fizzled"'],
+    [/\} deep ↢|class="stackdepth"/, 'the stack\'s "N deep" tag'],
+  ] as const) assert.doesNotMatch(MAIN, gone, `${what} is back`);
+  assert.doesNotMatch(CSS, /\.stackdepth\b/, 'and its stylesheet');
+});
+
+test('§7 a live count wears an X only where the card prints one, and the zoom never explains the card', async () => {
+  const { allCardNames, getCard } = await import('../../engine/src/cards/dsl.ts');
+  const { COUNT_TERMS, liveChip, liveLines, printsX } = await import('../livecount.ts');
+  const LIVE = read('livecount.ts');
+  // derived, not listed: every card with a live-count hook and no printed X
+  // has its own terms in COUNT_TERMS, and nothing else is in there
+  const hooked = allCardNames().filter(n => { const c = getCard(n) as unknown as Record<string, unknown>;
+    return c['xPreview'] !== undefined || c['xPreviewRows'] !== undefined; });
+  const counting = hooked.filter(n => !printsX(n)).sort();
+  assert.ok(counting.includes('Mischievous Reclaimer') && hooked.some(n => printsX(n)), 'the premise: both kinds exist');
+  assert.deepEqual(Object.keys(COUNT_TERMS).sort(), counting, 'COUNT_TERMS is exactly the hooked cards that print no X');
+  const row = (x: number, label = 'a long sentence explaining how the card works') => ({ label, x });
+  for (const n of counting) {
+    for (const x of [0, 1, 3]) {
+      const chip = liveChip(n, [row(x), row(x)]);
+      assert.ok(chip === null || !/X/.test(chip), `${n}: no X on a card that prints none (${chip})`);
+      for (const l of liveLines(n, [row(x), row(x)])) assert.equal(l, chip, `${n}: the zoom says at most the chip's count`);
+    }
+  }
+  // the owner's card, and a real X card
+  assert.equal(liveChip('Mischievous Reclaimer', [row(1)]), '1/2', '"the second ally dies": one of two');
+  assert.equal(liveChip('Mischievous Reclaimer', [row(3)]), '2/2', 'it has fired; it does not count past its threshold');
+  assert.equal(liveChip('Soul Siphon', [row(7)]), 'X=7', 'a card that prints X says X — and no "now"');
+  assert.deepEqual(liveLines('Retribution Thing', [row(7, 'lost'), row(0, 'gained')]), ['X = 7 (lost)', 'X = 0 (gained)'],
+    'a label survives only where it NAMES a row of several');
+  assert.deepEqual(liveLines('Life Channel', [row(5, 'you (this spell\'s own +3 included)')]), ['X = 5'], 'never a sentence about the card');
+  // and the board's renderers go through it
+  assert.doesNotMatch(MAIN, /X=\$\{[^}]*\} now|right now\$\{|X right now/, 'no "now" padding on the live X');
+  assert.match(LIVE, /export function liveChip/);
+});
