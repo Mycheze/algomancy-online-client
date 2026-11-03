@@ -10,14 +10,13 @@
 
 .homelogo { color: var(--accent); letter-spacing: .3em; text-align: center; margin: var(--space-3) 0 var(--space-6); }
 .namerow { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6); color: var(--dim); }
-.namerow input { flex: 1; background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+.namerow input { flex: 1; }
 .homebtns { display: flex; flex-direction: column; gap: var(--space-4); }
 .homebtns button { padding: var(--space-4); font-size: var(--text-14); }
 .homebtns .primary { border-color: var(--accent); color: var(--accent); font-weight: 700; }
 .joinrow { display: flex; gap: var(--space-4); }
 /* min-width:0 so the input SHRINKS before the button beside it is pushed out of the card */
-.joinrow input { flex: 1; min-width: 0; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
-  border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); letter-spacing: .2em; font-weight: 700; text-align: center; }
+.joinrow input { flex: 1; min-width: 0; letter-spacing: .2em; font-weight: 700; text-align: center; }
 .joinrow button { flex: 1; }
 
 /* ── home screen ───────────────────────────────────────────────────────
@@ -45,7 +44,7 @@
 /* the two ways to start a NEW game read as the offer; joining is a reply to
    someone else's, so it does not need the same weight */
 .homecard.offer { border-color: var(--color-border-strong); }
-.homecard h2 { margin: 0; font-size: var(--text-16); color: var(--text); letter-spacing: .02em; font-weight: 700; }
+.homecard h2 { margin: 0; font-size: var(--text-16); color: var(--text); letter-spacing: .02em; }
 .homecard .cardsub { margin: 0; color: var(--dim); font-size: var(--text-12); line-height: 1.5; }
 .homecard .spacer { flex: 1 1 auto; min-height: 2px; }
 .homecard .cta { padding: var(--space-5) var(--space-5); font-size: var(--text-14); font-weight: 700; }
@@ -65,7 +64,7 @@
    One panel, one row per update — date, a kind chip, the line. A second
    update on the same day leaves its date blank so a day reads as a group. */
 .updates { max-width: 1180px; margin: 0 auto; padding: 6px 22px 40px; box-sizing: border-box; }
-.updates h2 { margin: 0 0 var(--space-4); color: var(--dim); font-size: var(--text-12); font-weight: 700;
+.updates h2 { margin: 0 0 var(--space-4); color: var(--dim); font-size: var(--text-12);
   text-transform: uppercase; letter-spacing: .08em; }
 .updlist { list-style: none; margin: 0; padding: 0; background: var(--panel);
   border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }

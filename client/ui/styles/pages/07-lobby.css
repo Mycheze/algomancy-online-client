@@ -6,8 +6,7 @@
 .deckimport input { letter-spacing: normal; font-weight: 400; text-align: left; font-size: var(--text-12); }
 .deckimport button { flex: 0 0 auto; padding: var(--space-3) var(--space-5); }
 .deckpaste summary { color: var(--dim); font-size: var(--text-12); cursor: pointer; }
-.deckpaste textarea { width: 100%; box-sizing: border-box; margin: var(--space-3) 0; background: var(--panel2);
-  color: var(--text); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font: 12px monospace; }
+.deckpaste textarea { width: 100%; box-sizing: border-box; margin: var(--space-3) 0; font: 12px monospace; }
 .deckmsg { color: var(--accent); font-size: var(--text-12); }
 /* BL-29 — the spectator's standing line. Loud on purpose: an omniscient view
    that ever looked like a player's is the one way this feature could mislead

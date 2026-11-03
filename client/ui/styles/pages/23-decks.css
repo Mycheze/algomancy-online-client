@@ -54,8 +54,8 @@
    exactly the way it shortens the board under restoreViewport's. */
 .deckcover img { width: 100%; display: block; aspect-ratio: auto 18 / 25; }
 .deckheroinfo { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
-.deckname { font-family: inherit; font-weight: 700; font-size: 19px; line-height: 1.2; background: var(--panel2); color: var(--text);
-  border: 1px solid transparent; border-radius: var(--radius-md); padding: var(--space-2) var(--space-4); width: 100%; }
+.deckname { font-family: inherit; font-weight: 700; font-size: 19px; line-height: 1.2;
+  border: 1px solid transparent; padding: var(--space-2) var(--space-4); width: 100%; }
 .deckname:hover { border-color: var(--line); }
 .deckname:focus { border-color: var(--accent); outline: none; }
 .deckfacts { color: var(--dim); display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
@@ -73,8 +73,7 @@
 .dkswapchip.moved { border-color: var(--accent); color: var(--accent); }
 .dkswaprow { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-4); align-items: center; padding: var(--space-4) 0;
   border-top: 1px solid var(--line); }
-.dkswapname { width: 14em; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
-  border-radius: var(--radius-md); padding: var(--space-2) var(--space-4); font: inherit; }
+.dkswapname { width: 14em; padding: var(--space-2) var(--space-4); font: inherit; }
 .dkswapname:focus { border-color: var(--accent); outline: none; }
 .dkswapside { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
 .dkswapside > .zonelabel { margin: 0 var(--space-1) 0 0; }

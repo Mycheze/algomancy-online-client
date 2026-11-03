@@ -1,5 +1,4 @@
 /* ── the league page (ui/league.ts, docs/20-league.md) ───────────────── */
-.lgpage .dim { color: var(--dim); }
 .lgpage tr.dim { opacity: .5; }
 .lgtag { font-size: var(--text-11); margin-left: var(--space-4); padding: var(--space-1) var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-lg);
   color: var(--dim); text-transform: uppercase; letter-spacing: .06em; vertical-align: middle; }
@@ -21,8 +20,7 @@
 }
 .lgtzrow { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin: var(--space-4) 0; }
 .lgtzrow label { display: flex; flex-direction: column; gap: var(--space-1); width: 100%; font-size: var(--text-12); color: var(--dim); }
-.lgtzrow input { width: 100%; box-sizing: border-box; padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm);
-  background: var(--panel2); color: var(--text); border: 1px solid var(--line); font: inherit; }
+.lgtzrow input { width: 100%; box-sizing: border-box; border-radius: var(--radius-sm); font: inherit; }
 /* the week of hours: a day label column, then 24 hour columns that shrink with the page */
 .lgpresets { display: flex; flex-wrap: wrap; gap: var(--space-3); margin: var(--space-2) 0 var(--space-5); }
 .lgpresets button.on { border-color: var(--accent); color: var(--accent); }
@@ -62,9 +60,8 @@
 .lgbdates li.now { border-color: var(--accent); }
 .lgbdates li.now span { color: var(--accent); }
 .lgbbody { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-5) var(--space-7); margin-top: var(--space-5); font-size: var(--text-13); }
-.lgbbody h3 { margin: 0 0 var(--space-3); color: var(--dim); font-size: var(--text-11); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.lgbbody h3 { margin: 0 0 var(--space-3); color: var(--dim); font-size: var(--text-11); text-transform: uppercase; letter-spacing: .08em; }
 .lgbbody p { margin: var(--space-2) 0; }
-.lgbbody .dim { color: var(--dim); }
 .lgbhow { margin: 0; padding-left: var(--space-6); display: grid; gap: var(--space-1); }
 .lgbsteps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
 .lgbsteps li.done { color: var(--dim); }
@@ -101,7 +98,7 @@
   background: var(--panel2); border: 1px solid var(--line); border-radius: var(--radius-md); }
 .lgtimechips, .lgtimepick { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
 .lgtimechips button, .lgtimepick button { font-size: var(--text-12); padding: var(--space-1) var(--space-4); }
-.lgtimepick select { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-3); }
+.lgtimepick select { background: var(--panel); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-3); }
 .lgstamps td { padding: var(--space-1) var(--space-3) var(--space-1) 0; }
 .lgstampcode { width: 15em; max-width: 42vw; font-family: monospace; font-size: var(--text-12); background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-3); }
 .lgsuggest td { vertical-align: top; }

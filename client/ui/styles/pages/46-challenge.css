@@ -1,5 +1,4 @@
 /* ── the weekly challenge (ui/challenge.ts, ui/challengerun.ts, docs/21) ── */
-.chpage .dim { color: var(--dim); }
 .chpage .chgoal { font-size: var(--text-14); font-weight: 700; color: var(--text); }
 .chproblem { color: var(--danger); margin: var(--space-4) 0 0; }
 .chpast button.on { border-color: var(--accent); color: var(--accent); }

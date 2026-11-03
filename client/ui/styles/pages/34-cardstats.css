@@ -85,7 +85,7 @@
 
 .csboards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-4); }
 .csboard { border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--panel); padding: var(--space-4) var(--space-4); }
-.csboard h4 { margin: 0 0 var(--space-3); font-size: var(--text-13); }
+.csboard h4 { margin: 0 0 var(--space-3); }
 .csboard ol { list-style: none; margin: 0; padding: 0; }
 .csboardrow { display: grid; grid-template-columns: 26px 1fr auto auto; align-items: center; gap: var(--space-3); width: 100%;
   background: none; border: 0; padding: var(--space-1) 0; color: var(--text); font: inherit; font-size: var(--text-12); cursor: pointer; text-align: left; }
