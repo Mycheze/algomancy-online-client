@@ -35,7 +35,10 @@
 .homeident .acctbar { margin: 0; }
 .homeident .acctbar .accthint { flex: 0 1 auto; }
 .homeident .namerow { margin: 0; font-size: var(--text-12); }
-.homeident .namerow input { width: 150px; flex: 0 0 auto; }
+/* 120px, not 150: at 150 the signed-out row (name, the account bar, five nav
+   buttons) ran ~6px past 1136px at a 1440 window and "Challenge" wrapped onto a
+   row of its own (docs/23 Found, fixed 2026-11-03) */
+.homeident .namerow input { width: 120px; flex: 0 0 auto; }
 
 .homegrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(302px, 1fr));
   gap: var(--space-5); align-items: stretch; }
