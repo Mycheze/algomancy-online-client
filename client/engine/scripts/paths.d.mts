@@ -74,6 +74,8 @@ export const UI_COMPONENTS_DIR: string;
 export const STORYBOOK_DIR: string;
 /** client/storybook/stories/ — one `<component>.stories.ts` per component */
 export const STORYBOOK_STORIES_DIR: string;
+/** client/storybook/storybook-static/ — the built Storybook, served at /storybook/ to admins */
+export const STORYBOOK_STATIC_DIR: string;
 export const VAR_DIR: string;
 export const ISSUES_JSONL: string;
 export const VERDICTS_JSONL: string;

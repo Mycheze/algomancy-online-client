@@ -145,6 +145,8 @@ import * as lg from './league.ts';
 import * as admin from './admin.ts';
 // the Comprehensive Rules review page (?crreview), and its layer beside #app
 import * as crr from './crreview.ts';
+// the admin's "Design (Storybook)" button: a ticket, then /storybook/ in a new window
+import { openStorybook } from './storybook-link.ts';
 import { installCrLayer } from './crlayer.ts';
 import * as lob from './lobby.ts';
 import * as crp from './customrulespanel.ts';
@@ -10830,6 +10832,8 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   if (btn.dataset['btn'] === 'nav-challenge') { acct.leaveScreen(); chal.openChallenge(); return; }
   if (btn.dataset['btn'] === 'nav-admin') { acct.leaveScreen(); admin.openAdmin(); return; }
   if (btn.dataset['btn'] === 'nav-crreview') { acct.leaveScreen(); crr.openReview(); return; }
+  // Storybook opens in a new window; this page stays where it is
+  if (btn.dataset['btn'] === 'nav-storybook') { void openStorybook(); return; }
   // the rules review page owns everything prefixed cr-
   if (crr.handleButton(btn)) return;
   // accounts own everything prefixed acct- (sign-in, profile, friends)

@@ -122,6 +122,30 @@ git -C /home/bena/Documents/Algomancy pull --ff-only
 npm --prefix /home/bena/Documents/Algomancy/client/ui run build
 ```
 
+Optional — only when the design-system components changed, and only on a box
+an admin wants to look at Storybook on (the profile's 🎨 Design (Storybook)
+button, admins only; `client/server/storybook.ts`):
+
+```bash
+npm --prefix /home/bena/Documents/Algomancy/client/storybook ci     # first time, and when its package-lock.json changes
+npm --prefix /home/bena/Documents/Algomancy/client/storybook run build
+```
+
+Nothing else depends on it. With no build, `/storybook/` tells an admin
+"Storybook isn't built on this server" and is a plain 404 to everybody else;
+the game is untouched either way, and no restart is needed after a build. The
+`ci` fetches ~75 MB of pinned packages from the npm registry, so the box needs
+network for it (it has it: it reaches the registry for `client/engine` and
+`client/server` too); Storybook 10 and Vite 7 need Node ≥ 20.19 (the box has
+22). The box has one CPU and 2 GB of RAM: build while nobody is in a game, or
+build on the laptop and `rsync -a --delete client/storybook/storybook-static/
+algomancy-vps:/home/bena/Documents/Algomancy/client/storybook/storybook-static/`.
+⚠ Storybook draws every story in an `<iframe>`, so the edge must allow
+same-origin framing under `/storybook/*`: `deploy/Caddyfile` does since
+2026-11-03, and a box whose `/etc/caddy/Caddyfile` predates that needs the
+`sudo cp deploy/Caddyfile … && sudo systemctl reload caddy` from step 3 once,
+or Storybook opens to an empty preview.
+
 A client-only change is live on the next page load; `serveFile` sends
 `no-cache` and revalidates. An engine or server change also needs
 `sudo systemctl restart algomancy-game` — the page reconnects and reloads
