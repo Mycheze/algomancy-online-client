@@ -45,6 +45,8 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-03', kind: 'change', text: 'Sideboarding between Competitive games happens on the deck table: your deck below, your sideboard above. Tap a card or drag it across.' },
+  { date: '2026-11-03', kind: 'fix', text: 'The board is easier to read: tooltips fit their text, card text sits in one box, the action bar keeps one height and shows its notices instead of popping them up, and empty block slots and live counts lose their clutter.' },
   { date: '2026-11-03', kind: 'change', text: 'A new look: the site now uses the colours of the official rulebook, deep purple with orange highlights, and the comprehensive rules are dark like everything else.' },
   { date: '2026-11-03', kind: 'change', text: 'A new home screen that fits on one screen: one Play card for drafts and constructed games (Competitive included), with Beginner mode, bans and the card filter right on it, and League, Challenge and Matchmaking beside it.' },
   { date: '2026-11-03', kind: 'new', text: 'Competitive matches, best of 1 or 3: a sideboard of up to 7 to swap between games, 45 minutes each for the whole match unless you pick another clock, and players plan and deploy in turn. A match can be paused between games.' },

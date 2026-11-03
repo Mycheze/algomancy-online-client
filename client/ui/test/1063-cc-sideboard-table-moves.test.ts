@@ -1,4 +1,4 @@
-/* 1060 — THE SIDEBOARDING TABLE: A CARD GOES ACROSS BY TAP AND BY DROP.
+/* 1063 — THE SIDEBOARDING TABLE: A CARD GOES ACROSS BY TAP AND BY DROP.
  *
  * Owner, 2026-11-03, on the chip list the between screen had been: "I wanted
  * something like MTGO. Your deck laid out below, on the table we spent so
