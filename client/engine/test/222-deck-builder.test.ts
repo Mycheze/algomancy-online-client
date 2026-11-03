@@ -250,8 +250,9 @@ test('§5a the cap withholds the plus everywhere, and greys only where you are s
   // sideboard (`total`, which is `n` on a deck with no sideboard)
   assert.match(tileFn, /const atCap = where !== 'maybe' && total >= 2;/,
     'the cap itself is unchanged: two copies, anywhere you can add one');
-  const grey = /const (\w+) = atCap && where === 'add';/.exec(tileFn);
-  assert.ok(grey, 'the greying must be a SEPARATE flag, true only in the add drawer');
+  // 2026-11-03: the Sideboard tab got its own add drawer ('addside'), which is shopping too
+  const grey = /const (\w+) = atCap && (?:where === 'add'|\(where === 'add' \|\| where === 'addside'\));/.exec(tileFn);
+  assert.ok(grey, 'the greying must be a SEPARATE flag, true only in the add drawers');
   assert.match(tileFn, new RegExp(`\\$\\{${grey![1]!} \\? ' atcap' : ''\\}`),
     'and it must be what writes the atcap class');
   assert.doesNotMatch(tileFn, /\$\{atCap \? ' atcap' : ''\}/,
