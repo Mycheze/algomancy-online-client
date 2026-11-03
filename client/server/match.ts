@@ -35,7 +35,7 @@ import type { CardName, Seat } from '../engine/src/types.ts';
 import { checkMatchDeck, checkSwap, type MatchConfig } from '../engine/src/matchdeck.ts';
 import { matchDeckForPlay } from './collection.ts';
 import {
-  MATCH_CLOCK_MS, closeMatchRoom, createRoom, decidedWinner, getRoom, roomWaiting, setRoomDeck,
+  closeMatchRoom, createRoom, decidedWinner, getRoom, roomWaiting, setRoomDeck,
   setRoomHeld, setSeatUser, settleClock, touchRoom, type Room,
 } from './rooms.ts';
 import {
@@ -141,7 +141,10 @@ export function startMatch(room: Room, id: string, bestOf: 1 | 3, now = Date.now
   const m: Match = {
     id, bestOf, users: [null, null], names: [...room.names] as [string, string], createdAt: now,
     registered: [null, null], current: [null, null], games: [],
-    banks: [...room.clockMs] as [number, number], clockStart: room.clockStart ?? MATCH_CLOCK_MS.constructed,
+    banks: [...room.clockMs] as [number, number],
+    // null: a match with no clock (the creator chose Off) — every later game's
+    // room is created clockless too (nextGame), never with a 45-minute bank of 0
+    clockStart: room.clockStart,
     phase: 'game', room: room.code,
   };
   saveMatch(m);
@@ -500,8 +503,8 @@ export interface MatchLobbyInfo {
   /** the game about to be dealt, 1-based */
   game: number;
   score: [number, number]; names: [string, string];
-  /** the frozen chess clocks, ms, and the match's bank ("of 45:00") */
-  banks: [number, number]; clockStart: number;
+  /** the frozen chess clocks, ms, and the match's bank ("of 45:00"; null: no clock) */
+  banks: [number, number]; clockStart: number | null;
   phase: Match['phase'];
   /** the previous game's loser (null before game 1) and their choice, public once made */
   chooser: Seat | null; initiative: Seat | null;

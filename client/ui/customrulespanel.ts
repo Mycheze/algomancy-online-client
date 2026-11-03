@@ -1,30 +1,38 @@
-/* BL-43 — the Custom rules panel on the home screen's Live draft card.
+/* BL-43 — the Custom rules on the home screen's Draft tab.
  *
- * Smash-style: a normal game needs no settings, so the panel starts closed and
- * its defaults send nothing at all — `createPayload` is null for them, and the
- * room is made by the same GET /api/new every standard game uses. Change a
- * knob and the rules ride a POST instead; the server resolves and pool-checks
- * them with the very functions this panel previews with (ui/customrules.ts),
- * and the server's answer is the one that counts.
+ * Smash-style: a normal game needs no settings, and its defaults send nothing
+ * at all — `createPayload` is null for them, and the room is made by the same
+ * GET /api/new every standard game uses. Change something and the rules ride
+ * a POST instead; the server resolves and pool-checks them with the very
+ * functions this module previews with (ui/customrules.ts), and the server's
+ * answer is the one that counts.
  *
- * "Simple cards only" is its own control, near the top, and entirely separate
- * from the Advanced card filter — the owner: "so that it's not hard to miss".
+ * WHERE THEY ARE DRAWN (owner, 2026-11-03: "Bring as many things out of the
+ * Custom Rules modal as possible. It should only be reserved for changing the
+ * default 'value settings'… And 'beginner mode' should be an easier to reach
+ * toggle"): on the Draft tab itself — Mode (Standard | Beginner), Cards
+ * ("Simple cards only", the Advanced card filter one tap away), Banned cards,
+ * and the pool line — and only the numbers (DEAL_KNOBS) in the Game values
+ * sheet. One rules object, one store, one payload: where a control sits
+ * changes nothing that reaches the server.
+ *
+ * "Simple cards only" is its own control, apart from the Advanced card filter —
+ * the owner: "so that it's not hard to miss".
  *
  * Typing never repaints the home screen: the ban suggestions, the filter's
  * match count and the pool line are patched in place, so the input keeps its
  * focus and a click on the Create button right after typing is not eaten by a
  * repaint that replaced the button under the pointer.
  *
- * The panel's markup is pages/customrules.ts since the design-system round
- * (2026-11-03): this module keeps the rules, their storage, the server-verdict
- * preview, the cr- clicks and the in-place typing patches (wirePanel), and
- * hands the page what it shows through panelSnapshot().
+ * The markup is pages/customrules.ts: this module keeps the rules, their
+ * storage, the server-verdict preview, the cr- clicks and the in-place typing
+ * patches (wirePanel), and hands the page what it shows through panelSnapshot().
  */
 import { DECK_LIST } from '../engine/src/cards/registry.ts';
 import { DEAL_BOUNDS, DEAL_DEFAULTS, DEAL_KNOBS, type DealKnob } from '../engine/src/draftdeal.ts';
 import {
-  BEGINNER_RULES, MAX_QUERY_LENGTH, STANDARD_RULES, checkCustomRules, elementSets, fixedElements,
-  resolveCustomRules, rulesSummary, sanitizeCustomRules, type CustomRules, type RulesVerdict,
+  BEGINNER_RULES, MAX_QUERY_LENGTH, STANDARD_RULES, checkCustomRules, elementSets, fixedElements, isBeginnerRules,
+  resolveCustomRules, rulesSummary, sanitizeCustomRules, valuesSummary, type CustomRules, type RulesVerdict,
 } from './customrules.ts';
 import { esc } from './util.ts';
 
@@ -42,7 +50,7 @@ function load(): CustomRules {
 }
 
 let rules: CustomRules = load();
-let open = false;
+/** the card filter's box is shown (one tap away on the Draft tab); always, while a filter is set */
 let advancedOpen = rules.query !== '';
 let banDraft = '';
 let focusBan = false;
@@ -59,6 +67,12 @@ function save(): void {
 /** the rules to create a room with, or null for a standard game */
 export function activeRules(): CustomRules | null {
   return sanitizeCustomRules(rules);
+}
+
+/** the Beginner game is in effect (the Mode row's Beginner) — derived from the
+ * rules, so a ban or a life total on top of it keeps it Beginner */
+export function beginnerOn(): boolean {
+  return isBeginnerRules(activeRules());
 }
 
 /** how many elements the draft will be played with */
@@ -118,13 +132,17 @@ function poolHtml(): string {
  * checks exactly those — and the in-place pool line (wirePanel) keeps using
  * them until the next paint. */
 export interface PanelSnapshot {
-  open: boolean;
   /** the rules a room would be made with, or null for a standard game */
   active: CustomRules | null;
   /** the knobs as set (a standard game's are the defaults) */
   rules: CustomRules;
   /** the active rules in a line each (rulesSummary), or [] */
   summary: string[];
+  /** only the value settings that differ, short (valuesSummary) — the Game values row */
+  values: string[];
+  /** the Beginner game is in effect (isBeginnerRules) */
+  beginner: boolean;
+  /** the card filter's box is showing (always, while a filter is set) */
   advancedOpen: boolean;
   banDraft: string;
   /** cards in the pool, and how many of them are simple */
@@ -140,8 +158,8 @@ export function panelSnapshot(fixedEls: readonly string[] | null): PanelSnapshot
   lastFixed = fixedEls;
   const active = activeRules();
   return {
-    open, active, rules, summary: active ? rulesSummary(active) : [],
-    advancedOpen, banDraft,
+    active, rules, summary: active ? rulesSummary(active) : [], values: valuesSummary(active), beginner: isBeginnerRules(active),
+    advancedOpen: advancedOpen || rules.query !== '', banDraft,
     deckCount: DECK_LIST.length, simpleCount: simpleCount(),
     suggestions: suggestionsHtml(), queryNote: queryNote(), pool: poolHtml(),
   };
@@ -154,6 +172,28 @@ export function handlePanelButton(b: string | undefined, btn: HTMLElement): bool
       rules = btn.dataset['preset'] === 'beginner' ? { ...BEGINNER_RULES, bans: [] } : standard();
       banDraft = '';
       advancedOpen = false;
+      break;
+    case 'cr-beginner':
+      // the Mode row: Beginner is the preset above; Standard, from Beginner,
+      // is the standard game again — and from anything else changes nothing,
+      // so a click on the Standard already showing never wipes a ban list
+      if (btn.dataset['on'] === '1') {
+        rules = { ...BEGINNER_RULES, bans: [] };
+      } else if (isBeginnerRules(activeRules())) {
+        rules = standard();
+      } else return true;
+      banDraft = '';
+      advancedOpen = false;
+      break;
+    case 'cr-advanced':
+      // the card filter's box, one tap away on the Draft tab: no rule changes
+      // (a filter that is set keeps its box: it cannot be hidden while in force)
+      advancedOpen = rules.query !== '' || !advancedOpen;
+      return true;
+    case 'cr-values':
+      // the Game values sheet's "Back to the standard values": the numbers
+      // only — the cards rules (simple, bans, filter) stay as they are
+      rules = { ...rules, ...DEAL_DEFAULTS, preset: null };
       break;
     case 'cr-simple':
       rules = { ...rules, simpleOnly: !rules.simpleOnly, preset: null };
@@ -179,20 +219,14 @@ export function handlePanelButton(b: string | undefined, btn: HTMLElement): bool
     default:
       return false;
   }
-  open = true;
   save();
   return true;
 }
 
-/** After the home screen paints: keep the open/closed state, and patch the
- * typing-driven parts in place (see the header). */
+/** After the home screen paints: patch the typing-driven parts in place (see
+ * the header). The boxes are found by id wherever the page drew them. */
 export function wirePanel(): void {
-  const root = document.querySelector('[data-customrules]') as HTMLDetailsElement | null;
-  if (!root) return;
-  root.addEventListener('toggle', () => { open = root.open; });
-  const adv = root.querySelector('.cradvanced') as HTMLDetailsElement | null;
-  adv?.addEventListener('toggle', () => { advancedOpen = adv.open; });
-
+  if (typeof document === 'undefined') return;
   const ban = document.getElementById('cr-ban') as HTMLInputElement | null;
   ban?.addEventListener('input', () => {
     banDraft = ban.value;
@@ -209,6 +243,9 @@ export function wirePanel(): void {
   const query = document.getElementById('cr-query') as HTMLInputElement | null;
   query?.addEventListener('input', () => {
     rules = { ...rules, query: query.value.trim().slice(0, MAX_QUERY_LENGTH), preset: null };
+    // emptied by typing, the box stays: a repaint (the queue poll) must not
+    // take it away from under the caret
+    advancedOpen = true;
     save();
     const note = document.getElementById('cr-querynote');
     if (note) note.textContent = queryNote();

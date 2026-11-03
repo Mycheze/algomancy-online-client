@@ -117,8 +117,10 @@ function browserKeysInSource(): string[] {
     const src = read(f);
     // localStorage.getItem('algoName') — the key written at the call site
     for (const m of src.matchAll(/localStorage\.\w+\(\s*'(algo\w+)'/g)) keys.add(m[1]!);
-    // const TOKEN_KEY = 'algoToken'; — the key hoisted to a constant
-    for (const m of src.matchAll(/^const \w+ = '(algo\w+)';/gm)) keys.add(m[1]!);
+    // const TOKEN_KEY = 'algoToken'; — the key hoisted to a constant, exported
+    // or not (2026-11-03: pages/clockpick.ts exports MATCH_CLOCK_KEY for its
+    // tests, and the sweep read only the bare `const`)
+    for (const m of src.matchAll(/^(?:export )?const \w+ = '(algo\w+)';/gm)) keys.add(m[1]!);
   }
   return [...keys].sort();
 }

@@ -24,7 +24,15 @@
  * (#legalfoot, a layer AFTER #app, shown on every off-board page) and
  * 48-legal.css's `min-height: calc(100dvh - 128px)` on #app's first child. A
  * page drawn in the shell must hide #legalfoot (the redesign moves its text
- * into the bottom bar), or the page scrolls by the footer's height. */
+ * into the bottom bar), or the page scrolls by the footer's height.
+ *
+ * `contained` (owner, 2026-11-03: "on my laptop all the icons are so hidden
+ * down in the edges"): the two bars' CONTENT and the main region share one
+ * centred column, at most --shell-content-max wide, with a side gutter that
+ * grows with the window (--shell-gutter). The bars' backgrounds and borders
+ * stay full-bleed; only what is in them moves in, so the first toolbar button
+ * stands over the main region's left edge and the last over its right. A page
+ * that wants a narrower or wider column sets the two properties on its root. */
 import { type Common, rootAttrs } from './_shared.ts';
 
 export interface AppShellProps extends Common {
@@ -34,10 +42,13 @@ export interface AppShellProps extends Common {
   mainHtml?: string;
   /** trusted markup: the bottom bar */
   bottomHtml?: string;
+  /** the bars' content and the main region in one centred column with side
+   * gutters (`ui-app-shell--contained`), instead of edge to edge */
+  contained?: boolean;
 }
 
 export function appShell(p: AppShellProps): string {
-  return `<div${rootAttrs('ui-app-shell', p)}>`
+  return `<div${rootAttrs(p.contained ? 'ui-app-shell ui-app-shell--contained' : 'ui-app-shell', p)}>`
     + (p.topHtml ? `<header class="ui-app-shell__top">${p.topHtml}</header>` : '')
     + `<main class="ui-app-shell__main">${p.mainHtml ?? ''}</main>`
     + (p.bottomHtml ? `<footer class="ui-app-shell__bottom">${p.bottomHtml}</footer>` : '')

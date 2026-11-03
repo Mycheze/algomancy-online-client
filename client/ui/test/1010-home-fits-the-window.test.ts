@@ -29,6 +29,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readStyles, readStylePieces } from './read-styles.ts';
 import { homeHtml, HOME_SHEETS, type HomeView } from '../pages/home.ts';
+import { STANDARD_RULES } from '../customrules.ts';
+
+const STANDARD = { ...STANDARD_RULES, bans: [] };
 
 interface Rule { sel: string; body: string; media: string }
 
@@ -75,12 +78,14 @@ const SIZE = /(^|;|\s)(height|min-height|max-height|margin(-[a-z]+)?|padding(-[a
 function view(): HomeView {
   return {
     account: { resolving: false, me: null }, nameBox: '', signedIn: false, mode: 'draft', format: 'casual', sheet: null,
-    draft: { k: 3, els: [], fixedOpen: false, setCount: 35, fixedError: undefined, customError: undefined, custom: false, rulesSummary: [] },
+    draft: { k: 3, els: [], fixedOpen: false, setCount: 35, fixedError: undefined, customError: undefined, custom: false,
+      rules: { active: null, rules: STANDARD, summary: [], values: [], beginner: false, advancedOpen: false, banDraft: '',
+        deckCount: 528, simpleCount: 300, suggestions: '', queryNote: '', pool: '' } },
     clock: { mode: 'draft', auto: true, now: 0, byModeMin: 60 }, error: '',
     deckPicker: { current: null, signedIn: false, mine: [], defaults: null, msg: '' }, hasDeck: false,
     competitive: { signedIn: false, decks: null, bestOf: 3, pick: null }, singleCard: null,
     leagueLive: false, challengeLive: false, badges: { alerts: 0, join: 0, updates: 0 },
-    slots: { league: '', challenge: '', queue: '', invites: '', yourMatches: '', leagueMatches: '', customRules: '', scpicker: '', info: '', updates: '' },
+    slots: { league: '', challenge: '', queue: '', invites: '', yourMatches: '', leagueMatches: '', scpicker: '', info: '', updates: '' },
   };
 }
 
@@ -106,7 +111,7 @@ test('1010 §1 the root is the shell, homepage last, and nothing is drawn after 
   for (const sheet of [null, ...HOME_SHEETS]) {
     for (const mode of ['draft', 'constructed'] as const) {
       const html = homeHtml({ ...view(), sheet, mode });
-      assert.match(html, /^<div class="ui-app-shell homepage">/, 'the root must be the app shell, with homepage as its LAST class (287)');
+      assert.match(html, /^<div class="ui-app-shell ui-app-shell--contained homepage">/, 'the root must be the (contained) app shell, with homepage as its LAST class (287)');
       assert.equal(endOfFirstElement(html), html.length, `${sheet ?? 'no sheet'}/${mode}: something is drawn after the shell`);
     }
   }

@@ -62,7 +62,12 @@ export function overflowWalk(W) {
     if (why.length) out.push({ text: (b.textContent || b.value || b.placeholder || '').trim().slice(0, 30), cls: String(b.className).slice(0, 40), why: why.join(',') });
   }
   const de = document.documentElement;
-  return { scrollW: de.scrollWidth, scrollH: de.scrollHeight, W, H: innerHeight, bad: out.slice(0, 20) };
+  // the app shell's main region (components/app-shell.ts): it scrolls inside
+  // itself, so a page drawn in the shell never makes the DOCUMENT taller —
+  // what does not fit is hidden below the region's own edge instead
+  const main = typeof document.querySelector === 'function' ? document.querySelector('.ui-app-shell__main') : null;
+  const region = main ? { scrollH: main.scrollHeight, H: main.clientHeight } : null;
+  return { scrollW: de.scrollWidth, scrollH: de.scrollHeight, W, H: innerHeight, region, bad: out.slice(0, 20) };
 }
 
 /** the walk as an expression for Runtime.evaluate, for a viewport `width` wide */
@@ -78,6 +83,19 @@ export const overflowJs = (width) => `(${overflowWalk.toString()})(${Number(widt
  */
 export function pageScrolls(ov) {
   return ov.scrollH > ov.H || ov.scrollW > ov.W;
+}
+
+/**
+ * THE SHELL'S MAIN REGION SCROLLS: what it holds is taller than it is. The
+ * document cannot show this — the shell is exactly the window and clips — so
+ * pageScrolls is blind to it, and that is how the Draft tab's new rows
+ * (2026-11-03, Mode, Cards and Banned out of the Custom rules sheet) first ran
+ * 100px past the bottom of a 1024×768 window with every check green. A
+ * `noScroll` state fails on this too. One pixel of rounding is allowed.
+ * @param {{ region?: { scrollH: number, H: number } | null }} ov
+ */
+export function regionScrolls(ov) {
+  return !!ov.region && ov.region.scrollH > ov.region.H + 1;
 }
 
 /** the viewports a `noScroll` state is held to (a phone may scroll) */

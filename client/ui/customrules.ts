@@ -62,6 +62,32 @@ export const BEGINNER_RULES: Readonly<CustomRules> = {
   ...STANDARD_RULES, preset: 'beginner', elements: 2, packSize: 5, simpleOnly: true,
 };
 
+/** What Beginner changes, derived from the two tables rather than listed: every
+ * field (but the display-only `preset`) where BEGINNER_RULES differs from the
+ * standard game — today elements, packSize and simpleOnly. */
+const BEGINNER_KEYS = (Object.keys(BEGINNER_RULES) as (keyof CustomRules)[])
+  .filter(k => k !== 'preset' && BEGINNER_RULES[k] !== STANDARD_RULES[k]);
+
+/** Is the Beginner game in effect? True when the rules hold everything Beginner
+ * sets, whatever else was changed on top of it (a ban, a starting life): the
+ * home's Mode row reads Beginner then, because that is the game being made. */
+export function isBeginnerRules(r: CustomRules | null): boolean {
+  return !!r && BEGINNER_KEYS.every(k => r[k] === BEGINNER_RULES[k]);
+}
+
+/** each value setting, short — a Record over DealKnob, so a new knob cannot
+ * be left out of the summary (it will not typecheck) */
+const VALUE_SHORT: Record<DealKnob, (n: number) => string> = {
+  elements: n => `${n} elements`, packSize: n => `Packs of ${n}`, openingHand: n => `Hand ${n}`,
+  draftDraw: n => `Draw ${n}`, startingLife: n => `Life ${n}`,
+};
+
+/** The VALUE settings (the numbers, DEAL_KNOBS) that differ from the standard
+ * game, short, for the home's Game values row: "2 elements · Life 20". */
+export function valuesSummary(r: CustomRules | null): string[] {
+  return r ? DEAL_KNOBS.filter(k => r[k] !== DEAL_DEFAULTS[k]).map(k => VALUE_SHORT[k](r[k])) : [];
+}
+
 export function isStandardRules(r: CustomRules): boolean {
   return !r.simpleOnly && r.bans.length === 0 && r.query === ''
     && DEAL_KNOBS.every(k => r[k] === DEAL_DEFAULTS[k]);

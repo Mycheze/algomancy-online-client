@@ -45,7 +45,8 @@ const stub = (btn: string, data: Record<string, string> = {}): HTMLElement =>
   ({ dataset: { btn, ...data } }) as unknown as HTMLElement;
 
 test('the Custom rules panel draws cr- buttons (positive control)', () => {
-  for (const b of ['cr-ban', 'cr-unban', 'cr-step', 'cr-simple', 'cr-preset']) {
+  // (cr-preset is no longer drawn since 2026-11-03: the Mode row's cr-beginner replaced its buttons)
+  for (const b of ['cr-ban', 'cr-unban', 'cr-step', 'cr-simple', 'cr-beginner', 'cr-advanced', 'cr-values']) {
     assert.ok(panelButtons.includes(b), `the panel draws ${b}`);
   }
 });

@@ -75,8 +75,25 @@ export const DECKS = [
 /** a standard game's rules, as the Custom rules panel holds them */
 export const STANDARD_RULES = { ...DEAL_DEFAULTS, simpleOnly: false, query: '', bans: [], preset: null } as unknown as CustomRules;
 
-/** the Custom rules panel closed, with nothing set — what the home screen draws by default */
+/** the custom rules with nothing set — what the home screen's Draft tab draws by default */
 export const RULES_STANDARD: CustomRulesView = {
-  open: false, active: null, rules: STANDARD_RULES, summary: [], advancedOpen: false, banDraft: '',
-  deckCount: 528, simpleCount: 312, suggestions: '', queryNote: 'Same syntax as the 🔍 Cards page.', pool: '', extra: '',
+  active: null, rules: STANDARD_RULES, summary: [], values: [], beginner: false, advancedOpen: false, banDraft: '',
+  deckCount: 528, simpleCount: 312, suggestions: '', queryNote: 'Same syntax as the 🔍 Cards page.', pool: '',
+};
+
+/** the Beginner game (the Mode row's Beginner): two elements, packs of 5, simple cards only */
+const BEGINNER_SET = { ...STANDARD_RULES, preset: 'beginner', elements: 2, packSize: 5, simpleOnly: true } as CustomRules;
+export const RULES_BEGINNER: CustomRulesView = {
+  ...RULES_STANDARD, active: BEGINNER_SET, rules: BEGINNER_SET, beginner: true,
+  summary: ['2 elements', 'Packs of 5', 'Simple cards only'], values: ['2 elements', 'Packs of 5'],
+  pool: '<span class="crok">✓ Fire + Wood: a pool of 121 cards (these rules need 50).</span>',
+};
+
+/** two bans, a card filter, a starting life — and the pool line */
+const CARDS_SET = { ...STANDARD_RULES, startingLife: 20, bans: ['Overwhelm', 'Ignis Sprite'], query: '-set:lightdark' } as CustomRules;
+export const RULES_CARDS: CustomRulesView = {
+  ...RULES_STANDARD, active: CARDS_SET, rules: CARDS_SET, advancedOpen: true,
+  summary: ['20 starting life', 'Banned: Overwhelm, Ignis Sprite', 'Card filter: -set:lightdark'], values: ['Life 20'],
+  queryNote: '365 of 483 cards match.',
+  pool: '<span class="crok">✓ Every choice of 3 elements leaves at least 140 cards (these rules need 80).</span>',
 };

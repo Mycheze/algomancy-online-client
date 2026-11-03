@@ -16,17 +16,32 @@
  * §0 no DOM; the root is the app shell with `homepage` LAST (report.ts, 287)
  * §1 who you are: the name box only signed out; the account in the toolbar
  * §2 the toolbar's buttons, in the top bar
- * §3 Draft: the clock, the elements (room | now), custom rules, Create room
+ * §3 Draft: Mode, the clock, the elements (room | now), the custom rules' rows
+ *    (Cards, Banned, Game values — taken out of their sheet 2026-11-03), Create room
  * §4 Constructed: Casual and Competitive, signed in and out
  * §5 the three cards beside Play open their pages; inner buttons survive
  * §6 the sheets: one at a time, from the view, each dismissable
  * §7 badges: Alerts, Join, Updates — and none at zero
  * §8 every data-btn the OLD home drew is still reachable from the new one
+ *
+ * 2026-11-03 (round 2): the shell is `contained` (one column for the bars and
+ * the main region); Competitive has a Clock row (the match clock); the custom
+ * rules' Mode, Cards and Banned are Draft rows and the sheet is "Game values".
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { homeHtml, HOME_SHEETS, type HomeView } from '../pages/home.ts';
 import type { DeckPickerView } from '../pages/deckpicker.ts';
+import type { CustomRulesView } from '../pages/customrules.ts';
+import type { CustomRules } from '../customrules.ts';
+import { DEAL_DEFAULTS } from '../../engine/src/draftdeal.ts';
+
+const STANDARD = { v: 1, ...DEAL_DEFAULTS, simpleOnly: false, query: '', bans: [], preset: null } as CustomRules;
+/** the custom rules untouched, with the typing fragments as markers */
+const RULES: CustomRulesView = {
+  active: null, rules: STANDARD, summary: [], values: [], beginner: false, advancedOpen: false, banDraft: '',
+  deckCount: 528, simpleCount: 300, suggestions: '<!--SLOT:sugg-->', queryNote: 'q', pool: '<!--SLOT:pool-->',
+};
 
 const PICKER: DeckPickerView = {
   current: null, signedIn: false, mine: [],
@@ -45,7 +60,7 @@ function view(over: Partial<HomeView> = {}): HomeView {
     mode: 'draft',
     format: 'casual',
     sheet: null,
-    draft: { k: 3, els: [], fixedOpen: false, setCount: 35, fixedError: undefined, customError: undefined, custom: false, rulesSummary: [] },
+    draft: { k: 3, els: [], fixedOpen: false, setCount: 35, fixedError: undefined, customError: undefined, custom: false, rules: RULES },
     clock: { mode: 'draft', auto: true, now: 60 * 60_000, byModeMin: 60 },
     error: '',
     deckPicker: PICKER,
@@ -58,7 +73,7 @@ function view(over: Partial<HomeView> = {}): HomeView {
     slots: {
       league: '<!--SLOT:league-->', challenge: '<!--SLOT:challenge-->', queue: '<!--SLOT:queue-->',
       invites: '<!--SLOT:invites-->', yourMatches: '<!--SLOT:yourMatches-->', leagueMatches: '<!--SLOT:leagueMatches-->',
-      customRules: '<!--SLOT:customRules-->', scpicker: '<!--SLOT:scpicker-->', info: '<!--SLOT:info-->', updates: '<!--SLOT:updates-->',
+      scpicker: '<!--SLOT:scpicker-->', info: '<!--SLOT:info-->', updates: '<!--SLOT:updates-->',
     },
     ...over,
   };
@@ -70,7 +85,7 @@ const signedIn = (over: Partial<HomeView> = {}): HomeView => view({
   ...over,
 });
 const cons = (v: HomeView, format: HomeView['format'] = 'casual'): HomeView =>
-  ({ ...v, mode: 'constructed', format, clock: { mode: 'constructed', auto: true, now: 45 * 60_000, byModeMin: 45 } });
+  ({ ...v, mode: 'constructed', format, clock: { mode: format === 'competitive' ? 'competitive' : 'constructed', auto: true, now: 45 * 60_000, byModeMin: 45 } });
 
 const btns = (html: string): string[] => [...html.matchAll(/data-btn="([^"]+)"/g)].map(m => m[1]!);
 /** the region of the shell: top bar, main, bottom bar */
@@ -88,7 +103,7 @@ test('960 §0 positive control: there is no DOM here; the root is the app shell,
   assert.equal(typeof (globalThis as Record<string, unknown>)['document'], 'undefined',
     'a document global exists, so this file would not notice homeHtml reaching for it');
   const html = homeHtml(view());
-  assert.match(html, /^<div class="ui-app-shell homepage">/, 'report.ts names the page from the LAST class of #app\'s first div');
+  assert.match(html, /^<div class="ui-app-shell ui-app-shell--contained homepage">/, 'report.ts names the page from the LAST class of #app\'s first div');
   for (const r of ['top', 'main', 'bottom'] as const) region(html, r);
 });
 
@@ -125,15 +140,26 @@ test('960 §2 the toolbar: Decks Cards Metagame | account | Learn Test Rules Ale
     'signed out, Alerts says to sign in');
 });
 
-test('960 §3 Draft: clock, elements, custom rules, Create room', () => {
+test('960 §3 Draft: Mode, clock, elements, the custom rules rows, Create room', () => {
   const html = homeHtml(view());
   const main = region(html, 'main');
+  // the rows, in order, each under its label
+  const labels = [...main.matchAll(/<div class="homerowlabel">([^<]+)<\/div>/g)].map(m => m[1]);
+  assert.deepEqual(labels, ['Mode', 'Clock', 'Elements', 'Cards', 'Banned', 'Game values']);
+  assert.match(main, /data-btn="cr-beginner"[^>]*aria-pressed="true"[^>]*data-on="0">Standard</, 'first visit: Standard');
+  assert.doesNotMatch(main, /homemodehint/, 'no Beginner line while Standard');
+  assert.match(main, /data-btn="cr-simple"/);
+  assert.match(main, /data-btn="cr-advanced"[^>]*>Card filter…</);
+  assert.match(main, /<input id="cr-ban" /);
+  assert.match(main, /<span id="cr-bansugg" class="crsugg"><!--SLOT:sugg--><\/span>/);
+  assert.match(main, /<div id="cr-pool" class="crpool"><!--SLOT:pool--><\/div>/);
+  assert.doesNotMatch(main, /data-btn="cr-step"/, 'the numbers are in the Game values sheet only');
   assert.equal((main.match(/data-btn="clockpick"[^>]*data-clockfor="draft"/g) ?? []).length, 4, 'Default Off 45m 60m');
   assert.match(main, /class="ui-segmented__option on" data-btn="clockpick" type="button" data-value="auto"/);
   assert.match(main, /data-btn="home-els"[^>]*aria-pressed="true"[^>]*data-pick="room"/, 'first visit: choose in the room');
   assert.doesNotMatch(main, /data-btn="eltoggle"/, 'no chips until Pick now');
   assert.match(buttonOf(main, 'home-sheet', 'data-sheet="rules"'), /Change…/);
-  assert.match(main, /None — the standard game/);
+  assert.match(main, /<span class="dim">Standard values<\/span>/);
   assert.match(buttonOf(main, 'newgame', 'data-mode="draft"'), /^<button class="ui-button ui-button--action homecreate" data-btn="newgame" type="button" data-mode="draft">Create room</);
   assert.ok(main.indexOf('data-btn="home-sheet"') < main.lastIndexOf('data-sheet="join"'), 'positive control');
   assert.ok(main.indexOf('data-sheet="join"') < main.indexOf('data-btn="newgame"'), 'Join a room sits left of Create');
@@ -149,9 +175,13 @@ test('960 §3 Draft: clock, elements, custom rules, Create room', () => {
   assert.equal((now.match(/data-btn="newgame"/g) ?? []).length, 1, 'one Create button');
   assert.match(buttonOf(pick(['fire']), 'newgame'), / disabled data-mode="draft" data-els="1">Pick 3 elements \(1\/3\)</);
   assert.match(buttonOf(pick(['fire', 'wood', 'water'], { fixedError: 'no <trio>' }), 'newgame'), /title="no &lt;trio&gt;" disabled data-mode="draft" data-els="1">/);
-  // custom rules: the summary, the label, and the verdict on the room button
-  const custom = homeHtml(view({ draft: { ...view().draft, custom: true, rulesSummary: ['Packs of <5>'] } }));
-  assert.match(custom, /<b>Packs of &lt;5&gt;<\/b>/);
+  // custom rules: the values summary, the label, and the verdict on the room button
+  const custom = homeHtml(view({ draft: { ...view().draft, custom: true, rules: { ...RULES, values: ['Packs of <5>', 'Life 20'] } } }));
+  assert.match(custom, /<b>Packs of &lt;5&gt; · Life 20<\/b>/);
+  // Beginner: the Mode row says what it is, beside the control
+  const beg = homeHtml(view({ draft: { ...view().draft, rules: { ...RULES, beginner: true } } }));
+  assert.match(beg, /data-btn="cr-beginner"[^>]*aria-pressed="true"[^>]*data-on="1">Beginner</);
+  assert.match(beg, /<span class="homemodehint">The rulebook’s Quick Start: 2 elements, packs of 5, simple cards only\.<\/span>/);
   assert.match(buttonOf(custom, 'newgame'), />Create custom room</);
   assert.match(buttonOf(homeHtml(view({ draft: { ...view().draft, customError: 'too few' } })), 'newgame'), /title="too few" disabled data-mode="draft">Create room</);
   // the last refusal, above the buttons, escaped
@@ -176,12 +206,15 @@ test('960 §4 Constructed: Casual and Competitive', () => {
   const mine = homeHtml(cons(signedIn({ hasDeck: true })));
   assert.match(mine, /data-btn="deck-openpage"[^>]*>My decks →/);
   assert.doesNotMatch(mine, /data-sheet="import"/);
-  // competitive: Best of (3 first), the fixed clock, the CC picker, Create match
+  // competitive: Best of (3 first), the match clock, the CC picker, Create match
   const cc = homeHtml(cons(signedIn(), 'competitive'));
   assert.match(cc, /data-btn="cc-bo" type="button" data-value="3" aria-pressed="true" data-bo="3">3 games</);
   assert.match(cc, /data-btn="cc-bo" type="button" data-value="1" aria-pressed="false" data-bo="1">1 game</);
-  assert.doesNotMatch(cc, /data-btn="clockpick"/, 'the server fixes a match clock');
-  assert.match(cc, /45 minutes each, for the whole match/);
+  // the match clock (owner, 2026-11-03): its own picker, Default first and on
+  assert.equal((cc.match(/data-btn="clockpick"[^>]*data-clockfor="competitive"/g) ?? []).length, 4, 'Default Off 45m 60m');
+  assert.doesNotMatch(cc, /data-clockfor="constructed"/, 'not the casual clock');
+  assert.match(cc, /class="ui-segmented__option on" data-btn="clockpick" type="button" data-value="auto" aria-pressed="true" title="45 minutes per player, for the whole match"/);
+  assert.match(cc, /45m per player, for the whole match/);
   assert.match(cc, /<option value="dOK" selected>Legal<\/option>/);
   assert.match(cc, /<option value="dBAD" disabled>Big side — too many<\/option>/);
   assert.match(buttonOf(cc, 'cc-new'), />Create match</);
@@ -218,7 +251,7 @@ test('960 §6 the sheets: one at a time, from the view, each dismissable', () =>
     join: [/id="h-code"/, /data-btn="joincode"/, /<!--SLOT:invites-->/, /<!--SLOT:yourMatches-->/, /<!--SLOT:leagueMatches-->/],
     info: [/ui-sheet--anchor-bottom-left/, /<!--SLOT:info-->/],
     updates: [/ui-sheet--anchor-bottom-right/, /<!--SLOT:updates-->/],
-    rules: [/<!--SLOT:customRules-->/, /data-btn="home-sheet-close"[^>]*>Done</],
+    rules: [/Game values/, /data-btn="cr-step"/, /data-btn="cr-values"/, /data-btn="home-sheet-close"[^>]*>Done</],
     import: [/id="h-deckurl"/, /data-btn="deckimporturl"/, /id="h-decktext"/, /data-btn="deckimporttext"/],
     single: [/<!--SLOT:scpicker-->/, /data-btn="meta-ladder"/, /data-btn="newgame" type="button" disabled data-mode="constructed" data-single="1">Pick a card first/],
     'alerts-signin': [/Sign in to get friend invites/, /data-btn="acct-open-auth"/],

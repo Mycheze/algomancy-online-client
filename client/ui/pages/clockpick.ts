@@ -70,9 +70,42 @@ export function chosenClockMs(mode?: string): number {
 /** BL-26: is the picker on "Default" (i.e. let the mode decide)? */
 export const clockIsAuto = (): boolean => localStorage.getItem('algoClockMs') === null;
 
+/**
+ * docs/22 §6.1 — A COMPETITIVE MATCH'S CLOCK, the creator's choice (owner,
+ * 2026-11-03: "Competitive constructed still needs the Clock setting. Yes, the
+ * default will usually be used, but it's up to the players if they want to
+ * override that").
+ *
+ * Its OWN setting, not `algoClockMs`: a match bank is spent over the whole
+ * match, a casual bank over one game, and a player who turns the casual clock
+ * Off for a slow evening with a friend has not asked for an untimed match.
+ * "Default" is again the ABSENCE of the key, and then the creating link carries
+ * no clock at all and the server applies the owner's match default
+ * (server/rooms.ts MATCH_CLOCK_MS.constructed, 45 minutes each for the whole
+ * match). A league match never reads this: its room exists before anyone joins.
+ */
+export const MATCH_CLOCK_KEY = 'algoMatchClockMs';
+/** the match default, for the picker's line — the server's MATCH_CLOCK_MS.constructed (279 locks the pair) */
+export const MATCH_CLOCK_DEFAULT_MS = CLOCK_DEFAULT_BY_MODE['constructed']!;
+
+/** the bank the next Competitive match this browser CREATES asks for, or null
+ * for the default (nothing is sent; the server decides) */
+export function chosenMatchClockMs(): number | null {
+  const raw = localStorage.getItem(MATCH_CLOCK_KEY);
+  if (raw === null) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+/** the Competitive Clock row's click: 'auto' (Default) removes the key */
+export function setMatchClockChoice(ms: string | undefined): void {
+  if (ms === 'auto' || ms === undefined) localStorage.removeItem(MATCH_CLOCK_KEY);
+  else localStorage.setItem(MATCH_CLOCK_KEY, String(Number(ms)));
+}
+
 export interface ClockPickView {
-  /** which card the picker sits on — written to data-clockpick / data-clockfor */
-  mode: 'draft' | 'constructed';
+  /** which card the picker sits on — written to data-clockpick / data-clockfor.
+   * `competitive` is the match clock (its own setting, MATCH_CLOCK_KEY) */
+  mode: 'draft' | 'constructed' | 'competitive';
   /** the picker is on "Default" (nothing stored: the mode decides) */
   auto: boolean;
   /** the stored bank in ms (0 = no clock); only read when not `auto` */
@@ -82,7 +115,11 @@ export interface ClockPickView {
 }
 
 /** gather the picker's state (localStorage) for the card `mode` */
-export function clockPickView(mode: 'draft' | 'constructed'): ClockPickView {
+export function clockPickView(mode: ClockPickView['mode']): ClockPickView {
+  if (mode === 'competitive') {
+    const c = chosenMatchClockMs();
+    return { mode, auto: c === null, now: c ?? MATCH_CLOCK_DEFAULT_MS, byModeMin: Math.round(MATCH_CLOCK_DEFAULT_MS / 60_000) };
+  }
   return {
     mode,
     auto: clockIsAuto(),
@@ -110,10 +147,13 @@ export function clockPickView(mode: 'draft' | 'constructed'): ClockPickView {
 export function clockPickHtml(v: ClockPickView, o: { look?: 'chips' | 'segmented' } = {}): string {
   const { mode, auto, now } = v;
   const byMode = v.byModeMin;
+  // a match bank lasts the whole match (docs/22 §6.1), and running out loses the match
+  const match = mode === 'competitive';
   const hint = auto
-    ? `${byMode}m each`
-    : now ? 'running out of time loses the game'
+    ? match ? `${byMode}m per player, for the whole match` : `${byMode}m each`
+    : now ? match ? 'per player, for the whole match' : 'running out of time loses the game'
     : 'no clock — nobody can lose on time';
+  const defaultWhy = match ? `${byMode} minutes per player, for the whole match` : '45 min constructed · 60 min live draft';
   // the new home (docs/24, 2026-11-03): the same four choices as one segmented
   // control in the Play card's Clock row, which carries its own label. Same
   // data-btn, data-ms and data-clockfor; `.on` marks the choice as before.
@@ -121,7 +161,7 @@ export function clockPickHtml(v: ClockPickView, o: { look?: 'chips' | 'segmented
     return `<div class="clockpick clockpick--seg" data-clockpick="${mode}">${segmented({
       ariaLabel: 'Clock', size: 'sm',
       options: [
-        { label: 'Default', value: 'auto', on: auto, dataBtn: 'clockpick', title: '45 min constructed · 60 min live draft',
+        { label: 'Default', value: 'auto', on: auto, dataBtn: 'clockpick', title: defaultWhy,
           attrs: { 'data-ms': 'auto', 'data-clockfor': mode } },
         ...CLOCK_PRESETS.map(c => ({ label: c.label, value: String(c.ms), on: !auto && c.ms === now, dataBtn: 'clockpick', title: c.why,
           attrs: { 'data-ms': c.ms, 'data-clockfor': mode } })),
@@ -131,12 +171,9 @@ export function clockPickHtml(v: ClockPickView, o: { look?: 'chips' | 'segmented
   return `<div class="clockpick" data-clockpick="${mode}" title="the clock for games you start">
     <span class="clockpicklabel">⏱ Clock</span>
     <button class="elchip${auto ? ' on' : ''}" data-btn="clockpick" data-ms="auto" data-clockfor="${mode}"
-      title="45 min constructed · 60 min live draft">Default</button>
+      title="${esc(defaultWhy)}">Default</button>
     ${CLOCK_PRESETS.map(c => `<button class="elchip${!auto && c.ms === now ? ' on' : ''}"
       data-btn="clockpick" data-ms="${c.ms}" data-clockfor="${mode}" title="${esc(c.why)}">${esc(c.label)}</button>`).join('')}
-    <span class="clockpickhint">${auto
-      ? `${byMode}m each`
-      : now ? 'running out of time loses the game'
-      : 'no clock — nobody can lose on time'}</span>
+    <span class="clockpickhint">${hint}</span>
   </div>`;
 }
