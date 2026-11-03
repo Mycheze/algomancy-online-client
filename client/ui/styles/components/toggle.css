@@ -1,0 +1,4 @@
+/* ── ui-toggle (ui/components/toggle.ts) ──────────────────────────────
+   A ui-button that stays pressed. `.on` is today's 28-times-written rule. */
+.ui-toggle.on { border-color: var(--color-accent); color: var(--color-accent); }
+.ui-toggle--strong.on { font-weight: 700; }

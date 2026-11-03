@@ -1,0 +1,17 @@
+/* ── ui-field (ui/components/field.ts) ────────────────────────────────
+   The label column is the league's .lgform label; the control is the input
+   recipe written out ~15 times (census §8b). Focus colours the border, as the
+   six copies do; the focus RING is the base layer's, so none is removed here. */
+.ui-field { display: flex; flex-direction: column; gap: var(--space-1); }
+.ui-field__label { font-size: var(--text-12); color: var(--color-text-muted); }
+.ui-field__control { background: var(--color-surface-raised); color: var(--color-text);
+  border: 1px solid var(--color-border); border-radius: var(--control-radius);
+  padding: var(--space-3) var(--space-4); font: inherit; }
+.ui-field__control:focus { border-color: var(--color-accent); }
+.ui-field__hint { font-size: var(--text-12); color: var(--color-text-muted); }
+.ui-field__error { font-size: var(--text-12); color: var(--color-danger); }
+.ui-field--invalid .ui-field__control { border-color: var(--color-danger); }
+/* a checkbox or radio: the box, then its label, in a row (.lgform label:has(checkbox)) */
+.ui-field--check { flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.ui-field--check .ui-field__label { color: var(--color-text); }
+.ui-field--check .ui-field__hint, .ui-field--check .ui-field__error { flex-basis: 100%; }

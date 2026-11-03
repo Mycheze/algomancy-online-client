@@ -1,0 +1,15 @@
+/* ── ui-status (ui/components/status.ts) ──────────────────────────────
+   .deckmsg's 12px line, in the status tokens' colours. Boxed: on the
+   tone's tinted background, as .promptbar and .pwwarn are. */
+.ui-status { font-size: var(--text-12); }
+.ui-status--ok { color: var(--color-success); }
+.ui-status--warn { color: var(--color-warning); }
+.ui-status--error { color: var(--color-danger); }
+.ui-status--info { color: var(--color-info); }
+.ui-status--note { color: var(--color-accent); }
+.ui-status--boxed { padding: var(--space-3) var(--space-5); border: 1px solid currentColor;
+  border-radius: var(--radius-md); background: var(--color-surface-raised); }
+.ui-status--ok.ui-status--boxed { background: var(--color-success-bg); }
+.ui-status--warn.ui-status--boxed { background: var(--color-warning-bg); }
+.ui-status--error.ui-status--boxed { background: var(--color-danger-bg); }
+.ui-status--info.ui-status--boxed { background: var(--color-info-bg); }

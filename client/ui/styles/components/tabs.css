@@ -1,0 +1,11 @@
+/* ── ui-tabs (ui/components/tabs.ts) ──────────────────────────────────
+   The row is .accttabs with the 4px gap most tab rows use (.chtabs, .crtabs,
+   .helptabs); the current tab is the bold accent of .helptab.on, .accttab.on
+   and .chtabs button.on (census §8f). */
+.ui-tabs { display: flex; gap: var(--space-2); margin-bottom: var(--space-5); flex-wrap: wrap; }
+.ui-tabs__tab.on { border-color: var(--color-accent); color: var(--color-accent); font-weight: 700; }
+.ui-tabs__count { color: var(--color-text-muted); font-weight: 400; }
+/* the profile's tabs (.accttabs): small capitals, 6px apart */
+.ui-tabs--caps { gap: var(--space-3); }
+.ui-tabs--caps .ui-tabs__tab { text-transform: uppercase; letter-spacing: .06em; font-size: var(--text-11);
+  padding: var(--space-3) var(--space-5); }

@@ -1,0 +1,17 @@
+/* ── ui-chip (ui/components/chip.ts) ──────────────────────────────────
+   The tag is .constag (pages/17-accounts.css), the pill .badgechip's shape;
+   the tones are the status tokens (census §8d). The tone sets one colour,
+   --ui-chip-tone, which the border and text (or, solid, the fill) read. */
+.ui-chip { --ui-chip-tone: var(--color-text-muted);
+  display: inline-block; padding: var(--space-1) var(--space-3); border-radius: var(--radius-sm);
+  font-size: var(--text-11); font-weight: 600; letter-spacing: .03em; text-transform: uppercase;
+  color: var(--ui-chip-tone); border: 1px solid var(--color-border); vertical-align: middle; }
+.ui-chip[title] { cursor: help; }
+.ui-chip--pill { border-radius: var(--radius-pill); padding: var(--space-1) var(--space-4); }
+.ui-chip--accent { --ui-chip-tone: var(--color-accent); border-color: var(--ui-chip-tone); }
+.ui-chip--success { --ui-chip-tone: var(--color-success); border-color: var(--ui-chip-tone); }
+.ui-chip--warning { --ui-chip-tone: var(--color-warning); border-color: var(--ui-chip-tone); }
+.ui-chip--danger { --ui-chip-tone: var(--color-danger); border-color: var(--ui-chip-tone); }
+.ui-chip--info { --ui-chip-tone: var(--color-info); border-color: var(--ui-chip-tone); }
+.ui-chip--solid { background: var(--ui-chip-tone); border-color: var(--ui-chip-tone); color: var(--color-text-on-accent); }
+.ui-chip--neutral.ui-chip--solid { background: var(--color-surface-raised); border-color: var(--color-border); color: var(--color-text); }

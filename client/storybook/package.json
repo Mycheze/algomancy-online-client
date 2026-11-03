@@ -1,0 +1,16 @@
+{
+  "name": "@algomancy/storybook",
+  "private": true,
+  "type": "module",
+  "description": "Storybook for the client's design-system components (ui/components/). Its own package so that ui/ keeps no dependencies and the gate never waits on it: nothing in `npm --prefix client run check` reaches this directory except the stories' TYPES, which ui/'s tsconfig checks (they import nothing from Storybook). The previews load the site's real stylesheet, ui/bundle.css, which `npm run css` builds from ui/styles/ — the same file the game server serves. README.md says how to run it and how to add a component.",
+  "scripts": {
+    "css": "node ../ui/scripts/build-css.mjs",
+    "storybook": "npm run css && storybook dev -p 6006",
+    "build": "npm run css && storybook build -o storybook-static"
+  },
+  "devDependencies": {
+    "@storybook/html-vite": "10.6.2",
+    "storybook": "10.6.2",
+    "vite": "7.3.7"
+  }
+}

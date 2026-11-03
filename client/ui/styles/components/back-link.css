@@ -1,0 +1,3 @@
+/* ── ui-back-link (ui/components/back-link.ts) ────────────────────────
+   A ui-button; this only keeps it whole in a crowded header row (.ttback). */
+.ui-back-link { flex: none; }

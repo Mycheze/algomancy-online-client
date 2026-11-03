@@ -19,6 +19,22 @@
  */
 @import "tokens.css";
 @import "base.css";
+/* the components (design-system Phase 3, ui/components/README.md): every
+   class in them is new and `ui-`-prefixed, so they sit right after the base
+   and before every page, which can still override them while it adopts them */
+@import "components/button.css";
+@import "components/toggle.css";
+@import "components/field.css";
+@import "components/panel.css";
+@import "components/page-header.css";
+@import "components/back-link.css";
+@import "components/tabs.css";
+@import "components/table.css";
+@import "components/chip.css";
+@import "components/status.css";
+@import "components/empty-state.css";
+@import "components/dialog.css";
+@import "components/toast.css";
 @import "board/02-promptbar.css";
 @import "board/03-life-cards-battle-log.css";
 @import "pages/04-joinscreen.css";

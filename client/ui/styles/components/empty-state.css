@@ -1,0 +1,7 @@
+/* ── ui-empty-state (ui/components/empty-state.ts) ────────────────────
+   The deck page's .deckdesc.empty: a dashed box, the muted line, its button. */
+.ui-empty-state { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap;
+  padding: var(--space-4); border: 1px dashed var(--color-border); border-radius: var(--radius-md);
+  color: var(--color-text-muted); }
+.ui-empty-state__title { color: var(--color-text); font-weight: 600; }
+.ui-empty-state--bare { padding: 0; border: none; }

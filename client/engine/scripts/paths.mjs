@@ -216,6 +216,16 @@ export const STYLES_INDEX = join(STYLES_DIR, 'index.css');
 /** GENERATED and gitignored, like bundle.js: what index.html links, written by
  *  `npm --prefix client/ui run build` (ui/scripts/build-css.mjs) */
 export const BUNDLE_CSS = join(UI_DIR, 'bundle.css');
+/** the design system's components (Phase 3): one pure `<name>.ts` (props → an
+ *  HTML string) per component, its CSS at `styles/components/<name>.css`, a
+ *  story in STORYBOOK_STORIES_DIR and a test in ui/test (guarded by ui/test/940) */
+export const UI_COMPONENTS_DIR = join(UI_DIR, 'components');
+/** client/storybook/ — its own package with its own dependencies, so ui/ keeps
+ *  none and the gate never waits on it. Its stories are typechecked by ui/'s
+ *  tsconfig (they import nothing from storybook itself). */
+export const STORYBOOK_DIR = join(REPO_ROOT, 'client', 'storybook');
+/** one `<component>.stories.ts` per file in UI_COMPONENTS_DIR */
+export const STORYBOOK_STORIES_DIR = join(STORYBOOK_DIR, 'stories');
 
 /* ── THE DEPLOY BOX, AND THE RUNTIME STATE THAT ONLY EXISTS THERE ─────────
  *

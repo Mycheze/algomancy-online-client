@@ -1,0 +1,15 @@
+/* ── ui-dialog (ui/components/dialog.ts) ──────────────────────────────
+   A native <dialog> dressed as .overlaybox, with .overlay's scrim as its
+   ::backdrop (census §8e). The UA's own dialog border, padding, colours and
+   max-width are replaced, not added to. */
+.ui-dialog { background: var(--color-surface); color: var(--color-text);
+  border: 1px solid var(--color-accent); border-radius: var(--dialog-radius); padding: var(--dialog-pad);
+  width: min(92vw, 560px); max-width: none; max-height: 80vh; }
+.ui-dialog[open] { display: flex; flex-direction: column; gap: var(--space-5); }
+.ui-dialog::backdrop { background: var(--color-scrim); }
+.ui-dialog--lg { width: min(92vw, 640px); }
+.ui-dialog--xl { width: min(92vw, 820px); }
+.ui-dialog__head { display: flex; align-items: center; gap: var(--space-4); }
+.ui-dialog__title { margin: 0; color: var(--color-accent); flex: 1; }
+.ui-dialog__body { min-height: 0; overflow: auto; }
+.ui-dialog__actions { display: flex; justify-content: flex-end; gap: var(--space-4); flex-wrap: wrap; }
