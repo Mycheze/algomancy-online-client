@@ -31,6 +31,12 @@ To look at it from an iPad on the same network, start the dev server with
 `http://<this machine>:6006`. Or serve `storybook-static/` with any static file
 server.
 
+On the site: the game server serves `storybook-static/` at `/storybook/` to
+admins only (`client/server/storybook.ts`), opened by the 🎨 Design (Storybook)
+button on an admin's profile. `npm run build` on the box is the whole deploy
+(`deploy/README.md` § Deploying a change); no build, no Storybook, nothing else
+affected.
+
 ## Add a component
 
 The contract and the steps are in `client/ui/components/README.md`. In short:

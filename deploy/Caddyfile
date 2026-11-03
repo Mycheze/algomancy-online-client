@@ -42,9 +42,11 @@ algomancy.online {
 	# <iframe> (client/ui/assets.ts RULEBOOK_URL), its Comprehensive rules tab
 	# the generated rules page (CR_PAGE_URL), and DENY refuses even a
 	# same-origin frame. client/ui/test/299-front-door.test.ts reads this.
-	@rulebook path /data/rules/Algomancy-Manual.pdf /comprehensive-rules
+	# /storybook/* too (admins only, client/server/storybook.ts): Storybook
+	# draws every story in an <iframe> of its own iframe.html.
+	@rulebook path /data/rules/Algomancy-Manual.pdf /comprehensive-rules /storybook/*
 	header @rulebook X-Frame-Options "SAMEORIGIN"
-	@notrulebook not path /data/rules/Algomancy-Manual.pdf /comprehensive-rules
+	@notrulebook not path /data/rules/Algomancy-Manual.pdf /comprehensive-rules /storybook/*
 	header @notrulebook X-Frame-Options "DENY"
 
 	# answered here, before the app — the app has no robots.txt and should

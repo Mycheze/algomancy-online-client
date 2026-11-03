@@ -83,7 +83,9 @@ test('§3 the rulebook: a real file, served by exactly one route, frameable by t
   const caddy = read(REPO, 'deploy', 'Caddyfile');
   // the two books the How to play box frames: the Manual, and (2026-11-01) the
   // comprehensive rules page — the same matcher, so the two lists cannot drift
-  const books = `${esc(RULEBOOK_URL)} ${esc(CR_PAGE_URL)}`;
+  // …and (2026-11-03) /storybook/*, whose manager frames its own iframe.html
+  // (server/storybook.ts serves it to admins); a DENY there is a blank Storybook
+  const books = `${esc(RULEBOOK_URL)} ${esc(CR_PAGE_URL)} /storybook/\\*`;
   assert.match(caddy, new RegExp(`@rulebook path ${books}\\s*\\n\\s*header @rulebook X-Frame-Options "SAMEORIGIN"`),
     'deploy/Caddyfile does not let the site frame the rulebook and the comprehensive rules');
   assert.match(caddy, new RegExp(`@notrulebook not path ${books}\\s*\\n\\s*header @notrulebook X-Frame-Options "DENY"`),

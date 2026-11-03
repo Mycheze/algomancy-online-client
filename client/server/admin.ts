@@ -69,7 +69,16 @@ const ISSUES_SNAPSHOT = join(
 /** The caller's account if they hold the admin flag, else undefined. The ONE
  *  place that question is asked; every route goes through it. */
 export function adminFor(req: IncomingMessage): Account | undefined {
-  const account = accountForToken(tokenOf(req));
+  return adminForToken(tokenOf(req));
+}
+
+/** The same question for a session token that did not arrive as a bearer
+ *  header: the Storybook pages (storybook.ts) are opened by a browser
+ *  navigation, which carries a cookie and no header, and the cookie names the
+ *  session the owner opened them from. Asked on every request, so a revoked
+ *  admin flag or a logged-out session closes Storybook at once. */
+export function adminForToken(token: string | null | undefined): Account | undefined {
+  const account = accountForToken(token);
   return account?.admin ? account : undefined;
 }
 

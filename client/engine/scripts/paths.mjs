@@ -226,6 +226,10 @@ export const UI_COMPONENTS_DIR = join(UI_DIR, 'components');
 export const STORYBOOK_DIR = join(REPO_ROOT, 'client', 'storybook');
 /** one `<component>.stories.ts` per file in UI_COMPONENTS_DIR */
 export const STORYBOOK_STORIES_DIR = join(STORYBOOK_DIR, 'stories');
+/** `npm --prefix client/storybook run build`'s output (gitignored). The game
+ *  server serves it at /storybook/ to admins only (server/storybook.ts); it is
+ *  optional, and a box that never built it simply has no Storybook. */
+export const STORYBOOK_STATIC_DIR = join(STORYBOOK_DIR, 'storybook-static');
 
 /* ── THE DEPLOY BOX, AND THE RUNTIME STATE THAT ONLY EXISTS THERE ─────────
  *
