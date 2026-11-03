@@ -1,7 +1,7 @@
 /* THE WAITING ROOMS: what a seat sees after joining a room and before the
  * game is dealt. Four kinds, one dispatcher (paintWaiting):
  *
- *   · a live draft room choosing its trio  → ui/lobby.ts lobbyHtml (already pure)
+ *   · a live draft room choosing its trio  → pages/lobby.ts lobbyHtml
  *   · a Single Card Duel room              → singleWaitingHtml, here
  *   · a Competitive Constructed match room → ui/match.ts matchWaitingHtml
  *   · a constructed room (and a constructed LEAGUE match) → constructedWaitingHtml, here
@@ -21,6 +21,7 @@ import * as mt from '../match.ts';
 import * as sc from '../singlecard.ts';
 import { chosenDeck, esc, shareBar } from '../util.ts';
 import { deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
+import { lobbyHtml, lobbyView } from './lobby.ts';
 
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
 
@@ -231,12 +232,12 @@ export function paintWaiting(app: HTMLElement, net: WaitingNet, error: string, r
   // a draft room chooses its trio here, before a single card is dealt
   if (w.trio) {
     const link = `${location.origin}/?ws=1&room=${encodeURIComponent(net.room)}&seat=${other(net.seat)}&mode=draft`;
-    app.innerHTML = lob.lobbyHtml({
+    app.innerHTML = lobbyHtml(lobbyView({
       lobby: w.trio, seat: net.seat as 0 | 1, names: net.names,
       peers: net.peers, room: net.room, link,
       friends: roomFriendsHtml(!net.peers[other(net.seat)]),
       ...(w.custom ?? net.custom ? { custom: (w.custom ?? net.custom)! } : {}),
-    });
+    }));
     return;
   }
   if (w.single) {
