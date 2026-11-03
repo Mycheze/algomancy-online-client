@@ -73,6 +73,8 @@ function blocked(item) {
   if (answered.has(item)) return null; // an answer reopens it
   const j = journal.get(item);
   if (!j) return null;
+  // a dry night's verdicts: master never moved, so without this every tick would redo the first item
+  if (String(j.outcome).startsWith('dry-')) return `done in a dry run (${j.outcome}, ${j.ts})`;
   if (WAITING.has(j.outcome)) return `waiting on the owner (${j.outcome}, ${j.ts})`;
   if (COOLDOWN.has(j.outcome) && Date.now() - Date.parse(j.ts) < WEEK) return `cooling down (${j.outcome}, ${j.ts})`;
   return null;

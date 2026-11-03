@@ -36,11 +36,14 @@ mkdir -p "$STATE"/{handoffs,answers,redgate,outcomes,handoffs/done,answers/done}
 [ -f "$CONF" ] && { set -a; . "$CONF"; set +a; }
 : "${STEWARD_TZ:=Europe/Prague}"
 : "${STEWARD_WINDOW:=23-08}"          # local hours [start,end) in which Claude may run
-: "${STEWARD_MODE:=dry}"              # dry = never push or deploy; live = for real
+: "${STEWARD_MODE:=dry}"              # dry = never touch master, a branch or the VPS (work goes to refs/steward-dry/*); live = for real
 : "${STEWARD_MODEL:=opus}"
 : "${STEWARD_RUN_HOURS:=4}"           # one item's hard cap
 : "${STEWARD_GATE_MIN:=120}"
 : "${STEWARD_IDLE_MIN:=10}"           # a game file touched this recently = someone is playing
+# TEST SEAMS, and nothing else: steward/test-runner.sh swaps in a stub Claude and a stub gate
+: "${STEWARD_CLAUDE_BIN:=claude}"
+: "${STEWARD_GATE_CMD:=npm --prefix $REPO/client run check}"
 VPS=algomancy-vps
 VREPO=/home/bena/Documents/Algomancy
 SITE=https://algomancy.online
@@ -108,7 +111,7 @@ gate() {
   local tag="$1" glog="$LOGS/gate-$TS-$1.log" rc
   log "gate ($tag) → $glog"
   npm --prefix "$REPO/client/ui" run build >/dev/null 2>&1
-  timeout "$((STEWARD_GATE_MIN * 60))" npm --prefix "$REPO/client" run check >"$glog" 2>&1; rc=$?
+  timeout "$((STEWARD_GATE_MIN * 60))" bash -c "$STEWARD_GATE_CMD" >"$glog" 2>&1; rc=$?
   echo "EXIT $rc" >>"$glog"
   log "gate ($tag) EXIT $rc"
   echo "$glog"; return $rc
@@ -178,7 +181,10 @@ ship_head() { # item base
     gate "$(slug "$item")-rebased" >/dev/null || return 3
   fi
   pol=$(node "$REPO/steward/policy.mjs" origin/master HEAD)
-  if [ "$STEWARD_MODE" != live ]; then log "DRY: would push $(g rev-parse --short HEAD) to master"; echo "$pol"; return 0; fi
+  if [ "$STEWARD_MODE" != live ]; then
+    g push -q -f origin "HEAD:refs/steward-dry/$(slug "$item")" || true
+    log "DRY: would push $(g rev-parse --short HEAD) to master (kept at refs/steward-dry/$(slug "$item"))"; echo "$pol"; return 0
+  fi
   g push -q origin HEAD:refs/heads/master || { log "$item: push to master refused"; return 2; }
   want_deploy "$(jq .deploy.restartGame <<<"$pol")" "$(jq .deploy.restartBot <<<"$pol")" "$item"
   echo "$pol"
@@ -187,7 +193,7 @@ ship_head() { # item base
 stage_head() { # item → pushes steward/<slug>
   local b="steward/$(slug "$1")"
   if [ "$STEWARD_MODE" = live ]; then g push -q -f origin "HEAD:refs/heads/$b" || log "push of $b failed"
-  else g update-ref "refs/steward/$(slug "$1")" HEAD; log "DRY: would push $b"; fi
+  else g push -q -f origin "HEAD:refs/steward-dry/$(slug "$1")" || true; log "DRY: would push $b (kept at refs/steward-dry/$(slug "$1"))"; fi
   echo "$b"
 }
 
@@ -253,7 +259,7 @@ EOF
   log "claude: up to $((cap / 60)) min, model $STEWARD_MODEL"
   local rlog="$LOGS/run-$TS.jsonl" rc
   ( cd "$REPO" && GIT_SSH_COMMAND="$BIN/git-ssh-guard" STEWARD_STATE="$STATE" \
-      timeout "$cap" claude -p "$prompt" --model "$STEWARD_MODEL" \
+      timeout "$cap" "$STEWARD_CLAUDE_BIN" -p "$prompt" --model "$STEWARD_MODEL" \
         --settings "$BIN/claude-settings.json" --permission-mode acceptEdits \
         --output-format stream-json --verbose ) >"$rlog" 2>"$LOGS/run-$TS.err"; rc=$?
   log "claude exited $rc"
@@ -324,6 +330,7 @@ EOF
   # a resumed item has used its answer
   [ -f "$STATE/answers/$(slug "$item").md" ] && mv -f "$STATE/answers/$(slug "$item").md" "$STATE/answers/done/"
 
+  [ "$STEWARD_MODE" != live ] && final="dry-$final"
   journal "$(slug "$item")" "$final" title="$title" summary="$summary" branch="$branch" gate="$glog" policy="$reasons" \
     sha="$(g rev-parse --short HEAD)" run="$rlog" minutes="$(( ( $(date +%s) - START ) / 60 ))"
   notify "$item → $final: $title${branch:+ (branch $branch)}"

@@ -31,7 +31,9 @@ jnote() { # item outcome [note]  → a journal row on the box
   local row; row=$(jq -cn --arg ts "$(date -u +%FT%TZ)" --arg i "$1" --arg o "$2" --arg n "${3:-}" '{ts:$ts,item:$i,outcome:$o,note:$n,by:"owner"}')
   box "cat >> $SROOT/state/journal.jsonl" <<<"$row"
 }
-fetch() { g fetch -q --prune origin '+refs/heads/steward/*:refs/remotes/origin/steward/*' '+refs/heads/steward-approved/*:refs/remotes/origin/steward-approved/*' 2>/dev/null || true; }
+fetch() { g fetch -q --prune origin '+refs/heads/steward/*:refs/remotes/origin/steward/*' '+refs/heads/steward-approved/*:refs/remotes/origin/steward-approved/*' '+refs/steward-dry/*:refs/remotes/origin/steward-dry/*' 2>/dev/null || true; }
+# a staged branch, or (a dry night's) refs/steward-dry/<item>
+ref_of() { local s="$1"; for r in "origin/steward/$s" "origin/steward-dry/$s"; do g rev-parse -q --verify "$r" >/dev/null && { echo "$r"; return; }; done; }
 
 cmd="${1:-status}"; shift || true
 case "$cmd" in
@@ -53,22 +55,28 @@ for f in $S/handoffs/*.md; do [ -e "$f" ] || continue; i=$(basename "$f" .md); e
 EOF
   echo "── staged branches"
   g for-each-ref --format='  %(refname:lstrip=3)  %(committerdate:relative)  %(contents:subject)' refs/remotes/origin/steward/ | head -40
+  if [ -n "$(g for-each-ref refs/remotes/origin/steward-dry/)" ]; then
+    echo "── dry-run work (refs/steward-dry/*: what it WOULD have shipped or staged)"
+    g for-each-ref --format='  %(refname:lstrip=3)  %(committerdate:relative)  %(contents:subject)' refs/remotes/origin/steward-dry/ | head -40
+  fi
   ;;
 show)
   item="${1:?item}"; s=$(slug "$item"); fetch
   box "cat $SROOT/state/handoffs/$s.md $SROOT/state/handoffs/$item.md 2>/dev/null | head -400" || true
-  if g rev-parse -q --verify "origin/steward/$s" >/dev/null; then
-    echo; echo "── branch steward/$s"
-    g log --format='  %h %s' "origin/master..origin/steward/$s"
-    g diff --stat "origin/master...origin/steward/$s" | tail -25
-    echo; node "$REPO/steward/policy.mjs" origin/master "origin/steward/$s" | jq -r '"policy: \(.verdict)  \(.reasons|join("; "))"'
+  r=$(ref_of "$s")
+  if [ -n "$r" ]; then
+    echo; echo "── $r"
+    g log --format='  %h %s' "origin/master..$r"
+    g diff --stat "origin/master...$r" | tail -25
+    echo; node "$REPO/steward/policy.mjs" origin/master "$r" | jq -r '"policy: \(.verdict)  \(.reasons|join("; "))"'
   fi ;;
 diff)
-  s=$(slug "${1:?item}"); fetch; g diff "origin/master...origin/steward/$s" ;;
+  s=$(slug "${1:?item}"); fetch; r=$(ref_of "$s"); [ -n "$r" ] || { echo "no branch for $s"; exit 1; }; g diff "origin/master...$r" ;;
 try)
   s=$(slug "${1:?item}"); fetch
   wt="$REPO/.claude/worktrees/steward-$s"
-  [ -d "$wt" ] || g worktree add -q --detach "$wt" "origin/steward/$s"
+  r=$(ref_of "$s"); [ -n "$r" ] || { echo "no branch for $s"; exit 1; }
+  [ -d "$wt" ] || g worktree add -q --detach "$wt" "$r"
   for d in client/engine/node_modules client/server/node_modules .venv; do [ -e "$wt/$d" ] || ln -s "$REPO/$d" "$wt/$d"; done
   echo "worktree: $wt"
   echo "run it:   npm --prefix $wt/client run dev     → http://127.0.0.1:5177"
