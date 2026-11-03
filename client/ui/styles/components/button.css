@@ -8,11 +8,12 @@
 .ui-button:disabled, .ui-button[aria-disabled="true"] { opacity: .4; cursor: default; }
 .ui-button--sm { padding: var(--space-2) var(--space-4); font-size: var(--text-12); }
 
-/* the green confirm (button.primary) */
-.ui-button--primary { background: var(--color-confirm); border-color: var(--color-confirm-border); }
-/* …and keeps its green border on hover, as button.primary does (base.css puts it after button:hover) */
+/* the filled confirm (button.primary): the Manual's orange with dark ink
+   (it was a green until 2026-11-03) */
+.ui-button--primary { background: var(--color-confirm); border-color: var(--color-confirm-border); color: var(--color-text-on-accent); }
+/* …and keeps its own border on hover, as button.primary does (base.css puts it after button:hover) */
 .ui-button--primary:hover { border-color: var(--color-confirm-border); }
-/* the gold page action (.homebtns .primary and its copies) */
+/* the outlined page action (.homebtns .primary and its copies) */
 .ui-button--action { border-color: var(--color-accent); color: var(--color-accent); }
 /* "not this one" (.declinebtn) */
 .ui-button--ghost { background: transparent; border-style: dashed; color: var(--color-text-muted); }

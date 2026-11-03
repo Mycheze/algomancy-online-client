@@ -13,7 +13,7 @@
 .cstable th, .cstable td { padding: var(--space-1) var(--space-3); border-bottom: 1px solid var(--line); white-space: nowrap; }
 .cstable thead th { position: sticky; top: 0; background: var(--panel2); z-index: 2; font-weight: 600; text-align: left; }
 .cstable tbody tr:hover td { background-color: rgba(255, 255, 255, .03); }
-.cstable tbody tr.on td { background-color: rgba(217, 164, 65, .10); }
+.cstable tbody tr.on td { background-color: color-mix(in srgb, var(--color-accent) 10%, transparent); }
 .cstable .csnum { text-align: right; font-variant-numeric: tabular-nums; }
 .cstable .csnum small, .cspair small, .cstile small { color: var(--dim); font-size: var(--text-11); margin-left: var(--space-1); }
 .cstable th.cscard, .cstable td.cscard { position: sticky; left: 0; background: var(--panel); z-index: 1; }

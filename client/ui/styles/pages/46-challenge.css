@@ -23,7 +23,6 @@
 .chrow .chname { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chplayrow { margin-top: var(--space-5); display: flex; justify-content: flex-end; }
 .chplayrow .cta { padding: var(--space-4) var(--space-7); font-weight: 700; }
-.chplayrow .cta.primary { border-color: var(--accent); color: var(--accent); }
 /* the run's meter: a row of the board's sticky strip, under the turn bar,
    so it covers nothing (main.ts renders it there) */
 .chmeter { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);

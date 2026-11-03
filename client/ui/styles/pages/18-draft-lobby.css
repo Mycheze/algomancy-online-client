@@ -51,7 +51,7 @@
 .lobbyseat { display: flex; align-items: center; gap: var(--space-4); }
 .seatdot { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--accent); }
 .seatdot.ready { background: var(--glow); box-shadow: 0 0 7px var(--glow); }
-.seatdot.away { background: #454f5c; }
+.seatdot.away { background: var(--color-border-strong); }
 .lobbygo { margin-left: auto; }
 .lobbygo button { font-size: var(--text-14); font-weight: 700; padding: var(--space-4) var(--space-7); }
 /* the ranking being built, best first — numbered so the order is the message */

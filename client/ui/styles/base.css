@@ -32,10 +32,10 @@
    list, a checkbox, an unstyled input, the date picker) are drawn for a dark
    page, not as white boxes on it (owner's recommendation, 2026-11-02). */
 :root { color-scheme: dark; }
-/* …but a framed document (the rulebook PDF, the comprehensive rules) keeps
-   the scheme it had: a frame inherits the page's preference, and the CR
-   document has a dark theme it would switch to. Whether it should is a
-   design call (the redesign's), not a side effect of this line. */
+/* …but a framed document keeps the scheme it had: the rulebook PDF's viewer is
+   drawn light. The comprehensive rules no longer depend on it — since the
+   Manual's palette (owner 2026-11-03, "keep it all dark") render.mjs writes
+   that document dark whatever the preference, in the client's own colours. */
 :where(iframe) { color-scheme: normal; }
 * { box-sizing: border-box; }
 /* no font boosting on a phone; no grey flash on a tap (moved from shared/touch) */
@@ -54,7 +54,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-text); font: v
 button { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 5px;
   padding: 5px 12px; cursor: pointer; font: inherit; }
 button:hover { border-color: var(--accent); }
-button.primary { background: var(--color-confirm); border-color: var(--color-confirm-border); }
+button.primary { background: var(--color-confirm); border-color: var(--color-confirm-border); color: var(--color-text-on-accent); }
 button:disabled { opacity: .4; cursor: default; }
 
 /* ── text ── */

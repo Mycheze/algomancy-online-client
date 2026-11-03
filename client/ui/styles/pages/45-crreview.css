@@ -63,7 +63,7 @@
 .crchipx.ok { color: var(--glow); border-color: var(--glow); }
 .crchipx.crans { color: var(--pending); border-color: var(--pending); }
 .crchipx.crsys { color: var(--accent); border-color: var(--accent); }
-.crquote { margin: 0 0 var(--space-3); padding: var(--space-2) var(--space-4); border-left: 3px solid var(--target); background: var(--panel2);
+.crquote { margin: 0 0 var(--space-3); padding: var(--space-2) var(--space-4); border-left: 3px solid var(--color-accent); background: var(--panel2);
   font-size: var(--text-12); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 7.5em; overflow: hidden; }
 .crquote.gone { text-decoration: line-through; color: var(--dim); border-left-color: var(--dim); }
 .croq { margin: var(--space-6) 0; }
@@ -72,13 +72,13 @@
 .croqbtns { display: inline-flex; flex-wrap: wrap; gap: var(--space-2); }
 
 /* the decorations the page adds to the document */
-mark.crhl { background: rgba(224, 185, 60, .22); color: inherit; border-bottom: 2px solid var(--target); cursor: pointer; }
-mark.crhl.on { background: rgba(224, 185, 60, .45); }
+mark.crhl { background: color-mix(in srgb, var(--color-accent) 22%, transparent); color: inherit; border-bottom: 2px solid var(--color-accent); cursor: pointer; }
+mark.crhl.on { background: color-mix(in srgb, var(--color-accent) 45%, transparent); }
 .crplus, .crcount { padding: 0 var(--space-3); font-size: var(--text-12); line-height: 18px; margin-left: var(--space-3); vertical-align: middle; }
 .crplus { color: var(--dim); }
 .crcount { color: var(--accent); border-color: var(--accent); }
 .crflash { animation: crflash 1.6s ease-out; }
-@keyframes crflash { from { background: rgba(224, 185, 60, .35); } to { background: transparent; } }
+@keyframes crflash { from { background: color-mix(in srgb, var(--color-accent) 35%, transparent); } to { background: transparent; } }
 /* the copy-link button by every number and heading: faint until its line is
    pointed at or it has the focus; a finger cannot point, so on touch
    (html.touch, the last pointer's type, never matchMedia) it stays readable */
@@ -111,13 +111,13 @@ html.touch .crdoc .crshare { opacity: .7; padding: var(--space-2) var(--space-3)
 .crslab { flex: 0 0 64px; display: flex; flex-direction: column; font: 12px ui-monospace, monospace; color: var(--accent); overflow-wrap: anywhere; }
 .crskind { font: 10px system-ui, sans-serif; color: var(--dim); }
 .crsbody { min-width: 0; font-size: var(--text-12); line-height: 1.4; overflow-wrap: anywhere; }
-.crsbody mark { background: rgba(224, 185, 60, .35); color: inherit; border-radius: var(--radius-sm); }
+.crsbody mark { background: color-mix(in srgb, var(--color-accent) 35%, transparent); color: inherit; border-radius: var(--radius-sm); }
 .crsnone { padding: var(--space-4) var(--space-4); color: var(--dim); font-size: var(--text-12); }
 
 /* the layer: the chip, the composer, the sheet */
 .crselchip { position: fixed; z-index: 75; padding: var(--space-2) var(--space-4); border-radius: var(--radius-lg); border-color: var(--accent); background: var(--panel);
   box-shadow: 0 2px 8px rgba(0,0,0,.4); }
-.crscrim { position: fixed; inset: 0; z-index: 72; background: rgba(6,8,11,.55); }
+.crscrim { position: fixed; inset: 0; z-index: 72; background: color-mix(in srgb, var(--color-scrim) 76%, transparent); }
 .crcomposer { position: fixed; right: 24px; top: 90px; width: min(420px, calc(100vw - 32px)); background: var(--panel);
   border: 1px solid var(--accent); border-radius: var(--radius-lg); padding: var(--space-5) var(--space-5); display: flex; flex-direction: column; gap: var(--space-4);
   box-shadow: 0 6px 24px rgba(0,0,0,.5); }
@@ -145,17 +145,20 @@ html.touch .crdoc .crshare { opacity: .7; padding: var(--space-2) var(--space-3)
   .crcomposer { left: 0; right: 0; top: auto; bottom: 0; width: auto; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
 }
 
-/* the document itself: render.mjs's stylesheet, its dark palette, scoped */
+/* the document itself: render.mjs's stylesheet, scoped, in the client's roles —
+   the same palette render.mjs writes into the public page (ui/test/1030) */
 .crdoc {
-  --surface: var(--color-surface); --fg: #e3e8ec; --muted: #9aa6b0; --line: var(--color-border);
-  --accent: var(--color-info); --accent-soft: var(--color-info-bg);
-  --ok: #6fcf9c; --ok-bg: #173327; --warn: #e6b75c; --warn-bg: #3a2d12; --bad: #f08a8d; --bad-bg: #3c1c1e;
-  --c-printed: var(--color-info); --c-designer: #c3a3ec; --c-mixed: #8cc6bf; --c-owner: #e6ac63; --c-engine: #f08a8d;
+  --surface: var(--color-surface); --fg: var(--color-text); --muted: var(--color-text-muted); --line: var(--color-border);
+  --accent: var(--color-info); --accent-soft: var(--color-info-bg); --mark: var(--color-accent);
+  --ok: var(--color-success); --ok-bg: var(--color-success-bg); --warn: var(--color-warning); --warn-bg: var(--color-warning-bg);
+  --bad: var(--color-danger); --bad-bg: var(--color-danger-bg);
+  --c-printed: #82b3dd; --c-designer: #d9a6e8; --c-mixed: #8cc6bf; --c-owner: #f2a66b; --c-engine: var(--color-danger);
   --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
   color: var(--fg); font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-user-select: text; user-select: text;
 }
 .crdoc h2 { font: 600 22px/1.3 Georgia, serif; margin: 28px 0 12px; padding-top: var(--space-5); border-top: 1px solid var(--line); }
+.crdoc h2::before { content: '_ '; color: var(--mark); }
 .crdoc h2:first-child { margin-top: 0; }
 .crdoc h3 { margin: 28px 0 8px; }
 .crdoc h4 { font-size: var(--text-14); margin: 20px 0 6px; }

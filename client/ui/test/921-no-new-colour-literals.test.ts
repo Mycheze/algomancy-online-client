@@ -41,29 +41,28 @@ import assert from 'node:assert/strict';
 import { colourLiterals, declarations } from '../scripts/css-scan.mjs';
 import { readStylePieces } from './read-styles.ts';
 
-/** colour literals per piece, banked 2026-11-02 after the Phase 1b codemod and its snap (1b-ii). May only go down. */
+/** colour literals per piece, banked 2026-11-02 after the Phase 1b codemod and its snap (1b-ii), and again
+ *  2026-11-03 after the Manual's palette (ui/test/1030) moved the gold, green and felt onto the roles. May only go down. */
 const ALLOW: Record<string, number> = {
   'pages/joinscreen': 2,
-  'pages/home': 5,
-  'shared/element-chips': 9,
-  'pages/draft-lobby': 3,
-  'pages/postgame': 2,
+  'shared/element-chips': 8,
+  'pages/draft-lobby': 2,
+  'pages/postgame': 1,
   'pages/decks': 4,
-  'pages/tabletop': 14,
+  'pages/tabletop': 10,
   'pages/binder': 7,
-  'pages/deckstrip-curve-affinity': 6,
-  'pages/cards': 1,
-  'pages/queue': 4,
-  'pages/admin': 14,
-  'pages/learn': 23,
-  'pages/cardstats': 4,
+  'pages/deckstrip-curve-affinity': 4,
+  'pages/queue': 3,
+  'pages/admin': 12,
+  'pages/learn': 16,
+  'pages/cardstats': 3,
   'pages/deck-modals': 2,
   'shared/touch': 2,
   'shared/drag': 3,
   // moved out of board/ (exempt) in the design-system round, 2026-11-03: the report pill's,
   // the bell's and the bell list's shadows, which no --shadow-* step equals. Not new colours.
   'shared/report-and-inbox': 4,
-  'pages/crreview': 22,
+  'pages/crreview': 9,
   'pages/challenge': 1,
 };
 

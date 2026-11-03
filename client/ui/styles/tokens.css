@@ -23,36 +23,47 @@
  * --target, --pending, --glow, the board's --cw/--gap/--ringpad) are as they
  * were. New CSS uses the role names. */
 :root {
-  /* ── colour: the neutrals ── */
-  --color-bg: #12151a;               /* the page */
-  --color-surface-sunken: #0d1014;   /* below the page: wells, inputs (legal.ts's footer today) */
-  --color-surface: #1a1f27;          /* a panel */
-  --color-surface-raised: #20262f;   /* a panel on a panel; the base button */
-  --color-surface-overlay: rgba(20, 24, 30, .9);  /* a translucent floating panel */
-  --color-scrim: rgba(6, 8, 11, .72);             /* the dimmer behind a dialog */
-  --color-scrim-strong: rgba(6, 8, 11, .78);      /* a darker one, behind a full-page reader (the legal pages) */
-  --color-border: #2e3742;
-  --color-border-strong: #3b4654;    /* the slate borders (eleven near-copies today) */
-  --color-text: #d6dde6;
-  --color-text-muted: #8794a3;
-  --color-text-on-accent: #12151a;   /* dark ink on a gold or pale fill (the accent, Light's cream) */
+  /* ── colour: the neutrals ──
+     THE MANUAL'S PALETTE (owner 2026-11-03: "change the color scheme to
+     match the official rule PDF rather than this yellow and green nonsense").
+     Sampled off data/rules/Algomancy-Manual.pdf: its page is #3e1d52, its
+     raised panels #442258 / #4e3060, its muted text a lavender-grey, its one
+     accent the orange of its headings and NOTE boxes. The panel IS the
+     Manual's page; the page under it is one step darker so a panel reads as
+     raised. Contrast of every text role on every surface: the table in
+     var/records/ds-round-2026-11-03-r2-theme.md (all ≥ 4.5:1 but the two
+     noted there). */
+  --color-bg: #2b1439;               /* the page: a step darker than the Manual's */
+  --color-surface-sunken: #1f0e2b;   /* below the page: wells, inputs (legal.ts's footer today) */
+  --color-surface: #3e1d52;          /* a panel: the Manual's page */
+  --color-surface-raised: #482a5a;   /* a panel on a panel; the base button (between the Manual's #442258 and #4e3060) */
+  --color-surface-overlay: rgba(43, 20, 57, .92); /* a translucent floating panel */
+  --color-scrim: rgba(16, 6, 22, .72);            /* the dimmer behind a dialog */
+  --color-scrim-strong: rgba(16, 6, 22, .78);     /* a darker one, behind a full-page reader (the legal pages) */
+  --color-border: #634a76;
+  --color-border-strong: #7b6390;
+  --color-text: #f3eef7;             /* the Manual's white, a breath softer */
+  --color-text-muted: #b3a3bd;       /* its lavender-grey (#9e8da8), lifted to clear 4.5:1 on a raised panel */
+  --color-text-on-accent: #24102f;   /* dark ink on the orange (white on it is 2.4:1) and on pale fills (Light's cream) */
   --color-text-on-fill: #ffffff;     /* ink on a saturated or dark fill: element chips, red badges, captions */
   /* ── colour: brand and interaction ── */
-  --color-accent: #d9a441;           /* gold: the brand, the page's main action, "on" */
-  --color-accent-wash: #2a2314;      /* a dim gold fill behind gold text: a warning note, a deck that is not legal yet */
-  --color-link: #7fc0ff;
-  --color-confirm: #3c5a2f;          /* green: button.primary, "confirm" at the table */
-  --color-confirm-border: #5b8747;
-  --color-confirm-hover: #476b37;
+  --color-accent: #f68c3f;           /* the Manual's orange: the brand, the page's main action, "on", a heading's mark */
+  --color-accent-wash: #4a2630;      /* a dim orange fill behind orange text: a warning note, a deck that is not legal yet */
+  --color-link: #cdb6ff;             /* a light lavender: the Manual's secondary tone */
+  /* the primary (button.primary, "confirm" at the table) is the orange too, filled,
+     with dark ink — it was a green until 2026-11-03 */
+  --color-confirm: #f68c3f;
+  --color-confirm-border: #f8a96f;
+  --color-confirm-hover: #f79a56;
   /* ── colour: status, each with a tinted background ── */
   --color-success: #6fc36f;          /* the same green as the board's --glow, deliberately not tied to it */
-  --color-success-bg: #1d2b1a;
+  --color-success-bg: #1e3a2b;
   --color-warning: #e8b64c;          /* what the phantom var(--warn, #e8b64c) has been painting */
-  --color-warning-bg: #33270f;
-  --color-danger: #d95454;
-  --color-danger-bg: #2b1a1a;
-  --color-info: #7fb6e0;             /* the rules page's blue */
-  --color-info-bg: #1d3142;
+  --color-warning-bg: #45311a;
+  --color-danger: #f06969;           /* lifted from #d95454 (3.5:1 on the purple) to 4.6:1, and no further: white on it stays over 3:1 */
+  --color-danger-bg: #4a1a2c;
+  --color-info: #bea3ef;             /* the Manual's lavender (#8864b9), lifted to read as text */
+  --color-info-bg: #3a2a63;
   /* ── colour: data — the card stats' diverging win-rate scale (above even, below even) ── */
   --color-winrate-up: #4fb3c9;
   --color-winrate-down: #e07b39;

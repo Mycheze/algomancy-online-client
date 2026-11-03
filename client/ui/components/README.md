@@ -14,7 +14,7 @@ here (see "Adding a variant").
 
 | component | file | variants and options |
 |---|---|---|
-| Button | `button.ts` | `secondary` (default), `primary` (green confirm), `action` (gold page action), `ghost`, `danger`, `link`, `icon` (needs `title`) · size `md`/`sm` · `href` renders an `<a>` |
+| Button | `button.ts` | `secondary` (default), `primary` (filled orange confirm), `action` (orange outline), `ghost`, `danger`, `link`, `icon` (needs `title`) · size `md`/`sm` · `href` renders an `<a>` |
 | Toggle | `toggle.ts` | `on` / off · `strong` (bold when on) · size |
 | Field | `field.ts` | control `input` (any `type`, checkbox/radio laid out in a row) / `textarea` / `select` · `hint` · `error` |
 | Panel | `panel.ts` | `default` / `inset` / `emphasis` · `roomy` · `wide` · `title` (+ `titleHtml`, or alone) · `panelSubheading()`, the `<h4>` inside a panel |
@@ -23,7 +23,7 @@ here (see "Adding a variant").
 | Tabs | `tabs.ts` | `plain` / `caps` · per-tab `count`, `dataBtn`, `title` and `className` |
 | Table | `table.ts` | columns with `align`, `className`, `headClassName`, `title` (a header tooltip); cells text or `{ html }`; `caption`, `emptyText`, `scroll`, `headless` (no header row) |
 | Chip | `chip.ts` | tone `neutral` / `accent` / `success` / `warning` / `danger` / `info` · shape `tag` / `pill` · `solid` |
-| Status message | `status.ts` | `ok` / `warn` / `error` / `info` / `note` (today's gold `.deckmsg`) · `boxed` · `tag: 'p'` (a paragraph, with its margins) |
+| Status message | `status.ts` | `ok` / `warn` / `error` / `info` / `note` (today's accent `.deckmsg`) · `boxed` · `tag: 'p'` (a paragraph, with its margins) |
 | Empty state | `empty-state.ts` | boxed (default) / `bare` · `title` · `actionHtml` |
 | Dialog | `dialog.ts` | native `<dialog>` · width `md` / `lg` / `xl` · `closable` · `openDialog` / `closeDialog` / `installDialogClose` |
 | Toast | `toast.ts` | `success` / `info` / `danger` · `toastHtml` (markup) and `showToast` (one region on `<body>`) |
@@ -63,8 +63,7 @@ the attribute string); it is not a component.
 6. **Today's look.** Each component reproduces the most common existing recipe
    (the census, `client/docs/23-ui-inventory/07-design-foundations.md` §8, which
    each file's header cites), so swapping it into a page changes nothing on
-   screen. Where it deliberately does not, the header says so (the gold
-   `action` button drops the green fill the census lists as a bug).
+   screen. Where it deliberately does not, the header says so.
 7. **A story and a test each.** `client/storybook/stories/<name>.stories.ts`
    shows every variant; `ui/test/9xx-ui-<name>.test.ts` checks, without a DOM,
    that each variant renders its class, text is escaped and `data-btn` passes
@@ -109,9 +108,6 @@ and in `../pages/README.md`; the larger leftovers:
 
 - **My decks, the tabletop builder, the binder, the rules review, How to play**
   are not under `pages/` yet, so they use no component.
-- The gold-on-green `.cta.primary` buttons (home, queue, waiting rooms, match):
-  the `action` variant is the gold alone; adopting it is a visible fix for the
-  owner to approve.
 - The metagame, ladder, card stats and shared-deck headers: their Back button
   sits beside the title, `pageHeader` puts it at the edge. An owner call.
 - The profile's cards are still `<section class="acctcard">` (`panel` can take
@@ -126,9 +122,11 @@ Known seams:
 - `main.ts` repaints `#app` with `innerHTML` on every state change, so a
   `<dialog>` inside `#app` is destroyed by the next repaint. A dialog that must
   outlive one belongs in a layer beside `#app` (`ui/README.md`).
-- The gold "primary" on a `<button>` today also shows the green fill underneath
-  (the census's bug); `variant: 'action'` is the gold alone. Swapping it in is a
-  visible fix the owner should see on the list.
+- **The colours are the Manual's** (owner 2026-11-03): deep purple surfaces,
+  one orange accent that is also the filled primary, lavender as the secondary
+  tone. The old gold-on-green `.cta.primary` is gone: the page overrides that
+  painted gold over the green fill were deleted, so those buttons are plain
+  primaries. `ui/test/1030` keeps the old gold and green off the pages.
 - **The home redesign's five** (icon, icon button, segmented, sheet, app
   shell, 2026-11-03) reproduce nothing: they are new looks for
   `client/docs/24-redesign/`, so no page uses them until that page is built.
