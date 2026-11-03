@@ -33,7 +33,7 @@ import * as mt from '../match.ts';
 import * as mm from '../queue.ts';
 import * as sc from '../singlecard.ts';
 import { updatesHtml, wireUpdates } from '../updates.ts';
-import { button } from '../components/index.ts';
+import { button, statusMessage } from '../components/index.ts';
 import { chosenDeck, elIcon as elIconOf, esc } from '../util.ts';
 import { caretIn, restoreCaret } from './caret.ts';
 import { chosenClockMs, clockPickHtml, clockPickView, type ClockPickView } from './clockpick.ts';
@@ -277,7 +277,7 @@ export function homeHtml(v: HomeView): string {
         </details>
         ${s.customRules}
         <div class="spacer"></div>
-        ${v.error ? `<p class="deckmsg">${esc(v.error)}</p>` : ''}
+        ${v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''}
         <button class="cta primary" data-btn="newgame" data-mode="draft" ${d.customError ? `disabled title="${esc(d.customError)}"` : ''}>
           ${d.custom ? 'New custom live draft' : 'New live draft'}</button>
       </div>

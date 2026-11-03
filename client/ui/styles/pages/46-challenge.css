@@ -8,9 +8,6 @@
 .chtabtip { margin: var(--space-1) 0 var(--space-3); }
 .chboard th.chsorted { color: var(--accent); }
 .chwinners { margin: 0 0 var(--space-4); }
-/* a panel's sub-heading ("Your best"): .acctcard h4's recipe, which ui-panel has no part for yet */
-.chpage .ui-panel h4 { margin: var(--space-6) 0 var(--space-4); color: var(--dim); font-size: var(--text-12);
-  text-transform: uppercase; letter-spacing: .06em; }
 .chmine td { padding-top: var(--space-1); padding-bottom: var(--space-1); }
 .chrowbtns { white-space: nowrap; text-align: right; }
 .chrowbtns button { margin-left: var(--space-2); }

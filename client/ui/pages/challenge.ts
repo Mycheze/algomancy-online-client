@@ -28,7 +28,8 @@ import {
 } from '../../engine/src/challenge.ts';
 import { builderHtml, type BuilderView } from '../challengebuild.ts';
 import { pageHeader } from '../components/page-header.ts';
-import { panel } from '../components/panel.ts';
+import { panel, panelSubheading } from '../components/panel.ts';
+import { type TableColumn, table } from '../components/table.ts';
 import { tabs } from '../components/tabs.ts';
 import { canSubmit, doneRuns, type DoneRun, type SubmitReply } from '../challengerun.ts';
 import { esc } from '../util.ts';
@@ -175,7 +176,7 @@ export function challengePageHtml(v: ChallengePageView): string {
   const b = v.building;
   return `<div class="metapage chpage">
     ${pageHeader({ title: 'Weekly challenge',
-      subtitleHtml: '<p class="hint">Build a deck in order, then reach the goal using as few cards, elements and turns as you can.</p>',
+      subtitle: 'Build a deck in order, then reach the goal using as few cards, elements and turns as you can.', subtitleAs: 'p',
       back: { dataBtn: 'ch-close', label: 'Back', variant: 'secondary' } })}
     ${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
     ${loading && !data ? '<p class="dim">Loading…</p>' : ''}
@@ -192,11 +193,17 @@ export function challengePageHtml(v: ChallengePageView): string {
   </div>`;
 }
 
+// "Your best" and the past weeks are lists with no header row; a column's class sits on every cell
+const BEST_COLUMNS = [{ key: 'kind', label: '' }, { key: 'rank', label: '' }, { key: 'score', label: '', className: 'dim' }];
+const PAST_COLUMNS = [{ key: 'week', label: '' }, { key: 'title', label: '' }, { key: 'entrants', label: '', className: 'dim' },
+  { key: 'btns', label: '', className: 'chrowbtns' }];
+
 function bestHtml(id: string, v: ChallengePageView): string {
   const m = v.data?.mine?.[id];
   if (!m) return '';
-  return `<h4>Your best</h4><table class="ui-table chmine"><tbody>${BOARD_KINDS.map(k => `<tr>
-    <td>${BOARD_LABEL[k]}</td><td><b>#${m[k].rank}</b></td><td class="dim">${esc(scoreLine(m[k].score))}</td></tr>`).join('')}</tbody></table>`;
+  return `${panelSubheading({ text: 'Your best' })}${table({ className: 'chmine', headless: true, columns: BEST_COLUMNS, rows: BOARD_KINDS.map(k => ({ cells: {
+    kind: BOARD_LABEL[k], rank: { html: `<b>#${m[k].rank}</b>` }, score: scoreLine(m[k].score),
+  } })) })}`;
 }
 
 function weekCardHtml(c: ChallengeView, v: ChallengePageView): string {
@@ -246,34 +253,41 @@ function boardHtml(c: ChallengeView, v: ChallengePageView, past = false): string
   else if (!b.boards.fastest.length) body = '<p class="dim">No runs yet.</p>';
   else {
     const first = FIRST[tab];
-    const th = (k: 'turns' | 'cards' | 'elements', label: string, tip = ''): string =>
-      `<th${k === first ? ' class="chsorted"' : ''}${tip ? ` title="${esc(tip)}"` : ''}>${label}</th>`;
-    const td = (k: 'turns' | 'cards' | 'elements', val: string): string => `<td>${k === first ? `<b>${val}</b>` : val}</td>`;
+    // the column the tab sorts by: its head in accent, its numbers bold
+    const col = (k: 'turns' | 'cards' | 'elements', label: string, tip?: string): TableColumn =>
+      ({ key: k, label, headClassName: k === first ? 'chsorted' : undefined, title: tip });
+    const td = (k: 'turns' | 'cards' | 'elements', val: string): { html: string } => ({ html: k === first ? `<b>${val}</b>` : val });
+    const columns: TableColumn[] = [{ key: 'rank', label: '#' }, { key: 'player', label: 'player' },
+      col('turns', 'Turns', TURNS_TIP), col('cards', 'Cards', CARDS_TIP), col('elements', 'Elements'),
+      ...(b.closed ? [{ key: 'btns', label: '', className: 'chrowbtns' }] : [])];
     body = `${winnersHtml(b)}
       ${tabs({ className: 'chtabs', dataBtn: 'ch-tab', active: tab,
         items: BOARD_KINDS.map(k => ({ id: k, label: BOARD_LABEL[k], title: BOARD_TIP[k] })) })}
       <p class="dim chtabtip">${esc(BOARD_TIP[tab])}</p>
-      <table class="ui-table chboard"><thead><tr><th>#</th><th>player</th>${th('turns', 'Turns', TURNS_TIP)}${th('cards', 'Cards', CARDS_TIP)}${th('elements', 'Elements')}${
-        b.closed ? '<th></th>' : ''}</tr></thead>
-      <tbody>${b.boards[tab].map(r => `<tr><td>${r.rank}</td><td>${esc(r.name)}${olderHtml(r)}</td>${td('turns', `${r.score.turns}${r.score.debtTurns ? ` <span class="dim" title="${esc(debtTip(r.score))}">(+${r.score.debtTurns} debt)</span>` : ''}`)}${
-        td('cards', `${r.score.cards}${r.score.extra ? ` <span class="dim">(${r.score.extra} extra)</span>` : ''}`)}${td('elements', String(r.score.elements))}${
-        b.closed ? `<td class="chrowbtns">${r.deck ? `<button data-btn="ch-try" data-id="${esc(c.id)}" data-run="${esc(r.runId ?? '')}" title="load this deck into the builder">Try this deck</button>` : ''}${
-          r.runId ? `<button data-btn="ch-watch" data-run="${esc(r.runId)}">Watch</button>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table>`;
+      ${table({ className: 'chboard', columns, rows: b.boards[tab].map(r => ({ cells: {
+        rank: r.rank, player: { html: `${esc(r.name)}${olderHtml(r)}` },
+        turns: td('turns', `${r.score.turns}${r.score.debtTurns ? ` <span class="dim" title="${esc(debtTip(r.score))}">(+${r.score.debtTurns} debt)</span>` : ''}`),
+        cards: td('cards', `${r.score.cards}${r.score.extra ? ` <span class="dim">(${r.score.extra} extra)</span>` : ''}`),
+        elements: td('elements', String(r.score.elements)),
+        btns: { html: `${r.deck ? `<button data-btn="ch-try" data-id="${esc(c.id)}" data-run="${esc(r.runId ?? '')}" title="load this deck into the builder">Try this deck</button>` : ''}${
+          r.runId ? `<button data-btn="ch-watch" data-run="${esc(r.runId)}">Watch</button>` : ''}` },
+      } })) })}`;
   }
   const head = past ? `${esc(c.title)} <span class="dim">· week of ${esc(c.week)}</span>` : 'Leaderboard';
   return panel({ wide: !!b && b !== 'loading' && b !== 'error' && b.closed, className: 'chboardcard',
-    bodyHtml: `<h3 class="ui-panel__title">${head}</h3>${body}` });
+    titleHtml: head, bodyHtml: body });
 }
 
 function pastHtml(d: ChallengeReply, v: ChallengePageView): string {
   const pastOpen = v.pastOpen;
   if (!d.past.length) return '';
   return `${panel({ title: 'Past weeks', wide: true, bodyHtml: `
-    <table class="ui-table chpast"><tbody>${d.past.map(c => `<tr>
-      <td>${esc(c.week)}</td><td><b>${esc(c.title)}</b> <span class="dim">${esc(goalText(c.goal))}</span></td>
-      <td class="dim">${c.entrants} entrant${c.entrants === 1 ? '' : 's'}</td>
-      <td class="chrowbtns"><button class="${pastOpen === c.id ? 'on' : ''}" data-btn="ch-past" data-id="${esc(c.id)}">Leaderboard</button>
-        <button data-btn="ch-build" data-id="${esc(c.id)}">Build</button></td></tr>`).join('')}</tbody></table>
+    ${table({ className: 'chpast', headless: true, columns: PAST_COLUMNS, rows: d.past.map(c => ({ cells: {
+      week: c.week, title: { html: `<b>${esc(c.title)}</b> <span class="dim">${esc(goalText(c.goal))}</span>` },
+      entrants: `${c.entrants} entrant${c.entrants === 1 ? '' : 's'}`,
+      btns: { html: `<button class="${pastOpen === c.id ? 'on' : ''}" data-btn="ch-past" data-id="${esc(c.id)}">Leaderboard</button>
+        <button data-btn="ch-build" data-id="${esc(c.id)}">Build</button>` },
+    } })) })}
   ` })}${pastOpen ? ((): string => { const c = d.past.find(x => x.id === pastOpen); return c ? boardHtml(c, v, true) : ''; })() : ''}`;
 }
 

@@ -43,7 +43,7 @@
    it at the padding edge rather than the top — the row above it stays visible
    and scrolls out over the header. Making the body the scroller is the version
    with no browser disagreement in it, and it keeps the scrim clickable. */
-#legalover { position: fixed; inset: 0; z-index: 90; background: rgba(6,8,11,.78);
+#legalover { position: fixed; inset: 0; z-index: 90; background: var(--color-scrim-strong);
   display: flex; align-items: flex-start; justify-content: center; overflow: hidden; padding: 4vh 16px; }
 #legalover .lgpanel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
   max-width: 760px; width: 100%; max-height: 92vh; display: flex; flex-direction: column; min-height: 0; }

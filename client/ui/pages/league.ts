@@ -21,7 +21,8 @@
  */
 import { trophyChipHtml } from '../account.ts';
 import { pageHeader } from '../components/page-header.ts';
-import { panel } from '../components/panel.ts';
+import { panel, panelSubheading } from '../components/panel.ts';
+import { table } from '../components/table.ts';
 import { esc } from '../util.ts';
 import { wallClock, zonedEpoch } from '../zonetime.ts';
 
@@ -535,7 +536,7 @@ export function leagueHtml(v: LeagueView): string {
   const { data, msg, loading } = v;
   const s = data?.season ?? null;
   return `<div class="metapage lgpage">
-    ${pageHeader({ title: '🏅 League', subtitleHtml: `<p class="hint">${esc(pageHint(s))}</p>`,
+    ${pageHeader({ title: '🏅 League', subtitle: pageHint(s), subtitleAs: 'p',
       back: { dataBtn: 'lg-close', label: 'Back', variant: 'secondary' } })}
     ${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
     ${data && data.seasons.length > 1 ? `<div class="cbtools">${data.seasons.map(x =>
@@ -562,8 +563,8 @@ function seasonCardHtml(s: SeasonView, v: LeagueView): string {
   const fin = s.phases.find(p => p.phase === s.weeks + 1);
   const end = s.phases.find(p => p.phase === s.weeks + 2);
   const active = s.entrants.filter(e => !e.withdrawn).length;
-  return panel({ className: 'lgspan2', bodyHtml: `
-    <h3 class="ui-panel__title">${esc(s.name)} ${s.hidden ? '<span class="lgtag">hidden</span>' : ''}${s.hold ? '<span class="lgtag">on hold</span>' : ''}</h3>
+  return panel({ className: 'lgspan2', title: s.name,
+    titleHtml: `${s.hidden ? '<span class="lgtag">hidden</span>' : ''}${s.hold ? '<span class="lgtag">on hold</span>' : ''}`, bodyHtml: `
     <div class="statgrid">
       <div class="statcell"><div class="statval lgphase">${esc(s.label)}</div><div class="statlab">now</div></div>
       <div class="statcell"><div class="statval">${active}</div><div class="statlab">players</div></div>
@@ -660,23 +661,33 @@ function hourLabel(h: number): string {
 const weekName = (s: SeasonView, k: number): string =>
   k > s.weeks ? 'The final' : k === 0 ? 'Sign-up week' : `Week ${k}`;
 
+// the league's tables have no header row: the panel's title (and a week's
+// sub-heading) say what the rows are. A column's class sits on every cell.
+const MY_MATCH_COLUMNS = [{ key: 'who', label: '' }, { key: 'play', label: '', className: 'lgplay' }, { key: 'result', label: '' }];
+const SUGGEST_COLUMNS = [{ key: 'who', label: '' }, { key: 'free', label: '' }, { key: 'play', label: '', className: 'lgplay' }];
+const STAMP_COLUMNS = [{ key: 'preview', label: '' }, { key: 'code', label: '' }, { key: 'copy', label: '' }];
+const OUTBOX_COLUMNS = [{ key: 'kind', label: '' }, { key: 'to', label: '' }, { key: 'at', label: '', className: 'dim' }, { key: 'state', label: '' }];
+const PREVIEW_COLUMNS = [{ key: 'pair', label: '' }, { key: 'shared', label: '' }, { key: 'windows', label: '', className: 'dim' }];
+const STANDINGS_COLUMNS = [{ key: 'rank', label: '#' }, { key: 'player', label: 'player' }, { key: 'wl', label: 'W–L' }, { key: 'pts', label: 'pts' },
+  { key: 'omw', label: 'OMW', title: "opponents' match-win percentage — the tiebreak" }];
+
 function myMatchesHtml(s: SeasonView, v: LeagueView): string {
   const { arming, timeOpen } = v;
   const me = s.me!;
   const weeks = [...new Set(me.matches.map(m => m.week))].sort((a, b) => b - a);
   return panel({ title: 'Your matches', wide: true, bodyHtml: `
-    ${weeks.map(k => `<h4>${weekName(s, k)}</h4>
-      <table class="ui-table lgmatches"><tbody>${me.matches.filter(m => m.week === k).map(m => `<tr>
-        <td>vs <b>${esc(m.opponent.name)}</b>${m.opponent.contact
-          ? `<br><span class="dim">Discord: </span>${esc(m.opponent.contact)}` : ''}</td>
-        <td class="lgplay">${m.playable ? `<button class="primary" data-btn="lg-play" data-season="${esc(s.id)}" data-match="${esc(m.id)}">Play</button>
+    ${weeks.map(k => `${panelSubheading({ text: weekName(s, k) })}
+      ${table({ className: 'lgmatches', headless: true, columns: MY_MATCH_COLUMNS, rows: me.matches.filter(m => m.week === k).map(m => ({ cells: {
+        who: { html: `vs <b>${esc(m.opponent.name)}</b>${m.opponent.contact
+          ? `<br><span class="dim">Discord: </span>${esc(m.opponent.contact)}` : ''}` },
+        play: { html: m.playable ? `<button class="primary" data-btn="lg-play" data-season="${esc(s.id)}" data-match="${esc(m.id)}">Play</button>
           ${m.week === 0 ? `<button data-btn="lg-cancel" data-match="${esc(m.id)}" class="${arming === `cancel:${m.id}` ? 'danger' : ''}">${
-            arming === `cancel:${m.id}` ? 'Press again to call it off' : 'Call off'}</button>` : ''}` : ''}</td>
-        <td>${m.result
+            arming === `cancel:${m.id}` ? 'Press again to call it off' : 'Call off'}</button>` : ''}` : '' },
+        result: { html: m.result
           ? (m.won === true ? '✅ you won' : m.won === false ? 'you lost'
             : m.result.outcome === 'double-loss' ? 'double loss' : '<span class="dim">not played</span>')
-          : timeHtml(s, m, v) + (timeOpen === m.id ? '' : freeLineHtml(m, v))}</td>
-      </tr>`).join('')}</tbody></table>`).join('')}
+          : timeHtml(s, m, v) + (timeOpen === m.id ? '' : freeLineHtml(m, v)) },
+      } })) })}`).join('')}
     <p class="hint">Times are in ${esc(v.tz)}. Play opens your match room; your opponent joins from their own
       League page. Nothing is dealt until you are both there, and the elements are drawn at random.</p>
   ` });
@@ -748,13 +759,13 @@ function suggestionsHtml(s: SeasonView, v: LeagueView): string {
   return panel({ title: 'Free when you are', wide: true, bodyHtml: `
     <p>Sign-up week has no pairings. Play anybody here instead: up to ${me.week0Cap} games count in the standings
       (you have ${used}), one per opponent. Message them on Discord, then start the game and both press Play.</p>
-    ${me.suggestions.length ? `<table class="ui-table lgsuggest"><tbody>${me.suggestions.map(x => `<tr>
-      <td><b>${esc(x.name)}</b>${x.contact ? `<br><span class="dim">Discord: </span>${esc(x.contact)}` : ''}</td>
-      <td>${x.days ? `<span class="dim">free together:</span> ${x.windows.map(w => windowText(w, v.tz)).map(esc).join(' · ')}`
-        : '<span class="dim">no shared hours left this week</span>'}</td>
-      <td class="lgplay">${x.problem ? `<span class="dim">${esc(x.problem)}</span>`
-        : `<button data-btn="lg-challenge" data-id="${esc(x.id)}">Start a league game</button>`}</td>
-    </tr>`).join('')}</tbody></table>` : '<p class="dim">Nobody else has joined yet.</p>'}
+    ${me.suggestions.length ? table({ className: 'lgsuggest', headless: true, columns: SUGGEST_COLUMNS, rows: me.suggestions.map(x => ({ cells: {
+      who: { html: `<b>${esc(x.name)}</b>${x.contact ? `<br><span class="dim">Discord: </span>${esc(x.contact)}` : ''}` },
+      free: { html: x.days ? `<span class="dim">free together:</span> ${x.windows.map(w => windowText(w, v.tz)).map(esc).join(' · ')}`
+        : '<span class="dim">no shared hours left this week</span>' },
+      play: { html: x.problem ? `<span class="dim">${esc(x.problem)}</span>`
+        : `<button data-btn="lg-challenge" data-id="${esc(x.id)}">Start a league game</button>` },
+    } })) }) : '<p class="dim">Nobody else has joined yet.</p>'}
     <p class="hint">Times are in ${esc(v.tz)}.</p>
   ` });
 }
@@ -777,28 +788,31 @@ function standingsHtml(s: SeasonView, v: LeagueView): string {
     return s.champion?.id === id ? ' 🏆' : '';
   };
   return panel({ title: 'Standings', bodyHtml: `
-    <table class="ui-table"><thead><tr><th>#</th><th>player</th><th>W–L</th><th>pts</th><th title="opponents' match-win percentage — the tiebreak">OMW</th></tr></thead>
-    <tbody>${s.standings.map(r => `<tr class="${withdrawn.has(r.id) ? 'dim' : ''}">
-      <td>${r.rank}</td><td>${esc(r.name)}${mark(r.id)}</td>
-      <td>${r.w}–${r.l}${r.unplayed ? ` <span class="dim" title="matches not played">(${r.unplayed})</span>` : ''}</td>
-      <td>${r.points}</td><td>${r.w + r.l + r.unplayed ? `${Math.round(r.omw * 100)}%` : '–'}</td></tr>`).join('')}</tbody></table>
+    ${table({ columns: STANDINGS_COLUMNS, rows: s.standings.map(r => ({ className: withdrawn.has(r.id) ? 'dim' : undefined, cells: {
+      rank: r.rank, player: { html: `${esc(r.name)}${mark(r.id)}` },
+      wl: { html: `${r.w}–${r.l}${r.unplayed ? ` <span class="dim" title="matches not played">(${r.unplayed})</span>` : ''}` },
+      pts: r.points, omw: r.w + r.l + r.unplayed ? `${Math.round(r.omw * 100)}%` : '–',
+    } })) })}
     <p class="hint">3 points a win. Ties go to opponents' match-win percentage, then head to head.</p>
   ` });
 }
+
+const ALL_MATCH_COLUMNS = [{ key: 'pair', label: '' }, { key: 'result', label: '' }];
+const ALL_MATCH_COLUMNS_ORG = [...ALL_MATCH_COLUMNS, { key: 'org', label: '', className: 'lgorg' }];
 
 function allMatchesHtml(s: SeasonView, v: LeagueView): string {
   const weeks = [...new Set(s.matches.map(m => m.week))].sort((a, b) => b - a);
   const org = v.data?.organizer === true;
   // the organizer's result controls need the width; a player's view sits beside the table
   return panel({ title: 'Matches', wide: org, className: org ? undefined : 'lgspan2', bodyHtml: `
-    ${weeks.map(k => `<h4>${weekName(s, k)}</h4>
-      <table class="ui-table"><tbody>${s.matches.filter(m => m.week === k).map(m => `<tr>
-        <td>${esc(m.a.name)} vs ${esc(m.b.name)}</td><td>${resultText(m)}${disputesHtml(m)}</td>
-        ${org ? `<td class="lgorg"><select id="lg-ov-${esc(m.id)}">
+    ${weeks.map(k => `${panelSubheading({ text: weekName(s, k) })}
+      ${table({ headless: true, columns: org ? ALL_MATCH_COLUMNS_ORG : ALL_MATCH_COLUMNS, rows: s.matches.filter(m => m.week === k).map(m => ({ cells: {
+        pair: `${m.a.name} vs ${m.b.name}`, result: { html: `${resultText(m)}${disputesHtml(m)}` },
+        org: { html: `<select id="lg-ov-${esc(m.id)}">
           <option value="">set…</option><option value="a">${esc(m.a.name)} won</option><option value="b">${esc(m.b.name)} won</option>
           <option value="unplayed">not played</option><option value="double-loss">double loss</option><option value="clear">reopen</option>
-        </select><button data-btn="lg-override" data-match="${esc(m.id)}">set</button></td>` : ''}
-      </tr>`).join('')}</tbody></table>`).join('')}
+        </select><button data-btn="lg-override" data-match="${esc(m.id)}">set</button>` },
+      } })) })}`).join('')}
   ` });
 }
 
@@ -816,10 +830,11 @@ function stampHtml(v: LeagueView): string {
   return panel({ title: 'Discord time code', className: 'lgstamp', bodyHtml: `
     <p class="lgtimepick"><input type="datetime-local" id="lg-stamp-at" step="60" value="${wallValue(at, tz)}">
       <span class="dim">${esc(tz)} time</span></p>
-    <table class="ui-table lgstamps"><tbody>${STAMP_STYLES.map(st => `<tr>
-      <td>${esc(stampPreview(at, st, tz, v.now))}</td>
-      <td><input id="lg-stamp-${st}" class="lgstampcode" readonly value="${esc(discordCode(unix, st))}"></td>
-      <td><button data-btn="lg-stamp-copy" data-style="${st}">Copy</button></td></tr>`).join('')}</tbody></table>
+    ${table({ className: 'lgstamps', headless: true, columns: STAMP_COLUMNS, rows: STAMP_STYLES.map(st => ({ cells: {
+      preview: stampPreview(at, st, tz, v.now),
+      code: { html: `<input id="lg-stamp-${st}" class="lgstampcode" readonly value="${esc(discordCode(unix, st))}">` },
+      copy: { html: `<button data-btn="lg-stamp-copy" data-style="${st}">Copy</button>` },
+    } })) })}
   ` });
 }
 
@@ -866,9 +881,11 @@ function organizerHtml(s: SeasonView | null, v: LeagueView): string {
         <span class="dim">(skips the Discord-name, hours and late-entry checks)</span></p>
       ${preview ? previewHtml(preview, tz) : ''}
       ${postHtml(s, v)}
-      ${s.outbox?.length ? `<h4>Discord messages</h4><table class="ui-table lgout"><tbody>${s.outbox.slice().reverse().slice(0, 25).map(r => `<tr>
-        <td>${esc(r.kind)}</td><td>${esc(r.to)}</td><td class="dim">${when(r.createdAt, tz)}</td>
-        <td>${r.failed ? `⚠ ${esc(r.failed)}` : r.sentAt ? '✓ sent' : '<span class="dim">waiting</span>'}</td></tr>`).join('')}</tbody></table>` : ''}
+      ${s.outbox?.length ? `${panelSubheading({ text: 'Discord messages' })}${table({ className: 'lgout', headless: true, columns: OUTBOX_COLUMNS,
+        rows: s.outbox.slice().reverse().slice(0, 25).map(r => ({ cells: {
+          kind: r.kind, to: r.to, at: { html: when(r.createdAt, tz) },
+          state: { html: r.failed ? `⚠ ${esc(r.failed)}` : r.sentAt ? '✓ sent' : '<span class="dim">waiting</span>' },
+        } })) })}` : ''}
       ${s.log?.length ? `<details><summary>Log</summary><ul class="lglog">${s.log.slice().reverse().map(l =>
         `<li><span class="dim">${when(l.at, tz)}</span> ${esc(l.what)}</li>`).join('')}</ul></details>` : ''}
     ` : ''}
@@ -912,16 +929,17 @@ function repairHtml(s: SeasonView, v: LeagueView): string {
 
 function postHtml(s: SeasonView, v: LeagueView): string {
   const text = postText(s, v.origin);
-  return `<h4>Post for Discord</h4>
+  return `${panelSubheading({ text: 'Post for Discord' })}
     <textarea id="lg-post" class="lgpost" readonly rows="${Math.min(18, text.split('\n').length + 1)}">${esc(text)}</textarea>
     <p><button data-btn="lg-copy">Copy</button> <span class="dim">Times are Discord timestamps — each reader sees their own.</span></p>`;
 }
 
 function previewHtml(p: Preview, tz: string): string {
-  return `<h4>Week ${p.week} would be</h4>
-    <table class="ui-table"><tbody>${p.edges.map(e => `<tr class="${e.score < 2 ? 'lgweak' : ''}">
-      <td>${esc(e.a)} vs ${esc(e.b)}</td><td>${e.score} day${e.score === 1 ? '' : 's'} shared</td>
-      <td class="dim">${e.windows.slice(0, 2).map(w => windowText(w, tz)).map(esc).join(' · ')}</td></tr>`).join('')}</tbody></table>
+  return `${panelSubheading({ text: `Week ${p.week} would be` })}
+    ${table({ headless: true, columns: PREVIEW_COLUMNS, rows: p.edges.map(e => ({ className: e.score < 2 ? 'lgweak' : undefined, cells: {
+      pair: `${e.a} vs ${e.b}`, shared: `${e.score} day${e.score === 1 ? '' : 's'} shared`,
+      windows: e.windows.slice(0, 2).map(w => windowText(w, tz)).join(' · '),
+    } })) })}
     <p class="hint">${p.short ? `${esc(p.short)} has one opponent fewer this week. ` : ''}Rows in red share fewer than two days — they
       may struggle to meet. The real pairing is made from the players and results at the moment the week starts.</p>`;
 }

@@ -108,7 +108,7 @@ test('973 §4 between games: score, clocks, countdown, presets, boards, legality
 
   const short = { main: MAIN.slice(1), side: [...SIDE, MAIN[0]!] };
   const bad = matchRoomHtml(room({ shown: short }));
-  assert.match(bad, /<p class="deckmsg cclegal">Main deck needs 30 — you have 29\.<\/p>/);
+  assert.match(bad, /<p class="ui-status ui-status--note deckmsg cclegal" role="status">Main deck needs 30 — you have 29\.<\/p>/);
   assert.match(bad, /data-btn="cc-ready" disabled>Ready<\/button> <span class="dim">Fix the deck to ready up\./);
 
   const loser = matchRoomHtml(room({ w: lobby({ chooser: 0 }) }));

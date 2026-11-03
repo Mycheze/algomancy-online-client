@@ -47,12 +47,14 @@ const fix = (x: number | null, d = 1): string => (x === null ? '' : x.toFixed(d)
 
 /** A win rate's tint: a diverging scale around 50% — orange below, cyan above,
  * grey at the middle. The number is always printed, so the colour is never
- * the only thing saying it. */
+ * the only thing saying it. The two colours are tokens (--color-winrate-up /
+ * -down, styles/tokens.css); the strength is the share mixed with transparent,
+ * which is the token at that alpha. */
 function wrTint(x: number | null): string {
   if (x === null) return '';
   const d = Math.max(-1, Math.min(1, (x - 0.5) / 0.25));
-  const a = (Math.abs(d) * 0.34).toFixed(3);
-  return d >= 0 ? `background: rgba(79, 179, 201, ${a})` : `background: rgba(224, 123, 57, ${a})`;
+  const share = (Math.abs(d) * 34).toFixed(1);
+  return `background: color-mix(in srgb, var(--color-winrate-${d >= 0 ? 'up' : 'down'}) ${share}%, transparent)`;
 }
 
 function wrCell(w: Wr): string {
