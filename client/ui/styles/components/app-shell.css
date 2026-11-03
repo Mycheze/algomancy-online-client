@@ -17,6 +17,19 @@
 .ui-app-shell__zone--center { justify-content: center; }
 .ui-app-shell__zone--end { justify-content: flex-end; }
 
+/* `contained` (appShell({ contained: true })): the bars' content and the main
+   region share one centred column. The padding is the larger of the gutter and
+   half of what the window has beyond the column, so the column is
+   --shell-content-max wide on a big screen and the window less two gutters on
+   a small one. A percentage padding is taken of the containing block's width
+   (the window's, for all three), which is what lets one formula serve them. The two
+   sizes are tokens (tokens.css); a page may set them on its root. */
+.ui-app-shell--contained > .ui-app-shell__top > .ui-app-shell__bar,
+.ui-app-shell--contained > .ui-app-shell__bottom > .ui-app-shell__bar,
+.ui-app-shell--contained > .ui-app-shell__main {
+  padding-left: max(var(--shell-gutter), calc((100% - var(--shell-content-max)) / 2));
+  padding-right: max(var(--shell-gutter), calc((100% - var(--shell-content-max)) / 2)); }
+
 /* below a tablet (narrower than 760px or shorter than 600px) the shell lets go:
    stacked flow, at least the window's height, and the PAGE scrolls. Phones are
    "not broken", not designed for (client/docs/24-redesign/, principle 1). */

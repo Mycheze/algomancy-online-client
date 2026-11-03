@@ -55,6 +55,16 @@ export function SCENARIOS(fx) {
   home('info-open', { steps: [{ click: sheetBtn('info') }] });
   home('updates-open', { ...me, steps: [{ click: sheetBtn('updates') }] });
   home('customrules-open', { ...me, steps: [{ click: sheetBtn('rules') }] });
+  // the custom rules out of the sheet, on the Draft tab (owner, 2026-11-03).
+  // Beginner signed out: the tallest Draft tab (the name box, the Mode line,
+  // the two element chips rows)
+  const CARDS_RULES = { v: 1, preset: null, elements: 3, packSize: 10, openingHand: 6, draftDraw: 2, startingLife: 20,
+    simpleOnly: false, bans: ['Overwhelm', 'Ignis Sprite'], query: '-set:lightdark' };
+  home('beginner', { steps: [{ click: '[data-btn="cr-beginner"][data-on="1"]' }] });
+  home('cards-rules', { ...me, ls: { algoCustomRules: JSON.stringify(CARDS_RULES) } });
+  home('ban-typing', { steps: [{ type: '#cr-ban', text: 'ign', settle: 200 }] });
+  home('competitive-clock-off', { ...me, steps: [constructedTab, { click: '[data-btn="home-format"][data-format="competitive"]' },
+    { click: '[data-btn="clockpick"][data-clockfor="competitive"][data-ms="0"]' }] });
   add('auth', 'sign-up', '/', { steps: [{ click: btn('acct-open-auth') }], pages: 1 });
   add('auth', 'log-in', '/', { steps: [{ click: btn('acct-open-auth') }, { click: btn('acct-toggle-mode') }], pages: 1 });
   // the legal pages open from the client info sheet (the bottom bar's left)

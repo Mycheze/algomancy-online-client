@@ -419,7 +419,8 @@ ANTI-HALLUCINATION CONTRACT" 1a).
   binding in CC. No owner call is needed for the order itself. The owner call is only that CC
   drops D1.5.
 - *(annexd)* **The match clock.**
-  - 45 minutes per player for the whole match. It runs under D3.2.
+  - 45 minutes per player for the whole match by default; the creator may choose another bank
+    or none (§6.1, 2026-11-03). It runs under D3.2.
   - Neither clock runs between games or while the match is paused.
   - Running out loses the match.
 - *(annexd)* **The sideboard window.**
@@ -747,8 +748,8 @@ waiting room's branch in `ui/main.ts`. The match-specific DOM stays in `match.ts
   build a casual room.
 - **Clock across games.**
   - The topbar shows the carried bank.
-  - Game *k*+1's room is created with `clockMs = match.banks` and `clockStart = 45 min` (the
-    match's setting, for display: "of 45:00").
+  - Game *k*+1's room is created with `clockMs = match.banks` and `clockStart` = the match's
+    bank (45 min by default, for display: "of 45:00"; null for a match with no clock, §6.1).
   - `createRoom` (`rooms.ts:2498`) takes an optional initial `clockMs`.
   - `match.banks` is written from the room's `clockMs` in `matchGameDecided`, after
     `settleClock`.
@@ -838,8 +839,16 @@ and `Match.rated` are carried onto every game room the match creates.
 - A **Competitive** home card, beside Constructed (`ui/main.ts:9416`). It has a Bo1 / Bo3
   toggle (default Bo3), the deck picker filtered to CC-legal decks, and **New match**. It needs
   sign-in (§2.2). Signed out, the card says so and offers Sign in.
-- **No clock picker.** The bank is `MATCH_CLOCK_MS.constructed`, the 45 minutes the owner asked
-  for, and it is fixed.
+- **A Clock row** (owner, 2026-11-03: "Competitive constructed still needs the Clock setting.
+  Yes, the default will usually be used, but it's up to the players if they want to override
+  that"). Default · Off · 45m · 60m, Default preselected. It is its own setting
+  (`algoMatchClockMs`, `pages/clockpick.ts` MATCH_CLOCK_KEY), apart from the casual clock: a
+  match bank lasts the whole match. A choice rides the creating link as `&clock=` (`ui/match.ts`
+  newMatch); Default sends nothing, and the server's creating join then uses
+  `MATCH_CLOCK_MS.constructed`, the owner's 45 minutes. A league match room exists before anyone
+  joins it, so it keeps that default whatever a link says. Off makes the whole match clockless:
+  `Match.clockStart` is null and every later game's room is created with no clock (tests 1045,
+  1046, 1043).
 - Rooms made from the lobby are **unrated**, like every link room (`rooms.ts:730-738`).
 - The waiting-room header (`ui/main.ts:9493`) reads "Competitive — Best of 3 — room CODE".
 

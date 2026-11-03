@@ -2,10 +2,15 @@
  * match history, the prompt and the help.
  *
  * The owner's picture was Smash Bros Brawl: a normal game says nothing, and
- * the settings are there for whoever goes looking. So §1 is that the panel
- * starts closed and sends NOTHING while it is untouched — a standard game is
- * the same plain GET /api/new it always was — and only then what it sends
- * once something changes.
+ * the settings are there for whoever goes looking. So §1 is that untouched
+ * rules send NOTHING — a standard game is the same plain GET /api/new it
+ * always was — and only then what they send once something changes.
+ *
+ * Since 2026-11-03 the panel is taken apart (owner: the modal "should only be
+ * reserved for changing the default 'value settings'"): Mode, Cards and
+ * Banned are rows of the home's Draft tab and the numbers a Game values sheet
+ * (pages/customrules.ts). The markup pins below follow the pieces; what is
+ * SENT is unchanged and is what §1–§5 hold to.
  *
  * Titles carry no apostrophes: ledger guards cite them by substring.
  */
@@ -13,25 +18,25 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createPayload, elementCount, handlePanelButton, verdict } from '../customrulespanel.ts';
-import { customRulesHtml, customRulesView } from '../pages/customrules.ts';
+import { bansHtml, cardsHtml, customRulesView, gameValuesHtml, modeHtml, poolLineHtml } from '../pages/customrules.ts';
 import { lobbyHtml as drawLobby, lobbyView, type LobbyArgs } from '../pages/lobby.ts';
 import { customTag, historyRowsHtml, type MatchRow } from '../account.ts';
 import { RULES_SECTIONS } from '../rules.ts';
 import { DECK_LIST } from '../../engine/src/cards/registry.ts';
 
-// the panel's markup is pages/customrules.ts since the design-system round (2026-11-03)
-const panelHtml = (fixed: readonly string[] | null): string => customRulesHtml(customRulesView(fixed));
+// the rules' markup is pages/customrules.ts's pieces (2026-11-03): all of them, in the Draft tab's order
+const panelHtml = (fixed: readonly string[] | null): string => {
+  const v = customRulesView(fixed);
+  return [modeHtml(v), cardsHtml(v), bansHtml(v), poolLineHtml(v), gameValuesHtml(v)].join('\n');
+};
 const click = (b: string, data: Record<string, string> = {}): boolean =>
   handlePanelButton(b, { dataset: data } as unknown as HTMLElement);
 const reset = (): void => { click('cr-preset', { preset: 'standard' }); };
 
-// ⚠ §1 must run FIRST and click nothing: every panel button opens the panel on
-// purpose (a changed panel stays open), so "starts closed" is only observable
-// before the first click of the module's life.
-test('BL-43 ui §1 the panel starts closed and an untouched panel sends nothing', () => {
+// §1 runs FIRST and clicks nothing: the module's untouched state
+test('BL-43 ui §1 untouched rules are the standard game and send nothing', () => {
   const html = panelHtml(null);
-  assert.match(html, /<details class="customrules" data-customrules >/, 'closed: no open attribute');
-  assert.match(html, /none set/);
+  assert.match(html, /class="ui-segmented__option on" data-btn="cr-beginner"[^>]*data-on="0">Standard</, 'Mode reads Standard');
   assert.equal(createPayload(null), null, 'a standard game is a plain GET — no rules are sent');
   assert.equal(verdict(null).rules, null);
   assert.equal(elementCount(), 3);
@@ -49,9 +54,9 @@ test('BL-43 ui §2 the Beginner preset sends two elements, simple cards and pack
   assert.equal(elementCount(), 2, 'the home screen fixed pick now wants two');
   assert.equal(verdict(['fire', 'wood']).error, undefined);
   const html = panelHtml(['fire', 'wood']);
-  assert.match(html, /data-customrules open/, 'a changed panel stays open');
-  assert.match(html, /class="crsimple on"/, 'Simple cards only shows as on');
-  assert.match(html, /Packs of 5/);
+  assert.match(html, /class="ui-segmented__option on" data-btn="cr-beginner"[^>]*data-on="1">Beginner</, 'Mode reads Beginner');
+  assert.match(html, /ui-toggle on crsimple"/, 'Simple cards only shows as on');
+  assert.match(html, /<div class="crknob changed"><span>Pack size<\/span>[\s\S]*?<b>5<\/b>/);
   reset();
   assert.equal(createPayload(null), null, 'Back to standard sends nothing again');
 });
@@ -60,9 +65,14 @@ test('BL-43 ui §3 Simple cards only is its own control, apart from the advanced
   reset();
   const html = panelHtml(null);
   const simple = html.indexOf('data-btn="cr-simple"');
-  const advanced = html.indexOf('class="cradvanced"');
-  assert.ok(simple > 0 && advanced > simple, 'the toggle is drawn, and above the Advanced section');
-  assert.ok(!html.slice(advanced).includes('cr-simple'), 'and is not inside it');
+  const advanced = html.indexOf('data-btn="cr-advanced"');
+  assert.ok(simple > 0 && advanced > simple, 'the toggle is drawn, and before the card filter');
+  click('cr-advanced');
+  const open = panelHtml(null);
+  const box = open.indexOf('class="cradvanced"');
+  assert.ok(box > 0, 'positive control: the card filter box opened');
+  assert.ok(!open.slice(box).includes('cr-simple'), 'the toggle is not inside the filter');
+  click('cr-advanced');
   click('cr-simple');
   assert.equal(createPayload(null)?.rules.simpleOnly, true);
   assert.equal(createPayload(null)?.rules.query, '', 'turning it on writes no card filter');

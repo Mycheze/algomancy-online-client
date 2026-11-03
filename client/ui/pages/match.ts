@@ -199,8 +199,11 @@ function scoreboardHtml(v: MatchRoomView): string {
     ? ` · <span class="cccount" data-cc-until="${w.until}">${clock(w.until - v.now)}</span> to sideboard` : '';
   return `<div class="ccscore">
     <div class="ccgame">Game ${w.game} of ${w.bestOf} — ${esc(scoreWords(w.score, me))}${left}</div>
-    <div class="ccbanks">Your clock <b>${clock(w.banks[me] ?? 0)}</b> · ${esc(w.names[opp] || 'Opponent')} <b>${clock(w.banks[opp] ?? 0)}</b>
-      <span class="dim">of ${clock(w.clockStart)}</span></div>
+    ${w.clockStart === null
+      // the creator chose no clock (docs/22 §6.1): there are no banks to show
+      ? '<div class="ccbanks"><span class="dim">No clock in this match</span></div>'
+      : `<div class="ccbanks">Your clock <b>${clock(w.banks[me] ?? 0)}</b> · ${esc(w.names[opp] || 'Opponent')} <b>${clock(w.banks[opp] ?? 0)}</b>
+      <span class="dim">of ${clock(w.clockStart)}</span></div>`}
   </div>`;
 }
 

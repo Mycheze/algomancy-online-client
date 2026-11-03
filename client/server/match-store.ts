@@ -73,8 +73,9 @@ export interface Match {
   games: MatchGame[];
   /** chess-clock ms left per seat, written at each game's end */
   banks: [number, number];
-  /** the bank the match started with (the display's "of 45:00") */
-  clockStart: number;
+  /** the bank the match started with (the display's "of 45:00"); null when
+   *  the creator chose no clock (2026-11-03) — every game of it is clockless */
+  clockStart: number | null;
   phase: MatchPhase;
   /** the room of the game being played (phase 'game') */
   room: string;

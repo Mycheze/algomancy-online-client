@@ -50,7 +50,7 @@ const rulesRow = (h: string): string => /<span class="homerulessum">([^]*?)<\/sp
 
 test('366 the clock chips are the Play card Clock row, and Custom rules has none', () => {
   let html = ui.html();
-  assert.match(html, /class="ui-app-shell homepage"/, 'positive control: the home screen really was painted');
+  assert.match(html, /class="ui-app-shell ui-app-shell--contained homepage"/, 'positive control: the home screen really was painted');
   const play = playCard(html);
   assert.ok(play, 'no Play card on the home screen');
   const all = [...html.matchAll(/data-btn="clockpick"/g)].length;
@@ -59,11 +59,11 @@ test('366 the clock chips are the Play card Clock row, and Custom rules has none
   assert.match(clockRow(play), /data-clockpick="draft"/, 'the Draft tab draws the draft clock');
   assert.match(play, /<div class="homerowlabel">Clock<\/div>/, 'under its own label');
 
-  // the Custom rules sheet: the rules, and no clock
+  // the Game values sheet (the custom rules' numbers, 2026-11-03): no clock
   html = ui.click({ btn: 'home-sheet', sheet: 'rules' });
   const sheet = block(html, /<div class="ui-sheet /, 'div');
-  assert.match(sheet, /data-customrules/, 'positive control: the Custom rules sheet opened');
-  assert.doesNotMatch(sheet, /data-btn="clockpick"/, 'the clock is back inside Custom rules');
+  assert.match(sheet, /data-btn="cr-step"/, 'positive control: the Game values sheet opened');
+  assert.doesNotMatch(sheet, /data-btn="clockpick"/, 'the clock is back inside the custom rules');
   ui.click({ btn: 'home-sheet-close' });
 
   // the Constructed tab draws its own, and only its own
@@ -83,8 +83,8 @@ test('366 changing the clock does not make the game custom', () => {
   assert.equal(crp.verdict(null).rules, null);
   const html = ui.html();
   const s = rulesRow(html);
-  assert.match(s, /None/, `the Custom rules row reflects the clock: ${s}`);
-  assert.doesNotMatch(s, /clock|⏱|Off/i, `the Custom rules row mentions the clock: ${s}`);
+  assert.match(s, /Standard values/, `the Game values row reflects the clock: ${s}`);
+  assert.doesNotMatch(s, /clock|⏱|Off/i, `the Game values row mentions the clock: ${s}`);
   assert.match(html, /data-btn="newgame" type="button" data-mode="draft">Create room</,
     'the Create button calls it a custom room');
   ui.click({ btn: 'clockpick', ms: 'auto' });

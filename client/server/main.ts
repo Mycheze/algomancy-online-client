@@ -2641,8 +2641,12 @@ wss.on('connection', ws => {
       const room = joinableRoom(code, mode,
         Array.isArray(msg.els) ? (msg.els as import('../engine/src/types.ts').Element[]) : undefined,
         deckCards ?? undefined,
-        // docs/22 §6.1: a match's bank is fixed — the owner's 45 minutes, nobody's picker
-        ccId ? MATCH_CLOCK_MS.constructed : sanitizeClock(msg.clock), single,
+        // docs/22 §6.1: a match's bank is the creator's Clock choice (owner,
+        // 2026-11-03: "it's up to the players if they want to override that"),
+        // and with none on the link the owner's default, 45 minutes each for
+        // the whole match. Only ever a CREATING join: a league match room
+        // exists before anybody joins it, so it keeps its fixed default.
+        ccId ? (msg.clock !== undefined ? sanitizeClock(msg.clock) : MATCH_CLOCK_MS.constructed) : sanitizeClock(msg.clock), single,
         ccId ? { rules: { sequential: true }, match: { id: ccId, game: 1 } } : undefined);
       // only reachable if the reservation expired between the check above and
       // here; treated exactly like a typo

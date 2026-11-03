@@ -1,36 +1,39 @@
-import { customRulesHtml, type CustomRulesView } from '../../../ui/pages/customrules.ts';
-import type { CustomRules } from '../../../ui/customrules.ts';
-import { RULES_STANDARD, STANDARD_RULES } from './_page.ts';
+import {
+  bansHtml, cardsHtml, gameValuesHtml, modeHtml, poolLineHtml, type CustomRulesView,
+} from '../../../ui/pages/customrules.ts';
+import { RULES_BEGINNER, RULES_CARDS, RULES_STANDARD } from './_page.ts';
 
-const STANDARD = STANDARD_RULES;
-
-const BEGINNER = { ...STANDARD, elements: 2, packSize: 5, simpleOnly: true, bans: ['Overwhelm'] } as CustomRules;
+/* The custom rules' pieces (pages/customrules.ts), as the home's Draft tab and
+ * its Game values sheet draw them. The whole tab is Pages/Home's stories. */
+const pieces = (v: CustomRulesView): string => `<div class="homeplay" style="max-width:560px">
+  <div class="homerows">
+    <div class="homerow"><div class="homerowlabel">Mode</div><div class="homerowctl">${modeHtml(v)}</div></div>
+    <div class="homerow"><div class="homerowlabel">Cards</div><div class="homerowctl">${cardsHtml(v)}</div></div>
+    <div class="homerow"><div class="homerowlabel">Banned</div><div class="homerowctl">${bansHtml(v)}</div></div>
+    ${poolLineHtml(v)}
+  </div>
+  <hr>
+  ${gameValuesHtml(v)}
+</div>`;
 
 export default {
-  title: 'Pages/Custom rules panel',
-  render: (v: CustomRulesView) => `<div style="max-width:380px" class="homecard">${customRulesHtml(v)}</div>`,
+  title: 'Pages/Custom rules pieces',
+  render: (v: CustomRulesView) => `<div class="homepage" style="padding:16px">${pieces(v)}</div>`,
   args: RULES_STANDARD,
 };
 
-export const Closed = {};
-export const OpenStandard = { name: 'Open, standard', args: { ...RULES_STANDARD, open: true } };
-export const Beginner = {
-  name: 'Beginner, a ban, the pool line',
-  args: {
-    ...RULES_STANDARD, open: true, active: BEGINNER, rules: BEGINNER,
-    summary: ['2 elements', 'Packs of 5', 'Simple cards only', '1 ban'],
-    pool: '<span class="crok">✓ 312 cards: enough for two players</span>',
-  },
-};
+export const Standard = {};
+export const Beginner = { name: 'Beginner: the pool line, two values changed', args: RULES_BEGINNER };
+export const BansAndFilter = { name: 'Two bans, the card filter open', args: RULES_CARDS };
 export const Refused = {
   name: 'A pool the server would refuse',
   args: {
-    ...RULES_STANDARD, open: true, active: { ...BEGINNER, packSize: 15 }, rules: { ...BEGINNER, packSize: 15 },
-    summary: ['2 elements', 'Packs of 15', 'Simple cards only'], advancedOpen: true,
-    pool: '<span class="crbad">✗ too few cards for packs of 15</span>',
+    ...RULES_BEGINNER, rules: { ...RULES_BEGINNER.rules, packSize: 15 }, active: { ...RULES_BEGINNER.rules, packSize: 15 },
+    beginner: false, values: ['2 elements', 'Packs of 15'],
+    pool: '<span class="crbad">✗ Fire + Wood leaves only 121 cards and these rules need 150. Try smaller packs, fewer cards dealt, or fewer restrictions.</span>',
   },
 };
 export const Typing = {
   name: 'Typing a ban',
-  args: { ...RULES_STANDARD, open: true, banDraft: 'ign', suggestions: '<button data-btn="cr-ban" data-name="Ignis Sprite">Ignis Sprite</button>' },
+  args: { ...RULES_STANDARD, banDraft: 'ign', suggestions: '<button data-btn="cr-ban" data-name="Ignis Sprite">Ignis Sprite</button>' },
 };

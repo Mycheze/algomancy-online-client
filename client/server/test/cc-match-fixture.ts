@@ -34,12 +34,14 @@ export async function ccFixture(tag: string) {
   const codes: string[] = [];
   M.setMatchHooks({ code: () => { const c = `${tag.toUpperCase().slice(0, 3)}${(++n).toString(36).toUpperCase()}`; codes.push(c); return c; } });
 
-  /** a match as main.ts's creating join builds it, both seats registered and game 1 dealt */
-  function start(bestOf: 1 | 3, users: [string, string] = ['u-ann', 'u-bo'], regs: [Registered, Registered] = REG): { room: Room; m: Match } {
+  /** a match as main.ts's creating join builds it, both seats registered and game 1 dealt.
+   *  `clock`: the bank the creator chose (docs/22 §6.1), null for none; the match default if left out */
+  function start(bestOf: 1 | 3, users: [string, string] = ['u-ann', 'u-bo'], regs: [Registered, Registered] = REG,
+    clock: number | null = R.MATCH_CLOCK_MS.constructed): { room: Room; m: Match } {
     const id = M.reserveMatchId();
     const code = `${tag.toUpperCase().slice(0, 3)}G${(++n).toString(36).toUpperCase()}`;
     R.reserveRoomCode(code);
-    const room = R.joinableRoom(code, 'constructed', undefined, regs[0].main, R.MATCH_CLOCK_MS.constructed, false,
+    const room = R.joinableRoom(code, 'constructed', undefined, regs[0].main, clock, false,
       { rules: { sequential: true }, match: { id, game: 1 } })!;
     const m = M.startMatch(room, id, bestOf);
     for (const s of [0, 1] as Seat[]) R.setSeatUser(room, s as 0 | 1, users[s]!);

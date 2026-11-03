@@ -185,7 +185,7 @@ import { artUrl, ICON_BASE } from './assets.ts';
 // one of those has already been evaluated and the boot order is unchanged.
 import * as admin from './pages/admin.ts';
 import { caretIn, type CaretSnap } from './pages/caret.ts';
-import { CLOCK_DEFAULT_MS, chosenClockMs } from './pages/clockpick.ts';
+import { CLOCK_DEFAULT_MS, chosenClockMs, setMatchClockChoice } from './pages/clockpick.ts';
 import { connectingHtml } from './pages/connecting.ts';
 import { importDeck } from './pages/deckpicker.ts';
 import { closeHomeSheet, openHomeSheet, paintHome, saveHomeName, setHomeFormat, setHomeMode } from './pages/home.ts';
@@ -10068,15 +10068,19 @@ document.addEventListener('click', e => {
  * home screen itself, navigates away, or fires a request whose reply does the
  * painting — so the caller stops when one of these claims the click. */
 function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
-  // BL-43: the Custom rules panel's buttons
+  // BL-43: the custom rules' buttons (the Draft tab's rows, the Game values sheet)
+  const wasBeginner = crp.beginnerOn();
   if (crp.handlePanelButton(b, btn)) {
-    // the Beginner preset SUGGESTS the rulebook's pair, as a fixed pick the
-    // player can see and change — not a choice made for them
-    if (b === 'cr-preset' && btn.dataset['preset'] === 'beginner') {
+    // Beginner (the Mode row, or the preset) SUGGESTS the rulebook's pair, as
+    // a fixed pick the player can see and change — not a choice made for them
+    if ((b === 'cr-preset' && btn.dataset['preset'] === 'beginner') || (b === 'cr-beginner' && btn.dataset['on'] === '1')) {
       ui.homeEls = ['fire', 'wood'];
       ui.homeFixedTrio = true;
       localStorage.setItem('algoEls', JSON.stringify(ui.homeEls));
     }
+    // …and Standard, from Beginner, is the standard game again: the elements
+    // go back to being chosen in the room
+    if (b === 'cr-beginner' && btn.dataset['on'] !== '1' && wasBeginner) ui.homeFixedTrio = false;
     renderHome();
     return true;
   }
@@ -10108,6 +10112,13 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
       if (!ui.homeEls.includes(pick)) ui.homeEls.push(pick);
     }
     localStorage.setItem('algoEls', JSON.stringify(ui.homeEls));
+    renderHome();
+    return true;
+  }
+  if (b === 'clockpick' && btn.dataset['clockfor'] === 'competitive') {
+    // docs/22 §6.1: a Competitive match's clock is its own setting (a match
+    // bank, not a per-game one) — pages/clockpick.ts MATCH_CLOCK_KEY
+    setMatchClockChoice(btn.dataset['ms']);
     renderHome();
     return true;
   }

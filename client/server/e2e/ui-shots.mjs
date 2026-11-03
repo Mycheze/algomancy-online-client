@@ -60,7 +60,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { SHOTS_NOW, buildFixture, copyFixtureVar, fixtureEnv } from './ui-fixture.ts';
-import { NO_SCROLL_VIEWPORTS, overflowJs, pageScrolls } from './ui-shots-overflow.mjs';
+import { NO_SCROLL_VIEWPORTS, overflowJs, pageScrolls, regionScrolls } from './ui-shots-overflow.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 // ws is the server's own dependency, and CommonJS
@@ -460,6 +460,13 @@ async function main() {
           if (s.noScroll && NO_SCROLL_VIEWPORTS.includes(vpName) && (!ov || pageScrolls(ov))) {
             entry.pageScrolls = ov ? { w: ov.scrollW, h: ov.scrollH, W: ov.W, H: ov.H } : 'not measured';
             problems.push(`${name}: the page scrolls (${ov ? `${ov.scrollW}×${ov.scrollH} in a ${ov.W}×${ov.H} window` : 'not measured'}) — it must fit the window`);
+            noScrollFailed = true;
+          }
+          // …and neither may the shell's main region, which scrolls inside itself
+          // where the page cannot see it (ui-shots-overflow.mjs regionScrolls)
+          if (s.noScroll && NO_SCROLL_VIEWPORTS.includes(vpName) && ov && regionScrolls(ov)) {
+            entry.regionScrolls = { h: ov.region.scrollH, H: ov.region.H };
+            problems.push(`${name}: the main region scrolls (${ov.region.scrollH}px in ${ov.region.H}px) — it must fit the window`);
             noScrollFailed = true;
           }
           // screenfuls: scroll the document, never resize the window

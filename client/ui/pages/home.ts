@@ -9,8 +9,10 @@
  * Challenge and Matchmaking, each of which opens its page.
  *
  * Everything that used to be a fold or a band is a SHEET now (components/
- * sheet.ts): Join a room, the Custom rules panel, the deck import, Single Card
- * Duel, the client info and the update log. Which sheet is open is this
+ * sheet.ts): Join a room, the Game values (the custom rules' numbers), the deck
+ * import, Single Card Duel, the client info and the update log. The rest of
+ * the custom rules — Beginner, Simple cards only, the card filter, the bans —
+ * are rows of the Draft tab itself (owner, 2026-11-03). Which sheet is open is this
  * module's state (`homeSheet`), so the home's frequent whole-page repaints
  * (the queue poll, a friend coming online) simply draw it open again.
  *
@@ -56,7 +58,9 @@ import {
 import { chosenDeck, elIcon as elIconOf, esc } from '../util.ts';
 import { caretIn, restoreCaret } from './caret.ts';
 import { clockPickHtml, clockPickView, type ClockPickView } from './clockpick.ts';
-import { customRulesHtml, customRulesView } from './customrules.ts';
+import {
+  BEGINNER_HINT, bansHtml, cardsHtml, customRulesView, gameValuesHtml, modeHtml, poolLineHtml, type CustomRulesView,
+} from './customrules.ts';
 import { deckImportHtml, deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
 import { singleCardPickerHtml, singleCardPickerView } from './singlecard.ts';
 import { ccDeckSelectHtml, competitiveCardView, yourMatchesHtml, yourMatchesView, type CompetitiveCardView } from './match.ts';
@@ -181,8 +185,6 @@ export interface HomeSlots {
   yourMatches: string;
   /** league.ts joinRowsHtml — league matches to play now ('' when none) */
   leagueMatches: string;
-  /** pages/customrules.ts customRulesHtml, bare — the Custom rules sheet's body */
-  customRules: string;
   /** pages/singlecard.ts singleCardPickerHtml — the Single Card Duel sheet's picker */
   scpicker: string;
   /** legal.ts footHtml — the client info sheet: buy links, the notice, credits, the legal pages */
@@ -215,10 +217,12 @@ export interface HomeView {
     customError: string | undefined;
     /** custom rules are set: "Create custom room" */
     custom: boolean;
-    /** the Custom rules row's summary, one entry per changed rule ([] = none) */
-    rulesSummary: readonly string[];
+    /** the custom rules as the Draft tab's rows and the Game values sheet draw
+     * them (pages/customrules.ts customRulesView) */
+    rules: CustomRulesView;
   };
-  /** the clock picker for the tab that is showing (Competitive's is fixed) */
+  /** the clock picker for the tab that is showing — Competitive's is the
+   * match clock (`mode: 'competitive'`, its own setting) */
   clock: ClockPickView;
   /** the last refusal (main.ts `uiError`), or '' */
   error: string;
@@ -279,9 +283,9 @@ export function homeView(st: HomeState): HomeView {
     draft: {
       k, els: st.els, fixedOpen: st.fixedOpen, setCount: crp.setCount(),
       fixedError: fixedVerdict.error, customError: customVerdict.error, custom: !!customVerdict.rules,
-      rulesSummary: rulesView.active ? rulesView.summary : [],
+      rules: rulesView,
     },
-    clock: clockPickView(mode),
+    clock: clockPickView(mode === 'constructed' && homeFormat() === 'competitive' ? 'competitive' : mode),
     error: st.error,
     deckPicker: deckPickerView(),
     hasDeck: !!deck,
@@ -291,7 +295,6 @@ export function homeView(st: HomeState): HomeView {
     badges: { alerts: inbox.inboxUnread(), join, updates: updatesUnseen() },
     slots: {
       league, challenge, queue, invites, yourMatches, leagueMatches,
-      customRules: customRulesHtml(rulesView, { bare: true }),
       scpicker: singleCardPickerHtml(singleCardPickerView()),
       info: footHtml(),
       updates: updatesListHtml(),
@@ -348,9 +351,11 @@ const create = (label: string, p: { dataBtn: string; attrs?: Record<string, stri
   button({ label, variant: 'action', className: 'homecreate', dataBtn: p.dataBtn, attrs: p.attrs, disabled: p.disabled, title: p.title });
 
 function draftRowsHtml(v: HomeView): { rows: string; go: string } {
-  const d = v.draft, k = d.k;
+  const d = v.draft, k = d.k, r = d.rules;
   const picked = d.els.length === k;
-  const rows = row('Clock', clockPickHtml(v.clock, { look: 'segmented' }))
+  // Mode first: Beginner sets the elements, the cards and the values below it
+  const rows = row('Mode', `<div class="homemode">${modeHtml(r)}${r.beginner ? `<span class="homemodehint">${esc(BEGINNER_HINT)}</span>` : ''}</div>`)
+    + row('Clock', clockPickHtml(v.clock, { look: 'segmented' }))
     + row('Elements', segmented({
       ariaLabel: 'Elements', size: 'sm',
       options: [
@@ -358,10 +363,15 @@ function draftRowsHtml(v: HomeView): { rows: string; go: string } {
         { label: 'Pick now', value: 'now', on: d.fixedOpen, dataBtn: 'home-els', attrs: { 'data-pick': 'now' } },
       ],
     }) + (d.fixedOpen ? elementPickHtml(d) : ''),
-    d.fixedOpen ? '' : `You both pick the ${k === 3 ? 'three' : k} elements in the room.`)
-    + row('Custom rules', `<div class="homerules"><span class="homerulessum">${d.rulesSummary.length
-      ? `<b>${esc(d.rulesSummary.join(' · '))}</b>` : '<span class="dim">None — the standard game</span>'}</span>
-      ${button({ label: 'Change…', size: 'sm', ...opens('rules') })}</div>`);
+    d.fixedOpen ? '' : `You both pick the ${k === 3 ? 'three' : k === 2 ? 'two' : k} elements in the room.`)
+    + row('Cards', cardsHtml(r))
+    + row('Banned', bansHtml(r))
+    // the numbers alone live in a sheet (owner: the modal is "only reserved
+    // for changing the default 'value settings'")
+    + row('Game values', `<div class="homerules"><span class="homerulessum">${r.values.length
+      ? `<b>${esc(r.values.join(' · '))}</b>` : '<span class="dim">Standard values</span>'}</span>
+      ${button({ label: 'Change…', size: 'sm', ...opens('rules') })}</div>`)
+    + poolLineHtml(r);
   const custom = d.custom ? 'Create custom room' : 'Create room';
   const go = d.fixedOpen
     ? create(picked ? `${custom} · ${d.els.map(cap).join(' + ')}` : `Pick ${k} elements (${d.els.length}/${k})`, {
@@ -397,7 +407,9 @@ function constructedRowsHtml(v: HomeView): { rows: string; go: string } {
           label: `${n} game${n === 1 ? '' : 's'}`, value: String(n), on: c.bestOf === n, dataBtn: 'cc-bo', attrs: { 'data-bo': n },
         })),
       }))
-      + row('Clock', '<span class="homefixed">45 minutes each, for the whole match</span>')
+      // docs/22 §6.1: the match clock — Default is the owner's 45 minutes each
+      // for the whole match; the creator may override it (owner, 2026-11-03)
+      + row('Clock', clockPickHtml(v.clock, { look: 'segmented' }))
       + row('Deck', ccDeckSelectHtml(c.decks, c.pick));
     return { rows, go: create(c.pick ? 'Create match' : 'Pick a deck first', { dataBtn: 'cc-new', disabled: !c.pick }) };
   }
@@ -510,8 +522,9 @@ function sheetHtml(v: HomeView): string {
     case 'join':
       return sheet({ ...base, id: SHEET_IDS.join, title: 'Join a room', className: 'homesheet', bodyHtml: joinBody(v) });
     case 'rules':
-      return sheet({ ...base, id: SHEET_IDS.rules, title: 'Custom rules', width: 'lg', className: 'homesheet',
-        bodyHtml: `<p class="homesheetnote">A custom game counts toward no stats or rating. The clock is not a custom rule.</p>${s.customRules}`,
+      // the Game values: the numbers only (the cards rules are on the Draft tab)
+      return sheet({ ...base, id: SHEET_IDS.rules, title: 'Game values', width: 'md', className: 'homesheet',
+        bodyHtml: `<p class="homesheetnote">Change a value and the room is a custom game: it counts toward no stats or rating.</p>${gameValuesHtml(v.draft.rules)}`,
         footerHtml: button({ label: 'Done', variant: 'action', dataBtn: 'home-sheet-close' }) });
     case 'import':
       return sheet({ ...base, id: SHEET_IDS.import, title: 'Import a deck', className: 'homesheet',
@@ -569,6 +582,9 @@ export function homeHtml(v: HomeView): string {
       + iconButton({ label: 'Report', icon: 'report', attrs: { 'data-report': 'open' }, title: 'report a bug or say something' }),
   });
   return appShell({
+    // one centred column for the bars' content and the main region (owner,
+    // 2026-11-03: the toolbar sat hard in the window's corners on a laptop)
+    contained: true,
     className: 'homepage',
     topHtml: top,
     mainHtml: `<div class="homemain">${playHtml(v)}${sideHtml(v)}</div>${sheetHtml(v)}`,
@@ -681,7 +697,7 @@ export function paintHome(app: HTMLElement, st: HomeState, rerender: () => void)
   mt.wireDeckSelect(rerender);   // docs/22 §6.1: Competitive's deck picker
   // docs/22 §5.6: a paused or running match is always one button away (the Join sheet)
   mt.loadMyMatches(acct.token() ? acct.authHeaders(false) : null, rerender);
-  crp.wirePanel();   // BL-43 (the Custom rules sheet)
+  crp.wirePanel();   // BL-43: the Draft tab's ban and filter boxes
   sc.wire();         // CR D8.2 (the Single Card Duel sheet)
   // what was typed, and where, survives the repaint (HOME_TYPED)
   HOME_TYPED.forEach((id, i) => {

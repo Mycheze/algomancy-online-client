@@ -70,30 +70,34 @@
 .fixedtrio > summary:hover { color: var(--text); }
 .fixedtrio .elrow { flex-wrap: wrap; gap: var(--space-2); margin: var(--space-4) 0; }
 
-/* BL-43: the Custom rules panel on the Live draft card — closed by default, and
-   a normal game unless something in it changes */
-.customrules { border-top: 1px dashed var(--line); padding-top: var(--space-4); margin-top: var(--space-3); }
-.customrules > summary { color: var(--dim); font-size: var(--text-12); cursor: pointer; padding: var(--space-1) 0; }
-.customrules > summary b { color: var(--accent); font-weight: 600; }
-.customrules > summary:hover { color: var(--text); }
-.crpresets { display: flex; gap: var(--space-3); flex-wrap: wrap; margin: var(--space-4) 0; }
-.crsimple { display: flex; align-items: center; gap: var(--space-3); width: 100%; text-align: left; margin: var(--space-2) 0 var(--space-4); }
-.crsimple.on { border-color: var(--accent); }
-.crsimple .dim { margin-left: auto; font-size: var(--text-11); }
-.crknobs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-2) var(--space-4); margin-bottom: var(--space-4); }
-.crknob { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-12); }
+/* BL-43: the custom rules — rows of the home's Draft tab (Cards, Banned, the
+   pool line) and the Game values sheet (the numbers), pages/customrules.ts.
+   They were one panel in a sheet until 2026-11-03. */
+.crcards { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3) var(--space-5); }
+.cradvanced { display: flex; flex-direction: column; gap: var(--space-2); width: 100%; }
+.cradvanced input { width: 100%; max-width: 360px; box-sizing: border-box; padding: var(--space-2) var(--space-4); }
+.cradvanced .dim { font-size: var(--text-11); }
+.crbans { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); width: 100%; font-size: var(--text-12); }
+.crchip { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-1) var(--space-2) var(--space-1) var(--space-4); }
+.crchip button { padding: 0 var(--space-2); border: 0; background: none; }
+.crbanbox { position: relative; flex: 1 1 160px; max-width: 260px; }
+.crbanbox input { width: 100%; box-sizing: border-box; padding: var(--space-2) var(--space-4); }
+/* the ban suggestions hang under the box: typing never makes the Draft tab taller */
+.crbanbox .crsugg { position: absolute; top: calc(100% + var(--space-2)); left: 0; z-index: var(--z-popover);
+  min-width: 100%; width: max-content; max-width: 360px; padding: var(--space-3);
+  background: var(--color-surface-overlay); border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-1); }
+.crbanbox .crsugg:empty { display: none; }
+.crsugg { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.crsugg button { font-size: var(--text-11); padding: var(--space-1) var(--space-3); }
+.crknobs { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: var(--space-4) var(--space-6); }
+.crknob { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-13); }
 .crknob span { flex: 1; color: var(--dim); }
 .crknob.changed span { color: var(--text); }
 .crknob b { min-width: 2ch; text-align: center; }
-.crknob button { padding: 0 var(--space-3); line-height: 20px; }
-.crbans input, .cradvanced input { width: 100%; box-sizing: border-box; margin: var(--space-2) 0; padding: var(--space-2) var(--space-4); }
-.crchips { display: flex; flex-wrap: wrap; gap: var(--space-2); font-size: var(--text-12); }
-.crchip { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-1) var(--space-2) var(--space-1) var(--space-4); }
-.crchip button { padding: 0 var(--space-2); border: 0; background: none; }
-.crsugg { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.crsugg button { font-size: var(--text-11); padding: var(--space-1) var(--space-3); }
-.cradvanced > summary { color: var(--dim); font-size: var(--text-12); cursor: pointer; margin-top: var(--space-3); }
-.crpool { font-size: var(--text-12); margin-top: var(--space-4); }
+.crknob button { padding: 0 var(--space-3); line-height: 22px; }
+.crvaluesfoot { margin-top: var(--space-6); }
+.crpool { font-size: var(--text-12); }
+.crpool:empty { display: none; }
 .crok { color: var(--dim); }
 .crbad { color: var(--danger); }
 .lobbycustom { border: 1px solid var(--accent); border-radius: var(--radius-md); padding: var(--space-4) var(--space-5); margin-bottom: var(--space-5); }

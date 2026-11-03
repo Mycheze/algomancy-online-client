@@ -27,6 +27,7 @@
 import { checkSwap, type MatchConfig, type SwapPreset } from '../engine/src/matchdeck.ts';
 import type { Seat } from '../engine/src/types.ts';
 import { esc } from './util.ts';
+import { chosenMatchClockMs } from './pages/clockpick.ts';
 
 // ── the wire (server/match.ts) ───────────────────────────────────────
 
@@ -37,7 +38,7 @@ export type MatchPhase = 'game' | 'between' | 'paused' | 'over' | 'void';
 export interface MatchLobbyInfo {
   id: string; bestOf: 1 | 3; game: number;
   score: [number, number]; names: [string, string];
-  banks: [number, number]; clockStart: number;
+  banks: [number, number]; clockStart: number | null;
   phase: MatchPhase;
   chooser: Seat | null; initiative: Seat | null;
   until: number | null; locked: boolean;
@@ -165,7 +166,12 @@ function newMatch(decks: CcDeck[] | null, fail: (msg: string) => void): void {
   fetch('/api/new').then(async r => {
     const j = await r.json() as { code?: string; error?: string };
     if (!r.ok || !j.code) { fail(j.error ?? 'could not start a match'); return; }
-    location.search = `?ws=1&room=${encodeURIComponent(j.code)}&seat=0&mode=constructed&bo=${bestOf}&ccdeck=${encodeURIComponent(pick.id)}`;
+    // the Clock row's choice rides the CREATING link as a casual room's does
+    // (main.ts newgame); Default sends nothing and the server applies the
+    // match default. Never on a link for the other seat (matchLink).
+    const ms = chosenMatchClockMs();
+    const clock = ms === null ? '' : `&clock=${ms}`;
+    location.search = `?ws=1&room=${encodeURIComponent(j.code)}&seat=0&mode=constructed&bo=${bestOf}&ccdeck=${encodeURIComponent(pick.id)}${clock}`;
   }).catch(() => fail('could not reach the server'));
 }
 
