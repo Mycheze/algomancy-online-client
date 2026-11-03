@@ -2904,11 +2904,12 @@ CONTENTS
       Example: Aberrant Populace attacks and creates two Wisps. The Wisps are in the battle region, outside the formation.
       [Basis: Printed | Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files | Printed: Manual p.15; Manual p.43; Manual p.43; card: Aberrant Populace | Tests: 08-cards2.test.ts, 98-spawn-region.test.ts | Example test: 08-cards2.test.ts::Aberrant Populace: attack -> two Wisps out of formation | Key: combat.formations.outside.spawned]
 
-602.2b A unit that comes under another player's control during a battle, after the formations are set, leaves its formation, unless the effect that changes its control itself gives it a position. It stays out of every formation for the rest of that battle, attacking and blocking for nobody, and joins its new controller's side at regroup. See rule 711.
+602.2b A unit that comes under another player's control during a battle, after the formations are set, leaves its formation, unless the effect that changes its control itself gives it a position. If blocks have not yet been declared, a defending player who gains control of it may declare it as a blocker or send it to counterattack (see rule 711.3). Otherwise it stays out of every formation for the rest of that battle, attacking and blocking for nobody, and joins its new controller's side at regroup. See rule 711.
       Example: Download steals an enemy Robot token after blocks. The Robot leaves the formation and takes no further part in the battle.
       Example: At regroup, the stolen Robot joins its new controller's side.
+      Example: Before blocks, the defending player casts Download on an attacking Robot token. The Robot stops attacking, and its new controller declares it as a blocker; it blocks and deals its combat damage.
       Example: After attacks, the defender casts Organic Exchange on an attacking Bubb and their own 1/1, which is in no formation. The two swap positions as the card says: the 1/1 takes Bubb's attack slot and deals the combat damage, and Bubb is in no formation.
-      [Basis: Mixed | Verified: confirmed in round 3; verifier ran 4 tests (a probe it wrote), all passed; 3 gate test files | Printed: card: Organic Exchange | Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) | Tests: 145-erase-routes.test.ts, 24-wood-b.test.ts, 421-cr-regions-formations.test.ts | Example tests: 145-erase-routes.test.ts::CR 711.3 (viii): Download -- a Robot token stolen mid-battle is OUT of the formation, 145-erase-routes.test.ts::CR 711.3 (ix): Download -- the stolen Robot token joins its NEW controller's side at regroup, 24-wood-b.test.ts::Organic Exchange: control swaps and the attack slot passes to the exchanged unit | Key: combat.formations.outside.stolen]
+      [Basis: Mixed | Verified: not verified (the text changed after verification); 3 gate test files | Printed: card: Organic Exchange | Designer: RQ 1414660063162798082 | Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) | Tests: 145-erase-routes.test.ts, 24-wood-b.test.ts, 421-cr-regions-formations.test.ts | Example tests: 145-erase-routes.test.ts::CR 711.3 (viii): Download -- a Robot token stolen mid-battle is OUT of the formation, 145-erase-routes.test.ts::CR 711.3 (ix): Download -- the stolen Robot token joins its NEW controller's side at regroup, 145-erase-routes.test.ts::CR 711.3 (x): Download before blocks, 24-wood-b.test.ts::Organic Exchange: control swaps and the attack slot passes to the exchanged unit | Key: combat.formations.outside.stolen]
 
 602.3. The front row of a column must be filled before a unit can be placed in its back row. So a column of a formation holds no unit, one unit in its front row, or two units. It never holds a unit in its back row alone.
       Example: While building an attack, a player puts a unit in the back slot of an empty column. When the attack is declared, that unit stands in the front row.
@@ -4666,10 +4667,12 @@ CONTENTS
       Example: Mindspore Fiend gives away a modded blocker, and its mods go with it.
       [Basis: Mixed | Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files | Printed: Rulebook 2023 p.15; Manual p.34 | Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) | Tests: 25-wood-c.test.ts, 24-wood-b.test.ts | Example test: 24-wood-b.test.ts::Mindspore Fiend gives away a MODDED blocker | Demonstrated by test: 25-wood-c.test.ts::CR 711.2: a stolen unit takes its MODS with it | Key: effects.control.mods]
 
-711.3. A unit whose controller changes leaves its formation. If this happens during a battle, the unit stays in the battle out of formation for the rest of that battle: it attacks for nobody and blocks for nobody. It joins its new controller's side at regroup. See rules 602, 506.2a.
-      Example: a Robot token stolen by Download mid-battle is out of the formation for the rest of the battle.
+711.3. A unit whose controller changes leaves its formation. If this happens during a battle, the unit stays in the battle out of formation. If blocks have not yet been declared and its new controller is the defending player, they may declare it as a blocker or send it to counterattack, like any other unit of theirs in the battle's region. Otherwise it attacks for nobody and blocks for nobody for the rest of that battle. It joins its new controller's side at regroup. See rules 602, 506.2a.
+      Example: a Robot token stolen by Download after blocks is out of the formation for the rest of the battle.
       Example: the stolen Robot joins its new controller's side at regroup.
-      [Basis: Owner ruling, adopted 2026-08-23, 2026-08-25 (quoted from the retired ruling register) | Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file | Tests: 145-erase-routes.test.ts | Example tests: 145-erase-routes.test.ts::CR 711.3 (viii): Download, 145-erase-routes.test.ts::CR 711.3 (ix): Download | Key: effects.control.formation]
+      Example: Before blocks, the defending player casts Download on an attacking Robot token. The Robot stops attacking, and its new controller declares it as a blocker; it blocks and deals its combat damage.
+      Example: Before blocks, the defending player steals an attacking Robot token with Download and sends it out to counterattack.
+      [Basis: Mixed | Verified: not verified (the text changed after verification); 1 gate test file | Designer: RQ 1414660063162798082; RQ 1414660063162798082 | Owner ruling, adopted 2026-08-23, 2026-08-25 (quoted from the retired ruling register) | Tests: 145-erase-routes.test.ts | Example tests: 145-erase-routes.test.ts::CR 711.3 (viii): Download, 145-erase-routes.test.ts::CR 711.3 (ix): Download, 145-erase-routes.test.ts::CR 711.3 (x): Download before blocks, 145-erase-routes.test.ts::CR 711.3 (xi): Download before blocks | Key: effects.control.formation]
 
 711.3a If a unit that was blocking changes controller, the attacking column it blocked stays blocked. See rules 606, 607.
       [Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) | Verified: confirmed in round 1; verifier ran 1 test, passed; no gate test | Key: effects.control.formation.block-stays]
@@ -6925,21 +6928,21 @@ Basis
 |---|---|
 | Printed | 453 |
 | Designer | 202 |
-| Owner call | 677 |
+| Owner call | 676 |
 | Engine only | 47 |
-| Mixed | 486 |
+| Mixed | 487 |
 
 Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1851 |
+| confirmed | 1849 |
 | partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 7 |
 | not verified | 1 |
-| text changed | 0 |
+| text changed | 2 |
 
 Engine-only rules (awaiting the owner's sign-off)
 

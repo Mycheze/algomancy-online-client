@@ -82,7 +82,8 @@
  *    formation but cannot slot it into the thief's (no mid-battle
  *    formation-join primitive)". IT IS NOT AN APPROXIMATION — CR 711.3: the owner
  *    ruled on 2026-08-25 that a unit stolen mid-battle SITS OUT UNTIL REGROUP,
- *    which is precisely what the engine does. See the ⚠ on E.giveControl and
+ *    which is precisely what the engine does (before blocks, the designer lets
+ *    the defender who stole an attacker block with it — CT-424). See the ⚠ on E.giveControl and
  *    the two Download cases in 145-erase-routes.test.ts. The old "joins the new
  *    controller's formations" is honored AT REGROUP, which is when formations
  *    are next built; the token swaps sides immediately, owner unchanged.)
@@ -1099,13 +1100,16 @@ card('Dispatch Courier', {
 // region: CR 711.4 exclusivity applies here too (a spell token has no mods to
 // carry, and `mods` is [] on one, so the same call is correct for both kinds).
 //
-// ⚠ CR 711.3 — MID-BATTLE, THE STOLEN TOKEN SITS OUT UNTIL REGROUP, AND THAT IS
-// THE RULE, NOT A GAP. Download is a {Battle} spell, so it can steal a Robot
-// with the formations already declared. Owner, 2026-08-25: *it sits out until
-// regroup* — controller changes at once, the unit is OUT of the formation for
-// the rest of this battle (it attacks for nobody and blocks for nobody), and
-// it joins its new controller's side at regroup, which is when formations are
-// next built. `E.giveControl`'s unslot is what delivers that; it must NOT grow
+// ⚠ CR 711.3 — MID-BATTLE, THE STOLEN TOKEN LEAVES ITS FORMATION AND IS NEVER
+// RE-SLOTTED, AND THAT IS THE RULE, NOT A GAP. Download is a {Battle} spell, so
+// it can steal a Robot with the formations already declared. Owner, 2026-08-25:
+// *it sits out until regroup* — controller changes at once, the unit is OUT of
+// the formation, and it joins its new controller's side at regroup, which is
+// when formations are next built. The designer (rules-questions 2025-09-08,
+// CT-424) narrows "sits out": an attacker stolen BEFORE blocks "is no longer
+// attacking and would be able to block", so the defender who took it may
+// declare it as a blocker (or send it to counterattack); stolen after blocks,
+// it fights for nobody until regroup. `E.giveControl`'s unslot is what delivers that; it must NOT grow
 // a re-slot. The engine has done this since control changes were routed through one primitive, by accident of having no formation-join
 // primitive — the owner's 2026-08-25 ruling (CR 711.3) only wrote the decision down and pinned it,
 // so the next reader does not "repair" a correct behaviour.

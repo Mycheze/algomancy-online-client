@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:622620d0b86164cc",
+ "generated_from": "sha256:5c785206ce5f64f5",
  "rules": [
   {
    "num": "100.1",
@@ -15270,13 +15270,14 @@
    "sectionTitle": "Formations",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "602.2",
-   "text": "A unit that comes under another player's control during a battle, after the formations are set, leaves its formation, unless the effect that changes its control itself gives it a position. It stays out of every formation for the rest of that battle, attacking and blocking for nobody, and joins its new controller's side at regroup.",
+   "text": "A unit that comes under another player's control during a battle, after the formations are set, leaves its formation, unless the effect that changes its control itself gives it a position. If blocks have not yet been declared, a defending player who gains control of it may declare it as a blocker or send it to counterattack (see rule 711.3). Otherwise it stays out of every formation for the rest of that battle, attacking and blocking for nobody, and joins its new controller's side at regroup.",
    "see": [
     "711"
    ],
    "examples": [
     "Download steals an enemy Robot token after blocks. The Robot leaves the formation and takes no further part in the battle.",
     "At regroup, the stolen Robot joins its new controller's side.",
+    "Before blocks, the defending player casts Download on an attacking Robot token. The Robot stops attacking, and its new controller declares it as a blocker; it blocks and deals its combat damage.",
     "After attacks, the defender casts Organic Exchange on an attacking Bubb and their own 1/1, which is in no formation. The two swap positions as the card says: the 1/1 takes Bubb's attack slot and deals the combat damage, and Bubb is in no formation."
    ],
    "basis": "mixed",
@@ -15287,7 +15288,7 @@
    ],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "602.3",
@@ -24566,16 +24567,18 @@
    "sectionTitle": "Control Change",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "711",
-   "text": "A unit whose controller changes leaves its formation. If this happens during a battle, the unit stays in the battle out of formation for the rest of that battle: it attacks for nobody and blocks for nobody. It joins its new controller's side at regroup.",
+   "text": "A unit whose controller changes leaves its formation. If this happens during a battle, the unit stays in the battle out of formation. If blocks have not yet been declared and its new controller is the defending player, they may declare it as a blocker or send it to counterattack, like any other unit of theirs in the battle's region. Otherwise it attacks for nobody and blocks for nobody for the rest of that battle. It joins its new controller's side at regroup.",
    "see": [
     "602",
     "506.2a"
    ],
    "examples": [
-    "a Robot token stolen by Download mid-battle is out of the formation for the rest of the battle.",
-    "the stolen Robot joins its new controller's side at regroup."
+    "a Robot token stolen by Download after blocks is out of the formation for the rest of the battle.",
+    "the stolen Robot joins its new controller's side at regroup.",
+    "Before blocks, the defending player casts Download on an attacking Robot token. The Robot stops attacking, and its new controller declares it as a blocker; it blocks and deals its combat damage.",
+    "Before blocks, the defending player steals an attacking Robot token with Download and sends it out to counterattack."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
@@ -24583,7 +24586,7 @@
    ],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "711.3a",

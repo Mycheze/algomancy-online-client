@@ -193,10 +193,10 @@
   },
   {
     "id": "D-U16-11",
-    "kind": "c-owner-call-only",
+    "kind": "a-sources-disagree",
     "rule": "effects.control.formation",
-    "tier": 3,
-    "summary": "That a unit stolen during a battle stays out of formation until regroup, attacking and blocking for nobody, is the owner's call on Download. No printed or designer source covers it, and the owner ruling of 2026-08-18 (“Control change […]”) had said the stolen unit joins its new controller's formations.",
+    "tier": 2,
+    "summary": "The owner's call on Download (2026-08-25) had a unit stolen during a battle sit out until regroup, attacking and blocking for nobody; the owner ruling of 2026-08-18 (“Control change […]”) had it join its new controller's formations. The designer, asked about stealing an attacking token with Download before blocks, says it is no longer attacking and can block.",
     "sides": [
       {
         "source": "owner ruling, adopted 2026-08-18",
@@ -205,9 +205,13 @@
       {
         "source": "owner ruling, adopted 2026-08-25",
         "quote": "it sits out until regroup."
+      },
+      {
+        "source": "RQ 1414660063162798082",
+        "quote": "you gain control of it so its no longer attacking and would be able to block"
       }
     ],
-    "resolution": "Owner call. The rule states the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”); the owner ruling of 2026-08-18 (“Control change […]”)’s formation clause is cited as history."
+    "resolution": "Settled by the designer, who outranks an owner call. The rule states his answer for a steal before blocks (the defender who took the unit may block or counterattack with it) and the owner's 2026-08-25 call for a steal after blocks (it sits out until regroup). The engine already did both; CT-424 pins them."
   },
   {
     "id": "D-U16-12",

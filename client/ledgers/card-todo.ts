@@ -180,17 +180,6 @@ const OPEN: TodoEntry[] = [
   },
   // ── Pass D, the mop-up and the replacement-order round, 2026-10-25: defects found and not fixed
   {
-    id: 424, area: "engine", severity: "minor",
-    cards: ["Download"],
-    title: "a unit stolen during a battle sits out until regroup, but the designer says the new controller can block with it",
-    detail: "CR 711.3 states the owner's 2026-08-25 call (\"it sits out until regroup\"); the owner's 2026-08-18 call had it join the new controller's formations. Caleb, rules-questions 2025-09-08 [1414660063162798082], asked about stealing an attacking token with Download: \"you gain control of it so its no longer attacking and would be able to block. It cant attack an opponent in the same turn of a FFA game since there's only one declare attack step each turn\". The designer outranks an owner call in the authority order, so the rule and the engine may be wrong.",
-    evidence: "CR pass D 2026-10-25 (zero-handoff/PD-cr.md, tier-3 stretch): discrepancy D-U16-11, the quote checked against the rules-questions export.",
-    fix: "Put Caleb's words to the owner beside his 2026-08-25 call. If Caleb's reading stands, a unit stolen in battle stops attacking and may block for its new controller; change the control-change path (Download and every in-battle steal), redraft 711.3, add a test, and replay stored games for drift.",
-    proof: null,
-    verify: "Steal an attacking unit with Download before blocks: can its new controller block with it?",
-    status: 'open',
-  },
-  {
     id: 426, area: "engine", severity: "minor",
     title: "a Virus on a resolving spell unit stays on as an augment; the designer says a spell carrying a Virus is erased on resolution",
     detail: "CR 723.4c (effects.virus.spell-host.spell-unit) states the owner's 2026-08-22 exception: a spell unit enters play with the Virus as an augment instead of being erased. Caleb, rules-questions 2025-03-06 [1347270455198879858]: \"It's very similar to how regular viruses work. So you can hit enemy spells, the spell gets erased on resolution\". No source makes the spell-unit exception; the record says no ruling asks for it.",

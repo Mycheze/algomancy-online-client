@@ -6,7 +6,7 @@ Every place where the sources disagree, the register contradicts itself, or a ru
 
 None.
 
-## 2. Record and test fixes (66)
+## 2. Record and test fixes (67)
 
 ### D-U01-10 · Other · rule 102.4
 
@@ -586,6 +586,16 @@ The Manual Q&A on Tough and Balanced gives opposite orders for a Tough mod on a 
 
 **Resolution:** Answered by the owner on 2026-10-22 (CT-257): reading A, the Manual p.42 first clause. Tough augmented onto a Balanced unit is doubled, then balanced; the last clause ("applied to") is a grant by an effect, which balances, then doubles. rule 709.4b and rule 802.1m state it alone. Engine fix: done 2026-10-22 (F-U16-4, F-U19-5 closed): 08-cards2 drives both clauses.
 
+### D-U16-11 · Sources disagree · rule 711.3
+
+The owner's call on Download (2026-08-25) had a unit stolen during a battle sit out until regroup, attacking and blocking for nobody; the owner ruling of 2026-08-18 (“Control change […]”) had it join its new controller's formations. The designer, asked about stealing an attacking token with Download before blocks, says it is no longer attacking and can block.
+
+- owner ruling, adopted 2026-08-18: "including joining the new controller's formations"
+- owner ruling, adopted 2026-08-25: "it sits out until regroup."
+- RQ 1414660063162798082: "you gain control of it so its no longer attacking and would be able to block"
+
+**Resolution:** Settled by the designer, who outranks an owner call. The rule states his answer for a steal before blocks (the defender who took the unit may block or counterattack with it) and the owner's 2026-08-25 call for a steal after blocks (it sits out until regroup). The engine already did both; CT-424 pins them.
+
 ### D-U16-14 · Sources disagree · rule 712.1a
 
 Whether a unit stripped by a continuous effect (Transmogrifant, Monke) stops applying its own static abilities. Printed text strips all abilities and the owner ruling of 2026-08-21 (“The suppression layer: "loses all attributes…”) says a static is an ability; the owner ruling of 2026-08-21 (“The suppression layer: "loses all attributes…”) and the owner ruling of 2026-10-09 (“Stripping is a layer applied in…”) encode static-vs-static in one pass that reads only the one-time stamp, so such a unit keeps applying its statics. The owner ruling of 2026-08-21 (“The suppression layer: "loses all attributes…”) justifies the one pass only by the mutual case.
@@ -761,7 +771,7 @@ The owner ruling of 2026-08-30 (“nothing may exist only in the…”) still sa
 
 **Resolution:** Mark the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s closing count as answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) in the register ("its log-only count answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”)"); CT-236 tracks the stale sentence. The rules follow the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) (rule D7.4b). rule D7.4 states the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s standard; its engine-differs marker for F-U24-4 (CT-236) has been dropped, because the toast tier gives every such announcement a surface. D-U24-9 is this item from the rule's side: its count of nineteen against the inventory test's 21 is the same stale sentence. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]
 
-## 3. Engine-only and owner-only rules (84)
+## 3. Engine-only and owner-only rules (83)
 
 ### D-U01-13 · Engine only · rule 103.3a
 
@@ -1237,15 +1247,6 @@ The owner ruling of 2026-08-25 (“a COPY of a spell is…”) says a Virus appl
 - owner ruling, adopted 2026-08-25: "onto the ORIGINAL while it sat on the stack are **not** copied, so their"
 
 **Resolution:** The rule states only the {Modular} half, which has a designer source. The Virus half is left unstated as engine behaviour with no ruling. Question for the owner only if the judge's CR says what a copy does with a Virus on the original.
-
-### D-U16-11 · Owner call only · rule 711.3
-
-That a unit stolen during a battle stays out of formation until regroup, attacking and blocking for nobody, is the owner's call on Download. No printed or designer source covers it, and the owner ruling of 2026-08-18 (“Control change […]”) had said the stolen unit joins its new controller's formations.
-
-- owner ruling, adopted 2026-08-18: "including joining the new controller's formations"
-- owner ruling, adopted 2026-08-25: "it sits out until regroup."
-
-**Resolution:** Owner call. The rule states the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”); the owner ruling of 2026-08-18 (“Control change […]”)’s formation clause is cited as history.
 
 ### D-U16-16 · Engine only · rule 713.3a
 
@@ -2114,7 +2115,7 @@ The owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) rules on a 
 - owner ruling, adopted 2026-08-25: "It changes controller **immediately**, is **out of the formation for the rest"
 - card: Organic Exchange: "Exchange control of two target units and swap their positions."
 
-**Resolution:** Printed text governs the card: the effect that changes control itself gives each unit a position, so neither sits out. The rule states the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) as the default and the card's own positioning as the exception. The engine matches both.
+**Resolution:** Printed text governs the card: the effect that changes control itself gives each unit a position, so neither sits out. The rule states the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) as the default and the card's own positioning as the exception. The engine matches both. The designer (rules-questions 2025-09-08) narrows the one-sided theft: an attacker the defender steals before blocks may block for them (rule 711.3, CT-424).
 
 ### D-U10-2 · Other · rule 603.2a
 
