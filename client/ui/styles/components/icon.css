@@ -1,0 +1,5 @@
+/* ── ui-icon (ui/components/icon.ts) ──────────────────────────────────
+   An inline SVG drawn in the text colour (stroke="currentColor"), 1em square
+   unless the component was given a size. It sits on the text's baseline like
+   a glyph and never shrinks in a flex row. */
+.ui-icon { display: inline-block; flex: none; vertical-align: -.125em; overflow: visible; }

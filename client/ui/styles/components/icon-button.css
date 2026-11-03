@@ -1,0 +1,32 @@
+/* ── ui-icon-button (ui/components/icon-button.ts) ────────────────────
+   The redesign's toolbar button: a big icon over a small caption, no box.
+   Muted at rest, the text colour on a raised wash under the pointer, gold when
+   `on`. At least --icon-button-min-h square, a finger's target. The keyboard
+   focus ring is base.css's. The :hover rule names its border too, because
+   base.css's `button:hover` (0,1,1) would otherwise paint a gold edge on it. */
+.ui-icon-button { position: relative; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--space-1); min-height: var(--icon-button-min-h); min-width: var(--icon-button-min-h);
+  padding: var(--space-2) var(--space-4); background: transparent; color: var(--color-text-muted);
+  border: 1px solid transparent; border-radius: var(--radius-lg); font: inherit; font-size: var(--text-11); line-height: 1.2;
+  white-space: nowrap; text-decoration: none; cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out); }
+.ui-icon-button:hover { color: var(--color-text); background: var(--color-surface-raised); border-color: transparent; }
+.ui-icon-button.on, .ui-icon-button.on:hover { color: var(--color-accent); }
+.ui-icon-button:disabled, .ui-icon-button[aria-disabled="true"] { opacity: .4; cursor: default;
+  color: var(--color-text-muted); background: transparent; }
+/* the icon left of the caption, the caption at body size: the account slot, the bottom bar */
+.ui-icon-button--inline { flex-direction: row; gap: var(--space-4); padding: var(--space-2) var(--space-5); font-size: var(--text-13); }
+
+.ui-icon-button__icon { position: relative; display: inline-flex; flex: none; }
+.ui-icon-button__icon > svg, .ui-icon-button__icon > img { width: var(--icon-button-icon); height: var(--icon-button-icon); }
+.ui-icon-button__icon > img { border-radius: var(--radius-pill); object-fit: cover; }
+.ui-icon-button__label { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+/* the badge: a gold pill on the icon's top-right corner, ringed in the bar's
+   colour so it reads as sitting ON the icon */
+.ui-icon-button__badge { position: absolute; top: calc(-1 * var(--space-2)); right: calc(-1 * var(--space-4));
+  min-width: var(--icon-button-badge); height: var(--icon-button-badge); padding: 0 var(--space-2);
+  border-radius: var(--radius-pill); background: var(--color-accent); color: var(--color-text-on-accent);
+  box-shadow: 0 0 0 2px var(--color-surface); font-size: var(--text-11); font-weight: 700;
+  line-height: var(--icon-button-badge); text-align: center; }
+.ui-icon-button__badge--dot { top: 0; right: 0; min-width: 0; width: var(--icon-button-dot); height: var(--icon-button-dot); padding: 0; }

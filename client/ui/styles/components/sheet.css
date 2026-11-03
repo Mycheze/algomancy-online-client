@@ -1,0 +1,38 @@
+/* ── ui-sheet (ui/components/sheet.ts) ────────────────────────────────
+   A panel over the page, drawn from state. The root covers the window (fixed,
+   the modal layer) and lays the panel out inside its gutters; the scrim fills
+   it behind the panel and is the "tap off" target. The panel is at most the
+   root's content box (max-height: 100%), so it never leaves the window, and
+   its body scrolls inside itself.
+   ⚠ No entry animation: the page redraws an open sheet on every repaint (every
+   poll), and an animation would replay each time. */
+.ui-sheet { position: fixed; inset: 0; z-index: var(--z-modal); display: flex;
+  align-items: center; justify-content: center; padding: var(--sheet-gutter); }
+.ui-sheet__scrim { position: absolute; inset: 0; background: var(--color-scrim); }
+/* anchored: in a corner, clear of the app shell's bar, over a lighter scrim */
+.ui-sheet--anchor-bottom-left, .ui-sheet--anchor-bottom-right { align-items: flex-end;
+  padding-bottom: calc(var(--shell-bar-h) + var(--space-2)); }
+.ui-sheet--anchor-top-left, .ui-sheet--anchor-top-right { align-items: flex-start;
+  padding-top: calc(var(--shell-bar-h) + var(--space-2)); }
+.ui-sheet--anchor-bottom-left, .ui-sheet--anchor-top-left { justify-content: flex-start; }
+.ui-sheet--anchor-bottom-right, .ui-sheet--anchor-top-right { justify-content: flex-end; }
+.ui-sheet--anchor-bottom-left .ui-sheet__scrim, .ui-sheet--anchor-bottom-right .ui-sheet__scrim,
+.ui-sheet--anchor-top-left .ui-sheet__scrim, .ui-sheet--anchor-top-right .ui-sheet__scrim { background: var(--sheet-scrim-soft); }
+
+.ui-sheet__panel { position: relative; display: flex; flex-direction: column; width: var(--sheet-w-md);
+  max-width: 100%; max-height: 100%; overflow: hidden; background: var(--color-surface); color: var(--color-text);
+  border: 1px solid var(--color-border-strong); border-radius: var(--dialog-radius); box-shadow: var(--shadow-3); }
+.ui-sheet--sm .ui-sheet__panel { width: var(--sheet-w-sm); }
+.ui-sheet--lg .ui-sheet__panel { width: var(--sheet-w-lg); }
+
+.ui-sheet__head { display: flex; align-items: center; gap: var(--space-4); flex: none;
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-6); border-bottom: 1px solid var(--color-border); }
+.ui-sheet__title { flex: 1; min-width: 0; margin: 0; color: var(--color-accent); font-size: var(--text-16); }
+.ui-sheet__close { display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 40px; height: 40px; padding: 0; background: transparent; color: var(--color-text-muted);
+  border: 1px solid transparent; border-radius: var(--radius-pill); font-size: var(--text-22); cursor: pointer; }
+.ui-sheet__close:hover { color: var(--color-text); background: var(--color-surface-raised); border-color: transparent; }
+.ui-sheet__body { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain;
+  padding: var(--space-5) var(--space-6); }
+.ui-sheet__foot { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--space-4); flex: none;
+  padding: var(--space-4) var(--space-6); border-top: 1px solid var(--color-border); }

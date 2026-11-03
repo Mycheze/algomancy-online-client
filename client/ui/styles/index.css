@@ -35,6 +35,11 @@
 @import "components/empty-state.css";
 @import "components/dialog.css";
 @import "components/toast.css";
+@import "components/icon.css";
+@import "components/icon-button.css";
+@import "components/segmented.css";
+@import "components/sheet.css";
+@import "components/app-shell.css";
 @import "board/02-promptbar.css";
 @import "board/03-life-cards-battle-log.css";
 @import "pages/04-joinscreen.css";
