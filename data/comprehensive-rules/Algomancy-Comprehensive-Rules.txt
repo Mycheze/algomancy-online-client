@@ -6933,11 +6933,11 @@ Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1850 |
+| confirmed | 1851 |
 | partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
-| untested | 8 |
+| untested | 7 |
 | not verified | 1 |
 | text changed | 0 |
 
@@ -6986,7 +6986,7 @@ Engine-only rules (awaiting the owner's sign-off)
 - D8.6d A player may also concede the match: during a game, between games, while the match is paused, or before its first game begins. The player who concedes it loses the match. During a game, that game is conceded first, so it is lost as well.
 - D8.6f Either player may offer to pause until the sideboarding window closes (rule D8.6b), and the match is paused when the other player agrees. No clock runs while it is paused, and its waiting game is not closed for being idle (rule D3.4). It resumes once both players are present and both ask to resume, with a new sideboarding window.
 - D8.6h A league match closes at the end of its league week only if it is paused or between games at that moment. A game in progress then is played out: if it decides the match, the result stands; if not, the match closes when that game ends. Either way, the games already played stay in each player's match history.
-- D8.6i While a match is still being played, neither of its players can open a replay of any of its games or watch any of its games as a spectator. Neither player is ever sent the other's registered deck, sideboard or swaps, and in a game neither is sent the other's deck elements. Once the match is over or closed, its replays are open as any game's are.
+- D8.6i While a match is still being played, neither of its players can open a replay of any of its games or watch any of its games as a spectator. Neither player is ever sent the other's registered deck, sideboard or deck id, nor the deck and sideboard the other has made for the next game, and in a game neither is sent the other's deck elements. Once the match is over or closed, its replays are open as any game's are.
 - D8.6k A game of a match moves no rating by itself, whether the match ends or closes with no result. Every game of a match counts toward the players' records, statistics and achievements, and toward the card statistics, as any game does.
 
 Findings: where the engine differs

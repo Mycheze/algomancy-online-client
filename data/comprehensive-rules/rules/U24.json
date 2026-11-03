@@ -1035,7 +1035,7 @@
       },
       {
         "text": "In a Competitive Constructed game, neither player is sent the other's deck elements.",
-        "test": "820-cc-no-leak-over-the-wire.test.ts::§1-§5 no message names the opponent sideboard, deck id, swaps or deck elements"
+        "test": "820-cc-no-leak-over-the-wire.test.ts::§1-§5 no message names the opponent sideboard, deck id or deck elements"
       }
     ],
     "see": [
@@ -4398,8 +4398,21 @@
     "key": "annexd.modes.competitive.clock",
     "parent": "annexd.modes.competitive",
     "order": 1,
-    "text": "Each player has 45 minutes for the whole match, not for each game. A player whose time runs out loses the match.",
-    "examples": [],
+    "text": "By default each player has 45 minutes for the whole match, not for each game. The player who creates the match may choose another bank or no clock; a league match always keeps the default. A player whose time runs out loses the match.",
+    "examples": [
+      {
+        "text": "A match created with no clock chosen gives each player 45 minutes; one created with 60 minutes gives each player 60; one created with the clock off has no clock. A clock sent by the player who joins is not read.",
+        "test": "1045-cc-match-clock-choice.test.ts::1045 §1-§4 the creating join sets the match clock; the default is 45 minutes; the joiner sets nothing"
+      },
+      {
+        "text": "In a match with a 60-minute bank, a player who has 50 minutes left when game 1 ends starts game 2 with those 50 minutes, not a fresh bank.",
+        "test": "1046-cc-clockless-match-carries.test.ts::1046 §2 a timed match carries its own bank into game 2"
+      },
+      {
+        "text": "A player whose clock runs out in game 1 of a best of three loses the match, not just that game.",
+        "test": "815-cc-flag-loses-the-match.test.ts::§1-§2 a flag in game 1 of a Bo3 loses the match, not just the game"
+      }
+    ],
     "see": [
       "annexd.clocks"
     ],
@@ -4417,17 +4430,26 @@
           "quote": "Lose the match",
           "adopted": "2026-11-02",
           "from": "chat 2026-11-02, his answer to: what happens when a player's time runs out?"
+        },
+        {
+          "quote": "competitive constructed still needs the Clock setting. Yes, the default will usually be used, but it's up to the players if they want to override that.",
+          "adopted": "2026-11-03",
+          "from": "chat 2026-11-03"
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "1045-cc-match-clock-choice.test.ts",
+        "1046-cc-clockless-match-carries.test.ts",
+        "815-cc-flag-loses-the-match.test.ts",
+        "1043-competitive-match-clock.test.ts"
+      ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "high",
-    "notes": "Owner's message and his answer of 2026-11-02. How the clock runs is D3.2.",
-    "sourceHashes": {},
-    "untested": true
+    "notes": "Owner's message and his answer of 2026-11-02; the clock became a choice on 2026-11-03 (owner). The league clause is the implementation (server/league-match.ts creates the room with MATCH_CLOCK_MS.constructed before anybody joins, and main.ts reads msg.clock only on a creating join); no test pins a league MATCH room's clock, so that clause rests on the server code (basis stays owner, as for the other annexd.modes.competitive owner rules: sources.engine takes engine/src symbols only). How the clock runs is D3.2.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.competitive.sideboard-window",
@@ -4677,15 +4699,15 @@
     "key": "annexd.modes.competitive.no-peeking",
     "parent": "annexd.modes.competitive",
     "order": 9,
-    "text": "While a match is still being played, neither of its players can open a replay of any of its games or watch any of its games as a spectator. Neither player is ever sent the other's registered deck, sideboard or swaps, and in a game neither is sent the other's deck elements. Once the match is over or closed, its replays are open as any game's are.",
+    "text": "While a match is still being played, neither of its players can open a replay of any of its games or watch any of its games as a spectator. Neither player is ever sent the other's registered deck, sideboard or deck id, nor the deck and sideboard the other has made for the next game, and in a game neither is sent the other's deck elements. Once the match is over or closed, its replays are open as any game's are.",
     "examples": [
       {
         "text": "In the middle of a best of three, a player tries to open the replay of game 1, and to watch the match from a second tab. Both are refused until the match is over.",
         "test": "821-cc-no-peeking-mid-match.test.ts::§1-§3 the replay and the omniscient watch are refused to the players until the match is over"
       },
       {
-        "text": "Through a whole best of three, no message to either player names the opponent's sideboard, deck id, swaps or deck elements.",
-        "test": "820-cc-no-leak-over-the-wire.test.ts::§1-§5 no message names the opponent sideboard, deck id, swaps or deck elements"
+        "text": "Through two games of a best of three and into the third game's lobby, while one player changes their deck from their sideboard between games, no message to either player names the opponent's sideboard, deck id or deck elements.",
+        "test": "820-cc-no-leak-over-the-wire.test.ts::§1-§5 no message names the opponent sideboard, deck id or deck elements"
       }
     ],
     "see": [
@@ -4705,7 +4727,7 @@
     "basis": "engine",
     "scope": "digital",
     "confidence": "medium",
-    "notes": "ENGINE-ONLY (server/api-replay.ts, main.ts watch, match.ts matchLobbyInfo, view.ts deckElements). docs/22 section 2.6 and the section 0 default that the opponent never sees a sideboard or swaps.",
+    "notes": "ENGINE-ONLY (server/api-replay.ts, main.ts watch, match.ts matchLobbyInfo, view.ts deckElements). docs/22 section 2.6 and the section 0 default that the opponent never sees a sideboard. 2026-11-03: saved swap presets were removed from the client, so 'or swaps' left the text; what is withheld now is the registered deck and sideboard, the deck id, the current (next-game) configuration (matchLobbyInfo sends only `mine`) and the in-game deck elements (test 820 sections 1-5).",
     "sourceHashes": {}
   },
   {

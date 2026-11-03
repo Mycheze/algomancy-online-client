@@ -816,7 +816,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 > *Example: In a Competitive Constructed game, neither player is sent the other's deck elements.*
 
-<sub>Basis: Owner call · adopted 2026-10-25; Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Tests: 435-cr-digital-2.test.ts, 667-draft-any-element-resource.test.ts, 820-cc-no-leak-over-the-wire.test.ts · Example tests: 435-cr-digital-2.test.ts::cr:annexd.reveal.public-zones.deck-elements — in constructed, the deck elements of both players are in the view each player is sent, 820-cc-no-leak-over-the-wire.test.ts::§1-§5 no message names the opponent sideboard, deck id, swaps or deck elements · Key: annexd.reveal.public-zones.deck-elements</sub>
+<sub>Basis: Owner call · adopted 2026-10-25; Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 3 gate test files · Tests: 435-cr-digital-2.test.ts, 667-draft-any-element-resource.test.ts, 820-cc-no-leak-over-the-wire.test.ts · Example tests: 435-cr-digital-2.test.ts::cr:annexd.reveal.public-zones.deck-elements — in constructed, the deck elements of both players are in the view each player is sent, 820-cc-no-leak-over-the-wire.test.ts::§1-§5 no message names the opponent sideboard, deck id or deck elements · Key: annexd.reveal.public-zones.deck-elements</sub>
 
 <sub>Discrepancies: D-U24-2 (discrepancies.md)</sub>
 
@@ -1392,9 +1392,15 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner call · adopted 2026-11-02 · Verified: untested in round 4; verifier ran no tests; no gate test · Key: annexd.modes.competitive</sub>
 
-<a id="rD8.6a"></a>**D8.6a** Each player has 45 minutes for the whole match, not for each game. A player whose time runs out loses the match. See rule D3. *(Untested: no executed test demonstrates it.)*
+<a id="rD8.6a"></a>**D8.6a** By default each player has 45 minutes for the whole match, not for each game. The player who creates the match may choose another bank or no clock; a league match always keeps the default. A player whose time runs out loses the match. See rule D3.
 
-<sub>Basis: Owner call · adopted 2026-11-02 · Verified: untested in round 4; verifier ran no tests; no gate test · Key: annexd.modes.competitive.clock</sub>
+> *Example: A match created with no clock chosen gives each player 45 minutes; one created with 60 minutes gives each player 60; one created with the clock off has no clock. A clock sent by the player who joins is not read.*
+
+> *Example: In a match with a 60-minute bank, a player who has 50 minutes left when game 1 ends starts game 2 with those 50 minutes, not a fresh bank.*
+
+> *Example: A player whose clock runs out in game 1 of a best of three loses the match, not just that game.*
+
+<sub>Basis: Owner call · adopted 2026-11-02, 2026-11-03 · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 4 gate test files · Tests: 1045-cc-match-clock-choice.test.ts, 1046-cc-clockless-match-carries.test.ts, 815-cc-flag-loses-the-match.test.ts, 1043-competitive-match-clock.test.ts · Example tests: 1045-cc-match-clock-choice.test.ts::1045 §1-§4 the creating join sets the match clock; the default is 45 minutes; the joiner sets nothing, 1046-cc-clockless-match-carries.test.ts::1046 §2 a timed match carries its own bank into game 2, 815-cc-flag-loses-the-match.test.ts::§1-§2 a flag in game 1 of a Bo3 loses the match, not just the game · Key: annexd.modes.competitive.clock</sub>
 
 <a id="rD8.6b"></a>**D8.6b** Between games the players have 120 seconds to change their decks from their sideboards (rule 901.9c), or until both of them are ready, whichever comes first. *(Untested: no executed test demonstrates it.)*
 
@@ -1440,13 +1446,13 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 1 gate test file · Tests: 829-cc-league-week-end-voids.test.ts · Example tests: 829-cc-league-week-end-voids.test.ts::§2 ⭐ a game in progress plays out, and if it decides the match its result stands, 829-cc-league-week-end-voids.test.ts::§3 ⭐ a game at the boundary that does not decide the match: voided when it ends · Key: annexd.modes.competitive.league-week</sub>
 
-<a id="rD8.6i"></a>**D8.6i** While a match is still being played, neither of its players can open a replay of any of its games or watch any of its games as a spectator. Neither player is ever sent the other's registered deck, sideboard or swaps, and in a game neither is sent the other's deck elements. Once the match is over or closed, its replays are open as any game's are. See rule D6.6e.
+<a id="rD8.6i"></a>**D8.6i** While a match is still being played, neither of its players can open a replay of any of its games or watch any of its games as a spectator. Neither player is ever sent the other's registered deck, sideboard or deck id, nor the deck and sideboard the other has made for the next game, and in a game neither is sent the other's deck elements. Once the match is over or closed, its replays are open as any game's are. See rule D6.6e.
 
 > *Example: In the middle of a best of three, a player tries to open the replay of game 1, and to watch the match from a second tab. Both are refused until the match is over.*
 
-> *Example: Through a whole best of three, no message to either player names the opponent's sideboard, deck id, swaps or deck elements.*
+> *Example: Through two games of a best of three and into the third game's lobby, while one player changes their deck from their sideboard between games, no message to either player names the opponent's sideboard, deck id or deck elements.*
 
-<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Tests: 820-cc-no-leak-over-the-wire.test.ts, 821-cc-no-peeking-mid-match.test.ts · Example tests: 821-cc-no-peeking-mid-match.test.ts::§1-§3 the replay and the omniscient watch are refused to the players until the match is over, 820-cc-no-leak-over-the-wire.test.ts::§1-§5 no message names the opponent sideboard, deck id, swaps or deck elements · Key: annexd.modes.competitive.no-peeking</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Tests: 820-cc-no-leak-over-the-wire.test.ts, 821-cc-no-peeking-mid-match.test.ts · Example tests: 821-cc-no-peeking-mid-match.test.ts::§1-§3 the replay and the omniscient watch are refused to the players until the match is over, 820-cc-no-leak-over-the-wire.test.ts::§1-§5 no message names the opponent sideboard, deck id or deck elements · Key: annexd.modes.competitive.no-peeking</sub>
 
 <a id="rD8.6j"></a>**D8.6j** A rated Competitive Constructed match moves the constructed rating once, by the result of the match. See rules D8.6k, D8.5e.
 

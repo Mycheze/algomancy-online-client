@@ -3008,45 +3008,107 @@
   },
   {
     "key": "annexd.modes.competitive.clock",
-    "textHash": "ff87afdfa1f8bba4",
-    "verdict": "untested",
+    "textHash": "f6ceaf21ca915ed7",
+    "verdict": "confirmed",
     "round": 4,
     "verifier": "U24-r4",
     "engine": [
       {
-        "loc": "client/server/rooms.ts:MATCH_CLOCK_MS",
+        "loc": "client/server/main.ts:creating join (ccId clock)",
         "agrees": true,
-        "note": "today's constructed bank is 45 minutes for a single game; no match exists, so a per-match bank and a match loss on time are not implemented"
-      }
-    ],
-    "tests_run": [],
-    "probes": [],
-    "source_checks": [
-      {
-        "ref": "owner: The clock becomes a true chess clock in CC with 45 minutes per player, per match, ...",
-        "supports": "yes",
-        "note": "45 minutes per player per match"
+        "note": "creator's msg.clock if given, else MATCH_CLOCK_MS.constructed (45 min); 0 = Off"
       },
       {
-        "ref": "owner: Lose the match",
+        "loc": "client/server/rooms.ts:MATCH_CLOCK_MS",
+        "agrees": true,
+        "note": "constructed: 45 * 60 * 1000"
+      },
+      {
+        "loc": "client/server/league-match.ts:openLeagueMatch",
+        "agrees": true,
+        "note": "always MATCH_CLOCK_MS.constructed; LeagueMatchRequest has no clock field"
+      },
+      {
+        "loc": "client/server/match.ts:matchGameDecided",
+        "agrees": true,
+        "note": "a game decided on time ends the match"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/1045-cc-match-clock-choice.test.ts",
+        "pattern": "1045 §1-§4",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/1046-cc-clockless-match-carries.test.ts",
+        "pattern": "1046 §2",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/815-cc-flag-loses-the-match.test.ts",
+        "pattern": "§1-§2 a flag",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/1043-competitive-match-clock.test.ts",
+        "pattern": "1043",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/server/test/zz-probe-U24-1.test.ts",
+        "test": "probe U24-1 a league CC match keeps the default 45-minute bank",
+        "passed": true,
+        "demonstrates": "yes: openLeagueMatch deals the room and records the match with a 45-minute bank, and ignores any clock field on the request"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "owner: The clock becomes a true chess clock in CC with 45 minutes per player, per match (chat 2026-11-02)",
+        "supports": "yes",
+        "note": "default 45 min, per match not per game"
+      },
+      {
+        "ref": "owner: Lose the match (chat 2026-11-02)",
         "supports": "yes",
         "note": "answer to what happens when time runs out"
+      },
+      {
+        "ref": "owner: competitive constructed still needs the Clock setting (chat 2026-11-03)",
+        "supports": "yes",
+        "note": "the players may override the default; the league-keeps-default sentence is shown by league-match.ts + probe U24-1"
       }
     ],
     "quote_spans": [
       {
+        "file": "client/server/main.ts",
+        "text": "ccId ? (msg.clock !== undefined ? sanitizeClock(msg.clock) : MATCH_CLOCK_MS.constructed) : sanitizeClock(msg.clock), single,"
+      },
+      {
         "file": "client/server/rooms.ts",
         "text": "constructed: 45 * 60 * 1000,"
-      }
-    ],
-    "scratch_spans": [
+      },
       {
-        "file": "data/comprehensive-rules/build/verify-input/U24-r4.json",
-        "text": "45 minutes per player, per match"
+        "file": "client/server/league-match.ts",
+        "text": "undefined, undefined, undefined, MATCH_CLOCK_MS.constructed, undefined, false, {"
+      },
+      {
+        "file": "client/server/test/1046-cc-clockless-match-carries.test.ts",
+        "text": "assert.deepEqual(g2.clockMs, [50 * 60_000, 55 * 60_000], 'the banks carried');"
+      },
+      {
+        "file": "client/server/test/815-cc-flag-loses-the-match.test.ts",
+        "text": "assert.equal(m.phase, 'over', 'the match is over after one game of three');"
       }
     ],
     "basis_ok": true,
-    "problem": "Owner-only rule supported by its quotes; no match (and so no per-match clock or match loss on time) exists in server/ui, so nothing demonstrates it."
+    "problem": ""
   },
   {
     "key": "annexd.modes.competitive.concede-match",
@@ -3296,42 +3358,42 @@
   },
   {
     "key": "annexd.modes.competitive.no-peeking",
-    "textHash": "de8940f39d972262",
+    "textHash": "0c56011c5e59d92c",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U24-r4",
     "engine": [
       {
-        "loc": "client/server/api-replay.ts:replayRoutes",
+        "loc": "client/server/api-replay.ts:replayRoutes (matchOpen gate)",
         "agrees": true,
-        "note": "a replay of a game of an open match is 404 unless admin"
+        "note": "a saved game of an open match is 404 to everyone but a non-seat admin"
       },
       {
-        "loc": "client/server/main.ts:watch handler",
+        "loc": "client/server/main.ts:watch handler (matchStillOpen)",
         "agrees": true,
-        "note": "an open match's room is watched only by a signed-in non-player"
+        "note": "an open match's rooms are watched only by a signed-in account not in it"
       },
       {
-        "loc": "client/server/match.ts:matchLobbyInfo",
+        "loc": "client/server/match-store.ts:matchOpen",
         "agrees": true,
-        "note": "only `mine` is sent, never the opponent's registration"
+        "note": "open = phase not 'over' and not 'void', so both gates lift once the match is over or voided"
       },
       {
         "loc": "client/server/view.ts:viewFor",
         "agrees": true,
-        "note": "CC blanks the opponent's deck elements"
+        "note": "CC games blank the opponent's deckElements"
       }
     ],
     "tests_run": [
       {
         "file": "client/server/test/821-cc-no-peeking-mid-match.test.ts",
-        "pattern": "§1-§3 the replay and the omniscient watch are refused",
+        "pattern": "§1-§3",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/server/test/820-cc-no-leak-over-the-wire.test.ts",
-        "pattern": "§1-§5 no message names the opponent sideboard",
+        "pattern": "§1-§5 no message",
         "passed": true,
         "asserts_claim": true
       }
@@ -3339,34 +3401,39 @@
     "probes": [
       {
         "file": "client/server/test/zz-probe-U24-2.test.ts",
-        "test": "probe U24-2 a void match: its game counts everywhere but the rating, stays in history, and its replay opens",
+        "test": "probe U24-2 a voided match no longer gates its replays",
         "passed": true,
-        "demonstrates": "yes: matchStillOpen is truthy mid-match and undefined once the match is void, so the replay and watch guards lift"
+        "demonstrates": "yes: the gate both doors ask (matchStillOpen) holds while paused and lets go once the match is void (closed with no result), covering 'or closed'"
       }
     ],
     "source_checks": [
       {
-        "ref": "engine code + tests (basis engine)",
+        "ref": "821-cc-no-peeking-mid-match.test.ts",
         "supports": "yes",
-        "note": "821 shows the replay opening after the match is over; for 'closed' (void) probe zz-probe-U24-2 shows matchStillOpen returning nothing once the match is void"
+        "note": "replay 404 and watch refused to both players mid-match; both open after the match is over"
+      },
+      {
+        "ref": "820-cc-no-leak-over-the-wire.test.ts",
+        "supports": "yes",
+        "note": "across two games and a third lobby with sideboard swaps: no opponent sideboard card, no deck id, lobby 'mine' only own (registered + current), opponent deckElements blank"
       }
     ],
     "quote_spans": [
       {
         "file": "client/server/api-replay.ts",
-        "text": "  if (opts.matchOpen?.((raw as { match?: unknown }).match) && !(admin && seat === null)) return notFound(res);"
+        "text": "if (opts.matchOpen?.((raw as { match?: unknown }).match) && !(admin && seat === null)) return notFound(res);"
       },
       {
         "file": "client/server/main.ts",
-        "text": "        if (!who || playsIn(openMatch, who.id)) {"
+        "text": "if (!who || playsIn(openMatch, who.id)) {"
       },
       {
         "file": "client/server/match-store.ts",
         "text": "export const matchOpen = (m: Match): boolean => m.phase !== 'over' && m.phase !== 'void';"
       },
       {
-        "file": "client/server/view.ts",
-        "text": "  if (v.sequential && v.deckElements) v.deckElements = v.deckElements.map((els, s) => (s === seat ? els : []));"
+        "file": "client/server/test/820-cc-no-leak-over-the-wire.test.ts",
+        "text": "assert.deepEqual(Object.keys(mi.mine).sort(), ['current', 'registered'], 'my own deck, and nothing else');"
       }
     ],
     "basis_ok": true,
@@ -6166,20 +6233,25 @@
   },
   {
     "key": "annexd.reveal.public-zones.deck-elements",
-    "textHash": "13c9e0d6ebb4a82e",
+    "textHash": "d89c64a355d9ec78",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U24-r4",
     "engine": [
       {
+        "loc": "client/engine/src/apply.ts:createGame (deckElements)",
+        "agrees": true,
+        "note": "the engine stamps deckElements for both seats in constructed"
+      },
+      {
         "loc": "client/server/view.ts:viewFor",
         "agrees": true,
-        "note": "deckElements sent for both seats except when `sequential` (CC), where the opponent's entry is blanked"
+        "note": "only a sequential (CC) game blanks the opponent's entry; ordinary constructed views carry both"
       },
       {
         "loc": "client/ui/inspect.ts:resourceMenuElements",
         "agrees": true,
-        "note": "reads state.deckElements?.[seat] only, to order the resource menu"
+        "note": "reads s.deckElements?.[seat] — the asking seat's own entry only; the only other client read (ui/lessons.ts) is also c.seat's own"
       }
     ],
     "tests_run": [
@@ -6191,38 +6263,52 @@
       },
       {
         "file": "client/server/test/820-cc-no-leak-over-the-wire.test.ts",
-        "pattern": "§1-§5 no message names the opponent sideboard",
+        "pattern": "§1-§5 no message",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/50-ui-inspect.test.ts",
+        "pattern": "the resource menu leads with your own",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/ui/test/667-draft-any-element-resource.test.ts",
-        "pattern": "CR 105.9a / BL-44",
+        "pattern": "CR 105.9a",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": false
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "owner: **Shipped unredacted**, because redaction lives in `server/view.ts` and the engine cannot",
+        "ref": "owner: Shipped unredacted (register@72de434)",
         "supports": "yes",
-        "note": "both players' deck elements are in the view"
+        "note": "the view carries both entries unredacted outside CC"
       },
       {
-        "ref": "owner: Drop all",
+        "ref": "owner: Drop all (chat 2026-10-25)",
         "supports": "yes",
-        "note": "the feature of SHOWING a constructed deck's elements to both players was dropped, so the client reads only its own"
+        "note": "the feature of SHOWING a constructed deck's elements to both players was dropped; the client reads only its own seat's entry"
       }
     ],
     "quote_spans": [
       {
         "file": "client/server/view.ts",
-        "text": "  if (v.sequential && v.deckElements) v.deckElements = v.deckElements.map((els, s) => (s === seat ? els : []));"
+        "text": "if (v.sequential && v.deckElements) v.deckElements = v.deckElements.map((els, s) => (s === seat ? els : []));"
       },
       {
         "file": "client/ui/inspect.ts",
-        "text": "  const deck: readonly string[] | undefined = s.deckElements?.[seat] ?? s.elements;"
+        "text": "const deck: readonly string[] | undefined = s.deckElements?.[seat] ?? s.elements;"
+      },
+      {
+        "file": "client/engine/test/435-cr-digital-2.test.ts",
+        "text": "assert.deepEqual(viewFor(h.state, viewer, null).deckElements, [['fire'], ['water']], `seat ${viewer} is sent both`);"
+      },
+      {
+        "file": "client/engine/test/50-ui-inspect.test.ts",
+        "text": "assert.deepEqual(theirs.show, s.deckElements![1], 'seat 1 reads seat 1');"
       }
     ],
     "basis_ok": true,
