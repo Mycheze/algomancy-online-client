@@ -59,5 +59,5 @@ Tapping a whole card goes deeper (opens that page).
   live.
 - "No page scrolling" is a layout rule for every page, so it probably belongs in the system: an app shell (top
   bar, main area, bottom bar) with `100dvh` and per-region scrolling. Give it a guard (ui-shots can measure
-  document height against the viewport at 1440, 1024 touch and 390).
+  document height against the viewport at 1440 and 1024 touch).
 - Every `data-btn` survives a redesign (tests and the tutorial find buttons by them).
