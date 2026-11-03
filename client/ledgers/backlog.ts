@@ -600,6 +600,48 @@ const OPEN: Entry[] = [
       + 'badge, the review queue over judge questions, and reports ORDERED by badge — those '
       + 'are the doneWhen lines still open.',
   },
+  {
+    id: 'BL-51',
+    slug: 'colour-blind-mode',
+    title: 'Colour-blind / high-visibility mode',
+    area: 'client',
+    size: 'L',
+    status: 'open',
+    track: 'feature',
+    said:
+      'We should certainly make a "colorblind friendly" version that ignores aesthetics and just '
+      + 'makes sure everything is very easy to see and accessible.',
+    means:
+      'A FUTURE switch (owner 2026-11-03, while the Manual\'s purple/orange palette went live): a '
+      + 'second look for the whole client, board and pages, chosen in the settings, that puts '
+      + 'legibility first and the rulebook\'s aesthetics second. Nothing the player needs to know '
+      + 'is told by colour alone, every text and every meaningful shape clears a high contrast bar '
+      + 'on whatever it sits on, and the state colours of the table (targeting, legal, pending, '
+      + 'danger, the seats) stay apart for the common colour-vision deficiencies.',
+    doneWhen: [
+      'A setting turns the mode on and off, signed in or not, and the choice is remembered',
+      'With it on, every element is told apart by its SHAPE or a label as well as its colour (the element shapes already exist), on cards, chips, the resource row and the favourite-element picker',
+      'With it on, every text and every element shape clears 4.5:1 against the surface it is drawn on; the board\'s state outlines (targeting, legal, pending, danger) are told apart by line style or a mark, not hue alone',
+      'A guard test holds the mode\'s palette to those contrast numbers, as test 1030 holds the default one',
+    ],
+    decided: [
+      'Not built yet: the owner named it as a future item on 2026-11-03. Do not fold it into a palette round.',
+    ],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/styles/tokens.css',
+      'client/ui/test/1030-manual-palette.test.ts',
+    ],
+    notes:
+      'Starting numbers, from the palette round (var/records/ds-round-2026-11-03-r2-theme.md): on the '
+      + 'purple, the element colours as SHAPES are below 3:1 on a raised panel — Dark 2.5:1 (was 3.2 '
+      + 'on the old slate), Earth 2.4:1 (3.1), Wood 2.9:1 (3.6); the favourite-element picker\'s Dark '
+      + 'icon reads faint. Danger text on a raised panel is 3.95:1 and white on the red badges 3.03:1, '
+      + 'the two pairs the default palette leaves under 4.5. The board\'s state colours are table roles '
+      + 'in tokens.css (--glow legal green, --target targeting gold, --pending teal, --danger); green '
+      + 'vs gold and teal vs green are the pairs a deuteranope loses first.',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
