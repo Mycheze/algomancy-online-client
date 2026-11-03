@@ -6,21 +6,24 @@ Pages are built by concatenating those strings and assigning them to
 `innerHTML`, which is how every page in this client is already painted, so a
 component drops into a page with no framework and no new dependency.
 
-**Nothing uses them yet.** The components went in first, in Storybook, with
-tests. The next wave (Phase 4, one page per round) swaps them into the pages.
+They went in first (Phase 3, in Storybook, with tests); wave 2 of Phase 4
+(2026-11-03) swapped them into the pages under `../pages/`, and the round after
+added the variants those pages asked for. A page never writes a `ui-` class by
+hand (test 995): if a component cannot draw what a page needs, add the option
+here (see "Adding a variant").
 
 | component | file | variants and options |
 |---|---|---|
 | Button | `button.ts` | `secondary` (default), `primary` (green confirm), `action` (gold page action), `ghost`, `danger`, `link`, `icon` (needs `title`) · size `md`/`sm` · `href` renders an `<a>` |
 | Toggle | `toggle.ts` | `on` / off · `strong` (bold when on) · size |
 | Field | `field.ts` | control `input` (any `type`, checkbox/radio laid out in a row) / `textarea` / `select` · `hint` · `error` |
-| Panel | `panel.ts` | `default` / `inset` / `emphasis` · `roomy` · `wide` · `title` |
-| Page header | `page-header.ts` | title (+ `titleHtml`), subtitle, `actionsHtml`, `back` (a back link, last) |
+| Panel | `panel.ts` | `default` / `inset` / `emphasis` · `roomy` · `wide` · `title` (+ `titleHtml`, or alone) · `panelSubheading()`, the `<h4>` inside a panel |
+| Page header | `page-header.ts` | title (+ `titleHtml`), subtitle (`subtitleAs: 'p'` for a paragraph with its margins), `actionsHtml`, `back` (a back link, last) |
 | Back link | `back-link.ts` | `primary` (default, "Return to Lobby") / `secondary` / `link` · `arrow` |
-| Tabs | `tabs.ts` | `plain` / `caps` · per-tab `count` and `dataBtn` |
-| Table | `table.ts` | columns with `align`, cells text or `{ html }`, `caption`, `emptyText`, `scroll` |
+| Tabs | `tabs.ts` | `plain` / `caps` · per-tab `count`, `dataBtn`, `title` and `className` |
+| Table | `table.ts` | columns with `align`, `className`, `headClassName`, `title` (a header tooltip); cells text or `{ html }`; `caption`, `emptyText`, `scroll`, `headless` (no header row) |
 | Chip | `chip.ts` | tone `neutral` / `accent` / `success` / `warning` / `danger` / `info` · shape `tag` / `pill` · `solid` |
-| Status message | `status.ts` | `ok` / `warn` / `error` / `info` / `note` (today's gold `.deckmsg`) · `boxed` |
+| Status message | `status.ts` | `ok` / `warn` / `error` / `info` / `note` (today's gold `.deckmsg`) · `boxed` · `tag: 'p'` (a paragraph, with its margins) |
 | Empty state | `empty-state.ts` | boxed (default) / `bare` · `title` · `actionHtml` |
 | Dialog | `dialog.ts` | native `<dialog>` · width `md` / `lg` / `xl` · `closable` · `openDialog` / `closeDialog` / `installDialogClose` |
 | Toast | `toast.ts` | `success` / `info` / `danger` · `toastHtml` (markup) and `showToast` (one region on `<body>`) |
@@ -79,28 +82,39 @@ after `base.css`; a component imports nothing it should not.
 5. `ui/test/<next free 9xx>-ui-<name>.test.ts`.
 6. `npm --prefix client/ui run check`. 940 names anything you missed.
 
-## How the pages adopt them (Phase 4)
+## Adding a variant
 
-One page per round, in the plan's order (Home, Sign-in/Profile, My decks,
-Cards, Metagame/Card stats, League, Weekly challenge, Queue/waiting
-rooms/post-game, How to play/Learn, Admin, Rules review). Each round:
+A page that needs something a component does not do yet (a title with markup, a
+table with no header row) gets it here, not as a copy of the component's markup
+in the page:
 
-1. **Split the renderer.** `ui/pages/<page>.ts` gets `pageView()`, which gathers
-   the state, and `pageHtml(view)`, which draws it from components. A page
-   story renders `pageHtml` with made-up data.
-2. **Swap in components, keeping every `data-btn`** and every class a test or
-   the ui-driver reads. Where a test reads an old class, keep it on the element
-   with `className` (`className: 'acctcard'`), or change the test in the same
-   commit and say why.
-3. **Delete the page's private CSS** the component replaced (`.accthead`,
-   `.acctcard`, its copy of the `.on` rule). The component pieces load before
-   every page, so while a page's old rules remain they still win; delete them
-   to see the component's look.
-4. **Prove it with ui-shots** before and after. The only allowed differences
-   are where the page's private copy differed from the component; each goes on
-   the list for the owner.
+1. Add the prop to the component, defaulting to today's output — every page that
+   does not pass it must render byte for byte as before.
+2. Any CSS goes in the component's piece, from tokens. A colour the scale does
+   not hold becomes a token in `ui/styles/tokens.css` first.
+3. A story for it in the component's stories file, and a case in its test.
+4. Swap it into the page, delete the page CSS it replaces (grep the class across
+   `client/ui` first, `.ts` included), and prove it with `ui-shots`: 0 differences.
 
-Known seams for that work:
+## Where the pages stand (Phase 4)
+
+Every page under `../pages/` draws with these where one reproduces its look.
+What each page still writes by hand, and why, is in its module's header comment
+and in `../pages/README.md`; the larger leftovers:
+
+- **My decks, the tabletop builder, the binder, the rules review, How to play**
+  are not under `pages/` yet, so they use no component.
+- The gold-on-green `.cta.primary` buttons (home, queue, waiting rooms, match):
+  the `action` variant is the gold alone; adopting it is a visible fix for the
+  owner to approve.
+- The metagame, ladder, card stats and shared-deck headers: their Back button
+  sits beside the title, `pageHeader` puts it at the edge. An owner call.
+- The profile's cards are still `<section class="acctcard">` (`panel` can take
+  their counts in `titleHtml` now), and its history/ladder tables `.accttable`.
+- The match room's buttons (834–839 pin their exact markup) and the report
+  dialog's (287 reads `data-report="send" disabled` in that order).
+
+Known seams:
 - A page rule with an element selector outranks a component class: `.deckpage h1`
   (22px) beats `.ui-page-header__title` (26px), `.acctbar button` beats
   `.ui-button`'s padding. Deleting the page rule is the fix, not `!important`.

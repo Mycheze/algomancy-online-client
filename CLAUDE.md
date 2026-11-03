@@ -29,6 +29,10 @@ bot/            the runtime modules · app.py (web) · bot.py (Discord) · cogs/
 bot/pipeline/   the scripts that BUILD data/ — run by hand, never on a request path
 client/engine/  src/ (the rules reducer) · test/ · scripts/ — the engine, and only the engine
 client/ui/      the whole browser client (~26k lines). It imports the engine; it is not in it.
+client/ui/styles/      the stylesheet's pieces; index.css is their order = the cascade (tokens → base → components → pages)
+client/ui/pages/       the non-game pages: view → pure …Html → paint, one module each (its README is the contract)
+client/ui/components/  the design system's `ui-` components: pure props → HTML string, a story and a test each
+client/storybook/      Storybook for the components and pages (own package; the gate only typechecks its stories)
 client/server/  the WebSocket game server · test/ (in-process) · e2e/ (spawns the real server)
 client/ledgers/ every work queue: card-todo, playtest-ledger, backlog, and the derived ones
 client/docs/    the specs — and a test fixture directory, see below

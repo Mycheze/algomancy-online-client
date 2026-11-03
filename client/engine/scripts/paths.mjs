@@ -220,6 +220,10 @@ export const BUNDLE_CSS = join(UI_DIR, 'bundle.css');
  *  HTML string) per component, its CSS at `styles/components/<name>.css`, a
  *  story in STORYBOOK_STORIES_DIR and a test in ui/test (guarded by ui/test/940) */
 export const UI_COMPONENTS_DIR = join(UI_DIR, 'components');
+/** the non-game pages under the page contract (view → pure …Html → paint), one
+ *  module each, mapped in its README.md; a story each in STORYBOOK_STORIES_DIR/pages
+ *  and a DOM-free test (guarded by ui/test/992) */
+export const UI_PAGES_DIR = join(UI_DIR, 'pages');
 /** client/storybook/ — its own package with its own dependencies, so ui/ keeps
  *  none and the gate never waits on it. Its stories are typechecked by ui/'s
  *  tsconfig (they import nothing from storybook itself). */

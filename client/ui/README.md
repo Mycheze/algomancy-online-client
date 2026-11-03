@@ -68,6 +68,37 @@ printed on cards the pool does not carry) and `scan-reminders.json` (type-line
 reminders the oracle transcription omits). `glossary.ts` and `rules.ts` read
 them.
 
+## How the pages are drawn (the design system)
+
+The non-game pages are built in four layers, each in its own place
+([`docs/23-design-system.md`](../docs/23-design-system.md) is the plan and its § Progress says how far it got):
+
+1. **Tokens** — [`styles/tokens.css`](styles/tokens.css): every colour, size, space, radius and shadow as a
+   `--color-*` / `--text-*` / `--space-*` … custom property. A new colour is a token first.
+2. **Base** — [`styles/base.css`](styles/base.css): the element defaults (headings, links, `.hint`/`.dim`,
+   `.eyebrow`, text fields, the focus ring), all under `:where()` and never on the board.
+3. **Components** — [`components/`](components/README.md): `ui-` pieces as pure `props → HTML string` functions
+   (button, panel, page header, tabs, table, status …), CSS in `styles/components/`.
+4. **Pages** — [`pages/`](pages/README.md): one module per page, `…View()` gathers, a pure `…Html(view)` draws
+   from components, `paint…()` touches the DOM. The page's own CSS is `styles/pages/<nn>-<page>.css`.
+
+**The stylesheet is one file built from pieces.** [`styles/index.css`](styles/index.css) lists them with
+`@import`, and that order IS the cascade: tokens → base → components → the page, board and shared pieces in their
+historical order (later overrides earlier, so a piece never moves casually). `npm run build` concatenates them into
+`bundle.css`; tests read the same text through `test/read-styles.ts`. The board's pieces are `styles/board/`; a
+page's are `styles/pages/`; what both use is `styles/shared/`.
+
+**Storybook** ([`../storybook/README.md`](../storybook/README.md)) shows every component and every page from
+made-up views, on the site's real CSS: `cd client/storybook && npm install && npm run storybook`. It is where a page
+design is iterated. **ui-shots** (`client/server/e2e/ui-shots.mjs`, compared with `ui-shots-compare.mjs`) photographs
+every page state at three widths against a fixed fixture; a restructure is proved by 0 differences.
+
+**The guards** (all in `npm run check`): 920 the piece list and order, 921 no new colour literal in a page piece,
+925 no page re-declares a base selector, 940 every component has its CSS, story, test and barrel line, 962 every
+`pages/*.ts` `…Html` is pure, 992 every page has a story and a DOM-free test, 993 no colour literal in a page or
+component `.ts`, 994 no stray stylesheet (no `style.css`, no `.css` outside `styles/`, no injected `<style>`),
+995 no page hand-writes a `ui-` class, 996 the READMEs name every page and component file.
+
 ## Touch
 
 The client is used on iPads. Hover is gated on the pointer type, never on a

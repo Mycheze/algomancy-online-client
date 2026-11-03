@@ -1,11 +1,16 @@
 # `client/ui/pages/` — the non-game pages
 
-Where the client's pages live once they are converted to the page contract
-(`client/docs/23-design-system.md` § Target structure, Phase 4). Started
-2026-11-03 by moving the home screen, the waiting rooms, the deck picker and
-the connecting screen out of `main.ts`. Every other page is still in its own
-module at `client/ui/<name>.ts`; the table below says where, and how hard each
-is to bring here. The next wave converts them one page per round.
+Where the client's pages live under the page contract (`client/docs/23-design-system.md` § Target structure,
+Phase 4). Started 2026-11-03 by moving the home screen, the waiting rooms, the deck picker and the connecting screen
+out of `main.ts`; the same day's wave 2 brought the front door, the account pages, the card pages, the league, the
+weekly challenge and Learn to Play here. **Still outside:** My decks (+ its modals and the tabletop builder and
+binder), the rules review, How to play / the help layer, the lesson window, the public CR sheet, and the replay bar —
+the table below says where each one is and how hard it is.
+
+**The usual shape.** A page's old module (`client/ui/<name>.ts`) keeps its STATE, its fetches, its clicks and any
+in-place patches, and gains one snapshot export (`queueSnapshot()`, `panelSnapshot()`, `state()` …) the page's view
+reads. The drawing lives here. Other modules import the old module, not the page, so nothing outside had to change.
+A page module imports from its controller with `import type` only, so the runtime graph stays controller → page.
 
 ## The page contract
 
@@ -29,24 +34,48 @@ And the rules that keep a conversion invisible:
 - **Import order is boot order.** `main.ts` imports `pages/*` LAST, and a page imports only modules main.ts already
   imported above it, so nothing is evaluated earlier than it was.
 - A page gets a DOM-free test of its `…Html` (960–962 are the pattern: made-up views, `<!--SLOT:x-->` markers for the
-  slots, and the `data-btn` names asserted).
+  slots, and the `data-btn` names asserted) and a Storybook story (`client/storybook/stories/pages/<page>.stories.ts`,
+  `_page.ts` holds the frame and stand-in slots). Test 992 fails on a `pages/*.ts` that exports an `…Html` and has
+  neither.
+- **Draw with the components** (`../components/README.md`): a page never writes a `ui-` class by hand (test 995), and
+  never a colour literal (test 993) — a colour is a token in `styles/tokens.css`, read through `var(--…)`. A page that
+  needs something a component cannot do yet asks for a variant (add it there, with a story and a test) rather than
+  copying the component's markup.
 
 ## What is here now
 
-| file | exports | what |
+| file | exports | what (and the module that keeps the state) |
 |---|---|---|
 | `home.ts` | `homeView`, `homeHtml`, `paintHome`, `constructedOptionsHtml`, `singleDuelHtml`, `saveHomeName` | the home screen. `main.ts renderHome()` is still the **router** (which page owns `#app`) and calls `paintHome` when none does |
-| `waiting.ts` | `constructedWaitingView/Html`, `singleWaitingView/Html`, `paintWaiting` | the waiting rooms: constructed + constructed league, Single Card Duel; dispatches the draft trio lobby (`lobby.ts`) and the Competitive match room (`match.ts`) |
-| `deckpicker.ts` | `deckPickerView`, `deckPickerHtml`, `deckPicker`, `wireDeckPicker`, `importDeck` | the constructed deck picker (home, waiting room, and the queue through `initQueue`) with its state |
+| `waiting.ts` | `constructedWaitingView/Html`, `singleWaitingView/Html`, `paintWaiting` | the waiting rooms: constructed + constructed league, Single Card Duel; dispatches the draft trio lobby and the Competitive match room |
+| `deckpicker.ts` | `deckPickerView`, `deckPickerHtml`, `deckPicker`, `wireDeckPicker`, `importDeck` | the constructed deck picker (home, waiting room, queue) with its state |
 | `clockpick.ts` | `clockPickView`, `clockPickHtml`, `chosenClockMs`, `CLOCK_*` | BL-26's clock banks and picker. Engine test 279 locks `CLOCK_DEFAULT_BY_MODE` to the server's copy by reading this file |
 | `connecting.ts` | `connectingHtml` | "Connecting to the server…" and a refused join |
-| `caret.ts` | `caretIn`, `restoreCaret` | the caret carry, shared with the board's `snapshotViewport` |
+| `caret.ts` | `caretIn`, `restoreCaret` | the caret carry, shared with the board's `snapshotViewport` (not a page; no `…Html`) |
+| `queue.ts` | `queueView`, `queueHtml`, `paintQueue`, `queueStripView`, `queueStripHtml` | the matchmaking queue and its home strip. `ui/queue.ts`: socket, counts poll, the 1s tick (`tickInPlace`), `queue-` clicks; snapshot `queueSnapshot()` |
+| `lobby.ts` | `lobbyView`, `lobbyHtml`, `revealHtml` | the draft trio lobby and the trio reveal. `ui/lobby.ts`: the un-submitted pick/ranking, `lobby-` clicks; snapshot `lobbyLocals()` |
+| `customrules.ts` | `customRulesView`, `customRulesHtml` | the Custom rules panel (Live draft card). `ui/customrulespanel.ts`: rules + storage, verdict, `cr-` clicks, `wirePanel` (in-place typing patches); snapshot `panelSnapshot()` |
+| `singlecard.ts` | `singleCardPickerView`, `singleCardPickerHtml` | the Single Card Duel card picker. `ui/singlecard.ts`: the pick, `sc-` clicks, `wire`; snapshot `pickerSnapshot()` |
+| `postgame.ts` | `postGameView`, `postGameHtml` | the post-game screen (drawn over the board by main.ts). `ui/postgame.ts`: wire types, `pg-` clicks, the helpers server test 363 imports |
+| `match.ts` | `competitiveCardView/Html`, `yourMatchesView/Html`, `matchRoomView`, `matchRoomHtml`, `paintMatchRoom`, `matchResultHtml` | Competitive Constructed: the home card, "Your matches", the match room. `ui/match.ts`: the draft, best-of, the Your-matches fetch, `cc-` clicks, the countdown; snapshot `matchState()` |
+| `signin.ts` | `signinView`, `signinHtml`, `paintSignin`, `identityBarView`, `identityBarHtml` | sign-in / register and the identity bar (a home slot). State in `ui/account.ts` |
+| `profile.ts` | `profileView`, `profileHtml`, `paintProfile`; the shared pieces `badgeChipsHtml`, `trophyChip(s)Html`, `historyRowsHtml`, `gameElementsHtml`, `modeName` … | the profile (Stats · Achievements · Ladder · Friends · Decks · History). State, fetches and clicks in `ui/account.ts`, which re-exports the shared pieces |
+| `admin.ts` | `adminView`, `adminHtml`, `paintAdmin` (+ state and clicks, the whole module) | Admin (Reports · Accounts · Games · Live rooms · Challenges) |
+| `report.ts` | `reportLayerHtml`, `reportDialogHtml`, `reportPillHtml`, the label tables | the report pill and dialog (+ dispute). State, sending and keys in `ui/report.ts` |
+| `inbox.ts` | `inboxLayerHtml`, `inboxListHtml`, `roomFriendsHtml`, `roomFriendsBodyHtml` | the bell, its list, the invite popups, the waiting room's friends panel. State, poll and clicks in `ui/inbox.ts` |
+| `cards.ts` | `cardsView`, `cardsHtml`, `paintCards`, `facets`, `CHUNK` | the card browser (`?cards`, `?card=`). State, fetches, URL, clicks and keys in `ui/cards.ts` |
+| `meta.ts` | `metaView`, `metaHtml`, `paintMeta`, `metaTabsHtml`, `metaRowHtml`, `artFor` | metagame list, shared deck, card duel ladder; hosts card stats. State in `ui/meta.ts` |
+| `cardstats.ts` | `cardStatsView`, `cardStatsHtml`, `paintCardStats`, `COLS`, `colsFor` | the card stats tab. State in `ui/cardstats.ts` |
+| `league.ts` | `leagueView`, `leagueHtml`, `leagueBannerHtml`, `leagueNavHtml`, the season types and formatting | the league page, its home banner and header button. State, fetches, `handleButton`, the grid and time-code wiring and `paint()` in `ui/league.ts` (`TODO(ds)`: paint stays with the wiring) |
+| `challenge.ts` | `challengePageView`, `challengePageHtml`, `challengeHomeView`, `challengeHomeCardHtml`, `challengeNavHtml` | the weekly challenge page, its home card and header button. State, fetches, clicks, the tabletop host and `paint()` in `ui/challenge.ts` (`TODO(ds)`); the builder is `ui/challengebuild.ts` `builderHtml` (already pure) |
+| `challengerun.ts` | `runMeterHtml`, `runEndHtml`, `scoreHtml`, `statCell` | a challenge run's meter and end panels. `ui/challengerun.ts` gathers (`runMeterView`, `runEndView`) |
+| `learn.ts` | `learnMenuView`, `learnMenuHtml` | the Learn to Play menu. The layer, clicks and keys in `ui/learnmenu.ts` |
 
 **Still in `main.ts`, on purpose:** `handlePregameButton` — the home and waiting-room buttons (`eltoggle`, `elrandom`,
 `clockpick`, `newgame`, `joincode`, `deckimporturl/text`, `deckjoin`, `singlejoin`, `gohome`, `copylink`). They write
-main.ts state (`ui.homeEls`, `uiError`, `NET`) and open the room. `TODO(ds): view/html split:` move them here once
-`uiError` and the element pick have a home outside main.ts's `UiState`. Also the **kicked** notice, written inline in
-`NetBackend`'s message handler.
+main.ts state (`ui.homeEls`, `ui.homeFixedTrio`, `uiError`, `NET`) and open the room. `TODO(ds): view/html split:` move
+them here once `uiError` and the element pick have a home outside main.ts's `UiState`. Also the **kicked** notice,
+written inline in `NetBackend`'s message handler.
 
 ## Every non-game page and screen
 
@@ -64,18 +93,18 @@ import a pure renderer or read source are not listed. ui-shots states are `page_
 | **Home** | `pages/home.ts` homeView/homeHtml/paintHome; router `main.ts` renderHome; buttons `main.ts` handlePregameButton | 06-home, 18-draft-lobby (`.fixedtrio`, Custom rules), 33-single-card-duel, 07-lobby (picker), 30-queue (strip), 47-competitive-match, board/13 (`.clockpick`), shared/10-element-chips | 366, 839 (and 610/634/732 start here) | home__signed-out, home__signed-in, home__folds-open, home__bell-open, home__cc-your-matches *cc* | **easy** now (split done); the buttons are medium — they write `ui.homeEls`/`uiError` |
 | Deck picker (home, waiting room, queue) | `pages/deckpicker.ts` | 07-lobby (`.deckselect`, `.deckinfo`, `.deckimport`, `.deckpaste`, `.deckmsg`) | 366 (on home), 254 (waiting room) | home__*, waiting__constructed, queue__constructed | **easy** (split done) |
 | Clock picker | `pages/clockpick.ts` | board/13-playtest-round4-clocks-report (`.clockpick`) | 366 | home__folds-open | **easy** (split done) |
-| Custom rules panel (Live draft card) | `customrulespanel.ts` panelHtml/wirePanel | 18-draft-lobby (`.customrules`), 10-element-chips | 366 | home__folds-open | **easy**: panelHtml is one function over 7 module `let`s; give it a view |
-| Single Card Duel fold + card picker | `pages/home.ts` singleDuelHtml; `singlecard.ts` pickerHtml/wire | 33-single-card-duel | — | home__folds-open | **easy**: pickerHtml reads one `let` (the chosen card) |
-| Competitive card + "Your matches" row (home) | `match.ts` competitiveCardHtml, yourMatchesHtml, loadMyMatches | 47-competitive-match | 839 | home__signed-in, home__cc-your-matches *cc* | **medium**: `bestOf`/`pickId`/`mine` are module state, and the row fetches on paint |
-| Recent updates band | `updates.ts` updatesHtml/wireUpdates | 06-home (`.upd*`) | — (323 is DOM-free) | on every home__* | **easy**: already `(list, seen) => string` |
-| Matchmaking queue page | `queue.ts` renderScreen (13 `let`s; borrows the deck picker through initQueue) | 30-queue, 04-joinscreen | — | queue__picker, queue__constructed, queue__signed-out | **medium**: repaints the whole page every second while searching (inventory bug 2) |
+| Custom rules panel (Live draft card) | `pages/customrules.ts` customRulesView/Html; state + clicks + `wirePanel` in `customrulespanel.ts` | 18-draft-lobby (`.customrules`), 10-element-chips | 366 | home__folds-open | **easy (done)** |
+| Single Card Duel fold + card picker | `pages/home.ts` singleDuelHtml; `pages/singlecard.ts` singleCardPickerView/Html; the pick + clicks in `singlecard.ts` | 33-single-card-duel, 34-cardstats (`.scwarn`) | — | home__folds-open | **easy (done)** |
+| Competitive card + "Your matches" row (home) | `pages/match.ts` competitiveCardView/Html, yourMatchesView/Html; `match.ts` keeps `bestOf`/`pickId`/`mine` and the fetch (`loadMyMatches`) | 47-competitive-match | 839 | home__signed-in, home__cc-your-matches *cc* | **easy (done)** |
+| Recent updates band | `updates.ts` updatesHtml/wireUpdates (`UPDATES` is the deploy list, edited every round; drawn by `pages/home.ts`) | 06-home (`.upd*`) | — (323 is DOM-free) | on every home__* | **easy**: already `(list, seen) => string`; stays where it is, with a story (`stories/pages/updates.stories.ts`) |
+| Matchmaking queue page + home strip | `pages/queue.ts` queueView/Html, paintQueue, queueStripView/Html; socket, counts poll, the 1s in-place tick and clicks in `queue.ts` | 30-queue, 04-joinscreen | — | queue__picker, queue__constructed, queue__signed-out | **easy (done)** |
 | Connecting / refused join | `pages/connecting.ts` connectingHtml; `main.ts` renderConnecting | 04-joinscreen (`.joinscreen`, `.joinerr`) | 254 | — (a socket screen) | **easy** (done) |
 | Kicked ("another connection took over") | `main.ts` NetBackend message handler, `m.t === 'kicked'` | 04-joinscreen | 70, 355 | — | **easy** markup, but it sits inside the socket class; move with the board-side cleanup |
 | Constructed / constructed-league waiting room | `pages/waiting.ts` constructedWaitingView/Html, paintWaiting | 18-draft-lobby (`.lobbypage`, `.lobbyseat`, `.seatdot`, `.lockedin`), 07-lobby, board/05 (`.sharelink`) | 254, 356 | waiting__constructed | **easy** (done) |
-| Single Card Duel waiting room | `pages/waiting.ts` singleWaitingView/Html | 18-draft-lobby, 33-single-card-duel, 34-cardstats (`.scdraw` landed there in the split) | — | — (needs a room with `single` armed) | **easy** (done) |
-| Draft trio lobby + trio reveal | `lobby.ts` lobbyHtml, revealHtml, handleLobbyButton | 18-draft-lobby, 07-lobby, 10-element-chips | 269 | — | **easy**: both are already pure `(args) => string` |
-| Competitive match room: game 1 registration, between games, pause | `match.ts` matchWaitingHtml, handleMatchButton (via `pages/waiting.ts` paintWaiting) | 47-competitive-match | 834, 835, 836, 837, 838 | match__registration *cc*, match__between-paused *cc* | **medium**: the html is near-pure but the seat's deck choice is module state |
-| Post-game (game over, rematch, Bo3 continue) | `postgame.ts` postGameHtml (pure), handlePostGameButton | 19-postgame | 521, 638, 838 | — (over a finished board) | **easy** for the html; it paints over the board, so its story needs a board stub |
+| Single Card Duel waiting room | `pages/waiting.ts` singleWaitingView/Html | 18-draft-lobby, 33-single-card-duel (`.scdraw`) | — | — (needs a room with `single` armed) | **easy** (done) |
+| Draft trio lobby + trio reveal | `pages/lobby.ts` lobbyView/Html, revealHtml; `lobby.ts` lobbyLocals, handleLobbyButton | 18-draft-lobby, 07-lobby, 10-element-chips | 269 | — | **easy (done)** |
+| Competitive match room: game 1 registration, between games, pause | `pages/match.ts` matchRoomView/Html, paintMatchRoom, matchResultHtml (via `pages/waiting.ts` paintWaiting); `match.ts` handleMatchButton | 47-competitive-match | 834, 835, 836, 837, 838 | match__registration *cc*, match__between-paused *cc* | **easy (done)**; its buttons are still hand-written (834–839 pin their markup) |
+| Post-game (game over, rematch, Bo3 continue) | `pages/postgame.ts` postGameView/Html; `postgame.ts` handlePostGameButton | 19-postgame | 521, 638, 838 | — (over a finished board) | **easy (done)** |
 | Replay viewer bar | `replaybar.ts` (9 `let`s, keys installed globally) | board/36-replaybar | 320, 321, 508 | — | **medium**: keys fire while typing (inventory bug 9) |
 | Draft pick / bottom-two / pick-set dialogs, concede, judge box | `main.ts` (board half), `pickset.ts` pickSetHtml | board/* | many | — | out of scope (board) — listed so nobody looks for them here |
 
@@ -83,25 +112,25 @@ import a pure renderer or read source are not listed. ui-shots states are `page_
 
 | page / screen | code now | CSS | driver tests | ui-shots states | tangle |
 |---|---|---|---|---|---|
-| Sign-in / register | `account.ts` renderScreen (the auth branch) | 17-accounts | 839 | auth__sign-up, auth__log-in | **medium**: shares account.ts's 19 `let`s with the profile |
-| Profile (Stats · Achievements · Ladder · Friends · Decks · History) | `account.ts` renderScreen + the per-tab builders; `barHtml` (home slot) | 17-accounts, 28-metagame (`.acctpage` overrides) | 610, 634, 732 | profile__stats, profile__achievements, profile__ladder, profile__friends, profile__decks, profile__history | **hard**: 1,255 lines, 19 module `let`s, 5 fetches, the ladder fetch error shows as "nobody has played" (inventory bug 5) |
+| Sign-in / register | `pages/signin.ts` signinView/Html, paintSignin (state in `account.ts`) | 17-accounts | 839 | auth__sign-up, auth__log-in | **easy (done)** |
+| Profile (Stats · Achievements · Ladder · Friends · Decks · History) | `pages/profile.ts` profileView/Html, paintProfile; the identity bar is `pages/signin.ts` identityBarHtml (`account.ts` barHtml gathers the slot); state, fetches and clicks in `account.ts` | 17-accounts, 28-metagame (`.acctpage` overrides) | 610, 634, 732 | profile__stats, profile__achievements, profile__ladder, profile__friends, profile__decks, profile__history | **done** (view/html split). The cards are still `<section class="acctcard">`, not `panel()` |
 | My decks (list, hero, Cards · Curve & affinity · Maybeboard · Games tabs) | `decks.ts` renderScreen | 23-decks, 26-deckstrip-curve-affinity, 27-cards (add drawer) | 830, 832, 833 (open it from home) | decks__first, decks__public-deck, decks__curve, decks__games, decks__maybeboard, decks__card-focus, decks__group-cost, decks__add-drawer | **hard**: 2,075 lines, 30 module `let`s |
 | Deck modals (settings, describe, export, import) | `decks.ts` | 35-deck-modals | 830 | decks__settings, decks__describe, decks__export, decks__import | **hard** (with the page) |
 | Sideboard tab + swap presets (Competitive) | `decks.ts` (tab `side`, `deck-swap-*`, `deck-try-*`) | 23-decks, 47-competitive-match | 830, 832, 833 | decks__cc-sideboard *cc*, decks__cc-swap-new *cc* | **hard** (with the page) |
 | Tabletop deck builder (+ binder layer) | `tabletop.ts` pageHtml/renderScreen; `binder.ts` | 24-tabletop, 25-binder, 26-deckstrip-curve-affinity, shared/38-drag | 535, 537, 540, 541, 542, 831 | tabletop__deck, challenge__builder, tabletop__cc-sideboard *cc* | **hard**: registers its drag handler on import; its z-index sits above every dialog |
-| Card browser (`?cards`) | `cards.ts` renderScreen (13 `let`s, 2 fetches) | 27-cards, 28-metagame | — | cards__browse, cards__search, cards__syntax, cards__list-view, cards__text-view, cards__pinned, cards__deckbuilding | **medium**: one module, but the query state and the pinned panel interleave |
-| Metagame: published decks, shared deck `?deck=`, card duel ladder | `meta.ts` renderScreen (17 `let`s, 4 fetches) | 28-metagame | — | meta__decks, meta__shared-deck, meta__card-ladder | **medium** |
-| Card stats (`?cardstats`) | `cardstats.ts` pageHtml (exported) / renderScreen | 34-cardstats, 28-metagame | — | cardstats__cards, cardstats__elements, cardstats__highlights, cardstats__game, cardstats__card | **medium**: a `pageHtml` exists but reads 16 module `let`s and localStorage |
+| Card browser (`?cards`) | `pages/cards.ts` cardsView/Html, paintCards; state, fetches, URL, clicks and keys in `cards.ts` | 27-cards, 28-metagame | — | cards__browse, cards__search, cards__syntax, cards__list-view, cards__text-view, cards__pinned, cards__deckbuilding | **easy (done)** |
+| Metagame: published decks, shared deck `?deck=`, card duel ladder | `pages/meta.ts` metaView/Html, paintMeta; state in `meta.ts` | 28-metagame | — | meta__decks, meta__shared-deck, meta__card-ladder | **easy (done)**; its headers keep their own markup (the Back button sits by the title, not at the edge — an owner call) |
+| Card stats (`?cardstats`) | `pages/cardstats.ts` cardStatsView/Html, paintCardStats; state in `cardstats.ts` | 34-cardstats, 28-metagame | — | cardstats__cards, cardstats__elements, cardstats__highlights, cardstats__game, cardstats__card | **easy (done)** |
 
 ### League, challenge, admin, learning, rules
 
 | page / screen | code now | CSS | driver tests | ui-shots states | tangle |
 |---|---|---|---|---|---|
-| League (season, entry, availability, matches, standings, organizer) | `league.ts` renderScreen, navButtonHtml, homeBannerHtml; `leaguenotes.ts` | 44-league | 610 | league__announced, league__signup, league__running, league__final, league__finished, league__signed-out, league__organizer, league__suggest-time | **hard**: 1,384 lines, 21 `let`s, the home banner and nav button fetch while drawing |
-| Weekly challenge (page, boards, past weeks, builder, run meter, end dialogs, watch) | `challenge.ts` renderScreen, homeCardHtml, navButtonHtml; `challengebuild.ts` builderHtml (pure); `challengerun.ts` meterHtml/scoreHtml | 46-challenge, 44-league (`.chmeter`) | 505, 508, 540, 592, 598, 612, 648 | challenge__page, challenge__signed-out, challenge__board-leanest, challenge__board-purest, challenge__board-overall, challenge__past-week, challenge__builder | **medium**: the builder is pure; the page has 18 `let`s and fetches its card on the home screen |
-| Admin (Reports · Accounts · Games · Live rooms · Challenges) | `admin.ts` renderScreen | 31-admin | — | admin__refused, admin__reports, admin__accounts, admin__games, admin__rooms, admin__challenges | **easy**: the inventory's "cheapest page to convert"; treats a 500 as "not an admin" (bug 5) |
+| League (season, entry, availability, matches, standings, organizer) | `pages/league.ts` leagueView/Html, leagueBannerHtml, leagueNavHtml; state, clicks, grid + time-code wiring and `paint` in `league.ts`; `leaguenotes.ts` (the bell's) | 44-league | 610 | league__announced, league__signup, league__running, league__final, league__finished, league__signed-out, league__organizer, league__suggest-time | **done** (view/html split; paint stays with the wiring — `TODO(ds)`) |
+| Weekly challenge (page, boards, past weeks, builder, run meter, end dialogs, watch) | `pages/challenge.ts` challengePageView/Html, challengeHomeView/HomeCardHtml/NavHtml; `pages/challengerun.ts` runMeterHtml/runEndHtml/scoreHtml; `challengebuild.ts` builderHtml; state + tabletop host in `challenge.ts` | 46-challenge, 44-league (`.chmeter`) | 505, 508, 540, 592, 598, 612, 648 | challenge__page, challenge__signed-out, challenge__board-leanest, challenge__board-purest, challenge__board-overall, challenge__past-week, challenge__builder | **done** (paint stays in challenge.ts — `TODO(ds)`) |
+| Admin (Reports · Accounts · Games · Live rooms · Challenges) | `pages/admin.ts` adminView/Html, paintAdmin (the whole module: state and clicks too) | 31-admin | — | admin__refused, admin__reports, admin__accounts, admin__games, admin__rooms, admin__challenges | **done** |
 | How to play (Rules · Rulebook · Comprehensive rules · Interface), off-board help layer | `rules.ts` rulesBoxHtml/helpBoxHtml (pure); `helplayer.ts` | board/11-hotfixes-help-judge-overlays | — (299 is DOM-free) | rules__rules, rules__search, rules__rulebook, rules__cr, rules__interface | **easy**: the renderers are pure; its CSS lives in a board piece |
-| Learn to Play menu | `learnmenu.ts` menuHtml (pure) | 32-learn | — | learn__menu, learn__lessons | **easy** |
+| Learn to Play menu | `pages/learn.ts` learnMenuView/Html; the layer, clicks and keys in `learnmenu.ts` (`menuHtml` kept, 307 drives it) | 32-learn | — | learn__menu, learn__lessons | **done** |
 | Lesson window | `lessonlayer.ts` windowHtml/pageHtml (exported) | 32-learn, board/43-toolbar | — | — (it is a game) | **medium**: 9 `let`s; drawn over a board |
 | Rules review (`?crreview`) | `crreview.ts` renderScreen (37 `let`s, polling) | 45-crreview | — | crreview__doc, crreview__annexD, crreview__disc, crreview__oq, crreview__comments | **hard**: ~30 module globals plus polling; owns every `cr-` button |
 | Public CR sheet / link previews | `crlayer.ts` | 45-crreview (`.crscrim`) | — | — | **medium** |
@@ -112,9 +141,9 @@ import a pure renderer or read source are not listed. ui-shots states are `page_
 
 | page / screen | code now | CSS | driver tests | ui-shots states | tangle |
 |---|---|---|---|---|---|
-| Legal footer + About / AI / Privacy / Terms | `legal.ts` footHtml (pure), installLegal | **injected** by `legal.ts` (a `<style>` it writes; not in `styles/` yet) | — | legal__about, legal__ai, legal__privacy, legal__terms | **medium**: the CSS has to move into `styles/` first |
-| Report pill + dialog (+ dispute) | `report.ts` (15 `let`s) | board/13-playtest-round4-clocks-report (`.reportbox`) | 287, 521, 592 | report__dialog, report__bug | **medium** |
-| Bell, notification list, invite popups, room friends | `inbox.ts` (18 `let`s, 3 fetches); roomFriendsHtml (waiting-room slot) | board/13-playtest-round4-clocks-report (`.inboxlist`, `.invitecard`) | 839 | home__bell-open | **medium** |
+| Legal footer + About / AI / Privacy / Terms | `legal.ts` footHtml (pure), installLegal | `pages/48-legal.css` (the last piece; no longer injected) | — | legal__about, legal__ai, legal__privacy, legal__terms | **easy**: the CSS is in `styles/`; the markup could move here as is |
+| Report pill + dialog (+ dispute) | markup `pages/report.ts` reportLayerHtml/DialogHtml/PillHtml; state, sending and keys in `report.ts` | shared/13-report-and-inbox | 287, 521, 592 | report__dialog, report__bug | **done** |
+| Bell, notification list, invite popups, room friends | markup `pages/inbox.ts` inboxLayerHtml/ListHtml, roomFriendsHtml/BodyHtml; state, poll and clicks in `inbox.ts` | shared/13-report-and-inbox | 839 | home__bell-open | **done** |
 | Toasts, tab-title alert, info tip | `toast.ts`, `tabalert.ts`, `infotip.ts`, `main.ts` | board/29-cost-toasts, board/42-zoom-ressum-infotip | many (board) | — | out of scope (board primitives) |
 
 ## The ui-shots *cc* states
