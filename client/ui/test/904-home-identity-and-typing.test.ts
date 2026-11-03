@@ -11,13 +11,16 @@
  *     holds back the "Your name" box for the same moment.
  *  2. The home screen is repainted whole by things the player did not do (the
  *     queue count, a friend coming online). One queue poll emptied the name,
- *     room-code, deck-link and paste boxes and dropped the focus. renderHome
- *     carries their text and the caret across (HOME_TYPED, caretIn,
+ *     room-code, deck-link and paste boxes and dropped the focus. The home
+ *     paint carries their text and the caret across (HOME_TYPED, caretIn,
  *     restoreCaret — caretIn is the board's snapshotViewport capture, shared,
  *     not a fifth copy).
  *
  * account.ts paints into the DOM and main.ts boots on import, so this reads
- * the source.
+ * the source. Since the design-system round (2026-11-03) the home screen is
+ * pages/home.ts (homeView/homeHtml/paintHome), the deck import is
+ * pages/deckpicker.ts and caretIn is pages/caret.ts, shared with main.ts's
+ * board; the assertions below are the same ones, read from there.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -26,6 +29,8 @@ import { readFileSync } from 'node:fs';
 const read = (f: string): string => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
 const acct = read('account.ts');
 const main = read('main.ts');
+const home = read('pages/home.ts');
+const picker = read('pages/deckpicker.ts');
 const fn = (src: string, head: string): string => {
   const i = src.indexOf(head);
   assert.ok(i >= 0, `positive control: ${head}`);
@@ -41,31 +46,37 @@ test('a token being checked is drawn as signing in, not as signed out', () => {
   const refresh = fn(acct, 'async function refreshMe');
   assert.equal((refresh.match(/resolving = false;/g) ?? []).length, 2, 'cleared on a 401 and on every other way out');
   assert.ok(refresh.lastIndexOf('resolving = false;') < refresh.lastIndexOf('repaint();'), 'before the repaint that shows the answer');
-  assert.match(fn(main, 'function renderHome'), /\$\{user \|\| acct\.resolvingUser\(\)\s*\? ''/, 'no "Your name" box while it resolves');
+  assert.match(fn(home, 'export function homeView'), /nameBox: user \|\| acct\.resolvingUser\(\) \? null : name,/, 'no "Your name" box while it resolves');
+  assert.match(fn(home, 'export function homeHtml'), /\$\{v\.nameBox === null\s*\? ''/, '…and homeHtml draws none for a null nameBox');
 });
 
-test('renderHome carries the typed boxes and the caret across its repaint', () => {
-  const home = fn(main, 'function renderHome');
-  const paint = home.indexOf('$app.innerHTML = `<div class="homepage">');
+test('the home paint carries the typed boxes and the caret across its repaint', () => {
+  const body = fn(home, 'export function paintHome');
+  const paint = body.indexOf('app.innerHTML = homeHtml(homeView(st));');
   assert.ok(paint > 0, 'positive control: the paint');
-  const before = home.slice(0, paint), after = home.slice(paint);
+  const before = body.slice(0, paint), after = body.slice(paint);
   assert.match(before, /const typed = HOME_TYPED\.map/, 'read before');
   assert.match(before, /const caret = caretIn\(HOME_CARET\);/);
   assert.match(after, /HOME_TYPED\.forEach\(\(id, i\) => \{[^}]*box\.value = typed\[i\]!/, 'written back after');
   assert.match(after, /restoreCaret\(caret\);/);
   for (const id of ['h-name', 'h-code', 'h-deckurl', 'h-decktext']) {
-    assert.match(main, new RegExp(`const HOME_TYPED = \\[[^\\]]*'${id}'`), `${id} is carried`);
-    assert.match(main, new RegExp(`id="${id}"`), `${id} is drawn (positive control)`);
+    assert.match(home, new RegExp(`const HOME_TYPED = \\[[^\\]]*'${id}'`), `${id} is carried`);
+    assert.match(home + picker, new RegExp(`id="${id}"`), `${id} is drawn (positive control)`);
   }
 });
 
 test('the caret capture is the board\'s, shared — not another copy', () => {
   assert.match(fn(main, 'function snapshotViewport'), /const keepFocus = caretIn\(\['judge-q', 'num-entry', 'dec-search', 'rules-q'\]\);/);
+  assert.match(main, /import \{ caretIn, type CaretSnap \} from '\.\/pages\/caret\.ts';/, 'the board imports the one copy');
+  assert.match(home, /import \{ caretIn, restoreCaret \} from '\.\/caret\.ts';/, 'and so does the home screen');
+  assert.doesNotMatch(main + home, /\nfunction caretIn\(/, 'no second copy of it');
 });
 
 test('a deck that imported cleanly empties its link/list box (it is not carried back by HOME_TYPED)', () => {
-  const body = fn(main, 'function importDeck(');
-  const ok = body.slice(body.indexOf('saveDeck(r.deck)'));
+  const body = fn(picker, 'export function importDeck(');
+  const at = body.indexOf('chooseDeck(r.deck)');
+  assert.ok(at > 0, 'positive control: the import keeps the deck');
+  const ok = body.slice(at);
   assert.match(ok, /\['h-deckurl', 'h-decktext'\][\s\S]*?\.value = ''[\s\S]*?rerender\(\)/,
-    'after saveDeck, both import boxes are emptied before the repaint');
+    'after chooseDeck, both import boxes are emptied before the repaint');
 });

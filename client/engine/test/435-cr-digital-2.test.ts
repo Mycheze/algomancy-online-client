@@ -614,7 +614,8 @@ test('cr:annexd.confirm.dials.damage-split — the dealing player is asked about
 // and trio.ts behind them. No copy of either function lives in this file.
 const HERE = dirname(fileURLToPath(import.meta.url));
 const MAIN_SRC = readFileSync(join(HERE, '..', '..', 'server', 'main.ts'), 'utf8');
-const UI_MAIN_SRC = readFileSync(join(HERE, '..', '..', 'ui', 'main.ts'), 'utf8');
+// the Single Card Duel waiting room left ui/main.ts for ui/pages/waiting.ts (design-system round, 2026-11-03)
+const UI_WAITING_SRC = readFileSync(join(HERE, '..', '..', 'ui', 'pages', 'waiting.ts'), 'utf8');
 function mainFnSource(name: string): string {
   const start = MAIN_SRC.indexOf(`\nfunction ${name}(`);
   assert.ok(start >= 0, `server/main.ts declares ${name}`);
@@ -660,7 +661,7 @@ test('cr:annexd.modes.single-card-duel.no-units — two cards that make no unit 
   assert.deepEqual(w0.drawn, { mine: SPELL, theirs: SPELL2 }, 'seat 0 is told both cards');
   assert.deepEqual(w1.drawn, { mine: SPELL2, theirs: SPELL }, 'seat 1 is told both cards');
   assert.deepEqual([w0.have, w1.have], [[false, false], [false, false]], 'both are asked to pick again');
-  assert.match(UI_MAIN_SRC, /\$\{w\.drawn \? `<div class="lobbypanel scdraw">[\s\S]{0,400}Neither ever makes a unit/,
+  assert.match(UI_WAITING_SRC, /\$\{v\.drawn \? `<div class="lobbypanel scdraw">[\s\S]{0,400}Neither ever makes a unit/,
     'and the client says why');
   const scratch = mkdtempSync(join(tmpdir(), 'algo-435n-'));
   process.env['ALGO_ACCOUNTS_FILE'] = join(scratch, 'accounts.json');

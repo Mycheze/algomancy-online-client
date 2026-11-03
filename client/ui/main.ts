@@ -122,7 +122,7 @@ import type {
 } from '../engine/src/types.ts';
 import * as acct from './account.ts';
 import { disputeAnswered, installReport, isReportOpen, openDispute, openReport, reportJustSent } from './report.ts';
-import { installInbox, roomFriendsHtml } from './inbox.ts';
+import { installInbox } from './inbox.ts';
 import * as amend from './amend.ts';
 import { installTouch, peekEnd, tapRead, touchSeen } from './touch.ts';
 import { dragActive, installDrag, type DragPlan } from './drag.ts';
@@ -175,11 +175,19 @@ import { GAME_LESSONS } from './lessons.ts';
 // lines here on purpose — the import, and the installSandbox() call at the
 // very bottom of this file.
 import { installSandbox } from './sandbox.ts';
-import { chooseDeck, chosenDeck, copyText, elIcon as elIconOf, esc, shareBar, type ChosenDeck } from './util.ts';
-import { updatesHtml, wireUpdates } from './updates.ts';
+import { chosenDeck, copyText, elIcon as elIconOf, esc, shareBar } from './util.ts';
 import { resGoKey, tapGoHtml, tapGoKeyOf, tapGoLabel, tapGoLive, tokenGoKey, zoomGoHtml, type TapGo } from './tapgo.ts';
 
 import { artUrl, ICON_BASE } from './assets.ts';
+// the non-game pages (docs/23 § Target structure: pageView() + pure pageHtml()).
+// Imported LAST on purpose: they import only modules imported above, so every
+// one of those has already been evaluated and the boot order is unchanged.
+import { caretIn, type CaretSnap } from './pages/caret.ts';
+import { CLOCK_DEFAULT_MS, chosenClockMs } from './pages/clockpick.ts';
+import { connectingHtml } from './pages/connecting.ts';
+import { deckPicker, importDeck, wireDeckPicker } from './pages/deckpicker.ts';
+import { paintHome, saveHomeName } from './pages/home.ts';
+import { paintWaiting } from './pages/waiting.ts';
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
 
 /** chess-clock snapshot the server attaches to every state broadcast (#6);
@@ -1373,24 +1381,9 @@ const freshUi = (): UiState => ({
 
 /* The deck this browser brings to constructed games lives in ui/util.ts —
  * the decks page (ui/decks.ts) writes it too, and neither screen can import
- * the other. These two names are kept because this file reads them in a dozen
- * places, and `SavedDeck` is the shape the picker below builds. */
-type SavedDeck = ChosenDeck;
+ * the other. This name is kept because this file reads it in several places.
+ * The picker itself (the bundled defaults, the import) is pages/deckpicker.ts. */
 const savedDeck = chosenDeck;
-const saveDeck = chooseDeck;
-/** the bundled default decks — fetched once from the server */
-let defaultDeckList: SavedDeck[] | null = null;
-let defaultDecksLoading = false;
-/** import status / problems shown under the deck picker */
-let deckMsg = '';
-function ensureDefaultDecks(then: () => void): void {
-  if (defaultDeckList || defaultDecksLoading) return;
-  defaultDecksLoading = true;
-  fetch('/api/deck/defaults').then(r => r.json()).then((r: { decks: (SavedDeck & { problems: string[] })[] }) => {
-    defaultDeckList = r.decks.filter(d => !d.problems.length);
-    then();
-  }).catch(() => { deckMsg = 'could not load the default decks from the server'; then(); });
-}
 let ui: UiState = freshUi();
 /* ── 2026-10-03: THE PLAYBACK — the opponent's hidden step, a board at a time ──
  *
@@ -3071,106 +3064,6 @@ function clockWarnAt(start: number): number {
   return Math.min(60_000, start / 10);
 }
 
-/**
- * BL-26 — THE BANKS THE HOME SCREEN OFFERS for a game you START.
- *
- * ⚠ THIS WAS A PLACEHOLDER SET AND IS NOT ANY MORE. The list was six evenly
- * spaced numbers with a comment saying which presets to show was the owner's
- * call, open as Q4 in docs/questions-round36.md. He answered:
- *
- *   "45m and 60m. Constructed games are shorter, so I'd say the default for
- *    constructed is 45m and the default for live draft is 60m."
- *
- * So there are three chips, not six, and the DEFAULT is not a constant any
- * more — it is a function of the mode, which is the part a single
- * `CLOCK_DEFAULT_MS` could not express. The SERVER still validates a RANGE
- * rather than a list (`sanitizeClock`: anything between MIN_CLOCK_MS and
- * MAX_CLOCK_MS, with 0 / 'off' meaning no clock), so this is what the screen
- * offers and not a rule about what a room may be — an old link with
- * `clock=90m` on it is still honoured.
- */
-const CLOCK_PRESETS: readonly { ms: number; label: string; why: string }[] = [
-  { ms: 0, label: 'Off', why: 'no clock at all — nobody can lose on time' },
-  { ms: 45 * 60_000, label: '45m', why: '45 minutes each — the constructed default' },
-  { ms: 60 * 60_000, label: '60m', why: '60 minutes each — the live-draft default' },
-];
-
-/**
- * BL-26 — THE DEFAULT BANK PER MODE, the owner's answer in one place.
- *
- * A draft game includes the draft, which a constructed game does not, so it
- * gets the longer bank. `shared` is the quick shared-pool game and takes the
- * constructed number: it deals rather than drafts, so it is the SHORT shape.
- */
-const CLOCK_DEFAULT_BY_MODE: Record<string, number> = {
-  constructed: 45 * 60_000,
-  shared: 45 * 60_000,
-  draft: 60 * 60_000,
-};
-/** what "Default" means with no mode in hand — the picker's own highlight, and
- * the fallback for a stored value that is not a number */
-const CLOCK_DEFAULT_MS = CLOCK_DEFAULT_BY_MODE['constructed']!;
-
-/**
- * The bank this browser will ask for on the next room it CREATES.
- *
- * ⚠ NOTHING STORED IS NOT THE SAME AS A STORED DEFAULT. The picker's fourth
- * state is "Default", which REMOVES the key — so the mode decides, and a
- * player who never touches the picker gets 45m for constructed and 60m for a
- * draft without having to know that. A player who picks a number gets that
- * number in every mode, because they asked for it.
- */
-function chosenClockMs(mode?: string): number {
-  const raw = localStorage.getItem('algoClockMs');
-  const byMode = (mode !== undefined && CLOCK_DEFAULT_BY_MODE[mode]) || CLOCK_DEFAULT_MS;
-  if (raw === null) return byMode;
-  const n = Number(raw);
-  return Number.isFinite(n) && n >= 0 ? n : byMode;
-}
-/** BL-26: is the picker on "Default" (i.e. let the mode decide)? */
-const clockIsAuto = (): boolean => localStorage.getItem('algoClockMs') === null;
-
-/** BL-26: the picker — the clock for a game you START, so it applies to the
- * New buttons on the card it sits on and to neither of the ways you JOIN a
- * room somebody else made.
- *
- * #191 (owner): "The clock setting should be in the custom rules area, not
- * taking up space up above." So it is drawn TWICE, once per card that starts
- * a game: inside Custom rules on the Live draft card and in a small Options
- * fold on the Constructed card. Both copies read and write the one
- * `algoClockMs` setting.
- *
- * ⚠ It sits INSIDE the custom rules panel but is NOT a custom rule: a custom
- * game counts toward nothing, and the clock must not make a game custom. It is
- * handed to the panel as markup and stays out of the rules object, so
- * `createPayload` and the panel's "— none set" summary never see it. */
-function clockPickHtml(mode: 'draft' | 'constructed'): string {
-  const auto = clockIsAuto();
-  const now = chosenClockMs();
-  const byMode = Math.round(chosenClockMs(mode) / 60_000);
-  return `<div class="clockpick" data-clockpick="${mode}" title="the clock for games you start">
-    <span class="clockpicklabel">⏱ Clock</span>
-    <button class="elchip${auto ? ' on' : ''}" data-btn="clockpick" data-ms="auto" data-clockfor="${mode}"
-      title="45 min constructed · 60 min live draft">Default</button>
-    ${CLOCK_PRESETS.map(c => `<button class="elchip${!auto && c.ms === now ? ' on' : ''}"
-      data-btn="clockpick" data-ms="${c.ms}" data-clockfor="${mode}" title="${esc(c.why)}">${esc(c.label)}</button>`).join('')}
-    <span class="clockpickhint">${auto
-      ? `${byMode}m each`
-      : now ? 'running out of time loses the game'
-      : 'no clock — nobody can lose on time'}</span>
-  </div>`;
-}
-
-/** #191: the Constructed card's Options fold — the clock, and nothing else
- * yet. Closed by default, like Custom rules on the draft card. */
-let homeOptionsOpen = false;
-function constructedOptionsHtml(): string {
-  const ms = chosenClockMs('constructed');
-  return `<details class="fixedtrio homeoptions" data-homeoptions ${homeOptionsOpen ? 'open' : ''}>
-    <summary>Options <span class="dim">— clock ${ms ? `${Math.round(ms / 60_000)}m` : 'off'}</span></summary>
-    ${clockPickHtml('constructed')}
-  </details>`;
-}
 
 /** 1s ticker: patches ONLY the clock time nodes — never a full re-render */
 setInterval(() => {
@@ -8119,41 +8012,12 @@ function gcStaleUi(): void {
  * by restoreViewport / rewireInputs after. */
 type ViewportSnap = {
   scroll: (readonly [string, number])[];
-  keepFocus: { id: string; start: number; end: number } | null;
+  /** caretIn() — pages/caret.ts, shared with the home screen */
+  keepFocus: CaretSnap;
   hadJudge: boolean;
   /** #124: the oversized-menu search box was already on screen last paint */
   hadDecSearch: boolean;
 };
-/** The text box (one of `ids`) that owns focus, and where its caret sits — read
- * before a repaint replaces it, so the rebuilt box can be handed both back.
- * snapshotViewport (the board) and renderHome (the home screen) share it. */
-function caretIn(ids: readonly string[]): ViewportSnap['keepFocus'] {
-  const box = document.activeElement;
-  return (box instanceof HTMLInputElement || box instanceof HTMLTextAreaElement) && ids.includes(box.id)
-    ? { id: box.id, start: box.selectionStart ?? 0, end: box.selectionEnd ?? 0 }
-    : null;
-}
-
-/** put a caretIn() snapshot back on the rebuilt box, if it is still there */
-function restoreCaret(keep: ViewportSnap['keepFocus']): void {
-  if (!keep) return;
-  const box = document.getElementById(keep.id) as HTMLInputElement | HTMLTextAreaElement | null;
-  if (!box) return;
-  box.focus();
-  box.setSelectionRange(keep.start, keep.end);
-}
-
-/* The home screen's typing boxes that no state remembers. The home screen is
- * repainted whole by things the player did not do — the matchmaking count
- * changing (queue.ts's 5s poll), a friend coming online, the profile landing —
- * and each repaint used to rebuild these four empty, mid-word, and drop the
- * focus (found 2026-11-02: all four wiped by one queue poll). Their text is
- * carried across the repaint and the caret put back (caretIn/restoreCaret).
- * The other boxes on the page keep their own drafts in state (the Custom rules
- * ban and filter boxes, the single-card search), so only their caret is
- * carried. test/904-home-identity-and-typing.test.ts. */
-const HOME_TYPED = ['h-name', 'h-code', 'h-deckurl', 'h-decktext'] as const;
-const HOME_CARET: readonly string[] = [...HOME_TYPED, 'cr-ban', 'cr-query', 'sc-q'];
 
 function snapshotViewport(): ViewportSnap {
   // playtest DEYK: "it constantly resets the scroll height, which means you
@@ -9265,162 +9129,14 @@ function renderConnecting(): void {
   // a refused join (a room code that names no game) lands here, so this screen
   // needs a way out — without the button it is a dead end you can only leave by
   // editing the URL
-  $app.innerHTML = `<div class="joinscreen"><h2>Algomancy</h2>
-    <p${uiError ? ' class="joinerr"' : ''}>${uiError ? esc(uiError) : 'Connecting to the server…'}</p>
-    ${uiError ? '<button class="primary" data-btn="gohome">← Back to the home screen</button>' : ''}</div>`;
+  $app.innerHTML = connectingHtml({ error: uiError });   // pages/connecting.ts
 }
 
-/**
- * The constructed deck picker: which deck this browser brings to a game.
- *
- * Two sources, and only ever one of them at a time. Signed in, it is YOUR
- * saved collection (ui/decks.ts) — which already holds copies of the five
- * bundled decks, seeded at first sight, so offering both would list the same
- * decks twice under two different identities. Signed out there is no
- * collection, so it falls back to the bundled five plus import-by-link, which
- * is exactly what this picker was before the collection existed.
- *
- * Only LEGAL decks are offered: a picker that lets you choose a 27-card deck
- * and then refuses the game is a worse way to say "not yet" than not offering
- * it. The decks page says which ones those are and why.
- */
-function deckPickerHtml(): string {
-  const cur = savedDeck();
-  const mine = acct.token() ? dk.playableDecks() : [];
-  const manage = acct.token()
-    ? '<button class="deckmanage" data-btn="deck-openpage">My decks →</button>'
-    : '';
-
-  if (mine.length) {
-    const opts = mine.map((d, i) =>
-      `<option value="c${i}" ${cur && cur.id === d.id ? 'selected' : ''}>${esc(d.name)}${
-        d.author && d.author !== 'you' ? ` — by ${esc(d.author)}` : ''}</option>`).join('');
-    const strayOpt = cur && !mine.some(d => d.id === cur.id)
-      ? `<option value="stray" selected>${esc(cur.name)} (not in your collection)</option>` : '';
-    const info = cur
-      ? `<div class="deckinfo">${cur.cards.length} cards${cur.url
-          ? ` · <a href="${esc(cur.url)}" target="_blank" rel="noopener">algomancer.cc</a>` : ''}</div>`
-      : '<div class="deckinfo"></div>';
-    return `<select id="h-deck" class="deckselect">
-        ${cur ? '' : '<option value="" selected disabled>choose a deck…</option>'}${opts}${strayOpt}
-      </select>
-      ${info}${manage}
-      ${deckMsg ? `<div class="deckmsg">${esc(deckMsg)}</div>` : ''}`;
-  }
-
-  const defaults = defaultDeckList;
-  if (!defaults) {
-    return `<div class="hint">${acct.token() ? 'loading your decks…' : 'loading the deck list…'}</div>${
-      deckMsg ? `<div class="deckmsg">${esc(deckMsg)}</div>` : ''}${manage}`;
-  }
-  const isDefault = !!cur && defaults.some(d => d.name === cur.name && d.url === cur.url);
-  const opts = defaults.map((d, i) =>
-    `<option value="d${i}" ${cur && d.name === cur.name && d.url === cur.url ? 'selected' : ''}>${esc(d.name)} — by ${esc(d.author)}</option>`).join('');
-  const customOpt = cur && !isDefault
-    ? `<option value="custom" selected>${esc(cur.name)}${cur.author && cur.author !== 'you' ? ` — by ${esc(cur.author)}` : ''} (imported)</option>` : '';
-  const info = cur
-    ? `<div class="deckinfo">${cur.cards.length} cards · by ${esc(cur.author)}${cur.url
-        ? ` · <a href="${esc(cur.url)}" target="_blank" rel="noopener">view on algomancer.cc</a>` : ''}</div>`
-    : '<div class="deckinfo"></div>';
-  return `<select id="h-deck" class="deckselect">
-      ${cur ? '' : '<option value="" selected disabled>choose a deck…</option>'}${opts}${customOpt}
-    </select>
-    ${info}${manage}
-    <div class="joinrow deckimport">
-      <input id="h-deckurl" placeholder="algomancer.cc deck link" spellcheck="false">
-      <button data-btn="deckimporturl">Load</button>
-    </div>
-    <details class="deckpaste"><summary>…or paste a deck list</summary>
-      <textarea id="h-decktext" rows="6" spellcheck="false" placeholder="1 Ignis Sprite&#10;2 Overwhelm&#10;…"></textarea>
-      <button data-btn="deckimporttext">Use pasted list</button>
-    </details>
-    ${deckMsg ? `<div class="deckmsg">${esc(deckMsg)}</div>` : ''}`;
-}
-
-/**
- * CR D8.2 — SINGLE CARD DUEL, tucked under the Constructed card.
- *
- * The owner, 2026-09-18: a goofy thought-experiment format that should be "not
- * easy to start. But not tooo hidden" — so it is a closed disclosure at the
- * foot of Constructed rather than a card of its own, and it remembers being
- * opened (a pick repaints the home screen, and must not snap it shut).
- */
-let singleDuelOpen = false;
-
-function singleDuelHtml(): string {
-  const card = sc.chosen();
-  return `<details class="fixedtrio singleduel" data-singleduel ${singleDuelOpen ? 'open' : ''}>
-    <summary>…or something sillier: <b>Single Card Duel</b></summary>
-    <p class="cardsub">Thirty copies of one card. Your opponent picks theirs blind. It rates
-      the cards, not you — see the <button class="linkbtn" data-btn="meta-ladder">card ladder</button>.</p>
-    ${sc.pickerHtml()}
-    <button data-btn="newgame" data-mode="constructed" data-single="1" ${card ? '' : 'disabled'}>
-      ${card ? `New single card duel — ${esc(card)}` : 'pick a card first'}</button>
-  </details>`;
-}
-
-function wireSingleDuel(): void {
-  const root = document.querySelector('[data-singleduel]') as HTMLDetailsElement | null;
-  root?.addEventListener('toggle', () => { singleDuelOpen = root.open; });
-  sc.wire();
-}
-
-/** wire the picker's <select> after (re)rendering the screen holding it */
-function wireDeckPicker(rerender: () => void): void {
-  // BOTH sources, always: a signed-in player whose collection is empty (they
-  // deleted the starters) falls through to the bundled list, and fetching only
-  // the collection would leave that picker saying "loading…" for ever
-  ensureDefaultDecks(rerender);
-  if (acct.token()) dk.ensureCollection(rerender);
-  const sel = document.getElementById('h-deck') as HTMLSelectElement | null;
-  sel?.addEventListener('change', () => {
-    const v = sel.value;
-    if (v.startsWith('c')) {
-      const d = dk.playableDecks()[Number(v.slice(1))];
-      if (d) { saveDeck(d); deckMsg = ''; }
-    } else if (v.startsWith('d') && defaultDeckList) {
-      const d = defaultDeckList[Number(v.slice(1))];
-      if (d) { saveDeck(d); deckMsg = ''; }
-    }
-    rerender();
-  });
-}
-
-/** import a deck through the server (link fetch or paste parse) */
-function importDeck(body: { url?: string; text?: string }, rerender: () => void): void {
-  deckMsg = 'importing…';
-  rerender();
-  fetch('/api/deck/import', {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
-  }).then(r => r.json()).then((r: { ok: boolean; error?: string; deck?: SavedDeck & { problems: string[] } }) => {
-    if (!r.ok || !r.deck) { deckMsg = r.error ?? 'import failed'; rerender(); return; }
-    if (r.deck.problems.length) {
-      deckMsg = `not playable: ${r.deck.problems.slice(0, 4).join(' · ')}${r.deck.problems.length > 4 ? ` (+${r.deck.problems.length - 4} more)` : ''}`;
-      rerender(); return;
-    }
-    saveDeck(r.deck);
-    deckMsg = `loaded ${r.deck.name} (${r.deck.cards.length} cards) by ${r.deck.author}`;
-    // the link or list is used up: empty its box BEFORE the repaint, which
-    // otherwise carries typed text across (HOME_TYPED) and would put it back
-    for (const id of ['h-deckurl', 'h-decktext']) {
-      const box = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null;
-      if (box) box.value = '';
-    }
-    rerender();
-  }).catch(() => { deckMsg = 'could not reach the server'; rerender(); });
-}
-
-/** Home screen (docs/07 §2): new game / join / learn.
- *
- * (There was a "Practice demo" button in this row until 2026-09-05; the
- * owner had it removed — "It sucks". The `?demo=1` route it opened is still
- * there for the tests and the screenshot rig; it is just not offered.)
- *
- * Three cards abreast, not one 340px column. The old stack put "join with a
- * code" and the two solo modes below the fold on an ordinary window, and it
- * sat centred in the LEFT half of the board grid with the rail's width blank
- * beside it (playtest 2026-08-21). Abreast, the whole menu is one screenful
- * and each way in states what it is before it asks for anything. */
+/** THE ROUTER for every page that is not a game: whichever page owns #app
+ * right now (sign-in/profile, rules review, card browser, tabletop, decks,
+ * metagame, league, challenge, admin, queue — in that order of precedence)
+ * paints itself; when none does, the home screen does (pages/home.ts, which
+ * has the home screen's own story). Every page's rerender comes back here. */
 function renderHome(): void {
   dropBaselines();
   $app.classList.remove('board');
@@ -9450,262 +9166,18 @@ function renderHome(): void {
   if (admin.screen()) { admin.renderScreen(); return; }
   // BL-01: …and the matchmaking queue
   if (mm.screen()) { mm.renderScreen(); return; }
-  const user = acct.currentUser();
-  const name = user ? user.username : (localStorage.getItem('algoName') ?? '');
-  const deck = savedDeck();
-  // BL-43: the Custom rules panel decides how many elements a fixed pick wants,
-  // and previews the server's verdict on the rules for both Create buttons
-  const k = crp.elementCount();
-  const fixedPick = ui.homeFixedTrio && ui.homeEls.length === k ? ui.homeEls : null;
-  const customVerdict = crp.verdict(null);
-  const fixedVerdict = crp.verdict(ui.homeEls.length === k ? ui.homeEls : null);
-  const typed = HOME_TYPED.map(id => (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null)?.value);
-  const pasteOpen = (document.querySelector('.homepage .deckpaste') as HTMLDetailsElement | null)?.open ?? false;
-  const caret = caretIn(HOME_CARET);
-  $app.innerHTML = `<div class="homepage">
-    <div class="homehead">
-      <h1 class="homelogo">ALGOMANCY</h1>
-      <div class="homeident">
-        ${user || acct.resolvingUser()
-          ? ''
-          : `<label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(name)}" placeholder="(optional)"></label>`}
-        ${acct.barHtml()}
-        ${user ? '<button class="homedecks" data-btn="deck-openpage">🗂 My decks</button>' : ''}
-        <button class="homedecks" data-help="rules">📖 How to play</button>
-        <button class="homedecks" data-btn="cards-openpage">🔍 Cards</button>
-        <button class="homedecks" data-btn="meta-openpage">🏆 Metagame</button>
-        ${lg.navButtonHtml()}
-        ${chal.navButtonHtml()}
-      </div>
-    </div>
-
-    ${lg.homeBannerHtml()}
-
-    ${mm.stripHtml(!!acct.token())}
-
-    ${mt.yourMatchesHtml()}
-
-    <div class="homegrid">
-      <div class="homecard offer">
-        <h2>Live draft</h2>
-        <p class="cardsub">Draft from shared packs, then play. You pick the ${k === 3 ? 'three' : k}
-          elements together once you are both in the room.</p>
-        <details class="fixedtrio" ${ui.homeFixedTrio ? 'open' : ''}>
-          <summary>…or pick the ${k === 3 ? 'trio' : 'elements'} now and skip the lobby</summary>
-          <div class="elrow">${ALL_ELEMENTS.map(el =>
-            `<button class="elchip ${el}${ui.homeEls.includes(el) ? ' on' : ''}" data-btn="eltoggle" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
-            <button data-btn="elrandom" title="pick at random — any of the ${crp.setCount()}">🎲</button>
-          </div>
-          <button data-btn="newgame" data-mode="draft" data-els="1" ${ui.homeEls.length === k && !fixedVerdict.error ? '' : 'disabled'}
-            ${fixedVerdict.error && ui.homeEls.length === k ? `title="${esc(fixedVerdict.error)}"` : ''}>
-            ${ui.homeEls.length === k ? `Start with ${ui.homeEls.join(' + ')}` : `pick ${k} of the ${ALL_ELEMENTS.length} (${ui.homeEls.length}/${k})`}</button>
-        </details>
-        ${crp.panelHtml(fixedPick, clockPickHtml('draft'))}
-        <div class="spacer"></div>
-        ${uiError ? `<p class="deckmsg">${esc(uiError)}</p>` : ''}
-        <button class="cta primary" data-btn="newgame" data-mode="draft" ${customVerdict.error ? `disabled title="${esc(customVerdict.error)}"` : ''}>
-          ${customVerdict.rules ? 'New custom live draft' : 'New live draft'}</button>
-      </div>
-
-      <div class="homecard offer deckpicker">
-        <h2>Constructed</h2>
-        <p class="cardsub">A deck you built: 30 cards, max 2 of each.</p>
-        ${deckPickerHtml()}
-        ${constructedOptionsHtml()}
-        <div class="spacer"></div>
-        <button class="cta primary" data-btn="newgame" data-mode="constructed" ${deck ? '' : 'disabled'}>
-          New constructed game${deck ? '' : ' — pick a deck first'}</button>
-        ${singleDuelHtml()}
-      </div>
-
-      ${mt.competitiveCardHtml(!!acct.token(), acct.token() ? dk.competitiveDecks() : null)}
-
-      <div class="homecard">
-        <h2>Join a game</h2>
-        <p class="cardsub">Enter the room code you were sent.</p>
-        <div class="joinrow">
-          <input id="h-code" placeholder="CODE" maxlength="8" autocapitalize="characters"
-            spellcheck="false" style="text-transform:uppercase">
-          <button data-btn="joincode">Join</button>
-        </div>
-        <div class="spacer"></div>
-        <div class="homesep">
-          <div class="zonelabel">On your own</div>
-          <div class="homesolo">
-            <button data-learn="menu">Learn to play</button>
-          </div>
-        </div>
-      </div>
-      ${chal.homeCardHtml()}
-    </div>
-
-    <p class="homefoot">To play a friend, start a game and invite them, or send them the code.</p>
-  </div>
-  ${updatesHtml()}`;
-  const codeInput = document.getElementById('h-code') as HTMLInputElement | null;
-  codeInput?.addEventListener('keydown', e => {
-    if (e.key === 'Enter') (document.querySelector('[data-btn="joincode"]') as HTMLElement).click();
-  });
-  wireDeckPicker(renderHome);
-  mt.wireDeckSelect(renderHome);   // docs/22 §6.1: the Competitive card's picker
-  // docs/22 §5.6: a paused or running match is always one button away
-  mt.loadMyMatches(acct.token() ? acct.authHeaders(false) : null, renderHome);
-  crp.wirePanel();   // BL-43
-  wireSingleDuel();  // CR D8.2
-  // what was typed, and where, survives the repaint (HOME_TYPED)
-  HOME_TYPED.forEach((id, i) => {
-    const box = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null;
-    if (box && typed[i] !== undefined) box.value = typed[i]!;
-  });
-  if (pasteOpen) { const d = document.querySelector('.homepage .deckpaste') as HTMLDetailsElement | null; if (d) d.open = true; }
-  restoreCaret(caret);
-  const opts = document.querySelector('[data-homeoptions]') as HTMLDetailsElement | null;
-  opts?.addEventListener('toggle', () => { homeOptionsOpen = opts.open; });   // #191
-  wireUpdates();
-  // BL-01: the at-a-glance count. Started HERE rather than at boot because
-  // this is the only screen that shows it, and an idle tab on a board should
-  // not be asking the server who is queueing every five seconds. Idempotent.
-  mm.startCountsPoll();
+  // none does: the home screen itself (pages/home.ts)
+  paintHome($app, { els: ui.homeEls, fixedOpen: ui.homeFixedTrio, error: uiError }, renderHome);
 }
 
-/** Constructed lobby: the room exists but the game has not been dealt — it
- * starts the moment both seats have brought a deck. */
+/** The waiting rooms (constructed, league, single card, draft trio, a
+ * Competitive match): the room exists but the game has not been dealt.
+ * pages/waiting.ts draws and wires whichever one this is. */
 function renderWaiting(): void {
   dropBaselines();
   $app.classList.remove('board');
-  const net = NET!;
-  const w = net.waiting!;
-  // a draft room chooses its trio here, before a single card is dealt
-  if (w.trio) {
-    const link = `${location.origin}/?ws=1&room=${encodeURIComponent(net.room)}&seat=${other(net.seat)}&mode=draft`;
-    $app.innerHTML = lob.lobbyHtml({
-      lobby: w.trio, seat: net.seat as 0 | 1, names: net.names,
-      peers: net.peers, room: net.room, link,
-      friends: roomFriendsHtml(!net.peers[other(net.seat)]),
-      ...(w.custom ?? net.custom ? { custom: (w.custom ?? net.custom)! } : {}),
-    });
-    return;
-  }
-  const me = net.seat, opp = other(me);
-  if (w.single) return renderSingleWaiting();
-  // docs/22 §5.4: a Competitive match's room — game 1's registration, the
-  // between-games screen, a pause — is ui/match.ts's page
-  if (w.match) {
-    $app.innerHTML = mt.matchWaitingHtml(
-      { room: net.room, seat: me, names: net.names, peers: net.peers, ended: net.matchEnded },
-      w.match, acct.token() ? dk.competitiveDecks() : null, uiError);
-    if (acct.token()) dk.ensureCollection(renderWaiting);
-    mt.wireDeckSelect(renderWaiting);
-    return;
-  }
-  const link = `${location.origin}/?ws=1&room=${encodeURIComponent(net.room)}&seat=${opp}&mode=constructed`;
-  const deck = savedDeck();
-  const mineIn = w.have[me];
-  const oppLine = net.peers[opp] ? 'connected — still choosing a deck…' : 'not here yet';
-  // a constructed LEAGUE match (owner, 2026-11-01): a deck for this game, any
-  // deck. Both seats are bound, so there is no code to share — the draft
-  // league lobby says the same (ui/lobby.ts)
-  const league = w.league === true;
-  // same furniture as the draft lobby (ui/lobby.ts): it is the same moment in
-  // the same room, and the two screens looking different made it read as two
-  // different products
-  $app.innerHTML = `<div class="lobbypage">
-    <div class="lobbyhead">
-      <h1 class="homelogo">ALGOMANCY</h1>
-      <h2>${league ? 'League match' : 'Constructed'} — room <span class="roomcode">${esc(net.room)}</span></h2>
-      <div class="headbtns"><button data-btn="gohome">Leave</button></div>
-    </div>
-
-    ${league
-      ? (net.peers[opp] ? '' : '<p class="hint lobbywait">Waiting for your opponent. They join from their own League page — tell them on Discord you are here.</p>')
-      : `${shareBar('Send your opponent the room code', net.room, link)}
-    ${roomFriendsHtml(!net.peers[opp])}`}
-
-    ${mineIn ? '' : `<div class="lobbypanel deckpicker">
-      <div class="zonelabel">Your deck${league ? ' for this game' : ''}</div>
-      ${league ? '<p class="hint">Any deck. Keep it or change it every game.</p>' : ''}
-      ${deckPickerHtml()}
-      <button class="cta primary" data-btn="deckjoin" ${deck ? '' : 'disabled'}>Play this deck</button>
-    </div>`}
-
-    <div class="lobbyfoot">
-      <div class="lobbyseats">
-        <span class="lobbyseat"><i class="seatdot${mineIn ? ' ready' : ''}"></i>
-          <span>${esc(net.names[me] ?? 'You')} (you) — ${mineIn
-            ? `<b class="lockedin">deck is in</b>${deck ? ` — ${esc(deck.name)} by ${esc(deck.author)}` : ''}`
-            : '<span class="dim">pick a deck above</span>'}</span></span>
-        <span class="lobbyseat"><i class="seatdot${w.have[opp] ? ' ready' : net.peers[opp] ? '' : ' away'}"></i>
-          <span>${esc(net.names[opp] ?? 'Opponent')} — ${w.have[opp]
-            ? '<b class="lockedin">deck is in</b>' : `<span class="dim">${esc(oppLine)}</span>`}</span></span>
-      </div>
-    </div>
-
-    ${uiError ? `<p class="deckmsg">${esc(uiError)}</p>` : ''}
-    <p class="homefoot">Deals when both decks are in.</p>
-  </div>`;
-  wireDeckPicker(renderWaiting);
+  paintWaiting($app, NET!, uiError, renderWaiting);
 }
-
-/** CR D8.2: the waiting room of a single card duel — the constructed one, asking
- * for a card. Blind: the other seat's line says only that their card is in. */
-function renderSingleWaiting(): void {
-  const net = NET!;
-  const w = net.waiting!;
-  const me = net.seat, opp = other(me);
-  // no `&single=1`: the room exists, the server says what it is (see singleArmed)
-  const link = `${location.origin}/?ws=1&room=${encodeURIComponent(net.room)}&seat=${opp}&mode=constructed`;
-  const card = sc.chosen();
-  const mineIn = w.have[me];
-  const oppLine = net.peers[opp] ? 'connected — still choosing a card…' : 'not here yet';
-  $app.innerHTML = `<div class="lobbypage">
-    <div class="lobbyhead">
-      <h1 class="homelogo">ALGOMANCY</h1>
-      <h2>Single Card Duel — room <span class="roomcode">${esc(net.room)}</span></h2>
-      <div class="headbtns"><button data-btn="gohome">Leave</button></div>
-    </div>
-
-    ${shareBar('Send your opponent the room code', net.room, link)}
-    ${roomFriendsHtml(!net.peers[opp])}
-
-    ${w.drawn ? `<div class="lobbypanel scdraw">
-      <div class="zonelabel">Draw — pick again</div>
-      <p>You picked <b data-prev="${esc(w.drawn.mine)}">${esc(w.drawn.mine)}</b>; ${esc(net.names[opp] ?? 'your opponent')} picked
-        <b data-prev="${esc(w.drawn.theirs)}">${esc(w.drawn.theirs)}</b>. Neither ever makes a unit, so nobody
-        could attack — a draw before it starts. Pick again (the same card is allowed).</p>
-    </div>` : ''}
-
-    ${mineIn ? '' : `<div class="lobbypanel deckpicker">
-      <div class="zonelabel">Your card</div>
-      <p class="cardsub">Thirty copies of whatever you pick, hidden from your opponent.</p>
-      ${sc.pickerHtml()}
-      <button class="cta primary" data-btn="singlejoin" ${card ? '' : 'disabled'}>${card ? `Play ${esc(card)}` : 'Pick a card first'}</button>
-    </div>`}
-
-    <div class="lobbyfoot">
-      <div class="lobbyseats">
-        <span class="lobbyseat"><i class="seatdot${mineIn ? ' ready' : ''}"></i>
-          <span>${esc(net.names[me] ?? 'You')} (you) — ${mineIn
-            ? `<b class="lockedin">card is in</b>${card ? ` — ${esc(card)}` : ''}`
-            : '<span class="dim">pick a card above</span>'}</span></span>
-        <span class="lobbyseat"><i class="seatdot${w.have[opp] ? ' ready' : net.peers[opp] ? '' : ' away'}"></i>
-          <span>${esc(net.names[opp] ?? 'Opponent')} — ${w.have[opp]
-            ? '<b class="lockedin">card is in</b>' : `<span class="dim">${esc(oppLine)}</span>`}</span></span>
-      </div>
-    </div>
-
-    ${uiError ? `<p class="deckmsg">${esc(uiError)}</p>` : ''}
-    <p class="homefoot">Deals when both cards are in.</p>
-  </div>`;
-  sc.wire();
-}
-
-const saveHomeName = (): void => {
-  // logged in, the name box is not rendered at all — the account name is the
-  // one the server files stats under and must not be overwritten by a stale
-  // input value
-  const inp = document.getElementById('h-name') as HTMLInputElement | null;
-  if (inp) localStorage.setItem('algoName', inp.value.trim());
-};
 
 // ── the current text box ──────────────────────────────────────────────
 /*
@@ -12576,7 +12048,7 @@ crr.initCrReview({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 mm.initQueue({
   app: $app,
   rerender: () => { if (!inGame) renderHome(); },
-  deckPickerHtml,
+  deckPickerHtml: deckPicker,   // pages/deckpicker.ts
   wireDeckPicker,
   chosenDeck: savedDeck,
   token: acct.token,

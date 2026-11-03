@@ -1896,7 +1896,7 @@
     "verifier": "U23-r1",
     "engine": [
       {
-        "loc": "client/ui/main.ts:CLOCK_PRESETS",
+        "loc": "client/ui/pages/clockpick.ts:CLOCK_PRESETS",
         "agrees": true,
         "note": "Off, 45m, 60m"
       }
@@ -1914,7 +1914,7 @@
     "source_checks": [],
     "quote_spans": [
       {
-        "file": "client/ui/main.ts",
+        "file": "client/ui/pages/clockpick.ts",
         "text": "{ ms: 0, label: 'Off', why: 'no clock at all — nobody can lose on time' },"
       }
     ],
@@ -1967,7 +1967,7 @@
     "verifier": "U23-r2",
     "engine": [
       {
-        "loc": "client/ui/main.ts:CLOCK_DEFAULT_BY_MODE / chosenClockMs",
+        "loc": "client/ui/pages/clockpick.ts:CLOCK_DEFAULT_BY_MODE / chosenClockMs",
         "agrees": true,
         "note": "constructed 45, shared 45, draft 60"
       },
@@ -1989,11 +1989,11 @@
     "source_checks": [],
     "quote_spans": [
       {
-        "file": "client/ui/main.ts",
+        "file": "client/ui/pages/clockpick.ts",
         "text": "constructed: 45 * 60_000,"
       },
       {
-        "file": "client/ui/main.ts",
+        "file": "client/ui/pages/clockpick.ts",
         "text": "draft: 60 * 60_000,"
       }
     ],

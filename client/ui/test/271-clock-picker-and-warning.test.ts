@@ -48,6 +48,13 @@ import { client } from './ui-driver.ts';
 import type { GameState, Seat } from '../../engine/src/types.ts';
 
 const MAIN = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+// Since the design-system round (2026-11-03) the waiting rooms are
+// pages/waiting.ts and the picker and its tables are pages/clockpick.ts; the
+// room links are read from main.ts and every page module, labelled by file.
+const PAGE_FILES = ['waiting.ts', 'home.ts', 'clockpick.ts', 'deckpicker.ts', 'connecting.ts'];
+const SOURCES: [string, string][] = [['main.ts', MAIN],
+  ...PAGE_FILES.map(f => [`pages/${f}`, readFileSync(new URL(`../pages/${f}`, import.meta.url), 'utf8')] as [string, string])];
+const CLOCK = readFileSync(new URL('../pages/clockpick.ts', import.meta.url), 'utf8');
 const ui = await client();
 const SEAT: Seat = 0;
 
@@ -127,14 +134,14 @@ test('BL-27 §2 the threshold is a tenth of the ROOM\'S bank, not a constant', (
 
 /* ══ §3 — the setting rides the CREATING join and nothing else ═════════ */
 
-/** every `?ws=1&room=…` link ui/main.ts builds, with its source line */
-const LINKS = MAIN.split('\n')
-  .map((line, i) => ({ line, n: i + 1 }))
-  .filter(l => l.line.includes('ws=1&room='));
+/** every `?ws=1&room=…` link ui/main.ts and ui/pages/ build, with its file:line */
+const LINKS = SOURCES.flatMap(([file, src]) => src.split('\n')
+  .map((line, i) => ({ line, n: `${file}:${i + 1}` }))
+  .filter(l => l.line.includes('ws=1&room=')));
 
 test('BL-26 §3 no link built for the OTHER seat carries the clock setting', () => {
   assert.ok(LINKS.length >= 4,
-    `only ${LINKS.length} room links found in ui/main.ts — the parse is not reading them, and `
+    `only ${LINKS.length} room links found in ui/main.ts + ui/pages/ — the parse is not reading them, and `
     + 'this guard would be about nothing');
 
   // A SHARE link is one addressed to the seat that is NOT this client's: the
@@ -148,7 +155,7 @@ test('BL-26 §3 no link built for the OTHER seat carries the clock setting', () 
   // straight past a check for the literal
   const leaky = shares.filter(l => /clock/i.test(l.line));
   assert.deepEqual(leaky.map(l => l.n), [],
-    `these links hand the opponent a clock setting: main.ts lines ${leaky.map(l => l.n).join(', ')}. `
+    `these links hand the opponent a clock setting: ${leaky.map(l => l.n).join(', ')}. `
     + 'The room already exists by then and the server ignores the field (joinableRoom), so the '
     + 'only thing it can change is what the joiner believes they are choosing.');
 
@@ -183,7 +190,7 @@ test('BL-26 §4 the home screen offers the owner\'s three banks, including no cl
   // ⚠ THE LIST IS NO LONGER A PLACEHOLDER. Q4 of docs/questions-round36.md is
   // answered: *"45m and 60m. Constructed games are shorter, so I'd say the
   // default for constructed is 45m and the default for live draft is 60m."*
-  const presets = [...MAIN.matchAll(/^\s*\{ ms: ([^,]+), label: '([^']*)'/gm)]
+  const presets = [...CLOCK.matchAll(/^\s*\{ ms: ([^,]+), label: '([^']*)'/gm)]
     .map(m => ({ ms: m[1]!.trim(), label: m[2]! }));
   assert.deepEqual(presets.map(p => p.label), ['Off', '45m', '60m'],
     'the picker no longer offers exactly what the owner asked for. This is his answer, not a '
@@ -204,7 +211,7 @@ test('BL-26 §4 the default follows the MODE, and the mode is only known at the 
   // source for the same reason as §4 above — the home screen is not this
   // client's entry point — but derived STRUCTURALLY: the table, and the fact
   // that the one call site which knows the mode passes it.
-  const table = /const CLOCK_DEFAULT_BY_MODE: Record<string, number> = \{([^}]*)\}/.exec(MAIN);
+  const table = /const CLOCK_DEFAULT_BY_MODE: Record<string, number> = \{([^}]*)\}/.exec(CLOCK);
   assert.ok(table, 'there is no per-mode default table at all');
   const rows = [...table[1]!.matchAll(/(\w+):\s*(\d+) \* 60_000/g)]
     .map(m => [m[1]!, Number(m[2])] as const);

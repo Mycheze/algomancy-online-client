@@ -9,7 +9,7 @@
  *   §3  plain player-facing text: no ruling numbers, ticket ids or markup
  *   §4  the band: the newest SHOWN_UPDATES open, the rest under "Older updates",
  *       a same-day row leaves its date blank, and the text is escaped
- *   §5  renderHome paints it after .homepage, never inside it — the menu keeps
+ *   §5  the home screen paints it after .homepage, never inside it — the menu keeps
  *       its one-screenful floor (legal.ts sizes #app's FIRST child)
  */
 import { test } from 'node:test';
@@ -20,7 +20,9 @@ import { fileURLToPath } from 'node:url';
 
 import { MAX_UPDATE_CHARS, SHOWN_UPDATES, UPDATES, updatesHtml, type Update } from '../updates.ts';
 
-const MAIN = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'main.ts'), 'utf8');
+// the home screen is pages/home.ts since the design-system round (2026-11-03):
+// homeView() gathers updatesHtml(), homeHtml() draws it, paintHome() wires it
+const HOME = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'pages', 'home.ts'), 'utf8');
 
 test('§1 newest first, real dates, none in the future', () => {
   assert.ok(UPDATES.length > 0, 'the list is empty');
@@ -79,14 +81,16 @@ test('§4 the band: the newest open, the rest folded, same-day dates blank, text
   assert.doesNotMatch(updatesHtml(list.slice(0, 2), null), /<details/, 'a short list has nothing to fold');
 });
 
-test('§5 renderHome paints the band after .homepage, not inside it', () => {
-  const body = MAIN.slice(MAIN.indexOf('function renderHome(): void {'));
-  const from = body.indexOf('$app.innerHTML = `<div class="homepage">');
-  assert.ok(from >= 0, 'could not find renderHome\'s paint');
+test('§5 the home screen paints the band after .homepage, not inside it', () => {
+  const body = HOME.slice(HOME.indexOf('export function homeHtml(v: HomeView): string {'));
+  const from = body.indexOf('return `<div class="homepage">');
+  assert.ok(from >= 0, 'could not find homeHtml\'s paint');
   const paint = body.slice(from, body.indexOf('`;', from));
-  assert.match(paint, /<\/div>\s*\$\{updatesHtml\(\)\}$/,
-    'updatesHtml() must be the last thing painted, after .homepage closes');
-  assert.match(body.slice(0, body.indexOf('\n}\n')), /wireUpdates\(\)/, 'renderHome does not wire the disclosure');
+  assert.match(paint, /<\/div>\s*\$\{s\.updates\}$/,
+    'the updates slot must be the last thing painted, after .homepage closes');
+  assert.match(HOME, /const updates = updatesHtml\(\);/, 'homeView does not fill the updates slot');
+  const paintHome = HOME.slice(HOME.indexOf('export function paintHome('));
+  assert.match(paintHome.slice(0, paintHome.indexOf('\n}\n')), /wireUpdates\(\)/, 'paintHome does not wire the disclosure');
 });
 
 test('§6 new since the last visit: marked by count, across the fold, never on a first visit', () => {
