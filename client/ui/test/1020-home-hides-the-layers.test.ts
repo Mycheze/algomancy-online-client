@@ -11,8 +11,8 @@
  * the Alerts button opens and the invite popups still show there, hung from
  * the top right under the toolbar. Every other page is unchanged.
  *
- * §1 the three are hidden under `:root:has(#app > .homepage)` / `#app:has(> .homepage) +`, and
- *    no rule anywhere hides them unconditionally
+ * §1 the three are hidden on the home (the pill and the bell only while no layer — How to play,
+ *    Learn to Play, a legal page — is up over it and covering the toolbar), and nowhere else
  * §2 the list and the popups move to the top on the home, and only there
  * §3 nothing adds height on the home: the pill-clear and the footer floor exclude it
  * §4 the report still names the new root "home" (pageOf reads the LAST class)
@@ -25,7 +25,20 @@ import { pageOf } from '../report.ts';
 const css = readStyles().replace(/\/\*[\s\S]*?\*\//g, '');
 /** every rule as [selector, body] */
 const rules = (): Array<[string, string]> => [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(m => [m[1]!.trim(), m[2]!]);
-const ON_HOME = ':root:has(#app > .homepage)';
+/** on the home, with no layer (help, Learn to Play, a legal page) up over it */
+/** a selector list split at its top-level commas (not the ones inside `:has(a, b)`) */
+function selectors(list: string): string[] {
+  const out: string[] = [];
+  let depth = 0, from = 0;
+  for (let i = 0; i < list.length; i++) {
+    const c = list[i];
+    if (c === '(') depth++;
+    else if (c === ')') depth--;
+    else if (c === ',' && depth === 0) { out.push(list.slice(from, i).trim()); from = i + 1; }
+  }
+  return [...out, list.slice(from).trim()];
+}
+const ON_HOME = ':root:has(#app > .homepage):not(:has(#helplayer > *, #learnmenu > *, #legalover))';
 
 test('1020 §0 positive control: the rules are read', () => {
   assert.ok(rules().length > 500, 'the stylesheet was not reached');
@@ -34,7 +47,7 @@ test('1020 §0 positive control: the rules are read', () => {
 
 test('1020 §1 on the home, and only there, the pill, the bell and the footer are hidden', () => {
   const hiding = rules().filter(([, body]) => /\bdisplay:\s*none\b/.test(body));
-  const hides = (el: RegExp): string[] => hiding.flatMap(([sel]) => sel.split(',').map(s => s.trim()).filter(s => el.test(s)));
+  const hides = (el: RegExp): string[] => hiding.flatMap(([sel]) => selectors(sel).filter(s => el.test(s)));
   assert.deepEqual(hides(/\.reportfab\b/), [`${ON_HOME} #reportlayer > .reportfab`]);
   assert.deepEqual(hides(/\.inboxbell\b/), [`${ON_HOME} #inboxlayer > .inboxbell`]);
   assert.deepEqual(hides(/#legalfoot\b(?!:not)/), ['#app:has(> .homepage) + #legalfoot']);
@@ -45,7 +58,7 @@ test('1020 §1 on the home, and only there, the pill, the bell and the footer ar
 test('1020 §2 the bell\'s list and the popups hang from the top right on the home', () => {
   const top = rules().filter(([sel]) => sel.startsWith(ON_HOME) && /\.inboxlist|\.invitepops/.test(sel));
   assert.equal(top.length, 1, 'one rule moves them');
-  assert.match(top[0]![0], /#inboxlayer > \.inboxlist,\s*:root:has\(#app > \.homepage\) #inboxlayer > \.invitepops/);
+  assert.deepEqual(selectors(top[0]![0]), [`${ON_HOME} #inboxlayer > .inboxlist`, `${ON_HOME} #inboxlayer > .invitepops`]);
   assert.match(top[0]![1], /top: 72px; bottom: auto;/);
   // everywhere else they stay at the bottom right, over the pill
   assert.match(css, /\.inboxlist, \.invitepops \{ position: fixed; right: 18px; bottom: 62px;/);

@@ -93,10 +93,13 @@
    a Report button (data-report="open") and an Alerts button
    (data-inbox="bell") with the unread count, so the floating pill and bell
    are hidden there — and only there. Read off #app's markup, not a class the
-   router sets: the home's root is the one `.homepage` (test 1020). The list
-   the Alerts button opens, and the invite popups, still show; they hang from
-   the top right, under the toolbar, instead of over the bottom bar. */
-:root:has(#app > .homepage) #reportlayer > .reportfab,
-:root:has(#app > .homepage) #inboxlayer > .inboxbell { display: none; }
-:root:has(#app > .homepage) #inboxlayer > .inboxlist,
-:root:has(#app > .homepage) #inboxlayer > .invitepops { top: 72px; bottom: auto; }
+   router sets: the home's root is the one `.homepage` (test 1020). A layer
+   opened OVER the home (How to play, Learn to Play, an About/Privacy page)
+   covers the toolbar, so while one is up the pill and the bell come back, as
+   on every other page. The list the Alerts button opens, and the invite
+   popups, still show; on the home they hang from the top right, under the
+   toolbar, instead of over the bottom bar. */
+:root:has(#app > .homepage):not(:has(#helplayer > *, #learnmenu > *, #legalover)) #reportlayer > .reportfab,
+:root:has(#app > .homepage):not(:has(#helplayer > *, #learnmenu > *, #legalover)) #inboxlayer > .inboxbell { display: none; }
+:root:has(#app > .homepage):not(:has(#helplayer > *, #learnmenu > *, #legalover)) #inboxlayer > .inboxlist,
+:root:has(#app > .homepage):not(:has(#helplayer > *, #learnmenu > *, #legalover)) #inboxlayer > .invitepops { top: 72px; bottom: auto; }
