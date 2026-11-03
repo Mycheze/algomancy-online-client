@@ -6,6 +6,9 @@
 .scart { width: 46px; flex: none; }
 .scimg { width: 46px; border-radius: var(--radius-sm); display: block; }
 .scname { display: flex; flex-direction: column; gap: var(--space-1); }
+/* "makes no units" under the picked card (pages/singlecard.ts). It sat at the end of
+   34-cardstats.css after the split, like .scdraw below; nothing between there and here matches it. */
+.scwarn { font-size: var(--text-12); color: var(--danger); }
 .ladderrow { border: 1px solid var(--line); background: var(--panel); cursor: default; }
 .metatabs { margin-bottom: var(--space-3); }
 /* the search box is not a room code: no spaced capitals, and the 🎲 stays a button's width */

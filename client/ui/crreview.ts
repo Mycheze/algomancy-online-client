@@ -1,6 +1,6 @@
 /* THE RULES REVIEW PAGE: the Comprehensive Rules, open for comments.
  *
- * Same contract as admin.ts, league.ts and meta.ts, which main.ts already
+ * Same contract as pages/admin.ts, league.ts and meta.ts, which main.ts already
  * knows how to drive: `screen()` says whether this page owns the app element,
  * `renderScreen()` paints it, `handleButton()` is offered every click
  * (everything here is prefixed `cr-`), and the state lives in this file.
