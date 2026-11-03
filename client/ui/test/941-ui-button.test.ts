@@ -46,7 +46,7 @@ test('an icon button needs a title, which is also its aria-label', () => {
   assert.match(button({ label: '↻', variant: 'icon', title: 'reload' }), /title="reload" aria-label="reload"/);
 });
 
-test('primary keeps its green border on hover, as button.primary does (the gold hover would outrank it)', async () => {
+test('primary keeps its own border on hover, as button.primary does (the accent hover would outrank it)', async () => {
   const { readStyles } = await import('./read-styles.ts');
   const css = readStyles();
   assert.match(css, /\.ui-button--primary:hover\s*\{\s*border-color:\s*var\(--color-confirm-border\);\s*\}/);

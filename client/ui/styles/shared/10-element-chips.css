@@ -3,7 +3,7 @@
 /* BL-17: the trust mark on a profile — small, and not a button */
 .badgechip { display: inline-block; font-size: .55em; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
   padding: var(--space-1) var(--space-4); border-radius: var(--radius-pill); vertical-align: middle; border: 1px solid var(--accent); color: var(--accent); }
-.badgechip.owner { background: var(--accent); color: var(--bg, #111); }
+.badgechip.owner { background: var(--accent); color: var(--color-text-on-accent); }
 /* docs/20 §7: a league season's place — the season's name is part of the chip, so it keeps its case */
 .badgechip.trophy { text-transform: none; letter-spacing: .02em; white-space: nowrap; }
 .badgechip.trophy.champion { background: #e0a93c; border-color: #e0a93c; color: #111; }

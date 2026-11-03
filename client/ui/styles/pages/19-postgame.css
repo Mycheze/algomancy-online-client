@@ -7,7 +7,7 @@
   padding: 20px 24px; width: min(560px, 100%); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto;
   display: flex; flex-direction: column; gap: var(--space-5); box-shadow: 0 14px 50px rgba(0,0,0,.65); }
 .pgbox.won { border-color: var(--glow); }
-.pgbox.lost { border-color: #4a5462; }
+.pgbox.lost { border-color: var(--color-border-strong); }
 
 .pghead { text-align: center; }
 .pgtitle { font-size: 30px; font-weight: 700; letter-spacing: .02em; line-height: 1.1; }

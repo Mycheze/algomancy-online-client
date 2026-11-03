@@ -4,7 +4,7 @@
 
 const COLOURS = [
   'bg', 'surface-sunken', 'surface', 'surface-raised', 'surface-overlay', 'scrim', 'border', 'border-strong',
-  'text', 'text-muted', 'text-on-accent', 'text-on-fill', 'accent', 'link', 'confirm', 'confirm-border', 'confirm-hover',
+  'text', 'text-muted', 'text-on-accent', 'text-on-fill', 'accent', 'accent-wash', 'link', 'confirm', 'confirm-border', 'confirm-hover',
   'success', 'success-bg', 'warning', 'warning-bg', 'danger', 'danger-bg', 'info', 'info-bg',
 ].map(n => `--color-${n}`);
 const TEXT = ['11', '12', '13', '14', '16', '22', '26'].map(n => `--text-${n}`);

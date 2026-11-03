@@ -6,12 +6,12 @@
  * 07-design-foundations.md §8a):
  *
  *   secondary  the base button: raised surface, hairline border, accent on hover (the default)
- *   primary    the GREEN confirm — today's `button.primary`, "yes, do it" at the table and on pages
- *   action     the GOLD page action — today's `.homebtns .primary` and its five copies (accent
- *              border and text). Both "primaries" stay until the redesign picks one (docs/23,
- *              Decisions). ⚠ On a <button> today those copies ALSO show the green fill under the
- *              gold, because `button.primary` still applies; this variant is the gold alone, so a
- *              page swapping it in loses that green. That is the census's bug, not this look.
+ *   primary    the filled confirm — today's `button.primary`, "yes, do it" at the table and on pages.
+ *              The Manual's orange with dark ink since 2026-11-03 (it was a green)
+ *   action     the outlined page action — accent border and text on the base button. Since the
+ *              Manual's palette (2026-11-03) the accent and the primary are one orange, so the old
+ *              gold-on-green `.cta.primary` copies are plain filled primaries now; this variant is
+ *              the outline, for an action beside a primary
  *   ghost      transparent, dashed, dim — today's `.declinebtn` ("not this one")
  *   danger     red border and text — the pattern written out nine times (`.dkdanger`, …)
  *   link       a button that reads as a link — today's `.linkbtn` (accent, dotted underline)

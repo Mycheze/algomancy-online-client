@@ -95,7 +95,7 @@ Still open, with the default that applies unless the owner says otherwise:
 |---|---|---|
 | Phase 1 | The snap list | Flag anything over 2px or a visible colour shift; the rest goes through |
 | Phase 3 | Where Storybook is viewed | A static build on the site behind the owner badge, so it opens on the iPad |
-| Phase 3 | What "primary" looks like | Keep both: green = confirm in the game, gold = a page's main action. Choose properly in the redesign |
+| Phase 3 | What "primary" looks like | Keep both: green = confirm in the game, gold = a page's main action. Choose properly in the redesign. **Settled 2026-11-03** (owner: "match the official rule PDF rather than this yellow and green nonsense"): one orange, the Manual's, filled for the primary and as the accent; the palette is the Manual's purple (tokens.css, ui/test/1030) |
 | Phase 3 | Prefix for component classes | `ui-` (`ui-button`, `ui-panel`) |
 | Phase 4 | Page order | As in the table above |
 

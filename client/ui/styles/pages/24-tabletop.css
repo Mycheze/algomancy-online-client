@@ -12,7 +12,7 @@
    ONLY THE PILE UNDER THE CARD LIGHTS: a soft tint, never an outline; the
    gap that opens in it is the preview. The one dashed thing is a new pile's
    place, while the card is over it. */
-:root { --bdw: 340px; --ddh: 46vh; --felt: #172520; }
+:root { --bdw: 340px; --ddh: 46vh; --felt: var(--color-surface-sunken); }
 html.touch { --bdw: 300px; }
 .ttpage { position: fixed; top: 0; left: 0; bottom: 0; right: var(--bdw); z-index: 1;
   display: flex; flex-direction: column; background: var(--bg); --cw: 132px; --ch: 183px; }
@@ -38,7 +38,7 @@ html.touch { --bdw: 300px; }
 /* the page's own scroll boxes, in the page's colours (Firefox drew them white) */
 .tttable, .ttmaybe, .ttbody, .ddresults { scrollbar-color: var(--color-border-strong) transparent; scrollbar-width: thin; }
 .tttable { flex: 1; min-width: 0; overflow: auto; overscroll-behavior: contain; padding: 14px 10px 60px;
-  background: radial-gradient(ellipse at 50% 0%, #1e3029 0%, var(--felt) 70%); touch-action: pan-y; }
+  background: radial-gradient(ellipse at 50% 0%, var(--color-bg) 0%, var(--felt) 70%); touch-action: pan-y; }
 .ttrow { display: flex; flex-wrap: wrap; align-items: stretch; row-gap: var(--space-6); }
 .ttpile { width: var(--cw); flex: none; display: flex; flex-direction: column; padding: var(--space-2);
   border-radius: var(--radius-lg); transition: background .12s; }
@@ -100,7 +100,7 @@ html:not(.ttcarrypile) .ttpage .ttend.dropover::before { content: ''; display: b
   box-shadow: 0 18px 40px rgba(0, 0, 0, .65); transition: none; height: auto; }
 #draglayer > .dragghost.ddtile .dkbtns, #draglayer > .dragghost.ddtile .dkn { display: none; }
 #draglayer > .dragghost.ttcard > .ttart { height: auto; }
-#draglayer > .dragghost.ttpile { background: rgba(23, 37, 32, .92); }
+#draglayer > .dragghost.ttpile { background: color-mix(in srgb, var(--felt) 92%, transparent); }
 #draglayer > .dragghost.ttpile .ttfan { width: auto; }
 #draglayer > .dragghost.ttpile .ttcard { width: 100%; height: auto; }
 /* a card held up to read (ui/presszoom.ts): the scan alone, on the zoom layer.
@@ -108,7 +108,7 @@ html:not(.ttcarrypile) .ttpage .ttend.dropover::before { content: ''; display: b
    down reads a pile strip by strip and not the raised card's whole face */
 #cardzoom > .presszoom > img { display: block; width: 100%; height: auto; }
 .ttmaybe { flex: none; width: calc(var(--cw) + 30px); overflow-y: auto; overscroll-behavior: contain;
-  padding: 14px 10px 40px; background: #141f1b; border-left: 1px solid var(--line); touch-action: pan-y; }
+  padding: 14px 10px 40px; background: var(--felt); border-left: 1px solid var(--line); touch-action: pan-y; }
 .ttmaybepile { min-height: 100%; }
 .ttmaybepile .ttpilelabel { color: var(--dim); text-transform: uppercase; letter-spacing: .06em; font-size: var(--text-11); }
 /* the sideboard (docs/22 §4.5): a pile above Maybe at the same edge, n/7 */
