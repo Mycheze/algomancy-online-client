@@ -7,6 +7,7 @@
  * home screen and waiting rooms are built from.
  *
  * §1 every exported …Html function in pages/*.ts is pure (read off the source)
+ * §1b …and that check reads code: a string, a comment or `v.tab` is not a read of `let tab`
  * §2 main.ts keeps no second copy of what moved
  * §3 the deck picker: loading, the bundled list, the collection, a stray deck
  * §4 the clock picker: Default, a preset, off
@@ -39,33 +40,113 @@ function bodyOf(text: string, at: number): string {
 const GLOBALS = ['document', 'window', 'localStorage', 'sessionStorage', 'location', 'fetch', 'navigator',
   'setTimeout', 'setInterval', 'requestAnimationFrame', 'Date.now', 'Math.random'];
 
+/**
+ * The CODE of a function body: every comment, every string literal and the
+ * static text of every template literal blanked to spaces, the `${…}` inside a
+ * template kept (to any depth). So `'admin-tab'`, `data-btn="queue-mode"` in a
+ * template and a word in a comment are not reads of anything; `${tab}` still is.
+ * (ds-w3b, 2026-11-03: the check matched words anywhere, so a page could not
+ * name a module `let` in a string or as a property without tripping it.)
+ */
+function codeOnly(text: string): string {
+  let out = '';
+  /** what each open `{` belongs to: true = it opened a template's `${` */
+  const braces: boolean[] = [];
+  let i = 0;
+  const blank = (s: string): string => s.replace(/[^\n]/g, ' ');
+  /** the static run of a template from i (just after its backtick or a `}` closing a `${`) */
+  const templateRun = (): void => {
+    const start = i;
+    while (i < text.length) {
+      if (text[i] === '\\') { i += 2; continue; }
+      if (text[i] === '`') { out += blank(text.slice(start, i)) + '`'; i++; return; }
+      if (text[i] === '$' && text[i + 1] === '{') { out += blank(text.slice(start, i)) + '${'; i += 2; braces.push(true); return; }
+      i++;
+    }
+    out += blank(text.slice(start));
+  };
+  while (i < text.length) {
+    const c = text[i]!, n = text[i + 1];
+    if (c === '/' && n === '/') { const e = text.indexOf('\n', i); const end = e < 0 ? text.length : e; out += blank(text.slice(i, end)); i = end; continue; }
+    if (c === '/' && n === '*') { const e = text.indexOf('*/', i + 2); const end = e < 0 ? text.length : e + 2; out += blank(text.slice(i, end)); i = end; continue; }
+    if (c === "'" || c === '"') {
+      let j = i + 1;
+      while (j < text.length && text[j] !== c && text[j] !== '\n') j += text[j] === '\\' ? 2 : 1;
+      out += c + blank(text.slice(i + 1, j)) + c; i = j + 1; continue;
+    }
+    if (c === '`') { out += '`'; i++; templateRun(); continue; }
+    if (c === '{') { braces.push(false); out += c; i++; continue; }
+    if (c === '}') {
+      out += c; i++;
+      if (braces.pop()) templateRun();
+      continue;
+    }
+    out += c; i++;
+  }
+  return out;
+}
+
+/** what makes one exported …Html function impure, read off its file's source */
+function impurities(text: string): string[] {
+  const found: string[] = [];
+  // what this file could reach that is not pure: other modules' namespaces,
+  // and its own module-level `let` state
+  const namespaces = [...text.matchAll(/^import \* as (\w+) from/gm)].map(m => m[1]!);
+  const lets = [...text.matchAll(/^let (\w+)/gm)].map(m => m[1]!);
+  for (const m of text.matchAll(/^export function (\w+Html)\(/gm)) {
+    const name = m[1]!, body = codeOnly(bodyOf(text, m.index!));
+    // a word that is not a property (`v.tab`, `x?.tab`) and not part of a longer name
+    const word = (w: string): RegExp => new RegExp(`(^|[^.\\w$])${w.replace('.', '\\.')}(?![\\w$])`);
+    for (const g of GLOBALS) {
+      if (word(g).test(body)) found.push(`${name}() touches ${g} — gather it in the view function and pass it in`);
+    }
+    for (const ns of namespaces) {
+      if (new RegExp(`(^|[^.\\w$])${ns}\\s*\\??\\.`).test(body)) found.push(`${name}() calls into ${ns}.* — that module's markup is a slot the view fills`);
+    }
+    for (const l of lets) {
+      if (word(l).test(body)) found.push(`${name}() reads the module's own state \`${l}\` — put it in the view`);
+    }
+  }
+  return found;
+}
+
 test('962 §1 every exported …Html function in ui/pages/ is pure', () => {
   let checked = 0;
   for (const f of FILES) {
     const text = src(f);
-    // what this file could reach that is not pure: other modules' namespaces,
-    // and its own module-level `let` state
-    const namespaces = [...text.matchAll(/^import \* as (\w+) from/gm)].map(m => m[1]!);
-    const lets = [...text.matchAll(/^let (\w+)/gm)].map(m => m[1]!);
-    for (const m of text.matchAll(/^export function (\w+Html)\(/gm)) {
-      const name = m[1]!, body = bodyOf(text, m.index!);
-      checked++;
-      for (const g of GLOBALS) {
-        assert.doesNotMatch(body, new RegExp(`(^|[^.\\w])${g.replace('.', '\\.')}\\b`),
-          `pages/${f} ${name}() touches ${g} — gather it in the view function and pass it in`);
-      }
-      for (const ns of namespaces) {
-        assert.doesNotMatch(body, new RegExp(`\\b${ns}\\.`),
-          `pages/${f} ${name}() calls into ${ns}.* — that module's markup is a slot the view fills`);
-      }
-      for (const l of lets) {
-        assert.doesNotMatch(body, new RegExp(`\\b${l}\\b`),
-          `pages/${f} ${name}() reads the module's own state \`${l}\` — put it in the view`);
-      }
-    }
+    checked += [...text.matchAll(/^export function (\w+Html)\(/gm)].length;
+    assert.deepEqual(impurities(text), [], `pages/${f}`);
   }
   // positive control: the derived set is the pages this round extracted, not empty
   assert.ok(checked >= 8, `only ${checked} …Html functions found under ui/pages/ — the parse is not reading them`);
+});
+
+test('962 §1b the purity check reads code, not strings, comments or properties — and still catches a read', () => {
+  const page = (body: string): string =>
+    `import * as acct from '../account.ts';\nlet tab = 'stats';\nlet fetching = false;\nexport function fooHtml(v: V): string {\n${body}\n}\n`;
+  // not reads: a string, a template's own text, a property, a comment, a longer name
+  for (const ok of [
+    "  return 'admin-tab' + \"tab\";",
+    '  return `<button data-btn="admin-tab" class="tab">${v.tab}</button>`;',
+    '  return `${v?.tab ?? \'\'}${v.fetching ? \'…\' : \'\'}`;',
+    '  // the tab, while fetching, from document and window\n  return \'\';',
+    '  /* tab */ return `${v.tabs.map(t => `<i>${t.tab}</i>`).join(\'\')} fetch the document`;',
+    '  const tabName = v.tab, tab_ = 1; return `${tabName}${tab_}`;',
+    "  return 'acct.me' + v.acct;",
+  ]) assert.deepEqual(impurities(page(ok)), [], ok);
+  // reads, wherever the code is: plain, in a template's ${}, nested, shorthand, a global, a namespace
+  for (const [bad, want] of [
+    ['  return tab;', /`tab`/],
+    ['  return `<b>${tab}</b>`;', /`tab`/],
+    ['  return `${v.on ? `<i>${fetching ? 1 : 2}</i>` : \'\'}`;', /`fetching`/],
+    ['  return JSON.stringify({ tab });', /`tab`/],
+    ['  return `${document.title}`;', /touches document/],
+    ['  return String(Date.now());', /touches Date\.now/],
+    ['  return `${acct.currentUser()}`;', /calls into acct/],
+  ] as const) {
+    const found = impurities(page(bad));
+    assert.ok(found.some(f => want.test(f)), `${bad} → ${JSON.stringify(found)}`);
+  }
 });
 
 test('962 §2 main.ts keeps no second copy of what moved to ui/pages/', () => {
