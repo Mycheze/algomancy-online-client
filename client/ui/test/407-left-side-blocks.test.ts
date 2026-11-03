@@ -170,7 +170,8 @@ test('§5 committed, a left side-block is column 1 and has no attacker', () => {
   h.do({ type: 'declareBlocks', seat: D, blocks: { [-1]: [mine[0]!] } });
   ui.join(h.state, D, legalActions(h.state, D));
   assert.match(ui.html(), /column 1 · side-block/);
-  assert.match(ui.html(), /no attacker/, 'not "gone": nobody ever stood there');
+  // owner 2026-11-03: the faint labels go — a marked empty slot named in its aria-label
+  assert.match(ui.html(), /class="slot ghost noatk"[^>]*aria-label="no attacker"/, 'not "gone": nobody ever stood there');
 });
 
 test('§6 with a left side-block placed, number key 1 still means column 1', () => {

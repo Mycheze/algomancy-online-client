@@ -5294,8 +5294,8 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
       ? (iBlock ? blockBuilderHtml(ci) : pendingColHtml(NET?.building?.cols[ci] ?? []))
       : blockers.map(id => h.state.entities[id] ? unitHtml(h.state.entities[id]!) : '').join('');
     // the "nothing here" markers are a thin strip, not a card-sized hole: the
-    // half already reserves the height it needs, so the label only has to say
-    // the word
+    // half already reserves the height it needs, so the marker only has to be
+    // seen (ghostSlotHtml)
     const atkCards = col.map(id => h.state.entities[id] ? unitHtml(h.state.entities[id]!) : '').join('');
     // #107: a `behind` spot lands beside the one unit standing there; a `hole`
     // spot lands where the "gone" marker was, because a hole IS an empty
@@ -5305,7 +5305,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     // CR 606.4: a side-block's column never had an attacker in it — not "gone"
     const sideCol = !!b.sideCols?.includes(ci);
     const atkSide = atkDrop ? atkCards + fsSlot(atkDrop)
-      : (atkCards || (sideCol ? '<div class="slot ghost">no attacker</div>' : '<div class="slot ghost">gone</div>'));
+      : (atkCards || ghostSlotHtml(sideCol ? 'noatk' : 'atkgone'));
     const blkDrop = fsMine(b.defender) ? fsCol.get(ci) : undefined;
     // CT-190 / report #176: BLOCKED IS KEY PRESENCE, NOT A NON-EMPTY LIST
     // (BattleState.blocks; CR 606.3a). A block whose blocker has since left — a
@@ -5313,9 +5313,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     // drawn as one, not as the "unblocked" a column nobody answered gets.
     const blockedEmpty = b.step !== 'blocks' && Object.hasOwn(b.blocks, ci);
     const blkSide = blkDrop ? blockBuild + fsSlot(blkDrop)
-      : (blockBuild || (blockedEmpty
-        ? '<div class="slot ghost blockgone" title="the blocker left, but the column stays blocked — no damage gets through">blocker gone</div>'
-        : '<div class="slot ghost">unblocked</div>'));
+      : (blockBuild || ghostSlotHtml(blockedEmpty ? 'blockgone' : 'through'));
     return battleColHtml({
       label: `column ${ci + 1}${sideCol ? ' · side-block' : ''}`, flip, atk: atkSide, blk: blkSide,
       blkPending: watchingBlocks && !!NET?.building?.cols[ci]?.length,
@@ -5339,7 +5337,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     const watched = NET?.building?.left?.[-ci - 1] ?? [];
     return battleColHtml({
       label: 'side-block · left', flip, cls: 'sidecol',
-      atk: '<div class="slot ghost">no attacker</div>',
+      atk: ghostSlotHtml('noatk'),
       blk: iBlock ? blockBuilderHtml(ci) : pendingColHtml(watched),
       blkPending: watchingBlocks && !!watched.length,
       sides: { atk: b.attacker, blk: b.defender },
@@ -5349,7 +5347,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     const ci = b.columns.length + k;
     return battleColHtml({
       label: `column ${ci + 1} · side-block`, flip, cls: 'sidecol',
-      atk: '<div class="slot ghost">no attacker</div>',
+      atk: ghostSlotHtml('noatk'),
       blk: iBlock ? blockBuilderHtml(ci) : pendingColHtml(NET?.building?.cols[ci] ?? []),
       blkPending: watchingBlocks && !!NET?.building?.cols[ci]?.length,
       sides: { atk: b.attacker, blk: b.defender },
@@ -5499,6 +5497,30 @@ function counterSendHtml(): string {
  * cannot be added that disagrees. `atk`/`blk` are the two sides by MEANING,
  * never by position; position is this function's business and nobody else's.
  */
+/**
+ * THE EMPTY HALVES OF A BATTLE COLUMN, as shapes (owner, 2026-11-03: the faint
+ * "unblocked" and "blocker gone" were so faint you could not tell they were
+ * text — "Better to remove it and represent in other ways"). No word on the
+ * table: each is an empty slot the size the word's strip was, marked so it
+ * reads at a glance and on a finger (no hover-only meaning), its name in
+ * `title` and `aria-label` (test/1060 §4):
+ *   through    nobody blocks it — an arrow out of the slot, away from the
+ *              fight, toward the player it hits
+ *   blockgone  blocked, and the blocker has left (CT-190; still blocked, CR
+ *              606.3a) — the slot struck through, and no arrow: nothing gets by
+ *   atkgone    the attacker has left — struck through the same way
+ *   noatk      a side-block's column: nobody ever stood there — just empty
+ */
+const GHOST_SLOT = {
+  through: 'unblocked: its damage goes through',
+  blockgone: 'blocker gone: the blocker left, but the column stays blocked, so no damage gets through',
+  atkgone: 'attacker gone',
+  noatk: 'no attacker',
+} as const;
+function ghostSlotHtml(kind: keyof typeof GHOST_SLOT): string {
+  return `<div class="slot ghost ${kind}" role="img" aria-label="${GHOST_SLOT[kind]}" title="${GHOST_SLOT[kind]}"></div>`;
+}
+
 function battleColHtml(o: {
   label: string; flip: boolean; atk: string; blk: string;
   /** the half holds an UNCOMMITTED build (the opponent's, live) */
@@ -5571,7 +5593,7 @@ function watchingHtml(who: string, doing: string, flip: boolean): string {
         atk: pendingColHtml(c), atkPending: true,
         // what the committed table puts opposite an undefended column, so the
         // half opposite does not appear out of nowhere when it commits
-        blk: '<div class="slot ghost">unblocked</div>',
+        blk: ghostSlotHtml('through'),
         // the same formation marks the committed table carries, so an arrow
         // at a formation lands the same in both views
         ...(h.state.battle ? { sides: { atk: h.state.battle.attacker, blk: h.state.battle.defender } } : {}),
