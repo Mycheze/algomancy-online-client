@@ -190,6 +190,8 @@ let tab: ProfileTab = 'stats';
 let friendMsg = '';
 /** #296: the change-password box's last answer (the server's error, or done) */
 let pwMsg: { text: string; ok: boolean } | null = null;
+/** why choosing a favourite element did not take (shown under the picker) */
+let favMsg = '';
 let leaders: LeaderRow[] | null = null;
 /** the last load of `leaders` failed: the friends tab says so (and offers to ask again) */
 let leadersFailed = false;
@@ -355,7 +357,7 @@ function renderAuth(): void {
 function renderProfile(): void {
   if (!me) { view = 'auth'; renderAuth(); return; }
   paintProfile($app!, profileView({
-    me, tab, discordLinking, linkCode, linkMsg, friendMsg, pwMsg, leaders, leadersFailed, ladderMode, ladder, artFor,
+    me, tab, discordLinking, linkCode, linkMsg, friendMsg, pwMsg, favMsg, leaders, leadersFailed, ladderMode, ladder, artFor,
   }));
 }
 
@@ -451,7 +453,7 @@ export function handleButton(btn: HTMLElement): boolean {
       renderScreen(); return true;
 
     case 'acct-open-profile':
-      view = 'profile'; tab = 'stats'; pwMsg = null;
+      view = 'profile'; tab = 'stats'; pwMsg = null; favMsg = '';
       renderScreen();
       void refreshMe();
       return true;
@@ -484,7 +486,12 @@ export function handleButton(btn: HTMLElement): boolean {
 
     case 'acct-favorite': {
       const el = btn.dataset['el'] || null;
-      void post('/api/me/favorite', { element: el }).then(() => refreshMe());
+      // a refusal or no server used to be an unhandled rejection and no word
+      // on the page: the picker just did not move (test/997)
+      void post('/api/me/favorite', { element: el }).then(r => {
+        favMsg = r.ok ? '' : (r.error ?? 'that did not work');
+        if (r.ok) void refreshMe(); else renderScreen();
+      }).catch(() => { favMsg = 'could not reach the server'; renderScreen(); });
       return true;
     }
 
@@ -561,9 +568,13 @@ export function handleButton(btn: HTMLElement): boolean {
 
     case 'acct-discord-unlink':
       void (async () => {
-        const body = await post('/api/link/discord/unlink', {}) as
-          { ok: boolean; me?: Me };
-        if (body.ok && body.me) { me = body.me; linkCode = null; linkMsg = ''; }
+        // as Link Discord: a refusal or no server says so on the card (test/997)
+        try {
+          const body = await post('/api/link/discord/unlink', {}) as
+            { ok: boolean; me?: Me; error?: string };
+          if (body.ok && body.me) { me = body.me; linkCode = null; linkMsg = ''; }
+          else linkMsg = body.error ?? 'could not unlink';
+        } catch { linkMsg = 'could not reach the server'; }
         renderScreen();
       })();
       return true;

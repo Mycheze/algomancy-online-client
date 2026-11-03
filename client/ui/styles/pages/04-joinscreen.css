@@ -16,6 +16,9 @@
 .joinscreen h2 { margin: 0; color: var(--accent); }
 .joinscreen label { display: block; }
 .joinscreen input[type="text"] { font-size: var(--text-16); padding: var(--space-3); margin-left: var(--space-3); }
-.joinscreen button { font-size: var(--text-16); padding: var(--space-4); }
+/* not the queue screen's (it keeps .joinscreen for the report form, see 30-queue): this
+   rule outranked every button class there, so its Find button, ranked/open choices,
+   format chips, home link and Decline all drew 16px with 8px padding, never their own */
+.joinscreen:where(:not(.queuescreen)) button { font-size: var(--text-16); padding: var(--space-4); }
 .joinscreen .hint { font-size: var(--text-12); margin: 0; }
 

@@ -51,7 +51,10 @@ test('the Connections card draws linkMsg', () => {
   assert.ok(at >= 0, 'positive control: connectionsHtml');
   const card = profile.slice(at, profile.indexOf('\n}\n', at));
   assert.match(card, /const linkMsg = c\.linkMsg;/, 'the message the view carries');
-  assert.match(card, /\$\{linkMsg \? `<p class="deckmsg">\$\{esc\(linkMsg\)\}<\/p>` : ''\}/);
+  // drawn as an error since 2026-11-03 (it was .deckmsg's gold), on BOTH faces of
+  // the card: Unlink's failure lands here too (test/997)
+  assert.match(card, /const msg = linkMsg \? statusMessage\(\{ tone: 'error', text: linkMsg \}\) : '';/);
+  assert.equal([...card.matchAll(/\$\{msg\}/g)].length, 2, 'the linked and the unlinked card both draw it');
 });
 
 test('authMsg is still drawn only by the sign-in screen (why the old write was invisible)', () => {

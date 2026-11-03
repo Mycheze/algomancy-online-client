@@ -47,7 +47,7 @@ const LEADER: LeaderRow = { id: 'u2', username: 'Nyar', online: true, games: 3, 
 
 function state(over: Partial<ProfileState> = {}): ProfileState {
   return {
-    me: ME, tab: 'stats', discordLinking: false, linkCode: null, linkMsg: '', friendMsg: '', pwMsg: null,
+    me: ME, tab: 'stats', discordLinking: false, linkCode: null, linkMsg: '', friendMsg: '', pwMsg: null, favMsg: '',
     leaders: null, leadersFailed: false, ladderMode: 'constructed', ladder: null, artFor: c => `art/${c}.webp`, ...over,
   };
 }
