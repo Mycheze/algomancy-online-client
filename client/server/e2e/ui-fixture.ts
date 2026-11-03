@@ -1,6 +1,6 @@
 /* A made-up world for photographing the client (ui-shots.mjs).
  *
- *   node client/server/e2e/ui-fixture.ts --out <dir>
+ *   node client/server/e2e/ui-fixture.ts --out <dir> [--cc]
  *
  * Boots the REAL server on throwaway state under <dir>/var and fills it
  * through the server's own routes and sockets — the same way the e2e tests
@@ -23,6 +23,13 @@
  *            everything else is seeded here
  *   shots    SHOTS_NOW, an hour later (ui-shots.mjs runs its server and
  *            freezes the browser's Date there)
+ *
+ * --cc adds the Competitive Constructed world (docs/22), which the shared
+ * fixture predates: a deck with a sideboard and a swap preset, and a Best of
+ * three paused between games 1 and 2 (so "Your matches" lists it and its room
+ * shows the between-games screen). Off by default, so a rebuild of the
+ * shared fixture without it seeds exactly what it did before; it runs LAST in
+ * phase B for the same reason (the seeded randomness before it is untouched).
  *
  * What it does NOT make deterministic: ids, room codes and tokens are random
  * per build, and the seconds inside a stamp drift with how long a step took.
@@ -65,6 +72,10 @@ export function fixtureEnv(varDir: string, now: string): Record<string, string> 
     ALGO_LEAGUE_FILE: join(varDir, 'league.json'),
     ALGO_CR_COMMENTS_FILE: join(varDir, 'cr-comments.jsonl'),
     ALGO_CHALLENGES_DIR: join(varDir, 'challenges'),
+    // docs/22: the Competitive match store. Missing until 2026-11-03, when
+    // nothing in the fixture made a match; without it a match would be
+    // written to the checkout's own var/matches
+    ALGO_MATCHES_DIR: join(varDir, 'matches'),
     ALGO_OG_CACHE_DIR: join(varDir, 'og-cache'),
     ALGO_TESTER_TOKEN: TESTER,
     // off, whatever the operator's shell exported (suite.test.ts says why)
@@ -91,6 +102,16 @@ export interface FixtureInfo {
   sharedDeck: string;
   seasons: Record<'announced' | 'signup' | 'running' | 'final' | 'finished', string>;
   challenge: { current: string; past: string };
+  /** --cc only: the Competitive Constructed world (absent from the shared fixture) */
+  cc?: {
+    /** the signed-in player's deck with a sideboard and a swap preset */
+    deck: string;
+    /** the Best of three, game 1 won by the signed-in player, paused between games */
+    match: string;
+    /** the room the match waits in for game 2, and the signed-in player's seat in it */
+    room: string;
+    seat: number;
+  };
   gaps: string[];
 }
 
@@ -197,7 +218,7 @@ const arg = (k: string): string | undefined => {
   return i >= 0 ? process.argv[i + 1] : undefined;
 };
 
-export async function buildFixture(outDir: string): Promise<FixtureInfo> {
+export async function buildFixture(outDir: string, opts: { cc?: boolean } = {}): Promise<FixtureInfo> {
   const out = resolve(outDir);
   const varDir = join(out, 'var');
   rmSync(varDir, { recursive: true, force: true });
@@ -422,11 +443,79 @@ export async function buildFixture(outDir: string): Promise<FixtureInfo> {
     const cr = await post('/api/cr/comment', { op: 'add', target: 'sec:608', body: 'This sentence could say who the "players" are.' }, tok(NAMES.admin));
     if (!cr['ok']) gaps.push(`rules review comment: ${cr['error'] ?? cr['_status']}`);
 
+    // ── --cc: Competitive Constructed (docs/22). LAST, so nothing above moves ──
+    let cc: FixtureInfo['cc'];
+    if (opts.cc) {
+      /** a sideboard of `n` cards that keeps every card at two across both boards (CR 901.9b) */
+      const sideFor = (main: string[], from: string[], n: number): string[] => {
+        const count = new Map<string, number>();
+        for (const c of main) count.set(c, (count.get(c) ?? 0) + 1);
+        const side: string[] = [];
+        for (const c of from) {
+          if (side.length >= n) break;
+          if ((count.get(c) ?? 0) >= 2 || side.includes(c)) continue;
+          count.set(c, (count.get(c) ?? 0) + 1);
+          side.push(c);
+        }
+        return side;
+      };
+      const meMain = defs[0]!.cards, frMain = defs[2]!.cards;
+      const meSide = sideFor(meMain, [...defs[1]!.cards, ...defs[3]!.cards], 5);
+      const frSide = sideFor(frMain, [...defs[3]!.cards, ...defs[1]!.cards], 3);
+      const ccMe = await mk(NAMES.me, 'Ember Rush (Competitive)', meMain, {
+        sideboard: meSide,
+        swaps: [
+          { id: 'fx-swap-control', name: 'Against control', out: meMain.slice(0, 2), in: meSide.slice(0, 2) },
+          { id: 'fx-swap-wide', name: 'Against go-wide', out: [meMain[4]!], in: [meSide[2]!] },
+        ],
+      });
+      const ccFr = await mk(NAMES.friend, 'Undertow (Competitive)', frMain, { sideboard: frSide });
+      const code = (await get('/api/new'))['code'] as string;
+      const a = await new Sock().open();
+      a.send({ t: 'join', room: code, seat: 0, mode: 'constructed', cc: { bestOf: 3 }, deckId: ccMe, token: tok(NAMES.me) });
+      for (let w = 0; w < 60 && !a.last(m => m['t'] === 'joined'); w++) await sleep(50);
+      const b = await new Sock().open();
+      b.send({ t: 'join', room: code, deckId: ccFr, token: tok(NAMES.friend), pick: true });
+      for (let w = 0; w < 80 && !(a.view && b.view); w++) await sleep(50);
+      if (!a.view || !b.view) {
+        gaps.push(`cc match: game 1 not dealt (${JSON.stringify(a.last(m => m['t'] === 'error') ?? b.last(m => m['t'] === 'error') ?? {})})`);
+      } else {
+        // game 1: the friend concedes, so the signed-in player leads 1-0 and
+        // the friend (the loser) chooses the initiative for game 2
+        b.send({ t: 'action', action: { type: 'concede', seat: b.seat } });
+        let next: J | undefined;
+        for (let w = 0; w < 80 && !(next = a.last(m => m['t'] === 'match')); w++) await sleep(50);
+        const room = next?.['room'] as string | undefined;
+        if (!room) gaps.push('cc match: no next room after game 1');
+        else {
+          // both into the next room, then a pause both agree to: a paused
+          // match survives the restart into the shots server unchanged
+          // (server test 818), and its screen does not count down
+          const a2 = await new Sock().open(), b2 = await new Sock().open();
+          a2.send({ t: 'join', room, token: tok(NAMES.me) });
+          for (let w = 0; w < 60 && !a2.last(m => m['t'] === 'joined'); w++) await sleep(50);
+          b2.send({ t: 'join', room, token: tok(NAMES.friend) });
+          for (let w = 0; w < 60 && !b2.last(m => m['t'] === 'joined'); w++) await sleep(50);
+          b2.send({ t: 'cc', op: 'pause' });
+          await sleep(300);
+          a2.send({ t: 'cc', op: 'pause' });
+          for (let w = 0; w < 60 && !a2.last(m => m['waiting']?.['match']?.['phase'] === 'paused'); w++) await sleep(50);
+          if (!a2.last(m => m['waiting']?.['match']?.['phase'] === 'paused')) gaps.push('cc match: the pause was not agreed');
+          const mine = await get('/api/matches/mine', tok(NAMES.me));
+          const listed = ((mine['matches'] ?? []) as J[])[0];
+          cc = { deck: ccMe, match: String(listed?.['id'] ?? ''), room, seat: Number(a2.seat) };
+          a2.close(); b2.close();
+        }
+      }
+      a.close(); b.close();
+    }
+
     info = {
       builtAt: SEED_NOW, password: PASSWORD, tester: TESTER, names: NAMES, tokens,
       decks: { pub: dPub, unlisted: dUnl, maybe: dMaybe }, sharedDeck: shared,
       seasons: { announced: 'winter', signup: 'autumn', running: 'harvest', final: 'solstice', finished: 'equinox' },
       challenge: { current: cur, past: '2026-11-01-tokens' },
+      ...(cc ? { cc } : {}),
       gaps,
     };
   } finally {
@@ -472,7 +561,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     process.exit(2);
   }
   const t = Date.now();
-  const r = await buildFixture(outDir);
+  const r = await buildFixture(outDir, { cc: process.argv.includes('--cc') });
   console.log(`fixture built in ${((Date.now() - t) / 1000).toFixed(0)}s at ${resolve(outDir)}`);
   if (r.gaps.length) console.log(`gaps:\n  ${r.gaps.join('\n  ')}`);
 }

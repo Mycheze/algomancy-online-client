@@ -138,5 +138,24 @@ export function SCENARIOS(fx) {
     pick('#h-deck', '/Ember Rush/'),
     { click: '[data-btn="newgame"][data-mode="constructed"]:not([data-single])', settle: 1500 },
   ], check: '#app', pages: 1 });
+
+  // ── Competitive Constructed (docs/22): only on a fixture built with --cc
+  //    (ui-fixture.ts), which the shared one predates. AFTER everything else:
+  //    the last state creates a match room, and the paused match these read
+  //    would show on the shared states' home and profile pictures.
+  if (fx.cc) {
+    const ccDeck = [...decks, { click: btn('deck-open'), text: 'Competitive' }];
+    add('home', 'cc-your-matches', '/', me);
+    add('decks', 'cc-sideboard', '/', { ...me, steps: [...ccDeck, { click: tab('deck-tab', 'side') }] });
+    add('decks', 'cc-swap-new', '/', { ...me, steps: [...ccDeck, { click: tab('deck-tab', 'side') }, { click: btn('deck-swap-new') }] });
+    add('tabletop', 'cc-sideboard', `/?table=${fx.cc.deck}`, { ...me, pages: 1 });
+    add('match', 'between-paused', `/?ws=1&room=${fx.cc.room}&seat=${fx.cc.seat}&mode=constructed`,
+      { ...me, steps: [{ settle: 1500 }], check: '#app' });
+    // last: it creates a match room (seeded code, so the same one each run)
+    add('match', 'registration', '/', { ...me, steps: [
+      pick('#cc-deck', '/Competitive/'),
+      { click: btn('cc-new'), settle: 1500 },
+    ], check: '#app', pages: 1 });
+  }
   return S;
 }
