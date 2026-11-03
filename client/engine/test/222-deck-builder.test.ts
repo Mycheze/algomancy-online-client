@@ -195,7 +195,7 @@ test('§3b the buttons and the badge are pulled in to the front card', () => {
  * the same `.dktile` in the browser but never stacks it: one row is one card
  * there, and it correctly does not appear here.
  */
-const STACK_PAGES = readdirSync(UI)
+const STACK_PAGES = [...readdirSync(UI), ...readdirSync(join(UI, 'pages')).map(f => `pages/${f}`)]
   .filter(f => f.endsWith('.ts'))
   .filter(f => /class="dktile/.test(read(f)) && /stackLayers\(/.test(read(f)));
 
@@ -219,7 +219,8 @@ test('§4b a card with no scan still stacks, because the ghost and the front are
   // "<img " and did nothing at all on an artless card. The wrapper is what
   // carries the offset now, and BOTH the ghost and the front card have to come
   // out of the same call or the two paths can drift apart again.
-  const meta = read('meta.ts');
+  // the shared deck's tile is drawn by pages/meta.ts since the design-system round
+  const meta = read('pages/meta.ts');
   const whole = meta.slice(meta.indexOf('function deckTile('), meta.indexOf('function deckGrid('));
   assert.ok(whole.length > 100, 'deckTile moved — this test needs updating');
   // the comments here QUOTE the trap, so the code is read without them
