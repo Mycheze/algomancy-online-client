@@ -5,8 +5,8 @@
  * that writes `style="background: rgba(…)"` or `color: #e07b39` has put a
  * colour where a redesign cannot find it. A colour is a token in
  * styles/tokens.css and reaches markup as `var(--color-…)` — in a class's CSS,
- * or inline through `var()` / `color-mix(… var(--…) …)` when it is computed
- * (the card stats' win-rate tint is the example).
+ * or inline through `var()` when it is computed — `rgb(var(--color-…-rgb) / a)`
+ * for a token at a computed alpha (the card stats' win-rate tint).
  *
  * Comments are prose and are skipped. ALLOW is the escape hatch: a file and
  * the literal, with the reason. It is empty, and should stay so.
@@ -29,7 +29,8 @@ const ALLOW: Record<string, { literal: string; why: string }[]> = {};
 const code = (src: string): string => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|\s)\/\/.*$/gm, '$1');
 
 const HEX = /(?<![&\w/-])#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\b/g;
-const FUNC = /\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\(/g;
+/** a colour function — unless its channels are a token's (`rgb(var(--color-x-rgb) / .3)`) */
+const FUNC = /\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\((?!\s*var\()/g;
 const NAMED = /\b(?:color|background(?:-color)?|border(?:-[a-z]+)?-?color|border|outline|fill|stroke|box-shadow|text-shadow)\s*:\s*[^;"'`]*?\b(white|black|red|green|blue|gold|orange|yellow|purple|pink|gr[ae]y|silver|cyan|magenta|navy|teal|crimson|maroon)\b/gi;
 
 /** every colour literal in a module's code */
@@ -71,6 +72,7 @@ test('§0 the detector: every spelling caught; ids, issue numbers, entities, tok
     "const n = `report #296 is fixed`;",
     "const e = '&#39;';",
     'return `background: color-mix(in srgb, var(--color-winrate-up) 12.3%, transparent)`;',
+    'return `background: rgb(var(--color-winrate-up-rgb) / ${a})`;',
     "const s = 'color: var(--color-accent)';",
     "const u = 'https://example.com/#abc';",
   ];
@@ -87,6 +89,6 @@ test('§1 no colour literal in ui/pages/*.ts or ui/components/*.ts', () => {
   }
   assert.deepEqual(bad, [],
     'a colour literal in page or component markup. Make it a token in styles/tokens.css and write var(--color-…) '
-    + '(color-mix(in srgb, var(--…) N%, transparent) for a computed strength), or, if it truly cannot be, '
+    + '(rgb(var(--color-…-rgb) / a) for a computed alpha), or, if it truly cannot be, '
     + 'add it to ALLOW with the reason');
 });

@@ -66,7 +66,7 @@ test('982 §2 the Cards section', () => {
   assert.doesNotMatch(cardStatsHtml(view({ signedIn: false })), /meta-cs-mine/, '"my games" only when signed in');
   assert.equal([...html.matchAll(/<button class="csname" data-btn="meta-cs-focus" data-card="[^"]+" data-prev=/g)].length, 6);
   // raw numbers: a rate always prints its n
-  assert.match(html, /<td class="csnum cswr" style="background: color-mix\(in srgb, var\(--color-winrate-up\) 0\.0%, transparent\)" title="1 won of 2">50%<small>2<\/small><\/td>/);
+  assert.match(html, /<td class="csnum cswr" style="background: rgb\(var\(--color-winrate-up-rgb\) \/ 0\.000\)" title="1 won of 2">50%<small>2<\/small><\/td>/);
   assert.match(cardStatsHtml(view({ minGames: 5 })), /<th class="cscard">Card <span class="dim">3<\/span>/, 'min games filters rows');
   assert.match(cardStatsHtml(view({ text: 'zzz' })), /No card matches that\./);
   assert.match(cardStatsHtml(view({ text: 'x' })), /data-btn="meta-cs-clear"/);

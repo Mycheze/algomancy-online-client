@@ -56,6 +56,10 @@
   /* ── colour: data — the card stats' diverging win-rate scale (above even, below even) ── */
   --color-winrate-up: #4fb3c9;
   --color-winrate-down: #e07b39;
+  /* the same two as channels, for a tint whose strength the page computes: rgb(var(--…-rgb) / .12).
+     (color-mix with transparent rounds ±3 off the rgba it replaced.) Keep them in step with the two above. */
+  --color-winrate-up-rgb: 79 179 201;
+  --color-winrate-down-rgb: 224 123 57;
 
   /* ── type ── */
   --font-ui: system-ui, sans-serif;
