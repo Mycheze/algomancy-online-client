@@ -44,7 +44,7 @@ import * as path from 'node:path';
 
 import {
   DEPLOY_HOST, DEPLOY_ROOT, GAMES_DIR, ISSUES_JSONL, ISSUES_SNAPSHOT, REPO_ROOT,
-  VAR_DIR, VERDICTS_JSONL, remote,
+  STORYBOOK_STATIC_DIR, VAR_DIR, VERDICTS_JSONL, remote,
 } from '../../engine/scripts/paths.mjs';
 import { gamesDir, issuesFile, verdictsFile } from '../statepaths.ts';
 
@@ -102,6 +102,7 @@ const CANONICAL: Record<string, string> = {
  */
 const CANONICAL_DIRS: Record<string, string> = {
   GAMES_DIR: `${remote(GAMES_DIR)}/`,
+  STORYBOOK_STATIC_DIR: `${remote(STORYBOOK_STATIC_DIR)}/`,
 };
 
 /* ════════════════════════════════════════════════════════════════════════

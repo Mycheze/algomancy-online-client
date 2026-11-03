@@ -182,7 +182,7 @@ test('§5 a league match: the organizer sees the dispute, a player does not, a f
   assert.equal(f.ok && f.row.dispute?.league, undefined, 'but it flags no league match');
   assert.equal(m.disputes!.length, 1);
   // the organizer's page draws the line
-  const ui = readFileSync(join(import.meta.dirname, '..', '..', 'ui', 'league.ts'), 'utf8');
+  const ui = readFileSync(join(import.meta.dirname, '..', '..', 'ui', 'pages', 'league.ts'), 'utf8');
   assert.match(ui, /\$\{resultText\(m\)\}\$\{disputesHtml\(m\)\}/, 'the league page prints it beside the result');
 });
 

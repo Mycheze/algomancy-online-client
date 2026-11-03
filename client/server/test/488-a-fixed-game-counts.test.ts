@@ -109,6 +109,6 @@ test('§4 the league result carries the tag, and a fixed room reports it', () =>
   // the room's own result reaches it (main.ts recordFinishedGame)
   const main = readFileSync(join(HERE, '..', 'main.ts'), 'utf8');
   assert.match(main, /leagueRecordPlayed\(.*\{ fixed: room\.amendments\.length > 0 \}\)/);
-  const leagueUi = readFileSync(join(HERE, '..', '..', 'ui', 'league.ts'), 'utf8');
+  const leagueUi = readFileSync(join(HERE, '..', '..', 'ui', 'pages', 'league.ts'), 'utf8');
   assert.match(leagueUi, /r\.fixed \? .*\(fixed\)/, 'and the league page prints it beside the result');
 });

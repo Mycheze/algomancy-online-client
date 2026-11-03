@@ -86,7 +86,10 @@ const HOME_CARD: Record<string, string> = {
 
 test('§2 ⭐ every page the client opens off the URL has its own preview, or is declared', () => {
   const keys = new Set<string>();
-  for (const f of readdirSync(UI).filter(f => f.endsWith('.ts'))) {
+  // ui/ and ui/pages/ (the design-system round moved the page modules there, 2026-11-03)
+  const files = [...readdirSync(UI).filter(f => f.endsWith('.ts')),
+    ...readdirSync(join(UI, 'pages')).filter(f => f.endsWith('.ts')).map(f => join('pages', f))];
+  for (const f of files) {
     const src = readFileSync(join(UI, f), 'utf8');
     for (const m of src.matchAll(/\b(?:params|url|q)\.(?:get|has)\('([a-z]+)'\)|URLSearchParams\(location\.search\)\.(?:get|has)\('([a-z]+)'\)/g)) {
       keys.add((m[1] ?? m[2])!);
