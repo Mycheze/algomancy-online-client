@@ -110,7 +110,7 @@ Still open, with the default that applies unless the owner says otherwise:
 | tool | Same branch, `efc6f506`: `client/server/e2e/ui-shots.mjs` + `ui-fixture.ts` + `pinned-server.mjs` + `ui-shots-compare.mjs`. 83 states × 3 viewports, 524 PNGs. Always compare two runs **on the same fixture dir** (a re-seeded fixture differs in ~80 shots), with `--fuzz 3`. |
 | 1b-i | Same branch, `b507f029`: 65 role tokens in `styles/tokens.css` (the old names still work), `ui/scripts/tokenize-styles.mjs` (exact matches only, pages/shared/base, the board untouched), 921 colour-literal ratchet. Zero visible change (524 shots, 0 differ). **The landing gate for 1a + tool + 1b-i was started and stopped unfinished; run it again before pushing.** |
 | 1b-ii | Same branch. `tokenize-styles.mjs --snap through`: 589 near-values onto the scale, pages/ only, each element ≤2px. Visible in aggregate (479/524 shots differ). **Owner approved 2026-11-03.** |
-| 2–5 | Not started. |
+| 2–5 | **Round of 2026-11-03, branch `ds-int`** (the owner: backend only, under today's look; PAGES ONLY; CC merged in; both ship together after an owner playtest). Wave 1 merged: `ds-pages` (home, waiting rooms, deck/clock picker out of `main.ts` into `ui/pages/`; `pages/README.md` maps all 40 pages; CC states in ui-shots via `ui-fixture.ts --cc`), `ds-comp` (13 `ui-` components, tests 940+, Storybook in `client/storybook/`), `ds-base` (Phase 2 base layer under `:where()`, guard 925). Wave 2 (pages onto components): front door, account/social/admin, cards/meta/stats, league/challenge/learn. Not this round: decks + tabletop + binder (CC-heavy), crreview, rules/help, the icon sprite. Briefs and per-stream records: `var/records/ds-round-2026-11-03-*.md`. |
 
 ### Waiting for the owner
 
