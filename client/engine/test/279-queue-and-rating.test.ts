@@ -34,7 +34,9 @@ const MAIN = readFileSync(new URL('../../ui/main.ts', import.meta.url), 'utf8');
 // design-system round (2026-11-03); the router (renderHome's screen chain) stayed
 const HOME = readFileSync(new URL('../../ui/pages/home.ts', import.meta.url), 'utf8');
 const CLOCK = readFileSync(new URL('../../ui/pages/clockpick.ts', import.meta.url), 'utf8');
-const POSTGAME = readFileSync(new URL('../../ui/postgame.ts', import.meta.url), 'utf8');
+// the post-game screen's markup is ui/pages/postgame.ts since the design-system round (2026-11-03)
+const POSTGAME = readFileSync(new URL('../../ui/postgame.ts', import.meta.url), 'utf8')
+  + readFileSync(new URL('../../ui/pages/postgame.ts', import.meta.url), 'utf8');
 
 /* ══ §1 — how the queue reads ══════════════════════════════════════════ */
 
@@ -187,10 +189,10 @@ test('BL-01 §4 the home screen shows the queue, and the post-game button is ali
 
   // ⭐ the button that was disabled from the day the post-game screen was
   // built ("not built yet — for when there are more than two of us")
-  assert.doesNotMatch(POSTGAME, /disabled[^>]*>\s*Join matchmaking queue/,
+  assert.doesNotMatch(POSTGAME, /disabled[^>]*>\s*Join matchmaking queue|label: 'Join matchmaking queue'[^)]*disabled/,
     'the post-game "Join matchmaking queue" button is still disabled — it was a placeholder for '
     + 'exactly this feature and is the natural place to want another game from');
-  assert.match(POSTGAME, /data-btn="pg-queue"/, 'and it needs a handler to be worth enabling');
+  assert.match(POSTGAME, /(data-btn="|dataBtn: ')pg-queue/, 'and it needs a handler to be worth enabling');
   assert.match(POSTGAME, /case 'pg-queue':/, 'which has to be routed');
 });
 

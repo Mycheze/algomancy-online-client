@@ -190,6 +190,7 @@ import { paintHome, saveHomeName } from './pages/home.ts';
 import { paintWaiting } from './pages/waiting.ts';
 import { paintQueue } from './pages/queue.ts';
 import { revealHtml } from './pages/lobby.ts';
+import { postGameHtml, postGameView } from './pages/postgame.ts';
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
 
 /** chess-clock snapshot the server attaches to every state broadcast (#6);
@@ -7924,7 +7925,7 @@ function renderNow(): boolean {
     ${inspectorHtml()}
     ${judgeOpen ? judgeOverlayHtml() : ''}
     ${pendingTrio ? `<div class="overlay trioover">${revealHtml(pendingTrio)}</div>` : ''}
-    ${postGame && !postGameHidden ? pg.postGameHtml(postGame) : ''}
+    ${postGame && !postGameHidden ? postGameHtml(postGameView(postGame)) : ''}
     ${glimpseNoticeHtml()}
     ${costToastHtml(costToastsUp, Date.now())}
     ${toastMsg ? `<div class="toast">${esc(toastMsg)}</div>` : ''}`;

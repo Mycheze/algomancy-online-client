@@ -24,8 +24,12 @@ import { Harness } from '../../engine/src/harness.ts';
 import { legalActions } from '../../engine/src/apply.ts';
 import { viewFor } from '../../server/view.ts';
 import { client } from './ui-driver.ts';
-import { postGameHtml, type GameOver } from '../postgame.ts';
+import type { GameOver } from '../postgame.ts';
+import { postGameHtml as drawPostGame, postGameView } from '../pages/postgame.ts';
 import type { GameState, Seat } from '../../engine/src/types.ts';
+
+// the screen's markup is pages/postgame.ts since the design-system round (2026-11-03)
+const postGameHtml = (o: GameOver): string => drawPostGame(postGameView(o));
 
 const ui = await client();
 const SEAT: Seat = 0;
@@ -64,12 +68,12 @@ function over(seed: number, payload: Record<string, unknown>): string {
 test('§1 the button sits beside Rematch where the game can be disputed, and nowhere else', () => {
   const html = over(52100, DISPUTABLE);
   assert.deepEqual(buttons(html).slice(0, 2), ['pg-rematch', 'pg-dispute'], 'Dispute game is right after Rematch');
-  assert.match(html, /data-btn="pg-dispute">Dispute game<\/button>/);
+  assert.match(html, /data-btn="pg-dispute"[^>]*>Dispute game<\/button>/);   // a button() since 2026-11-03: type="button" follows data-btn
   // the payload of a scenario or test-mode room carries no `disputable`
   assert.ok(!buttons(over(52101, OVER)).includes('pg-dispute'), 'no button where the server does not offer it');
   // pure markup: the same rule, without the client around it
   assert.doesNotMatch(postGameHtml(OVER as unknown as GameOver), /pg-dispute|Disputed/);
-  assert.match(postGameHtml({ ...DISPUTABLE, disputed: [true, false] } as unknown as GameOver), /<button disabled>Disputed<\/button>/,
+  assert.match(postGameHtml({ ...DISPUTABLE, disputed: [true, false] } as unknown as GameOver), /<button[^>]* disabled>Disputed<\/button>/,
     'once disputed, it says so and does nothing');
   assert.doesNotMatch(postGameHtml({ ...DISPUTABLE, disputed: [true, false] } as unknown as GameOver), /pg-dispute/);
   // the other seat sees its own button, not ours
