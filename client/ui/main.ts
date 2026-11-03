@@ -188,7 +188,7 @@ import { caretIn, type CaretSnap } from './pages/caret.ts';
 import { CLOCK_DEFAULT_MS, chosenClockMs } from './pages/clockpick.ts';
 import { connectingHtml } from './pages/connecting.ts';
 import { importDeck } from './pages/deckpicker.ts';
-import { paintHome, saveHomeName } from './pages/home.ts';
+import { closeHomeSheet, openHomeSheet, paintHome, saveHomeName, setHomeFormat, setHomeMode } from './pages/home.ts';
 import { paintWaiting } from './pages/waiting.ts';
 import { paintQueue } from './pages/queue.ts';
 import { revealHtml } from './pages/lobby.ts';
@@ -10080,6 +10080,13 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
     renderHome();
     return true;
   }
+  // the new home (docs/24, 2026-11-03): the Play card's tabs and switches and
+  // the sheets. Each is home state (pages/home.ts) and a repaint.
+  if (b === 'home-mode') { setHomeMode(btn.dataset['mode']); renderHome(); return true; }
+  if (b === 'home-format') { setHomeFormat(btn.dataset['format']); renderHome(); return true; }
+  if (b === 'home-els') { ui.homeFixedTrio = btn.dataset['pick'] === 'now'; renderHome(); return true; }
+  if (b === 'home-sheet') { openHomeSheet(btn.dataset['sheet']); renderHome(); return true; }
+  if (b === 'home-sheet-close') { closeHomeSheet(); renderHome(); return true; }
   if (b === 'eltoggle') {
     ui.homeFixedTrio = true;
     const el = btn.dataset['el']!;

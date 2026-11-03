@@ -1,27 +1,41 @@
-/* THE HOME SCREEN (docs/07 §2): new game / join / learn.
+/* THE HOME SCREEN (client/docs/24-redesign/, the owner's sketch of 2026-11-03).
  *
- * (There was a "Practice demo" button in this row until 2026-09-05; the
+ * One window, no page scroll: the app shell (components/app-shell.ts) holds a
+ * toolbar along the top (Decks · Cards · Metagame | the account | Learn · Test
+ * · Rules · Alerts · Report), the main area, and a bottom bar (the client's
+ * info on the left, the update log on the right). The main area is two
+ * columns: the PLAY card — Draft | Constructed, the room's settings as rows,
+ * Join a room and Create room — and three lighter cards beside it, League,
+ * Challenge and Matchmaking, each of which opens its page.
+ *
+ * Everything that used to be a fold or a band is a SHEET now (components/
+ * sheet.ts): Join a room, the Custom rules panel, the deck import, Single Card
+ * Duel, the client info and the update log. Which sheet is open is this
+ * module's state (`homeSheet`), so the home's frequent whole-page repaints
+ * (the queue poll, a friend coming online) simply draw it open again.
+ *
+ * (There was a "Practice demo" button on the home screen until 2026-09-05; the
  * owner had it removed — "It sucks". The `?demo=1` route it opened is still
  * there for the tests and the screenshot rig; it is just not offered.)
  *
- * Three cards abreast, not one 340px column. The old stack put "join with a
- * code" and the two solo modes below the fold on an ordinary window, and it
- * sat centred in the LEFT half of the board grid with the rail's width blank
- * beside it (playtest 2026-08-21). Abreast, the whole menu is one screenful
- * and each way in states what it is before it asks for anything.
- *
- * Moved out of main.ts in the design-system round, 2026-11-03, and split the
- * way docs/23 § Target structure asks: homeView() gathers the state,
+ * Split the way docs/23 § Target structure asks: homeView() gathers the state,
  * homeHtml(view) draws it and touches nothing else, paintHome() puts it on the
  * page and wires it. main.ts renderHome() is still the ROUTER — the chain of
  * "does another page own #app right now?" checks — and calls paintHome() when
  * none does.
  *
  * What is still in main.ts: the home screen's buttons (handlePregameButton:
- * eltoggle, elrandom, clockpick, newgame, joincode, deckimport*, …), because
- * they write main.ts state (`ui.homeEls`, `uiError`) and open the room.
+ * eltoggle, elrandom, clockpick, newgame, joincode, deckimport*, and the
+ * home-mode / home-format / home-els / home-sheet / home-sheet-close switches,
+ * which call the setters below), because they write main.ts state
+ * (`ui.homeEls`, `ui.homeFixedTrio`, `uiError`) and open the room.
  * TODO(ds): view/html split: move handlePregameButton here once `uiError` and
  * the element pick have a home outside main.ts's UiState.
+ *
+ * The decisions behind the layout (what moved where, what was dropped) are in
+ * var/records/ds-round-2026-11-03-home-decisions.md and the round's record
+ * ds-round-2026-11-03-home-page.md; test 1010 pins the shell's no-scroll
+ * contract.
  */
 import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
 import * as acct from '../account.ts';
@@ -32,18 +46,25 @@ import * as lg from '../league.ts';
 import * as mt from '../match.ts';
 import * as mm from '../queue.ts';
 import * as sc from '../singlecard.ts';
-import { updatesHtml, wireUpdates } from '../updates.ts';
-import { button, statusMessage } from '../components/index.ts';
+import { footHtml } from '../legal.ts';
+import * as inbox from '../inbox.ts';
+import { markUpdatesSeen, updatesListHtml, updatesUnseen, wireUpdates } from '../updates.ts';
+import { ICON_BASE } from '../assets.ts';
+import {
+  appShell, button, chip, icon, iconButton, iconButtonBadge, installSheetEsc, segmented, sheet, shellBar, statusMessage,
+} from '../components/index.ts';
 import { chosenDeck, elIcon as elIconOf, esc } from '../util.ts';
 import { caretIn, restoreCaret } from './caret.ts';
-import { chosenClockMs, clockPickHtml, clockPickView, type ClockPickView } from './clockpick.ts';
+import { clockPickHtml, clockPickView, type ClockPickView } from './clockpick.ts';
 import { customRulesHtml, customRulesView } from './customrules.ts';
-import { deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
+import { deckImportHtml, deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
 import { singleCardPickerHtml, singleCardPickerView } from './singlecard.ts';
-import { competitiveCardHtml, competitiveCardView, yourMatchesHtml, yourMatchesView } from './match.ts';
-import { queueStripHtml, queueStripView } from './queue.ts';
+import { ccDeckSelectHtml, competitiveCardView, yourMatchesHtml, yourMatchesView, type CompetitiveCardView } from './match.ts';
+import { queueGlanceHtml, queueStripView } from './queue.ts';
+import { identityBarView, type IdentityBarView } from './signin.ts';
 
 const elIcon = (name: string): string => elIconOf(name, name);
+const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
 /* The home screen's typing boxes that no state remembers. The home screen is
  * repainted whole by things the player did not do — the matchmaking count
@@ -51,6 +72,8 @@ const elIcon = (name: string): string => elIconOf(name, name);
  * and each repaint used to rebuild these four empty, mid-word, and drop the
  * focus (found 2026-11-02: all four wiped by one queue poll). Their text is
  * carried across the repaint and the caret put back (caretIn/restoreCaret).
+ * Since the redesign (2026-11-03) the room code and the deck import live in
+ * sheets; a sheet drawn open again by a repaint gets them back the same way.
  * The other boxes on the page keep their own drafts in state (the Custom rules
  * ban and filter boxes, the single-card search), so only their caret is
  * carried. test/904-home-identity-and-typing.test.ts. */
@@ -66,75 +89,79 @@ export const saveHomeName = (): void => {
   if (inp) localStorage.setItem('algoName', inp.value.trim());
 };
 
-/* ── the Constructed card's Options fold ──────────────────────────────── */
+/* ── the home's own state: which Play tab, which format, which sheet ───── */
 
-/** #191: the Constructed card's Options fold — the clock, and nothing else
- * yet. Closed by default, like Custom rules on the draft card. */
-let homeOptionsOpen = false;
+export const HOME_MODES = ['draft', 'constructed'] as const;
+export type HomeMode = typeof HOME_MODES[number];
+export const HOME_FORMATS = ['casual', 'competitive'] as const;
+export type HomeFormat = typeof HOME_FORMATS[number];
+export const HOME_SHEETS = ['join', 'info', 'updates', 'rules', 'import', 'single', 'alerts-signin'] as const;
+export type HomeSheet = typeof HOME_SHEETS[number];
 
-export interface ConstructedOptionsView {
-  /** the fold is open (it remembers being opened across repaints) */
-  open: boolean;
-  /** the bank a constructed game would get, in ms (0 = off) — the summary */
-  ms: number;
-  clock: ClockPickView;
+/** the Play card's tab and Constructed's format are REMEMBERED (legal.ts
+ * BROWSER_KEYS lists both): a constructed player should not have to switch
+ * tabs every visit. First visit: Draft, Casual. */
+const MODE_KEY = 'algoHomeMode';
+const FORMAT_KEY = 'algoHomeFormat';
+
+function stored<T extends string>(key: string, allowed: readonly T[], fallback: T): T {
+  try {
+    const v = localStorage.getItem(key);
+    return v !== null && (allowed as readonly string[]).includes(v) ? v as T : fallback;
+  } catch { return fallback; }
+}
+function store(key: string, v: string): void {
+  try { localStorage.setItem(key, v); } catch { /* storage blocked: remembered for nothing */ }
 }
 
-export function constructedOptionsHtml(v: ConstructedOptionsView): string {
-  const ms = v.ms;
-  return `<details class="fixedtrio homeoptions" data-homeoptions ${v.open ? 'open' : ''}>
-    <summary>Options <span class="dim">— clock ${ms ? `${Math.round(ms / 60_000)}m` : 'off'}</span></summary>
-    ${clockPickHtml(v.clock)}
-  </details>`;
+export const homeMode = (): HomeMode => stored(MODE_KEY, HOME_MODES, 'draft');
+export const homeFormat = (): HomeFormat => stored(FORMAT_KEY, HOME_FORMATS, 'casual');
+/** home-mode: Draft | Constructed (an unknown value changes nothing) */
+export function setHomeMode(m: string | undefined): void {
+  if ((HOME_MODES as readonly string[]).includes(m ?? '')) store(MODE_KEY, m!);
+}
+/** home-format: Casual | Competitive */
+export function setHomeFormat(f: string | undefined): void {
+  if ((HOME_FORMATS as readonly string[]).includes(f ?? '')) store(FORMAT_KEY, f!);
 }
 
-/* ── Single Card Duel, tucked under the Constructed card ──────────────── */
+/** the sheet drawn open, or null. Module state, so a repaint draws it again. */
+let homeSheet: HomeSheet | null = null;
+/** the info sheet was opened by a mouse hovering its button: it closes again
+ * when the mouse moves off it (a click or tap open stays until dismissed) */
+let sheetByHover = false;
+/** the sheet the last paint drew — to tell "just opened" from "drawn again" */
+let paintedSheet: HomeSheet | null = null;
 
-/**
- * CR D8.2 — SINGLE CARD DUEL, tucked under the Constructed card.
- *
- * The owner, 2026-09-18: a goofy thought-experiment format that should be "not
- * easy to start. But not tooo hidden" — so it is a closed disclosure at the
- * foot of Constructed rather than a card of its own, and it remembers being
- * opened (a pick repaints the home screen, and must not snap it shut).
- */
-let singleDuelOpen = false;
-
-export interface SingleDuelView {
-  open: boolean;
-  /** the card picked so far (ui/singlecard.ts), or null */
-  card: string | null;
-  /** pages/singlecard.ts singleCardPickerHtml() — a slot */
-  picker: string;
+export const openSheet = (): HomeSheet | null => homeSheet;
+/** home-sheet data-sheet=<name>. Opening the update log marks it seen. */
+export function openHomeSheet(name: string | undefined, how: 'click' | 'hover' = 'click'): boolean {
+  if (!(HOME_SHEETS as readonly string[]).includes(name ?? '')) return false;
+  homeSheet = name as HomeSheet;
+  sheetByHover = how === 'hover';
+  if (homeSheet === 'updates') markSeen();
+  return true;
+}
+/** home-sheet-close, the scrim, the ✕, Esc. True when a sheet was open. */
+export function closeHomeSheet(): boolean {
+  const was = homeSheet !== null;
+  homeSheet = null;
+  sheetByHover = false;
+  return was;
 }
 
-export function singleDuelHtml(v: SingleDuelView): string {
-  const card = v.card;
-  return `<details class="fixedtrio singleduel" data-singleduel ${v.open ? 'open' : ''}>
-    <summary>…or something sillier: <b>Single Card Duel</b></summary>
-    <p class="cardsub">Thirty copies of one card. Your opponent picks theirs blind. It rates
-      the cards, not you — see the ${button({ label: 'card ladder', variant: 'link', className: 'linkbtn', dataBtn: 'meta-ladder' })}.</p>
-    ${v.picker}
-    <button data-btn="newgame" data-mode="constructed" data-single="1" ${card ? '' : 'disabled'}>
-      ${card ? `New single card duel — ${esc(card)}` : 'pick a card first'}</button>
-  </details>`;
-}
+/** the update log's "seen" advances when its sheet OPENS (docs/24), not when the home loads */
+function markSeen(): void { markUpdatesSeen(); }
 
-function wireSingleDuel(): void {
-  const root = document.querySelector('[data-singleduel]') as HTMLDetailsElement | null;
-  root?.addEventListener('toggle', () => { singleDuelOpen = root.open; });
-  sc.wire();
-}
-
-/* ── the page ─────────────────────────────────────────────────────────── */
+/* ── the view ─────────────────────────────────────────────────────────── */
 
 /** what main.ts owns and hands in: the element pick and the last error */
 export interface HomeState {
   /** the elements picked for a fixed draft (main.ts `ui.homeEls`) */
   els: readonly string[];
-  /** the "pick the trio now" fold is open (main.ts `ui.homeFixedTrio`) */
+  /** Elements is on "Pick now" (main.ts `ui.homeFixedTrio`) */
   fixedOpen: boolean;
-  /** main.ts `uiError`: a refused New game, shown on the Live draft card */
+  /** main.ts `uiError`: a refused New game, shown above the Play card's buttons */
   error: string;
 }
 
@@ -142,200 +169,520 @@ export interface HomeState {
  * own module state (and some fetch while drawing), so they arrive as strings:
  * a story or a test passes '' or a stub. */
 export interface HomeSlots {
-  acctBar: string;        // account.ts barHtml — the identity bar
-  leagueNav: string;      // league.ts navButtonHtml
-  challengeNav: string;   // challenge.ts navButtonHtml
-  leagueBanner: string;   // league.ts homeBannerHtml — fetches while drawing
-  queueStrip: string;     // pages/queue.ts queueStripHtml — the matchmaking strip
-  yourMatches: string;    // pages/match.ts yourMatchesHtml — paused/running Competitive matches
-  customRules: string;    // pages/customrules.ts customRulesHtml, with the draft clock inside
-  competitiveCard: string; // pages/match.ts competitiveCardHtml
-  challengeCard: string;  // challenge.ts homeCardHtml — fetches while drawing
-  updates: string;        // updates.ts updatesHtml — the Recent updates band, after .homepage
+  /** league.ts homeGlanceHtml — the League card's body ('' with no season); fetches while drawing */
+  league: string;
+  /** challenge.ts homeGlanceHtml — the Challenge card's body ('' with no week); fetches while drawing */
+  challenge: string;
+  /** pages/queue.ts queueGlanceHtml — the Matchmaking card's body, with the open games' Join buttons */
+  queue: string;
+  /** inbox.ts inviteRowsHtml — the Join sheet's pending friend invites ('' when none) */
+  invites: string;
+  /** pages/match.ts yourMatchesHtml — paused/running Competitive matches ('' when none) */
+  yourMatches: string;
+  /** league.ts joinRowsHtml — league matches to play now ('' when none) */
+  leagueMatches: string;
+  /** pages/customrules.ts customRulesHtml, bare — the Custom rules sheet's body */
+  customRules: string;
+  /** pages/singlecard.ts singleCardPickerHtml — the Single Card Duel sheet's picker */
+  scpicker: string;
+  /** legal.ts footHtml — the client info sheet: buy links, the notice, credits, the legal pages */
+  info: string;
+  /** updates.ts — the update log's list */
+  updates: string;
 }
 
 export interface HomeView {
+  /** the toolbar's centre: who is signed in (pages/signin.ts identityBarView) */
+  account: IdentityBarView;
   /** the "Your name" box's value, or null when it is not drawn — signed in, or
    * a stored token still resolving (it would flash "Playing signed out") */
   nameBox: string | null;
-  /** signed in: the 🗂 My decks button */
   signedIn: boolean;
+  mode: HomeMode;
+  format: HomeFormat;
+  sheet: HomeSheet | null;
   draft: {
     /** how many elements a fixed pick wants (Custom rules may change it) */
     k: number;
     els: readonly string[];
+    /** Elements: "Pick now" (true) or "Choose in the room" */
     fixedOpen: boolean;
     /** how many element sets the 🎲 picks among */
     setCount: number;
     /** the server's verdict on the rules for a FIXED pick, when one is refused */
     fixedError: string | undefined;
-    /** …and for the plain New live draft */
+    /** …and for a room that chooses its elements in the lobby */
     customError: string | undefined;
-    /** custom rules are set: "New custom live draft" */
+    /** custom rules are set: "Create custom room" */
     custom: boolean;
+    /** the Custom rules row's summary, one entry per changed rule ([] = none) */
+    rulesSummary: readonly string[];
   };
+  /** the clock picker for the tab that is showing (Competitive's is fixed) */
+  clock: ClockPickView;
   /** the last refusal (main.ts `uiError`), or '' */
   error: string;
   deckPicker: DeckPickerView;
-  options: ConstructedOptionsView;
-  /** a deck is chosen: New constructed game is live */
+  /** a deck is chosen: Create room is live on Casual */
   hasDeck: boolean;
-  singleDuel: SingleDuelView;
+  /** Competitive: Best of, the CC-legal decks, the pick (pages/match.ts) */
+  competitive: CompetitiveCardView;
+  /** Single Card Duel: the card picked so far (ui/singlecard.ts), or null */
+  singleCard: string | null;
+  /** the League / Challenge cards open their pages (a season or a week to show) */
+  leagueLive: boolean;
+  challengeLive: boolean;
+  badges: {
+    /** the bell's unread count (inbox.ts inboxUnread) — Alerts */
+    alerts: number;
+    /** invites + your matches + league matches to play — Join a room */
+    join: number;
+    /** update-log entries since it was last opened — Updates */
+    updates: number;
+  };
   slots: HomeSlots;
 }
 
 /** Gather everything the home screen shows. The slot calls run in the order
- * the page used to call them while drawing (some of them fetch). */
+ * the page draws them (some of them fetch). */
 export function homeView(st: HomeState): HomeView {
   const user = acct.currentUser();
   const name = user ? user.username : (localStorage.getItem('algoName') ?? '');
   const deck = chosenDeck();
+  const mode = homeMode();
   // BL-43: the Custom rules panel decides how many elements a fixed pick wants,
   // and previews the server's verdict on the rules for both Create buttons
   const k = crp.elementCount();
   const fixedPick = st.fixedOpen && st.els.length === k ? st.els : null;
   const customVerdict = crp.verdict(null);
   const fixedVerdict = crp.verdict(st.els.length === k ? st.els : null);
-  const acctBar = acct.barHtml();
-  const leagueNav = lg.navButtonHtml();
-  const challengeNav = chal.navButtonHtml();
-  const leagueBanner = lg.homeBannerHtml();
-  const queueStrip = queueStripHtml(queueStripView());
+  const rulesView = customRulesView(fixedPick);
+  const signedIn = !!acct.token();
+  // the cards beside Play, and what waits behind Join a room (the league and
+  // challenge answers are asked for here, once per token, as the banner did)
+  const leagueLive = lg.hasLeague();
+  const league = lg.homeGlanceHtml();
+  const challengeLive = chal.hasChallenge();
+  const challenge = chal.homeGlanceHtml();
+  const queue = queueGlanceHtml(queueStripView());
+  const invites = inbox.inviteRowsHtml();
   const yourMatches = yourMatchesHtml(yourMatchesView());
-  const setCount = crp.setCount();
-  const customRules = customRulesHtml(customRulesView(fixedPick, clockPickHtml(clockPickView('draft'))));
-  const deckPicker = deckPickerView();
-  const options: ConstructedOptionsView = {
-    open: homeOptionsOpen, ms: chosenClockMs('constructed'), clock: clockPickView('constructed'),
-  };
-  const singleDuel: SingleDuelView = { open: singleDuelOpen, card: sc.chosen(), picker: singleCardPickerHtml(singleCardPickerView()) };
-  const competitiveCard = competitiveCardHtml(competitiveCardView(!!acct.token(), acct.token() ? dk.competitiveDecks() : null));
-  const challengeCard = chal.homeCardHtml();
-  const updates = updatesHtml();
+  const leagueMatches = lg.joinRowsHtml();
+  const join = inbox.inviteCount() + mt.myMatchCount() + lg.joinCount();
   return {
+    account: identityBarView(user, acct.resolvingUser()),
     nameBox: user || acct.resolvingUser() ? null : name,
     signedIn: !!user,
+    mode,
+    format: homeFormat(),
+    sheet: homeSheet,
     draft: {
-      k, els: st.els, fixedOpen: st.fixedOpen, setCount,
+      k, els: st.els, fixedOpen: st.fixedOpen, setCount: crp.setCount(),
       fixedError: fixedVerdict.error, customError: customVerdict.error, custom: !!customVerdict.rules,
+      rulesSummary: rulesView.active ? rulesView.summary : [],
     },
+    clock: clockPickView(mode),
     error: st.error,
-    deckPicker,
-    options,
+    deckPicker: deckPickerView(),
     hasDeck: !!deck,
-    singleDuel,
+    competitive: competitiveCardView(signedIn, signedIn ? dk.competitiveDecks() : null),
+    singleCard: sc.chosen(),
+    leagueLive, challengeLive,
+    badges: { alerts: inbox.inboxUnread(), join, updates: updatesUnseen() },
     slots: {
-      acctBar, leagueNav, challengeNav, leagueBanner, queueStrip, yourMatches,
-      customRules, competitiveCard, challengeCard, updates,
+      league, challenge, queue, invites, yourMatches, leagueMatches,
+      customRules: customRulesHtml(rulesView, { bare: true }),
+      scpicker: singleCardPickerHtml(singleCardPickerView()),
+      info: footHtml(),
+      updates: updatesListHtml(),
     },
   };
 }
 
+/* ── the pieces ───────────────────────────────────────────────────────── */
+
+/** a sheet opener: `home-sheet` with the sheet's name */
+const opens = (name: HomeSheet): { dataBtn: string; attrs: { 'data-sheet': string } } =>
+  ({ dataBtn: 'home-sheet', attrs: { 'data-sheet': name } });
+
+/** one settings row of the Play card: the label on the left, the control on the right */
+function row(label: string, controlHtml: string, hintHtml = ''): string {
+  return `<div class="homerow"><div class="homerowlabel">${esc(label)}</div>
+    <div class="homerowctl">${controlHtml}${hintHtml ? `<div class="homerowhint">${hintHtml}</div>` : ''}</div></div>`;
+}
+
+/** the toolbar's centre: the account (avatar, name, record), or Sign in */
+function accountHtml(a: IdentityBarView): string {
+  const me = a.me;
+  if (!me && a.resolving) {
+    // the same shape the signed-out button is, so nothing jumps when it resolves
+    return `<div class="homeacct busy" aria-busy="true"><span class="homeav">${icon('account')}</span>
+      <span class="homeaccttext"><span class="homeacctname">Signing in…</span></span></div>`;
+  }
+  if (!me) {
+    return `<button class="homeacct out" data-btn="acct-open-auth" title="log in or make an account — signed out, nothing is recorded">
+      <span class="homeav">${icon('signin')}</span>
+      <span class="homeaccttext"><span class="homeacctname">Sign in</span><span class="homeacctrec">playing as a guest</span></span></button>`;
+  }
+  const record = me.games
+    ? `${me.wins}W–${me.losses}L${me.unresolved ? ` · ${me.unresolved} unrecorded` : ''}`
+    : 'no games yet';
+  const av = me.favoriteElement
+    ? `<span class="homeav el ${esc(me.favoriteElement)}"><img src="${ICON_BASE}${esc(me.favoriteElement)}.webp" alt="" title="favorite element: ${esc(me.favoriteElement)}"></span>`
+    : `<span class="homeav">${esc(me.username.charAt(0).toUpperCase())}</span>`;
+  return `<button class="homeacct in" data-btn="acct-open-profile" title="your profile, stats and achievements">
+    ${av}<span class="homeaccttext"><span class="homeacctname">${esc(me.username)}</span>
+    <span class="homeacctrec">${record}${me.streak >= 2 ? ` · 🔥${me.streak}` : ''}</span></span></button>`;
+}
+
+/** the element chips and the die, for "Pick now" */
+function elementPickHtml(d: HomeView['draft']): string {
+  return `<div class="elrow homeels">${ALL_ELEMENTS.map(el =>
+    `<button class="elchip ${el}${d.els.includes(el) ? ' on' : ''}" data-btn="eltoggle" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
+    ${button({ label: '🎲', variant: 'icon', title: `pick at random — any of the ${d.setCount}`, dataBtn: 'elrandom' })}
+  </div>`;
+}
+
+/** the Create button: the page's one gold action */
+const create = (label: string, p: { dataBtn: string; attrs?: Record<string, string | number | boolean | undefined>; disabled?: boolean; title?: string }): string =>
+  button({ label, variant: 'action', className: 'homecreate', dataBtn: p.dataBtn, attrs: p.attrs, disabled: p.disabled, title: p.title });
+
+function draftRowsHtml(v: HomeView): { rows: string; go: string } {
+  const d = v.draft, k = d.k;
+  const picked = d.els.length === k;
+  const rows = row('Clock', clockPickHtml(v.clock, { look: 'segmented' }))
+    + row('Elements', segmented({
+      ariaLabel: 'Elements', size: 'sm',
+      options: [
+        { label: 'Choose in the room', value: 'room', on: !d.fixedOpen, dataBtn: 'home-els', attrs: { 'data-pick': 'room' } },
+        { label: 'Pick now', value: 'now', on: d.fixedOpen, dataBtn: 'home-els', attrs: { 'data-pick': 'now' } },
+      ],
+    }) + (d.fixedOpen ? elementPickHtml(d) : ''),
+    d.fixedOpen ? '' : `You both pick the ${k === 3 ? 'three' : k} elements in the room.`)
+    + row('Custom rules', `<div class="homerules"><span class="homerulessum">${d.rulesSummary.length
+      ? `<b>${esc(d.rulesSummary.join(' · '))}</b>` : '<span class="dim">None — the standard game</span>'}</span>
+      ${button({ label: 'Change…', size: 'sm', ...opens('rules') })}</div>`);
+  const custom = d.custom ? 'Create custom room' : 'Create room';
+  const go = d.fixedOpen
+    ? create(picked ? `${custom} · ${d.els.map(cap).join(' + ')}` : `Pick ${k} elements (${d.els.length}/${k})`, {
+      dataBtn: 'newgame', attrs: { 'data-mode': 'draft', 'data-els': '1' },
+      disabled: !picked || !!d.fixedError, title: picked && d.fixedError ? d.fixedError : undefined,
+    })
+    : create(custom, { dataBtn: 'newgame', attrs: { 'data-mode': 'draft' }, disabled: !!d.customError, title: d.customError });
+  return { rows, go };
+}
+
+function constructedRowsHtml(v: HomeView): { rows: string; go: string } {
+  const format = row('Format', segmented({
+    ariaLabel: 'Format', size: 'sm',
+    options: [
+      { label: 'Casual', value: 'casual', on: v.format === 'casual', dataBtn: 'home-format', attrs: { 'data-format': 'casual' } },
+      { label: 'Competitive', value: 'competitive', on: v.format === 'competitive', dataBtn: 'home-format', attrs: { 'data-format': 'competitive' } },
+    ],
+  }), v.format === 'competitive' ? 'A sideboard of up to 7, swapped between games. Players take each step in turn.' : '');
+  if (v.format === 'competitive') {
+    const c = v.competitive;
+    if (!c.signedIn) {
+      // it says so instead of disappearing: a match hangs off two accounts
+      return {
+        rows: format + `<div class="homeneedacct"><p>Competitive matches need an account, so the result can be kept.</p>
+          ${button({ label: 'Sign in', variant: 'action', dataBtn: 'acct-open-auth' })}</div>`,
+        go: '',
+      };
+    }
+    const rows = format
+      + row('Best of', segmented({
+        ariaLabel: 'Best of', size: 'sm',
+        options: ([1, 3] as const).map(n => ({
+          label: `${n} game${n === 1 ? '' : 's'}`, value: String(n), on: c.bestOf === n, dataBtn: 'cc-bo', attrs: { 'data-bo': n },
+        })),
+      }))
+      + row('Clock', '<span class="homefixed">45 minutes each, for the whole match</span>')
+      + row('Deck', ccDeckSelectHtml(c.decks, c.pick));
+    return { rows, go: create(c.pick ? 'Create match' : 'Pick a deck first', { dataBtn: 'cc-new', disabled: !c.pick }) };
+  }
+  const importBtn = v.deckPicker.signedIn ? '' : button({ label: 'Import a deck…', variant: 'link', className: 'homeimport', ...opens('import') });
+  const rows = format
+    + row('Clock', clockPickHtml(v.clock, { look: 'segmented' }))
+    + row('Deck', deckPickerHtml(v.deckPicker, { importHtml: importBtn }))
+    + `<div class="homesilly">${button({ labelHtml: '…or something sillier: <b>Single Card Duel</b>', variant: 'link', className: 'homesillybtn', ...opens('single') })}</div>`;
+  return {
+    rows,
+    go: create(v.hasDeck ? 'Create room' : 'Pick a deck first', { dataBtn: 'newgame', attrs: { 'data-mode': 'constructed' }, disabled: !v.hasDeck }),
+  };
+}
+
+function playHtml(v: HomeView): string {
+  const { rows, go } = v.mode === 'draft' ? draftRowsHtml(v) : constructedRowsHtml(v);
+  const join = button({
+    labelHtml: `Join a room${v.badges.join > 0 ? ` ${chip({ label: String(v.badges.join), tone: 'accent', shape: 'pill', solid: true, className: 'homejoinbadge' })}` : ''}`,
+    className: 'homejoin', ...opens('join'),
+    title: 'a room code, a friend’s invite, a paused match or a league match',
+  });
+  return `<section class="homeplay" aria-labelledby="home-play-h">
+    <div class="homeplayhead">
+      <h1 id="home-play-h">Play</h1>
+      ${segmented({
+        ariaLabel: 'Game type', full: true,
+        options: [
+          { label: 'Draft', value: 'draft', on: v.mode === 'draft', dataBtn: 'home-mode', attrs: { 'data-mode': 'draft' } },
+          { label: 'Constructed', value: 'constructed', on: v.mode === 'constructed', dataBtn: 'home-mode', attrs: { 'data-mode': 'constructed' } },
+        ],
+      })}
+      <p class="homeplaysub">${v.mode === 'draft'
+        ? 'Draft from shared packs, then play with what you drafted.'
+        : 'Bring a deck you built: 30 cards, at most 2 of each.'}</p>
+    </div>
+    <div class="homerows">${rows}</div>
+    <div class="homeplayfoot">
+      ${v.nameBox === null
+        ? ''
+        : `<label class="homename">Your name <input id="h-name" maxlength="24" value="${esc(v.nameBox)}" placeholder="(optional)"></label>`}
+      ${v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''}
+      <div class="homeactions">${join}${go}</div>
+    </div>
+  </section>`;
+}
+
+/** one of the three cards beside Play: the whole card opens its page (a
+ * stretched button), and buttons inside it (Matchmaking's Join) still work */
+function sideCardHtml(p: { kind: string; title: string; iconName: 'league' | 'challenge' | 'matchmaking'; dataBtn: string;
+  live: boolean; bodyHtml: string; empty: string; open: string }): string {
+  return `<section class="homeside homeside--${p.kind}${p.live ? '' : ' off'}" aria-label="${esc(p.title)}">
+    <h2 class="homesidetitle">${icon(p.iconName)}<span>${esc(p.title)}</span>${p.live ? icon('chevron-right') : ''}</h2>
+    <div class="homesidebody">${p.bodyHtml || `<p class="homesideempty">${esc(p.empty)}</p>`}</div>
+    ${p.live ? `<button class="homesideopen" data-btn="${esc(p.dataBtn)}" aria-label="${esc(p.open)}"></button>` : ''}
+  </section>`;
+}
+
+function sideHtml(v: HomeView): string {
+  const s = v.slots;
+  return `<div class="homesides">
+    ${sideCardHtml({ kind: 'league', title: 'League', iconName: 'league', dataBtn: 'nav-league', live: v.leagueLive,
+      bodyHtml: s.league, empty: v.leagueLive ? 'Seasons, standings and your matches.' : 'No league running right now.', open: 'Open the League page' })}
+    ${sideCardHtml({ kind: 'challenge', title: 'Challenge', iconName: 'challenge', dataBtn: 'nav-challenge', live: v.challengeLive,
+      bodyHtml: s.challenge, empty: v.challengeLive ? 'Past weeks and their boards.' : 'No challenge this week.', open: 'Open the weekly challenge' })}
+    ${sideCardHtml({ kind: 'queue', title: 'Matchmaking', iconName: 'matchmaking', dataBtn: 'queue-open', live: true,
+      bodyHtml: s.queue, empty: 'Find an opponent.', open: 'Open matchmaking' })}
+  </div>`;
+}
+
+function bottomHtml(v: HomeView): string {
+  const n = v.badges.updates;
+  return shellBar({
+    className: 'homebottom',
+    startHtml: iconButton({ label: 'Algomancy Online (Unofficial Client)', icon: 'info', layout: 'inline', className: 'homeinfo',
+      on: v.sheet === 'info', ...opens('info'), title: 'about this client: the game, the notice, buying it, privacy' }),
+    endHtml: iconButton({ label: n > 0 ? `Updates · ${n} new` : 'Updates', icon: 'updates', layout: 'inline', badge: n > 0 ? 'dot' : undefined,
+      className: 'homeupdates', on: v.sheet === 'updates', ...opens('updates'),
+      title: n > 0 ? `${n} new since you last looked` : 'what changed, newest first' }),
+  });
+}
+
+/* ── the sheets ───────────────────────────────────────────────────────── */
+
+function joinBody(v: HomeView): string {
+  const s = v.slots;
+  const sec = (label: string, html: string): string =>
+    html ? `<section class="homejoinsec"><div class="zonelabel">${esc(label)}</div>${html}</section>` : '';
+  // yourMatchesHtml carries its own "Your matches" heading
+  const waiting = sec('Invites', s.invites) + (s.yourMatches ? `<section class="homejoinsec">${s.yourMatches}</section>` : '')
+    + sec('League matches', s.leagueMatches);
+  return `<label class="homecodelabel" for="h-code">Room code</label>
+    <div class="joinrow homecode">
+      <input id="h-code" placeholder="CODE" maxlength="8" autocapitalize="characters"
+        spellcheck="false" style="text-transform:uppercase">
+      ${button({ label: 'Join', variant: 'action', dataBtn: 'joincode' })}
+    </div>
+    ${waiting || '<p class="homejoinnone">Nothing waiting for you — ask for a code.</p>'}`;
+}
+
+/** each sheet's id on the page (the root's; its title is `<id>-title`) */
+const SHEET_IDS: Record<HomeSheet, string> = {
+  join: 'home-join', info: 'home-info', updates: 'home-updates', rules: 'home-rules', import: 'home-import',
+  single: 'home-single', 'alerts-signin': 'home-alerts',
+};
+
+function sheetHtml(v: HomeView): string {
+  const s = v.slots;
+  const base = { open: true, dismissBtn: 'home-sheet-close', attrs: { 'data-home-sheet': v.sheet ?? '' } } as const;
+  switch (v.sheet) {
+    case 'join':
+      return sheet({ ...base, id: SHEET_IDS.join, title: 'Join a room', className: 'homesheet', bodyHtml: joinBody(v) });
+    case 'rules':
+      return sheet({ ...base, id: SHEET_IDS.rules, title: 'Custom rules', width: 'lg', className: 'homesheet',
+        bodyHtml: `<p class="homesheetnote">A custom game counts toward no stats or rating. The clock is not a custom rule.</p>${s.customRules}`,
+        footerHtml: button({ label: 'Done', variant: 'action', dataBtn: 'home-sheet-close' }) });
+    case 'import':
+      return sheet({ ...base, id: SHEET_IDS.import, title: 'Import a deck', className: 'homesheet',
+        bodyHtml: `<p class="homesheetnote">An algomancer.cc deck link, or a pasted list. Sign in to keep decks of your own.</p>
+          ${deckImportHtml()}
+          ${v.deckPicker.msg ? statusMessage({ tone: 'note', className: 'deckmsg', text: v.deckPicker.msg }) : ''}` });
+    case 'single':
+      return sheet({ ...base, id: SHEET_IDS.single, title: 'Single Card Duel', className: 'homesheet singleduel',
+        bodyHtml: `<p class="cardsub">Thirty copies of one card. Your opponent picks theirs blind. It rates
+          the cards, not you — see the ${button({ label: 'card ladder', variant: 'link', className: 'linkbtn', dataBtn: 'meta-ladder' })}.</p>
+          ${s.scpicker}`,
+        footerHtml: create(v.singleCard ? `Create duel · ${v.singleCard}` : 'Pick a card first', {
+          dataBtn: 'newgame', attrs: { 'data-mode': 'constructed', 'data-single': '1' }, disabled: !v.singleCard,
+        }) });
+    case 'info':
+      return sheet({ ...base, id: SHEET_IDS.info, title: 'Algomancy Online (Unofficial Client)', width: 'lg',
+        placement: 'anchor-bottom-left', className: 'homesheet homeinfosheet', bodyHtml: s.info });
+    case 'updates':
+      return sheet({ ...base, id: SHEET_IDS.updates, title: 'Updates', placement: 'anchor-bottom-right', width: 'lg',
+        className: 'homesheet homeupdsheet', bodyHtml: s.updates });
+    case 'alerts-signin':
+      return sheet({ ...base, id: SHEET_IDS['alerts-signin'], title: 'Alerts', width: 'sm', placement: 'anchor-top-right', className: 'homesheet',
+        bodyHtml: '<p>Sign in to get friend invites, match alerts and league notices here.</p>',
+        footerHtml: button({ label: 'Sign in', variant: 'action', dataBtn: 'acct-open-auth' }) });
+    default:
+      return '';
+  }
+}
+
 /** The home screen's markup. Pure: no DOM, no globals, no module state —
- * everything it shows comes in through `v`. The Recent updates band is drawn
- * AFTER .homepage, never inside it (test 323 §5). */
+ * everything it shows comes in through `v`. The root is the app shell, with
+ * `homepage` as its LAST class: report.ts names the page from the last class
+ * of #app's first element (test 287), and the layers hide their own pill, bell
+ * and footer when `#app > .homepage` is on screen. */
 export function homeHtml(v: HomeView): string {
-  const s = v.slots, d = v.draft;
-  const k = d.k;
-  return `<div class="homepage">
-    <div class="homehead">
-      <h1 class="homelogo">ALGOMANCY</h1>
-      <div class="homeident">
-        ${v.nameBox === null
-          ? ''
-          : `<label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(v.nameBox)}" placeholder="(optional)"></label>`}
-        ${s.acctBar}
-        ${v.signedIn ? button({ label: '🗂 My decks', className: 'homedecks', dataBtn: 'deck-openpage' }) : ''}
-        ${button({ label: '📖 How to play', className: 'homedecks', attrs: { 'data-help': 'rules' } })}
-        ${button({ label: '🔍 Cards', className: 'homedecks', dataBtn: 'cards-openpage' })}
-        ${button({ label: '🏆 Metagame', className: 'homedecks', dataBtn: 'meta-openpage' })}
-        ${s.leagueNav}
-        ${s.challengeNav}
-      </div>
-    </div>
+  // the toolbar: Decks Cards Metagame · the account · Learn Test Rules Alerts Report
+  const alerts = v.signedIn
+    ? iconButton({ label: 'Alerts', icon: 'alerts', badge: v.badges.alerts, className: 'homealerts', attrs: { 'data-inbox': 'bell' },
+      title: 'friend invites, match alerts and league notices' })
+    : iconButton({ label: 'Alerts', icon: 'alerts', className: 'homealerts', ...opens('alerts-signin'), on: v.sheet === 'alerts-signin' });
+  const top = shellBar({
+    className: 'hometools',
+    startHtml: iconButton({ label: 'Decks', icon: 'decks', dataBtn: 'deck-openpage', title: 'your decks: build, import, export' })
+      + iconButton({ label: 'Cards', icon: 'cards', dataBtn: 'cards-openpage', title: 'every card, with a search' })
+      + iconButton({ label: 'Metagame', icon: 'stats', dataBtn: 'meta-openpage', title: 'published decks, card stats, the card duel ladder' }),
+    centerHtml: accountHtml(v.account),
+    endHtml: iconButton({ label: 'Learn', icon: 'learn', attrs: { 'data-learn': 'menu' }, title: 'Learn to Play: lessons against a bot' })
+      // test mode (ui/sandbox.ts): its click handler writes "dealing…" or what
+      // went wrong into the [data-sbx-label] span — a small note under the
+      // button — so the icon and caption are never overwritten
+      + iconButton({ label: 'Test', iconHtml: `${icon('test')}<span class="homesbxnote" data-sbx-label></span>`, attrs: { 'data-sbx': 'open' },
+        title: 'test mode: a solo sandbox — any card, any mana, 1000 life — and the rules still apply' })
+      + iconButton({ label: 'Rules', icon: 'rules', attrs: { 'data-help': 'rules' }, title: 'how to play: the rules, the rulebook, the interface' })
+      + alerts
+      + iconButton({ label: 'Report', icon: 'report', attrs: { 'data-report': 'open' }, title: 'report a bug or say something' }),
+  });
+  return appShell({
+    className: 'homepage',
+    topHtml: top,
+    mainHtml: `<div class="homemain">${playHtml(v)}${sideHtml(v)}</div>${sheetHtml(v)}`,
+    bottomHtml: bottomHtml(v),
+  });
+}
 
-    ${s.leagueBanner}
+/* ── painting and wiring ──────────────────────────────────────────────── */
 
-    ${s.queueStrip}
+/** the last pointer that pressed anything: a finger, a pen or a mouse */
+let lastPointer = 'mouse';
+let installed = false;
+/** the rerender the document-level listeners call (main.ts renderHome) */
+let homeRerender: (() => void) | null = null;
 
-    ${s.yourMatches}
+/** Buttons inside an open sheet that keep it open: the sheet's own controls.
+ * Anything else in a sheet leads somewhere — another page (the card ladder, a
+ * paused match), a layer (About, Privacy …) — and closes the sheet first, so
+ * coming back to home does not find it still up, and a layer opened from the
+ * info sheet is not drawn UNDER it. */
+const KEEPS_SHEET = /^(home-|cr-|sc-|deckimport|joincode$|newgame$)/;
 
-    <div class="homegrid">
-      <div class="homecard offer">
-        <h2>Live draft</h2>
-        <p class="cardsub">Draft from shared packs, then play. You pick the ${k === 3 ? 'three' : k}
-          elements together once you are both in the room.</p>
-        <details class="fixedtrio" ${d.fixedOpen ? 'open' : ''}>
-          <summary>…or pick the ${k === 3 ? 'trio' : 'elements'} now and skip the lobby</summary>
-          <div class="elrow">${ALL_ELEMENTS.map(el =>
-            `<button class="elchip ${el}${d.els.includes(el) ? ' on' : ''}" data-btn="eltoggle" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
-            ${button({ label: '🎲', variant: 'icon', title: `pick at random — any of the ${d.setCount}`, dataBtn: 'elrandom' })}
-          </div>
-          <button data-btn="newgame" data-mode="draft" data-els="1" ${d.els.length === k && !d.fixedError ? '' : 'disabled'}
-            ${d.fixedError && d.els.length === k ? `title="${esc(d.fixedError)}"` : ''}>
-            ${d.els.length === k ? `Start with ${d.els.join(' + ')}` : `pick ${k} of the ${ALL_ELEMENTS.length} (${d.els.length}/${k})`}</button>
-        </details>
-        ${s.customRules}
-        <div class="spacer"></div>
-        ${v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''}
-        <button class="cta primary" data-btn="newgame" data-mode="draft" ${d.customError ? `disabled title="${esc(d.customError)}"` : ''}>
-          ${d.custom ? 'New custom live draft' : 'New live draft'}</button>
-      </div>
+function installHomeListeners(): void {
+  if (installed || typeof document === 'undefined' || typeof document.addEventListener !== 'function') return;
+  installed = true;
+  document.addEventListener('pointerdown', e => { lastPointer = (e as PointerEvent).pointerType || 'mouse'; }, true);
+  // capture: before the layers' own capture listeners act on the click and
+  // before main.ts's delegator repaints
+  document.addEventListener('click', e => {
+    if (!homeSheet) return;
+    const t = e.target as HTMLElement | null;
+    const hit = t?.closest?.('[data-btn], [data-legal], [data-help], [data-learn], [data-report], [data-inbox]') as HTMLElement | null;
+    if (!hit) return;
+    // inside an open sheet: its root carries data-home-sheet (sheetHtml)
+    if (!hit.closest('[data-home-sheet]')) return;
+    const b = hit.dataset['btn'];
+    if (b !== undefined && KEEPS_SHEET.test(b)) return;
+    if (hit.dataset['inbox'] === 'decline') return;
+    closeHomeSheet();
+    // a data-btn's own handler repaints (or navigates); a layer button opens
+    // its layer and nothing repaints #app, so take the sheet down here
+    if (b === undefined) homeRerender?.();
+  }, true);
+  // Esc closes the open sheet — only while the home screen is what #app shows
+  installSheetEsc(document, () => {
+    if (!homeSheet || !document.getElementById(SHEET_IDS[homeSheet])) return false;
+    closeHomeSheet();
+    homeRerender?.();
+    return true;
+  });
+}
 
-      <div class="homecard offer deckpicker">
-        <h2>Constructed</h2>
-        <p class="cardsub">A deck you built: 30 cards, max 2 of each.</p>
-        ${deckPickerHtml(v.deckPicker)}
-        ${constructedOptionsHtml(v.options)}
-        <div class="spacer"></div>
-        <button class="cta primary" data-btn="newgame" data-mode="constructed" ${v.hasDeck ? '' : 'disabled'}>
-          New constructed game${v.hasDeck ? '' : ' — pick a deck first'}</button>
-        ${singleDuelHtml(v.singleDuel)}
-      </div>
+/** the info sheet opens on a MOUSE resting on its button (a finger's tap is a
+ * click), and a sheet opened that way closes when the mouse leaves it */
+function wireInfoHover(app: HTMLElement): void {
+  const btn = app.querySelector('.homeinfo') as HTMLElement | null;
+  if (!btn || typeof btn.addEventListener !== 'function') return;
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  btn.addEventListener('pointerenter', e => {
+    if ((e as PointerEvent).pointerType !== 'mouse' || homeSheet) return;
+    timer = setTimeout(() => { timer = null; if (!homeSheet && openHomeSheet('info', 'hover')) homeRerender?.(); }, 250);
+  });
+  btn.addEventListener('pointerleave', () => { if (timer) { clearTimeout(timer); timer = null; } });
+  if (homeSheet !== 'info' || !sheetByHover) return;
+  const scrim = app.querySelector('#home-info .ui-sheet__scrim') as HTMLElement | null;
+  const panel = app.querySelector('#home-info .ui-sheet__panel') as HTMLElement | null;
+  scrim?.addEventListener('pointermove', e => {
+    const pe = e as PointerEvent;
+    if (pe.pointerType !== 'mouse' || !panel) return;
+    // the mouse is free to cross from the button up to the panel: the box
+    // around the two of them is "still hovering"
+    const a = btn.getBoundingClientRect(), b = panel.getBoundingClientRect();
+    const inside = pe.clientX >= Math.min(a.left, b.left) && pe.clientX <= Math.max(a.right, b.right)
+      && pe.clientY >= Math.min(a.top, b.top) && pe.clientY <= Math.max(a.bottom, b.bottom);
+    if (!inside) { closeHomeSheet(); homeRerender?.(); }
+  });
+}
 
-      ${s.competitiveCard}
-
-      <div class="homecard">
-        <h2>Join a game</h2>
-        <p class="cardsub">Enter the room code you were sent.</p>
-        <div class="joinrow">
-          <input id="h-code" placeholder="CODE" maxlength="8" autocapitalize="characters"
-            spellcheck="false" style="text-transform:uppercase">
-          ${button({ label: 'Join', dataBtn: 'joincode' })}
-        </div>
-        <div class="spacer"></div>
-        <div class="homesep">
-          <div class="zonelabel">On your own</div>
-          <div class="homesolo">
-            ${button({ label: 'Learn to play', attrs: { 'data-learn': 'menu' } })}
-          </div>
-        </div>
-      </div>
-      ${s.challengeCard}
-    </div>
-
-    <p class="homefoot">To play a friend, start a game and invite them, or send them the code.</p>
-  </div>
-  ${s.updates}`;
+/** The Alerts and Join badges, patched in place when the inbox's counts move
+ * (no whole-page repaint for a count). */
+function patchHomeBadges(alerts: number, join: number): void {
+  const bell = document.querySelector('#app > .homepage .homealerts .ui-icon-button__icon');
+  if (bell) {
+    bell.querySelector('.ui-icon-button__badge')?.remove();
+    bell.insertAdjacentHTML('beforeend', iconButtonBadge(alerts));
+  }
+  const joinBtn = document.querySelector('#app > .homepage .homejoin');
+  if (joinBtn) {
+    joinBtn.querySelector('.homejoinbadge')?.remove();
+    if (join > 0) joinBtn.insertAdjacentHTML('beforeend', ` ${chip({ label: String(join), tone: 'accent', shape: 'pill', solid: true, className: 'homejoinbadge' })}`);
+  }
 }
 
 /** Paint the home screen into `app` and wire it. `rerender` is main.ts's
  * renderHome — the router, which comes back here when no other page owns #app. */
 export function paintHome(app: HTMLElement, st: HomeState, rerender: () => void): void {
+  homeRerender = rerender;
+  installHomeListeners();
   const typed = HOME_TYPED.map(id => (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null)?.value);
   const pasteOpen = (document.querySelector('.homepage .deckpaste') as HTMLDetailsElement | null)?.open ?? false;
   const caret = caretIn(HOME_CARET);
   app.innerHTML = homeHtml(homeView(st));
+  const justOpened = homeSheet !== paintedSheet ? homeSheet : null;
+  paintedSheet = homeSheet;
   const codeInput = document.getElementById('h-code') as HTMLInputElement | null;
   codeInput?.addEventListener('keydown', e => {
     if (e.key === 'Enter') (document.querySelector('[data-btn="joincode"]') as HTMLElement).click();
   });
   wireDeckPicker(rerender);
-  mt.wireDeckSelect(rerender);   // docs/22 §6.1: the Competitive card's picker
-  // docs/22 §5.6: a paused or running match is always one button away
+  mt.wireDeckSelect(rerender);   // docs/22 §6.1: Competitive's deck picker
+  // docs/22 §5.6: a paused or running match is always one button away (the Join sheet)
   mt.loadMyMatches(acct.token() ? acct.authHeaders(false) : null, rerender);
-  crp.wirePanel();   // BL-43
-  wireSingleDuel();  // CR D8.2
+  crp.wirePanel();   // BL-43 (the Custom rules sheet)
+  sc.wire();         // CR D8.2 (the Single Card Duel sheet)
   // what was typed, and where, survives the repaint (HOME_TYPED)
   HOME_TYPED.forEach((id, i) => {
     const box = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null;
@@ -343,9 +690,18 @@ export function paintHome(app: HTMLElement, st: HomeState, rerender: () => void)
   });
   if (pasteOpen) { const d = document.querySelector('.homepage .deckpaste') as HTMLDetailsElement | null; if (d) d.open = true; }
   restoreCaret(caret);
-  const opts = document.querySelector('[data-homeoptions]') as HTMLDetailsElement | null;
-  opts?.addEventListener('toggle', () => { homeOptionsOpen = opts.open; });   // #191
+  // a sheet that holds a text box hands it the focus as it opens — with a
+  // mouse; a finger would get the on-screen keyboard over the sheet
+  if (justOpened === 'join' && lastPointer === 'mouse') codeInput?.focus?.();
+  wireInfoHover(app);
   wireUpdates();
+  // the inbox's counts move on its own poll: badge them in place, no repaint
+  // for a count — but an open Join sheet lists the invites, so it is redrawn
+  inbox.onInboxChange(() => {
+    if (!document.getElementById(SHEET_IDS.join) && !document.querySelector('#app > .homepage')) return;
+    if (homeSheet === 'join') { homeRerender?.(); return; }
+    patchHomeBadges(inbox.inboxUnread(), inbox.inviteCount() + mt.myMatchCount() + lg.joinCount());
+  });
   // BL-01: the at-a-glance count. Started HERE rather than at boot because
   // this is the only screen that shows it, and an idle tab on a board should
   // not be asking the server who is queueing every five seconds. Idempotent.

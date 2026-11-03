@@ -104,8 +104,11 @@ function interfaceFields(src: string, name: string): string[] {
 }
 
 /** every `.ts` directly in ui/ — the browser's own storage lives in these */
-const uiSources = (): string[] =>
-  fs.readdirSync(UI_DIR).filter(f => f.endsWith('.ts')).map(f => path.join(UI_DIR, f));
+// ui/ and ui/pages/: since the design-system round (2026-11-03) a page module
+// can keep a preference of its own (the home's Play tab, pages/home.ts), and a
+// sweep of ui/ alone did not see it
+const uiSources = (): string[] => [UI_DIR, path.join(UI_DIR, 'pages')].flatMap(d =>
+  fs.readdirSync(d).filter(f => f.endsWith('.ts')).map(f => path.join(d, f)));
 
 /** every `algo…` key this client puts in the browser's local storage */
 function browserKeysInSource(): string[] {

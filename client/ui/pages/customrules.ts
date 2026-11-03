@@ -33,7 +33,7 @@ export function customRulesView(fixedEls: readonly string[] | null, extra = ''):
 }
 
 /** The panel. Pure: everything comes in through `v` (customRulesView). */
-export function customRulesHtml(v: CustomRulesView): string {
+export function customRulesHtml(v: CustomRulesView, o: { bare?: boolean } = {}): string {
   const { active, rules } = v;
   const stepper = (k: DealKnob): string => {
     const [lo, hi] = DEAL_BOUNDS[k];
@@ -43,10 +43,16 @@ export function customRulesHtml(v: CustomRulesView): string {
       <b>${val}</b>
       <button data-btn="cr-step" data-knob="${k}" data-d="1" ${val >= hi ? 'disabled' : ''} aria-label="more">+</button></div>`;
   };
-  return `<details class="customrules" data-customrules ${v.open ? 'open' : ''}>
+  // `bare`: the panel's body alone, always shown, for a sheet that carries its
+  // own title (the home's Custom rules sheet, docs/24, 2026-11-03). Still
+  // `data-customrules`, so wirePanel() finds and patches it the same way.
+  const head = o.bare
+    ? '<div class="customrules customrules--bare" data-customrules>'
+    : `<details class="customrules" data-customrules ${v.open ? 'open' : ''}>
     <summary>Custom rules${active
       ? ` · <b>${esc(v.summary.join(' · '))}</b>`
-      : ' <span class="dim">— none set</span>'}</summary>
+      : ' <span class="dim">— none set</span>'}</summary>`;
+  return `${head}
     ${v.extra}
     <div class="crpresets">
       ${button({ labelHtml: '🌱 Beginner', dataBtn: 'cr-preset', attrs: { 'data-preset': 'beginner' },
@@ -72,5 +78,5 @@ export function customRulesHtml(v: CustomRulesView): string {
       <div id="cr-querynote" class="dim">${esc(v.queryNote)}</div>
     </details>
     <div id="cr-pool" class="crpool">${v.pool}</div>
-  </details>`;
+  ${o.bare ? '</div>' : '</details>'}`;
 }

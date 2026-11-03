@@ -9,8 +9,8 @@
  *   §3  plain player-facing text: no ruling numbers, ticket ids or markup
  *   §4  the band: the newest SHOWN_UPDATES open, the rest under "Older updates",
  *       a same-day row leaves its date blank, and the text is escaped
- *   §5  the home screen paints it after .homepage, never inside it — the menu keeps
- *       its one-screenful floor (legal.ts sizes #app's FIRST child)
+ *   §5  the home screen shows it in its Updates sheet, opened from the bottom bar
+ *       (docs/24, 2026-11-03; it was a band painted after .homepage until then)
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -81,14 +81,21 @@ test('§4 the band: the newest open, the rest folded, same-day dates blank, text
   assert.doesNotMatch(updatesHtml(list.slice(0, 2), null), /<details/, 'a short list has nothing to fold');
 });
 
-test('§5 the home screen paints the band after .homepage, not inside it', () => {
-  const body = HOME.slice(HOME.indexOf('export function homeHtml(v: HomeView): string {'));
-  const from = body.indexOf('return `<div class="homepage">');
-  assert.ok(from >= 0, 'could not find homeHtml\'s paint');
-  const paint = body.slice(from, body.indexOf('`;', from));
-  assert.match(paint, /<\/div>\s*\$\{s\.updates\}$/,
-    'the updates slot must be the last thing painted, after .homepage closes');
-  assert.match(HOME, /const updates = updatesHtml\(\);/, 'homeView does not fill the updates slot');
+test('§5 the home screen shows the list in its Updates sheet, from the bottom bar', () => {
+  // new home layout, docs/24, 2026-11-03: the band under the menu became the
+  // Updates sheet, opened from the bottom bar's right; the home is one window,
+  // so nothing is painted after the shell (1010 §1)
+  const sheets = HOME.slice(HOME.indexOf('function sheetHtml('));
+  const body = sheets.slice(0, sheets.indexOf('\n}\n'));
+  assert.match(body, /case 'updates':[^]*?placement: 'anchor-bottom-right'[^]*?bodyHtml: s\.updates/,
+    'the Updates sheet does not draw the list');
+  const bottom = HOME.slice(HOME.indexOf('function bottomHtml('));
+  assert.match(bottom.slice(0, bottom.indexOf('\n}\n')), /endHtml: iconButton\(\{ label: [^]*?opens\('updates'\)/,
+    'the bottom bar has no Updates button');
+  assert.match(HOME, /updates: updatesListHtml\(\),/, 'homeView does not fill the updates slot (the list alone: the sheet has its own title)');
+  assert.match(HOME, /if \(homeSheet === 'updates'\) markSeen\(\);/, 'opening the sheet does not mark the list seen');
+  assert.match(HOME, /function markSeen\(\): void \{ markUpdatesSeen\(\); \}/);
+  assert.match(HOME, /badges: \{[^}]*updates: updatesUnseen\(\)/, 'the Updates button does not badge the new ones');
   const paintHome = HOME.slice(HOME.indexOf('export function paintHome('));
   assert.match(paintHome.slice(0, paintHome.indexOf('\n}\n')), /wireUpdates\(\)/, 'paintHome does not wire the disclosure');
 });

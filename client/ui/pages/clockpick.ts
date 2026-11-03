@@ -8,6 +8,7 @@
  * two buttons that use them (`newgame`, `clockpick`, in handlePregameButton).
  * The server keeps its own copy of the per-mode table (server/rooms.ts
  * MATCH_CLOCK_MS); engine test 279 locks the two together by reading this file. */
+import { segmented } from '../components/index.ts';
 import { esc } from '../util.ts';
 
 /**
@@ -106,9 +107,27 @@ export function clockPickView(mode: 'draft' | 'constructed'): ClockPickView {
  * `createPayload` and the panel's "— none set" summary never see it.
  *
  * Pure: everything it shows comes in through `v` (clockPickView). */
-export function clockPickHtml(v: ClockPickView): string {
+export function clockPickHtml(v: ClockPickView, o: { look?: 'chips' | 'segmented' } = {}): string {
   const { mode, auto, now } = v;
   const byMode = v.byModeMin;
+  const hint = auto
+    ? `${byMode}m each`
+    : now ? 'running out of time loses the game'
+    : 'no clock — nobody can lose on time';
+  // the new home (docs/24, 2026-11-03): the same four choices as one segmented
+  // control in the Play card's Clock row, which carries its own label. Same
+  // data-btn, data-ms and data-clockfor; `.on` marks the choice as before.
+  if (o.look === 'segmented') {
+    return `<div class="clockpick clockpick--seg" data-clockpick="${mode}">${segmented({
+      ariaLabel: 'Clock', size: 'sm',
+      options: [
+        { label: 'Default', value: 'auto', on: auto, dataBtn: 'clockpick', title: '45 min constructed · 60 min live draft',
+          attrs: { 'data-ms': 'auto', 'data-clockfor': mode } },
+        ...CLOCK_PRESETS.map(c => ({ label: c.label, value: String(c.ms), on: !auto && c.ms === now, dataBtn: 'clockpick', title: c.why,
+          attrs: { 'data-ms': c.ms, 'data-clockfor': mode } })),
+      ],
+    })}<span class="clockpickhint">${hint}</span></div>`;
+  }
   return `<div class="clockpick" data-clockpick="${mode}" title="the clock for games you start">
     <span class="clockpicklabel">⏱ Clock</span>
     <button class="elchip${auto ? ' on' : ''}" data-btn="clockpick" data-ms="auto" data-clockfor="${mode}"

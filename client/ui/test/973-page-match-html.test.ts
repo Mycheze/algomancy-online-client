@@ -18,7 +18,7 @@ import assert from 'node:assert/strict';
 import { DECK_LIST } from '../../engine/src/cards/registry.ts';
 import type { CardName } from '../../engine/src/types.ts';
 import {
-  competitiveCardHtml, matchResultHtml, matchRoomHtml, yourMatchesHtml, type MatchRoomView,
+  ccDeckSelectHtml, competitiveCardHtml, matchResultHtml, matchRoomHtml, yourMatchesHtml, type MatchRoomView,
 } from '../pages/match.ts';
 import type { MatchLobbyInfo } from '../match.ts';
 
@@ -70,6 +70,20 @@ test('973 §1 the Competitive card', () => {
   assert.match(none, /no deck is Competitive legal yet/);
   assert.match(none, /data-btn="cc-new" disabled>New match — pick a deck first/);
   assert.match(competitiveCardHtml({ signedIn: true, decks: null, bestOf: 3, pick: null }), /loading your decks…/);
+});
+
+test('973 §1b the CC deck picker alone: the home Play card draws it in its Deck row', () => {
+  // new home layout, docs/24, 2026-11-03: Competitive is a format on the Play card, which draws this piece
+  const decks = [{ id: 'dOK', name: 'Legal', error: null }, { id: 'dBAD', name: 'Big <side>', error: 'too many' }];
+  const html = ccDeckSelectHtml(decks, decks[0]!);
+  assert.match(html, /^<select id="cc-deck" class="deckselect">/);
+  assert.match(html, /<option value="dOK" selected>Legal<\/option>/);
+  assert.match(html, /<option value="dBAD" disabled>Big &lt;side&gt; — too many<\/option>/);
+  assert.match(ccDeckSelectHtml([decks[1]!], null), /no deck is Competitive legal yet/);
+  assert.match(ccDeckSelectHtml(null, null), /loading your decks…/);
+  assert.match(ccDeckSelectHtml([], null), /No decks yet/);
+  assert.equal(competitiveCardHtml({ signedIn: true, decks, bestOf: 3, pick: decks[0]! }).includes(html), true,
+    'the card and the Play card draw the same picker');
 });
 
 test('973 §2 Your matches', () => {

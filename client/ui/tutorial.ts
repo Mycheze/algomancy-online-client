@@ -44,46 +44,49 @@ export const TUTORIAL: readonly TutorialSection[] = [
     steps: [
       {
         label: 'Find a game',
-        text: 'The strip at the top of the home screen is matchmaking. Open it, choose live draft or constructed and ranked or casual, and '
-          + 'search. When a match is found both players have a short countdown to Accept; Stop searching at any time.',
+        text: 'The Matchmaking card beside Play on the home screen opens matchmaking. Choose live draft or constructed and ranked or '
+          + 'casual, and search. When a match is found both players have a short countdown to Accept; Stop searching at any time.',
         btns: ['queue-open', 'queue-mode', 'queue-ranked', 'queue-go', 'queue-accept', 'queue-decline', 'queue-cancel'],
       },
       {
-        label: 'New live draft',
-        text: 'Makes a room and takes you to its lobby, which shows the room code and a link to send. The three elements are chosen there, '
-          + 'together: pick a method, make your pick, Lock in — Change my mind unlocks — and Draft! once both of you are locked. '
-          + 'To skip the lobby, open “…or fix the trio now” on the home screen, pick three elements (or roll the dice), and start straight away.',
-        btns: ['newgame', 'lobby-method', 'lobby-pick', 'lobby-lock', 'lobby-unlock', 'trio-ok', 'eltoggle', 'elrandom'],
+        label: 'Create a draft room',
+        text: 'On the Play card choose Draft and press Create room. It makes a room and takes you to its lobby, which shows the room code '
+          + 'and a link to send. The three elements are chosen there, together: pick a method, make your pick, Lock in — Change my mind '
+          + 'unlocks — and Draft! once both of you are locked. To skip the lobby, set Elements to “Pick now”, pick three elements (or roll '
+          + 'the dice), and create the room.',
+        btns: ['home-mode', 'newgame', 'lobby-method', 'lobby-pick', 'lobby-lock', 'lobby-unlock', 'trio-ok', 'home-els', 'eltoggle', 'elrandom'],
       },
       {
-        label: 'New constructed game',
-        text: 'Pick one of your decks first — the button is disabled until you have. Signed in, the picker lists your saved decks; the '
-          + 'My decks page is where you build, import and export them. The room waits until both players have brought a deck.',
-        btns: ['newgame', 'deck-openpage', 'deck-new', 'deck-import-open', 'deck-export'],
+        label: 'Create a constructed room',
+        text: 'On the Play card choose Constructed and pick one of your decks — Create room is disabled until you have. Signed in, the '
+          + 'picker lists your saved decks; Decks along the top is where you build, import and export them. Competitive is a match of one '
+          + 'or three games with a sideboard, for signed-in players. The room waits until both players have brought a deck.',
+        btns: ['home-mode', 'home-format', 'newgame', 'cc-bo', 'cc-new', 'deck-openpage', 'deck-new', 'deck-import-open', 'deck-export'],
       },
       {
-        label: 'Join a game',
-        text: 'Type the four-letter room code your opponent sent and press Join (or Enter). A link they sent opens the room directly.',
-        btns: ['joincode'],
+        label: 'Join a room',
+        text: 'Join a room, beside Create room, takes the four-letter code your opponent sent: type it and press Join (or Enter). It also '
+          + 'lists a friend’s invite, a paused match and a league match you can play now. A link they sent opens the room directly.',
+        btns: ['home-sheet', 'joincode'],
       },
       {
         label: 'Clock',
-        text: 'The chess clock for a game you start is under Custom rules on the Live draft card, or Options on the Constructed card; '
-          + 'whoever joins your room plays the clock you chose. Changing it does not make the game custom. '
-          + '“Off” means nobody can lose on time.',
+        text: 'The chess clock for a room you create is the Clock row on the Play card; whoever joins your room plays the clock you chose. '
+          + 'Changing it does not make the game custom. “Off” means nobody can lose on time. A Competitive match is always 45 minutes each.',
         btns: ['clockpick'],
       },
       {
         label: 'Cards, decks and the metagame',
-        text: 'Cards opens the card browser — every card in the box, with a search that understands filters such as “el:wood kind:unit mana:2 '
-          + '-kw:virus” (the ? beside the box lists them). My decks is your collection. Metagame lists the decks people have published and '
-          + 'how they are doing.',
+        text: 'Cards, along the top of the home screen, opens the card browser — every card in the box, with a search that understands '
+          + 'filters such as “el:wood kind:unit mana:2 -kw:virus” (the ? beside the box lists them). Decks is your collection. Metagame '
+          + 'lists the decks people have published and how they are doing.',
         btns: ['cards-openpage', 'cards-help', 'deck-openpage', 'meta-openpage'],
       },
       {
         label: 'Your account',
-        text: 'Sign in or register from the home screen. Your name opens the account page: results and rating, the ladder, friends, linking '
-          + 'Discord, and signing out. Playing signed out works too — start a room and send the code — it just does not count for anything.',
+        text: 'Sign in from the middle of the home screen’s top bar. Signed in, your name there opens the account page: results and '
+          + 'rating, the ladder, friends, linking Discord, and signing out. Playing as a guest works too — create a room and send the '
+          + 'code — it just does not count for anything.',
         btns: ['acct-open-auth', 'acct-open-profile', 'acct-logout', 'acct-friend-add', 'acct-discord-link'],
       },
     ],

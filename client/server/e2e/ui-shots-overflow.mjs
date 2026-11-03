@@ -67,3 +67,18 @@ export function overflowWalk(W) {
 
 /** the walk as an expression for Runtime.evaluate, for a viewport `width` wide */
 export const overflowJs = (width) => `(${overflowWalk.toString()})(${Number(width)})`;
+
+/**
+ * THE PAGE SCROLLS: the document is taller or wider than the window. The home
+ * screen must never (client/docs/24-redesign/, principle 2: "no page
+ * scrolling"; a region may scroll inside itself) — ui-shots fails a state
+ * marked `noScroll` at desktop and tablet when this is true. Phones are
+ * stacked and may scroll. `ov` is what overflowWalk returned.
+ * @param {{ scrollW: number, scrollH: number, W: number, H: number }} ov
+ */
+export function pageScrolls(ov) {
+  return ov.scrollH > ov.H || ov.scrollW > ov.W;
+}
+
+/** the viewports a `noScroll` state is held to (a phone may scroll) */
+export const NO_SCROLL_VIEWPORTS = ['desktop', 'tablet'];

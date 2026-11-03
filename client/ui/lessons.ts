@@ -711,7 +711,7 @@ Everything else you learned — resources, deployment, regions, battle, mods —
 
 After three turns the packs are put on the bottom of the deck and fresh packs of 10 are dealt.
 
-**To play one:** *New live draft* on the home screen. For a gentle first draft, open *Custom rules* there: simple cards only, smaller packs.`,
+**To play one:** on the home screen's Play card choose *Draft* and press *Create room*. For a gentle first draft, open *Custom rules* there: simple cards only, smaller packs.`,
       quotes: [
         { text: 'During the draft step of the live draft mode, players combine the cards in their hand with the cards in their pack. Then they are able to freely select which cards from the resulting pile they wish to keep in their hand and which cards should go back into the pack. Players must always leave exactly 10 cards in the pack at the end of this step, so they will exit the draft step with the same number of cards in hand that they began with.', source: 'Manual, p. 16' },
         { text: 'Additionally, after each cycle of N+1 turns, where N is the number of players, all of the existing packs are recycled (put on the bottom of the deck) and each player is dealt a new pack of 10 cards.', source: 'Manual, p. 16' },
@@ -730,11 +730,11 @@ After three turns the packs are put on the bottom of the deck and fresh packs of
     },
     {
       title: 'Constructed',
-      body: `**Before the game** you build a deck of **at least 30 cards**, with **no more than 2 copies** of any card. Build and save decks from *My decks* on the home screen.
+      body: `**Before the game** you build a deck of **at least 30 cards**, with **no more than 2 copies** of any card. Build and save decks from *Decks* along the top of the home screen.
 
 **Every turn,** instead of drawing 2 and drafting, you **draw 4, then put 2 of them on the bottom** of your deck. You always see more cards than you keep, so you choose what fits your plan this turn — and the two you put back are recycled, shuffled back in when you reach them.
 
-**To play one:** pick a saved deck and press *New constructed game* on the home screen.`,
+**To play one:** choose *Constructed* on the home screen's Play card, pick a saved deck and press *Create room*.`,
       quotes: [
         { text: 'Constructed: Players bring pre-constructed decks to the game. The standard format allows up to 2 copies of each card, with a minimum deck size of 30.', source: 'Manual, p. 6' },
         { text: 'During the draft step in constructed, players simply draw 2 cards from their own deck and recycle 2 cards from their hand instead of drafting from packs and passing them between players.', source: 'Manual, p. 16' },
