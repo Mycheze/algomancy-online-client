@@ -38,6 +38,7 @@ import { caretIn, restoreCaret } from './caret.ts';
 import { chosenClockMs, clockPickHtml, clockPickView, type ClockPickView } from './clockpick.ts';
 import { customRulesHtml, customRulesView } from './customrules.ts';
 import { deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
+import { singleCardPickerHtml, singleCardPickerView } from './singlecard.ts';
 import { queueStripHtml, queueStripView } from './queue.ts';
 
 const elIcon = (name: string): string => elIconOf(name, name);
@@ -101,7 +102,7 @@ export interface SingleDuelView {
   open: boolean;
   /** the card picked so far (ui/singlecard.ts), or null */
   card: string | null;
-  /** ui/singlecard.ts pickerHtml() — a slot, drawn by that module */
+  /** pages/singlecard.ts singleCardPickerHtml() — a slot */
   picker: string;
 }
 
@@ -205,7 +206,7 @@ export function homeView(st: HomeState): HomeView {
   const options: ConstructedOptionsView = {
     open: homeOptionsOpen, ms: chosenClockMs('constructed'), clock: clockPickView('constructed'),
   };
-  const singleDuel: SingleDuelView = { open: singleDuelOpen, card: sc.chosen(), picker: sc.pickerHtml() };
+  const singleDuel: SingleDuelView = { open: singleDuelOpen, card: sc.chosen(), picker: singleCardPickerHtml(singleCardPickerView()) };
   const competitiveCard = mt.competitiveCardHtml(!!acct.token(), acct.token() ? dk.competitiveDecks() : null);
   const challengeCard = chal.homeCardHtml();
   const updates = updatesHtml();

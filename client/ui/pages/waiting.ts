@@ -21,6 +21,7 @@ import * as mt from '../match.ts';
 import * as sc from '../singlecard.ts';
 import { chosenDeck, esc, shareBar } from '../util.ts';
 import { deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
+import { singleCardPickerHtml, singleCardPickerView } from './singlecard.ts';
 import { lobbyHtml, lobbyView } from './lobby.ts';
 
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
@@ -153,7 +154,7 @@ export interface SingleWaitingView {
   oppName: string | undefined;
   /** the card picked so far (ui/singlecard.ts), or null */
   card: string | null;
-  /** ui/singlecard.ts pickerHtml() — a slot; '' once my card is in */
+  /** pages/singlecard.ts singleCardPickerHtml() — a slot; '' once my card is in */
   picker: string;
   error: string;
 }
@@ -173,7 +174,7 @@ export function singleWaitingView(net: WaitingNet, error: string): SingleWaiting
     myName: net.names[me],
     oppName: net.names[opp],
     card: sc.chosen(),
-    picker: mineIn ? '' : sc.pickerHtml(),
+    picker: mineIn ? '' : singleCardPickerHtml(singleCardPickerView()),
     error,
   };
 }

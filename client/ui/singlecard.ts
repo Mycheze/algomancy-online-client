@@ -12,6 +12,9 @@
  *
  * Typing never repaints the host page: the suggestions are patched in place,
  * so the input keeps its focus (the same reason ui/customrulespanel.ts gives).
+ *
+ * The picker's markup is pages/singlecard.ts since the design-system round
+ * (2026-11-03); this module keeps the pick, the clicks and the typing.
  */
 import { DECK_LIST } from '../engine/src/cards/registry.ts';
 import { canonicalCardName } from '../engine/src/cards/dsl.ts';
@@ -48,22 +51,34 @@ function suggestionsHtml(): string {
     : '<span class="dim">no card by that name</span>';
 }
 
-/** the picker: the chosen card's scan, a type-ahead and a 🎲 */
-export function pickerHtml(): string {
+/** What the picker shows (pages/singlecard.ts draws it). */
+export interface PickerSnapshot {
+  /** the card picked so far, or null */
+  card: string | null;
+  /** its scan, drawn (ui/cardpanel.ts artHtml), or '' */
+  art: string;
+  /** a deck of it can put a unit on the table */
+  makesUnits: boolean;
+  copies: number;
+  /** the search box's text, and its suggestions drawn (wire() patches the same in place) */
+  draft: string;
+  suggestions: string;
+  /** how many cards the 🎲 picks among */
+  deckCount: number;
+}
+
+export function pickerSnapshot(): PickerSnapshot {
   const cur = chosen();
   const row = cur ? rowFor(cur) : null;
-  return `<div class="scpick">
-    <div class="scchosen">${cur
-      ? `<span class="scart" data-prev="${esc(cur)}">${row ? artHtml(row, 'scimg') : ''}</span>
-         <span class="scname"><b>${esc(cur)}</b><span class="dim">× ${SINGLE_CARD_COPIES}</span>${makesUnits(cur) ? ''
-           : `<span class="scwarn" title="a deck of this card can never put a unit on the table">makes no units — a draw if theirs doesn’t either</span>`}</span>`
-      : '<span class="dim">no card picked yet</span>'}</div>
-    <div class="joinrow">
-      <input id="sc-q" placeholder="find a card…" spellcheck="false" autocomplete="off" value="${esc(draft)}">
-      <button data-btn="sc-random" title="any card at random — any of the ${DECK_LIST.length}">🎲</button>
-    </div>
-    <div id="sc-sugg" class="crsugg">${suggestionsHtml()}</div>
-  </div>`;
+  return {
+    card: cur,
+    art: row ? artHtml(row, 'scimg') : '',
+    makesUnits: cur ? makesUnits(cur) : true,
+    copies: SINGLE_CARD_COPIES,
+    draft,
+    suggestions: suggestionsHtml(),
+    deckCount: DECK_LIST.length,
+  };
 }
 
 /** the picker's clicks — true when handled; the caller repaints */
