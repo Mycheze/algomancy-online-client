@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": ["Bash", "Read", "Edit", "Write", "Glob", "Grep", "Agent", "TodoWrite", "Skill", "NotebookEdit"],
+    "deny": [
+      "Bash(git push:*)", "Bash(git fetch:*)", "Bash(git pull:*)", "Bash(git remote:*)",
+      "Bash(git -C * push:*)", "Bash(git -C * fetch:*)",
+      "Bash(ssh:*)", "Bash(scp:*)", "Bash(rsync:*)", "Bash(sftp:*)",
+      "Bash(sudo:*)", "Bash(systemctl:*)", "Bash(kill:*)", "Bash(pkill:*)",
+      "Bash(npm --prefix client run check:*)", "Bash(npm run check:*)",
+      "Bash(crontab:*)", "Bash(curl:*)", "Bash(wget:*)",
+      "Read(~/.ssh/**)", "Read(~/.config/algomancy-steward/**)", "Read(~/.claude/**)"
+    ]
+  }
+}

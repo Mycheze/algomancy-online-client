@@ -1,0 +1,4 @@
+# Items the steward must leave alone. One per line: the id, then why.
+# Edit freely; it is read every run. A '#' starts a comment.
+CT-346  owner: leave open (housework round, 2026-10-24)
+CT-362  owner: leave open (housework round, 2026-10-24)

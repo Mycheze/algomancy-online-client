@@ -1,0 +1,21 @@
+# The steward's tick — a systemd USER unit on the home box (benshomeserver).
+# Install: steward/README.md § Install. Never on the VPS (1 CPU, live games).
+[Unit]
+Description=Algomancy steward (one tick: land approvals, deploy, one night item)
+After=network-online.target
+
+[Service]
+Type=oneshot
+# run a COPY: the tick resets the clone, and bash reads a script as it runs it
+ExecStartPre=/bin/cp %h/algomancy-steward/repo/steward/run-once.sh %h/algomancy-steward/bin/run-once.sh
+ExecStart=/bin/bash %h/algomancy-steward/bin/run-once.sh
+Environment=PATH=%h/.local/bin:%h/.local/node/bin:/usr/local/bin:/usr/bin:/bin
+# SILENCE: the owner's one hard requirement for this box is that the fans never
+# spin up. Two of twelve cores, lowest priority, idle I/O. This box delegates no
+# cpu controller to user units, so a CPUQuota= would be ignored; affinity is
+# applied by the service manager itself and needs no cgroup.
+CPUAffinity=10 11
+Nice=19
+IOSchedulingClass=idle
+MemoryMax=8G
+TimeoutStartSec=14h

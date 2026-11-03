@@ -36,6 +36,7 @@ client/storybook/      Storybook for the components and pages (own package; the 
 client/server/  the WebSocket game server · test/ (in-process) · e2e/ (spawns the real server)
 client/ledgers/ every work queue: card-todo, playtest-ledger, backlog, and the derived ones
 client/docs/    the specs — and a test fixture directory, see below
+steward/        the unattended night worker on the home box (its README is the contract)
 var/            ALL mutable runtime state: the bot's logs, saved games, the account
                 store, playtest reports, card verdicts. Gitignored whole. Never commit
                 anything under it; back it up, because none of it can be rebuilt.
@@ -140,6 +141,9 @@ That one command fans out to engine, ui, server and ledgers, and
   have never seen is someone else's half-written work, not yours; `git diff
   --stat` tells them apart.
 - Land anything large from a worktree, then `git push origin <branch>:master`.
+- **The steward pushes too.** `steward/run-once.sh` on the home box lands its own
+  fixes on master at night and stages the rest as `steward/<item>` branches (the
+  only branches besides master that may exist). Review them with `steward/review.sh`.
 - **Master is the only branch.** Rounds used to leave their branch behind after
   landing — 76 of them by 2026-09-20, every one already on master (rebased, so
   the stale tip was no longer an ancestor and each read as "1 ahead" of work

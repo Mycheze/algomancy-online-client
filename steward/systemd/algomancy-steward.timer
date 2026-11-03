@@ -1,0 +1,9 @@
+[Unit]
+Description=Algomancy steward — tick again five minutes after the last one ended
+
+[Timer]
+OnBootSec=10min
+OnUnitInactiveSec=5min
+
+[Install]
+WantedBy=timers.target
