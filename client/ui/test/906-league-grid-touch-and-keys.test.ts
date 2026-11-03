@@ -13,7 +13,9 @@
  * arrows move a visible focus cell, Space toggles it; role=grid/gridcell with
  * aria-selected, labelled by day and hour.
  *
- * league.ts paints into the DOM, so this reads its source and the stylesheet.
+ * league.ts paints into the DOM, so this reads its source and the stylesheet:
+ * the grid's markup from pages/league.ts (where it moved in the design-system
+ * round, 2026-11-03), its wiring from league.ts.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -21,12 +23,13 @@ import { readFileSync } from 'node:fs';
 import { readStyles } from './read-styles.ts';
 
 const src = readFileSync(new URL('../league.ts', import.meta.url), 'utf8');
+const html = readFileSync(new URL('../pages/league.ts', import.meta.url), 'utf8');
 const css = readStyles().replace(/\/\*[\s\S]*?\*\//g, '');
 const grid = src.slice(src.indexOf('function wireGrid'), src.indexOf('\n}\n', src.indexOf('function wireGrid')));
 const rule = (sel: string): string => css.match(new RegExp(`(?:^|\\})\\s*${sel.replace(/[.]/g, '\\.')}\\s*\\{([^}]*)\\}`))?.[1] ?? '';
 
 test('positive control: the grid and its wiring are where this expects', () => {
-  assert.match(src, /<div class="lggrid" id="lg-grid"/);
+  assert.match(html, /<div class="lggrid" id="lg-grid"/);
   assert.ok(grid.length > 500);
   assert.ok(rule('.lggrid'), 'the .lggrid rule');
 });
@@ -45,7 +48,7 @@ test('a tap toggles one cell (the click a tap sends; a scroll sends none)', () =
 });
 
 test('the keyboard: one tabbable cell, arrows move it, Space and Enter toggle', () => {
-  assert.match(src, /tabindex="\$\{i === \(gridFocus \?\? [^)]*\) \? 0 : -1\}"/, 'roving tabindex');
+  assert.match(html, /tabindex="\$\{i === \(gridFocus \?\? [^)]*\) \? 0 : -1\}"/, 'roving tabindex');
   const keys = grid.slice(grid.indexOf('el.onkeydown'));
   for (const k of ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']) assert.ok(keys.includes(k), k);
   assert.match(keys, /if \(e\.key === ' ' \|\| e\.key === 'Enter'\) \{ e\.preventDefault\(\); toggle\(cell\);/);
@@ -54,11 +57,11 @@ test('the keyboard: one tabbable cell, arrows move it, Space and Enter toggle', 
 });
 
 test('a screen reader: grid, rows, headers, gridcells with aria-selected, labelled by day and hour', () => {
-  assert.match(src, /id="lg-grid" role="grid" aria-label="[^"]+"/);
-  assert.match(src, /role="columnheader"/);
-  assert.match(src, /class="lghr" role="rowheader"/);
-  assert.match(src, /role="gridcell" aria-selected="\$\{on\}" aria-label="\$\{label\}"/);
-  assert.match(src, /const label = `\$\{DAY_NAMES\[day\]\} \$\{hourLabel\(h\)\}`;/);
+  assert.match(html, /id="lg-grid" role="grid" aria-label="[^"]+"/);
+  assert.match(html, /role="columnheader"/);
+  assert.match(html, /class="lghr" role="rowheader"/);
+  assert.match(html, /role="gridcell" aria-selected="\$\{on\}" aria-label="\$\{label\}"/);
+  assert.match(html, /const label = `\$\{DAY_NAMES\[day\]\} \$\{hourLabel\(h\)\}`;/);
   assert.match(grid, /cell\.setAttribute\('aria-selected', String\(v === '1'\)\)/, 'kept true as cells change');
   assert.match(rule('.lggrid .lgrow'), /display:\s*contents/, 'the rows do not break the layout');
 });

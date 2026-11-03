@@ -1,0 +1,48 @@
+/* 987 — LEARN TO PLAY'S MENU, DRAWN WITHOUT A PAGE (design-system round,
+ * 2026-11-03). The menu's markup left ui/learnmenu.ts for pages/learn.ts:
+ * learnMenuView gathers the saved progress, learnMenuHtml draws it.
+ *
+ * §1 nothing saved: Start, the elements, the picked one on, every lesson
+ * §2 a saved game with this element: Continue and Start over; with another: Start
+ * §3 a lesson already shown is ticked; every data-lmenu the layer routes is drawn
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { learnMenuHtml, learnMenuView } from '../pages/learn.ts';
+import { LEARN_ELEMENTS } from '../lessondeck.ts';
+import { ALL_LESSONS } from '../lessons.ts';
+import type { LearnProgress } from '../learn.ts';
+
+const saved = (element: string, seen: string[] = []): LearnProgress =>
+  ({ v: 1, element, seen, game: {} } as unknown as LearnProgress);
+const lm = (html: string): string[] => [...html.matchAll(/data-lmenu="([^"]+)"/g)].map(m => m[1]!);
+
+test('987 §0 positive control: there is no DOM here', () => {
+  assert.equal(typeof (globalThis as Record<string, unknown>)['document'], 'undefined');
+  assert.match(learnMenuHtml(learnMenuView(null, 'fire')), /^<div class="learnscrim" id="learnscrim">/);
+});
+
+test('987 §1 nothing saved: Start, the elements with the picked one on, every lesson', () => {
+  const v = learnMenuView(null, 'water');
+  assert.equal(v.saved, false);
+  const html = learnMenuHtml(v);
+  assert.match(html, /data-lmenu="start">Start the water game</);
+  assert.doesNotMatch(html, /data-lmenu="continue"/);
+  assert.equal([...html.matchAll(/class="learnel /g)].length, LEARN_ELEMENTS.length);
+  assert.match(html, /class="learnel el-water on" data-lmenu="el" data-el="water"/);
+  assert.equal([...html.matchAll(/data-lmenu="read"/g)].length, ALL_LESSONS.length);
+});
+
+test('987 §2 a saved game: Continue and Start over for its element, Start for another', () => {
+  const html = learnMenuHtml(learnMenuView(saved('fire'), 'fire'));
+  assert.match(html, /data-lmenu="continue">Continue your fire game<\/button><button data-lmenu="fresh">Start over</);
+  assert.match(learnMenuHtml(learnMenuView(saved('fire'), 'earth')), /data-lmenu="start">Start the earth game</);
+});
+
+test('987 §3 a lesson already shown is ticked; every routed data-lmenu is drawn', () => {
+  const first = ALL_LESSONS[0]!;
+  const html = learnMenuHtml(learnMenuView(saved('fire', [first.id]), 'fire'));
+  assert.equal([...html.matchAll(/class="learnseen"/g)].length, 1);
+  assert.match(html, new RegExp(`data-i="0">${first.n}\\. [^<]+</button> <span class="learnseen">✓</span>`));
+  for (const k of ['close', 'el', 'continue', 'fresh', 'read']) assert.ok(lm(html).includes(k), k);
+});

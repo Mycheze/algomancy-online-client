@@ -23,13 +23,13 @@
 import type { Action, CardName, EngineEvent, GameState } from '../engine/src/types.ts';
 import { legalActions } from '../engine/src/apply.ts';
 import {
-  BOARD_KINDS, DUMMY_DECK, challengeDeal, debtPayoffTurns, dummyMove, endOf, foldRun, newRun, progress, progressLabel, runFailed, scoreRun,
+  DUMMY_DECK, challengeDeal, debtPayoffTurns, dummyMove, endOf, foldRun, newRun, progress, progressLabel, runFailed, scoreRun,
   type BoardKind, type ChallengeDef, type RunAcc, type RunScore,
 } from '../engine/src/challenge.ts';
 import type { BotPolicy } from './bot.ts';
 import { SoloServer, type ActedBy, type SoloDeal } from './solo.ts';
 import * as acct from './account.ts';
-import { esc } from './util.ts';
+import { runEndHtml, runMeterHtml, type RunEndView, type RunMeterView } from './pages/challengerun.ts';
 import type { ChallengeReportRun } from '../server/report-run.ts';
 
 /** the run in progress (one at a time), so a reload continues it */
@@ -259,86 +259,29 @@ export function startRun(id: string | null, opts: { onBotStuck?: (why: string) =
 let layer: HTMLElement | null = null;
 let hooks: { home: () => void; page: () => void; signIn: () => void; retry: (run: ChallengeRun) => void; rewind: (run: ChallengeRun) => void } | null = null;
 
-/** one number in a stat grid — account.ts's `.statcell`, value over label */
-export const statCell = (label: string, value: string | number): string =>
-  `<div class="statcell"><div class="statval">${esc(String(value))}</div><div class="statlab">${esc(label)}</div></div>`;
-
-/** what the run took — turns first, the hardest to cut; extra copies only when there are any */
-export function scoreHtml(s: RunScore): string {
-  return `<div class="statgrid chscore">${statCell('Turns', s.turns)}${statCell('Cards', s.cards)}${
-    s.extra ? statCell('Extra copies', s.extra) : ''}${statCell('Elements', s.elements)}</div>${
-    s.debtTurns ? `<p class="dim chdebt">Met on turn ${s.turns - s.debtTurns}, plus ${s.debtTurns} turn${
-      s.debtTurns === 1 ? '' : 's'} to pay off ${s.debt ?? 0} debt.</p>` : ''}`;
-}
-
-const BOARD_NAME: Record<BoardKind, string> = { fastest: 'fastest', leanest: 'leanest', purest: 'purest', overall: 'overall' };
-
-/** "New best: fastest, leanest. #1 fastest · #3 leanest · #2 purest · #2 overall." */
-function placedText(r: SubmitReply): string {
-  const nb = (r.newBest ?? []).map(k => BOARD_NAME[k]);
-  const head = nb.length ? `New best: ${nb.join(', ')}.` : 'On the leaderboard. No new best.';
-  const ranks = BOARD_KINDS.flatMap(k => (r.ranks?.[k] ? [`#${r.ranks[k]} ${BOARD_NAME[k]}`] : []));
-  return `${head}${ranks.length ? ` ${ranks.join(' · ')}.` : ''}`;
-}
-
-function submitHtml(run: ChallengeRun): string {
-  const st = run.submit;
-  switch (st.s) {
-    case 'guest': return `<p>Sign in to put this run on the leaderboard. It is kept here until you do.</p>
-      <button class="primary" data-chal="signin">Sign in</button>`;
-    case 'sending': return '<p class="dim">Submitting…</p>';
-    case 'error': return `<p class="chproblem">${esc(st.error)}</p><button data-chal="resend">Try again</button>`;
-    case 'done': return `<p>${esc(placedText(st.reply))}</p>`;
-    default: return '';
-  }
-}
+export { scoreHtml, statCell } from './pages/challengerun.ts';
 
 /** owner 2026-11-02 ("data-losing only"): Give up throws the run away, so it
  * asks twice — the league's press-again pattern (league.ts `arming`,
  * `button.danger`). Any other run button disarms it. test/901. */
 let arming: string | null = null;
 
-/** The meter: a row of the board's own sticky strip (main.ts renders it
- * there), under the turn bar — part of the table's layout, so it covers
- * nothing the board shows, at any width. Only the end panel is a layer. */
-export function meterHtml(run: ChallengeRun): string {
-  return `<div class="chmeter" role="status">
-    <span class="chmetertext">${esc(run.meterText())}</span>
-    <button data-chal="rewind" title="back to the start of this turn">↺ Turn</button>
-    <button data-chal="retry">Retry</button>
-    ${arming === 'giveup'
-      ? '<button class="danger" data-chal="giveup">Press again to give up</button>'
-      : '<button data-chal="giveup">Give up</button>'}
-  </div>`;
+/** the meter's view: the run's words, and whether Give up is armed */
+export const runMeterView = (run: ChallengeRun): RunMeterView => ({ text: run.meterText(), armed: arming === 'giveup' });
+
+/** the end panel's view: the goal met, the run failed, or neither */
+export function runEndView(run: ChallengeRun | null): RunEndView {
+  if (!run) return null;
+  if (run.done) return { kind: 'done', score: run.done.score, submit: run.submit };
+  if (run.failed) return { kind: 'failed', why: run.failedWhy() };
+  return null;
 }
 
-export function layerHtml(run: ChallengeRun | null): string {
-  if (!run) return '';
-  if (run.done) {
-    return `<div class="chscrim"><div class="chbox" role="dialog" aria-label="Goal met">
-      <h3>Goal met</h3>
-      ${scoreHtml(run.done.score)}
-      ${submitHtml(run)}
-      <div class="chboxbtns">
-        <button data-chal="export">Export run</button>
-        <button data-chal="retry">Retry</button>
-        <button class="primary" data-chal="page">Challenge page</button>
-      </div>
-    </div></div>`;
-  }
-  if (run.failed) {
-    return `<div class="chscrim"><div class="chbox" role="dialog" aria-label="Run failed">
-      <h3>Run failed</h3>
-      <p>${esc(run.failedWhy())}</p>
-      <div class="chboxbtns">
-        <button data-chal="rewind">↺ Rewind this turn</button>
-        <button class="primary" data-chal="retry">Retry</button>
-        <button data-chal="page">Challenge page</button>
-      </div>
-    </div></div>`;
-  }
-  return '';
-}
+/** The meter, drawn by pages/challengerun.ts (main.ts puts it in the board's strip). */
+export const meterHtml = (run: ChallengeRun): string => runMeterHtml(runMeterView(run));
+
+/** The end panel, drawn by pages/challengerun.ts. */
+export const layerHtml = (run: ChallengeRun | null): string => runEndHtml(runEndView(run));
 
 export function paintLayer(): void {
   if (layer) layer.innerHTML = layerHtml(current);

@@ -1,5 +1,8 @@
 /* ── the league page (ui/league.ts, docs/20-league.md) ───────────────── */
 .lgpage tr.dim { opacity: .5; }
+/* a closed season's trophy chip in the standings: shared/10-element-chips'
+   `.accttable .badgechip.trophy`, for the ui-table the page draws now */
+.lgpage .ui-table .badgechip.trophy { font-size: .8em; margin-left: var(--space-2); }
 .lgtag { font-size: var(--text-11); margin-left: var(--space-4); padding: var(--space-1) var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-lg);
   color: var(--dim); text-transform: uppercase; letter-spacing: .06em; vertical-align: middle; }
 .lgpage .statval.lgphase { font-size: var(--text-14); padding: var(--space-1) 0; }
@@ -7,7 +10,11 @@
 .lgskips button.on, .lgpage button.danger, .chmeter button.danger, .chkeptrow button.danger { border-color: var(--danger); color: var(--danger); }
 /* three columns: the season beside your entry, the table beside the matches */
 .lgpage .acctbody { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.lgpage .acctcard.lgspan2 { grid-column: span 2; }
+.lgpage .lgspan2 { grid-column: span 2; }
+/* a panel's sub-heading (a week's name over its table): .acctcard h4's recipe,
+   which ui-panel has no part for yet */
+.lgpage .ui-panel h4 { margin: var(--space-6) 0 var(--space-4); color: var(--dim); font-size: var(--text-12);
+  text-transform: uppercase; letter-spacing: .06em; }
 /* the week grid fills its card; its controls stand in a column beside it */
 .lgavail { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 14px 28px; align-items: start; }
 .lgavside > p:first-child { margin-top: 0; }
@@ -15,8 +22,12 @@
 .lgavside .lgpresets button { text-align: left; }
 @media (max-width: 760px) {
   .lgpage .acctbody, .lgavail { grid-template-columns: minmax(0, 1fr); }
-  .lgpage .acctcard.lgspan2 { grid-column: auto; }
+  .lgpage .lgspan2 { grid-column: auto; }
   .lgavside .lgpresets { flex-direction: row; }
+  /* the floating Report pill (.reportfab: 18px up, ~36px tall) sat over the
+     last buttons on a phone ("Suggest a time"), and the page ended before
+     they could scroll clear of it: room for the pill under the last card */
+  .lgpage { padding-bottom: calc(var(--space-9) + var(--space-7)); }
 }
 .lgtzrow { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin: var(--space-4) 0; }
 .lgtzrow label { display: flex; flex-direction: column; gap: var(--space-1); width: 100%; font-size: var(--text-12); color: var(--dim); }

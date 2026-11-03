@@ -112,7 +112,8 @@ test('§2 the closed season standings mark the champion and the finalist with th
   ui.click({ btn: 'nav-league' });
   await settle(); await settle();
   const html = ui.html();
-  const table = /<h3>Standings<\/h3>([\s\S]*?)<\/table>/.exec(html)?.[1] ?? '';
+  // a ui-panel title since the design-system round (2026-11-03)
+  const table = /<h3[^>]*>Standings<\/h3>([\s\S]*?)<\/table>/.exec(html)?.[1] ?? '';
   assert.ok(table, 'the standings did not paint');
   const row = (a: Account): string => new RegExp(`<td>${a.username}([^<]*(?:<span[^>]*>[^<]*</span>)?)</td>`).exec(table)?.[1] ?? '';
   assert.match(row(champion), /badgechip trophy champion[^>]*>🏆 Champion</);

@@ -4,38 +4,23 @@
  * board, as a layer beside #app — ui/helplayer.ts's pattern, including its
  * scrim rule: `.learnscrim`, never the board's overlay class. Pick an element
  * and start (or continue, or start over), or re-read any lesson.
+ *
+ * The markup is pages/learn.ts's (the design-system round, 2026-11-03); this
+ * file keeps the layer, its clicks and its keys.
  */
-import { elIcon, esc } from './util.ts';
 import { ALL_LESSONS } from './lessons.ts';
 import { openLesson } from './lessonlayer.ts';
-import { LEARN_ELEMENTS, isLearnElement, type LearnElement } from './lessondeck.ts';
+import { isLearnElement, type LearnElement } from './lessondeck.ts';
 import { loadProgress, type LearnProgress } from './learn.ts';
+import { learnMenuHtml, learnMenuView } from './pages/learn.ts';
 
 let open = false;
 let layer: HTMLElement | null = null;
 let picked: LearnElement = 'fire';
 
-/** the turn the saved game is on, read off its log length rather than replayed */
-export function menuHtml(progress: LearnProgress | null, el: LearnElement): string {
-  const saved = progress?.game && progress.element === el;
-  const els = LEARN_ELEMENTS.map(e =>
-    `<button class="learnel el-${e} ${e === el ? 'on' : ''}" data-lmenu="el" data-el="${e}">${elIcon(e)}${e[0]!.toUpperCase()}${e.slice(1)}</button>`).join('');
-  const seen = new Set(progress?.seen ?? []);
-  const lessons = ALL_LESSONS.map((l, i) =>
-    `<li><button class="learnread" data-lmenu="read" data-i="${i}">${esc(l.n)}. ${esc(l.title)}</button>${seen.has(l.id) ? ' <span class="learnseen">✓</span>' : ''}</li>`).join('');
-  return `<div class="learnscrim" id="learnscrim"><div class="learnbox" role="dialog" aria-label="Learn to play">
-    <div class="lhead"><h3>📘 Learn to play</h3><button data-lmenu="close">✕</button></div>
-    <p class="learnblurb">A real game, with a lesson at each new moment. About twenty minutes.</p>
-    <div class="learnlabel">Play one element</div>
-    <div class="learnels">${els}</div>
-    <div class="learngo">
-      ${saved
-        ? `<button class="lprimary" data-lmenu="continue">Continue your ${esc(el)} game</button><button data-lmenu="fresh">Start over</button>`
-        : `<button class="lprimary" data-lmenu="start">Start the ${esc(el)} game</button>`}
-    </div>
-    <details class="learnlist"><summary>Read a lesson</summary><ol>${lessons}</ol></details>
-  </div></div>`;
-}
+/** the menu for this progress and element: pages/learn.ts draws it */
+export const menuHtml = (progress: LearnProgress | null, el: LearnElement): string =>
+  learnMenuHtml(learnMenuView(progress, el));
 
 function paint(): void {
   if (!layer) return;
