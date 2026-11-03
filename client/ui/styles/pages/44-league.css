@@ -1,5 +1,8 @@
 /* ── the league page (ui/league.ts, docs/20-league.md) ───────────────── */
 .lgpage tr.dim { opacity: .5; }
+/* a closed season's trophy chip in the standings: shared/10-element-chips'
+   `.accttable .badgechip.trophy`, for the ui-table the page draws now */
+.lgpage .ui-table .badgechip.trophy { font-size: .8em; margin-left: var(--space-2); }
 .lgtag { font-size: var(--text-11); margin-left: var(--space-4); padding: var(--space-1) var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-lg);
   color: var(--dim); text-transform: uppercase; letter-spacing: .06em; vertical-align: middle; }
 .lgpage .statval.lgphase { font-size: var(--text-14); padding: var(--space-1) 0; }
