@@ -185,6 +185,10 @@ export function loadMyMatches(headers: Record<string, string> | null, rerender: 
     .finally(() => { mineLoading = false; if (mine?.length) rerender(); });
 }
 
+/** how many open matches "Your matches" would list (0 before the list has
+ * loaded) — part of the new home's Join badge (docs/24) */
+export function myMatchCount(): number { return mine?.length ?? 0; }
+
 /** forget the list (signing out) */
 export function resetMyMatches(): void { mine = null; mineLoading = false; }
 

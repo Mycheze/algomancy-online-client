@@ -32,10 +32,11 @@
  * that main.ts's global `[data-btn]` listener does not match, and it repaints
  * itself off a MutationObserver on `#app` rather than from a render hook.
  *
- * The one thing that DOES go inside `#app` is the home-screen launcher, and it
- * is put there by the same observer: the button is appended to the home
- * screen's "On your own" row the moment that row appears, so test mode is
- * started from the home screen without renderHome() knowing this file exists.
+ * The one thing that goes inside `#app` is the home-screen launcher, and the
+ * HOME draws it (docs/24, 2026-11-03: the toolbar's Test button carries
+ * `data-sbx="open"`). Until then this observer appended a "Test mode" button
+ * to the home's "On your own" row; a home without that row silently lost the
+ * button, so the home draws it now and this file only answers the click.
  */
 import { allCardNames, printsStats } from '../engine/src/cards/dsl.ts';
 import type { Action, GameState, ResourceKind, Seat } from '../engine/src/types.ts';
@@ -325,20 +326,31 @@ function onClick(ev: MouseEvent): void {
   }
 }
 
+/**
+ * Where the launcher says "dealing…" or what went wrong: its
+ * `[data-sbx-label]` child when it has one — an icon button's caption, so
+ * the icon survives — else the button itself, as a plain text button always
+ * did. Exported for test 1021.
+ */
+export function launcherLabel(btn: HTMLElement): HTMLElement {
+  return (typeof btn.querySelector === 'function' ? btn.querySelector<HTMLElement>('[data-sbx-label]') : null) ?? btn;
+}
+
 /** The home-screen launcher: deal a sandbox room and go to it. */
 function openSandbox(btn: HTMLElement): void {
+  const label = launcherLabel(btn);
   btn.setAttribute('disabled', 'disabled');
-  btn.textContent = 'dealing…';
+  label.textContent = 'dealing…';
   fetch('/api/sandbox/open?json=1')
     .then(r => r.json())
     .then((r: { ok?: boolean; join?: string; error?: string }) => {
       if (r.ok && r.join) { location.href = r.join; return; }
       btn.removeAttribute('disabled');
-      btn.textContent = `test mode — ${r.error ?? 'the server refused'}`;
+      label.textContent = `test mode — ${r.error ?? 'the server refused'}`;
     })
     .catch(() => {
       btn.removeAttribute('disabled');
-      btn.textContent = 'test mode — could not reach the server';
+      label.textContent = 'test mode — could not reach the server';
     });
 }
 
@@ -374,7 +386,6 @@ function repaint(force = false): void {
   if (!s || seat === null) {
     if (root.innerHTML) { root.innerHTML = ''; painted = ''; }
     root.classList.remove('on');
-    homeLauncher();
     return;
   }
   const sig = JSON.stringify([
@@ -393,28 +404,6 @@ function repaint(force = false): void {
     next?.focus();
     next?.setSelectionRange(caret, caret);
   }
-  homeLauncher();
-}
-
-/**
- * The home screen's "Test mode" button, put into the page rather than painted
- * over it.
- *
- * It goes in `.homesolo` — the "On your own" row, which is where a thing you
- * do by yourself belongs — so it reads as
- * part of the menu instead of as a floating debug affordance. Appended by the
- * observer whenever that row appears, and idempotent, so `renderHome()` can
- * repaint as often as it likes without this file being wired into it.
- */
-function homeLauncher(): void {
-  const row = document.querySelector('.homesolo');
-  if (!row) return;
-  if (row.querySelector('[data-sbx="open"]')) return;
-  const b = document.createElement('button');
-  b.setAttribute('data-sbx', 'open');
-  b.title = 'a solo sandbox: any card, any mana, 1000 life — and the rules still apply to what you build';
-  b.textContent = 'Test mode';
-  row.appendChild(b);
 }
 
 const CSS = `

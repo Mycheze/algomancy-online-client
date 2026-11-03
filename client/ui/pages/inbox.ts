@@ -167,6 +167,22 @@ function requestHtml(r: RequestCardView): string {
     </div>`;
 }
 
+/** The pending invites as rows, for a sheet that lists them inside the page
+ * (the home's Join sheet, docs/24): the same sentence and the same
+ * `data-inbox="join"` / `"decline"` buttons as the popup, so the click goes
+ * through inbox.ts's capture listener wherever the row is drawn. Nothing at
+ * all when there is none. */
+export function inviteRowsHtml(invites: readonly InviteCardView[]): string {
+  if (!invites.length) return '';
+  return `<div class="inviterows">${invites.map(i => `<div class="inviterow">
+    <span><b>${esc(i.from)}</b> invites you to ${esc(i.label)}.</span>
+    <span class="invbtns">
+      <button class="primary" data-inbox="join" data-id="${esc(i.id)}">Join</button>
+      <button data-inbox="decline" data-id="${esc(i.id)}">No thanks</button>
+    </span>
+  </div>`).join('')}</div>`;
+}
+
 /** the list the bell opens */
 export function inboxListHtml(v: InboxListView): string {
   const rows = [

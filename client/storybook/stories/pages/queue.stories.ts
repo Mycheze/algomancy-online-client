@@ -1,4 +1,4 @@
-import { queueHtml, queueStripHtml, type QueueView } from '../../../ui/pages/queue.ts';
+import { queueGlanceHtml, queueHtml, queueStripHtml, type QueueView } from '../../../ui/pages/queue.ts';
 import { deckPickerHtml } from '../../../ui/pages/deckpicker.ts';
 import { DECKS, overlay, page } from './_page.ts';
 
@@ -48,4 +48,21 @@ export const HomeStrip = {
 export const HomeStripEmpty = {
   name: 'The home strip, nobody waiting',
   render: () => `<div style="max-width:1136px">${queueStripHtml({ counts: { total: 0, byMode: { constructed: 0, draft: 0 } }, openGames: [] })}</div>`,
+};
+
+// the new home's Matchmaking card body (docs/24): the count and the open games, no Find a game
+const card = (html: string): string => `<div style="max-width:320px;padding:12px;border:1px dashed var(--color-border)">${html}</div>`;
+export const HomeGlance = {
+  name: 'Home card glance, with open games',
+  render: () => card(queueGlanceHtml({
+    counts: { total: 2, byMode: { constructed: 1, draft: 1 } },
+    openGames: [
+      { id: 'g1', username: 'Rashi', mode: 'draft', ranked: true, rating: 1490, waitedMs: 42_000 },
+      { id: 'g2', username: 'Cy', mode: 'constructed', ranked: false, rating: 1400, waitedMs: 130_000 },
+    ],
+  })),
+};
+export const HomeGlanceEmpty = {
+  name: 'Home card glance, nobody waiting',
+  render: () => card(queueGlanceHtml({ counts: { total: 0, byMode: { constructed: 0, draft: 0 } }, openGames: [] })),
 };

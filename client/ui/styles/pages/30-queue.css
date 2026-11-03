@@ -82,3 +82,9 @@
 .pgclaim input { padding: .35rem .5rem; border-radius: var(--radius-md); }
 .pgclaimerr:empty { display: none; }
 
+
+/* the new home's Matchmaking card body (pages/queue.ts queueGlanceHtml, docs/24) */
+.qglance { display: flex; flex-direction: column; gap: var(--space-2); }
+.qglcount { color: var(--dim); font-size: var(--text-12); }
+.qglcount.live { color: var(--glow); }
+.qglance .qopen { margin-top: var(--space-2); }

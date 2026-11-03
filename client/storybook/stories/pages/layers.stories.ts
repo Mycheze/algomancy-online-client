@@ -3,7 +3,7 @@
  * (ui/pages/inbox.ts). Each is fixed to the window's corner on the site, so
  * a story draws it inside a frame. */
 import { reportLayerHtml, type ReportDialogView } from '../../../ui/pages/report.ts';
-import { inboxLayerHtml, type InboxListView, roomFriendsHtml } from '../../../ui/pages/inbox.ts';
+import { inboxLayerHtml, type InboxListView, inviteRowsHtml, roomFriendsHtml } from '../../../ui/pages/inbox.ts';
 import { frame } from '../_helpers.ts';
 
 const dialog = (over: Partial<ReportDialogView> = {}): ReportDialogView =>
@@ -38,4 +38,10 @@ export const RoomFriends = {
     { id: 'b', username: 'Karanda', favoriteElement: null, status: 'playing', invite: 'sent' },
     { id: 'c', username: 'Tomzy', favoriteElement: null, status: 'offline', invite: 'declined' },
   ] })}</div>`,
+};
+export const InviteRows = {
+  name: 'Invites as rows (the home\'s Join sheet)',
+  render: () => `<div style="max-width:420px">${inviteRowsHtml([
+    { id: 'i1', from: 'Karanda', label: 'a constructed game' }, { id: 'i2', from: 'Nyar', label: 'a live draft' },
+  ])}</div>`,
 };

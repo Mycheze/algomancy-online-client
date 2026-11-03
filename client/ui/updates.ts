@@ -17,10 +17,11 @@
  * `323-recent-updates.test.ts` holds the list to that shape: newest first, a
  * real date not in the future, a known kind, and short.
  *
- * Painted by `renderHome()` as a SIBLING after `.homepage`, inside `#app`:
- * the home menu keeps its one-screenful floor (legal.ts's `100dvh - 128px`
- * applies to `#app`'s first child) and this band sits between it and the
- * footer. It exists on the home screen only.
+ * Drawn by the home screen only: `updatesHtml` is the whole band (a
+ * `section.updates` with its heading), `updatesListHtml` the list alone, for
+ * a sheet that has a heading of its own (docs/24's Updates sheet, opened from
+ * the home's bottom bar). `updatesUnseen()` is that button's "N new" badge
+ * and `markUpdatesSeen()` is called when the list is OPENED.
  */
 import { esc } from './util.ts';
 
@@ -311,28 +312,53 @@ export function updateDay(iso: string): string {
 }
 
 /*
- * NEW SINCE YOUR LAST VISIT. The browser keeps how many entries it had shown
- * (`SEEN_KEY`); the ones above that count are marked. A COUNT, not a date:
- * two pushes on one day are two lines, and a date would call the second one
- * seen. The list only ever grows at the top, so the count is exact. Read and
- * advanced once per page load, at the first home paint — the home repaints
- * often, and advancing on every paint would clear the mark as it appeared. A
- * first visit (nothing stored) marks nothing: everything is new to them.
+ * NEW SINCE YOU LAST LOOKED. The browser keeps how many entries it had shown
+ * (`SEEN_KEY`); the ones above that count are new. A COUNT, not a date: two
+ * pushes on one day are two lines, and a date would call the second one seen.
+ * The list only ever grows at the top, so the count is exact.
+ *
+ * Since 2026-11-03 (docs/24) the list is behind a button, so "seen" means the
+ * list was OPENED (`markUpdatesSeen`), not that the home page loaded — until
+ * then the first home paint of each page load advanced it. A first visit
+ * (nothing stored) badges nothing, since everything is new to them, and
+ * records today's count, so the NEXT entry is the first one badged.
+ *
+ * The open list marks the rows that were new when it was first opened in
+ * this page load (`markedFrom`), so opening it does not wipe the marks off
+ * the very list being read; the badge, read from storage, clears at once.
  */
 const SEEN_KEY = 'algoUpdatesSeen';
-let seenCount: number | null | undefined;
 
-/** how many of `list` this browser had seen before this page load; null on a first visit */
-function seenBefore(list: readonly Update[]): number | null {
-  if (seenCount !== undefined) return seenCount;
-  seenCount = null;
+/** the count stored, or null on a first visit (or with storage blocked) */
+function storedSeen(): number | null {
   try {
     const raw = localStorage.getItem(SEEN_KEY);
-    if (raw !== null && /^\d+$/.test(raw)) seenCount = Number(raw);
-    localStorage.setItem(SEEN_KEY, String(list.length));
-  } catch { /* storage blocked, or no DOM: mark nothing */ }
-  return seenCount;
+    return raw !== null && /^\d+$/.test(raw) ? Number(raw) : null;
+  } catch { return null; }
 }
+function storeSeen(n: number): void {
+  try { localStorage.setItem(SEEN_KEY, String(n)); } catch { /* storage blocked, or no DOM: nothing remembered */ }
+}
+
+/** what the stored count was when the list was first opened this page load; undefined = not opened yet */
+let markedFrom: number | null | undefined;
+
+/** How many entries are newer than the last time the list was opened: the
+ * Updates button's badge. 0 on a first visit, which records the count. */
+export function updatesUnseen(list: readonly Update[] = UPDATES): number {
+  const seen = storedSeen();
+  if (seen === null) { storeSeen(list.length); return 0; }
+  return Math.max(0, list.length - seen);
+}
+
+/** The list was opened: everything in it is seen now. */
+export function markUpdatesSeen(list: readonly Update[] = UPDATES): void {
+  if (markedFrom === undefined) markedFrom = storedSeen();
+  storeSeen(list.length);
+}
+
+/** the count the drawn list marks rows from (null: mark nothing) */
+const seenForList = (): number | null => (markedFrom !== undefined ? markedFrom : storedSeen());
 
 /** one row; `showDate` is false for a second entry on the same day */
 function rowHtml(u: Update, showDate: boolean, unseen: boolean): string {
@@ -351,27 +377,42 @@ function listHtml(list: readonly Update[], prevDate: string | null, unseen: numb
 /** whether "Older updates" is open — kept across home repaints, which rebuild it */
 let olderOpen = false;
 
+const unseenOf = (list: readonly Update[], seen: number | null): number =>
+  (seen === null ? 0 : Math.max(0, list.length - seen));
+
 /**
- * The band under the home menu. Empty when there is nothing to say. `seen` is
- * how many entries this browser had already shown (null: a first visit).
+ * The list alone — the newest SHOWN_UPDATES open, the rest under "Older
+ * updates (n)" — for a sheet with its own heading. Empty when there is
+ * nothing to say. `seen` as for updatesHtml.
  */
-export function updatesHtml(list: readonly Update[] = UPDATES, seen: number | null = seenBefore(list)): string {
+export function updatesListHtml(list: readonly Update[] = UPDATES, seen: number | null = seenForList()): string {
   if (!list.length) return '';
-  const unseen = seen === null ? 0 : Math.max(0, list.length - seen);
+  const unseen = unseenOf(list, seen);
   const shown = list.slice(0, SHOWN_UPDATES);
   const older = list.slice(SHOWN_UPDATES);
-  return `<section class="updates" aria-labelledby="upd-h">
-    <h2 id="upd-h">Recent updates${unseen ? `<span class="updnew">${unseen} new since your last visit</span>` : ''}</h2>
-    <ol class="updlist">${listHtml(shown, null, unseen)}</ol>
+  return `<ol class="updlist">${listHtml(shown, null, unseen)}</ol>
     ${older.length ? `<details class="updolder"${olderOpen ? ' open' : ''}>
       <summary>Older updates (${older.length})</summary>
       <ol class="updlist">${listHtml(older, shown[shown.length - 1]!.date, unseen, SHOWN_UPDATES)}</ol>
-    </details>` : ''}
+    </details>` : ''}`;
+}
+
+/**
+ * The band: the heading, its "N new" note and the list. Empty when there is
+ * nothing to say. `seen` is how many entries this browser had already seen
+ * (null: a first visit) — by default the count when the list was opened.
+ */
+export function updatesHtml(list: readonly Update[] = UPDATES, seen: number | null = seenForList()): string {
+  if (!list.length) return '';
+  const unseen = unseenOf(list, seen);
+  return `<section class="updates" aria-labelledby="upd-h">
+    <h2 id="upd-h">Recent updates${unseen ? `<span class="updnew">${unseen} new since your last visit</span>` : ''}</h2>
+    ${updatesListHtml(list, seen)}
   </section>`;
 }
 
-/** after `renderHome()` paints: remember the disclosure, since the next paint rebuilds it */
+/** after a paint that drew the list: remember the disclosure, since the next paint rebuilds it */
 export function wireUpdates(): void {
-  const d = document.querySelector?.('.updates .updolder') as HTMLDetailsElement | null;
+  const d = document.querySelector?.('.updolder') as HTMLDetailsElement | null;
   d?.addEventListener?.('toggle', () => { olderOpen = d.open; });
 }
