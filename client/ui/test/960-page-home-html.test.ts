@@ -55,7 +55,7 @@ test('960 §0 positive control: there is no DOM here', () => {
 test('960 §1 signed out: the name box (escaped), and no My decks button', () => {
   const html = homeHtml(view({ nameBox: 'Ann <&>' }));
   assert.match(html, /<input id="h-name" maxlength="24" value="Ann &lt;&amp;&gt;"/);
-  assert.doesNotMatch(html, /class="homedecks" data-btn="deck-openpage"/);
+  assert.doesNotMatch(html, /homedecks" data-btn="deck-openpage"/);
 });
 
 test('960 §2 signed in (or still resolving): no name box; signed in: the My decks button', () => {
@@ -63,7 +63,8 @@ test('960 §2 signed in (or still resolving): no name box; signed in: the My dec
   assert.doesNotMatch(resolving, /id="h-name"/, 'a null nameBox draws no box (the "signing in" moment)');
   const html = homeHtml(view({ nameBox: null, signedIn: true }));
   assert.doesNotMatch(html, /id="h-name"/);
-  assert.match(html, /<button class="homedecks" data-btn="deck-openpage">🗂 My decks<\/button>/);
+  // a button() since 2026-11-03, still carrying .homedecks
+  assert.match(html, /<button class="ui-button ui-button--secondary homedecks" data-btn="deck-openpage" type="button">🗂 My decks<\/button>/);
   assert.ok(html.indexOf('<!--SLOT:acctBar-->') < html.indexOf('data-btn="deck-openpage"'),
     'the identity bar comes before the nav buttons');
 });

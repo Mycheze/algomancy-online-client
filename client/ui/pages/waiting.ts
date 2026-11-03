@@ -17,6 +17,7 @@ import { roomFriendsHtml } from '../inbox.ts';
 import * as lob from '../lobby.ts';
 import * as mt from '../match.ts';
 import * as sc from '../singlecard.ts';
+import { button } from '../components/index.ts';
 import { chosenDeck, esc, shareBar } from '../util.ts';
 import { deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
 import { singleCardPickerHtml, singleCardPickerView } from './singlecard.ts';
@@ -105,7 +106,7 @@ export function constructedWaitingHtml(v: ConstructedWaitingView): string {
     <div class="lobbyhead">
       <h1 class="homelogo">ALGOMANCY</h1>
       <h2>${v.league ? 'League match' : 'Constructed'} — room <span class="roomcode">${esc(v.room)}</span></h2>
-      <div class="headbtns"><button data-btn="gohome">Leave</button></div>
+      <div class="headbtns">${button({ label: 'Leave', dataBtn: 'gohome' })}</div>
     </div>
 
     ${v.league
@@ -186,7 +187,7 @@ export function singleWaitingHtml(v: SingleWaitingView): string {
     <div class="lobbyhead">
       <h1 class="homelogo">ALGOMANCY</h1>
       <h2>Single Card Duel — room <span class="roomcode">${esc(v.room)}</span></h2>
-      <div class="headbtns"><button data-btn="gohome">Leave</button></div>
+      <div class="headbtns">${button({ label: 'Leave', dataBtn: 'gohome' })}</div>
     </div>
 
     ${shareBar('Send your opponent the room code', v.room, v.link)}

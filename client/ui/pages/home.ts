@@ -33,6 +33,7 @@ import * as mt from '../match.ts';
 import * as mm from '../queue.ts';
 import * as sc from '../singlecard.ts';
 import { updatesHtml, wireUpdates } from '../updates.ts';
+import { button } from '../components/index.ts';
 import { chosenDeck, elIcon as elIconOf, esc } from '../util.ts';
 import { caretIn, restoreCaret } from './caret.ts';
 import { chosenClockMs, clockPickHtml, clockPickView, type ClockPickView } from './clockpick.ts';
@@ -112,7 +113,7 @@ export function singleDuelHtml(v: SingleDuelView): string {
   return `<details class="fixedtrio singleduel" data-singleduel ${v.open ? 'open' : ''}>
     <summary>…or something sillier: <b>Single Card Duel</b></summary>
     <p class="cardsub">Thirty copies of one card. Your opponent picks theirs blind. It rates
-      the cards, not you — see the <button class="linkbtn" data-btn="meta-ladder">card ladder</button>.</p>
+      the cards, not you — see the ${button({ label: 'card ladder', variant: 'link', className: 'linkbtn', dataBtn: 'meta-ladder' })}.</p>
     ${v.picker}
     <button data-btn="newgame" data-mode="constructed" data-single="1" ${card ? '' : 'disabled'}>
       ${card ? `New single card duel — ${esc(card)}` : 'pick a card first'}</button>
@@ -244,10 +245,10 @@ export function homeHtml(v: HomeView): string {
           ? ''
           : `<label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(v.nameBox)}" placeholder="(optional)"></label>`}
         ${s.acctBar}
-        ${v.signedIn ? '<button class="homedecks" data-btn="deck-openpage">🗂 My decks</button>' : ''}
-        <button class="homedecks" data-help="rules">📖 How to play</button>
-        <button class="homedecks" data-btn="cards-openpage">🔍 Cards</button>
-        <button class="homedecks" data-btn="meta-openpage">🏆 Metagame</button>
+        ${v.signedIn ? button({ label: '🗂 My decks', className: 'homedecks', dataBtn: 'deck-openpage' }) : ''}
+        ${button({ label: '📖 How to play', className: 'homedecks', attrs: { 'data-help': 'rules' } })}
+        ${button({ label: '🔍 Cards', className: 'homedecks', dataBtn: 'cards-openpage' })}
+        ${button({ label: '🏆 Metagame', className: 'homedecks', dataBtn: 'meta-openpage' })}
         ${s.leagueNav}
         ${s.challengeNav}
       </div>
@@ -268,7 +269,7 @@ export function homeHtml(v: HomeView): string {
           <summary>…or pick the ${k === 3 ? 'trio' : 'elements'} now and skip the lobby</summary>
           <div class="elrow">${ALL_ELEMENTS.map(el =>
             `<button class="elchip ${el}${d.els.includes(el) ? ' on' : ''}" data-btn="eltoggle" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
-            <button data-btn="elrandom" title="pick at random — any of the ${d.setCount}">🎲</button>
+            ${button({ label: '🎲', variant: 'icon', title: `pick at random — any of the ${d.setCount}`, dataBtn: 'elrandom' })}
           </div>
           <button data-btn="newgame" data-mode="draft" data-els="1" ${d.els.length === k && !d.fixedError ? '' : 'disabled'}
             ${d.fixedError && d.els.length === k ? `title="${esc(d.fixedError)}"` : ''}>
@@ -300,13 +301,13 @@ export function homeHtml(v: HomeView): string {
         <div class="joinrow">
           <input id="h-code" placeholder="CODE" maxlength="8" autocapitalize="characters"
             spellcheck="false" style="text-transform:uppercase">
-          <button data-btn="joincode">Join</button>
+          ${button({ label: 'Join', dataBtn: 'joincode' })}
         </div>
         <div class="spacer"></div>
         <div class="homesep">
           <div class="zonelabel">On your own</div>
           <div class="homesolo">
-            <button data-learn="menu">Learn to play</button>
+            ${button({ label: 'Learn to play', attrs: { 'data-learn': 'menu' } })}
           </div>
         </div>
       </div>
