@@ -1643,15 +1643,23 @@
     "key": "effects.control.formation",
     "parent": "711",
     "order": 3,
-    "text": "A unit whose controller changes leaves its formation. If this happens during a battle, the unit stays in the battle out of formation for the rest of that battle: it attacks for nobody and blocks for nobody. It joins its new controller's side at regroup.",
+    "text": "A unit whose controller changes leaves its formation. If this happens during a battle, the unit stays in the battle out of formation. If blocks have not yet been declared and its new controller is the defending player, they may declare it as a blocker or send it to counterattack, like any other unit of theirs in the battle's region. Otherwise it attacks for nobody and blocks for nobody for the rest of that battle. It joins its new controller's side at regroup.",
     "examples": [
       {
-        "text": "a Robot token stolen by Download mid-battle is out of the formation for the rest of the battle.",
+        "text": "a Robot token stolen by Download after blocks is out of the formation for the rest of the battle.",
         "test": "145-erase-routes.test.ts::CR 711.3 (viii): Download"
       },
       {
         "text": "the stolen Robot joins its new controller's side at regroup.",
         "test": "145-erase-routes.test.ts::CR 711.3 (ix): Download"
+      },
+      {
+        "text": "Before blocks, the defending player casts Download on an attacking Robot token. The Robot stops attacking, and its new controller declares it as a blocker; it blocks and deals its combat damage.",
+        "test": "145-erase-routes.test.ts::CR 711.3 (x): Download before blocks"
+      },
+      {
+        "text": "Before blocks, the defending player steals an attacking Robot token with Download and sends it out to counterattack.",
+        "test": "145-erase-routes.test.ts::CR 711.3 (xi): Download before blocks"
       }
     ],
     "see": [
@@ -1660,7 +1668,16 @@
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1414660063162798082",
+          "quote": "you gain control of it so its no longer attacking and would be able to block"
+        },
+        {
+          "ref": "RQ 1414660063162798082",
+          "quote": "In 1v1 or teams you could use it to attack the same turn if you were the non-initiative player and stole it before the attack step happened"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -1684,11 +1701,13 @@
         "145-erase-routes.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Owner call (Bena 2026-08-25 on Download). No printed or designer source. See D-U16-11.",
-    "sourceHashes": {}
+    "notes": "Designer, rules-questions 2025-09-08 (RQ 1414660063162798082), on Download stealing an attacking token before blocks: it is no longer attacking and may block. That outranks the owner's 2026-08-25 call (\"it sits out until regroup\"), which now covers a steal after blocks, when there is no declaration left for the unit to join. The counterattack clause is the permissive reading of his 1v1 sentence and is what the engine does (checkBlocks asks only controller, presence and region). CT-424, D-U16-11.",
+    "sourceHashes": {
+      "RQ 1414660063162798082": "d4fbacc2796c7ea20ef66bfcdd0629e578c1345e5e30adccf1a845bb9fd31f24"
+    }
   },
   {
     "key": "effects.control.formation.block-stays",

@@ -180,17 +180,6 @@ const OPEN: TodoEntry[] = [
   },
   // ── Pass D, the mop-up and the replacement-order round, 2026-10-25: defects found and not fixed
   {
-    id: 424, area: "engine", severity: "minor",
-    cards: ["Download"],
-    title: "a unit stolen during a battle sits out until regroup, but the designer says the new controller can block with it",
-    detail: "CR 711.3 states the owner's 2026-08-25 call (\"it sits out until regroup\"); the owner's 2026-08-18 call had it join the new controller's formations. Caleb, rules-questions 2025-09-08 [1414660063162798082], asked about stealing an attacking token with Download: \"you gain control of it so its no longer attacking and would be able to block. It cant attack an opponent in the same turn of a FFA game since there's only one declare attack step each turn\". The designer outranks an owner call in the authority order, so the rule and the engine may be wrong.",
-    evidence: "CR pass D 2026-10-25 (zero-handoff/PD-cr.md, tier-3 stretch): discrepancy D-U16-11, the quote checked against the rules-questions export.",
-    fix: "Put Caleb's words to the owner beside his 2026-08-25 call. If Caleb's reading stands, a unit stolen in battle stops attacking and may block for its new controller; change the control-change path (Download and every in-battle steal), redraft 711.3, add a test, and replay stored games for drift.",
-    proof: null,
-    verify: "Steal an attacking unit with Download before blocks: can its new controller block with it?",
-    status: 'open',
-  },
-  {
     id: 427, area: "engine", severity: "minor",
     title: "a split damage step fixes its schedule when the step begins; the designer says a column that dealt Swift damage deals no normal damage",
     detail: "CR 608.3 and 608.3d (combat.damage.split) state the owner's 2026-09-16 call: windows open after a sub-step only when it struck and a later one will, and the schedule is fixed when the step begins. Caleb, rules-questions 2025-04-20 [1363292630443626568]: \"If a column dealt swift damage, it won't deal normal damage. / If a column dealt normal damage it won't deal sluggish damage.\" That tracks what each column dealt rather than a schedule fixed at the start, which differs when a column gains or loses Swift or Sluggish mid-step.",

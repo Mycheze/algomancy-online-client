@@ -179,6 +179,6 @@
         "quote": "Exchange control of two target units and swap their positions."
       }
     ],
-    "resolution": "Printed text governs the card: the effect that changes control itself gives each unit a position, so neither sits out. The rule states the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) as the default and the card's own positioning as the exception. The engine matches both."
+    "resolution": "Printed text governs the card: the effect that changes control itself gives each unit a position, so neither sits out. The rule states the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) as the default and the card's own positioning as the exception. The engine matches both. The designer (rules-questions 2025-09-08) narrows the one-sided theft: an attacker the defender steals before blocks may block for them (rule effects.control.formation, CT-424)."
   }
 ]

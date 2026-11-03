@@ -36,7 +36,9 @@
  *     battle, and joins its new controller's side at regroup. The behaviour
  *     was an accident of there being no formation-join primitive; the two
  *     cases at the bottom of this file make it a decision, so the next reader
- *     does not "fix" it into a mid-battle re-slot.
+ *     does not "fix" it into a mid-battle re-slot. The designer narrowed it
+ *     (CT-424): a steal BEFORE blocks leaves the unit free to block or
+ *     counterattack for its new controller — cases (x) and (xi).
  *
  * ⚠ WHAT MUST NOT CHANGE, and is pinned here as hard as the fix: an erase is
  * still NOT a death and NOT a trash. CR 801.2 is about a card entering a bin and
@@ -381,12 +383,14 @@ test('(vii): Banishment still fires no \'died\' and no \'trashed\' — an erase 
 });
 
 // ══════════════════════════════════════════════════════════════════════
-// (viii)–(ix) DOWNLOAD: a mid-battle theft sits out until regroup
+// (viii)–(ix) DOWNLOAD: a theft after blocks sits out until regroup
 // ══════════════════════════════════════════════════════════════════════
 //
 // Owner's ruling, 2026-08-25: *it sits out until regroup*. Not a limitation —
 // a decision. These two cases exist so the next reader does not turn
-// `E.giveControl`'s unslot into a re-slot.
+// `E.giveControl`'s unslot into a re-slot. Since CT-424 it covers a theft
+// AFTER blocks only: before blocks, the designer lets the new controller block
+// with it — cases (x)–(xi) below.
 
 test('CR 711.3 (viii): Download — a Robot token stolen mid-battle is OUT of the formation for the rest of the battle', () => {
   const h = new Harness(14540);
@@ -418,8 +422,8 @@ test('CR 711.3 (viii): Download — a Robot token stolen mid-battle is OUT of th
     [...h.state.battle!.columns, ...Object.values(h.state.battle!.blocks)]
       .some(col => col.includes(robot));
   assert.ok(!inLine(),
-    'and it is OUT of the formation at once — it blocks for nobody and attacks for nobody. '
-    + 'CR 711.3: the owner ruled it SITS OUT UNTIL REGROUP; giveControl\'s unslot is what delivers '
+    'and it is OUT of the formation at once — stolen after blocks, it blocks for nobody and attacks '
+    + 'for nobody. CR 711.3: it SITS OUT UNTIL REGROUP; giveControl\'s unslot is what delivers '
     + 'that and must not grow a re-slot.');
 
   // …for the REST of the battle: run the damage steps out and it is still out.
@@ -497,4 +501,75 @@ test('CR 711.3 (ix): Download — the stolen Robot token joins its NEW controlle
   assert.deepEqual(h.state.battle!.columns[0], [robot],
     'A declares the stolen Robot as an attacker in the next battle — it sat out ONE battle, '
     + 'which is exactly what "until regroup" means');
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// (x)–(xi) DOWNLOAD BEFORE BLOCKS: the defender steals an ATTACKER
+// ══════════════════════════════════════════════════════════════════════
+//
+// The designer, rules-questions 2025-09-08 (RQ 1414660063162798082), asked
+// about stealing an attacking token with Download in the priority window
+// before blocks: *"you gain control of it so its no longer attacking and would
+// be able to block."* That outranks the owner's 2026-08-25 "it sits out until
+// regroup" (the CR's authority order), which had been written down as "blocks
+// for nobody" for every mid-battle steal. The engine always did what the
+// designer says — `giveControl` unslots it from the attack, and `checkBlocks`
+// asks only that a blocker be the defender's, present and in the battle's
+// region — so these pin it (CT-424), CR 711.3.
+
+/** A attacks with a 2/2 Robot and a 1/1; D steals the Robot before blocks. */
+function stealAttackerBeforeBlocks(seed: number): { h: Harness; A: Seat; D: Seat; robot: EntityId; other: EntityId } {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  giveResources(h, D, 'metal', 2);                          // Download: mm/1
+  toNextBattle(h, A);
+  let robot = 0;
+  withE(h, e => { robot = e.spawnUnit(A, 'Robot', e.homeRegion(A), { token: true, counters: 2 }).id; });
+  const other = spawn(h, A, 'Unit Token');                  // 1/1
+  h.do({ type: 'declareAttack', seat: A, columns: [[robot], [other]] });
+  pass(h);                                                  // A passes the attack window
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Download') });
+  pick(h, { unit: robot });
+  pass(h); pass(h);
+  resolveAll(h);
+  assert.equal(ent(h, robot)!.controller, D, 'D stole the attacking Robot');
+  assert.ok(!h.state.battle!.columns.some(col => col.includes(robot)),
+    'it is no longer attacking: out of the attacking formation');
+  let guard = 10;
+  while (h.state.battle!.step !== 'blocks' && guard-- > 0) pass(h);
+  assert.equal(h.state.battle!.step, 'blocks', 'and the battle reaches blocks');
+  return { h, A, D, robot, other };
+}
+
+test('CR 711.3 (x): Download before blocks — the defender may BLOCK with the attacker it stole', () => {
+  const { h, A, D, robot, other } = stealAttackerBeforeBlocks(14542);
+  const col = h.state.battle!.columns.findIndex(c => c.includes(other));
+  const life0 = h.state.players[D]!.life;
+  h.do({ type: 'declareBlocks', seat: D, blocks: { [col]: [robot] } });
+  assert.deepEqual(h.state.battle!.blocks[col], [robot],
+    'the stolen Robot is a declared blocker for its new controller — the designer: "its no longer '
+    + 'attacking and would be able to block" (CR 711.3)');
+  let guard = 60;
+  while (h.state.phase === 'battle' && guard-- > 0) {
+    const d = h.state.decision;
+    if (d) { h.do({ type: 'decide', seat: d.seat, choice: d.kind === 'orderTriggers' ? d.options.map((_, i) => i) : 0 }); continue; }
+    if (h.state.battle!.step === 'declare') h.do({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
+    else if (h.state.battle!.step === 'blocks') h.do({ type: 'declareBlocks', seat: h.state.battle!.defender, blocks: {} });
+    else pass(h);
+  }
+  assert.ok(guard > 0, 'the battle finished');
+  assert.equal(ent(h, other), undefined, 'it really fought: the 2/2 Robot killed the 1/1 it blocked');
+  assert.ok(ent(h, robot), 'and survived it');
+  assert.equal(h.state.players[D]!.life, life0, 'nothing connected');
+  assert.equal(ent(h, robot)!.controller, D, 'still D\'s');
+  void A;
+});
+
+test('CR 711.3 (xi): Download before blocks — the defender may send the attacker it stole to counterattack', () => {
+  const { h, D, robot } = stealAttackerBeforeBlocks(14543);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [robot] });
+  assert.deepEqual(h.state.battle!.sentAttackers, [robot],
+    'it is one of the defender\'s units in the battle\'s region like any other, so it may go out '
+    + 'as a counterattacker (CR 711.3)');
 });

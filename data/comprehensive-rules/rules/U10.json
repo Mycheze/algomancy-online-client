@@ -1456,7 +1456,7 @@
     "key": "combat.formations.outside.stolen",
     "parent": "combat.formations.outside",
     "order": 2,
-    "text": "A unit that comes under another player's control during a battle, after the formations are set, leaves its formation, unless the effect that changes its control itself gives it a position. It stays out of every formation for the rest of that battle, attacking and blocking for nobody, and joins its new controller's side at regroup.",
+    "text": "A unit that comes under another player's control during a battle, after the formations are set, leaves its formation, unless the effect that changes its control itself gives it a position. If blocks have not yet been declared, a defending player who gains control of it may declare it as a blocker or send it to counterattack (see rule effects.control.formation). Otherwise it stays out of every formation for the rest of that battle, attacking and blocking for nobody, and joins its new controller's side at regroup.",
     "examples": [
       {
         "text": "Download steals an enemy Robot token after blocks. The Robot leaves the formation and takes no further part in the battle.",
@@ -1465,6 +1465,10 @@
       {
         "text": "At regroup, the stolen Robot joins its new controller's side.",
         "test": "145-erase-routes.test.ts::CR 711.3 (ix): Download — the stolen Robot token joins its NEW controller's side at regroup"
+      },
+      {
+        "text": "Before blocks, the defending player casts Download on an attacking Robot token. The Robot stops attacking, and its new controller declares it as a blocker; it blocks and deals its combat damage.",
+        "test": "145-erase-routes.test.ts::CR 711.3 (x): Download before blocks"
       },
       {
         "text": "After attacks, the defender casts Organic Exchange on an attacking Bubb and their own 1/1, which is in no formation. The two swap positions as the card says: the 1/1 takes Bubb's attack slot and deals the combat damage, and Bubb is in no formation.",
@@ -1481,7 +1485,12 @@
           "quote": "Exchange control of two target units and swap their positions."
         }
       ],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1414660063162798082",
+          "quote": "you gain control of it so its no longer attacking and would be able to block"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -1500,8 +1509,10 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) rules a one-sided theft (Download). Organic Exchange's printed 'swap their positions' is the exception clause: the card itself gives each unit the other's position (the round-2 verifier measured both staying in formation, swapped). Card text added from printed.json, not from this unit's pack. See D-U10-11. The earlier engineDiffers (F-U10-4) is withdrawn: the engine follows the card.",
-    "sourceHashes": {}
+    "notes": "The owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) rules a one-sided theft (Download). Organic Exchange's printed 'swap their positions' is the exception clause: the card itself gives each unit the other's position (the round-2 verifier measured both staying in formation, swapped). Card text added from printed.json, not from this unit's pack. See D-U10-11. The earlier engineDiffers (F-U10-4) is withdrawn: the engine follows the card. CT-424: the designer (RQ 1414660063162798082, 2025-09-08) lets the defender who steals an attacker before blocks block with it; the owner's 'sits out' is the after-blocks case.",
+    "sourceHashes": {
+      "RQ 1414660063162798082": "d4fbacc2796c7ea20ef66bfcdd0629e578c1345e5e30adccf1a845bb9fd31f24"
+    }
   },
   {
     "key": "combat.formations.front-first",

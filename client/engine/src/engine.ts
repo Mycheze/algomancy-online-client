@@ -8216,7 +8216,7 @@ export class E {
    * does — and `data.unit` makes the moved unit the event's source, so a
    * `self:` listener on the unit that just changed hands matches.
    *
-   * ⚠ **CR 711.3 — A UNIT STOLEN MID-BATTLE SITS OUT UNTIL REGROUP. THIS IS A
+   * ⚠ **CR 711.3 — A UNIT STOLEN MID-BATTLE IS NEVER RE-SLOTTED. THIS IS A
    * RULING, NOT A LIMITATION.** Owner, 2026-08-25, asked about Download
    * ("Gain control of target token", a `{Battle}` spell, so the theft can land
    * with the formations already declared): *it sits out until regroup* — the
@@ -8236,6 +8236,16 @@ export class E {
    * The batch-metal-a header used to file this under "ENGINE APPROXIMATIONS …
    * cannot slot it into the thief's (no mid-battle formation-join primitive)".
    * The behaviour was right; only the label was wrong.
+   *
+   * **Before blocks, the thief may block with it** (CT-424). The designer,
+   * rules-questions 2025-09-08, on Download stealing an ATTACKING token before
+   * blocks: *"you gain control of it so its no longer attacking and would be
+   * able to block."* Nothing here has to do that: the unslot ends the attack,
+   * and `checkBlocks` (apply.ts) takes any unit the defender controls in the
+   * battle's region — formation membership is not asked — so a defender who
+   * steals an attacker can declare it as a blocker or send it to counterattack.
+   * "Sits out" is what happens to a unit stolen once blocks are declared, when
+   * no declaration is left for it to join. Pinned by 145's cases (x)–(xi).
    */
   giveControl(u: Entity, to: Seat, opts?: { keepFormation?: boolean }): boolean {
     if (!this.entity(u.id)) { this.ev('info', `${u.card} is gone — nothing changes hands.`); return false; }

@@ -14391,4 +14391,20 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-05 (steward): audit first. Every ctx.choose key in the pool (94 calls) is a literal or built from a seat, a loop index, a part or target index, an entity id already on the table, or the helper sequence; none from an answer, so neither field leaked a pick in any card checked, and the 779 non-interference tests stayed green. No client code reads either field (ui/ has no 'resolve' suspension reader at all) and the engine resumes from the room's own state, so viewFor now blanks pendingKey and deletes shown for every seat, as it already did answers and snapshot: the next card's key or a privateTo line counted in shown can no longer reach the wire. The guard went red on each field with its line removed.",
     status: 'done',
   },
+  {
+    id: 424, area: "engine", severity: "minor",
+    cards: ["Download"],
+    title: "a unit stolen during a battle sits out until regroup, but the designer says the new controller can block with it",
+    detail: "CR 711.3 states the owner's 2026-08-25 call (\"it sits out until regroup\"); the owner's 2026-08-18 call had it join the new controller's formations. Caleb, rules-questions 2025-09-08 [1414660063162798082], asked about stealing an attacking token with Download: \"you gain control of it so its no longer attacking and would be able to block. It cant attack an opponent in the same turn of a FFA game since there's only one declare attack step each turn\". The designer outranks an owner call in the authority order, so the rule and the engine may be wrong.",
+    evidence: "CR pass D 2026-10-25 (zero-handoff/PD-cr.md, tier-3 stretch): discrepancy D-U16-11, the quote checked against the rules-questions export.",
+    fix: "Put Caleb's words to the owner beside his 2026-08-25 call. If Caleb's reading stands, a unit stolen in battle stops attacking and may block for its new controller; change the control-change path (Download and every in-battle steal), redraft 711.3, add a test, and replay stored games for drift.",
+    proof: null,
+    verify: "Steal an attacking unit with Download before blocks: can its new controller block with it?",
+    guards: [
+      "145-erase-routes.test.ts::CR 711.3 (x): Download before blocks — the defender may BLOCK with the attacker it stole",
+      "145-erase-routes.test.ts::CR 711.3 (xi): Download before blocks — the defender may send the attacker it stole to counterattack",
+    ],
+    closed: "DONE 2026-11-03 by the steward. Not a question: the CR's authority order puts calebgannon's own words above an owner call, and his 2025-09-08 answer (RQ 1414660063162798082, indexed into rules-questions.snapshot.jsonl) is checked against the export with its question. The ENGINE ALREADY DID WHAT HE SAYS — giveControl unslots the stolen attacker and checkBlocks asks only controller, presence and region, so the thief who defends can block with it or send it to counterattack (probed, then pinned by 145 (x)-(xi)). What was wrong was the rule: CR 711.3 and 602.2b said 'blocks for nobody' for every mid-battle steal. Both are redrafted (the owner's 'sits out until regroup' now covers a steal after blocks), D-U16-11 moved to tier 2 as settled by the designer, and the engine/Download comments say the same. The counterattack half is the permissive reading of his 1v1 sentence and is what the engine has always done.",
+    status: 'done',
+  },
 ];
