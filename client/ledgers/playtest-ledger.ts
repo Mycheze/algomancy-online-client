@@ -121,6 +121,42 @@ import { CLOSED } from './playtest-ledger-closed.ts';
 /** Everything still open. The closed entries — the bulk of the file until
  *  2026-09-03 — live in playtest-ledger-closed.ts, unchanged and still run. */
 const OPEN: LedgerEntry[] = [
+  {
+    id: 319, room: "KFCS", date: "2026-11-03",
+    report: "mycheze, seat 1: with Thoughtripper's trigger on the stack the helper text says Gember WILL discard, though I haven't decided whether to pay yet.",
+    status: 'live',
+    note: "Real. At [143] Thoughtripper's \"you may pay [2]: each opponent discards a card\" is on the stack and its line reads \"Gember discards a card\". A class: 7 of the pool's 9 \"you may pay\" triggers state the effect without the condition (2 already say \"if you pay N\"). CT-520.",
+  },
+  {
+    id: 321, room: "KFCS", date: "2026-11-03",
+    report: "mycheze, seat 1, agreed fix: set both players' life down by 2. \"Gember didn't get to play Recall from her bin during that turn for some reason. She spell extracted it but didn't get priority to play it\"",
+    status: 'live',
+    note: "Replayed: after Spell Excavation chose Recall [264], the engine offered Gember both Recalls from the bin at every one of her seven priority windows [268]-[282], and the bin glows a playable card; she passed each time. The room file cannot say whether a standing Pass all made those passes (in 'all' mode a newly granted play does not hand priority back, CR D2.2). CT-521.",
+  },
+  {
+    id: 322, room: "DQTX", date: "2026-11-03",
+    report: "mycheze, seat 1: casting spell tokens, the UI makes you click the first one again instead of taking the one you clicked as the first, and the final one is picked for you. It throws off the sequence.",
+    status: 'live',
+    note: "Real. [129] cast token 46 (ordered), then [130] the burst-order prompt asks which resolves first: the clicked token is ignored (burstStep is called with no pick), and the last token is taken without asking. The owner's ask changes the CR 803.5d flow. CT-522.",
+  },
+  {
+    id: 323, room: "SHXD", date: "2026-11-03",
+    report: "mycheze, seat 1: when \"all passing\" your clock still ticks down and it shouldn't.",
+    status: 'live',
+    note: "The server stops a Pass-all seat's clock only in a pure priority window its arm is answering (CR D3.2b); declarations, decisions and deploy steps are billed, and the arm drops at a phase change. Which window ticked is not in the report or the file. Gember lost this game (game 3 of a match) on time. CT-523.",
+  },
+  {
+    id: 324, room: "SHXD", date: "2026-11-03",
+    report: "mycheze, seat 1: there's no way to get back to the Game Over summary after you View Board.",
+    status: 'live',
+    note: "Real. The way back (\"Post-game summary\" in the prompt bar) is drawn only when the state's phase is 'gameover'; this game was lost on time, which is decided off the state (it ended at turn 4's planning step), so the button never appears. CT-524.",
+  },
+  {
+    id: 325, room: "SHXD", date: "2026-11-03",
+    report: "mycheze, seat 1, dispute (winner mycheze): \"We don't really want this to count.\"",
+    status: 'wontfix',
+    note: "Nothing to build: the dispute did its job (BL-48: it files this row, tags the game and changes no result). Filed two minutes after Gember lost game 3 of match MH4VMRK6WGV on time (clockMs [0, 539039]; the match carries banks between games). Whether the result stands is the owner's call; the defect that may lie behind it, a clock running under Pass all (#323), is CT-523.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
