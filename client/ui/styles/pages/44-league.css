@@ -24,6 +24,15 @@
   .lgpage .acctbody, .lgavail { grid-template-columns: minmax(0, 1fr); }
   .lgpage .lgspan2 { grid-column: auto; }
   .lgavside .lgpresets { flex-direction: row; }
+  /* the open "Suggest a time" form needs a row's whole width: in the table's third
+     column its date box pushed the page ~90px past a phone's edge. While it is open,
+     that week's rows stack: who and Play on a line, the time (and the form) under them. */
+  .lgmatches:has(.lgtimeform), .lgmatches:has(.lgtimeform) > tbody { display: block; }
+  .lgmatches:has(.lgtimeform) tr { display: flex; flex-wrap: wrap; align-items: center; }
+  .lgmatches:has(.lgtimeform) td { width: auto; }
+  .lgmatches:has(.lgtimeform) td:first-child { flex: 1 1 auto; }
+  .lgmatches:has(.lgtimeform) td:last-child { flex: 1 0 100%; box-sizing: border-box; }
+  .lgmatches:has(.lgtimeform) td:not(:last-child) { border-bottom: 0; }
 }
 .lgtzrow { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin: var(--space-4) 0; }
 .lgtzrow label { display: flex; flex-direction: column; gap: var(--space-1); width: 100%; font-size: var(--text-12); color: var(--dim); }
