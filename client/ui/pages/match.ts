@@ -1,7 +1,7 @@
 /* COMPETITIVE CONSTRUCTED — THE MATCH SCREENS (docs/22 §5, §6.1): the home
  * screen's Competitive card and its "Your matches" row, and the match room —
  * game 1's registration, the between-games screen (score, frozen clocks,
- * sideboarding, presets, Ready with the loser's initiative choice), the pause,
+ * sideboarding, Ready with the loser's initiative choice), the pause,
  * and a match that ended while the page waited.
  *
  * Moved out of ui/match.ts in the design-system round, 2026-11-03, under the
@@ -14,7 +14,7 @@
  * Touch-first (a 120 s window on an iPad): every move is one tap on a visible
  * button; nothing here needs hover or a right-click.
  */
-import { applyPreset, checkSwap, SIDEBOARD_MAX, type MatchConfig } from '../../engine/src/matchdeck.ts';
+import { checkSwap, SIDEBOARD_MAX, type MatchConfig } from '../../engine/src/matchdeck.ts';
 import type { Seat } from '../../engine/src/types.ts';
 import * as acct from '../account.ts';
 import { button, statusMessage, toggle } from '../components/index.ts';
@@ -212,19 +212,10 @@ function boardHtml(cfg: MatchConfig, from: 'main' | 'side', live: boolean): stri
       data-prev="${esc(n)}" ${live ? '' : 'disabled'}>${esc(n)}${c > 1 ? ` <b>×${c}</b>` : ''}</button>`).join('');
 }
 
-function presetsHtml(w: MatchLobbyInfo, cfg: MatchConfig, live: boolean): string {
-  const reg = w.mine!.registered;
-  const btn = (attrs: string, label: string, on: boolean, why: string | null): string =>
-    `<span class="ccpreset"><button class="${on ? 'on' : ''}" ${attrs} ${live && !why ? '' : 'disabled'}>${esc(label)}</button>${
-      why ? `<span class="ccwhy">${esc(why)}</span>` : ''}</span>`;
-  return `<div class="ccpresets">
-    ${btn('data-btn="cc-preset" data-preset="registered"', 'Registered deck', sameBoards(cfg, reg), null)}
-    ${w.mine!.presets.map(p => {
-      const got = applyPreset(reg, p);
-      const why = 'error' in got ? got.error : null;
-      return btn(`data-btn="cc-preset" data-preset="${esc(p.id)}"`, p.name, !why && sameBoards(cfg, got as MatchConfig), why);
-    }).join('')}
-  </div>`;
+/** back to the deck as registered — one tap (docs/22 §8 Q3), off while it already is */
+function resetHtml(w: MatchLobbyInfo, cfg: MatchConfig): string {
+  const same = sameBoards(cfg, w.mine!.registered);
+  return `<div class="ccreset"><button data-btn="cc-reset" ${same ? 'disabled' : ''}>Back to the registered deck</button></div>`;
 }
 
 /** Ready, with the loser's two buttons and never a default (§8 answer 1) */
@@ -330,7 +321,7 @@ function betweenHtml(v: MatchRoomView): string {
   const why = live ? legalityLine(reg, cfg) : null;
   return `<div class="lobbypanel ccside">
       <div class="zonelabel">${live ? 'Sideboarding — tap a card to move it across' : 'Your deck for this game'}</div>
-      ${live ? presetsHtml(w, cfg, live) : ''}
+      ${live ? resetHtml(w, cfg) : ''}
       <div class="ccboards">
         <div class="ccboard"><h3>Main <span class="acctcount${cfg.main.length < 30 ? ' bad' : ''}">${cfg.main.length}</span></h3>${boardHtml(cfg, 'main', live)}</div>
         <div class="ccboard"><h3>Sideboard <span class="acctcount${cfg.side.length > SIDEBOARD_MAX ? ' bad' : ''}">${cfg.side.length}/${SIDEBOARD_MAX}</span></h3>${boardHtml(cfg, 'side', live)}</div>

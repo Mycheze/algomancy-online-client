@@ -2,7 +2,8 @@
  * (818, 820, 821). Not a test. Builds a throwaway var/ (games, matches,
  * accounts), signs three players up IN-PROCESS (their session tokens are in the
  * accounts file the spawned server boots from), saves each a CC deck with a
- * sideboard and a swap preset, and drives the real server over raw WebSockets
+ * sideboard (and `swap`, a legal between-games configuration of it: two out,
+ * two in), and drives the real server over raw WebSockets
  * the way 520 does.
  *
  * The decks are disjoint slices of the pool, so a card's name says whose it is.
@@ -73,10 +74,10 @@ export async function ccWire(tag: string) {
     const side = pool.slice(60 + i * 5, 60 + i * 5 + 3);
     const made = C.createDeck(r.account, {
       name: `${n} CC`, cards: main, sideboard: side,
-      swaps: [{ id: `${n.toLowerCase()}-swap`, name: `${n}-secret-plan`, out: main.slice(0, 2), in: side.slice(0, 2) }],
     });
     if (!made.ok) throw new Error(made.error);
-    return { name: `${n}${tag}`, token: r.token, id: r.account.id, deckId: made.deck!.id, presetId: made.deck!.swaps![0]!.id, main, side };
+    const swap = { main: [...main.slice(2), ...side.slice(0, 2)], side: [...side.slice(2), ...main.slice(0, 2)] };
+    return { name: `${n}${tag}`, token: r.token, id: r.account.id, deckId: made.deck!.id, swap, main, side };
   });
   restore();
   let server: ServerHandle = await spawnServer(env);

@@ -48,9 +48,8 @@ export async function deckRoutes(
   if (path === '/api/decks/create') {
     const r = createDeck(account, {
       name: b['name'], cards: b['cards'], maybe: b['maybe'],
-      // the sideboard and the swap presets (docs/22 §4.4) — sanitized, never refused
+      // the sideboard (docs/22 §4.4) — sanitized, never refused
       ...('sideboard' in b ? { sideboard: b['sideboard'] } : {}),
-      ...('swaps' in b ? { swaps: b['swaps'] } : {}),
     });
     if (!r.ok) return json(res, r), true;
     answer({ id: r.deck.id, ...(r.note ? { note: r.note } : {}) });
@@ -70,10 +69,9 @@ export async function deckRoutes(
       ...('description' in b ? { description: b['description'] } : {}),
       // the tabletop's arrangement — never the deck, and clamped to it
       ...('piles' in b ? { piles: b['piles'] } : {}),
-      // the sideboard, and the swap presets (null clears them). Nothing here
-      // refuses an illegal CC deck: legality is enforced where it is PLAYED
+      // the sideboard. Nothing here refuses an illegal CC deck: legality is
+      // enforced where it is PLAYED. (An older client's `swaps` is not read.)
       ...('sideboard' in b ? { sideboard: b['sideboard'] } : {}),
-      ...('swaps' in b ? { swaps: b['swaps'] } : {}),
     });
     if (!r.ok) return json(res, r), true;
     answer({ id: r.deck.id, ...(r.note ? { note: r.note } : {}) });
@@ -117,7 +115,7 @@ export async function deckRoutes(
   // cards you want, and the note says which one is gone.
   //
   // What the deck carries BESIDE its list — the description, the cover card,
-  // the maybeboard, the sideboard and its swaps — rides in on whichever importer knew it and is dropped by
+  // the maybeboard and the sideboard — rides in on whichever importer knew it and is dropped by
   // the ones that did not (`...(info.x ? …)`), so a pasted plain list never
   // writes a blank description over anything.
   if (path === '/api/decks/import') {
@@ -134,7 +132,6 @@ export async function deckRoutes(
         ...(info.cover ? { cover: info.cover } : {}),
         ...(info.maybe?.length ? { maybe: info.maybe } : {}),
         ...(info.sideboard?.length ? { sideboard: info.sideboard } : {}),
-        ...(info.swaps?.length ? { swaps: info.swaps } : {}),
       });
       if (!r.ok) return json(res, r), true;
       // importDeckUrl's own problems (unscripted cards, deck-rule breaches)

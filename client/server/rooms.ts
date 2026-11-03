@@ -2782,7 +2782,7 @@ export type SeatVerdict =
 
 export function seatVerdict(room: Room, requested: number | undefined, me: string | null): SeatVerdict {
   // docs/22 §2.2: a Competitive match hangs off two ACCOUNTS — its pause and
-  // resume, the presets, the league. A guest still has casual constructed.
+  // resume, the league. A guest still has casual constructed.
   if (room.match && me === null) {
     return { refuse: 'a Competitive match needs an account — sign in (or play as a guest) first' };
   }

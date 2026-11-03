@@ -17,16 +17,16 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFile
 import { join } from 'node:path';
 import { randomBytes } from 'node:crypto';
 import type { CardName, Seat } from '../engine/src/types.ts';
-import type { MatchConfig, SwapPreset } from '../engine/src/matchdeck.ts';
+import type { MatchConfig } from '../engine/src/matchdeck.ts';
 import type { RoomLeague } from './rooms.ts';
 import { matchesDir } from './statepaths.ts';
 
 /** what a seat brought to game 1: the pool every later configuration must be
- * a rearrangement of (CR 901.9c), the saved deck it came from, and that deck's
- * swap presets as they stood (the seat's own — never sent to the other) */
+ * a rearrangement of (CR 901.9c), and the saved deck it came from. (A match
+ * file written before 2026-11-03 may also carry that deck's swap `presets`;
+ * nothing reads them any more.) */
 export interface Registered extends MatchConfig {
   deckId: string | null;
-  presets: SwapPreset[];
 }
 
 export interface MatchGame {

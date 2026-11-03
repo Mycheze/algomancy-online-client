@@ -1,5 +1,5 @@
 /* THE SIDEBOARD RULE — a Competitive Constructed deck: a main deck, a sideboard
- * of up to seven cards, and the swaps between them (docs/22 §4.1, §4.6).
+ * of up to seven cards, and the swaps between them (docs/22 §4.1).
  *
  * The rule is the owner's (2026-11-02, docs/22 §0): "like Magic" — any cards
  * either way between games, the main deck stays at 30 or more, the sideboard
@@ -11,16 +11,14 @@
  * nothing here can change a game that exists, and the deck work and the
  * engine work never edit the same file.
  *
- * Three questions, three functions:
+ * Two questions, two functions:
  *
  *   checkMatchDeck  may this deck be REGISTERED for a match?
  *   checkSwap       is this a legal between-games configuration OF that deck?
- *   applyPreset     what configuration does this saved swap give, or why not?
  *
- * ⚠ A PRESET IS A TARGET, NEVER A DELTA ON WHATEVER IS CURRENT. It is applied
- * to the REGISTERED deck every time, so two clicks give what one does, and a
- * preset that worked in game 2 still works in game 3 whatever game 2 used.
- * The delta reading fails half the time, for reasons nobody can see (§4.6).
+ * (Saved swap presets were here until 2026-11-03, when the owner had them
+ * taken out to be planned again: "the UX is terrible for it". Between games a
+ * player moves cards by hand; checkSwap is all that needs.)
  */
 import { checkDeck } from './apply.ts';
 import { canonicalCardName } from './cards/dsl.ts';
@@ -38,23 +36,6 @@ export interface MatchConfig {
   main: CardName[];
   side: CardName[];
 }
-
-/** A saved swap (§4.6): which copies leave the main deck and which come in,
- * both MULTISETS relative to the registered deck. |in| ≠ |out| is fine — the
- * main deck's size may change. */
-export interface SwapPreset {
-  id: string;
-  /** ≤ PRESET_NAME_MAX chars */
-  name: string;
-  /** main → sideboard */
-  out: CardName[];
-  /** sideboard → main */
-  in: CardName[];
-}
-
-/** at most this many presets on a deck, and this long a name (§4.6) */
-export const PRESETS_MAX = 12;
-export const PRESET_NAME_MAX = 40;
 
 export type MatchDeckResult =
   | { ok: true; main: CardName[]; side: CardName[] }
@@ -127,75 +108,4 @@ export function checkSwap(registered: MatchConfig, next: MatchConfig): MatchDeck
   const lost = [...was].filter(([n, c]) => c > (now.get(n) ?? 0)).map(([n]) => n);
   if (lost.length) return { ok: false, error: `missing from both boards: ${few(lost)}` };
   return checkMatchDeck(next.main, next.side);
-}
-
-/** `list` with one copy of each name in `take` removed — the LAST copy, so the
- * positions in front of it never move. Null if `list` holds too few. */
-function without(list: readonly CardName[], take: readonly CardName[]): CardName[] | null {
-  const out = [...list];
-  for (const n of take) {
-    const i = out.lastIndexOf(n);
-    if (i < 0) return null;
-    out.splice(i, 1);
-  }
-  return out;
-}
-
-/** the first card `want` needs more of than `have` holds, and how many it needs */
-function shortOf(have: readonly CardName[], want: readonly CardName[]): [CardName, number] | null {
-  const h = counts(have);
-  for (const [n, c] of counts(want)) if (c > (h.get(n) ?? 0)) return [n, c];
-  return null;
-}
-
-/**
- * The configuration a preset gives: the REGISTERED deck with `out` moved to
- * the sideboard and `in` moved to the main deck — or why it cannot be.
- *
- * Absolute, so idempotent: it never reads the current configuration. A preset
- * is usable iff `out ⊆ main`, `in ⊆ side` (multisets) and the result passes
- * checkMatchDeck. A later deck edit can make a stored preset stale; the error
- * says why in a sentence a button can show ("needs 2× Ignis Sprite in the
- * main deck"). Validity is computed, never stored (§4.6).
- *
- * Deterministic order: the main deck keeps its registered order with the
- * leavers taken out and the arrivals appended in preset order; the same for
- * the sideboard.
- */
-export function applyPreset(registered: MatchConfig, p: Pick<SwapPreset, 'out' | 'in'>): MatchConfig | { error: string } {
-  const main = registered.main.map(canonicalCardName);
-  const side = registered.side.map(canonicalCardName);
-  const out = (isNameList(p?.out) ? p.out : []).map(canonicalCardName);
-  const inn = (isNameList(p?.in) ? p.in : []).map(canonicalCardName);
-  const shortMain = shortOf(main, out);
-  if (shortMain) return { error: `needs ${shortMain[1]}× ${shortMain[0]} in the main deck` };
-  const shortSide = shortOf(side, inn);
-  if (shortSide) return { error: `needs ${shortSide[1]}× ${shortSide[0]} in the sideboard` };
-  const next: MatchConfig = {
-    main: [...without(main, out)!, ...inn],
-    side: [...without(side, inn)!, ...out],
-  };
-  if (next.main.length < 30) return { error: `would leave the main deck at ${next.main.length} cards — it needs 30` };
-  if (next.side.length > SIDEBOARD_MAX) {
-    return { error: `would put ${next.side.length} cards in the sideboard — it holds ${SIDEBOARD_MAX}` };
-  }
-  const c = checkMatchDeck(next.main, next.side);
-  return c.ok ? { main: c.main, side: c.side } : { error: c.error };
-}
-
-/**
- * The preset that turns `registered` into `current` — the "set from current"
- * button (§4.6), and the inverse of applyPreset: applying the result to
- * `registered` gives `current`'s cards on each board. `out` is what the main
- * deck lost, `in` what it gained, both multisets in canonical names.
- */
-export function presetBetween(registered: MatchConfig, current: MatchConfig): Pick<SwapPreset, 'out' | 'in'> {
-  const was = counts(registered.main.map(canonicalCardName));
-  const now = counts(current.main.map(canonicalCardName));
-  const diff = (a: Map<string, number>, b: Map<string, number>): CardName[] => {
-    const r: CardName[] = [];
-    for (const [n, c] of a) for (let i = (b.get(n) ?? 0); i < c; i++) r.push(n);
-    return r;
-  };
-  return { out: diff(was, now), in: diff(now, was) };
 }

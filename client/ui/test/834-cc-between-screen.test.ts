@@ -7,8 +7,8 @@
  *   §2 ONE TAP MOVES ONE COPY across, by mouse or by finger; the in-between
  *      illegal deck says why in the legality line, Ready is disabled, and
  *      nothing is sent until the deck is legal again — then the config is
- *   §3 the presets row: Registered deck, each saved swap, a stale one disabled
- *      with its reason in words (no hover needed); a tap sends the preset
+ *   §3 one tap back to the registered deck — an ordinary config. (Saved swap
+ *      presets were taken out on 2026-11-03, owner: "rip it out for now".)
  *   §4 the opponent is a ready dot and a name: their deck is never drawn
  *   §5 the winner's Ready carries no initiative
  */
@@ -29,10 +29,6 @@ const info = (over: Record<string, unknown> = {}): Record<string, unknown> => ({
   phase: 'between', chooser: 1, initiative: null, until: UNTIL, locked: false, ready: [false, false],
   mine: {
     registered: { main: MAIN, side: SIDE }, current: { main: MAIN, side: SIDE },
-    presets: [
-      { id: 'p1', name: 'vs control', out: [N[0]], in: [N[15]] },
-      { id: 'p2', name: 'old swap', out: [N[0]], in: [N[23]] },
-    ],
   },
   ...over,
 });
@@ -82,17 +78,14 @@ test('§2 one tap moves one copy; an illegal deck is not sent and Ready waits', 
   assert.match(board(html, 'Main'), new RegExp(`${N[15]}`));
 });
 
-test('§3 presets: Registered deck, each swap, a stale one disabled with its reason', () => {
+test('§3 one tap back to the registered deck, sent as an ordinary config', () => {
   const html = ui.html();
-  assert.match(html, /data-btn="cc-preset" data-preset="registered"[^>]*>Registered deck</);
-  assert.match(html, /<button class="on" data-btn="cc-preset" data-preset="p1" >vs control<\/button>/,
-    'the deck on screen IS the swap — it is marked');
-  const stale = /<span class="ccpreset"><button[^>]*data-preset="p2"[^>]*>old swap<\/button><span class="ccwhy">([^<]*)<\/span>/.exec(html);
-  assert.ok(stale, 'the stale swap is drawn with its reason beside it');
-  assert.match(stale[0], /disabled/);
-  assert.match(stale[1]!, new RegExp(`needs 1× ${N[23]} in the sideboard`));
-  ui.click({ btn: 'cc-preset', preset: 'registered' });
-  assert.deepEqual(cc(), [{ t: 'cc', op: 'preset', preset: 'registered' }]);
+  assert.doesNotMatch(html, /cc-preset/, 'no saved swaps');
+  assert.match(html, /<button data-btn="cc-reset" >Back to the registered deck<\/button>/, 'moved away from it: offered');
+  ui.click({ btn: 'cc-reset' });
+  assert.deepEqual(cc(), [{ t: 'cc', op: 'config', main: MAIN, side: SIDE }]);
+  const back = lobby();
+  assert.match(back, /<button data-btn="cc-reset" disabled>Back to the registered deck<\/button>/, 'there already: off');
 });
 
 test('§4 the opponent is a ready dot and a name, never a deck', () => {

@@ -5,12 +5,12 @@
  *      second registration deals game 1, sequential
  *   §2 a concede of game 1 pushes {t:'match'} with the next room to both seats,
  *      and the post-game payload carries the match score
- *   §3 in the next room each seat sees its own deck; a preset applies; the
+ *   §3 in the next room each seat sees its own deck; a swap applies; the
  *      window opens once both are in; a pause is offered and agreed
  *   §4 THE SERVER RESTARTS. Both rejoin: the match is still paused, the
  *      configuration, the score and the banks exactly as they were
  *   §5 resume (both); the loser readies with the initiative; game 2 deals on
- *      the chosen seat, from the preset deck, on the carried banks
+ *      the chosen seat, from the swapped deck, on the carried banks
  *   §6 game 2 to the other seat; game 3; the match ends 2-1 and says so
  *   §7 /api/matches/mine lists an open match and drops a finished one
  */
@@ -53,9 +53,9 @@ test('§1-§7 a Bo3 over the wire, paused, restarted, resumed and finished', asy
     assert.ok(opened['waiting'].match.until > Date.now(), 'the window opened once both were in');
     const banks: number[] = opened['waiting'].match.banks;
     let mk = a.msgs.length;
-    a.send({ t: 'cc', op: 'preset', preset: ann.presetId });
+    a.send({ t: 'cc', op: 'config', ...ann.swap });
     const pre = await a.next(m => m.t === 'update' && m['waiting']?.match?.mine?.current?.side?.includes(ann.main[0]), mk);
-    const presetCfg = pre['waiting'].match.mine.current;
+    const swapCfg = pre['waiting'].match.mine.current;
     mk = a.msgs.length;
     b.send({ t: 'cc', op: 'pause' });
     await a.next(m => m.t === 'update' && m['waiting']?.match?.pause?.offeredBy === 1, mk);
@@ -67,7 +67,7 @@ test('§1-§7 a Bo3 over the wire, paused, restarted, resumed and finished', asy
     const a2 = await w.client(), b2 = await w.client();
     const [ra, rb] = await joinNext(a2, b2, room2, ann, bo);
     assert.equal(ra['waiting']?.match?.phase, 'paused', 'still paused after the restart');
-    assert.deepEqual(ra['waiting'].match.mine.current, presetCfg, 'the configuration as it was');
+    assert.deepEqual(ra['waiting'].match.mine.current, swapCfg, 'the configuration as it was');
     assert.deepEqual(rb['waiting'].match.score, [0, 1], 'the score as it was');
     assert.deepEqual(ra['waiting'].match.banks, banks, 'the banks as they were');
     assert.equal((await mine(bo.token))[0]?.phase, 'paused', '§7 listed as paused');
@@ -86,8 +86,8 @@ test('§1-§7 a Bo3 over the wire, paused, restarted, resumed and finished', asy
     await b2.next(m => m.t === 'joined' && !!m['view'], mkB);
     assert.equal(g2a['view'].initiative, 1, 'Bo takes the initiative, as Ann chose');
     assert.equal(g2a['match']?.game, 2);
-    assert.equal(g2a['view'].players[0].hand.length + g2a['view'].decks[0].length, presetCfg.main.length,
-      'Ann plays the preset deck (its size)');
+    assert.equal(g2a['view'].players[0].hand.length + g2a['view'].decks[0].length, swapCfg.main.length,
+      'Ann plays the swapped deck (its size)');
     assert.deepEqual(g2a['clock']?.ms?.map((x: number) => Math.round(x / 1000)), banks.map(x => Math.round(x / 1000)),
       'game 2 starts on the carried banks');
     // §6 Bo concedes game 2; game 3; Bo concedes again

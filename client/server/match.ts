@@ -32,7 +32,7 @@
  *             a flag — running out of time loses the MATCH (owner, §0).
  */
 import type { CardName, Seat } from '../engine/src/types.ts';
-import { applyPreset, checkMatchDeck, checkSwap, type MatchConfig } from '../engine/src/matchdeck.ts';
+import { checkMatchDeck, checkSwap, type MatchConfig } from '../engine/src/matchdeck.ts';
 import { matchDeckForPlay } from './collection.ts';
 import {
   MATCH_CLOCK_MS, closeMatchRoom, createRoom, decidedWinner, getRoom, roomWaiting, setRoomDeck,
@@ -114,19 +114,18 @@ const no = (why: string): MatchOutcome => ({ ok: false, why });
 
 /**
  * What a seat registers for a match (docs/22 §5.1): a SAVED deck, re-read from
- * the account and checked with checkMatchDeck (collection.ts matchDeckForPlay),
- * with its presets; or, with no deck id, a main + sideboard off the wire,
- * checked the same way and carrying no presets.
+ * the account and checked with checkMatchDeck (collection.ts matchDeckForPlay);
+ * or, with no deck id, a main + sideboard off the wire, checked the same way.
  */
 export function registrationFor(userId: string, deckId: unknown, deck: unknown, side: unknown): Registered | { error: string } {
   if (typeof deckId === 'string' && deckId) {
     const d = matchDeckForPlay(userId, deckId);
     if (!d) return { error: 'that deck is not legal for Competitive Constructed — check its sideboard and copies in the deck builder' };
-    return { main: d.main, side: d.side, deckId: d.id, presets: d.presets };
+    return { main: d.main, side: d.side, deckId: d.id };
   }
   const c = checkMatchDeck(deck, side ?? []);
   return c.ok
-    ? { main: c.main, side: c.side, deckId: null, presets: [] }
+    ? { main: c.main, side: c.side, deckId: null }
     : { error: `that deck is not legal for Competitive Constructed: ${c.error}` };
 }
 
@@ -160,7 +159,7 @@ export function registerSeat(room: Room, seat: Seat, userId: string, name: strin
   if (room.match?.game !== 1 || m.phase !== 'game' || !roomWaiting(room)) {
     return { ok: false, why: 'decks are registered before game 1 only — between games you sideboard' };
   }
-  m.registered[seat] = { ...reg, main: [...reg.main], side: [...reg.side], presets: reg.presets.map(p => ({ ...p, out: [...p.out], in: [...p.in] })) };
+  m.registered[seat] = { main: [...reg.main], side: [...reg.side], deckId: reg.deckId };
   m.current[seat] = copyConfig(reg);
   m.users[seat] = userId;
   m.names[seat] = name;
@@ -378,24 +377,11 @@ export function matchOp(room: Room, seat: Seat, op: string, msg: Record<string, 
     delete m.pause;
     return touch();
   }
-  if (op === 'config' || op === 'preset') {
+  if (op === 'config') {
     if (b.locked) return no('the sideboarding window has closed — what was set is what is played');
     const reg = m.registered[seat];
     if (!reg) return no('you have no registered deck in this match');
-    let next: MatchConfig;
-    if (op === 'preset') {
-      const id = msg['preset'];
-      if (id === null || id === undefined || id === 'registered') next = copyConfig(reg);
-      else {
-        const p = reg.presets.find(x => x.id === id);
-        if (!p) return no('no such swap on your deck');
-        const r = applyPreset(reg, p);
-        if ('error' in r) return no(`that swap cannot be used: ${r.error}`);
-        next = r;
-      }
-    } else {
-      next = { main: msg['main'] as CardName[], side: msg['side'] as CardName[] };
-    }
+    const next: MatchConfig = { main: msg['main'] as CardName[], side: msg['side'] as CardName[] };
     // checkSwap: the same cards as registered, main ≥ 30, side ≤ 7, the copy
     // cap over both (CR 901.9c). An illegal one is REFUSED and `current` keeps
     // the last legal one — so the lock can only ever deal a legal deck.
@@ -525,7 +511,7 @@ export interface MatchLobbyInfo {
   locked: boolean;
   ready: [boolean, boolean];
   /** this seat's own deck — null before it has registered one */
-  mine: { registered: MatchConfig; current: MatchConfig; presets: Registered['presets'] } | null;
+  mine: { registered: MatchConfig; current: MatchConfig } | null;
   /** voidAt: when a paused match lapses — 7 days, or its league week's end if sooner */
   pause?: { offeredBy: Seat | null; pausedAt: number | null; resume: [boolean, boolean]; voidAt: number | null };
   result?: Match['result'];
@@ -549,7 +535,6 @@ export function matchLobbyInfo(room: Room, seat: Seat): MatchLobbyInfo | undefin
     mine: reg && cur ? {
       registered: { main: [...reg.main], side: [...reg.side] },
       current: { main: [...cur.main], side: [...cur.side] },
-      presets: reg.presets.map(p => ({ ...p, out: [...p.out], in: [...p.in] })),
     } : null,
     ...(m.pause ? { pause: { offeredBy: m.pause.offeredBy, pausedAt: m.pause.pausedAt, resume: [...m.pause.resume] as [boolean, boolean], voidAt: matchVoidAt(m) } } : {}),
     ...(m.result ? { result: { ...m.result } } : {}),

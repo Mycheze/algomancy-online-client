@@ -2359,7 +2359,7 @@ wss.on('connection', ws => {
       note?: unknown;
       /** docs/22: a Competitive match — `cc: {bestOf}` on the creating join, a
        *  `side` beside `deck`, and the between-games `{t:'cc', op, …}` fields */
-      cc?: unknown; side?: unknown; op?: unknown; main?: unknown; preset?: unknown; ready?: unknown; initiative?: unknown };
+      cc?: unknown; side?: unknown; op?: unknown; main?: unknown; ready?: unknown; initiative?: unknown };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
     // ⚠ `JSON.parse("null")` SUCCEEDS. So do `[]`, `1` and `"x"`. The very next
     // line reads `msg.t`, and on null that throws inside a 'message' listener,
@@ -2807,7 +2807,6 @@ wss.on('connection', ws => {
     /* ── docs/22 §5 — A COMPETITIVE MATCH BETWEEN GAMES ─────────────────
      *
      *   {t:'cc', op:'config', main, side}   this seat's next configuration
-     *   {t:'cc', op:'preset', preset}       a saved swap ('registered' = the deck as registered)
      *   {t:'cc', op:'ready', ready, initiative?}   the loser's Ready carries the choice
      *   {t:'cc', op:'pause' | 'unpause' | 'resume'}
      *   {t:'concedeMatch'}                  in a game or between (one function)

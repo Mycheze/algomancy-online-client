@@ -50,13 +50,10 @@ import {
 import { buildDeckFile, deckFileText } from './deckformat.ts';
 import { chooseDeck, chosenDeck, copyText, elIcon, esc } from './util.ts';
 import { artUrl } from './assets.ts';
+import { button } from './components/index.ts';
 import * as tt from './tabletop.ts';
 import type { DeckPile } from './deckarrange.ts';
-import {
-  MATCH_COPY_CAP, PRESETS_MAX, PRESET_NAME_MAX, SIDEBOARD_MAX,
-  applyPreset, checkMatchDeck, checkSwap, presetBetween,
-  type MatchConfig, type SwapPreset,
-} from '../engine/src/matchdeck.ts';
+import { MATCH_COPY_CAP, SIDEBOARD_MAX, checkMatchDeck, type MatchConfig } from '../engine/src/matchdeck.ts';
 
 // ── the shapes the server sends (server/collection.ts) ────────────────
 
@@ -73,9 +70,6 @@ export interface DeckView {
    * the games of a Competitive Constructed match. The server always sends it;
    * read through `sideOf`, which is also right for a reply that predates it */
   sideboard?: string[];
-  /** the deck's saved swaps (docs/22 §4.6) — the owner's own; sent only when
-   * edited (`swapsDirty`), so an edit to the cards never rewrites them */
-  swaps?: SwapPreset[];
   cover: string | null;
   author: string;
   url?: string;
@@ -200,21 +194,6 @@ export const screen = (): 'decks' | null => (open ? 'decks' : null);
 export function initDecks(opts: { app: HTMLElement; rerender: () => void }): void {
   $app = opts.app;
   rerenderHost = opts.rerender;
-  // a swap's name, typed: saved without a repaint, so the caret stays put
-  // (the deck name's rule — see wire()). One listener, on the document, because
-  // the rows are rebuilt by every paint.
-  if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
-    document.addEventListener('input', e => {
-      const box = e.target as HTMLInputElement | null;
-      const id = box?.dataset?.['swapName'];
-      const d = current();
-      const p = id && d ? d.swaps?.find(x => x.id === id) : undefined;
-      if (!d || !p) return;
-      p.name = String(box!.value ?? '').slice(0, PRESET_NAME_MAX);
-      swapsDirty.add(d.id);
-      scheduleSave(d.id);
-    });
-  }
 }
 
 const current = (): DeckView | null => decks?.find(d => d.id === openId) ?? null;
@@ -333,8 +312,6 @@ export function competitiveDecks(): { id: string; name: string; error: string | 
 }
 
 const SAVE_MS = 500;
-/** decks whose swaps were edited since the last save went out */
-const swapsDirty = new Set<string>();
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 let savePending: string | null = null;
 
@@ -359,11 +336,8 @@ function flushSave(): void {
     // which clamps it to `cards` either way (an add here leaves a deficit the
     // table reconciles on open; a cut, a surplus the server trims)
     piles: deck.piles ?? null,
-    // the sideboard rides along like the maybeboard; the swaps only when they
-    // were edited — re-sending them on every card edit would let the server's
-    // sanitize quietly rewrite a preset the edit just made stale (docs/22 §4.6)
+    // the sideboard rides along like the maybeboard
     sideboard: sideOf(deck),
-    ...(swapsDirty.delete(deck.id) ? { swaps: deck.swaps ?? null } : {}),
   }).then(r => {
     inflight--;
     if (!r.ok) { msg = r.error ?? 'could not save that change'; paint(); return; }
@@ -471,13 +445,13 @@ function recordLine(r: DeckRecord): string {
  * The cap itself is unchanged, and so is what BL-34 asked for: at two copies
  * no `+` is offered anywhere, in the deck or in the drawer.
  */
-function tile(name: string, n: number, where: 'deck' | 'maybe' | 'side' | 'add', cover: string | null,
+function tile(name: string, n: number, where: 'deck' | 'maybe' | 'side' | 'add' | 'addside', cover: string | null,
   /** copies across the deck AND the sideboard — what the cap counts (docs/22 §4.5) */
   total = n): string {
   const overCap = where === 'maybe' ? n > 2 : total > 2;
   const atCap = where !== 'maybe' && total >= 2;
   /** the grey — only where "you already have the most of this" is news */
-  const shopping = atCap && where === 'add';
+  const shopping = atCap && (where === 'add' || where === 'addside');
   // COPIES ARE DRAWN, NOT COUNTED (ui/decklayout.ts): two copies is two cards,
   // stacked. The badge comes back only OVER the cap, where "too many of this"
   // is exactly the thing that must not be left to counting corners by eye.
@@ -499,7 +473,10 @@ function tile(name: string, n: number, where: 'deck' | 'maybe' | 'side' | 'add',
     ${needsCountBadge(n) || (where !== 'maybe' && overCap)
       ? `<span class="dkn bad"${total !== n ? ' title="counting the other board"' : ''}>×${total !== n && where !== 'maybe' ? total : n}</span>` : ''}
     <span class="dkbtns">
-      ${where === 'add'
+      ${where === 'addside'
+        // the drawer on the sideboard tab: its one button adds there
+        ? (atCap ? '' : `<button data-btn="deck-add-side" data-card="${esc(name)}" title="add to the sideboard">+</button>`)
+        : where === 'add'
         ? `${atCap ? '' : `<button data-btn="deck-add" data-card="${esc(name)}" title="add a copy to the deck">+</button>`}
            <button data-btn="deck-add-maybe" data-card="${esc(name)}" title="add to the maybeboard">»</button>
            ${atCap ? '' : `<button data-btn="deck-add-side" data-card="${esc(name)}" title="add to the sideboard">SB</button>`}`
@@ -622,11 +599,19 @@ function countInSide(name: string): number {
 /** what the copy cap counts: the deck and the sideboard together */
 const countBoth = (name: string): number => countIn(name) + countInSide(name);
 
-function addDrawerHtml(): string {
+/** one search result: on the sideboard tab it counts, and adds to, the sideboard */
+const resultTile = (n: string, into: 'deck' | 'side'): string => into === 'side'
+  ? tile(n, countInSide(n), 'addside', null, countBoth(n))
+  : tile(n, countIn(n), 'add', null, countBoth(n));
+
+/** the add-cards drawer: under the main list it adds to the deck (with » and
+ * SB beside each +); on the sideboard tab its + adds to the sideboard */
+function addDrawerHtml(into: 'deck' | 'side' = 'deck'): string {
   if (!adding) {
     return `<div class="dkaddrow">
-      <button class="dkadd" data-btn="deck-adding">+ Add cards</button>
-      <button class="dkbrowse" data-btn="deck-browse" title="the full card browser, with the whole filter syntax">🔍 Browse all cards</button>
+      <button class="dkadd" data-btn="deck-adding">${into === 'side' ? '+ Add cards to the sideboard' : '+ Add cards'}</button>
+      ${/* the full browser adds to the DECK — not offered where + means the sideboard */ into === 'side' ? ''
+        : '<button class="dkbrowse" data-btn="deck-browse" title="the full card browser, with the whole filter syntax">🔍 Browse all cards</button>'}
     </div>`;
   }
   const { names, total } = searchResults();
@@ -642,7 +627,7 @@ function addDrawerHtml(): string {
       <input id="dk-search" class="dksearch" spellcheck="false"
         placeholder="search the pool — name, type, text, or a filter like  mana:2 -kw:virus"
         value="${esc(search)}">
-      <button data-btn="deck-browse" title="the full browser, with the facet rail and the syntax help">🔍 browse</button>
+      ${into === 'side' ? '' : '<button data-btn="deck-browse" title="the full browser, with the facet rail and the syntax help">🔍 browse</button>'}
       <button data-btn="deck-adding-close">done</button>
     </div>
     <div class="dkfilters">
@@ -655,7 +640,7 @@ function addDrawerHtml(): string {
     </div>
     <div class="dkresultcount">${total} card${total === 1 ? '' : 's'}${
       total > names.length ? ` — showing the first ${names.length}, narrow the search or open the browser to see the rest` : ''}</div>
-    <div id="dk-results" class="dkgrid">${names.map(n => tile(n, countIn(n), 'add', null, countBoth(n))).join('')}</div>
+    <div id="dk-results" class="dkgrid">${names.map(n => resultTile(n, into)).join('')}</div>
   </section>`;
 }
 
@@ -1050,7 +1035,7 @@ function gamesTab(deck: DeckView): string {
   </section>`;
 }
 
-// ── the sideboard tab, and its swaps (docs/22 §4.5, §4.6) ──────────────
+// ── the sideboard tab (docs/22 §4.5) ──────────────────────────────────
 
 /**
  * The Competitive Constructed chip: the main deck, the sideboard, and the copy
@@ -1066,119 +1051,34 @@ function ccChipHtml(d: DeckView, casualLegal: boolean): string {
     casualLegal ? ` · ${esc(cc.error)}` : ''}</span>`;
 }
 
-/**
- * THE SWAP BEING TRIED — a configuration of the open deck, never saved.
- *
- * A preset is a target RELATIVE TO THE DECK (applyPreset), so the deck itself
- * must stay put while you work one out. You move cards across in this trial
- * instead; "Set from current" (presetBetween) turns the trial into a preset,
- * "Try" turns a preset into the trial, and "Registered deck" is the reset —
- * the same three things the between-games screen offers. Keyed to the deck as
- * it stands: an edit to the deck itself starts the trial over.
- */
-let trial: { id: string; base: string; cfg: MatchConfig } | null = null;
-
-function trialOf(d: DeckView): MatchConfig {
-  const base = JSON.stringify([d.cards, sideOf(d)]);
-  if (!trial || trial.id !== d.id || trial.base !== base) {
-    trial = { id: d.id, base, cfg: { main: [...d.cards], side: [...sideOf(d)] } };
-  }
-  return trial.cfg;
-}
-
-/** a multiset as "Name ×2" chips, each a button */
-function chipsOf(list: readonly string[], btn: string, extra: string, mark?: ReadonlySet<string>): string {
-  const counts = new Map<string, number>();
-  for (const n of list) counts.set(n, (counts.get(n) ?? 0) + 1);
-  return [...counts].sort((x, y) => x[0].localeCompare(y[0])).map(([n, c]) =>
-    `<button class="dkswapchip${mark?.has(n) ? ' moved' : ''}" data-btn="${btn}" data-card="${esc(n)}"${extra}
-      data-prev="${esc(n)}">${esc(n)}${c > 1 ? ` ×${c}` : ''}</button>`).join('');
-}
-
-/** one saved swap: its name, what goes out and in, and its buttons — or, when
- * a later edit has made it unusable, the same row disabled with the reason */
-function swapRowHtml(d: DeckView, p: SwapPreset): string {
-  const got = applyPreset(boardsOf(d), p);
-  const why = 'error' in got ? got.error : null;
-  const at = ` data-swap="${esc(p.id)}"`;
-  return `<div class="dkswaprow${why ? ' stale' : ''}">
-    <input class="dkswapname" id="dk-swapname-${esc(p.id)}" data-swap-name="${esc(p.id)}"
-      maxlength="${PRESET_NAME_MAX}" value="${esc(p.name)}" aria-label="swap name" spellcheck="false">
-    <span class="dkswapside"><span class="zonelabel">out</span>${chipsOf(p.out, 'deck-swap-dropout', at) || '<span class="dim">—</span>'}</span>
-    <span class="dkswapside"><span class="zonelabel">in</span>${chipsOf(p.in, 'deck-swap-dropin', at) || '<span class="dim">—</span>'}</span>
-    <span class="dkswapbtns">
-      <button data-btn="deck-swap-try"${at} ${why ? 'disabled' : ''}>Try</button>
-      <button data-btn="deck-swap-set"${at}>Set from current</button>
-      <button class="dkicon" data-btn="deck-swap-del"${at} aria-label="delete this swap">✕</button>
-    </span>
-    ${why ? `<div class="dkswapwhy">${esc(why)}</div>` : ''}
-  </div>`;
-}
-
-function swapsHtml(d: DeckView): string {
-  const reg = boardsOf(d);
-  const cur = trialOf(d);
-  const delta = presetBetween(reg, cur);
-  const changed = delta.out.length + delta.in.length > 0;
-  const ok = checkSwap(reg, cur);
-  const presets = d.swaps ?? [];
-  return `<h3>Swaps <span class="acctcount">${presets.length}</span></h3>
-    <div class="hint">Tap a card to move it across, then save the swap. Saved swaps are one tap between games.</div>
-    <div class="dkswaptry">
-      <div class="dkswapcol"><div class="zonelabel">Deck ${cur.main.length}</div>
-        ${chipsOf(cur.main, 'deck-try-out', '', new Set(delta.in)) || '<span class="dim">—</span>'}</div>
-      <div class="dkswapcol"><div class="zonelabel">Sideboard ${cur.side.length}/${SIDEBOARD_MAX}</div>
-        ${chipsOf(cur.side, 'deck-try-in', '', new Set(delta.out)) || '<span class="dim">—</span>'}</div>
-    </div>
-    <div class="dkaddrow">
-      ${changed && !ok.ok ? `<span class="deckstatus bad">${esc(ok.error)}</span>` : ''}
-      <button data-btn="deck-swap-reset" ${changed ? '' : 'disabled'}>Registered deck</button>
-      ${presets.length < PRESETS_MAX
-        ? `<button class="primary" data-btn="deck-swap-new" ${changed ? '' : 'disabled'}>Save as a swap</button>` : ''}
-    </div>
-    ${presets.map(p => swapRowHtml(d, p)).join('')}`;
-}
-
 function sideTabHtml(d: DeckView): string {
   const side = sideOf(d);
   return `<section class="acctcard wide">
     <h3>Sideboard <span class="acctcount${side.length > SIDEBOARD_MAX ? ' bad' : ''}">${side.length}/${SIDEBOARD_MAX}</span></h3>
     <div class="hint">Swapped with the deck between games of a Competitive match. Max ${MATCH_COPY_CAP} of a card across both.</div>
     <div class="dkwork">
-      <div class="dkworkmain">${groupedTiles(analyzeDeck(side), null, 'side')}</div>
+      <div class="dkworkmain">
+        ${groupedTiles(analyzeDeck(side), null, 'side')}
+        ${addDrawerHtml('side')}
+      </div>
       ${focusHtml()}
     </div>
-    ${swapsHtml(d)}
   </section>`;
 }
 
-/** a fresh preset id the server keeps (collection.ts PRESET_ID) */
-function newSwapId(list: readonly SwapPreset[]): string {
-  let n = 1;
-  while (list.some(p => p.id === `w${n}`)) n++;
-  return `w${n}`;
-}
-
-/** change the open deck's swaps, then save them with the deck */
-function editSwaps(fn: (list: SwapPreset[], d: DeckView) => SwapPreset[]): void {
-  edit(d => {
-    const next = fn((d.swaps ?? []).map(p => ({ ...p, out: [...p.out], in: [...p.in] })), d);
-    if (next.length) d.swaps = next; else delete d.swaps;
-    swapsDirty.add(d.id);
-  });
-}
-
-/** one copy of `name` across, in the trial (never refused: the count is the same) */
-function tryMove(name: string, from: 'main' | 'side'): void {
-  const d = current();
-  if (!d) return;
-  const cfg = trialOf(d);
-  const to = from === 'main' ? 'side' : 'main';
-  const i = cfg[from].lastIndexOf(name);
-  if (i < 0) return;
-  cfg[from].splice(i, 1);
-  cfg[to].push(name);
-  paint();
+/**
+ * THE WAY TO THE SIDEBOARD FROM UNDER THE MAIN LIST — owner, 2026-11-03: "the
+ * sideboard should be the second tab AND have a link to that tab from below the
+ * main list, where people will normally look for it". Every deck shows it: any
+ * deck can be taken to a Competitive match, so any deck can have a sideboard.
+ * The same `deck-tab` button the tab is, so it goes where the tab goes.
+ */
+function sideLinkHtml(d: DeckView): string {
+  const n = sideOf(d).length;
+  return `<div class="dksidelink">${button({
+    variant: 'link', dataBtn: 'deck-tab', attrs: { 'data-tab': 'side' },
+    label: n ? `Sideboard · ${n} card${n === 1 ? '' : 's'} →` : 'Add a sideboard →',
+  })}</div>`;
 }
 
 // ── the page ──────────────────────────────────────────────────────────
@@ -1282,7 +1182,7 @@ function exportLayer(d: DeckView): string {
       <button data-btn="deck-export-close">close</button>
     </div>
     <div class="hint">${file
-      ? 'Description, cover, sideboard, swaps, maybeboard and attribution included — paste it into any import box.'
+      ? 'Description, cover, sideboard, maybeboard and attribution included — paste it into any import box.'
       : 'Cards only, one per line — no description or cover. algomancer.cc reads this format.'}</div>
     <textarea class="dkexporttext" rows="${file ? 16 : 10}" readonly
       onclick="this.select()">${esc(body)}</textarea>
@@ -1301,10 +1201,11 @@ function detailHtml(d: DeckView): string {
     ? [`this build cannot play: ${a.unknown.slice(0, 3).join(', ')}${a.unknown.length > 3 ? ` (+${a.unknown.length - 3})` : ''}`]
     : [])];
   const tabs = ([
+    // the sideboard SECOND, beside the list it is swapped with (owner, 2026-11-03)
     ['cards', `cards <span class="acctcount">${a.total}</span>`],
+    ['side', `sideboard <span class="acctcount${side.length > SIDEBOARD_MAX ? ' bad' : ''}">${side.length}/${SIDEBOARD_MAX}</span>`],
     ['mana', 'curve &amp; affinity'],
     ['maybe', `maybeboard <span class="acctcount">${d.maybe.length}</span>`],
-    ['side', `sideboard <span class="acctcount${side.length > SIDEBOARD_MAX ? ' bad' : ''}">${side.length}/${SIDEBOARD_MAX}</span>`],
     ['games', `games <span class="acctcount">${d.record.games}</span>`],
   ] as [Tab, string][]).map(([t, label]) =>
     `<button class="accttab ${tab === t ? 'on' : ''}" data-btn="deck-tab" data-tab="${t}">${label}</button>`).join('');
@@ -1362,9 +1263,10 @@ function detailHtml(d: DeckView): string {
                 `<button class="dkkind${group === g.id ? ' on' : ''}" data-btn="deck-group"
                   data-group="${g.id}" title="${esc(g.hint)}">${esc(g.label)}</button>`).join('')}
               <span class="dkfilterspacer"></span>
-              <span class="hint">click a card to pin it · » sends it to the maybeboard</span>
+              <span class="hint">click a card to pin it · » sends it to the maybeboard · SB to the sideboard</span>
             </div>
             ${groupedTiles(a, d.cover, 'deck')}
+            ${sideLinkHtml(d)}
             ${addDrawerHtml()}
            </div>
            ${focusHtml()}
@@ -1568,7 +1470,7 @@ function wire(was: Perch | null): void {
     const count = document.querySelector('.dkresultcount');
     if (!out) return;
     const { names, total } = searchResults();
-    out.innerHTML = names.map(n => tile(n, countIn(n), 'add', null, countBoth(n))).join('');
+    out.innerHTML = names.map(n => resultTile(n, tab === 'side' ? 'side' : 'deck')).join('');
     if (count) {
       count.textContent = `${total} card${total === 1 ? '' : 's'}` +
         (total > names.length ? ` — showing the first ${names.length}, narrow the search to see the rest` : '');
@@ -1912,39 +1814,6 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'deck-side-less':
       editBoards(b => { b.side = removeOne(b.side, card); }); return true;
 
-    // ── the swaps ──
-    case 'deck-try-out': tryMove(card, 'main'); return true;
-    case 'deck-try-in': tryMove(card, 'side'); return true;
-    case 'deck-swap-reset':
-      trial = null; paint(); return true;
-    case 'deck-swap-try': {
-      const d = current();
-      const p = d?.swaps?.find(x => x.id === btn.dataset['swap']);
-      if (!d || !p) return true;
-      const got = applyPreset(boardsOf(d), p);
-      if ('error' in got) { msg = got.error; paint(); return true; }
-      trialOf(d);
-      trial!.cfg = got;
-      paint();
-      return true;
-    }
-    case 'deck-swap-new':
-      editSwaps((list, d) => list.length >= PRESETS_MAX ? list
-        : [...list, { id: newSwapId(list), name: `Swap ${list.length + 1}`, ...presetBetween(boardsOf(d), trialOf(d)) }]);
-      return true;
-    case 'deck-swap-set':
-      editSwaps((list, d) => list.map(p => p.id === btn.dataset['swap']
-        ? { ...p, ...presetBetween(boardsOf(d), trialOf(d)) } : p));
-      return true;
-    case 'deck-swap-del':
-      editSwaps(list => list.filter(p => p.id !== btn.dataset['swap']));
-      return true;
-    case 'deck-swap-dropout':
-    case 'deck-swap-dropin': {
-      const key = b === 'deck-swap-dropout' ? 'out' : 'in';
-      editSwaps(list => list.map(p => p.id === btn.dataset['swap'] ? { ...p, [key]: removeOne(p[key], card) } : p));
-      return true;
-    }
     case 'deck-stop':
       return true;   // a click inside a modal box is not a click outside it
 

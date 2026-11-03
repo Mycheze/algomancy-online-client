@@ -44,9 +44,7 @@ export interface PublicDeckView {
   id: string;
   name: string;
   cards: CardName[];
-  /** the sideboard — part of the list, so a shared deck shows it. Its swap
-   * presets are NOT here and never will be: they are the owner's own plans
-   * (docs/22 §4.3), and this type is the whole of what a non-owner sees. */
+  /** the sideboard — part of the list, so a shared deck shows it (docs/22 §4.3) */
   sideboard: CardName[];
   cover: CardName | null;
   author: string;
