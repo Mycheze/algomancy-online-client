@@ -642,6 +642,480 @@ const OPEN: Entry[] = [
       + 'in tokens.css (--glow legal green, --target targeting gold, --pending teal, --danger); green '
       + 'vs gold and teal vs green are the pairs a deuteranope loses first.',
   },
+  // ── the leftovers of the 2026-11-02/03 rounds (Competitive Constructed, the design
+  //    system, the new home, board-r1), filed 2026-11-03. Owner, that night: "put all
+  //    the other things into the backlog of todos that we want to take care of".
+  //    Each was re-checked against the code before it was filed.
+  {
+    id: 'BL-52',
+    slug: 'faster-gate',
+    title: 'The full gate takes ~12 minutes — make it faster',
+    area: 'engine',
+    size: 'M',
+    status: 'open',
+    track: 'qol',
+    said:
+      'put all the other things into the backlog of todos that we want to take care of '
+      + '(2026-11-03; the owner had noticed how long the gate runs)',
+    means:
+      '`npm --prefix client run check` is one && chain and took ~12 min on 2026-11-03: engine ~5.7, '
+      + 'ledgers ~2.8 (for 52 tests), ui ~1.4, server ~1.1, then the Python tests. Look at the '
+      + 'ledgers link first (its time is out of all proportion to its size), then run the suites in '
+      + 'parallel. Only the server suite binds a port, so it is the one that must stay alone.',
+    doneWhen: [
+      'The ledgers link takes a time in proportion to its tests, or the record says why it cannot',
+      'The gate runs the independent suites in parallel and still fails (non-zero exit, the failing suite named) when any one of them fails',
+      'Two gates still cannot deadlock on the server suite\'s port, and the full gate is measurably shorter than 12 minutes on the dev machine',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/package.json',
+      'client/ledgers/package.json',
+      'client/engine/package.json',
+    ],
+    notes:
+      'Timings from the design-system round register (var/records/ds-round-2026-11-03-register.md, '
+      + '"Ticket after landing"). Parallel runs make CPU load worse, and several tests already flake '
+      + 'under load (CT-511) — fix or pin those first or the faster gate will be a flakier one.',
+  },
+  {
+    id: 'BL-53',
+    slug: 'competitive-swap-presets',
+    title: 'Competitive: saved sideboard swaps — plan the UX before building it again',
+    area: 'client',
+    size: 'L',
+    status: 'open',
+    track: 'feature',
+    said:
+      'That can come later, but the UX is terrible for it and we should plan it better. (2026-11-03, '
+      + 'on the saved "standardized swaps" presets being taken out; the 2026-11-02 ask was saved named '
+      + 'presets that exchange a specific set of cards in one click)',
+    means:
+      'A PLANNING item, not a rebuild. The presets shipped with Competitive Constructed on 2026-11-02 '
+      + 'and were removed whole on 2026-11-03 (engine matchdeck.ts, the deck store, the match wire, the '
+      + 'deck page\'s Swaps section; record var/records/ds-round-2026-11-03-r2-C.md section 2). Manual '
+      + 'sideboarding on the deck table and "Back to the registered deck" stay. Design where a preset is '
+      + 'made and where it is applied (the deck page? the sideboarding table?) and show the owner before '
+      + 'writing code.',
+    doneWhen: [
+      'A written design (screens and the one-tap flow) is shown to the owner and he approves it',
+      'Only then: a player can save a named swap on a deck and apply it between games in one tap; the opponent never sees it',
+    ],
+    decided: [
+      'Removed 2026-11-03; old decks that still carry `swaps` load and lose the field at their next write (812 section 2).',
+    ],
+    asks: [
+      'Where should a swap be made and applied, and what should it look like? (the owner: "we should plan it better")',
+    ],
+    deps: [],
+    touches: [
+      'client/ui/pages/match.ts',
+      'client/ui/decks.ts',
+      'client/engine/src/matchdeck.ts',
+      'client/docs/22-competitive-constructed.md',
+    ],
+  },
+  {
+    id: 'BL-54',
+    slug: 'draft-card-pool-setting',
+    title: 'Draft: a card-pool setting — base game or with Light & Dark',
+    area: 'server',
+    size: 'M',
+    status: 'open',
+    track: 'feature',
+    said:
+      'The home sketch (client/docs/24-redesign/home-sketch-2026-11-03.png) has a Pool setting for a '
+      + 'draft: base game vs with Light & Dark. Not built on the new home: "No card-pool setting (needs a '
+      + 'server change; spec)" (flagged for the owner, 2026-11-03).',
+    means:
+      'Every Light & Dark card has the light or dark faction, so "base game only" is the same as the '
+      + 'elements being drawn from the five base elements. Today every trio method draws from all seven '
+      + '(server/trio.ts ALL_ELEMENTS), and the only lever is a custom card filter, which makes the game '
+      + 'custom (no stats) and is refused when the lobby picks the elements. The options are written up '
+      + 'in var/records/ds-round-2026-11-03-home-inventory.md section 4: A (the room carries a pool and '
+      + 'the trio methods draw from 5 or 7) is the only one that keeps both players choosing in the lobby '
+      + 'and keeps the game counting toward stats.',
+    doneWhen: [
+      'The draft panel on home has a Pool choice; with "Base game" no trio method, the 🎲 or a fixed pick can produce Light or Dark',
+      'A base-game draft is not a custom game: it counts toward stats and rating like any other',
+      'The pool survives a restart and a rematch, and a saved game replays with it',
+    ],
+    decided: [],
+    asks: [
+      'Option A from the inventory (a room field read by trio.ts), or another? And does a league draft ever use it?',
+    ],
+    deps: [],
+    touches: [
+      'client/server/trio.ts',
+      'client/server/rooms.ts',
+      'client/ui/pages/home.ts',
+      'client/ui/pages/lobby.ts',
+    ],
+  },
+  {
+    id: 'BL-55',
+    slug: 'sideboarding-table-leftovers',
+    title: 'Competitive: what the sideboarding table and match screens still lack',
+    area: 'client',
+    size: 'M',
+    status: 'open',
+    track: 'qol',
+    said:
+      'I wanted something like MTGO. Your deck laid out below, on the table we spent so much time '
+      + 'building, then the sideboard above and you slide cards in and out. (2026-11-03; built and live '
+      + 'that night, these are what its record left)',
+    means:
+      'The table between games works (tap or drag a copy across). Left over, all re-checked in the code '
+      + 'on 2026-11-03: (1) a mouse hover raises a card in its pile but gives no big zoom; only '
+      + 'press-and-hold or the middle button does (zoom.ts\'s hover target is the board\'s `.card`); '
+      + '(2) the deck is always laid out by cost (pages/match.ts deckPilesHtml: seedPiles(main, \'cost\')), '
+      + 'never as the player arranged it on their tabletop, because that arrangement is not in the match '
+      + 'payload; (3) the report pill and bell float over the table\'s bottom bar, which keeps 215px clear '
+      + 'for them (47-competitive-match.css); (4) the match result says the score only, not each game\'s '
+      + 'result; (5) the Competitive deck pick is not remembered across a reload (ui/match.ts pickId is '
+      + 'module state); (6) never tried on a real iPad or in Firefox (headless Chrome only).',
+    doneWhen: [
+      'Hovering a card on the sideboarding table with a mouse shows the big zoom, as on the board',
+      'The deck is laid out as the player arranged it on the tabletop when the deck has an arrangement',
+      'Nothing floats over the table\'s bottom bar',
+      'The match result lists each game\'s winner, and the Competitive deck pick survives a reload',
+      'The owner has moved cards across on a real iPad',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/pages/match.ts',
+      'client/ui/match.ts',
+      'client/ui/zoom.ts',
+      'client/ui/styles/pages/47-competitive-match.css',
+    ],
+    notes:
+      'Sources: var/records/cc-sideboard-2026-11-03.md "Left / notes"; the Competitive register '
+      + '(var/records/cc-round-2026-11-02-register.md, "Not done (W6)"). The builder\'s own sideboard '
+      + 'pile on the tabletop has the same untried-device gap, filed as CT-516.',
+  },
+  {
+    id: 'BL-56',
+    slug: 'card-browser-sideboard',
+    title: 'The card browser has no "add to sideboard" button',
+    area: 'client',
+    size: 'S',
+    status: 'open',
+    track: 'qol',
+    said:
+      'Adding cards to your sideboard isn\'t working (2026-11-03; fixed that night on the deck page, the '
+      + 'tabletop and the pinned panel, but not in the full card browser)',
+    means:
+      'With a deck open, the full card browser\'s tiles (pages/cards.ts tileButtons) offer − / + / » '
+      + '(maybeboard) and nothing for the sideboard; on the deck page\'s Sideboard tab the 🔍 browse button '
+      + 'is simply not offered (decks.ts). While there: the browser\'s + is not capped at 2 copies, which '
+      + 'the deck page and the binder are.',
+    doneWhen: [
+      'With a deck open, a card browser tile can add a copy to the sideboard, within the 7-card and 2-copy limits',
+      'The Sideboard tab offers the browser like the other tabs do, and a card added there lands on the sideboard',
+      'The browser\'s + stops at 2 copies across deck and sideboard',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/pages/cards.ts',
+      'client/ui/cards.ts',
+      'client/ui/decks.ts',
+    ],
+    notes: 'Sources: var/records/ds-round-2026-11-03-r2-C.md "Found, not fixed"; ds-w2c record (the + cap).',
+  },
+  {
+    id: 'BL-57',
+    slug: 'redesign-remaining-pages',
+    title: 'Redesign the remaining pages to the docs/24 principles (one window, no page scroll, buttons)',
+    area: 'client',
+    size: 'XL',
+    status: 'open',
+    track: 'feature',
+    said:
+      'Owner, 2026-11-03 (client/docs/24-redesign/README.md): iPad and desktop only, "Let\'s not even '
+      + 'worry about phones for now"; "No page scrolling. Every page has to be manageable without scrolling '
+      + 'up or down"; everything is buttons; simple, not chaotic.',
+    means:
+      'Only the home is built on the app shell and guarded as one window (ui-shots `noScroll`, test 1012). '
+      + 'Every other page still scrolls as a page. Not yet redesigned (client/ui/pages/README.md): My decks '
+      + 'with its modals and Sideboard tab (still scrolls, r2-C record), the tabletop builder and binder, '
+      + 'the card browser, Metagame (its headers keep their own markup by an owner call: the Back button '
+      + 'by the title), Card stats, Profile, Sign-in, Admin, League, Weekly challenge, Learn to Play menu, '
+      + 'How to play / rules, the rules review page, the matchmaking queue, the waiting rooms and draft '
+      + 'lobby, post-game. The sideboarding table is already window-sized. One page at a time, each shown '
+      + 'to the owner.',
+    doneWhen: [
+      'Each page above fits the window at 1440x900 and at 1024x768 touch, with only its own lists scrolling inside, and a ui-shots `noScroll` state guards it',
+      'The owner has seen and approved each redesigned page',
+    ],
+    decided: [
+      'No phone layouts (owner 2026-11-03). Phone-only overflows found tonight are parked, not fixed.',
+    ],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/docs/24-redesign/README.md',
+      'client/ui/pages/README.md',
+      'client/ui/components/app-shell.ts',
+      'client/server/e2e/ui-shots-states.mjs',
+    ],
+  },
+  {
+    id: 'BL-58',
+    slug: 'board-colour-literals',
+    title: 'Board colours the palette round left hard-coded: the commit button\'s green, the stack popup\'s navy',
+    area: 'client',
+    size: 'S',
+    status: 'open',
+    track: 'qol',
+    said:
+      'put all the other things into the backlog of todos that we want to take care of (2026-11-03)',
+    means:
+      'The Manual palette moved the board through tokens but left the board\'s own literals "for the '
+      + 'board\'s round". board-r1 then fixed the action bar\'s washes. Still literals: `button.commitbtn` '
+      + '(styles/board/29-cost-toasts.css: #3c5a2f / #5b8747 / #476b37), written to match the old green '
+      + '`button.primary`, which is orange now; and the stack item popup\'s navy (the old-slate family, a '
+      + 'seam on the purple but legible).',
+    doneWhen: [
+      'The commit button reads as the same primary as every other primary button',
+      'The stack item popup sits on a palette surface, not the old navy; test 921\'s board allowlist shrinks with it',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/styles/board/29-cost-toasts.css',
+      'client/ui/styles/board/20-stack.css',
+      'client/ui/test/921-no-new-colour-literals.test.ts',
+    ],
+    notes:
+      'Sources: var/records/ds-round-2026-11-03-r2-theme.md "Left / for later" and '
+      + 'var/records/board-r1-2026-11-03.md "Not done / for later". The prompt bar\'s dark-gold wash on '
+      + 'the same list is fixed (board-r1 item 3).',
+  },
+  {
+    id: 'BL-59',
+    slug: 'ipad-one-height-bar-review',
+    title: 'iPad: look at the side effects of the one-height action bar',
+    area: 'client',
+    size: 'S',
+    status: 'open',
+    track: 'qol',
+    said:
+      'One height for the action bar (owner, mid-round in board-r1, 2026-11-03). Its record: "Worth '
+      + 'showing the owner."',
+    means:
+      'For the OWNER to look at on a real iPad, not a fix to start. The action bar is now always two '
+      + 'rows tall (87px under touch), so the board never jumps. The cost on touch: battle and table '
+      + 'cards are a little smaller than under a one-row prompt (a battle ghost slot went from 100px to '
+      + '87px wide); and a card-scan decision (trigger order, glimpse "cache one", Scholar of the Void) '
+      + 'stands up out of the bar over the bottom of your info line while it is up. Also for him to try '
+      + 'on the iPad: Storybook from the installed web app (whether `window.open(\'\')` gives a usable '
+      + 'window; ds-sb record).',
+    doneWhen: [
+      'The owner has played a game on the iPad with the bar and said keep it, or what to change',
+    ],
+    decided: [
+      'This reverses the 2026-09-26 call ("fits its content"); 324 section 5 now pins the constant height.',
+    ],
+    asks: [
+      'Are the smaller touch cards and the covered info line acceptable for a bar that never jumps?',
+    ],
+    deps: [],
+    touches: [
+      'client/ui/styles/board/39-regions.css',
+      'client/ui/test/324-info-block-resources.test.ts',
+    ],
+    notes: 'Measurements: var/records/board-r1-2026-11-03.md section 3b.',
+  },
+  {
+    id: 'BL-60',
+    slug: 'popup-sentences-owner-call',
+    title: 'Owner\'s call: the board popup sentences kept as candidates to cut',
+    area: 'client',
+    size: 'S',
+    status: 'open',
+    track: 'qol',
+    said:
+      'All the extra weirdly AI generated, superfluous text was supposed to have been gotten rid of '
+      + 'forever ago. (2026-11-03, board-r1 item 7)',
+    means:
+      'board-r1 cut the clear cases and KEPT these for the owner (all still in the code): the resource '
+      + 'window\'s "Dormant: no mana or affinity until activated in planning."; the zoom\'s "token — erased '
+      + 'when it leaves play"; the room tip\'s "N watching — they see both hands"; the Single Card Duel '
+      + 'game tip "thirty copies of one card each. Rates the cards, not you."; the stack head\'s "— '
+      + 'resolves as ONE composed ability"; the burst line "clicking a Fireball casts all 3 at once, as one '
+      + 'chain, of different sizes."; the rot pill\'s "Rot never decreases on its own."; the debt pill\'s '
+      + 'reminder; the cache\'s "both players see it"; the counterattack strip\'s "they arrive next round '
+      + 'and cannot be touched until then"; the toolbar settings\' one-or-two-sentence tooltips; and the '
+      + 'stack does-line on a card with no X ("Deal X damage to Gember (currently 3)": Dropslime, Burning '
+      + 'Vengeance, Verdant Vengeance, Null Drone), where "no X on a card that has none" needs a wording '
+      + 'choice against the 2026-09-30 live-amount wording.',
+    doneWhen: [
+      'The owner has said keep or cut for each line, and the cut ones are gone',
+    ],
+    decided: [],
+    asks: [
+      'Keep or cut, line by line (the table in var/records/board-r1-2026-11-03.md section 7, "Kept, candidates for the owner")',
+    ],
+    deps: [],
+    touches: [
+      'client/ui/main.ts',
+      'client/ui/ressum.ts',
+      'client/ui/cardtext.ts',
+      'client/ui/does-lines.json',
+    ],
+  },
+  {
+    id: 'BL-61',
+    slug: 'retire-style-codemods',
+    title: 'Retire the one-shot style scripts: delete split-styles.mjs, drop tokenize-styles\' stale token template',
+    area: 'client',
+    size: 'S',
+    status: 'open',
+    track: 'qol',
+    said:
+      'put all the other things into the backlog of todos that we want to take care of (2026-11-03)',
+    means:
+      '`client/ui/scripts/split-styles.mjs` cut style.css into styles/ and was due for deletion once '
+      + 'Competitive Constructed landed (the landing runbook\'s step 6); it has landed. '
+      + '`tokenize-styles.mjs` still embeds TOKENS_CSS with the OLD values (e.g. --color-surface #1a1f27, '
+      + 'now #3e1d52 in tokens.css). Re-checked: its isRoleTokens guard leaves a tokens.css that already '
+      + 'holds role tokens alone, so a re-run does NOT overwrite it as the palette record feared, but the '
+      + 'stale template misleads anyone who reads it.',
+    doneWhen: [
+      'split-styles.mjs is gone and nothing references it (920, css-scan.mjs, docs/23, ui/README.md, engine/scripts/paths.mjs checked)',
+      'tokenize-styles.mjs carries no copy of the token values: tokens.css is the only place they live',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/scripts/split-styles.mjs',
+      'client/ui/scripts/tokenize-styles.mjs',
+      'client/ui/test/920-styles-split-order.test.ts',
+      'client/ui/test/921-no-new-colour-literals.test.ts',
+    ],
+  },
+  {
+    id: 'BL-62',
+    slug: 'home-owner-calls',
+    title: 'Owner to decide: what the new home left out of the sketch',
+    area: 'client',
+    size: 'S',
+    status: 'open',
+    track: 'qol',
+    said:
+      'Looking really solid… great v1! (2026-11-03, on the new home). Flagged for him by its record: '
+      + '"No logo on home (the bottom bar names the client)." "Clock chips are Default/Off/45m/60m, not '
+      + 'the sketch\'s 20m/40m (271 pins them)."',
+    means:
+      'Decisions, not bugs. (1) No ALGOMANCY logo on home: the toolbar is the header and the bottom bar '
+      + 'names the client. (2) The sketch\'s 20m/40m clock chips were not adopted; the presets are Off / 45m '
+      + '/ 60m (pages/clockpick.ts CLOCK_PRESETS, test 271). (3) The Draft tab has empty space between its '
+      + 'rows and its buttons at 1440x900, because the card keeps one height across tabs so nothing jumps. '
+      + '(4) The Challenge card has no Play button of its own: the whole card opens the challenge page.',
+    doneWhen: [
+      'The owner has answered each of the four, and any change he asks for is built',
+    ],
+    decided: [],
+    asks: [
+      'A logo on home or not?',
+      'Clock presets: keep Off/45m/60m, or the sketch\'s 20m/40m?',
+      'Is the Draft tab\'s empty space at 1440x900 fine, and is a whole-card Challenge button enough?',
+    ],
+    deps: [],
+    touches: [
+      'client/ui/pages/home.ts',
+      'client/ui/pages/clockpick.ts',
+      'client/ui/test/271-clock-picker-and-warning.test.ts',
+    ],
+    notes: 'Source: var/records/ds-round-2026-11-03-home-page.md "Flagged for the owner".',
+  },
+  {
+    id: 'BL-63',
+    slug: 'design-system-small-leftovers',
+    title: 'Design-system round: the small page bugs and tidy-ups it found and left',
+    area: 'client',
+    size: 'M',
+    status: 'open',
+    track: 'qol',
+    said:
+      'put all the other things into the backlog of todos that we want to take care of (2026-11-03)',
+    means:
+      'The records\' "found, not fixed" lines that were still true in the code on 2026-11-03, each small. '
+      + 'Pick any one off; tick its doneWhen line. Phone-only overflows (profile History 534px and the '
+      + 'card-search syntax help 448px on a 390px screen, the past-week Watch buttons, card stats headers) '
+      + 'are parked under the owner\'s "not even worry about phones" (BL-57).',
+    doneWhen: [
+      'The home toolbar\'s Alerts button shows pressed while the inbox list is open (pages/home.ts passes no `on` when signed in; the list\'s state is inbox.ts\'s)',
+      '`.zonelabel`, the client\'s one global small-caps label, lives in base.css (or becomes `.eyebrow`), not in board/03-life-cards-battle-log.css',
+      'The button component writes `disabled` where a test reading attribute order expects it (rootAttrs puts it before the pass-through attrs; 287 reads `data-report="send" disabled`), so the report dialog can use button()',
+      'The profile\'s password-change failure is drawn as an error, not in `.deckmsg` gold',
+      'Metagame: a filter typed on the card ladder does not carry to the deck list and back (meta.ts shares one `text`)',
+      'Card stats: the bar fills in 34-cardstats.css (#4fb3c9, #9aa5b0) use data-viz tokens, as wrTint now does',
+      'Checked: whether the tabletop\'s rerender `!inGame` guard can reach the waiting-room deck-page bug it resembles (docs/23 "Found, not fixed")',
+      'The TODO(ds) splits are done: handlePregameButton out of main.ts into pages/home.ts, and league / challenge paint() split from their wiring; the "kicked" notice out of NetBackend',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/pages/home.ts',
+      'client/ui/inbox.ts',
+      'client/ui/styles/base.css',
+      'client/ui/components/_shared.ts',
+      'client/ui/pages/profile.ts',
+      'client/ui/meta.ts',
+      'client/ui/styles/pages/34-cardstats.css',
+      'client/ui/tabletop.ts',
+      'client/docs/23-design-system.md',
+    ],
+    notes:
+      'Sources: var/records/ds-round-2026-11-03-{ds-base,ds-w2b,ds-w2c,ds-w3a,ds-w3b,home-page}.md and '
+      + 'docs/23 "Found, not fixed". Already fixed later that night and NOT filed: the report button over '
+      + 'the league\'s Suggest a time, the friends list\'s empty table on a fetch error, the league grid\'s '
+      + '"drag" on touch, the signed-out Challenge nav wrap, `.scdraw`/`.scwarn` in the wrong piece, '
+      + 'legal.ts\'s injected stylesheet, the queue\'s 16px buttons, the favourite/unlink missing catches, '
+      + 'the ladder failure in gold, crreview.ts\'s stale comment, 962 matching words in strings, the '
+      + 'component gaps (panel titleHtml and sub-heading, table headless and column titles, tabs '
+      + 'className), the native checkboxes drawn light.',
+  },
+  {
+    id: 'BL-64',
+    slug: 'ui-shots-stable-comparisons',
+    title: 'ui-shots: make two runs of one build compare clean',
+    area: 'client',
+    size: 'S',
+    status: 'open',
+    track: 'qol',
+    said:
+      'put all the other things into the backlog of todos that we want to take care of (2026-11-03)',
+    means:
+      'Every stream of the design-system round had to explain away the same false differences: the '
+      + 'share links print the server port, so runs on two ports differ in 8 shots (decks__settings, '
+      + 'meta__shared-deck, waiting__constructed); a focused search box draws its accent border or not '
+      + 'depending on window focus (rules__*, and cards__browse as the first state of a fresh Chrome); '
+      + 'cardstats__* and decks__first are not pixel-stable (translucent tiles, art); under load a shot '
+      + 'can catch "Loading the document…" (crreview__doc, rules__cr) or time out.',
+    doneWhen: [
+      'Two full runs of the same build on two different ports compare with zero differences',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/server/e2e/ui-shots.mjs',
+      'client/server/e2e/ui-shots-states.mjs',
+      'client/server/e2e/ui-shots-compare.mjs',
+    ],
+    notes: 'Sources: the ds-pages, ds-base, ds-w2c and ds-w3a records under var/records/.',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

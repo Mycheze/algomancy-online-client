@@ -347,6 +347,58 @@ const OPEN: TodoEntry[] = [
     verify: "An activatable unit flush against the In Play edge: screenshot the glow.",
     status: 'open',
   },
+  // ── Competitive Constructed, 2026-11-02 (the round reserved CT-500..519; the
+  //    open ones are here, the closed ones in card-todo-closed.ts; 503 was the
+  //    corpus rebuild, done at landing in 3b7c7be6, and 505..507 were never used)
+  {
+    id: 502, area: "coverage", severity: "minor",
+    title: "four Competitive Constructed rules records name no test, though tests for them exist",
+    detail: "The CR records formats.constructed.competitive.sideboard (7 cards; the copy cap counts deck and sideboard), formats.constructed.competitive.swaps (any exchange between games, deck at least 30), annexd.modes.competitive.sideboard-window (120 s or both Ready) and annexd.modes.competitive.initiative-choice (the loser chooses) render with no \"Tests:\" line, so nothing re-checks them.",
+    evidence: "The Competitive register (var/records/cc-round-2026-11-02-register.md, W1 \"TO FILE: CT-502\"); re-checked 2026-11-03 in the rendered CR and Annex D, where those four keys carry no tests.",
+    fix: "Bind each record to the test that already exercises it through the cr scripts (808 for the sideboard cap, 817 for the window and the exchange, 835 for the loser's choice), re-verify and re-render.",
+    proof: null,
+    verify: "Search Algomancy-Comprehensive-Rules.md and Annex-D-Digital-Conventions.md for the four keys: does each \"Key:\" line have a \"Tests:\" part?",
+    status: 'open',
+  },
+  {
+    id: 504, area: "engine", severity: "minor",
+    title: "no printed rule says who takes the initiative in a constructed game's first game",
+    detail: "formats.constructed.competitive.initiative says the first game's initiative is \"chosen at random, as in any game\", but the only starting rule for initiative is concepts.starting.live-draft.initiative, which covers a live draft. No record or printed rule sets it for constructed, casual or Competitive.",
+    evidence: "The Competitive register (var/records/cc-round-2026-11-02-register.md, W1 \"TO FILE: CT-504\"); re-checked 2026-11-03: no other record pairs initiative with random.",
+    fix: "Find the source (the Manual's constructed section, a RAQ thread, or the owner) and write a starting record for constructed that the Competitive record can point at; until then the random first game is an owner call.",
+    proof: null,
+    verify: "Grep the rules records for an initiative rule that applies to a constructed game.",
+    status: 'open',
+  },
+  {
+    id: 511, area: "coverage", severity: "minor",
+    title: "several tests fail or hang only under machine load, and a parallel gate will make that worse",
+    detail: "Seen during the 2026-11-02/03 rounds, each passing alone: server 594 (replay report run) flakes under load; server 486 timed out twice in a gate under agent load (7/7 alone); server 615 hung once; ui 294 section 4 (the prophecy meter) intermittent; ui 226 section 1a (log and naming) once with three ui-shots runs going.",
+    evidence: "The Competitive register (W3 \"TO FILE: CT-511\") and the design-system register (gate1-3), ds-comp and ds-w2a records under var/records/.",
+    fix: "For each, find what waits on wall-clock time and make it wait on the event instead (or give it a deadline that scales); BL-52 wants the gate parallel, so do this first.",
+    proof: null,
+    verify: "Run the full gate while three ui-shots runs are going: do any of 594, 486, 615, 294 or 226 fail?",
+    status: 'open',
+  },
+  {
+    id: 515, area: "client", severity: "minor",
+    title: "a deck's text export drops its sideboard, and pasting the export back puts its maybeboard in the deck",
+    detail: "ui/deckstats.ts deckListText writes the main list and then a \"// maybeboard\" divider with the maybeboard, and has no sideboard at all. server/decks.ts importDeckText skips every // line and adds every card line to the deck, so a round trip moves the maybeboard into the main deck and loses the sideboard. The rich file format carries both correctly.",
+    evidence: "The Competitive builder stream (register, W5 \"TO FILE at landing: CT-515\"), pre-existing in importDeckText; re-checked 2026-11-03 in both files.",
+    fix: "Give the text grammar a sideboard divider, export it, and make importDeckText read the divider lines (maybeboard and sideboard) into their own lists; extend 188's round trip to both.",
+    proof: () => still('ui/decks.ts', 'deckListText(d.name, d.cards, d.maybe, d.url)') && still('server/decks.ts', "if (!line || line.startsWith('#') || line.startsWith('//')) continue;"),
+    status: 'open',
+  },
+  {
+    id: 516, area: "client", severity: "minor",
+    title: "the deck builder's sideboard pile was never tried in Firefox, by touch drag or on an iPad",
+    detail: "The Competitive builder stream added a sideboard pile (5/7) to the tabletop builder and drove it in headless Chrome only. drag.ts has a Firefox guard and scans are draggable=false, but nobody has dragged a card to or from the sideboard pile with a finger or in Firefox.",
+    evidence: "The Competitive register (W5 \"CT-516 not verified in Firefox / touch drag / iPad\").",
+    fix: "Drag cards both ways between the deck and the sideboard pile on a real iPad and in Firefox; fix what does not move, and add a ui-driver touch case if one is missing.",
+    proof: null,
+    verify: "On an iPad, open a deck on the tabletop and drag a card onto the sideboard pile and back.",
+    status: 'open',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
