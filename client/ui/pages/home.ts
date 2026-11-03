@@ -36,6 +36,7 @@ import { updatesHtml, wireUpdates } from '../updates.ts';
 import { chosenDeck, elIcon as elIconOf, esc } from '../util.ts';
 import { caretIn, restoreCaret } from './caret.ts';
 import { chosenClockMs, clockPickHtml, clockPickView, type ClockPickView } from './clockpick.ts';
+import { customRulesHtml, customRulesView } from './customrules.ts';
 import { deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
 import { queueStripHtml, queueStripView } from './queue.ts';
 
@@ -144,7 +145,7 @@ export interface HomeSlots {
   leagueBanner: string;   // league.ts homeBannerHtml — fetches while drawing
   queueStrip: string;     // pages/queue.ts queueStripHtml — the matchmaking strip
   yourMatches: string;    // match.ts yourMatchesHtml — paused/running Competitive matches
-  customRules: string;    // customrulespanel.ts panelHtml, with the draft clock inside
+  customRules: string;    // pages/customrules.ts customRulesHtml, with the draft clock inside
   competitiveCard: string; // match.ts competitiveCardHtml
   challengeCard: string;  // challenge.ts homeCardHtml — fetches while drawing
   updates: string;        // updates.ts updatesHtml — the Recent updates band, after .homepage
@@ -199,7 +200,7 @@ export function homeView(st: HomeState): HomeView {
   const queueStrip = queueStripHtml(queueStripView());
   const yourMatches = mt.yourMatchesHtml();
   const setCount = crp.setCount();
-  const customRules = crp.panelHtml(fixedPick, clockPickHtml(clockPickView('draft')));
+  const customRules = customRulesHtml(customRulesView(fixedPick, clockPickHtml(clockPickView('draft'))));
   const deckPicker = deckPickerView();
   const options: ConstructedOptionsView = {
     open: homeOptionsOpen, ms: chosenClockMs('constructed'), clock: clockPickView('constructed'),

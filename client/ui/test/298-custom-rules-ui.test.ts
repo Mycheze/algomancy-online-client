@@ -12,12 +12,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createPayload, elementCount, handlePanelButton, panelHtml, verdict } from '../customrulespanel.ts';
+import { createPayload, elementCount, handlePanelButton, verdict } from '../customrulespanel.ts';
+import { customRulesHtml, customRulesView } from '../pages/customrules.ts';
 import { lobbyHtml as drawLobby, lobbyView, type LobbyArgs } from '../pages/lobby.ts';
 import { customTag, historyRowsHtml, type MatchRow } from '../account.ts';
 import { RULES_SECTIONS } from '../rules.ts';
 import { DECK_LIST } from '../../engine/src/cards/registry.ts';
 
+// the panel's markup is pages/customrules.ts since the design-system round (2026-11-03)
+const panelHtml = (fixed: readonly string[] | null): string => customRulesHtml(customRulesView(fixed));
 const click = (b: string, data: Record<string, string> = {}): boolean =>
   handlePanelButton(b, { dataset: data } as unknown as HTMLElement);
 const reset = (): void => { click('cr-preset', { preset: 'standard' }); };
