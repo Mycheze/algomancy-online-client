@@ -198,6 +198,7 @@ const OPEN: TodoEntry[] = [
     fix: "Ask the owner whether Caleb's \"the spell gets erased on resolution\" covers a spell unit. If it does, a virused spell unit is erased on resolution (it never arrives); change the resolution path, redraft 723.4c, add a test and replay stored games. If not, record the owner's answer as the source of 723.4c.",
     proof: null,
     verify: "Augment a Virus onto a spell unit on the stack and let it resolve: does the unit arrive with the Virus on it?",
+    progress: "RESEARCHED 2026-11-03 (steward; handoff CT-426.md). Still the owner's call. The engine pins the exception: 67 \"CR 723.4c\" (Hush Mush with Chitin Shredder arrives Powerful). The quote's full context is thenathmeister asking \"does the spell get exiled if it resolves while augmented?\"; Caleb answers \"It's very similar to how regular viruses work. So you can hit enemy spells, the spell gets erased on resolution\" and does not mention spell units. Caleb 2023-07-06 [1126563875148550154]: \"a spell unit is a spell that enters play as a unit instead of going to the discard upon resolution\". So the erase-on-resolution, which is Unstable replacing the trip to the bin, has no bin trip to replace. _passer, 2026-01-16, NOT a [Solved] write-up, answering whether a resolved spell unit stays augmented: \"If I remember correctly, yes spell-unit will keep mod after resolving\". No RAQ thread title covers virused spells or spell units carrying mods. Nothing in generated_rulings or the rules-questions snapshot settles it.",
     status: 'open',
   },
   {

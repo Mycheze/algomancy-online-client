@@ -354,6 +354,12 @@ test('CR 723.4e: only SPELLS are legal hosts — not abilities, not units mid-ca
   }), IllegalAction, 'one host, not two');
 });
 
+// PINNED TO CURRENT BEHAVIOUR, OPEN QUESTION (CT-426, D-U17-3). Caleb, RQ
+// 1347270455198879858: "you can hit enemy spells, the spell gets erased on
+// resolution". Does that cover a spell UNIT, which on resolution enters play
+// "instead of going to the discard" (Caleb, RQ 1126563875148550154)? This test
+// pins the owner's 2026-08-22 exception (it arrives, Virus attached). If the
+// owner reads Caleb the other way, flip it: the unit never arrives.
 test('CR 723.4c: a spell UNIT carries its virus into play as an augment mod', () => {
   const { h, A, D } = attackWindow(6718);
   giveResources(h, D, 'wood', 2);                    // Hush Mush gg/2 — a {Battle} SPELL UNIT
