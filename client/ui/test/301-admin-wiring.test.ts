@@ -35,7 +35,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const UI = dirname(dirname(fileURLToPath(import.meta.url)));
-const admin = readFileSync(join(UI, 'admin.ts'), 'utf8');
+const admin = readFileSync(join(UI, 'pages', 'admin.ts'), 'utf8');
 const main = readFileSync(join(UI, 'main.ts'), 'utf8');
 
 test('BL-16 §1 the page asks the SERVER who is an admin, and carries no check of its own', () => {
@@ -56,7 +56,7 @@ test('BL-16 §1 the page asks the SERVER who is an admin, and carries no check o
 });
 
 test('BL-16 §2 main.ts registers the page: init, screen and handleButton', () => {
-  assert.ok(/import \* as admin from '\.\/admin\.ts';/.test(main), 'imported');
+  assert.ok(/import \* as admin from '\.\/pages\/admin\.ts';/.test(main), 'imported');
   assert.ok(/admin\.initAdmin\(\{/.test(main), 'initialised at boot, so ?admin=1 opens it');
   assert.ok(/if \(admin\.screen\(\)\) \{ admin\.renderScreen\(\); return; \}/.test(main),
     'dispatched in render, so it owns the page when open');
@@ -85,13 +85,14 @@ test('BL-16 §4 only an admin is shown the way in: their own profile, from the s
     .map(f => {
       try { return readFileSync(join(UI, `${f}.ts`), 'utf8'); } catch { return ''; }
     }).join('\n'));
-  const account = code(readFileSync(join(UI, 'account.ts'), 'utf8'));
+  // the profile's markup is ui/pages/profile.ts since the design-system round (2026-11-03)
+  const account = code(readFileSync(join(UI, 'account.ts'), 'utf8') + readFileSync(join(UI, 'pages', 'profile.ts'), 'utf8'));
   const mainCode = code(main);
   assert.ok(!/\?admin=1/.test(others + account + mainCode),
     'no page builds a link to ?admin=1');
   assert.ok(!/nav-admin|openAdmin\(\)/.test(others), 'no other page offers it');
   // the one button, drawn only when the server said this account is an admin
-  const btns = account.match(/[^\n]*data-btn="nav-admin"[^\n]*/g) ?? [];
+  const btns = account.match(/[^\n]*(?:data-btn="|dataBtn: ')nav-admin['"][^\n]*/g) ?? [];
   assert.equal(btns.length, 1, 'one Admin button, on the profile');
   assert.ok(/me\.admin \?/.test(btns[0]!), 'drawn only when the profile the SERVER sent says admin');
   // main.ts opens the dashboard on that button and nowhere else

@@ -40,7 +40,8 @@ test('while a dialog is open, every key is the dialog\'s — Escape closes it, n
   assert.equal(replayKeysBelongElsewhere(el(null), aDialog), true);
   assert.match(REPLAY_DIALOGS, /\.overlay/);
   assert.match(REPLAY_DIALOGS, /\.reportscrim/);
-  const report = readFileSync(new URL('../report.ts', import.meta.url), 'utf8');
+  // the report layer's markup is ui/pages/report.ts since the design-system round (2026-11-03)
+  const report = readFileSync(new URL('../pages/report.ts', import.meta.url), 'utf8');
   assert.match(report, /<div class="reportscrim"/, 'the report form is a .reportscrim');
 });
 

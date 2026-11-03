@@ -47,6 +47,7 @@
 @import "board/11-hotfixes-help-judge-overlays.css";
 @import "board/12-playtest-round3.css";
 @import "board/13-playtest-round4-clocks-report.css";
+@import "shared/13-report-and-inbox.css";
 @import "board/14-light-and-dark.css";
 @import "board/15-anim-arrows.css";
 @import "board/16-fills-window.css";

@@ -90,7 +90,8 @@ async function profileHead(): Promise<string> {
   await settle(); await settle();
   if (!ui.has({ btn: 'acct-close' })) ui.click({ btn: 'acct-open-profile' });
   await settle();
-  const h1 = /<div class="accthead">[\s\S]*?<h1>([\s\S]*?)<\/h1>/.exec(ui.html());
+  // the header is the ui-page-header component since the design-system round (2026-11-03); it keeps .accthead
+  const h1 = /<header class="ui-page-header accthead">[\s\S]*?<h1 class="ui-page-header__title">([\s\S]*?)<\/h1>/.exec(ui.html());
   assert.ok(h1, 'the profile header did not paint');
   return h1[1]!;
 }

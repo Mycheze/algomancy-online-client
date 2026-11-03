@@ -28,6 +28,8 @@ import { readFileSync } from 'node:fs';
 
 const read = (f: string): string => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
 const acct = read('account.ts');
+// the identity bar's markup is ui/pages/signin.ts since the design-system round (2026-11-03)
+const signin = read('pages/signin.ts');
 const main = read('main.ts');
 const home = read('pages/home.ts');
 const picker = read('pages/deckpicker.ts');
@@ -38,8 +40,9 @@ const fn = (src: string, head: string): string => {
 };
 
 test('a token being checked is drawn as signing in, not as signed out', () => {
-  const bar = fn(acct, 'export function barHtml');
-  const busy = bar.indexOf('if (!me && resolving)');
+  assert.match(fn(acct, 'export function barHtml'), /identityBarHtml\(identityBarView\(me, resolving\)\)/, 'the bar is handed `resolving`');
+  const bar = fn(signin, 'export function identityBarHtml');
+  const busy = bar.indexOf('if (!me && v.resolving)');
   assert.ok(busy > 0 && busy < bar.indexOf('Playing signed out'), 'the resolving case comes first');
   assert.match(bar, /Signing in…/);
   assert.match(fn(acct, 'export function initAccounts'), /if \(token\(\)\) \{ resolving = true; void refreshMe\(\); \}/);

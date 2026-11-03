@@ -7,10 +7,13 @@
 .adminhead h1 { margin: 0; }
 .adminwho { color: var(--dim); font-size: .85em; margin-right: auto; }
 .admintabs { display: flex; gap: .4rem; flex-wrap: wrap; margin: .8rem 0; }
-.admintab.on { background: var(--accent); color: var(--bg, #111); font-weight: 700; }
+/* the tabs are the ui-tabs component; the current one keeps the page's accent FILL
+   (the component's own .on is accent text on the raised surface) */
+.admintabs .ui-tabs__tab.on { background: var(--accent); color: var(--bg, #111); }
 .adminnote { color: var(--dim); font-size: .85em; line-height: 1.5; }
 .adminnote label { margin-left: .8rem; }
-.adminmsg { color: var(--bad, #e66); font-weight: 600; }
+/* the error line is the ui-status component (error tone); bold, and spaced as the <p> it was */
+.adminmsg { font-weight: 600; margin: 1em 0; }
 /* the tables scroll sideways rather than squeezing a column to nothing — a
  * report note that wraps to one character per line is not readable */
 .admintablewrap { overflow-x: auto; }

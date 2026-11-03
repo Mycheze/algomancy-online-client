@@ -24,35 +24,21 @@
  *     (deckpage, cbpage, acctpage…) so no list of screens is kept here.
  *
  * The values (kind, severity) are the server's — server/report-fields.ts is
- * the one list; ui/ does not import server/, so the LABELS live here and
- * 287-report-form.test.ts checks this table against that list both ways.
+ * the one list; ui/ does not import server/, so the LABELS live in the client
+ * (ui/pages/report.ts, beside the markup that reads them; re-exported here)
+ * and 287-report-form.test.ts checks this table against that list both ways.
  */
-import { esc } from './util.ts';
 import * as acct from './account.ts';
+import {
+  reportLayerHtml, severityApplies, type ReportDialogView, type ReportKind, type ReportSeverity,
+  REPORT_KIND_LABELS, REPORT_SEVERITY_LABELS,
+} from './pages/report.ts';
 
-export type ReportKind = 'bug' | 'ux' | 'feature' | 'other';
-export type ReportSeverity = 'minor' | 'medium' | 'gamebreaking';
-export const REPORT_KIND_LABELS: readonly [ReportKind, string, string][] = [
-  ['bug', 'Bug', 'the game did something wrong — a card, a rule, a crash'],
-  ['ux', 'UX / UI issue', 'the game did the right thing but the interface made it hard, unclear or ugly'],
-  ['feature', 'Feature request', 'something you wish the client did'],
-  ['other', 'Other', 'anything else'],
-];
-export const REPORT_SEVERITY_LABELS: readonly [ReportSeverity, string, string][] = [
-  ['minor', 'Minor', 'cosmetic, or easy to work around'],
-  ['medium', 'Medium', 'got in the way, but the game went on'],
-  ['gamebreaking', 'Game breaking', 'the game could not continue, or the outcome was wrong'],
-];
-/** a severity is asked for a bug and a UX issue; a feature request and
- * "other" have none (the server stores null for those) */
-const severityApplies = (k: ReportKind | null): boolean => k === 'bug' || k === 'ux';
-/** the textarea's prompt, per kind — the one line that makes a good ticket */
-const REPORT_PROMPT: Record<ReportKind, string> = {
-  bug: 'What happened, and what did you expect instead?',
-  ux: 'What was confusing, awkward or hard to see?',
-  feature: 'What would you like the client to do, and why?',
-  other: 'What is it?',
-};
+/* The markup is ui/pages/report.ts (design-system round, 2026-11-03): pure
+ * functions of a view this module gathers. The label tables live there too,
+ * because the markup reads them; they are re-exported here, where 287 and
+ * the rest have always found them. */
+export { REPORT_KIND_LABELS, REPORT_SEVERITY_LABELS, type ReportKind, type ReportSeverity };
 
 /** where a report is filed from: a game (room + seat), a solo room (the run
  * itself), or a page */
@@ -149,72 +135,18 @@ const appEl = (): HTMLElement | null => document.getElementById('app');
 /** in a game the board owns the window; the rail has the button then */
 const onBoard = (): boolean => appEl()?.classList.contains('board') ?? false;
 
-/** who the report will be credited to — the account, or nobody */
-function filedAs(): string {
-  const me = acct.currentUser();
-  return me
-    ? `Filed as <b>${esc(me.username)}</b>.`
-    : 'Filed anonymously — sign in for it to carry your name.';
+/** the dialog's view: what ui/pages/report.ts draws */
+function dialogView(): ReportDialogView {
+  return {
+    dispute: !!dispute, busy, kind: dispute ? null : kind, severity: dispute ? null : severity, complete: complete(),
+    inGame: !!(ctx.room || ctx.solo), user: acct.currentUser()?.username ?? null, error,
+  };
 }
-
-/** one row of radio-style buttons: real <button>s (Tab / Space / Enter work
- * for free), `role=radio` + `aria-checked` so a screen reader hears a choice */
-function choicesHtml(what: 'kind' | 'severity', options: readonly [string, string, string][], picked: string | null): string {
-  return `<div class="reportchoices" role="radiogroup">${options.map(([v, label, why]) =>
-    `<button type="button" role="radio" aria-checked="${picked === v}" class="${picked === v ? 'on' : ''}"
-      data-report="${what}" data-${what}="${v}" title="${esc(why)}" ${busy ? 'disabled' : ''}>${esc(label)}</button>`).join('')}</div>`;
-}
-
-/** BL-48: the dispute form — one box, required */
-function disputeDialogHtml(): string {
-  return `<div class="reportscrim" id="reportscrim"><div class="overlaybox reportbox" role="dialog" aria-label="Dispute game">
-    <h3>Dispute game</h3>
-    <div class="hint">Filed with the final board. The result stands until someone reviews it. ${filedAs()}</div>
-    <textarea id="report-note" rows="4" placeholder="What went wrong?" ${busy ? 'disabled' : ''}></textarea>
-    <div class="judgerow">
-      <button data-report="close">Cancel <span class="kh">(esc)</span></button>
-      <span class="reporthint">Ctrl+Enter sends</span>
-      <button class="primary" data-report="send" ${busy || !complete() ? 'disabled' : ''}>${busy ? 'sending…' : 'Send dispute'}</button>
-    </div>
-    ${error ? `<div class="reporterror">${esc(error)}</div>` : ''}
-  </div></div>`;
-}
-
-function dialogHtml(): string {
-  if (dispute) return disputeDialogHtml();
-  const where = ctx.room || ctx.solo
-    ? 'Filed with this exact moment of the game, so a bug can be replayed.'
-    : 'Filed with the page you are on.';
-  return `<div class="reportscrim" id="reportscrim"><div class="overlaybox reportbox" role="dialog" aria-label="Report">
-    <h3>📝 Report</h3>
-    <div class="hint">${where} ${filedAs()}</div>
-    <div class="reportfield">
-      <div class="reportlabel">What is it?</div>
-      ${choicesHtml('kind', REPORT_KIND_LABELS, kind)}
-    </div>
-    ${severityApplies(kind) ? `<div class="reportfield">
-      <div class="reportlabel">How bad is it?</div>
-      ${choicesHtml('severity', REPORT_SEVERITY_LABELS, severity)}
-    </div>` : ''}
-    <textarea id="report-note" rows="4" placeholder="${esc(kind ? REPORT_PROMPT[kind] : 'Pick a type above, then say what happened')}" ${busy ? 'disabled' : ''}></textarea>
-    <div class="judgerow">
-      <button data-report="close">Cancel <span class="kh">(esc)</span></button>
-      <span class="reporthint">${kind ? 'Ctrl+Enter sends' : ''}</span>
-      <button class="primary" data-report="send" ${busy || !complete() ? 'disabled' : ''}>${busy ? 'sending…' : 'Send report'}</button>
-    </div>
-    ${error ? `<div class="reporterror">${esc(error)}</div>` : ''}
-  </div></div>`;
-}
-
-/** the fixed pill every non-board page carries */
-const pillHtml = (): string =>
-  '<button class="reportfab" data-report="open">📝 Report</button>';
 
 /** repaint the layer from the state, and wire the one typing box */
 function paint(): void {
   if (!layer) return;
-  layer.innerHTML = (open ? dialogHtml() : onBoard() ? '' : pillHtml())
-    + (toast ? `<div class="toast">${esc(toast)}</div>` : '');
+  layer.innerHTML = reportLayerHtml({ dialog: open ? dialogView() : null, onBoard: onBoard(), toast });
   const box = document.getElementById('report-note') as HTMLTextAreaElement | null;
   if (!box) return;
   box.value = noteText();

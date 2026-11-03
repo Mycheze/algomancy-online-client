@@ -39,7 +39,7 @@ function body(refs: { open?: unknown; soon?: unknown } = {}): unknown {
   };
 }
 
-interface Rig { admin: typeof import('../admin.ts'); app: { innerHTML: string; className: string }; urls: string[] }
+interface Rig { admin: typeof import('../pages/admin.ts'); app: { innerHTML: string; className: string }; urls: string[] }
 
 let fresh = 0;
 async function rig(opts: { refused?: boolean; refs?: { open?: unknown; soon?: unknown } } = {}): Promise<Rig> {
@@ -58,7 +58,7 @@ async function rig(opts: { refused?: boolean; refs?: { open?: unknown; soon?: un
         : { ok: true, reports: [] };
     return { ok: true, status: 200, json: async () => reply };
   };
-  const admin = await import(`../admin.ts?fresh=${++fresh}`) as typeof import('../admin.ts');
+  const admin = await import(`../pages/admin.ts?fresh=${++fresh}`) as typeof import('../pages/admin.ts');
   const app = { innerHTML: '', className: '' };
   admin.initAdmin({ app: app as unknown as HTMLElement, rerender: () => {} });
   await settle();
@@ -90,7 +90,9 @@ test('§1 the Challenges tab draws every calendar row, the upcoming one included
   assert.equal(r.admin.screen(), 'admin');
   const html = await openTab(r);
   assert.ok(r.urls.includes('/api/admin/challenges'), 'the tab asks the admin route');
-  assert.match(html, /admintab on" data-btn="admin-tab" data-tab="challenges">Challenges</, 'the tab is drawn, and on');
+  // the tabs are the ui-tabs component since the design-system round (2026-11-03): the current
+  // tab is the one with `on` and aria-selected, whatever else its class list holds
+  assert.match(html, /ui-tabs__tab on" data-btn="admin-tab" data-tab="challenges" type="button" role="tab" aria-selected="true">Challenges</, 'the tab is drawn, and on');
 
   const ids = [...html.matchAll(/class="unk">(wk-[a-z]+)</g)].map(m => m[1]);
   assert.deepEqual(ids, ['wk-open', 'wk-soon', 'wk-old'], 'every row, in the order the server sent');

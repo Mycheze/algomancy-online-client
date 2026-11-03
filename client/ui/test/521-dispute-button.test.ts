@@ -114,7 +114,8 @@ test('§4 a refusal stays on the form with the reason from the server', () => {
   ui.click({ report: 'send' });
   const html = ui.push({ t: 'disputeerr', msg: 'you have already disputed this game' });
   assert.ok(ui.has({ report: 'send' }), 'the form stays up');
-  assert.match(html, /class="reporterror">you have already disputed this game</);
+  // the error line is the ui-status component since the design-system round (2026-11-03); it keeps .reporterror
+  assert.match(html, /class="ui-status ui-status--error reporterror" role="alert">you have already disputed this game</);
   ui.click({ report: 'close' });
 });
 

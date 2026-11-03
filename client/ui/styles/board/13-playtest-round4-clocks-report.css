@@ -43,62 +43,9 @@
 .revealcards { display: flex; gap: 5px; flex-wrap: wrap; }
 .revealcards .card { width: 70px; }
 
-/* #7 / T6: the report form + confirmation toast */
-/* the report form's own scrim (ui/report.ts): a layer beside #app, above every
-   board overlay (z 60) and the legal pages, so it is reachable from any page */
-.reportscrim { position: fixed; inset: 0; z-index: 70; background: rgba(6,8,11,.72);
-  display: flex; align-items: center; justify-content: center; }
-.reportfab { position: fixed; right: 18px; bottom: 18px; z-index: 55; padding: 8px 14px; border-radius: 999px;
-  box-shadow: 0 4px 18px rgba(0,0,0,.45); font-size: 13px; }
-.reporterror { color: var(--danger); font-size: 12px; margin-top: 6px; }
-
-/* the bell, its list and the invite popup (ui/inbox.ts): a layer beside #app,
-   off the board only. The bell sits left of the Report pill, the list and the
-   popup above them both. */
-.inboxbell { position: fixed; right: 124px; bottom: 18px; z-index: 55; padding: 7px 11px; border-radius: 999px;
-  box-shadow: 0 4px 18px rgba(0,0,0,.45); font-size: 14px; line-height: 1; }
-.inboxbell.lit { border-color: var(--accent); }
-.inboxcount { display: inline-block; min-width: 16px; margin-left: 5px; padding: 1px 4px; border-radius: 999px;
-  background: var(--danger); color: #fff; font-size: 11px; font-weight: 700; text-align: center; }
-.inboxlist, .invitepops { position: fixed; right: 18px; bottom: 62px; z-index: 56; width: min(92vw, 320px);
-  display: flex; flex-direction: column; gap: 8px; }
-.inboxlist { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px;
-  box-shadow: 0 8px 28px rgba(0,0,0,.55); max-height: 60vh; overflow-y: auto; }
-.inboxlist > .zonelabel { margin-top: 0; }
-.inboxlist .hint { margin: 0; }
-.invitecard { position: relative; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px;
-  padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
-.invitepops .invitecard { border-color: var(--accent); box-shadow: 0 8px 28px rgba(0,0,0,.55); padding-right: 30px; }
-.invbtns { display: flex; gap: 6px; }
-.invbtns button { font-size: 12px; padding: 4px 10px; }
-.invx { position: absolute; top: 6px; right: 6px; padding: 1px 6px; font-size: 11px; background: none; border: none; color: var(--dim); }
-
-/* the waiting room's "Invite a friend" panel: online friends first */
-.roomfriend { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px dotted var(--line); }
-.roomfriend:last-of-type { border-bottom: none; }
-.roomfriend.offline .rfname { color: var(--dim); }
-.rfname { font-weight: 700; }
-.rfstatus { flex: 1; color: var(--dim); font-size: 11px; }
-.roomfriend button { font-size: 12px; padding: 3px 10px; }
-.fdot.busy { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
-/* league news in the bell: unread ones carry the accent edge */
-.inboxlist > .zonelabel + .zonelabel, .inboxlist .zonelabel { margin: 4px 0 0; }
-.leaguenote.unread { border-left: 3px solid var(--accent); }
-.inboxdone { margin: 0; color: var(--glow); font-size: 13px; }
-.reportbox { width: min(92vw, 520px); }
-.reportbox textarea { background: var(--panel2); color: var(--text); border: 1px solid var(--line);
-  border-radius: 5px; padding: 8px 10px; font: inherit; resize: vertical; }
-.reportfield { display: flex; flex-direction: column; gap: 6px; }
-.reportlabel { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
-/* the radio rows: one button per choice, the picked one wears the same green
-   ring as the toggles in the side rail (.aptoggle.on), so "selected" looks the
-   same everywhere on the board */
-.reportchoices { display: flex; flex-wrap: wrap; gap: 6px; }
-.reportchoices button { flex: 1 1 auto; padding: 6px 10px; font-size: 13px; }
-.reportchoices button.on { border-color: var(--glow); color: var(--glow); background: #1d2b1a; }
-.reportchoices button[data-severity="gamebreaking"].on { border-color: var(--danger); color: var(--danger); background: #2b1a1a; }
-.reportbox .judgerow { align-items: center; }
-.reporthint { flex: 1; text-align: right; color: var(--dim); font-size: 11px; }
+/* the report form, the bell and the invite popups moved to
+   styles/shared/13-report-and-inbox.css (design-system round, 2026-11-03),
+   the piece right after this one: they are layers on every page, not the board */
 
 /* BL-46: "Beta: propose a fix" (ui/amend.ts) — its own layer beside #app, like
    the report form: the dialog's scrim, and the bar the other seat answers on */

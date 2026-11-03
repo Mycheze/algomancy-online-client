@@ -1,0 +1,69 @@
+/* ── the report form and the bell: the layers on every page ──────────────
+   ui/report.ts (the pill, the report / dispute dialog) and ui/inbox.ts (the
+   bell, its list, the invite popups, the waiting room's "Invite a friend"
+   panel); their markup is ui/pages/report.ts and ui/pages/inbox.ts.
+   Moved here word for word from board/13-playtest-round4-clocks-report.css in
+   the design-system round (2026-11-03) — they are pages' layers, not the
+   board — and placed right after it in styles/index.css. What followed them
+   in that piece (the amend dialog, .toast, the X preview, .logcard) styles
+   none of these elements, so the cascade is unchanged. Every literal that is
+   EXACTLY a token's value became the token (ui/scripts/tokenize-styles.mjs:
+   sizes, spacing, the scrim, the tinted backgrounds, the white count), so
+   nothing moved on screen; the four shadows are not on the scale yet. */
+
+/* #7 / T6: the report form + confirmation toast */
+/* the report form's own scrim (ui/report.ts): a layer beside #app, above every
+   board overlay (z 60) and the legal pages, so it is reachable from any page */
+.reportscrim { position: fixed; inset: 0; z-index: 70; background: var(--color-scrim);
+  display: flex; align-items: center; justify-content: center; }
+.reportfab { position: fixed; right: 18px; bottom: 18px; z-index: 55; padding: 8px 14px; border-radius: var(--radius-pill);
+  box-shadow: 0 4px 18px rgba(0,0,0,.45); font-size: var(--text-13); }
+.reporterror { color: var(--danger); font-size: var(--text-12); margin-top: var(--space-3); }
+
+/* the bell, its list and the invite popup (ui/inbox.ts): a layer beside #app,
+   off the board only. The bell sits left of the Report pill, the list and the
+   popup above them both. */
+.inboxbell { position: fixed; right: 124px; bottom: 18px; z-index: 55; padding: 7px 11px; border-radius: var(--radius-pill);
+  box-shadow: 0 4px 18px rgba(0,0,0,.45); font-size: var(--text-14); line-height: 1; }
+.inboxbell.lit { border-color: var(--accent); }
+.inboxcount { display: inline-block; min-width: 16px; margin-left: 5px; padding: 1px 4px; border-radius: var(--radius-pill);
+  background: var(--danger); color: var(--color-text-on-fill); font-size: var(--text-11); font-weight: 700; text-align: center; }
+.inboxlist, .invitepops { position: fixed; right: 18px; bottom: 62px; z-index: 56; width: min(92vw, 320px);
+  display: flex; flex-direction: column; gap: var(--space-4); }
+.inboxlist { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: var(--space-5);
+  box-shadow: 0 8px 28px rgba(0,0,0,.55); max-height: 60vh; overflow-y: auto; }
+.inboxlist > .zonelabel { margin-top: 0; }
+.inboxlist .hint { margin: 0; }
+.invitecard { position: relative; background: var(--panel2); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  padding: 10px 12px; display: flex; flex-direction: column; gap: var(--space-4); font-size: var(--text-13); }
+.invitepops .invitecard { border-color: var(--accent); box-shadow: 0 8px 28px rgba(0,0,0,.55); padding-right: 30px; }
+.invbtns { display: flex; gap: var(--space-3); }
+.invbtns button { font-size: var(--text-12); padding: 4px 10px; }
+.invx { position: absolute; top: 6px; right: 6px; padding: 1px 6px; font-size: var(--text-11); background: none; border: none; color: var(--dim); }
+
+/* the waiting room's "Invite a friend" panel: online friends first */
+.roomfriend { display: flex; align-items: center; gap: var(--space-4); padding: 5px 0; border-bottom: 1px dotted var(--line); }
+.roomfriend:last-of-type { border-bottom: none; }
+.roomfriend.offline .rfname { color: var(--dim); }
+.rfname { font-weight: 700; }
+.rfstatus { flex: 1; color: var(--dim); font-size: var(--text-11); }
+.roomfriend button { font-size: var(--text-12); padding: 3px 10px; }
+.fdot.busy { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+/* league news in the bell: unread ones carry the accent edge */
+.inboxlist > .zonelabel + .zonelabel, .inboxlist .zonelabel { margin: var(--space-2) 0 0; }
+.leaguenote.unread { border-left: 3px solid var(--accent); }
+.inboxdone { margin: 0; color: var(--glow); font-size: var(--text-13); }
+.reportbox { width: min(92vw, 520px); }
+.reportbox textarea { background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 5px; padding: 8px 10px; font: inherit; resize: vertical; }
+.reportfield { display: flex; flex-direction: column; gap: var(--space-3); }
+.reportlabel { color: var(--dim); font-size: var(--text-11); text-transform: uppercase; letter-spacing: .06em; }
+/* the radio rows: one button per choice, the picked one wears the same green
+   ring as the toggles in the side rail (.aptoggle.on), so "selected" looks the
+   same everywhere on the board */
+.reportchoices { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.reportchoices button { flex: 1 1 auto; padding: 6px 10px; font-size: var(--text-13); }
+.reportchoices button.on { border-color: var(--glow); color: var(--glow); background: var(--color-success-bg); }
+.reportchoices button[data-severity="gamebreaking"].on { border-color: var(--danger); color: var(--danger); background: var(--color-danger-bg); }
+.reportbox .judgerow { align-items: center; }
+.reporthint { flex: 1; text-align: right; color: var(--dim); font-size: var(--text-11); }
