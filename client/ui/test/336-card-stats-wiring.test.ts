@@ -24,31 +24,38 @@ import { fileURLToPath } from 'node:url';
 const UI = join(dirname(fileURLToPath(import.meta.url)), '..');
 const cs = readFileSync(join(UI, 'cardstats.ts'), 'utf8');
 const meta = readFileSync(join(UI, 'meta.ts'), 'utf8');
-const cards = readFileSync(join(UI, 'cards.ts'), 'utf8');
+// the markup of all three is under pages/ since the design-system round
+const csPage = readFileSync(join(UI, 'pages', 'cardstats.ts'), 'utf8');
+const metaPage = readFileSync(join(UI, 'pages', 'meta.ts'), 'utf8');
+const cardsPage = readFileSync(join(UI, 'pages', 'cards.ts'), 'utf8');
 
 test('every meta-cs button the page draws has a case in handle()', () => {
-  const drawn = new Set([...cs.matchAll(/data-btn="(meta-cs-[a-z-]+)"/g)].map(m => m[1]!));
+  const drawn = new Set([...csPage.matchAll(/data-btn="(meta-cs-[a-z-]+)"/g)].map(m => m[1]!));
   // chip() builds some of them from a string argument
-  for (const m of cs.matchAll(/chip\([^,]+, '(meta-cs-[a-z-]+)'/g)) drawn.add(m[1]!);
+  for (const m of csPage.matchAll(/chip\([^,]+, '(meta-cs-[a-z-]+)'/g)) drawn.add(m[1]!);
   assert.ok(drawn.size >= 10, `found only ${drawn.size} buttons — the scan has gone blind`);
   const handler = cs.slice(cs.indexOf('export function handle('));
   for (const b of drawn) assert.ok(handler.includes(`case '${b}'`), `${b} is drawn and nothing answers it`);
   assert.ok(meta.includes('cardstats.handle(btn)'), 'meta.ts must offer every click to the card stats module');
+  // and the tab is drawn through the page module, inside meta's page
+  assert.match(metaPage, /cardStatsHtml\(v\.stats\)/);
 });
 
 test('the URL is the page: ?cardstats= on a cold load, replaceState only', () => {
   assert.match(meta, /url\.has\('cardstats'\)/);
   assert.match(meta, /searchParams\.set\('cardstats', cardstats\.focused\(\) \?\? '1'\)/);
-  assert.ok(!/pushState/.test(cs) && !/pushState/.test(meta), 'one back-button step per filter click buries the app');
+  for (const src of [cs, meta, csPage, metaPage]) {
+    assert.ok(!/pushState/.test(src), 'one back-button step per filter click buries the app');
+  }
 });
 
 test('the card browser opens this page on the card', () => {
-  assert.match(cards, /data-btn="meta-stats-open" data-card="\$\{esc\(r\.name\)\}"/);
+  assert.match(cardsPage, /data-btn="meta-stats-open" data-card="\$\{esc\(r\.name\)\}"/);
   assert.match(meta, /case 'meta-stats-open':\s*\n\s*openStats\(btn\.dataset\['card'\]/);
 });
 
 test('every win rate is printed with its game count', () => {
-  const cell = cs.slice(cs.indexOf('function wrCell('), cs.indexOf('const iwdCell'));
+  const cell = csPage.slice(csPage.indexOf('function wrCell('), csPage.indexOf('const iwdCell'));
   assert.match(cell, /<small>\$\{w\.n\}<\/small>/, 'a percentage without its n is a number nobody can judge');
-  assert.ok(!/shrink|wilson|bayes/i.test(cs), 'raw numbers, by the owner\'s choice (2026-09-27)');
+  assert.ok(!/shrink|wilson|bayes/i.test(cs + csPage), 'raw numbers, by the owner\'s choice (2026-09-27)');
 });

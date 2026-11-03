@@ -93,7 +93,8 @@ test('the deck page does not paint underneath the browser', () => {
 });
 
 test('the help sheet is printed from the parser tables, so it cannot claim a filter that does not exist', () => {
-  const cards = read('cards.ts');
+  // the sheet is drawn by the page module (pages/cards.ts) since the design-system round
+  const cards = read('pages/cards.ts');
   assert.match(cards, /KEYS\.map\(/, 'the filter table must be generated');
   assert.match(cards, /FLAGS\.map\(/, 'the is: list must be generated');
   // …and every example in it answers, which is what makes generating it worth
@@ -144,8 +145,9 @@ test('the rail offers the seven kinds, the three boxes, and scrolls a long secti
   // Owner, 2026-09-05. "Kind and timing ... should have: Unit, Spell, Token,
   // Deployment Only, Haste, Battle, Virus" and "Printed deck: only Base Game,
   // Kickstarter Exclusive, Light vs Dark". The chips are derived in facets(),
-  // which is private to the page, so this pins the source it derives from.
-  const cards = read('cards.ts');
+  // which is private to the page, so this pins the source it derives from
+  // (pages/cards.ts since the design-system round).
+  const cards = read('pages/cards.ts');
   for (const label of ['Unit', 'Spell', 'Token', 'Deployment only', 'Haste', 'Battle', 'Virus']) {
     assert.match(cards, new RegExp(`'${label}'`), `the kind section must offer ${label}`);
   }

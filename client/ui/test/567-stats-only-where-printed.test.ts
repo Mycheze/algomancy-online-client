@@ -56,7 +56,7 @@ test('CR 206.2 / CT-244: the browser row and the sandbox line ask the same predi
   assert.equal(printsStats('spell'), false);
   assert.equal(printsStats('spellUnit'), true);
   assert.equal(printsStats('unit'), true);
-  for (const f of ['cards.ts', 'sandbox.ts', 'cardpanel.ts', 'cardsearch.ts', 'cardtext.ts']) {
+  for (const f of ['pages/cards.ts', 'sandbox.ts', 'cardpanel.ts', 'cardsearch.ts', 'cardtext.ts']) {
     assert.match(SRC(f), /printsStats\(/, `${f} decides stats with printsStats`);
     assert.doesNotMatch(SRC(f), /kind === 'spell' \? '/, `${f} has no spell-only stat guard left`);
   }

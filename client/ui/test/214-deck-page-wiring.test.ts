@@ -118,12 +118,13 @@ test('"similar" is one notion, and it is a query you can read', () => {
 // ── the wiring, asserted over the source ──────────────────────────────
 
 test('both pages pin the SAME panel — neither has one of its own', () => {
-  for (const f of ['decks.ts', 'cards.ts']) {
-    assert.match(read(f), /from '\.\/cardpanel\.ts'/, `${f} must use the shared panel`);
+  // the browser's markup is pages/cards.ts since the design-system round
+  for (const f of ['decks.ts', 'pages/cards.ts']) {
+    assert.match(read(f), /from '\.\.?\/cardpanel\.ts'/, `${f} must use the shared panel`);
   }
   // the shape the browser's private copy had: a <section class="cbdetail">
   // built inline. Exactly one file may emit it, and it is not a page.
-  for (const f of ['decks.ts', 'cards.ts', 'meta.ts']) {
+  for (const f of ['decks.ts', 'cards.ts', 'meta.ts', 'pages/cards.ts', 'pages/meta.ts', 'pages/cardstats.ts']) {
     assert.doesNotMatch(code(f), /<section class="cbdetail">/,
       `${f} grew its own card panel again`);
   }
@@ -214,9 +215,10 @@ test('the metagame page never decides for itself who may be seen', () => {
   // The visibility rule lives in server/publicdecks.ts, once. A client-side
   // filter would be a second copy of it, and the dangerous kind: it would look
   // right while the server was the one actually shipping private lists.
-  const meta = code('meta.ts');
-  assert.doesNotMatch(meta, /visibility === 'private'/,
-    'the client must not be the thing deciding what is private');
+  for (const f of ['meta.ts', 'pages/meta.ts']) {
+    assert.doesNotMatch(code(f), /visibility === 'private'/,
+      `the client must not be the thing deciding what is private (${f})`);
+  }
 });
 
 test('the tabletop is one button away, and the page under it neither paints over it nor loses its piles', () => {

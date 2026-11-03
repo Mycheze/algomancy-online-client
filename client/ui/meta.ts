@@ -4,6 +4,8 @@
  * already knows how to drive: screen() says whether this page owns the app
  * element, renderScreen() paints it, handleButton() is offered every click
  * (everything here is prefixed `meta-`), and the state lives in this file.
+ * The markup is pages/meta.ts (metaView / metaHtml / paintMeta, the page
+ * contract); paint() hands it the state.
  *
  * TWO SCREENS, ONE MODULE, because they are one subject: a row on the list IS
  * a link to the deck view, and the deck view is what a share link opens. The
@@ -23,20 +25,15 @@
  * — one back-button step per filter click would bury the rest of the app).
  */
 import * as acct from './account.ts';
-import { artHtml, cardPanelHtml, deckStripHtml } from './cardpanel.ts';
-import { cardLinker, clipDescription, descSummary } from './cardlinks.ts';
-import { mdToHtml } from './markdown.ts';
-import { rowFor } from './cardindex.ts';
-import { analyzeDeck, deckElements } from './deckstats.ts';
-import { GROUPINGS, deckSections, needsCountBadge, stackLayers } from './decklayout.ts';
 import type { DeckGrouping } from './decklayout.ts';
-import { deckStatsHtml } from './decks.ts';
 import { buildDeckFile, deckFileText } from './deckformat.ts';
 import { deckListText } from './deckstats.ts';
-import { ALL_ELEMENTS } from '../engine/src/apply.ts';
-import { copyText, esc, elIcon } from './util.ts';
-import { artUrl } from './assets.ts';
+import { copyText } from './util.ts';
 import * as cardstats from './cardstats.ts';
+import { metaView, paintMeta } from './pages/meta.ts';
+
+/** the card art for a name (the profile's deck rows use it too) */
+export { artFor } from './pages/meta.ts';
 
 /** the shape server/publicdecks.ts sends */
 export interface PublicDeck {
@@ -57,7 +54,7 @@ export interface PublicDeck {
   copiedFrom?: { id: string; name: string; owner: string };
 }
 
-type Sort = 'winrate' | 'games' | 'new' | 'name';
+export type Sort = 'winrate' | 'games' | 'new' | 'name';
 
 // ── module state ──────────────────────────────────────────────────────
 
@@ -102,7 +99,7 @@ export const screen = (): 'meta' | null => (view ? 'meta' : null);
 export function initMeta(opts: { app: HTMLElement; rerender: () => void }): void {
   $app = opts.app;
   rerenderHost = opts.rerender;
-  cardstats.initCardStats({ repaint: () => { syncUrl(); paint(); } });
+  cardstats.initCardStats({ repaint: HOOKS.statsRepaint });
   const url = new URLSearchParams(location.search);
   const id = url.get('deck');
   if (id) { view = 'deck'; wantId = id; loadOne(id); }
@@ -163,7 +160,7 @@ function loadOne(id: string): void {
 // ── CR D8.2f: the card ladder ─────────────────────────────────────────────
 
 /** the shape server/cardladder.ts sends, one row per card that has duelled */
-interface CardStanding {
+export interface CardStanding {
   card: string; rating: number; games: number; wins: number; losses: number; mirrors: number;
 }
 let ladder: { cards: CardStanding[]; rankedAfter: number; duels: number } | null = null;
@@ -188,16 +185,6 @@ export function openLadder(): void {
   paint();
 }
 
-/** the three tabs this page has: decks people published, how every card has
- * done across every game (ui/cardstats.ts), and cards that duelled */
-function tabsHtml(): string {
-  return `<div class="cbtools metatabs">
-    <button class="${view === 'list' ? 'on' : ''}" data-btn="meta-list">Published decks</button>
-    <button class="${view === 'stats' ? 'on' : ''}" data-btn="meta-stats-open">Card stats</button>
-    <button class="${view === 'ladder' ? 'on' : ''}" data-btn="meta-ladder">Card duel ladder</button>
-  </div>`;
-}
-
 /** Open the card stats tab — on one card's numbers when `card` is given
  * (the card browser's "card stats" link). */
 export function openStats(card?: string | null): void {
@@ -205,52 +192,6 @@ export function openStats(card?: string | null): void {
   cardstats.open(card ?? null);   // always fresh, like the ladder
   syncUrl();
   paint();
-}
-
-function ladderRowHtml(c: CardStanding, rank: number | null): string {
-  return `<div class="metarow ladderrow" data-prev="${esc(c.card)}">
-    <span class="metacover">${artFor(c.card)
-      ? `<img src="${esc(artFor(c.card))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : ''}</span>
-    <span class="metabody">
-      <span class="metaname">${rank !== null ? `<span class="dim">#${rank}</span> ` : ''}${esc(c.card)}</span>
-      <span class="metaby">${c.wins}W–${c.losses}L in ${c.games} duel${c.games === 1 ? '' : 's'}${
-        c.mirrors ? ` · ${c.mirrors} mirror${c.mirrors === 1 ? '' : 's'}` : ''}</span>
-    </span>
-    <span class="metarec"><b>${c.rating}</b></span>
-  </div>`;
-}
-
-function ladderHtml(): string {
-  const q = text.trim().toLowerCase();
-  const all = (ladder?.cards ?? []).filter(c => !q || c.card.toLowerCase().includes(q));
-  const bar = ladder?.rankedAfter ?? 5;
-  // rank numbers belong to the whole ranked ladder, not to whatever the filter left
-  const rankOf = new Map((ladder?.cards ?? []).filter(c => c.games >= bar).map((c, i) => [c.card, i + 1]));
-  const ranked = all.filter(c => rankOf.has(c.card));
-  const rest = all.filter(c => !rankOf.has(c.card));
-  return `<div class="metapage">
-    <div class="accthead">
-      <div><h1>Card duel ladder</h1>
-        <p class="hint">Every card's Elo from Single Card Duels — thirty copies of one card against
-          thirty of another. The cards are rated, never the players. Start a duel from the home
-          screen, under Constructed.</p></div>
-      <button data-btn="meta-close">Back</button>
-    </div>
-    ${tabsHtml()}
-    ${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
-    <div class="cbtools">
-      <span class="dim">${ladder ? `${ladder.duels} duel${ladder.duels === 1 ? '' : 's'} · ${ladder.cards.length} card${ladder.cards.length === 1 ? '' : 's'} rated` : ''}</span>
-      <span class="cbspacer"></span>
-      <input id="meta-q" class="dksearch" spellcheck="false" placeholder="find a card" value="${esc(text)}">
-    </div>
-    ${loading && !ladder ? '<p class="hint">loading…</p>' : ''}
-    ${ladder && !ladder.cards.length ? '<p class="hint">No duels yet. Somebody has to go first.</p>' : ''}
-    ${ladder && ladder.cards.length && !all.length ? '<p class="hint">No rated card matches that.</p>' : ''}
-    <div class="metalist">${ranked.map(c => ladderRowHtml(c, rankOf.get(c.card)!)).join('')}</div>
-    ${rest.length ? `<div class="metadivider">Not enough duels yet
-        <span class="hint">— a card is ranked once it has ${bar} duels that were not mirrors.</span></div>
-      <div class="metalist">${rest.map(c => ladderRowHtml(c, null)).join('')}</div>` : ''}
-  </div>`;
 }
 
 // ── opening it ────────────────────────────────────────────────────────
@@ -280,178 +221,31 @@ function close(): void {
   rerenderHost();
 }
 
-// ── little pieces ─────────────────────────────────────────────────────
+// ── painting ──────────────────────────────────────────────────────────
 
-export const artFor = (name: string): string => {
-  const r = rowFor(name);
-  return r ? artUrl(r.image || r.name.replace(/ /g, '-') + '.jpg') : '';
-};
-
-/**
- * A deck's record as a line, and the one thing it must never do: dress up a
- * sample it has not got. Under the floor it prints the count and NO rate.
- */
-function recordLine(d: PublicDeck): string {
-  const { games, wins, losses } = d.record;
-  if (!games) return '<span class="dim">no games yet</span>';
-  const decided = wins + losses;
-  // still asked here, and it is the shared DECK page that needs it: that page
-  // opens any shared deck, floor or no floor, and "100%" off two games is a
-  // number nobody should be shown. Everything on the metagame LIST is over the
-  // floor by construction now (server/publicdecks.ts's metaList).
-  const ranked = games >= minGames && decided > 0;
-  return `${ranked
-    ? `<b class="${wins >= losses ? 'good' : 'bad'}">${Math.round((wins / decided) * 100)}%</b> `
-    : ''}<span class="dim">${wins}W–${losses}L in ${games} game${games === 1 ? '' : 's'}${
-    d.copies > 1 ? ` · ${d.copies} copies` : ''}</span>`;
+/** The state the page is drawn from — pages/meta.ts metaView() gathers it,
+ * metaHtml() draws it. */
+export interface MetaState {
+  view: 'list' | 'deck' | 'ladder' | 'stats' | null;
+  rows: PublicDeck[] | null;
+  minGames: number;
+  one: PublicDeck | null;
+  loading: boolean;
+  msg: string;
+  sort: Sort;
+  els: ReadonlySet<string>;
+  text: string;
+  focus: string | null;
+  deckGroup: DeckGrouping;
+  statsOpen: boolean;
+  descOpen: boolean;
+  exporting: 'text' | 'file' | null;
+  ladder: { cards: CardStanding[]; rankedAfter: number; duels: number } | null;
 }
 
-/** the deck's elements, from the same arithmetic the deck page uses */
-function elLine(d: PublicDeck): string {
-  return deckElements(analyzeDeck(d.cards))
-    .map(e => `<span class="acctel ${e.el}" title="${Math.round(e.share * 100)}% of the deck">${e.el}</span>`)
-    .join('');
-}
-
-/** the filters, applied in the browser: the server ranks, this narrows */
-function shown(): PublicDeck[] {
-  const q = text.trim().toLowerCase();
-  return (rows ?? []).filter(d => {
-    if (q && !d.name.toLowerCase().includes(q)
-      && !d.owner.username.toLowerCase().includes(q)
-      && !d.cards.some(c => c.toLowerCase().includes(q))) return false;
-    if (els.size) {
-      const have = new Set(deckElements(analyzeDeck(d.cards)).map(e => e.el));
-      for (const el of els) if (!have.has(el)) return false;
-    }
-    return true;
-  });
-}
-
-// ── the list ──────────────────────────────────────────────────────────
-
-function rowHtml(d: PublicDeck): string {
-  // the row is one line high, so the snippet is PROSE, not markdown — see descSummary
-  const snippet = d.description ? descSummary(d.description) : '';
-  return `<button class="metarow" data-btn="meta-open" data-id="${esc(d.id)}">
-    <span class="metacover">${d.cover
-      ? `<img src="${esc(artFor(d.cover))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`
-      : ''}</span>
-    <span class="metabody">
-      <span class="metaname">${esc(d.name)}</span>
-      <span class="metaby">by ${esc(d.owner.username)}${
-        d.copiedFrom ? ` <span class="dim">· after ${esc(d.copiedFrom.owner)}’s ${esc(d.copiedFrom.name)}</span>` : ''}</span>
-      ${snippet ? `<span class="metadesc">${esc(snippet)}</span>` : ''}
-      <span class="metaels">${elLine(d)}</span>
-    </span>
-    <span class="metarec">${recordLine(d)}</span>
-  </button>`;
-}
-
-function listHtml(): string {
-  // ⚠ NO SECOND TIER. The server used to send every public deck and this page
-  // split them around `minGames` into a ranked list and a "not enough games
-  // yet" tail. Since decks publish by default, that tail was every unplayed
-  // deck on the deploy, so the floor moved into `metaList` and became a filter
-  // — everything that arrives here is legal and has been played.
-  const all = shown();
-  const SORTS: [Sort, string][] = [
-    ['winrate', 'winrate'], ['games', 'most played'], ['new', 'newest'], ['name', 'name'],
-  ];
-  return `<div class="metapage">
-    <div class="accthead">
-      <div><h1>Metagame</h1>
-        <p class="hint">Decks people have published, with their records.</p></div>
-      <button data-btn="meta-close">Back</button>
-    </div>
-    ${tabsHtml()}
-    ${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
-    <div class="cbtools">
-      <span class="zonelabel">sort</span>
-      ${SORTS.map(([s, label]) =>
-        `<button class="${sort === s ? 'on' : ''}" data-btn="meta-sort" data-sort="${s}">${label}</button>`).join('')}
-      <span class="cbspacer"></span>
-      <input id="meta-q" class="dksearch" spellcheck="false" placeholder="name, builder, or a card in it"
-        value="${esc(text)}">
-    </div>
-    <div class="dkfilters">
-      ${ALL_ELEMENTS.map(el =>
-        `<button class="elchip ${el}${els.has(el) ? ' on' : ''}" data-btn="meta-el" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
-      ${els.size || text ? '<button data-btn="meta-clear">clear</button>' : ''}
-    </div>
-    ${loading && !rows ? '<p class="hint">loading…</p>' : ''}
-    ${rows && !all.length
-      ? `<p class="hint">${rows.length
-        ? 'Nothing matches those filters.'
-        : `Nothing on the list yet. A deck appears here once it is <b>public</b>, <b>legal</b>
-           and has ${minGames} constructed games behind it, played signed in.`}</p>`
-      : ''}
-    <div class="metalist">${all.map(rowHtml).join('')}</div>
-    ${all.length ? `<p class="hint">Every deck here is legal and has at least ${minGames}
-      constructed games behind it.</p>` : ''}
-  </div>`;
-}
-
-// ── one shared deck ───────────────────────────────────────────────────
-
-/**
- * One card on a shared deck's grid.
- *
- * COPIES ARE DRAWN, NOT COUNTED — two copies is two cards, stacked
- * (ui/decklayout.ts). The number comes back only over the legal cap, where
- * "there are too many of these" is exactly what must not be left to the eye.
- */
-function deckTile(name: string, n: number): string {
-  const r = rowFor(name);
-  const layers = stackLayers(n);
-  // ⚠ THE OFFSET GOES ON A WRAPPER, NOT ON THE ART. `artHtml` returns an <img>
-  // for a card with art and a <div class="cbnoart"> for one without, so
-  // patching a style attribute into "<img " would silently do nothing on every
-  // artless card — every ghost would sit at offset zero and the stack would
-  // vanish exactly where it is least obvious. The wrapper is the positioned
-  // box and takes whatever artHtml gives it.
-  const art = (cls: string): string => (r ? artHtml(r, cls) : `<div class="${cls} cbnoart">${esc(name)}</div>`);
-  // `--d` is the stack DEPTH, and the CSS derives the whole pile geometry from
-  // it (see the .dkstack block in ui/style.css) rather than casing on a count.
-  return `<div class="dktile${layers.length ? ' dkstack' : ''}"
-      ${layers.length ? `style="--d:${layers.length}"` : ''}
-      data-prev="${esc(name)}" data-btn="meta-focus" data-card="${esc(name)}"
-      ${n > 1 ? `aria-label="${esc(name)} ×${n}"` : ''}>
-    ${layers.map(i => `<span class="dkghostwrap" style="--i:${i}" aria-hidden="true">${
-    art('dkart')}</span>`).join('')}
-    ${art('dkart')}
-    ${needsCountBadge(n) ? `<span class="dkn bad">×${n}</span>` : ''}
-  </div>`;
-}
-
-/**
- * The shared deck, laid out.
- *
- * The owner: *"When viewing other people's decks, it's hard to really
- * visualize things since it's just a flat list."* It was literally that — one
- * `.dkgrid` over `a.copies` in whatever order the list happened to be stored
- * in, with no split, no sort and no stats, while the BUILDER had all three.
- * Both surfaces now go through ui/decklayout.ts.
- */
-function deckGrid(d: PublicDeck): string {
-  const a = analyzeDeck(d.cards);
-  const sections = deckSections(a, deckGroup);
-  return `<div class="dktoolbar">
-      <span class="zonelabel">group by</span>
-      ${GROUPINGS.map(g => `<button class="dkkind${deckGroup === g.id ? ' on' : ''}"
-        data-btn="meta-group" data-group="${g.id}" title="${esc(g.hint)}">${esc(g.label)}</button>`).join('')}
-      <span class="dkfilterspacer"></span>
-      <button class="dkkind${statsOpen ? ' on' : ''}" data-btn="meta-stats"
-        title="curve, elements, and the affinity this deck needs open">${
-  statsOpen ? 'Hide stats' : 'Stats'}</button>
-    </div>
-    ${statsOpen ? `<div class="acctbody deckbody metastats">${deckStatsHtml(a)}</div>` : ''}
-    ${sections.map(sec => `<div class="dkgroup">
-      <div class="dkgrouphead">${esc(sec.label)} <span class="dim">${sec.cards} card${
-  sec.cards === 1 ? '' : 's'}</span></div>
-      <div class="dkgrid">${sec.entries.map(e => deckTile(e.name, e.n)).join('')}</div>
-    </div>`).join('')}`;
-}
+const state = (): MetaState => ({
+  view, rows, minGames, one, loading, msg, sort, els, text, focus, deckGroup, statsOpen, descOpen, exporting, ladder,
+});
 
 /** Whichever export format is showing, as text. A shared deck has no
  * maybeboard — the shelf is not published — so the file simply has no `maybe`,
@@ -462,96 +256,16 @@ function exportBody(d: PublicDeck): string {
     : deckListText(d.name, d.cards, [], d.url);
 }
 
-function exportHtml(d: PublicDeck): string {
-  const file = exporting === 'file';
-  return `<div class="dkexport">
-    <div class="dktoolbar">
-      <span class="zonelabel">export</span>
-      <button class="dkkind${file ? '' : ' on'}" data-btn="meta-export" data-format="text">card list</button>
-      <button class="dkkind${file ? ' on' : ''}" data-btn="meta-export" data-format="file">whole deck (JSON)</button>
-      <span class="dkfilterspacer"></span>
-      <button data-btn="meta-copy-export">copy</button>
-      <button data-btn="meta-export-close">close</button>
-    </div>
-    <div class="hint">${file
-      ? 'Description, cover and attribution included — paste it into the import box on your decks page.'
-      : 'One line per card — paste it anywhere, including algomancer.cc.'}</div>
-    <textarea class="dkexporttext" rows="${file ? 16 : 10}" readonly
-      onclick="this.select()">${esc(exportBody(d))}</textarea>
-  </div>`;
-}
-
-function deckHtml(): string {
-  if (!one) {
-    return `<div class="metadeck">
-      <div class="accthead"><div><h1>Deck</h1></div>
-        <button data-btn="meta-close">Back</button></div>
-      <p class="hint">${esc(msg || (loading ? 'loading…' : 'That deck is not shared.'))}</p>
-      <button data-btn="meta-list">See the metagame list</button>
-    </div>`;
-  }
-  const d = one;
-  const a = analyzeDeck(d.cards);
-  const mine = acct.currentUser()?.id === d.owner.id;
-  const desc = d.description ?? '';
-  const { text: shownDesc, clipped } = descOpen ? { text: desc, clipped: false } : clipDescription(desc, 400);
-  const link = `${location.origin}${location.pathname}?deck=${encodeURIComponent(d.id)}`;
-  return `<div class="metadeck">
-    <div class="accthead">
-      <div><h1>${esc(d.name)}</h1>
-        <p class="hint">by ${esc(d.owner.username)}${
-          d.copiedFrom ? ` · after ${esc(d.copiedFrom.owner)}’s ${esc(d.copiedFrom.name)}` : ''}${
-          d.visibility === 'unlisted' ? ' · unlisted — only people with the link see this' : ''}</p></div>
-      <button data-btn="meta-list">Metagame</button>
-      <button data-btn="meta-close">Back</button>
-    </div>
-    ${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
-    ${deckStripHtml(d.name, a, { lead: 'Deck' })}
-    <div class="deckrecline">${recordLine(d)}</div>
-    ${desc.trim() ? `<div class="deckdesc">
-      <div class="deckdescbody">${mdToHtml(shownDesc, { inline: cardLinker({ focusBtn: 'meta-focus' }) })}</div>
-      ${clipped || descOpen
-        ? `<button class="cblink" data-btn="meta-desc-toggle">${descOpen ? 'show less' : 'read more'}</button>`
-        : ''}</div>` : ''}
-    <div class="dkaddrow">
-      ${acct.token() && !mine
-        ? '<button class="primary" data-btn="meta-take">Copy this deck to my collection</button>'
-        : ''}
-      ${mine ? '<span class="hint">Yours — edit it on your decks page.</span>' : ''}
-    </div>
-    <div class="sharebar">Send somebody this link:
-      <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
-      <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>
-    ${exporting ? exportHtml(d) : '<button class="dkadd" data-btn="meta-export">Export this deck</button>'}
-    <div class="dkwork">
-      <div class="dkworkmain">${deckGrid(d)}</div>
-      ${focus ? cardPanelHtml(focus, { close: 'meta-unfocus' }) : ''}
-    </div>
-  </div>`;
-}
+const HOOKS = {
+  setText: (t: string): void => { text = t; },
+  setStatsText: cardstats.setText,
+  repaint: (): void => paint(),
+  statsRepaint: (): void => { syncUrl(); paint(); },
+};
 
 function paint(): void {
   if (!$app || !view) return;
-  $app.classList.remove('board');
-  $app.innerHTML = view === 'list' ? listHtml() : view === 'ladder' ? ladderHtml()
-    : view === 'stats' ? cardstats.pageHtml(tabsHtml()) : deckHtml();
-  if (view === 'stats') cardstats.afterPaint();
-  const box = document.getElementById('meta-q') as HTMLInputElement | null;
-  if (box) {
-    box.oninput = () => { text = box.value; repaintKeepingCaret(); };
-  }
-}
-
-/** Typing in the filter box must not yank the caret out of it, which a full
- * repaint does — the same problem ui/cards.ts documents at repaintKeepingCaret. */
-function repaintKeepingCaret(): void {
-  const before = document.getElementById('meta-q') as HTMLInputElement | null;
-  const at = before?.selectionStart ?? null;
-  paint();
-  const after = document.getElementById('meta-q') as HTMLInputElement | null;
-  if (!after) return;
-  after.focus();
-  if (at !== null) after.setSelectionRange(at, at);
+  paintMeta($app, metaView(state(), one && exporting ? exportBody(one) : '', cardstats.state()), HOOKS);
 }
 
 export function renderScreen(): void { paint(); }

@@ -37,6 +37,10 @@ test('off the board, a [data-prev] target arms the hover box before the zoom is 
 
 test('the pages it is for really draw data-prev on things that are not .card', () => {
   const read = (f: string): string => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
-  assert.match(read('cards.ts'), /<div class="cbrow[^"]*"\s+data-prev=/);
+  // the browser's markup is pages/cards.ts since the design-system round
+  assert.match(read('pages/cards.ts'), /<div class="cbrow[^"]*"\s+data-prev=/);
+  assert.match(read('pages/cards.ts'), /<div class="dktile cbtile[^"]*"\s+data-prev=/);
+  assert.match(read('pages/meta.ts'), /data-prev="\$\{esc\(name\)\}" data-btn="meta-focus"/);
+  assert.match(read('pages/cardstats.ts'), /<button class="csname" data-btn="meta-cs-focus" data-card="\$\{esc\(name\)\}" data-prev=/);
   assert.match(read('decks.ts'), /data-prev=/);
 });

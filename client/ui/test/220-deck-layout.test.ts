@@ -185,7 +185,8 @@ test('§3d the NUMBER comes back over the legal cap, and only there', () => {
 /* ══ §4 one layout, both surfaces ════════════════════════════════════════ */
 
 const decksSrc = readFileSync(join(UI, 'decks.ts'), 'utf8');
-const metaSrc = readFileSync(join(UI, 'meta.ts'), 'utf8');
+// the shared deck's grid is drawn by pages/meta.ts since the design-system round
+const metaSrc = readFileSync(join(UI, 'pages', 'meta.ts'), 'utf8');
 
 test('§4a both pages group through the shared module', () => {
   // ⚠ THE IMPORT, not a mention. A break-test that shadowed `deckSections`
@@ -193,7 +194,7 @@ test('§4a both pages group through the shared module', () => {
   // the symbol was there, it just was not the shared one. So the assertion is
   // that the name is bound BY the import from decklayout.ts.
   for (const [name, src] of [['decks.ts', decksSrc], ['meta.ts', metaSrc]] as const) {
-    const imports = [...src.matchAll(/import \{([^}]*)\} from '\.\/decklayout\.ts';/g)]
+    const imports = [...src.matchAll(/import \{([^}]*)\} from '\.\.?\/decklayout\.ts';/g)]
       .flatMap(m => m[1]!.split(',').map(x => x.trim()));
     assert.ok(imports.includes('deckSections'),
       `${name} must import deckSections from ui/decklayout.ts — got [${imports.join(', ')}]`);
@@ -260,7 +261,7 @@ test('§4c2 a stack is legible AND still one grid cell — both, or neither coun
 });
 
 test('§4d the shared page shows the SAME stats panel, not a thinner copy', () => {
-  assert.match(metaSrc, /import \{ deckStatsHtml \} from '\.\/decks\.ts';/,
+  assert.match(metaSrc, /import \{ deckStatsHtml \} from '\.\.?\/decks\.ts';/,
     'element requirements and mana values were already computed and rendered for the builder — '
     + 'growing a second, thinner panel on the shared page is how the two come to disagree');
   assert.match(metaSrc, /deckStatsHtml\(a\)/);
