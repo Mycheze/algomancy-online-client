@@ -14,6 +14,8 @@
  * §4 ⭐ algomancer.cc's own deck payload imports as a deck
  * §5 ⭐ nothing derived is in the file at all
  * §6 ⭐ a deck file cannot publish itself — visibility does not transfer
+ *
+ * Version 2's sideboard and swaps are server/test/811's.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -91,7 +93,7 @@ test('§2b nothing absent is written as a blank', () => {
   // a bare deck must not export `description: ""` — an importer applying that
   // would blank the description of whatever it was pasted over
   const file = buildDeckFile({ name: 'x', cards: copies('Ignis Sprite', 2) });
-  for (const k of ['description', 'author', 'source', 'visibility', 'id', 'url', 'maybe', 'record']) {
+  for (const k of ['description', 'author', 'source', 'visibility', 'id', 'url', 'maybe', 'sideboard', 'swaps', 'record']) {
     assert.ok(!(k in file), `${k} should be absent, not empty`);
   }
 });

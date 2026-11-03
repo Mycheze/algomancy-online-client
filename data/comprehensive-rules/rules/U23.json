@@ -673,11 +673,15 @@
     "key": "annexd.general.hidden-segment",
     "parent": "D1",
     "order": 4,
-    "text": "A hidden simultaneous segment is a part of the turn in which both players act at once and neither sees what the other does until both are done. The resource step, the haste step and deployment are hidden simultaneous segments.",
+    "text": "A hidden simultaneous segment is a part of the turn in which both players act at once and neither sees what the other does until both are done. The resource step, the haste step and deployment are hidden simultaneous segments, except in Competitive Constructed, where no step is hidden (rule formats.constructed.competitive.order).",
     "examples": [
       {
         "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment — the resource step, the haste step and deployment are hidden simultaneous segments; battle is not"
+      },
+      {
+        "text": "In Competitive Constructed none of the three steps is a hidden simultaneous segment.",
+        "test": "804-cc-no-hidden-step.test.ts::CC: hiddenSegment is null in every step, and planningStep names the step"
       }
     ],
     "see": [
@@ -705,28 +709,38 @@
           "quote": "round: a glimpse waits for the reveal in every hidden step (the resource step,",
           "adopted": "2026-10-04",
           "from": "register@72de434"
+        },
+        {
+          "quote": "CC needs to have the actual, rules complete priority system where there are no true simultanous zones.",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02"
         }
       ],
       "engine": [],
       "tests": [
-        "434-cr-digital-1.test.ts"
+        "434-cr-digital-1.test.ts",
+        "804-cc-no-hidden-step.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-10-04 (“Seeing hidden cards ends your undo”) lists the same three as 'planning, haste, deployment'; the owner ruling of 2026-10-04 (“A glimpse inside a hidden step…”) names the resource step. Read as the same set.",
+    "notes": "The owner ruling of 2026-10-04 (“Seeing hidden cards ends your undo”) lists the same three as 'planning, haste, deployment'; the owner ruling of 2026-10-04 (“A glimpse inside a hidden step…”) names the resource step. Read as the same set. 2026-11-02: the Competitive Constructed exception (doc 22 section 3.3).",
     "sourceHashes": {}
   },
   {
     "key": "annexd.general.initiative-order",
     "parent": "D1",
     "order": 5,
-    "text": "Where the printed rules have the initiative player take the resource step and the haste step first, and the initiative team deploy first (rules turn.planning.order and turn.deploy.order), this client runs those steps for both players at once, each hidden from the other (rule annexd.general.hidden-segment). The non-initiative player neither waits for the initiative player nor sees what they did before acting. This is a house rule of the client.",
+    "text": "Where the printed rules have the initiative player take the resource step and the haste step first, and the initiative team deploy first (rules turn.planning.order and turn.deploy.order), this client runs those steps for both players at once, each hidden from the other (rule annexd.general.hidden-segment). The non-initiative player neither waits for the initiative player nor sees what they did before acting. This is a house rule of the client. In Competitive Constructed the house rule does not apply, and the printed order holds (rule formats.constructed.competitive.order).",
     "examples": [
       {
         "text": "The non-initiative player is offered plays at once in deployment, and can finish deploying while the initiative player is still acting.",
         "test": "21-fixes.test.ts::both seats deploy at once: NIT may act and finish before IT"
+      },
+      {
+        "text": "In Competitive Constructed the non-initiative player is offered nothing in the resource step until the initiative player is done.",
+        "test": "802-cc-resource-step.test.ts::CC resource step: the initiative player first, then the non-initiative player"
       }
     ],
     "see": [
@@ -753,17 +767,23 @@
           "quote": "Keep simultaneous",
           "adopted": "2026-10-22",
           "from": "owner, chat 2026-10-22 (CT-247: keep the hidden simultaneous steps, or sequence them by initiative as printed)"
+        },
+        {
+          "quote": "The INT player always does their planning/haste/deployment first, while NIT watches, then they switch.",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02"
         }
       ],
       "engine": [],
       "tests": [
-        "21-fixes.test.ts"
+        "21-fixes.test.ts",
+        "802-cc-resource-step.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "high",
-    "notes": "CT-247 closed wontfix on 2026-10-22: the owner kept the simultaneous hidden resource, haste and deployment steps (the house rule) as a digital convention. His 2026-10-22 words were not in this pass's inputs; the quotes are the register's write-up of the same decision of 2026-10-11 (500.2a carries them too). F-U08-1, F-U09-3 closed. D-U08-1, D-U09-1.",
+    "notes": "CT-247 closed wontfix on 2026-10-22: the owner kept the simultaneous hidden resource, haste and deployment steps (the house rule) as a digital convention. His 2026-10-22 words were not in this pass's inputs; the quotes are the register's write-up of the same decision of 2026-10-11 (500.2a carries them too). F-U08-1, F-U09-3 closed. D-U08-1, D-U09-1. 2026-11-02: the owner's Competitive Constructed format drops the house rule (doc 22 section 3.2); CT-247's wontfix stands for every other game.",
     "sourceHashes": {}
   },
   {
@@ -2670,7 +2690,7 @@
     "key": "annexd.clocks.idle-rooms",
     "parent": "D3",
     "order": 4,
-    "text": "A game is closed when nobody has moved in it for an hour, if fewer than five actions have been taken, or for twelve hours otherwise, and nobody (no player and no watcher) has been connected to it for the five-minute reconnect grace. An open tab keeps an idle game open.",
+    "text": "A game is closed when nobody has moved in it for an hour, if fewer than five actions have been taken, or for twelve hours otherwise, and nobody (no player and no watcher) has been connected to it for the five-minute reconnect grace. An open tab keeps an idle game open. The waiting game of a paused Competitive Constructed match is the exception (rule annexd.modes.competitive.pause).",
     "examples": [
       {
         "text": null,
@@ -2683,9 +2703,15 @@
       {
         "text": null,
         "test": "367-idle-rooms-close.test.ts::367 §3 a connected seat or a watcher keeps an idle room open, and an empty one gets a grace to reconnect"
+      },
+      {
+        "text": "A Competitive Constructed match is paused between games. Its waiting game is not closed for idling while the pause lasts, and a waiting game nobody paused is.",
+        "test": "819-cc-pause-void-and-idle.test.ts::§5 an unpaused waiting room idles out as any room does, and voids its match"
       }
     ],
-    "see": [],
+    "see": [
+      "annexd.modes.competitive.pause"
+    ],
     "sources": {
       "printed": [],
       "designer": [],
@@ -2694,13 +2720,14 @@
       "engine": [],
       "tests": [
         "367-idle-rooms-close.test.ts",
-        "434-cr-digital-1.test.ts"
+        "434-cr-digital-1.test.ts",
+        "819-cc-pause-void-and-idle.test.ts"
       ]
     },
     "basis": "engine",
     "scope": "digital",
     "confidence": "high",
-    "notes": "ENGINE-ONLY. D-U23-2. Round 2: the nobody-connected condition was added; the verifier measured rooms.ts idleDue ('if (roomAttended(room)) { room.unattendedSince = null; return false; }', RECONNECT_GRACE_MS = 5 min) and idleWindowMs ('actions < IDLE_FEW_ACTIONS ? IDLE_SHORT_MS : IDLE_LONG_MS;', counted from lastActionAt). Its probe showed an attended room three days idle stays open. The sub-rule kept-open restates the attended half on its own. Engine location: client/server/rooms.ts idleDue, idleWindowMs.",
+    "notes": "ENGINE-ONLY. D-U23-2. Round 2: the nobody-connected condition was added; the verifier measured rooms.ts idleDue ('if (roomAttended(room)) { room.unattendedSince = null; return false; }', RECONNECT_GRACE_MS = 5 min) and idleWindowMs ('actions < IDLE_FEW_ACTIONS ? IDLE_SHORT_MS : IDLE_LONG_MS;', counted from lastActionAt). Its probe showed an attended room three days idle stays open. The sub-rule kept-open restates the attended half on its own. Engine location: client/server/rooms.ts idleDue, idleWindowMs. Amended 2026-11-02 (Competitive Constructed, docs/22): the paused-match exception (server/match.ts setRoomHeld).",
     "sourceHashes": {}
   },
   {
@@ -4490,6 +4517,51 @@
     "scope": "digital",
     "confidence": "medium",
     "notes": "The owner: a fix \"doesn't change anything in the game\"; the ledger records that a fixed game counts for everything and is only tagged.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.undo.competitive",
+    "parent": "D4",
+    "order": 6,
+    "text": "In Competitive Constructed (rule formats.constructed.competitive), the player taking the resource step, the haste step or deployment may undo their own actions in that step, one at a time, until they finish the step. An undo cannot go back past the start of the step, past an action of the other player, or past an action that drew, searched, shuffled or reordered a deck, looked at a hand, or revealed a hidden card.",
+    "examples": [
+      {
+        "text": "The initiative player activates a resource, recycles a card and exchanges a Prismite: all three can be undone until they press Done, and none of them after.",
+        "test": "805-cc-undo-until-done.test.ts::CC undo: the resource step is undoable back to its start, and only by the seat taking it"
+      },
+      {
+        "text": "In deployment a player plays a unit, then a unit that draws a card when it spawns: neither can be undone, but a unit played after the draw can.",
+        "test": "805-cc-undo-until-done.test.ts::CC undo: a draw stands, and everything before it with it"
+      }
+    ],
+    "see": [
+      "annexd.undo.hidden-step",
+      "annexd.undo.seen-cards"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Undo until Done",
+          "adopted": "2026-11-02",
+          "from": "chat 2026-11-02, his answer to: Undo in CC: what should undo be?"
+        }
+      ],
+      "engine": [
+        "sequentialStep",
+        "ccUndoMark",
+        "ccUndoFloor"
+      ],
+      "tests": [
+        "805-cc-undo-until-done.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "Owner's answer of 2026-11-02 ('Undo until Done'). The limits are the engine's (doc 22 section 3.6, engine/src/ccundo.ts), in the shape of D4.1b and D4.3. The server rewind and the button are later workstreams (W3, W6).",
     "sourceHashes": {}
   }
 ]

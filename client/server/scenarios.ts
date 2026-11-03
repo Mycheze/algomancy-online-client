@@ -88,7 +88,7 @@
  * ALGO_VERDICTS_FILE. "The link doesn't work" is almost always the token.
  */
 import type {
-  Action, CardName, Element, EngineEvent, EntityId, GameMode, GameState, Phase,
+  Action, CardName, Element, EngineEvent, EntityId, GameMode, GameRules, GameState, Phase,
   ResourceKind, Seat,
 } from '../engine/src/types.ts';
 import { apply, createGame, IllegalAction } from '../engine/src/apply.ts';
@@ -493,6 +493,27 @@ function runPrologue(sc: Scenario, ids: ScenarioIds, state: GameState, events: E
 }
 
 /**
+ * docs/22 §2.3 — a SAVED room's CC rules, read for a deal. Absent → undefined
+ * (a standard game). Anything present that this build cannot read is REFUSED:
+ * the log was recorded under those rules, and replaying it under the house
+ * rules would produce a plausible room describing a game nobody played
+ * (restoreCustom's argument). The one reader: rooms.ts (restore), stats.ts,
+ * cardledger.ts and replay-room.ts all deal a saved file through it, so no two
+ * of them can disagree about which game a file holds (test 822).
+ */
+export function savedRules(raw: unknown, mode: GameMode): GameRules | undefined {
+  if (raw === undefined || raw === null) return undefined;
+  const r = raw as { sequential?: unknown; initiative?: unknown };
+  const keys = typeof raw === 'object' ? Object.keys(raw as object) : ['?'];
+  if (mode !== 'constructed' || r.sequential !== true
+    || keys.some(k => k !== 'sequential' && k !== 'initiative')
+    || (r.initiative !== undefined && r.initiative !== 0 && r.initiative !== 1)) {
+    throw new Error('saved with game rules this build cannot read — refusing to replay its log under the house rules');
+  }
+  return { sequential: true, ...(r.initiative === 0 || r.initiative === 1 ? { initiative: r.initiative } : {}) };
+}
+
+/**
  * Deal a game and apply a scenario to it. THE choke point.
  *
  * Same arguments as `createGame`, plus the scenario id. Returns the same shape,
@@ -512,8 +533,13 @@ export function dealScenario(
   id?: string,
   /** BL-43: a live draft's custom deal, passed straight through to createGame */
   deal?: import('../engine/src/draftdeal.ts').DraftDeal,
+  /** docs/22 §3.1 — a Competitive Constructed game's rules (sequential steps,
+   * games 2–3's chosen initiative), passed straight through to createGame.
+   * Forgetting it deals game 2 under the house rules with the rolled
+   * initiative: a different game. Test 822 scans every deal site for it. */
+  rules?: import('../engine/src/types.ts').GameRules,
 ): { state: GameState; events: EngineEvent[] } {
-  const base = createGame(seed, names, mode, els, decks, deal);
+  const base = createGame(seed, names, mode, els, decks, deal, undefined, rules);
   if (id === undefined) return { state: base.state, events: base.events };
   // BL-06 — the second kind of deal (see SANDBOX_ID above). Before the
   // SCENARIOS lookup, so a sandbox never falls into "no such scenario".

@@ -32,7 +32,7 @@ interface Person { id: string; name: string; contact?: string | null }
 interface Suggestion { id: string; name: string; contact: string | null; days: number; hours: number; windows: Win[]; problem: string | null }
 interface Result { outcome: 'a' | 'b' | 'unplayed' | 'double-loss'; how: string; code?: string; at: string; note?: string; fixed?: true }
 /** what a season's games are (server/league-store.ts LeagueFormat); absent = draft */
-type Format = 'draft' | 'constructed';
+type Format = 'draft' | 'constructed' | 'competitive';
 interface SeasonView {
   id: string; name: string; format?: Format; phase: number; label: string; weeks: number; perWeek: number; lateUntil: number;
   signupOpens: string; start: string; phases: { phase: number; label: string; at: string }[];
@@ -204,14 +204,24 @@ export function navButtonHtml(): string {
 // deck, change it every game if you like. Few words: one sentence each place.
 
 const constructed = (s: Pick<SeasonView, 'format'> | null | undefined): boolean => s?.format === 'constructed';
+/** docs/22 §6.2: Competitive Constructed — each league match a best of three */
+const competitive = (s: Pick<SeasonView, 'format'> | null | undefined): boolean => s?.format === 'competitive';
+const COMPETITIVE_LINE = 'Competitive Constructed: every match is a best of three, with a registered deck and a sideboard of up to 7 cards.';
 /** the one sentence on what a match is */
-const matchLine = (s: SeasonView): string => (constructed(s)
+const matchLine = (s: SeasonView): string => (competitive(s) ? COMPETITIVE_LINE : constructed(s)
   ? 'Casual constructed: bring any deck, and change it every game if you like.'
   : 'Every match is one live draft with random elements and a random first player.');
 /** the page's subtitle */
-const pageHint = (s: SeasonView | null): string => (constructed(s)
+const pageHint = (s: SeasonView | null): string => (competitive(s)
+  ? 'A month of Competitive Constructed: best-of-three matches every week, matched on when you can play, then a final.'
+  : constructed(s)
   ? 'A month of casual constructed: opponents every week, matched on when you can play, then a final.'
   : 'A month of live drafts: opponents every week, matched on when you can play, then a final.');
+/** the format in a few words, for the organizer */
+const formatWords = (f: Format | undefined): string =>
+  (f === 'competitive' ? 'Competitive Constructed' : f === 'constructed' ? 'casual constructed' : 'live draft');
+const FORMATS: readonly Format[] = ['draft', 'constructed', 'competitive'];
+const formatOfVal = (v: string | undefined): Format => (FORMATS as readonly (string | undefined)[]).includes(v) ? v as Format : 'draft';
 
 // ── the home banner ───────────────────────────────────────────────────
 //
@@ -242,7 +252,7 @@ export function homeBannerHtml(): string {
     <div class="lgbhead">
       <button class="lgbfold" data-btn="lg-banner" aria-expanded="${bannerOpen}">
         <span class="lgbcaret">${bannerOpen ? '▾' : '▸'}</span> 🏅 <b>${esc(s.name)}</b></button>
-      <span class="lgbphase">${constructed(s) ? 'Constructed · ' : ''}${esc(s.label)}</span>
+      <span class="lgbphase">${competitive(s) ? 'Competitive · ' : constructed(s) ? 'Constructed · ' : ''}${esc(s.label)}</span>
       ${me?.entered ? `<span class="lgbin">✓ you're in</span>` : ''}
       <span class="lgbnext">${esc(nextText(s))}</span>
       ${cta}
@@ -897,7 +907,7 @@ function organizerHtml(s: SeasonView | null): string {
   const next = s ? s.phases.find(p => p.phase === s.phase + 1) : null;
   return `<div class="acctcard wide lgorgcard"><h3>Organizer</h3>
     ${s ? `
-      <p>${esc(s.name)} (${constructed(s) ? 'casual constructed' : 'live draft'}) is at <b>${esc(s.label)}</b>. ${s.auto
+      <p>${esc(s.name)} (${formatWords(s.format)}) is at <b>${esc(s.label)}</b>. ${s.auto
         ? `It moves on by itself${s.hold ? ' — <b>but it is on hold</b>' : ''}${next ? `: next is <b>${esc(next.label)}</b> at ${when(next.at)}` : ''}.`
         : 'It moves on only when you press Advance.'}</p>
       <p>
@@ -907,8 +917,8 @@ function organizerHtml(s: SeasonView | null): string {
         <button data-btn="lg-set" data-key="hold" data-val="${s.hold ? '0' : '1'}">${s.hold ? 'Release hold' : 'Hold at next boundary'}</button>
         <button data-btn="lg-set" data-key="auto" data-val="${s.auto ? '0' : '1'}">${s.auto ? 'Switch to manual' : 'Switch to automatic'}</button>
         <button data-btn="lg-set" data-key="hidden" data-val="${s.hidden ? '0' : '1'}">${s.hidden ? 'Make public' : 'Hide'}</button>
-        ${s.formatProblem ? '' : `<button data-btn="lg-format" data-val="${constructed(s) ? 'draft' : 'constructed'}">${
-          constructed(s) ? 'Make it draft' : 'Make it constructed'}</button>`}
+        ${s.formatProblem ? '' : FORMATS.filter(f => f !== (s.format ?? 'draft')).map(f =>
+          `<button data-btn="lg-format" data-val="${f}">Make it ${formatWords(f)}</button>`).join(' ')}
         ${s.hidden ? `<button class="${arming === 'delete' ? 'danger' : ''}" data-btn="lg-delete">${arming === 'delete' ? 'Press again to delete this test season' : 'Delete'}</button>` : ''}
       </p>
       ${repairHtml(s)}
@@ -932,7 +942,8 @@ function organizerHtml(s: SeasonView | null): string {
         <label>Opponents a week <input id="lg-new-per" type="number" min="1" max="6" value="3"></label>
         <label>Format <select id="lg-new-format">
           <option value="draft">Live draft (random elements)</option>
-          <option value="constructed">Casual constructed (any deck, every game)</option></select></label>
+          <option value="constructed">Casual constructed (any deck, every game)</option>
+          <option value="competitive">Competitive Constructed (best of three, sideboards)</option></select></label>
         <label><input id="lg-new-auto" type="checkbox" checked> automatic (follows the calendar)</label>
         <label><input id="lg-new-hidden" type="checkbox"> hidden (a test season)</label>
       </div>
@@ -979,6 +990,7 @@ export function postText(s: SeasonView, origin: string): string {
     return [
       `🏅 **${s.name}** — sign-ups are open!`,
       ...(constructed(s) ? ['Casual constructed: bring any deck, and change it every game if you like.'] : []),
+      ...(competitive(s) ? [COMPETITIVE_LINE] : []),
       `Weeks run Sunday to Saturday. This is sign-up week: no pairings yet. Join, and the League page shows who is free when you are — up to ${s.perWeek} games against them count.`,
       `Week 1 pairings go up ${stamp(at(1))}, then each Sunday for ${s.weeks} weeks, then a final between the top two.`,
       ``,
@@ -1184,8 +1196,12 @@ export function playMatch(season: string, match: string): void {
     // the season's format, as the server says: a constructed league room
     // waits for a deck from each seat (the server's answer, so an old server
     // that never says is a draft)
+    // A Competitive match's room is a MATCH room (`cc=1`, as ui/match.ts
+    // matchLink): its join brings no deck — game 1 registers in the room,
+    // games 2-3 deal from the match (CT-514)
     location.search = `?ws=1&room=${encodeURIComponent(String(r['room']))}`
-      + (seat === 0 || seat === 1 ? `&seat=${seat}` : '') + `&mode=${r['mode'] === 'constructed' ? 'constructed' : 'draft'}`;
+      + (seat === 0 || seat === 1 ? `&seat=${seat}` : '') + `&mode=${r['mode'] === 'constructed' || r['mode'] === 'competitive' ? 'constructed' : 'draft'}`
+      + (r['mode'] === 'competitive' ? '&cc=1' : '');
   });
 }
 
@@ -1311,7 +1327,7 @@ export function handleButton(btn: HTMLElement): boolean {
         signupOpens: openAt ? new Date(openAt).toISOString() : '', start: startAt ? new Date(startAt).toISOString() : '',
         weeks: Number(val('lg-new-weeks')), perWeek: Number(val('lg-new-per')),
         auto: checked('lg-new-auto'), hidden: checked('lg-new-hidden'),
-        format: val('lg-new-format') === 'constructed' ? 'constructed' : 'draft',
+        format: formatOfVal(val('lg-new-format')),
       }).then(r => {
         msg = r.ok ? 'Season created.' : (r.error ?? 'could not create it');
         if (r.ok) want = String(r['id']);
@@ -1336,7 +1352,7 @@ export function handleButton(btn: HTMLElement): boolean {
       if (s) void act('/api/league/admin/update', { id: s.id, [btn.dataset['key'] ?? '']: btn.dataset['val'] === '1' });
       return true;
     case 'lg-format':
-      if (s) void act('/api/league/admin/update', { id: s.id, format: btn.dataset['val'] === 'constructed' ? 'constructed' : 'draft' });
+      if (s) void act('/api/league/admin/update', { id: s.id, format: formatOfVal(btn.dataset['val']) });
       return true;
     case 'lg-delete':
       if (arming !== 'delete') { arming = 'delete'; paint(); return true; }

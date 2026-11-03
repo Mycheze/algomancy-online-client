@@ -296,17 +296,32 @@ export const STACK_VIRUS_HOSTS = new Set<StackItem['kind']>(['spell', 'spellUnit
 
 export function other(seat: Seat): Seat { return 1 - seat; }
 
+/** Which of the three planning-and-deployment steps is this state in, if any:
+ * the resource step ('plan'), the haste step or deployment. A NAME for the
+ * step, whatever the format; `hiddenSegment` below is whether it is hidden.
+ * server/rooms.ts `stepKey`/`stepLabel` name the agreed-fix rewind's "start of
+ * this step" with it, which a Competitive Constructed game needs as much as
+ * any other (doc 22 §3.3). */
+export function planningStep(s: GameState): 'plan' | 'haste' | 'deploy' | null {
+  if (s.phase === 'planning') return (s.hasteDone || s.hasteEnding) ? 'haste' : 'plan';
+  if (s.phase === 'deploy') return 'deploy';
+  return null;
+}
+
 /** Which hidden simultaneous segment is this state in, if any?
  *
  * THE definition (apply.ts re-exports it), and server/rooms.ts `segmentKey` is a
  * thin wrapper over it (its doc block is the long-form ruling). Two copies of
  * this predicate is exactly the drift BL-19 is this repo's standing example of:
  * CR D2.1b's decision gate turns on it, and so does the timestamp clock
- * (CR 113.2b, `E.stampSegment`). */
+ * (CR 113.2b, `E.stampSegment`).
+ *
+ * Competitive Constructed (`s.sequential`, doc 22 §3.3): NONE. Its steps are
+ * taken one player at a time, in the open (CR 501.4, 507.3), so every reader
+ * of this — the server's frozen board, held events and recap, the decision
+ * gate, the timestamp re-basing — stands down by construction. */
 export function hiddenSegment(s: GameState): 'plan' | 'haste' | 'deploy' | null {
-  if (s.phase === 'planning') return (s.hasteDone || s.hasteEnding) ? 'haste' : 'plan';
-  if (s.phase === 'deploy') return 'deploy';
-  return null;
+  return s.sequential ? null : planningStep(s);
 }
 
 /** Manual p.17: each player may flip up to TWO dormant resources face-up per
@@ -3994,7 +4009,7 @@ export class E {
     if (!c.prophecy) return false;
     if (this.deploying(seat)) return true;
     if (normalizeProphecy(c.prophecy.condition).prophesyAt !== 'haste') return false;
-    return this.s.phase === 'planning' && this.s.hasteDone !== null && !this.s.hasteDone[seat];
+    return this.hasting(seat);
   }
 
   /** unrecognised conditions warned about already during THIS apply() call —
@@ -16543,7 +16558,10 @@ export class E {
     this.s.deployActed = this.s.players.map(() => false);
     // CR 707.10 (CT-255): "each deployment" — every bin-play grant's budget reopens
     this.s.deployBinPlayGrants = [];
-    this.ev('phase', 'Deployment: both players deploy at the same time — moves are revealed when everyone is done.');
+    this.ev('phase', this.s.sequential
+      // Competitive Constructed: CR 507.3, the initiative player deploys first
+      ? `Deployment: ${this.pname(this.initiative)} deploys first, then ${this.pname(this.nit)}.`
+      : 'Deployment: both players deploy at the same time — moves are revealed when everyone is done.');
     this.s.deployStarting = true;   // CR 507.4: step 2 is owed
     this.rotDamage();   // CR 507.4: start of deployment, before anyone may deploy
     this.finishDeployStart();
@@ -16561,9 +16579,38 @@ export class E {
     this.settle();
   }
 
-  /** `seat` may take deployment actions right now (simultaneous model) */
+  /** `seat` may take deployment actions right now: both at once (the house
+   * rule, Annex D1.5), or in Competitive Constructed only the initiative-ordered
+   * first seat still deploying (CR 507.3; `deployPlayer`, kept by
+   * doDoneDeploying). THE predicate: the reducer and `legalActions` both read it. */
   deploying(seat: Seat): boolean {
-    return this.s.phase === 'deploy' && this.s.deployDone !== null && !this.s.deployDone[seat];
+    return this.s.phase === 'deploy' && this.s.deployDone !== null && !this.s.deployDone[seat]
+      && (!this.s.sequential || this.s.deployPlayer === seat);
+  }
+
+  /** `seat` may take resource-step actions right now (recycle, activate,
+   * exchange a Prismite, done). The house rule: any seat not yet done
+   * (CR D1.5). Competitive Constructed (CR 901.9a): only once BOTH have put their cards
+   * back (CR 501.4a: no player begins the resource step until every player has
+   * finished the draft step), and the initiative player first, then the other
+   * (CR 501.4). The constructed draw-4/bottom-2 itself stays simultaneous
+   * (CR 501.4: the draw and draft steps happen for both players at once), which
+   * is why this is not the gate on `bottomCards`. THE predicate: the reducer
+   * and `legalActions` both read it. */
+  planning(seat: Seat): boolean {
+    const s = this.s;
+    return s.phase === 'planning' && !s.planningDone[seat]
+      && (!s.sequential || (s.bottomDone == null && (seat === s.initiative || !!s.planningDone[s.initiative])));
+  }
+
+  /** `seat` may act in the haste step right now. The house rule: any seat not
+   * yet done (Annex D1.5). Competitive Constructed: the initiative player
+   * first, then the other (CR 501.4). THE predicate: the reducer (plays, mods,
+   * prophecies, done) and `legalActions` all read it. */
+  hasting(seat: Seat): boolean {
+    const s = this.s;
+    return s.phase === 'planning' && s.hasteDone != null && !s.hasteDone[seat]
+      && (!s.sequential || seat === s.initiative || !!s.hasteDone[s.initiative]);
   }
 
   endTurn(): void {

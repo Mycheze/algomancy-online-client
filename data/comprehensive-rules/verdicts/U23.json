@@ -2077,49 +2077,66 @@
   },
   {
     "key": "annexd.clocks.idle-rooms",
-    "textHash": "485d399714e5ee6b",
+    "textHash": "d9012bc28ae590e7",
     "verdict": "confirmed",
-    "round": 3,
-    "verifier": "U23-r3",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
-      {
-        "loc": "client/server/rooms.ts:idleWindowMs",
-        "agrees": true,
-        "note": "<5 actions -> 1h, else 12h"
-      },
       {
         "loc": "client/server/rooms.ts:idleDue",
         "agrees": true,
-        "note": "attended (seat socket or watcher) never closes; empty must persist RECONNECT_GRACE_MS (5 min) from first empty sweep tick; decided rooms are left to sweepFinished"
+        "note": "attended -> open; held (paused match) -> open; 5-min grace; window 1 h if < 5 actions else 12 h"
       },
       {
-        "loc": "client/server/rooms.ts:closeIdleRoom",
+        "loc": "client/server/match.ts:setRoomHeld callback",
         "agrees": true,
-        "note": "marks closed, keeps file (sandbox dropped)"
+        "note": "held only when the match is paused and this is its between room"
       }
     ],
     "tests_run": [
       {
         "file": "client/server/test/367-idle-rooms-close.test.ts",
-        "pattern": "367 §1|367 §2|367 §3",
+        "pattern": "367 §1 a room with fewer than five actions",
         "passed": true,
-        "asserts_claim": "yes (read, not run: server test excluded by brief); §1 59m stays/61m closes at 4 actions, §2 11h stays/12h closes at 5, §3 seat/watcher keep it, grace before close",
-        "note": "executed at wave end: whole file 8/8 pass"
-      }
-    ],
-    "probes": [
+        "asserts_claim": true
+      },
       {
-        "file": "data/comprehensive-rules/build/probes/U23/idle-rooms.test.ts",
-        "title": "annexd.clocks.idle-rooms: 4 actions -> one hour, 5 actions -> twelve hours (empty room); a room nobody moves in is NOT closed while a seat is connected",
+        "file": "client/server/test/367-idle-rooms-close.test.ts",
+        "pattern": "367 §2 a room with five or more actions",
         "passed": true,
-        "demonstrates": "yes: windows 1h/<5 actions and 12h/>=5, open tab keeps room, grace then close"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/367-idle-rooms-close.test.ts",
+        "pattern": "367 §3 a connected seat or a watcher keeps",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "pattern": "cr:annexd.clocks.idle-rooms",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/819-cc-pause-void-and-idle.test.ts",
+        "pattern": "§5 an unpaused waiting room idles out",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/819-cc-pause-void-and-idle.test.ts",
+        "pattern": "§1-§4 a pause is agreed, held through the idle sweep",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "367-idle-rooms-close.test.ts",
+        "ref": "engine code + tests (basis engine)",
         "supports": "yes",
-        "note": "test header quotes the owner's 2026-10-04 instruction; basis engine honest"
+        "note": "example 4's bound test (819 §5) asserts the unpaused half; the paused half is asserted by 819 §1-§4 ('the idle sweep closes nothing'), also run"
       }
     ],
     "quote_spans": [
@@ -2129,7 +2146,7 @@
       },
       {
         "file": "client/server/rooms.ts",
-        "text": "actions < IDLE_FEW_ACTIONS ? IDLE_SHORT_MS : IDLE_LONG_MS;"
+        "text": "export const IDLE_SHORT_MS = 3600_000;"
       },
       {
         "file": "client/server/rooms.ts",
@@ -2141,12 +2158,19 @@
       },
       {
         "file": "client/server/rooms.ts",
-        "text": "!!room.sockets[0] || !!room.sockets[1] || room.watchers.size > 0;"
+        "text": "  !!room.sockets[0] || !!room.sockets[1] || room.watchers.size > 0;"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "  if (roomHeld(room)) return false;"
+      },
+      {
+        "file": "client/server/match.ts",
+        "text": "  return !!m && m.phase === 'paused' && m.between?.code === room.code;"
       }
     ],
     "basis_ok": true,
-    "problem": "None substantive. Nuance: the sweep never closes a game that already has a winner (decidedWinner) and a sandbox room is deleted rather than kept; the grace is counted from the first sweep tick that sees the room empty.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.clocks.idle-rooms.kept-open",
@@ -2506,53 +2530,67 @@
   },
   {
     "key": "annexd.general.hidden-segment",
-    "textHash": "06a558e2bb2ba414",
+    "textHash": "272b024d43f1c066",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U23-r1",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/engine (hiddenSegment) / server/rooms.ts segmentKey",
+        "loc": "client/engine/src/engine.ts:hiddenSegment",
         "agrees": true,
-        "note": "'plan', 'haste', 'deploy'"
+        "note": "planningStep(s) ('plan'|'haste'|'deploy') unless s.sequential, then null"
+      },
+      {
+        "loc": "client/server/rooms.ts:segmentKey",
+        "agrees": true,
+        "note": "thin wrapper over hiddenSegment; the server holds the other seat's plays until the step closes"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "pattern": "cr:annexd.general.hidden-segment",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/804-cc-no-hidden-step.test.ts",
+        "pattern": "CC: hiddenSegment is null in every step",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R18 (its hidden-segment half)",
+        "ref": "owner: register quotes (2026-08-18, 2026-10-04)",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "haste step hidden 'exactly as the planning phase'; 'every hidden step (the resource step,' — deployment as hidden rests on the bound 434 test"
       },
       {
-        "ref": "R18 (its hidden-segment half)",
+        "ref": "owner: CC needs to have the actual, rules complete priority system where there are no true simultanous zones.",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
-      },
-      {
-        "ref": "R310",
-        "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "the CC exception"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "false: the haste step is a **hidden simultaneous segment** — nobody sees the"
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "text": "assert.equal(hiddenSegment(h.state), 'deploy', 'deployment');"
       },
       {
-        "file": "client/docs/digital-rules.md",
+        "file": "client/engine/src/engine.ts",
+        "text": "return s.sequential ? null : planningStep(s);"
+      }
+    ],
+    "scratch_spans": [
+      {
+        "file": "data/comprehensive-rules/build/verify-input/U23-r4.json",
         "text": "other side's haste plays until everyone is done, exactly as the planning phase"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "round: a glimpse waits for the reveal in every hidden step (the resource step,"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.general.hidden-segment.barrier",
@@ -2661,20 +2699,20 @@
   },
   {
     "key": "annexd.general.initiative-order",
-    "textHash": "6433427b2c82ebca",
+    "textHash": "f5484edc54ed5312",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:hiddenSegment / settle (deployIsolate)",
+        "loc": "client/engine/src/engine.ts:E.deploying/E.planning/E.hasting",
         "agrees": true,
-        "note": "the resource step, haste step and deployment run for both seats at once; neither seat waits on the other"
+        "note": "without s.sequential both seats act at once; with it, initiative first"
       },
       {
-        "loc": "client/server/view.ts:viewFor (frozenOpp)",
+        "loc": "client/engine/src/engine.ts:hiddenSegment",
         "agrees": true,
-        "note": "the opponent's half is served as the segment began"
+        "note": "each step hidden outside CC"
       }
     ],
     "tests_run": [
@@ -2683,29 +2721,48 @@
         "pattern": "both seats deploy at once: NIT may act and finish before IT",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/802-cc-resource-step.test.ts",
+        "pattern": "CC resource step: the initiative player first, then the non-initiative player",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "pattern": "cr:annexd.general.hidden-segment",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "owner register@72de434",
+        "ref": "owner: register 2026-10-11 quotes",
         "supports": "yes",
-        "note": "both quotes: runs the steps for both players at once, each unseen until both are done; a deliberate digital convention"
+        "note": "the client runs the steps at once, unseen, as a digital convention"
       },
       {
-        "ref": "Manual p.38 (checked)",
+        "ref": "owner: Keep simultaneous",
         "supports": "yes",
-        "note": "the printed order it departs from: the initiative team deploys before passing to the non-initiative team"
+        "note": "CT-247 answer: keep the house rule"
+      },
+      {
+        "ref": "owner: The INT player always does their planning/haste/deployment first, while NIT watches, then they switch.",
+        "supports": "yes",
+        "note": "CC exception"
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/test/21-fixes.test.ts",
-        "text": "both seats deploy at once: NIT may act and finish before IT"
-      },
+        "text": "test('both seats deploy at once: NIT may act and finish before IT', () => {"
+      }
+    ],
+    "scratch_spans": [
       {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "will deploy units in any order they wish before passing"
+        "file": "data/comprehensive-rules/build/verify-input/U23-r4.json",
+        "text": "This client runs those steps for both players at once, each unseen by the other until both are done."
       }
     ],
     "basis_ok": true,
@@ -5376,6 +5433,87 @@
       {
         "file": "client/ui/test/358-burst-order-ui.test.ts",
         "text": "assert.ok(!net.has({ btn: 'burstundo' }), 'no Undo last pick before the first pick');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.undo.competitive",
+    "textHash": "ff13190496893f5f",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U23-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/ccundo.ts:sequentialStep",
+        "agrees": true,
+        "note": "the open CC step and the seat taking it"
+      },
+      {
+        "loc": "client/engine/src/ccundo.ts:ccUndoMark",
+        "agrees": true,
+        "note": "barriers: done, other, asks, fix, random, deck (draw/search/mill/top/reorder), seen (glimpsed/revealed/seenHand)"
+      },
+      {
+        "loc": "client/engine/src/ccundo.ts:ccUndoFloor",
+        "agrees": true,
+        "note": "only the trailing run of the seat's own actions in the open step, back to the latest barrier"
+      },
+      {
+        "loc": "client/server/rooms.ts:undoForSeat",
+        "agrees": true,
+        "note": "note: the server does not yet call ccUndoFloor (no CC game is offered by server/ui); the rule is demonstrated at the engine seam only"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/805-cc-undo-until-done.test.ts",
+        "pattern": "CC undo: the resource step is undoable back to its start",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/805-cc-undo-until-done.test.ts",
+        "pattern": "CC undo: a draw stands, and everything before it with it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/805-cc-undo-until-done.test.ts",
+        "pattern": "CC undo: each barrier, read off the boards",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/805-cc-undo-until-done.test.ts",
+        "pattern": "CC undo: sequentialStep names the open step",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner: Undo until Done",
+        "supports": "yes",
+        "note": "answer to 'Undo in CC: what should undo be?'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/805-cc-undo-until-done.test.ts",
+        "text": "assert.equal(m.floor(0), m.marks.length, 'the draw stands, and the quiet play before it too');"
+      },
+      {
+        "file": "client/engine/test/805-cc-undo-until-done.test.ts",
+        "text": "assert.equal(m.floor(0), m.marks.length, 'never past a Done');"
+      }
+    ],
+    "scratch_spans": [
+      {
+        "file": "data/comprehensive-rules/build/verify-input/U23-r4.json",
+        "text": "Undo until Done"
       }
     ],
     "basis_ok": true,

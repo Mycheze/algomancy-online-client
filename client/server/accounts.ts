@@ -24,9 +24,11 @@ import {
 } from './stats.ts';
 import { evaluateAchievements, type AchievementState } from './achievements.ts';
 import {
-  foldRatings, PUBLIC_AFTER, RATED_MODES, START_RATING,
-  type RatedMode, type RatingTable,
+  foldRatings, matchRatingRow, PUBLIC_AFTER, RATED_MODES, START_RATING,
+  type RatableGame, type RatedMode, type RatingTable,
 } from './rating.ts';
+// docs/22 §2.6: a decided Competitive match is ONE rated result
+import { allMatches } from './match-store.ts';
 import type { PublicDeckView } from './publicdecks.ts';
 import type { TrioHistoryRow } from './trio.ts';
 import { accountsFile } from './statepaths.ts';
@@ -461,7 +463,19 @@ export interface RecordedGame {
    * says nobody was signed in). Absent on every other game.
    */
   signedUp?: Seat[];
+  /**
+   * docs/22 §2.6 — this game was one game of a COMPETITIVE MATCH: which match,
+   * which game of it, and how many it was out of. Every game of a match is
+   * recorded and counted like any game (stats, achievements, the deck record);
+   * only the rating leaves it to the match's single result (rating.ts isRated,
+   * matchRatingRow). Absent on every other game.
+   */
+  match?: RecordedMatchTag;
 }
+
+/** see RecordedGame.match — `bestOf` is absent only when the match record was
+ * not loaded and the link (a game 1) cannot say */
+export interface RecordedMatchTag { id: string; game: number; bestOf?: 1 | 3 }
 
 export const emptyProfile = (): Profile => ({
   games: 0, wins: 0, losses: 0, unresolved: 0,
@@ -1134,7 +1148,7 @@ export function rebuildProfiles(): void {
  * `emptyProfile()` already gave them.
  */
 function applyRatings(): void {
-  const table: RatingTable = foldRatings(store.history);
+  const table: RatingTable = foldRatings([...store.history, ...matchRatingRows()]);
   for (const a of store.accounts) {
     const stand = table.get(a.id);
     if (!stand) continue;
@@ -1143,6 +1157,21 @@ function applyRatings(): void {
       a.profile.ratedGames[mode] = stand[mode].games;
     }
   }
+}
+
+/**
+ * docs/22 §2.6 — one rated row per DECIDED Competitive match, read from the
+ * match store (a stamped result: match.ts `finish`), beside the per-game rows
+ * the fold skips for being in a match. A game-1 decision weighs as game 1's
+ * concession says (CR D8.5), read off that game's own history row.
+ */
+function matchRatingRows(): RatableGame[] {
+  const decided = allMatches().filter(m => m.phase === 'over');
+  if (!decided.length) return [];
+  const byCode = new Map(store.history.map(g => [g.code, g]));
+  return decided
+    .map(m => matchRatingRow(m, code => byCode.get(code)?.concession))
+    .filter((r): r is RatableGame => r !== null);
 }
 
 /** Add a game straight to the history without folding it (the seeder uses
@@ -1339,6 +1368,8 @@ export interface MatchRow {
   amended?: number;
   /** BL-48: present only for a disputed game — by you, by them, or both */
   disputed?: { mine: boolean; theirs: boolean };
+  /** docs/22 §2.6: present only for a game of a Competitive match — "Game 2 of 3" */
+  match?: RecordedMatchTag;
 }
 
 /**
@@ -1404,6 +1435,7 @@ export function recentGames(userId: string, limit = 25): MatchRow[] {
         ...(g.disputed?.length
           ? { disputed: { mine: g.disputed.includes(seat), theirs: g.disputed.includes(seat === 0 ? 1 : 0) } }
           : {}),
+        ...(g.match ? { match: { ...g.match } } : {}),
       };
     });
 }

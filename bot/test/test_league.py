@@ -348,6 +348,17 @@ check("⭐ status shows the other live season the player is in", "October 2026" 
 check("⭐ …and the current one, saying it is constructed",
       "November 2026 League** (casual constructed)" in both and "Cy" in both)
 check("the older season comes first", both.index("October 2026") < both.index("November 2026"))
+
+# docs/22 §6.2 (CT-514): a Competitive season is worded as itself, never as draft or casual constructed
+COMP = "Competitive Constructed: every match is a best of three"
+for kind in ("signups-open", "signup"):
+    comp_row = row(kind)
+    comp_row["data"] = {**comp_row["data"], "format": "competitive"}
+    text = lg.render(comp_row, None)["content"]
+    check(f"⭐ {kind}: a competitive season says so", COMP in text and CASUAL not in text)
+comp = lg.status_text({"linked": True, "season": _view("December 2026 League", "Week 1 of 4", "competitive")})
+check("⭐ status names a competitive season as one",
+      "December 2026 League** (Competitive Constructed, best of three)" in comp and "casual" not in comp)
 check("status with no other season is unchanged in shape",
       lg.status_text({"linked": True, "season": _view("October 2026", "Week 3 of 3")}).startswith("🏅 **October 2026** — Week 3 of 3."))
 

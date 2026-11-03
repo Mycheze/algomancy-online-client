@@ -174,6 +174,328 @@
     "problem": ""
   },
   {
+    "key": "formats.constructed.competitive",
+    "textHash": "cf23e17ee7bc7482",
+    "verdict": "untested",
+    "round": 4,
+    "verifier": "U22-r4",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts",
+        "agrees": true,
+        "note": "no match / best-of-three concept in server, ui or engine; every game is a single game"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner: Matches can actually be Best of 3 (not just Bo1 like we have now), so that needs to be made an option",
+        "supports": "yes",
+        "note": "supports one game or best of three"
+      }
+    ],
+    "quote_spans": [],
+    "scratch_spans": [
+      {
+        "file": "data/comprehensive-rules/build/verify-input/U22-r4.json",
+        "text": "Matches can actually be Best of 3 (not just Bo1 like we have now), so that needs to be made an option"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Owner-only rule supported by its quote; no engine or server code plays a match (Bo1/Bo3), so nothing demonstrates it."
+  },
+  {
+    "key": "formats.constructed.competitive.concede",
+    "textHash": "916a376e73afbd5c",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U22-r4",
+    "engine": [
+      {
+        "loc": "client/server/match.ts:matchGameDecided",
+        "agrees": true,
+        "note": "a conceded game is scored like any decided game; nextGame unless the score reached `need`, or finish()"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/816-cc-concede-game-and-match.test.ts",
+        "pattern": "§1 conceding a game in an undecided Bo3",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/816-cc-concede-game-and-match.test.ts",
+        "pattern": "§5 a decided match refuses a second concede",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner: Conceding needs to be \"Concede GAME\" not \"Concede MATCH\" and function properly",
+        "supports": "yes",
+        "note": "the owner asks that the in-game concede be a game concede that works; the record says exactly that"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/match.ts",
+        "text": "  } else if (score[winner]! >= need) {"
+      },
+      {
+        "file": "client/server/match.ts",
+        "text": "    nextGame(m, room, winner, now);"
+      },
+      {
+        "file": "client/server/match.ts",
+        "text": "  return room.concession ? 'conceded' : 'played';"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.constructed.competitive.initiative",
+    "textHash": "01600a43f10fbf4c",
+    "verdict": "untested",
+    "round": 4,
+    "verifier": "U22-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "rules.initiative overrides state.initiative after the roll is still drawn; with no rules the roll decides (initRoll < 0.5 ? 0 : 1). Nothing in engine, server or ui knows of a match or of a previous game's loser: GameRules.initiative is a seat a caller passes in, and no caller passes it."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/801-cc-rules-and-initiative.test.ts",
+        "pattern": "CC rules: a chosen initiative keeps the RNG stream",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner: Loser of last game chooses",
+        "supports": "yes",
+        "note": "answers 'Who has initiative in games 2 and 3 of a Bo3?' — supports sentence 2"
+      },
+      {
+        "ref": "engine createGame",
+        "supports": "partial",
+        "note": "shows a random game 1 and a chosen seat honoured with the same shuffle; not who chooses"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (rules?.initiative !== undefined) state.initiative = rules.initiative;"
+      }
+    ],
+    "scratch_spans": [
+      {
+        "file": "data/comprehensive-rules/build/verify-input/U22-r4.json",
+        "text": "Loser of last game chooses"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Sentence 1 (random first game) and the example (chosen seat keeps the shuffle) are demonstrated by 801. Sentence 2 (the previous game's loser chooses) rests on the owner's call, which supports it, but no match exists anywhere in engine/server/ui, so no test or probe can demonstrate who makes the choice."
+  },
+  {
+    "key": "formats.constructed.competitive.order",
+    "textHash": "2f98d3888ff22fbf",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U22-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.planning/E.hasting/E.deploying",
+        "agrees": true,
+        "note": "with s.sequential the initiative player alone may act in each step, then the other; the draw phase (bottomCards) stays simultaneous and the resource step opens only when bottomDone clears"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:hiddenSegment",
+        "agrees": true,
+        "note": "returns null when s.sequential, so no step is hidden"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "stamps sequential from rules"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/802-cc-resource-step.test.ts",
+        "pattern": "CC draw phase: both players bottom at once",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/802-cc-resource-step.test.ts",
+        "pattern": "CC resource step: it opens only when both players have bottomed",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/802-cc-resource-step.test.ts",
+        "pattern": "CC resource step: the initiative player first, then the non-initiative player",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/803-cc-haste-and-deploy.test.ts",
+        "pattern": "CC haste step: the initiative player first",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/803-cc-haste-and-deploy.test.ts",
+        "pattern": "CC deployment: only the initiative player deploys",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/804-cc-no-hidden-step.test.ts",
+        "pattern": "CC: ",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": "turn legend: 'IT FIRST, THEN NIT' for TEAMS/1V1 planning"
+      },
+      {
+        "ref": "Rulebook 2023 p.5",
+        "supports": "yes",
+        "note": "initiative team makes all plays first, non-initiative waits and sees, in the mana and main phases"
+      },
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "deployment: initiative team deploys, then passes to the non-initiative team"
+      },
+      {
+        "ref": "owner: CC needs to have the actual, rules complete priority system where there are no true simultanous zones.",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner: The INT player always does their planning/haste/deployment first, while NIT watches, then they switch.",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "IT FIRST, THEN NIT"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "plays first while the non-intiative gets to wait"
+      },
+      {
+        "file": "client/engine/test/802-cc-resource-step.test.ts",
+        "text": "assert.deepEqual(h.legal(nit), [], 'the NIT watches');"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return s.sequential ? null : planningStep(s);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.constructed.competitive.sideboard",
+    "textHash": "9b24d3453b2dae76",
+    "verdict": "untested",
+    "round": 4,
+    "verifier": "U22-r4",
+    "engine": [
+      {
+        "loc": "client/server/decks.ts",
+        "agrees": true,
+        "note": "no sideboard in the client (algomancer.cc's sideboard is read as a maybeboard)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner: CC has sideboards.",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner: Each deck can have 7 cards (and the whole list can still only have max of 2 copies of a single card)",
+        "supports": "yes",
+        "note": "in the sideboard context: 7-card sideboard, copy cap over the whole list"
+      }
+    ],
+    "quote_spans": [],
+    "scratch_spans": [
+      {
+        "file": "data/comprehensive-rules/build/verify-input/U22-r4.json",
+        "text": "Each deck can have 7 cards (and the whole list can still only have max of 2 copies of a single card)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Owner-only rule supported by its quotes; no sideboard exists in engine/server/ui, so nothing demonstrates it."
+  },
+  {
+    "key": "formats.constructed.competitive.swaps",
+    "textHash": "01938b44dcb17067",
+    "verdict": "untested",
+    "round": 4,
+    "verifier": "U22-r4",
+    "engine": [
+      {
+        "loc": "client/server/decks.ts",
+        "agrees": true,
+        "note": "no sideboard exists: the algomancer.cc 'sideboard' is read as a maybeboard; no between-games window"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner: that can be freely exchanged with the the cards in their mainboard between games (but not before the match starts)",
+        "supports": "yes",
+        "note": "free exchange between games, none before the match"
+      },
+      {
+        "ref": "owner: Like Magic (Recommended)",
+        "supports": "yes",
+        "note": "answer to how free the swaps are: any numbers, deck at its minimum, sideboard at its maximum (30 by formats.constructed.deck-size, 7 by formats.constructed.competitive.sideboard)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/decks.ts",
+        "text": "the maybeboard — algomancer.cc's `sideboard` lands here"
+      }
+    ],
+    "scratch_spans": [
+      {
+        "file": "data/comprehensive-rules/build/verify-input/U22-r4.json",
+        "text": "that can be freely exchanged with the the cards in their mainboard between games (but not before the match starts)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Supported by the owner's calls (the 30/7 bounds by cross-reference to the deck-size and sideboard rules); no sideboard or between-games swap exists in the client, so nothing demonstrates it."
+  },
+  {
     "key": "formats.constructed.copies",
     "textHash": "a36afa14eff82bef",
     "verdict": "confirmed",

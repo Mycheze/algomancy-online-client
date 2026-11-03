@@ -35,6 +35,7 @@ import { esc, elIcon } from './util.ts';
 import { playCue } from './audio.ts';
 import { alertTab } from './tabalert.ts';
 import { noteLine, type LeagueNote } from './leaguenotes.ts';
+import { matchLink, myMatchLine, type MyMatch } from './match.ts';
 
 // ── types off the wire (server/api-inbox.ts) ─────────────────────────
 
@@ -77,6 +78,8 @@ let requests: RequestView[] = [];
 let friends: RoomFriend[] = [];
 let notes: LeagueNote[] = [];
 let times: TimeAsk[] = [];
+/** docs/22 §5.6: this account's open Competitive matches (/api/matches/mine) */
+let matches: MyMatch[] = [];
 /** has a poll answered yet — the panel says "loading" until one has */
 let loaded = false;
 let panelOpen = false;
@@ -111,10 +114,21 @@ function loadSeen(): void {
  * same match is a new thing to hear about). */
 const noteKey = (n: LeagueNote): string => `L${n.id}`;
 const timeKey = (t: TimeAsk): string => `T${t.match}@${t.at}`;
+/** a match whose sideboarding window is running — once per game */
+const matchKey = (m: MyMatch): string => `M${m.id}@${m.game}`;
+/** the open matches worth a line: not the one whose room this page is */
+const shownMatches = (): MyMatch[] => matches.filter(m => m.room !== deps?.room());
+/** …and the ones worth a count: the sideboarding window is running without you */
+const dueMatches = (): MyMatch[] => shownMatches().filter(m => m.phase === 'between' && m.until !== null);
+/** CT-517: a paused match whose opponent is in its room — waiting on you to resume */
+const resumeAsks = (): MyMatch[] => shownMatches().filter(m => m.phase === 'paused' && m.opponentHere === true);
+/** once per pause */
+const resumeKey = (m: MyMatch): string => `MR${m.id}@${m.pausedAt}`;
 
 function saveSeen(): void {
   // only the ones still waiting are worth keeping; the rest have gone
-  const live = new Set([...invites.map(i => i.id), ...notes.map(noteKey), ...times.map(timeKey)]);
+  const live = new Set([...invites.map(i => i.id), ...notes.map(noteKey), ...times.map(timeKey), ...matches.map(matchKey),
+    ...matches.map(resumeKey)]);
   try {
     sessionStorage.setItem(SEEN_KEY, JSON.stringify({
       a: [...announced].filter(id => live.has(id)), d: [...dismissed].filter(id => live.has(id)),
@@ -123,7 +137,8 @@ function saveSeen(): void {
 }
 
 /** what the bell counts: everything waiting on an answer, and league news not yet read */
-const unread = (): number => invites.length + requests.length + times.length + notes.filter(n => !n.read).length;
+const unread = (): number => invites.length + requests.length + times.length + notes.filter(n => !n.read).length
+  + dueMatches().length + resumeAsks().length;
 
 /** a league time, in the player's zone */
 function timeText(unix: number): string {
@@ -220,8 +235,20 @@ function noteHtml(n: LeagueNote, pop: boolean): string {
   </div>`;
 }
 
+/** docs/22 §5.6: an open match, one button from anywhere */
+function matchCardHtml(m: MyMatch): string {
+  const l = myMatchLine(m);
+  // CT-517: the other player is in the paused match's room, waiting on you
+  const asks = m.phase === 'paused' && m.opponentHere === true;
+  return `<div class="invitecard">
+    <div>${asks ? `<b>${esc(m.opponent || 'Your opponent')}</b> wants to resume your match` : `Competitive match ${l.text}`}</div>
+    <div class="invbtns"><button class="primary" data-inbox="match-open" data-room="${esc(m.room)}" data-seat="${m.seat}">${l.button}</button></div>
+  </div>`;
+}
+
 function listHtml(): string {
   const rows = [
+    ...shownMatches().map(matchCardHtml),
     ...invites.map(i => inviteCardHtml(i, false)),
     ...times.map(timeAskHtml),
     ...requests.map(r => `<div class="invitecard">
@@ -294,6 +321,28 @@ function poll(): void {
     })
     .catch(() => { /* offline: keep what we had */ })
     .finally(() => { inFlight = false; schedule(); });
+  pollMatches();
+}
+
+/** the open matches, beside the inbox: a separate answer, so a server that
+ * does not know the route costs the bell nothing */
+function pollMatches(): void {
+  let asked: Promise<unknown>;
+  try { asked = fetch('/api/matches/mine', { headers: deps!.authHeaders() }); } catch { return; }
+  asked.then(r => (r as Response).json())
+    .then((r: { ok?: boolean; matches?: MyMatch[] }) => {
+      if (!r?.ok) return;
+      const next = r.matches ?? [];
+      if (JSON.stringify(next) === JSON.stringify(matches)) return;
+      matches = next;
+      // a sideboarding window that started without you is worth a chime
+      const fresh = [...dueMatches().map(matchKey), ...resumeAsks().map(resumeKey)].filter(k => !announced.has(k));
+      if (fresh.length && loaded) { playCue('decision'); alertTab('Your match is waiting'); }
+      for (const k of fresh) announced.add(k);
+      saveSeen();
+      paint();
+    })
+    .catch(() => { /* offline, or an older server: no lines */ });
 }
 
 /** fold a poll's answer in, and say so only if something changed */
@@ -406,6 +455,11 @@ function onClick(what: string, el: HTMLElement): void {
         .finally(() => { clearTimeout(fallback); go(); });
       return;
     }
+    case 'match-open':
+      panelOpen = false;
+      paint();
+      location.search = matchLink(el.dataset['room'] ?? '', el.dataset['seat'] === '1' ? 1 : 0);
+      return;
     case 'decline':
       invites = invites.filter(i => i.id !== id);
       paint();

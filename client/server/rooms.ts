@@ -13,12 +13,15 @@ import { join } from 'node:path';
 // type-only, so rooms.ts gains no runtime dependency on ws — the sockets are
 // the real WebSockets main.ts plugs in; this module only checks presence
 import type { WebSocket } from 'ws';
-import type { Action, ActivateVia, AmendDest, AmendEdit, AmendSource, AmendUnitDest, CardName, Element, EngineEvent, EntityId, GameMode, GameState, Phase, Seat } from '../engine/src/types.ts';
+import type { Action, ActivateVia, AmendDest, AmendEdit, AmendSource, AmendUnitDest, CardName, Element, EngineEvent, EntityId, GameMode, GameRules, GameState, Phase, Seat } from '../engine/src/types.ts';
+// CR D4.6 — CC undo until Done: the engine's half (which step is open, whose,
+// and what each action means to a take-back)
+import { ccUndoFloor, ccUndoMark, type CcUndoMark } from '../engine/src/ccundo.ts';
 import { AMEND_DESTS, AMEND_SOURCES, AMEND_UNIT_DESTS } from '../engine/src/types.ts';
 import { amendProblem, amendText } from '../engine/src/amend.ts';
 import { singleCardsOf } from './cardladder.ts';
 import { DECK_LIST } from '../engine/src/cards/registry.ts';
-import { amendFrozen, apply, checkDeck, checkSingleCard, checkSingleDeck, makesUnits, decisionBlocks, forcedAction, hiddenSegment, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import { amendFrozen, apply, checkDeck, checkSingleCard, checkSingleDeck, makesUnits, decisionBlocks, forcedAction, hiddenSegment, legalActions, planningStep, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
 // CR D8.4 — the scenario tester. `dealScenario` IS `createGame` when no scenario
 // id is passed, byte for byte, so every ordinary room is unaffected; when one
 // is passed it applies the scenario's deterministic board mutation. It is
@@ -27,7 +30,7 @@ import { amendFrozen, apply, checkDeck, checkSingleCard, checkSingleDeck, makesU
 // scenario, which is exactly the bug docs/14 §2 is written to prevent.
 // BL-06: `isDealId`, not `isScenarioId` — the sandbox is a second kind of
 // deal (see scenarios.ts's SANDBOX_ID), and a saved sandbox room must restore.
-import { dealScenario, isDealId, isSandboxId } from './scenarios.ts';
+import { dealScenario, isDealId, isSandboxId, savedRules } from './scenarios.ts';
 import { legalForSeat, other } from './view.ts';
 import type { HeldFrame, SegmentClose } from './view.ts';
 // The on-disk shapes moved to types.ts so replay-room.ts can name them
@@ -50,6 +53,7 @@ import { canonicalRef, zoneDelta } from './zonedelta.ts';
 import { lastSeen, NOTHING_SEEN, SEEN_REFUSAL, seenBy, type Seen } from './seen.ts';
 import { cardFact, cardOpen, sanitizeFact, sanitizeOpen, type CardFact, type CardOpen } from './cardledger.ts';
 import { gamesDir } from './statepaths.ts';
+import { sanitizeMatchLink } from './match-store.ts';
 // CR D8.5: a conceded game weighs by the turn it was conceded on — stamped here,
 // read by the folds. The type and the sanitizer only; the thresholds stay in
 // concession.ts, which is the one place they are named.
@@ -746,6 +750,19 @@ export interface Room {
    */
   league?: RoomLeague;
   /**
+   * COMPETITIVE CONSTRUCTED (docs/22 §2.3) — PART OF THE DEAL, like `custom`.
+   * `{sequential: true}` on every game of a CC match; games 2–3 add the
+   * `initiative` the previous game's loser chose. Every deal site in this file
+   * passes it (fresh / rebuild), and test 822 scans for one that forgets.
+   * Absent on every other room. A saved value this build cannot read THROWS on
+   * restore (restoreRules), never deals a standard game.
+   */
+  rules?: GameRules;
+  /** CC: the match this room is one game of (server/match.ts), 1-based. The
+   * match record holds everything that lasts between games; the room holds
+   * only this link. Absent on every other room. */
+  match?: RoomMatch;
+  /**
    * CR D8.4 — the scenario this room was dealt with, if any. PERSISTED, beside
    * `seed`, because it is part of the deal.
    *
@@ -984,6 +1001,13 @@ export interface Room {
    * `segRefs` began measuring the undo instead of predicting it.)
    */
   segSeen: Seen[];
+  /**
+   * CR D4.6 — CC UNDO UNTIL DONE: engine/src/ccundo.ts's mark for every
+   * applied action, parallel to `actions` like `segSeen`. DERIVED: pushed by
+   * applyToRoom, recomputed by rebuild(), never persisted. Empty-marked
+   * (`key: null`) outside a sequential room, where nothing reads it.
+   */
+  ccMarks: CcUndoMark[];
   /**
    * Per-action: `state.nextId` as that action was applied. DERIVED, never
    * persisted, parallel to `actions`.
@@ -1368,6 +1392,17 @@ export const FIX_RUN_IDLE_MS = 10 * 60_000;
 
 /** see Room.league */
 export interface RoomLeague { season: string; match: string }
+
+/** see Room.match */
+export interface RoomMatch { id: string; game: number }
+
+/** A saved `match` link, or null if it is not one. */
+export const sanitizeRoomMatch = (raw: unknown): RoomMatch | null => sanitizeMatchLink(raw);
+
+/** A saved room's CC rules (docs/22 §2.3) — scenarios.ts savedRules, the one
+ * reader every deal of a saved room uses (stats, the card ledger, replay-room
+ * read the same file this does). Re-exported under its old name. */
+export const restoreRules = savedRules;
 
 /** A saved `league` tag, or null if it is not one. */
 export function sanitizeLeague(raw: unknown): RoomLeague | null {
@@ -1817,11 +1852,13 @@ const rooms = new Map<string, Room>();
  * room's own. It is the LAST argument on purpose — a caller that forgets it
  * deals an ordinary game, which is the safe direction, and the two tests that
  * matter (185/186 + test-scenario.ts) fail loudly if a room path forgets. */
-function fresh(seed: number, names: [string, string], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]], scenario?: string, deal?: DraftDeal): { state: GameState; events: EngineEvent[] } {
+function fresh(seed: number, names: [string, string], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]], scenario?: string, deal?: DraftDeal, rules?: GameRules): { state: GameState; events: EngineEvent[] } {
   // BL-43: `deal` is the room's custom deal. Unlike a scenario, forgetting it
   // is NOT the safe direction — a custom room would be re-dealt as a standard
   // game under its own log — so test-custom-rules.ts checks every call site.
-  const r = dealScenario(seed, names, mode, els, decks, scenario, deal);
+  // docs/22 §3.1: `rules` (a CC game) is the same kind of argument, and test
+  // 822 checks every call site for it the same way.
+  const r = dealScenario(seed, names, mode, els, decks, scenario, deal, rules);
   return { state: r.state, events: r.events };
 }
 
@@ -1977,7 +2014,7 @@ export function resolveLobby(room: Room, history: TrioHistoryRow[]): TrioResult 
   });
   lobby.result = result;
   room.els = sanitizeTrio(result.els, roomElementCount(room));
-  const { state, events } = fresh(room.seed, room.names, room.mode, room.els, undefined, room.scenario, room.custom?.deal);
+  const { state, events } = fresh(room.seed, room.names, room.mode, room.els, undefined, room.scenario, room.custom?.deal, room.rules);
   room.state = state;
   room.actions = [];
   room.events = events;
@@ -2014,11 +2051,12 @@ const leaguePlaceholderDeck = (): CardName[] => {
 /** the decks to build a constructed room's state from: any missing deck is
  * stood in for by the other one (placeholder games are never played) — and a
  * league room with neither yet by the placeholder above */
-function decksFor(room: Pick<Room, 'decks'> & { league?: RoomLeague | null }): [CardName[], CardName[]] {
+function decksFor(room: Pick<Room, 'decks'> & { league?: RoomLeague | null; match?: RoomMatch | null }): [CardName[], CardName[]] {
   const a = room.decks[0] ?? room.decks[1];
   const b = room.decks[1] ?? room.decks[0];
   if (!a || !b) {
-    if (room.league) { const p = leaguePlaceholderDeck(); return [p, p]; }
+    // …and a CC game room after game 1, created before anybody has brought a deck
+    if (room.league || room.match) { const p = leaguePlaceholderDeck(); return [p, p]; }
     throw new Error('a constructed room needs at least one deck');
   }
   return [a, b];
@@ -2034,7 +2072,12 @@ function decksFor(room: Pick<Room, 'decks'> & { league?: RoomLeague | null }): [
  * Otherwise whatever deck was last selected on the home page would be locked
  * in the moment the League page's Play button landed you in the room.
  */
-export function takesJoinDeck(room: Pick<Room, 'league'>, pick: boolean): boolean {
+export function takesJoinDeck(room: Pick<Room, 'league' | 'match'>, pick: boolean): boolean {
+  // docs/22 §2.4: a CC room never takes a join's deck. Game 1 registers
+  // through server/match.ts (main + sideboard, checkMatchDeck); games 2–3 are
+  // dealt from the match's locked configurations, never from whatever deck
+  // the joining browser happens to have selected.
+  if (room.match) return false;
   return !room.league || pick;
 }
 
@@ -2085,7 +2128,7 @@ export function setRoomDeck(room: Room, seat: 0 | 1, cards: CardName[], deckId: 
     delete room.singleDraw;
   }
   if (complete) {
-    const { state, events } = fresh(room.seed, room.names, room.mode, room.els, decksFor(room), room.scenario, room.custom?.deal);
+    const { state, events } = fresh(room.seed, room.names, room.mode, room.els, decksFor(room), room.scenario, room.custom?.deal, room.rules);
     room.state = state;
     room.actions = [];
     room.events = events;
@@ -2096,7 +2139,23 @@ export function setRoomDeck(room: Room, seat: 0 | 1, cards: CardName[], deckId: 
   return complete;
 }
 
+/**
+ * CR D4.6 — what one applied action means to a CC take-back: the engine's mark
+ * (ccundo.ts) and, for an action inside the open CC step, the MEASURED floor
+ * beside it (seen.ts, docs/22 §3.6 point 3). Outside a hidden segment seenBy is
+ * asked with no frozen board and no hold: in CC both players watch every event
+ * live, so whatever reached EITHER seat is shown.
+ */
+function ccMeasure(before: GameState, a: Action, after: GameState, events: readonly EngineEvent[], names: readonly [string, string]): { mark: CcUndoMark; seen: Seen | null } {
+  if (!before.sequential) return { mark: blankMark(a.seat), seen: null };
+  const mark = ccUndoMark(before, a, after, events);
+  return { mark, seen: mark.key !== null ? seenBy(before, a, after, events, { frozen: null, holding: false, names: [...names] as [string, string] }) : null };
+}
+/** the mark of an action no CC walk can cross: no step key ends the trailing run */
+const blankMark = (seat: Seat): CcUndoMark => ({ key: null, seat, barrier: null, leftDecision: false, decide: false });
+
 interface Rebuilt {
+  ccMarks: CcUndoMark[];
   state: GameState;
   events: EngineEvent[];
   segKey: SegKey | null;
@@ -2133,8 +2192,8 @@ interface Rebuilt {
  * hidden-segment bookkeeping. Tolerant: an action the (possibly newer) engine
  * now rejects is skipped with a warning instead of killing the whole room — a
  * personal server should never eat a live game over a rules tweak. */
-function rebuild(seed: number, names: [string, string], actions: Action[], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]], scenario?: string, deal?: DraftDeal): Rebuilt {
-  let { state, events } = fresh(seed, names, mode, els, decks, scenario, deal);
+function rebuild(seed: number, names: [string, string], actions: Action[], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]], scenario?: string, deal?: DraftDeal, rules?: GameRules): Rebuilt {
+  let { state, events } = fresh(seed, names, mode, els, decks, scenario, deal, rules);
   const all = [...events];
   // SEED THE SEGMENT FROM THE INITIAL STATE: createGame already ends inside
   // turn 1's planning, and turn-1 planning has no preceding action — a
@@ -2149,6 +2208,7 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
   const segIdFloor: number[] = [];
   const segRefs: string[] = [];
   const segPosRefs: string[] = [];
+  const ccMarks: CcUndoMark[] = [];
   const sigs: string[] = [];
   const cardLog: (CardFact | null)[] = [];
   const opened = cardOpen(state);
@@ -2179,6 +2239,7 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
         // most need to be able to see afterwards
         skipped.push({ i, type: a.type, seat: a.seat, why: err.message, kind: 'lost' });
         segSeen.push(NOTHING_SEEN);   // keep the index alignment with `actions`
+        ccMarks.push(blankMark(a.seat));
         segRefs.push(`refused:${err.message}`);
         segPosRefs.push(`refused:${err.message}`);
         sigs.push('');            // no board moved, so there is nothing to fingerprint
@@ -2194,6 +2255,10 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
     cardLog.push(cardFact(before, state, a, r.events));
     all.push(...r.events);
     segSeen.push(NOTHING_SEEN);   // the open segment's entries are filled in below
+    // CR D4.6: a CC game's take-back marks, and its measured floor (no segment there)
+    const cc = ccMeasure(before, a, state, r.events, names);
+    ccMarks.push(cc.mark);
+    if (cc.seen) segSeen[i] = cc.seen;
     if (holding) inSegment.push({ i, before, a, after: state, events: r.events });
     // BL-46: the frozen board shows an agreed fix, exactly as applyToRoom
     // patched it when the fix landed — or a restart would un-show it
@@ -2226,7 +2291,7 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
       segSeen[x.i] = seenBy(x.before, x.a, x.after, x.events, { frozen: segSnapshot, holding: true, names });
     }
   }
-  return { state, events: all, segKey, segSnapshot, heldEvents, heldFrames, segStartIndex, segSeen, segIdFloor, segRefs, segPosRefs, sigs, cardLog, cardOpen: opened, skipped };
+  return { state, events: all, segKey, segSnapshot, heldEvents, heldFrames, segStartIndex, segSeen, segIdFloor, segRefs, segPosRefs, ccMarks, sigs, cardLog, cardOpen: opened, skipped };
 }
 
 /**
@@ -2390,6 +2455,11 @@ export const RECONNECT_GRACE_MS = 5 * 60_000;
 export const idleWindowMs = (actions: number): number =>
   actions < IDLE_FEW_ACTIONS ? IDLE_SHORT_MS : IDLE_LONG_MS;
 
+/** docs/22 §2.5 — the idle sweep's exemption, supplied by server/match.ts
+ * (setRoomHeld). Nothing is held until it is set. */
+let roomHeld: (room: Room) => boolean = () => false;
+export function setRoomHeld(fn: (room: Room) => boolean): void { roomHeld = fn; }
+
 /** is anybody in the room — a seat or an audience? */
 export const roomAttended = (room: Room): boolean =>
   !!room.sockets[0] || !!room.sockets[1] || room.watchers.size > 0;
@@ -2403,6 +2473,10 @@ export function idleDue(room: Room, now: number): boolean {
   if (roomAttended(room)) { room.unattendedSince = null; return false; }
   room.unattendedSince ??= now;
   if (decidedWinner(room) !== null) return false;
+  // docs/22 §2.5: a PAUSED match's waiting room is held for as long as the
+  // pause may last (server/match.ts voids it at 7 days). Injected, because
+  // match.ts imports this module and this module must not import it.
+  if (roomHeld(room)) return false;
   if (now - room.unattendedSince < RECONNECT_GRACE_MS) return false;
   return now - room.lastActionAt >= idleWindowMs(room.actions.length);
 }
@@ -2429,6 +2503,26 @@ export function closeIdleRoom(room: Room, now: number): boolean {
   persist(room);
   pinMtime(join(GAMES_DIR, `${room.code}.json`), room.lastActionAt);
   return dropRoom(room.code, true);
+}
+
+/**
+ * docs/22 §2.5 — close a CC match's room for a reason that is not idling: the
+ * match was voided, or decided between games. Like closeIdleRoom: no result
+ * is stamped, the file is kept and marked, the room is forgotten.
+ */
+export function closeMatchRoom(room: Room, reason: 'void' | 'match', now: number): boolean {
+  if (rooms.get(room.code) !== room) return false;
+  room.closed = { reason, at: now, afterMs: 0 };
+  persist(room);
+  pinMtime(join(GAMES_DIR, `${room.code}.json`), room.lastActionAt);
+  return dropRoom(room.code, true);
+}
+
+/** docs/22 §2.5: a pause (or a resume) restarts the room's idle and restore
+ * clocks — the 7-day restore window then lapses with the 7-day void. */
+export function touchRoom(room: Room, now: number): void {
+  room.lastActionAt = now;
+  persist(room);
 }
 
 /** The sweep: close every room that is due. Returns the codes it closed. */
@@ -2468,6 +2562,8 @@ export function closedNotice(code: string): string | null {
       return `Game ${code} is over: ${name} won.`
         + (raw.scenario === undefined || raw.scenario === null ? ' Its players can watch it back from their match history.' : '');
     }
+    if (raw.closed?.reason === 'void') return `Game ${code} closed: its match was called off with no result.`;
+    if (raw.closed?.reason === 'match') return `Game ${code} closed: its match is over.`;
     if (raw.closed?.reason !== 'idle') return null;
     const h = Math.max(1, Math.round((Number(raw.closed.afterMs) || IDLE_SHORT_MS) / 3600_000));
     return `Game ${code} closed after ${h} hour${h === 1 ? '' : 's'} without a move.`;
@@ -2494,18 +2590,27 @@ export function codeTaken(code: string): boolean {
  * BL-26: `clockStart` is THIS room's bank — `undefined` takes the default,
  * `null` means no clock. It is last and optional so every existing caller
  * (the tests, the rematch, the scenario deal) keeps getting exactly today's
- * 60-minute room without saying so. */
-export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], scenario?: string, clockStart: number | null = CLOCK_START_MS, customIn?: RoomCustom, single = false): Room {
+ * 60-minute room without saying so.
+ *
+ * `cc` (docs/22 §2.4, server/match.ts only): a Competitive Constructed game
+ * room — its `rules` (part of the deal), its `match` link, and the chess-clock
+ * banks the match carried out of the previous game (`clockMs`). Constructed
+ * only; a CC room with no creator deck waits on the placeholder deck. */
+export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], scenario?: string, clockStart: number | null = CLOCK_START_MS, customIn?: RoomCustom, single = false,
+  cc?: { rules: GameRules; match: RoomMatch; clockMs?: [number, number]; users?: [string | null, string | null]; league?: RoomLeague; rated?: boolean }): Room {
   // BL-43: custom rules belong to a live draft, and never to a scenario deal
   const custom = mode === 'draft' && !scenario ? customIn : undefined;
   const trio = sanitizeTrio(els, roomElementCount({ custom }));
-  if (mode === 'constructed' && !creatorDeck) throw new IllegalAction('a constructed room needs a deck');
+  if (cc && (mode !== 'constructed' || scenario || single)) throw new IllegalAction('a Competitive Constructed room is a plain constructed room');
+  if (mode === 'constructed' && !creatorDeck && !cc) throw new IllegalAction('a constructed room needs a deck');
   const decks: [CardName[] | null, CardName[] | null] = [null, null];
+  const rules = cc?.rules;
+  const placeholder = creatorDeck ?? (cc ? leaguePlaceholderDeck() : undefined);
   const { state, events } = mode === 'constructed'
-    ? fresh(seed, names, mode, trio, [creatorDeck!, creatorDeck!], scenario, custom?.deal)
-    : fresh(seed, names, mode, trio, undefined, scenario, custom?.deal);
+    ? fresh(seed, names, mode, trio, [placeholder!, placeholder!], scenario, custom?.deal, rules)
+    : fresh(seed, names, mode, trio, undefined, scenario, custom?.deal, rules);
   const room: Room = {
-    code, seed, mode, els: trio, decks, deckIds: [null, null], names, users: [null, null], winner: null,
+    code, seed, mode, els: trio, decks, deckIds: [null, null], names, users: cc?.users ? [...cc.users] : [null, null], winner: null,
     // CR D8.4: only a scenario room carries one; `undefined` is the normal case
     // and is not persisted (see persist()).
     ...(scenario ? { scenario } : {}),
@@ -2513,6 +2618,13 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     ...(custom ? { custom } : {}),
     // CR D8.2: only ever constructed, and persisted only when set
     ...(single && mode === 'constructed' ? { single: true as const } : {}),
+    // docs/22: a CC game room's rules and match link, persisted only then —
+    // and, for a game after the first, the match's two accounts (stamped
+    // before either client connects, as createRematch does), its league tag
+    // and whether it is rated
+    ...(cc ? { rules: { ...cc.rules }, match: { ...cc.match } } : {}),
+    ...(cc?.league ? { league: { ...cc.league } } : {}),
+    ...(cc?.rated ? { rated: true } : {}),
     lobby: mode === 'draft' && !els ? freshLobby() : null,
     rematch: [false, false], rematchRoom: null,
     amendments: [], proposal: null, fixCooldown: [0, 0], fixRun: null,   // BL-46: nothing fixed yet
@@ -2526,12 +2638,14 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     // and dead code is exactly what a red-check cannot see through.
     versions: [],
     segKey: null, segSnapshot: null, heldEvents: [[], []], heldFrames: [[], []], closing: null, segStartIndex: -1, segSeen: [],
-    segIdFloor: [], segRefs: [], segPosRefs: [], sigs: [], cardLog: [], cardOpen: null, deferred: [[], []],
+    segIdFloor: [], segRefs: [], segPosRefs: [], sigs: [], cardLog: [], cardOpen: null, deferred: [[], []], ccMarks: [],
     // BL-26: both banks START at the room's own setting — the ONE site that is
     // allowed to read the constant, and it reads it through the argument
     // default rather than directly. A clockless room's `clockMs` is never
     // billed, never sent and never read; 0 says so louder than 60:00 would.
-    clockStart, clockMs: clockStart === null ? [0, 0] : [clockStart, clockStart],
+    // docs/22 §5.5: …except a CC game after the first, which starts on the
+    // banks the match carried out of the game before (one bank per MATCH)
+    clockStart, clockMs: clockStart === null ? [0, 0] : cc?.clockMs ? [...cc.clockMs] : [clockStart, clockStart],
     matchMs: 0, matchRun: false, startedAt: null,   // BL-37
     clockStamp: Date.now(), clockRun: [false, false],
     building: [null, null],
@@ -2667,6 +2781,11 @@ export type SeatVerdict =
   | { refuse: string };
 
 export function seatVerdict(room: Room, requested: number | undefined, me: string | null): SeatVerdict {
+  // docs/22 §2.2: a Competitive match hangs off two ACCOUNTS — its pause and
+  // resume, the presets, the league. A guest still has casual constructed.
+  if (room.match && me === null) {
+    return { refuse: 'a Competitive match needs an account — sign in (or play as a guest) first' };
+  }
   const claimedByAnother = (seat: 0 | 1): boolean =>
     room.users[seat] !== null && room.users[seat] !== me;
   const occupant = (seat: 0 | 1): string => room.names[seat] || `seat ${seat}'s player`;
@@ -2703,7 +2822,9 @@ export function seatVerdict(room: Room, requested: number | undefined, me: strin
  * room's bank is not theirs to set — a joiner who could re-specify it could
  * hand their opponent a three-second game by editing a link.
  */
-export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], clockStart: number | null = CLOCK_START_MS, single = false): Room | null {
+export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], clockStart: number | null = CLOCK_START_MS, single = false,
+  /** docs/22 §5.1: a CC match's game 1, created by its creator's join (server/match.ts) */
+  cc?: { rules: GameRules; match: RoomMatch }): Room | null {
   const existing = rooms.get(code);
   if (existing) return existing;
   pruneReservations();
@@ -2717,7 +2838,7 @@ export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Elem
   // not consulted. Only a live draft carries rules; any other mode plays standard.
   const custom = mode === 'draft' ? reservation.custom : undefined;
   return createRoom(code, (Math.random() * 1e9) >>> 0, undefined, mode, custom ? reservation.els : els, creatorDeck,
-    undefined, clockStart, custom, single);
+    undefined, clockStart, custom, single, mode === 'constructed' && !single ? cc : undefined);
 }
 
 /** Apply an action to the room's authoritative state and record it. Throws
@@ -2785,6 +2906,10 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   room.segSeen.push(holding && segmentKey(r.state) === room.segKey
     ? seenBy(before, action, r.state, r.events, { frozen: room.segSnapshot, holding: true, names: room.names })
     : NOTHING_SEEN);
+  // CR D4.6: the CC take-back's marks, as rebuild() derives them
+  const cc = ccMeasure(before, action, r.state, r.events, room.names);
+  room.ccMarks.push(cc.mark);
+  if (cc.seen) room.segSeen[room.segSeen.length - 1] = cc.seen;
   room.events.push(...r.events);
   if (isFix && room.segSnapshot && room.segKey !== null && segmentKey(r.state) === room.segKey) {
     room.segSnapshot = amendFrozen(room.segSnapshot, action, before);
@@ -2836,6 +2961,7 @@ export function openSegment(room: Room): void {
  * bookkeeping goes with it, and the new game's first segment opens now. */
 function resetSegment(room: Room): void {
   room.segSeen = [];
+  room.ccMarks = [];
   room.segIdFloor = [];
   room.segRefs = [];
   room.segPosRefs = [];
@@ -3231,6 +3357,27 @@ export function segmentFloor(room: Room): number {
   return i;
 }
 
+/**
+ * CR D4.6 — the earliest action `seat` may take back in a CC game right now, or
+ * `actions.length` when there is none: the engine's floor (ccUndoFloor: the
+ * open step is this seat's, never past a Done, a question, a draw or a reveal)
+ * raised to just after the latest action in that run that showed EITHER seat a
+ * hidden card (server/seen.ts — both players watch a CC step live).
+ */
+export function ccFloor(room: Room, seat: Seat): number {
+  const len = room.actions.length;
+  if (!room.state.sequential || room.frozen || decidedWinner(room) !== null) return len;
+  let floor = ccUndoFloor(room.ccMarks, seat, room.state);
+  if (floor >= len) return len;
+  floor = Math.max(floor, lastSeen(room.segSeen, 0, floor) + 1, lastSeen(room.segSeen, 1, floor) + 1, amendFloor(room));
+  return Math.min(floor, len);
+}
+
+/** CR D4.6: may `seat` press undo now? The boolean each CC push carries
+ * (docs/22 §3.6 point 5) — never the marks. */
+export const ccUndoOpen = (room: Room, seat: Seat): boolean =>
+  !!room.state.sequential && ccFloor(room, seat) < room.actions.length;
+
 export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
   // CT-160: an undo is a WRITE to the log — it splices an action out and
   // rebuilds. `applyToRoom` would not stop it (undoActionAt replays through
@@ -3260,6 +3407,29 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
     && (sus.type === 'cast' ? sus.item.kind !== 'triggered' && sus.item.controller === seat
       // CR D4.2: picking a burst's next token is part of the same pre-commit cast
       : sus.type === 'burstPick' && sus.seat === seat);
+  // CR D4.6 — COMPETITIVE CONSTRUCTED: UNDO UNTIL DONE (docs/22 §3.6, §8 answer 2).
+  // A CC game has no hidden segment, so the walk above never starts; its own
+  // walk is the trailing run of this seat's actions in the open CC step, back
+  // to the latest barrier (engine/src/ccundo.ts) and to the latest action that
+  // showed EITHER seat a hidden card (the measured floor). One action per press,
+  // the last one — by construction this seat's own — through every gate the
+  // segment walk uses. The opponent watches it happen (main.ts sends both seats
+  // the new board).
+  if (room.state.sequential && !segKey && !castChain) {
+    const len = room.actions.length;
+    const floor = ccFloor(room, seat);
+    if (floor >= len) {
+      return { ok: false, why: 'nothing to undo — only your own moves in this step can be taken back, until you press Done' };
+    }
+    const i = len - 1;
+    if (i < fixFloor || room.actions[i]!.type === 'amend') return { ok: false, why: FIX_UNDO_REFUSAL };
+    if (!spliceable(room, i, seat)) {
+      return { ok: false, why: 'a later move is about the very unit that action put on the board — it cannot be taken back on its own' };
+    }
+    const refused = undoActionAt(room, i);
+    if (refused.length) return { ok: false, why: undoRefusal(refused) };
+    return { ok: true };
+  }
   if (!segKey && !castChain) {
     return { ok: false, why: 'undo only works during planning and deploy (or while your own cast is awaiting X, costs or targets)' };
   }
@@ -3473,11 +3643,11 @@ export function fixInfo(room: Room, seat: Seat, now = Date.now()): { proposal?: 
 /** a step, as far as "back to the start of this step" means one: the phase
  * and its sub-step, the battle window and round, on this turn */
 function stepKey(s: GameState): string {
-  return [s.turn, s.phase, hiddenSegment(s) ?? '', s.battleRound, s.battle?.region ?? '',
+  return [s.turn, s.phase, planningStep(s) ?? '', s.battleRound, s.battle?.region ?? '',
     s.battle?.round ?? '', s.battle?.step ?? ''].join('|');
 }
 function stepLabel(s: GameState): string {
-  const seg = hiddenSegment(s);
+  const seg = planningStep(s);
   const what = seg === 'plan' ? 'planning' : seg === 'haste' ? 'the haste step' : seg === 'deploy' ? 'deployment'
     : s.phase === 'battle' && s.battle ? `battle (${s.battle.step}${s.battle.round === 2 ? ', counterattack' : ''})`
       : s.phase;
@@ -3493,7 +3663,7 @@ function tailStates(room: Room): { lo: number; states: GameState[] } {
   const actions = room.actions;
   const lo = Math.max(0, actions.length - FIX_REWIND_WINDOW);
   let { state } = fresh(room.seed, room.names, room.mode, room.els,
-    room.mode === 'constructed' ? decksFor(room) : undefined, room.scenario, room.custom?.deal);
+    room.mode === 'constructed' ? decksFor(room) : undefined, room.scenario, room.custom?.deal, room.rules);
   const states: GameState[] = [];
   for (let i = 0; i < actions.length; i++) {
     if (i >= lo) states.push(state);
@@ -4116,7 +4286,7 @@ function recordFork(room: Room): boolean {
 /** rebuild() for a room that already knows its own seed/mode/els/decks. */
 function rebuildRoom(room: Room): Rebuilt {
   return rebuild(room.seed, room.names, room.actions, room.mode, room.els,
-    room.mode === 'constructed' ? decksFor(room) : undefined, room.scenario, room.custom?.deal);
+    room.mode === 'constructed' ? decksFor(room) : undefined, room.scenario, room.custom?.deal, room.rules);
 }
 
 /** Adopt a rebuild's results wholesale (state + event history + the derived
@@ -4131,6 +4301,7 @@ function assignRebuild(room: Room, rb: Rebuilt): void {
   room.closing = null;
   room.segStartIndex = rb.segStartIndex;
   room.segSeen = rb.segSeen;
+  room.ccMarks = rb.ccMarks;
   room.segIdFloor = rb.segIdFloor;
   room.segRefs = rb.segRefs;
   // …and the file's restart keys with them: after an undo splice they must
@@ -4172,7 +4343,7 @@ export function createRematch(old: Room, code: string): Room {
   if (old.mode === 'constructed' && old.decks[0] && old.decks[1]) {
     room.decks = [[...old.decks[0]!], [...old.decks[1]!]];
     room.deckIds = [...old.deckIds];
-    const { state, events } = fresh(seed, room.names, room.mode, room.els, [room.decks[0]!, room.decks[1]!], room.scenario, room.custom?.deal);
+    const { state, events } = fresh(seed, room.names, room.mode, room.els, [room.decks[0]!, room.decks[1]!], room.scenario, room.custom?.deal, room.rules);
     room.state = state;
     room.events = events;
   } else if (old.mode === 'draft') {
@@ -4230,7 +4401,7 @@ export function createMatch(
     const room = createRoom(code, seed, names, mode, undefined, a.deck, undefined, MATCH_CLOCK_MS.constructed);
     room.decks = [[...a.deck], [...b.deck]];
     room.deckIds = [a.deckId ?? null, b.deckId ?? null];
-    const { state, events } = fresh(seed, names, mode, room.els, [room.decks[0]!, room.decks[1]!], room.scenario, room.custom?.deal);
+    const { state, events } = fresh(seed, names, mode, room.els, [room.decks[0]!, room.decks[1]!], room.scenario, room.custom?.deal, room.rules);
     room.state = state;
     room.events = events;
     room.users = [a.userId, b.userId];
@@ -4400,6 +4571,10 @@ function persist(room: Room, keepDate = false): void {
       ...(room.rated ? { rated: true } : {}),
       // the league match this room settles. Additive: written only when set.
       ...(room.league ? { league: room.league } : {}),
+      // docs/22 §2.3: a CC game's rules are PART OF THE DEAL (beside `seed`,
+      // like `custom`), and its match link. Additive: written only when set.
+      ...(room.rules ? { rules: room.rules } : {}),
+      ...(room.match ? { match: room.match } : {}),
       actions: room.actions, clockMs: room.clockMs,
       // 2026-10-04: when the log last changed — what restore and the idle
       // sweep age a room by (never the mtime; see Room.lastActionAt)
@@ -4558,6 +4733,9 @@ export function restoreRooms(now = Date.now()): void {
         rated?: unknown;
         /** the league match this room settles (docs/20-league.md) */
         league?: unknown;
+        /** docs/22: a CC game's rules (part of the deal) and its match link */
+        rules?: unknown;
+        match?: unknown;
         /** CR D8.5: who conceded, on which turn */
         concession?: unknown;
         /** CR D8.2: a single card duel */
@@ -4639,6 +4817,10 @@ export function restoreRooms(now = Date.now()): void {
       const decks: [CardName[] | null, CardName[] | null] = [null, null];
       const single = mode === 'constructed' && raw.single === true;
       const league = sanitizeLeague(raw.league);
+      // docs/22 §2.3: throws on rules this build cannot read (the catch below
+      // skips the room with the reason) — never a CC log under house rules
+      const rules = restoreRules(raw.rules, mode);
+      const match = sanitizeRoomMatch(raw.match);
       if (mode === 'constructed') {
         for (const s of [0, 1] as const) {
           // CR D8.2: a single-card room holds single-card decks and nothing else
@@ -4647,7 +4829,7 @@ export function restoreRooms(now = Date.now()): void {
         }
         // …except a constructed LEAGUE room nobody has picked a deck in yet,
         // which waits on the placeholder (createLeagueRoom)
-        if (!decks[0] && !decks[1] && !league) throw new Error('constructed room with no decks');
+        if (!decks[0] && !decks[1] && !league && !match) throw new Error('constructed room with no decks');
       }
       const deckIds: [string | null, string | null] = [
         typeof raw.deckIds?.[0] === 'string' ? raw.deckIds[0] : null,
@@ -4671,9 +4853,9 @@ export function restoreRooms(now = Date.now()): void {
         || (!!lobby && !lobby.result);
       const actions = unresolved ? [] : raw.actions;
       const { state, events, segKey, segSnapshot, heldEvents, heldFrames, segStartIndex, segSeen,
-        segIdFloor, segRefs, segPosRefs, skipped } = rebuild(
+        segIdFloor, segRefs, segPosRefs, ccMarks, skipped } = rebuild(
         raw.seed, names, actions, mode, els,
-        mode === 'constructed' ? decksFor({ decks, league }) : undefined, scenario, custom?.deal);
+        mode === 'constructed' ? decksFor({ decks, league, match }) : undefined, scenario, custom?.deal, rules);
       // BL-26 — THE ADDITIVE CASE, and the only place CLOCK_START_MS is still
       // read outside creation. A file written before the setting existed has
       // no `clockStart`, and 60:00 is not a guess for it: it is the bank that
@@ -4697,6 +4879,9 @@ export function restoreRooms(now = Date.now()): void {
         ...(raw.rated === true ? { rated: true } : {}),
         // …and a league room stays one, or its result would never reach the league
         ...(league ? { league } : {}),
+        // docs/22: and a CC game stays one — its rules re-dealt it just above
+        ...(rules ? { rules } : {}),
+        ...(match ? { match } : {}),
         rematch: [false, false], rematchRoom: null,
         // BL-46: the record survives the restart; a proposal does not
         amendments: sanitizeAmendments(raw.amendments, actions.length), proposal: null, fixCooldown: [0, 0],
@@ -4710,7 +4895,7 @@ export function restoreRooms(now = Date.now()): void {
         ...(concession ? { concession } : {}),
         state, actions, events,
         sockets: [null, null], watchers: new Set(), segKey, segSnapshot, heldEvents, heldFrames, closing: null, segStartIndex, segSeen,
-        segIdFloor, segRefs, segPosRefs, deferred: [[], []],
+        segIdFloor, segRefs, segPosRefs, ccMarks, deferred: [[], []],
         // BL-38: the file's own record, kept verbatim, and an empty slot for
         // every action it has none for. The rebuild above computed its own
         // fingerprints and they are deliberately NOT used here — see

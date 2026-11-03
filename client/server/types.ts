@@ -106,7 +106,10 @@ export interface VersionStamp {
  * unfinished, exactly like any other game the players walked away from.
  */
 export interface RoomClosed {
-  reason: 'idle';
+  /** 'idle': nobody moved for its window. docs/22 §2.5: 'void' — its
+   *  Competitive match was voided (paused 7 days, a league week closed, a game
+   *  room idle-closed); 'match' — its match ended between games (a concede). */
+  reason: 'idle' | 'void' | 'match';
   /** when it was closed (ms since the epoch) */
   at: number;
   /** the inactivity window that closed it, so the sentence a late visitor is

@@ -34,8 +34,9 @@ this, and it is exactly what the paste box accepts:
 1 Rune Channeler
 ```
 
-What it cannot carry is the description, the cover card, the maybeboard as a
-separate list, or where the deck came from. That is what the deck file is for.
+What it cannot carry is the description, the cover card, the sideboard and the
+maybeboard as separate lists, the saved sideboard swaps, or where the deck came
+from. That is what the deck file is for.
 
 ## Three rules the format rests on
 
@@ -70,7 +71,7 @@ It is advisory only because nobody's win rate means anything on your games.
 ```json
 {
   "format": "algomancy-deck",
-  "version": 1,
+  "version": 2,
   "name": "Single-Box Battle Deck - Fire v1.1.0",
   "cards": [
     {
@@ -98,10 +99,33 @@ It is advisory only because nobody's win rate means anything on your games.
       "quantity": 1
     }
   ],
+  "sideboard": [
+    {
+      "name": "Ignis Sprite",
+      "quantity": 2
+    }
+  ],
   "maybe": [
     {
       "name": "Rune Channeler",
       "quantity": 1
+    }
+  ],
+  "swaps": [
+    {
+      "name": "vs. control",
+      "out": [
+        {
+          "name": "Soul Swallower",
+          "quantity": 1
+        }
+      ],
+      "in": [
+        {
+          "name": "Ignis Sprite",
+          "quantity": 2
+        }
+      ]
     }
   ],
   "description": "Single-box deck focusing on Fire.\n\nSacrifice the small things, then **swing**.",
@@ -117,7 +141,7 @@ It is advisory only because nobody's win rate means anything on your games.
   "exportedAt": "2026-09-20T09:14:02.511Z",
   "generator": {
     "app": "algomancy.online",
-    "version": 1
+    "version": 2
   },
   "record": {
     "games": 9,
@@ -136,10 +160,12 @@ an importer that applies `description: ""` blanks a description that was fine.
 | field | type | |
 |---|---|---|
 | `format` | `"algomancy-deck"` | present and different → refuse; absent → read anyway |
-| `version` | integer | `1`. A higher number is readable: unknown fields are ignored, never fatal |
+| `version` | integer | `2`. A higher number is readable: unknown fields are ignored, never fatal. See [Versions](#versions) |
 | `name` | string | the deck's name |
 | `cards` | entry[] | the deck proper. One entry per distinct card |
+| `sideboard` | entry[] | the **sideboard** — see below. Since version 2 |
 | `maybe` | entry[] | the **maybeboard** — see below |
+| `swaps` | swap[] | saved sideboard swaps — see below. Since version 2 |
 | `description` | string | markdown. algomancer.cc's plain text is valid markdown |
 | `author` | string | who built it |
 | `cover` | string | card name — the art that represents the deck. This is the field that means something |
@@ -156,13 +182,28 @@ A **card entry** is `{"name": "Ignis Sprite", "quantity": 2}`. A reader should
 also accept a bare string (`"Ignis Sprite"`, meaning one) and an entry with no
 `quantity` (meaning one). Quantities are clamped to 1–99.
 
-### The maybeboard is not a sideboard
+### The sideboard, and the maybeboard
 
-Algomancy has no sideboard, and calling this one would invite people to expect
-between-game swaps that the rules do not have. `maybe` is a shelf: cards the
-builder is considering. Nothing in it is shuffled into anything and no deck
-rule applies to it. algomancer.cc's `sideboard` field is read into it and
-`maybe` is written back out — the two mean the same thing in practice.
+`sideboard`: up to 7 cards, exchanged with the main deck between the games of a
+Competitive Constructed match. The copy cap counts main and sideboard together.
+`maybe` is still a shelf: no deck rule applies to it and it is never played.
+
+algomancer.cc's `deck.sideboard` is read as `maybe`, not as `sideboard`: it
+predates sideboards here and people used it as a maybeboard, and a list over
+seven there would make the deck unregistrable. So is the `sideboard` of a flat
+file that says it is `version` 1 — that is how a version-1 reader read it.
+
+### Swaps
+
+A **swap** is `{"name": "vs. control", "out": entry[], "in": entry[]}`: the
+cards that go from the main deck to the sideboard, and the ones that come back
+the other way, both counted against the deck **as written in the file** — never
+against whatever was played last. `out` and `in` need not be the same size; the
+main deck may grow or shrink, as long as it stays at 30 or more and the
+sideboard at 7 or fewer. A swap that no longer fits the deck (it takes out a
+card the deck lost) is still carried; a reader shows it as unusable rather than
+rewriting it. A swap has no id — a reader issues its own. Swaps are the deck
+owner's own plans: a system exporting somebody else's deck leaves them out.
 
 ### Visibility does not transfer, and neither does the record
 
@@ -179,7 +220,7 @@ encouraged to do the same:
 1. **A deck file** as described above, at any `version`.
 2. **Anything with a top-level `cards` array** of entries, `format` absent.
 3. **algomancer.cc's own `/api/decks/<id>` response**, recognised by a nested
-   `deck.cards`. `deck.sideboard` is read as `maybe`, `deck.description` as
+   `deck.cards`. `deck.sideboard` is read as `maybe` (not as `sideboard`), `deck.description` as
    `description`, `user.username` as `author`, `cards[]`'s `{id, name}` pairs
    as the slug→name mapping, and a 24-hex `deck._id` becomes the `source` link.
 
@@ -187,6 +228,15 @@ Strict on write, permissive on read. Refuse only two things: a `format` that is
 present and names somebody else's format, and a file with no cards in it. Any
 field you do not recognise — including a `stats` block from a tool that keeps
 one — is ignored, never an error.
+
+## Versions
+
+- **1** — the original format.
+- **2** (2026-11-02) — `sideboard` and `swaps`. A version-1 reader handed a
+  version-2 file reads a flat `sideboard` into its maybeboard and ignores
+  `swaps`: the main deck survives, nothing is refused. That change of meaning
+  for the `sideboard` key is why the number moved; adding a field alone would
+  not have moved it.
 
 ## Where this is going
 
@@ -210,4 +260,5 @@ than code:
 
 *Implementation: `client/ui/deckformat.ts` (the format), `client/server/decks.ts`
 (the importers), `client/ui/decks.ts` (the export panel).
-Tests: `client/engine/test/311-deck-format.test.ts`.*
+Tests: `client/engine/test/311-deck-format.test.ts`,
+`client/server/test/811-deck-file-sideboard.test.ts`.*

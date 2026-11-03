@@ -111,6 +111,12 @@ html:not(.ttcarrypile) .ttpage .ttend.dropover::before { content: ''; display: b
   padding: 14px 10px 40px; background: #141f1b; border-left: 1px solid var(--line); touch-action: pan-y; }
 .ttmaybepile { min-height: 100%; }
 .ttmaybepile .ttpilelabel { color: var(--dim); text-transform: uppercase; letter-spacing: .06em; font-size: var(--text-11); }
+/* the sideboard (docs/22 §4.5): a pile above Maybe at the same edge, n/7 */
+.ttmaybe.ttedge2 { display: flex; flex-direction: column; gap: var(--space-5); }
+.ttedge2 > .ttmaybepile { flex: 1 0 auto; min-height: 0; }
+.ttsidepile .ttpilelabel { color: var(--dim); text-transform: uppercase; letter-spacing: .06em; font-size: var(--text-11); }
+.ttpilecount.bad { color: var(--danger); font-weight: 700; }
+.ttnote { padding: var(--space-3) var(--space-5); font-size: var(--text-13); color: var(--accent); background: #2a2314; }
 html.binderup .reportfab { right: calc(var(--bdw) + 18px); }
 html.binderup .inboxbell { right: calc(var(--bdw) + 124px); }
 @media (max-width: 900px) {

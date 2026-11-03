@@ -347,6 +347,10 @@ export interface MatchResult {
   /** BL-46: the game that settled it took agreed fixes — a tag for the
    * organizer, nothing more (owner, 2026-10-16: a fixed game counts) */
   fixed?: true;
+  /** docs/22 §6.2: a Competitive season's match is settled by a MATCH of up
+   * to three games — every one of their room codes (`code` is the last), so
+   * a dispute filed from any game of it is accepted. Absent otherwise. */
+  codes?: string[];
 }
 
 /** When the two players mean to play: one suggestion at a time (owner,
@@ -371,7 +375,9 @@ export interface LeagueMatch {
   b: string;
   windows: Window[];
   result?: MatchResult;
-  /** the room this match is being played in, once somebody opened it */
+  /** the room this match is being played in, once somebody opened it — for a
+   * Competitive season, the id of its CC MATCH (docs/22 §6.2), whose current
+   * room Play opens */
   room?: string;
   /** when the opponent was last told somebody is waiting in it (ISO) */
   pingAt?: string;

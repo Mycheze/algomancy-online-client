@@ -150,6 +150,8 @@ import * as lob from './lobby.ts';
 import * as crp from './customrulespanel.ts';
 import * as sc from './singlecard.ts';
 import * as pg from './postgame.ts';
+// docs/22 — a Competitive match: the home card, the waiting room, the between screen
+import * as mt from './match.ts';
 import * as ps from './pickset.ts';
 import * as mm from './queue.ts';
 import { installLegal } from './legal.ts';
@@ -238,7 +240,12 @@ interface NetMsg {
    * collapsed the queue onto it (2026-10-03: in Learn to Play the bot's own
    * push, a moment after the frames, cut every playback off at frame 1). */
   playbackTail?: true;
-  clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; league?: true; drawn?: { mine: string; theirs: string } }; custom?: lob.CustomRulesInfo; names?: [string, string];
+  clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; league?: true; drawn?: { mine: string; theirs: string }; match?: mt.MatchLobbyInfo }; custom?: lob.CustomRulesInfo; names?: [string, string];
+  /** docs/22 §5.8: a Competitive match's public summary — every in-game push,
+   * `gameover`, and `{t:'match'}` (whose `room` is where the match went) */
+  match?: mt.MatchSummary; room?: string | null;
+  /** docs/22 §5.8 / CR D4.6: in a Competitive game, "you can undo now" */
+  ccUndo?: boolean;
   /** present on every push of a single card duel */
   single?: true;
   trio?: lob.TrioReveal;
@@ -302,7 +309,28 @@ class NetBackend implements Backend {
   peers: [boolean, boolean] = [false, false];
   joined = false;
   /** constructed lobby: non-null while the room waits for both decks */
-  waiting: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; league?: true; drawn?: { mine: string; theirs: string } } | null = null;
+  waiting: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; league?: true; drawn?: { mine: string; theirs: string }; match?: mt.MatchLobbyInfo } | null = null;
+  /**
+   * docs/22 — A COMPETITIVE MATCH ROOM. Known from the link (`cc=1` on a match
+   * link, `bo` + `ccdeck` on the creator's) or from the first push that says
+   * so. A match room never takes the casual deck off a join: game 1 takes a
+   * REGISTRATION (`ccDeck`, the deck's id), games 2-3 take nothing at all.
+   */
+  cc = ((): boolean => { const q = new URLSearchParams(location.search); return q.has('cc') || q.has('ccdeck'); })();
+  /** the creating join's Best of — only on the creator's link */
+  private ccBestOf: 1 | 3 | null = ((): 1 | 3 | null => {
+    const q = new URLSearchParams(location.search);
+    return q.has('ccdeck') ? (q.get('bo') === '1' ? 1 : 3) : null;
+  })();
+  /** game 1: the saved deck this seat registers (re-sent on a reconnect, where
+   * the server ignores it: only the creating join and a `pick` join register) */
+  ccDeck: string | null = new URLSearchParams(location.search).get('ccdeck');
+  /** CR D4.6: the server says this seat can undo now (a CC step, before Done) */
+  ccUndo = false;
+  /** the match this room is a game of, as the last push described it */
+  match: mt.MatchSummary | null = null;
+  /** the match ended (or was voided) while this page sat in its waiting room */
+  matchEnded: mt.MatchSummary | null = null;
   /** CR D8.2: this room is a single card duel — the server says so (every push,
    * and the waiting payload), or the creating link does (`&single=1`) before
    * the room exists. Only ever set. */
@@ -440,7 +468,9 @@ class NetBackend implements Backend {
    * join — the server's join path picks a seat, and a spectator must never
    * reach that code at all. */
   sendWatch(): void {
-    this.ws.send(JSON.stringify({ t: 'watch', room: this.room }));
+    // docs/22 §2.6: a Competitive match room is watched only by a signed-in
+    // account that is not one of its players — the token says who is asking
+    this.ws.send(JSON.stringify({ t: 'watch', room: this.room, ...(acct.token() ? { token: acct.token() } : {}) }));
   }
   /** (re-)join — also called from the waiting screen once a deck is picked.
    * mode + trio only matter when this join creates the room; the selected
@@ -476,10 +506,22 @@ class NetBackend implements Backend {
       // CR D8.2: a single card duel brings a CARD instead — the one this browser
       // last picked. The server ignores a deck in a single room and a card in
       // any other, so sending the one the room wants is all this decides.
-      ...(this.single
+      //
+      // docs/22 §5.1: a Competitive match room brings a REGISTRATION instead —
+      // a saved deck's id, which the server re-reads with its sideboard and
+      // presets — and only when this seat chose one; the creating join adds
+      // the Best of. Games 2-3 bring nothing.
+      ...(this.cc
+        ? { ...(this.ccBestOf ? { cc: { bestOf: this.ccBestOf } } : {}), ...(this.ccDeck ? { deckId: this.ccDeck } : {}) }
+        : this.single
         ? (this.singleArmed && sc.chosen() ? { single: sc.chosen() } : {})
         : deck ? { deck: deck.cards, ...(deck.id ? { deckId: deck.id } : {}) } : {}),
     }));
+  }
+  /** docs/22 §5.8: a between-games request (`{t:'cc', op, …}`) or a match concede */
+  ccSend(msg: Record<string, unknown>): void {
+    if (this.ws.readyState !== WebSocket.OPEN) return;
+    this.ws.send(JSON.stringify(msg));
   }
   /**
    * CR D2.4 — automatic intents this client has sent that the server has not
@@ -700,6 +742,18 @@ class NetBackend implements Backend {
       return;
     }
     if (m.t === 'disputeerr') { disputeAnswered(false, m.msg ?? ''); return; }
+    // docs/22 §5.8 — A COMPETITIVE MATCH. Where it stands rides every push of
+    // one of its rooms; `{t:'match'}` says where it went when a game ended
+    // (the post-game screen's Continue) or that it is over while this page
+    // waited between games.
+    if (m.match) this.match = m.match;
+    if (m.waiting?.match) { this.cc = true; mt.onLobby(m.waiting.match); }
+    if (m.t === 'match') {
+      if (postGame) postGame = { ...postGame, ...(m.match ? { match: m.match } : {}) };
+      if (this.waiting && !m.room && m.match) this.matchEnded = m.match;
+      render();
+      return;
+    }
     // accounts: the profile that rides along with a join (a game's end pushes
     // its profile + unlocks on the 'gameover' payload instead)
     if (m.t === 'me') { if (m.me) acct.applyMe(m.me); return; }
@@ -809,6 +863,7 @@ class NetBackend implements Backend {
       this.building = m.building ?? null;   // reconnect mid-declaration
       this.log = m.log ?? []; this.logTypes = this.log.map(() => undefined);
       this.legal = m.legal ?? []; this.peers = m.peers ?? [false, false];
+      this.ccUndo = m.ccUndo === true;   // CR D4.6: absent outside a Competitive game
       this.autoOutstanding = 0;   // CR D2.4: a (re)join answers nothing; start clean
       this.serverPlayback = false;   // a join is the live board, never frames
       this.sentPassAll = '';      // the server dropped the standing pass on this join, and resetUi drops ours
@@ -990,6 +1045,8 @@ class NetBackend implements Backend {
       }
     }
     if (m.legal) this.legal = m.legal;
+    // CR D4.6: whether this seat can undo now travels WITH the state it is about
+    if (m.view) this.ccUndo = m.ccUndo === true;
     // CR D5.5a: `m.peers` is deliberately NOT applied here — see onMsg. A held
     // update's presence reading is stale by the time it is released.
     // A cast-time suspension is the ONE thing that changes the board
@@ -6472,8 +6529,14 @@ function phaseBarHtml(err: string): string {
     if (ui.confirmHaste !== null) {
       return confirmBarHtml('haste', ui.confirmHaste, IDLE_DONE_ASK, err);
     }
+    // CT-510: the other seat's haste flag is never served while the step is
+    // open (CR D2.5d), so it reads "…" — but in a Competitive game the non-
+    // initiative player only gets this bar once the initiative player is done
+    // (CR 501.4), and saying "…" about a finished seat would be false
+    const haste = s.sequential && NET && !bothSeats() && NET.seat !== s.initiative
+      ? s.hasteDone.map((d, p) => d || p === s.initiative) : s.hasteDone;
     return `<div class="promptbar"><span class="who">Haste step</span>
-      <span class="remind">Cards with haste resolve at once.</span> ${doneRow(s.hasteDone, 'donehaste')}${err}</div>`;
+      <span class="remind">Cards with haste resolve at once.</span> ${doneRow(haste, 'donehaste')}${err}</div>`;
   }
   if (s.phase === 'planning' && s.mode === 'draft' && s.draftDone) {
     if (NET && s.draftDone[NET.seat]) {
@@ -9362,7 +9425,7 @@ function renderHome(): void {
   dropBaselines();
   $app.classList.remove('board');
   // a logged-out browser has no collection to remember
-  if (!acct.token()) dk.resetCollection();
+  if (!acct.token()) { dk.resetCollection(); mt.resetMyMatches(); }
   // an open account screen (sign-in / profile) owns the page instead
   if (acct.screen()) { acct.renderScreen(); return; }
   // the rules review page: right after the account screen, because its
@@ -9420,6 +9483,8 @@ function renderHome(): void {
 
     ${mm.stripHtml(!!acct.token())}
 
+    ${mt.yourMatchesHtml()}
+
     <div class="homegrid">
       <div class="homecard offer">
         <h2>Live draft</h2>
@@ -9453,6 +9518,8 @@ function renderHome(): void {
         ${singleDuelHtml()}
       </div>
 
+      ${mt.competitiveCardHtml(!!acct.token(), acct.token() ? dk.competitiveDecks() : null)}
+
       <div class="homecard">
         <h2>Join a game</h2>
         <p class="cardsub">Enter the room code you were sent.</p>
@@ -9480,6 +9547,9 @@ function renderHome(): void {
     if (e.key === 'Enter') (document.querySelector('[data-btn="joincode"]') as HTMLElement).click();
   });
   wireDeckPicker(renderHome);
+  mt.wireDeckSelect(renderHome);   // docs/22 §6.1: the Competitive card's picker
+  // docs/22 §5.6: a paused or running match is always one button away
+  mt.loadMyMatches(acct.token() ? acct.authHeaders(false) : null, renderHome);
   crp.wirePanel();   // BL-43
   wireSingleDuel();  // CR D8.2
   // what was typed, and where, survives the repaint (HOME_TYPED)
@@ -9518,6 +9588,16 @@ function renderWaiting(): void {
   }
   const me = net.seat, opp = other(me);
   if (w.single) return renderSingleWaiting();
+  // docs/22 §5.4: a Competitive match's room — game 1's registration, the
+  // between-games screen, a pause — is ui/match.ts's page
+  if (w.match) {
+    $app.innerHTML = mt.matchWaitingHtml(
+      { room: net.room, seat: me, names: net.names, peers: net.peers, ended: net.matchEnded },
+      w.match, acct.token() ? dk.competitiveDecks() : null, uiError);
+    if (acct.token()) dk.ensureCollection(renderWaiting);
+    mt.wireDeckSelect(renderWaiting);
+    return;
+  }
   const link = `${location.origin}/?ws=1&room=${encodeURIComponent(net.room)}&seat=${opp}&mode=constructed`;
   const deck = savedDeck();
   const mineIn = w.have[me];
@@ -11170,7 +11250,9 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   seenhideall: () => forgetSeen('all'),
   seenrestore: () => forgetSeen('restore'),
   erasedclose: () => { erasedView = null; },
-  concedeno: () => { concedeAsk = null; },
+  concedeno: () => { concedeAsk = null; concedeMatchAsk = false; },
+  // docs/22 §5.5: the match, through the socket (server/match.ts concedeMatch)
+  concedematchyes: () => { concedeAsk = null; concedeMatchAsk = false; NET?.ccSend({ t: 'concedeMatch' }); },
   concedeyes: () => {
     const seat = concedeAsk;
     concedeAsk = null;
@@ -11253,6 +11335,21 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   },
 };
 
+/** what ui/match.ts may do through this page (docs/22 §5.8) */
+function matchActions(): mt.MatchActions {
+  const repaint = (): void => { if (NET) render(); else renderHome(); };
+  return {
+    lobby: () => NET?.waiting?.match ?? null,
+    seat: () => NET?.seat ?? 0,
+    send: msg => NET?.ccSend(msg),
+    // CT-518: `pick` — only this button registers a deck into a match room
+    register: id => { if (NET) { NET.ccDeck = id; NET.sendJoin(true); } },
+    decks: () => (acct.token() ? dk.competitiveDecks() : null),
+    fail: msg => { uiError = msg; repaint(); },
+    rerender: repaint,
+  };
+}
+
 function handleButton(btn: HTMLElement, e: MouseEvent): void {
   // Pages with no other way in (owner, 2026-10-04: an installed web app has no
   // address bar, so every page must be reachable by a button). The profile
@@ -11281,6 +11378,9 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   if (sc.handleButton(btn)) { if (NET) render(); else renderHome(); return; }
   // and the admin dashboard everything prefixed admin-
   if (admin.handleButton(btn)) return;
+  // docs/22: and a Competitive match everything prefixed cc- (home card,
+  // waiting room, between screen)
+  if (mt.handleMatchButton(btn, matchActions())) return;
   // and the post-game screen everything prefixed pg-
   if (postGame && pg.handlePostGameButton(btn, {
     over: postGame,
@@ -12072,7 +12172,7 @@ function closeTopOverlay(): boolean {
   if (logOpen) { logOpen = false; return true; }
   if (binView !== null) { binView = null; return true; }
   if (erasedView !== null) { erasedView = null; return true; }
-  if (concedeAsk !== null) { concedeAsk = null; return true; }
+  if (concedeAsk !== null) { concedeAsk = null; concedeMatchAsk = false; return true; }
   if (cacheView !== null) { cacheView = null; return true; }
   if (postGame && !postGameHidden) { postGameHidden = true; return true; }
   if (pendingTrio) { pendingTrio = null; return true; }
@@ -12260,7 +12360,8 @@ function boardMenuItems(): MenuItem[] {
   // ui/inspect.ts (boardMenuEntries) where it is tested. This hangs the two
   // behaviours on them — and note that neither one ACTS: concede opens the
   // confirmation (concedeHtml), it never concedes.
-  return boardMenuEntries(h.state, NET ? NET.seat : null, { fixes: !!NET && amend.fixesOn(), reveals: revealCount() }).map(entry => ({
+  const bestOf3 = !!NET && !NET.spectating && NET.match?.bestOf === 3 && (NET.match.phase === 'game' || NET.match.phase === 'between');
+  return boardMenuEntries(h.state, NET ? NET.seat : null, { fixes: !!NET && amend.fixesOn(), reveals: revealCount(), bestOf3 }).map(entry => ({
     label: entry.label,
     confirm: entry.confirm,
     go: entry.kind === 'log'
@@ -12271,24 +12372,35 @@ function boardMenuItems(): MenuItem[] {
           ? (): void => { amend.openFix(); }
           : entry.kind === 'reveals'
             ? (): void => { openReveals(); }
-          : (): void => { concedeAsk = entry.seat; render(); },
+          : entry.kind === 'concedeMatch'
+            ? (): void => { concedeAsk = entry.seat; concedeMatchAsk = true; render(); }
+          : (): void => { concedeAsk = entry.seat; concedeMatchAsk = false; render(); },
   }));
 }
 
 /** the concede confirmation — irreversible, so it is never one click */
 let concedeAsk: Seat | null = null;
+/** docs/22 §5.5: …and it is the whole Competitive match, not this game */
+let concedeMatchAsk = false;
 function concedeHtml(): string {
   if (concedeAsk === null) return '';
   const name = h.state.players[concedeAsk]!.name;
   // a test-mode game is nobody's record: leaving it is closing it, and the
   // words say so (owner, 2026-09-05); the action underneath is the same concede
-  const body = h.state.sandbox
+  const body = concedeMatchAsk
+    // docs/22 §5.5: a Competitive Best of 3's "Concede match" — its own button,
+    // because it is a socket message and not the game's concede action
+    ? `<h3>Concede the match?</h3>
+      <p>${esc(name)} loses the match. This cannot be undone.</p>
+      <button data-btn="concedematchyes">Concede match</button>
+      <button data-btn="concedeno">Keep playing</button>`
+    : h.state.sandbox
     ? `<h3>Leave the match?</h3>
       <p>This is a test game — nothing is recorded. Leaving closes it.</p>
       <button data-btn="concedeyes">Leave</button>
       <button data-btn="concedeno">Stay</button>`
-    : `<h3>Concede the match?</h3>
-      <p>${esc(name)} loses. This cannot be undone.</p>
+    : `<h3>Concede the game?</h3>
+      <p>${esc(name)} loses this game. This cannot be undone.</p>
       <button data-btn="concedeyes">Concede</button>
       <button data-btn="concedeno">Keep playing</button>`;
   return `<div class="overlay mainonly"><div class="overlaybox">${body}</div></div>`;
@@ -12502,6 +12614,8 @@ installInbox({
   playLeague: lg.playMatch,
   leagueChanged: lg.refresh,
 });
+// docs/22 §5.4: the sideboarding countdown, patched in place once a second
+mt.installCountdown();
 // BL-46: the agreed-fix dialog and the bar the other seat answers on — a layer
 // of its own beside #app, like the report form (ui/amend.ts)
 amend.installAmend({

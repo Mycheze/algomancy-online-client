@@ -1,0 +1,114 @@
+/* Competitive Constructed (doc 22 §3, §7 Risk 1) — THE DRIFT GUARD.
+ *
+ * CC changes who may act in the resource, haste and deploy steps. It does so
+ * only on a state that carries `sequential`, which only `createGame(..., rules)`
+ * stamps. Every game that exists today was dealt without `rules`, so for every
+ * one of them the engine must be BYTE-IDENTICAL to the engine before CC:
+ * the same state after every action, the same events, and the same legal list
+ * for both seats (the fuzz and the UI index into it — memory
+ * "new-legal-action-drifts-fuzz", "replay-drift-is-silent").
+ *
+ * The golden (`fixtures/800-drift-golden.json`) was written by THIS file on the
+ * engine of master ba32fcf4, before a line of CC existed (CC_DRIFT_WRITE=1).
+ * It is a rolling hash per run, checkpointed every 10 steps, over:
+ *   · every committed reference run (server/challenge-runs/, parked included),
+ *   · the committed 697 Nyar run,
+ *   · a fuzz sample: shared, live draft and constructed walks over legalActions.
+ *
+ * Proven to fail (2026-11-02): applying the CC clause to every game — the
+ * `!s.sequential ||` guard dropped from E.planning, E.hasting or E.deploying,
+ * one at a time — turns both tests red (the reference runs and the walks,
+ * the resource-step flip within their first ten steps).
+ *
+ * NEVER re-bless this golden to make it pass. A red here means an existing
+ * game now plays differently; that is a rules change for every saved game and
+ * needs its own round.
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import '../src/cards/registry.ts';
+import { createGame } from '../src/apply.ts';
+import { DUMMY_DECK, challengeDeal } from '../src/challenge.ts';
+import { CHALLENGES, REFERENCE_RUNS_DIR, challengeById } from '../../server/challenges.ts';
+import type { Action, CardName } from '../src/types.ts';
+import { Trace, randomDeck, traceReplay, walk } from './cc-walk.ts';
+
+const GOLDEN = new URL('./fixtures/800-drift-golden.json', import.meta.url);
+const NYAR = new URL('./fixtures/697-nyar-token-gesture-run.json', import.meta.url);
+
+type Run = { steps: number; marks: string[]; final: string };
+
+function referenceRuns(): Record<string, Run> {
+  const out: Record<string, Run> = {};
+  const files: string[] = [];
+  for (const dir of [REFERENCE_RUNS_DIR, join(REFERENCE_RUNS_DIR, 'parked')]) {
+    if (!existsSync(dir)) continue;
+    for (const f of readdirSync(dir).sort()) if (f.endsWith('.json')) files.push(join(dir, f));
+  }
+  for (const f of files) {
+    const row = JSON.parse(readFileSync(f, 'utf8')) as { challengeId: string; deck: CardName[]; actions: Action[] };
+    const def = challengeById(row.challengeId, CHALLENGES);
+    if (!def) continue;
+    const t = new Trace();
+    traceReplay(createGame(def.seed, ['Challenger', 'Dummy'], 'constructed', undefined,
+      [[...row.deck], [...DUMMY_DECK]], undefined, challengeDeal(def)), row.actions, t);
+    out[`ref:${row.challengeId}`] = t.done();
+  }
+  const nyar = JSON.parse(readFileSync(NYAR, 'utf8')) as
+    { run: { def: { seed: number } & Record<string, unknown>; deck: CardName[]; actions: Action[] } };
+  const t = new Trace();
+  traceReplay(createGame(nyar.run.def.seed, ['Challenger', 'Dummy'], 'constructed', undefined,
+    [[...nyar.run.deck], [...DUMMY_DECK]], undefined, challengeDeal({ ...nyar.run.def, blurb: '' } as never)), nyar.run.actions, t);
+  out['fixture:697-nyar'] = t.done();
+  return out;
+}
+
+const FUZZ: { key: string; seed: number; mode: 'shared' | 'draft' | 'constructed' }[] = [
+  ...[1, 2, 3, 4, 5, 6].map(seed => ({ key: `shared:${seed}`, seed, mode: 'shared' as const })),
+  ...[101, 102, 103, 104].map(seed => ({ key: `draft:${seed}`, seed, mode: 'draft' as const })),
+  ...[201, 202, 203, 204, 205, 206, 207, 208].map(seed => ({ key: `constructed:${seed}`, seed, mode: 'constructed' as const })),
+];
+
+function fuzzRuns(): Record<string, Run> {
+  const out: Record<string, Run> = {};
+  for (const f of FUZZ) {
+    const t = new Trace();
+    walk(f.seed, {
+      mode: f.mode, maxActions: 500, trace: t,
+      ...(f.mode === 'constructed' ? { decks: [randomDeck(f.seed), randomDeck(f.seed + 7919)] as [CardName[], CardName[]] } : {}),
+    });
+    out[f.key] = t.done();
+  }
+  return out;
+}
+
+function compare(name: string, got: Run, want: Run | undefined): void {
+  assert.ok(want, `${name}: not in the golden`);
+  const at = got.marks.findIndex((m, i) => m !== want.marks[i]);
+  assert.ok(at < 0 && got.steps === want.steps && got.final === want.final,
+    `${name}: drifted — ${at >= 0 ? `first difference within steps ${at * 10 + 1}–${(at + 1) * 10}` : `steps ${got.steps} vs ${want.steps}`}`);
+}
+
+if (process.env['CC_DRIFT_WRITE'] === '1') {
+  writeFileSync(GOLDEN, JSON.stringify({ engine: 'master ba32fcf4 (pre-CC)', runs: { ...referenceRuns(), ...fuzzRuns() } }, null, 1) + '\n');
+}
+
+const golden = JSON.parse(readFileSync(GOLDEN, 'utf8')) as { runs: Record<string, Run> };
+
+test('CC drift guard: every committed reference run replays byte-identical without rules', () => {
+  const runs = referenceRuns();
+  assert.ok(Object.keys(runs).length >= 10, 'the committed runs were found');
+  for (const [k, r] of Object.entries(runs)) compare(k, r, golden.runs[k]);
+  for (const k of Object.keys(golden.runs)) if (!k.startsWith('shared:') && !k.startsWith('draft:') && !k.startsWith('constructed:')) {
+    assert.ok(runs[k], `${k}: in the golden but no longer replayed`);
+  }
+});
+
+test('CC drift guard: a fuzz sample of shared, draft and constructed walks is byte-identical without rules', () => {
+  const runs = fuzzRuns();
+  for (const f of FUZZ) compare(f.key, runs[f.key]!, golden.runs[f.key]);
+  // the sample reaches every step CC touches: a constructed walk goes past turn 1
+  assert.ok(FUZZ.filter(f => f.mode === 'constructed').every(f => golden.runs[f.key]!.steps > 40));
+});

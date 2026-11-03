@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:d59bf7e2b08d0580",
+ "generated_from": "sha256:dac2e4e90dd60b0e",
  "rules": [
   {
    "num": "100.1",
@@ -36176,6 +36176,144 @@
    "verdict": "confirmed"
   },
   {
+   "num": "901.9",
+   "key": "formats.constructed.competitive",
+   "title": null,
+   "section": "901",
+   "sectionTitle": "Constructed",
+   "chapterTitle": "9. Multiplayer and Formats",
+   "parent": "901",
+   "text": "Competitive Constructed is constructed played as a match: either one game, or best of three, which the first player to win two games wins. The rules below add to the rest of rule 901 for it.",
+   "see": [
+    "D8.6"
+   ],
+   "examples": [],
+   "basis": "owner",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": true,
+   "verdict": "untested"
+  },
+  {
+   "num": "901.9a",
+   "key": "formats.constructed.competitive.order",
+   "title": null,
+   "section": "901",
+   "sectionTitle": "Constructed",
+   "chapterTitle": "9. Multiplayer and Formats",
+   "parent": "901.9",
+   "text": "In Competitive Constructed the resource step, the haste step and deployment are taken in the printed order: the initiative player takes each of them first while the non-initiative player waits and watches, and then the non-initiative player takes it (rules 501.4 and rule 507.3). The client's simultaneous hidden steps (rule D1.5) do not apply. The draw phase is still taken by both players at once, and the resource step begins only when both players have put their cards back (rules 901.5 and rule 501.4a).",
+   "see": [
+    "501.4",
+    "507.3",
+    "D1.5"
+   ],
+   "examples": [
+    "Both players put their two cards back at the same time, and either may go first.",
+    "A player who has put their cards back is offered nothing until the other player has too.",
+    "The non-initiative player can neither recycle a card nor activate a resource until the initiative player presses Done.",
+    "In deployment the non-initiative player cannot play a unit until the initiative player is done deploying."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "901.9b",
+   "key": "formats.constructed.competitive.sideboard",
+   "title": null,
+   "section": "901",
+   "sectionTitle": "Constructed",
+   "chapterTitle": "9. Multiplayer and Formats",
+   "parent": "901.9",
+   "text": "In Competitive Constructed each deck may have a sideboard of up to 7 cards. The limit of 2 copies of a card (rule 901.3) counts the deck and its sideboard together.",
+   "see": [
+    "901.3"
+   ],
+   "examples": [],
+   "basis": "owner",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": true,
+   "verdict": "untested"
+  },
+  {
+   "num": "901.9c",
+   "key": "formats.constructed.competitive.swaps",
+   "title": null,
+   "section": "901",
+   "sectionTitle": "Constructed",
+   "chapterTitle": "9. Multiplayer and Formats",
+   "parent": "901.9",
+   "text": "Between the games of a match a player may exchange any cards between their deck and their sideboard, in any numbers, as long as the deck keeps at least 30 cards (rule 901.2) and the sideboard at most 7. No exchange is made before the first game.",
+   "see": [
+    "901.2"
+   ],
+   "examples": [],
+   "basis": "owner",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": true,
+   "verdict": "untested"
+  },
+  {
+   "num": "901.9d",
+   "key": "formats.constructed.competitive.initiative",
+   "title": null,
+   "section": "901",
+   "sectionTitle": "Constructed",
+   "chapterTitle": "9. Multiplayer and Formats",
+   "parent": "901.9",
+   "text": "The initiative player of a match's first game is chosen at random, as in any game. In each later game of the match, the player who lost the previous game chooses which player takes the initiative.",
+   "see": [
+    "103.1c",
+    "D8.6c"
+   ],
+   "examples": [
+    "Whichever player is chosen to take the initiative, both decks are shuffled exactly as they would have been, and the chosen player holds the initiative."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "untested"
+  },
+  {
+   "num": "901.9e",
+   "key": "formats.constructed.competitive.concede",
+   "title": null,
+   "section": "901",
+   "sectionTitle": "Constructed",
+   "chapterTitle": "9. Multiplayer and Formats",
+   "parent": "901.9",
+   "text": "In a match, a player who concedes a game loses that game (rule 104.4), and the match goes on to its next game unless that game decided it.",
+   "see": [
+    "D8.6d"
+   ],
+   "examples": [
+    "In a best of three, a player concedes the first game. Their opponent leads by one game to none, and the second game is set up."
+   ],
+   "basis": "owner",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
    "num": "902.1",
    "key": "formats.draft.live-draft",
    "title": null,
@@ -37770,14 +37908,16 @@
    "sectionTitle": "General and Precedence",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D1",
-   "text": "A hidden simultaneous segment is a part of the turn in which both players act at once and neither sees what the other does until both are done. The resource step, the haste step and deployment are hidden simultaneous segments.",
+   "text": "A hidden simultaneous segment is a part of the turn in which both players act at once and neither sees what the other does until both are done. The resource step, the haste step and deployment are hidden simultaneous segments, except in Competitive Constructed, where no step is hidden (rule 901.9a).",
    "see": [
     "501",
     "504",
     "507",
     "D6"
    ],
-   "examples": [],
+   "examples": [
+    "In Competitive Constructed none of the three steps is a hidden simultaneous segment."
+   ],
    "basis": "owner",
    "scope": "digital",
    "engineDiffers": false,
@@ -37854,14 +37994,15 @@
    "sectionTitle": "General and Precedence",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D1",
-   "text": "Where the printed rules have the initiative player take the resource step and the haste step first, and the initiative team deploy first (rules 501.4 and rule 507.3), this client runs those steps for both players at once, each hidden from the other (rule D1.4). The non-initiative player neither waits for the initiative player nor sees what they did before acting. This is a house rule of the client.",
+   "text": "Where the printed rules have the initiative player take the resource step and the haste step first, and the initiative team deploy first (rules 501.4 and rule 507.3), this client runs those steps for both players at once, each hidden from the other (rule D1.4). The non-initiative player neither waits for the initiative player nor sees what they did before acting. This is a house rule of the client. In Competitive Constructed the house rule does not apply, and the printed order holds (rule 901.9a).",
    "see": [
     "501",
     "507",
     "D1.4"
    ],
    "examples": [
-    "The non-initiative player is offered plays at once in deployment, and can finish deploying while the initiative player is still acting."
+    "The non-initiative player is offered plays at once in deployment, and can finish deploying while the initiative player is still acting.",
+    "In Competitive Constructed the non-initiative player is offered nothing in the resource step until the initiative player is done."
    ],
    "basis": "owner",
    "scope": "digital",
@@ -38886,9 +39027,13 @@
    "sectionTitle": "Clocks",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D3",
-   "text": "A game is closed when nobody has moved in it for an hour, if fewer than five actions have been taken, or for twelve hours otherwise, and nobody (no player and no watcher) has been connected to it for the five-minute reconnect grace. An open tab keeps an idle game open.",
-   "see": [],
-   "examples": [],
+   "text": "A game is closed when nobody has moved in it for an hour, if fewer than five actions have been taken, or for twelve hours otherwise, and nobody (no player and no watcher) has been connected to it for the five-minute reconnect grace. An open tab keeps an idle game open. The waiting game of a paused Competitive Constructed match is the exception (rule D8.6e).",
+   "see": [
+    "D8.6e"
+   ],
+   "examples": [
+    "A Competitive Constructed match is paused between games. Its waiting game is not closed for idling while the pause lasts, and a waiting game nobody paused is."
+   ],
    "basis": "engine",
    "scope": "digital",
    "engineDiffers": false,
@@ -39405,6 +39550,31 @@
    "see": [],
    "examples": [],
    "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D4.6",
+   "key": "annexd.undo.competitive",
+   "title": null,
+   "section": "D4",
+   "sectionTitle": "Undo",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D4",
+   "text": "In Competitive Constructed (rule 901.9), the player taking the resource step, the haste step or deployment may undo their own actions in that step, one at a time, until they finish the step. An undo cannot go back past the start of the step, past an action of the other player, or past an action that drew, searched, shuffled or reordered a deck, looked at a hand, or revealed a hidden card.",
+   "see": [
+    "D4.1",
+    "D4.3"
+   ],
+   "examples": [
+    "The initiative player activates a resource, recycles a card and exchanges a Prismite: all three can be undone until they press Done, and none of them after.",
+    "In deployment a player plays a unit, then a unit that draws a card when it spawns: neither can be undone, but a unit played after the draw can."
+   ],
+   "basis": "mixed",
    "scope": "digital",
    "engineDiffers": false,
    "discrepancies": [],
@@ -40389,10 +40559,13 @@
    "sectionTitle": "Reveal Timing of Simultaneous Steps",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D6.6",
-   "text": "In constructed, the view each player is sent carries the elements of both players' decks. The client reads only the player's own, to order that player's resource menu (D6.14b).",
-   "see": [],
+   "text": "In constructed, the view each player is sent carries the elements of both players' decks (in Competitive Constructed, only the player's own: rule D8.6i). The client reads only the player's own, to order that player's resource menu (D6.14b).",
+   "see": [
+    "D8.6i"
+   ],
    "examples": [
-    "A fire deck plays a water deck in constructed. Each player is sent that one deck is fire and the other water."
+    "A fire deck plays a water deck in constructed. Each player is sent that one deck is fire and the other water.",
+    "In a Competitive Constructed game, neither player is sent the other's deck elements."
    ],
    "basis": "owner",
    "scope": "digital",
@@ -42285,6 +42458,305 @@
     "A player concedes an unrated game on turn 1. Neither player has a rating change."
    ],
    "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D8.5e",
+   "key": "annexd.modes.concession.match",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8.5",
+   "text": "A Competitive Constructed match is weighed as a whole, never game by game (rule D8.6j). A match decided during or straight after its first game weighs as that game does under rules D8.5a, rule D8.5b and rule D8.5c. A match of two or more games weighs as a full game. A match conceded before its first game begins is a walkover. The rating penalty of a walkover falls on the player who lost the match.",
+   "see": [
+    "D8.6j"
+   ],
+   "examples": [
+    "A best of one is conceded on turn 1. As a single game would, it costs the conceder 5 rating points, gives the winner nothing, and counts as no rated game.",
+    "A best of three ends on a turn-1 concede of its third game. It is a full result.",
+    "A player concedes the match before its first game is dealt. That player loses 5 rating points.",
+    "One player concedes game 1 on turn 1, and the other then concedes the match. The penalty falls on the second player, who lost the match."
+   ],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D8.6",
+   "key": "annexd.modes.competitive",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8",
+   "text": "Competitive Constructed (rule 901.9) is played with a match clock and a sideboarding window between games, as below.",
+   "see": [
+    "901"
+   ],
+   "examples": [],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": true,
+   "verdict": "untested"
+  },
+  {
+   "num": "D8.6a",
+   "key": "annexd.modes.competitive.clock",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8.6",
+   "text": "Each player has 45 minutes for the whole match, not for each game. A player whose time runs out loses the match.",
+   "see": [
+    "D3"
+   ],
+   "examples": [],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": true,
+   "verdict": "untested"
+  },
+  {
+   "num": "D8.6b",
+   "key": "annexd.modes.competitive.sideboard-window",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8.6",
+   "text": "Between games the players have 120 seconds to change their decks from their sideboards (rule 901.9c), or until both of them are ready, whichever comes first.",
+   "see": [],
+   "examples": [],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": true,
+   "verdict": "untested"
+  },
+  {
+   "num": "D8.6c",
+   "key": "annexd.modes.competitive.initiative-choice",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8.6",
+   "text": "The player who lost the previous game makes the initiative choice (rule 901.9d) as they ready up for the next game.",
+   "see": [
+    "D1.2"
+   ],
+   "examples": [],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": true,
+   "verdict": "untested"
+  },
+  {
+   "num": "D8.6d",
+   "key": "annexd.modes.competitive.concede-match",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8.6",
+   "text": "A player may also concede the match: during a game, between games, while the match is paused, or before its first game begins. The player who concedes it loses the match. During a game, that game is conceded first, so it is lost as well.",
+   "see": [
+    "901.9e"
+   ],
+   "examples": [
+    "During a game, a player concedes the match. That game is lost first, as a conceded game, and then the match is over.",
+    "Between games, a player concedes the match. The match is over and the next game is never dealt."
+   ],
+   "basis": "engine",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D8.6e",
+   "key": "annexd.modes.competitive.pause",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8.6",
+   "text": "Between games, the two players may agree to pause the match. A paused match picks up later where it stood: the same score, the same decks and sideboards, and the same time left on both clocks.",
+   "see": [
+    "D8.6f"
+   ],
+   "examples": [
+    "Two players at one game all agree to pause, and the server restarts while the match is paused. When both come back and resume, the score, their decks and their clocks are as they were."
+   ],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D8.6f",
+   "key": "annexd.modes.competitive.resume",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8.6",
+   "text": "Either player may offer to pause until the sideboarding window closes (rule D8.6b), and the match is paused when the other player agrees. No clock runs while it is paused, and its waiting game is not closed for being idle (rule D3.4). It resumes once both players are present and both ask to resume, with a new sideboarding window.",
+   "see": [
+    "D8.6e"
+   ],
+   "examples": [
+    "A paused match is left for days. The idle sweep does not close its waiting game, and when both players resume, the sideboarding window starts again in full."
+   ],
+   "basis": "engine",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D8.6g",
+   "key": "annexd.modes.competitive.void",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8.6",
+   "text": "A match that stays paused for 7 days closes with no result. A league match also closes with no result at the end of its league week.",
+   "see": [
+    "D8.6h"
+   ],
+   "examples": [
+    "A match is paused and nobody resumes it for 7 days. It closes, and nobody wins it.",
+    "A league week ends while one league match is paused and another is between games. Both close with no result."
+   ],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D8.6h",
+   "key": "annexd.modes.competitive.league-week",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8.6",
+   "text": "A league match closes at the end of its league week only if it is paused or between games at that moment. A game in progress then is played out: if it decides the match, the result stands; if not, the match closes when that game ends. Either way, the games already played stay in each player's match history.",
+   "see": [
+    "D8.6g"
+   ],
+   "examples": [
+    "A league week ends during the third game of a match tied one game each. The game is played out, and its winner wins the league match.",
+    "A league week ends during the first game of a match. When that game ends the match closes, with no result."
+   ],
+   "basis": "engine",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D8.6i",
+   "key": "annexd.modes.competitive.no-peeking",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8.6",
+   "text": "While a match is still being played, neither of its players can open a replay of any of its games or watch any of its games as a spectator. Neither player is ever sent the other's registered deck, sideboard or swaps, and in a game neither is sent the other's deck elements. Once the match is over or closed, its replays are open as any game's are.",
+   "see": [
+    "D6.6e"
+   ],
+   "examples": [
+    "In the middle of a best of three, a player tries to open the replay of game 1, and to watch the match from a second tab. Both are refused until the match is over.",
+    "Through a whole best of three, no message to either player names the opponent's sideboard, deck id, swaps or deck elements."
+   ],
+   "basis": "engine",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D8.6j",
+   "key": "annexd.modes.competitive.rating",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8.6",
+   "text": "A rated Competitive Constructed match moves the constructed rating once, by the result of the match.",
+   "see": [
+    "D8.6k",
+    "D8.5e"
+   ],
+   "examples": [
+    "Two players play a rated best of three, and one wins it two games to none. Each rating moves once, and each player has one more rated game."
+   ],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D8.6k",
+   "key": "annexd.modes.competitive.games-counted",
+   "title": null,
+   "section": "D8",
+   "sectionTitle": "Tutorial and Single-Card Modes",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D8.6",
+   "text": "A game of a match moves no rating by itself, whether the match ends or closes with no result. Every game of a match counts toward the players' records, statistics and achievements, and toward the card statistics, as any game does.",
+   "see": [
+    "D8.6j"
+   ],
+   "examples": [
+    "A game of a rated match is never rated on its own.",
+    "A best of three goes to three games. Each player's profile counts three games, and the card statistics count three games.",
+    "The card statistics of that match count all three of its games."
+   ],
+   "basis": "engine",
    "scope": "digital",
    "engineDiffers": false,
    "discrepancies": [],

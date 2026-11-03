@@ -29,7 +29,7 @@ import { E } from '../engine/src/engine.ts';
 // CR D8.4 — the third deal site (see scenarios.ts). The post-game screen and
 // the accounts fold both replay a game to count it; a scenario room counted
 // without its board is a made-up game in somebody's profile.
-import { dealScenario } from './scenarios.ts';
+import { dealScenario, savedRules } from './scenarios.ts';
 import { getCard } from '../engine/src/cards/dsl.ts';
 // a seat's colours, read exactly as the Card Stats page reads them (#190)
 import { identity } from './cardstats.ts';
@@ -184,6 +184,11 @@ export interface GameRecord {
    * summary deals from `deal`; a file naming a deal this build cannot read is
    * summarized as unplayable rather than as a standard game. */
   custom?: { rules?: unknown; deal?: unknown } | null;
+  /** docs/22 §2.3: a Competitive Constructed game's rules (sequential steps,
+   * games 2–3's chosen initiative) — part of its deal. Read through
+   * scenarios.ts savedRules; a value this build cannot read is summarized as
+   * unplayable, never as a standard game. */
+  rules?: unknown;
 }
 
 const emptySeat = (name: string): SeatStats => ({
@@ -363,7 +368,10 @@ export function summarizeGame(rec: GameRecord): GameSummary {
   let events: EngineEvent[];
   try {
     if (rec.custom && !deal) throw new Error('saved with custom rules this build cannot read');
-    const g = dealScenario(rec.seed, names, mode, els, decks, rec.scenario, deal);
+    // docs/22 §2.3: a CC game deals with its rules — game 2's chosen initiative
+    // dealt as the roll would replay a different game (test 822 scans for this)
+    const rules = savedRules(rec.rules, mode);
+    const g = dealScenario(rec.seed, names, mode, els, decks, rec.scenario, deal, rules);
     state = g.state;
     events = [...g.events];
   } catch (err) {

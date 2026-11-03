@@ -55,7 +55,15 @@ import {
   answerFix, dropProposal, fixInfo, fixesRefusal, editTiming, proposalExpired, proposeFix, recordAmendment,
   rewindOptions, rewindRoom, type Proposal, fixRunContinues, noteFixRun, takeFixRun, takeStaleFixRuns, FIX_RUN_IDLE_MS,
   disputedSeats, disputesRefusal,
+  MATCH_CLOCK_MS, ccUndoOpen,
 } from './rooms.ts';
+// docs/22 — Competitive Constructed: the match record and everything between games
+import {
+  concedeMatch, matchGameDecided, matchLobbyInfo, matchOfRoom, matchOp, matchSeatJoined, matchStillOpen,
+  matchSummary, matchesFor, playsIn, reconcileMatches, registerSeat, registrationFor, reserveMatchId,
+  setMatchHooks, startMatch, sweepMatches, type MatchLobbyInfo,
+} from './match.ts';
+import { loadMatches } from './match-store.ts';
 import { fileDispute } from './dispute.ts';
 // CR D8.4a — the scenario tester (docs/14). Everything about it is gated on
 // ALGO_TESTER_TOKEN below; with no token set none of these routes exists.
@@ -93,7 +101,8 @@ import { leagueRoutes } from './api-league.ts';
 import { challengeRoutes } from './api-challenge.ts';
 import { sweepChallenges } from './challenge-store.ts';
 import { challengeNow } from './challenges.ts';
-import { recordPlayed as leagueRecordPlayed, tick as leagueTick } from './league-store.ts';
+import { recordPlayed as leagueRecordPlayed, roomModeOf, tick as leagueTick, type LeagueFormat } from './league-store.ts';
+import { installLeagueMatchHooks, openLeagueMatch } from './league-match.ts';
 import { emit, since as eventsSince, BOOT_ID } from './hooks.ts';
 import { CODE_ALPHABET } from './link.ts';
 import { deckForPlay } from './collection.ts';
@@ -578,7 +587,18 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // BL-38: a finished game, and an honest verdict on whether this engine can
   // still reproduce it. Your own games; any game if you are an admin; 404 to
   // everybody else, including the signed-out (api-replay.ts says why).
-  if (await replayRoutes(req, res, path, { liveRoom: code => !!getRoom(code) })) return;
+  // docs/22 §2.6: a game of a Competitive match still being played is not
+  // served to its players (nor anybody but an admin) until the match is over
+  if (await replayRoutes(req, res, path, { liveRoom: code => !!getRoom(code), matchOpen: raw => !!matchStillOpen(raw) })) return;
+  // docs/22 §5.6 — the "Your matches" row: this account's open matches, so a
+  // paused or running match is always one button away (no URL bar)
+  if (path === '/api/matches/mine') {
+    const me = accountForToken(tokenOf(req));
+    if (!me) { res.writeHead(401, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'sign in first' })); return; }
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+    res.end(JSON.stringify({ ok: true, matches: matchesFor(me.id) }));
+    return;
+  }
 
   // the Card Stats page: 17lands-style numbers for every card, folded out of
   // every finished game's card ledger (api-cardstats.ts). Public aggregates;
@@ -1553,6 +1573,12 @@ function baseView(room: Room, seat: Seat) {
     // BL-46: present only in a room that takes agreed fixes — the menu entry
     // is drawn from it — with the open proposal, if any (a reconnect sees it)
     ...((): object => { const f = fixInfo(room, seat); return f ? { fix: f } : {}; })(),
+    // docs/22 §5.5: a CC game says which match and game it is (the in-game
+    // chip, "Concede match") — public facts only
+    ...((): object => { const m = matchOfRoom(room); return m ? { match: matchSummary(m) } : {}; })(),
+    // CR D4.6 / docs/22 §3.6 point 5: in a CC game, "you can undo now" — a
+    // boolean, never the marks
+    ...(room.state.sequential ? { ccUndo: ccUndoOpen(room, seat) } : {}),
   };
 }
 
@@ -1774,6 +1800,9 @@ function waitingInfo(room: Room, seat: Seat): {
   single?: true;
   /** a constructed LEAGUE room: each player picks this game's deck here */
   league?: true;
+  /** docs/22 §5.3: a Competitive match's game 1 registration or its
+   *  between-games window — built per seat; the opponent's deck is never in it */
+  match?: MatchLobbyInfo;
   /** CR D8.2c: the last pair this duel was drawn on, from THIS seat's side —
    * shown until a game is dealt, and the only time the opponent's card is named */
   drawn?: { mine: CardName; theirs: CardName };
@@ -1791,11 +1820,15 @@ function waitingInfo(room: Room, seat: Seat): {
   const lobby = roomLobby(room);
   const count = roomElementCount(room);
   const blurbs = methodBlurbs(count);
+  // only a match room asks the match store: every other room's lobby stands alone
+  const mi = room.match ? matchLobbyInfo(room, seat) : undefined;
   return {
     have: [!!room.decks[0], !!room.decks[1]],
     clockStart: room.clockStart,
     // a constructed league room: the waiting room says so, and has no code to share
     ...(room.league && room.mode === 'constructed' ? { league: true as const } : {}),
+    // docs/22 §5.3: a CC match room — this seat's own deck, never the other's
+    ...(mi ? { match: mi } : {}),
     // CR D8.2b: the waiting room asks for a CARD, not a deck. Blind: `have` says
     // that the opponent's card is in, never which — you find out on the table.
     ...(room.single ? { single: true } : {}),
@@ -1918,10 +1951,18 @@ function recordFinishedGame(room: Room): void {
   // record would let the instrument quietly rewrite the numbers it exists to
   // check. The post-game screen still works; only the RECORD is skipped.
   if (room.scenario) return;
+  // docs/22 §5.5 — A COMPETITIVE MATCH'S GAME, FIRST. This is the one choke
+  // point a win, a concede and a flag all reach: the score moves, the banks
+  // are written, and the match either ends or creates its next room (and
+  // tells both seats where it is) before the post-game screen goes out below.
+  if (room.match) {
+    try { matchGameDecided(room); } catch (err) { console.error(`[match] ${room.code}: could not record the game:`, err); }
+  }
   // the league (docs/20-league.md §5): a league room's first decided game
   // settles its match — a win, a concede (a turn-1 walkover included) or a
   // timeout alike. league-store ignores a second report for the same match.
-  if (room.league) {
+  // A CC match reports once, as a MATCH (docs/22 §6.2 — W4), never per game.
+  if (room.league && !room.match) {
     const seat = room.winner ?? decidedWinner(room);
     const winner = seat === 0 || seat === 1 ? room.users[seat] : null;
     try {
@@ -2029,6 +2070,9 @@ function sendGameOver(room: Room, seat: Seat, extra: {
     // BL-48: a game between two players can be disputed from this screen —
     // and who already has. Absent on a scenario or sandbox room's payload.
     ...(disputesRefusal(room) === null ? { disputable: true, disputed: disputedSeats(room) } : {}),
+    // docs/22 §5.5: a match game's screen shows the match score and Continue
+    // (`match.room` is where the match is now) in place of Rematch
+    ...((): object => { const m = matchOfRoom(room); return m ? { match: matchSummary(m) } : {}; })(),
   });
 }
 
@@ -2060,6 +2104,42 @@ function summarizeRoom(room: Room): import('./accounts.ts').RecordedGame {
     ...(room.amendments.length ? { amended: room.amendments.length } : {}),
   };
 }
+
+/**
+ * docs/22 — the socket half of server/match.ts. A match transition has been
+ * saved by the time any of these runs; each only tells the seats.
+ */
+function joinedMsgFor(room: Room, s: Seat): SeatMsg {
+  const waiting = waitingInfo(room, s);
+  return waiting
+    ? seatMsg('joined', { room: room.code, seat: s, boot: BOOT_ID, waiting, peers: peersOf(room), names: room.names })
+    : seatMsg('joined', {
+      room: room.code, seat: s, boot: BOOT_ID, ...baseView(room, s), log: visibleLog(room, s), names: room.names,
+      building: room.building[other(s)],
+    });
+}
+setMatchHooks({
+  code: () => freshRoomCode(),
+  // the next game is dealt: both seats get a full 'joined', as a completed
+  // constructed pair does today
+  dealt: room => { settleClock(room); forEachSeat(s => sendToSeat(room, s, joinedMsgFor(room, s))); },
+  lobby: room => forEachSeat(s => pushView(room, s)),
+  // where the match went: to both seats of the room the game was played in
+  // (the post-game screen's Continue), and of the room it moved to
+  moved: (m, from, next) => {
+    const msg = { t: 'match', match: matchSummary(m), room: next?.code ?? null };
+    const told = new Set<WebSocket>();
+    for (const r of [from, next]) {
+      if (!r) continue;
+      for (const ws of r.sockets) if (ws && !told.has(ws)) { told.add(ws); send(ws, msg); }
+    }
+  },
+  concede: (room, seat) => landAction(room, seat, { type: 'concede', seat }),
+});
+// docs/22 §2.6/§6.2 (W4): a decided match reports to the league once and
+// re-folds the ratings (`ended`); a league week's close voids a league match
+// waiting between games or paused
+installLeagueMatchHooks();
 
 /** Push the current rematch state to both seats. */
 function broadcastRematch(room: Room): void {
@@ -2272,7 +2352,10 @@ wss.on('connection', ws => {
       /** CT-182: a join made while this seat's report dialog is open */
       hold?: unknown;
       /** BL-48: a dispute's "what went wrong" */
-      note?: unknown };
+      note?: unknown;
+      /** docs/22: a Competitive match — `cc: {bestOf}` on the creating join, a
+       *  `side` beside `deck`, and the between-games `{t:'cc', op, …}` fields */
+      cc?: unknown; side?: unknown; op?: unknown; main?: unknown; preset?: unknown; ready?: unknown; initiative?: unknown };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
     // ⚠ `JSON.parse("null")` SUCCEEDS. So do `[]`, `1` and `"x"`. The very next
     // line reads `msg.t`, and on null that throws inside a 'message' listener,
@@ -2321,6 +2404,18 @@ wss.on('connection', ws => {
       // a socket that is already a SEAT may not also watch: it would be handed
       // the opponent's hand, which is the one thing this must never do
       if (conns.has(ws)) return send(ws, { t: 'error', msg: 'this connection is already sitting at that table' });
+      // docs/22 §2.6 — NO MID-MATCH PEEKING. The omniscient view would show a
+      // player the opponent's deck between games and in them, from a second
+      // tab. While a Competitive match is open its rooms are watched only by a
+      // SIGNED-IN account that is not one of its two players (a signed-out tab
+      // could be either of them).
+      const openMatch = matchStillOpen(room.match);
+      if (openMatch) {
+        const who = accountForToken(typeof msg.token === 'string' ? msg.token : undefined);
+        if (!who || playsIn(openMatch, who.id)) {
+          return send(ws, { t: 'error', msg: 'a Competitive match in progress can be watched only by a signed-in player who is not in it' });
+        }
+      }
       room.watchers.add(ws);
       watching.set(ws, room);
       pushWatchers(room);
@@ -2513,6 +2608,23 @@ wss.on('connection', ws => {
       // mode + chosen trio only apply when this join CREATES the room (the
       // creator's link carries them); an existing room keeps its own.
       const mode = msg.mode === 'draft' ? 'draft' : msg.mode === 'constructed' ? 'constructed' : 'shared';
+      // docs/22 §5.1 — THE CREATING JOIN OF A COMPETITIVE MATCH. Signed in (a
+      // match hangs off accounts), and a CC-legal registration: a saved deck
+      // re-read from the account, or a main + side off the wire, either way
+      // checked with checkMatchDeck. The match id is minted before the room so
+      // room 1 is created already carrying its rules and its link.
+      const ccCreate = !existing && mode === 'constructed' && !single && !!msg.cc && typeof msg.cc === 'object';
+      let ccReg: import('./match-store.ts').Registered | null = null;
+      let ccId: string | null = null;
+      if (ccCreate) {
+        const who = accountForToken(msg.token);
+        if (!who) return send(ws, { t: 'error', msg: 'a Competitive match needs an account — sign in (or play as a guest) first' });
+        const reg = registrationFor(who.id, msg.deckId, msg.deck, msg.side);
+        if ('error' in reg) return send(ws, { t: 'error', msg: reg.error });
+        ccReg = reg;
+        ccId = reserveMatchId();
+        deckCards = reg.main;
+      }
       if (mode === 'constructed' && !existing && !deckCards) {
         return send(ws, { t: 'error', msg: single
           ? 'a single card duel needs a card — pick one on the home screen first'
@@ -2525,10 +2637,17 @@ wss.on('connection', ws => {
       const room = joinableRoom(code, mode,
         Array.isArray(msg.els) ? (msg.els as import('../engine/src/types.ts').Element[]) : undefined,
         deckCards ?? undefined,
-        sanitizeClock(msg.clock), single);
+        // docs/22 §6.1: a match's bank is fixed — the owner's 45 minutes, nobody's picker
+        ccId ? MATCH_CLOCK_MS.constructed : sanitizeClock(msg.clock), single,
+        ccId ? { rules: { sequential: true }, match: { id: ccId, game: 1 } } : undefined);
       // only reachable if the reservation expired between the check above and
       // here; treated exactly like a typo
       if (!room) return send(ws, { t: 'error', msg: `No game with code ${code}. Start a new game to create one.` });
+      if (ccId && room.match?.id === ccId && !matchOfRoom(room)) {
+        const bestOf = (msg.cc as { bestOf?: unknown }).bestOf === 1 ? 1 : 3;
+        startMatch(room, ccId, bestOf);
+        console.log(`[match] ${ccId}: new Best of ${bestOf} in ${room.code}`);
+      }
       // ⚠ the other half of the watcher/seat fence — see the ⚠ on `watch`.
       // A socket that was watching (this room or any other) stops the moment
       // it takes a seat, BEFORE the seat exists, so no push in between can
@@ -2604,8 +2723,28 @@ wss.on('connection', ws => {
       const claimed = typeof msg.deckId === 'string' && !room.single ? msg.deckId : null;
       const owned = deckForPlay(account?.id ?? null, claimed);
       // a constructed league room takes only the waiting room's own pick (rooms.ts takesJoinDeck)
-      const gameJustStarted = roomWaiting(room) && deckCards && takesJoinDeck(room, msg.pick === true)
+      let gameJustStarted = roomWaiting(room) && deckCards && takesJoinDeck(room, msg.pick === true)
         ? setRoomDeck(room, seat, deckCards, owned ? owned.id : null) : false;
+      // docs/22 §5.1: a CC match's game 1 takes a REGISTRATION (main + side),
+      // never the bare deck above (takesJoinDeck is false in every match room);
+      // games 2-3 take nothing off a join at all — they deal from the match.
+      // CT-518: a registration is the creating join or the waiting room's own
+      // "Play this deck" (`pick`). Every other join carries whatever deck the
+      // browser last selected — a code typed on the home page sends the
+      // Constructed deck — and a CC-legal one would deal game 1 unchosen.
+      if (room.match && account) {
+        const m = matchOfRoom(room);
+        const brings = msg.pick === true && (msg.deckId !== undefined || msg.deck !== undefined);
+        if (m && room.match.game === 1 && roomWaiting(room) && m.phase === 'game' && (ccReg || brings)) {
+          const reg = ccReg ?? registrationFor(account.id, msg.deckId, msg.deck, msg.side);
+          if ('error' in reg) send(ws, { t: 'error', msg: reg.error });
+          else {
+            const r = registerSeat(room, seat, account.id, account.username, reg);
+            if (!r.ok) send(ws, { t: 'error', msg: r.why });
+            else gameJustStarted = r.dealt;
+          }
+        }
+      }
       settleClock(room);   // a connected seat with pending work goes on the clock
       // CT-179: a lobby or a view, decided once (waitingInfo is undefined iff
       // the game is dealt) and built by seatMsg, which refuses anything else
@@ -2643,6 +2782,8 @@ wss.on('connection', ws => {
         else pushView(room, otherSeat);
       }
       console.log(`[ws] ${code}: seat ${seat} joined${roomWaiting(room) ? ' (waiting for decks)' : gameJustStarted ? ' (constructed game started)' : ''}`);
+      // docs/22 §5.2: the sideboarding window opens once both seats are in
+      if (room.match) matchSeatJoined(room);
       // CR D8.4: a scenario room may open with the table already waiting on seat
       // 1 (a scenario whose prologue ends on the opponent's window). Without
       // this the owner would join a board that never moves — which docs/14 §4
@@ -2659,6 +2800,31 @@ wss.on('connection', ws => {
       return;
     }
 
+    /* ── docs/22 §5 — A COMPETITIVE MATCH BETWEEN GAMES ─────────────────
+     *
+     *   {t:'cc', op:'config', main, side}   this seat's next configuration
+     *   {t:'cc', op:'preset', preset}       a saved swap ('registered' = the deck as registered)
+     *   {t:'cc', op:'ready', ready, initiative?}   the loser's Ready carries the choice
+     *   {t:'cc', op:'pause' | 'unpause' | 'resume'}
+     *   {t:'concedeMatch'}                  in a game or between (one function)
+     *
+     * Refusals come back as {t:'error'}; every accepted op pushes both seats
+     * a fresh waiting payload (match.ts hooks.lobby). */
+    if (msg.t === 'cc') {
+      const conn = conns.get(ws);
+      if (!conn) return send(ws, { t: 'error', msg: 'join a room first' });
+      const out = matchOp(conn.room, conn.seat, String(msg.op ?? ''), msg as unknown as Record<string, unknown>);
+      if (!out.ok) return send(ws, { t: 'error', msg: out.why });
+      return;
+    }
+    if (msg.t === 'concedeMatch') {
+      const conn = conns.get(ws);
+      if (!conn) return send(ws, { t: 'error', msg: 'join a room first' });
+      const out = concedeMatch(conn.room, conn.seat);
+      if (!out.ok) return send(ws, { t: 'error', msg: out.why });
+      return;
+    }
+
     // ── post-game: another one? ──
     if (msg.t === 'rematch') {
       const conn = conns.get(ws);
@@ -2672,6 +2838,9 @@ wss.on('connection', ws => {
       if (decidedWinner(room) === null) {
         return send(ws, { t: 'error', msg: 'the game is not over yet' });
       }
+      // docs/22 §5.5: in a match, Continue follows the match; a rematch is a
+      // NEW match, made from the lobby — createRematch would build a casual room
+      if (room.match) return send(ws, { t: 'error', msg: 'a Competitive match goes on with Continue — start a new match from the lobby for a rematch' });
       room.rematch[conn.seat] = msg.want !== false;
       if (room.rematch[0] && room.rematch[1]) {
         // createRematch registers the room outright, so there is nothing to
@@ -2927,9 +3096,12 @@ wss.on('connection', ws => {
       // enters the opponent's log, held or revealed (view.ts visibleToSeat).
       // It still goes on room.events so the actor's own full-log replace below
       // (and any later resync) keeps it.
+      // CR D4.6 (owner, docs/22 §8 answer 2): in a CC game there is no hidden
+      // step — the opponent watched the move and watches the take-back — so
+      // the line is everybody's there
       const note = {
         type: 'note', msg: `${room.names[conn.seat]} undid their last action.`,
-        data: { privateTo: conn.seat },
+        data: room.state.sequential ? {} : { privateTo: conn.seat },
       } as unknown as import('../engine/src/types.ts').EngineEvent;
       room.events.push(note);
       forEachSeat(s => sendToSeat(room, s, seatMsg('update', {
@@ -3298,8 +3470,13 @@ function openLeagueRoom(req: {
   existing: string | null;
   a: { userId: string; username: string };
   b: { userId: string; username: string };
-  season: string; match: string; rated: boolean; mode: 'draft' | 'constructed';
-}): { code: string; users: [string | null, string | null] } {
+  season: string; match: string; rated: boolean; mode: LeagueFormat;
+}): { code: string; users: [string | null, string | null]; match?: string } {
+  // docs/22 §6.2: a Competitive season's match is a CC MATCH — Play opens its
+  // current room (league-match.ts), and the league remembers the match id
+  if (req.mode === 'competitive') {
+    return openLeagueMatch(req, () => { const c = freshRoomCode(); reserveRoomCode(c); return c; });
+  }
   const old = req.existing ? getRoom(req.existing) : undefined;
   if (old && old.league?.match === req.match && !old.closed && old.winner === null && decidedWinner(old) === null) {
     return { code: old.code, users: [...old.users] };
@@ -3308,7 +3485,7 @@ function openLeagueRoom(req: {
   const [first, second] = Math.random() < 0.5 ? [req.a, req.b] : [req.b, req.a];
   const code = freshRoomCode();
   reserveRoomCode(code);
-  const room = createLeagueRoom(first, second, code, { season: req.season, match: req.match }, req.rated, req.mode);
+  const room = createLeagueRoom(first, second, code, { season: req.season, match: req.match }, req.rated, roomModeOf(req.mode));
   console.log(`[league] ${room.code}: ${first.username} vs ${second.username} for ${req.match} (${req.mode})${req.rated ? ' (rated)' : ''}`);
   return { code: room.code, users: [...room.users] };
 }
@@ -3349,11 +3526,21 @@ function sweepChallengeWeeks(): void {
   challengeTickAt = t;
   try { sweepChallenges(challengeNow()); } catch (err) { console.error('[challenges] sweep failed:', err); }
 }
-const expiryTimer = setInterval(() => { sweepExpiry(); sweepPassAll(); sweepWatchHold(); sweepFixes(); sweepQueue(); sweepFinished(); sweepIdle(); sweepLeague(); sweepChallengeWeeks(); }, EXPIRY_TICK_MS);
+/** docs/22 §2.5: the match sweep — open and lock sideboarding windows, void
+ * what lapsed. After sweepIdle, so a game room closed this tick voids its match. */
+function sweepCc(): void {
+  try { sweepMatches(Date.now()); } catch (err) { console.error('[match] sweep failed:', err); }
+}
+const expiryTimer = setInterval(() => { sweepExpiry(); sweepPassAll(); sweepWatchHold(); sweepFixes(); sweepQueue(); sweepFinished(); sweepIdle(); sweepCc(); sweepLeague(); sweepChallengeWeeks(); }, EXPIRY_TICK_MS);
 expiryTimer.unref();
 
 loadAccounts();
+// docs/22 §2.5 — boot order: the match store, then the rooms, then the
+// reconcile (a game decided just before a crash moves its match on; what
+// lapsed while the server was down is voided)
+loadMatches();
 restoreRooms();
+reconcileMatches();
 // CT-197: the sandbox cap counts the sandboxes a restart brought back, oldest
 // first, so the next one opened evicts the oldest of them rather than none
 sandboxCodes.push(...sandboxCodesByAge());

@@ -118,7 +118,7 @@ export interface PileCard {
 }
 
 export interface PileView {
-  /** the drop zone key (`data-tt-zone`): 'pile|<id>', 'maybe', 'scratch|<id>' */
+  /** the drop zone key (`data-tt-zone`): 'pile|<id>', 'maybe', 'side', 'scratch|<id>' */
   zone: string;
   /** the pile's title: an editable name (`rename` set), or a fixed label */
   name: string;
@@ -145,6 +145,8 @@ export interface PileView {
   cls?: string;
   /** an empty pile the user named stays on the table: it offers a ✕ */
   deletable?: boolean;
+  /** the most it may hold (the sideboard's 7): the count reads n/limit, red over it */
+  limit?: number;
 }
 
 /** One pile: its header, then its fan. */
@@ -165,7 +167,7 @@ export function pileHtml(p: PileView): string {
     <header class="ttpilehead"${p.head !== undefined ? ` data-tt-head="${esc(p.head)}"` : ''}>
       ${grip}${title}${overHere.length ? `<span class="ttovercap" title="${esc(overHere.map(nm =>
         `${nm} ×${p.over!.get(nm)}`).join(', '))}">×${Math.max(...overHere.map(nm => p.over!.get(nm)!))}</span>` : ''}<span
-        class="ttpilecount">${n}</span>${p.deletable && p.head !== undefined
+        class="ttpilecount${p.limit !== undefined && n > p.limit ? ' bad' : ''}">${n}${p.limit !== undefined ? `/${p.limit}` : ''}</span>${p.deletable && p.head !== undefined
         ? `<button class="ttpiledel" data-btn="tt-delpile" data-tt-pile="${esc(p.head)}" aria-label="delete pile">✕</button>` : ''}
     </header>
     <div class="ttfan" style="height:${fanHeight(n, p.S, p.ch)}px">${p.cards.map((c, k) =>

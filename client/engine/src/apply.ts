@@ -7,9 +7,9 @@
  */
 import type {
   Action, ActivateVia, AmendEdit, ApplyResult, CardName, Decision, EffectPart, Element, EngineEvent, Entity,
-  EntityId, FormationSpot, GameMode, GameState, ResourceKind, Seat, StackItem, TargetRef,
+  EntityId, FormationSpot, GameMode, GameRules, GameState, ResourceKind, Seat, StackItem, TargetRef,
 } from './types.ts';
-import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, STACK_VIRUS_HOSTS, Suspended, hiddenSegment, nthUseKey, other, type ChainRest, type CostOpts } from './engine.ts';
+import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, STACK_VIRUS_HOSTS, Suspended, hiddenSegment, nthUseKey, other, planningStep, type ChainRest, type CostOpts } from './engine.ts';
 import {
   affinityPips, ambushEffect, canonicalCardName, costAmount, effectByKey, getCard, graftCauseIndex, isAugment, isGraftable,
   registerSynthetic, requiresTargets, specForSlot, type AbilityCost, type ActivatedAbility, type CardDef,
@@ -147,10 +147,21 @@ export function createGame(
   /** CR D8.1, mode 'constructed' only: a Learn to Play deal (lessondeal.ts) —
    * per-seat hands, draws, stacked decks and Shard income. */
   lessonDeal?: LessonDeal,
+  /** Competitive Constructed (doc 22 §3.1), mode 'constructed' only: the
+   * printed initiative-first step order, and games 2-3's chosen initiative.
+   * Absent (or empty) is every other game, dealt by exactly the path every
+   * game before CC took: the same RNG draws, the same state, byte for byte
+   * (800 holds it there). */
+  rules?: GameRules,
 ): ApplyResult {
   let rngState = seed >>> 0;
   const draftDeal = mode === 'draft' ? sanitizeDraftDeal(deal) : undefined;
   if (lessonDeal && mode !== 'constructed') throw new Error('a lesson deal needs constructed mode');
+  if (rules?.sequential !== undefined && rules.sequential !== true) throw new Error('rules.sequential is true or absent');
+  if (rules?.initiative !== undefined && rules.initiative !== 0 && rules.initiative !== 1) throw new Error('rules.initiative is a seat');
+  const ruled = rules?.sequential === true || rules?.initiative !== undefined;
+  if (ruled && mode !== 'constructed') throw new Error('Competitive Constructed rules need constructed mode');
+  if (ruled && lessonDeal) throw new Error('a lesson deal takes no Competitive Constructed rules');
   const lesson = lessonDeal ? sanitizeLessonDeal(lessonDeal) : undefined;
   const elementCount = draftDeal?.elements ?? 3;
   const trio = sanitizeTrio(draftElements ?? defaultElements(elementCount), elementCount);
@@ -203,6 +214,8 @@ export function createGame(
       seatDecks.push(lesson?.stacked[seat] ? [...d] : shuffled);
     }
   }
+  // drawn whatever decides the initiative: a chosen seat (CC games 2-3) must
+  // not move the RNG stream, so every later draw is the seed's as it always was
   let initRoll: number;
   [initRoll, rngState] = rngNext(rngState);
 
@@ -218,6 +231,8 @@ export function createGame(
     ...(deckElements ? { deckElements } : {}),
     ...(seatDecks ? { decks: seatDecks, bottomDone: null } : {}),
     ...(singleCard ? { singleCard: true as const } : {}),
+    // Competitive Constructed: absent on every other game (doc 22 §3.1)
+    ...(rules?.sequential ? { sequential: true as const } : {}),
     ...(draftDeal ? { draftDeal: { packSize: draftDeal.packSize, draftDraw: draftDeal.draftDraw } } : {}),
     ...(lesson ? { lesson: {
       drawPerTurn: lesson.drawPerTurn, shardsPerTurn: lesson.shardsPerTurn, firstShardTurn: lesson.firstShardTurn, shardState: lesson.shardState,
@@ -246,6 +261,9 @@ export function createGame(
     triggerQueue: [], triggerOrderedSeats: [], suspension: null, decision: null,
     resolving: null,
   };
+  // Competitive Constructed games 2-3: the seat the previous game's loser chose
+  // (never with a lesson deal, refused above). The roll above was still drawn.
+  if (rules?.initiative !== undefined) state.initiative = rules.initiative;
   const e = new E(state);
   if (mode === 'draft') {
     // Manual p.16: opening hand (4) is dealt together with turn 1's draws (2),
@@ -313,7 +331,7 @@ export function createGame(
 /** Which hidden simultaneous segment is this state in, if any? Defined in
  * engine.ts (the timestamp clock reads it too, CR 113.2b) and re-exported here,
  * where every caller has always imported it from. */
-export { hiddenSegment };
+export { hiddenSegment, planningStep };
 
 /**
  * CR D2.1 — does the open decision (if any) stop `seat` from acting?
@@ -397,8 +415,9 @@ function pendingFingerprint(s: GameState): string {
     // the acting seat may not end the segment out from under a question either
     // (the last `donePlanning` / `doneHaste` / `doneDeploying` runs the step's
     // end and the next step's start): the answer would land in a phase its
-    // asker never saw.
-    hiddenSegment(s),
+    // asker never saw. The step's NAME (identical to `hiddenSegment` outside
+    // Competitive Constructed, where no step is hidden but each still ends).
+    planningStep(s),
     sus?.type === 'orderTriggers' ? s.triggerQueue : null,
   ]);
 }
@@ -475,8 +494,8 @@ function stateBasedBackstop(e: E): void {
  * `events` deliberately stays the CREATION events, not an accumulation —
  * callers only read `.state` (server/rooms.ts rebuild() accumulates its own
  * full history when it needs one). */
-export function replay(seed: number, actions: Action[], names?: [string, string], mode?: GameMode, draftElements?: Element[], decks?: [CardName[], CardName[]], deal?: DraftDeal, lessonDeal?: LessonDeal): ApplyResult {
-  let r = createGame(seed, names, mode, draftElements, decks, deal, lessonDeal);
+export function replay(seed: number, actions: Action[], names?: [string, string], mode?: GameMode, draftElements?: Element[], decks?: [CardName[], CardName[]], deal?: DraftDeal, lessonDeal?: LessonDeal, rules?: GameRules): ApplyResult {
+  let r = createGame(seed, names, mode, draftElements, decks, deal, lessonDeal, rules);
   for (const a of actions) r = { ...apply(r.state, a), events: r.events };
   return r;
 }
@@ -654,6 +673,9 @@ function doBottomCards(e: E, seat: Seat, handIndices: number[]): void {
 
 function doRecycle(e: E, seat: Seat, handIndex: number, element: ResourceKind): void {
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
+  // Competitive Constructed (CR 501.4, 501.4a): E.planning adds the initiative-first
+  // order; in every other game it is exactly the line above
+  e.need(e.planning(seat), 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
   e.need(!e.bottomPending(seat), 'finish your draw phase first');
   // CR 106.6a: a Prismite or a Shard is a resource too — "Yep you can grab
@@ -675,6 +697,9 @@ function doRecycle(e: E, seat: Seat, handIndex: number, element: ResourceKind): 
 
 function doActivateResource(e: E, seat: Seat, index: number): void {
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
+  // Competitive Constructed (CR 501.4, 501.4a): E.planning adds the initiative-first
+  // order; in every other game it is exactly the line above
+  e.need(e.planning(seat), 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
   e.need(!e.bottomPending(seat), 'finish your draw phase first');
   const r = e.player(seat).resources[index];
@@ -717,6 +742,9 @@ function maybeGrantShard(e: E, seat: Seat, kind: ResourceKind): void {
 
 function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKind): void {
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
+  // Competitive Constructed (CR 501.4, 501.4a): E.planning adds the initiative-first
+  // order; in every other game it is exactly the line above
+  e.need(e.planning(seat), 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
   e.need(!e.bottomPending(seat), 'finish your draw phase first');
   // CR 106.8d / CT-237: the printed Prismite reads "Create a NON-PRISMITE
@@ -770,6 +798,9 @@ function doConcede(e: E, seat: Seat): void {
 
 function doDonePlanning(e: E, seat: Seat): void {
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
+  // Competitive Constructed (CR 501.4, 501.4a): E.planning adds the initiative-first
+  // order; in every other game it is exactly the line above
+  e.need(e.planning(seat), 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
   e.need(!e.bottomPending(seat), 'finish your draw phase first');
   // CR 502.4a: debt is paid HERE — the last thing in the resource step. planningDone
@@ -784,6 +815,9 @@ function doDonePlanning(e: E, seat: Seat): void {
 function doDoneHaste(e: E, seat: Seat): void {
   e.need(e.s.phase === 'planning' && e.s.hasteDone !== null, 'not the haste step');
   e.need(!e.s.hasteDone![seat], 'you already finished the haste step');
+  // Competitive Constructed (CR 501.4): the initiative player's haste step comes
+  // first. Implied by the two lines above in every other game.
+  e.need(e.hasting(seat), 'the initiative player takes the haste step first');
   e.s.hasteDone![seat] = true;
   if (e.s.hasteDone!.every(Boolean)) e.startBattlePhase();
 }
@@ -971,7 +1005,7 @@ function playAtTiming(
       ...(owner !== undefined ? { owner } : {}) });
   if (e.s.phase === 'planning') {
     // haste step (CR 504.2, 504.3): only haste cards, resolving immediately
-    e.need(e.s.hasteDone !== null && !e.s.hasteDone[seat], 'not your haste step');
+    e.need(e.hasting(seat), 'not your haste step');
     const region = e.homeRegion(seat);
     // CR 803.2b: the printed timing is the default, and a PlayPermission granted by
     // a unit in this region can widen it ("Each turn, you may play a unit
@@ -2123,8 +2157,8 @@ function battleAugmentAllowed(e: E, seat: Seat, c: CardDef, from: ModZone, regio
  */
 function hasteModAllowed(e: E, seat: Seat, c: CardDef, from: ModZone,
   kind: 'augment' | 'graft'): boolean {
-  // the CR 504 haste step, and this seat has not already finished it
-  if (e.s.phase !== 'planning' || e.s.hasteDone === null || e.s.hasteDone[seat]) return false;
+  // the CR 504 haste step, and this seat may act in it (E.hasting)
+  if (!e.hasting(seat)) return false;
   // CR 101.6: the grantor has to be in the region the modding happens in, which
   // during the haste step is always this seat's home region.
   return e.mayApplyModAtHaste({ seat, card: c, from, region: e.homeRegion(seat), kind });
@@ -3792,7 +3826,8 @@ function legalDecisionActions(e: E, seat: Seat): Action[] {
 /** the haste step (CR 504): done, or a haste-timed play from hand / cache */
 function legalHasteActions(e: E, seat: Seat): Action[] {
   const out: Action[] = [];
-  if (e.s.hasteDone![seat]) return out;
+  // E.hasting: in every game but Competitive Constructed exactly "not done yet"
+  if (!e.hasting(seat)) return out;
   out.push({ type: 'doneHaste', seat });
   const home = e.homeRegion(seat);
   // CR 702.2d: the hand's plays, then the cache's, through ONE per-source offer —
@@ -3850,6 +3885,11 @@ function legalPlanningActions(e: E, seat: Seat): Action[] {
     }
     return out;
   }
+  // E.planning: in every game but Competitive Constructed exactly the
+  // dispatcher's own test, so nothing returns here; in CC, a seat waiting for
+  // the other to bottom, or for the initiative player's resource step, is
+  // offered nothing (CR 501.4, 501.4a)
+  if (!e.planning(seat)) return out;
   for (let i = 0; i < hand.length; i++) {
     for (const el of s.elements) out.push({ type: 'recycleForResource', seat, handIndex: i, element: el });
     // last, after the elements — appending keeps every element option at

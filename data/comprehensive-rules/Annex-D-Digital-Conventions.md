@@ -109,9 +109,11 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner call · adopted 2026-10-25 · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 671-placement-warning-badge.test.ts · Example tests: 671-placement-warning-badge.test.ts::CR 802.12 / CT-410: on the board, a Feeble unit clicked into a block column wears the (!) before Confirm, and loses it when moved out, 671-placement-warning-badge.test.ts::CR 606.2e / CT-410: an unmet Alluring duty marks the lured unit, wherever it is · Demonstrated by test: 671-placement-warning-badge.test.ts::CR D1.3 / 606.2e / CT-410: the badge shows exactly when the engine refuses the plan — under an Alluring duty · Key: annexd.general.one-opinion.block-warning</sub>
 
-<a id="rD1.4"></a>**D1.4.** A hidden simultaneous segment is a part of the turn in which both players act at once and neither sees what the other does until both are done. The resource step, the haste step and deployment are hidden simultaneous segments. See rules 501, 504, 507, D6.
+<a id="rD1.4"></a>**D1.4.** A hidden simultaneous segment is a part of the turn in which both players act at once and neither sees what the other does until both are done. The resource step, the haste step and deployment are hidden simultaneous segments, except in Competitive Constructed, where no step is hidden (rule 901.9a). See rules 501, 504, 507, D6.
 
-<sub>Basis: Owner ruling, adopted 2026-08-18, 2026-10-04 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment — the resource step, the haste step and deployment are hidden simultaneous segments; battle is not · Key: annexd.general.hidden-segment</sub>
+> *Example: In Competitive Constructed none of the three steps is a hidden simultaneous segment.*
+
+<sub>Basis: Owner call · adopted 2026-11-02; Owner ruling, adopted 2026-08-18, 2026-10-04 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Tests: 434-cr-digital-1.test.ts, 804-cc-no-hidden-step.test.ts · Example test: 804-cc-no-hidden-step.test.ts::CC: hiddenSegment is null in every step, and planningStep names the step · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment — the resource step, the haste step and deployment are hidden simultaneous segments; battle is not · Key: annexd.general.hidden-segment</sub>
 
 <a id="rD1.4a"></a>**D1.4a** The hiding is done by the server's view of the game, the same way hands are hidden. The rules engine itself hides nothing.
 
@@ -125,11 +127,13 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner ruling, adopted 2026-10-04 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment.battle-open — in battle nothing is held: a cast is on the opponent view and in their events at once · Key: annexd.general.hidden-segment.battle-open</sub>
 
-<a id="rD1.5"></a>**D1.5.** Where the printed rules have the initiative player take the resource step and the haste step first, and the initiative team deploy first (rules 501.4 and rule 507.3), this client runs those steps for both players at once, each hidden from the other (rule D1.4). The non-initiative player neither waits for the initiative player nor sees what they did before acting. This is a house rule of the client. See rules 501, 507, D1.4.
+<a id="rD1.5"></a>**D1.5.** Where the printed rules have the initiative player take the resource step and the haste step first, and the initiative team deploy first (rules 501.4 and rule 507.3), this client runs those steps for both players at once, each hidden from the other (rule D1.4). The non-initiative player neither waits for the initiative player nor sees what they did before acting. This is a house rule of the client. In Competitive Constructed the house rule does not apply, and the printed order holds (rule 901.9a). See rules 501, 507, D1.4.
 
 > *Example: The non-initiative player is offered plays at once in deployment, and can finish deploying while the initiative player is still acting.*
 
-<sub>Basis: Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-10-11 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 21-fixes.test.ts · Example test: 21-fixes.test.ts::both seats deploy at once: NIT may act and finish before IT · Key: annexd.general.initiative-order</sub>
+> *Example: In Competitive Constructed the non-initiative player is offered nothing in the resource step until the initiative player is done.*
+
+<sub>Basis: Owner call · adopted 2026-10-22, 2026-11-02; Owner ruling, adopted 2026-10-11 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Tests: 21-fixes.test.ts, 802-cc-resource-step.test.ts · Example tests: 21-fixes.test.ts::both seats deploy at once: NIT may act and finish before IT, 802-cc-resource-step.test.ts::CC resource step: the initiative player first, then the non-initiative player · Key: annexd.general.initiative-order</sub>
 
 <a id="rD1.6"></a>**D1.6.** In a draft, a player who has made their pick may begin the resource step, activating and recycling, while the other player is still drafting. The printed turn ends each step for every player together (rule 501.4a); this client does not hold the faster player back, because the resource step is hidden and the other player cannot see the head start. See rules 501.4a, D1.4.
 
@@ -399,9 +403,11 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.clocks.out-of-time — a seat whose clock runs out loses with no move made, and the log says they ran out of time · Key: annexd.clocks.out-of-time</sub>
 
-<a id="rD3.4"></a>**D3.4.** A game is closed when nobody has moved in it for an hour, if fewer than five actions have been taken, or for twelve hours otherwise, and nobody (no player and no watcher) has been connected to it for the five-minute reconnect grace. An open tab keeps an idle game open.
+<a id="rD3.4"></a>**D3.4.** A game is closed when nobody has moved in it for an hour, if fewer than five actions have been taken, or for twelve hours otherwise, and nobody (no player and no watcher) has been connected to it for the five-minute reconnect grace. An open tab keeps an idle game open. The waiting game of a paused Competitive Constructed match is the exception (rule D8.6e). See rule D8.6e.
 
-<sub>Basis: Engine only · Verified: confirmed in round 3; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Tests: 367-idle-rooms-close.test.ts, 434-cr-digital-1.test.ts · Demonstrated by tests: 367-idle-rooms-close.test.ts::367 §1 a room with fewer than five actions closes after an hour without a move, not before, 367-idle-rooms-close.test.ts::367 §2 a room with five or more actions closes after twelve hours without a move, not before, 367-idle-rooms-close.test.ts::367 §3 a connected seat or a watcher keeps an idle room open, and an empty one gets a grace to reconnect · Key: annexd.clocks.idle-rooms</sub>
+> *Example: A Competitive Constructed match is paused between games. Its waiting game is not closed for idling while the pause lasts, and a waiting game nobody paused is.*
+
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 6 tests, all passed; 3 gate test files · Tests: 367-idle-rooms-close.test.ts, 434-cr-digital-1.test.ts, 819-cc-pause-void-and-idle.test.ts · Example test: 819-cc-pause-void-and-idle.test.ts::§5 an unpaused waiting room idles out as any room does, and voids its match · Demonstrated by tests: 367-idle-rooms-close.test.ts::367 §1 a room with fewer than five actions closes after an hour without a move, not before, 367-idle-rooms-close.test.ts::367 §2 a room with five or more actions closes after twelve hours without a move, not before, 367-idle-rooms-close.test.ts::367 §3 a connected seat or a watcher keeps an idle room open, and an empty one gets a grace to reconnect · Key: annexd.clocks.idle-rooms</sub>
 
 <a id="rD3.4a"></a>**D3.4a** A connected player or a watcher keeps an idle game open, and an empty game is given a grace period for a player to reconnect.
 
@@ -545,6 +551,14 @@ These are the conventions of this digital client: how it times, shows and confir
 <a id="rD4.5f"></a>**D4.5f** A game with a fix in it counts like any other game: its result, rating, league result, achievements and card statistics. It is only tagged as fixed where the game is listed.
 
 <sub>Basis: Owner call · adopted 2026-10-16 · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 1 gate test file · Tests: 488-a-fixed-game-counts.test.ts · Demonstrated by tests: 488-a-fixed-game-counts.test.ts::§2 a fixed game counts: the profile, the rating gate, the card-stats gate, 488-a-fixed-game-counts.test.ts::§3 the match history and the admin games list show the tag, 488-a-fixed-game-counts.test.ts::§4 the league result carries the tag, and a fixed room reports it · Key: annexd.undo.agreed-fix.counts</sub>
+
+<a id="rD4.6"></a>**D4.6.** In Competitive Constructed (rule 901.9), the player taking the resource step, the haste step or deployment may undo their own actions in that step, one at a time, until they finish the step. An undo cannot go back past the start of the step, past an action of the other player, or past an action that drew, searched, shuffled or reordered a deck, looked at a hand, or revealed a hidden card. See rules D4.1, D4.3.
+
+> *Example: The initiative player activates a resource, recycles a card and exchanges a Prismite: all three can be undone until they press Done, and none of them after.*
+
+> *Example: In deployment a player plays a unit, then a unit that draws a card when it spawns: neither can be undone, but a unit played after the draw can.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 1 gate test file · Owner call · adopted 2026-11-02 · Engine: sequentialStep, ccUndoMark, ccUndoFloor · Tests: 805-cc-undo-until-done.test.ts · Example tests: 805-cc-undo-until-done.test.ts::CC undo: the resource step is undoable back to its start, and only by the seat taking it, 805-cc-undo-until-done.test.ts::CC undo: a draw stands, and everything before it with it · Key: annexd.undo.competitive</sub>
 
 <a id="rD5"></a>
 ### D5. Recap and Playback
@@ -796,11 +810,13 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner ruling, adopted 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 260-cost-ramp-and-bin-targets.test.ts · Example test: 260-cost-ramp-and-bin-targets.test.ts::CR D6.6d the opponent sees the target too, which is the half the report is really about · Key: annexd.reveal.public-zones.bin</sub>
 
-<a id="rD6.6e"></a>**D6.6e** In constructed, the view each player is sent carries the elements of both players' decks. The client reads only the player's own, to order that player's resource menu (D6.14b).
+<a id="rD6.6e"></a>**D6.6e** In constructed, the view each player is sent carries the elements of both players' decks (in Competitive Constructed, only the player's own: rule D8.6i). The client reads only the player's own, to order that player's resource menu (D6.14b). See rule D8.6i.
 
 > *Example: A fire deck plays a water deck in constructed. Each player is sent that one deck is fire and the other water.*
 
-<sub>Basis: Owner call · adopted 2026-10-25; Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Tests: 435-cr-digital-2.test.ts, 667-draft-any-element-resource.test.ts · Example test: 435-cr-digital-2.test.ts::cr:annexd.reveal.public-zones.deck-elements — in constructed, the deck elements of both players are in the view each player is sent · Key: annexd.reveal.public-zones.deck-elements</sub>
+> *Example: In a Competitive Constructed game, neither player is sent the other's deck elements.*
+
+<sub>Basis: Owner call · adopted 2026-10-25; Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Tests: 435-cr-digital-2.test.ts, 667-draft-any-element-resource.test.ts, 820-cc-no-leak-over-the-wire.test.ts · Example tests: 435-cr-digital-2.test.ts::cr:annexd.reveal.public-zones.deck-elements — in constructed, the deck elements of both players are in the view each player is sent, 820-cc-no-leak-over-the-wire.test.ts::§1-§5 no message names the opponent sideboard, deck id, swaps or deck elements · Key: annexd.reveal.public-zones.deck-elements</sub>
 
 <sub>Discrepancies: D-U24-2 (discrepancies.md)</sub>
 
@@ -1359,3 +1375,91 @@ These are the conventions of this digital client: how it times, shows and confir
 > *Example: A player concedes an unrated game on turn 1. Neither player has a rating change.*
 
 <sub>Basis: Owner ruling, adopted 2026-09-05 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Tests: 435-cr-digital-2.test.ts · Example test: 435-cr-digital-2.test.ts::cr:annexd.modes.concession.rated-only — an unrated walkover moves nobody · Key: annexd.modes.concession.rated-only</sub>
+
+<a id="rD8.5e"></a>**D8.5e** A Competitive Constructed match is weighed as a whole, never game by game (rule D8.6j). A match decided during or straight after its first game weighs as that game does under rules D8.5a, rule D8.5b and rule D8.5c. A match of two or more games weighs as a full game. A match conceded before its first game begins is a walkover. The rating penalty of a walkover falls on the player who lost the match. See rule D8.6j.
+
+> *Example: A best of one is conceded on turn 1. As a single game would, it costs the conceder 5 rating points, gives the winner nothing, and counts as no rated game.*
+
+> *Example: A best of three ends on a turn-1 concede of its third game. It is a full result.*
+
+> *Example: A player concedes the match before its first game is dealt. That player loses 5 rating points.*
+
+> *Example: One player concedes game 1 on turn 1, and the other then concedes the match. The penalty falls on the second player, who lost the match.*
+
+<sub>Basis: Owner call · adopted 2026-11-02 · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 1 gate test file · Tests: 825-cc-match-concession-weight.test.ts · Example tests: 825-cc-match-concession-weight.test.ts::§1 ⭐ a match decided in or right after game 1 weighs as game 1 does (CR D8.5), 825-cc-match-concession-weight.test.ts::§2 ⭐ two or more games weigh normal, whatever the deciding concede, 825-cc-match-concession-weight.test.ts::§3 a match conceded before game 1 was dealt is a walkover by the conceder, 825-cc-match-concession-weight.test.ts::§4 the stamp is on the match loser, whoever conceded game 1 · Key: annexd.modes.concession.match</sub>
+
+<a id="rD8.6"></a>**D8.6.** Competitive Constructed (rule 901.9) is played with a match clock and a sideboarding window between games, as below. See rule 901. *(Untested: no executed test demonstrates it.)*
+
+<sub>Basis: Owner call · adopted 2026-11-02 · Verified: untested in round 4; verifier ran no tests; no gate test · Key: annexd.modes.competitive</sub>
+
+<a id="rD8.6a"></a>**D8.6a** Each player has 45 minutes for the whole match, not for each game. A player whose time runs out loses the match. See rule D3. *(Untested: no executed test demonstrates it.)*
+
+<sub>Basis: Owner call · adopted 2026-11-02 · Verified: untested in round 4; verifier ran no tests; no gate test · Key: annexd.modes.competitive.clock</sub>
+
+<a id="rD8.6b"></a>**D8.6b** Between games the players have 120 seconds to change their decks from their sideboards (rule 901.9c), or until both of them are ready, whichever comes first. *(Untested: no executed test demonstrates it.)*
+
+<sub>Basis: Owner call · adopted 2026-11-02 · Verified: untested in round 4; verifier ran no tests; no gate test · Key: annexd.modes.competitive.sideboard-window</sub>
+
+<a id="rD8.6c"></a>**D8.6c** The player who lost the previous game makes the initiative choice (rule 901.9d) as they ready up for the next game. See rule D1.2. *(Untested: no executed test demonstrates it.)*
+
+<sub>Basis: Owner call · adopted 2026-11-02 · Verified: untested in round 4; verifier ran no tests; no gate test · Key: annexd.modes.competitive.initiative-choice</sub>
+
+<a id="rD8.6d"></a>**D8.6d** A player may also concede the match: during a game, between games, while the match is paused, or before its first game begins. The player who concedes it loses the match. During a game, that game is conceded first, so it is lost as well. See rule 901.9e.
+
+> *Example: During a game, a player concedes the match. That game is lost first, as a conceded game, and then the match is over.*
+
+> *Example: Between games, a player concedes the match. The match is over and the next game is never dealt.*
+
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 1 gate test file · Tests: 816-cc-concede-game-and-match.test.ts · Example tests: 816-cc-concede-game-and-match.test.ts::§2 conceding the match in a game: a real concede in that game, then the match ends, 816-cc-concede-game-and-match.test.ts::§3 conceding the match between games stamps it and closes the waiting room · Key: annexd.modes.competitive.concede-match</sub>
+
+<a id="rD8.6e"></a>**D8.6e** Between games, the two players may agree to pause the match. A paused match picks up later where it stood: the same score, the same decks and sideboards, and the same time left on both clocks. See rule D8.6f.
+
+> *Example: Two players at one game all agree to pause, and the server restarts while the match is paused. When both come back and resume, the score, their decks and their clocks are as they were.*
+
+<sub>Basis: Owner call · adopted 2026-11-02 · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Tests: 818-cc-bo3-through-a-restart.test.ts, 819-cc-pause-void-and-idle.test.ts · Example test: 818-cc-bo3-through-a-restart.test.ts::§1-§7 a Bo3 over the wire, paused, restarted, resumed and finished · Key: annexd.modes.competitive.pause</sub>
+
+<a id="rD8.6f"></a>**D8.6f** Either player may offer to pause until the sideboarding window closes (rule D8.6b), and the match is paused when the other player agrees. No clock runs while it is paused, and its waiting game is not closed for being idle (rule D3.4). It resumes once both players are present and both ask to resume, with a new sideboarding window. See rule D8.6e.
+
+> *Example: A paused match is left for days. The idle sweep does not close its waiting game, and when both players resume, the sideboarding window starts again in full.*
+
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Tests: 819-cc-pause-void-and-idle.test.ts · Example test: 819-cc-pause-void-and-idle.test.ts::§1-§4 a pause is agreed, held through the idle sweep, resumed where it stood, and void at 7 days · Key: annexd.modes.competitive.resume</sub>
+
+<a id="rD8.6g"></a>**D8.6g** A match that stays paused for 7 days closes with no result. A league match also closes with no result at the end of its league week. See rule D8.6h.
+
+> *Example: A match is paused and nobody resumes it for 7 days. It closes, and nobody wins it.*
+
+> *Example: A league week ends while one league match is paused and another is between games. Both close with no result.*
+
+<sub>Basis: Owner call · adopted 2026-11-02 · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Tests: 819-cc-pause-void-and-idle.test.ts, 829-cc-league-week-end-voids.test.ts · Example tests: 819-cc-pause-void-and-idle.test.ts::§1-§4 a pause is agreed, held through the idle sweep, resumed where it stood, and void at 7 days, 829-cc-league-week-end-voids.test.ts::§1 ⭐ the week closes: a paused and a between league match are voided with no result · Key: annexd.modes.competitive.void</sub>
+
+<a id="rD8.6h"></a>**D8.6h** A league match closes at the end of its league week only if it is paused or between games at that moment. A game in progress then is played out: if it decides the match, the result stands; if not, the match closes when that game ends. Either way, the games already played stay in each player's match history. See rule D8.6g.
+
+> *Example: A league week ends during the third game of a match tied one game each. The game is played out, and its winner wins the league match.*
+
+> *Example: A league week ends during the first game of a match. When that game ends the match closes, with no result.*
+
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 1 gate test file · Tests: 829-cc-league-week-end-voids.test.ts · Example tests: 829-cc-league-week-end-voids.test.ts::§2 ⭐ a game in progress plays out, and if it decides the match its result stands, 829-cc-league-week-end-voids.test.ts::§3 ⭐ a game at the boundary that does not decide the match: voided when it ends · Key: annexd.modes.competitive.league-week</sub>
+
+<a id="rD8.6i"></a>**D8.6i** While a match is still being played, neither of its players can open a replay of any of its games or watch any of its games as a spectator. Neither player is ever sent the other's registered deck, sideboard or swaps, and in a game neither is sent the other's deck elements. Once the match is over or closed, its replays are open as any game's are. See rule D6.6e.
+
+> *Example: In the middle of a best of three, a player tries to open the replay of game 1, and to watch the match from a second tab. Both are refused until the match is over.*
+
+> *Example: Through a whole best of three, no message to either player names the opponent's sideboard, deck id, swaps or deck elements.*
+
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Tests: 820-cc-no-leak-over-the-wire.test.ts, 821-cc-no-peeking-mid-match.test.ts · Example tests: 821-cc-no-peeking-mid-match.test.ts::§1-§3 the replay and the omniscient watch are refused to the players until the match is over, 820-cc-no-leak-over-the-wire.test.ts::§1-§5 no message names the opponent sideboard, deck id, swaps or deck elements · Key: annexd.modes.competitive.no-peeking</sub>
+
+<a id="rD8.6j"></a>**D8.6j** A rated Competitive Constructed match moves the constructed rating once, by the result of the match. See rules D8.6k, D8.5e.
+
+> *Example: Two players play a rated best of three, and one wins it two games to none. Each rating moves once, and each player has one more rated game.*
+
+<sub>Basis: Owner call · adopted 2026-11-02 · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 824-cc-one-elo-result-per-match.test.ts · Example test: 824-cc-one-elo-result-per-match.test.ts::§2 ⭐ a rated Bo3 won 2-0 moves each rating once and counts one rated game, while both games count · Key: annexd.modes.competitive.rating</sub>
+
+<a id="rD8.6k"></a>**D8.6k** A game of a match moves no rating by itself, whether the match ends or closes with no result. Every game of a match counts toward the players' records, statistics and achievements, and toward the card statistics, as any game does. See rule D8.6j.
+
+> *Example: A game of a rated match is never rated on its own.*
+
+> *Example: A best of three goes to three games. Each player's profile counts three games, and the card statistics count three games.*
+
+> *Example: The card statistics of that match count all three of its games.*
+
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 2 gate test files · Tests: 824-cc-one-elo-result-per-match.test.ts, 826-cc-games-recorded-and-tagged.test.ts · Example tests: 824-cc-one-elo-result-per-match.test.ts::§1 a game of a match is never rated, and only a decided match has a row, 826-cc-games-recorded-and-tagged.test.ts::§1 ⭐ every game of a 2-1 Bo3 is a history row tagged with its match and game, 826-cc-games-recorded-and-tagged.test.ts::§2 ⭐ the card stats count every game of the match · Key: annexd.modes.competitive.games-counted</sub>

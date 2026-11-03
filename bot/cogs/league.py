@@ -109,6 +109,15 @@ def league_url(base, season=None):
     return f"{base}/?league={season}" if season else f"{base}/?league"
 
 
+# what a season's format adds to a sign-up line; a draft season adds nothing
+FORMAT_LINE = {
+    "constructed": "Casual constructed: bring any deck, and change it every game if you like. ",
+    "competitive": "Competitive Constructed: every match is a best of three, with a registered deck and a sideboard. ",
+}
+# …and to the season's name in /league status
+FORMAT_TAG = {"constructed": " (casual constructed)", "competitive": " (Competitive Constructed, best of three)"}
+
+
 def render(row, base=None):
     """One outbox row → the kwargs for `send()`: content, embed, view.
     Returns None for a kind this bot does not know (acked as failed, so a
@@ -121,9 +130,9 @@ def render(row, base=None):
         view.add_item(discord.ui.Button(label="Open the league →", style=discord.ButtonStyle.link, url=url))
     season = d.get("season", "the league")
     # owner, 2026-11-01: a season is a live draft (the default, and every row
-    # written before formats existed) or casual constructed
-    casual = ("Casual constructed: bring any deck, and change it every game if you like. "
-              if d.get("format") == "constructed" else "")
+    # written before formats existed) or casual constructed; docs/22 §6.2 adds
+    # Competitive Constructed, every match a best of three
+    casual = FORMAT_LINE.get(d.get("format"), "")
 
     if kind == "signup":
         text = (f"🏅 You're in **{season}**! " + casual
@@ -455,7 +464,7 @@ def status_text(body) -> str:
 
 def _season_status(s) -> str:
     me = s.get("me") or {}
-    head = f"🏅 **{s['name']}**{' (casual constructed)' if s.get('format') == 'constructed' else ''} — {s['label']}."
+    head = f"🏅 **{s['name']}**{FORMAT_TAG.get(s.get('format'), '')} — {s['label']}."
     if not me.get("entered"):
         return head + " You're not in it" + (f": {me['joinProblem']}." if me.get("joinProblem") else " — `/league join`.")
     week = max([m["week"] for m in me.get("matches", [])], default=0)

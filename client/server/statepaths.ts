@@ -97,6 +97,11 @@ export const crCommentsFile = (): string => process.env['ALGO_CR_COMMENTS_FILE']
  * (the top ten of each leaderboard), rewritten atomically.
  */
 export const challengesDir = (): string => process.env['ALGO_CHALLENGES_DIR'] ?? join(VAR_DIR, 'challenges');
+/** Competitive Constructed matches (docs/22 §2.2, server/match-store.ts): one
+ * JSON file per match, `<id>.json`, written atomically. Each game of a match
+ * is an ordinary room file under gamesDir(); this holds what lasts between
+ * them — the score, the sideboard configurations, the clocks, the pause. */
+export const matchesDir = (): string => process.env['ALGO_MATCHES_DIR'] ?? join(VAR_DIR, 'matches');
 /** the drawn link-preview pictures (a deck's fan, server/main.ts /og/deck/).
  * A cache: every file is rebuilt from the deck on a miss, so losing it costs
  * one Python run per deck and nothing else. */

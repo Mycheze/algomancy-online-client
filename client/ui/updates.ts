@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-03', kind: 'new', text: 'Competitive matches, best of 1 or 3: a sideboard of up to 7 to swap between games (saved swaps are one tap), 45 minutes each for the whole match, and players plan and deploy in turn. A match can be paused between games.' },
   { date: '2026-11-03', kind: 'fix', text: 'League sign-up on a phone: swiping over the hours grid scrolls the page again, and a tap marks or clears one hour. The grid also works from the keyboard: Tab to it, move with the arrow keys, press Space to mark.' },
   { date: '2026-11-03', kind: 'change', text: 'Giving up a weekly challenge run, or dropping a finished run you have not submitted, now asks you to press again first.' },
   { date: '2026-11-03', kind: 'fix', text: 'Custom rules on the home page work again: banning cards, the + and − steppers, Simple cards only and the Beginner preset had stopped doing anything. Banned cards now sit in a tidy row instead of piling on top of each other.' },

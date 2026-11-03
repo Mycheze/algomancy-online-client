@@ -95,6 +95,8 @@ export function spawnServer(env: Record<string, string> = {}): Promise<ServerHan
         ...process.env,
         ALGO_LEAGUE_FILE: join(tmpdir(), `algo-league-${process.pid}-${Math.random().toString(36).slice(2)}.json`),
         ALGO_CHALLENGES_DIR: join(tmpdir(), `algo-challenges-${process.pid}-${Math.random().toString(36).slice(2)}`),
+        // docs/22: a Competitive match a test makes is written to a throwaway too
+        ALGO_MATCHES_DIR: join(tmpdir(), `algo-matches-${process.pid}-${Math.random().toString(36).slice(2)}`),
         ...env, PORT: '0',
       },
       stdio: ['ignore', 'pipe', 'pipe'],

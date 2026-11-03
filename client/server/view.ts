@@ -319,6 +319,14 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
    * redaction cannot itself be a tell.) */
   if (v.hasteDone) v.hasteDone = v.hasteDone.map((done, s) => (s === seat ? done : false));
 
+  /* docs/22 §3.3 — CR D6.6e's "one line in server/view.ts", for Competitive
+   * Constructed only: the opponent's DECK ELEMENTS are not sent. Between games
+   * of a match a sideboard can change them, and the entry would tell the other
+   * player that it had (and which way). Your own stays — the resource menus
+   * lead with it. Every other mode is unchanged: D6.6e is still open there.
+   * The deck's SIZE stays public, as a deck's height is at a table. */
+  if (v.sequential && v.deckElements) v.deckElements = v.deckElements.map((els, s) => (s === seat ? els : []));
+
   // CT-242: a graft waiting on its host's "when I become targeted" trigger is a
   // card out of its applier's hand and not yet on the board — a deployment (or
   // haste-step) mod, so it is that seat's business only, like their stack half.

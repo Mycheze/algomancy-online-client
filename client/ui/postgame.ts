@@ -13,6 +13,7 @@
 import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { esc } from './util.ts';
 import { currentUser, gameElementsHtml, isGuest, modeName, signupNoteHtml, signupOutcome } from './account.ts';
+import { matchLink, matchResultHtml, scoreWords, type MatchSummary } from './match.ts';
 
 /** NB: the wire carries more fields than the client reads (e.g. a per-seat
  * `won` — this screen reads GameOver.winner instead) — only what the UI
@@ -84,6 +85,13 @@ export interface GameOver {
    * browser's storage on a refresh (main.ts).
    */
   signup?: { ticket: string; until: number };
+  /**
+   * docs/22 §5.5 — this game was one of a Competitive match: where the match
+   * stands now, and `room`, where it went (the next game's room). The screen
+   * shows the score and Continue in place of Rematch; a finished match shows
+   * the match result. Updated by `{t:'match'}` while the screen is up.
+   */
+  match?: MatchSummary;
 }
 
 /**
@@ -247,6 +255,28 @@ function signupClaimHtml(o: GameOver): string {
   </form>`;
 }
 
+/**
+ * docs/22 §5.5 — in a Competitive match, Continue takes Rematch's place: the
+ * next game's room already exists. A finished match offers a NEW match (the
+ * Competitive card, with the same Best of), never `createRematch`, which would
+ * build a casual room.
+ */
+function matchButtonsHtml(m: MatchSummary): string {
+  if (m.phase === 'over' || m.phase === 'void') {
+    return `<button class="primary" data-btn="pg-newmatch" data-bo="${m.bestOf}">New match</button>`;
+  }
+  return `<button class="primary" data-btn="pg-continue" data-room="${esc(m.room)}">Continue to game ${m.game}</button>`;
+}
+
+/** the match's line: "Game 1 of 3 · you lead 1–0", or its result */
+function matchLineHtml(o: GameOver): string {
+  const m = o.match;
+  if (!m) return '';
+  if (m.phase === 'over' || m.phase === 'void') return `<div class="pgnote pgmatch">${matchResultHtml(m, o.seat, o.names)}</div>`;
+  const played = m.score[0] + m.score[1];
+  return `<div class="pgnote pgmatch">Best of ${m.bestOf} · ${esc(scoreWords(m.score, o.seat))} after ${played} game${played === 1 ? '' : 's'}.</div>`;
+}
+
 /** The rematch control, which is really four states wearing one button. */
 function rematchHtml(o: GameOver): string {
   const me = o.seat, opp = (o.seat === 0 ? 1 : 0) as 0 | 1;
@@ -323,12 +353,13 @@ export function postGameHtml(o: GameOver): string {
       ? (o.concession?.weight === 'walkover' ? 'In your match history, marked as not counted.' : 'Recorded to your profile.')
       : 'Not recorded — nobody was signed in.'}</div>
 
+    ${matchLineHtml(o)}
     ${disputedNote(o)}
     ${guestClaimHtml()}
     ${signupClaimHtml(o)}
 
     <div class="pgbtns">
-      ${rematchHtml(o)}
+      ${o.match ? matchButtonsHtml(o.match) : rematchHtml(o)}
       ${disputeHtml(o)}
       <button data-btn="pg-home">Return to home</button>
       <button data-btn="pg-queue">Join matchmaking queue</button>
@@ -358,6 +389,10 @@ export function handlePostGameButton(btn: HTMLElement, a: PostGameActions): bool
     case 'pg-rematch': a.send({ want: true }); return true;
     case 'pg-rematch-cancel': a.send({ want: false }); return true;
     case 'pg-goto-rematch': goToRematch(btn.dataset['room'] ?? '', a.over); return true;
+    // docs/22 §5.5: on to the match's next game, same seat
+    case 'pg-continue': if (btn.dataset['room']) location.search = matchLink(btn.dataset['room'], a.over.seat); return true;
+    // …or, the match over, the Competitive card on the home screen with the same Best of
+    case 'pg-newmatch': location.href = `${location.pathname}?bo=${btn.dataset['bo'] === '1' ? 1 : 3}`; return true;
     case 'pg-home': location.href = location.pathname; return true;
     case 'pg-close': a.dismiss(); return true;
     case 'pg-dispute': if (a.over.disputable && !a.over.disputed?.[a.over.seat]) a.dispute(); return true;

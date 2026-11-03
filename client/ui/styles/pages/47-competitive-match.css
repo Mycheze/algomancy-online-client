@@ -1,0 +1,30 @@
+/* ── docs/22: a Competitive match (ui/match.ts) — the home card, Your
+ * matches, the between screen. Touch-first: every control is a button with
+ * room for a finger, nothing here needs hover. ── */
+.ccbo { display: flex; gap: var(--space-3); }
+.ccbo button.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.ccmine { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5); margin: 0 0 var(--space-5);
+  display: flex; flex-direction: column; gap: var(--space-3); }
+.ccmine > .zonelabel { margin: 0; }
+.ccmatchrow { display: flex; align-items: center; justify-content: space-between; gap: var(--space-5); flex-wrap: wrap; font-size: var(--text-13); }
+.ccscore { display: flex; flex-direction: column; gap: var(--space-1); margin: var(--space-2) 0 var(--space-5); font-size: var(--text-13); }
+.ccscore .ccgame { font-size: var(--text-14); font-weight: 700; }
+.ccscore .cccount { color: var(--accent); font-variant-numeric: tabular-nums; }
+.ccscore .dim { color: var(--dim); }
+.ccpresets { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-4); margin-bottom: var(--space-4); }
+.ccpreset { display: inline-flex; align-items: center; gap: var(--space-3); }
+.ccpresets button.on { border-color: var(--accent); color: var(--accent); }
+.ccwhy { font-size: var(--text-12); color: var(--dim); }
+.ccboards { display: flex; flex-direction: column; gap: var(--space-4); }
+.ccboard h3 { margin: 0 0 var(--space-3); font-size: var(--text-14); }
+.ccchip { padding: var(--space-3) var(--space-4); margin: 0 var(--space-2) var(--space-2) 0; font-size: var(--text-13); text-transform: none; min-height: 32px; }
+.ccchip:disabled { opacity: .75; cursor: default; }
+.cclegal { margin: var(--space-4) 0 0; }
+.ccready { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); margin: var(--space-5) 0 0; }
+.ccready > p { flex-basis: 100%; margin: 0; }
+.ccready button { padding: var(--space-4) var(--space-6); font-weight: 700; }
+.ccready .lobbyseats { flex-basis: 100%; }
+.ccfoot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); margin: var(--space-6) 0 0; }
+.ccconcede { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.ccresult { font-size: var(--text-14); margin: var(--space-2) 0 var(--space-5); }
+.ccresult.won b { color: var(--glow); }

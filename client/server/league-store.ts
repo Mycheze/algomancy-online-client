@@ -47,12 +47,20 @@ export interface Entrant {
  * What a season's games are (owner, 2026-11-01). 'draft' is the October
  * season's: one live draft, random elements. 'constructed' is "casual
  * constructed": each player brings any deck to each game, the same one or a
- * different one every time. A row written before the field existed has none,
- * and reads as draft — `formatOf`, never `s.format`.
+ * different one every time. 'competitive' (docs/22 §6.2, 2026-11-02) is
+ * Competitive Constructed: each league match is a best-of-three CC MATCH with
+ * a registered deck and sideboard. A row written before the field existed has
+ * none, and reads as draft — `formatOf`, never `s.format`.
  */
-export type LeagueFormat = 'draft' | 'constructed';
-export const LEAGUE_FORMATS: readonly LeagueFormat[] = ['draft', 'constructed'];
-export const formatOf = (s: { format?: unknown }): LeagueFormat => (s.format === 'constructed' ? 'constructed' : 'draft');
+export type LeagueFormat = 'draft' | 'constructed' | 'competitive';
+export const LEAGUE_FORMATS: readonly LeagueFormat[] = ['draft', 'constructed', 'competitive'];
+/** ⚠ a format is one this build KNOWS, read by membership: the old
+ * `=== 'constructed' ? … : 'draft'` read every new format as a draft */
+export const formatOf = (s: { format?: unknown }): LeagueFormat =>
+  (LEAGUE_FORMATS as readonly unknown[]).includes(s.format) ? s.format as LeagueFormat : 'draft';
+/** the format a season's rooms are played in: a competitive season's games
+ * are constructed games (each a game of a CC match) */
+export const roomModeOf = (f: LeagueFormat): 'draft' | 'constructed' => (f === 'draft' ? 'draft' : 'constructed');
 
 export interface Season extends SeasonClock {
   /** `[a-z0-9-]`, e.g. `2026-10` — also the prefix of every match id */
@@ -251,7 +259,7 @@ function checkInput(i: Partial<SeasonInput>): string | null {
   if (i.lateUntil !== undefined && (!Number.isInteger(i.lateUntil) || i.lateUntil < 1 || i.lateUntil > i.weeks!)) {
     return 'late sign-ups must close by a week of the season';
   }
-  if (i.format !== undefined && !LEAGUE_FORMATS.includes(i.format)) return 'the format is draft or constructed';
+  if (i.format !== undefined && !LEAGUE_FORMATS.includes(i.format)) return 'the format is draft, constructed or competitive';
   return null;
 }
 
@@ -263,7 +271,7 @@ export function createSeason(i: SeasonInput, now: number): Res<{ season: Season 
     id: i.id, name: i.name, signupOpens: iso(Date.parse(i.signupOpens)), start: iso(Date.parse(i.start)),
     // written only when it is not the default, so a draft season's row is
     // exactly what it was before formats existed
-    ...(i.format === 'constructed' ? { format: 'constructed' as const } : {}),
+    ...(i.format && i.format !== 'draft' ? { format: i.format } : {}),
     weeks: i.weeks, perWeek: i.perWeek, auto: i.auto, hold: false, hidden: i.hidden,
     lateUntil: Math.min(i.lateUntil ?? 2, i.weeks), phase: -1, createdAt: iso(now),
     entrants: [], matches: [], shorts: {}, log: [],
@@ -300,7 +308,7 @@ export function updateSeason(id: string, patch: Partial<SeasonInput> & { hold?: 
   const next = { ...s, ...Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined)) } as Season;
   const bad = checkInput(next);
   if (bad) return { ok: false, error: bad };
-  if (next.format === 'constructed') s.format = 'constructed'; else delete s.format;
+  if (next.format && next.format !== 'draft') s.format = next.format; else delete s.format;
   s.name = next.name; s.auto = next.auto === true; s.hidden = next.hidden === true;
   s.signupOpens = iso(Date.parse(next.signupOpens)); s.start = iso(Date.parse(next.start));
   s.weeks = next.weeks; s.perWeek = next.perWeek; s.lateUntil = Math.min(next.lateUntil, next.weeks);
@@ -883,15 +891,18 @@ export function overrideResult(s: Season, matchId: string, outcome: Outcome | 'c
 }
 
 /** A league room reached a result at the table (docs/20 §5). The first decided
- * game settles the match; later ones are ignored. */
-export function recordPlayed(matchId: string, winnerUserId: string, code: string, now: number, opts: { fixed?: boolean } = {}): boolean {
+ * game settles the match; later ones are ignored. A Competitive season's
+ * match reports once, when its CC match is decided (docs/22 §6.2), with every
+ * game's code in `codes` (the last is `code`). */
+export function recordPlayed(matchId: string, winnerUserId: string, code: string, now: number, opts: { fixed?: boolean; codes?: string[] } = {}): boolean {
   for (const s of db().seasons) {
     const m = s.matches.find(x => x.id === matchId);
     if (!m) continue;
     if (m.result && m.result.outcome !== 'unplayed') return false;
     if (winnerUserId !== m.a && winnerUserId !== m.b) return false;
     m.result = { outcome: winnerUserId === m.a ? 'a' : 'b', how: 'played', code, at: iso(now),
-      ...(opts.fixed ? { fixed: true as const } : {}) } satisfies MatchResult;
+      ...(opts.fixed ? { fixed: true as const } : {}),
+      ...(opts.codes?.length ? { codes: [...opts.codes] } : {}) } satisfies MatchResult;
     note(s, `${m.id}: ${nameOf(winnerUserId)} won (${code})${opts.fixed ? ' — the game took agreed fixes' : ''}`, now);
     resultMessages(s, m, now);
     persist(now);
@@ -912,7 +923,9 @@ export function flagDispute(matchId: string, userId: string, code: string, noteT
     const m = s.matches.find(x => x.id === matchId);
     if (!m) continue;
     if (userId !== m.a && userId !== m.b) return false;
-    if (m.result?.code && m.result.code !== code) return false;
+    // docs/22 §6.2: a Competitive match was settled by every one of its games
+    // (`codes`); any other league match by the one game in `code`
+    if (m.result?.code && !(m.result.codes ?? [m.result.code]).includes(code)) return false;
     const text = noteText.trim().slice(0, 300);
     m.disputes = [...(m.disputes ?? []).filter(d => d.by !== userId), { by: userId, code, at: iso(now), note: text }];
     note(s, `${m.id}: ${nameOf(userId)} disputed the result (${code}): ${text.slice(0, 80)}`, now);
@@ -932,6 +945,29 @@ export function flagDispute(matchId: string, userId: string, code: string, noteT
     return true;
   }
   return false;
+}
+
+/** docs/22 §2.5/§6.2 — does this league match already carry a result? (The
+ * week closing marks every open one `unplayed`, so "the week closed on it" is
+ * this.) The CC match sweep voids a league match between games or paused once
+ * it does: "league matches also close at league-week end". */
+export function leagueMatchSettled(matchId: string): boolean {
+  for (const s of db().seasons) {
+    const m = s.matches.find(x => x.id === matchId);
+    if (m) return !!m.result;
+  }
+  return false;
+}
+
+/** CT-514 — when this league match's week closes (the moment closeWeek marks
+ * it unplayed, and the CC sweep voids a match between games or paused), or
+ * null once it carries a result or is unknown */
+export function leagueMatchDeadline(matchId: string): number | null {
+  for (const s of db().seasons) {
+    const m = s.matches.find(x => x.id === matchId);
+    if (m) return m.result ? null : phaseStart(s, m.week + 1);
+  }
+  return null;
 }
 
 function resultMessages(s: Season, m: LeagueMatch, now: number): void {
