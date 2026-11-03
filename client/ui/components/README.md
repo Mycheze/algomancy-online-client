@@ -27,6 +27,11 @@ here (see "Adding a variant").
 | Empty state | `empty-state.ts` | boxed (default) / `bare` · `title` · `actionHtml` |
 | Dialog | `dialog.ts` | native `<dialog>` · width `md` / `lg` / `xl` · `closable` · `openDialog` / `closeDialog` / `installDialogClose` |
 | Toast | `toast.ts` | `success` / `info` / `danger` · `toastHtml` (markup) and `showToast` (one region on `<body>`) |
+| Icon | `icon.ts` | `icon(name, { size, title })` · one outline style, 24×24, `currentColor` · `ICON_NAMES` · 1em unless `size` (px or a CSS length) · decorative unless `title` |
+| Icon button | `icon-button.ts` | the toolbar button: icon + caption · layout `stack` / `inline` · `badge` (a count, 99+, or `'dot'`) · `on` · `disabled` · `href` · `iconHtml` (an avatar) · ≥48px |
+| Segmented | `segmented.ts` | one of a few: each option its own `dataBtn`/`attrs`/`on`/`disabled`/`title` · size `md` / `sm` · `full` · `ariaLabel` (root `role="group"`) |
+| Sheet | `sheet.ts` | drawn from state (`open: false` → '') · placement `center` / `anchor-bottom-left` / `-bottom-right` / `-top-left` / `-top-right` · width `sm` / `md` / `lg` · `dismissBtn` on scrim and ✕ · `footerHtml` · `installSheetEsc` |
+| App shell | `app-shell.ts` | `appShell({ topHtml, mainHtml, bottomHtml })`: 100dvh, only the main region scrolls; stacked flow under 760×600 · `shellBar({ startHtml, centerHtml, endHtml })` |
 
 `index.ts` re-exports them all. `_shared.ts` holds what they share (escaping,
 the attribute string); it is not a component.
@@ -36,7 +41,7 @@ the attribute string); it is not a component.
 1. **Pure.** `props → string`. No DOM, no module state, no imports but sibling
    components and `../util.ts` (for `esc`). The two exceptions are the small
    helpers that exist to touch the DOM, `openDialog`/`closeDialog`/
-   `installDialogClose` and `showToast`; each takes what it touches as an
+   `installDialogClose`, `showToast` and `installSheetEsc`; each takes what it touches as an
    argument (or `globalThis.document`), so a test can pass a fake.
 2. **Escaped.** Every text prop goes through `esc` from `ui/util.ts`. A prop
    whose name ends in `Html` (`labelHtml`, `bodyHtml`, `actionsHtml`, a table
@@ -124,6 +129,14 @@ Known seams:
 - The gold "primary" on a `<button>` today also shows the green fill underneath
   (the census's bug); `variant: 'action'` is the gold alone. Swapping it in is a
   visible fix the owner should see on the list.
+- **The home redesign's five** (icon, icon button, segmented, sheet, app
+  shell, 2026-11-03) reproduce nothing: they are new looks for
+  `client/docs/24-redesign/`, so no page uses them until that page is built.
+  Their sizes are tokens at the end of `tokens.css` (`--icon-button-*`,
+  `--segmented-*`, `--shell-bar-h`, `--sheet-*`). A sheet has no entry
+  animation on purpose (a repaint redraws it), and a page in the app shell
+  must hide `#legalfoot`, or the page scrolls by the footer's height
+  (`app-shell.ts`'s header).
 - The toast helper replaces the green `.toast`, `.crtoast` and the deck page's
   messages. The board's cost toasts (`ui/toast.ts`) are a stack of game notices
   and stay as they are.

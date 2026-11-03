@@ -1,0 +1,21 @@
+/* ── ui-segmented (ui/components/segmented.ts) ────────────────────────
+   One choice out of a few: a sunken pill track, one button per option, the
+   chosen one raised with a gold edge and gold text. No weight change when
+   chosen, so the row never shifts. The option rules name their border on
+   :hover because base.css's `button:hover` (0,1,1) would paint it gold. */
+/* fit-content: a track hugs its options even as a stretched flex or grid item; --full fills */
+.ui-segmented { display: inline-flex; align-items: stretch; gap: var(--space-1); width: fit-content; max-width: 100%;
+  padding: var(--space-1); background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border); border-radius: var(--radius-pill); }
+.ui-segmented--full { display: flex; width: 100%; }
+.ui-segmented--full .ui-segmented__option { flex: 1 1 0; min-width: 0; }
+
+.ui-segmented__option { min-height: var(--segmented-h); padding: 0 var(--space-6); background: transparent;
+  color: var(--color-text-muted); border: 1px solid transparent; border-radius: var(--radius-pill);
+  font: inherit; font-size: var(--text-14); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out); }
+.ui-segmented__option:hover { color: var(--color-text); border-color: transparent; }
+.ui-segmented__option.on, .ui-segmented__option.on:hover { background: var(--color-surface-raised);
+  color: var(--color-accent); border-color: var(--color-accent); }
+.ui-segmented__option:disabled { opacity: .4; cursor: default; color: var(--color-text-muted); }
+.ui-segmented--sm .ui-segmented__option { min-height: var(--segmented-h-sm); padding: 0 var(--space-5); font-size: var(--text-13); }

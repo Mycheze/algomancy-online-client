@@ -1,0 +1,28 @@
+/* ── ui-app-shell (ui/components/app-shell.ts) ────────────────────────
+   The page that never scrolls: exactly the window's height (100dvh; 100vh
+   first, for a browser without dvh), rows `auto 1fr auto`, overflow hidden.
+   The main region takes what the bars leave and scrolls inside itself. The
+   grid areas keep each region in its row when a bar is left out. */
+.ui-app-shell { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "top" "main" "bottom";
+  height: 100vh; height: 100dvh; overflow: hidden; background: var(--color-bg); color: var(--color-text); }
+.ui-app-shell__top { grid-area: top; min-width: 0; background: var(--color-surface); border-bottom: 1px solid var(--color-border); }
+.ui-app-shell__main { grid-area: main; min-width: 0; min-height: 0; overflow: auto; padding: var(--space-6); }
+.ui-app-shell__bottom { grid-area: bottom; min-width: 0; background: var(--color-surface-sunken); border-top: 1px solid var(--color-border); }
+
+/* a bar's three zones (shellBar()): start | centre | end. 1fr auto 1fr keeps
+   the centre in the true middle whatever the sides hold. */
+.ui-app-shell__bar { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center;
+  gap: var(--space-4); min-height: var(--shell-bar-h); padding: var(--space-2) var(--space-6); }
+.ui-app-shell__zone { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.ui-app-shell__zone--center { justify-content: center; }
+.ui-app-shell__zone--end { justify-content: flex-end; }
+
+/* below a tablet (narrower than 760px or shorter than 600px) the shell lets go:
+   stacked flow, at least the window's height, and the PAGE scrolls. Phones are
+   "not broken", not designed for (client/docs/24-redesign/, principle 1). */
+@media (max-width: 759.98px), (max-height: 599.98px) {
+  .ui-app-shell { height: auto; min-height: 100vh; min-height: 100dvh; overflow: visible; }
+  .ui-app-shell__main { overflow: visible; }
+  .ui-app-shell__bar { display: flex; flex-wrap: wrap; justify-content: space-between; }
+  .ui-app-shell__zone { flex-wrap: wrap; }
+}

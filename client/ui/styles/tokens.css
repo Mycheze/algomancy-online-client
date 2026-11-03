@@ -138,4 +138,16 @@
   --dialog-pad: 18px 22px;     /* .overlaybox */
   --toast-pad: 10px 18px;      /* .toast, the green one */
   --toast-bottom: 18px;        /* .toast: how far above the window's foot */
+  /* the redesign's home components (2026-11-03: icon-button, segmented, sheet,
+     app-shell). New pieces with no look to reproduce; these are their sizes. */
+  --icon-button-min-h: 48px;   /* a finger's target on an iPad */
+  --icon-button-icon: 24px;    /* the toolbar icon */
+  --icon-button-badge: 16px;   /* the count pill's height (and least width) */
+  --icon-button-dot: 8px;      /* the badge with no number */
+  --segmented-h: 40px;         /* an option's height (sm: --segmented-h-sm) */
+  --segmented-h-sm: 32px;
+  --shell-bar-h: 64px;         /* the app shell's bars at their least; the anchored sheets clear it */
+  --sheet-gutter: 16px;        /* the least room between a sheet and the window's edge */
+  --sheet-w-sm: 320px; --sheet-w-md: 480px; --sheet-w-lg: 720px;
+  --sheet-scrim-soft: rgba(6, 8, 11, .32);   /* behind an anchored sheet: the page stays readable */
 }
