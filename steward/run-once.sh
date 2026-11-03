@@ -343,7 +343,7 @@ governor_on() {
   if ! STEWARD_ROOT="$ROOT" "$REPO/steward/thermal.sh" check 2>>"$LOGS/runner.log"; then
     log "thermal cap not installed — refusing heavy work (the box must stay silent)"; return 1
   fi
-  STEWARD_ROOT="$ROOT" "$REPO/steward/thermal.sh" run & GOV_PID=$!
+  STEWARD_ROOT="$ROOT" "$REPO/steward/thermal.sh" run 9>&- & GOV_PID=$!   # 9>&-: the governor must not hold the tick lock
   cp "$REPO/steward/thermal.sh" "$BIN/thermal.sh"
   trap 'kill $GOV_PID 2>/dev/null; "$BIN/thermal.sh" floor' EXIT
   sleep 1
