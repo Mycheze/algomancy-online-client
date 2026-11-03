@@ -109,14 +109,14 @@ Still open, with the default that applies unless the owner says otherwise:
 | 1a | **Branch `ds-phase1b`** (worktree `.claude/worktrees/ds-phase1b`), commits `a0afe05e` (split into `client/ui/styles/`, `bundle.css` byte-identical to the old `style.css`) and `af486e6e` (CR verdict U23's span path follows the move). Full gate green on its own. |
 | tool | Same branch, `efc6f506`: `client/server/e2e/ui-shots.mjs` + `ui-fixture.ts` + `pinned-server.mjs` + `ui-shots-compare.mjs`. 83 states × 3 viewports, 524 PNGs. Always compare two runs **on the same fixture dir** (a re-seeded fixture differs in ~80 shots), with `--fuzz 3`. |
 | 1b-i | Same branch, `b507f029`: 65 role tokens in `styles/tokens.css` (the old names still work), `ui/scripts/tokenize-styles.mjs` (exact matches only, pages/shared/base, the board untouched), 921 colour-literal ratchet. Zero visible change (524 shots, 0 differ). **The landing gate for 1a + tool + 1b-i was started and stopped unfinished; run it again before pushing.** |
-| 1b-ii | **Branch `ds-snap`** (`b2c170ac`, on top of `b507f029`): `tokenize-styles.mjs --snap through`. 589 near-values onto the scale, pages/ only, each element ≤2px. It is visible in aggregate (479/524 shots differ), so it is **waiting for the owner**. |
+| 1b-ii | Same branch. `tokenize-styles.mjs --snap through`: 589 near-values onto the scale, pages/ only, each element ≤2px. Visible in aggregate (479/524 shots differ). **Owner approved 2026-11-03.** |
 | 2–5 | Not started. |
 
 ### Waiting for the owner
 
 The approval page is https://claude.ai/artifact/KYPv65og6FnFJx9vMx6ozu.
 
-1. Apply the spacing snap (`ds-snap`)? Recommended: yes.
+1. ~~Apply the spacing snap?~~ Yes (owner, 2026-11-03).
 2. Leave the 17 bigger near-misses as literals and handle them page by page in Phase 4? Recommended: yes, and nothing changes unless the owner objects.
 3. `color-scheme: dark` on `:root` (dark native scrollbars and selects)? Recommended: yes, in Phase 2.
 
