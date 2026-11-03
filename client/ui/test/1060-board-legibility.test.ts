@@ -21,6 +21,12 @@
  *   §4  no faint words in the battle's empty slots ("blocker gone", "unblocked"
  *       — "Better to remove it and represent in other ways"): each empty half
  *       is a marked shape, named in its aria-label and title.
+ *   §5  no toast on the board ("the weird toast icon that pops up for actions
+ *       that can't happen for no targets or something ... It's really not
+ *       needed at all and should probably just be removed entirely and replaced
+ *       with something else"). What it said — a cost that did nothing, a dark
+ *       hand card's reason, the line closing ranks, a stuck bot — is a line in
+ *       the action bar, waiting for the player's next action or the next prompt.
  *
  * (The fifth, a colour-blind mode, is BL-51 in ledgers/backlog.ts: not built.)
  */
@@ -30,7 +36,8 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { Harness } from '../../engine/src/harness.ts';
 import { legalActions } from '../../engine/src/apply.ts';
-import { spawn, toDeployment, toNextBattle, withE } from '../../engine/test/util.ts';
+import { give, giveResources, pass, spawn, toDeployment, toNextBattle, withE } from '../../engine/test/util.ts';
+import { viewFor } from '../../server/view.ts';
 import type { Seat } from '../../engine/src/types.ts';
 import { client } from './ui-driver.ts';
 import { readStyles } from './read-styles.ts';
@@ -141,4 +148,46 @@ test('§4 the battle\'s empty halves carry no words: each is a marked shape, nam
     }
     assert.doesNotMatch(html.replace(/<[^>]+>/g, ' '), /\b(?:unblocked|blocker gone)\b/, `seat ${seat}: neither faint word is on the table`);
   }
+});
+
+test('§5 no game notice draws a toast: each is a line inside the action bar, and it waits for the player', async () => {
+  // in the source: neither corner toast is left on the board
+  const TOAST = read('toast.ts');
+  assert.doesNotMatch(MAIN, /class="toast"|showToast\(|toastMsg/, 'main.ts draws no board toast');
+  assert.doesNotMatch(MAIN + TOAST, /costtoast/, 'the cost toast strip is gone');
+  assert.doesNotMatch(CSS, /\.costtoasts? \{/, '…and its stylesheet');
+  // on the board: D holds priority in a battle with 2 fire open and an Arc
+  // Lightning (4) in hand — the dark card a click explains
+  const h = new Harness(106002);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'The Foretold');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.state.players[D]!.resources = [];
+  giveResources(h, D, 'fire', 2);
+  while (h.state.priority !== D) pass(h);
+  const i = give(h, D, 'Arc Lightning');
+  const ui = await client();
+  const view = viewFor(h.state, D), legal = legalActions(h.state, D);
+  ui.join(view, D, legal);
+  ui.sent();
+  const bar = (html: string): string => {
+    const at = html.indexOf('<div class="actionbar">');
+    return at < 0 ? '' : html.slice(at, html.indexOf('class="side toolbar"', at));
+  };
+  ui.pointer('pointerdown', { act: 'hand', p: D, i }, { pointerType: 'mouse', pointerId: 2, isPrimary: true });
+  const clicked = ui.click({ act: 'hand', p: D, i });
+  assert.match(bar(clicked), /class="barnotice"[\s\S]*?Needs 4 mana; you have 2\./, 'the reason is a line IN the action bar');
+  assert.doesNotMatch(clicked, /class="toast"|costtoast/, 'and nothing toasts');
+  // a cost that did nothing arrives the same way
+  const withLoss = ui.update(view, legal, { events: [{ type: 'info', msg: 'Luminous Arc: it has no legal target — nothing happens.', data: {} }] });
+  assert.match(bar(ui.key('s') || withLoss), /class="barnotice"/, 'a cost notice is on the line too');
+  // it waits: every timer run out, and a repaint under the same question, keep it…
+  ui.tick();
+  assert.match(bar(ui.update(view, legal)), /class="barnotice"/, 'no clock takes it away');
+  // …and the player's next action puts it away
+  ui.click({ btn: 'pass' });
+  assert.ok(ui.actions().length > 0, 'the pass was sent');
+  assert.doesNotMatch(bar(ui.update(view, legal)), /class="barnotice"/, 'gone with the player\'s next action');
 });

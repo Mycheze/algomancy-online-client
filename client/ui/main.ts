@@ -61,7 +61,7 @@ import { EFFECT_ART_TOP, effectFace, lostTargetsForRow, roleSentence, stackBadge
 import { doesLine, lastKnown, noteTable, tableMemory } from './doesline.ts';
 import { glimpseHeadline, glimpseNotice, revealRecords, revealView } from './reveal.ts';
 import { dismissNotice, installRevealsLayer, isRevealsOpen, loadReveals, noticeReveal, openReveals, recordReveals, revealCount } from './reveallog.ts';
-import { costToastHtml, nextCostToastWake, queueCostToasts, type LiveCostToast } from './toast.ts';
+import { barNoticeHtml, COST_TOAST_HEAD, costToasts, foldNotices, type BarNotice } from './toast.ts';
 import type { SpotTarget } from './fslot.ts';
 import { entityTextBox, iconizeText, predictionOf, printedTextBox, textBoxFor, txtIcon, attrReminders} from './cardtext.ts';
 import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
@@ -971,7 +971,7 @@ class NetBackend implements Backend {
         const msg = m.msg ?? 'error';
         this.log.push(`(the client answered for you and the server declined: ${msg})`);
         this.logTypes.push(undefined);
-        showToast(`the client answered for you and the server declined: ${msg}`);
+        noteBar(`the client answered for you and the server declined: ${msg}`);   // the log line is above
         render(); return;
       }
       uiError = m.msg ?? 'error'; playCue('error'); render(); return;
@@ -1685,8 +1685,15 @@ function tokenLossBarHtml(): string {
  * sentences by name, deliberately: a twentieth added next month must surface
  * without anybody editing this file.
  */
-let costToastsUp: LiveCostToast[] = [];
-let costToastTimer: ReturnType<typeof setTimeout> | null = null;
+/** THE ACTION BAR'S NOTICE LINE (owner, 2026-11-03: the corner toast goes —
+ * "It's a weird notification that pops up in a weird spot ... It then goes
+ * away quickly"). What a resolution cost somebody, and the client's own "why
+ * not" sentences (noteBar), wait on a line inside the action bar until the
+ * player's next action (act) or the bar's next prompt (barNoticeLine) — or a
+ * click on the line. `barNoticesUnder` is the prompt the line was first drawn
+ * under; null until it has been drawn. test/1060 §5. */
+let barNotices: BarNotice[] = [];
+let barNoticesUnder: string | null = null;
 
 /** note whatever this batch cost the player. Called from the two places
  * `absorbTokenLoss` is, and for the same reason — on the NET side that is
@@ -1694,19 +1701,37 @@ let costToastTimer: ReturnType<typeof setTimeout> | null = null;
  * when it arrives, so a held batch's toasts land with the board that explains
  * them and never ahead of it. */
 function absorbCostToasts(events: readonly EngineEvent[]): void {
-  costToastsUp = queueCostToasts(costToastsUp, events, Date.now());
-  scheduleCostToastWake();
+  const add = costToasts(events).map(t => ({ ...t, head: COST_TOAST_HEAD }));
+  if (!add.length) return;
+  barNotices = foldNotices(barNotices, add);
+  barNoticesUnder = null;
 }
 
-/** one scheduled repaint, at the moment the strip next changes. Without it a
- * notice about one resolution can sit over the board for minutes purely
- * because nothing else happened to repaint, which is not good enough for a
- * row that appears several at a time. */
-function scheduleCostToastWake(): void {
-  if (costToastTimer !== null) { clearTimeout(costToastTimer); costToastTimer = null; }
-  const at = nextCostToastWake(costToastsUp, Date.now());
-  if (at === null) return;
-  costToastTimer = setTimeout(() => { costToastTimer = null; render(); }, Math.max(16, at - Date.now()));
+/** a sentence of the client's own for the notice line — what the corner toast
+ * used to say. `log` also files it in the battle log, for the ones that are
+ * something that HAPPENED (a dark card's reason is asked for, not an event). */
+function noteBar(msg: string, opts: { log?: boolean } = {}): void {
+  barNotices = foldNotices(barNotices, [{ key: `client ${msg}`, msg, n: 1 }]);
+  barNoticesUnder = null;
+  if (opts.log && NET) { NET.log.push(`(${msg})`); NET.logTypes.push(undefined); }
+}
+
+/** the line, for the action bar: drawn under the prompt it arrived with, and
+ * gone the first time the bar asks something else (digits aside — a live
+ * count in the prompt is not a new question) */
+/** the bar's prompt, with the notice line above it (the prompt stays the
+ * bar's LAST child, the one that fills its fixed height) */
+function promptWithNotice(): string {
+  const prompt = promptHtml();
+  return `${barNoticeLine(prompt)}${prompt}`;
+}
+
+function barNoticeLine(prompt: string): string {
+  if (!barNotices.length) return '';
+  const under = prompt.replace(/\d+/g, '#');
+  if (barNoticesUnder === null) barNoticesUnder = under;
+  else if (barNoticesUnder !== under) { barNotices = []; barNoticesUnder = null; return ''; }
+  return barNoticeHtml(barNotices);
 }
 
 /** the pending repaint that ends the current beat */
@@ -1717,7 +1742,7 @@ let flashTimer: ReturnType<typeof setTimeout> | null = null;
  * not something somebody just did, and must not replay old beats. */
 function flashReset(): void {
   tokenLossUp = null;   // CR D7.4a: a resync is not somebody losing their tokens
-  costToastsUp = [];    // CR D7.4: nor anything a resolution cost somebody
+  barNotices = []; barNoticesUnder = null;   // CR D7.4: nor anything a resolution cost somebody
   // (the reveal notice is not dropped here: it waits for the viewer, report #224)
   flashQueue = [];
   beatQueue = [];       // CR D5.4: and the narrative beats holding back log lines
@@ -2310,6 +2335,7 @@ function act(a: Action): void {
   // CR 703.2a / CT-253: Ctrl held or the hold toggle on — the action asks to
   // keep priority. Here, at the one door, so no route can send without it.
   if (holdPriorityOn() && h.state.phase === 'battle') a = withHoldPriority(a);
+  barNotices = []; barNoticesUnder = null;   // the player's next action puts the notice line away
   NET.do(a);
   uiError = '';
 }
@@ -3098,13 +3124,6 @@ setInterval(() => {
 // layer of its own beside #app now (installReport, at boot), with its own
 // clicks and its own Escape; the rail button below is the only thing left
 // here, and all it does is open that layer with the room and the seat.
-let toastMsg: string | null = null;
-let toastTimer = 0;
-function showToast(msg: string): void {
-  toastMsg = msg;
-  clearTimeout(toastTimer);
-  toastTimer = window.setTimeout(() => { toastMsg = null; render(); }, 4000);
-}
 /** #5 / #85: the value(s) a card reading a hidden battle ledger would use if it
  * resolved right now. Both hooks are pure per-card queries the engine never
  * calls — see engine/src/cards/dsl.ts.
@@ -7852,7 +7871,7 @@ function ensureBlockKeys(): void {
   ui.backOnly = pruneBackOnly(ui.columns, ui.backOnly);
   if (r.dropped.length) {
     const n = r.dropped.length;
-    showToast(`the line closed ranks — the column you were blocking is gone, so ${n === 1 ? 'your blocker is' : `your ${n} blockers are`} free to place again`);
+    noteBar(`the line closed ranks — the column you were blocking is gone, so ${n === 1 ? 'your blocker is' : `your ${n} blockers are`} free to place again`, { log: true });
     playCue('error');
   }
 }
@@ -7929,7 +7948,7 @@ function renderNow(): boolean {
     <div class="actionbar">
       ${pickShowHtml()}
       ${tokenLossBarHtml()}
-      ${promptHtml()}
+      ${promptWithNotice()}
     </div>
     ${toolbarHtml({ canUndo, autoPref, bluffPref, fullPref })}
     ${NET ? `<div class="handdock${handDockTucked() ? ' tucked' : ''}"><div class="zonelabel">${handLabel('Your hand', h.state.players[botSeat]!.hand.length)}${handDockTucked() ? ' — tucked away while you choose; <span class="mouseonly">hover</span><span class="touchonly">tap here</span> to look' : ''}</div>
@@ -7951,8 +7970,7 @@ function renderNow(): boolean {
     ${pendingTrio ? `<div class="overlay trioover">${revealHtml(pendingTrio)}</div>` : ''}
     ${postGame && !postGameHidden ? postGameHtml(postGameView(postGame)) : ''}
     ${glimpseNoticeHtml()}
-    ${costToastHtml(costToastsUp, Date.now())}
-    ${toastMsg ? `<div class="toast">${esc(toastMsg)}</div>` : ''}`;
+`;
   restoreViewport(snap);
   // [142]: …and the hover, which is the other thing every paint used to
   // throw away. After restoreViewport, because "did the card move?" is a
@@ -10465,7 +10483,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   glimpseclose: () => { dismissNotice(); },
   // CR D7.4a: the tokens are gone either way, so this only puts the notice away
   tokenlossclose: () => { tokenLossUp = null; },
-  costtoastclose: () => { costToastsUp = []; },
+  noticeclose: () => { barNotices = []; barNoticesUnder = null; },
   autopasstoggle: () => {
     localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
     cancelAutoPass();
@@ -11304,7 +11322,7 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: boo
   // a drag onto the table plays; a drag onto a host is the mod (see dragCardPlan)
   if (!opts.noMods) items.push(...modMenuItems(p, 'hand', i, name, modActions));
   // CT-371: a dark card's click used to do nothing at all; it says why
-  if (!items.length) { const why = handWhy(p, i); if (why) showToast(why); }
+  if (!items.length) { const why = handWhy(p, i); if (why) noteBar(why); }
   offer(items, e);
 }
 
@@ -12254,7 +12272,7 @@ if (params.has('room') && params.get('room')!.trim()) {
   // page. Everything from here on is the ordinary NET path, bot hidden and all.
   const solo = learn.startSolo(params.get('el'), {
     fresh: params.get('new') === '1',
-    onBotStuck: why => showToast(`the Tutorial Bot got stuck: ${why}`),
+    onBotStuck: why => noteBar(`the Tutorial Bot got stuck: ${why}`, { log: true }),
   });
   // a reload continues this game rather than dealing another
   if (params.get('new') === '1') history.replaceState(null, '', `?learn=play&el=${solo.progress.element}`);
@@ -12265,7 +12283,7 @@ if (params.has('room') && params.get('room')!.trim()) {
 } else if (params.get('challenge') === 'play') {
   // docs/21 — a weekly challenge run: the Learn to Play room with the
   // challenge's deal and the dummy. No saved run (a stale link): the page.
-  const run = chrun.startRun(params.get('id'), { onBotStuck: why => showToast(`the dummy got stuck: ${why}`) });
+  const run = chrun.startRun(params.get('id'), { onBotStuck: why => noteBar(`the dummy got stuck: ${why}`, { log: true }) });
   if (!run) {
     location.search = '?challenge';
   } else {

@@ -1,48 +1,30 @@
-/* ═══ CR D7.4 / CT-142 — the cost-toast tier. Agent T.
-   Self-contained: append verbatim to the end of client/ui/style.css.
-   Every custom property it uses (--panel, --line, --text, --dim, --danger) is
-   already declared at the top of that file; nothing here is redefined and
-   nothing above it is touched.
+/* ═══ CR D7.4 / CT-142 — THE NOTICE LINE (ui/toast.ts barNoticeHtml).
 
-   THE SHARED CHANNEL for "you paid for that and it did not happen": a spell
-   that fizzled, a cost that could not be paid so the effect was skipped, a
-   trigger a tax prevented, a discount that expired unused, a column that dealt
-   no damage. None of them changes anything on the board — that is what makes
-   them invisible — so until now the log was the only place they existed, which
-   is what CR D7.4 forbids.
+   It was a toast tier in the bottom-left corner: "you paid for that and it did
+   not happen" (a spell with no legal target, a cost that could not be paid, a
+   discount that went unused), up for a second and a half. The owner,
+   2026-11-03: "It's a weird notification that pops up in a weird spot and
+   nothing else does it. It then goes away quickly." So it is a line INSIDE the
+   action bar now, above the prompt, where the player is already looking, and it
+   waits for the player's next action or the bar's next question. The client's
+   own "why not" sentences (a dark hand card's reason, the line closing ranks)
+   ride it too; the corner toast those used is gone with it.
 
-   WHERE IT SITS. Bottom LEFT, the one free corner: .glimpsenotice owns bottom
-   right, .toast owns bottom centre, and .stackboard.live floats against the
-   rail. It lifts above the hand dock in net mode exactly as .toast does, with
-   the same 178px, so the two can never sit on top of the dock or each other.
-
-   WHAT IT LOOKS LIKE. Quieter than the .promptbar the CR D7.4a token loss earned
-   and quieter than .glimpsenotice: those are things to act on or to study, and
-   these are things you are allowed to ignore. A muted panel, one --danger rule
-   down the left edge to say it is a loss, and no button — the whole strip is
-   the dismiss target, because there is nothing here to choose. */
-.costtoasts { position: fixed; left: 16px; bottom: 16px; z-index: 61;
-  display: flex; flex-direction: column; gap: 5px; align-items: flex-start;
-  max-width: min(42vw, 460px); cursor: pointer; }
-.netmode .costtoasts { bottom: 178px; }   /* above the hand dock, like .toast */
-
-.costtoast { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap;
-  background: var(--panel); border: 1px solid var(--line);
-  border-left: 3px solid var(--danger); border-radius: 7px;
-  padding: 6px 10px; font-size: 12px; line-height: 1.35;
-  box-shadow: 0 5px 20px rgba(0,0,0,.5);
-  animation: costtoastin .18s ease-out; }
-.costtoasthead { color: var(--danger); font-weight: 700; font-size: 11px;
+   WHAT IT LOOKS LIKE: "that did not happen", told apart from every prompt
+   state — the danger wash with a red rule down the left, the label in red, the
+   sentence in the panel's text colour (red on the wash 4.7:1). One line; the
+   whole line is the dismiss target, since there is nothing here to choose. */
+.barnotice { flex: none; display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap;
+  background: var(--color-danger-bg); border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent);
+  border-left: 3px solid var(--danger); border-radius: 6px;
+  padding: 3px 10px; font-size: 12px; line-height: 1.35; color: var(--text); cursor: pointer; }
+.barnoticehead { color: var(--danger); font-weight: 700; font-size: 11px;
   letter-spacing: .04em; white-space: nowrap; }
-.costtoastmsg { color: var(--text); }
-/* how many identical sentences folded into this row */
-.costtoastn { color: var(--dim); font-style: normal; font-weight: 700; }
-/* the overflow line: the rows past COST_TOAST_MAX are counted, never dropped,
-   and it names the surface that still has all of them */
-.costtoastmore { color: var(--dim); font-size: 11px; padding-left: 4px; }
-
-@keyframes costtoastin { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .costtoast { animation: none; } }
+.barnoticemsg { color: var(--text); }
+/* how many identical sentences folded into it */
+.barnoticen { color: var(--dim); font-style: normal; font-weight: 700; }
+/* the earlier notices it stands in front of: counted, never dropped in silence */
+.barnoticemore { color: var(--dim); font-size: 11px; }
 
 /* ═══ CR D7.2b, D6.6d / CT-162 + CT-169 ══════════════════════════════════════════
 

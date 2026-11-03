@@ -73,10 +73,8 @@ import { effectByKey, type EffectCtx, type ResolvedTarget } from '../../engine/s
 import { toDeployment } from '../../engine/test/util.ts';
 import { client } from './ui-driver.ts';
 import {
-  ABSENCE, COSTLY, COST_TOAST_HEAD, COST_TOAST_MAX, costToast, costToastHtml, costToasts,
-  nextCostToastWake, queueCostToasts, visibleCostToasts, ZONE_CHANGE,
+  ABSENCE, COSTLY, COST_TOAST_HEAD, barNoticeHtml, costToast, costToasts, foldNotices, ZONE_CHANGE,
 } from '../toast.ts';
-import { HOLD_MS, STAGGER_MS } from '../flash.ts';
 import type { EngineEvent, EventType, GameState } from '../../engine/src/types.ts';
 import { readStyles } from './read-styles.ts';
 
@@ -450,67 +448,51 @@ test('[CR D7.4] identical sentences in one batch coalesce into one row with a co
   assert.equal(got[0]!.msg, one.msg, 'and the engine sentence is carried verbatim');
 });
 
-test('[CR D7.4] distinct losses stack, staggered, and the queue drops what has expired', () => {
+/* Owner 2026-11-03: the board toast goes; notices live in the action bar. The
+ * corner strip, its expiry clock and its 4-row cap went with it (ui/toast.ts
+ * header): a notice now waits on one line of the bar until the player's next
+ * action or the bar's next prompt. These are that line's rules. */
+
+test('[CR D7.4] distinct losses fold into the line in order, the newest last, and nothing expires', () => {
   const evs: EngineEvent[] = [1, 2, 3].map(i => ({
     type: 'info', msg: `Ann: the [${i} Fire] cost cannot be paid — that effect is skipped.`, data: {},
   }));
-  const q = queueCostToasts([], evs, 1000);
-  assert.equal(q.length, 3, 'three different losses are three rows');
-  // the dwell is flash.ts constants, never a number invented here — so the
-  // toasts move with the client tempo instead of fighting the beat queue
-  assert.deepEqual(q.map(t => t.until),
-    [1, 2, 3].map(i => 1000 + HOLD_MS + i * STAGGER_MS),
-    'each new row is staggered by one beat, so a burst does not arrive and vanish as a block');
-
-  const later = queueCostToasts(q, [], q[0]!.until + 1);
-  assert.equal(later.length, 2, 'the expired row is gone from the queue, not merely hidden');
-  assert.equal(queueCostToasts(q, [], q[2]!.until + 1).length, 0, 'and eventually all of them');
+  const q = foldNotices([], costToasts(evs));
+  assert.equal(q.length, 3, 'three different losses are three notices');
+  assert.deepEqual(q.map(t => t.msg), evs.map(e => e.msg), 'in the order they happened');
+  assert.equal(Object.keys(q[0]!).includes('until'), false, 'no clock: the line is put away by the player, not by time');
 });
 
-test('[CR D7.4] a repeat of a row that is still up refreshes it instead of duplicating it', () => {
+test('[CR D7.4] a repeat of a notice on the line counts up and becomes the newest instead of duplicating it', () => {
   const ev: EngineEvent = { type: 'info', msg: 'Ann: the [2 Fire] cost cannot be paid — that effect is skipped.', data: {} };
-  const first = queueCostToasts([], [ev], 1000);
-  const again = queueCostToasts(first, [ev], 1500);
-  assert.equal(again.length, 1, 'the same loss twice is one row');
-  assert.equal(again[0]!.n, 2, 'with two on it');
-  assert.ok(again[0]!.until > first[0]!.until, 'and a restarted clock, because it just happened again');
+  const other: EngineEvent = { type: 'info', msg: 'Bo: there is no legal target for that — it does nothing.', data: {} };
+  const first = foldNotices([], costToasts([ev, other]));
+  const again = foldNotices(first, costToasts([ev]));
+  assert.equal(again.length, 2, 'the same loss twice is one notice');
+  assert.equal(again[1]!.msg, ev.msg, 'and it moves to the end, the one drawn');
+  assert.equal(again[1]!.n, 2, 'with two on it');
 });
 
-test('[CR D7.4] the overflow is counted and pointed at the log, never dropped in silence', () => {
-  const evs: EngineEvent[] = Array.from({ length: COST_TOAST_MAX + 3 }, (_, i) => ({
+test('[CR D7.4] the line draws the newest and counts the rest, never dropping them in silence', () => {
+  const evs: EngineEvent[] = Array.from({ length: 4 }, (_, i) => ({
     type: 'info' as EventType, msg: `Ann: the [${i} Fire] cost cannot be paid — that effect is skipped.`, data: {},
   }));
-  const q = queueCostToasts([], evs, 1000);
-  const { shown, more } = visibleCostToasts(q, 1000);
-  assert.equal(shown.length, COST_TOAST_MAX, 'the strip is capped');
-  assert.equal(more, 3, 'and the rest are counted');
-  assert.equal(shown.length + more, q.length, 'nothing is lost between the queue and the screen');
-  assert.match(costToastHtml(q, 1000), /costtoastmore">\+3 more/, 'and the count is drawn');
-  // newest wins the space: a burst is read from the bottom, and the row that
-  // just landed is the one the player is most likely to still be able to act on
-  assert.equal(shown[shown.length - 1]!.key, q[q.length - 1]!.key);
-});
-
-test('[CR D7.4] the strip schedules its own exit', () => {
-  const q = queueCostToasts([], [{ type: 'info', msg: 'Ann: the [2 Fire] cost cannot be paid — that effect is skipped.', data: {} }], 1000);
-  assert.equal(nextCostToastWake(q, 1000), q[0]!.until, 'there is a moment to repaint at');
-  assert.equal(nextCostToastWake(q, q[0]!.until), null, 'and none once the strip is empty');
-  assert.equal(nextCostToastWake([], 1000), null);
+  const html = barNoticeHtml(foldNotices([], costToasts(evs).map(t => ({ ...t, head: COST_TOAST_HEAD }))));
+  assert.match(html, /the \[3 Fire\] cost cannot be paid/, 'the newest is the one on the line');
+  assert.match(html, /barnoticemore">\+3 earlier/, 'and the earlier ones are counted');
 });
 
 test('[CR D7.4] the tier wears one label, because a per-case label map is a typed list', () => {
-  const html = costToastHtml(queueCostToasts([], [
-    { type: 'info', msg: 'Ann: the [2 Fire] cost cannot be paid — that effect is skipped.', data: {} },
-    { type: 'info', msg: 'Bo: there is no legal target for that — it does nothing.', data: {} },
-  ], 1000), 1000);
-  assert.equal(html.split(COST_TOAST_HEAD).length - 1, 2,
-    'both rows carry the shared head — a twentieth announcement must arrive already labelled');
-  assert.match(html, /the \[2 Fire\] cost cannot be paid/, 'and the engine sentence under it');
-  assert.equal(costToastHtml([], 1000), '', 'and an empty tier draws nothing at all');
+  const line = (evs: EngineEvent[]): string =>
+    barNoticeHtml(foldNotices([], costToasts(evs).map(t => ({ ...t, head: COST_TOAST_HEAD }))));
+  for (const msg of ['Ann: the [2 Fire] cost cannot be paid — that effect is skipped.',
+    'Bo: there is no legal target for that — it does nothing.']) {
+    const html = line([{ type: 'info', msg, data: {} }]);
+    assert.equal(html.split(COST_TOAST_HEAD).length - 1, 1, 'every cost notice carries the shared head — a twentieth announcement must arrive already labelled');
+  }
+  assert.equal(barNoticeHtml([]), '', 'and an empty line draws nothing at all');
   // the sentences reach the page escaped, like everything else this client draws
-  const nasty = costToastHtml(queueCostToasts([], [
-    { type: 'info', msg: '<b>x</b>: the [2 Fire] cost cannot be paid — skipped.', data: {} },
-  ], 1000), 1000);
+  const nasty = line([{ type: 'info', msg: '<b>x</b>: the [2 Fire] cost cannot be paid — skipped.', data: {} }]);
   assert.equal(/<b>x<\/b>/.test(nasty), false, 'card names are escaped');
 });
 
@@ -570,15 +552,18 @@ test('[CR D7.4] the client puts a costly absence on the screen and not only in t
     type: 'info', msg: 'Luminous Arc: it has no legal target — nothing happens.', data: {},
   };
   const before = show(h.state);
-  assert.equal(/costtoast/.test(before), false, 'nothing is claimed before the batch arrives');
+  assert.equal(/barnotice/.test(before), false, 'nothing is claimed before the batch arrives');
 
   const after = show(h.state, [loss]);
-  assert.match(after, /class="costtoasts"/, 'the tier is drawn');
-  assert.match(after, /class="costtoasthead">⚠ this did nothing<\/b>/, 'wearing the shared label');
-  assert.match(after, /class="costtoastmsg">Luminous Arc: it has no legal target — nothing happens\./,
+  const bar = after.slice(after.indexOf('<div class="actionbar">'));
+  assert.match(bar, /^<div class="actionbar">[\s\S]*?class="barnotice"/, 'the notice is drawn, inside the action bar');
+  assert.match(after, /class="barnoticehead">⚠ this did nothing<\/b>/, 'wearing the shared label');
+  assert.match(after, /class="barnoticemsg">Luminous Arc: it has no legal target — nothing happens\./,
     'and carrying the engine own sentence, verbatim, beside it');
-  assert.ok(ui.has({ btn: 'costtoastclose' }), 'and a way to put it away');
-  assert.equal(/costtoast/.test(ui.click({ btn: 'costtoastclose' })), false, 'dismissed');
+  assert.equal(/costtoast/.test(after), false, 'and no corner toast (owner 2026-11-03)');
+  assert.match(show(h.state), /class="barnotice"/, 'it waits: a repaint under the same prompt keeps it');
+  assert.ok(ui.has({ btn: 'noticeclose' }), 'and a way to put it away');
+  assert.equal(/barnotice/.test(ui.click({ btn: 'noticeclose' })), false, 'dismissed');
 });
 
 test('[CR D7.4] an ordinary batch puts no toast on the screen', () => {
@@ -590,21 +575,18 @@ test('[CR D7.4] an ordinary batch puts no toast on the screen', () => {
     { type: 'died', msg: 'Grox dies and nothing is skipped.', data: { unit: 4, seat: 0 } },
     { type: 'info', msg: 'Ann sent no counterattackers — no battle here.', data: {} },
   ]);
-  assert.equal(/costtoast/.test(quiet), false,
+  assert.equal(/barnotice|costtoast/.test(quiet), false,
     'a plain absence and a death are not this channel');
 });
 
-test('[CR D7.4] the tier has a stylesheet of its own', () => {
-  // the strip is position: fixed and has to sit in the one free corner —
-  // .glimpsenotice owns bottom right and .toast owns bottom centre. Without
-  // this it renders in the document flow, which is worse than not rendering.
+test('[CR D7.4] the notice line has a stylesheet of its own, and the corner strip has none', () => {
+  // owner 2026-11-03: the board toast goes; notices live in the action bar
   const css = readStyles();
-  assert.match(css, /\.costtoasts \{[^}]*position: fixed/, 'the strip is placed');
-  assert.match(css, /\.netmode \.costtoasts \{[^}]*bottom: 178px/,
-    'and lifts above the hand dock in net mode, like every other fixed notice');
-  assert.match(css, /\.costtoasthead \{/, 'the shared label has a treatment');
-  assert.match(css, /prefers-reduced-motion[\s\S]{0,120}\.costtoast \{ animation: none/,
-    'and it respects the motion preference, like .glimpsenotice');
+  assert.match(css, /\.barnotice \{[^}]*border-left: 3px solid var\(--danger\)/, 'the line wears the loss rule');
+  assert.match(css, /\.barnoticehead \{/, 'the shared label has a treatment');
+  assert.doesNotMatch(css, /\.costtoasts? \{/, 'the corner strip is gone');
+  assert.match(css, /\.actionbar:not\(:has\(\.promptbar, \.barnotice\)\) \{ display: none; \}/,
+    'a notice alone still shows the bar it lives in');
 });
 
 test('[CR D7.4] the log still carries every one of them', () => {

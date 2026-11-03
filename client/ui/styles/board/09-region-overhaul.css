@@ -22,7 +22,7 @@
    collapses rather than leaving an empty gap above the hand. */
 .actionbar { display: flex; flex-direction: column; gap: 6px; max-height: 50vh; overflow-y: auto; }
 .actionbar .promptbar { margin-bottom: 0; }
-.actionbar:not(:has(.promptbar)) { display: none; }
+.actionbar:not(:has(.promptbar, .barnotice)) { display: none; }
 
 /* A3: missing art never shows a broken-image glyph */
 .artfallback { display: none; }
