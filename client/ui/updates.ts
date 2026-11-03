@@ -44,6 +44,10 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-03', kind: 'fix', text: 'The Report button no longer covers the bottom of a page or a button like the League page’s “Suggest a time”: pages now leave room for it.' },
+  { date: '2026-11-03', kind: 'fix', text: 'League page: on a touch screen the availability help says to tap the hours, and on a phone the “Suggest a time” box fits the screen.' },
+  { date: '2026-11-03', kind: 'fix', text: 'Your profile now says when something did not work: the Friends list failing to load (with a Try again button), picking a favourite element, unlinking Discord, or a ladder that will not load.' },
+  { date: '2026-11-03', kind: 'change', text: 'Tidier buttons on the Find a game screen, and on the signed-out home page the Challenge button no longer drops onto a row of its own.' },
   { date: '2026-11-03', kind: 'fix', text: 'Search boxes and form fields that showed up as white boxes now match the dark theme, helper text is a quieter grey everywhere, and keyboard focus shows a clear ring.' },
   { date: '2026-11-03', kind: 'new', text: 'Competitive matches, best of 1 or 3: a sideboard of up to 7 to swap between games (saved swaps are one tap), 45 minutes each for the whole match, and players plan and deploy in turn. A match can be paused between games.' },
   { date: '2026-11-03', kind: 'fix', text: 'League sign-up on a phone: swiping over the hours grid scrolls the page again, and a tap marks or clears one hour. The grid also works from the keyboard: Tab to it, move with the arrow keys, press Space to mark.' },
