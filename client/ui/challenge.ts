@@ -52,6 +52,7 @@ import {
 export {
   BOARD_LABEL, DEBT_RULE, type BoardReply, type BoardRow, type ChallengeReply, type ChallengeView, type MyBest,
 } from './pages/challenge.ts';
+import { paintFrame } from './pages/frame.ts';
 
 // ── module state ──────────────────────────────────────────────────────
 
@@ -257,10 +258,10 @@ function paint(): void {
   // the tabletop is up over this page: a commit there must not paint this
   // page over it (and it never paints under a drag that way either)
   if (tt.screen()) return;
-  $app.classList.remove('board');
-  $app.innerHTML = challengePageHtml(challengePageView({
+  // the app frame (pages/frame.ts): both columns keep their scroll over a repaint
+  paintFrame($app, challengePageHtml(challengePageView({
     data, hint, loading, msg, skew, tab, pastOpen, arming, boards, sending, building, list, importing, undo, decks: importable,
-  }));
+  })));
 }
 
 function setList(next: string[], replacing?: string): void {

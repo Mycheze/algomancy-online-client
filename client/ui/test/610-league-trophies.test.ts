@@ -113,6 +113,9 @@ test('§2 the closed season standings mark the champion and the finalist with th
   await settle();
   ui.click({ btn: 'nav-league' });
   await settle(); await settle();
+  // the standings are the page's Standings tab since the app frame (2026-11-04)
+  ui.click({ btn: 'lg-section', v: 'standings' });
+  await settle();
   const html = ui.html();
   // a ui-panel title since the design-system round (2026-11-03)
   const table = /<h3[^>]*>Standings<\/h3>([\s\S]*?)<\/table>/.exec(html)?.[1] ?? '';

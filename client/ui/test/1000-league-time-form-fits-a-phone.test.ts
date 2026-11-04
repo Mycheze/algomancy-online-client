@@ -47,6 +47,7 @@ const view = (timeOpen: string | null): LeagueView => ({
   loading: false, msg: '', draft: { tz: 'UTC', grid: defaultGrid(), contact: 'me' }, dirty: false, busy: false,
   arming: null, gridFocus: null, timeOpen, preview: null, now: NOW, tz: 'UTC', browserTz: 'UTC', zones: ['UTC'],
   origin: 'https://example.test', stampAt: NOW, chips: { champion: '', finalist: '' },
+  section: 'season', chrome: { signedIn: true, alerts: 0 },
 });
 
 test('1000 §1 the open form sits in the last cell of its row, in a table.lgmatches', () => {

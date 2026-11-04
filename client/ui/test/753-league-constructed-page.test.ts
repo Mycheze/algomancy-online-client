@@ -109,8 +109,9 @@ test('753 §1 ⭐ a constructed season says casual constructed — banner, page,
   press(r.lg, { btn: 'lg-open' });
   await settle();
   const page = text(r.app.innerHTML);
-  assert.match(page, /A month of casual constructed/, '⭐ the page subtitle says it');
-  assert.match(page, /bring any deck, and change it every game/, 'the season card says it');
+  // the page subtitle went with the app frame (2026-11-04: the toolbar names the page);
+  // the season card is where the page says it
+  assert.match(page, /Casual constructed: bring any deck, and change it every game/, '⭐ the season card says it');
   assert.doesNotMatch(page, /December|competitive/i, 'the page does not mention December');
   const post = r.lg.postText(NOV as never, 'https://algomancy.online');
   assert.match(post, /Casual constructed: bring any deck/, 'the Discord post says it');
@@ -166,6 +167,8 @@ test('753 §3 the organizer chooses the format when creating a season', async ()
   const r = await rig({ organizer: true });
   press(r.lg, { btn: 'lg-open' });
   await settle();
+  // the organizer's card is the page's Organizer tab since the app frame (2026-11-04)
+  press(r.lg, { btn: 'lg-section', v: 'organizer' });
   assert.match(r.app.innerHTML, /id="lg-new-format"/, 'the form has a format');
   assert.match(r.app.innerHTML, /<option value="constructed">/);
   assert.match(text(r.app.innerHTML), /November 2026 League \(casual constructed\) is at/, 'the panel says which format this one is');

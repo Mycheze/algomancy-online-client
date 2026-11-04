@@ -21,10 +21,11 @@
 import * as acct from './account.ts';
 import {
   FORMATS, GRID_LEN, PRESETS, SHOW_DAYS, STAMP_STYLES, browserTz, defaultGrid, discordCode, fromWallValue,
-  hoursIn, leagueBannerHtml, leagueGlanceHtml, leagueGlanceView, leagueHtml, leagueJoinRowsHtml, leagueJoinView,
+  hoursIn, LEAGUE_SECTIONS, leagueBannerHtml, leagueGlanceHtml, leagueGlanceView, leagueHtml, leagueJoinRowsHtml, leagueJoinView,
   leagueNavHtml, leagueView, nextQuarter, presetHours, viewTz as tzOf, when as whenIn,
-  type Format, type LeagueState, type Preview, type StampStyle,
+  type Format, type LeagueSection, type LeagueState, type Preview, type StampStyle,
 } from './pages/league.ts';
+import { paintFrame } from './pages/frame.ts';
 
 export { discordCode, postText, stampPreview, STAMP_STYLES, type StampStyle } from './pages/league.ts';
 
@@ -68,6 +69,8 @@ let hintOrganizer = false;
 let howOpen: boolean | null = null;
 /** the Discord time code's instant; null = not chosen yet (the next quarter hour) */
 let stampAt: number | null = null;
+/** the part of the season showing (the toolbar's tabs); Season each time the page opens */
+let section: LeagueSection = 'season';
 /** whether the home banner is unfolded — remembered, since a player who is
  * not playing should be able to put it away. The key is spelled at each call
  * site: 267 finds the stored keys there. */
@@ -192,7 +195,7 @@ export function refresh(): void {
 }
 
 export function openLeague(season?: string): void {
-  open = true; want = season ?? null; msg = ''; preview = null; arming = null;
+  open = true; want = season ?? null; msg = ''; preview = null; arming = null; section = 'season';
   syncUrl();
   load();
   paint();
@@ -226,10 +229,10 @@ const when = (iso: string | number): string => whenIn(iso, viewTz());
 
 function paint(): void {
   if (!$app || !open) return;
-  $app.classList.remove('board');
-  $app.innerHTML = leagueHtml(leagueView({
-    data, hint, loading, msg, draft, dirty, busy, arming, gridFocus, timeOpen, preview, stampAt,
-  }));
+  // the app frame (pages/frame.ts): every region that scrolls keeps its place
+  paintFrame($app, leagueHtml(leagueView({
+    data, hint, loading, msg, draft, dirty, busy, arming, gridFocus, timeOpen, preview, stampAt, section,
+  })));
   wireGrid();
   wireStamp();
 }
@@ -439,6 +442,12 @@ export function handleButton(btn: HTMLElement): boolean {
       return true;
     case 'lg-close': close(); return true;
     case 'lg-season': want = btn.dataset['id'] ?? null; preview = null; syncUrl(); load(); return true;
+    // the toolbar's tabs: which part of the season shows (pages/league.ts LEAGUE_SECTIONS)
+    case 'lg-section': {
+      const v = btn.dataset['v'] as LeagueSection | undefined;
+      if (v && (LEAGUE_SECTIONS as readonly string[]).includes(v)) { section = v; paint(); }
+      return true;
+    }
 
     case 'lg-grid-preset': {
       const p = PRESETS.find(x => x.id === btn.dataset['preset']);

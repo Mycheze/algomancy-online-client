@@ -45,13 +45,14 @@ const DATA: ChallengeReply = { now: NOW, current: CUR, past: [OLD],
 
 function view(over: Partial<ChallengePageView> = {}): ChallengePageView {
   return { data: DATA, loading: false, msg: '', now: NOW, tab: 'fastest', pastOpen: null, arming: null,
-    boards: { cur: board(false) }, building: null, builder: null, kept: [], canSubmit: true, ...over };
+    boards: { cur: board(false) }, building: null, builder: null, kept: [], canSubmit: true, chrome: { signedIn: true, alerts: 0 }, ...over };
 }
 const btns = (html: string): Set<string> => new Set([...html.matchAll(/data-btn="([^"]+)"/g)].map(m => m[1]!));
 
 test('986 §0 positive control: there is no DOM here', () => {
   assert.equal(typeof (globalThis as Record<string, unknown>)['document'], 'undefined');
-  assert.match(challengePageHtml(view()), /^<div class="metapage chpage">/);
+  // the app frame (pages/frame.ts, 2026-11-04), its page class last (287)
+  assert.match(challengePageHtml(view()), /^<div class="ui-app-shell ui-app-shell--contained ui-app-shell--fill apppage chpage">/);
 });
 
 test('986 §1 loading, no week, a week with its board', () => {
@@ -59,7 +60,7 @@ test('986 §1 loading, no week, a week with its board', () => {
   const none = challengePageHtml(view({ data: { ...DATA, current: null } }));
   assert.match(none, /No challenge this week/);
   const html = challengePageHtml(view());
-  assert.match(html, /class="ui-page-header"/, 'the header is the page-header component');
+  assert.match(html, /class="ui-icon-button ui-icon-button--stack frameback" data-btn="ch-close"/, 'the way back, the toolbar\'s Home');
   assert.match(html, /3d 2h left · 2 entrants/, 'time left on the server clock the view carries');
   assert.match(html, /<h4 class="ui-panel__subheading">Your best<\/h4>/);
   for (const b of ['ch-close', 'ch-build', 'ch-tab', 'ch-past']) assert.ok(btns(html).has(b), b);
@@ -111,4 +112,18 @@ test('986 §5 the home card and the header button', () => {
   assert.equal(challengeHomeCardHtml(pastOnly), '', 'no card without a week on');
   assert.match(challengeNavHtml(pastOnly), /nav-challenge/, 'but the button, while a past week can be looked at');
   assert.equal(challengeNavHtml(challengeHomeView(null, NOW)), '', 'no server, nothing');
+});
+
+test('986 §6 the app frame: two columns that scroll; a past week\'s board takes this week\'s place', () => {
+  const html = challengePageHtml(view());
+  assert.match(html, /<div class="chleft" data-scroll="ch-left">/);
+  assert.match(html, /<div class="chright" data-scroll="ch-board-cur">[\s\S]*Leaderboard/);
+  const past = challengePageHtml(view({ pastOpen: 'old', boards: { cur: board(false), old: board(true) } }));
+  assert.match(past, /<div class="chright" data-scroll="ch-board-old">/, 'the past board is the one on the right, with its own scroll');
+  assert.doesNotMatch(past, /data-scroll="ch-board-cur"/, 'in place of this week\'s, not under the list');
+  assert.match(past, /<button class="chweekback" data-btn="ch-past" data-id="old">This week<\/button>/, 'and the way back to this week');
+  // the past weeks are rows of two lines, the open one marked
+  assert.match(past, /<ul class="chpast"><li class="chpastrow on">/);
+  // no week on and none open: no board column
+  assert.match(challengePageHtml(view({ data: { ...DATA, current: null } })), /<div class="chwork chnoboard">/);
 });

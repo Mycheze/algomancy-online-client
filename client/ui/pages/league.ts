@@ -20,8 +20,9 @@
  * seasonView); nothing here re-derives a standing or a pairing.
  */
 import { trophyChipHtml } from '../account.ts';
-import { pageHeader } from '../components/page-header.ts';
 import { panel, panelSubheading } from '../components/panel.ts';
+import { segmented } from '../components/segmented.ts';
+import { frameChromeView, frameHtml, type FrameChrome } from './frame.ts';
 import { table } from '../components/table.ts';
 import { esc } from '../util.ts';
 import { wallClock, zonedEpoch } from '../zonetime.ts';
@@ -126,12 +127,6 @@ const COMPETITIVE_LINE = 'Competitive Constructed: every match is a best of thre
 const matchLine = (s: SeasonView): string => (competitive(s) ? COMPETITIVE_LINE : constructed(s)
   ? 'Casual constructed: bring any deck, and change it every game if you like.'
   : 'Every match is one live draft with random elements and a random first player.');
-/** the page's subtitle */
-const pageHint = (s: SeasonView | null): string => (competitive(s)
-  ? 'A month of Competitive Constructed: best-of-three matches every week, matched on when you can play, then a final.'
-  : constructed(s)
-  ? 'A month of casual constructed: opponents every week, matched on when you can play, then a final.'
-  : 'A month of live drafts: opponents every week, matched on when you can play, then a final.');
 /** the format in a few words, for the organizer */
 const formatWords = (f: Format | undefined): string =>
   (f === 'competitive' ? 'Competitive Constructed' : f === 'constructed' ? 'casual constructed' : 'live draft');
@@ -603,32 +598,92 @@ export interface LeagueView {
   stampAt: number;
   /** a closed season's two trophy chips (account.ts trophyChipHtml), '' before */
   chips: { champion: string; finalist: string };
+  /** which part of the season is showing (the toolbar's tabs) */
+  section: LeagueSection;
+  /** the toolbar's account and bell (pages/frame.ts) */
+  chrome: FrameChrome;
+}
+
+/* ── the page in the app frame (2026-11-04, docs/24) ─────────────────────
+   One window: the seasons in a rail on the left (each with its phase and its
+   own Play buttons — the season tabs and the other seasons' banners in one
+   list), the season's parts as tabs in the toolbar, and the part showing
+   scrolling inside itself. */
+
+export const LEAGUE_SECTIONS = ['season', 'avail', 'standings', 'stamp', 'organizer'] as const;
+export type LeagueSection = typeof LEAGUE_SECTIONS[number];
+const SECTION_LABEL: Record<LeagueSection, string> = {
+  season: 'Season', avail: 'Availability', standings: 'Standings', stamp: 'Time code', organizer: 'Organizer',
+};
+
+/** the parts this viewer has: Availability signed in, Standings with a season, Organizer for an organizer */
+export function leagueSections(v: Pick<LeagueView, 'data'>): LeagueSection[] {
+  const d = v.data;
+  return LEAGUE_SECTIONS.filter(k => k === 'season' || k === 'stamp'
+    || (k === 'avail' && !!d?.signedIn)
+    || (k === 'standings' && !!d?.season)
+    || (k === 'organizer' && !!d?.organizer));
+}
+
+/** server/league.ts phaseLabel, for a season the answer has only the bare numbers of */
+function phaseText(x: { phase: number; weeks: number }): string {
+  if (x.phase < 0) return 'Announced';
+  if (x.phase === 0) return 'Sign-up week';
+  if (x.phase <= x.weeks) return `Week ${x.phase} of ${x.weeks}`;
+  if (x.phase === x.weeks + 1) return 'The final';
+  return 'Finished';
+}
+
+/** The seasons, one row each: the row opens it; an open match of yours has its Play */
+function railHtml(v: LeagueView): string {
+  const d = v.data;
+  if (!d) return '';
+  const cur = d.season;
+  const list = d.seasons.length ? d.seasons : cur ? [{ id: cur.id, name: cur.name, phase: cur.phase, weeks: cur.weeks, hidden: cur.hidden }] : [];
+  if (list.length <= 1 && !(d.others ?? []).length) return '';
+  return `<nav class="lgrail" aria-label="Seasons" data-scroll="lg-rail">${list.map(x => {
+    const full = cur?.id === x.id ? cur : (d.others ?? []).find(o => o.id === x.id) ?? null;
+    // the season showing has its Play buttons in Your matches, beside the rail
+    const mine = cur?.id === x.id ? [] : full?.me?.matches.filter(m => m.playable) ?? [];
+    const fin = full && full.phase === full.weeks + 1 && !mine.length ? full.matches.find(m => m.final) : undefined;
+    const next = full ? (fin ? pairingText(fin) : esc(nextText(full, v.tz))) : '';
+    return `<div class="lgrailrow${cur?.id === x.id ? ' on' : ''}">
+      <button class="lgseasonbtn" data-btn="lg-season" data-id="${esc(x.id)}"${cur?.id === x.id ? ' aria-current="true"' : ''}>
+        <span class="lgrailname">${esc(x.name)}${x.hidden ? ' 🔒' : ''}</span>
+        <span class="lgbphase">${esc(full?.label ?? phaseText(x))}</span>
+        ${next ? `<span class="lgrailnext">${next}</span>` : ''}
+      </button>
+      ${mine.map(m => `<div class="lgrailplay"><span>vs <b>${esc(m.opponent.name)}</b></span>
+        <button class="primary" data-btn="lg-play" data-season="${esc(full!.id)}" data-match="${esc(m.id)}">Play</button></div>`).join('')}
+    </div>`;
+  }).join('')}</nav>`;
 }
 
 export function leagueHtml(v: LeagueView): string {
   const { data, msg, loading } = v;
   const s = data?.season ?? null;
-  return `<div class="metapage lgpage">
-    ${pageHeader({ title: '🏅 League', subtitle: pageHint(s), subtitleAs: 'p',
-      back: { dataBtn: 'lg-close', label: 'Back', variant: 'secondary' } })}
-    ${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
-    ${data && data.seasons.length > 1 ? `<div class="cbtools">${data.seasons.map(x =>
-      `<button class="${s?.id === x.id ? 'on' : ''}" data-btn="lg-season" data-id="${esc(x.id)}">${esc(x.name)}${x.hidden ? ' 🔒' : ''}</button>`).join('')}</div>` : ''}
-    ${loading && !data ? '<p class="dim">Loading…</p>' : ''}
-    ${(data?.others ?? []).map(o => otherHtml(o, v.tz)).join('')}
-    <div class="acctbody">
-      ${data && !s ? panel({ title: 'No season yet', wide: true, bodyHtml: '<p>There is no league season running right now. Watch the Discord for the next one.</p>' }) : ''}
+  const secs = leagueSections(v);
+  const sec: LeagueSection = secs.includes(v.section) ? v.section : 'season';
+  const body = sec === 'avail' ? availabilityCardHtml(v)
+    : sec === 'standings' ? `${s && (s.standings.length || s.phase <= 0) ? standingsHtml(s, v) : ''}${s && s.matches.length ? allMatchesHtml(s, v) : ''}`
+    : sec === 'stamp' ? stampHtml(v)
+    : sec === 'organizer' ? organizerHtml(s, v)
+    : `${data && !s ? panel({ title: 'No season yet', wide: true, bodyHtml: '<p>There is no league season running right now. Watch the Discord for the next one.</p>' }) : ''}
       ${s ? seasonCardHtml(s, v) : ''}
       ${s ? entryCardHtml(s, v) : ''}
-      ${data?.signedIn ? availabilityCardHtml(v) : ''}
       ${s?.me?.matches.length ? myMatchesHtml(s, v) : ''}
-      ${s && s.phase === 0 && s.me?.entered ? suggestionsHtml(s, v) : ''}
-      ${s && s.standings.length ? standingsHtml(s, v) : ''}
-      ${s && s.matches.length ? allMatchesHtml(s, v) : ''}
-      ${stampHtml(v)}
-      ${data?.organizer ? organizerHtml(s, v) : ''}
-    </div>
-  </div>`;
+      ${s && s.phase === 0 && s.me?.entered ? suggestionsHtml(s, v) : ''}`;
+  const rail = railHtml(v);
+  return frameHtml({
+    page: 'lgpage', title: 'League', back: { dataBtn: 'lg-close', label: 'Home' }, chrome: v.chrome, fill: true,
+    centerHtml: data ? segmented({ ariaLabel: 'League', className: 'lgsections',
+      options: secs.map(k => ({ label: SECTION_LABEL[k], value: k, on: k === sec, dataBtn: 'lg-section', attrs: { 'data-v': k } })) }) : '',
+    mainHtml: `${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
+    ${loading && !data ? '<p class="dim">Loading…</p>' : ''}
+    <div class="lgwork${rail ? '' : ' lgnorail'}">${rail}
+      <div class="lgsection" data-scroll="lg-${sec}-${esc(s?.id ?? 'none')}"><div class="acctbody lgsec-${sec}">${body}</div></div>
+    </div>`,
+  });
 }
 
 function seasonCardHtml(s: SeasonView, v: LeagueView): string {
@@ -680,7 +735,8 @@ function entryCardHtml(s: SeasonView, v: LeagueView): string {
   const problem = me.joinProblem;
   return panel({ title: 'Join', bodyHtml: `
     ${problem
-      ? `<p>${esc(problem[0]!.toUpperCase() + problem.slice(1))}${/Discord name|usually free|hours/.test(problem) ? ' (below)' : ''}.</p>`
+      ? `<p>${esc(problem[0]!.toUpperCase() + problem.slice(1))}.${/Discord name|usually free|hours/.test(problem)
+        ? ' <button class="linkbtn" data-btn="lg-section" data-v="avail">Availability</button>' : ''}</p>`
       : `<p>You are all set. ${s.phase <= 0 ? 'Join, then play anybody free when you are this week. Pairings start with week 1.'
         : 'Press the button and your pairings arrive with the next week.'}</p>`}
     <button class="primary" data-btn="lg-join" ${problem || busy ? 'disabled' : ''}>Join ${esc(s.name)}</button>
@@ -1035,6 +1091,8 @@ export interface LeagueRaw {
   preview: Preview | null;
   /** the chosen Discord time code instant, or null for the next quarter hour */
   stampAt: number | null;
+  /** the part of the season showing */
+  section: LeagueSection;
 }
 
 /** The zone to show times in: the one the viewer's availability is written
@@ -1066,5 +1124,7 @@ export function leagueView(r: LeagueRaw): LeagueView {
     stampAt: r.stampAt ?? nextQuarter(now),
     chips: s ? { champion: trophyChipHtml({ name: s.name, place: 'champion' }, false), finalist: trophyChipHtml({ name: s.name, place: 'finalist' }, false) }
       : { champion: '', finalist: '' },
+    section: r.section,
+    chrome: frameChromeView(),
   };
 }

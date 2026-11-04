@@ -2,6 +2,7 @@
  * (ui/pages/challenge.ts), and a run's meter and end panels
  * (ui/pages/challengerun.ts), drawn from made-up views. The buttons do nothing
  * here — their handler is ui/challenge.ts, which a story does not load. */
+import { CHROME } from './_page.ts';
 import type { RunScore } from '../../../engine/src/challenge.ts';
 import {
   challengeGlanceHtml, challengeHomeCardHtml, challengeHomeView, challengeNavHtml, challengePageHtml,
@@ -32,7 +33,7 @@ const DATA: ChallengeReply = { now: NOW, current: CUR, past: [OLD],
 
 const view = (over: Partial<ChallengePageView> = {}): ChallengePageView => ({
   data: DATA, loading: false, msg: '', now: NOW, tab: 'fastest', pastOpen: null, arming: null,
-  boards: { cur: board(false) }, building: null, builder: null, kept: [], canSubmit: true, ...over,
+  boards: { cur: board(false) }, building: null, builder: null, kept: [], canSubmit: true, chrome: CHROME, ...over,
 });
 
 export default {
