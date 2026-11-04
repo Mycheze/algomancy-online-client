@@ -239,9 +239,11 @@ const KEYWORD_RULES: GlossEntry[] = [
   // regroup.", ui/scan-reminders.json; CR 802.21), and 156 DERIVES
   // `E.KILL_RIDERS` by scraping "kills … unit" out of this row and that
   // sentence. Losing that phrasing silently changes which attributes ride
-  // the kill diff. (The draw is one card per kill, CR 802.21a; the loss until
-  // regroup, CR 802.21c, is not built: no unit can carry {Reaping}, CT-173.)
-  { term: 'Reaping', cites: ['attr.reaping'], text: 'When it kills a unit, its controller draws a card.' },
+  // the kill diff. (The draw is ONE card however many units the source killed,
+  // CR 802.21a — the row said "kills a unit … draws a card", which read as one
+  // card per kill, CT-433; the loss until regroup, CR 802.21c, is not built:
+  // no unit can carry {Reaping}, CT-173.)
+  { term: 'Reaping', cites: ['attr.reaping', 'attr.reaping.draw'], text: 'When it kills one or more units, its controller draws one card.' },
   { term: 'Inverted', cites: ['attr.inverted.net', 'attr.inverted.base', 'printed'], text: 'Its stat CHANGES are reversed (a −7/−7 becomes +7/+7), measured from its printed stats, so a base rewrite (Aberrant Statweaver) is reversed too. It applies once however many sources granted it.' },
   // CT-80 (c): this row carried the first Unaware ruling's 2026-07-16 wording — "everything
   // counts as interacting with it" — which the Unaware ruling replaced on 2026-08-23 and

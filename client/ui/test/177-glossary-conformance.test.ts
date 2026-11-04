@@ -722,3 +722,20 @@ test('CR D6.11: the two reminder scrapes in this repo agree, term for term', () 
     'the player-facing reminder must keep the whole printed span — a per-sentence scrape cuts '
     + "Spellbind's second sentence off, and that sentence is the cost rule");
 });
+
+test('CR 802.21a: the {Reaping} row draws ONE card for one or more kills, as the rule and the type line say', () => {
+  // CT-433. The row read "When it kills a unit, its controller draws a card.",
+  // which reads as a card per kill. CR 802.21a (owner ruling 2026-08-30) and
+  // the printed type-line reminder ("When a reaping source kills one or more
+  // units, draw a card.") both say one card however many it killed. No
+  // printed, manual or library channel displaces the row, so it is the
+  // sentence the Rules reference shows a player for {Reaping}.
+  const rule = RECORDS.get('attr.reaping.draw') as { text?: string } | undefined;
+  assert.match(String(rule?.text ?? ''), /one or more units[^.]*draws one card/i,
+    'CR 802.21a no longer says what this guard checks against — re-read it before rewording the row');
+  const row = GLOSSARY.find(e => e.term === 'Reaping');
+  assert.ok(row, 'the glossary lost its {Reaping} row');
+  assert.match(row.text, /\bkills one or more units\b/, `{Reaping} must say "one or more units": "${row.text}"`);
+  assert.match(row.text, /\bdraws one card\b/, `{Reaping} must say "draws one card": "${row.text}"`);
+  assert.ok(row.cites?.includes('attr.reaping.draw'), '{Reaping} must cite the rule it states, CR 802.21a');
+});

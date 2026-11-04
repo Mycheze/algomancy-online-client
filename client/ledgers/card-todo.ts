@@ -208,15 +208,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 433, area: "client", severity: "minor",
-    title: "the glossary {Reaping} row says one kill draws a card; CR 802.21a says killing one or more units draws one card",
-    detail: "ui/glossary.ts row Reaping: \"When it kills a unit, its controller draws a card.\" CR 802.21a: a reaping source that kills one or more units draws one card. Players see the printed sentence (scan-reminders.json), but the full row text is the old paraphrase. 156 derives KILL_RIDERS from this row text, so a reword must keep that derivation.",
-    evidence: "Pass D paperwork 2026-10-25 (zero-handoff/PD-paper.md, new defect 4), while fixing CT-173's comments.",
-    fix: "Reword the row to CR 802.21a, then run 156, 177 and 227.",
-    proof: () => still('ui/glossary.ts', "text: 'When it kills a unit, its controller draws a card.'"),
-    status: 'open',
-  },
-  {
     id: 434, area: "engine", severity: "minor",
     title: "the declineCost branch of the grafted cast-cost decision is believed dead since the cost became a cast-time payment",
     detail: "engine.ts, the grafted cast-cost decision: \"if ('declineCost' in obj) {\". Since CR 111.15 and CT-216 a grafted cost is paid as the composite goes on the stack, and nothing is believed to reach the decline branch. CT-391 kept it and described it as believed dead, because that pass made no behaviour change.",
