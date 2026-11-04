@@ -63,7 +63,7 @@ import {
   cardHeight, cardWidth, fanHeight, insertIndexAt, noImgDrag, previewShift, stripIndexAt, stripOf, type PileCard, type PileView,
 } from './piletable.ts';
 import { installPressZoom } from './presszoom.ts';
-import { installSplitter, readSplit, stepSplit, writeSplit } from './splitter.ts';
+import { installSplitter, readSplit, shownSplit, stepSplit, writeSplit } from './splitter.ts';
 import { PEEK_MS, touchSeen } from './touch.ts';
 import { elIcon, esc } from './util.ts';
 import { builderLoadingHtml, builderView, paintBuilder, type BuilderSheet, type BuilderView } from './pages/builder.ts';
@@ -1015,7 +1015,7 @@ export function handleButton(el: HTMLElement): boolean {
       return true;
     case 'tt-sheet-close': sheetOpen = null; paint(); return true;
     // ── the divider's tap route ──
-    case 'tt-split': writeSplit(stepSplit(readSplit(), Number(el.dataset['by'] ?? 0))); paneSeen = 0; paint(); return true;
+    case 'tt-split': writeSplit(stepSplit(shownSplit(el.closest?.('.ttbuilder') ?? null) ?? readSplit(), Number(el.dataset['by'] ?? 0))); paneSeen = 0; paint(); return true;
     default: return true;
   }
 }

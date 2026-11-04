@@ -11,6 +11,12 @@
 .ttbuilder { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--felt); }
 .ttbuilder > .ttnote { flex: none; }
 .ttbuilder > .ttpool { flex: var(--pool-f) 1 0; }
+/* the pool's floor: its filter bar and a strip of results, never less, and nothing of it spills.
+   min-height: auto (not 0) floors it at its content; contain: size keeps the results' cards out of
+   that content; overflow: clip (not hidden, which would zero the floor) clips the rest. Below the
+   floor the bar used to paint over the divider and hide ▲ ▼ and the grip (2026-11-04, test 1137) */
+.ttbuilder > .ttpool { min-height: auto; overflow: clip; }
+.ttbuilder > .ttpool > .ttpoolresults { contain: size; min-height: 40px; }
 .ttbuilder > .tttablewrap { flex: calc(1 - var(--pool-f)) 1 0; min-height: 0; }
 .ttbuilder.ttnopool > .tttablewrap { flex: 1 1 0; }
 .ttsplitting, .ttsplitting * { cursor: row-resize; user-select: none; }
