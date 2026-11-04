@@ -78,6 +78,28 @@ const GLYPHS = {
   back: '<path d="M20 12H4.5"/><path d="m10.5 5.5-6.5 6.5 6.5 6.5"/>',
   // a magnifier: a search box's mark
   search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/>',
+  // the deck screens' tools (BL-65, 2026-11-04): the builder's toolbar, the Decks page's preview actions
+  // an arrow curling back to the left: take the last move back
+  undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+  // the same arrow, curling forward to the right
+  redo: '<path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/>',
+  // a pencil
+  edit: '<path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7.5 18.5 3 20l1.5-4.5z"/><path d="m14.5 5.5 3 3"/>',
+  // a funnel
+  filter: '<path d="M3.5 4.5h17l-6.5 8v6l-4 2v-8z"/>',
+  // a plus
+  plus: '<path d="M12 5v14"/><path d="M5 12h14"/>',
+  // an arrow coming down into a tray
+  import: '<path d="M12 3.5v11"/><path d="m7.5 10 4.5 4.5 4.5-4.5"/><path d="M4 15.5v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>',
+  // an arrow going up out of a tray
+  export: '<path d="M12 14.5v-11"/><path d="m7.5 8 4.5-4.5L16.5 8"/><path d="M4 15.5v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>',
+  // three nodes joined: hand it on
+  share: '<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 13.3 7.6 4.4"/><path d="m15.8 6.3-7.6 4.4"/>',
+  // two sheets, one over the other
+  copy: '<rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M15.5 8.5v-3a2 2 0 0 0-2-2h-8a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3"/>',
+  // a bin with its lid
+  trash: '<path d="M3.5 6h17"/><path d="M8.5 6V4.5A1.5 1.5 0 0 1 10 3h4a1.5 1.5 0 0 1 1.5 1.5V6"/>'
+    + '<path d="m5.5 6 1 13.6A1.5 1.5 0 0 0 8 21h8a1.5 1.5 0 0 0 1.5-1.4l1-13.6"/><path d="M10 10.5v6"/><path d="M14 10.5v6"/>',
 } as const;
 
 export type IconName = keyof typeof GLYPHS;

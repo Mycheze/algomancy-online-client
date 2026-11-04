@@ -9,7 +9,9 @@ import { ICON_NAMES, type IconName, icon } from '../components/icon.ts';
 /** the names the redesign's home asked for (the brief, 2026-11-03) */
 const ASKED = ['decks', 'cards', 'account', 'test', 'rules', 'alerts', 'report', 'play', 'join', 'league', 'challenge',
   'matchmaking', 'updates', 'info', 'close', 'chevron-right', 'chevron-down', 'learn', 'stats', 'admin', 'link',
-  'signin', 'clock', 'users', 'pause'];
+  'signin', 'clock', 'users', 'pause',
+  // the deck screens' tools (BL-65 W0, 2026-11-04)
+  'undo', 'redo', 'edit', 'filter', 'plus', 'import', 'export', 'share', 'copy', 'trash'];
 
 test('the set holds every asked-for name, once', () => {
   for (const n of ASKED) assert.ok((ICON_NAMES as string[]).includes(n), `no icon named ${n}`);

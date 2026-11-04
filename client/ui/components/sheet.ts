@@ -23,9 +23,13 @@
  * Placement: `center` over a dimmed page; the four anchors sit in a corner,
  * clear of an app shell's top or bottom bar (--shell-bar-h), over a lighter
  * scrim — for a list that belongs to a toolbar button or a bottom-bar link.
+ * `side` (BL-65, 2026-11-04) is docked to the window's right edge, the full
+ * height, over the lighter scrim: the deck screens' sheets, which cover part of
+ * the window and never the whole deck. It always leaves a strip of the page
+ * showing (--shell-bar-h wide) to tap off; it does not animate in either.
  * Width: sm 320px, md 480px, lg 720px, never wider than the window less its
  * gutters. Height: the body scrolls once the panel reaches the window's height
- * less its gutters (and the bar, when anchored).
+ * less its gutters (and the bar, when anchored; the side sheet has none).
  *
  * ⚠ A sheet holding a text field (the room code) loses the caret on every
  * repaint if it is drawn inside #app; keep such a sheet in a layer beside #app,
@@ -35,7 +39,7 @@ import { icon } from './icon.ts';
 
 export const SHEET_WIDTHS = ['sm', 'md', 'lg'] as const;
 export type SheetWidth = typeof SHEET_WIDTHS[number];
-export const SHEET_PLACEMENTS = ['center', 'anchor-bottom-left', 'anchor-bottom-right', 'anchor-top-left', 'anchor-top-right'] as const;
+export const SHEET_PLACEMENTS = ['center', 'anchor-bottom-left', 'anchor-bottom-right', 'anchor-top-left', 'anchor-top-right', 'side'] as const;
 export type SheetPlacement = typeof SHEET_PLACEMENTS[number];
 
 export interface SheetProps extends Common {

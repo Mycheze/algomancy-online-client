@@ -30,6 +30,9 @@ export const AnchorBottomLeft = { name: 'Anchor: bottom left', ...anchored('anch
 export const AnchorBottomRight = { name: 'Anchor: bottom right', ...anchored('anchor-bottom-right') };
 export const AnchorTopLeft = { name: 'Anchor: top left', ...anchored('anchor-top-left') };
 export const AnchorTopRight = { name: 'Anchor: top right', ...anchored('anchor-top-right') };
+/** the deck screens' sheet (BL-65): docked right, full height, a light scrim; the deck stays in view beside it */
+export const Side = { name: 'Side (docked right)', args: { placement: 'side', title: 'Stats', footerHtml: undefined } };
+export const SideLarge = { name: 'Side, large', args: { placement: 'side', width: 'lg', title: 'More filters', footerHtml: undefined } };
 export const Closed = { name: 'Closed (renders nothing)', args: { open: false } };
 
 /** the pattern a page follows: the open sheet is STATE, every click repaints from it, Esc closes */

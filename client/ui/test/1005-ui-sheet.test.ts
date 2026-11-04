@@ -39,6 +39,15 @@ test('every placement and width is its modifier; className, dataBtn and attrs pa
   assert.match(html, /title="Done &amp; close" aria-label="Done &amp; close"/);
 });
 
+test('side (BL-65): the deck screens\' sheet is a placement like the others — same parts, same dismiss on scrim and ✕', () => {
+  const html = sheet({ open: true, id: 'tt-sheet', title: 'Stats', bodyHtml: '<p>b</p>', dismissBtn: 'tt-sheet-close', placement: 'side' });
+  assert.match(html, /^<div class="ui-sheet ui-sheet--side ui-sheet--md" id="tt-sheet" data-sheet>/);
+  assert.equal(html.match(/data-btn="tt-sheet-close"/g)?.length, 2, 'the scrim and the ✕');
+  assert.equal(html.replace('ui-sheet--side', 'ui-sheet--center'),
+    sheet({ open: true, id: 'tt-sheet', title: 'Stats', bodyHtml: '<p>b</p>', dismissBtn: 'tt-sheet-close' }),
+    'only the modifier differs: the side sheet is the same markup, placed by CSS');
+});
+
 function fakeDoc(): { doc: { addEventListener(t: 'keydown', fn: (e: SheetKeyEvent) => void): void }; listeners: Array<(e: SheetKeyEvent) => void> } {
   const listeners: Array<(e: SheetKeyEvent) => void> = [];
   return { doc: { addEventListener: (_t, fn) => { listeners.push(fn); } }, listeners };
