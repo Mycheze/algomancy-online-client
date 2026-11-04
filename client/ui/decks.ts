@@ -42,12 +42,12 @@ import { chipState, nextChipState, search as runSearch, withChip } from './cards
 import * as acct from './account.ts';
 import { GROUPINGS, deckSections, needsCountBadge, stackLayers } from './decklayout.ts';
 import type { DeckGrouping } from './decklayout.ts';
-import { txtIcon } from './cardtext.ts';
 import {
-  ELEMENTS, analyzeDeck, cardFacts, deckElements, deckListText,
-  type CardFacts, type DeckAnalysis,
+  ELEMENTS, analyzeDeck, deckElements, deckListText,
+  type DeckAnalysis,
 } from './deckstats.ts';
 import { buildDeckFile, deckFileText } from './deckformat.ts';
+import { deckStatsHtml } from './pages/deckstats.ts';
 import { chooseDeck, chosenDeck, copyText, elIcon, esc } from './util.ts';
 import { artUrl } from './assets.ts';
 import { button } from './components/index.ts';
@@ -380,16 +380,6 @@ const shortDate = (iso: string | null): string => {
   return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 };
 
-/** a card's printed cost as the game's own icons: [3][r][r] */
-function costBadge(f: CardFacts): string {
-  const mana = f.isX ? txtIcon('cost_x', 'X')
-    // the icon set stops at 9; the pool's few double-digit costs print as text
-    : f.mana <= 9 ? txtIcon(`cost_${f.mana}`, String(f.mana))
-    : `<span class="costnum">${f.mana}</span>`;
-  const pips = ELEMENTS.flatMap(el => Array.from({ length: f.pips[el] ?? 0 }, () => elIcon(el, el))).join('');
-  return `<span class="costbox">${mana}${pips}</span>`;
-}
-
 const elChips = (a: DeckAnalysis): string => deckElements(a)
   .map(e => `<span class="acctel ${e.el}" title="${Math.round(e.share * 100)}% of the deck">${e.el}</span>`)
   .join('');
@@ -644,35 +634,6 @@ function addDrawerHtml(into: 'deck' | 'side' = 'deck'): string {
   </section>`;
 }
 
-// ── the mana / curve tab ──────────────────────────────────────────────
-
-function curveHtml(a: DeckAnalysis): string {
-  const peak = Math.max(1, ...a.curve.map(c => c.total));
-  return `<div class="dkcurve">${a.curve.map(c => `
-    <div class="dkcurverow${c.total ? '' : ' empty'}">
-      <span class="dkcurvem">${c.mana}</span>
-      <span class="dkcurvebar">
-        ${c.units ? `<span class="seg units" style="flex:${c.units}" title="${c.units} unit${c.units === 1 ? '' : 's'} at ${c.mana}"></span>` : ''}
-        ${c.spellUnits ? `<span class="seg spellunits" style="flex:${c.spellUnits}" title="${c.spellUnits} spell unit${c.spellUnits === 1 ? '' : 's'} at ${c.mana}"></span>` : ''}
-        ${c.spells ? `<span class="seg spells" style="flex:${c.spells}" title="${c.spells} spell${c.spells === 1 ? '' : 's'} at ${c.mana}"></span>` : ''}
-        <span class="pad" style="flex:${peak - c.total}"></span>
-      </span>
-      <span class="dkcurven">${c.total || ''}</span>
-    </div>`).join('')}
-    ${a.xCards ? `<div class="dkcurverow x">
-      <span class="dkcurvem">X</span>
-      <span class="dkcurvebar"><span class="seg spells" style="flex:${a.xCards}"></span>
-        <span class="pad" style="flex:${peak - a.xCards}"></span></span>
-      <span class="dkcurven">${a.xCards}</span>
-    </div>` : ''}
-    <div class="dkcurvekey">
-      <span><i class="seg units"></i> units</span>
-      ${a.spellUnits ? '<span><i class="seg spellunits"></i> spell units</span>' : ''}
-      <span><i class="seg spells"></i> spells</span>
-      ${a.xCards ? '<span class="dim">X-cost cards sit on no rung — they cost what you pay</span>' : ''}
-    </div>`;
-}
-
 /** A deck's visibility, read the way the server reads it: absent is private.
  * Duplicated as a one-liner rather than imported because the client and the
  * server share no code — and this is the safe direction to get wrong. */
@@ -921,91 +882,9 @@ function syntaxHtml(): string {
   </div>`;
 }
 
-/** The affinity table: what you must have OPEN, and by when. */
-function affinityHtml(a: DeckAnalysis): string {
-  const live = ELEMENTS.filter(el => (a.maxAffinity[el] ?? 0) > 0);
-  if (!live.length) return '<div class="hint">Nothing in the deck asks for affinity yet.</div>';
-  const rows = a.rows.filter(r => r.count > 0 || live.some(el => (r.need[el] ?? 0) > 0));
-  const cell = (r: typeof a.rows[number], el: string): string => {
-    const cum = r.cumulative[el] ?? 0;
-    if (!cum) return '<td class="dknone">·</td>';
-    const isNew = r.first.includes(el);
-    return `<td class="${isNew ? 'dknew' : ''}" title="${isNew
-      ? `a card at ${r.mana} mana is the first thing that needs ${cum} ${el}`
-      : 'carried up from a cheaper card'}">${cum}</td>`;
-  };
-  return `<table class="dkaff">
-    <thead><tr><th>by mana</th><th>cards</th>${live.map(el =>
-      `<th class="acctel ${el}">${elIcon(el)}${el}</th>`).join('')}</tr></thead>
-    <tbody>${rows.map(r => `<tr>
-      <td class="dkmana">${r.mana}</td>
-      <td class="dim">${r.count || ''}</td>
-      ${live.map(el => cell(r, el)).join('')}
-    </tr>`).join('')}
-    <tr class="dkmaxrow"><td>everything</td><td class="dim">${a.total - a.unknown.length}</td>
-      ${live.map(el => `<td><b>${a.maxAffinity[el] ?? 0}</b></td>`).join('')}</tr>
-    </tbody>
-  </table>
-  <div class="hint">The affinity you need <b>open</b> by each mana value. <b>Bold</b> is where a new
-    requirement first appears. The bottom row is the ceiling:
-    ${live.map(el => `${a.maxAffinity[el]} ${el}`).join(' + ')} can play every card in the deck.</div>`;
-}
-
-/**
- * Everything a reader wants to know about a list: the curve and its average,
- * what is in it, the element share, and the affinity ceiling — *"basic stats
- * about the deck like element requirements and mana values"*.
- *
- * EXPORTED because the shared deck page (ui/meta.ts) shows the same deck to
- * somebody who cannot edit it, and growing a second, thinner stats panel there
- * is how the two come to disagree. It is a pure function of `DeckAnalysis`
- * and holds none of this page's state.
- */
-export function deckStatsHtml(a: DeckAnalysis): string {
-  const pct = (n: number): string => a.total ? `${Math.round((n / a.total) * 100)}%` : '0%';
-  const elTotal = ELEMENTS.reduce((n, el) => n + (a.elements[el] ?? 0), 0);
-  return `<section class="acctcard">
-      <h3>Curve</h3>
-      ${curveHtml(a)}
-      <div class="hint">Average cost ${a.avgMana.toFixed(1)} mana${
-        a.xCards ? `, not counting ${a.xCards} X-cost card${a.xCards === 1 ? '' : 's'}` : ''}.</div>
-    </section>
-    <section class="acctcard">
-      <h3>What is in it</h3>
-      <div class="statgrid">
-        <div class="statcell"><div class="statval">${a.units}</div><div class="statlab">units (${pct(a.units)})</div></div>
-        <div class="statcell"><div class="statval">${a.spells}</div><div class="statlab">spells (${pct(a.spells)})</div></div>
-        ${a.spellUnits ? `<div class="statcell"><div class="statval">${a.spellUnits}</div><div class="statlab">spell units</div></div>` : ''}
-        <div class="statcell" title="cards printed {Battle} — playable during a battle rather than in deployment"><div class="statval">${a.battle}</div><div class="statlab">battle cards</div></div>
-        ${a.haste ? `<div class="statcell"><div class="statval">${a.haste}</div><div class="statlab">haste cards</div></div>` : ''}
-        <div class="statcell"><div class="statval">${a.copies.length}</div><div class="statlab">different cards</div></div>
-      </div>
-    </section>
-    <section class="acctcard">
-      <h3>Elements</h3>
-      ${elTotal ? `<div class="elbar">${ELEMENTS.map(el => {
-        const w = a.elements[el] ?? 0;
-        return w > 0 ? `<span class="elbarseg ${el}" style="flex:${w}"
-          title="${el}: ${Math.round((w / elTotal) * 100)}%"></span>` : '';
-      }).join('')}</div>
-      <div class="ellegend">${deckElements(a).map(e =>
-        `<span class="acctel ${e.el}">${e.el} ${Math.round(e.share * 100)}%</span>`).join('')}</div>`
-      : '<div class="hint">Nothing in the deck yet.</div>'}
-      <div class="hint">By card; a hybrid counts half to each element.</div>
-    </section>
-    <section class="acctcard wide">
-      <h3>Affinity — what you need open, and by when</h3>
-      ${affinityHtml(a)}
-    </section>
-    ${a.demanding.length ? `<section class="acctcard wide">
-      <h3>The greediest costs</h3>
-      <div class="dkdemand">${a.demanding.slice(0, 8).map(d => {
-        const f = cardFacts(d.name);
-        return `<span class="dkdemandrow">${f ? costBadge(f) : ''} ${esc(d.name)}</span>`;
-      }).join('')}</div>
-      <div class="hint">These set the ceiling above — cut from here to lower it.</div>
-    </section>` : ''}`;
-}
+// deckStatsHtml lives in pages/deckstats.ts since BL-65 (the builder's Stats sheet draws it too);
+// re-exported for the shared deck page (pages/meta.ts), which imports it from here
+export { deckStatsHtml };
 
 // ── the games tab ─────────────────────────────────────────────────────
 

@@ -265,7 +265,13 @@ test('§4d the shared page shows the SAME stats panel, not a thinner copy', () =
     'element requirements and mana values were already computed and rendered for the builder — '
     + 'growing a second, thinner panel on the shared page is how the two come to disagree');
   assert.match(metaSrc, /deckStatsHtml\(a\)/);
-  assert.match(decksSrc, /export function deckStatsHtml/);
+  // ONE panel: defined in pages/deckstats.ts since BL-65 (the builder's Stats sheet draws it too), and decks.ts,
+  // which the shared page imports it from, re-exports that one rather than keeping a copy
+  const statsSrc = readFileSync(join(UI, 'pages', 'deckstats.ts'), 'utf8');
+  assert.match(statsSrc, /export function deckStatsHtml/);
+  assert.match(decksSrc, /import \{ deckStatsHtml \} from '\.\/pages\/deckstats\.ts';/);
+  assert.match(decksSrc, /export \{ deckStatsHtml \};/);
+  assert.doesNotMatch(decksSrc, /function deckStatsHtml/, 'no second copy in decks.ts');
 });
 
 test('§4e the stats really do carry element requirements and mana values', () => {

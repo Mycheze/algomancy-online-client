@@ -254,6 +254,40 @@ export function analyzeDeck(cards: readonly string[]): DeckAnalysis {
   };
 }
 
+/** One rung of the curve split by element: how many cards cost `mana`, and
+ * how much of that is each element. */
+export interface ElementRung {
+  /** the mana value, or 'X' for the X-cost cards, which sit on no rung */
+  mana: number | 'X';
+  total: number;
+  /** element → cards, a hybrid counted half to each of its elements (as
+   * `elements` counts it), so a rung's parts add up to its total. A card of
+   * no element is `none`. */
+  byElement: Record<string, number>;
+}
+
+/**
+ * The curve again, each rung split by element (BL-65: the builder's stats
+ * strip colours its curve by element). The same rungs as `curve` — dense, from
+ * the cheapest card to the dearest — then one 'X' rung last when the deck has
+ * X-cost cards. Derived from the analysis' `copies`, so it needs no second
+ * pass over the list; an unknown card (no facts) is on no rung, as in `curve`.
+ */
+export function curveByElement(a: DeckAnalysis): ElementRung[] {
+  const rungs: ElementRung[] = a.curve.map(c => ({ mana: c.mana, total: 0, byElement: {} }));
+  const x: ElementRung = { mana: 'X', total: 0, byElement: {} };
+  const bottom = a.curve.length ? a.curve[0]!.mana : 0;
+  for (const { n, facts: f } of a.copies) {
+    if (!f) continue;
+    const rung = f.isX ? x : rungs[f.mana - bottom];
+    if (!rung) continue;
+    rung.total += n;
+    const els = f.factions.length ? f.factions : ['none'];
+    for (const el of els) rung.byElement[el] = (rung.byElement[el] ?? 0) + n / els.length;
+  }
+  return x.total ? [...rungs, x] : rungs;
+}
+
 /** The elements a deck is actually built out of, biggest share first — what
  * the deck row shows as its identity. A share below `floor` of the deck is a
  * splash worth naming but not a colour of the deck; below a card's worth of
