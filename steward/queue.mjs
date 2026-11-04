@@ -15,6 +15,9 @@
  *                        because an unledgered row turns 70-playtest-ledger red
  *                        and every other item's gate with it. Not offered while a
  *                        triage branch is waiting on the owner (it already has them).
+ *   1b. inbox <slug>     the owner's own asks: plain messages he posts in #steward
+ *                        (state/inbox/, written by discord.mjs), oldest first — before
+ *                        the worker's own debt. Never offered again once finished.
  *   2. repair <branch>   a staged branch whose gate went red (state/redgate/); not
  *                        one that was red only because master was (masterRed —
  *                        the runner re-gates those itself once master is green)
@@ -114,6 +117,16 @@ const triageWaits = existsSync(join(STATE, 'redgate', 'triage.json')) || WAITING
 if (triageWaits && (fresh.length || dirty.length)) excluded.push(`triage: a triage branch is waiting on the owner (${journal.get('triage')?.outcome ?? 'gate-red'})`);
 else if (fresh.length) out.push( `triage #${fresh[0]}-#${fresh.at(-1)}  (${fresh.length} new report row${fresh.length > 1 ? 's' : ''})`);
 else if (dirty.length) out.push(`triage snapshots  (${dirty.join(', ')} changed on the fetch)`);
+
+// 1b. the owner's inbox
+const FINISHED = new Set(['shipped', 'landed', 'already-fixed', 'not-a-bug', 'rejected']);
+for (const f of ls(join(STATE, 'inbox')).filter(f => f.endsWith('.md')).sort()) {
+  const item = f.replace(/\.md$/, '');
+  const j = journal.get(item);
+  if (j && FINISHED.has(String(j.outcome))) { excluded.push(`${item}: finished (${j.outcome}, ${j.ts})`); continue; }
+  const ask = readLines(join(STATE, 'inbox', f)).find(l => l.trim() && !l.startsWith('#')) || '';
+  push(item, `inbox ${item}  (${ask.slice(0, 100)}; the request: ${join(STATE, 'inbox', f)})`);
+}
 
 // 2. red staged branches
 for (const f of ls(join(STATE, 'redgate')).filter(f => f.endsWith('.json'))) {

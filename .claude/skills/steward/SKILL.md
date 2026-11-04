@@ -73,6 +73,7 @@ skip, say why in your verdict (outcome `skip`):
 Queue line kinds: `fix-master` (master's own gate is red — §12), `repair
 <branch>` (a staged branch whose gate went red — fix it on that branch, see §9),
 `resume <item>` (answered — finish it), `triage #a-#b` (new reports — see §10),
+`inbox inbox-<id>` (a request the owner typed into #steward — §13),
 `report #N`, `CT-N`, `BL-N`, `tidy` (§11).
 
 **Never skip `fix-master` to work on something else**: while master is red every
@@ -316,3 +317,26 @@ failures and the log. Nothing else can go green until this is fixed, so:
    read: the failure, the cause commit, the fix, the targeted test passing.
 4. If the fix is in `deploy/`, `CLAUDE.md` or a lockfile, outcome `needs-human`
    with the exact change written out.
+
+## 13. `inbox inbox-<id>` — the owner asked for something directly
+
+He typed it into #steward; the queue line names the file
+(`$STEWARD_STATE/inbox/<item>.md`: his words, and screenshots to Read). Treat it
+like a report from the one player whose word is final on how the game should
+behave — but still prove before you change: reproduce a bug, find the rule for a
+rules point (§5), find the code for a UI point.
+
+- **Small and clear** (a wording, a value, a bug he describes exactly): do it,
+  the usual way — evidence, fix, guard, mutation check. Outcome by §8 (a UI
+  change is `stage`).
+- **Too big for one run**: file it (a BL in `backlog.ts`, or a CT), with his
+  words quoted and what you found; outcome `ship` (ledger-only), and the summary
+  names the ticket.
+- **Unclear, or two real readings**: `needs-human` with the handoff's questions —
+  it is posted in the thread on his message, and his reply resumes you.
+- **A question, not a change**: answer it in the summary (with the source), outcome
+  `not-a-bug` if nothing needs changing.
+
+Item id is the `inbox-<id>` token. Your **summary is what he reads** in the thread
+when it closes: say in plain words what you did and what he will see — the same
+standard as the "Recent updates" lines (CLAUDE.md), not repo jargon.

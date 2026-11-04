@@ -15,6 +15,12 @@
  *                      worker resumes the item on its next night run
  *   (night log)        pause · resume
  *
+ * The INBOX (owner, 2026-11-04): a plain message of his in the channel itself —
+ * not in a thread — is a request, taken like a report. It becomes
+ * state/inbox/inbox-<message id>.md (screenshots saved beside it), the queue
+ * offers it right after triage, and a thread opened ON his message is where the
+ * worker asks, shows, and says it is done.
+ *
  * Only the owner's messages count (STEWARD_DISCORD_OWNER): anyone else in the
  * server could otherwise approve code onto the live site. A ✅ says one was taken.
  *
@@ -184,11 +190,17 @@ async function updateItem(db, slug, md) {
   it.hash = hash(md); save(db);
 }
 
+/** an inbox item is finished only when the journal says so (it has no handoff while it waits) */
+const FINISHED = new Set(['shipped', 'landed', 'already-fixed', 'not-a-bug', 'rejected', 'gave-up', 'skip', 'failed', 'gate-red-twice']);
+const lastRow = slug => journalRows().filter(r => r.item === slug && r.by !== 'owner').at(-1);
+const finished = slug => FINISHED.has(String(lastRow(slug)?.outcome ?? '').replace(/^dry-/, ''));
+
 async function closeItem(db, slug) {
   const it = db.items[slug];
-  const last = journalRows().filter(r => r.item === slug).at(-1);
+  const last = lastRow(slug) ?? journalRows().filter(r => r.item === slug).at(-1);
   const what = last ? `${last.outcome}${last.title ? ` — ${last.title}` : ''}${last.note ? ` — ${last.note}` : ''}${last.sha ? ` (${String(last.sha).slice(0, 8)})` : ''}` : 'done';
-  await say(it.thread, `✅ **Closed:** ${clip(what, 1800)}`).catch(() => {});
+  const why = last?.summary ? `\n\n${clip(last.summary, 1400)}` : '';
+  await say(it.thread, `✅ **Closed:** ${clip(what, 500)}${why}`).catch(() => {});
   await api('PATCH', `/channels/${it.thread}`, { archived: true }).catch(() => {});
   it.closed = true; save(db);
 }
@@ -252,10 +264,38 @@ async function readReplies(db, actions) {
   }
 }
 
+/** the owner's plain messages in the channel → inbox requests, each with a thread on it */
+async function readInbox(db) {
+  if (db.channelType === undefined) db.channelType = (await api('GET', `/channels/${FORUM}`)).type;
+  if (db.channelType === 15) return;                 // a forum has no top-level messages
+  if (!db.inboxLastSeen) db.inboxLastSeen = FORUM;   // the channel's own id is its creation time
+  const msgs = ((await api('GET', `/channels/${FORUM}/messages?after=${db.inboxLastSeen}&limit=100`)) || []).sort(byId);
+  if (!msgs.length) return;
+  db.inboxLastSeen = msgs.at(-1).id; save(db);
+  for (const m of msgs) {
+    if (m.author?.id !== OWNER || m.author?.bot || ![0, 19].includes(m.type ?? 0)) continue;
+    const slug = `inbox-${m.id}`;
+    const text = String(m.content || '').trim() || '(a screenshot only)';
+    const files = await saveAttachments(slug, m);
+    const day = new Date(Number((BigInt(m.id) >> 22n) + 1420070400000n)).toISOString().slice(0, 10);
+    mkdirSync(join(STATE, 'inbox'), { recursive: true });
+    writeFileSync(join(STATE, 'inbox', `${slug}.md`), `# Inbox — from the owner, ${day} (Discord message ${m.id})\n\n${text}\n` +
+      (files.length ? `\nScreenshots (Read them):\n${files.map(p => `- ${p}`).join('\n')}\n` : ''));
+    const first = text.split('\n').find(l => l.trim()) || 'request';
+    const t = await api('POST', `/channels/${FORUM}/messages/${m.id}/threads`, { name: clip(first, 90), auto_archive_duration: 10080 });
+    db.items[slug] = { thread: t.id, hash: null, lastSeen: t.id, closed: false, inbox: true };
+    save(db);
+    jnote(slug, 'inbox', clip(text, 400));
+    await react(FORUM, m.id);
+    await say(t.id, `Got it — queued as \`${slug}\`. The worker takes it after the item it is on now. It will ask here if it needs anything, and say here when it is done.`);
+  }
+}
+
 async function sync() {
   const db = load(); const actions = [];
   // replies first: an approval should land on this very tick
   await readReplies(db, actions);
+  await readInbox(db);
   const open = ls(HANDOFFS).filter(f => f.endsWith('.md')).map(f => f.replace(/\.md$/, ''));
   for (const slug of open) {
     const md = readFileSync(join(HANDOFFS, `${slug}.md`), 'utf8');
@@ -263,7 +303,11 @@ async function sync() {
     if (!it || it.closed) await postItem(db, slug, md);
     else if (it.hash !== hash(md)) await updateItem(db, slug, md);
   }
-  for (const [slug, it] of Object.entries(db.items)) if (!it.closed && !open.includes(slug)) await closeItem(db, slug);
+  for (const [slug, it] of Object.entries(db.items)) {
+    if (it.closed || open.includes(slug)) continue;
+    if (it.inbox && !finished(slug)) continue;   // queued or in progress: its thread stays open
+    await closeItem(db, slug);
+  }
   if (actions.length) console.log(actions.join('\n'));
 }
 

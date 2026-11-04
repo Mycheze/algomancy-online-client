@@ -31,7 +31,7 @@ STATE="$ROOT/state"
 LOGS="$ROOT/logs"
 BIN="$ROOT/bin"
 CONF="${STEWARD_CONF:-$HOME/.config/algomancy-steward/env}"
-mkdir -p "$STATE"/{handoffs,answers,redgate,outcomes,handoffs/done,answers/done} "$LOGS" "$BIN"
+mkdir -p "$STATE"/{handoffs,answers,redgate,outcomes,inbox,handoffs/done,answers/done} "$LOGS" "$BIN"
 
 [ -f "$CONF" ] && { set -a; . "$CONF"; set +a; }
 : "${STEWARD_TZ:=Europe/Prague}"
@@ -453,7 +453,7 @@ EOF
     title=$(jq -r '.title // ""' "$STATE/outcome.json"); summary=$(jq -r '.summary // ""' "$STATE/outcome.json")
   fi
   if [ -z "${item:-}" ]; then
-    item=$(awk '{print ($1=="report"||$1=="repair"||$1=="resume"||$1=="triage") ? $2 : $1}' <<<"$first")
+    item=$(awk '{print ($1=="report"||$1=="repair"||$1=="resume"||$1=="triage"||$1=="inbox") ? $2 : $1}' <<<"$first")
     [ "${first%% *}" = triage ] && item=triage
     outcome=failed; title="(no verdict written)"; summary="claude exited $rc without an outcome.json (timeout=124)"
   fi

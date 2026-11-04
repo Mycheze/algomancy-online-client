@@ -89,6 +89,11 @@ Personal Server that only he and the bot can see (`steward/discord.mjs`):
 - **📓 night log** — every ship, stage, deploy and red as it happens, and a
   summary every morning (the first tick from 08:00 Prague, `STEWARD_SUMMARY_HOUR`).
 
+- **the inbox** — a plain message of his in the channel (not in a thread) is a
+  request, taken like a report: the bot opens a thread on it ("queued"), the
+  queue offers it right after triage, and that thread is where the worker asks,
+  shows a staged branch, or says it is done (state/inbox/).
+
 He replies in the post: **approve** · **reject** <why> · **retry** <why> · or
 just answers in words, with screenshots if he likes (they are saved beside the
 answer for the worker to look at). **pause** / **resume** in the night log.
