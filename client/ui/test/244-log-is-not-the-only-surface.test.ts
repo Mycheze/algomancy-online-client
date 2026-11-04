@@ -693,7 +693,10 @@ test('[CR D7.4] the derivation itself is alive: every filter it uses matches som
   // 232 → 233 with CT-418 (owner 2026-10-25, "Check both at the end"): the game-over
   // E.judgeDeckOutWithLife says when a deck-out inside an effect is judged with
   // the life totals. It carries the winner, which the game-over screen shows.
-  assert.equal(sites.length, 233,`the engine and apply make ${sites.length} announcements`);
+  // 233 → 232 with CT-434 (CR 111.15: a grafted cost cannot be declined):
+  // payCastCost's declineCost branch was unreachable and is deleted, and its
+  // "the [cost] is declined" line with it.
+  assert.equal(sites.length, 232,`the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');
@@ -715,7 +718,8 @@ test('[CR D7.4] the derived inventory of announcements that exist only in the lo
   // nothing on it draws a pending discount in the first place.
   // 39 → 38 with the Wraith ruling of 2026-10-16 (the site census above): the
   // stale-subject fizzle line is gone with the stale subject.
-  assert.equal(inv.length, 38,
+  // 38 → 37 with CT-434: the dead "the [cost] is declined" line is gone.
+  assert.equal(inv.length, 37,
     'the count moved — a new announcement with no surface, or one that gained one.\n'
     + 'THE INVENTORY AS MEASURED NOW:\n' + show(inv));
 
@@ -730,7 +734,8 @@ test('[CR D7.4] the derived inventory of announcements that exist only in the lo
   // repeating itself: a new structural announcement had nowhere to go and
   // became an 'info' line, exactly like the other thirty-five.
   // info 36 → 35 with the Wraith ruling of 2026-10-16 (see the count above).
-  assert.deepEqual([...byType].sort(), [['erased', 1], ['fizzled', 2], ['info', 35]]);
+  // info 35 → 34 with CT-434 (likewise).
+  assert.deepEqual([...byType].sort(), [['erased', 1], ['fizzled', 2], ['info', 34]]);
   assert.equal(read('../ui/main.ts').includes("info: 'ev-"), false,
     "'info' earns no colour in the log either — it is the plainest line the panel draws");
 });
@@ -745,7 +750,9 @@ test('[CR D7.4] the ranked half: the announcements where the absence cost the pl
   // ranking is on.
   // 21 → 20 with the Wraith ruling of 2026-10-16: "a part fizzles (what it was
   // aimed at is gone)" left the engine with the stale subject it reported.
-  assert.equal(costly.length, 20, 'tier 1:\n' + costly.map(s => `  ${s.file}:${s.line} ${s.msg}`).join('\n'));
+  // 20 → 19 with CT-434: "the [cost] is declined" was a dead branch's line;
+  // no cast-time cost can be declined (CR 111.15), so it is deleted.
+  assert.equal(costly.length, 19, 'tier 1:\n' + costly.map(s => `  ${s.file}:${s.line} ${s.msg}`).join('\n'));
   assert.equal(rest.length, 18);
 
   /* THE TICKET LIST. Keyed on a stem of the sentence rather than a line
@@ -768,7 +775,6 @@ test('[CR D7.4] the ranked half: the announcements where the absence cost the pl
     ['a part fizzles (target gone)', 1],
     ['the [~] cost cannot be paid', 2],
     ['cost must be paid ~ times and cannot be', 1],
-    ['the [cost] is declined', 1],
     ['part of the activation cost can no longer be paid', 1],
     ['imposed [sacrifice a unit] cost can no longer be paid', 1],
     ['there is no legal target for that', 1],
@@ -792,7 +798,7 @@ test('[CR D7.4] the ranked half: the announcements where the absence cost the pl
 });
 
 test('[CR D7.4] one of the thirty-eight now has a surface, and the client really draws it', () => {
-  // The measurement above counts the SOURCE, which still has 38 announcements
+  // The measurement above counts the SOURCE, which still has 37 announcements
   // that would be log-only if nobody had built anything. This is the one that
   // no longer is — asserted against the client, not against the count, so the
   // two can never quietly agree with each other while both being wrong.

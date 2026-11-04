@@ -315,7 +315,9 @@ test('[CR D7.4] the derived tier-1 population, and every member of it earns a to
   // for it, which is what puts it in this tier rather than in bookkeeping.
   // 21 → 20 with the Wraith ruling of report round 2026-10-16: the stale-subject
   // line "a part fizzles (what it was aimed at is gone)" has no site any more.
-  assert.equal(costly.length, 20,
+  // 20 → 19 with CT-434 (CR 111.15): payCastCost's unreachable declineCost
+  // branch is deleted, and its "the [cost] is declined" line with it.
+  assert.equal(costly.length, 19,
     'the tier-1 count moved — a new costly absence, or one reworded out of the class.\n'
     + 'AS MEASURED NOW:\n' + listing(costly));
 
@@ -332,7 +334,8 @@ test('[CR D7.4] the derived tier-1 population, and every member of it earns a to
   // the tier is derived from the sentence, not from a typed list of cases.
   // 18 → 17 with the Wraith ruling of 2026-10-16: the stale-subject part fizzle
   // was a toasted member, and its site is gone.
-  assert.equal(toasted.length, 17,
+  // 17 → 16 with CT-434: the declined-cost line was toasted, and is deleted.
+  assert.equal(toasted.length, 16,
     'the number of costly absences the toast tier carries has moved.\n'
     + 'TOASTED:\n' + listing(toasted) + '\nNOT TOASTED:\n' + listing(surfaced));
 
@@ -394,7 +397,8 @@ test('[CR D7.4] the whole tier, as one number, over engine and pool together', (
   const toasted = all.filter(s => costToast(eventOf(s)));
   // 22 → 23 with the Deferral Drone errata; see the tier-1 population above.
   // 23 → 22 with the Wraith ruling of 2026-10-16; likewise.
-  assert.equal(toasted.length, 22,
+  // 22 → 21 with CT-434; likewise.
+  assert.equal(toasted.length, 21,
     'CT-142 counted 19 rows in the 244 stem table. Per SITE, and after asking every existing '
     + 'surface whether it already draws the thing, the tier is:\n' + listing(toasted));
 });
@@ -402,8 +406,8 @@ test('[CR D7.4] the whole tier, as one number, over engine and pool together', (
 /* ── §2. the rule rejects what it should ──────────────────────────────── */
 
 test('[CR D7.4] an absence nobody paid for is not a toast', () => {
-  // ABSENCE alone is far too wide — 244 measures 38 log-only announcements and
-  // only 20 of them cost anything. The tier is the ranked half; the rest stay
+  // ABSENCE alone is far too wide — 244 measures 37 log-only announcements and
+  // only 19 of them cost anything. The tier is the ranked half; the rest stay
   // in the log, which is what the log is for.
   const absences = structuralSites().filter(s => s.msg && ABSENCE.test(s.msg));
   const notCostly = absences.filter(s => !COSTLY.test(s.msg));
