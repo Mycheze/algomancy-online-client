@@ -2,12 +2,11 @@
    Both are layers beside #app with their own scrims — never the board's
    overlay class (269). The lesson window sits above the board and below the
    report form and the legal pages; the lesson pill floats over the rail's foot. */
-.lessonscrim, .learnscrim { position: fixed; inset: 0; z-index: 76; background: rgba(6,8,11,.62);
+.lessonscrim { position: fixed; inset: 0; z-index: 76; background: rgba(6,8,11,.62);
   display: flex; align-items: center; justify-content: center; padding: var(--space-6); }
-.lessonbox, .learnbox { width: min(94vw, 760px); max-height: 90vh; display: flex; flex-direction: column; gap: var(--space-4);
+.lessonbox { width: min(94vw, 760px); max-height: 90vh; display: flex; flex-direction: column; gap: var(--space-4);
   background: var(--panel); border: 1px solid var(--accent); border-radius: var(--radius-lg); padding: var(--space-5) var(--space-6);
   box-shadow: 0 12px 40px rgba(0,0,0,.55); }
-.learnbox { width: min(94vw, 600px); }
 .lhead { display: flex; align-items: baseline; gap: var(--space-4); }
 .lhead h3 { margin: 0; flex: 1; }
 .lnum { color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: var(--text-11); letter-spacing: .08em; white-space: nowrap; }
@@ -72,14 +71,13 @@ a.lcard { color: var(--accent); text-decoration: underline dotted; cursor: help;
 .learnel { padding: var(--space-3) var(--space-5); opacity: .75; }
 .learnel.on { opacity: 1; font-weight: 700; border-color: var(--accent); color: var(--accent); }
 .learngo { display: flex; gap: var(--space-4); }
-.learngo button { padding: var(--space-4) var(--space-6); font-size: var(--text-14); }
 .learnlist summary { cursor: pointer; color: var(--dim); }
 .learnlist ol { margin: var(--space-3) 0 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-1); }
 .learnread { background: none; border: none; color: var(--text); padding: var(--space-1) 0; text-align: left; cursor: pointer; }
 .learnread:hover { color: var(--accent); }
 .learnseen { color: var(--glow); }
 @media (max-width: 700px) {
-  .lessonbox, .learnbox { padding: var(--space-4) var(--space-5); max-height: 94vh; }
+  .lessonbox { padding: var(--space-4) var(--space-5); max-height: 94vh; }
   .lfigimg { width: 110px; }
   .ldcol { width: 70px; } .ldslot, .ldunit { width: 66px; }
 }
@@ -194,3 +192,13 @@ body.lessonreading .arrowlayer { z-index: 85; }
 .lfcell .lbadge { font-size: var(--text-11); }
 @media (max-width: 700px) { .lfcell .lfigimg, .lfcell .lfigback, .lfcell .lfigcard { width: 64px; max-width: 64px; } }
 
+
+/* ── the Learn to Play menu as a sheet (pages/learn.ts, 2026-11-04) ────────
+   components/sheet.ts is the panel, its scrim and its ✕; this is only what is
+   inside: the elements, the one orange Start (home's Create-room weight), the
+   lessons under a hairline. */
+.learnsheet .ui-sheet__body { display: flex; flex-direction: column; gap: var(--space-5); }
+.learnsheet .learngo .learngobtn { flex: 1 1 0; min-height: var(--icon-button-min-h); font-size: var(--text-14); font-weight: 700; }
+.learnsheet .learngo .ui-button--secondary { flex: 0 0 auto; font-weight: 400; }
+.learnsheet .learnlist { border-top: 1px solid var(--color-border); padding-top: var(--space-4); }
+.learnsheet .learnlist summary { padding: var(--space-2) 0; }

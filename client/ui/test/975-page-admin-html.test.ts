@@ -32,7 +32,7 @@ function view(over: Partial<AdminView> = {}): AdminView {
     roomRows: [{ code: 'QXRM', mode: 'draft', names: ['Ann', 'Bo'], connected: [true, false], users: ['a', null], turn: 2,
       phase: 'main', winner: null, actions: 9, minutes: 4, watchers: 0, rated: false }],
     calendar: { now: 0, rows: [], runsOutAt: null, weeksLeft: 0, upcoming: 0 },
-    onlyUnmarked: false,
+    onlyUnmarked: false, chrome: { signedIn: true, alerts: 0 },
     ...over,
   };
 }
@@ -41,7 +41,9 @@ const btns = (html: string): string[] => [...html.matchAll(/data-btn="([^"]+)"/g
 
 test('975 §0 positive control: there is no DOM here', () => {
   assert.equal(typeof (globalThis as Record<string, unknown>)['document'], 'undefined');
-  assert.match(adminHtml(view()), /^<div class="adminpage">/);
+  // the app frame (pages/frame.ts, 2026-11-04): the page's class last (287)
+  assert.match(adminHtml(view()), /^<div class="ui-app-shell ui-app-shell--contained ui-app-shell--fill apppage framewide adminpage">/);
+  assert.match(adminHtml(view({ access: false })), /^<div class="ui-app-shell ui-app-shell--contained apppage adminpage">/);
 });
 
 test('975 §1 refused: the one sentence and the way out, nothing else', () => {
@@ -60,7 +62,9 @@ test('975 §2 every tab draws its table, and the current tab is the one that is 
   for (const [id] of ADMIN_TABS) {
     const html = adminHtml(view({ current: id }));
     assert.match(html, heads[id]!, `${id}: its body`);
-    const on = [...html.matchAll(/class="[^"]*\bon\b[^"]*" data-btn="admin-tab" data-tab="(\w+)"/g)].map(m => m[1]);
+    // the tabs are a segmented control in the toolbar's centre since 2026-11-04
+    const on = [...html.matchAll(/class="ui-segmented__option on" data-btn="admin-tab"[^>]*data-tab="(\w+)"/g)].map(m => m[1]);
+    assert.match(html, new RegExp(`<div class="admintablewrap" data-scroll="admin-${id}">|The calendar is empty`), `${id}: its table scrolls by itself`);
     assert.deepEqual(on, [id], `${id}: the only tab that is on`);
     assert.equal((html.match(/data-btn="admin-tab"/g) ?? []).length, ADMIN_TABS.length, 'every tab is drawn');
   }

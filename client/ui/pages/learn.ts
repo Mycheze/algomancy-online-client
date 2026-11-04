@@ -12,6 +12,7 @@ import type { LearnProgress } from '../learn.ts';
 import { LEARN_ELEMENTS, type LearnElement } from '../lessondeck.ts';
 import { ALL_LESSONS } from '../lessons.ts';
 import { elIcon, esc } from '../util.ts';
+import { button, sheet } from '../components/index.ts';
 
 export interface LearnMenuView {
   /** the element picked, the one Start (or Continue) plays */
@@ -35,22 +36,29 @@ export function learnMenuView(progress: LearnProgress | null, el: LearnElement):
   };
 }
 
+/** The menu, as a sheet (components/sheet.ts, 2026-11-04): the system's
+ * panel over a dimmed page, closed by tapping off it, its ✕ or Esc. The sheet
+ * root keeps the layer's `learnscrim` (its id and class: ui/learnmenu.ts
+ * reads a click on it, 307 and 1020 look for it); the scrim and the ✕ carry
+ * the sheet's `data-sheet-dismiss`, which the layer closes on. */
 export function learnMenuHtml(v: LearnMenuView): string {
   const { el, saved } = v;
   const els = v.elements.map(e =>
     `<button class="learnel el-${e} ${e === el ? 'on' : ''}" data-lmenu="el" data-el="${e}">${elIcon(e)}${e[0]!.toUpperCase()}${e.slice(1)}</button>`).join('');
   const lessons = v.lessons.map((l, i) =>
     `<li><button class="learnread" data-lmenu="read" data-i="${i}">${esc(l.n)}. ${esc(l.title)}</button>${l.seen ? ' <span class="learnseen">✓</span>' : ''}</li>`).join('');
-  return `<div class="learnscrim" id="learnscrim"><div class="learnbox" role="dialog" aria-label="Learn to play">
-    <div class="lhead"><h3>📘 Learn to play</h3><button data-lmenu="close">✕</button></div>
-    <p class="learnblurb">A real game, with a lesson at each new moment. About twenty minutes.</p>
+  const go = (label: string, lmenu: string, variant: 'primary' | 'secondary' = 'primary'): string =>
+    button({ label, variant, className: 'learngobtn', attrs: { 'data-lmenu': lmenu } });
+  return sheet({
+    open: true, id: 'learnscrim', title: 'Learn to play', width: 'md', className: 'learnscrim learnsheet',
+    bodyHtml: `<p class="learnblurb">A real game, with a lesson at each new moment. About twenty minutes.</p>
     <div class="learnlabel">Play one element</div>
     <div class="learnels">${els}</div>
     <div class="learngo">
       ${saved
-        ? `<button class="lprimary" data-lmenu="continue">Continue your ${esc(el)} game</button><button data-lmenu="fresh">Start over</button>`
-        : `<button class="lprimary" data-lmenu="start">Start the ${esc(el)} game</button>`}
+        ? `${go(`Continue your ${el} game`, 'continue')}${go('Start over', 'fresh', 'secondary')}`
+        : go(`Start the ${el} game`, 'start')}
     </div>
-    <details class="learnlist"><summary>Read a lesson</summary><ol>${lessons}</ol></details>
-  </div></div>`;
+    <details class="learnlist"><summary>Read a lesson</summary><ol>${lessons}</ol></details>`,
+  });
 }

@@ -2,6 +2,7 @@
  * server, no account. `adminHtml` is pure, so every state the page can be in
  * is one object away. */
 import { type AdminView, adminHtml } from '../../../ui/pages/admin.ts';
+import { CHROME } from './_page.ts';
 
 const OVER: NonNullable<AdminView['overview']> = {
   me: 'Warden', admins: 2, accounts: 41, games: 312, rooms: 3,
@@ -52,6 +53,7 @@ const base: AdminView = {
     ],
   },
   onlyUnmarked: false,
+  chrome: CHROME,
 };
 
 export default {

@@ -44,7 +44,8 @@
 import * as acct from '../account.ts';
 import { esc } from '../util.ts';
 import { goalText, setupLines, type ChallengeSetup, type Goal, type RunScore } from '../../engine/src/challenge.ts';
-import { button, statusMessage, tabs } from '../components/index.ts';
+import { button, segmented, statusMessage } from '../components/index.ts';
+import { frameChromeView, frameHtml, restoreScrolls, scrollsIn, type FrameChrome } from './frame.ts';
 
 /* ── the shapes the server sends (server/admin.ts) ─────────────────── */
 
@@ -269,7 +270,7 @@ function accountsHtml(accounts: AccountRow[], over: Overview | null): string {
   return `<p class="adminnote">${accounts.length} account(s) · ${over?.admins ?? '?'} admin(s).
     A judge badge and the admin flag are independent — a judge is a trusted voice on rules,
     an admin can change other people's accounts. The last admin cannot be revoked.</p>
-    <div class="admintablewrap"><table class="admintable">
+    <div class="admintablewrap" data-scroll="admin-accounts"><table class="admintable">
     <thead><tr><th>account</th><th>games</th><th>wins</th><th>joined</th><th>last played</th>
       <th>discord</th><th>actions</th></tr></thead>
     <tbody>${rows || '<tr><td colspan="7">no accounts yet</td></tr>'}</tbody></table></div>`;
@@ -311,7 +312,7 @@ function reportsHtml(reports: ReportRow[], over: Overview | null, unmarkedOnly: 
     <br><b>Status is read-only</b> and comes from the ledger in the build this server is running —
     it says whether a report is fixed <i>in what people are playing right now</i>. Your 👍/👎 is
     the part you can change, and it comes down with <code>npm run reports</code>.</p>
-    <div class="admintablewrap"><table class="admintable">
+    <div class="admintablewrap" data-scroll="admin-reports"><table class="admintable">
     <thead><tr><th>#</th><th>when</th><th>where</th><th>who</th><th>kind</th><th>report</th>
       <th>status</th><th>real?</th></tr></thead>
     <tbody>${rows || '<tr><td colspan="8">no reports</td></tr>'}</tbody></table></div>`;
@@ -358,7 +359,7 @@ function gamesHtml(games: GameRow[]): string {
     ${anyUnknown ? 'A name marked <i class="unk">*</i> is the one recorded when the game was played — that seat was signed out, or the account no longer exists. ' : ''}
     ${untimed ? `${untimed} were played before the match timer existed and have no length —
     they are shown as “—” rather than as 0, which would drag every average toward nothing.` : ''}</p>
-    <div class="admintablewrap"><table class="admintable">
+    <div class="admintablewrap" data-scroll="admin-games"><table class="admintable">
     <thead><tr><th>code</th><th>played</th><th>mode</th><th>elements</th><th>players</th>
       <th>result</th><th>turns</th><th>length</th></tr></thead>
     <tbody>${rows || '<tr><td colspan="8">no games recorded</td></tr>'}</tbody></table></div>`;
@@ -383,7 +384,7 @@ function roomsHtml(rooms: RoomRow[]): string {
     until it is dropped, and a room whose players both closed their tabs still shows — the dot
     beside each seat is whether a socket is attached right now, so “over, nobody connected” and
     “turn 4, both here” are told apart by looking. This page never touches a live game.</p>
-    <div class="admintablewrap"><table class="admintable">
+    <div class="admintablewrap" data-scroll="admin-rooms"><table class="admintable">
     <thead><tr><th>room</th><th>mode</th><th>seats</th><th>at</th><th>actions</th>
       <th>live</th><th>watching</th></tr></thead>
     <tbody>${rows || '<tr><td colspan="7">no rooms</td></tr>'}</tbody></table></div>`;
@@ -440,7 +441,7 @@ function challengesHtml(cal: ChallengeCal | null): string {
     Players see only the open week and the closed ones; the upcoming rows are on this page alone.
     The reference run is each row's own solution, scored by this server's engine; its raw is the row's par.
     Open now first, then upcoming, then closed newest first.</p>
-    <div class="admintablewrap"><table class="admintable">
+    <div class="admintablewrap" data-scroll="admin-challenges"><table class="admintable">
     <thead><tr><th>status</th><th>challenge</th><th>goal</th><th>opens / closes</th><th>seed</th>
       <th>par</th><th>reference run</th><th>board</th></tr></thead>
     <tbody>${rows || '<tr><td colspan="8">no challenges</td></tr>'}</tbody></table></div>`;
@@ -472,6 +473,8 @@ export interface AdminView {
   roomRows: RoomRow[];
   calendar: ChallengeCal | null;
   onlyUnmarked: boolean;
+  /** the toolbar's account and bell (pages/frame.ts) */
+  chrome: FrameChrome;
 }
 
 /* The view's names differ from the module's `let`s on purpose: test 962
@@ -481,40 +484,50 @@ export function adminView(): AdminView {
   return {
     access: allowed, current: shownTab, isLoading: fetching, actionMsg: msg, faultMsg: fault, overview: over,
     accountRows: accountList, reportRows: reportList, gameRows: gameList, roomRows: roomList, calendar: cal,
-    onlyUnmarked: unmarkedOnly,
+    onlyUnmarked: unmarkedOnly, chrome: frameChromeView(),
   };
 }
 
+/** The page, in the app frame (pages/frame.ts, 2026-11-04): the five tabs in
+ * the toolbar's centre, Refresh beside the shared tools, and each tab's table
+ * in one surface that scrolls by itself under its note — the page never does. */
 export function adminHtml(v: AdminView): string {
-  const close = button({ label: 'close', dataBtn: 'admin-close' });
+  const back = { dataBtn: 'admin-close', label: 'Home' };
   if (v.access === false) {
-    return `<div class="adminpage"><div class="adminhead">
-      <h1>Admin</h1>${close}</div>
-      <p class="adminnote">This account is not an admin on this server, or you are not signed in.
-      Nothing else on this page is available.</p></div>`;
+    return frameHtml({
+      page: 'adminpage', title: 'Admin', back, chrome: v.chrome,
+      mainHtml: `<p class="adminnote adminrefused">This account is not an admin on this server, or you are not signed in.
+      Nothing else on this page is available.</p>`,
+    });
   }
   const body = v.isLoading ? '<p class="adminnote">loading…</p>'
     : v.current === 'accounts' ? accountsHtml(v.accountRows, v.overview)
       : v.current === 'reports' ? reportsHtml(v.reportRows, v.overview, v.onlyUnmarked)
         : v.current === 'games' ? gamesHtml(v.gameRows)
           : v.current === 'challenges' ? challengesHtml(v.calendar) : roomsHtml(v.roomRows);
-  return `<div class="adminpage">
-    <div class="adminhead">
-      <h1>Admin</h1>
-      <span class="adminwho">${v.overview ? `signed in as ${esc(v.overview.me)}` : ''}</span>
-      ${button({ label: 'refresh', dataBtn: 'admin-refresh' })}
-      ${close}
-    </div>
-    ${tabs({ items: ADMIN_TABS.map(([id, label]) => ({ id, label })), active: v.current, dataBtn: 'admin-tab', className: 'admintabs' })}
-    ${v.actionMsg ? statusMessage({ tone: 'error', text: v.actionMsg, className: 'adminmsg' }) : ''}
+  return frameHtml({
+    page: 'adminpage', title: 'Admin',
+    titleHtml: `Admin${v.overview ? `<small>signed in as ${esc(v.overview.me)}</small>` : ''}`,
+    back, chrome: v.chrome, fill: true, wide: true,
+    centerHtml: segmented({
+      ariaLabel: 'Admin', className: 'admintabs',
+      options: ADMIN_TABS.map(([id, label]) => ({ label, value: id, on: v.current === id, dataBtn: 'admin-tab', attrs: { 'data-tab': id } })),
+    }),
+    toolsHtml: button({ label: 'Refresh', size: 'sm', dataBtn: 'admin-refresh', className: 'adminrefresh' }),
+    mainHtml: `${v.actionMsg ? statusMessage({ tone: 'error', text: v.actionMsg, className: 'adminmsg' }) : ''}
     ${v.faultMsg ? statusMessage({ tone: 'error', text: v.faultMsg, className: 'adminmsg' }) : ''}
-    ${body}
-  </div>`;
+    ${body}`,
+  });
 }
 
+/** Paint the page, every table where it was scrolled to (the frame's scroll
+ * carry; `className` already takes `.board` off, so paintFrame's classList
+ * call is not needed — and 608's stand-in #app has no classList) */
 export function paintAdmin(app: HTMLElement): void {
+  const kept = scrollsIn(app as unknown as Parameters<typeof scrollsIn>[0]);
   app.className = 'admin';
   app.innerHTML = adminHtml(adminView());
+  restoreScrolls(app as unknown as Parameters<typeof restoreScrolls>[0], kept);
 }
 
 function paint(): void {

@@ -92,7 +92,7 @@ test('§1 the Challenges tab draws every calendar row, the upcoming one included
   assert.ok(r.urls.includes('/api/admin/challenges'), 'the tab asks the admin route');
   // the tabs are the ui-tabs component since the design-system round (2026-11-03): the current
   // tab is the one with `on` and aria-selected, whatever else its class list holds
-  assert.match(html, /ui-tabs__tab on" data-btn="admin-tab" data-tab="challenges" type="button" role="tab" aria-selected="true">Challenges</, 'the tab is drawn, and on');
+  assert.match(html, /ui-segmented__option on" data-btn="admin-tab" type="button" data-value="challenges" aria-pressed="true" data-tab="challenges">Challenges</, 'the tab is drawn, and on');
 
   const ids = [...html.matchAll(/class="unk">(wk-[a-z]+)</g)].map(m => m[1]);
   assert.deepEqual(ids, ['wk-open', 'wk-soon', 'wk-old'], 'every row, in the order the server sent');
