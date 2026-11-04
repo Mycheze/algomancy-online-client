@@ -1,11 +1,12 @@
 /* The sign-in screen and the identity bar (ui/pages/signin.ts), from made-up
  * views. The bar is the home screen's slot; it is shown here on its own. */
 import { identityBarHtml, type IdentityBarView, signinHtml, type SigninView } from '../../../ui/pages/signin.ts';
+import { page } from './_page.ts';
 
 export default {
   title: 'Pages/Sign in',
-  render: (args: SigninView) => signinHtml(args),
-  args: { mode: 'login', username: '', msg: '', busy: false } satisfies SigninView,
+  render: (args: SigninView) => page(signinHtml(args)),
+  args: { mode: 'login', username: '', msg: '', busy: false, chrome: { signedIn: false, alerts: 0 } } satisfies SigninView,
 };
 
 export const LogIn = { name: 'Log in' };
