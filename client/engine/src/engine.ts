@@ -14784,12 +14784,8 @@ export class E {
         const sub = b.damageStep;
         // deaths + promotion between sub-steps, no priority (CR 608.3e); the
         // sub-step's Deadly / collapsed / Pure victims in the same batch (CT-413)
-        const doomed = this.combatSubStep(sub);
-        // CR 608.2f: the sub-step has been dealt (a suspension inside it throws
-        // before this line, and the sub-step re-enters from scratch)
-        if (!(b.dealtSubs ??= []).includes(sub)) b.dealtSubs.push(sub);
-        this.checkDeaths(doomed);
-        const next =sub === 'Swift' ? 'normal' : sub === 'normal' ? 'Sluggish' : 'after';
+        this.checkDeaths(this.combatSubStep(sub));
+        const next = sub === 'Swift' ? 'normal' : sub === 'normal' ? 'Sluggish' : 'after';
         /**
          * CR 608.3b — A SPLIT DAMAGE STEP IS SEVERAL STEPS, and this is the
          * boundary between two of them.
@@ -14876,15 +14872,30 @@ export class E {
     if (sub === 'normal' && done.includes('Swift')) return false;
     if (sub === 'Sluggish' && done.includes('normal')) return false;
     const attrs = pure ? new Set<string>() : this.colAttrs(colIds);
-    const dealt = b.dealtSubs ?? [];
     // CR 608.2f: once the Swift sub-step is dealt, only the column's mark says Swift
-    const swift = dealt.includes('Swift') ? done.includes('Swift') : attrs.has('Swift');
+    const swift = this.subDealt(b, 'Swift') ? done.includes('Swift') : attrs.has('Swift');
     if (sub === 'normal') return !swift && !attrs.has('Sluggish');
     // Sluggish, asked before the normal sub-step: the column with Sluggish
-    if (!dealt.includes('normal')) return attrs.has('Sluggish');
+    if (!this.subDealt(b, 'normal')) return attrs.has('Sluggish');
     // after it: every column that struck in neither, Sluggish or not, and a
     // column that struck in Swift again only with Sluggish (CR 608.2c)
     return !swift || attrs.has('Sluggish');
+  }
+
+  /**
+   * CR 608.2f: has sub-step `sub` been DEALT in this battle round? Read off the
+   * pump's own cursor — `damageStep` while it runs, `pendingSub` in the window
+   * between two sub-steps, the after-combat window once all are done — so every
+   * earlier sub-step is dealt and the cursor's own is not yet. Deliberately no
+   * field of its own: a state field would change the bytes of every saved game
+   * that reaches combat damage, and 800-cc-drift-guard holds them identical.
+   * The battle object is new each round, so nothing carries over.
+   */
+  private subDealt(b: BattleState, sub: DamageSubStep): boolean {
+    const at = b.damageStep ?? b.pendingSub ?? (b.step === 'afterWindow' ? 'after' : null);
+    if (!at) return false;
+    const ORDER: readonly (DamageSubStep | 'after')[] = ['Swift', 'normal', 'Sluggish', 'after'];
+    return ORDER.indexOf(sub) < ORDER.indexOf(at);
   }
 
   /** CR 608.2e: column `ci`'s `side` struck in `sub` — remember it for the battle */
