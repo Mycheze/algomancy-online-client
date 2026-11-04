@@ -661,7 +661,9 @@ test('cr:annexd.modes.single-card-duel.no-units — two cards that make no unit 
   assert.deepEqual(w0.drawn, { mine: SPELL, theirs: SPELL2 }, 'seat 0 is told both cards');
   assert.deepEqual(w1.drawn, { mine: SPELL2, theirs: SPELL }, 'seat 1 is told both cards');
   assert.deepEqual([w0.have, w1.have], [[false, false], [false, false]], 'both are asked to pick again');
-  assert.match(UI_WAITING_SRC, /\$\{v\.drawn \? `<div class="lobbypanel scdraw">[\s\S]{0,400}Neither ever makes a unit/,
+  // (a section of the room's one card since the rooms joined the app frame, 2026-11-04:
+  // `roomSection(v.drawn ? …`, the same panel and words)
+  assert.match(UI_WAITING_SRC, /(?:\$\{|roomSection\()v\.drawn \? `<div class="lobbypanel scdraw">[\s\S]{0,400}Neither ever makes a unit/,
     'and the client says why');
   const scratch = mkdtempSync(join(tmpdir(), 'algo-435n-'));
   process.env['ALGO_ACCOUNTS_FILE'] = join(scratch, 'accounts.json');
