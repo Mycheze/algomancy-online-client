@@ -322,6 +322,10 @@ export function place(h: TableHost, carry: Carry | null, to: Place): boolean {
     piles = movePile(piles, from, to.pos);
   } else {
     const { name } = carry;
+    // 0 — a NEW copy from the pool (a tap, Add another, or a drag) stops at the
+    // copy cap, the same note for all three: nothing moves
+    const capped = carry.from === 'binder' ? capNote(h, name, to) : null;
+    if (capped) { note = capped; paintPending = true; return false; }
     // 1 — take it from where it was. A copy leaving the deck for good (the
     // pool, Maybe) leaves the deck list; one moving inside the table does not
     let piece: string | null = name;
@@ -496,8 +500,9 @@ function validSelection(h: TableHost, piles: DeckPile[]): void {
 /** copies of `name` the cap counts: the deck and the sideboard together */
 const capCount = (h: TableHost, name: string): number => count(h.cards(), name) + count(h.side?.() ?? [], name);
 
-/** a tap's own refusal at the copy cap (a drag goes where it is dropped, and
- * an over-cap deck still saves, flagged). The sideboard's is the host's rule */
+/** the refusal of a new copy at the copy cap — place() asks it for every copy
+ * the pool sends, tapped or dragged (an imported over-cap deck still saves,
+ * flagged). The sideboard's is the host's rule */
 function capNote(h: TableHost, name: string, to: Place): string | null {
   if (h.cap === undefined || h.kind !== 'deck') return null;
   if (to.at === 'maybe' || to.at === 'side') return null;
@@ -852,8 +857,6 @@ export function handleButton(el: HTMLElement): boolean {
       if (!carry || carry.from !== 'binder' || h.readOnly) return true;
       putDown();
       const to: Place = target === 'side' && h.side ? { at: 'side' } : target === 'maybe' && h.maybe ? { at: 'maybe' } : { at: 'auto' };
-      const refused = capNote(h, carry.name, to);
-      if (refused) { note = refused; paint(); return true; }
       if (!place(h, carry, to)) paint();
       return true;
     }
@@ -918,8 +921,6 @@ export function handleButton(el: HTMLElement): boolean {
       // Add another: a new copy right after this one; the menu stays on it
       if (!c || c.from === 'head') return true;
       const to = afterCard(c);
-      const refused = to ? capNote(h, c.name, to) : null;
-      if (refused) { note = refused; paint(); return true; }
       if (!to || !place(h, { from: 'binder', name: c.name }, to)) paint();
       return true;
     }
@@ -1176,6 +1177,8 @@ const provider: DragProvider = {
   },
 };
 addDragProvider(provider);
+/** the table's one drag provider, for the tests that drop through it */
+export const tableDrag: DragProvider = provider;
 
 // ── the listeners a table needs beyond clicks ─────────────────────────
 
