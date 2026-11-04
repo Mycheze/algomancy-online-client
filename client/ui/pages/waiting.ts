@@ -17,12 +17,13 @@ import { roomFriendsHtml } from '../inbox.ts';
 import * as lob from '../lobby.ts';
 import * as mt from '../match.ts';
 import * as sc from '../singlecard.ts';
-import { button, statusMessage } from '../components/index.ts';
+import { settingRow, statusMessage } from '../components/index.ts';
 import { chosenDeck, esc, shareBar } from '../util.ts';
 import { deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
 import { singleCardPickerHtml, singleCardPickerView } from './singlecard.ts';
-import { lobbyHtml, lobbyView } from './lobby.ts';
+import { lobbyHtml, lobbyView, roomFrameHtml, roomSection } from './lobby.ts';
 import { paintMatchRoom } from './match.ts';
+import { frameChromeView, paintFrame, type FrameChrome } from './frame.ts';
 
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
 
@@ -68,6 +69,8 @@ export interface ConstructedWaitingView {
   deck: { name: string; author: string } | null;
   deckPicker: DeckPickerView;
   error: string;
+  /** the toolbar's account and bell (pages/frame.ts) */
+  chrome: FrameChrome;
 }
 
 export function constructedWaitingView(net: WaitingNet, error: string): ConstructedWaitingView {
@@ -87,6 +90,7 @@ export function constructedWaitingView(net: WaitingNet, error: string): Construc
     deck: chosenDeck(),
     deckPicker: deckPickerView(),
     error,
+    chrome: frameChromeView(),
   };
 }
 
@@ -102,26 +106,18 @@ export function constructedWaitingView(net: WaitingNet, error: string): Construc
  * different products. */
 export function constructedWaitingHtml(v: ConstructedWaitingView): string {
   const oppLine = v.oppHere ? 'connected — still choosing a deck…' : 'not here yet';
-  return `<div class="lobbypage">
-    <div class="lobbyhead">
-      <h1 class="homelogo">ALGOMANCY</h1>
-      <h2>${v.league ? 'League match' : 'Constructed'} — room <span class="roomcode">${esc(v.room)}</span></h2>
-      <div class="headbtns">${button({ label: 'Leave', dataBtn: 'gohome' })}</div>
-    </div>
-
-    ${v.league
+  return roomFrameHtml({
+    page: 'lobbypage', kind: v.league ? 'League match' : 'Constructed', room: v.room, chrome: v.chrome,
+    cardHtml: roomSection(v.league
       ? (v.oppHere ? '' : '<p class="hint lobbywait">Waiting for your opponent. They join from their own League page — tell them on Discord you are here.</p>')
-      : `${shareBar('Send your opponent the room code', v.room, v.link)}
-    ${v.friends}`}
-
-    ${v.mineIn ? '' : `<div class="lobbypanel deckpicker">
-      <div class="zonelabel">Your deck${v.league ? ' for this game' : ''}</div>
-      ${v.league ? '<p class="hint">Any deck. Keep it or change it every game.</p>' : ''}
-      ${deckPickerHtml(v.deckPicker)}
+      : shareBar('Send your opponent the room code', v.room, v.link))
+      + roomSection(v.league ? '' : v.friends)
+      + roomSection(v.mineIn ? '' : `<div class="lobbypanel deckpicker">
+      ${settingRow({ label: `Your deck${v.league ? ' for this game' : ''}`, controlHtml: deckPickerHtml(v.deckPicker),
+        hintHtml: v.league ? 'Any deck. Keep it or change it every game.' : '' })}
       <button class="cta primary" data-btn="deckjoin" ${v.deck ? '' : 'disabled'}>Play this deck</button>
-    </div>`}
-
-    <div class="lobbyfoot">
+    </div>`)
+      + roomSection(`<div class="lobbyfoot">
       <div class="lobbyseats">
         <span class="lobbyseat"><i class="seatdot${v.mineIn ? ' ready' : ''}"></i>
           <span>${esc(v.myName ?? 'You')} (you) — ${v.mineIn
@@ -131,11 +127,10 @@ export function constructedWaitingHtml(v: ConstructedWaitingView): string {
           <span>${esc(v.oppName ?? 'Opponent')} — ${v.oppIn
             ? '<b class="lockedin">deck is in</b>' : `<span class="dim">${esc(oppLine)}</span>`}</span></span>
       </div>
-    </div>
-
-    ${v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''}
-    <p class="homefoot">Deals when both decks are in.</p>
-  </div>`;
+    </div>`, 'roomsec--foot')
+      + roomSection(v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''),
+    footHtml: '<p class="homefoot">Deals when both decks are in.</p>',
+  });
 }
 
 /* ── the Single Card Duel room ────────────────────────────────────────── */
@@ -157,6 +152,7 @@ export interface SingleWaitingView {
   /** pages/singlecard.ts singleCardPickerHtml() — a slot; '' once my card is in */
   picker: string;
   error: string;
+  chrome: FrameChrome;
 }
 
 export function singleWaitingView(net: WaitingNet, error: string): SingleWaitingView {
@@ -176,6 +172,7 @@ export function singleWaitingView(net: WaitingNet, error: string): SingleWaiting
     card: sc.chosen(),
     picker: mineIn ? '' : singleCardPickerHtml(singleCardPickerView()),
     error,
+    chrome: frameChromeView(),
   };
 }
 
@@ -183,31 +180,23 @@ export function singleWaitingView(net: WaitingNet, error: string): SingleWaiting
  * for a card. Blind: the other seat's line says only that their card is in. Pure. */
 export function singleWaitingHtml(v: SingleWaitingView): string {
   const oppLine = v.oppHere ? 'connected — still choosing a card…' : 'not here yet';
-  return `<div class="lobbypage">
-    <div class="lobbyhead">
-      <h1 class="homelogo">ALGOMANCY</h1>
-      <h2>Single Card Duel — room <span class="roomcode">${esc(v.room)}</span></h2>
-      <div class="headbtns">${button({ label: 'Leave', dataBtn: 'gohome' })}</div>
-    </div>
-
-    ${shareBar('Send your opponent the room code', v.room, v.link)}
-    ${v.friends}
-
-    ${v.drawn ? `<div class="lobbypanel scdraw">
+  return roomFrameHtml({
+    page: 'lobbypage', kind: 'Single Card Duel', room: v.room, chrome: v.chrome,
+    cardHtml: roomSection(shareBar('Send your opponent the room code', v.room, v.link))
+      + roomSection(v.friends)
+      + roomSection(v.drawn ? `<div class="lobbypanel scdraw">
       <div class="zonelabel">Draw — pick again</div>
       <p>You picked <b data-prev="${esc(v.drawn.mine)}">${esc(v.drawn.mine)}</b>; ${esc(v.oppName ?? 'your opponent')} picked
         <b data-prev="${esc(v.drawn.theirs)}">${esc(v.drawn.theirs)}</b>. Neither ever makes a unit, so nobody
         could attack — a draw before it starts. Pick again (the same card is allowed).</p>
-    </div>` : ''}
-
-    ${v.mineIn ? '' : `<div class="lobbypanel deckpicker">
+    </div>` : '')
+      + roomSection(v.mineIn ? '' : `<div class="lobbypanel deckpicker">
       <div class="zonelabel">Your card</div>
       <p class="cardsub">Thirty copies of whatever you pick, hidden from your opponent.</p>
       ${v.picker}
       <button class="cta primary" data-btn="singlejoin" ${v.card ? '' : 'disabled'}>${v.card ? `Play ${esc(v.card)}` : 'Pick a card first'}</button>
-    </div>`}
-
-    <div class="lobbyfoot">
+    </div>`)
+      + roomSection(`<div class="lobbyfoot">
       <div class="lobbyseats">
         <span class="lobbyseat"><i class="seatdot${v.mineIn ? ' ready' : ''}"></i>
           <span>${esc(v.myName ?? 'You')} (you) — ${v.mineIn
@@ -217,11 +206,10 @@ export function singleWaitingHtml(v: SingleWaitingView): string {
           <span>${esc(v.oppName ?? 'Opponent')} — ${v.oppIn
             ? '<b class="lockedin">card is in</b>' : `<span class="dim">${esc(oppLine)}</span>`}</span></span>
       </div>
-    </div>
-
-    ${v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''}
-    <p class="homefoot">Deals when both cards are in.</p>
-  </div>`;
+    </div>`, 'roomsec--foot')
+      + roomSection(v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''),
+    footHtml: '<p class="homefoot">Deals when both cards are in.</p>',
+  });
 }
 
 /* ── the dispatcher ───────────────────────────────────────────────────── */
@@ -233,16 +221,16 @@ export function paintWaiting(app: HTMLElement, net: WaitingNet, error: string, r
   // a draft room chooses its trio here, before a single card is dealt
   if (w.trio) {
     const link = `${location.origin}/?ws=1&room=${encodeURIComponent(net.room)}&seat=${other(net.seat)}&mode=draft`;
-    app.innerHTML = lobbyHtml(lobbyView({
+    paintFrame(app, lobbyHtml(lobbyView({
       lobby: w.trio, seat: net.seat as 0 | 1, names: net.names,
       peers: net.peers, room: net.room, link,
       friends: roomFriendsHtml(!net.peers[other(net.seat)]),
       ...(w.custom ?? net.custom ? { custom: (w.custom ?? net.custom)! } : {}),
-    }));
+    })));
     return;
   }
   if (w.single) {
-    app.innerHTML = singleWaitingHtml(singleWaitingView(net, error));
+    paintFrame(app, singleWaitingHtml(singleWaitingView(net, error)));
     sc.wire();
     return;
   }
@@ -253,6 +241,6 @@ export function paintWaiting(app: HTMLElement, net: WaitingNet, error: string, r
       w.match, error, rerender);
     return;
   }
-  app.innerHTML = constructedWaitingHtml(constructedWaitingView(net, error));
+  paintFrame(app, constructedWaitingHtml(constructedWaitingView(net, error)));
   wireDeckPicker(rerender);
 }

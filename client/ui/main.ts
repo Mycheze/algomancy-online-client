@@ -193,7 +193,7 @@ import { importDeck } from './pages/deckpicker.ts';
 import { closeHomeSheet, openHomeSheet, paintHome, saveHomeName, setHomeFormat, setHomeMode } from './pages/home.ts';
 import { paintWaiting } from './pages/waiting.ts';
 import { paintQueue } from './pages/queue.ts';
-import { setChromeSource } from './pages/frame.ts';
+import { frameChromeView, setChromeSource } from './pages/frame.ts';
 import { revealHtml } from './pages/lobby.ts';
 import { postGameHtml, postGameView } from './pages/postgame.ts';
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
@@ -9164,7 +9164,7 @@ function renderConnecting(): void {
   // a refused join (a room code that names no game) lands here, so this screen
   // needs a way out — without the button it is a dead end you can only leave by
   // editing the URL
-  $app.innerHTML = connectingHtml({ error: uiError });   // pages/connecting.ts
+  $app.innerHTML = connectingHtml({ error: uiError, chrome: frameChromeView() });   // pages/connecting.ts, in the app frame
 }
 
 /** THE ROUTER for every page that is not a game: whichever page owns #app

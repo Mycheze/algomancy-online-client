@@ -34,7 +34,7 @@ const pick = (sel, re) => ({ eval: `(() => { const s = document.querySelector(${
 
 /** the pages drawn in the app frame (ui/pages/frame.ts, 2026-11-04): one
  * window each, like the home — every one of their states is `noScroll` */
-export const FRAME_PAGES = ['cards', 'meta', 'cardstats', 'queue', 'rules', 'auth', 'profile', 'admin'];
+export const FRAME_PAGES = ['cards', 'meta', 'cardstats', 'queue', 'rules', 'auth', 'profile', 'admin', 'waiting', 'match'];
 
 export function SCENARIOS(fx) {
   const S = [];

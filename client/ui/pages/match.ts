@@ -28,7 +28,7 @@
 import { checkSwap, SIDEBOARD_MAX, type MatchConfig } from '../../engine/src/matchdeck.ts';
 import type { Seat } from '../../engine/src/types.ts';
 import * as acct from '../account.ts';
-import { button, statusMessage, toggle } from '../components/index.ts';
+import { button, settingRow, statusMessage, toggle } from '../components/index.ts';
 import * as dk from '../decks.ts';
 import { seedPiles } from '../deckarrange.ts';
 import { roomFriendsHtml } from '../inbox.ts';
@@ -38,6 +38,8 @@ import {
 } from '../match.ts';
 import { cardHeight, cardWidth, pileHtml, scanHtml, stripOf, type PileCard } from '../piletable.ts';
 import { esc, shareBar } from '../util.ts';
+import { roomFrameHtml, roomSection } from './lobby.ts';
+import { frameChromeView, paintFrame, type FrameChrome } from './frame.ts';
 
 /** owner, docs/22 §0: a paused match closes after 7 days */
 const PAUSE_DAYS_MS = 7 * 24 * 3600_000;
@@ -171,6 +173,8 @@ export interface MatchRoomView extends MatchSeatView {
    * draws at for this window, and the deck pane's height (its piles' strips
    * tighten to fit it). Absent = the tabletop's touch size, a 460px pane */
   table?: TableSize;
+  /** the toolbar's account and bell (pages/frame.ts); the sideboarding table has no toolbar */
+  chrome: FrameChrome;
 }
 
 export interface TableSize { cw: number; ch: number; paneH: number }
@@ -209,16 +213,8 @@ export function matchRoomView(seat: MatchSeatView, w: MatchLobbyInfo, decks: CcD
     shown: shown(w),
     concedeAsk: matchState().concedeAsk,
     table: tableSize(),
+    chrome: frameChromeView(),
   };
-}
-
-function headerHtml(v: MatchRoomView): string {
-  const w = v.w;
-  return `<div class="lobbyhead">
-      <h1 class="homelogo">ALGOMANCY</h1>
-      <h2>Competitive — Best of ${w.bestOf} — room <span class="roomcode">${esc(v.room)}</span></h2>
-      <div class="headbtns">${button({ label: 'Leave', dataBtn: 'gohome' })}</div>
-    </div>`;
 }
 
 /** score, both frozen clocks, and the countdown (patched in place each second) */
@@ -330,27 +326,26 @@ function concedeHtml(concedeAsk: boolean): string {
     : '<button data-btn="cc-concede">🏳 Concede match</button>';
 }
 
-/** game 1, before the deal: each seat registers a CC-legal deck */
+/** game 1, before the deal: each seat registers a CC-legal deck — the room
+ * card's sections (pages/lobby.ts roomSection) */
 function registerHtml(v: MatchRoomView): string {
   const w = v.w;
   const me = v.seat, opp = other(me);
   const pick = v.pick;
-  return `${shareBar('Send your opponent the room code', v.room, v.link)}
-    ${v.friends}
-    ${w.mine ? '' : `<div class="lobbypanel deckpicker">
-      <div class="zonelabel">Your deck for the match</div>
-      <p class="hint">Main deck and sideboard. You can swap between games, never before game 1.</p>
-      ${ccDeckSelectHtml(v.decks, pick)}
+  return roomSection(shareBar('Send your opponent the room code', v.room, v.link))
+    + roomSection(v.friends)
+    + roomSection(w.mine ? '' : `<div class="lobbypanel deckpicker">
+      ${settingRow({ label: 'Your deck for the match', controlHtml: ccDeckSelectHtml(v.decks, pick),
+        hintHtml: 'Main deck and sideboard. You can swap between games, never before game 1.' })}
       <button class="cta primary" data-btn="cc-register" ${pick ? '' : 'disabled'}>Play this deck</button>
-    </div>`}
-    <div class="lobbyfoot"><div class="lobbyseats">
+    </div>`)
+    + roomSection(`<div class="lobbyfoot"><div class="lobbyseats">
       <span class="lobbyseat"><i class="seatdot${w.ready[me] ? ' ready' : ''}"></i>
         <span>${esc(v.names[me] ?? 'You')} (you) — ${w.ready[me] ? '<b class="lockedin">deck is in</b>' : '<span class="dim">pick a deck above</span>'}</span></span>
       <span class="lobbyseat"><i class="seatdot${w.ready[opp] ? ' ready' : v.peers[opp] ? '' : ' away'}"></i>
         <span>${esc(v.names[opp] ?? 'Opponent')} — ${w.ready[opp] ? '<b class="lockedin">deck is in</b>'
           : `<span class="dim">${v.peers[opp] ? 'choosing a deck…' : 'not here yet'}</span>`}</span></span>
-    </div></div>
-    <p class="homefoot">Game 1 deals when both decks are in. Initiative is random.</p>`;
+    </div></div>`, 'roomsec--foot');
 }
 
 /** the paused screen (sideboarding itself is the table below) */
@@ -363,14 +358,14 @@ function pausedHtml(v: MatchRoomView): string {
   const until = p?.voidAt ?? (p?.pausedAt ?? v.now) + PAUSE_DAYS_MS;
   const asked = !!p?.resume[me];
   const here = v.peers[opp];
-  return `<div class="lobbypanel ccpaused">
+  return roomSection(scoreboardHtml(v)) + roomSection(`<div class="lobbypanel ccpaused">
         <div class="zonelabel">Paused</div>
         <p>Paused — resume any time before ${esc(dayText(until))}.</p>
         ${asked ? `<p class="hint">Waiting for ${them} to resume…</p>`
           : `<button class="cta primary" data-btn="cc-resume" ${here ? '' : 'disabled'}>Resume</button>
              ${here ? (p?.resume[opp] ? `<p class="hint">${them} wants to resume.</p>` : '') : `<p class="hint">${them} is not here — you both need to be.</p>`}`}
-      </div>
-      <div class="ccfoot">${concedeHtml(v.concedeAsk)}</div>`;
+      </div>`)
+    + roomSection(`<div class="ccfoot">${concedeHtml(v.concedeAsk)}</div>`, 'roomsec--foot');
 }
 
 /**
@@ -424,8 +419,8 @@ function sideboardTableHtml(v: MatchRoomView): string {
 
 /** the match is over (or void) while this page was waiting on it */
 function endedHtml(v: MatchRoomView, m: MatchSummary): string {
-  return `<div class="lobbypanel ccover">${matchResultHtml(m, v.seat, v.names)}
-    <button class="cta" data-btn="gohome">Return to home</button></div>`;
+  return roomSection(`<div class="lobbypanel ccover">${matchResultHtml(m, v.seat, v.names)}
+    <button class="cta" data-btn="gohome">Return to home</button></div>`);
 }
 
 /** "You win the match 2–1" / "Rashi wins the match" / "closed with no result".
@@ -448,15 +443,18 @@ export function matchRoomHtml(v: MatchRoomView): string {
   const w = v.w;
   // between games and not paused: the sideboarding table is the whole page
   if (!v.ended && !registering(v, w) && w.phase !== 'paused' && w.mine && v.shown) return sideboardTableHtml(v);
-  const body = v.ended ? endedHtml(v, v.ended)
-    : registering(v, w) ? registerHtml(v)
-      : w.mine ? `${scoreboardHtml(v)}${pausedHtml(v)}`
-        : '<p class="hint">Waiting for the match…</p>';
-  return `<div class="lobbypage ccpage">
-    ${headerHtml(v)}
-    ${body}
-    ${v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''}
-  </div>`;
+  const reg = !v.ended && registering(v, w);
+  const card = v.ended ? endedHtml(v, v.ended)
+    : reg ? registerHtml(v)
+      : w.mine ? pausedHtml(v)
+        : roomSection('<p class="hint">Waiting for the match…</p>');
+  // the room in the frame (pages/lobby.ts roomFrameHtml); `ccpage` stays the
+  // root's LAST class (report.ts pageOf)
+  return roomFrameHtml({
+    page: 'ccpage', kind: `Competitive — Best of ${w.bestOf}`, room: v.room, chrome: v.chrome,
+    cardHtml: card + roomSection(v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''),
+    footHtml: reg ? '<p class="homefoot">Game 1 deals when both decks are in. Initiative is random.</p>' : '',
+  });
 }
 
 /** Paint a match room into `app` and wire it (pages/waiting.ts's dispatch).
@@ -464,7 +462,7 @@ export function matchRoomHtml(v: MatchRoomView): string {
 export function paintMatchRoom(app: HTMLElement, seat: MatchSeatView, w: MatchLobbyInfo, error: string, rerender: () => void): void {
   const view = (): MatchRoomView => matchRoomView(seat, w, acct.token() ? dk.competitiveDecks() : null, error);
   let v = view();
-  app.innerHTML = matchRoomHtml(v);
+  paintFrame(app, matchRoomHtml(v));
   // the sideboarding table: the deck pane's real height, so its piles' strips
   // fit it — painted once more if the first paint guessed it wrong
   const pane = typeof app.querySelector === 'function' ? app.querySelector<HTMLElement>('.ccsbdeck') : null;

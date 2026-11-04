@@ -116,7 +116,8 @@ const LOBBY: LobbyArgs = {
 
 test('BL-43 ui §6 the lobby shows both seats the rules, and a pair lobby talks about a pair', () => {
   const html = lobbyHtml({ ...LOBBY, custom: { summary: ['2 elements', 'Packs of 5'], excluded: 192 } });
-  assert.match(html, /Custom live draft — room/);
+  // the room's kind is the app frame's toolbar title since 2026-11-04 (pages/lobby.ts roomFrameHtml)
+  assert.match(html, /<h1 class="frametitle">Custom live draft<small>room/);
   assert.match(html, /class="lobbycustom"/);
   assert.match(html, /<li>Packs of 5<\/li>/);
   assert.match(html, /192 cards left out/);

@@ -47,6 +47,7 @@ function room(over: Partial<MatchRoomView> = {}): MatchRoomView {
     w, decks: null, pick: null, error: '', now: 1_000_000,
     link: 'http://x/?ws=1&room=CCRM&seat=1&mode=constructed&cc=1', friends: '<!--SLOT:friends-->',
     shown: w.mine?.current ?? null, concedeAsk: false,
+    chrome: { signedIn: true, alerts: 0 },
     ...over,
   };
 }
@@ -54,7 +55,9 @@ const btns = (html: string): string[] => [...html.matchAll(/data-btn="([^"]+)"/g
 
 test('973 §0 positive control: there is no DOM here', () => {
   assert.equal(typeof (globalThis as Record<string, unknown>)['document'], 'undefined');
-  assert.match(matchRoomHtml(room({ w: lobby({ game: 1, phase: 'game', mine: null }) })), /^<div class="lobbypage ccpage">/);
+    // the rooms are drawn in the app frame since 2026-11-04 (pages/lobby.ts roomFrameHtml): the shell is the root,
+    // the page's class still LAST (report.ts pageOf), and the kind of room + its code is the toolbar's title
+  assert.match(matchRoomHtml(room({ w: lobby({ game: 1, phase: 'game', mine: null }) })), /^<div class="ui-app-shell ui-app-shell--contained apppage ccpage">/);
   // between games the page is the sideboarding table; `ccpage` stays its LAST class (report.ts pageOf)
   assert.match(matchRoomHtml(room()), /^<div class="ccsbtable ccpage" style="--cw:108px;--ch:150px">/);
 });
@@ -101,7 +104,7 @@ test('973 §3 game 1: register a deck, then it is in', () => {
   const w = lobby({ game: 1, phase: 'game', mine: null, score: [0, 0] });
   const decks = [{ id: 'dOK', name: 'Legal', error: null }];
   const html = matchRoomHtml(room({ w, decks, pick: decks[0]!, peers: [true, false] }));
-  assert.match(html, /Competitive — Best of 3 — room <span class="roomcode">CCRM<\/span>/);
+  assert.match(html, /<h1 class="frametitle">Competitive — Best of 3<small>room <span class="roomcode">CCRM<\/span>/);
   assert.match(html, /Send your opponent the room code <b>CCRM<\/b>/);
   assert.match(html, /<!--SLOT:friends-->/);
   assert.match(html, /data-btn="cc-register" >Play this deck/);

@@ -11,14 +11,18 @@
 /* opponent's face-down (dormant) resource of unknown element */
 .res.hidden { background: var(--color-border); border-style: dashed; }
 /* tiny join screen */
-.joinscreen { max-width: 420px; margin: 60px auto; background: var(--panel); border: 1px solid var(--line);
+.joinscreen:where(:not(.apppage)) { max-width: 420px; margin: 60px auto; background: var(--panel); border: 1px solid var(--line);
   border-radius: var(--radius-lg); padding: var(--space-7); display: flex; flex-direction: column; gap: var(--space-5); }
-.joinscreen h2 { margin: 0; color: var(--accent); }
-.joinscreen label { display: block; }
-.joinscreen input[type="text"] { font-size: var(--text-16); padding: var(--space-3); margin-left: var(--space-3); }
+.joinscreen:where(:not(.apppage)) h2 { margin: 0; color: var(--accent); }
+.joinscreen:where(:not(.apppage)) label { display: block; }
+.joinscreen:where(:not(.apppage)) input[type="text"] { font-size: var(--text-16); padding: var(--space-3); margin-left: var(--space-3); }
 /* not the queue screen's (it keeps .joinscreen for the report form, see 30-queue): this
    rule outranked every button class there, so its Find button, ranked/open choices,
    format chips, home link and Decline all drew 16px with 8px padding, never their own */
-.joinscreen:where(:not(.queuescreen)) button { font-size: var(--text-16); padding: var(--space-4); }
-.joinscreen .hint { font-size: var(--text-12); margin: 0; }
+.joinscreen:where(:not(.queuescreen):not(.apppage)) button { font-size: var(--text-16); padding: var(--space-4); }
+.joinscreen:where(:not(.apppage)) .hint { font-size: var(--text-12); margin: 0; }
+/* `:where(:not(.apppage))` on every rule here (2026-11-04): a screen drawn in
+   the app frame (pages/frame.ts) whose root keeps .joinscreen for report.ts's
+   page name — the connecting screen — must not get this card's box on its
+   shell root, nor 16px on its toolbar's buttons. Specificity is unchanged. */
 
