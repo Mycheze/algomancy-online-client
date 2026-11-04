@@ -10,10 +10,12 @@
  *
  *   §1 tabletop.ts calls the host's `commit` exactly once, inside `place`
  *   §2 the drag plan's drop calls `place(` and nothing that writes; every tap
- *      that moves a card is a `place(` too; the binder's + and » are `place(`
+ *      that moves a card is a `place(` too; so is a tap on a pool card
+ *      (`tt-add`, BL-65: the pool replaced the binder and its + and »)
  *   §3 the deck page's host commits through decks.ts's `edit(` and tells the
- *      table (`tabletopChanged`); the binder never writes a deck
- *   §4 every painter defers while a card is in the air, and flushes when it lands
+ *      table (`tabletopChanged`); the pages that draw the table never write
+ *   §4 every painter defers while a card is in the air, and flushes when it
+ *      lands (the pool's results-only repaint too)
  *   §5 drag.ts cancels the browser's own `dragstart` for anything a provider
  *      would pick up (a capture listener, installed once) — and the scans are
  *      `draggable="false"` besides
@@ -65,35 +67,38 @@ test('§2 a drop is a place(); so is every tap that moves a card, and the binder
   for (const op of ['tt-to', 'tt-cut', 'tt-tomaybe', 'tt-todeck', 'tt-newpile']) {
     assert.match(click, new RegExp(`case '${op}':[\\s\\S]*?put\\(`), `the ${op} tap goes through place()`);
   }
-  for (const op of ['tt-pilemove', 'tt-delpile', 'tt-resort', 'tt-undo']) {
+  for (const op of ['tt-pilemove', 'tt-delpile', 'tt-addpile', 'tt-resort', 'tt-undo', 'tt-redo', 'tt-more']) {
     assert.match(click, new RegExp(`case '${op}':[\\s\\S]*?place\\(`), `${op} goes through place()`);
   }
-  const binder = body(TT, 'function binderHost(');
-  assert.match(binder, /add: name => \{ place\(h, \{ from: 'binder', name \}, \{ at: 'auto' \}\); \}/, 'the binder’s + is one copy through place()');
-  assert.match(binder, /toMaybe: \(name: string\) => \{ place\(h, \{ from: 'binder', name \}, \{ at: 'maybe' \}\); \}/);
+  // a tap on a pool card: one copy, to where Add to says, through place()
+  const add = /case 'tt-add': \{([\s\S]*?)\n {4}\}/.exec(click);
+  assert.ok(add, 'the pool’s tap moved — this test needs updating');
+  assert.match(add![1]!, /if \(!place\(h, carry, to\)\) paint\(\);/, 'the pool’s tap is one place()');
+  assert.match(add![1]!, /\{ at: 'side' \} : target === 'maybe' && h\.maybe \? \{ at: 'maybe' \} : \{ at: 'auto' \}/);
   assert.match(TT, /function commitRename\([\s\S]*?place\(host, null, \{ at: 'arrange', edit: \{ op: 'rename'/, 'a rename too');
 });
 
-test('§3 the deck page commits through edit(), and the binder never writes a deck', () => {
+test('§3 the deck page commits through edit(), and the pages that draw the table never write', () => {
   const decks = code('decks.ts');
   const host = body(decks, 'function tabletopHost(');
   assert.match(host, /commit: next => \{[\s\S]*?edit\(d => \{[\s\S]*?tt\.tabletopChanged\(\);/,
     'the table’s commit is the page’s edit() — its save funnel — then the table repaints');
-  assert.doesNotMatch(code('binder.ts'), /\.cards\s*=|scheduleSave|edit\(|commit\(/);
+  for (const f of ['pages/builder.ts', 'pages/table.ts', 'pages/pool.ts']) {
+    assert.doesNotMatch(code(f), /\.cards\s*=|scheduleSave|edit\(|commit\(|\bplace\(/, `${f} only draws`);
+  }
 });
 
 test('§4 every painter waits for the card to land, and paints when it does', () => {
-  for (const f of ['tabletop.ts', 'binder.ts']) {
-    const paint = body(code(f), 'function paint(');
+  for (const head of ['function paint(', 'function paintPool(']) {
+    const paint = body(TT, head);
     const defer = paint.search(/if \(dragActive\(\)\) \{ \w+ = true; return; \}/);
-    const write = paint.search(/\.innerHTML\s*=/);
-    assert.ok(defer >= 0, `${f} paint() must defer while dragActive() — the queue poll repaints under a drag`);
-    assert.ok(write < 0 || defer < write, `${f} defers AFTER it has already written`);
+    const write = paint.search(/\.innerHTML\s*=|paintBuilder\(/);
+    assert.ok(defer >= 0, `tabletop.ts ${head} must defer while dragActive() — the queue poll repaints under a drag`);
+    assert.ok(write < 0 || defer < write, `tabletop.ts ${head} defers AFTER it has already written`);
   }
   const ended = /ended\(\) \{([\s\S]*?)\n {2}\},/.exec(TT);
   assert.ok(ended, 'the provider’s ended() moved');
   assert.match(ended![1]!, /if \(paintPending\) paint\(\);/);
-  assert.match(ended![1]!, /flushBinder\(\);/);
   // the deck page under the table never paints while it is up (it would
   // write the deck page over the table on every drop)
   assert.match(body(code('decks.ts'), 'function paint('), /if \(tt\.screen\(\)\) return;/);
@@ -109,25 +114,26 @@ test('§5 the browser’s own drag is cancelled for every drag source', () => {
   assert.match(guard![1]!, /providers\.some\(p => p\.sourceOf\(t\)\)/, 'for whatever any provider would pick up');
   assert.match(guard![1]!, /press \|\| live/, 'and for any drag that starts while a press or a carry is on');
   assert.match(guard![1]!, /e\.preventDefault\(\)/);
-  // belt and braces: nothing the table or the binder draws is natively draggable
+  // belt and braces: nothing the table or the pool draws is natively draggable
   assert.match(code('piletable.ts'), /export const noImgDrag = /);
-  assert.match(body(code('tabletop.ts'), 'function paint('), /\$app\.innerHTML = noImgDrag\(pageHtml\(host\)\);/);
-  for (const f of ['tabletop.ts', 'binder.ts', 'piletable.ts']) {
+  assert.match(body(TT, 'function paint('), /paintBuilder\(\$app, builderView\(viewOf\(host\)\)\);/);
+  assert.match(body(code('pages/builder.ts'), 'export function paintBuilder('), /paintFrame\(app, noImgDrag\(builderHtml\(v\)\)\);/,
+    'the builder is written through noImgDrag');
+  for (const f of ['tabletop.ts', 'piletable.ts', 'pages/builder.ts', 'pages/table.ts', 'pages/pool.ts']) {
     const src = code(f);
     assert.doesNotMatch(src, /draggable="true"|\.draggable = true|addEventListener\('drop'/, `${f} uses no HTML5 drag and drop`);
     // a scan is drawn only through scanHtml, which strips the native drag
     const arts = [...src.matchAll(/\bartHtml\(/g)].length;
     assert.ok(f === 'piletable.ts' ? arts === 1 : arts === 0, `${f} draws a scan around scanHtml`);
   }
-  for (const w of ['binder.ts']) {
-    const writes = [...code(w).matchAll(/\.innerHTML = (?!'')([^;]*);/g)].map(m => m[1]!);
-    assert.ok(writes.every(x => x.startsWith('noImgDrag(')), `${w} writes markup only through noImgDrag: ${writes}`);
-  }
+  // the pool's results-only repaint writes through noImgDrag too
+  const writes = [...body(TT, 'function paintPool(').matchAll(/\.innerHTML = (?!'')([^;]*);/g)].map(m => m[1]!);
+  assert.ok(writes.length && writes.every(x => x.startsWith('noImgDrag(')), `paintPool writes only through noImgDrag: ${writes}`);
 });
 
 test('§6 no lit targets: only the zone under the card', () => {
   assert.match(TT, /targets: \[\],/, 'the plan names no targets');
-  for (const f of ['tabletop.ts', 'piletable.ts', 'binder.ts']) {
+  for (const f of ['tabletop.ts', 'piletable.ts', 'pages/table.ts', 'pages/pool.ts']) {
     assert.doesNotMatch(code(f), /droptarget|dttarget|dtslot/, `${f} outlines nothing`);
   }
   const drag = code('drag.ts');

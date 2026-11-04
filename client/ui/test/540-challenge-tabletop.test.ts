@@ -14,7 +14,7 @@
  *   §3 a strip card moved by the tap route lands before the card tapped
  *      (counted after it has left), and the draft is saved in that order
  *   §4 strip → scratch leaves the deck; scratch → strip joins it, where it
- *      is put; the binder's + adds to the END of the deck
+ *      is put; a tap on a pool card adds to the END of the deck
  *   §5 Back is the challenge page with the new order; its button opens the
  *      table again
  *   §6 the scratch table is a key of its own in BROWSER_KEYS, read and written
@@ -69,7 +69,7 @@ const ui = home();
 const flush = async (): Promise<void> => { for (let i = 0; i < 40; i++) await Promise.resolve(); };
 await flush();
 
-/** #app alone, without the binder beside it */
+/** #app alone (the binder layer beside it is gone since BL-65; the marker no longer occurs) */
 const appOf = (html: string): string => { const at = html.indexOf('<div class="ddscrim"'); return at < 0 ? html : html.slice(0, at); };
 /** the strip's cards as [src, name], left to right */
 const strip = (html: string): [string, string][] => {
@@ -155,7 +155,7 @@ test('§3 the tap route: a strip card lands before the card tapped, and the draf
   assert.deepEqual(names(html), want2, 'before card 5 (counted after it left: index 3)');
 });
 
-test('§4 strip → scratch leaves the deck, scratch → strip joins it, the binder’s + adds at the bottom', () => {
+test('§4 strip → scratch leaves the deck, scratch → strip joins it, a pool tap adds at the bottom', () => {
   let html = ui.html();
   const before = names(html);
   const piles = scratch(html).length;
@@ -177,11 +177,12 @@ test('§4 strip → scratch leaves the deck, scratch → strip joins it, the bin
   html = ui.tap({ 'tt-src': `strip|1|${out[0]}` });
   html = ui.tap({ 'tt-zone': 'strip' });
   assert.equal(names(html).at(-1), out[0], 'a tap on the strip itself is the bottom of the deck');
-  // the binder's +: one copy, at the bottom of the deck (what is on top was put there on purpose)
-  const pick = /data-dd="add" data-card="([^"]+)"/.exec(html)![1]!.replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+  // a tap on a pool card (BL-65: the pool replaced the binder's +): one copy, at the bottom
+  // of the deck (what is on top was put there on purpose)
+  const pick = /data-btn="tt-add" data-tt-src="binder\|([^"]+)"/.exec(html)![1]!.replace(/&#39;/g, "'").replace(/&amp;/g, '&');
   const was = names(html);
-  html = ui.click({ dd: 'add', card: pick });
-  assert.deepEqual(names(html), [...was, pick], 'the binder’s + adds one copy at the bottom');
+  html = ui.click({ btn: 'tt-add', 'tt-src': `binder|${pick}` });
+  assert.deepEqual(names(html), [...was, pick], 'a tap on a pool card adds one copy at the bottom');
   assert.deepEqual(draft(), [...was, pick]);
 });
 

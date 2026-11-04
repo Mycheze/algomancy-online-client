@@ -12,28 +12,18 @@
    ONLY THE PILE UNDER THE CARD LIGHTS: a soft tint, never an outline; the
    gap that opens in it is the preview. The one dashed thing is a new pile's
    place, while the card is over it. */
-:root { --bdw: 340px; --ddh: 46vh; --felt: var(--color-surface-sunken); }
-html.touch { --bdw: 300px; }
-.ttpage { position: fixed; top: 0; left: 0; bottom: 0; right: var(--bdw); z-index: 1;
-  display: flex; flex-direction: column; background: var(--bg); --cw: 132px; --ch: 183px; }
+:root { --felt: var(--color-surface-sunken); }
+/* the page is the app frame's (pages/builder.ts); its card size lives on the table (.tttablewrap) */
+.ttpage { --cw: 132px; --ch: 183px; }
 .ttloading { padding: 40px; }
-.tttop { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; padding: var(--space-4) var(--space-5);
-  background: var(--panel); border-bottom: 1px solid var(--line); }
-.ttback { flex: none; }
-.ttsummary { flex: 1; min-width: 0; }
-.ttsummary .cbdeckbar { position: static; margin: 0; padding: 0; border: 0; background: none; }
-.tttools { display: flex; align-items: center; gap: var(--space-3); flex: none; }
 .ttresort { position: relative; }
 .ttresort > summary { list-style: none; cursor: pointer; padding: var(--space-2) var(--space-4); border: 1px solid var(--line);
-  border-radius: var(--radius-md); background: var(--panel2); user-select: none; }
+  border-radius: var(--radius-md); background: var(--panel2); user-select: none; font-size: var(--text-13); }
 .ttresort > summary::-webkit-details-marker { display: none; }
 .ttmenu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; display: flex; flex-direction: column;
   gap: var(--space-1); min-width: 130px; padding: var(--space-2); background: var(--panel); border: 1px solid var(--line);
   border-radius: var(--radius-lg); box-shadow: 0 10px 24px rgba(0, 0, 0, .5); }
 .ttmenu button { text-align: left; }
-.ttselbar { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; padding: var(--space-3) var(--space-5);
-  background: var(--panel2); border-bottom: 1px solid var(--line); }
-.ttselbar .dkicon { width: 32px; height: 32px; margin-left: auto; }
 /* the table (pages/table.ts): its own stacking context, so a card lifted to
    z-index 500 stays above its neighbours and under every sheet */
 .tttablewrap { flex: 1; min-height: 0; display: flex; flex-direction: column; isolation: isolate; }
@@ -99,9 +89,9 @@ html:not(.ttcarrypile) .ttpage .ttend.dropover::before { content: ''; display: b
 .ttpile.ttpicked { outline: 2px solid var(--accent); }
 /* the card or pile in the air: lifted, no outline, and never a transition
    (the ghost moves by transform; one would trail the pointer) */
-#draglayer > .dragghost.ttcard, #draglayer > .dragghost.ttpile, #draglayer > .dragghost.ddtile {
+#draglayer > .dragghost.ttcard, #draglayer > .dragghost.ttpile, #draglayer > .dragghost.ttpooltile {
   box-shadow: 0 18px 40px rgba(0, 0, 0, .65); transition: none; height: auto; }
-#draglayer > .dragghost.ddtile .dkbtns, #draglayer > .dragghost.ddtile .dkn { display: none; }
+#draglayer > .dragghost.ttpooltile .ttpooln, #draglayer > .dragghost.ttpooltile .ttpools { display: none; }
 #draglayer > .dragghost.ttcard > .ttart { height: auto; }
 #draglayer > .dragghost.ttpile { background: color-mix(in srgb, var(--felt) 92%, transparent); }
 #draglayer > .dragghost.ttpile .ttfan { width: auto; }
@@ -117,7 +107,7 @@ html:not(.ttcarrypile) .ttpage .ttend.dropover::before { content: ''; display: b
 .ttrailmaybe { flex: 1 0 auto; display: flex; flex-direction: column; }
 /* Maybe is never the deck: dashed, hatched, and it says so */
 .ttmaybepile { flex: 1 0 auto; border: 1px dashed var(--color-border-strong);
-  background: repeating-linear-gradient(135deg, transparent 0 8px, var(--color-accent-wash) 8px 10px); }
+  background: repeating-linear-gradient(135deg, transparent 0 8px, var(--color-surface-raised) 8px 10px); }
 .ttrailnote { margin: var(--space-2) 0 0; color: var(--dim); font-size: var(--text-11); }
 .ttmaybepile .ttpilelabel, .ttsidepile .ttpilelabel { color: var(--dim); text-transform: uppercase; letter-spacing: .06em; font-size: var(--text-11); }
 /* an empty sideboard keeps a card's room, outlined — a place to drop, not just a header */
@@ -132,16 +122,6 @@ html:not(.ttcarrypile) .ttpage .ttend.dropover::before { content: ''; display: b
 .ttpopitems { display: flex; flex-direction: column; }
 .ttpopitems > .ttpopitem { justify-content: flex-start; text-align: left; }
 .ttnote { padding: var(--space-3) var(--space-5); font-size: var(--text-13); color: var(--accent); background: var(--color-accent-wash); }
-html.binderup .reportfab { right: calc(var(--bdw) + 18px); }
-html.binderup .inboxbell { right: calc(var(--bdw) + 124px); }
 @media (max-width: 900px) {
-  .ttpage { right: 0; bottom: var(--ddh); }
-  .ttbody { display: block; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }
-  .tttable { overflow: visible; }
-  .ttrail { width: auto; overflow: visible; border-left: 0; border-top: 1px solid var(--line); }
   .ttsummary .cbminicurve, .ttsummary .cbdeckels { display: none; }
-  html.binderup .reportfab, html.binderup .inboxbell { bottom: calc(var(--ddh) + 12px); }
-  html.binderup .reportfab { right: 18px; }
-  html.binderup .inboxbell { right: 124px; }
 }
-

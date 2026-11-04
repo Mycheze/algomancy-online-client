@@ -158,7 +158,6 @@ import * as mt from './match.ts';
 import * as ps from './pickset.ts';
 import * as mm from './queue.ts';
 import { installLegal } from './legal.ts';
-import { installBinder } from './binder.ts';
 import * as tt from './tabletop.ts';
 // CR D8.4 — the scenario tester's runner strip (docs/14 §3/§5). It draws nothing
 // unless a SERVER push says this room was dealt with a scenario, so nothing a
@@ -12148,9 +12147,6 @@ installLegal();
 // the Report form: its own layer beside #app, on every page — the pill off
 // the board, the rail button on it (ui/report.ts)
 installReport(reportOpenChanged);
-// the tabletop's card binder: a layer beside #app that stays docked while
-// the table under it repaints (ui/binder.ts)
-installBinder();
 // the bell, the invite popup and the waiting room's friends panel — a layer
 // beside #app on every page that is not a board (ui/inbox.ts)
 // the app frame's toolbar (pages/frame.ts): who is signed in, and the bell's count

@@ -3,9 +3,10 @@
  *
  *   §1 a Sideboard pile at the table's edge (the rail, BL-65), above Maybe, its header n/7
  *   §2 every move has a tap: a finger takes a deck card to the sideboard
- *      (the bar's Sideboard, or a tap on the pile) and back (To deck)
- *   §3 the binder's SB adds a copy to the sideboard; a ninth card reads 8/7
- *      and the count turns red
+ *      (the menu's To sideboard, or a tap on the pile) and back (To deck)
+ *   §3 the pool adds to the sideboard (Add to: Side, then a tap — BL-65: the
+ *      binder's SB went with the binder); a ninth card reads 8/7 and the
+ *      count turns red
  *   §4 a copy the cap across both boards forbids is refused, and the table
  *      says why
  *   §5 the save carries the sideboard the table built
@@ -76,7 +77,7 @@ test('§2 a finger moves a card to the sideboard and back', () => {
   const src = srcsIn(pileOf(html, firstPile(html)))[0]!;
   const name = src.split('|').slice(3).join('|');
   html = ui.tap({ 'tt-src': src });
-  assert.match(html, /class="ttselbar"[\s\S]*?data-btn="tt-toside"[^>]*>Sideboard</, 'its bar offers the sideboard');
+  assert.match(html, /class="ttpop"[\s\S]*?data-btn="tt-toside"[^>]*>To sideboard</, 'its menu offers the sideboard (BL-65: the bar became the menu)');
   html = ui.click({ btn: 'tt-toside' });
   assert.equal(deckCount(html), 29, 'off the deck');
   assert.deepEqual(namesIn(pileOf(html, 'side')), [...SIDE, name], 'onto the sideboard, at its end');
@@ -96,27 +97,27 @@ test('§2 a finger moves a card to the sideboard and back', () => {
   assert.equal(deckCount(html), 30);
 });
 
-test('§3 the binder adds to the sideboard; past seven the count is red', () => {
-  let html = ui.html();
-  assert.match(html, /data-dd="side" data-card="[^"]+" aria-label="to the sideboard">SB</, 'every binder tile has SB');
-  // six cards the binder shows that are in neither board
-  const fresh = [...new Set([...html.matchAll(/data-dd="side" data-card="([^"]+)"/g)].map(m => m[1]!))]
+test('§3 the pool adds to the sideboard; past seven the count is red', () => {
+  let html = ui.click({ btn: 'tt-target', to: 'side' });
+  assert.match(html, /data-btn="tt-target"[^>]*aria-pressed="true"[^>]*data-to="side"/, 'Add to: Side');
+  // six cards the pool shows that are in neither board
+  const fresh = [...new Set([...html.matchAll(/data-btn="tt-add" data-tt-src="binder\|([^"]+)"/g)].map(m => m[1]!))]
     .filter(n => /^[A-Za-z ]+$/.test(n) && !MAIN.includes(n) && !SIDE.includes(n)).slice(0, 6);
   assert.equal(fresh.length, 6);
-  for (const n of fresh) html = ui.click({ dd: 'side', card: n });
+  for (const n of fresh) html = ui.click({ btn: 'tt-add', 'tt-src': `binder|${n}` });
   const side = pileOf(html, 'side');
   assert.deepEqual(namesIn(side), [...SIDE, ...fresh]);
   assert.match(side, /class="ttpilecount bad">8\/7</, '8/7, in red');
   assert.equal(deckCount(html), 30, 'the deck is untouched');
-  html = ui.click({ dd: 'pin', card: fresh[0]! });
-  assert.match(html, /1 in the sideboard/, 'the pinned card says where its copy is');
-  assert.match(html, /data-dd="side" data-card="[^"]+">\+ Sideboard</);
+  const tile = html.slice(html.indexOf(`data-tt-src="binder|${fresh[0]}"`) - 60);
+  assert.match(tile.slice(0, tile.indexOf('</div>') + 6), /<span class="ttpools">S1<\/span>/, 'the pool card says where its copy is');
 });
 
 test('§4 the cap across both boards refuses, and says why', () => {
   const before = ui.html();
   const two = MAIN[0]!;                                       // two in the deck already
-  const html = ui.click({ dd: 'side', card: two });
+  // (BL-65: the binder's SB is the pool's tap with Add to: Side, still set from §3)
+  const html = ui.click({ btn: 'tt-add', 'tt-src': `binder|${two}` });
   assert.deepEqual(namesIn(pileOf(html, 'side')), namesIn(pileOf(before, 'side')), 'nothing moved');
   assert.match(html, new RegExp(`<div class="ttnote" role="status">Max 2 of ${two} across the deck and sideboard\\.</div>`),
     'the table says why');
@@ -142,10 +143,11 @@ test('§6 a drop is the same door, and the side zone is a card’s to drop on', 
   const legal = tt.slice(tt.indexOf('function legalZone('));
   assert.match(legal, /case 'side': return !!h\.side;/, 'a drop on the sideboard needs a host that has one');
   assert.match(tt, /if \(kind === 'side'\) return \{ at: 'side' \};/, 'a tap on the pile is a place()');
-  assert.match(tt, /case 'tt-toside': put\(\{ at: 'side' \}\); return true;/, 'the bar’s Sideboard is a place()');
-  assert.match(tt, /toSide: \(name: string\) => \{ if \(!place\(h, \{ from: 'binder', name \}, \{ at: 'side' \}\)\) paint\(\); \}/,
-    'the binder’s SB is a place()');
-  assert.match(tt, /const why = h\.refuse\?\.\(next\) \?\? null;\s*if \(why\) \{ note = why; paintPending = true; return false; \}/,
+  assert.match(tt, /case 'tt-toside': put\(\{ at: 'side' \}\); return true;/, 'the menu’s To sideboard is a place()');
+  assert.match(tt, /const to: Place = target === 'side' && h\.side \? \{ at: 'side' \}/, 'the pool’s tap with Add to: Side is a place() there');
+  assert.match(tt, /if \(to\.at === 'maybe' \|\| to\.at === 'side'\) return null;/, 'and the cap there is the host’s rule, not the tap’s');
+  // (BL-65: a step through the history restores a state that was, and is never refused)
+  assert.match(tt, /const why = stepped \? null : h\.refuse\?\.\(next\) \?\? null;\s*if \(why\) \{ note = why; paintPending = true; return false; \}/,
     'the host refuses inside place(), before its one commit');
   assert.match(code('decks.ts'), /refuse: next => \{[\s\S]*?crossCapRefusal\(/, 'and the deck page’s rule is the cap across both');
 });

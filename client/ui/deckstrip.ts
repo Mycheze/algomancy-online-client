@@ -79,12 +79,12 @@ export function challengeStripHtml(v: StripView): string {
       ${v.problem ? `<span class="chproblem">${esc(v.problem)}</span>` : ''}
       <button class="cta primary ttplay" data-btn="ch-play" ${v.problem ? 'disabled' : ''}>Play</button>
     </div>
-    <div class="ttstripbox">
+    <div class="ttstripbox" data-scroll="tt-strip">
       <div class="ttstripzone" data-tt-zone="strip" data-tt-axis="x" data-tt-s="${Sx}" data-tt-n="${n}" data-btn="tt-to">
         ${bracket}
         <div class="ttfan" style="width:${W}px;height:${v.ch}px">${cards}</div>
         <div class="ttstripnums" style="width:${W}px">${nums}</div>
-        ${n ? '' : '<span class="dim ttstripempty">Drag cards here from the binder or the table.</span>'}
+        ${n ? '' : '<span class="dim ttstripempty">Drag cards here from the pool or the table.</span>'}
       </div>
     </div>
   </section>`;

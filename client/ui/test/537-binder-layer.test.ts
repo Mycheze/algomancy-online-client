@@ -1,25 +1,31 @@
-/* THE BINDER IS A LAYER (ui/binder.ts), driven through ui/main.ts.
+/* THE POOL IN THE BUILDER (pages/pool.ts, ui/tabletop.ts), driven through ui/main.ts.
  *
- * The binder docked beside the tabletop has to survive every #app repaint the
- * table makes — that is the whole reason it is not markup inside the page.
- * So, through the real client on the real tabletop:
+ * BL-65 (2026-11-04): the binder docked down the right of the tabletop — a
+ * layer beside #app with its own `data-dd` clicks — became the POOL, a band
+ * across the top of the builder page. It is inside #app now, so what the
+ * binder's layer guaranteed by construction (the caret and the query survive
+ * every repaint) the pool has to earn: typing repaints only the results, and
+ * a full repaint carries the caret (pages/caret.ts) and keeps the query in
+ * the controller's state. (This file was 537-binder-layer; the number stays.)
  *
- *   §1 it is a body layer, installed at boot beside the report layer, and it
- *      is up for as long as the table is
- *   §2 it survives a #app repaint byte-identical, query and all
- *   §3 it speaks `data-dd`, never the board's button attribute, and has no
- *      board scrim (269 counts that class across ui/, comments included)
- *   §4 its + adds ONE copy, and each tile says how many are in the deck
- *   §5 the panel is a drop zone that means "take it out"
- *   §6 Escape unpins the pinned card and leaves the page alone
+ *   §1 no layer: the pool is in the page, and nothing installs a binder
+ *   §2 a repaint keeps the query: a chip writes it, a Re-sort repaints the
+ *      page, and the box and the chips still say it; typing repaints only
+ *      the results and the chips (source-level — the driver's typing boxes
+ *      are the report form's; the caret was checked in a real browser)
+ *   §3 it speaks the page's `tt-` buttons; no `data-dd` anywhere
+ *   §4 a tap adds ONE copy, and the card says how many; at the cap a tap
+ *      refuses and the note says why
+ *   §5 the band is the drop zone that means "take it out"
+ *   §6 Escape closes a sheet (More filters), and the page stays
  *   §7 it fetches nothing, books no timers, and holds the deck-legal pool
- *   §8 a mouse click on a table card pins that card here, to read
+ *   §8 a mouse click on a table card opens its menu; a click on the felt closes it
  *
  * Seeds: none. The deck is real cards, served by the driver's fetch seam.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -28,7 +34,7 @@ const code = (f: string): string => readFileSync(join(UI, f), 'utf8')
   .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/.*$/gm, '$1');
 
 const DECK = {
-  id: 'd537', name: 'Binder deck', cards: ['Ignis Sprite', 'Ignis Sprite', 'Good Whale'], maybe: [], cover: null,
+  id: 'd537', name: 'Pool deck', cards: ['Ignis Sprite', 'Ignis Sprite', 'Good Whale'], maybe: [], cover: null,
   author: 'you', createdAt: '2026-10-21T00:00:00Z', updatedAt: '2026-10-21T00:00:00Z', problems: [],
   record: { games: 0, wins: 0, losses: 0, unresolved: 0, lastPlayed: null },
 };
@@ -45,99 +51,117 @@ const { home } = await import('./ui-driver.ts');
 const ui = home();
 const flush = async (): Promise<void> => { for (let i = 0; i < 20; i++) await Promise.resolve(); };
 
-/** the binder's own markup, as the layer holds it */
-const binderOf = (html: string): string => {
-  const at = html.indexOf('<div class="ddscrim"');
-  return at < 0 ? '' : html.slice(at, html.indexOf('</aside>', at) + 8);
+/** the pool's own markup */
+const poolOf = (html: string): string => {
+  const at = html.indexOf('<section class="ttpool"');
+  return at < 0 ? '' : html.slice(at, html.indexOf('</section>', html.indexOf('id="tt-results"', at)) + 10);
 };
-const strip = (h: string): string => /class="cbdeckcount">(\d+) cards?</.exec(h)?.[1] ?? '';
+const deckCount = (html: string): number =>
+  [...html.matchAll(/<section class="ttpile[^"]*" data-tt-zone="pile\|[\s\S]*?<\/section>/g)]
+    .reduce((n, m) => n + [...m[0].matchAll(/class="ttcard/g)].length, 0);
+const tileOf = (html: string, card: string): string => {
+  const p = poolOf(html);
+  const at = p.indexOf(`data-tt-src="binder|${card}"`);
+  return at < 0 ? '' : p.slice(p.lastIndexOf('<div class="ttpooltile', at), p.indexOf('</div>', at) + 6);
+};
 
 await flush();
 ui.click({ btn: 'deck-openpage' });
 await flush();
 const SINCE = FETCHED.length;
 
-test('§1 a body layer, up with the table and only with it', () => {
-  assert.equal(binderOf(ui.html()), '', 'the deck page has no binder');
+test('§1 no layer: the pool is in the page', () => {
+  assert.equal(poolOf(ui.html()), '', 'the deck page has no pool');
   const html = ui.click({ btn: 'deck-tabletop' });
-  assert.match(html, /<div class="ttpage"/);
-  assert.match(binderOf(html), /class="ddpanel/, 'the table docks it');
-  assert.match(code('binder.ts'), /document\.body\.appendChild\(layer\)/);
-  assert.match(code('main.ts'), /installReport\(reportOpenChanged\);[\s\S]{0,40}installBinder\(\);/,
-    'installed at boot, beside the report layer');
-  assert.match(code('binder.ts'), /new MutationObserver\(\(\) => \{\s*if \(host && !onTabletop\(\)\) closeBinder\(\);/,
-    'and it goes when #app becomes another page');
+  assert.match(html, /\bttpage"/);
+  const at = html.indexOf('<section class="ttpool"');
+  assert.ok(at > 0 && at < html.indexOf('</main>'), 'the pool is inside the page’s main region');
+  assert.ok(!existsSync(join(UI, 'binder.ts')), 'ui/binder.ts is gone');
+  assert.doesNotMatch(code('main.ts'), /installBinder|binder\.ts/, 'and main.ts installs no binder');
+  assert.doesNotMatch(html, /id="binderlayer"|class="ddpanel/);
 });
 
-test('§2 a #app repaint leaves it byte-identical, query and all', () => {
-  ui.click({ dd: 'chip', key: 'kind', value: 'unit' });
-  const binder = binderOf(ui.html());
-  assert.match(binder, /id="dd-search"[^>]*value="kind:unit"/, 'the chip wrote the query');
-  const before = ui.html();
-  const after = ui.click({ btn: 'tt-resort', 'tt-by': 'type' });
-  assert.notEqual(after.slice(0, 2000), before.slice(0, 2000), 'the page did repaint');
-  assert.equal(binderOf(after), binder, 'and the binder did not change');
+test('§2 a repaint keeps the query; typing repaints the results alone', () => {
+  let html = ui.click({ btn: 'tt-chip', group: 'kind', value: 'unit' });
+  assert.match(poolOf(html), /<input id="tt-q"[^>]*value="kind:unit"/, 'the chip wrote the query');
+  assert.match(poolOf(html), /data-btn="tt-chip"[^>]*aria-pressed="true"[^>]*data-group="kind" data-value="unit"/);
+  html = ui.click({ btn: 'tt-resort', 'tt-by': 'type' });
+  assert.match(poolOf(html), /<input id="tt-q"[^>]*value="kind:unit"/, 'a full repaint draws the same query');
   ui.click({ btn: 'tt-undo' });
-  ui.click({ dd: 'clear' });
+  ui.click({ btn: 'tt-clear' });
+  // typing: the controller's input listener paints the results and the chips, never the box
+  const tt = code('tabletop.ts');
+  assert.match(tt, /if \(!host \|\| box\?\.id !== 'tt-q'\) return;\s*query = box\.value;\s*shown = PAGE;\s*paintPool\(\);/);
+  const pool = tt.slice(tt.indexOf('function paintPool('), tt.indexOf('export function focusPool('));
+  assert.match(pool, /#tt-results/);
+  assert.match(pool, /#tt-chips/);
+  assert.doesNotMatch(pool, /#tt-q|paintBuilder|paintFrame/, 'the box is never rebuilt while typed into');
+  // a full repaint carries the caret
+  assert.match(code('pages/builder.ts'), /const caret = [^;]*caretIn\(CARET_IDS\)[^;]*;\s*paintFrame\(app, noImgDrag\(builderHtml\(v\)\)\);\s*restoreCaret\(caret\);/);
+  assert.match(code('pages/builder.ts'), /CARET_IDS = \['tt-q', 'dk-name', 'dk-desc'\]/);
 });
 
-test('§3 data-dd, never data-btn, and no board scrim', () => {
-  const binder = binderOf(ui.html());
-  assert.ok(binder.length > 500);
-  assert.doesNotMatch(binder, /data-btn=/, 'main.ts sends every data-btn to the board’s handler');
-  assert.doesNotMatch(binder, /class="overlay/, 'the board’s scrim class means “close the top board dialog”');
-  assert.match(binder, /class="ddscrim"/, 'its own scrim, for the bottom sheet');
-  assert.doesNotMatch(code('binder.ts'), /data-btn/);
+test('§3 tt- buttons, never data-dd', () => {
+  const pool = poolOf(ui.html());
+  assert.ok(pool.length > 500);
+  assert.doesNotMatch(ui.html(), /data-dd=/, 'the binder’s attribute is gone');
+  assert.match(pool, /data-btn="tt-add"/);
+  assert.match(pool, /data-btn="tt-filters"/);
 });
 
-test('§4 + adds one copy; each tile says how many are in the deck', () => {
-  const tileOf = (h: string, card: string): string => {
-    const b = binderOf(h);
-    const at = b.indexOf(`data-card="${card}" data-tt-src=`);
-    return b.slice(b.lastIndexOf('<div class="dktile', at), b.indexOf('</span>\n    </span>', at));
-  };
+test('§4 a tap adds one copy; the card counts; at the cap a tap refuses', () => {
   let html = ui.html();
-  assert.equal(strip(html), '3');
-  const card = /data-dd="add" data-card="([^"]+)"/.exec(binderOf(html))![1]!;
-  html = ui.click({ dd: 'add', card });
-  assert.equal(strip(html), '4', 'one copy, not two');
-  assert.match(tileOf(html, card), /×1</, 'the binder says how many are in now');
+  assert.equal(deckCount(html), 3);
+  const card = /data-btn="tt-add" data-tt-src="binder\|([^"]+)"/.exec(poolOf(html))![1]!;
+  html = ui.click({ btn: 'tt-add', 'tt-src': `binder|${card}` });
+  assert.equal(deckCount(html), 4, 'one copy, not two');
+  assert.match(tileOf(html, card), /class="ttpooln">1</, 'the pool says how many are in now');
   assert.match(html, new RegExp(`class="ttcard[^"]*"[^>]*data-card="${card}"`), 'and it is on the table');
-  // the deck's own cards, by the "in deck" chip
-  html = ui.click({ dd: 'chip', key: 'in', value: 'deck' });
-  assert.match(tileOf(html, 'Ignis Sprite'), /×2</);
-  assert.match(tileOf(html, 'Good Whale'), /×1</);
+  ui.click({ btn: 'tt-chip', group: 'kind', value: 'unit' });
+  ui.click({ btn: 'tt-chip', group: 'el', value: 'fire' });
+  html = ui.click({ btn: 'tt-chip', group: 'mana', value: '1' });
+  assert.match(tileOf(html, 'Ignis Sprite'), /class="ttpooltile ttcap"[\s\S]*class="ttpooln cap">2\/2</, 'at the cap: dimmed, 2/2');
+  html = ui.click({ btn: 'tt-add', 'tt-src': 'binder|Ignis Sprite' });
+  assert.equal(deckCount(html), 4, 'a third is refused');
+  assert.match(html, /<div class="ttnote" role="status">Max 2 of Ignis Sprite\.<\/div>/);
+  ui.click({ btn: 'tt-clear' });
 });
 
-test('§5 the panel is the drop zone that takes a card out', () => {
-  const binder = binderOf(ui.html());
-  assert.match(binder, /<aside class="ddpanel[^"]*" data-tt-zone="binder"/);
-  assert.match(binder, /class="ddremove"[^>]*>Drop to remove</, 'it says so, while a card is over it');
-  assert.match(binder, /data-tt-src="binder\|/, 'and every tile is a drag source');
+test('§5 the band is the drop zone that takes a card out', () => {
+  const pool = poolOf(ui.html());
+  assert.match(pool, /^<section class="ttpool" data-tt-zone="binder"/);
+  assert.match(pool, /class="ttremove"[^>]*>Drop to remove</, 'it says so, while a card is over it');
+  assert.match(pool, /data-tt-src="binder\|/, 'and every card is a drag source');
 });
 
-test('§6 Escape unpins, and the page stays', () => {
-  let html = ui.click({ dd: 'pin', card: 'Good Whale' });
-  assert.match(binderOf(html), /class="ddpinbox"[\s\S]*Good Whale/, 'a tile click pins it');
+test('§6 Escape closes a sheet, and the page stays', () => {
+  let html = ui.click({ btn: 'tt-filters' });
+  assert.match(html, /data-tt-sheet="filters"/, 'More filters is a sheet');
+  assert.match(html, /data-btn="tt-chip" data-key=/, 'holding the full filter list');
   html = ui.key('Escape');
-  assert.doesNotMatch(binderOf(html), /class="ddpinbox"/, 'Escape unpins');
+  assert.doesNotMatch(html, /data-tt-sheet=/, 'Escape closes it');
   html = ui.key('Escape');
-  assert.match(html, /<div class="ttpage"/, 'and the page is not a dialog: Escape never closes it');
-  ui.click({ dd: 'clear' });
+  assert.match(html, /\bttpage"/, 'and the page is not a dialog: Escape never closes it');
 });
 
-test('§7 no fetch, no timers, the deck-legal pool, and the full browser one press away', () => {
+test('§7 no fetch, no timers, the deck-legal pool', () => {
   assert.deepEqual(FETCHED.slice(SINCE).filter(u => !u.startsWith('/api/decks')), [],
     'since the table opened: no request but the deck page’s own saves');
-  assert.doesNotMatch(code('binder.ts'), /\bfetch\(/, 'the pool is in the bundle; the binder never fetches');
-  assert.doesNotMatch(code('binder.ts'), /setTimeout|setInterval/, 'and books no timers (a headless suite would hang on one)');
-  assert.match(code('binder.ts'), /allRows\(\)\.filter\(r => r\.playable\)/);
-  assert.match(binderOf(ui.html()), /data-dd="browse"/);
+  for (const f of ['pages/pool.ts', 'pages/builder.ts', 'pages/table.ts']) {
+    assert.doesNotMatch(code(f), /\bfetch\(|setTimeout|setInterval/, `${f}: the pool is in the bundle, and a headless suite would hang on a timer`);
+  }
+  const pool = code('tabletop.ts').slice(code('tabletop.ts').indexOf('function poolView('));
+  assert.match(pool, /allRows\(\)\.filter\(r => r\.playable\)/);
+  assert.doesNotMatch(code('tabletop.ts'), /\bfetch\(|setTimeout|setInterval/);
 });
 
-test('§8 a mouse click on a table card pins it in the binder', () => {
+test('§8 a mouse click on a table card opens its menu; the felt closes it', () => {
   const src = /data-tt-src="(pile\|[^"]*Good Whale)"/.exec(ui.html())![1]!;
-  const html = ui.click({ 'tt-src': src });
-  assert.match(binderOf(html), /class="ddpinbox"[\s\S]*Good Whale/, 'the card is up to read');
-  assert.doesNotMatch(html, /class="ttselbar"/, 'and a mouse click picked nothing up');
+  ui.pointer('pointerdown', { 'tt-src': src }, { pointerType: 'mouse', pointerId: 1, isPrimary: true, button: 0 });
+  let html = ui.click({ 'tt-src': src });
+  assert.match(html, /<div class="ttpop" role="menu" aria-label="Good Whale"/, 'its menu');
+  assert.match(html, /data-btn="tt-details"/, 'with Details, to read it');
+  html = ui.click({ btn: 'tt-to', 'tt-zone': 'end' });
+  assert.doesNotMatch(html, /class="ttpop"/, 'a click on the felt closes it, and moves nothing');
+  assert.equal(deckCount(html), 4);
 });

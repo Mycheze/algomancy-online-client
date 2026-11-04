@@ -5,15 +5,18 @@
  * FINGER's route only: v1 made it the mouse's too, and the owner's whole
  * experience of v1 was "click and click again to drop". So a tap picks a card
  * up, a mouse click reads it; the pointer that pressed decides, never the
- * device. Through the real client:
+ * device. BL-65: a tap (or a click) on a card also opens its MENU, which is
+ * where v1's selection bar went. Through the real client:
  *
- *   §1 a tap picks a card up (it shows in the binder too); a second tap on it
- *      puts it down; Escape puts it down
+ *   §1 a tap picks a card up and opens its menu; a second tap on it puts it
+ *      down; Escape puts it down
  *   §2 then a tap on a pile lands it at the pile's end; a tap on a card lands
  *      it before that card
- *   §3 the bar: Cut takes it out, Maybe and To deck move it, New pile makes one
- *   §4 the grip picks a pile up, and ◀ ▶ move it along the row
- *   §5 a mouse click on the same card picks nothing up
+ *   §3 the menu: Remove one takes it out, To Maybe and To deck move it,
+ *      Move… then a tap on the end makes a new pile
+ *   §4 the grip picks a pile up, and its menu's ◀ ▶ move it along the row
+ *   §5 a mouse click on the same card opens the menu and carries nothing
+ *      (until Move…)
  *   §6 every intent of the drag model has its tap: the list, against the code
  */
 import { test } from 'node:test';
@@ -60,15 +63,14 @@ test('§1 a tap picks a card up, a second tap or Escape puts it down', () => {
   const [z] = piles(ui.html());
   const src = srcs(ui.html(), z!)[0]!;
   let html = ui.tap({ 'tt-src': src });
-  assert.match(html, /class="ttselbar"/, 'picked up: its bar is up');
+  assert.match(html, /class="ttpop"/, 'picked up: its menu is up');
   assert.match(html, new RegExp(`class="ttcard[^"]*ttpicked[^"]*"[^>]*data-tt-src="${src.replace(/[|]/g, '\\|')}"`), 'and it is marked');
-  assert.match(html, /class="ddpinbox"/, 'one gesture reads it too');
+  assert.match(html, /data-btn="tt-details"/, 'one gesture offers to read it too');
   html = ui.tap({ 'tt-src': src });
-  assert.doesNotMatch(html, /class="ttselbar"/, 'a second tap puts it down');
+  assert.doesNotMatch(html, /class="ttpop"|ttpicked/, 'a second tap puts it down');
   ui.tap({ 'tt-src': src });
   html = ui.key('Escape');
-  html = ui.key('Escape');
-  assert.doesNotMatch(html, /class="ttselbar"/, 'Escape puts it down (after the binder has unpinned)');
+  assert.doesNotMatch(html, /class="ttpop"|ttpicked/, 'Escape puts it down');
 });
 
 test('§2 a tap on a pile lands it at the end; a tap on a card, before that card', () => {
@@ -92,13 +94,16 @@ test('§2 a tap on a pile lands it at the end; a tap on a card, before that card
   assert.equal(p0[0], name, 'before the card tapped');
 });
 
-test('§3 the bar: Cut, Maybe and back, New pile', () => {
+test('§3 the menu: Remove one, To Maybe and back, Move… to a new pile', () => {
   let html = ui.html();
   const n = total(html);
   const pilesBefore = piles(html).length;
   ui.tap({ 'tt-src': srcs(html, piles(html)[0]!)[0]! });
-  html = ui.click({ btn: 'tt-newpile' });
-  assert.equal(piles(html).length, pilesBefore + 1, 'New pile makes one for it');
+  html = ui.click({ btn: 'tt-move' });
+  assert.doesNotMatch(html, /class="ttpop"/, 'Move… puts the menu away');
+  assert.match(html, /class="ttnote" role="status">Tap where it goes\.</, 'and says what it waits for');
+  html = ui.click({ btn: 'tt-to', 'tt-zone': 'end' });
+  assert.equal(piles(html).length, pilesBefore + 1, 'the end of the row makes a new pile for it');
   ui.tap({ 'tt-src': srcs(html, piles(html)[0]!)[0]! });
   html = ui.click({ btn: 'tt-tomaybe' });
   assert.equal(total(html), n - 1, 'Maybe takes it off the deck');
@@ -116,23 +121,31 @@ test('§4 the grip picks a pile up, and ◀ ▶ move it', () => {
   const order = piles(html);
   const id = order[0]!.split('|')[1]!;
   html = ui.tap({ btn: 'tt-head', 'tt-pile': id });
-  assert.match(html, /class="ttselbar"[\s\S]*data-btn="tt-pilemove" data-tt-by="1"/, 'its bar moves it');
+  assert.match(html, /class="ttpop"[\s\S]*data-btn="tt-pilemove"[^>]*data-tt-by="1"/, 'its menu moves it');
   html = ui.click({ btn: 'tt-pilemove', 'tt-by': '1' });
   assert.deepEqual(piles(html).slice(0, 2), [order[1], order[0]], 'one place to the right');
 });
 
-test('§5 a mouse click on a card picks nothing up', () => {
+test('§5 a mouse click on a card opens the menu and carries nothing', () => {
   ui.click({ btn: 'tt-putdown' });
-  const src = srcs(ui.html(), piles(ui.html())[0]!)[0]!;
-  ui.pointer('pointerdown', { 'tt-src': src }, { pointerType: 'mouse', pointerId: 1, isPrimary: true, button: 0 });
-  const html = ui.click({ 'tt-src': src });
-  assert.doesNotMatch(html, /class="ttselbar"/, 'no pick-up');
-  assert.match(html, /class="ddpinbox"/, 'it pins the card to read');
+  let html = ui.html();
+  const [a, b] = piles(html);
+  const src = srcs(html, a!)[0]!;
+  const nB = table(html).find(p => p[0] === b)![1].length;
+  const mouse = { pointerType: 'mouse', pointerId: 1, isPrimary: true, button: 0 };
+  ui.pointer('pointerdown', { 'tt-src': src }, mouse);
+  html = ui.click({ 'tt-src': src });
+  assert.match(html, /class="ttpop"/, 'a click opens the menu');
+  ui.pointer('pointerdown', { 'tt-zone': b! }, mouse);
+  html = ui.click({ btn: 'tt-to', 'tt-zone': b! });
+  assert.equal(table(html).find(p => p[0] === b)![1].length, nB, 'a click on another pile moves nothing');
+  assert.doesNotMatch(html, /class="ttpop"/, 'it closes the menu');
   const tt = code('tabletop.ts');
   assert.match(tt, /addEventListener\('pointerdown', e => \{ lastPointer = e\.pointerType \|\| 'mouse'; \}, \{ capture: true/,
     'the pointer that pressed is noted before its click');
-  assert.match(tt, /if \(lastPointer === 'mouse'\) \{ pinCard\(carry\.name\); return true; \}/, 'a mouse reads');
-  assert.doesNotMatch(tt, /touchSeen\(|matchMedia\(|ontouchstart/, 'never the device');
+  assert.match(tt, /const carrying = \(\): boolean => armed \|\| lastPointer !== 'mouse';/, 'a mouse carries only once Move… has armed it');
+  // the focusPool caret rule is the one device check allowed: a keyboard must not rise on a tablet
+  assert.doesNotMatch(tt.replace(/export function focusPool\([\s\S]*?\n\}/, ''), /touchSeen\(|matchMedia\(|ontouchstart/, 'never the device');
 });
 
 test('§6 every intent of the drag model has its tap', () => {
@@ -145,11 +158,15 @@ test('§6 every intent of the drag model has its tap', () => {
     ['to Maybe', /case 'tt-tomaybe': put\(\{ at: 'maybe' \}\)/],
     ['back from Maybe', /case 'tt-todeck':/],
     ['a new pile', /case 'tt-newpile': put\(\{ at: 'newpile'/],
+    ['a new empty pile', /case 'tt-addpile':[\s\S]*?op: 'addpile'/],
+    ['Move… (any pointer: put it where the next tap is)', /case 'tt-move':[\s\S]*?armed = true;/],
+    ['add from the pool (a tap)', /case 'tt-add':[\s\S]*?place\(h, carry, to\)/],
+    ['add another copy', /case 'tt-more':[\s\S]*?place\(h, \{ from: 'binder', name: c\.name \}, to\)/],
+    ['the divider', /case 'tt-split':/],
     ['move a pile', /case 'tt-head':[\s\S]*?case 'tt-pilemove':/],
     ['rename a pile', /case 'tt-rename':/],
     ['re-sort', /case 'tt-resort':/],
   ];
   for (const [what, re] of routes) assert.match(click, re, `${what} has a tap route`);
-  assert.match(code('binder.ts'), /case 'add': if \(card\) h\.add\(card\);/, 'add from the binder: its +');
   assert.match(code('piletable.ts'), /data-btn="tt-head"/, 'the pile’s grip is a button');
 });

@@ -15,8 +15,8 @@
  *      the hover zoom leaves it alone; drag.ts lets it go when a press becomes
  *      a drag; the tabletop installs it; the middle button's own effects are
  *      cancelled on cards only
- *   §3 the markup: every table card, Maybe card and binder tile carries
- *      `data-zoom`, through the real client
+ *   §3 the markup: every table card, Maybe card and pool card carries
+ *      `data-zoom`, through the real client (BL-65: the pool replaced the binder)
  *
  * The suites cannot press a real mouse (329's header): the Firefox and Chrome
  * walks in the round's hand-off are the proof that it works in a browser.
@@ -208,7 +208,7 @@ test('§1 nothing zooms under a drag, on a tile\'s button, off a card, or for a 
 test('§2 one zoom, held; drag.ts lets it go; the tabletop installs it; the wheel cancelled on cards only', () => {
   const zoom = code('zoom.ts'), drag = code('drag.ts'), pz = code('presszoom.ts');
   // the one layer: nothing but zoom.ts makes #cardzoom
-  for (const f of ['presszoom.ts', 'tabletop.ts', 'piletable.ts', 'binder.ts', 'drag.ts']) {
+  for (const f of ['presszoom.ts', 'tabletop.ts', 'piletable.ts', 'pages/pool.ts', 'pages/builder.ts', 'drag.ts']) {
     assert.doesNotMatch(code(f), /cardzoom/, `${f} builds no zoom of its own`);
   }
   assert.match(zoom, /export function zoomPress\([\s\S]*?put\(c, copy, r, box, animate\);\s*pressing = c;\s*held = true;/,
@@ -232,13 +232,13 @@ test('§2 one zoom, held; drag.ts lets it go; the tabletop installs it; the whee
   assert.match(code('tabletop.ts'), /holdMs: PEEK_MS,/, 'which is the tabletop\'s drag hold');
 });
 
-test('§3 every table card, Maybe card and binder tile carries data-zoom', () => {
+test('§3 every table card, Maybe card and pool card carries data-zoom', () => {
   const html = ui.html();
-  assert.match(html, /<div class="ttpage"/, 'the table is open');
+  assert.match(html, /\bttpage"/, 'the table is open');
   const cards = [...html.matchAll(/<div class="ttcard[^>]*>/g)].map(m => m[0]);
   assert.equal(cards.length, DECK.cards.length + DECK.maybe.length, 'the deck and the Maybe pile are drawn');
   for (const c of cards) assert.match(c, /\sdata-zoom[\s>]/, c);
-  const tiles = [...html.matchAll(/<div class="dktile ddtile[^>]*>/g)].map(m => m[0]);
-  assert.ok(tiles.length > 10, `the binder is up (${tiles.length} tiles)`);
+  const tiles = [...html.matchAll(/<div class="ttpooltile[^>]*>/g)].map(m => m[0]);
+  assert.ok(tiles.length > 10, `the pool is up (${tiles.length} cards)`);
   for (const t of tiles) assert.match(t, /\sdata-zoom[\s>]/, t);
 });

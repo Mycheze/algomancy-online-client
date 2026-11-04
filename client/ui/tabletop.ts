@@ -1,4 +1,4 @@
-/* THE TABLETOP — a deck builder page that is a card table.
+/* THE BUILDER'S CONTROLLER — the deck builder that is a card table.
  *
  * Owner, 2026-10-21, on the first try (cards on a table inside the deck
  * page): *"The builder doesn't need to be integrated into the pages. it can be
@@ -6,33 +6,38 @@
  * simulator' page thing. And the major issue is that you need to be able to
  * naturally DRAG AND DROP cards. That's critical."*
  *
- * So this is a page of its own, reached by "Build on the table" from the deck
- * page (and the challenge page), with a Back button. The deck lies on a felt
- * as PILES in a wrapping row (ui/piletable.ts draws one); the binder
- * (ui/binder.ts) is docked down the right with every card. You pick a card up
- * and put it down:
+ * BL-65 (2026-11-04) put it in the app frame (pages/builder.ts draws it): the
+ * card POOL across the top (pages/pool.ts, every card a tap adds — it replaced
+ * the binder docked down the right), the deck on the felt below as PILES in a
+ * wrapping row (pages/table.ts, ui/piletable.ts), the sideboard and Maybe in a
+ * rail at the table's right. You pick a card up and put it down:
  *
- *   binder → a pile          one copy into the deck, where you let go
- *   binder → bare table      the same, in a new pile there
+ *   pool → a pile            one copy into the deck, where you let go
+ *   pool → bare table        the same, in a new pile there
+ *   a tap on a pool card     one copy to where "Add to" says (Deck · Side · Maybe)
  *   pile → pile              that copy, to exactly where you let go
- *   pile → a gutter / table  a new pile there
- *   pile → binder            that copy out of the deck
- *   pile ↔ Maybe             the maybeboard is a pile at the table's edge
- *   pile ↔ Sideboard         so is the sideboard (docs/22 §4.5), above it: n/7
+ *   pile → a gap / table     a new pile there
+ *   pile → the pool          that copy out of the deck
+ *   pile ↔ Sideboard, Maybe  the rail's two piles
  *   a pile's header          the whole pile, to another place in the row
- *
- * Re-sort lays it all out again by cost, type or element, with one Undo. A
- * deck nobody has arranged opens as piles by cost.
+ *   a tap or click on a card its menu: Remove one · Add another · To sideboard
+ *                            · To Maybe · To deck · Move… · Find similar · Details
  *
  * ⚠ EVERY DROP IS A CLICK ROUTE, and `place()` is the only door. A drag drops
- * through `place()`; a finger can also TAP a card to pick it up and tap where
- * it goes, and that calls the same `place()`; the binder's + is a `place()`;
- * Re-sort, Undo, a rename, a new pile — all `place()`. It is the one function
- * here that calls the host's `commit`, so whatever a finger can do a mouse
- * can, and the other way round (ui/test/536 counts the call sites). A mouse
- * click does NOT pick a card up — it pins the card in the binder to read —
- * because tap-to-pick-up was the whole of v1's mouse experience ("It was all
- * click and click again to drop"). The pointer decides, never the device.
+ * through `place()`; a tap on a pool card is a `place()`; every menu item, a
+ * finger's pick-up-and-put-down, Move…, Re-sort, Undo and Redo, a rename, a
+ * new pile — all `place()`. It is the one function here that calls the host's
+ * `commit` (ui/test/536 counts the call sites), so whatever a finger can do a
+ * mouse can, and the other way round.
+ *
+ * A TAP ON A TABLE CARD OPENS ITS MENU, with any pointer. With a finger the
+ * card is also picked up: a tap on a pile, a gap or another card then puts it
+ * there (the finger's drag route, kept from v1 — 541). With a mouse a click
+ * elsewhere closes the menu, and Move… arms the same place-by-tap route.
+ *
+ * UNDO AND REDO are a history of snapshots (ui/history.ts): place() records the
+ * state before each change, and an Undo is a commit of the snapshot through the
+ * same door.
  *
  * ⚠ ONLY THE PILE UNDER THE CARD LIGHTS. No slot outlines, no list of lit
  * targets (v1's green borders "were super confusing"): the plan passes no
@@ -43,19 +48,30 @@
  * piles ARE the deck) and the weekly challenge (ui/challenge.ts — its piles
  * are a scratch table, and the deck is an ordered strip under it).
  */
-import { addDragProvider, dragActive, type DragPlan, type DragProvider } from './drag.ts';
-import { binderTookKey, closeBinder, flushBinder, openBinder, pinCard, type BinderHost } from './binder.ts';
+import { allRows } from './cardindex.ts';
+import { cardPanelHtml, similarQuery } from './cardpanel.ts';
+import { chipState, nextChipState, poolChosen, search as runSearch, type PoolGroup, withChip, withPoolGroup } from './cardsearch.ts';
 import {
   deletePile, insertCard, movePile, movePileCard, newPileAt, reconcilePiles, removeAt, renamePile, seedPiles,
   type DeckPile, type ResortBy,
 } from './deckarrange.ts';
+import { analyzeDeck, ELEMENTS } from './deckstats.ts';
+import { sampleOpeningHand } from '../engine/src/challenge.ts';
+import { addDragProvider, dragActive, type DragPlan, type DragProvider } from './drag.ts';
+import { canRedo, canUndo, emptyHistory, record, redo as redoStep, undo as undoStep, type History, type Snap } from './history.ts';
 import {
   cardHeight, cardWidth, fanHeight, insertIndexAt, noImgDrag, previewShift, stripIndexAt, stripOf, type PileCard, type PileView,
 } from './piletable.ts';
-import { tableHtml } from './pages/table.ts';
 import { installPressZoom } from './presszoom.ts';
-import { PEEK_MS } from './touch.ts';
-import { esc } from './util.ts';
+import { installSplitter, readSplit, stepSplit, writeSplit } from './splitter.ts';
+import { PEEK_MS, touchSeen } from './touch.ts';
+import { elIcon, esc } from './util.ts';
+import { builderLoadingHtml, builderView, paintBuilder, type BuilderSheet, type BuilderView } from './pages/builder.ts';
+import { facets, filterRailHtml, POOL_BTNS, syntaxHelpHtml } from './pages/cardfilters.ts';
+import { deckStatsHtml, sampleHandHtml, statsStripHtml } from './pages/deckstats.ts';
+import { frameChromeView, paintFrame } from './pages/frame.ts';
+import { poolChipsHtml, poolResultsHtml, type PoolChip, type PoolTarget, type PoolView } from './pages/pool.ts';
+import type { TableMenu, TableMenuItem, TableView } from './pages/table.ts';
 
 // ── the host ──────────────────────────────────────────────────────────
 
@@ -69,7 +85,7 @@ export interface TableHost {
   key: string;
   /** the deck's name */
   title(): string;
-  /** the Back button's words */
+  /** the Back button's caption */
   backLabel: string;
   /** the deck (ordered, for the challenge) */
   cards(): readonly string[];
@@ -86,9 +102,11 @@ export interface TableHost {
   piles(): readonly DeckPile[] | null;
   /** the deck's cover card, ringed on the table */
   cover?(): string | null;
-  /** copies a deck may hold (constructed 2): a pile's header says ×3 in red */
+  /** copies a deck may hold (constructed 2): a pile's header says ×3 in red,
+   * and a tap on a pool card at the cap refuses with a note */
   cap?: number;
-  /** the top bar's deck summary (count, legality, curve, elements) */
+  /** the legacy summary (count, legality, curve, elements), drawn beside the
+   * title when there is no `pill` */
   strip?(): string;
   /** markup under the table: the challenge's deck strip (see STRIP below) */
   below?(): string;
@@ -103,8 +121,8 @@ export interface TableHost {
   // ── BL-65 (2026-11-04): the builder in the app frame. All additive and
   // optional: a host that sets none of these draws as before ──────────────
 
-  /** the pool band over the table (search, chips, every card a tap adds).
-   * Absent/false = no pool (the Competitive table has none) */
+  /** the pool band over the table. ON unless false (or readOnly): every host
+   * a builder has is building a deck */
   pool?: boolean;
   /** the toolbar's count pill: its words, its tone, and the lines its
    * "What's wrong" sheet lists (`tt-problems`). Absent = `strip()` as before */
@@ -131,7 +149,9 @@ export interface TablePill {
   problems: readonly string[];
 }
 
-/** Where a card is picked up from. Indexes are positions in the pile as drawn. */
+/** Where a card is picked up from. Indexes are positions in the pile as drawn.
+ * `binder` is the pool (the name it had when the pool was a binder; 536 and
+ * 541 pin it as the pool's source). */
 export type Carry =
   | { from: 'binder'; name: string }
   | { from: 'pile'; pile: string; index: number; name: string }
@@ -144,11 +164,15 @@ export type Carry =
 export type Arrange =
   | { op: 'rename'; pile: string; name: string }
   | { op: 'delpile'; pile: string }
+  | { op: 'addpile' }
   | { op: 'resort'; by: ResortBy }
-  | { op: 'undo' };
+  | { op: 'undo' }
+  | { op: 'redo' }
+  /** the deck replaced whole (the challenge's Import a deck), undoably */
+  | { op: 'set'; cards: string[] };
 
 /** Where it goes. A destination index counts AFTER the carried card has left
- * (ui/deckarrange.ts); absent = the end. */
+ * (ui/deckarrange.ts); absent = the end. `binder` is the pool: out of the deck. */
 export type Place =
   | { at: 'pile'; pile: string; index?: number }
   | { at: 'newpile'; pos: number }
@@ -171,18 +195,37 @@ type Resolve = (id: string) => TableHost | null;
 /** how many times the waiting `?table=` has been asked for and not found */
 let misses = 0;
 const resolvers: Partial<Record<TableHost['kind'], Resolve>> = {};
-/** what a finger has picked up (touch only) */
+/** the card (or pile) picked: its menu is up, and a finger carries it */
 let sel: { key: string; carry: Carry } | null = null;
+/** the menu is open for `sel` (Move… closes it and keeps `sel`) */
+let menuOpen = false;
+/** Move…: the next tap on a pile, a gap or a card puts `sel` there, whatever the pointer */
+let armed = false;
 /** the card just dropped, drawn in front of its pile until the next pickup */
 let front: { zone: string; index: number } | null = null;
-/** Re-sort's one step back, gone after the next edit */
-let undo: { key: string; piles: DeckPile[] | null } | null = null;
+/** every change, to take back and put again */
+let hist: History | null = null;
 /** a paint asked for while a card was in the air */
 let paintPending = false;
 /** why the host refused the last move — shown until the next one */
 let note: string | null = null;
-/** the last pointer's type: a mouse click pins, a tap picks up */
+/** the last pointer's type: a finger carries what it taps, a mouse does not */
 let lastPointer = 'mouse';
+/** the pool: its query (the chips write into it), how many are drawn, where a tap adds */
+const PAGE = 120;
+let query = '';
+let shown = PAGE;
+let target: PoolTarget = 'deck';
+/** the builder's own sheet */
+type SheetKind = 'problems' | 'stats' | 'filters' | 'syntax' | 'details';
+let sheetOpen: { kind: SheetKind; card?: string } | null = null;
+/** the Stats sheet's sample hand, once dealt */
+let hand: string[] | null = null;
+/** More filters: which sections are open */
+const railOpen: Record<string, boolean> = { element: true, cost: true, kind: true };
+/** the table's pane height as last painted */
+let paneSeen = 0;
+
 /** a pile's rename box, let go of: once, however it was let go of */
 function commitRename(box: HTMLInputElement): void {
   const pile = box.dataset['ttRename'];
@@ -206,6 +249,7 @@ export function registerTableResolver(kind: TableHost['kind'], fn: Resolve): voi
 const count = (list: readonly string[], name: string): number => list.filter(c => c === name).length;
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 const pileZone = (id: string): string => `pile|${id}`;
+const poolOn = (h: TableHost): boolean => h.pool !== false && !h.readOnly;
 
 /** the piles on the table: a deck's saved ones held to the deck (or, never
  * arranged, the deck by cost); a challenge's scratch piles as saved */
@@ -215,26 +259,38 @@ function pilesOf(h: TableHost): DeckPile[] {
   return saved ? reconcilePiles(h.cards(), saved) : seedPiles(h.cards(), 'cost');
 }
 
+/** everything the table edits, as it is now */
+const snapNow = (h: TableHost): Snap => ({
+  cards: h.cards(), maybe: h.maybe?.() ?? null, side: h.side?.() ?? null, piles: h.piles(),
+});
+
+/** this table's history (a fresh one for another table) */
+const histFor = (h: TableHost): History => (hist && hist.key === h.key ? hist : emptyHistory(h.key));
+
+/** a different table, or the deck reloaded from the server: nothing to take back */
+export function clearHistory(): void { hist = null; }
+
 // ── THE ONE DOOR ──────────────────────────────────────────────────────
 
 /**
- * Put `carry` at `to` (or, with `carry` null, apply an arrangement edit or a
- * binder add). Computes the next state with the pure edits of
- * ui/deckarrange.ts and hands it to the host's `commit` — the only call of it
- * in this file. False, and nothing committed, when nothing would change.
+ * Put `carry` at `to` (or, with `carry` null, apply an arrangement edit).
+ * Computes the next state with the pure edits of ui/deckarrange.ts (or the
+ * history's snapshot) and hands it to the host's `commit` — the only call of
+ * it in this file. False, and nothing committed, when nothing would change.
  */
 export function place(h: TableHost, carry: Carry | null, to: Place): boolean {
   const deckPiles = h.kind === 'deck';
-  const cards = [...h.cards()];
-  const maybe = h.maybe ? [...h.maybe()] : null;
-  const side = h.side ? [...h.side()] : null;
+  let cards = [...h.cards()];
+  let maybe = h.maybe ? [...h.maybe()] : null;
+  let side = h.side ? [...h.side()] : null;
   const saved = h.piles();
   note = null;
   let piles = pilesOf(h);
-  let keepUndo = false;
   let landed: { zone: string; index: number } | null = null;
-  /** Undo's piles, null = back to never arranged; undefined = not an Undo */
+  /** a snapshot's piles to restore, null = back to never arranged; undefined = none */
   let restore: DeckPile[] | null | undefined;
+  /** the history after an Undo or a Redo (else: record before the commit) */
+  let stepped: History | null = null;
 
   /** one copy of `name` out of the deck list (constructed: the last copy;
    * order means nothing there) */
@@ -244,13 +300,18 @@ export function place(h: TableHost, carry: Carry | null, to: Place): boolean {
     const e = to.edit;
     if (e.op === 'rename') piles = renamePile(piles, e.pile, e.name);
     else if (e.op === 'delpile') piles = deletePile(piles, e.pile);
-    else if (e.op === 'resort') {
-      undo = { key: h.key, piles: saved ? saved.map(p => ({ ...p, cards: [...p.cards] })) : null };
-      keepUndo = true;
-      piles = seedPiles(deckPiles ? cards : piles.flatMap(p => p.cards), e.by);
-    } else {
-      if (!undo || undo.key !== h.key) return false;
-      restore = undo.piles && deckPiles ? reconcilePiles(cards, undo.piles) : undo.piles;
+    else if (e.op === 'addpile') piles = newPileAt(piles, piles.length);
+    else if (e.op === 'resort') piles = seedPiles(deckPiles ? cards : piles.flatMap(p => p.cards), e.by);
+    else if (e.op === 'set') cards = [...e.cards];
+    else {
+      const step = (e.op === 'undo' ? undoStep : redoStep)(histFor(h), snapNow(h));
+      if (!step) return false;
+      stepped = step.h;
+      cards = [...step.to.cards];
+      maybe = maybe && step.to.maybe ? [...step.to.maybe] : maybe;
+      side = side && step.to.side ? [...step.to.side] : side;
+      restore = step.to.piles ? step.to.piles.map(p => ({ ...p, cards: [...p.cards] })) : null;
+      if (restore && deckPiles) restore = reconcilePiles(cards, restore);
     }
   } else if (!carry) {
     return false;
@@ -262,7 +323,7 @@ export function place(h: TableHost, carry: Carry | null, to: Place): boolean {
   } else {
     const { name } = carry;
     // 1 — take it from where it was. A copy leaving the deck for good (the
-    // binder, Maybe) leaves the deck list; one moving inside the table does not
+    // pool, Maybe) leaves the deck list; one moving inside the table does not
     let piece: string | null = name;
     if (carry.from === 'maybe') {
       if (!maybe || maybe[carry.index] !== name) return false;
@@ -329,31 +390,35 @@ export function place(h: TableHost, carry: Carry | null, to: Place): boolean {
   }
 
   // the arrangement follows the deck, always
-  if (deckPiles) piles = reconcilePiles(cards, piles);
+  if (deckPiles && restore === undefined) piles = reconcilePiles(cards, piles);
   const next: TableNext = {};
   if (!same(cards, h.cards())) next.cards = cards;
   if (maybe && !same(maybe, h.maybe?.())) next.maybe = maybe;
   if (side && !same(side, h.side?.())) next.sideboard = side;
-  if (restore !== undefined) next.piles = restore;
-  else if (!same(piles, saved)) next.piles = piles;
-  if (!Object.keys(next).length) return false;
+  if (restore !== undefined) { if (!same(restore, saved)) next.piles = restore; } else if (!same(piles, saved)) next.piles = piles;
+  if (!Object.keys(next).length) {
+    // an Undo of a change that changed nothing visible still steps
+    if (stepped) hist = stepped;
+    return false;
+  }
   // the host's rule: refused, nothing moves and the reason shows (a drop's
-  // paint waits for the card to land — `ended` — and a tap's caller paints)
-  const why = h.refuse?.(next) ?? null;
+  // paint waits for the card to land — `ended` — and a tap's caller paints).
+  // A step through the history restores a state that was, and is never refused
+  const why = stepped ? null : h.refuse?.(next) ?? null;
   if (why) { note = why; paintPending = true; return false; }
-  if (!keepUndo) undo = null;
+  hist = stepped ?? record(histFor(h), snapNow(h));
   front = landed;
   h.commit(next);
   return true;
 }
 
 /** the host has applied a commit (or its deck changed some other way): the
- * table and the binder's counts follow. Every host calls this from its commit */
+ * table and the pool's counts follow. Every host calls this from its commit */
 export function tabletopChanged(): void {
   if (host) paint();
 }
 
-// ── markup ────────────────────────────────────────────────────────────
+// ── the view ──────────────────────────────────────────────────────────
 
 /** the card width and height this window draws at */
 function sizes(): { cw: number; ch: number } {
@@ -362,11 +427,21 @@ function sizes(): { cw: number; ch: number } {
   return { cw, ch: cardHeight(cw) };
 }
 
-/** the table pane's height, for how far a pile may grow before it tightens */
+/** the room a pile has to grow in before it tightens: the table pane as last
+ * painted, less its head and padding; before the first paint, a guess */
 function paneHeight(): number {
-  const pane = typeof document.querySelector === 'function' ? document.querySelector<HTMLElement>('.tttable') : null;
-  const h = pane?.clientHeight ?? 0;
-  return h > 0 ? h - 40 : Math.max(300, (typeof innerHeight === 'number' ? innerHeight : 800) - 170);
+  if (paneSeen > 0) return paneSeen;
+  const h = typeof innerHeight === 'number' ? innerHeight : 800;
+  return Math.max(260, Math.round((h - 150) * (1 - readSplit())) - 90);
+}
+
+/** what the pane really holds, measured after a paint (0 = not on screen) */
+function measurePane(): number {
+  if (typeof document === 'undefined' || typeof document.querySelector !== 'function') return 0;
+  const pane = document.querySelector<HTMLElement>('.ttpage .tttable');
+  if (!pane || !(pane.clientHeight > 0)) return 0;
+  const head = pane.querySelector<HTMLElement>('.tthead');
+  return pane.clientHeight - (head?.offsetHeight ?? 0) - 44;
 }
 
 /** the selection's own key, matched against each card's data-tt-src */
@@ -413,48 +488,114 @@ function validSelection(h: TableHost, piles: DeckPile[]): void {
   const ok = c.from === 'pile' ? piles.find(p => p.id === c.pile)?.cards[c.index] === c.name
     : c.from === 'maybe' ? h.maybe?.()[c.index] === c.name
       : c.from === 'side' ? h.side?.()[c.index] === c.name
-      : c.from === 'strip' ? h.cards()[c.index] === c.name
-        : c.from === 'head' ? piles.some(p => p.id === c.pile) : true;
-  if (!ok) sel = null;
+        : c.from === 'strip' ? h.cards()[c.index] === c.name
+          : c.from === 'head' ? piles.some(p => p.id === c.pile) : true;
+  if (!ok) putDown();
 }
 
-const btn = (op: string, extra = ''): string => `data-btn="tt-${op}"${extra ? ` ${extra}` : ''}`;
+/** copies of `name` the cap counts: the deck and the sideboard together */
+const capCount = (h: TableHost, name: string): number => count(h.cards(), name) + count(h.side?.() ?? [], name);
 
-/** what can be done to what a finger picked up — its whole menu */
-function selBarHtml(h: TableHost, piles: DeckPile[]): string {
+/** a tap's own refusal at the copy cap (a drag goes where it is dropped, and
+ * an over-cap deck still saves, flagged). The sideboard's is the host's rule */
+function capNote(h: TableHost, name: string, to: Place): string | null {
+  if (h.cap === undefined || h.kind !== 'deck') return null;
+  if (to.at === 'maybe' || to.at === 'side') return null;
+  return capCount(h, name) >= h.cap ? `Max ${h.cap} of ${name}.` : null;
+}
+
+/** what can be done to what is picked — its whole menu */
+function menuOf(h: TableHost, piles: DeckPile[]): TableMenu | null {
   const c = selected(h);
-  if (!c) return '';
+  if (!c || !menuOpen || h.readOnly) return null;
+  const it = (btn: string, label: string, extra: Partial<TableMenuItem> = {}): TableMenuItem => ({ btn, label, ...extra });
   if (c.from === 'head') {
     const i = piles.findIndex(p => p.id === c.pile);
-    return `<div class="ttselbar"><b>${esc(piles[i]?.name ?? '')}</b>
-      ${i > 0 ? `<button ${btn('pilemove', 'data-tt-by="-1"')} aria-label="move left">◀</button>` : ''}
-      ${i < piles.length - 1 ? `<button ${btn('pilemove', 'data-tt-by="1"')} aria-label="move right">▶</button>` : ''}
-      <button class="dkicon" ${btn('putdown')} aria-label="put it down">✕</button></div>`;
+    const p = piles[i];
+    return {
+      title: p?.name ?? '', for: `head|${c.pile}`, items: [
+        ...(i > 0 ? [it('tt-pilemove', '◀ Move left', { attrs: { 'data-tt-by': '-1' } })] : []),
+        ...(i < piles.length - 1 ? [it('tt-pilemove', 'Move right ▶', { attrs: { 'data-tt-by': '1' } })] : []),
+        ...(p && !p.cards.length && piles.length > 1 ? [it('tt-delpile', 'Delete pile', { attrs: { 'data-tt-pile': c.pile } })] : []),
+      ],
+    };
   }
-  return `<div class="ttselbar">
-    <b>${esc(c.name)}</b>
-    <span class="dim">tap where it goes</span>
-    ${c.from !== 'binder' ? `<button ${btn('cut')}>Cut</button>` : ''}
-    ${h.maybe && c.from !== 'maybe' ? `<button ${btn('tomaybe')}>Maybe</button>` : ''}
-    ${h.side && c.from !== 'side' ? `<button ${btn('toside')}>Sideboard</button>` : ''}
-    ${c.from === 'maybe' || c.from === 'side' ? `<button ${btn('todeck')}>To deck</button>` : ''}
-    <button ${btn('newpile')}>New pile</button>
-    <button class="dkicon" ${btn('putdown')} aria-label="put it down">✕</button>
-  </div>`;
+  const deck = h.kind === 'deck';
+  const inDeck = c.from === 'pile' ? deck : c.from === 'strip';
+  const full = deck && h.cap !== undefined && capCount(h, c.name) >= h.cap;
+  const items: TableMenuItem[] = [];
+  items.push(it('tt-cut', inDeck || c.from === 'side' || c.from === 'maybe' ? 'Remove one' : 'Take off the table'));
+  items.push(it('tt-more', 'Add another', { disabled: full }));
+  if (h.side && c.from !== 'side') items.push(it('tt-toside', 'To sideboard'));
+  if (h.maybe && c.from !== 'maybe') items.push(it('tt-tomaybe', 'To Maybe'));
+  if (!inDeck) items.push(it('tt-todeck', 'To deck'));
+  items.push(it('tt-move', 'Move…'));
+  items.push(it('tt-similar', 'Find similar'));
+  items.push(it('tt-details', 'Details'));
+  return { title: c.name, for: srcKey(c), items };
 }
 
-function toolsHtml(h: TableHost): string {
-  const by = (v: ResortBy, label: string): string => `<button ${btn('resort', `data-tt-by="${v}"`)}>${label}</button>`;
-  return `<div class="tttools">
-    <details class="ttresort"><summary>Re-sort ▾</summary>
-      <div class="ttmenu">${by('cost', 'By cost')}${by('type', 'By type')}${by('element', 'By element')}</div>
-    </details>
-    ${undo && undo.key === h.key ? `<button ${btn('undo')}>Undo</button>` : ''}
-  </div>`;
+/** the pool's chips: elements, costs, Unit · Spell (OR inside a group) */
+function poolChips(q: string): PoolChip[] {
+  const on = (g: PoolGroup, v: string): boolean => poolChosen(q, g).some(x => x.toLowerCase() === v.toLowerCase());
+  return [
+    ...ELEMENTS.map(el => ({ group: 'el' as const, value: el, label: el, iconHtml: elIcon(el, el), on: on('element', el) })),
+    ...['0', '1', '2', '3', '4', '5', '6', '7', '8', 'X'].map(m => ({ group: 'mana' as const, value: m, label: m, on: on('cost', m) })),
+    ...[['unit', 'Unit'], ['spell', 'Spell']].map(([v, label]) => ({ group: 'kind' as const, value: v!, label: label!, on: on('kind', v!) })),
+  ];
 }
 
-/** The page, as markup. Pure but for remembering the pane's height. */
-export function pageHtml(h: TableHost): string {
+const GROUP_OF: Record<PoolChip['group'], PoolGroup> = { el: 'element', mana: 'cost', kind: 'kind' };
+
+/** the pool, as the page draws it */
+function poolView(h: TableHost): PoolView | null {
+  if (!poolOn(h)) return null;
+  const deck = new Map<string, number>(), sideN = new Map<string, number>();
+  for (const n of h.cards()) deck.set(n, (deck.get(n) ?? 0) + 1);
+  for (const n of h.side?.() ?? []) sideN.set(n, (sideN.get(n) ?? 0) + 1);
+  const rows = runSearch(query, {
+    pool: allRows().filter(r => r.playable),
+    ctx: { copies: n => deck.get(n) ?? 0, maybe: n => count(h.maybe?.() ?? [], n) },
+  }).rows;
+  const cap = h.kind === 'deck' ? h.cap : undefined;
+  const tiles = rows.slice(0, shown).map(r => {
+    const inDeck = deck.get(r.name) ?? 0, inSide = sideN.get(r.name) ?? 0;
+    return { name: r.name, inDeck, inSide, atCap: cap !== undefined && inDeck + inSide >= cap, over: cap !== undefined && inDeck + inSide > cap };
+  });
+  const targets: PoolTarget[] = ['deck', ...(h.side ? ['side' as const] : []), ...(h.maybe ? ['maybe' as const] : [])];
+  if (!targets.includes(target)) target = 'deck';
+  return {
+    query, chips: poolChips(query), active: query.trim() !== '', total: rows.length, tiles,
+    ...(cap !== undefined ? { cap } : {}),
+    target, targets, scrollKey: `tt-pool|${query}`,
+  };
+}
+
+/** the builder's own sheet, its body drawn */
+function sheetOf(h: TableHost): BuilderSheet | null {
+  const s = sheetOpen;
+  if (!s) return null;
+  switch (s.kind) {
+    case 'problems': {
+      const lines = h.pill?.().problems ?? [];
+      return { kind: 'problems', title: 'What’s wrong', width: 'sm',
+        bodyHtml: lines.length ? `<ul class="ttproblems">${lines.map(l => `<li>${esc(l)}</li>`).join('')}</ul>` : '<p class="dim">Nothing.</p>' };
+    }
+    case 'stats':
+      return { kind: 'stats', title: 'Stats', width: 'md', bodyHtml: deckStatsHtml(analyzeDeck(h.cards())) + sampleHandHtml(hand) };
+    case 'filters':
+      return { kind: 'filters', title: 'More filters', width: 'md',
+        bodyHtml: filterRailHtml({ facets: facets(true), q: query, railOpen }, POOL_BTNS),
+        footerHtml: '<button class="cblink" data-btn="tt-filters" data-tt-syntax="1">Search syntax</button>' };
+    case 'syntax':
+      return { kind: 'syntax', title: 'Search syntax', width: 'lg', bodyHtml: syntaxHelpHtml(POOL_BTNS) };
+    case 'details':
+      return { kind: 'details', title: s.card ?? '', width: 'sm', bodyHtml: cardPanelHtml(s.card ?? '', { close: 'tt-sheet-close' }) };
+  }
+}
+
+/** Everything the builder shows, for pages/builder.ts. */
+function viewOf(h: TableHost): Omit<BuilderView, 'chrome'> {
   const { cw, ch } = sizes();
   const paneH = paneHeight();
   const piles = pilesOf(h);
@@ -467,7 +608,8 @@ export function pageHtml(h: TableHost): string {
   const over = new Map<string, number>();
   if (h.cap !== undefined) for (const n of new Set(both)) { const k = count(both, n); if (k > h.cap) over.set(n, k); }
   const cover = h.cover?.() ?? null;
-  /** which card of a pile a finger has picked up */
+  const ro = !!h.readOnly;
+  /** which card of a pile is picked */
   const picked = (list: PileCard[]): number | undefined => {
     const k = c ? list.findIndex(x => x.src === srcKey(c)) : -1;
     return k < 0 ? undefined : k;
@@ -475,87 +617,102 @@ export function pageHtml(h: TableHost): string {
   const pileOf = (p: DeckPile): PileView => {
     const zone = pileZone(p.id);
     const list: PileCard[] = p.cards.map((name, k) => ({ name, src: `pile|${p.id}|${k}|${name}` }));
-    return ({
-      zone, name: p.name, rename: p.id, head: p.id, cards: list, S: stripOf(list.length, paneH, ch), ch,
+    return {
+      zone, name: p.name, ...(ro ? { tap: { card: null } } : { rename: p.id, head: p.id }),
+      cards: list, S: stripOf(list.length, paneH, ch), ch,
       front: front?.zone === zone ? front.index : undefined, picked: picked(list),
       cover, over, cls: c?.from === 'head' && c.pile === p.id ? 'ttpicked' : '',
-      deletable: !p.cards.length && piles.length > 1,
-    });
+      deletable: !ro && !p.cards.length && piles.length > 1,
+    };
   };
+  // the rail's two piles share about the pane's height
+  const railH = Math.max(ch + 40, Math.round(paneH / 2));
   const maybe = h.maybe?.() ?? null;
-  const maybePile = maybe ? (() => {
-    const list: PileCard[] = maybe.map((name, k) => ({ name, src: `maybe|${k}|${name}` }));
-    return {
-      zone: 'maybe', name: 'Maybe', cards: list, S: stripOf(list.length, paneH, ch), ch,
-      front: front?.zone === 'maybe' ? front.index : undefined, picked: picked(list),
-      cls: 'ttmaybepile',
-    };
-  })() : null;
+  const maybePile: PileView | null = maybe ? {
+    zone: 'maybe', name: 'Maybe', cards: maybe.map((name, k) => ({ name, src: `maybe|${k}|${name}` })),
+    S: stripOf(maybe.length, railH, ch), ch, cls: 'ttmaybepile',
+    front: front?.zone === 'maybe' ? front.index : undefined,
+    picked: picked(maybe.map((name, k) => ({ name, src: `maybe|${k}|${name}` }))),
+    ...(ro ? { tap: { card: null } } : {}),
+  } : null;
   // the sideboard: the rail's first pile, its header n/7, an empty one a slot
-  const sidePile = side ? (() => {
-    const list: PileCard[] = side.map((name, k) => ({ name, src: `side|${k}|${name}` }));
-    return {
-      zone: 'side', name: 'Sideboard', cards: list, S: stripOf(list.length, paneH, ch), ch,
-      front: front?.zone === 'side' ? front.index : undefined, picked: picked(list),
-      over, cls: 'ttsidepile', slot: true, ...(h.sideMax !== undefined ? { limit: h.sideMax } : {}),
-    };
-  })() : null;
-  const table = tableHtml({
+  const sidePile: PileView | null = side ? {
+    zone: 'side', name: 'Sideboard', cards: side.map((name, k) => ({ name, src: `side|${k}|${name}` })),
+    S: stripOf(side.length, railH, ch), ch, over, cls: 'ttsidepile', slot: true,
+    front: front?.zone === 'side' ? front.index : undefined,
+    picked: picked(side.map((name, k) => ({ name, src: `side|${k}|${name}` }))),
+    ...(h.sideMax !== undefined ? { limit: h.sideMax } : {}),
+    ...(ro ? { tap: { card: null } } : {}),
+  } : null;
+  const table: TableView = {
     cw, ch, piles: piles.map(pileOf),
-    newPiles: { emptyText: 'Drag cards here from the binder.' },
+    newPiles: ro ? null : { emptyText: poolOn(h) ? 'Tap a card above to add it, or drag it here.' : '' },
+    ...(ro ? { zoneAttrs: {} } : {}),
     rail: sidePile || maybePile ? { side: sidePile, maybe: maybePile } : null,
     footHtml: h.below?.() ?? '',
-  });
-  // the page's class is the LAST one (ui/report.ts's pageOf reads it)
-  return `<div class="${c ? 'ttholding ' : ''}ttpage" style="--cw:${cw}px;--ch:${ch}px">
-    <div class="tttop">
-      <button class="ttback" ${btn('close')}>← ${esc(h.backLabel)}</button>
-      <div class="ttsummary">${h.strip?.() ?? `<b>${esc(h.title())}</b>`}</div>
-      ${toolsHtml(h)}
-    </div>
-    ${selBarHtml(h, piles)}
-    ${note ? `<div class="ttnote" role="status">${esc(note)}</div>` : ''}
-    ${table}
-  </div>`;
+    menu: menuOf(h, piles),
+    holding: !!c,
+  };
+  const deck = h.kind === 'deck';
+  return {
+    title: h.title(),
+    ...(h.titleBtn ? { titleBtn: h.titleBtn } : {}),
+    backLabel: h.backLabel,
+    pill: h.pill?.() ?? null,
+    stripHtml: h.pill ? '' : h.strip?.() ?? '',
+    hostToolsHtml: h.toolsHtml?.() ?? '',
+    canUndo: canUndo(hist, h.key),
+    canRedo: canRedo(hist, h.key),
+    stats: deck,
+    note: note ?? (armed && c ? 'Tap where it goes.' : null),
+    pool: poolView(h),
+    split: readSplit(),
+    head: { label: deck ? 'Main deck' : 'Scratch table', count: piles.reduce((n, p) => n + p.cards.length, 0), tools: !ro },
+    table,
+    statsStripHtml: deck ? statsStripHtml(analyzeDeck(cards)) : '',
+    sheet: sheetOf(h),
+    hostSheetHtml: h.sheetHtml?.() ?? '',
+    readOnly: ro,
+  };
 }
 
-/** the boxes that scroll on the page: their scroll is kept across a repaint
- * (they are rebuilt with it, and a drop must not throw the table to its top) */
-const SCROLLERS = '.ttbody, .tttable, .ttrail, .ttstripbox';
-
+/** the scroll of each region and the caret are carried by paintBuilder */
 function paint(): void {
   if (!$app || !host) return;
   if (dragActive()) { paintPending = true; return; }
   paintPending = false;
-  const keep = typeof document.querySelectorAll === 'function'
-    ? [...document.querySelectorAll<HTMLElement>(SCROLLERS)].map(e => [e.scrollTop, e.scrollLeft] as const)
-    : [];
-  $app.classList.remove('board');
-  $app.innerHTML = noImgDrag(pageHtml(host));
-  if (keep.length && typeof document.querySelectorAll === 'function') {
-    document.querySelectorAll<HTMLElement>(SCROLLERS).forEach((e, i) => {
-      const k = keep[i];
-      if (k) { e.scrollTop = k[0]; e.scrollLeft = k[1]; }
-    });
+  paintBuilder($app, builderView(viewOf(host)));
+  // the piles' strips fit the pane: drawn once more if the guess was wrong
+  const real = measurePane();
+  if (real > 0 && Math.abs(real - paneHeight()) > 8) {
+    paneSeen = real;
+    paintBuilder($app, builderView(viewOf(host)));
   }
-  openBinder(binderHost(host));
 }
 
-/** the binder's host: a + is a `place()` on the table, like a drop */
-function binderHost(h: TableHost): BinderHost {
-  return {
-    copies: name => count(h.cards(), name),
-    ...(h.maybe ? { maybe: (name: string) => count(h.maybe!(), name) } : {}),
-    ...(h.cap !== undefined ? { cap: h.cap } : {}),
-    add: name => { place(h, { from: 'binder', name }, { at: 'auto' }); },
-    ...(h.maybe ? { toMaybe: (name: string) => { place(h, { from: 'binder', name }, { at: 'maybe' }); } } : {}),
-    ...(h.side ? {
-      side: (name: string) => count(h.side!(), name),
-      // a refused one paints, so its reason shows
-      toSide: (name: string) => { if (!place(h, { from: 'binder', name }, { at: 'side' })) paint(); },
-    } : {}),
-    fullBrowser: query => h.fullBrowser?.(query),
-  };
+/** typing in the pool: the results and the chips only — the box, its caret
+ * and everything else stay as they are */
+function paintPool(): void {
+  if (!$app || !host || typeof $app.querySelector !== 'function') { paint(); return; }
+  if (dragActive()) { paintPending = true; return; }
+  const v = poolView(host);
+  const results = $app.querySelector<HTMLElement>('#tt-results');
+  const chips = $app.querySelector<HTMLElement>('#tt-chips');
+  if (!v || !results || !chips) { paint(); return; }
+  results.innerHTML = noImgDrag(poolResultsHtml(v));
+  results.dataset['scroll'] = v.scrollKey;
+  results.scrollTop = 0;
+  chips.innerHTML = noImgDrag(poolChipsHtml(v));
+}
+
+/** put the caret in the pool's search (a mouse only: on a tablet it would raise
+ * the keyboard over the table) — for a host that opens a new, empty deck */
+export function focusPool(): void {
+  if (touchSeen() || typeof document === 'undefined' || typeof document.getElementById !== 'function') return;
+  const box = document.getElementById('tt-q') as HTMLInputElement | null;
+  if (!box || typeof box.focus !== 'function') return;
+  box.focus({ preventScroll: true });
+  box.selectionStart = box.selectionEnd = box.value.length;
 }
 
 function syncUrl(): void {
@@ -578,12 +735,13 @@ export function initTabletop(opts: { app: HTMLElement; rerender: () => void }): 
 
 /** Open the table for this host, on top of the page that built it. */
 export function openTabletop(h: TableHost): void {
+  if (!hist || hist.key !== h.key) { hist = null; query = ''; shown = PAGE; target = 'deck'; }
   host = h;
   wanted = null;
-  sel = null;
+  putDown();
   front = null;
   note = null;
-  if (undo && undo.key !== h.key) undo = null;
+  sheetOpen = null;
   syncUrl();
   if ($app) $app.innerHTML = '';
   paint();
@@ -595,10 +753,10 @@ export function closeTabletop(): void {
   const h = host;
   host = null;
   wanted = null;
-  sel = null;
+  putDown();
   front = null;
+  sheetOpen = null;
   syncUrl();
-  closeBinder();
   if (h) h.close(); else rerenderHost();
 }
 
@@ -607,10 +765,7 @@ export function renderScreen(): void {
     const got = resolverFor(wanted)?.(wanted.startsWith('ch:') ? wanted.slice(3) : wanted) ?? null;
     if (got) { openTabletop(got); return; }
     if (++misses > 1) { wanted = null; syncUrl(); rerenderHost(); return; }
-    if ($app) {
-      $app.innerHTML = `<div class="ttpage"><div class="tttop"><button class="ttback" ${btn('close')}>← Back</button></div>
-        <div class="hint ttloading">Setting out the table…</div></div>`;
-    }
+    if ($app) paintFrame($app, builderLoadingHtml(frameChromeView()));
     return;
   }
   paint();
@@ -647,6 +802,23 @@ function beforeCard(c: Carry, zone: string, k: number): Place | null {
   return null;
 }
 
+/** right after the picked copy: where Add another puts a new one */
+function afterCard(c: Carry): Place | null {
+  switch (c.from) {
+    case 'pile': return { at: 'pile', pile: c.pile, index: c.index + 1 };
+    case 'maybe': return { at: 'maybe', index: c.index + 1 };
+    case 'side': return { at: 'side', index: c.index + 1 };
+    case 'strip': return { at: 'strip', index: c.index + 1 };
+    default: return null;
+  }
+}
+
+/** a finger carries what it picked; a mouse only once Move… has armed it */
+const carrying = (): boolean => armed || lastPointer !== 'mouse';
+
+/** put the pick down: no menu, nothing carried */
+function putDown(): void { sel = null; menuOpen = false; armed = false; }
+
 /** main.ts offers every button here. True when it was ours. */
 export function handleButton(el: HTMLElement): boolean {
   const b = el.dataset['btn'] ?? '';
@@ -654,19 +826,35 @@ export function handleButton(el: HTMLElement): boolean {
   const h = host;
   if (!h) return true;
   const c = selected(h);
-  const put = (to: Place): void => { const carry = c; sel = null; if (!carry || !place(h, carry, to)) paint(); };
+  const put = (to: Place): void => { const carry = c; putDown(); if (!carry || !place(h, carry, to)) paint(); };
   switch (b) {
     case 'tt-close': closeTabletop(); return true;
     case 'tt-card': {
+      if (h.readOnly) return true;
       const carry = carryOf(el.dataset['ttSrc']);
       if (!carry || carry.from === 'head') return true;
-      // A MOUSE READS, A FINGER LIFTS — the pointer decides, never the device
-      if (lastPointer === 'mouse') { pinCard(carry.name); return true; }
-      if (!c) { sel = { key: h.key, carry }; pinCard(carry.name); paint(); return true; }
-      if (srcKey(c) === srcKey(carry)) { sel = null; paint(); return true; }
-      const zone = (el.closest?.('[data-tt-zone]') as HTMLElement | null)?.dataset['ttZone'] ?? '';
-      const to = c.from === 'head' ? null : beforeCard(c, zone, Number(el.dataset['ttI'] ?? 0));
-      if (to) put(to); else { sel = { key: h.key, carry }; paint(); }
+      if (c && srcKey(c) === srcKey(carry)) { putDown(); paint(); return true; }
+      if (c && carrying()) {
+        const zone = (el.closest?.('[data-tt-zone]') as HTMLElement | null)?.dataset['ttZone'] ?? '';
+        const to = c.from === 'head' ? null : beforeCard(c, zone, Number(el.dataset['ttI'] ?? 0));
+        if (to) { put(to); return true; }
+      }
+      // A TAP OPENS THE MENU — and a finger carries the card besides
+      sel = { key: h.key, carry };
+      menuOpen = true;
+      armed = false;
+      paint();
+      return true;
+    }
+    case 'tt-add': {
+      // a tap on a pool card: one copy to where "Add to" says
+      const carry = carryOf(el.dataset['ttSrc']);
+      if (!carry || carry.from !== 'binder' || h.readOnly) return true;
+      putDown();
+      const to: Place = target === 'side' && h.side ? { at: 'side' } : target === 'maybe' && h.maybe ? { at: 'maybe' } : { at: 'auto' };
+      const refused = capNote(h, carry.name, to);
+      if (refused) { note = refused; paint(); return true; }
+      if (!place(h, carry, to)) paint();
       return true;
     }
     case 'tt-rename': {
@@ -689,14 +877,15 @@ export function handleButton(el: HTMLElement): boolean {
       return true;
     }
     case 'tt-head': {
-      // a finger picks the pile up to move it; a mouse drags it
-      if (lastPointer === 'mouse') return true;
+      // the grip picks the pile up: its menu moves it (a mouse can drag the header too)
       const pile = el.dataset['ttPile'] ?? '';
-      sel = c?.from === 'head' && c.pile === pile ? null : { key: h.key, carry: { from: 'head', pile } };
+      if (c?.from === 'head' && c.pile === pile) putDown();
+      else { sel = { key: h.key, carry: { from: 'head', pile } }; menuOpen = true; armed = false; }
       paint();
       return true;
     }
     case 'tt-pilemove': {
+      // the pile stays picked, so ◀ ▶ can be tapped again
       if (c?.from !== 'head') return true;
       const piles = pilesOf(h);
       const i = piles.findIndex(p => p.id === c.pile);
@@ -705,6 +894,8 @@ export function handleButton(el: HTMLElement): boolean {
     }
     case 'tt-to': {
       if (!c) return true;
+      // a click on the felt with the menu up only closes it
+      if (!carrying()) { putDown(); paint(); return true; }
       const to = zonePlace(h, el.dataset['ttZone'] ?? '');
       if (!to) return true;
       if (c.from === 'head') {
@@ -723,20 +914,96 @@ export function handleButton(el: HTMLElement): boolean {
     case 'tt-toside': put({ at: 'side' }); return true;
     case 'tt-todeck': put(h.kind === 'deck' ? { at: 'auto' } : { at: 'strip' }); return true;
     case 'tt-newpile': put({ at: 'newpile', pos: pilesOf(h).length }); return true;
-    case 'tt-putdown': sel = null; paint(); return true;
+    case 'tt-more': {
+      // Add another: a new copy right after this one; the menu stays on it
+      if (!c || c.from === 'head') return true;
+      const to = afterCard(c);
+      const refused = to ? capNote(h, c.name, to) : null;
+      if (refused) { note = refused; paint(); return true; }
+      if (!to || !place(h, { from: 'binder', name: c.name }, to)) paint();
+      return true;
+    }
+    case 'tt-move': {
+      // Move…: the menu goes, the card stays picked; the next tap puts it there
+      if (!c) return true;
+      menuOpen = false;
+      armed = true;
+      paint();
+      return true;
+    }
+    case 'tt-putdown': putDown(); paint(); return true;
     case 'tt-delpile':
+      putDown();
       if (!place(h, null, { at: 'arrange', edit: { op: 'delpile', pile: el.dataset['ttPile'] ?? '' } })) paint();
+      return true;
+    case 'tt-addpile':
+      putDown();
+      if (!place(h, null, { at: 'arrange', edit: { op: 'addpile' } })) paint();
       return true;
     case 'tt-resort': {
       const by = el.dataset['ttBy'] as ResortBy;
       if (by !== 'cost' && by !== 'type' && by !== 'element') return true;
-      sel = null;
+      putDown();
       if (!place(h, null, { at: 'arrange', edit: { op: 'resort', by } })) paint();
       return true;
     }
     case 'tt-undo':
-      if (!place(h, null, { at: 'arrange', edit: { op: 'undo' } })) paint();
+    case 'tt-redo':
+      putDown();
+      if (!place(h, null, { at: 'arrange', edit: { op: b === 'tt-undo' ? 'undo' : 'redo' } })) paint();
       return true;
+    // ── the pool ──
+    case 'tt-chip': {
+      const value = el.dataset['value'] ?? '';
+      const group = el.dataset['group'] as PoolChip['group'] | undefined;
+      if (group && GROUP_OF[group]) {
+        // the pool's own chips: OR inside the group
+        const g = GROUP_OF[group];
+        const now = poolChosen(query, g);
+        const has = now.some(v => v.toLowerCase() === value.toLowerCase());
+        query = withPoolGroup(query, g, has ? now.filter(v => v.toLowerCase() !== value.toLowerCase()) : [...now, value]);
+      } else {
+        // More filters' chips: include, exclude, clear — the Cards page's cycle
+        const key = el.dataset['key'] ?? '';
+        query = withChip(query, key, value, nextChipState(chipState(query, key, value)));
+      }
+      shown = PAGE;
+      paint();
+      return true;
+    }
+    case 'tt-clear': query = ''; shown = PAGE; paint(); return true;
+    case 'tt-show': shown += PAGE; paintPool(); return true;
+    case 'tt-target': {
+      const to = el.dataset['to'] as PoolTarget;
+      if (to === 'deck' || to === 'side' || to === 'maybe') target = to;
+      paint();
+      return true;
+    }
+    case 'tt-similar':
+      if (c && c.from !== 'head') { query = similarQuery(c.name); shown = PAGE; }
+      putDown();
+      paint();
+      return true;
+    case 'tt-try': query = el.dataset['q'] ?? ''; shown = PAGE; paint(); return true;
+    case 'tt-section': {
+      const s = el.dataset['section'] ?? '';
+      railOpen[s] = !railOpen[s];
+      paint();
+      return true;
+    }
+    // ── the sheets ──
+    case 'tt-filters': sheetOpen = { kind: el.dataset['ttSyntax'] ? 'syntax' : 'filters' }; putDown(); paint(); return true;
+    case 'tt-stats': sheetOpen = { kind: 'stats' }; hand = null; putDown(); paint(); return true;
+    case 'tt-hand': hand = sampleOpeningHand(h.cards(), Math.random); paint(); return true;
+    case 'tt-problems': sheetOpen = { kind: 'problems' }; putDown(); paint(); return true;
+    case 'tt-details':
+      if (c && c.from !== 'head') sheetOpen = { kind: 'details', card: c.name };
+      putDown();
+      paint();
+      return true;
+    case 'tt-sheet-close': sheetOpen = null; paint(); return true;
+    // ── the divider's tap route ──
+    case 'tt-split': writeSplit(stepSplit(readSplit(), Number(el.dataset['by'] ?? 0))); paneSeen = 0; paint(); return true;
     default: return true;
   }
 }
@@ -857,8 +1124,8 @@ const provider: DragProvider = {
   edgeScroll: true,
   pressLift: true,
   sourceOf(el) {
-    if (!host || !el?.closest) return null;
-    if (!el.closest('.ttpage, #binderlayer') || el.closest('input, summary')) return null;
+    if (!host || host.readOnly || !el?.closest) return null;
+    if (!el.closest('.ttpage') || el.closest('input, summary, .ttpop, [data-sheet]')) return null;
     const head = el.closest('[data-tt-head]') as HTMLElement | null;
     if (head) return head.closest('.ttpile') as HTMLElement | null;
     return el.closest('[data-tt-src]') as HTMLElement | null;
@@ -868,7 +1135,7 @@ const provider: DragProvider = {
     const head = src.querySelector?.(':scope > [data-tt-head]') as HTMLElement | null;
     const carry = src.classList.contains('ttpile') && head
       ? carryOf(`head|${head.dataset['ttHead']}`) : carryOf(src.dataset['ttSrc']);
-    if (!h || !carry) return null;
+    if (!h || !carry || h.readOnly) return null;
     const ok = (z: Element | null): z is HTMLElement =>
       !!z && legalZone(h, carry, (z as HTMLElement).dataset['ttZone'] ?? '');
     // a pile in the air shows where it would go as an edge, not a new pile's place
@@ -890,16 +1157,17 @@ const provider: DragProvider = {
     };
   },
   started() {
-    sel = null;
+    putDown();
     front = null;
     for (const el of document.querySelectorAll('.ttfront')) el.classList.remove('ttfront');
     for (const el of document.querySelectorAll('details.ttresort[open]')) el.removeAttribute('open');
+    // the menu goes at once (nothing repaints while a card is in the air)
+    for (const el of document.querySelectorAll('.ttpop')) el.remove();
   },
   ended() {
     clearPreview();
     document.documentElement.classList.remove('ttcarrypile');
     if (paintPending) paint();
-    flushBinder();
   },
   refind(src) {
     const k = src.dataset['ttSrc'] ?? src.dataset['ttZone'];
@@ -911,15 +1179,43 @@ addDragProvider(provider);
 
 // ── the listeners a table needs beyond clicks ─────────────────────────
 
+/** a text box has the keys (a shortcut there is the box's own) — except the
+ * pool's search while it is empty, which gives Undo back to the table */
+function typing(t: EventTarget | null): boolean {
+  const el = t as HTMLElement | null;
+  if (!el?.tagName) return false;
+  if (el.tagName === 'TEXTAREA' || el.isContentEditable) return true;
+  if (el.tagName === 'INPUT') return !(el.id === 'tt-q' && !(el as HTMLInputElement).value);
+  return false;
+}
+
 let listening = false;
 function ensureListeners(): void {
   if (listening || typeof document === 'undefined' || typeof document.addEventListener !== 'function') return;
   listening = true;
   // press and hold a card (or press the wheel on it) to read it big
   installPressZoom();
-  // the pointer that pressed decides what the click means (a mouse pins, a
-  // finger picks up) — noted before the click is dispatched
+  // the divider: its drag repaints once, on the release
+  installSplitter(() => { paneSeen = 0; if (host) paint(); });
+  // the pointer that pressed decides whether a tap carries the card (a finger
+  // does, a mouse does not) — noted before the click is dispatched
   document.addEventListener('pointerdown', e => { lastPointer = e.pointerType || 'mouse'; }, { capture: true, passive: true });
+  // a mouse click anywhere on the page that is not one of ours closes the card menu
+  document.addEventListener('click', e => {
+    if (!host || !sel || carrying()) return;
+    const t = e.target as HTMLElement | null;
+    if (!t?.closest || t.closest('.ttpop, [data-btn^="tt-"]') || !t.closest('.ttpage')) return;
+    putDown();
+    paint();
+  });
+  // the pool's search, typed into: the results only, so the caret is never touched
+  document.addEventListener('input', e => {
+    const box = e.target as HTMLInputElement | null;
+    if (!host || box?.id !== 'tt-q') return;
+    query = box.value;
+    shown = PAGE;
+    paintPool();
+  });
   // a pile's name, typed: never repainted while typed into; saved when let go
   document.addEventListener('change', e => {
     const box = e.target as HTMLInputElement | null;
@@ -933,10 +1229,24 @@ function ensureListeners(): void {
     // without focus never sends one); Escape keeps the old name
     if (e.key === 'Enter' && box?.dataset?.['ttRename']) { commitRename(box); return; }
     if (e.key === 'Escape' && box?.dataset?.['ttRename']) { e.stopPropagation(); box.value = box.defaultValue; commitRename(box); return; }
-    // Escape puts a picked-up card down — after the binder has had it. The
-    // page itself has no Escape: it is a page, not a dialog
-    if (e.key !== 'Escape' || binderTookKey(e) || !host || !selected(host)) return;
-    sel = null;
+    if (!host) return;
+    // Undo, Redo — but never a text box's own
+    const mod = e.ctrlKey || e.metaKey;
+    const k = (e.key ?? '').toLowerCase();
+    if (mod && !e.altKey && (k === 'z' || k === 'y') && !typing(e.target) && !host.readOnly) {
+      e.preventDefault();
+      const op = k === 'y' || e.shiftKey ? 'redo' : 'undo';
+      putDown();
+      if (!place(host, null, { at: 'arrange', edit: { op } })) paint();
+      return;
+    }
+    // Escape: the sheet, then the pick. The page itself has no Escape: it is a
+    // page, not a dialog
+    if (e.key !== 'Escape') return;
+    if (sheetOpen) { e.stopPropagation(); sheetOpen = null; paint(); return; }
+    if (!selected(host)) return;
+    e.stopPropagation();
+    putDown();
     paint();
   }, { capture: true });
   // hovering another card of the pile hands "in front" over to it
@@ -952,6 +1262,6 @@ function ensureListeners(): void {
   });
   // the card width and the strips follow the window
   if (typeof addEventListener === 'function') {
-    addEventListener('resize', () => { if (host && $app?.firstElementChild?.classList?.contains('ttpage')) paint(); });
+    addEventListener('resize', () => { if (host && $app?.firstElementChild?.classList?.contains('ttpage')) { paneSeen = 0; paint(); } });
   }
 }

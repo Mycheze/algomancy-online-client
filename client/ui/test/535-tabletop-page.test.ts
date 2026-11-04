@@ -8,13 +8,15 @@
  *      reload comes back; the buttons are the real way in — the owner uses an
  *      installed web app with no address bar)
  *   §2 its root class is `ttpage`, the LAST class (ui/report.ts's pageOf
- *      names the page by it) — with a card picked up too
- *   §3 Back returns to the deck page; the deck page offers "Build on the
- *      table" and nothing else of the table; the button opens it again, and
- *      Back again gives the deck page byte-identical
+ *      names the page by it) — with a card picked up too (BL-65: the root
+ *      is the app frame's; a picked card marks the TABLE `ttholding`)
+ *   §3 Back returns to the deck page; the deck page offers the table
+ *      (`deck-tabletop`) and nothing else of it; the button opens it again,
+ *      and Back again gives the deck page byte-identical
  *   §4 one mode: piles by cost, and no Sorted / Freeform toggle anywhere
- *   §5 Re-sort lays the table out by type, and Undo puts it back
- *   §6 every scan the page and its binder draw is `draggable="false"`
+ *   §5 Re-sort lays the table out by type, Undo puts it back, Redo again
+ *      (BL-65: a history, so a spent Undo is DISABLED, not gone)
+ *   §6 every scan the page and its pool draw is `draggable="false"`
  *   §7 renderHome asks for the table after the card browser and before the
  *      deck page and the challenge page it sits on
  *
@@ -48,10 +50,12 @@ const ui = home();
 const flush = async (): Promise<void> => { for (let i = 0; i < 20; i++) await Promise.resolve(); };
 await flush();
 
-/** #app's markup alone, without the layers beside it */
+/** #app's markup alone, without the layers beside it (the binder layer is
+ * gone since BL-65: the pool is inside the page; the report layer and the
+ * rest still sit after #app) */
 const appOf = (html: string): string => {
-  const at = html.indexOf('<div class="ddscrim"');
-  return at < 0 ? html : html.slice(0, at);
+  const at = html.indexOf('</main>');
+  return at < 0 ? html : html.slice(0, html.indexOf('</div>', html.indexOf('</footer>', at)) + 6);
 };
 /** the pile names on the table, in order */
 const piles = (html: string): string[] =>
@@ -59,7 +63,7 @@ const piles = (html: string): string[] =>
 
 test('§1 a reload on ?table= lands on the table', () => {
   const html = ui.html();
-  assert.match(html, /<div class="ttpage"/, 'the tabletop page is up');
+  assert.match(html, /<div class="[^"]*\bttpage"/, 'the tabletop page is up');
   assert.match(html, /Table deck/, 'with the deck it was asked for');
   assert.equal((html.match(/class="ttcard/g) ?? []).length, DECK.cards.length, 'every copy a card of its own');
 });
@@ -68,21 +72,23 @@ test('§2 the root class is ttpage, last, even with a card picked up', () => {
   assert.match(appOf(ui.html()), /^<div class="(?:[\w-]+ )*ttpage"/);
   const src = /data-tt-src="(pile\|[^"]+)"/.exec(ui.html())![1]!;
   const html = ui.tap({ 'tt-src': src });
-  assert.match(html, /class="ttselbar"/, 'a finger picked it up');
-  assert.match(appOf(html), /^<div class="ttholding ttpage"/, 'and the page is still named ttpage');
+  assert.match(html, /class="ttpop"/, 'a finger picked it up: its menu is up');
+  assert.match(html, /<div class="tttablewrap ttholding"/, 'the table says a card is held');
+  assert.match(appOf(html), /^<div class="(?:[\w-]+ )*ttpage"/, 'and the page is still named ttpage');
   ui.click({ btn: 'tt-putdown' });
 });
 
 let deckPage = '';
 test('§3 Back to the deck page, the one button there, and back again byte-identical', () => {
   let html = ui.click({ btn: 'tt-close' });
-  assert.doesNotMatch(html, /class="ttpage/, 'the table is gone');
-  assert.match(html, /<div class="deckpage"/, 'Back lands on the deck page');
-  assert.match(html, /data-btn="deck-tabletop"[^>]*>\s*Build on the table/, 'which offers the table');
+  assert.doesNotMatch(html, /\bttpage"/, 'the table is gone');
+  // (BL-65: the Decks page is in the app frame too, its class last; its button says "Edit on the table")
+  assert.match(html, /<div class="[^"]*\bdeckpage"/, 'Back lands on the deck page');
+  assert.match(html, /data-btn="deck-tabletop"/, 'which offers the table');
   assert.doesNotMatch(appOf(html), /class="tt|data-tt-|data-dd=/, 'and nothing else of it');
   deckPage = appOf(html);
   html = ui.click({ btn: 'deck-tabletop' });
-  assert.match(html, /<div class="ttpage"/, 'the button opens it');
+  assert.match(html, /<div class="[^"]*\bttpage"/, 'the button opens it');
   html = ui.click({ btn: 'tt-close' });
   assert.equal(appOf(html), deckPage, 'and Back gives the same deck page');
   ui.click({ btn: 'deck-tabletop' });
@@ -93,22 +99,27 @@ test('§4 one mode: piles by cost, no view toggle', () => {
   assert.ok(piles(html).length >= 2, `a deck nobody arranged opens as piles by cost: ${piles(html)}`);
   assert.ok(piles(html).every(n => /^(\d+|X)$/.test(n)), `each named by its mana value: ${piles(html)}`);
   assert.doesNotMatch(html, /Sorted|Freeform|data-dt-v=/, 'no Sorted / Freeform view');
-  for (const f of ['tabletop.ts', 'piletable.ts', 'binder.ts']) {
+  for (const f of ['tabletop.ts', 'piletable.ts', 'pages/builder.ts', 'pages/table.ts', 'pages/pool.ts']) {
     assert.doesNotMatch(code(f), /sortMoves|setView|'freeform'|'sorted'/, `${f} has no second mode`);
   }
 });
 
-test('§5 Re-sort by type, then Undo', () => {
+test('§5 Re-sort by type, then Undo, then Redo', () => {
   const before = piles(ui.html());
   let html = ui.click({ btn: 'tt-resort', 'tt-by': 'type' });
-  assert.ok(piles(html).includes('Units'), `by type: ${piles(html)}`);
-  assert.match(html, /data-btn="tt-undo"/, 'with one Undo');
+  const sorted = piles(html);
+  assert.ok(sorted.includes('Units'), `by type: ${sorted}`);
+  assert.match(html, /data-btn="tt-undo"(?![^>]*disabled)/, 'Undo is on');
   html = ui.click({ btn: 'tt-undo' });
   assert.deepEqual(piles(html), before, 'Undo puts the table back');
-  assert.doesNotMatch(html, /data-btn="tt-undo"/, 'and is spent');
+  assert.match(html, /data-btn="tt-undo"[^>]*disabled/, 'and is spent: disabled, not gone');
+  html = ui.click({ btn: 'tt-redo' });
+  assert.deepEqual(piles(html), sorted, 'Redo lays it out by type again');
+  html = ui.click({ btn: 'tt-undo' });
+  assert.deepEqual(piles(html), before);
 });
 
-test('§6 every scan on the page and in the binder is draggable="false"', () => {
+test('§6 every scan on the page and in the pool is draggable="false"', () => {
   const html = ui.html();
   const imgs = html.match(/<img\b[^>]*>/g) ?? [];
   assert.ok(imgs.length >= DECK.cards.length, `scans on screen: ${imgs.length}`);

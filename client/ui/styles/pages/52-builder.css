@@ -4,3 +4,111 @@
    card menu. Constructed, the weekly challenge and Competitive sideboarding all draw this table. After
    the frame and the Decks shelf; the old tabletop and binder pieces (24-tabletop.css, 25-binder.css)
    come earlier. Tokens only (921). */
+
+/* the page: the frame's main region (bleed + fill) holds one column — the note, the pool, the
+   divider, the table. The pool and the table share the height by --pool-f (ui/splitter.ts) */
+.ttpage { --pw: 96px; }
+.ttbuilder { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--felt); }
+.ttbuilder > .ttnote { flex: none; }
+.ttbuilder > .ttpool { flex: var(--pool-f) 1 0; }
+.ttbuilder > .tttablewrap { flex: calc(1 - var(--pool-f)) 1 0; min-height: 0; }
+.ttbuilder.ttnopool > .tttablewrap { flex: 1 1 0; }
+.ttsplitting, .ttsplitting * { cursor: row-resize; user-select: none; }
+
+/* the toolbar: the deck's name (Deck info), the count pill */
+.ttpage .frametitle { display: flex; align-items: center; gap: var(--space-4); }
+.tttitlebtn { min-width: 0; max-width: 32vw; padding-left: var(--space-2); padding-right: var(--space-2);
+  font-size: var(--text-22); font-weight: 700; letter-spacing: .02em; }
+.tttitlebtn > svg, .tttitlebtn .ui-icon { width: 16px; height: 16px; color: var(--color-text-muted); }
+.tttitletext { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ttpill { flex: none; font-size: var(--text-13); font-weight: 600; letter-spacing: 0; }
+.ttpill.ttpill--ok { color: var(--color-success); border-color: var(--color-success); }
+.ttpill.ttpill--warn { color: var(--color-warning); border-color: var(--color-warning); }
+.ttpill.ttpill--bad { color: var(--color-danger); border-color: var(--color-danger); }
+.ttsummary { min-width: 0; font-size: var(--text-13); font-weight: 400; letter-spacing: 0; }
+.ttsummary .cbdeckbar { position: static; margin: 0; padding: 0; border: 0; background: none; }
+/* the captions may go under 1100px: the icons stay, with their titles */
+@media (max-width: 1100px) {
+  .ttpage .frametop .ui-icon-button__label { display: none; }
+  .tttitlebtn { font-size: var(--text-18); }
+}
+
+/* THE POOL (pages/pool.ts) */
+.ttpool { min-height: 0; display: flex; flex-direction: column; background: var(--color-bg); position: relative; }
+.ttpoolbar { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5);
+  padding: var(--space-3) var(--space-5); }
+.ttq { flex: 0 1 240px; min-width: 140px; min-height: var(--segmented-h-sm); padding: 0 var(--space-5);
+  background: var(--color-surface-sunken); border: 1px solid var(--color-border-strong); border-radius: var(--radius-pill);
+  color: var(--color-text); font: inherit; }
+.ttq:focus { border-color: var(--color-accent); outline: none; }
+.ttpoolchips { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); }
+.ttchipgroup { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.ttchip { min-width: 28px; padding-left: var(--space-2); padding-right: var(--space-2); justify-content: center; }
+.ttelchip { padding: 0; width: 28px; border-radius: var(--radius-pill); }
+.ttelchip .elicon { width: 18px; height: 18px; margin: 0; }
+.ttelchip:not(.on) .elicon { opacity: .55; }
+.ttpoolcount { color: var(--color-text-muted); font-size: var(--text-12); margin-left: auto; white-space: nowrap; }
+.ttpoolto { flex: none; display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-12); }
+.ttpoolresults { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
+  padding: var(--space-1) var(--space-5) var(--space-5); scrollbar-color: var(--color-border-strong) transparent; scrollbar-width: thin; }
+.ttpoolgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--pw), 1fr)); gap: var(--space-3); }
+.ttpooltile { position: relative; cursor: pointer; border-radius: var(--radius-md); touch-action: pan-y;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; content-visibility: auto; contain-intrinsic-size: auto 134px; }
+.ttpooltile > .ttart { display: block; width: 100%; height: auto; aspect-ratio: 720 / 1000; object-fit: cover; border-radius: var(--radius-md);
+  -webkit-user-drag: none; -webkit-touch-callout: none; box-shadow: var(--shadow-1); }
+.ttpooltile > .cbnoart { display: flex; aspect-ratio: 720 / 1000; padding: var(--space-3); background: var(--panel2); font-size: var(--text-12); }
+html:not(.touch) .ttpooltile:hover > .ttart { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+.ttpooltile.ttcap > .ttart { opacity: .42; }
+.ttpooln, .ttpools { position: absolute; top: 4px; min-width: 20px; padding: 0 var(--space-2); border-radius: var(--radius-pill);
+  font-size: var(--text-12); font-weight: 700; line-height: 20px; text-align: center; pointer-events: none; }
+.ttpooln { right: 4px; background: var(--color-accent); color: var(--color-text-on-accent); }
+.ttpooln.cap { background: var(--color-surface-raised); color: var(--color-text); }
+.ttpooln.bad { background: var(--color-danger); color: var(--color-text-on-fill); }
+.ttpools { left: 4px; background: var(--color-link); color: var(--color-text-on-accent); }
+.ttpoolmore { display: block; margin: var(--space-4) auto 0; }
+.ttpoolnone { margin: var(--space-5) 0; }
+/* a table card carried over the pool: it means "take it out" */
+.ttremove { display: none; position: absolute; inset: 0; z-index: 2; align-items: center; justify-content: center; pointer-events: none;
+  color: var(--color-danger); font-weight: 700; background: var(--color-danger-bg); opacity: .9; }
+.ttpage .ttpool.dropover { outline: none; }
+.ttpage .ttpool.dropover .ttremove { display: flex; }
+
+/* THE DIVIDER (ui/splitter.ts): drag the grip, or tap ▲ ▼ */
+.ttdivider { flex: none; display: flex; align-items: center; justify-content: center; gap: var(--space-3); height: 24px;
+  background: var(--color-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
+.ttdivider .ui-button { min-height: 22px; padding: 0 var(--space-3); font-size: var(--text-11); }
+.ttgripbar { position: relative; width: 140px; height: 22px; cursor: row-resize; touch-action: none; }
+.ttgripbar::before { content: ''; position: absolute; left: 50%; top: 50%; width: 48px; height: 4px; margin: -2px 0 0 -24px;
+  border-radius: var(--radius-pill); background: var(--color-border-strong); }
+
+/* THE TABLE's head: what lies on it, + Pile, Re-sort */
+.tthead { display: flex; align-items: center; gap: var(--space-3); min-height: 32px; padding: 0 var(--space-2) var(--space-3); }
+.ttheadlabel { color: var(--color-text-muted); font-size: var(--text-11); font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+.ttheadcount { font-size: var(--text-13); }
+.ttheadtools { margin-left: auto; display: flex; align-items: center; gap: var(--space-3); }
+.ttbuilder .tttable { padding: var(--space-4) var(--space-4) var(--space-6); }
+
+/* the stats strip at the table's foot (pages/deckstats.ts statsStripHtml): one button, the Stats sheet */
+.ttstatsstrip { flex: none; border-top: 1px solid var(--color-border); background: var(--color-surface-sunken); }
+.ttstrip { display: flex; align-items: center; gap: var(--space-5); width: 100%; min-height: 36px; padding: var(--space-1) var(--space-5);
+  border: 0; background: none; color: var(--color-text-muted); font: inherit; font-size: var(--text-12); cursor: pointer; text-align: left; }
+.ttstrip:hover { color: var(--color-text); }
+.ttcurve { display: flex; align-items: flex-end; gap: 2px; height: 24px; }
+.ttrung { display: flex; flex-direction: column-reverse; width: 8px; min-height: 2px; border-radius: 1px; overflow: hidden; }
+.ttrung.empty { height: 2px; background: var(--color-border); }
+.ttrung.x { margin-left: var(--space-2); }
+.ttrungseg { display: block; min-height: 1px; }
+.ttstrip .ttsplit, .ttstrip .ttel { display: inline-flex; align-items: center; gap: var(--space-2); }
+.ttstrip .ttsplit { gap: var(--space-4); }
+.ttdot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+.ttstripgo { margin-left: auto; display: inline-flex; }
+/* the Stats sheet's sample hand */
+.ttsample { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); margin-top: var(--space-5); }
+.ttsamplecards { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.ttsamplecard { width: 92px; }
+.ttsampleart { display: block; width: 100%; height: auto; border-radius: var(--radius-md); }
+.ttproblems { margin: 0; padding-left: var(--space-6); }
+.ttproblems li { margin: var(--space-2) 0; }
+
+/* smaller windows: smaller pool cards, a narrower rail */
+@media (max-width: 1100px) { .ttpage { --pw: 80px; } }
