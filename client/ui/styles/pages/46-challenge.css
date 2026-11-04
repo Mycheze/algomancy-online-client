@@ -43,3 +43,25 @@
 .chgltitle { color: var(--accent); font-weight: 700; font-size: var(--text-12); text-transform: uppercase; letter-spacing: .06em; }
 .chglgoal { font-weight: 700; font-size: var(--text-14); color: var(--text); }
 .chglmeta { color: var(--dim); font-size: var(--text-13); }
+
+/* ── the weekly challenge in the app frame (2026-11-04, docs/24) ──────────
+   Two columns that each scroll inside themselves: the week and your runs on
+   the left, the leaderboard (this week's, or the past week opened) on the
+   right (pages/challenge.ts challengePageHtml). */
+.chpage.apppage .ui-app-shell__main { gap: var(--space-5); }
+.chwork { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(320px, 2fr) minmax(0, 3fr); gap: var(--space-6); }
+.chwork.chnoboard { grid-template-columns: minmax(0, 640px); }
+.chleft, .chright { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-5); }
+.chleft > *, .chright > * { flex: none; }
+.chpage .chboardcard { overflow-x: auto; }
+.chweekback { margin-left: var(--space-4); padding: var(--space-1) var(--space-4); font-size: var(--text-12); vertical-align: middle; }
+@media (max-width: 759.98px), (max-height: 599.98px) {
+  .chwork { grid-template-columns: minmax(0, 1fr); }
+  .chleft, .chright { overflow: visible; }
+}
+/* the past weeks: a row of two lines (title and goal; the week and its count), its buttons beside it */
+.chpast { list-style: none; margin: 0; padding: 0; }
+.chpastrow { display: flex; align-items: center; gap: var(--space-5); padding: var(--space-4) 0; }
+.chpastrow + .chpastrow { border-top: 1px solid var(--color-border); }
+.chpasttext { flex: 1 1 auto; min-width: 0; line-height: 1.45; }
+.chpastmeta { font-size: var(--text-12); }

@@ -20,7 +20,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  leagueBannerHtml, leagueHtml, leagueNavHtml, defaultGrid,
+  LEAGUE_SECTIONS, leagueBannerHtml, leagueHtml, leagueNavHtml, leagueSections, defaultGrid,
   type LeagueState, type LeagueView, type SeasonView,
 } from '../pages/league.ts';
 import { readStyles } from './read-styles.ts';
@@ -59,30 +59,33 @@ function view(data: LeagueState | null, over: Partial<LeagueView> = {}): LeagueV
     data, loading: false, msg: '', draft: { tz: 'UTC', grid: defaultGrid(), contact: 'me' }, dirty: false, busy: false,
     arming: null, gridFocus: null, timeOpen: null, preview: null, now: NOW, tz: 'UTC', browserTz: 'UTC', zones: ['UTC'],
     origin: 'https://example.test', stampAt: NOW, chips: { champion: '<!--SLOT:champion-->', finalist: '<!--SLOT:finalist-->' },
+    section: 'season', chrome: { signedIn: true, alerts: 0 },
     ...over,
   };
 }
 
 const btns = (html: string): Set<string> => new Set([...html.matchAll(/data-btn="([^"]+)"/g)].map(m => m[1]!));
+/** the page has its parts as tabs since the app frame (2026-11-04): every part, drawn */
+const allParts = (v: LeagueView): string => LEAGUE_SECTIONS.map(section => leagueHtml({ ...v, section })).join('\n');
 
 test('985 §0 positive control: there is no DOM here', () => {
   assert.equal(typeof (globalThis as Record<string, unknown>)['document'], 'undefined');
-  assert.match(leagueHtml(view(null, { loading: true })), /^<div class="metapage lgpage">/);
+  // the app frame (pages/frame.ts), its page class last (287)
+  assert.match(leagueHtml(view(null, { loading: true })), /^<div class="ui-app-shell ui-app-shell--contained ui-app-shell--fill apppage lgpage">/);
 });
 
 test('985 §1 the main states render, with every button the click handler routes', () => {
   assert.match(leagueHtml(view(null, { loading: true })), /<p class="dim">Loading…<\/p>/, 'loading');
   const none = leagueHtml(view(state(null)));
   assert.match(none, /No season yet/);
-  assert.match(none, /data-btn="lg-close"/, 'the way back, from the page header');
-  assert.match(none, /class="ui-page-header"/, 'the header is the page-header component');
+  assert.match(none, /class="ui-icon-button ui-icon-button--stack frameback" data-btn="lg-close"/, 'the way back, the toolbar\'s Home');
 
   const out = leagueHtml(view(state(season(), { signedIn: false, availability: null })));
   assert.match(out, /Sign in to join the league\./);
   assert.ok(btns(out).has('acct-open-auth'));
-  assert.doesNotMatch(out, /id="lg-grid"/, 'no availability grid signed out');
+  assert.doesNotMatch(allParts(view(state(season(), { signedIn: false, availability: null }))), /id="lg-grid"/, 'no availability grid signed out');
 
-  const running = leagueHtml(view(state(season()), { timeOpen: null, arming: 'leave' }));
+  const running = allParts(view(state(season()), { timeOpen: null, arming: 'leave' }));
   for (const b of ['lg-close', 'lg-skip', 'lg-leave', 'lg-tz-here', 'lg-grid-preset', 'lg-grid-clear', 'lg-grid-save',
     'lg-play', 'lg-time-accept', 'lg-time-open', 'lg-stamp-copy']) assert.ok(btns(running).has(b), b);
   assert.match(running, /Press again to leave the league/, 'the armed button says so');
@@ -90,7 +93,7 @@ test('985 §1 the main states render, with every button the click handler routes
   const form = leagueHtml(view(state(season()), { timeOpen: 'm1' }));
   for (const b of ['lg-time', 'lg-time-custom', 'lg-time-close']) assert.ok(btns(form).has(b), b);
 
-  const org = leagueHtml(view(state(season(), { organizer: true }), { preview: { week: 3, short: null, total: 1, edges: [] } }));
+  const org = allParts(view(state(season(), { organizer: true }), { preview: { week: 3, short: null, total: 1, edges: [] } }));
   for (const b of ['lg-advance', 'lg-preview', 'lg-set', 'lg-format', 'lg-repair', 'lg-add', 'lg-copy', 'lg-create', 'lg-override']) {
     assert.ok(btns(org).has(b), b);
   }
@@ -99,7 +102,7 @@ test('985 §1 the main states render, with every button the click handler routes
 });
 
 test('985 §2 player text is escaped', () => {
-  const html = leagueHtml(view(state(season({ name: 'Nov <b>' }), { organizer: true })));
+  const html = allParts(view(state(season({ name: 'Nov <b>' }), { organizer: true })));
   assert.match(html, /Nov &lt;b&gt;/);
   assert.doesNotMatch(html, /Nov <b>/);
   assert.match(html, /cy&lt;1&gt;/, 'a Discord name');
@@ -125,7 +128,7 @@ test('985 §3 the home banner and the header button', () => {
 });
 
 test('985 §4 the grid help text follows the input method: drag to a mouse, tap to a finger', () => {
-  const html = leagueHtml(view(state(season())));
+  const html = leagueHtml(view(state(season()), { section: 'avail' }));
   assert.match(html, /pick quick fills, or <span class="mouseonly">drag across<\/span><span class="touchonly">tap hours on<\/span> the grid\./);
   const css = readStyles().replace(/\/\*[\s\S]*?\*\//g, '');
   assert.match(css, /(^|\})\s*\.touchonly\s*\{\s*display:\s*none;?\s*\}/, 'a mouse never sees the finger words');
@@ -134,3 +137,35 @@ test('985 §4 the grid help text follows the input method: drag to a mouse, tap 
 
 // 985 §5 (a league-only phone padding for the Report pill) is gone: the pill now keeps the
 // corner clear on EVERY page while it is up (shared/13-report-and-inbox.css, guarded by 978 §7).
+
+test('985 §6 the app frame: the parts as tabs, the seasons as a rail, each part its own scroll', () => {
+  const v = view(state(season()));
+  // the tabs: Availability only signed in, Organizer only for an organizer
+  assert.deepEqual(leagueSections(v), ['season', 'avail', 'standings', 'stamp']);
+  assert.deepEqual(leagueSections(view(state(season(), { signedIn: false }))), ['season', 'standings', 'stamp']);
+  assert.deepEqual(leagueSections(view(state(season(), { organizer: true }))), [...LEAGUE_SECTIONS]);
+  const html = leagueHtml(v);
+  assert.match(html, /class="ui-segmented__option on" data-btn="lg-section" type="button" data-value="season" aria-pressed="true" data-v="season">Season</);
+  assert.match(html, /data-scroll="lg-season-2026-11"/, 'the part showing scrolls by itself, keyed by part and season');
+  // a part the viewer has not got falls back to the season
+  assert.match(leagueHtml(view(state(season(), { signedIn: false }), { section: 'avail' })), /aria-pressed="true" data-v="season"/);
+  // one season and nothing else running: no rail
+  assert.doesNotMatch(html, /class="lgrail"/);
+  // two: a row each; the one showing is marked and has no Play (its matches are beside it);
+  // another season's open match has its Play in its row
+  const other = season({ id: 'old', name: 'October', phase: 4, label: 'The final' });
+  const two = leagueHtml(view(state(season(), {
+    seasons: [{ id: 'old', name: 'October', phase: 4, weeks: 3, hidden: false }, { id: '2026-11', name: 'November', phase: 2, weeks: 3, hidden: false },
+      { id: 'dec', name: 'December', phase: -1, weeks: 3, hidden: false }],
+    others: [other],
+  })));
+  const rail = /<nav class="lgrail"[\s\S]*?<\/nav>/.exec(two)?.[0] ?? '';
+  assert.match(rail, /data-btn="lg-season" data-id="old"/);
+  assert.match(rail, /<div class="lgrailrow on">\s*<button class="lgrailopen" data-btn="lg-season" data-id="2026-11" aria-current="true">/);
+  assert.match(rail, /data-btn="lg-play" data-season="old" data-match="m1"/, 'the other season\'s Play');
+  assert.doesNotMatch(rail, /data-season="2026-11"/, 'no Play for the season showing');
+  assert.match(rail, /data-id="dec"[\s\S]*?Announced/, 'a season the answer only numbers still says where it is');
+  // a join problem that is fixed on Availability says where that is
+  const blocked = leagueHtml(view(state(season({ phase: 0, label: 'Sign-up week', me: { ...season().me!, entered: false, joinProblem: 'mark when you are usually free' } }))));
+  assert.match(blocked, /Mark when you are usually free\. <button class="linkbtn" data-btn="lg-section" data-v="avail">Availability<\/button>/);
+});

@@ -1,6 +1,7 @@
 /* The League page, its home banner and its header button (ui/pages/league.ts),
  * drawn from made-up views: no server, no account. The page's own buttons do
  * nothing here — their handler is ui/league.ts, which a story does not load. */
+import { CHROME } from './_page.ts';
 import {
   defaultGrid, leagueBannerHtml, leagueGlanceHtml, leagueGlanceView, leagueHtml, leagueJoinRowsHtml, leagueJoinView, leagueNavHtml,
   type LeagueState, type LeagueView, type SeasonView,
@@ -52,6 +53,7 @@ const view = (data: LeagueState | null, over: Partial<LeagueView> = {}): LeagueV
   arming: null, gridFocus: null, timeOpen: null, preview: null, now: NOW, tz: 'Europe/London', browserTz: 'Europe/London',
   zones: ['Europe/London', 'America/New_York', 'UTC'], origin: 'https://algomancy.online', stampAt: NOW,
   chips: { champion: ' <span class="badgechip trophy champion">🏆 Champion</span>', finalist: ' <span class="badgechip trophy finalist">🥈 Finalist</span>' },
+  section: 'season', chrome: CHROME,
   ...over,
 });
 

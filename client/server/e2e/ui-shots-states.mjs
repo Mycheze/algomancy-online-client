@@ -34,7 +34,7 @@ const pick = (sel, re) => ({ eval: `(() => { const s = document.querySelector(${
 
 /** the pages drawn in the app frame (ui/pages/frame.ts, 2026-11-04): one
  * window each, like the home — every one of their states is `noScroll` */
-export const FRAME_PAGES = ['cards', 'meta', 'cardstats', 'queue'];
+export const FRAME_PAGES = ['cards', 'meta', 'cardstats', 'queue', 'league', 'challenge'];
 
 export function SCENARIOS(fx) {
   const S = [];
@@ -124,15 +124,24 @@ export function SCENARIOS(fx) {
   add('league', 'signed-out', `/?league=${fx.seasons.running}`);
   add('league', 'organizer', `/?league=${fx.seasons.running}`, admin);
   add('league', 'suggest-time', `/?league=${fx.seasons.running}`, { ...me, steps: [{ click: btn('lg-time-open') }] });
+  // the page's parts, the toolbar's tabs since the app frame (2026-11-04)
+  const lgTab = v => ({ click: `[data-btn="lg-section"][data-v="${v}"]` });
+  add('league', 'availability', `/?league=${fx.seasons.running}`, { ...me, steps: [lgTab('avail')] });
+  add('league', 'standings', `/?league=${fx.seasons.running}`, { ...me, steps: [lgTab('standings')] });
+  add('league', 'time-code', `/?league=${fx.seasons.running}`, { ...me, steps: [lgTab('stamp')] });
+  add('league', 'organizer-tab', `/?league=${fx.seasons.running}`, { ...admin, steps: [lgTab('organizer')] });
 
   // ── the weekly challenge ──
   add('challenge', 'page', '/?challenge=1', me);
   add('challenge', 'signed-out', '/?challenge=1');
+  // "Build a deck": the builder's summary on the page (the tabletop is challenge__builder)
+  add('challenge', 'building', '/?challenge=1', { ...me, steps: [{ click: '[data-btn="ch-build"]' }] });
   for (const t of ['leanest', 'purest', 'overall']) {
     add('challenge', `board-${t}`, '/?challenge=1', { ...me, steps: [{ click: tab('ch-tab', t) }] });
   }
   add('challenge', 'past-week', `/?challenge=1&board=${fx.challenge.past}`, me);
-  add('challenge', 'builder', `/?table=ch:${fx.challenge.current}`, { ...me, pages: 1 });
+  // the tabletop, not the challenge page: not in the app frame yet
+  add('challenge', 'builder', `/?table=ch:${fx.challenge.current}`, { ...me, pages: 1, noScroll: false });
 
   // ── admin ──
   add('admin', 'refused', '/?admin=1', me);

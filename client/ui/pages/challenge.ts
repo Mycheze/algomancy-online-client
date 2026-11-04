@@ -27,12 +27,12 @@ import {
   BOARD_KINDS, TROPHY_KINDS, goalText, setupLines, type BoardKind, type ChallengeDef, type RunScore,
 } from '../../engine/src/challenge.ts';
 import { builderHtml, type BuilderView } from '../challengebuild.ts';
-import { pageHeader } from '../components/page-header.ts';
 import { panel, panelSubheading } from '../components/panel.ts';
 import { type TableColumn, table } from '../components/table.ts';
 import { tabs } from '../components/tabs.ts';
 import { canSubmit, doneRuns, type DoneRun, type SubmitReply } from '../challengerun.ts';
 import { esc } from '../util.ts';
+import { frameChromeView, frameHtml, type FrameChrome } from './frame.ts';
 
 // ── the server's shapes (server/api-challenge.ts, server/challenge-store.ts) ──
 
@@ -182,35 +182,42 @@ export interface ChallengePageView {
   kept: KeptRun[];
   /** this account can put a run on a board (named, not a guest) */
   canSubmit: boolean;
+  /** the toolbar's account and bell (pages/frame.ts) */
+  chrome: FrameChrome;
 }
 
+/** The page, in the app frame (pages/frame.ts, 2026-11-04): two columns that
+ * each scroll inside themselves. On the left what the week IS and what you
+ * have done (finished runs, the builder, this week, the past weeks); on the
+ * right the leaderboard — this week's, or the past week you opened, in its
+ * place rather than under the list. */
 export function challengePageHtml(v: ChallengePageView): string {
   const { data, msg, loading } = v;
   const cur = data?.current ?? null;
   const b = v.building;
-  return `<div class="metapage chpage">
-    ${pageHeader({ title: 'Weekly challenge',
-      subtitle: 'Build a deck in order, then reach the goal using as few cards, elements and turns as you can.', subtitleAs: 'p',
-      back: { dataBtn: 'ch-close', label: 'Back', variant: 'secondary' } })}
-    ${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
-    ${loading && !data ? '<p class="dim">Loading…</p>' : ''}
-    <div class="acctbody">
-      ${keptHtml(v)}
+  const past = v.pastOpen ? data?.past.find(x => x.id === v.pastOpen) ?? null : null;
+  const shown = past ?? cur;
+  const left = `${keptHtml(v)}
       ${b ? `${b.id !== cur?.id ? panel({ title: b.title, wide: true, bodyHtml: `<p class="chgoal">${esc(goalText(b.goal))}</p>${
         b.closed ? '<p class="dim">This week is closed. A run still goes on its leaderboard.</p>' : ''}` }) : ''}
         ${v.builder ? builderHtml(v.builder) : ''}` : ''}
       ${data && !cur ? panel({ title: 'No challenge this week', bodyHtml: '<p>Check back on Sunday.</p>' }) : ''}
       ${cur ? weekCardHtml(cur, v) : ''}
-      ${cur ? boardHtml(cur, v) : ''}
-      ${data ? pastHtml(data, v) : ''}
-    </div>
-  </div>`;
+      ${data ? pastHtml(data, v) : ''}`;
+  return frameHtml({
+    page: 'chpage', title: 'Weekly challenge', back: { dataBtn: 'ch-close', label: 'Home' }, chrome: v.chrome, fill: true,
+    mainHtml: `${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
+    ${loading && !data ? '<p class="dim">Loading…</p>' : ''}
+    <div class="chwork${shown ? '' : ' chnoboard'}">
+      <div class="chleft" data-scroll="ch-left">${left}</div>
+      ${shown ? `<div class="chright" data-scroll="ch-board-${esc(shown.id)}">${boardHtml(shown, v, !!past, !!past && !!cur)}</div>` : ''}
+    </div>`,
+  });
 }
 
 // "Your best" and the past weeks are lists with no header row; a column's class sits on every cell
 const BEST_COLUMNS = [{ key: 'kind', label: '' }, { key: 'rank', label: '' }, { key: 'score', label: '', className: 'dim' }];
-const PAST_COLUMNS = [{ key: 'week', label: '' }, { key: 'title', label: '' }, { key: 'entrants', label: '', className: 'dim' },
-  { key: 'btns', label: '', className: 'chrowbtns' }];
+
 
 function bestHtml(id: string, v: ChallengePageView): string {
   const m = v.data?.mine?.[id];
@@ -258,7 +265,7 @@ export const DEBT_RULE = 'Debt you still owe when you meet the goal adds the tur
   + 'your open resources pay first, then each later turn pays with 2 more resources than the one before.';
 const TURNS_TIP = `The turn you met the goal on, plus any turns paying off debt. ${DEBT_RULE}`;
 
-function boardHtml(c: ChallengeView, v: ChallengePageView, past = false): string {
+function boardHtml(c: ChallengeView, v: ChallengePageView, past = false, backToWeek = false): string {
   const tab = v.tab;
   const b = v.boards[c.id];
   let body: string;
@@ -287,7 +294,8 @@ function boardHtml(c: ChallengeView, v: ChallengePageView, past = false): string
           r.runId ? `<button data-btn="ch-watch" data-run="${esc(r.runId)}">Watch</button>` : ''}` },
       } })) })}`;
   }
-  const head = past ? `${esc(c.title)} <span class="dim">· week of ${esc(c.week)}</span>` : 'Leaderboard';
+  const head = past ? `${esc(c.title)} <span class="dim">· week of ${esc(c.week)}</span>${backToWeek
+    ? ` <button class="chweekback" data-btn="ch-past" data-id="${esc(c.id)}">This week</button>` : ''}` : 'Leaderboard';
   return panel({ wide: !!b && b !== 'loading' && b !== 'error' && b.closed, className: 'chboardcard',
     titleHtml: head, bodyHtml: body });
 }
@@ -296,13 +304,15 @@ function pastHtml(d: ChallengeReply, v: ChallengePageView): string {
   const pastOpen = v.pastOpen;
   if (!d.past.length) return '';
   return `${panel({ title: 'Past weeks', wide: true, bodyHtml: `
-    ${table({ className: 'chpast', headless: true, columns: PAST_COLUMNS, rows: d.past.map(c => ({ cells: {
-      week: c.week, title: { html: `<b>${esc(c.title)}</b> <span class="dim">${esc(goalText(c.goal))}</span>` },
-      entrants: `${c.entrants} entrant${c.entrants === 1 ? '' : 's'}`,
-      btns: { html: `<button class="${pastOpen === c.id ? 'on' : ''}" data-btn="ch-past" data-id="${esc(c.id)}">Leaderboard</button>
-        <button data-btn="ch-build" data-id="${esc(c.id)}">Build</button>` },
-    } })) })}
-  ` })}${pastOpen ? ((): string => { const c = d.past.find(x => x.id === pastOpen); return c ? boardHtml(c, v, true) : ''; })() : ''}`;
+    ${/* rows of two lines, not a table: the list sits in the page's narrower
+        left column (the app frame, 2026-11-04), where a week, a title and a
+        count in columns wrapped word by word */ ''}<ul class="chpast">${d.past.map(c => `<li class="chpastrow${pastOpen === c.id ? ' on' : ''}">
+      <div class="chpasttext"><b>${esc(c.title)}</b> <span class="dim">${esc(goalText(c.goal))}</span>
+        <div class="dim chpastmeta">${esc(c.week)} · ${c.entrants} entrant${c.entrants === 1 ? '' : 's'}</div></div>
+      <div class="chrowbtns"><button class="${pastOpen === c.id ? 'on' : ''}" data-btn="ch-past" data-id="${esc(c.id)}">Leaderboard</button>
+        <button data-btn="ch-build" data-id="${esc(c.id)}">Build</button></div>
+    </li>`).join('')}</ul>
+  ` })}`;
 }
 
 function keptHtml(v: ChallengePageView): string {
@@ -362,5 +372,6 @@ export function challengePageView(r: ChallengeRaw): ChallengePageView {
     builder: b ? { def: b, list: r.list, decks: r.decks(), importing: r.importing, undo: r.undo?.id === b.id ? r.undo.what : null } : null,
     kept: doneRuns().filter(x => viewOf(x.challengeId)).map(run => ({ run, st: r.sending.get(run.at) })),
     canSubmit: canSubmit(),
+    chrome: frameChromeView(),
   };
 }

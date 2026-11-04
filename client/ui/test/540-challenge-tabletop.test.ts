@@ -181,7 +181,8 @@ test('§5 Back is the challenge page with the new order; its button opens the ta
   const order = names(ui.html());
   let html = ui.click({ btn: 'tt-close' });
   assert.doesNotMatch(html, /class="ttpage/, 'the table is gone');
-  assert.match(html, /<div class="metapage chpage"/, 'the challenge page');
+  // in the app frame since 2026-11-04 (pages/frame.ts): the shell, chpage its last class
+  assert.match(html, /<div class="ui-app-shell[^"]* apppage chpage"/, 'the challenge page');
   assert.match(html, /data-btn="ch-tabletop"[^>]*>Build on the table</);
   const first = /class="chpos">1<\/span>\s*<span class="chname" data-prev="([^"]+)"/.exec(html)?.[1];
   assert.equal(first, order[0], 'its summary is the deck as the table left it');
@@ -245,7 +246,9 @@ test('§8 the wiring: the reload, the paint guard, and the strip’s drop index'
   assert.match(code('main.ts'), /tt\.registerTableResolver\('challenge', chal\.tabletopHostFor\);/);
   const ch = code('challenge.ts');
   const paint = ch.slice(ch.indexOf('function paint('), ch.indexOf('function setList('));
-  assert.ok(paint.indexOf('if (tt.screen()) return;') >= 0 && paint.indexOf('if (tt.screen()) return;') < paint.indexOf('innerHTML'),
+  // the paint is paintFrame since the app frame (2026-11-04); innerHTML before
+  const paints = Math.max(paint.indexOf('innerHTML'), paint.indexOf('paintFrame('));
+  assert.ok(paint.indexOf('if (tt.screen()) return;') >= 0 && paints > 0 && paint.indexOf('if (tt.screen()) return;') < paints,
     'the page never paints over the table (a commit there repaints the table, not this)');
   assert.match(ch, /commit: next => \{[\s\S]*?setList\(next\.cards\)[\s\S]*?tt\.tabletopChanged\(\);/, 'the strip commits through setList (saved, Undo ended) and repaints the table');
   // the index a release at x lands at: the gap before card i is i, past the last card's middle is the end
