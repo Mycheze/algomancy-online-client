@@ -91,7 +91,9 @@ if run skip; then # dry verdicts must not be picked again
 if run ship; then r=$(tick ship); [ "$(last_outcome "$r")" = dry-shipped ] && ok "ledger-only ship, green gate → dry-shipped" || bad "ship → $r"; fi
 if run ui; then r=$(tick ui); [ "$(last_outcome "$r")" = dry-staged ] && ok "a UI change asked to ship is downgraded → dry-staged ($(jq -r .policy <<<"$r" | cut -c1-50))" || bad "ui → $r"; fi
 if run red; then r=$(tick ship false); [ "$(last_outcome "$r")" = dry-gate-red ] && ls "$T/state/redgate/"*.json >/dev/null 2>&1 && ok "red gate → dry-gate-red + a repair entry" || bad "red → $r"
-  head -1 "$T/state/queue.txt" | grep -q '^repair ' && ok "the next queue starts with the repair" || bad "no repair line queued: $(head -1 "$T/state/queue.txt")"
+  # the NEXT queue (queue.txt is the one this tick started from, before the red)
+  nq=$(cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs 2>/dev/null | head -1)
+  grep -q '^repair ' <<<"$nq" && ok "the next queue starts with the repair" || bad "no repair line queued: $nq"
   rm -f "$T/state/redgate/"*.json; fi
 if run stage; then r=$(tick stage); [ "$(last_outcome "$r")" = dry-staged ] && ok "stage → dry-staged, handoff written" || bad "stage → $r"; fi
 if run needs-human; then r=$(tick needs-human); [ "$(last_outcome "$r")" = dry-needs-human ] && ok "needs-human → dry-needs-human" || bad "needs-human → $r"; fi
@@ -99,7 +101,8 @@ if run dirty; then r=$(tick dirty); [ "$(last_outcome "$r")" = dry-staged ] && o
 if run silent; then r=$(tick silent); [ "$(last_outcome "$r")" = dry-failed ] && ok "no verdict → dry-failed (cooled down)" || bad "silent → $r"; fi
 if run limit; then r=$(tick limit); [ "$(last_outcome "$r")" = limited ] && [ -f "$T/state/backoff-until" ] && ok "usage limit → backs off, item not charged" || bad "limit → $r"
   r2=$(tick skip); [ -z "$r2" ] && ok "inside the back-off nothing runs" || bad "ran during back-off: $r2"; rm -f "$T/state/backoff-until"; fi
-if run push; then tick push >/dev/null
+if run push && [ -n "${STEWARD_TEST_REMOTE:-}" ]; then echo "  - push guard not tested: a local STEWARD_TEST_REMOTE has no ssh for the guard to refuse"
+elif run push; then tick push >/dev/null
   git -C "$T/repo" ls-remote origin refs/heads/steward-escape | grep -q . && bad "THE AGENT PUSHED (steward-escape exists)" || ok "the agent cannot push (git ssh guard)"; fi
 if run answers; then tick skip >/dev/null; grep -q '^resume done' "$T/state/queue.txt" && bad "answers/done/ read as an item called done" || ok "answers/done/ is not an item"; fi
 if run sweep; then
