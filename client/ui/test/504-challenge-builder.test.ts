@@ -4,8 +4,7 @@
  * claim here is about ORDER:
  *
  *   §1 consecutive copies are ONE row of the summary ("1–4"), and two
- *      identical rows that meet are one; the browser's add goes to the
- *      bottom and its cut takes the lowest copy
+ *      identical rows that meet are one
  *   §2 the opening hand is the engine's (a dealt game read back), and it is
  *      the top of the list
  *   §3 the verdict is checkChallengeDeck's, word for word
@@ -15,8 +14,11 @@
  *      Turn-1 hand, Import / Clear / Undo / Play — and the way to the table
  *      ("Build on the table"), where the order is built (540); no row is
  *      moved or counted here, and nothing is HTML5-dragged
- *   §6 the card browser builds this list: add goes to the bottom, cut takes
- *      the lowest copy, and there is no maybeboard
+ *   §6 the table's toolbar (BL-65): the pill is a count, not "n / 30" (a
+ *      challenge deck has no size to reach), its problem is the engine's
+ *      verdict; Play waits for a legal deck; the Import sheet lists the saved
+ *      decks; the line over the strip keeps the goal and "this browser only".
+ *      The card browser's bridge is gone: the pool adds to the end (540).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -40,16 +42,13 @@ const DEF: ChallengeDef = { id: 'b1', week: '2026-10-18', title: 'Builder', blur
 const units = DECK_LIST.filter(n => getCard(n).kind === 'unit').slice(0, 12);
 const [A, Bn, C, D] = units as [string, string, string, string];
 
-test('§1 consecutive copies are one row, and the browser adds at the bottom and cuts the lowest copy', () => {
+test('§1 consecutive copies are one row', () => {
   const l = [A, A, A, Bn, C, C, D];
   assert.deepEqual(B.blocks(l), [{ name: A, start: 0, n: 3 }, { name: Bn, start: 3, n: 1 }, { name: C, start: 4, n: 2 }, { name: D, start: 6, n: 1 }]);
   assert.equal(B.blocks(Array(40).fill(A)).length, 1, 'a 40-copy deck is one row');
   // two identical rows that meet are one row
   assert.equal(B.blocks([A, Bn, A]).length, 3);
   assert.deepEqual(B.blocks([Bn, A, A]), [{ name: Bn, start: 0, n: 1 }, { name: A, start: 1, n: 2 }], 'adjacent copies merge');
-  assert.deepEqual(B.addCard([A, A], A), [A, A, A], 'a searched card goes to the bottom (onto a matching last row)');
-  assert.deepEqual(B.addCard([A], Bn), [A, Bn]);
-  assert.deepEqual(B.cutOne([A, Bn, A, C, A], A), [A, Bn, A, C], 'a cut from the browser takes the lowest copy');
   assert.deepEqual(l, [A, A, A, Bn, C, C, D], 'nothing changes the list it was given');
   assert.deepEqual(B.counts([A, Bn, A, A]), [{ name: A, n: 3 }, { name: Bn, n: 1 }]);
   assert.deepEqual(B.costIfAllUsed([A, A, A, A, Bn, Bn, Bn, C]), { unique: 3, extra: 3 }, 'copies past the second are extra');
@@ -121,19 +120,22 @@ test('§5 the builder card is a summary, numbered by position, with the way to t
   assert.doesNotMatch(B.builderHtml({ def: DEF, list: [], decks: [], importing: false }), /<ol class="chlist">/, 'an empty deck has no rows');
 });
 
-test('§6 the card browser builds the list through its bridge', () => {
-  let list: string[] = [A];
-  let back = 0;
-  const br = B.bridgeFor({ title: 'Builder', list: () => list, set: l => { list = l; }, back: () => { back++; } });
-  br.add(Bn); br.add(A);
-  assert.deepEqual(list, [A, Bn, A]);
-  assert.equal(br.copies(A), 2);
-  br.remove(A);
-  assert.deepEqual(list, [A, Bn], 'the lower copy went');
-  assert.equal(br.noMaybe, true, 'no maybeboard');
-  const s = br.summary();
-  assert.equal(s.total, 2);
-  assert.equal(s.legal, true);
-  br.back();
-  assert.equal(back, 1);
+test('§6 the table’s toolbar: a count pill, Import a deck, Play; the note over the strip', () => {
+  assert.deepEqual(B.tablePill([A, A, Bn]), { text: '3 in the deck', tone: 'ok', problems: [] }, 'a count — no size to reach');
+  assert.deepEqual(B.tablePill([]), { text: '0 in the deck', tone: 'warn', problems: ['Add a card to start.'] });
+  const bad = B.tablePill(['Training Construct']);
+  assert.equal(bad.tone, 'bad');
+  assert.deepEqual(bad.problems, [(checkChallengeDeck(['Training Construct']) as { error: string }).error], 'the engine’s words');
+  const tools = B.tableToolsHtml([A], false);
+  assert.match(tools, /data-btn="ch-import"[^>]*aria-expanded="false"[^>]*>Import a deck</);
+  assert.match(tools, /data-btn="ch-play"[^>]*>Play</);
+  assert.doesNotMatch(tools, /data-btn="ch-play"[^>]*disabled/, 'Play is live with a legal deck');
+  assert.match(B.tableToolsHtml([], true), /data-btn="ch-play"[^>]*disabled/, 'and waits without one');
+  assert.match(B.tableToolsHtml([], true), /aria-expanded="true"/);
+  const list = B.importListHtml([{ id: 'd1', name: 'Mine <3', cards: [A, Bn] }]);
+  assert.match(list, /data-btn="ch-importdeck"[^>]*data-id="d1"[^>]*>Mine &lt;3 <span class="dim">2<\/span>/);
+  assert.match(B.importListHtml([]), /No saved decks\./);
+  const note = B.tableNoteHtml('Have 3 units in play');
+  assert.match(note, /^<p class="ttchnote dim">Have 3 units in play · Cards on the table are not in the deck\. The table is saved in this browser only\.<\/p>$/);
+  assert.equal('bridgeFor' in B, false, 'the card browser’s bridge is retired');
 });

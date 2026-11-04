@@ -15,11 +15,14 @@
  *
  * The builder here is a summary — the deck's rows, its Turn-1 hand, Import,
  * Clear, Undo and Play — and a "Build on the table" button. The deck is built
- * on the tabletop (ui/tabletop.ts), which this page hosts as kind
- * `challenge`: a scratch table of piles on top (cards being considered, kept
- * in this browser, NOT in the deck) and the deck itself as a strip below,
- * left to right = top to bottom (ui/deckstrip.ts). The table sits on top of
- * this page, which stays `open` under it, so Back is a repaint of it.
+ * on the tabletop (ui/tabletop.ts, the builder in the app frame), which this
+ * page hosts as kind `challenge`: the pool over a scratch table of piles
+ * (cards being considered, kept in this browser, NOT in the deck) and the
+ * deck itself as a strip along the bottom, left to right = top to bottom
+ * (ui/deckstrip.ts). A pool tap adds to the END of the strip. The toolbar has
+ * the count pill, Import a deck (a side sheet) and Play; Undo and Redo are
+ * the builder's. The table sits on top of this page, which stays `open` under
+ * it, so Back is a repaint of it.
  *
  * The home page's card and the header button are drawn from one fetch of
  * GET /api/challenge, asked the first time the home page draws and never at
@@ -31,11 +34,10 @@
  */
 import { BOARD_KINDS, goalText, type BoardKind } from '../engine/src/challenge.ts';
 import * as acct from './account.ts';
-import * as cb from './cards.ts';
-import { deckStripHtml } from './cardpanel.ts';
+import { sheet } from './components/sheet.ts';
 import * as dk from './decks.ts';
 import {
-  bridgeFor, deckProblem, loadDraft, loadScratch, openingHand, saveDraft, saveScratch, summaryOf,
+  deckProblem, importListHtml, loadDraft, loadScratch, openingHand, saveDraft, saveScratch, tableNoteHtml, tablePill, tableToolsHtml,
 } from './challengebuild.ts';
 import { challengeStripHtml } from './deckstrip.ts';
 import { cardHeight, cardWidth } from './piletable.ts';
@@ -43,7 +45,7 @@ import * as tt from './tabletop.ts';
 import {
   canSubmit, doneRuns, forgetDone, freshRun, submitRun, type DoneRun, type SubmitReply,
 } from './challengerun.ts';
-import { chosenDeck, esc } from './util.ts';
+import { chosenDeck } from './util.ts';
 import {
   allViews, challengeGlanceHtml, challengeHomeCardHtml, challengeHomeView, challengeNavHtml, challengePageHtml, challengePageView,
   type BoardReply, type ChallengeReply, type ChallengeView,
@@ -108,6 +110,14 @@ export function initChallenge(opts: { app: HTMLElement; rerender: () => void }):
     // a run's goal panel, signed out: the sign-in form, then this page, which
     // submits the kept run (sendKept) once there is an account
     if (url.get('signin') === '1') acct.signInThenReturn();
+  }
+  // Esc closes the Import sheet on the table (the builder's own sheets are its)
+  if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape' || !importing || !tt.screen()) return;
+      importing = false;
+      tt.tabletopChanged();
+    });
   }
 }
 
@@ -264,6 +274,12 @@ function paint(): void {
   })));
 }
 
+/** whichever is on screen: the table (this page's import sheet is drawn in
+ * it) or this page */
+function repaint(): void {
+  if (tt.screen()) tt.tabletopChanged(); else paint();
+}
+
 function setList(next: string[], replacing?: string): void {
   undo = replacing && building ? { id: building, list: [...list], what: replacing } : null;
   list = next;
@@ -319,10 +335,15 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'ch-undo':
       if (undo && undo.id === building) { const back = undo.list; setList(back); }
       return true;
-    case 'ch-import': importing = !importing; if (importing) dk.ensureCollection(paint); paint(); return true;
+    case 'ch-import': importing = !importing; if (importing) dk.ensureCollection(repaint); repaint(); return true;
     case 'ch-importdeck': {
       const d = importable().find(x => x.id === btn.dataset['id']);
       importing = false;
+      // on the table: the builder's history takes it, so its Undo undoes it
+      if (tt.screen() && building) {
+        if (!d || !tt.place(tableHost(building), null, { at: 'arrange', edit: { op: 'set', cards: [...d.cards] } })) repaint();
+        return true;
+      }
       if (d) setList([...d.cards], `Imported ${d.name}.`); else paint();
       return true;
     }
@@ -389,18 +410,20 @@ function tableHost(id: string): tt.TableHost {
     backLabel: 'Back to the challenge',
     cards: () => (building === id ? list : loadDraft(id)),
     piles: () => loadScratch(id),
-    strip: () => {
-      const d = def();
-      return `${deckStripHtml(d?.title ?? 'this challenge', summaryOf(self.cards()), { lead: 'Challenge' })}
-        <p class="ttchnote dim">${d ? `${esc(goalText(d.goal))} · ` : ''}Cards on the table are not in the deck. The table is saved in this browser only.</p>`;
-    },
+    pool: true,
+    pill: () => tablePill(self.cards()),
+    toolsHtml: () => tableToolsHtml(self.cards(), importing),
+    sheetHtml: () => (importing ? sheet({
+      open: true, placement: 'side', width: 'sm', title: 'Import a deck', bodyHtml: importListHtml(importable()),
+      dismissBtn: 'ch-import', id: 'ch-importsheet',
+    }) : ''),
     below: () => {
       const l = self.cards();
       const d = def();
       const problem = deckProblem(l);
       const hand = d && !problem ? openingHand(d, l) : null;
       const c = tt.selected(self);
-      return challengeStripHtml({
+      return tableNoteHtml(d ? goalText(d.goal) : null) + challengeStripHtml({
         list: l, hand: hand ? hand.length : null, problem, ...cardSize(),
         front: tt.frontIn('strip'), picked: c?.from === 'strip' ? c.index : undefined,
       });
@@ -412,18 +435,7 @@ function tableHost(id: string): tt.TableHost {
       tt.tabletopChanged();
     },
     // the table has already left the screen, so this paints the page
-    close: () => { open = true; building = id; syncUrl(); paint(); },
-    fullBrowser: query => {
-      const d = def();
-      if (!d) return;
-      cb.useDeck(bridgeFor({
-        title: d.title, list: () => list,
-        set: l => { if (building === id) setList(l); },
-        // back to the table (it is still up under the browser)
-        back: () => { cb.useDeck(null); rerenderHost(); },
-      }));
-      cb.openBrowser(query);
-    },
+    close: () => { open = true; building = id; importing = false; syncUrl(); paint(); },
   };
   return self;
 }

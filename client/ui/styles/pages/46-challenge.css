@@ -65,3 +65,8 @@
 .chpastrow + .chpastrow { border-top: 1px solid var(--color-border); }
 .chpasttext { flex: 1 1 auto; min-width: 0; line-height: 1.45; }
 .chpastmeta { font-size: var(--text-12); }
+
+/* ── the challenge on the builder (BL-65, ui/challenge.ts's table host) ──────
+   The goal line over the deck strip, and the Import sheet's list of decks. */
+.ttpage .ttchnote { margin: 0; padding: var(--space-2) var(--space-4) 0; font-size: var(--text-12); }
+.chimport.chimportsheet { flex-direction: column; align-items: stretch; margin-top: 0; }

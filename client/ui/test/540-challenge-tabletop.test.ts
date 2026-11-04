@@ -89,17 +89,25 @@ const sorted = (l: readonly string[]): string[] => [...l].sort();
 /** the bracket's width, and the strip's step, as drawn */
 const bracketPx = (html: string): number => Number(/class="ttbracket" style="width:(\d+)px"/.exec(html)?.[1] ?? 0);
 const step = (html: string): number => Number(/data-tt-zone="strip" data-tt-axis="x" data-tt-s="(\d+)"/.exec(html)![1]);
-const cardW = (html: string): number => Number(/class="ttpage" style="--cw:(\d+)px/.exec(html)![1]);
+// --cw lives on the table's wrap since the builder went into the app frame (BL-65, pages/table.ts)
+const cardW = (html: string): number => Number(/class="tttablewrap[^"]*" style="--cw:(\d+)px/.exec(html)![1]);
 
 test('§1 a reload on ?table=ch:<id> lands on the table: the strip is the draft, the scratch piles beside it', () => {
   const html = ui.html();
   assert.match(appOf(html), /^<div class="(?:[\w-]+ )*ttpage"/, 'the tabletop page is up');
-  assert.match(html, /← Back to the challenge/);
+  assert.match(html, /data-btn="tt-close"[\s\S]*?Back to the challenge</, 'the frame’s Back, named for the page under it');
   assert.deepEqual(names(html), LIST, 'one card per copy, left to right = top to bottom');
   assert.deepEqual(strip(html).map(c => c[0]), LIST.map((n, k) => `strip|${k}|${n}`), 'each card is its own position');
   assert.deepEqual(scratch(html), [[units[5]]], 'the scratch table as saved');
   assert.match(html, /The table is saved in this browser only\./, 'and the page says so in one line');
   assert.match(html, /Cards on the table are not in the deck/);
+  assert.match(html, /class="ttchnote dim">Have 30 units in play at once · /, 'the goal line over the strip');
+  // the builder's toolbar (BL-65): a count pill, Import a deck, Play — no card browser bridge
+  assert.match(html, new RegExp(`>${LIST.length} in the deck<`), 'the pill is a count: a challenge deck has no size to reach');
+  assert.match(html, /data-btn="ch-import"[^>]*>Import a deck</);
+  assert.match(html, /data-btn="ch-play"[^>]*>Play</);
+  assert.match(html, /data-btn="tt-undo"/, 'Undo and Redo are the builder’s');
+  assert.match(html, /data-btn="tt-add"/, 'the pool is over the table');
   assert.doesNotMatch(html, /class="ttmaybe/, 'no Maybe pile on a challenge table');
   const nums = [...html.matchAll(/<span style="left:\d+px">(\d+)<\/span>/g)].map(m => Number(m[1]));
   assert.deepEqual(nums, LIST.map((_, k) => k + 1), 'a position under every card');
@@ -129,7 +137,7 @@ test('§3 the tap route: a strip card lands before the card tapped, and the draf
   // a card from past the hand, into it
   const k = hand + 2;
   let html = ui.tap({ 'tt-src': `strip|${k}|${before[k]}` });
-  assert.match(html, /class="ttselbar"/, 'a finger picks it up');
+  assert.match(html, /class="ttpop"[^>]*data-tt-menu="strip\|/, 'a finger picks it up (its menu opens)');
   assert.match(html, new RegExp(`class="ttcard[^"]*ttpicked[^"]*"[^>]*data-tt-src="strip\\|${k}\\|`), 'and it is marked');
   html = ui.tap({ 'tt-src': `strip|1|${before[1]}` });
   const want = [...before]; const [moved] = want.splice(k, 1); want.splice(1, 0, moved!);
@@ -152,7 +160,7 @@ test('§4 strip → scratch leaves the deck, scratch → strip joins it, the bin
   const before = names(html);
   const piles = scratch(html).length;
   html = ui.tap({ 'tt-src': `strip|2|${before[2]}` });
-  html = ui.click({ btn: 'tt-newpile' });
+  html = ui.tap({ 'tt-zone': 'end' });
   const out = [...before]; const [left] = out.splice(2, 1);
   assert.deepEqual(names(html), out, 'off the deck');
   assert.deepEqual(draft(), out);

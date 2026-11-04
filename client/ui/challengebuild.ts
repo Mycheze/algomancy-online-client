@@ -12,8 +12,9 @@
  *     dealt by `newChallengeGame` and read back — never a re-derivation of
  *     the constructed card step here.
  *   · decide what is legal. `checkChallengeDeck` says, word for word.
- *   · search cards. The tabletop's binder does, and the card browser
- *     (ui/cards.ts) behind its "All cards…", through the bridge `bridgeFor`.
+ *   · search cards. The tabletop's pool does (ui/pages/pool.ts), and a tap
+ *     on a pool card adds it to the BOTTOM of the deck: what is on top was
+ *     put there on purpose.
  *
  * Kept per challenge in this browser, never on the server: the draft deck
  * and the scratch table's piles (cards being considered, NOT in the deck).
@@ -22,11 +23,9 @@
  */
 import type { CardName } from '../engine/src/types.ts';
 import { checkChallengeDeck, newChallengeGame, type ChallengeDef } from '../engine/src/challenge.ts';
-import type { DeckBridge } from './cards.ts';
-import type { DeckSummary } from './cardpanel.ts';
 import type { DeckPile } from './deckarrange.ts';
+import { button } from './components/button.ts';
 import { panel } from './components/panel.ts';
-import { analyzeDeck } from './deckstats.ts';
 import { esc } from './util.ts';
 
 // ── the edits ────────────────────────────────────────────────────────
@@ -34,8 +33,8 @@ import { esc } from './util.ts';
 // The list is the deck, card by card (index 0 on top). Where a card goes in
 // it is said on the tabletop (ui/tabletop.ts): the deck is a strip there
 // (ui/deckstrip.ts), and a drop or a tap names the exact position, through
-// the table's one door, `place()`. What is left here is what the card
-// browser and the summary need.
+// the table's one door, `place()`. What is left here is what the page's
+// summary and the table's pill need.
 
 export interface Block { name: string; start: number; n: number }
 
@@ -49,15 +48,6 @@ export function blocks(list: readonly string[]): Block[] {
     else out.push({ name, start: i, n: 1 });
   });
   return out;
-}
-
-/** a card from the search goes to the BOTTOM: what is on top was put there on
- * purpose (onto the last block, if it is the same card) */
-export const addCard = (list: readonly string[], name: string): string[] => [...list, name];
-/** cut the LOWEST copy of a name — the one least likely to be the point */
-export function cutOne(list: readonly string[], name: string): string[] {
-  const i = list.lastIndexOf(name);
-  return i < 0 ? [...list] : list.filter((_, k) => k !== i);
 }
 
 /** copies per name, in the order each name first appears from the top */
@@ -152,34 +142,34 @@ export function saveScratch(id: string, piles: readonly DeckPile[] | null): void
   try { localStorage.setItem(TABLES_KEY, JSON.stringify(all)); } catch { /* private window: this visit only */ }
 }
 
-// ── the card browser's bridge ─────────────────────────────────────────
+// ── the table's toolbar (ui/tabletop.ts TableHost.pill / toolsHtml / sheetHtml) ──
 
-/** the deck bar's numbers (count, verdict, curve, elements) for this list —
- * the card browser's and the tabletop's top bar */
-export function summaryOf(l: readonly string[]): DeckSummary {
-  const a = analyzeDeck(l);
-  const p = deckProblem(l);
-  return {
-    total: l.length, legal: !p, problems: p ? [p] : [],
-    curve: a.curve.map(c => ({ mana: c.mana, total: c.total })), elements: a.elements,
-  };
+/** The count pill: how many cards the deck holds, and what is wrong with it.
+ * A challenge deck has no size to reach and no copy cap (docs/21 § Deck), so
+ * the pill is a count, not "n / 30". */
+export function tablePill(list: readonly string[]): { text: string; tone: 'ok' | 'warn' | 'bad'; problems: string[] } {
+  const p = deckProblem(list);
+  return { text: `${list.length} in the deck`, tone: !list.length ? 'warn' : p ? 'bad' : 'ok', problems: p ? [p] : [] };
 }
 
-/** What the card browser needs to build this list: add goes to the bottom,
- * cut takes the lowest copy. No maybeboard. */
-export function bridgeFor(o: { title: string; list: () => readonly string[]; set: (l: string[]) => void; back: () => void }): DeckBridge {
-  return {
-    id: () => null,
-    name: () => o.title,
-    copies: name => o.list().filter(c => c === name).length,
-    maybe: () => 0,
-    add: name => o.set(addCard(o.list(), name)),
-    remove: name => o.set(cutOne(o.list(), name)),
-    toMaybe: () => {},
-    noMaybe: true,
-    summary: () => summaryOf(o.list()),
-    back: o.back,
-  };
+/** The table's own tools: Import a deck (its sheet), and Play. */
+export function tableToolsHtml(list: readonly string[], importing: boolean): string {
+  return button({ label: 'Import a deck', dataBtn: 'ch-import', attrs: { 'aria-expanded': String(importing) } })
+    + button({ label: 'Play', variant: 'primary', dataBtn: 'ch-play', disabled: !!deckProblem(list) });
+}
+
+/** The Import sheet's body: one button per saved deck, the page's import list. */
+export function importListHtml(decks: readonly { id: string; name: string; cards: readonly string[] }[]): string {
+  return decks.length
+    ? `<div class="chimport chimportsheet">${decks.map(d => button({
+      labelHtml: `${esc(d.name)} <span class="dim">${d.cards.length}</span>`, dataBtn: 'ch-importdeck', attrs: { 'data-id': d.id },
+    })).join('')}</div>`
+    : '<p class="dim">No saved decks.</p>';
+}
+
+/** The line over the deck strip: the goal, and what the table is. */
+export function tableNoteHtml(goal: string | null): string {
+  return `<p class="ttchnote dim">${goal ? `${esc(goal)} · ` : ''}Cards on the table are not in the deck. The table is saved in this browser only.</p>`;
 }
 
 // ── the markup ───────────────────────────────────────────────────────
