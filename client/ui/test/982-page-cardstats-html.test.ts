@@ -41,7 +41,7 @@ function view(over: Partial<CardStatsView> = {}): CardStatsView {
   return {
     data: DATA, loading: false, msg: '', mode: 'all', range: 'all', rated: false, bothSigned: false, mine: false,
     section: 'cards', sortKey: 'games', sortDir: -1, text: '', els: [], kind: 'all', minGames: 1, focus: null,
-    signedIn: true, tabs: '<!--SLOT:tabs-->', ...over,
+    signedIn: true, tabs: '<!--SLOT:tabs-->', chrome: { signedIn: true, alerts: 0 }, ...over,
   };
 }
 const btns = (html: string): Set<string> => new Set([...html.matchAll(/data-btn="([^"]+)"/g)].map(m => m[1]!));

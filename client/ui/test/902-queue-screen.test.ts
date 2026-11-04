@@ -36,12 +36,10 @@ const ruleBody = (sel: string): string => {
 };
 
 test('the queue screen is one card, not a card in a card', () => {
-  assert.match(src, /<div class="joinscreen home queuescreen">\s*<div class="queuepanel">/, 'positive control: the nesting this is about');
-  const outer = ruleBody('.joinscreen.queuescreen');
-  assert.ok(outer, 'a rule takes .joinscreen\'s frame off the queue screen');
-  assert.match(outer, /border\s*:\s*0/);
-  assert.match(outer, /background\s*:\s*none/);
-  assert.match(outer, /max-width\s*:\s*none/);
+  // since 2026-11-04 the page is drawn in the app frame (pages/frame.ts): the
+  // root is the shell, not a .joinscreen card, so the panel is the only card
+  assert.match(src, /page: 'queuescreen'[\s\S]*?mainHtml: `<section class="queuepanel"/, 'positive control: the nesting this is about');
+  assert.doesNotMatch(src, /class="joinscreen[^"]*queuescreen/, 'the queue is inside a .joinscreen card again');
   assert.match(ruleBody('.queuescreen .queuepanel'), /border\s*:\s*1px/, 'the panel is the one frame');
 });
 

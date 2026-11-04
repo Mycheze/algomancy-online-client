@@ -18,5 +18,6 @@ export * from './icon-button.ts';
 export * from './segmented.ts';
 export * from './sheet.ts';
 export * from './app-shell.ts';
+export * from './setting-row.ts';
 export { esc } from './_shared.ts';
 export type { Attrs, AttrValue, Common } from './_shared.ts';

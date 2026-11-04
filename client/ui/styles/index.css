@@ -40,6 +40,7 @@
 @import "components/segmented.css";
 @import "components/sheet.css";
 @import "components/app-shell.css";
+@import "components/setting-row.css";
 @import "board/02-promptbar.css";
 @import "board/03-life-cards-battle-log.css";
 @import "pages/04-joinscreen.css";
@@ -88,3 +89,5 @@
 @import "pages/46-challenge.css";
 @import "pages/47-competitive-match.css";
 @import "pages/48-legal.css";
+/* the app frame every page after the home is drawn in (ui/pages/frame.ts, 2026-11-04) */
+@import "pages/49-frame.css";

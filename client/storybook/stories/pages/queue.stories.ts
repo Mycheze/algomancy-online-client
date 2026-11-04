@@ -1,12 +1,12 @@
 import { queueGlanceHtml, queueHtml, queueStripHtml, type QueueView } from '../../../ui/pages/queue.ts';
 import { deckPickerHtml } from '../../../ui/pages/deckpicker.ts';
-import { DECKS, overlay, page } from './_page.ts';
+import { CHROME, DECKS, overlay, page } from './_page.ts';
 
 function view(over: Partial<QueueView> = {}): QueueView {
   return {
     counts: { total: 1, byMode: { constructed: 0, draft: 1 } },
     error: '', pickMode: 'draft', pickRanked: true, signedIn: true, blocker: null, rating: 1512,
-    deckPicker: '', searching: null, offer: null,
+    deckPicker: '', searching: null, offer: null, chrome: CHROME,
     ...over,
   };
 }

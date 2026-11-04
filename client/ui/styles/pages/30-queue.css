@@ -13,14 +13,11 @@
 .queuestrip .qstripgo { flex: 0 0 auto; padding: var(--space-4) var(--space-6); font-size: var(--text-14);
   border-color: var(--accent); color: var(--accent); }
 
-/* ONE card: the root keeps .joinscreen (the report form reads the page off it)
-   but not its frame, or the 520px panel sat in — and stuck out of — a 420px card */
-.joinscreen.queuescreen { max-width: none; width: min(94vw, 520px); background: none; border: 0; padding: 0; }
+/* ONE card: since 2026-11-04 the root is the app frame (pages/frame.ts), not a
+   .joinscreen card, so the panel is the only frame (test 902) */
 .queuescreen .queuepanel { background: var(--panel); border: 1px solid var(--line);
   border-radius: var(--radius-lg); padding: 18px 20px 20px;
   display: flex; flex-direction: column; gap: var(--space-5); }
-.queuehead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
-.queuehead h2 { margin: 0; font-size: 19px; }
 .qcounts { color: var(--dim); font-size: var(--text-12); }
 .qmodes { gap: var(--space-4); }
 .queuescreen .qdeck { display: flex; flex-direction: column; gap: var(--space-4); }
@@ -88,3 +85,13 @@
 .qglcount { color: var(--dim); font-size: var(--text-12); }
 .qglcount.live { color: var(--glow); }
 .qglance .qopen { margin-top: var(--space-2); }
+
+/* ── matchmaking in the app frame (2026-11-04, docs/24) ───────────────────
+   One card in the middle of the window, as the home's Play card is: who is
+   around, then the form as setting rows (components/setting-row.ts). */
+.queuescreen.apppage .ui-app-shell__main { display: flex; }
+.queuescreen.apppage .queuepanel { margin: auto; width: min(100%, 640px); padding: var(--space-7); gap: var(--space-6);
+  background: var(--color-surface); border-color: var(--color-border-strong); box-shadow: var(--shadow-2); }
+.queuescreen .qcounts { font-size: var(--text-13); }
+.qrows { display: flex; flex-direction: column; gap: var(--space-6); }
+.queuescreen .qranked, .queuescreen .qopt, .queuescreen .qdeck { width: 100%; }

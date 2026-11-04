@@ -32,7 +32,14 @@
  * grows with the window (--shell-gutter). The bars' backgrounds and borders
  * stay full-bleed; only what is in them moves in, so the first toolbar button
  * stands over the main region's left edge and the last over its right. A page
- * that wants a narrower or wider column sets the two properties on its root. */
+ * that wants a narrower or wider column sets the two properties on its root.
+ *
+ * `fill` (2026-11-04, the pages after the home): the main region does NOT
+ * scroll; it is a flex column whose children share its height, so a page can
+ * lay out its own scrolling regions — the card browser's rail, its grid and
+ * its pinned card each scroll inside themselves, and the page never does. A
+ * child that should take the rest of the height gets `flex: 1; min-height: 0`.
+ * Below a tablet it lets go with the rest of the shell. */
 import { type Common, rootAttrs } from './_shared.ts';
 
 export interface AppShellProps extends Common {
@@ -45,10 +52,13 @@ export interface AppShellProps extends Common {
   /** the bars' content and the main region in one centred column with side
    * gutters (`ui-app-shell--contained`), instead of edge to edge */
   contained?: boolean;
+  /** the main region does not scroll: the page's own regions do (`ui-app-shell--fill`) */
+  fill?: boolean;
 }
 
 export function appShell(p: AppShellProps): string {
-  return `<div${rootAttrs(p.contained ? 'ui-app-shell ui-app-shell--contained' : 'ui-app-shell', p)}>`
+  const own = `ui-app-shell${p.contained ? ' ui-app-shell--contained' : ''}${p.fill ? ' ui-app-shell--fill' : ''}`;
+  return `<div${rootAttrs(own, p)}>`
     + (p.topHtml ? `<header class="ui-app-shell__top">${p.topHtml}</header>` : '')
     + `<main class="ui-app-shell__main">${p.mainHtml ?? ''}</main>`
     + (p.bottomHtml ? `<footer class="ui-app-shell__bottom">${p.bottomHtml}</footer>` : '')

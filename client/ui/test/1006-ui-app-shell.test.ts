@@ -23,3 +23,14 @@ test('shellBar: start | centre | end, each zone present even when empty', () => 
     + '<div class="ui-app-shell__zone ui-app-shell__zone--center"></div>'
     + '<div class="ui-app-shell__zone ui-app-shell__zone--end">c</div></div>');
 });
+
+test('fill: the main region gives its height to the page\'s own regions (2026-11-04)', async () => {
+  assert.match(appShell({ fill: true, mainHtml: 'm' }), /^<div class="ui-app-shell ui-app-shell--fill">/);
+  assert.match(appShell({ fill: true, contained: true }), /^<div class="ui-app-shell ui-app-shell--contained ui-app-shell--fill">/);
+  const { readStyles } = await import('./read-styles.ts');
+  const css = readStyles();
+  assert.match(css, /\.ui-app-shell--fill > \.ui-app-shell__main \{[^}]*overflow: hidden;/,
+    'a fill shell\'s main region must not scroll: its regions do');
+  // …and below a tablet it lets go like the rest of the shell
+  assert.match(css, /@media[^{]*\{[\s\S]*\.ui-app-shell--fill > \.ui-app-shell__main \{ overflow: visible; \}/);
+});

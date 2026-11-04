@@ -1,0 +1,63 @@
+/* ── the app frame (ui/pages/frame.ts, 2026-11-04) ─────────────────────
+   Every page after the home is drawn in the app shell with one toolbar:
+   [⌂ Home] Title · the page's tabs · the page's tools | Rules Alerts Report.
+   The shell (components/app-shell.css) makes it one window with no page
+   scroll; this piece is only what goes IN the bar, and the wide column.
+   Nothing here may give the root (.apppage) a height, a margin or a padding:
+   it is exactly the window (the same contract test 1010 holds the home to). */
+
+/* the start zone: the way back, then the page's name */
+.frametop .ui-app-shell__zone--start { gap: var(--space-5); }
+.frametitle { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: var(--color-text); font-size: var(--text-22); font-weight: 700; letter-spacing: .02em; }
+.frametitle small { margin-left: var(--space-4); color: var(--color-text-muted); font-size: var(--text-13); font-weight: 400; letter-spacing: 0; }
+
+/* the end zone: the page's own tools, a hairline, then the shared ones */
+.frametools { display: flex; align-items: center; gap: var(--space-2); }
+.framesep { align-self: stretch; width: 1px; margin: var(--space-4) var(--space-3); background: var(--color-border); }
+
+/* the slim bottom bar: the client's notice, one button (the legal footer's
+   stand-in, test 267); thinner than the home's, the page needs the room */
+.framebottom.ui-app-shell__bar { min-height: 0; padding-top: var(--space-1); padding-bottom: var(--space-1); }
+.framebottom .frameinfo { min-height: 36px; padding-top: var(--space-1); padding-bottom: var(--space-1); font-size: var(--text-12); }
+.framebottom .frameinfo .ui-icon-button__icon > svg { width: 18px; height: 18px; }
+
+/* a page whose content is a wide grid (the card browser) takes a wider column
+   than the home's; the bars' content moves out with it */
+.framewide { --shell-content-max: var(--shell-content-max-wide); }
+
+/* a page's toolbar row (the filters over a list): one line, wrapping only if it must */
+.framebar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) var(--space-5); flex: none; }
+.framebar .framespacer { flex: 1; }
+/* a filter box in a page's bar: the card browser's pill field, smaller */
+.framebar .dksearch { flex: 0 1 280px; min-width: 160px; min-height: var(--segmented-h-sm); padding: 0 var(--space-5);
+  background: var(--color-surface-sunken); border-color: var(--color-border-strong); border-radius: var(--radius-pill); }
+.framebar .dksearch:focus { border-color: var(--color-accent); outline: none; }
+/* the one strong surface a list page has (it hugs a short list, and stops at
+   the window's foot for a long one, which then scrolls inside it): rows inside it, hairlines between,
+   scrolling inside itself — not a box per row (docs/24, principle 5) */
+.framelist { flex: 0 1 auto; min-height: 0; overflow-y: auto; background: var(--color-surface);
+  border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+.framenote { flex: none; margin: 0; color: var(--color-text-muted); font-size: var(--text-12); }
+
+/* THE PINNED CARD beside a page's list (.cbside, around ui/cardpanel.ts's
+   .cbdetail): the card browser, card stats and a shared deck. A column of its
+   own that scrolls by itself; on an upright iPad or a narrow window a drawer
+   over the right of the list instead, inside the page and under the toolbar.
+   (shared/37-touch.css makes .cbdetail a window-high fixed sheet under 1100px
+   for the pages not yet in the frame; the 0,3,0 rules here undo it.) */
+.apppage :has(> .cbside) { position: relative; }
+.apppage .cbside { min-width: 0; min-height: 0; overflow-y: auto; }
+.apppage .cbside .cbdetail { position: relative; inset: auto; width: auto; max-height: none; overflow: visible;
+  z-index: auto; box-shadow: none; }
+@media (max-width: 1100px) {
+  .apppage .cbside { position: absolute; top: 0; right: 0; bottom: 0; width: min(340px, 60%); z-index: var(--z-sticky);
+    box-shadow: var(--shadow-2); border-radius: var(--radius-lg); }
+  .apppage .cbside .cbdetail { min-height: 100%; }
+  .apppage .dkwork:has(> .cbside) { grid-template-columns: minmax(0, 1fr); }
+}
+/* below a tablet the shell lets go and the page scrolls: the regions do too */
+@media (max-width: 759.98px), (max-height: 599.98px) {
+  .apppage .cbside { position: static; width: auto; box-shadow: none; overflow: visible; }
+  .framelist { overflow: visible; }
+}

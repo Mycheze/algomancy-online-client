@@ -17,7 +17,9 @@ import { cardPanelHtml } from '../cardpanel.ts';
 import { rowFor } from '../cardindex.ts';
 import { artUrl } from '../assets.ts';
 import { esc, elIcon } from '../util.ts';
-import type { CardStatsState, CsCard, Mode, Range, Section, Wr } from '../cardstats.ts';
+import type { CardStatsState, CsCard, Mode, Range, Wr } from '../cardstats.ts';
+import { segmented, toggle } from '../components/index.ts';
+import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
 
 const ELEMENTS = ['fire', 'water', 'earth', 'wood', 'metal', 'light', 'dark'];
 
@@ -27,11 +29,14 @@ export interface CardStatsView extends Omit<CardStatsState, 'els'> {
   els: string[];
   /** "my games" is offered only to a signed-in player */
   signedIn: boolean;
+  /** meta.ts's tabs, a slot: the toolbar's centre */
   tabs: string;
+  /** the toolbar's account and bell (pages/frame.ts) */
+  chrome: FrameChrome;
 }
 
 export function cardStatsView(st: CardStatsState, tabs: string): CardStatsView {
-  return { ...st, els: [...st.els], signedIn: !!acct.currentUser(), tabs };
+  return { ...st, els: [...st.els], signedIn: !!acct.currentUser(), tabs, chrome: frameChromeView() };
 }
 
 // ── numbers ───────────────────────────────────────────────────────────
@@ -174,31 +179,38 @@ function cardName(name: string): string {
     ${thumb(name)}<span>${esc(name)}</span><span class="cselicons">${elIcons(name)}</span></button>`;
 }
 
+/** one choice of a few, as the page's segmented controls draw it */
+function seg<T extends string>(label: string, btn: string, now: T, opts: [T, string][]): string {
+  return segmented({
+    ariaLabel: label, size: 'sm',
+    options: opts.map(([value, text]) => ({ label: text, value, on: now === value, dataBtn: btn, attrs: { 'data-v': value } })),
+  });
+}
+
 function headerHtml(v: CardStatsView): string {
   const d = v.data;
   const span = d?.firstPlayed && d.lastPlayed ? `${d.firstPlayed.slice(0, 10)} → ${d.lastPlayed.slice(0, 10)}` : '';
   const full = d ? d.coverage.draws : 0;
-  const chip = (on: boolean, btn: string, label: string, extra = ''): string =>
-    `<button class="${on ? 'on' : ''}" data-btn="${btn}"${extra}>${label}</button>`;
+  const flag = (on: boolean, btn: string, label: string): string => toggle({ label, on, size: 'sm', dataBtn: btn, className: 'csflag' });
   return `
-    <div class="cbtools csfilters">
+    <div class="framebar csfilters">
+      ${seg('Section', 'meta-cs-section', v.section, [['cards', 'Cards'], ['elements', 'Elements'], ['highlights', 'Highlights'], ['game', 'Games']])}
+      <span class="framespacer"></span>
       <span class="zonelabel">format</span>
-      ${(['all', 'draft', 'constructed'] as Mode[]).map(m => chip(v.mode === m, 'meta-cs-mode', m === 'all' ? 'both' : m, ` data-v="${m}"`)).join('')}
+      ${seg('Format', 'meta-cs-mode', v.mode, [['all', 'both'], ['draft', 'draft'], ['constructed', 'constructed']] as [Mode, string][])}
       <span class="zonelabel">played</span>
-      ${(['all', '30', '7'] as Range[]).map(r => chip(v.range === r, 'meta-cs-range', r === 'all' ? 'ever' : `last ${r} days`, ` data-v="${r}"`)).join('')}
-      <span class="cbspacer"></span>
-      ${chip(v.rated, 'meta-cs-rated', 'rated only')}
-      ${chip(v.bothSigned, 'meta-cs-signed', 'both signed in')}
-      ${v.signedIn ? chip(v.mine, 'meta-cs-mine', 'my games') : ''}
+      ${seg('Played', 'meta-cs-range', v.range, [['all', 'ever'], ['30', 'last 30 days'], ['7', 'last 7 days']] as [Range, string][])}
     </div>
-    ${d ? `<p class="hint csline">
-      <b>${d.games}</b> game${d.games === 1 ? '' : 's'} · ${d.seatGames} seats${span ? ` · ${span}` : ''}
-      · <b>${full}</b> of ${d.seatGames} seats have every draw on record
-      <span class="dim" title="Hands and draws are read from each game's own record. An older game that no longer replays on today's rules still says what was played and drafted, but not what was drawn, so it counts toward Played and not toward GIH.">(why?)</span>
-      ${v.mine ? ' · <b>your games only</b>' : ''}</p>` : ''}
-    <div class="cbtools metatabs cssections">
-      ${(['cards', 'elements', 'highlights', 'game'] as Section[]).map(s =>
-        chip(v.section === s, 'meta-cs-section', s === 'cards' ? 'Cards' : s === 'elements' ? 'Elements' : s === 'highlights' ? 'Highlights' : 'Games', ` data-v="${s}"`)).join('')}
+    <div class="framebar csline">
+      ${d ? `<span class="hint">
+        <b>${d.games}</b> game${d.games === 1 ? '' : 's'} · ${d.seatGames} seats${span ? ` · ${span}` : ''}
+        · <b>${full}</b> of ${d.seatGames} seats have every draw on record
+        <span class="dim" title="Hands and draws are read from each game's own record. An older game that no longer replays on today's rules still says what was played and drafted, but not what was drawn, so it counts toward Played and not toward GIH.">(why?)</span>
+        ${v.mine ? ' · <b>your games only</b>' : ''}</span>` : ''}
+      <span class="framespacer"></span>
+      ${flag(v.rated, 'meta-cs-rated', 'rated only')}
+      ${flag(v.bothSigned, 'meta-cs-signed', 'both signed in')}
+      ${v.signedIn ? flag(v.mine, 'meta-cs-mine', 'my games') : ''}
     </div>`;
 }
 
@@ -212,28 +224,32 @@ function tableHtml(v: CardStatsView): string {
     `<th class="csnum"><button class="cssort${v.sortKey === c.key ? ' on' : ''}" data-btn="meta-cs-sort" data-v="${c.key}" title="${esc(c.tip)}">${c.label}${
       v.sortKey === c.key ? (v.sortDir < 0 ? ' ▾' : ' ▴') : ''}</button></th>`).join('');
   return `
-    <div class="cbtools">
+    <div class="framebar">
       <input id="meta-cs-q" class="dksearch" spellcheck="false" placeholder="find a card" value="${esc(v.text)}">
-      ${(['all', 'unit', 'spell'] as const).map(k =>
-        `<button class="${v.kind === k ? 'on' : ''}" data-btn="meta-cs-kind" data-v="${k}">${k === 'all' ? 'all' : `${k}s`}</button>`).join('')}
-      <span class="cbspacer"></span>
-      <span class="zonelabel">min games</span>
-      <button data-btn="meta-cs-min" data-v="-1" aria-label="fewer">−</button><b class="csmin">${v.minGames}</b><button data-btn="meta-cs-min" data-v="1" aria-label="more">+</button>
-    </div>
-    <div class="dkfilters">
-      ${ELEMENTS.map(el => `<button class="elchip ${el}${v.els.includes(el) ? ' on' : ''}" data-btn="meta-cs-el" data-v="${el}">${elIcon(el)}${el}</button>`).join('')}
-      ${v.els.length || v.text || v.kind !== 'all' || v.minGames > 1 ? '<button data-btn="meta-cs-clear">clear</button>' : ''}
+      ${seg('Kind', 'meta-cs-kind', v.kind, [['all', 'all'], ['unit', 'units'], ['spell', 'spells']])}
+      <div class="dkfilters">
+        ${ELEMENTS.map(el => `<button class="elchip ${el}${v.els.includes(el) ? ' on' : ''}" data-btn="meta-cs-el" data-v="${el}">${elIcon(el)}${el}</button>`).join('')}
+        ${v.els.length || v.text || v.kind !== 'all' || v.minGames > 1 ? '<button data-btn="meta-cs-clear">clear</button>' : ''}
+      </div>
+      <span class="framespacer"></span>
+      ${minGamesHtml(v)}
     </div>
     <div class="dkwork cswork">
-      <div class="dkworkmain cstablewrap">
+      <div class="dkworkmain cstablewrap" data-scroll="cs-table">
         <table class="cstable">
           <thead><tr><th class="cscard">Card <span class="dim">${rows.length}</span></th>${head}</tr></thead>
           <tbody>${rows.map(c => `<tr class="${v.focus === c.card ? 'on' : ''}"><td class="cscard">${cardName(c.card)}</td>${cs.map(col => col.cell(c, csg)).join('')}</tr>`).join('')}</tbody>
         </table>
         ${!rows.length ? '<p class="hint">No card matches that.</p>' : ''}
       </div>
-      ${v.focus ? detailHtml(v, v.focus) : ''}
+      ${v.focus ? `<div class="cbside" data-scroll="cs-focus-${esc(v.focus)}">${detailHtml(v, v.focus)}</div>` : ''}
     </div>`;
+}
+
+/** the "at least N games" stepper, on the card table and over the highlights */
+function minGamesHtml(v: CardStatsView): string {
+  return `<span class="csstep"><span class="zonelabel">min games</span>
+    <button data-btn="meta-cs-min" data-v="-1" aria-label="fewer">−</button><b class="csmin">${v.minGames}</b><button data-btn="meta-cs-min" data-v="1" aria-label="more">+</button></span>`;
 }
 
 // ── 2. one card ───────────────────────────────────────────────────────
@@ -362,10 +378,10 @@ function highlightsHtml(v: CardStatsView): string {
   const pr = (c: CsCard): number => rate(c.picked, c.offered) ?? 0;
   const gamesSub = (w: Wr) => `${w.w}–${w.n - w.w}`;
   return `
-    <div class="cbtools">
-      <span class="hint">Every list counts only cards with at least</span>
-      <button data-btn="meta-cs-min" data-v="-1" aria-label="fewer">−</button><b class="csmin">${v.minGames}</b><button data-btn="meta-cs-min" data-v="1" aria-label="more">+</button>
-      <span class="hint">game${v.minGames === 1 ? '' : 's'} behind the number.</span>
+    <div class="framebar">
+      <span class="hint">Every list counts only cards with at least ${v.minGames} game${v.minGames === 1 ? '' : 's'} behind the number.</span>
+      <span class="framespacer"></span>
+      ${minGamesHtml(v)}
     </div>
     <div class="csboards">
       ${board('Best in hand', 'highest win rate when held', top(c => c.gih.n >= m, gihWr), c => pct(wrOf(c.gih)), c => gamesSub(c.gih))}
@@ -411,21 +427,22 @@ function gameHtml(v: CardStatsView): string {
 
 // ── the page ──────────────────────────────────────────────────────────
 
+/** The tab, in the frame (pages/frame.ts): the filters fixed at the top, and
+ * the section under them scrolling inside itself — the card table in its own
+ * box with the pinned card beside it, the other sections as one column. */
 export function cardStatsHtml(v: CardStatsView): string {
-  return `<div class="metapage cspage">
-    <div class="accthead">
-      <div><h1>Card stats</h1>
-        <p class="hint">How every card has done, from every game played here. Each percentage has
-          its number of games beside it — a small number is a small sample.</p></div>
-      <button data-btn="meta-close">Back</button>
-    </div>
-    ${v.tabs}
-    ${headerHtml(v)}
+  const body = v.data ? (v.section === 'cards' ? tableHtml(v)
+    : `<div class="csscroll" data-scroll="cs-${esc(v.section)}">${v.section === 'elements' ? elementsHtml(v)
+      : v.section === 'highlights' ? highlightsHtml(v) : gameHtml(v)}</div>`) : '';
+  return frameHtml({
+    page: 'cspage', title: 'Metagame',
+    back: { dataBtn: 'meta-close', label: 'Home' },
+    centerHtml: v.tabs, chrome: v.chrome, fill: true,
+    mainHtml: `${headerHtml(v)}
     ${v.msg ? `<div class="acctmsg">${esc(v.msg)}</div>` : ''}
     ${v.loading && !v.data ? '<p class="hint">loading…</p>' : ''}
-    ${v.data ? (v.section === 'cards' ? tableHtml(v) : v.section === 'elements' ? elementsHtml(v)
-      : v.section === 'highlights' ? highlightsHtml(v) : gameHtml(v)) : ''}
-  </div>`;
+    ${body}`,
+  });
 }
 
 /** Paint the tab into `app` and wire its filter box. Typing keeps the caret:
@@ -433,7 +450,7 @@ export function cardStatsHtml(v: CardStatsView): string {
  * at repaintKeepingCaret). */
 export function paintCardStats(app: HTMLElement, v: CardStatsView, setText: (text: string) => void,
   rerender: () => void): void {
-  app.innerHTML = cardStatsHtml(v);
+  paintFrame(app, cardStatsHtml(v));
   const box = document.getElementById('meta-cs-q') as HTMLInputElement | null;
   if (box) box.oninput = () => {
     setText(box.value);

@@ -14,7 +14,8 @@
  * one picker, one set of rules about which decks are offered.
  */
 import { ICON_BASE } from '../assets.ts';
-import { backLink, button, statusMessage } from '../components/index.ts';
+import { button, segmented, settingRow, statusMessage } from '../components/index.ts';
+import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
 import {
   bandLabel, countsSummary, MODE_LABEL, MODES, queueSnapshot, startCountsPoll, waitLabel,
   type MatchOffer, type OpenGame, type QueueCounts, type QueueMode, type Searching,
@@ -111,6 +112,8 @@ export interface QueueView {
   searching: (Searching & { waited: number }) | null;
   /** an offer on the table, and its whole seconds left */
   offer: (MatchOffer & { left: number }) | null;
+  /** the toolbar's account and bell (pages/frame.ts) */
+  chrome: FrameChrome;
 }
 
 export function queueView(): QueueView {
@@ -126,49 +129,48 @@ export function queueView(): QueueView {
     deckPicker: s.pickMode === 'constructed' ? deckPickerHtml(deckPickerView()) : '',
     searching: s.searching ? { ...s.searching, waited: Date.now() - s.searching.since } : null,
     offer: s.offer ? { ...s.offer, left: s.offerLeft } : null,
+    chrome: frameChromeView(),
   };
 }
 
 /** The queue screen: the picker, the searching line, or a match offer. Pure. */
+/** The page, in the app frame (pages/frame.ts): one card in the middle of the
+ * window, as the home's Play card is — who is around, then the form (or the
+ * search, or the offer). */
 export function queueHtml(v: QueueView): string {
   const body = v.offer ? offerHtml(v.offer) : v.searching ? searchingHtml(v.searching) : pickerHtml(v);
-
-  return `<div class="joinscreen home queuescreen">
-    <div class="queuepanel">
-      <div class="queuehead">
-        <h2>Find a game</h2>
-        ${backLink({ dataBtn: 'queue-home', label: 'home', arrow: true, variant: 'secondary', size: 'sm' })}
-      </div>
+  return frameHtml({
+    page: 'queuescreen', title: 'Matchmaking',
+    back: { dataBtn: 'queue-home', label: 'Home' },
+    chrome: v.chrome,
+    mainHtml: `<section class="queuepanel" aria-label="Find a game">
       <div class="qcounts">${esc(countsSummary(v.counts))}</div>
       ${v.error ? statusMessage({ tone: 'error', text: v.error }) : ''}
       ${body}
-    </div>
-  </div>`;
+    </section>`,
+  });
 }
 
 function pickerHtml(v: QueueView): string {
   const { pickMode, pickRanked, rating, blocker } = v;
-  return `
-    <div class="zonelabel">Format</div>
-    <div class="elrow qmodes">${MODES.map(m =>
-      `<button class="elchip${m === pickMode ? ' on' : ''}" data-btn="queue-mode" data-mode="${m}">${
-        MODE_LABEL[m]}</button>`).join('')}</div>
-    <p class="cardsub">${pickMode === 'draft'
+  const format = segmented({
+    ariaLabel: 'Format', size: 'sm', className: 'qmodes',
+    options: MODES.map(m => ({ label: MODE_LABEL[m], value: m, on: m === pickMode, dataBtn: 'queue-mode', attrs: { 'data-mode': m } })),
+  });
+  return `<div class="qrows">
+    ${settingRow({ label: 'Format', controlHtml: format, hintHtml: pickMode === 'draft'
       ? 'Once matched you agree the elements in a lobby, then draft from shared packs.'
-      : 'This deck is locked in — a matchmade game deals straight away.'}</p>
-
-    ${pickMode === 'constructed' ? `<div class="qdeck">${v.deckPicker}</div>` : ''}
-
-    <div class="zonelabel">Who you play</div>
-    <div class="qranked">
+      : 'This deck is locked in — a matchmade game deals straight away.' })}
+    ${pickMode === 'constructed' ? settingRow({ label: 'Deck', controlHtml: `<div class="qdeck">${v.deckPicker}</div>` }) : ''}
+    ${settingRow({ label: 'Who you play', controlHtml: `<div class="qranked">
       ${[true, false].map(r => `<button class="qopt${r === pickRanked ? ' on' : ''}" data-btn="queue-ranked" data-ranked="${r}">
         <b>${r ? 'Ranked' : 'Whoever’s open'}</b>
         <span class="hint">${r
           ? `near your rating${rating === null ? '' : ` · ${rating}`} — the search widens the longer you wait`
           : 'anyone at all — and it still counts towards your rating'}</span>
       </button>`).join('')}
+    </div>` })}
     </div>
-
     ${blocker ? statusMessage({ tone: 'note', text: blocker }) : ''}
     <button class="cta primary qgo" data-btn="queue-go" ${blocker ? 'disabled' : ''}>
       ${blocker ? 'Find a game' : `Find a ${MODE_LABEL[pickMode].toLowerCase()} game`}</button>
@@ -235,6 +237,6 @@ export function paintQueue(app: HTMLElement, rerender: () => void): void {
   // Idempotent.
   startCountsPoll();
   const v = queueView();
-  app.innerHTML = queueHtml(v);
+  paintFrame(app, queueHtml(v));
   if (v.pickMode === 'constructed' && !v.searching && !v.offer) wireDeckPicker(rerender);
 }

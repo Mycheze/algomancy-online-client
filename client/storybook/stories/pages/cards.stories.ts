@@ -6,6 +6,7 @@ import '../../../engine/src/cards/registry.ts';
 import { search } from '../../../ui/cardsearch.ts';
 import { allRows } from '../../../ui/cardindex.ts';
 import { CHUNK, cardsHtml, facets, type CardsView } from '../../../ui/pages/cards.ts';
+import { CHROME } from './_page.ts';
 
 const CARDS = allRows().filter(r => r.cls === 'card' && r.playable);
 const PINNED = CARDS[3]!;
@@ -14,7 +15,7 @@ function view(q: string, over: Partial<CardsView> = {}): CardsView {
   return {
     q, res: search(q), cardCount: allRows().filter(r => r.cls === 'card').length, deck: null, facets: facets(false),
     railOpen: { element: true, cost: true, kind: true }, hints: [], saved: [], helpOpen: false,
-    focus: null, focusRow: null, played: 0, rulings: null, cursor: -1, shown: CHUNK, ...over,
+    focus: null, focusRow: null, played: 0, rulings: null, cursor: -1, shown: CHUNK, chrome: CHROME, ...over,
   };
 }
 

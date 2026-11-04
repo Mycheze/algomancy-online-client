@@ -1,5 +1,8 @@
 /* 1020 — THE HOME SCREEN HIDES THE PILL, THE BELL AND THE FOOTER; NOTHING ELSE
- * DOES (new home, docs/24, 2026-11-03).
+ * DOES (new home, docs/24, 2026-11-03) — EXCEPT THE PAGES IN THE APP FRAME
+ * (2026-11-04): every page pages/frame.ts draws has the same toolbar, so its
+ * root carries the home's mark, `.apppage`, and the rules below read that.
+ * "The home" in this file means "a page whose root is .apppage".
  *
  * The new home's toolbar carries a Report button (`data-report="open"`) and
  * an Alerts button (`data-inbox="bell"`, with the unread count), and its
@@ -38,7 +41,7 @@ function selectors(list: string): string[] {
   }
   return [...out, list.slice(from).trim()];
 }
-const ON_HOME = ':root:has(#app > .homepage):not(:has(#helplayer > *, #learnmenu > *, #legalover))';
+const ON_HOME = ':root:has(#app > .apppage):not(:has(#helplayer > *, #learnmenu > *, #legalover))';
 
 test('1020 §0 positive control: the rules are read', () => {
   assert.ok(rules().length > 500, 'the stylesheet was not reached');
@@ -50,7 +53,7 @@ test('1020 §1 on the home, and only there, the pill, the bell and the footer ar
   const hides = (el: RegExp): string[] => hiding.flatMap(([sel]) => selectors(sel).filter(s => el.test(s)));
   assert.deepEqual(hides(/\.reportfab\b/), [`${ON_HOME} #reportlayer > .reportfab`]);
   assert.deepEqual(hides(/\.inboxbell\b/), [`${ON_HOME} #inboxlayer > .inboxbell`]);
-  assert.deepEqual(hides(/#legalfoot\b(?!:not)/), ['#app:has(> .homepage) + #legalfoot']);
+  assert.deepEqual(hides(/#legalfoot\b(?!:not)/), ['#app:has(> .apppage) + #legalfoot']);
   // the list and the popups are not hidden anywhere: the Alerts button opens the list on the home too
   assert.deepEqual(hides(/\.inboxlist|\.invitepops/), []);
 });
@@ -68,17 +71,31 @@ test('1020 §3 nothing adds height on the home', () => {
   // the pill-clear: both rules that set or read it stop at the home
   const clear = rules().filter(([sel, body]) => /--report-pill-clear/.test(body) && sel.includes('.reportfab'));
   assert.equal(clear.length, 2, 'the variable and the body padding');
-  for (const [sel] of clear) assert.ok(sel.includes(':not(:has(#app > .homepage))'), `${sel} reaches the home`);
+  for (const [sel] of clear) assert.ok(sel.includes(':not(:has(#app > .apppage))'), `${sel} reaches the home`);
   // the footer's floor: every rule that sets the 128px floor excludes the home
   const floor = rules().filter(([, body]) => /min-height: calc\(100dvh - 128px\)/.test(body));
   assert.ok(floor.length >= 1, 'positive control: the floor is there for the other pages');
   for (const [sel] of floor) {
-    assert.ok(sel.includes(':not(:has(> .homepage))'), `${sel} reaches the home's root`);
-    assert.doesNotMatch(sel.replaceAll(':not(:has(> .homepage))', ''), /\.homepage/, `${sel} puts the floor on the home`);
+    assert.ok(sel.includes(':not(:has(> .apppage))'), `${sel} reaches the home's root`);
+    assert.doesNotMatch(sel.replaceAll(':not(:has(> .apppage))', ''), /\.apppage|\.homepage/, `${sel} puts the floor on the home`);
   }
 });
 
 test('1020 §4 the report names the new home root "home"', () => {
   assert.equal(pageOf('<div class="ui-app-shell homepage">…'), 'home', 'homepage must stay the LAST class');
   assert.equal(pageOf('<div class="homepage ui-app-shell">…'), 'ui-app-shell', 'the order is what it reads');
+});
+
+test('1020 §5 the home and every page in the frame carry the mark; the page\'s own class stays last', async () => {
+  const { frameHtml } = await import('../pages/frame.ts');
+  const html = frameHtml({ page: 'cbpage', title: 'Cards', back: { dataBtn: 'cards-close', label: 'Home' },
+    chrome: { signedIn: true, alerts: 3 }, mainHtml: '' });
+  assert.match(html, /^<div class="ui-app-shell ui-app-shell--contained apppage cbpage">/);
+  assert.equal(pageOf(html), 'cb', 'the report still names the page by its own class');
+  // …and the frame's toolbar has what the hidden layers were: Report and Alerts
+  assert.match(html, /data-report="open"/);
+  assert.match(html, /data-inbox="bell"/);
+  // signed out there is no bell, and nothing is drawn in its place
+  assert.doesNotMatch(frameHtml({ page: 'x', title: 'X', back: { dataBtn: 'b', label: 'Home' }, chrome: { signedIn: false, alerts: 0 }, mainHtml: '' }),
+    /data-inbox/);
 });

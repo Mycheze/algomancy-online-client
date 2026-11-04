@@ -30,12 +30,17 @@
   padding-left: max(var(--shell-gutter), calc((100% - var(--shell-content-max)) / 2));
   padding-right: max(var(--shell-gutter), calc((100% - var(--shell-content-max)) / 2)); }
 
+/* `fill` (appShell({ fill: true })): the main region does not scroll — it is a
+   flex column, and the page's own regions take its height and scroll inside
+   themselves. A child that should take the rest gets flex: 1 and min-height: 0. */
+.ui-app-shell--fill > .ui-app-shell__main { display: flex; flex-direction: column; overflow: hidden; }
+
 /* below a tablet (narrower than 760px or shorter than 600px) the shell lets go:
    stacked flow, at least the window's height, and the PAGE scrolls. Phones are
    "not broken", not designed for (client/docs/24-redesign/, principle 1). */
 @media (max-width: 759.98px), (max-height: 599.98px) {
   .ui-app-shell { height: auto; min-height: 100vh; min-height: 100dvh; overflow: visible; }
-  .ui-app-shell__main { overflow: visible; }
+  .ui-app-shell__main, .ui-app-shell--fill > .ui-app-shell__main { overflow: visible; }
   .ui-app-shell__bar { display: flex; flex-wrap: wrap; justify-content: space-between; }
   .ui-app-shell__zone { flex-wrap: wrap; }
 }

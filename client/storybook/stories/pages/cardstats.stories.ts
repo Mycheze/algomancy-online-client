@@ -5,6 +5,7 @@ import { allRows } from '../../../ui/cardindex.ts';
 import { cardStatsHtml, type CardStatsView } from '../../../ui/pages/cardstats.ts';
 import { metaTabsHtml } from '../../../ui/pages/meta.ts';
 import type { CsCard, CsResult } from '../../../ui/cardstats.ts';
+import { CHROME } from './_page.ts';
 
 const NAMES = allRows().filter(r => r.cls === 'card' && r.playable).map(r => r.name);
 const wr = (n: number, w: number) => ({ n, w });
@@ -34,7 +35,7 @@ function view(over: Partial<CardStatsView> = {}): CardStatsView {
   return {
     data: DATA, loading: false, msg: '', mode: 'all', range: 'all', rated: false, bothSigned: false, mine: false,
     section: 'cards', sortKey: 'games', sortDir: -1, text: '', els: [], kind: 'all', minGames: 1, focus: null,
-    signedIn: true, tabs: metaTabsHtml('stats'), ...over,
+    signedIn: true, tabs: metaTabsHtml('stats'), chrome: CHROME, ...over,
   };
 }
 

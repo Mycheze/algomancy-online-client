@@ -49,3 +49,14 @@ export const Bar = {
     endHtml: iconButton({ label: 'Test', icon: 'test' }) + iconButton({ label: 'Rules', icon: 'rules' }) + iconButton({ label: 'Report', icon: 'report' }),
   })}</div>`,
 };
+/** `fill`: the main region does not scroll; two regions beside each other each scroll inside themselves */
+export const Fill = {
+  name: 'Fill: the page\'s regions scroll',
+  args: {
+    fill: true,
+    mainHtml: `<div style="flex:1;min-height:0;display:grid;grid-template-columns:200px 1fr;gap:16px">
+      <div style="overflow:auto">${Array.from({ length: 40 }, (_, i) => `<p style="margin:0 0 8px">Filter ${i + 1}</p>`).join('')}</div>
+      <div style="overflow:auto">${Array.from({ length: 60 }, (_, i) => `<p style="margin:0 0 8px">Result ${i + 1}</p>`).join('')}</div>
+    </div>`,
+  },
+};

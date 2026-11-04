@@ -1,5 +1,9 @@
 # 24: The redesign brief (owner, 2026-11-03)
 
+> **2026-11-04: the other pages started.** The app frame (`ui/pages/frame.ts`) carries the home's toolbar
+> to every page; the card browser, the metagame (+ card stats, a shared deck) and matchmaking are in it, for the
+> owner to approve before the rest follow the same recipe (`ui/pages/README.md` § Drawing a page in the app frame).
+>
 > **STATUS: the HOME SCREEN is BUILT** (2026-11-03 evening, branch `ds-int`), un-parked by the owner so it is
 > playtested with Competitive Constructed and lands with it. The other pages are not redesigned yet.
 > Every decision taken for the owner to veto: `var/records/ds-round-2026-11-03-home-decisions.md` plus

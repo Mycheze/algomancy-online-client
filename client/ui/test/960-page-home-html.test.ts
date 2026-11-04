@@ -103,7 +103,7 @@ test('960 §0 positive control: there is no DOM here; the root is the app shell,
   assert.equal(typeof (globalThis as Record<string, unknown>)['document'], 'undefined',
     'a document global exists, so this file would not notice homeHtml reaching for it');
   const html = homeHtml(view());
-  assert.match(html, /^<div class="ui-app-shell ui-app-shell--contained homepage">/, 'report.ts names the page from the LAST class of #app\'s first div');
+  assert.match(html, /^<div class="ui-app-shell ui-app-shell--contained apppage homepage">/, 'report.ts names the page from the LAST class of #app\'s first div');
   for (const r of ['top', 'main', 'bottom'] as const) region(html, r);
 });
 
@@ -144,7 +144,7 @@ test('960 §3 Draft: Mode, clock, elements, the custom rules rows, Create room',
   const html = homeHtml(view());
   const main = region(html, 'main');
   // the rows, in order, each under its label
-  const labels = [...main.matchAll(/<div class="homerowlabel">([^<]+)<\/div>/g)].map(m => m[1]);
+  const labels = [...main.matchAll(/<div class="ui-setting-row__label">([^<]+)<\/div>/g)].map(m => m[1]);
   assert.deepEqual(labels, ['Mode', 'Clock', 'Elements', 'Cards', 'Banned', 'Game values']);
   assert.match(main, /data-btn="cr-beginner"[^>]*aria-pressed="true"[^>]*data-on="0">Standard</, 'first visit: Standard');
   assert.doesNotMatch(main, /homemodehint/, 'no Beginner line while Standard');

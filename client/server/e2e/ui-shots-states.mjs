@@ -32,9 +32,13 @@ const pick = (sel, re) => ({ eval: `(() => { const s = document.querySelector(${
   const o = [...s.options].find(o => ${re}.test(o.text)); if (!o) return false;
   s.value = o.value; s.dispatchEvent(new Event('change', { bubbles: true })); return true; })()`, settle: 300 });
 
+/** the pages drawn in the app frame (ui/pages/frame.ts, 2026-11-04): one
+ * window each, like the home — every one of their states is `noScroll` */
+export const FRAME_PAGES = ['cards', 'meta', 'cardstats', 'queue'];
+
 export function SCENARIOS(fx) {
   const S = [];
-  const add = (page, state, url, o = {}) => S.push({ page, state, url, ...o });
+  const add = (page, state, url, o = {}) => S.push({ page, state, url, ...(FRAME_PAGES.includes(page) ? { noScroll: true } : {}), ...o });
   const me = { as: 'me' }, admin = { as: 'admin' };
 
   // ── home and the chrome on every page ──

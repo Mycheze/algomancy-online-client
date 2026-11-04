@@ -50,14 +50,14 @@ const rulesRow = (h: string): string => /<span class="homerulessum">([^]*?)<\/sp
 
 test('366 the clock chips are the Play card Clock row, and Custom rules has none', () => {
   let html = ui.html();
-  assert.match(html, /class="ui-app-shell ui-app-shell--contained homepage"/, 'positive control: the home screen really was painted');
+  assert.match(html, /class="ui-app-shell ui-app-shell--contained apppage homepage"/, 'positive control: the home screen really was painted');
   const play = playCard(html);
   assert.ok(play, 'no Play card on the home screen');
   const all = [...html.matchAll(/data-btn="clockpick"/g)].length;
   assert.equal(all, 4, 'Default, Off, 45m and 60m — once');
   assert.equal([...play.matchAll(/data-btn="clockpick"/g)].length, all, 'a clock chip is drawn outside the Play card');
   assert.match(clockRow(play), /data-clockpick="draft"/, 'the Draft tab draws the draft clock');
-  assert.match(play, /<div class="homerowlabel">Clock<\/div>/, 'under its own label');
+  assert.match(play, /<div class="ui-setting-row__label">Clock<\/div>/, 'under its own label');
 
   // the Game values sheet (the custom rules' numbers, 2026-11-03): no clock
   html = ui.click({ btn: 'home-sheet', sheet: 'rules' });

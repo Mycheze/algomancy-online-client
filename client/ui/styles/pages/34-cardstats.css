@@ -3,7 +3,8 @@
    cells are tinted on a diverging scale around 50% (orange below, cyan above,
    see wrTint) and ALWAYS print the number and its game count: the colour is
    never the only thing that says it. */
-.cspage { max-width: 1480px; }
+/* (.cspage is the app frame's root since 2026-11-04 — the shell; the frame
+   block at the end of this piece lays it out) */
 .csfilters { flex-wrap: wrap; row-gap: var(--space-3); }
 .csline { margin: var(--space-1) 0 var(--space-4); }
 .cssections { margin-top: var(--space-2); }
@@ -100,3 +101,22 @@
   .csbar { grid-template-columns: 7.5em 1fr auto; }
 }
 
+
+/* ── card stats in the app frame (2026-11-04, docs/24) ────────────────────
+   The filters fixed along the top; the card table in its own box, scrolling
+   both ways under its sticky header and name column, with the pinned card
+   beside it (pages/49-frame.css .cbside); the other sections one column that
+   scrolls by itself. */
+.cspage .ui-app-shell__main { gap: var(--space-4); }
+.cspage .csfilters { row-gap: var(--space-3); }
+.cspage .csline { margin: 0; }
+.cspage .csline .hint { margin: 0; }
+.csflag { border-radius: var(--radius-pill); }
+.csstep { display: inline-flex; align-items: center; gap: var(--space-3); }
+.cspage .dkfilters { margin: 0; }
+.cspage .cswork { flex: 1 1 auto; min-height: 0; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+.cspage .cstablewrap { min-height: 0; overflow: auto; }
+.csscroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+@media (max-width: 759.98px), (max-height: 599.98px) {
+  .cspage .cstablewrap, .csscroll { overflow: visible; }
+}

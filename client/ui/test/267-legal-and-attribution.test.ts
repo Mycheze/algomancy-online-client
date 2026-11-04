@@ -43,6 +43,7 @@ import * as path from 'node:path';
 
 import { REPO_ROOT } from '../../engine/scripts/paths.mjs';
 import { readStyles } from './read-styles.ts';
+import { frameHtml } from '../pages/frame.ts';
 import {
   BROWSER_KEYS, BUY_PHYSICAL, BUY_PNP, STORED_ACCOUNT, STORED_FILES, STORED_GAME,
   STORED_SESSION, UNOFFICIAL, DISCORD_INVITE, footHtml, installLegal, type StoredLine,
@@ -223,8 +224,15 @@ test('§2 the unofficial notice exists, and is in the footer itself rather than 
   // …except on the home screen. The home's toolbar and bottom bar carry these since 2026-11-03,
   // docs/24: the bottom bar's "Algomancy Online (Unofficial Client)" button opens the footer's
   // content, so the home hides the footer and is one window tall — no floor there.
-  assert.match(css, /#app:not\(\.board\):not\(:has\(> \.homepage\)\):has\(\+ #legalfoot/, 'the floor reaches the home screen again');
-  assert.match(css, /#app:has\(> \.homepage\) \+ #legalfoot \{ display: none; \}/, 'the footer shows on the home screen again');
+  // Since 2026-11-04 every page in the app frame (pages/frame.ts) is one window like the home
+  // and carries the home's mark, `.apppage`: the footer goes there too, and the frame's own
+  // slim bottom bar carries the same "Unofficial Client" button, opening the About page.
+  assert.match(css, /#app:not\(\.board\):not\(:has\(> \.apppage\)\):has\(\+ #legalfoot/, 'the floor reaches the home screen again');
+  assert.match(css, /#app:has\(> \.apppage\) \+ #legalfoot \{ display: none; \}/, 'the footer shows on the home screen again');
+  const frame = frameHtml({ page: 'cbpage', title: 'Cards', back: { dataBtn: 'cards-close', label: 'Home' },
+    chrome: { signedIn: false, alerts: 0 }, mainHtml: '' });
+  assert.match(frame, /<footer class="ui-app-shell__bottom">[\s\S]*data-legal="about"[\s\S]*Algomancy Online \(Unofficial Client\)/,
+    'a page in the frame hides the footer, so its bottom bar must say it is unofficial and open the notice');
   assert.equal(/legalbar|barHtml/.test(src), false,
     'the top strip is back — the owner asked for it to go (2026-09-05); the footer is the notice');
 });

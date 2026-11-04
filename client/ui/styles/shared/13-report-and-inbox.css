@@ -84,22 +84,25 @@
    window's foot. The number is the pill's 18px offset, its ~34px height and
    a gap. A page with a fixed bar of its own at the bottom can read the same
    variable (it is unset while no pill is showing, so `var(…, 0px)`).
-   NOT ON THE HOME SCREEN (below): the pill is hidden there, so the corner
-   is not kept clear either — the home is one window tall and must not grow. */
-:root:has(#reportlayer > .reportfab):not(:has(#app > .homepage)) { --report-pill-clear: 64px; scroll-padding-bottom: var(--report-pill-clear); }
-:root:has(#reportlayer > .reportfab):not(:has(#app > .homepage)) > body { padding-bottom: var(--report-pill-clear); }
+   NOT ON A PAGE IN THE APP FRAME (below): the pill is hidden there, so the
+   corner is not kept clear either — such a page is one window tall and must
+   not grow. */
+:root:has(#reportlayer > .reportfab):not(:has(#app > .apppage)) { --report-pill-clear: 64px; scroll-padding-bottom: var(--report-pill-clear); }
+:root:has(#reportlayer > .reportfab):not(:has(#app > .apppage)) > body { padding-bottom: var(--report-pill-clear); }
 
-/* THE HOME SCREEN CARRIES THESE ITSELF (docs/24, 2026-11-03): its toolbar has
-   a Report button (data-report="open") and an Alerts button
-   (data-inbox="bell") with the unread count, so the floating pill and bell
-   are hidden there — and only there. Read off #app's markup, not a class the
-   router sets: the home's root is the one `.homepage` (test 1020). A layer
+/* A PAGE IN THE APP FRAME CARRIES THESE ITSELF (docs/24, 2026-11-03; every
+   page in the frame since 2026-11-04): its toolbar has a Report button
+   (data-report="open") and an Alerts button (data-inbox="bell") with the
+   unread count, so the floating pill and bell are hidden there — and only
+   there. Read off #app's markup, not a class the router sets: the root of
+   such a page carries `.apppage` — the home and every page drawn by
+   pages/frame.ts (test 1020). A layer
    opened OVER the home (How to play, Learn to Play, an About/Privacy page)
    covers the toolbar, so while one is up the pill and the bell come back, as
    on every other page. The list the Alerts button opens, and the invite
-   popups, still show; on the home they hang from the top right, under the
-   toolbar, instead of over the bottom bar. */
-:root:has(#app > .homepage):not(:has(#helplayer > *, #learnmenu > *, #legalover)) #reportlayer > .reportfab,
-:root:has(#app > .homepage):not(:has(#helplayer > *, #learnmenu > *, #legalover)) #inboxlayer > .inboxbell { display: none; }
-:root:has(#app > .homepage):not(:has(#helplayer > *, #learnmenu > *, #legalover)) #inboxlayer > .inboxlist,
-:root:has(#app > .homepage):not(:has(#helplayer > *, #learnmenu > *, #legalover)) #inboxlayer > .invitepops { top: 72px; bottom: auto; }
+   popups, still show; on such a page they hang from the top right, under
+   the toolbar, instead of over the bottom bar. */
+:root:has(#app > .apppage):not(:has(#helplayer > *, #learnmenu > *, #legalover)) #reportlayer > .reportfab,
+:root:has(#app > .apppage):not(:has(#helplayer > *, #learnmenu > *, #legalover)) #inboxlayer > .inboxbell { display: none; }
+:root:has(#app > .apppage):not(:has(#helplayer > *, #learnmenu > *, #legalover)) #inboxlayer > .inboxlist,
+:root:has(#app > .apppage):not(:has(#helplayer > *, #learnmenu > *, #legalover)) #inboxlayer > .invitepops { top: 72px; bottom: auto; }

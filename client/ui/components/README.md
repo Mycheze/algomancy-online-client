@@ -31,7 +31,8 @@ here (see "Adding a variant").
 | Icon button | `icon-button.ts` | the toolbar button: icon + caption · layout `stack` / `inline` · `badge` (a count, 99+, or `'dot'`) · `on` · `disabled` · `href` · `iconHtml` (an avatar) · ≥48px |
 | Segmented | `segmented.ts` | one of a few: each option its own `dataBtn`/`attrs`/`on`/`disabled`/`title` · size `md` / `sm` · `full` · `ariaLabel` (root `role="group"`) |
 | Sheet | `sheet.ts` | drawn from state (`open: false` → '') · placement `center` / `anchor-bottom-left` / `-bottom-right` / `-top-left` / `-top-right` · width `sm` / `md` / `lg` · `dismissBtn` on scrim and ✕ · `footerHtml` · `installSheetEsc` |
-| App shell | `app-shell.ts` | `appShell({ topHtml, mainHtml, bottomHtml })`: 100dvh, only the main region scrolls; stacked flow under 760×600 · `contained` (the bars' content and the main region in one centred column, `--shell-content-max` / `--shell-gutter`) · `shellBar({ startHtml, centerHtml, endHtml })` |
+| Setting row | `setting-row.ts` | one setting of a form: `label` left at `--setting-row-label`, `controlHtml` right, `hintHtml` under it · stacks below a tablet |
+| App shell | `app-shell.ts` | `appShell({ topHtml, mainHtml, bottomHtml })`: 100dvh, only the main region scrolls; stacked flow under 760×600 · `fill` (the main region does not scroll; the page's own regions do) · `contained` (the bars' content and the main region in one centred column, `--shell-content-max` / `--shell-gutter`) · `shellBar({ startHtml, centerHtml, endHtml })` |
 
 `index.ts` re-exports them all. `_shared.ts` holds what they share (escaping,
 the attribute string); it is not a component.

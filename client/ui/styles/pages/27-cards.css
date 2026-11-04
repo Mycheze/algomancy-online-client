@@ -8,7 +8,9 @@
    nobody can tell apart.
    The grid, the tiles and the element chips are the deck page's (.dkgrid,
    .dktile, .elchip) on purpose: one card grid in the client, not two. */
-.cbpage { max-width: 1500px; margin: 0 auto; padding: var(--space-5) var(--space-7) var(--space-7); }
+/* (.cbpage is the app frame's root since 2026-11-04 — the shell, exactly the
+   window; it gets no size of its own. The frame block at the end of this
+   piece lays the page out.) */
 
 .cbbar { display: flex; gap: var(--space-3); align-items: center; margin: var(--space-4) 0 var(--space-2); flex-wrap: wrap; }
 .cbq { flex: 1; min-width: 0; font: 15px/1.4 ui-monospace, monospace;
@@ -209,3 +211,72 @@
 .cbdeckel { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--text-12); color: var(--dim); }
 .cbdeckel .elicon { width: 13px; height: 13px; }
 
+
+/* ── the card browser in the app frame (2026-11-04, docs/24) ──────────────
+   One window: the rail, the results and the pinned card are three columns
+   that each scroll inside themselves (pages/frame.ts carries their scroll
+   across a repaint by their data-scroll keys); the search sits fixed over
+   the results. Everything here is scoped to .cbpage: .cbtools, .cbdetail and
+   .cbdeckbar are also drawn by the deck and metagame pages. */
+.cbpage .ui-app-shell__main { gap: var(--space-5); }
+.cbpage .cbdeckbar { flex: none; margin: 0; }
+.cbpage .cbmain { position: relative; flex: 1 1 auto; min-height: 0; align-items: stretch;
+  grid-template-columns: 232px minmax(0, 1fr); gap: var(--space-6); }
+.cbpage .cbmain:has(.cbdetail) { grid-template-columns: 232px minmax(0, 1fr) 320px; }
+
+/* the rail: ONE surface, its sections flat inside it with hairlines between
+   (it was a stack of boxed folds) */
+.cbpage .cbrail { position: static; max-height: none; min-height: 0; overflow-y: auto; gap: 0;
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+.cbpage .cbsection { border: 0; border-radius: 0; background: none; }
+.cbpage .cbsection + .cbsection { border-top: 1px solid var(--color-border); }
+.cbpage .cbsectionhead { padding: var(--space-5) var(--space-5); color: var(--color-text-muted); font-size: var(--text-11);
+  font-weight: 700; letter-spacing: .08em; }
+.cbpage .cbsection.open .cbsectionhead, .cbpage .cbsectionhead:hover { color: var(--color-text); }
+.cbpage .cbsectionhead:hover { background: var(--color-surface-raised); }
+.cbpage .cbchips { max-height: none; overflow: visible; padding: 0 var(--space-5) var(--space-5); }
+.cbpage .cbnote { padding: 0 var(--space-5) var(--space-5); margin-top: calc(-1 * var(--space-2)); }
+
+/* the results: the search and its line fixed, the grid scrolling under them */
+.cbresults { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.cbhead { flex: none; display: flex; flex-direction: column; gap: var(--space-3); padding-bottom: var(--space-4); }
+.cbpage .cbbar { position: relative; margin: 0; flex-wrap: nowrap; }
+.cbqicon { position: absolute; left: var(--space-5); top: 50%; transform: translateY(-50%); display: inline-flex;
+  color: var(--color-text-muted); pointer-events: none; }
+.cbqicon > svg { width: 18px; height: 18px; }
+.cbpage .cbq { min-height: var(--icon-button-min-h); padding-left: calc(var(--space-5) + 18px + var(--space-4));
+  background: var(--color-surface-sunken); border-color: var(--color-border-strong); border-radius: var(--radius-pill); }
+.cbpage .cbq:focus { border-color: var(--color-accent); }
+.cbpage .cbclear { position: absolute; right: calc(var(--icon-button-min-h) + var(--space-5)); top: 50%; transform: translateY(-50%);
+  background: none; border: 0; color: var(--color-text-muted); font-size: var(--text-16); }
+.cbpage .cbclear:hover { color: var(--color-text); }
+.cbsyntax { flex: none; width: var(--icon-button-min-h); height: var(--icon-button-min-h); padding: 0;
+  border-radius: var(--radius-pill); font-weight: 700; font-size: var(--text-16); }
+.cbsyntax.on { border-color: var(--color-accent); color: var(--color-accent); }
+.cbpage .cberr, .cbpage .cbsuggest { margin: 0 var(--space-5); }
+.cbpage .cbtools { margin: 0; gap: var(--space-4); }
+.cbpage .cbcount { margin: 0; font-size: var(--text-13); }
+.cbpage .cbimplicit { display: inline; margin: 0; font-size: var(--text-12); }
+.cbsort { display: inline-flex; align-items: center; gap: var(--space-3); }
+.cbpage .cbtools select { min-height: var(--segmented-h-sm); padding: 0 var(--space-4); border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken); }
+.cbdir, .cbsmall { min-height: var(--segmented-h-sm); padding: 0 var(--space-5); border-radius: var(--radius-pill); font-size: var(--text-12); }
+.cbscroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: var(--space-2); }
+.cbnone { margin: var(--space-7) 0; text-align: center; }
+.cbpage .cbmore { margin: var(--space-6) auto var(--space-4); }
+
+/* the pinned card is the frame's side panel (.cbside, pages/49-frame.css) */
+
+/* the syntax sheet (components/sheet.ts): its body scrolls, the sheet's title is the heading */
+.cbhelp .ui-sheet__body { font-size: var(--text-13); }
+
+/* an iPad held upright, or a narrow window: the rail narrows, and the pinned
+   card is a drawer over the right of the results rather than a third column */
+@media (max-width: 1100px) {
+  .cbpage .cbmain, .cbpage .cbmain:has(.cbdetail) { grid-template-columns: 200px minmax(0, 1fr); }
+}
+/* below a tablet the shell lets go and the page scrolls: so do these */
+@media (max-width: 759.98px), (max-height: 599.98px) {
+  .cbpage .cbmain, .cbpage .cbmain:has(.cbdetail) { grid-template-columns: 1fr; }
+  .cbpage .cbrail, .cbscroll { overflow: visible; }
+}

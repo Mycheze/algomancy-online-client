@@ -17,7 +17,7 @@ function view(over: Partial<QueueView> = {}): QueueView {
   return {
     counts: { total: 0, byMode: { constructed: 0, draft: 0 } },
     error: '', pickMode: 'draft', pickRanked: true, signedIn: true, blocker: null, rating: 1512,
-    deckPicker: '<!--SLOT:deckPicker-->', searching: null, offer: null,
+    deckPicker: '<!--SLOT:deckPicker-->', searching: null, offer: null, chrome: { signedIn: true, alerts: 0 },
     ...over,
   };
 }
@@ -25,13 +25,16 @@ const btns = (html: string): string[] => [...html.matchAll(/data-btn="([^"]+)"/g
 
 test('970 §0 positive control: there is no DOM here', () => {
   assert.equal(typeof (globalThis as Record<string, unknown>)['document'], 'undefined');
-  assert.match(queueHtml(view()), /^<div class="joinscreen home queuescreen">/);
+  // the app frame (pages/frame.ts, 2026-11-04), the page's class last (287)
+  assert.match(queueHtml(view()), /^<div class="ui-app-shell ui-app-shell--contained apppage queuescreen">/);
 });
 
 test('970 §1 the picker: formats, who you play, Find a game; the deck picker only for constructed', () => {
   const draft = queueHtml(view());
   for (const b of ['queue-home', 'queue-mode', 'queue-ranked', 'queue-go']) assert.ok(btns(draft).includes(b), b);
-  assert.match(draft, /<button class="elchip"[^>]*data-mode="constructed">Constructed<\/button><button class="elchip on"[^>]*data-mode="draft">Live draft/);
+  // the format is a segmented control in a setting row since 2026-11-04
+  assert.match(draft, /<div class="ui-setting-row__label">Format<\/div>/);
+  assert.match(draft, /<button class="ui-segmented__option" data-btn="queue-mode" type="button" data-value="constructed" aria-pressed="false" data-mode="constructed">Constructed<\/button><button class="ui-segmented__option on" data-btn="queue-mode" type="button" data-value="draft" aria-pressed="true" data-mode="draft">Live draft/);
   assert.match(draft, /nobody waiting — be the first/);
   assert.match(draft, /near your rating · 1512/);
   assert.match(draft, /Find a live draft game<\/button>/);

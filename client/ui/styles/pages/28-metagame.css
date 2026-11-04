@@ -37,8 +37,11 @@
    started at x=0 and the card grid was clipped by the right-hand side.
    The two widths match what is on them — the list is rows, the deck view is a
    30-card grid with a panel beside it. */
-.metapage { max-width: 1100px; margin: 0 auto; padding: var(--space-4) var(--space-6) var(--space-8); }
-.metadeck { max-width: 1400px; margin: 0 auto; padding: var(--space-4) var(--space-6) var(--space-8); }
+.metapage:not(.apppage) { max-width: 1100px; margin: 0 auto; padding: var(--space-4) var(--space-6) var(--space-8); }
+.metadeck:not(.apppage) { max-width: 1400px; margin: 0 auto; padding: var(--space-4) var(--space-6) var(--space-8); }
+/* (since 2026-11-04 the metagame's own views are drawn in the app frame and
+   their root is the shell: `:not(.apppage)` keeps these boxes for the page
+   that still borrows .metapage — the weekly challenge, `metapage chpage`) */
 
 /* the metagame list */
 .metalist { display: flex; flex-direction: column; gap: var(--space-3); margin: var(--space-4) 0; }
@@ -59,3 +62,36 @@
 .metadivider .hint { text-transform: none; letter-spacing: 0; display: block; margin-top: var(--space-1); }
 .metapage .dkfilters { margin-bottom: var(--space-2); }
 
+
+/* ── the metagame in the app frame (2026-11-04, docs/24) ──────────────────
+   The filters fixed along the top, the list under them in ONE surface
+   (.framelist, pages/49-frame.css) that scrolls by itself, its rows flat
+   inside it with hairlines between — it was a box per row. */
+.metapage.apppage .ui-app-shell__main, .metadeck.apppage .ui-app-shell__main { gap: var(--space-5); }
+.metapage.apppage .dkfilters { margin: 0; }
+.metapage .framelist .metalist { gap: 0; margin: 0; }
+.metapage .framelist .metarow { background: none; border: 0; border-radius: 0; padding: var(--space-5) var(--space-6); }
+.metapage .framelist .metarow + .metarow { border-top: 1px solid var(--color-border); }
+.metapage .framelist .metarow:hover { background: var(--color-surface-raised); }
+.metapage .framelist .metalist + .metadivider { margin: 0; padding: var(--space-6) var(--space-6) var(--space-3); }
+.metaempty { margin: var(--space-8) var(--space-6); text-align: center; }
+
+/* one shared deck: what it is on the left, its cards on the right, each scrolling */
+.metadeck .cbdeckbar { flex: none; margin: 0; }
+.metadeckwork { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: var(--space-6); }
+.metadeckinfo { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-5); }
+.metadeckinfo .deckdesc { margin: 0; max-height: none; }
+.metadeckinfo .dkaddrow:empty { display: none; }
+.metadeckinfo .dkaddrow, .metadeckinfo .sharebar { margin: 0; }
+.metadeckinfo .sharebar { flex-direction: column; align-items: stretch; gap: var(--space-3); }
+.metadeckinfo .sharebar .sharelink { width: 100%; min-width: 0; }
+.metadeckinfo .sharebar button { align-self: flex-start; }
+.metadeckinfo .dkadd { align-self: flex-start; }
+.metadeck .metadeckcards { min-height: 0; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+.metadeck .metadeckcards > .dkworkmain { min-height: 0; overflow-y: auto; }
+.metadeckgone { margin: auto; text-align: center; }
+@media (max-width: 1100px) { .metadeckwork { grid-template-columns: 260px minmax(0, 1fr); } }
+@media (max-width: 759.98px), (max-height: 599.98px) {
+  .metadeckwork { grid-template-columns: 1fr; }
+  .metadeckinfo, .metadeck .metadeckcards > .dkworkmain { overflow: visible; }
+}

@@ -9,6 +9,9 @@ import type { CustomRulesView } from '../../../ui/pages/customrules.ts';
  *
  * Not a story (the leading `_`): Storybook's glob wants `*.stories.ts`. */
 
+/** the frame's toolbar inputs (pages/frame.ts FrameChrome): signed in, two unread */
+export const CHROME = { signedIn: true, alerts: 2 } as const;
+
 /** a page as #app holds it off the board: plain block flow, the page owns its width */
 export const page = (html: string): string => `<div id="app">${html}</div>`;
 

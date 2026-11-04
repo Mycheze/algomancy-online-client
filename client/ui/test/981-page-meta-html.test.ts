@@ -32,19 +32,22 @@ function view(over: Partial<MetaView> = {}): MetaView {
   return {
     view: 'list', rows: null, minGames: 5, one: null, loading: false, msg: '', sort: 'winrate', els: [], text: '',
     focus: null, deckGroup: 'type', statsOpen: false, descOpen: false, exporting: null, ladder: null,
-    signedIn: false, mine: false, link: 'http://x/?deck=d1', exportText: '', stats: null, ...over,
+    signedIn: false, mine: false, link: 'http://x/?deck=d1', exportText: '', stats: null, chrome: { signedIn: false, alerts: 0 }, ...over,
   };
 }
 const btns = (html: string): Set<string> => new Set([...html.matchAll(/data-btn="([^"]+)"/g)].map(m => m[1]!));
 
 test('981 §1 the published-deck list in each of its states', () => {
-  assert.match(metaHtml(view({ loading: true })), /<p class="hint">loading…<\/p>/);
+  // in the app frame since 2026-11-04 (pages/frame.ts): Home, the tabs in the toolbar, one list surface
+  assert.match(metaHtml(view()), /^<div class="ui-app-shell ui-app-shell--contained ui-app-shell--fill apppage metapage">/);
+  assert.match(metaHtml(view({ loading: true })), /<p class="hint metaempty">loading…<\/p>/);
   assert.match(metaHtml(view({ rows: [] })), /Nothing on the list yet\. A deck appears here once it is <b>public<\/b>/);
   assert.match(metaHtml(view({ rows: [deck(1)], text: 'zzz' })), /Nothing matches those filters\./);
   const html = metaHtml(view({ rows: [deck(1), deck(2)], sort: 'games' }));
   assert.equal([...html.matchAll(/<button class="metarow" data-btn="meta-open" data-id="d\d">/g)].length, 2);
   assert.match(html, /<b class="good">75%<\/b> <span class="dim">6W–2L in 8 games · 2 copies<\/span>/);
-  assert.match(html, /class="on" data-btn="meta-sort" data-sort="games"/);
+  assert.match(html, /class="ui-segmented__option on" data-btn="meta-sort" type="button" data-value="games" aria-pressed="true" data-sort="games"/);
+  assert.match(html, /<div class="framelist" data-scroll="meta-decks">/, 'the list scrolls by itself, and keeps its place over a repaint');
   for (const b of ['meta-close', 'meta-list', 'meta-stats-open', 'meta-ladder', 'meta-sort', 'meta-el', 'meta-open']) {
     assert.ok(btns(html).has(b), `${b} is drawn`);
   }
@@ -56,7 +59,9 @@ test('981 §1 the published-deck list in each of its states', () => {
 test('981 §2 the card duel ladder', () => {
   const cards = NAMES.slice(0, 4).map((card, i) => ({ card, rating: 1500 - i, games: 8 - i * 2, wins: 4, losses: 2, mirrors: i % 2 }));
   const html = metaHtml(view({ view: 'ladder', ladder: { cards, rankedAfter: 5, duels: 9 } }));
-  assert.match(html, /<h1>Card duel ladder<\/h1>/);
+  assert.match(html, /<h1 class="frametitle">Metagame<\/h1>/);
+  assert.match(html, /class="ui-segmented__option on" data-btn="meta-ladder"/, 'the ladder\'s tab is the lit one');
+  assert.match(html, /data-scroll="meta-ladder"/, 'another tab, another scroll'); 
   assert.match(html, /9 duels · 4 cards rated/);
   assert.equal([...html.matchAll(/<div class="metarow ladderrow" data-prev=/g)].length, 4, 'every card, with its hover');
   assert.match(html, /<span class="dim">#1<\/span>/);
@@ -67,12 +72,12 @@ test('981 §2 the card duel ladder', () => {
 
 test('981 §3 one shared deck: not found, typical, yours, another\'s', () => {
   const gone = metaHtml(view({ view: 'deck', msg: 'That deck is not shared, or the link is wrong.' }));
-  assert.match(gone, /<h1>Deck<\/h1>/);
+  assert.match(gone, /<h1 class="frametitle">Deck<\/h1>/);
   assert.match(gone, /That deck is not shared, or the link is wrong\./);
   assert.match(gone, /data-btn="meta-list">See the metagame list/);
   const d = deck(3, { visibility: 'unlisted', copiedFrom: { id: 'x', name: 'Orig', owner: 'Zed' }, description: 'A **bold** plan.' });
   const html = metaHtml(view({ view: 'deck', one: d }));
-  assert.match(html, /<h1>Deck 3<\/h1>/);
+  assert.match(html, /<h1 class="frametitle">Deck 3<small>by Builder3/, 'the deck\'s name is the page\'s title, its builder beside it');
   assert.match(html, /by Builder3 · after Zed’s Orig · unlisted — only people with the link see this/);
   assert.match(html, /<strong>bold<\/strong>|<b>bold<\/b>/);
   assert.match(html, /<input class="sharelink" readonly value="http:\/\/x\/\?deck=d1"/);
@@ -114,16 +119,20 @@ test('981 §5 text is escaped', () => {
 });
 
 test('981 §6 the tab row, and the card stats view', () => {
-  assert.match(metaTabsHtml('ladder'), /<button class="on" data-btn="meta-ladder">Card duel ladder<\/button>/);
-  assert.match(metaTabsHtml('list'), /<button class="on" data-btn="meta-list">/);
-  assert.doesNotMatch(metaTabsHtml('deck'), /class="on"/);
+  // a segmented control in the toolbar's centre since 2026-11-04
+  assert.match(metaTabsHtml('ladder'), /<button class="ui-segmented__option on" data-btn="meta-ladder" type="button" data-value="ladder" aria-pressed="true">Card duel ladder<\/button>/);
+  assert.match(metaTabsHtml('list'), /class="ui-segmented__option on" data-btn="meta-list"/);
+  // a shared deck is under Published decks: that tab is lit, and pressing it goes back to the list
+  assert.match(metaTabsHtml('deck'), /class="ui-segmented__option on" data-btn="meta-list"/);
+  assert.equal([...metaTabsHtml('deck').matchAll(/ on"/g)].length, 1);
   const stats = {
     data: null, loading: true, msg: '', mode: 'all', range: 'all', rated: false, bothSigned: false, mine: false,
     section: 'cards', sortKey: 'games', sortDir: -1, text: '', els: [], kind: 'all', minGames: 1, focus: null,
-    signedIn: false, tabs: '<!--SLOT:tabs-->',
+    signedIn: false, tabs: '<!--SLOT:tabs-->', chrome: { signedIn: false, alerts: 0 },
   } as const;
   const html = metaHtml(view({ view: 'stats', stats: { ...stats, els: [] } }));
-  assert.match(html, /<h1>Card stats<\/h1>/);
+  assert.match(html, /^<div class="ui-app-shell ui-app-shell--contained ui-app-shell--fill apppage cspage">/);
+  assert.match(html, /<h1 class="frametitle">Metagame<\/h1>/);
   assert.match(html, /<!--SLOT:tabs-->/, 'the tab row lands as a slot');
   assert.equal(metaHtml(view({ view: null })), '', 'nothing when the page does not own #app');
 });

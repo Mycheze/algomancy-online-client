@@ -160,6 +160,8 @@
   --shell-bar-h: 64px;         /* the app shell's bars at their least; the anchored sheets clear it */
   --shell-content-max: 1200px; /* a contained shell's column (owner, 2026-11-03: pull the bars in) */
   --shell-gutter: clamp(16px, 4vw, 64px);   /* …and its least side room, growing with the window */
+  --shell-content-max-wide: 1600px;
+  --setting-row-label: 104px;  /* a setting row's name column (components/setting-row.ts) */          /* the column of a page whose content is a wide grid (pages/frame.ts `wide`) */
   --sheet-gutter: 16px;        /* the least room between a sheet and the window's edge */
   --sheet-w-sm: 320px; --sheet-w-md: 480px; --sheet-w-lg: 720px;
   --sheet-scrim-soft: rgba(6, 8, 11, .32);   /* behind an anchored sheet: the page stays readable */

@@ -111,7 +111,8 @@ test('1010 §1 the root is the shell, homepage last, and nothing is drawn after 
   for (const sheet of [null, ...HOME_SHEETS]) {
     for (const mode of ['draft', 'constructed'] as const) {
       const html = homeHtml({ ...view(), sheet, mode });
-      assert.match(html, /^<div class="ui-app-shell ui-app-shell--contained homepage">/, 'the root must be the (contained) app shell, with homepage as its LAST class (287)');
+      // `apppage`: the mark every page in the app frame carries (pages/frame.ts, 2026-11-04)
+      assert.match(html, /^<div class="ui-app-shell ui-app-shell--contained apppage homepage">/, 'the root must be the (contained) app shell, with homepage as its LAST class (287)');
       assert.equal(endOfFirstElement(html), html.length, `${sheet ?? 'no sheet'}/${mode}: something is drawn after the shell`);
     }
   }
@@ -146,15 +147,17 @@ test('1010 §3 the home main region keeps scrolling inside itself; the columns n
 });
 
 test('1010 §4 the layers hide their furniture on the home screen, so neither adds height there', () => {
-  // the legal footer: hidden whenever #app holds the home
-  assert.ok(ALL.some(r => /#app:has\(> \.homepage\) \+ #legalfoot/.test(r.sel) && /display:\s*none/.test(r.body)),
+  // read off `.apppage`, which the home's root carries and every page in the
+  // app frame does too (pages/frame.ts, 2026-11-04): what holds for the home
+  // holds for them. The legal footer: hidden whenever #app holds such a page
+  assert.ok(ALL.some(r => /#app:has\(> \.apppage\) \+ #legalfoot/.test(r.sel) && /display:\s*none/.test(r.body)),
     '#legalfoot shows under the home — the page scrolls by the footer\'s height');
   // the off-board page floor (min-height: 100dvh - 128px on #app's first child) passes over the home
   const floors = ALL.filter(r => /#app[^{]*>\s*:first-child/.test(r.sel) && /min-height/.test(r.body));
   assert.ok(floors.length, 'positive control: the off-board floor rule is read');
-  for (const f of floors) assert.match(f.sel, /:not\(:has\(> \.homepage\)\)/, `the page floor applies to the home: ${f.sel}`);
+  for (const f of floors) assert.match(f.sel, /:not\(:has\(> \.apppage\)\)/, `the page floor applies to the home: ${f.sel}`);
   // the report pill's clearance on <body> (64px of padding) is not kept on the home
   const clear = ALL.filter(r => /reportfab/.test(r.sel) && />\s*body/.test(r.sel) && /padding-bottom/.test(r.body));
   assert.ok(clear.length, 'positive control: the pill clearance rule is read');
-  for (const c of clear) assert.match(c.sel, /:not\(:has\(#app > \.homepage\)\)/, `the pill's clearance pads the home: ${c.sel}`);
+  for (const c of clear) assert.match(c.sel, /:not\(:has\(#app > \.apppage\)\)/, `the pill's clearance pads the home: ${c.sel}`);
 });

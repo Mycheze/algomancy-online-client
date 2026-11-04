@@ -118,8 +118,12 @@ test('§5 the Discord invite is the one his site links, and the footer carries i
 test('§6 the help box is reachable off the board, from a layer that is not a board overlay', () => {
   const home = HOME.match(/export function homeHtml\(v: HomeView\): string \{[^]*?\n\}\n/)?.[0] ?? '';
   assert.ok(home.length > 1000, 'could not find homeHtml');
-  // a button() since 2026-11-03: the attribute is its `attrs`
-  assert.match(home, /data-help="rules"|'data-help': 'rules'/, 'the home screen has no "How to play" button');
+  // a button() since 2026-11-03: the attribute is its `attrs`; since 2026-11-04 the
+  // toolbar's tools are the app frame's (pages/frame.ts toolsHtml), and the home draws all of them
+  assert.match(home, /toolsHtml\([^)]*TOOL_NAMES/, 'the home screen no longer draws the shared tools');
+  const frame = read(UI_DIR, 'pages', 'frame.ts');
+  assert.match(frame, /TOOL_NAMES = \[[^\]]*'rules'/, 'the shared tools have no Rules');
+  assert.match(frame, /'data-help': 'rules'/, 'the home screen has no "How to play" button');
   assert.match(MAIN, /\ninstallHelpLayer\(\);/, 'main.ts never installs the help layer');
   const layer = read(UI_DIR, 'helplayer.ts');
   assert.doesNotMatch(layer, /class="overlay/,

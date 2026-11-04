@@ -22,8 +22,9 @@ import { printsStats } from '../../engine/src/cards/dsl.ts';   // CR 206.2
 import { FLAGS, KEYS, SORTS, VIEWS, chipState, type SearchResult } from '../cardsearch.ts';
 import { suggest } from '../cardsynonyms.ts';
 import { esc, elIcon } from '../util.ts';
-import { pageHeader } from '../components/page-header.ts';
+import { icon, segmented, sheet } from '../components/index.ts';
 import type { CardsState, DeckBridge } from '../cards.ts';
+import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
 
 /** How many tiles are painted before the "show the rest" button. Not a cap on
  * the SEARCH — the count above the grid is always the true total. */
@@ -61,6 +62,8 @@ export interface CardsView {
   cursor: number;
   /** how many results are painted */
   shown: number;
+  /** the toolbar's account and bell (pages/frame.ts) */
+  chrome: FrameChrome;
 }
 
 /** Gather the page from cards.ts's state. */
@@ -86,6 +89,7 @@ export function cardsView(st: CardsState): CardsView {
     rulings: st.rulings,
     cursor: st.cursor,
     shown: st.shown,
+    chrome: frameChromeView(),
   };
 }
 
@@ -185,7 +189,7 @@ function chipHtml(f: Facet, q: string): string {
 
 function railHtml(v: CardsView): string {
   const all = v.facets;
-  return `<aside class="cbrail">
+  return `<aside class="cbrail" data-scroll="cards-rail">
     ${SECTIONS.map(s => {
     const mine = all.filter(f => f.section === s.id);
     if (!mine.length) return '';
@@ -274,8 +278,22 @@ function rowHtml(v: CardsView, r: CardRow, at = -1): string {
   </div>`;
 }
 
-function resultsHtml(v: CardsView): string {
+/** the count line: how many, how many painted, and what is not counted */
+function countHtml(v: CardsView): string {
   const { res, q } = v;
+  const { total } = res;
+  const painted = Math.min(total, v.shown);
+  return `<div class="cbcount">
+      <b>${total}</b> card${total === 1 ? '' : 's'}${total > painted ? ` <span class="dim">· showing ${painted}</span>` : ''}
+      ${res.implicitCards
+    ? `<span class="cbimplicit">· tokens and reference cards not counted:
+        <button class="cblink" data-btn="cards-try" data-q="${esc(q ? `${q} class:all` : 'class:all')}">class:all</button></span>`
+    : ''}
+    </div>`;
+}
+
+function resultsHtml(v: CardsView): string {
+  const { res } = v;
   const { rows, total, query } = res;
   const page = rows.slice(0, v.shown);
   const rest = total - page.length;
@@ -285,18 +303,14 @@ function resultsHtml(v: CardsView): string {
     : query.view === 'list'
       ? `<div class="cblist">${page.map((r, i) => rowHtml(v, r, i)).join('')}</div>`
       : `<div class="dkgrid cbgrid">${page.map((r, i) => tileHtml(v, r, i)).join('')}</div>`;
-  return `<div class="cbcount">
-      <b>${total}</b> card${total === 1 ? '' : 's'}${total > page.length ? ` — showing ${page.length}` : ''}
-      ${res.implicitCards
-    ? `<span class="cbimplicit">tokens and reference cards not counted —
-        <button class="cblink" data-btn="cards-try" data-q="${esc(q ? `${q} class:all` : 'class:all')}">class:all</button></span>`
-    : ''}
-      ${total === 0 ? '<span class="hint">nothing matches — loosen a filter, or check the syntax under \u201c?\u201d.</span>' : ''}
-    </div>
+  // the key names the VIEW: switching grid → list starts the list at the top
+  return `<div class="cbscroll" data-scroll="cards-results-${esc(query.view)}">
+    ${total === 0 ? '<p class="cbnone hint">Nothing matches. Loosen a filter, or check the syntax under \u201c?\u201d.</p>' : ''}
     ${body}
     ${rest > 0
     ? `<button class="cbmore" data-btn="cards-more">show ${Math.min(rest, CHUNK)} more (${rest} left)</button>`
-    : ''}`;
+    : ''}
+  </div>`;
 }
 
 /* ── the detail pane ───────────────────────────────────────────────────── */
@@ -333,10 +347,10 @@ function detailHtml(v: CardsView): string {
 
 function helpHtml(v: CardsView): string {
   if (!v.helpOpen) return '';
-  return `<section class="cbhelp">
-    <button class="cbclose" data-btn="cards-help" title="close">×</button>
-    <h2>Search syntax</h2>
-    <p>Bare words search the name, type line and rules text. Terms side by side mean AND;
+  // a sheet over the page (components/sheet.ts): the scrim, the ✕ and Esc
+  // (cards.ts handleKey) all close it, as `cards-help` toggled it open
+  return sheet({ open: true, id: 'cards-syntax', title: 'Search syntax', width: 'lg', dismissBtn: 'cards-help', className: 'cbhelp',
+    bodyHtml: `<p>Bare words search the name, type line and rules text. Terms side by side mean AND;
       <code>OR</code>, brackets to group, and a leading <code>-</code> to exclude.</p>
     <pre class="cbexample">-el:fire (sub:sprite OR sub:demon) mana&lt;=3</pre>
     <table class="cbkeys">
@@ -364,8 +378,7 @@ function helpHtml(v: CardsView): string {
     <h3>Ordering</h3>
     <p><code>sort:</code> ${SORTS.map(s => `<code>${s}</code>`).join(' ')} ·
       <code>dir:asc</code>/<code>desc</code> ·
-      <code>view:</code> ${VIEWS.map(v => `<code>${v}</code>`).join(' ')}</p>
-  </section>`;
+      <code>view:</code> ${VIEWS.map(v => `<code>${v}</code>`).join(' ')}</p>` });
 }
 
 /* ── the page ──────────────────────────────────────────────────────────── */
@@ -387,12 +400,14 @@ function deckSideHtml(v: CardsView): string {
 
 function barHtml(v: CardsView): string {
   const { res, q, hints, saved } = v;
-  return `<div class="cbbar">
+  return `<div class="cbhead">
+    <div class="cbbar">
+      <span class="cbqicon" aria-hidden="true">${icon('search')}</span>
       <input id="cb-q" class="cbq" spellcheck="false" autocomplete="off"
         placeholder="search — try  el:wood kind:unit mana:2 -kw:virus"
         value="${esc(q)}">
       ${q ? '<button class="cbclear" data-btn="cards-clear" title="clear">×</button>' : ''}
-      <button data-btn="cards-help" title="search syntax">?</button>
+      <button class="cbsyntax${v.helpOpen ? ' on' : ''}" data-btn="cards-help" title="search syntax">?</button>
     </div>
     ${res.query.errors.length
     ? `<div class="cberr">${res.query.errors.map(e => esc(e.message)).join(' · ')}</div>`
@@ -402,37 +417,46 @@ function barHtml(v: CardsView): string {
       `<button class="cblink" data-btn="cards-try" data-q="${esc(h.query)}" title="${esc(h.why)}"><code>${esc(h.query)}</code></button>`).join(' or ')}?</div>`
     : ''}
     <div class="cbtools">
-      <label>sort
+      ${countHtml(v)}
+      <span class="cbspacer"></span>
+      ${saved.map(s => `<button class="cblink" data-btn="cards-try" data-q="${esc(s.q)}">${esc(s.name)}</button>`).join('')}
+      ${q ? '<button class="cbsmall" data-btn="cards-save" title="keep this search">save search</button>' : ''}
+      ${saved.length ? '<button class="cbsmall" data-btn="cards-forget" title="drop the saved searches">forget</button>' : ''}
+      <label class="cbsort">sort
         <select id="cb-sort">${SORTS.map(s =>
     `<option value="${s}"${res.query.sort === s ? ' selected' : ''}>${s}</option>`).join('')}</select>
       </label>
-      <button data-btn="cards-dir" title="reverse the order">${res.query.dir === 'asc' ? '↑' : '↓'}</button>
-      <span class="cbviews">${VIEWS.map(v =>
-    `<button class="${res.query.view === v ? 'on' : ''}" data-btn="cards-view" data-view="${v}">${v}</button>`).join('')}</span>
-      <span class="cbspacer"></span>
-      ${saved.map(s => `<button class="cblink" data-btn="cards-try" data-q="${esc(s.q)}">${esc(s.name)}</button>`).join('')}
-      ${q ? '<button data-btn="cards-save" title="keep this search">save search</button>' : ''}
-      ${saved.length ? '<button data-btn="cards-forget" title="drop the saved searches">forget</button>' : ''}
-    </div>`;
-}
-
-export function cardsHtml(v: CardsView): string {
-  return `<div class="cbpage">
-    ${pageHeader({
-    title: 'Cards',
-    subtitleHtml: `The ${v.cardCount} cards. Tokens and
-          reference cards: <button class="cblink" data-btn="cards-try" data-q="class:all">class:all</button>.`,
-    back: { dataBtn: 'cards-close', label: v.deck ? 'Back to the deck' : 'Return to Lobby' },
+      <button class="cbdir" data-btn="cards-dir" title="reverse the order">${res.query.dir === 'asc' ? '↑' : '↓'}</button>
+      ${segmented({
+    ariaLabel: 'View', size: 'sm', className: 'cbviews',
+    options: VIEWS.map(view => ({ label: view, value: view, on: res.query.view === view, dataBtn: 'cards-view', attrs: { 'data-view': view } })),
   })}
-    ${deckSideHtml(v)}
-    ${barHtml(v)}
-    ${helpHtml(v)}
-    <div class="cbmain">
-      ${railHtml(v)}
-      <section class="cbresults">${resultsHtml(v)}</section>
-      ${detailHtml(v)}
     </div>
   </div>`;
+}
+
+/** The page, in the app frame (pages/frame.ts): the facet rail, the results
+ * (the search fixed over a grid that scrolls) and the pinned card, each
+ * scrolling inside itself. The page never scrolls (docs/24, principle 2). */
+export function cardsHtml(v: CardsView): string {
+  const detail = detailHtml(v);
+  return frameHtml({
+    page: 'cbpage',
+    title: 'Cards',
+    back: v.deck
+      ? { dataBtn: 'cards-close', label: 'Deck', icon: 'back', title: `back to ${v.deck.name}` }
+      : { dataBtn: 'cards-close', label: 'Home' },
+    chrome: v.chrome,
+    fill: true,
+    wide: true,
+    mainHtml: `${deckSideHtml(v)}
+    <div class="cbmain">
+      ${railHtml(v)}
+      <section class="cbresults">${barHtml(v)}${resultsHtml(v)}</section>
+      ${detail ? `<div class="cbside" data-scroll="cards-detail-${esc(v.focus ?? '')}">${detail}</div>` : ''}
+    </div>
+    ${helpHtml(v)}`,
+  });
 }
 
 /** What paintCards wires the query box and the sort menu to (cards.ts). */
@@ -448,8 +472,7 @@ export interface CardsHooks {
 /** Paint `v` into `app`, then wire the live query box — it must not repaint
  * the page under the cursor (cards.ts scheduleRepaint / repaintKeepingCaret). */
 export function paintCards(app: HTMLElement, v: CardsView, h: CardsHooks): void {
-  app.classList.remove('board');
-  app.innerHTML = cardsHtml(v);
+  paintFrame(app, cardsHtml(v));
   // the sort menu answers to CHANGE, not to click. A click on a <select> is the
   // click that OPENS it, so a click handler reads the value you are replacing.
   const sort = document.getElementById('cb-sort') as HTMLSelectElement | null;

@@ -42,10 +42,31 @@ And the rules that keep a conversion invisible:
   needs something a component cannot do yet asks for a variant (add it there, with a story and a test) rather than
   copying the component's markup.
 
+## Drawing a page in the app frame (2026-11-04)
+
+Every page after the home is redesigned the same way (client/docs/24-redesign/: one window, no page scroll,
+everything a button). The first three were the card browser, the metagame (+ card stats, a shared deck) and
+matchmaking; the rest follow the same recipe:
+
+1. The page's `…View` adds `chrome: frameChromeView()`; its `…Html` returns `frameHtml({ page, title, back, chrome,
+   mainHtml, … })` from `frame.ts`. `page` is the page's old root class (report.ts names the page by it); `back` keeps
+   the page's own close button's `data-btn`. Its `paint…` calls `paintFrame(app, html)` instead of `app.innerHTML =`.
+2. The old page-box rule on that class (a `max-width`, `margin: 0 auto`, a padding) must not reach the shell root: drop it,
+   or scope it `:not(.apppage)` if another page still borrows the class (`.metapage` is the challenge page's too).
+3. No page scroll. Either the page is short and the shell's main region holds it, or it passes `fill: true` and lays out
+   its own regions: a `.framebar` of filters fixed at the top, then a region with `flex: 1; min-height: 0` that scrolls.
+   Every region that scrolls carries `data-scroll="<key>"` — the key names what is scrolled (give another tab another key).
+   A list is ONE surface (`.framelist`), its rows flat inside it with hairlines — not a box per row.
+4. A choice of a few is `segmented()`, a form row is `settingRow()`, a pinned card goes in `<div class="cbside" data-scroll=…>`
+   (the frame's side panel; a drawer under 1100px). Tabs between sibling views go in the toolbar's centre (`centerHtml`).
+5. Add the page to `FRAME_PAGES` in `client/server/e2e/ui-shots-states.mjs`: ui-shots then fails any of its states that
+   scrolls at desktop or tablet (1012, 1041).
+
 ## What is here now
 
 | file | exports | what (and the module that keeps the state) |
 |---|---|---|
+| `frame.ts` | `frameHtml`, `paintFrame`, `frameChromeView`, `setChromeSource`, `toolsHtml`, `TOOL_NAMES`, `PAGE_TOOLS`, `CLIENT_INFO`, `scrollsIn`/`restoreScrolls` | **the app frame** every page after the home is drawn in (2026-11-04): the contained app shell with one toolbar — Home/Back + title · the page's tabs · its tools \| Rules Alerts Report — and a slim bottom bar with the client's notice (267). Its root carries `apppage`, which hides the floating pill, bell and footer (1020). The five toolbar tools are defined here once; the home draws them too. `paintFrame` puts every `[data-scroll]` region back where it was after a repaint. The chrome (signed in? unread?) comes from the source main.ts sets at boot, so the module imports no state. Pages in it: cards, meta (+ card stats), queue |
 | `home.ts` | `homeView`, `homeHtml`, `paintHome`, `saveHomeName`; the home's own state `homeMode`/`setHomeMode`, `homeFormat`/`setHomeFormat`, `openSheet`/`openHomeSheet`/`closeHomeSheet` | the home screen (client/docs/24-redesign/, 2026-11-03): the app shell, a toolbar, the Play card (Draft \| Constructed), League · Challenge · Matchmaking beside it, a bottom bar, and the sheets (Join a room, Custom rules, Import, Single Card Duel, the client info, Updates). `main.ts renderHome()` is still the **router** (which page owns `#app`) and calls `paintHome` when none does |
 | `waiting.ts` | `constructedWaitingView/Html`, `singleWaitingView/Html`, `paintWaiting` | the waiting rooms: constructed + constructed league, Single Card Duel; dispatches the draft trio lobby and the Competitive match room |
 | `deckpicker.ts` | `deckPickerView`, `deckPickerHtml`, `deckPicker`, `wireDeckPicker`, `importDeck` | the constructed deck picker (home, waiting room, queue) with its state |

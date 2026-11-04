@@ -5,6 +5,7 @@ import '../../../engine/src/cards/registry.ts';
 import { allRows } from '../../../ui/cardindex.ts';
 import { metaHtml, type MetaView } from '../../../ui/pages/meta.ts';
 import type { PublicDeck } from '../../../ui/meta.ts';
+import { CHROME } from './_page.ts';
 
 const NAMES = allRows().filter(r => r.cls === 'card' && r.playable).map(r => r.name);
 
@@ -25,7 +26,7 @@ function view(over: Partial<MetaView> = {}): MetaView {
   return {
     view: 'list', rows: [0, 1, 2, 3].map(i => deck(i)), minGames: 5, one: null, loading: false, msg: '', sort: 'winrate',
     els: [], text: '', focus: null, deckGroup: 'type', statsOpen: false, descOpen: false, exporting: null, ladder: null,
-    signedIn: true, mine: false, link: 'https://algomancy.online/?deck=d0', exportText: '', stats: null, ...over,
+    signedIn: true, mine: false, link: 'https://algomancy.online/?deck=d0', exportText: '', stats: null, chrome: CHROME, ...over,
   };
 }
 

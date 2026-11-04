@@ -89,10 +89,7 @@
 .homeplayhead h1 { margin: 0; color: var(--color-text); font-size: var(--text-26); font-weight: 700; letter-spacing: .02em; }
 .homeplaysub { margin: 0; color: var(--color-text-muted); font-size: var(--text-13); }
 .homerows { display: flex; flex-direction: column; gap: var(--space-6); flex: 1 1 auto; }
-.homerow { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: var(--space-6); align-items: start; }
-.homerowlabel { padding-top: var(--space-3); color: var(--color-text-muted); font-size: var(--text-13); font-weight: 600; }
-.homerowctl { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); min-width: 0; }
-.homerowhint { color: var(--color-text-muted); font-size: var(--text-12); line-height: 1.45; }
+/* each row is the setting-row component (components/setting-row.css, 2026-11-04) */
 .homefixed { display: inline-block; padding-top: var(--space-3); color: var(--color-text); font-size: var(--text-13); }
 
 /* Mode: Standard | Beginner, and what Beginner is beside it (as the clock's line is) */
@@ -113,10 +110,10 @@
 .homerules { display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap; }
 .homerulessum b { color: var(--color-accent); font-weight: 600; }
 /* the deck row: the picker full width, the info line and My decks under it */
-.homepage .homerowctl .deckselect { width: 100%; max-width: 420px; }
-.homepage .homerowctl .deckmanage { padding: var(--space-2) var(--space-5); font-size: var(--text-12); }
-.homepage .homerowctl .deckinfo:empty { display: none; }
-.homesilly { margin-top: calc(-1 * var(--space-3)); padding-left: calc(104px + var(--space-6)); font-size: var(--text-12); color: var(--color-text-muted); }
+.homepage .ui-setting-row__control .deckselect { width: 100%; max-width: 420px; }
+.homepage .ui-setting-row__control .deckmanage { padding: var(--space-2) var(--space-5); font-size: var(--text-12); }
+.homepage .ui-setting-row__control .deckinfo:empty { display: none; }
+.homesilly { margin-top: calc(-1 * var(--space-3)); padding-left: calc(var(--setting-row-label) + var(--space-6)); font-size: var(--text-12); color: var(--color-text-muted); }
 .homesilly .homesillybtn { color: var(--color-text-muted); }
 .homesilly .homesillybtn:hover { color: var(--color-accent); }
 .homeneedacct { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-5);
@@ -206,7 +203,6 @@
   .homepage .ui-app-shell__main { display: block; padding: var(--space-6); }
   .homesides { flex-direction: column; }
   .homeside, .homeside--queue { flex: none; }
-  .homerow { grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
   .homesilly { padding-left: 0; }
   .homeactions { flex-wrap: wrap; }
   .homepage .ui-app-shell__bar { justify-content: center; }

@@ -26,6 +26,8 @@ import { artUrl } from '../assets.ts';
 import type { CardStanding, MetaState, PublicDeck } from '../meta.ts';
 import { cardStatsHtml, cardStatsView, paintCardStats, type CardStatsView } from './cardstats.ts';
 import type { CardStatsState } from '../cardstats.ts';
+import { segmented } from '../components/index.ts';
+import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
 
 type Sort = MetaState['sort'];
 
@@ -43,6 +45,8 @@ export interface MetaView extends Omit<MetaState, 'els'> {
   exportText: string;
   /** the card stats tab, when that is the view */
   stats: CardStatsView | null;
+  /** the toolbar's account and bell (pages/frame.ts) */
+  chrome: FrameChrome;
 }
 
 /** Gather the page. `exportText` is meta.ts's (its copy button copies the same
@@ -57,17 +61,33 @@ export function metaView(st: MetaState, exportText: string, stats: CardStatsStat
     link: one ? `${location.origin}${location.pathname}?deck=${encodeURIComponent(one.id)}` : '',
     exportText,
     stats: st.view === 'stats' ? cardStatsView(stats, metaTabsHtml(st.view)) : null,
+    chrome: frameChromeView(),
   };
 }
 
 /** the three tabs this page has: decks people published, how every card has
- * done across every game (ui/cardstats.ts), and cards that duelled */
+ * done across every game (ui/cardstats.ts), and cards that duelled. They sit
+ * in the toolbar's centre (pages/frame.ts); a shared deck is under Published
+ * decks, so that tab is the one lit while one is open. */
 export function metaTabsHtml(view: MetaView['view']): string {
-  return `<div class="cbtools metatabs">
-    <button class="${view === 'list' ? 'on' : ''}" data-btn="meta-list">Published decks</button>
-    <button class="${view === 'stats' ? 'on' : ''}" data-btn="meta-stats-open">Card stats</button>
-    <button class="${view === 'ladder' ? 'on' : ''}" data-btn="meta-ladder">Card duel ladder</button>
-  </div>`;
+  return segmented({
+    ariaLabel: 'Metagame', className: 'metatabs',
+    options: [
+      { label: 'Published decks', value: 'list', on: view === 'list' || view === 'deck', dataBtn: 'meta-list' },
+      { label: 'Card stats', value: 'stats', on: view === 'stats', dataBtn: 'meta-stats-open' },
+      { label: 'Card duel ladder', value: 'ladder', on: view === 'ladder', dataBtn: 'meta-ladder' },
+    ],
+  });
+}
+
+/** a metagame view in the frame: Home on the left, the tabs in the centre */
+function metaFrame(v: MetaView, page: string, mainHtml: string, o: { titleHtml?: string; title?: string; toolsHtml?: string } = {}): string {
+  return frameHtml({
+    page, title: o.title ?? 'Metagame', titleHtml: o.titleHtml,
+    back: { dataBtn: 'meta-close', label: 'Home' },
+    centerHtml: metaTabsHtml(v.view), toolsHtml: o.toolsHtml,
+    chrome: v.chrome, fill: true, mainHtml,
+  });
 }
 
 function ladderRowHtml(c: CardStanding, rank: number | null): string {
@@ -92,29 +112,23 @@ function ladderHtml(v: MetaView): string {
   const rankOf = new Map((ladder?.cards ?? []).filter(c => c.games >= bar).map((c, i) => [c.card, i + 1]));
   const ranked = all.filter(c => rankOf.has(c.card));
   const rest = all.filter(c => !rankOf.has(c.card));
-  return `<div class="metapage">
-    <div class="accthead">
-      <div><h1>Card duel ladder</h1>
-        <p class="hint">Every card's Elo from Single Card Duels — thirty copies of one card against
-          thirty of another. The cards are rated, never the players. Start a duel from the home
-          screen, under Constructed.</p></div>
-      <button data-btn="meta-close">Back</button>
-    </div>
-    ${metaTabsHtml(v.view)}
-    ${v.msg ? `<div class="acctmsg">${esc(v.msg)}</div>` : ''}
-    <div class="cbtools">
+  return metaFrame(v, 'metapage', `
+    <div class="framebar">
       <span class="dim">${ladder ? `${ladder.duels} duel${ladder.duels === 1 ? '' : 's'} · ${ladder.cards.length} card${ladder.cards.length === 1 ? '' : 's'} rated` : ''}</span>
-      <span class="cbspacer"></span>
-      <input id="meta-q" class="dksearch" spellcheck="false" placeholder="find a card" value="${esc(v.text)}">
+      <span class="framespacer"></span>
+      <input id="meta-q" class="dksearch metaq" spellcheck="false" placeholder="find a card" value="${esc(v.text)}">
     </div>
-    ${v.loading && !ladder ? '<p class="hint">loading…</p>' : ''}
-    ${ladder && !ladder.cards.length ? '<p class="hint">No duels yet. Somebody has to go first.</p>' : ''}
-    ${ladder && ladder.cards.length && !all.length ? '<p class="hint">No rated card matches that.</p>' : ''}
-    <div class="metalist">${ranked.map(c => ladderRowHtml(c, rankOf.get(c.card)!)).join('')}</div>
-    ${rest.length ? `<div class="metadivider">Not enough duels yet
-        <span class="hint">— a card is ranked once it has ${bar} duels that were not mirrors.</span></div>
-      <div class="metalist">${rest.map(c => ladderRowHtml(c, null)).join('')}</div>` : ''}
-  </div>`;
+    ${v.msg ? `<div class="acctmsg">${esc(v.msg)}</div>` : ''}
+    <div class="framelist" data-scroll="meta-ladder">
+      ${v.loading && !ladder ? '<p class="hint metaempty">loading…</p>' : ''}
+      ${ladder && !ladder.cards.length ? '<p class="hint metaempty">No duels yet. Somebody has to go first.</p>' : ''}
+      ${ladder && ladder.cards.length && !all.length ? '<p class="hint metaempty">No rated card matches that.</p>' : ''}
+      <div class="metalist">${ranked.map(c => ladderRowHtml(c, rankOf.get(c.card)!)).join('')}</div>
+      ${rest.length ? `<div class="metadivider">Not enough duels yet
+          <span class="hint">— a card is ranked once it has ${bar} duels that were not mirrors.</span></div>
+        <div class="metalist">${rest.map(c => ladderRowHtml(c, null)).join('')}</div>` : ''}
+    </div>
+    <p class="framenote">Each card's Elo from Single Card Duels: thirty copies of one card against thirty of another. Start one from Home, under Constructed.</p>`);
 }
 
 // ── little pieces ─────────────────────────────────────────────────────
@@ -196,38 +210,34 @@ function listHtml(v: MetaView): string {
   const SORTS: [Sort, string][] = [
     ['winrate', 'winrate'], ['games', 'most played'], ['new', 'newest'], ['name', 'name'],
   ];
-  return `<div class="metapage">
-    <div class="accthead">
-      <div><h1>Metagame</h1>
-        <p class="hint">Decks people have published, with their records.</p></div>
-      <button data-btn="meta-close">Back</button>
-    </div>
-    ${metaTabsHtml(v.view)}
-    ${v.msg ? `<div class="acctmsg">${esc(v.msg)}</div>` : ''}
-    <div class="cbtools">
-      <span class="zonelabel">sort</span>
-      ${SORTS.map(([s, label]) =>
-        `<button class="${v.sort === s ? 'on' : ''}" data-btn="meta-sort" data-sort="${s}">${label}</button>`).join('')}
-      <span class="cbspacer"></span>
-      <input id="meta-q" class="dksearch" spellcheck="false" placeholder="name, builder, or a card in it"
+  return metaFrame(v, 'metapage', `
+    <div class="framebar">
+      <input id="meta-q" class="dksearch metaq" spellcheck="false" placeholder="name, builder, or a card in it"
         value="${esc(v.text)}">
+      <div class="dkfilters metaels">
+        ${ALL_ELEMENTS.map(el =>
+          `<button class="elchip ${el}${v.els.includes(el) ? ' on' : ''}" data-btn="meta-el" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
+        ${v.els.length || v.text ? '<button data-btn="meta-clear">clear</button>' : ''}
+      </div>
+      <span class="framespacer"></span>
+      ${segmented({
+        ariaLabel: 'Sort', size: 'sm',
+        options: SORTS.map(([s, label]) => ({ label, value: s, on: v.sort === s, dataBtn: 'meta-sort', attrs: { 'data-sort': s } })),
+      })}
     </div>
-    <div class="dkfilters">
-      ${ALL_ELEMENTS.map(el =>
-        `<button class="elchip ${el}${v.els.includes(el) ? ' on' : ''}" data-btn="meta-el" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
-      ${v.els.length || v.text ? '<button data-btn="meta-clear">clear</button>' : ''}
+    ${v.msg ? `<div class="acctmsg">${esc(v.msg)}</div>` : ''}
+    <div class="framelist" data-scroll="meta-decks">
+      ${v.loading && !rows ? '<p class="hint metaempty">loading…</p>' : ''}
+      ${rows && !all.length
+        ? `<p class="hint metaempty">${rows.length
+          ? 'Nothing matches those filters.'
+          : `Nothing on the list yet. A deck appears here once it is <b>public</b>, <b>legal</b>
+             and has ${minGames} constructed games behind it, played signed in.`}</p>`
+        : ''}
+      <div class="metalist">${all.map(d => metaRowHtml(d, minGames)).join('')}</div>
     </div>
-    ${v.loading && !rows ? '<p class="hint">loading…</p>' : ''}
-    ${rows && !all.length
-      ? `<p class="hint">${rows.length
-        ? 'Nothing matches those filters.'
-        : `Nothing on the list yet. A deck appears here once it is <b>public</b>, <b>legal</b>
-           and has ${minGames} constructed games behind it, played signed in.`}</p>`
-      : ''}
-    <div class="metalist">${all.map(d => metaRowHtml(d, minGames)).join('')}</div>
-    ${all.length ? `<p class="hint">Every deck here is legal and has at least ${minGames}
-      constructed games behind it.</p>` : ''}
-  </div>`;
+    ${all.length ? `<p class="framenote">Every deck here is legal and has at least ${minGames}
+      constructed games behind it.</p>` : ''}`);
 }
 
 // ── one shared deck ───────────────────────────────────────────────────
@@ -313,52 +323,49 @@ function exportHtml(v: MetaView): string {
 function deckHtml(v: MetaView): string {
   const { one, msg } = v;
   if (!one) {
-    return `<div class="metadeck">
-      <div class="accthead"><div><h1>Deck</h1></div>
-        <button data-btn="meta-close">Back</button></div>
+    return metaFrame(v, 'metadeck', `<div class="metadeckgone">
       <p class="hint">${esc(msg || (v.loading ? 'loading…' : 'That deck is not shared.'))}</p>
       <button data-btn="meta-list">See the metagame list</button>
-    </div>`;
+    </div>`, { title: 'Deck' });
   }
   const d = one;
   const a = analyzeDeck(d.cards);
   const desc = d.description ?? '';
   const { text: shownDesc, clipped } = v.descOpen ? { text: desc, clipped: false } : clipDescription(desc, 400);
   const link = v.link;
-  return `<div class="metadeck">
-    <div class="accthead">
-      <div><h1>${esc(d.name)}</h1>
-        <p class="hint">by ${esc(d.owner.username)}${
-          d.copiedFrom ? ` · after ${esc(d.copiedFrom.owner)}’s ${esc(d.copiedFrom.name)}` : ''}${
-          d.visibility === 'unlisted' ? ' · unlisted — only people with the link see this' : ''}</p></div>
-      <button data-btn="meta-list">Metagame</button>
-      <button data-btn="meta-close">Back</button>
-    </div>
+  const by = `by ${esc(d.owner.username)}${
+    d.copiedFrom ? ` · after ${esc(d.copiedFrom.owner)}’s ${esc(d.copiedFrom.name)}` : ''}${
+    d.visibility === 'unlisted' ? ' · unlisted — only people with the link see this' : ''}`;
+  // two columns that each scroll: what the deck IS on the left (who made it,
+  // its record, its primer, how to take it), the cards on the right
+  return metaFrame(v, 'metadeck', `
     ${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
     ${deckStripHtml(d.name, a, { lead: 'Deck' })}
-    <div class="deckrecline">${recordLine(d, v.minGames)}</div>
-    ${desc.trim() ? `<div class="deckdesc">
-      <div class="deckdescbody">${mdToHtml(shownDesc, { inline: cardLinker({ focusBtn: 'meta-focus' }) })}</div>
-      ${clipped || v.descOpen
-        ? `<button class="cblink" data-btn="meta-desc-toggle">${v.descOpen ? 'show less' : 'read more'}</button>`
-        : ''}</div>` : ''}
-    <div class="dkaddrow">
-      ${v.signedIn && !v.mine
-        ? '<button class="primary" data-btn="meta-take">Copy this deck to my collection</button>'
-        : ''}
-      ${v.mine ? '<span class="hint">Yours — edit it on your decks page.</span>' : ''}
-    </div>
-    <div class="sharebar">Send somebody this link:
-      <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
-      <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>
-    ${v.exporting ? exportHtml(v) : '<button class="dkadd" data-btn="meta-export">Export this deck</button>'}
-    <div class="dkwork">
-      <div class="dkworkmain">${deckGrid(d, v.deckGroup, v.statsOpen)}</div>
-      ${v.focus ? cardPanelHtml(v.focus, { close: 'meta-unfocus' }) : ''}
-    </div>
-  </div>`;
+    <div class="metadeckwork">
+      <aside class="metadeckinfo" data-scroll="meta-deck-info">
+        <div class="deckrecline">${recordLine(d, v.minGames)}</div>
+        ${desc.trim() ? `<div class="deckdesc">
+          <div class="deckdescbody">${mdToHtml(shownDesc, { inline: cardLinker({ focusBtn: 'meta-focus' }) })}</div>
+          ${clipped || v.descOpen
+            ? `<button class="cblink" data-btn="meta-desc-toggle">${v.descOpen ? 'show less' : 'read more'}</button>`
+            : ''}</div>` : ''}
+        <div class="dkaddrow">
+          ${v.signedIn && !v.mine
+            ? '<button class="primary" data-btn="meta-take">Copy this deck to my collection</button>'
+            : ''}
+          ${v.mine ? '<span class="hint">Yours — edit it on your decks page.</span>' : ''}
+        </div>
+        <div class="sharebar">Send somebody this link:
+          <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
+          <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>
+        ${v.exporting ? exportHtml(v) : '<button class="dkadd" data-btn="meta-export">Export this deck</button>'}
+      </aside>
+      <div class="dkwork metadeckcards">
+        <div class="dkworkmain" data-scroll="meta-deck-cards">${deckGrid(d, v.deckGroup, v.statsOpen)}</div>
+        ${v.focus ? `<div class="cbside" data-scroll="meta-deck-focus-${esc(v.focus)}">${cardPanelHtml(v.focus, { close: 'meta-unfocus' })}</div>` : ''}
+      </div>
+    </div>`, { title: d.name, titleHtml: `${esc(d.name)}<small>${by}</small>` });
 }
-
 
 /** Whichever view is up. Empty when the page does not own #app. */
 export function metaHtml(v: MetaView): string {
@@ -380,9 +387,8 @@ export interface MetaHooks {
 
 /** Paint `v` into `app`, and wire the filter box. */
 export function paintMeta(app: HTMLElement, v: MetaView, h: MetaHooks): void {
-  app.classList.remove('board');
   if (v.stats) paintCardStats(app, v.stats, h.setStatsText, h.statsRepaint);
-  else app.innerHTML = metaHtml(v);
+  else paintFrame(app, metaHtml(v));
   const box = document.getElementById('meta-q') as HTMLInputElement | null;
   if (box) {
     box.oninput = () => { h.setText(box.value); repaintKeepingCaret(h.repaint); };

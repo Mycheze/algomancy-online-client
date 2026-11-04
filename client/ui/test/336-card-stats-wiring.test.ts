@@ -31,8 +31,9 @@ const cardsPage = readFileSync(join(UI, 'pages', 'cards.ts'), 'utf8');
 
 test('every meta-cs button the page draws has a case in handle()', () => {
   const drawn = new Set([...csPage.matchAll(/data-btn="(meta-cs-[a-z-]+)"/g)].map(m => m[1]!));
-  // chip() builds some of them from a string argument
-  for (const m of csPage.matchAll(/chip\([^,]+, '(meta-cs-[a-z-]+)'/g)) drawn.add(m[1]!);
+  // seg() and flag() (the segmented controls and toggles, 2026-11-04) build the
+  // rest from a string argument
+  for (const m of csPage.matchAll(/(?:seg|flag)\([^)]*?'(meta-cs-[a-z-]+)'/g)) drawn.add(m[1]!);
   assert.ok(drawn.size >= 10, `found only ${drawn.size} buttons — the scan has gone blind`);
   const handler = cs.slice(cs.indexOf('export function handle('));
   for (const b of drawn) assert.ok(handler.includes(`case '${b}'`), `${b} is drawn and nothing answers it`);

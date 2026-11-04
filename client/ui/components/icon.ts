@@ -72,6 +72,12 @@ const GLYPHS = {
   users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M15.5 4.7a3.5 3.5 0 0 1 0 6.6"/><path d="M18 14.3a6.5 6.5 0 0 1 3.5 5.7"/>',
   // two bars
   pause: '<path d="M9 5v14"/><path d="M15 5v14"/>',
+  // a house: the frame's way back to the home screen (pages/frame.ts)
+  home: '<path d="M3.5 11 12 3.5l8.5 7.5"/><path d="M5.5 9.5V20a.5.5 0 0 0 .5.5h4.5v-6h3v6H18a.5.5 0 0 0 .5-.5V9.5"/>',
+  // an arrow pointing left: back to the page this one was opened from
+  back: '<path d="M20 12H4.5"/><path d="m10.5 5.5-6.5 6.5 6.5 6.5"/>',
+  // a magnifier: a search box's mark
+  search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/>',
 } as const;
 
 export type IconName = keyof typeof GLYPHS;

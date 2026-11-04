@@ -12,10 +12,13 @@
    NOT THE HOME SCREEN (docs/24, 2026-11-03): its bottom bar carries the
    footer's content behind its "Algomancy Online (Unofficial Client)" button,
    so the footer is hidden there and the home is exactly one window tall —
-   until then .homepage had this floor too (test 267 §2, 1020). */
-#app:not(.board):not(:has(> .homepage)):has(+ #legalfoot:not([hidden])) > :first-child {
+   until then .homepage had this floor too (test 267 §2, 1020). Since
+   2026-11-04 the same holds for every page drawn in the app frame
+   (pages/frame.ts): its root carries `.apppage`, as the home's does, and the
+   client's info is one tap away on the home. */
+#app:not(.board):not(:has(> .apppage)):has(+ #legalfoot:not([hidden])) > :first-child {
   min-height: calc(100dvh - 128px); box-sizing: border-box; }
-#app:has(> .homepage) + #legalfoot { display: none; }
+#app:has(> .apppage) + #legalfoot { display: none; }
 
 #legalfoot { border-top: 1px solid var(--line); background: var(--color-surface-sunken); }
 /* 1400px, not 1180: the deck builder and the card browser are 1400/1500 wide

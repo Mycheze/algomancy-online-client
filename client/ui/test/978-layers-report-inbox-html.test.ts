@@ -115,9 +115,10 @@ test('978 §7 while the pill is up, the page keeps the corner it sits in clear',
   const css = readStyles().replace(/\/\*[\s\S]*?\*\//g, '');
   const pill = /\.reportfab \{[^}]*\bbottom: (\d+)px;[^}]*padding: 8px/.exec(css);
   assert.ok(pill, 'positive control: the pill is fixed at a bottom offset');
-  // `:not(:has(#app > .homepage))`: the home's toolbar and bottom bar carry these since
-  // 2026-11-03, docs/24 — the pill is hidden there, so nothing keeps its corner clear (1020)
-  const HOME_OUT = String.raw`:not\(:has\(#app > \.homepage\)\)`;
+  // `:not(:has(#app > .apppage))`: the home's toolbar and bottom bar carry these since
+  // 2026-11-03, docs/24, and every page in the app frame's since 2026-11-04 — the pill is
+  // hidden there, so nothing keeps its corner clear (1020)
+  const HOME_OUT = String.raw`:not\(:has\(#app > \.apppage\)\)`;
   const root = new RegExp(String.raw`:root:has\(#reportlayer > \.reportfab\)${HOME_OUT} \{([^}]*)\}`).exec(css)?.[1] ?? '';
   const clear = Number(/--report-pill-clear: (\d+)px/.exec(root)?.[1] ?? 0);
   // the pill: its offset, 8px padding twice and a line of 13px text — the clearance covers it and leaves a gap

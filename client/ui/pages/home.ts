@@ -53,10 +53,11 @@ import * as inbox from '../inbox.ts';
 import { markUpdatesSeen, updatesListHtml, updatesUnseen, wireUpdates } from '../updates.ts';
 import { ICON_BASE } from '../assets.ts';
 import {
-  appShell, button, chip, icon, iconButton, iconButtonBadge, installSheetEsc, segmented, sheet, shellBar, statusMessage,
+  appShell, button, chip, icon, iconButton, iconButtonBadge, installSheetEsc, segmented, settingRow, sheet, shellBar, statusMessage,
 } from '../components/index.ts';
 import { chosenDeck, elIcon as elIconOf, esc } from '../util.ts';
 import { caretIn, restoreCaret } from './caret.ts';
+import { TOOL_NAMES, toolsHtml } from './frame.ts';
 import { clockPickHtml, clockPickView, type ClockPickView } from './clockpick.ts';
 import {
   BEGINNER_HINT, bansHtml, cardsHtml, customRulesView, gameValuesHtml, modeHtml, poolLineHtml, type CustomRulesView,
@@ -308,11 +309,9 @@ export function homeView(st: HomeState): HomeView {
 const opens = (name: HomeSheet): { dataBtn: string; attrs: { 'data-sheet': string } } =>
   ({ dataBtn: 'home-sheet', attrs: { 'data-sheet': name } });
 
-/** one settings row of the Play card: the label on the left, the control on the right */
-function row(label: string, controlHtml: string, hintHtml = ''): string {
-  return `<div class="homerow"><div class="homerowlabel">${esc(label)}</div>
-    <div class="homerowctl">${controlHtml}${hintHtml ? `<div class="homerowhint">${hintHtml}</div>` : ''}</div></div>`;
-}
+/** one settings row of the Play card: the label on the left, the control on
+ * the right (components/setting-row.ts, shared with every form since 2026-11-04) */
+const row = (label: string, controlHtml: string, hintHtml = ''): string => settingRow({ label, controlHtml, hintHtml });
 
 /** the toolbar's centre: the account (avatar, name, record), or Sign in */
 function accountHtml(a: IdentityBarView): string {
@@ -556,36 +555,29 @@ function sheetHtml(v: HomeView): string {
 
 /** The home screen's markup. Pure: no DOM, no globals, no module state —
  * everything it shows comes in through `v`. The root is the app shell, with
- * `homepage` as its LAST class: report.ts names the page from the last class
+ * `apppage` (pages/frame.ts) and `homepage` as its LAST class: report.ts names the page from the last class
  * of #app's first element (test 287), and the layers hide their own pill, bell
  * and footer when `#app > .homepage` is on screen. */
 export function homeHtml(v: HomeView): string {
-  // the toolbar: Decks Cards Metagame · the account · Learn Test Rules Alerts Report
-  const alerts = v.signedIn
-    ? iconButton({ label: 'Alerts', icon: 'alerts', badge: v.badges.alerts, className: 'homealerts', attrs: { 'data-inbox': 'bell' },
-      title: 'friend invites, match alerts and league notices' })
-    : iconButton({ label: 'Alerts', icon: 'alerts', className: 'homealerts', ...opens('alerts-signin'), on: v.sheet === 'alerts-signin' });
+  // the toolbar: Decks Cards Metagame · the account · Learn Test Rules Alerts Report.
+  // The five tools are the frame's (pages/frame.ts toolsHtml), shared with
+  // every other page; only the home's signed-out Alerts is its own (a sheet).
   const top = shellBar({
     className: 'hometools',
     startHtml: iconButton({ label: 'Decks', icon: 'decks', dataBtn: 'deck-openpage', title: 'your decks: build, import, export' })
       + iconButton({ label: 'Cards', icon: 'cards', dataBtn: 'cards-openpage', title: 'every card, with a search' })
       + iconButton({ label: 'Metagame', icon: 'stats', dataBtn: 'meta-openpage', title: 'published decks, card stats, the card duel ladder' }),
     centerHtml: accountHtml(v.account),
-    endHtml: iconButton({ label: 'Learn', icon: 'learn', attrs: { 'data-learn': 'menu' }, title: 'Learn to Play: lessons against a bot' })
-      // test mode (ui/sandbox.ts): its click handler writes "dealing…" or what
-      // went wrong into the [data-sbx-label] span — a small note under the
-      // button — so the icon and caption are never overwritten
-      + iconButton({ label: 'Test', iconHtml: `${icon('test')}<span class="homesbxnote" data-sbx-label></span>`, attrs: { 'data-sbx': 'open' },
-        title: 'test mode: a solo sandbox — any card, any mana, 1000 life — and the rules still apply' })
-      + iconButton({ label: 'Rules', icon: 'rules', attrs: { 'data-help': 'rules' }, title: 'how to play: the rules, the rulebook, the interface' })
-      + alerts
-      + iconButton({ label: 'Report', icon: 'report', attrs: { 'data-report': 'open' }, title: 'report a bug or say something' }),
+    endHtml: toolsHtml({ signedIn: v.signedIn, alerts: v.badges.alerts }, TOOL_NAMES, {
+      alertsSignedOutHtml: iconButton({ label: 'Alerts', icon: 'alerts', className: 'homealerts', ...opens('alerts-signin'), on: v.sheet === 'alerts-signin' }),
+    }),
   });
   return appShell({
     // one centred column for the bars' content and the main region (owner,
     // 2026-11-03: the toolbar sat hard in the window's corners on a laptop)
     contained: true,
-    className: 'homepage',
+    // `apppage`: the page carries its own Report, Alerts and footer (pages/frame.ts)
+    className: 'apppage homepage',
     topHtml: top,
     mainHtml: `<div class="homemain">${playHtml(v)}${sideHtml(v)}</div>${sheetHtml(v)}`,
     bottomHtml: bottomHtml(v),

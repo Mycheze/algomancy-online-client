@@ -1,0 +1,12 @@
+/* ── ui-setting-row (ui/components/setting-row.ts) ────────────────────
+   A setting's name on the left at a fixed width, the control on the right
+   (a column: the control, then its hint), aligned at the top. The recipe is
+   the home Play card's `.homerow` of 2026-11-03, moved here whole. Below a
+   tablet it stacks. A form spaces its rows itself (the home's .homerows). */
+.ui-setting-row { display: grid; grid-template-columns: var(--setting-row-label) minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+.ui-setting-row__label { padding-top: var(--space-3); color: var(--color-text-muted); font-size: var(--text-13); font-weight: 600; }
+.ui-setting-row__control { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); min-width: 0; }
+.ui-setting-row__hint { color: var(--color-text-muted); font-size: var(--text-12); line-height: 1.45; }
+@media (max-width: 759.98px), (max-height: 599.98px) {
+  .ui-setting-row { grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
+}
