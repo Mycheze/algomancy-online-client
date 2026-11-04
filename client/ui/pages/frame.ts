@@ -196,7 +196,7 @@ export function restoreScrolls(app: { querySelector?: (s: string) => Scroller | 
 /** Put a page drawn in the frame on screen, every scrolling region where it was. */
 export function paintFrame(app: HTMLElement, html: string): void {
   const kept = scrollsIn(app as unknown as Parameters<typeof scrollsIn>[0]);
-  app.classList.remove('board');
+  app.classList?.remove('board');   // ?: a test's stand-in #app may have no classList
   app.innerHTML = html;
   restoreScrolls(app as unknown as Parameters<typeof restoreScrolls>[0], kept);
 }
