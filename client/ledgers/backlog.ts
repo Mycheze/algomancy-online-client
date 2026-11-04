@@ -1117,49 +1117,6 @@ const OPEN: Entry[] = [
     notes: 'Sources: the ds-pages, ds-base, ds-w2c and ds-w3a records under var/records/.',
   },
   {
-    id: 'BL-65',
-    slug: 'deck-builder-manager-overhaul',
-    title: 'My decks and the deck builder: a massive overhaul on the new design system',
-    area: 'client',
-    size: 'XL',
-    status: 'open',
-    track: 'qol',
-    said:
-      'the whole deck builder and manager, like you said, need a massive overhaul. Make a note of that in '
-      + 'memory and the backlog and once this is merged, you can start on it (2026-11-04)',
-    means:
-      'The pages redesign (client/docs/24-redesign, rounds 1 and 2, 2026-11-04) put every simple page in '
-      + 'the app frame (ui/pages/frame.ts) and left My decks and the tabletop builder out on purpose: they '
-      + 'are the biggest and most tangled screens (decks.ts ~2,000 lines and 30 module lets, its modals, the '
-      + 'tabletop page, the binder layer, the sideboard tab, the add drawer, the card browser in '
-      + 'deckbuilding mode). Redesign them on the system, not reskin them: one window, no page scroll, '
-      + 'everything a button, the owner\'s principles in docs/24. Start with a design pass the owner '
-      + 'approves (sketch or Storybook) before code, then split decks.ts into the page contract '
-      + '(view / pure html / paint) the other pages follow.',
-    doneWhen: [
-      'My decks, the deck page, its modals and the tabletop builder are drawn in the app frame by the page contract',
-      'No state of theirs scrolls at desktop or tablet (FRAME_PAGES in ui-shots-states.mjs)',
-      'The owner has approved the design before it lands',
-    ],
-    decided: [
-      'It starts after the pages redesign (rounds 1 and 2) is merged (owner, 2026-11-04)',
-    ],
-    asks: [],
-    deps: [],
-    touches: [
-      'client/ui/decks.ts',
-      'client/ui/tabletop.ts',
-      'client/ui/pages/decks.ts',
-      'client/ui/pages/builder.ts',
-      'client/ui/pages/table.ts',
-      'client/ui/pages/pool.ts',
-      'client/ui/styles/pages/51-decks-shelf.css',
-      'client/ui/styles/pages/52-builder.css',
-    ],
-    notes: 'The rooms, cards and metagame pages already draw parts of it (the deck picker, the deck strip, '
-      + 'the card panel): reuse them. The account agent asked for a vertical ui-tabs variant, likely useful here.',
-  },
-  {
     id: 'BL-66',
     slug: 'pages-redesign-ux-pass',
     title: 'The redesigned pages: the owner\'s UX changes',

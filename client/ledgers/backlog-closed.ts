@@ -2867,4 +2867,63 @@ export const CLOSED: Entry[] = [
       + 'brought its own tutorial bot (ui/bot.ts), so BL-03 and BL-11 no longer gate anything here.'
       + "\n\nDONE 2026-10-25 (4bed755e). The END lesson's last page (\"Where next\") has a figure before the reference cards: \"Buy the game, or at least the print-and-play, to support the creator of this excellent game.\" (the owner's 2026-08-25 words) and the two BL-15 links, the boxed game first, each in a new tab with noopener. legal.ts exports shopLinksHtml(), which the footer and About pitch already used, so their output is unchanged. A figure because lesson markdown never emits an href. All three 693 tests failed against the old lessons.ts. Not driven in a browser.",
   },
+  {
+    id: 'BL-65',
+    slug: 'deck-builder-manager-overhaul',
+    title: 'My decks and the deck builder: a massive overhaul on the new design system',
+    area: 'client',
+    size: 'XL',
+    status: 'done',
+    evidence: {
+      commit: '79cbf826',
+      guards: [
+        'client/ui/test/1106-table-html.test.ts::\u00a72 the rail: Sideboard n/7 with its slot, then Maybe, not in the deck',
+        'client/ui/test/1107-page-builder-html.test.ts::\u00a72 the toolbar',
+        'client/ui/test/1116-page-decks-html.test.ts::1116 \u00a71 the page in the frame, the shelf bar, the boxes; signed out',
+        'client/ui/test/1117-decks-page-flows.test.ts::\u00a71 the page opens on a deck; a box selects its deck, the builder waits for Edit',
+        'client/ui/test/1124-challenge-builder-host.test.ts::\u00a71 a pool tap adds one copy at the END of the strip, and the draft is saved so',
+        'client/ui/test/1129-cc-sideboard-builder-table.test.ts::\u00a72 Undo takes the last move back through moveCopy, sending what a tap would',
+        'client/ui/test/1136-pile-readable-strip.test.ts::\u00a71 a pile too tall for its pane fans at the readable step, at every card size',
+      ],
+    },
+    track: 'qol',
+    said:
+      'the whole deck builder and manager, like you said, need a massive overhaul. Make a note of that in '
+      + 'memory and the backlog and once this is merged, you can start on it (2026-11-04)',
+    means:
+      'The pages redesign (client/docs/24-redesign, rounds 1 and 2, 2026-11-04) put every simple page in '
+      + 'the app frame (ui/pages/frame.ts) and left My decks and the tabletop builder out on purpose: they '
+      + 'are the biggest and most tangled screens (decks.ts ~2,000 lines and 30 module lets, its modals, the '
+      + 'tabletop page, the binder layer, the sideboard tab, the add drawer, the card browser in '
+      + 'deckbuilding mode). Redesign them on the system, not reskin them: one window, no page scroll, '
+      + 'everything a button, the owner\'s principles in docs/24. Start with a design pass the owner '
+      + 'approves (sketch or Storybook) before code, then split decks.ts into the page contract '
+      + '(view / pure html / paint) the other pages follow.',
+    doneWhen: [
+      'My decks, the deck page, its modals and the tabletop builder are drawn in the app frame by the page contract',
+      'No state of theirs scrolls at desktop or tablet (FRAME_PAGES in ui-shots-states.mjs)',
+      'The owner has approved the design before it lands',
+    ],
+    decided: [
+      'It starts after the pages redesign (rounds 1 and 2) is merged (owner, 2026-11-04)',
+    ],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/decks.ts',
+      'client/ui/tabletop.ts',
+      'client/ui/pages/decks.ts',
+      'client/ui/pages/builder.ts',
+      'client/ui/pages/table.ts',
+      'client/ui/pages/pool.ts',
+      'client/ui/styles/pages/51-decks-shelf.css',
+      'client/ui/styles/pages/52-builder.css',
+    ],
+    notes: 'The rooms, cards and metagame pages already draw parts of it (the deck picker, the deck strip, '
+      + 'the card panel): reuse them. The account agent asked for a vertical ui-tabs variant, likely useful here.'
+      + '\n\nDONE 2026-11-04 (branch decks, landed at 79cbf826). Owner approved the design page ("Oh helll yeah") and the as-built screenshots ("Looks great. Go ahead and merge and ship it"). '
+      + 'One builder (pages/builder.ts + tabletop.ts): pool over the table, splitter, piles, Sideboard + hatched Maybe rail, card menu, undo/redo through place(). '
+      + 'Decks page (pages/decks.ts): shelf + preview + side sheets. CC sideboarding, the challenge and the shared deck use the same table. Binder, deck tabs, add drawer, modals and the browser Building mode removed. '
+      + 'Real Firefox 158 BiDi: every gesture at 1440/1024/768. Not tried on a real iPad (CT-516). Register: var/records/bl65/register.md.',
+  },
 ];
