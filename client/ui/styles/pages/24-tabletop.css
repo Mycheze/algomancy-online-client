@@ -34,9 +34,12 @@ html.touch { --bdw: 300px; }
 .ttselbar { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; padding: var(--space-3) var(--space-5);
   background: var(--panel2); border-bottom: 1px solid var(--line); }
 .ttselbar .dkicon { width: 32px; height: 32px; margin-left: auto; }
+/* the table (pages/table.ts): its own stacking context, so a card lifted to
+   z-index 500 stays above its neighbours and under every sheet */
+.tttablewrap { flex: 1; min-height: 0; display: flex; flex-direction: column; isolation: isolate; }
 .ttbody { flex: 1; min-height: 0; display: flex; }
 /* the page's own scroll boxes, in the page's colours (Firefox drew them white) */
-.tttable, .ttmaybe, .ttbody, .ddresults { scrollbar-color: var(--color-border-strong) transparent; scrollbar-width: thin; }
+.tttable, .ttrail, .ttbody, .ddresults { scrollbar-color: var(--color-border-strong) transparent; scrollbar-width: thin; }
 .tttable { flex: 1; min-width: 0; overflow: auto; overscroll-behavior: contain; padding: 14px 10px 60px;
   background: radial-gradient(ellipse at 50% 0%, var(--color-bg) 0%, var(--felt) 70%); touch-action: pan-y; }
 .ttrow { display: flex; flex-wrap: wrap; align-items: stretch; row-gap: var(--space-6); }
@@ -107,17 +110,27 @@ html:not(.ttcarrypile) .ttpage .ttend.dropover::before { content: ''; display: b
    While it is up (html.zoompress) hovering raises nothing, so the wheel held
    down reads a pile strip by strip and not the raised card's whole face */
 #cardzoom > .presszoom > img { display: block; width: 100%; height: auto; }
-.ttmaybe { flex: none; width: calc(var(--cw) + 30px); overflow-y: auto; overscroll-behavior: contain;
+.ttrail { flex: none; width: calc(var(--cw) + 30px); overflow-y: auto; overscroll-behavior: contain;
+  display: flex; flex-direction: column; gap: var(--space-5);
   padding: 14px 10px 40px; background: var(--felt); border-left: 1px solid var(--line); touch-action: pan-y; }
-.ttmaybepile { min-height: 100%; }
-.ttmaybepile .ttpilelabel { color: var(--dim); text-transform: uppercase; letter-spacing: .06em; font-size: var(--text-11); }
-/* the sideboard (docs/22 §4.5): a pile above Maybe at the same edge, n/7 */
-.ttmaybe.ttedge2 { display: flex; flex-direction: column; gap: var(--space-5); }
-.ttedge2 > .ttmaybepile { flex: 1 0 auto; min-height: 0; }
+.ttrailbox { flex: none; }
+.ttrailmaybe { flex: 1 0 auto; display: flex; flex-direction: column; }
+/* Maybe is never the deck: dashed, hatched, and it says so */
+.ttmaybepile { flex: 1 0 auto; border: 1px dashed var(--color-border-strong);
+  background: repeating-linear-gradient(135deg, transparent 0 8px, var(--color-accent-wash) 8px 10px); }
+.ttrailnote { margin: var(--space-2) 0 0; color: var(--dim); font-size: var(--text-11); }
+.ttmaybepile .ttpilelabel, .ttsidepile .ttpilelabel { color: var(--dim); text-transform: uppercase; letter-spacing: .06em; font-size: var(--text-11); }
 /* an empty sideboard keeps a card's room, outlined — a place to drop, not just a header */
 .ttfan.ttslot { border: 1px dashed var(--color-border-strong); border-radius: var(--radius-md); }
-.ttsidepile .ttpilelabel { color: var(--dim); text-transform: uppercase; letter-spacing: .06em; font-size: var(--text-11); }
 .ttpilecount.bad { color: var(--danger); font-weight: 700; }
+/* the card menu (pages/table.ts): outside the table's stacking context, placed
+   beside the picked card by the paint (ui/tabletop.ts placeMenu) */
+.ttpop { position: fixed; z-index: var(--z-menu); min-width: 168px; max-width: 240px; padding: var(--space-2);
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-2); }
+.ttpophead { display: flex; align-items: center; gap: var(--space-2); padding: 0 0 var(--space-2) var(--space-2); }
+.ttpophead > b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-13); }
+.ttpopitems { display: flex; flex-direction: column; }
+.ttpopitems > .ttpopitem { justify-content: flex-start; text-align: left; }
 .ttnote { padding: var(--space-3) var(--space-5); font-size: var(--text-13); color: var(--accent); background: var(--color-accent-wash); }
 html.binderup .reportfab { right: calc(var(--bdw) + 18px); }
 html.binderup .inboxbell { right: calc(var(--bdw) + 124px); }
@@ -125,7 +138,7 @@ html.binderup .inboxbell { right: calc(var(--bdw) + 124px); }
   .ttpage { right: 0; bottom: var(--ddh); }
   .ttbody { display: block; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }
   .tttable { overflow: visible; }
-  .ttmaybe { width: auto; overflow: visible; border-left: 0; border-top: 1px solid var(--line); }
+  .ttrail { width: auto; overflow: visible; border-left: 0; border-top: 1px solid var(--line); }
   .ttsummary .cbminicurve, .ttsummary .cbdeckels { display: none; }
   html.binderup .reportfab, html.binderup .inboxbell { bottom: calc(var(--ddh) + 12px); }
   html.binderup .reportfab { right: 18px; }

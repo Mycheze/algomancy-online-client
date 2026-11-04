@@ -1,7 +1,7 @@
 /* THE SIDEBOARD PILE ON THE TABLETOP (docs/22 §4.5) — ui/tabletop.ts and
  * ui/binder.ts, driven through the real client.
  *
- *   §1 a Sideboard pile at the table's edge, above Maybe, its header n/7
+ *   §1 a Sideboard pile at the table's edge (the rail, BL-65), above Maybe, its header n/7
  *   §2 every move has a tap: a finger takes a deck card to the sideboard
  *      (the bar's Sideboard, or a tap on the pile) and back (To deck)
  *   §3 the binder's SB adds a copy to the sideboard; a ninth card reads 8/7
@@ -64,8 +64,9 @@ test('§1 a Sideboard pile at the edge, above Maybe, n/7', () => {
   assert.match(side, /<span class="ttpilelabel">Sideboard<\/span>/);
   assert.match(side, /class="ttpilecount">2\/7</, 'its header counts n/7');
   assert.deepEqual(namesIn(side), SIDE);
-  const edge = /<div class="ttmaybe ttedge2">([\s\S]*?)<\/section>\s*<section/.exec(html);
-  assert.ok(edge, 'at the same edge as Maybe');
+  // BL-65: the edge is the table's rail (pages/table.ts), the sideboard first
+  const edge = /<aside class="ttrail"[^>]*><div class="ttrailbox ttrailside"><section class="ttpile ttsidepile"/.exec(html);
+  assert.ok(edge, 'at the same edge as Maybe: the rail');
   assert.ok(html.indexOf('data-tt-zone="side"') < html.indexOf('data-tt-zone="maybe"'), 'above it');
   assert.equal(deckCount(html), 30, 'the sideboard is not counted in the deck');
 });

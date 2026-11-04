@@ -50,8 +50,9 @@ import {
   type DeckPile, type ResortBy,
 } from './deckarrange.ts';
 import {
-  cardHeight, cardWidth, fanHeight, insertIndexAt, noImgDrag, pileHtml, previewShift, stripIndexAt, stripOf, type PileCard,
+  cardHeight, cardWidth, fanHeight, insertIndexAt, noImgDrag, previewShift, stripIndexAt, stripOf, type PileCard, type PileView,
 } from './piletable.ts';
+import { tableHtml } from './pages/table.ts';
 import { installPressZoom } from './presszoom.ts';
 import { PEEK_MS } from './touch.ts';
 import { esc } from './util.ts';
@@ -95,8 +96,39 @@ export interface TableHost {
   commit(next: TableNext): void;
   /** Back: save what is waiting and repaint the page underneath */
   close(): void;
-  /** the full card browser with this query */
-  fullBrowser(query: string): void;
+  /** the full card browser with this query. Optional since BL-65: the
+   * builder's pool and its More filters sheet replace it (W3 removes it) */
+  fullBrowser?(query: string): void;
+
+  // ── BL-65 (2026-11-04): the builder in the app frame. All additive and
+  // optional: a host that sets none of these draws as before ──────────────
+
+  /** the pool band over the table (search, chips, every card a tap adds).
+   * Absent/false = no pool (the Competitive table has none) */
+  pool?: boolean;
+  /** the toolbar's count pill: its words, its tone, and the lines its
+   * "What's wrong" sheet lists (`tt-problems`). Absent = `strip()` as before */
+  pill?(): TablePill;
+  /** trusted markup: the host's own toolbar buttons, before Undo/Redo/Stats
+   * (decks.ts: Deck info; the challenge: Import a deck, Play). A host whose
+   * buttons open a sheet of its own calls `tabletopChanged()` to repaint */
+  toolsHtml?(): string;
+  /** trusted markup: the host's own sheet when one is open, else '' (Deck
+   * info, the challenge's import). Drawn inside the page, after the table */
+  sheetHtml?(): string;
+  /** the title's own button (the deck name ✎ opens Deck info: `deck-settings`) */
+  titleBtn?: string;
+  /** shown, not editable: no drag, no card menu, no pool */
+  readOnly?: boolean;
+}
+
+/** the toolbar's count pill (TableHost.pill) */
+export interface TablePill {
+  /** "30 cards · legal", "27 / 30", "18 / 30 in the deck" */
+  text: string;
+  tone: 'ok' | 'warn' | 'bad';
+  /** what is wrong, one line each — the "What's wrong" sheet; [] = nothing */
+  problems: readonly string[];
 }
 
 /** Where a card is picked up from. Indexes are positions in the pile as drawn. */
@@ -440,37 +472,40 @@ export function pageHtml(h: TableHost): string {
     const k = c ? list.findIndex(x => x.src === srcKey(c)) : -1;
     return k < 0 ? undefined : k;
   };
-  const pileOf = (p: DeckPile): string => {
+  const pileOf = (p: DeckPile): PileView => {
     const zone = pileZone(p.id);
     const list: PileCard[] = p.cards.map((name, k) => ({ name, src: `pile|${p.id}|${k}|${name}` }));
-    return pileHtml({
+    return ({
       zone, name: p.name, rename: p.id, head: p.id, cards: list, S: stripOf(list.length, paneH, ch), ch,
       front: front?.zone === zone ? front.index : undefined, picked: picked(list),
       cover, over, cls: c?.from === 'head' && c.pile === p.id ? 'ttpicked' : '',
       deletable: !p.cards.length && piles.length > 1,
     });
   };
-  const gutter = (i: number): string => `<div class="ttgutter" data-tt-zone="gap|${i}" ${btn('to')}></div>`;
   const maybe = h.maybe?.() ?? null;
   const maybePile = maybe ? (() => {
     const list: PileCard[] = maybe.map((name, k) => ({ name, src: `maybe|${k}|${name}` }));
-    return pileHtml({
+    return {
       zone: 'maybe', name: 'Maybe', cards: list, S: stripOf(list.length, paneH, ch), ch,
       front: front?.zone === 'maybe' ? front.index : undefined, picked: picked(list),
       cls: 'ttmaybepile',
-    });
-  })() : '';
-  // the sideboard: a pile at the same edge, above Maybe, its header n/7
+    };
+  })() : null;
+  // the sideboard: the rail's first pile, its header n/7, an empty one a slot
   const sidePile = side ? (() => {
     const list: PileCard[] = side.map((name, k) => ({ name, src: `side|${k}|${name}` }));
-    return pileHtml({
+    return {
       zone: 'side', name: 'Sideboard', cards: list, S: stripOf(list.length, paneH, ch), ch,
       front: front?.zone === 'side' ? front.index : undefined, picked: picked(list),
       over, cls: 'ttsidepile', slot: true, ...(h.sideMax !== undefined ? { limit: h.sideMax } : {}),
-    });
-  })() : '';
-  const maybeHtml = maybe || side
-    ? `<div class="ttmaybe${side ? ' ttedge2' : ''}">${sidePile}${maybePile}</div>` : '';
+    };
+  })() : null;
+  const table = tableHtml({
+    cw, ch, piles: piles.map(pileOf),
+    newPiles: { emptyText: 'Drag cards here from the binder.' },
+    rail: sidePile || maybePile ? { side: sidePile, maybe: maybePile } : null,
+    footHtml: h.below?.() ?? '',
+  });
   // the page's class is the LAST one (ui/report.ts's pageOf reads it)
   return `<div class="${c ? 'ttholding ' : ''}ttpage" style="--cw:${cw}px;--ch:${ch}px">
     <div class="tttop">
@@ -480,21 +515,13 @@ export function pageHtml(h: TableHost): string {
     </div>
     ${selBarHtml(h, piles)}
     ${note ? `<div class="ttnote" role="status">${esc(note)}</div>` : ''}
-    <div class="ttbody">
-      <div class="tttable" data-tt-zone="end" ${btn('to')}>
-        <div class="ttrow">${piles.map((p, i) => gutter(i) + pileOf(p)).join('')}
-          <div class="ttend" data-tt-zone="end" ${btn('to')}>${piles.length ? '' : '<span class="dim">Drag cards here from the binder.</span>'}</div>
-        </div>
-      </div>
-      ${maybeHtml}
-    </div>
-    ${h.below?.() ?? ''}
+    ${table}
   </div>`;
 }
 
 /** the boxes that scroll on the page: their scroll is kept across a repaint
  * (they are rebuilt with it, and a drop must not throw the table to its top) */
-const SCROLLERS = '.ttbody, .tttable, .ttmaybe, .ttstripbox';
+const SCROLLERS = '.ttbody, .tttable, .ttrail, .ttstripbox';
 
 function paint(): void {
   if (!$app || !host) return;
@@ -527,7 +554,7 @@ function binderHost(h: TableHost): BinderHost {
       // a refused one paints, so its reason shows
       toSide: (name: string) => { if (!place(h, { from: 'binder', name }, { at: 'side' })) paint(); },
     } : {}),
-    fullBrowser: query => h.fullBrowser(query),
+    fullBrowser: query => h.fullBrowser?.(query),
   };
 }
 
