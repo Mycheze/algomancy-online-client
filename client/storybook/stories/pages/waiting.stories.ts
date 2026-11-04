@@ -4,7 +4,7 @@ import {
 import { connectingHtml } from '../../../ui/pages/connecting.ts';
 import { deckPickerHtml, type DeckPickerView } from '../../../ui/pages/deckpicker.ts';
 import { singleCardPickerHtml } from '../../../ui/pages/singlecard.ts';
-import { DECKS, FRIENDS, LINK, page } from './_page.ts';
+import { DECKS, FRIENDS, LINK, page, CHROME } from './_page.ts';
 
 const PICKER: DeckPickerView = { current: DECKS[0]!, signedIn: true, mine: DECKS, defaults: null, msg: '' };
 
@@ -13,6 +13,7 @@ function cview(over: Partial<ConstructedWaitingView> = {}): ConstructedWaitingVi
     room: 'QXZZ', link: LINK, league: false, friends: FRIENDS,
     mineIn: false, oppIn: false, oppHere: false, myName: 'Ann', oppName: 'Bo',
     deck: DECKS[0]!, deckPicker: PICKER, error: '',
+    chrome: CHROME,
     ...over,
   };
 }
@@ -22,6 +23,7 @@ function sview(over: Partial<SingleWaitingView> = {}): SingleWaitingView {
     mineIn: false, oppIn: false, oppHere: true, myName: 'Ann', oppName: 'Bo', card: 'Ignis Sprite',
     picker: singleCardPickerHtml({ card: 'Ignis Sprite', art: '', makesUnits: true, copies: 30, draft: '', suggestions: '', deckCount: 528 }),
     error: '',
+    chrome: CHROME,
     ...over,
   };
 }

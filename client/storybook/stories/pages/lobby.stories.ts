@@ -1,5 +1,5 @@
 import { lobbyHtml, revealHtml, type LobbyView } from '../../../ui/pages/lobby.ts';
-import { FRIENDS, overlay, page } from './_page.ts';
+import { FRIENDS, overlay, page, CHROME } from './_page.ts';
 
 const METHODS = [
   { id: 'pick-one', label: 'One each', blurb: 'Each of you names an element; the server adds a third.' },
@@ -13,6 +13,7 @@ function view(over: Partial<LobbyView> = {}): LobbyView {
     seat: 0, names: ['Ann', 'Bo'], peers: [true, true], room: 'QXZZ',
     link: 'https://algomancy.online/?ws=1&room=QXZZ&seat=1&mode=draft', friends: FRIENDS,
     pick: null, ranking: [], ready: false,
+    chrome: CHROME,
     ...over,
   };
 }

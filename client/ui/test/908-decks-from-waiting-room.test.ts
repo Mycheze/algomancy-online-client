@@ -21,7 +21,8 @@ const waiting = readFileSync(new URL('../pages/waiting.ts', import.meta.url), 'u
 test('positive control: the waiting room offers the deck page, and its close calls the host rerender', () => {
   // a button() since the design-system round (2026-11-03)
   assert.match(picker, /button\(\{ label: 'My decks →', className: 'deckmanage', dataBtn: 'deck-openpage' \}\)/);
-  assert.match(waiting, /\$\{deckPickerHtml\(v\.deckPicker\)\}/, 'the constructed waiting room draws the picker');
+  // the picker is the control of the room's deck row (a settingRow) since 2026-11-04
+  assert.match(waiting, /controlHtml: deckPickerHtml\(v\.deckPicker\)/, 'the constructed waiting room draws the picker');
   const close = decks.slice(decks.indexOf("case 'deck-close':"), decks.indexOf('return true;', decks.indexOf("case 'deck-close':")));
   assert.match(close, /rerenderHost\(\)/);
   assert.match(main, /if \(NET\?\.waiting\) \{ hideHoverTip\(\); renderWaiting\(\); return false; \}/, 'renderNow paints the room');

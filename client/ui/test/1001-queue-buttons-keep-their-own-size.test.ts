@@ -27,8 +27,10 @@ const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(m => [m[1]!.trim(),
 test('1001 §1 the join screen\'s button rule skips the queue screen, at the same specificity', () => {
   const sized = rules.filter(([sel, body]) => /\.joinscreen\b[^,]*\sbutton\s*$/.test(sel) && /font-size|padding/.test(body));
   assert.equal(sized.length, 1, `one rule sizes a join screen's buttons: ${JSON.stringify(sized.map(r => r[0]))}`);
-  assert.equal(sized[0]![0], '.joinscreen:where(:not(.queuescreen)) button',
-    'it skips .queuescreen, inside :where() so it stays (0,1,1) for the screens it still sizes');
+  // …and since 2026-11-04 it skips a screen in the app frame too (.apppage, pages/frame.ts):
+  // the connecting screen keeps .joinscreen as its page name, and its toolbar's buttons are the frame's
+  assert.equal(sized[0]![0], '.joinscreen:where(:not(.queuescreen):not(.apppage)) button',
+    'it skips .queuescreen and .apppage, inside :where() so it stays (0,1,1) for the screens it still sizes');
 });
 
 test('1001 §2 nothing else sizes every button under .joinscreen', () => {

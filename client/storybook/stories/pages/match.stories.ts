@@ -3,7 +3,7 @@ import {
   competitiveCardHtml, matchRoomHtml, yourMatchesHtml, type MatchRoomView,
 } from '../../../ui/pages/match.ts';
 import type { MatchLobbyInfo } from '../../../ui/match.ts';
-import { FRIENDS, page } from './_page.ts';
+import { FRIENDS, page, CHROME } from './_page.ts';
 
 // real cards, two copies each, and a full sideboard of seven (the table draws their scans)
 const MAIN = Array.from({ length: 30 }, (_, i) => DECK_LIST[i % 15]!);
@@ -27,6 +27,7 @@ function room(over: Partial<MatchRoomView> = {}): MatchRoomView {
     w, decks: null, pick: null, error: '', now: NOW,
     link: 'https://algomancy.online/?ws=1&room=CCRM&seat=1&mode=constructed&cc=1', friends: FRIENDS,
     shown: w.mine?.current ?? null, concedeAsk: false,
+    chrome: CHROME,
     ...over,
   };
 }

@@ -25,6 +25,7 @@ function view(over: Partial<LobbyView> = {}): LobbyView {
     lobby: { method: 'pick-one', methods: METHODS, locked: [false, false], mine: {} },
     seat: 0, names: ['Ann', 'Bo'], peers: [true, true], room: 'QXZZ', link: 'http://x/?room=QXZZ&seat=1',
     friends: '<!--SLOT:friends-->', pick: null, ranking: [], ready: false,
+    chrome: { signedIn: true, alerts: 0 },
     ...over,
   };
 }
@@ -32,12 +33,14 @@ const btns = (html: string): string[] => [...html.matchAll(/data-btn="([^"]+)"/g
 
 test('971 §0 positive control: there is no DOM here', () => {
   assert.equal(typeof (globalThis as Record<string, unknown>)['document'], 'undefined');
-  assert.match(lobbyHtml(view()), /^<div class="lobbypage">/);
+    // the rooms are drawn in the app frame since 2026-11-04 (pages/lobby.ts roomFrameHtml): the shell is the root,
+    // the page's class still LAST (report.ts pageOf), and the kind of room + its code is the toolbar's title
+  assert.match(lobbyHtml(view()), /^<div class="ui-app-shell ui-app-shell--contained apppage lobbypage">/);
 });
 
 test('971 §1 pick-one: the named element is on, and ready waits for it', () => {
   const none = lobbyHtml(view());
-  assert.match(none, /Live draft — room <span class="roomcode">QXZZ<\/span>/);
+  assert.match(none, /<h1 class="frametitle">Live draft<small>room <span class="roomcode">QXZZ<\/span>/);
   assert.match(none, /How should the trio be chosen\?/);
   assert.equal(btns(none).filter(b => b === 'lobby-method').length, 3, 'every method, each with its blurb');
   assert.match(none, /class="lobbymethod on"/);
@@ -74,11 +77,11 @@ test('971 §4 the opponent away: share the code (and invite a friend); a league 
   assert.match(away, /<i class="seatdot away"><\/i>\s*<span>Bo — has not arrived yet/);
   assert.doesNotMatch(lobbyHtml(view()), /sharebar/, 'both here: nothing to share');
   const league = lobbyHtml(view({ peers: [true, false], lobby: { ...view().lobby, method: 'random' } }));
-  assert.match(league, /League match — room/);
+  assert.match(league, /League match<small>room/);
   assert.match(league, /tell them on Discord you are here/);
   assert.doesNotMatch(league, /sharebar|SLOT:friends/);
   const custom = lobbyHtml(view({ custom: { summary: ['Packs of 5'], excluded: 1 } }));
-  assert.match(custom, /Custom live draft — room/);
+  assert.match(custom, /Custom live draft<small>room/);
   assert.match(custom, /1 card left out\./);
 });
 

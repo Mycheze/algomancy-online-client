@@ -6,16 +6,10 @@
    answer?" — are side by side, because the second one only makes sense in
    the light of the first. Who is ready and the button that says so live in
    one bar underneath, so the state of the room is always in the same place. */
-.lobbypage { max-width: 1000px; margin: 0 auto; padding: 30px 22px 44px; min-height: 100dvh;
-  display: flex; flex-direction: column; justify-content: safe center; gap: var(--space-6); }
 .lobbypage .sharebar { margin-bottom: 0; flex-wrap: wrap; }
-.lobbyhead { display: flex; align-items: baseline; gap: var(--space-6); flex-wrap: wrap;
-  border-bottom: 1px solid var(--line); padding-bottom: var(--space-5); }
-.lobbyhead .homelogo { margin: 0; font-size: var(--text-22); text-align: left; }
-.lobbyhead h2 { margin: 0; font-size: var(--text-14); color: var(--text); }
-.lobbyhead .roomcode { color: var(--accent); letter-spacing: .16em; }
-.lobbyhead .headbtns { margin-left: auto; }
-.lobbyhead .headbtns button { font-size: var(--text-12); padding: var(--space-2) var(--space-5); }
+/* (.lobbypage was the page box and .lobbyhead its ALGOMANCY header until
+   2026-11-04; the rooms are drawn in the app frame now — the block at the end
+   of this piece) */
 
 .lobbygrid { display: grid; grid-template-columns: minmax(250px, 330px) 1fr; gap: var(--space-5); align-items: stretch; }
 @media (max-width: 780px) { .lobbygrid { grid-template-columns: 1fr; } }
@@ -118,3 +112,52 @@
 .triodetail { margin: 0; padding: 0; list-style: none; color: var(--dim); font-size: var(--text-12);
   line-height: 1.6; text-align: left; }
 
+
+/* ── the rooms in the app frame (2026-11-04, docs/24) ─────────────────────
+   Every room before the deal — the draft lobby, the constructed and Single
+   Card Duel rooms, a Competitive match's registration and pause, and the
+   connecting screen (pages/lobby.ts roomFrameHtml) — is one card in the
+   middle of the window, as the home's Play card is: its sections flat inside
+   it with hairlines between (the share line, Invite a friend, the custom
+   rules, the choice, the deck), and who is ready in a footer band at the
+   bottom. The panels these sections were drawn as keep their classes and
+   lose their boxes here. */
+.apppage:is(.lobbypage, .ccpage, .joinscreen) .ui-app-shell__main { display: flex; }
+.roomcol { margin: auto; width: min(100%, 920px); display: flex; flex-direction: column; gap: var(--space-5); }
+.roomcard { display: flex; flex-direction: column; background: var(--color-surface); border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-2); overflow: hidden; }
+.roomsec { padding: var(--space-6) var(--space-7); }
+.roomsec + .roomsec { border-top: 1px solid var(--color-border); }
+.roomsec--foot { background: var(--color-surface-sunken); padding-top: var(--space-5); padding-bottom: var(--space-5); }
+.roomsec > :first-child { margin-top: 0; }
+.roomsec > :last-child { margin-bottom: 0; }
+/* the boxes the sections used to be */
+.roomsec > :is(.lobbypanel, .lobbyfoot, .sharebar, .lobbycustom),
+.roomsec .lobbygrid > .lobbypanel { background: none; border: 0; border-radius: 0; padding: 0; margin: 0; box-shadow: none; }
+/* the share line: the code, the link and copy on one row */
+.roomsec > .sharebar { gap: var(--space-4); }
+.roomsec > .sharebar .sharelink { min-height: var(--segmented-h-sm); border-radius: var(--radius-pill); padding: 0 var(--space-5);
+  background: var(--color-surface-sunken); }
+.roomsec > .sharebar button { border-radius: var(--radius-pill); padding: 0 var(--space-6); min-height: var(--segmented-h-sm); }
+/* the two questions of the draft lobby, side by side, a hairline between */
+.roomsec .lobbygrid { gap: 0; grid-template-columns: minmax(250px, 320px) minmax(0, 1fr); }
+.roomsec .lobbygrid > .lobbypanel:first-child { padding-right: var(--space-7); }
+.roomsec .lobbygrid > .lobbypanel + .lobbypanel { padding-left: var(--space-7); border-left: 1px solid var(--color-border); }
+/* the deck row: the picker and Play this deck */
+.roomsec > .deckpicker .ui-setting-row__control .deckselect { width: 100%; max-width: 420px; }
+.roomsec > .deckpicker > .cta { align-self: flex-start; min-width: 220px; padding: var(--space-4) var(--space-7); font-size: var(--text-14);
+  font-weight: 700; margin-left: calc(var(--setting-row-label) + var(--space-6)); }
+.roomsec > .deckpicker > .zonelabel + .cardsub, .roomsec > .deckpicker > .zonelabel + .hint { margin-top: calc(-1 * var(--space-2)); }
+.roomsec > .deckpicker:not(:has(> .ui-setting-row)) > .cta { margin-left: 0; }
+/* the room's state, and the button that changes it */
+.roomsec > .lobbyfoot { gap: var(--space-6); }
+.roomsec .lobbyseats { gap: var(--space-7); }
+.roomsec > .ccfoot { margin: 0; }
+/* the line under the card */
+.roomcol > .homefoot { margin: 0; }
+/* the room code in the toolbar's title */
+.apppage .frametitle .roomcode { color: var(--color-accent); letter-spacing: .16em; font-weight: 700; }
+/* the connecting screen: one line, and the refusal's way out */
+.apppage.joinscreen .roomcol { width: min(100%, 520px); }
+.apppage.joinscreen .roomsec { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-5); text-align: left; }
+.apppage.joinscreen .roomsec p { margin: 0; font-size: var(--text-14); }

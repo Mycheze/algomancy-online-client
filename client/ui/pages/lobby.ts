@@ -15,6 +15,49 @@ import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
 import { button } from '../components/index.ts';
 import { lobbyLocals, type CustomRulesInfo, type TrioLobby, type TrioReveal } from '../lobby.ts';
 import { elIcon as icon, esc, shareBar } from '../util.ts';
+import { frameChromeView, frameHtml, type FrameChrome } from './frame.ts';
+
+/* ── the room frame (2026-11-04) ─────────────────────────────────────────
+ * Every room before the deal — this lobby, the constructed and Single Card
+ * Duel waiting rooms (pages/waiting.ts), a Competitive match's registration
+ * and pause (pages/match.ts) and the connecting screen — is drawn in the app
+ * frame (pages/frame.ts): Leave on the left (the rooms' own `gohome`), the
+ * kind of room and its code as the title, then the room as ONE card of
+ * sections with hairlines between them (`roomSection`), not a stack of boxes,
+ * and the line that says when it deals under it. The ALGOMANCY logo row it
+ * replaces is gone: the toolbar is the header. */
+
+export interface RoomFrameProps {
+  /** the root class report.ts names the page by (`lobbypage`, `ccpage`, `joinscreen`) */
+  page: string;
+  /** what kind of room: "Live draft", "Constructed", "Competitive — Best of 3" … */
+  kind: string;
+  /** the room code, or null (the connecting screen has none yet) */
+  room: string | null;
+  chrome: FrameChrome;
+  /** trusted markup: the card's sections (roomSection) */
+  cardHtml: string;
+  /** trusted markup under the card (the "Deals when…" line) */
+  footHtml?: string;
+  /** the way out: the rooms' Leave, or the connecting screen's Home */
+  backLabel?: string;
+}
+
+/** one section of a room's card; '' for nothing, so an absent part leaves no gap */
+export const roomSection = (html: string, cls = ''): string =>
+  html.trim() ? `<div class="roomsec${cls ? ` ${cls}` : ''}">${html}</div>` : '';
+
+/** A room in the frame. Pure. */
+export function roomFrameHtml(p: RoomFrameProps): string {
+  return frameHtml({
+    page: p.page,
+    title: p.room ? `${p.kind} — room ${p.room}` : p.kind,
+    titleHtml: `${esc(p.kind)}${p.room ? `<small>room <span class="roomcode">${esc(p.room)}</span></small>` : ''}`,
+    back: { dataBtn: 'gohome', label: p.backLabel ?? 'Leave' },
+    chrome: p.chrome,
+    mainHtml: `<div class="roomcol"><section class="roomcard">${p.cardHtml}</section>${p.footHtml ?? ''}</div>`,
+  });
+}
 
 /** the engine's own element list, so a new element never leaves this screen
  * with a stale copy */
@@ -32,6 +75,8 @@ export interface LobbyArgs {
   custom?: CustomRulesInfo;
   /** the "Invite a friend" panel (ui/inbox.ts), drawn under the share bar */
   friends?: string;
+  /** the toolbar's account and bell (pages/frame.ts); signed out when absent */
+  chrome?: FrameChrome;
 }
 
 export interface LobbyView extends LobbyArgs {
@@ -41,10 +86,11 @@ export interface LobbyView extends LobbyArgs {
   ranking: readonly string[];
   /** complete enough to lock in */
   ready: boolean;
+  chrome: FrameChrome;
 }
 
 export function lobbyView(a: LobbyArgs): LobbyView {
-  return { ...a, ...lobbyLocals(a.lobby) };
+  return { ...a, ...lobbyLocals(a.lobby), chrome: a.chrome ?? frameChromeView() };
 }
 
 function methodPickerHtml(lobby: TrioLobby, iAmLocked: boolean): string {
@@ -124,20 +170,16 @@ export function lobbyHtml(v: LobbyView): string {
         ? `<p class="hint">This is a league match. When you are both ready, the ${word} is drawn at random and the first player is picked at random.</p>`
       : `<p class="hint">Say you are ready and the server picks a ${word} the two of you have never played.</p>`;
 
-  return `<div class="lobbypage">
-    <div class="lobbyhead">
-      <h1 class="homelogo">ALGOMANCY</h1>
-      <h2>${v.custom ? 'Custom live draft' : lobby.method === 'random' ? 'League match' : 'Live draft'} — room <span class="roomcode">${esc(room)}</span></h2>
-      <div class="headbtns">${button({ label: 'Leave', dataBtn: 'gohome' })}</div>
-    </div>
-
-    ${theyAreHere ? '' : lobby.method === 'random'
+  return roomFrameHtml({
+    page: 'lobbypage',
+    kind: v.custom ? 'Custom live draft' : lobby.method === 'random' ? 'League match' : 'Live draft',
+    room, chrome: v.chrome,
+    cardHtml: roomSection(theyAreHere ? '' : lobby.method === 'random'
       ? '<p class="hint lobbywait">Waiting for your opponent. They join from their own League page — tell them on Discord you are here.</p>'
-      : shareBar('Send your opponent the room code', room, link) + (v.friends ?? '')}
-
-    ${v.custom ? customPanelHtml(v.custom) : ''}
-
-    <div class="lobbygrid">
+      : shareBar('Send your opponent the room code', room, link))
+      + roomSection(theyAreHere || lobby.method === 'random' ? '' : v.friends ?? '')
+      + roomSection(v.custom ? customPanelHtml(v.custom) : '')
+      + roomSection(`<div class="lobbygrid">
       <div class="lobbypanel">
         <div class="zonelabel">How should the ${word} be chosen?</div>
         ${methodPickerHtml(lobby, iAmLocked)}
@@ -146,9 +188,8 @@ export function lobbyHtml(v: LobbyView): string {
         <div class="zonelabel">${esc(bodyLabel(lobby.method))}</div>
         <div class="lobbysection">${body}</div>
       </div>
-    </div>
-
-    <div class="lobbyfoot">
+    </div>`)
+      + roomSection(`<div class="lobbyfoot">
       <div class="lobbyseats">
         ${seatLine(names[seat] ?? 'You', true, true, iAmLocked)}
         ${seatLine(names[opp] ?? 'Your opponent', false, theyAreHere, theyAreLocked)}
@@ -156,10 +197,9 @@ export function lobbyHtml(v: LobbyView): string {
       <div class="lobbygo">${iAmLocked
         ? button({ label: 'Change my mind', dataBtn: 'lobby-unlock' })
         : button({ label: v.ready ? "I'm ready" : 'finish choosing first', variant: 'primary', dataBtn: 'lobby-lock', disabled: !v.ready })}</div>
-    </div>
-
-    <p class="homefoot">Nothing is dealt until you have both locked in.</p>
-  </div>`;
+    </div>`, 'roomsec--foot'),
+    footHtml: '<p class="homefoot">Nothing is dealt until you have both locked in.</p>',
+  });
 }
 
 /** The "here is your trio, and here is exactly how it happened" interstitial.

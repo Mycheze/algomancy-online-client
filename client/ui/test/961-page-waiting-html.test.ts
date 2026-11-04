@@ -24,6 +24,7 @@ function cview(over: Partial<ConstructedWaitingView> = {}): ConstructedWaitingVi
     deck: null,
     deckPicker: { current: null, signedIn: false, mine: [], defaults: null, msg: '' },
     error: '',
+    chrome: { signedIn: true, alerts: 0 },
     ...over,
   };
 }
@@ -32,6 +33,7 @@ function sview(over: Partial<SingleWaitingView> = {}): SingleWaitingView {
     room: 'QXZZ', link: LINK, friends: '<!--SLOT:friends-->', drawn: null,
     mineIn: false, oppIn: false, oppHere: false, myName: 'Ann', oppName: 'Bo',
     card: null, picker: '<!--SLOT:scpicker-->', error: '',
+    chrome: { signedIn: true, alerts: 0 },
     ...over,
   };
 }
@@ -40,12 +42,14 @@ const seats = (html: string): string[] => [...html.matchAll(/<i class="seatdot([
 
 test('961 §0 positive control: there is no DOM here', () => {
   assert.equal(typeof (globalThis as Record<string, unknown>)['document'], 'undefined');
-  assert.match(constructedWaitingHtml(cview()), /^<div class="lobbypage">/);
+    // the rooms are drawn in the app frame since 2026-11-04 (pages/lobby.ts roomFrameHtml): the shell is the root,
+    // the page's class still LAST (report.ts pageOf), and the kind of room + its code is the toolbar's title
+  assert.match(constructedWaitingHtml(cview()), /^<div class="ui-app-shell ui-app-shell--contained apppage lobbypage">/);
 });
 
 test('961 §1 one seat in a constructed room: share, invite, pick a deck', () => {
   const html = constructedWaitingHtml(cview());
-  assert.match(html, /Constructed — room <span class="roomcode">QXZZ<\/span>/);
+  assert.match(html, /<h1 class="frametitle">Constructed<small>room <span class="roomcode">QXZZ<\/span>/);
   assert.ok(html.includes(LINK.replace(/&/g, '&amp;')) || html.includes(LINK), 'the share link is on screen');
   assert.match(html, /<!--SLOT:friends-->/, 'the Invite a friend panel');
   assert.match(html, /<div class="lobbypanel deckpicker">/, 'the deck picker panel');
@@ -73,7 +77,7 @@ test('961 §2 two seats in: no picker, both decks in', () => {
 
 test('961 §3 a constructed league match: nothing to share, any deck', () => {
   const html = constructedWaitingHtml(cview({ league: true, friends: '' }));
-  assert.match(html, /League match — room/);
+  assert.match(html, /League match<small>room/);
   assert.doesNotMatch(html, /data-btn="copylink"/, 'both seats are bound: no code to share');
   assert.match(html, /Waiting for your opponent\. They join from their own League page/);
   assert.match(html, /Your deck for this game/);
@@ -83,7 +87,7 @@ test('961 §3 a constructed league match: nothing to share, any deck', () => {
 
 test('961 §4 a Single Card Duel room: the card picker, the draw, and a blind opponent', () => {
   const html = singleWaitingHtml(sview());
-  assert.match(html, /Single Card Duel — room/);
+  assert.match(html, /Single Card Duel<small>room/);
   assert.match(html, /<!--SLOT:scpicker-->/);
   assert.match(html, /data-btn="singlejoin" disabled>Pick a card first/);
   assert.deepEqual(btns(html).filter(b => b !== 'copylink'), ['gohome', 'singlejoin']);

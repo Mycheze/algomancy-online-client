@@ -207,7 +207,10 @@ test('962 §4 the clock picker: Default, a preset, off', () => {
 test('962 §5 the connecting screen, and a refused join with its way home', () => {
   const wait = connectingHtml({ error: '' });
   assert.match(wait, /<p>Connecting to the server…<\/p>/);
-  assert.doesNotMatch(wait, /data-btn/);
+  // in the app frame since 2026-11-04, as the rooms are: the toolbar's Home (gohome) is the
+  // only button while it connects; the refusal adds its own way home below
+  assert.deepEqual([...wait.matchAll(/data-btn="([^"]+)"/g)].map(m => m[1]), ['gohome']);
+  assert.match(wait, /^<div class="ui-app-shell ui-app-shell--contained apppage joinscreen">/, 'report.ts still names it "join"');
   const refused = connectingHtml({ error: 'no room <QXZZ>' });
   assert.match(refused, /<p class="joinerr">no room &lt;QXZZ&gt;<\/p>/);
   assert.match(refused, /data-btn="gohome"/);
