@@ -648,7 +648,7 @@ function railHtml(v: LeagueView): string {
     const fin = full && full.phase === full.weeks + 1 && !mine.length ? full.matches.find(m => m.final) : undefined;
     const next = full ? (fin ? pairingText(fin) : esc(nextText(full, v.tz))) : '';
     return `<div class="lgrailrow${cur?.id === x.id ? ' on' : ''}">
-      <button class="lgrailopen" data-btn="lg-season" data-id="${esc(x.id)}"${cur?.id === x.id ? ' aria-current="true"' : ''}>
+      <button class="lgseasonbtn" data-btn="lg-season" data-id="${esc(x.id)}"${cur?.id === x.id ? ' aria-current="true"' : ''}>
         <span class="lgrailname">${esc(x.name)}${x.hidden ? ' 🔒' : ''}</span>
         <span class="lgbphase">${esc(full?.label ?? phaseText(x))}</span>
         ${next ? `<span class="lgrailnext">${next}</span>` : ''}

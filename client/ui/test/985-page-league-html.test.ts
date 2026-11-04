@@ -161,7 +161,7 @@ test('985 §6 the app frame: the parts as tabs, the seasons as a rail, each part
   })));
   const rail = /<nav class="lgrail"[\s\S]*?<\/nav>/.exec(two)?.[0] ?? '';
   assert.match(rail, /data-btn="lg-season" data-id="old"/);
-  assert.match(rail, /<div class="lgrailrow on">\s*<button class="lgrailopen" data-btn="lg-season" data-id="2026-11" aria-current="true">/);
+  assert.match(rail, /<div class="lgrailrow on">\s*<button class="lgseasonbtn" data-btn="lg-season" data-id="2026-11" aria-current="true">/);
   assert.match(rail, /data-btn="lg-play" data-season="old" data-match="m1"/, 'the other season\'s Play');
   assert.doesNotMatch(rail, /data-season="2026-11"/, 'no Play for the season showing');
   assert.match(rail, /data-id="dec"[\s\S]*?Announced/, 'a season the answer only numbers still says where it is');

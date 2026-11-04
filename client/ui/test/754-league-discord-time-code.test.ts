@@ -50,6 +50,8 @@ async function rig(opts: { signedIn?: boolean; clipboard?: 'ok' | 'refuse' } = {
   lg.initLeague({ app: app as unknown as HTMLElement, rerender: () => {} });
   lg.handleButton({ dataset: { btn: 'lg-open' } } as unknown as HTMLElement);
   await settle();
+  // the time code is the page's Time code tab since the app frame (2026-11-04)
+  lg.handleButton({ dataset: { btn: 'lg-section', v: 'stamp' } } as unknown as HTMLElement);
   // the page drew the field: give it the value its HTML carries, as a browser would
   const v = /id="lg-stamp-at"[^>]*value="([^"]*)"/.exec(app.innerHTML)?.[1];
   if (v) field('lg-stamp-at').value = v;

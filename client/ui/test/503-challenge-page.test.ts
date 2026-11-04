@@ -184,7 +184,8 @@ test('§4 a closed week: Try this deck loads it into the builder, Watch goes to 
   await settle();
   const html = r.app.innerHTML;
   assert.match(html, /Winners · Fastest: <b>Ann<\/b> · Leanest: <b>Bo<\/b> · Purest: <b>Bo<\/b>/, 'three winners; overall has none');
-  assert.match(html, /<h3[^>]*>Week old <span class="dim">· week of 2026-10-11<\/span><\/h3>/, 'a past board names its week');
+  // …and since the app frame (2026-11-04) it stands in this week's place, with the way back
+  assert.match(html, /<h3[^>]*>Week old <span class="dim">· week of 2026-10-11<\/span> <button class="chweekback" data-btn="ch-past" data-id="old">This week<\/button><\/h3>/, 'a past board names its week');
   r.store.set('algoChallengeDecks', JSON.stringify({ old: [units[3]!] }));
   r.ch.handleButton(button(html, { btn: 'ch-try', id: 'old', run: 'run-ann-1' }));
   assert.deepEqual([...r.ch.builderList()], OLD_DECK);
