@@ -39,7 +39,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { ent, finishBattle, pass, spawn, toDeployment, toNextBattle } from './util.ts';
-import type { EntityId, GameState, Seat } from '../src/types.ts';
+import type { DamageSubStep, EntityId, GameState, Seat } from '../src/types.ts';
 
 /** answer whatever the combat pump raised (an elective split, a trigger
  * ordering, Eldritch Dreamtender's discard pick) and pass the afterWindow
@@ -397,6 +397,14 @@ test('CT-145 CR 608.9a: the sub-step gate DISCRIMINATES — the question no beha
   for (const step of ['Swift', 'normal', 'Sluggish'] as const) {
     const probe = structuredClone(h.state);
     probe.battle!.damageStep = step;
+    // the board a real game has at that cursor: every EARLIER sub-step has been
+    // dealt, so the columns that struck in it carry its mark (CR 608.2e). Since
+    // CT-427, CR 608.2f reads those marks, not Swift, once the Swift sub-step
+    // is behind the cursor; a cursor moved with no marks is a state no game reaches
+    const ORDER = ['Swift', 'normal', 'Sluggish'] as const;
+    probe.battle!.struck = Object.fromEntries(cases
+      .map(([, , mine], ci): [string, DamageSubStep[]] => [`atk:${ci}`, [mine]])
+      .filter(([, [mine]]) => ORDER.indexOf(mine!) < ORDER.indexOf(step)));
     const e = new E(probe);
     for (const [name, id, mine] of cases) {
       assert.equal(e.strikesInCurrentSubStep(probe.entities[id]!), step === mine,
