@@ -1180,6 +1180,35 @@ const OPEN: Entry[] = [
       'client/ui/styles/pages/49-frame.css',
     ],
   },
+  {
+    id: 'BL-67',
+    slug: 'spectate-has-a-way-in',
+    title: 'Spectating has no way in but a typed URL',
+    area: 'client',
+    size: 'S',
+    status: 'open',
+    track: 'qol',
+    said:
+      'Every SINGLE page must be accessible (and leavable) without touching the URL bar (since we\'re treating '
+      + 'this like a stand alone app that just happens to run in browser) (2026-11-04)',
+    means:
+      'The way-out audit of 2026-11-04 fixed every screen that stranded a player (test 1074; Test mode\'s Leave in '
+      + 'test-sandbox.ts). One screen is still reachable only by URL: watching a game (`&watch=1`), which the '
+      + 'interface guide tells players to type (ui/tutorial.ts) and which main.ts says "belongs wherever spectating '
+      + 'is offered on purpose" — nothing offers it. Offer it where a player would look: a friend\'s live game, '
+      + 'the room\'s share line. (Left URL-only on purpose: the scenario tester and ?demo are developer tools behind '
+      + 'a token or for the screenshot rig; the CR review page and rules questions are the judges\'.)',
+    doneWhen: [
+      'A player can start watching a game from a button, and the guide no longer tells anyone to type a URL',
+    ],
+    decided: [],
+    asks: ['where the Watch button should be'],
+    deps: [],
+    touches: [
+      'client/ui/tutorial.ts',
+      'client/ui/main.ts',
+    ],
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

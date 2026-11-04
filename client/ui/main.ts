@@ -324,6 +324,11 @@ class NetBackend implements Backend {
   frozen: string | null = null;
   peers: [boolean, boolean] = [false, false];
   joined = false;
+  /** a reconnect re-sent the join of a room this client was IN, and the
+   * server has not answered yet. A refusal now (the room closed while the
+   * device slept: rooms.ts joinRefusal) is not an error on a live board — the
+   * board is gone, and the refused screen, with its way home, is the screen. */
+  rejoining = false;
   /** constructed lobby: non-null while the room waits for both decks */
   waiting: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; league?: true; drawn?: { mine: string; theirs: string }; match?: mt.MatchLobbyInfo } | null = null;
   /**
@@ -456,6 +461,7 @@ class NetBackend implements Backend {
     this.ws = openSocket(`${proto}://${location.host}`);
     this.ws.onopen = () => {
       this.reconnectDelay = 1000;
+      this.rejoining = this.joined;
       if (this.spectating) this.sendWatch(); else this.sendJoin();
     };
     this.ws.onmessage = ev => {
@@ -722,6 +728,8 @@ class NetBackend implements Backend {
     this.ws.send(JSON.stringify({ t: 'amend', ...msg }));
   }
   private onMsg(m: NetMsg): void {
+    // the rejoin was answered: only an 'error' BEFORE this is its refusal (below)
+    if (m.t === 'joined' || m.t === 'watching') this.rejoining = false;
     // the post-game screen: the whole payload on game over, then just the
     // rematch state as the two of you make up your minds
     if (m.t === 'gameover') {
@@ -955,6 +963,12 @@ class NetBackend implements Backend {
         <p>${esc(m.msg ?? 'another connection took over this seat')}</p>
         <button data-btn="gohome">home</button></div>`;
       return;
+    }
+    if (m.t === 'error' && this.rejoining) {
+      this.rejoining = false;
+      this.joined = false;
+      uiError = m.msg ?? 'this room is gone';
+      render(); return;
     }
     if (m.t === 'error') {
       // CR D5.4c: never say "no" about a board the player cannot see yet — spend
@@ -6351,10 +6365,13 @@ function promptHtml(): string {
     // once you dismiss it to look at the board, so it has a way back
     // a rules question is nobody's game: its board is seen from seat 0, but
     // "You win!" would be said to whoever opened the link
-    if (NET) return `<div class="promptbar"><span class="who">${s.winner === NET.seat && !asQuestion() ? 'You win! 🎉' : `${esc(won)} wins.`}</span>
-      ${postGame ? '<button data-btn="pg-reopen">Post-game summary</button>' : ''}</div>`;
-    return `<div class="promptbar"><span class="who">${esc(won)} wins!</span>
-      <button data-btn="restart">New game</button></div>`;
+    // …and ALWAYS a way home: a spectator gets no post-game screen at all, and
+    // a board with no server behind it (a replay, ?demo) had a "New game"
+    // button nothing answered (2026-11-04: every screen is leavable)
+    const home = '<button data-btn="gohome">Home</button>';
+    if (NET) return `<div class="promptbar"><span class="who">${s.winner === NET.seat && !asQuestion() && !NET.spectating ? 'You win! 🎉' : `${esc(won)} wins.`}</span>
+      ${postGame ? '<button data-btn="pg-reopen">Post-game summary</button>' : ''}${home}</div>`;
+    return `<div class="promptbar"><span class="who">${esc(won)} wins!</span>${home}</div>`;
   }
   // Playtest 2026-08-20: "when a decision is pending for the other player I
   // get the window for priority and it asks me to pass, but I can't." The
@@ -10097,6 +10114,12 @@ document.addEventListener('click', e => {
  * the share link. Nothing here repaints the BOARD — each button repaints the
  * home screen itself, navigates away, or fires a request whose reply does the
  * painting — so the caller stops when one of these claims the click. */
+/** Back to the home screen from anywhere: the page reloads on the bare path,
+ * which drops the room, the replay, the watch — whatever the query held. */
+function goHome(): void {
+  location.href = location.pathname;
+}
+
 function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
   // BL-43: the custom rules' buttons (the Draft tab's rows, the Game values sheet)
   const wasBeginner = crp.beginnerOn();
@@ -10217,7 +10240,7 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
     location.search = `?ws=1&room=${encodeURIComponent(code)}`;
     return true;
   }
-  if (b === 'gohome') { location.href = location.pathname; return true; }
+  if (b === 'gohome') { goHome(); return true; }
   if (b === 'copylink') {
     // both clipboard paths and no repaint — see copyText in ui/util.ts
     copyText(btn.dataset['link']!, document.querySelector('.sharelink'), btn);
@@ -11891,7 +11914,10 @@ function boardMenuItems(): MenuItem[] {
   // behaviours on them — and note that neither one ACTS: concede opens the
   // confirmation (concedeHtml), it never concedes.
   const bestOf3 = !!NET && !NET.spectating && NET.match?.bestOf === 3 && (NET.match.phase === 'game' || NET.match.phase === 'between');
-  return boardMenuEntries(h.state, NET ? NET.seat : null, { fixes: !!NET && amend.fixesOn(), reveals: revealCount(), bestOf3 }).map(entry => ({
+  const spectating = !!NET?.spectating;
+  // the way home, wherever there is no live seat to play (ui/inspect.ts says why)
+  const home = !NET || spectating || h.state.phase === 'gameover' || !!NET.frozen;
+  return boardMenuEntries(h.state, NET ? NET.seat : null, { fixes: !!NET && amend.fixesOn(), reveals: revealCount(), bestOf3, spectating, home }).map(entry => ({
     label: entry.label,
     confirm: entry.confirm,
     go: entry.kind === 'log'
@@ -11902,6 +11928,8 @@ function boardMenuItems(): MenuItem[] {
           ? (): void => { amend.openFix(); }
           : entry.kind === 'reveals'
             ? (): void => { openReveals(); }
+          : entry.kind === 'home'
+            ? (): void => { goHome(); }
           : entry.kind === 'concedeMatch'
             ? (): void => { concedeAsk = entry.seat; concedeMatchAsk = true; render(); }
           : (): void => { concedeAsk = entry.seat; concedeMatchAsk = false; render(); },

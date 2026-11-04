@@ -736,7 +736,8 @@ export type BoardMenuEntry =
   | { kind: 'concedeMatch'; seat: Seat; label: string; confirm: boolean }
   | { kind: 'log'; label: string; confirm: boolean }
   | { kind: 'fix'; label: string; confirm: boolean }
-  | { kind: 'reveals'; label: string; confirm: boolean };
+  | { kind: 'reveals'; label: string; confirm: boolean }
+  | { kind: 'home'; label: string; confirm: boolean };
 
 /**
  * The card-menu rule, CR D6.15 (BL-20): the two things THE BOARD offers on a
@@ -753,7 +754,8 @@ export type BoardMenuEntry =
  * `mySeat` is the seat this client drives, or null where the screen drives
  * both (so both are offered) or none at all.
  */
-export function boardMenuEntries(s: GameState, mySeat: Seat | null, opts: { fixes?: boolean; reveals?: number; bestOf3?: boolean } = {}): BoardMenuEntry[] {
+export function boardMenuEntries(s: GameState, mySeat: Seat | null,
+  opts: { fixes?: boolean; reveals?: number; bestOf3?: boolean; spectating?: boolean; home?: boolean } = {}): BoardMenuEntry[] {
   const items: BoardMenuEntry[] = [];
   // CT-124 / report #131: *"the game log would be better to hide by default.
   // Instead of always being on screen, it should be accessible by the
@@ -783,10 +785,11 @@ export function boardMenuEntries(s: GameState, mySeat: Seat | null, opts: { fixe
   // because a fix is about the game rather than a card. Only where the server
   // says this room takes fixes (`opts.fixes`: two people, a live game), and
   // only for a seat this client plays.
-  if (opts.fixes && mySeat !== null && s.phase !== 'gameover') {
+  if (opts.fixes && mySeat !== null && !opts.spectating && s.phase !== 'gameover') {
     items.push({ kind: 'fix', confirm: true, label: '🛠 Beta: propose a fix' });
   }
-  if (s.phase !== 'gameover') {
+  // a spectator has no seat to concede: the server refuses it (it is not in `conns`)
+  if (s.phase !== 'gameover' && !opts.spectating) {
     // net: you may only concede your own seat. Hotseat: one person is driving
     // both, so both are offered — and priority can be null (planning, draft),
     // which is exactly when someone might want to stop.
@@ -807,6 +810,13 @@ export function boardMenuEntries(s: GameState, mySeat: Seat | null, opts: { fixe
       items.push({ kind: 'concedeMatch', seat: mySeat, confirm: true, label: '🏳 Concede match' });
     }
   }
+  // EVERY SCREEN IS LEAVABLE (owner, 2026-11-04: "Every SINGLE page must be
+  // accessible (and leavable) without touching the URL bar"). Where this
+  // client has no live seat to play — watching, a finished game, a frozen
+  // one, no game at all (a replay that did not load, ?demo) — the table's
+  // menu goes home. A player mid-game against someone leaves by conceding,
+  // as before: walking off a live opponent is a concede.
+  if (opts.home) items.push({ kind: 'home', confirm: false, label: '🏠 Home' });
   return items;
 }
 
