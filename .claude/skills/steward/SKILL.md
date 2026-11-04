@@ -39,9 +39,13 @@ spec, every player-visible change gets an update line in `client/ui/updates.ts`.
    whole run is pinned to two CPU cores so the box stays silent; don't fight that.
 4. **Never touch `var/`** except reading the files the runner fetched, and
    `steward/vps-fetch.sh` to bring down a game file.
-5. **Never edit** `steward/`, `.claude/`, `deploy/`, `CLAUDE.md`, any
-   `package.json` or lockfile. If one of those is the problem, say so in a
-   handoff.
+5. **Never edit** `deploy/`, `CLAUDE.md`, `.claude/` outside `.claude/skills/steward/`,
+   any `package.json` or lockfile. If
+   one of those is the problem, say so in a handoff. `steward/` and
+   `.claude/skills/steward/` (your own harness) you MAY fix when the item's fault
+   is there — such a diff always goes to the owner (outcome `stage`, and the
+   policy forces it anyway), and the runner judges your work with its own copy
+   of `steward/`, never yours. Do not edit them for any other reason.
 6. **Commit your work** on the detached HEAD before you finish — the runner
    only sees commits. Commit messages say *why* (the evidence, the CR number),
    in the repo's usual style, ending with
@@ -66,9 +70,14 @@ skip, say why in your verdict (outcome `skip`):
 - it needs a decision nobody has made, AND you cannot even prepare it (rare —
   usually you *can* prepare it; that is outcome `needs-human`).
 
-Queue line kinds: `repair <branch>` (a staged branch whose gate went red — fix
-it on that branch, see §9), `resume <item>` (answered — finish it), `triage
-#a-#b` (new reports — see §10), `report #N`, `CT-N`, `BL-N`, `tidy` (§11).
+Queue line kinds: `fix-master` (master's own gate is red — §12), `repair
+<branch>` (a staged branch whose gate went red — fix it on that branch, see §9),
+`resume <item>` (answered — finish it), `triage #a-#b` (new reports — see §10),
+`report #N`, `CT-N`, `BL-N`, `tidy` (§11).
+
+**Never skip `fix-master` to work on something else**: while master is red every
+branch you make is red too, and a night of red branches is a night lost
+(2026-11-03: six items, six red gates, all for one line on master).
 
 ## 3. Prove it is real — evidence before code
 
@@ -262,6 +271,9 @@ Answer with: `steward/review.sh answer <item> "…"`
 queue line, fix the failure (your own earlier work — not by weakening a test),
 commit, and give the verdict for the *original* item again.
 
+You only see real failures here: a branch that was red only because master was
+is re-gated by the runner itself once master is green, and never queued.
+
 ## 10. `triage #a-#b` — new reports came in
 
 The runner already ran `npm --prefix client run reports`; the snapshot has rows
@@ -275,6 +287,11 @@ verdicts — a journal: a later row for the same scenario+room supersedes an
 earlier one, and a retraction is a `works` row; `264-verdict-loop` wants a CT for
 every standing non-`works` verdict) and `report-marks.snapshot.jsonl`. Handle
 those the same way. Commit the snapshots and the ledgers together.
+
+**Only a triage run commits the snapshots.** On any other item the fetched rows
+are in your tree but not yours: leave them uncommitted (`70-playtest-ledger`
+may be red in your targeted runs because of them — that is expected), and the
+runner puts the snapshot back to master's before it commits or gates anything.
 Outcome `ship` (ledger-only). The fixes come on later nights, one per run.
 
 ## 11. `tidy` — keep the queues honest (ledger-only)
@@ -283,3 +300,19 @@ Pick at most a handful of these and stop: a BL whose work has shipped but is
 still `open` (close with `evidence`); a CT whose proof is already false; a
 duplicate pair; a `touches` path that moved; a parked note whose primitive now
 exists. Never invent new work here. Outcome `ship`.
+
+## 12. `fix-master` — master's own gate is red
+
+The runner gated clean `origin/master` and it failed; the queue line names the
+failures and the log. Nothing else can go green until this is fixed, so:
+
+1. Read the log. Confirm it on clean master with the one test file (not the gate).
+2. Find what introduced it (`git log -S`, `git log -- <file>`). Fix the cause in
+   the smallest honest way — never by loosening the test that caught it, unless
+   the test itself is provably wrong (then say exactly why in the handoff).
+3. Item id `fix-master`. Outcome `ship` when the fix is ordinary code the policy
+   allows; `stage` when it is in `steward/`, `.claude/` or anything else
+   protected (rule 5) — write the handoff so the owner can approve it in one
+   read: the failure, the cause commit, the fix, the targeted test passing.
+4. If the fix is in `deploy/`, `CLAUDE.md` or a lockfile, outcome `needs-human`
+   with the exact change written out.
