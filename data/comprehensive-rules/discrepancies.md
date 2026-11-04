@@ -594,7 +594,7 @@ The owner's call on Download (2026-08-25) had a unit stolen during a battle sit 
 - owner ruling, adopted 2026-08-25: "it sits out until regroup."
 - RQ 1414660063162798082: "you gain control of it so its no longer attacking and would be able to block"
 
-**Resolution:** Settled by the designer, who outranks an owner call. The rule states his answer for a steal before blocks (the defender who took the unit may block or counterattack with it) and the owner's 2026-08-25 call for a steal after blocks (it sits out until regroup). The engine already did both; CT-424 pins them.
+**Resolution:** Settled by the designer, who outranks an owner call. The rule states his answer for a steal before blocks (the defender who took the unit may block or counterattack with it) and the owner's 2026-08-25 call for a steal after blocks (it sits out until regroup). The engine already did both; CT-424 pins them. The owner confirmed it on Discord 2026-11-04: "the stolen unit is a normal unit on their side that can block and/or counterattack."
 
 ### D-U16-14 · Sources disagree · rule 712.1a
 
