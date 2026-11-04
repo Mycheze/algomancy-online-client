@@ -11,3 +11,7 @@ export function pageScrolls(ov: { scrollW: number; scrollH: number; W: number; H
 export function regionScrolls(ov: { region?: RegionSize | null }): boolean;
 /** the viewports a `noScroll` state is held to */
 export const NO_SCROLL_VIEWPORTS: readonly string[];
+/** viewports a state is shot at only when it names them in `also` */
+export const OPT_IN_VIEWPORTS: readonly string[];
+/** does state `s` get a picture at viewport `vpName`? */
+export function shotAt(s: { viewports?: string[]; also?: string[] }, vpName: string): boolean;

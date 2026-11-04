@@ -14,7 +14,7 @@
  * tokens are random per fixture build (ui-fixture.ts says why that does not
  * matter within one build). A missing fixture is built on the spot.
  *
- * Options:  --port 5182 (5182–5185 are this tool's)   --viewports desktop,tablet,phone
+ * Options:  --port 5182 (5182–5185 are this tool's)   --viewports desktop,tablet,phone,portrait
  *           --only <substring of page__state>          --pages N (screens per state, default 3)
  *           --chrome /usr/bin/google-chrome            --verbose
  *
@@ -22,7 +22,7 @@
  * next screenfuls of a page taller than the window, scrolled, never resized),
  * plus <out>/manifest.json: every shot's url, steps, scroll size, the
  * overflow walk's findings, and whether the frame settled. A state marked
- * `noScroll` (the home screen) whose page scrolls at desktop or tablet is a
+ * `noScroll` (the home screen) whose page scrolls at desktop, tablet or portrait is a
  * problem, and the run exits 1.
  *
  * ── what makes two runs byte-identical ─────────────────────────────────────
@@ -44,7 +44,7 @@
  *
  * Touch: the client sets html.touch at install time from
  * matchMedia('(pointer: coarse)') (ui/touch.ts installTouch) and on any touch
- * pointerdown. The tablet and phone viewports turn on CDP touch emulation and
+ * pointerdown. The tablet, phone and portrait viewports turn on CDP touch emulation and
  * emulate pointer/any-pointer: coarse, hover/any-hover: none BEFORE the page
  * loads, so the class is there from the first paint; their clicks are taps
  * (Input.dispatchTouchEvent), not mouse events.
@@ -60,7 +60,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { SHOTS_NOW, buildFixture, copyFixtureVar, fixtureEnv } from './ui-fixture.ts';
-import { NO_SCROLL_VIEWPORTS, overflowJs, pageScrolls, regionScrolls } from './ui-shots-overflow.mjs';
+import { NO_SCROLL_VIEWPORTS, overflowJs, pageScrolls, regionScrolls, shotAt } from './ui-shots-overflow.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 // ws is the server's own dependency, and CommonJS
@@ -70,6 +70,11 @@ export const VIEWPORTS = {
   desktop: { w: 1440, h: 900, touch: false, mobile: false },
   tablet: { w: 1024, h: 768, touch: true, mobile: true },
   phone: { w: 390, h: 844, touch: true, mobile: true },
+  // an upright iPad (BL-65, 2026-11-04). OPT-IN: only the states that name it
+  // in `also` are shot here (the deck screens), so a full run is not a
+  // quarter longer for pages nobody has laid out for it yet
+  // (ui-shots-overflow.mjs OPT_IN_VIEWPORTS, shotAt)
+  portrait: { w: 768, h: 1024, touch: true, mobile: true },
 };
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -399,7 +404,7 @@ async function main() {
   const fixtureDir = resolve(opt('fixture', join(tmpdir(), 'algo-ui-fixture')));
   const outDir = resolve(opt('out', './ui-shots-out'));
   const port = Number(opt('port', '5182'));
-  const vps = opt('viewports', 'desktop,tablet,phone').split(',');
+  const vps = opt('viewports', 'desktop,tablet,phone,portrait').split(',');
   const only = opt('only', '');
   const pages = Number(opt('pages', '3'));
   const verbose = args.includes('--verbose');
@@ -442,7 +447,7 @@ async function main() {
       live.add(P);
       let n = 0;
       for (const s of states) {
-        if (s.viewports && !s.viewports.includes(vpName)) continue;
+        if (!shotAt(s, vpName)) continue;
         const name = `${s.page}__${s.state}__${vpName}`;
         const entry = { page: s.page, state: s.state, viewport: vpName, url: s.url, as: s.as ?? null, steps: s.steps ?? [], files: [] };
         if (s.stub) entry.stubbed = s.stub;

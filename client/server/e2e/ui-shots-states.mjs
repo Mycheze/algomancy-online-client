@@ -18,7 +18,9 @@
  *   css           a stylesheet added before the picture — a MASK, named in the
  *                 manifest; same rule
  *   viewports     only these
- *   noScroll      the page must fit the window at desktop and tablet: a
+ *   also          opt-in viewports to shoot as well (ui-shots.mjs VIEWPORTS
+ *                 `optIn`: the upright iPad, 'portrait')
+ *   noScroll      the page must fit the window at desktop, tablet and portrait: a
  *                 document taller (or wider) than the viewport is a problem
  *                 and ui-shots exits 1 (the home screen, docs/24)
  *
@@ -34,7 +36,12 @@ const pick = (sel, re) => ({ eval: `(() => { const s = document.querySelector(${
 
 /** the pages drawn in the app frame (ui/pages/frame.ts, 2026-11-04): one
  * window each, like the home — every one of their states is `noScroll` */
-export const FRAME_PAGES = ['cards', 'meta', 'cardstats', 'queue', 'rules', 'auth', 'profile', 'admin', 'waiting', 'match', 'league', 'challenge'];
+export const FRAME_PAGES = ['cards', 'meta', 'cardstats', 'queue', 'rules', 'auth', 'profile', 'admin', 'waiting', 'match', 'league', 'challenge',
+  // BL-65 (2026-11-04): the Decks page (root `deckpage`) and the builder (root `ttpage`)
+  'decks', 'builder'];
+
+/** the deck screens are laid out for an upright iPad too (BL-65) */
+const PORTRAIT = { also: ['portrait'] };
 
 export function SCENARIOS(fx) {
   const S = [];
@@ -83,22 +90,31 @@ export function SCENARIOS(fx) {
     add('profile', t, '/', { ...me, steps: [{ click: btn('acct-open-profile') }, ...(t === 'stats' ? [] : [{ click: tab('acct-tab', t) }])] });
   }
 
-  // ── my decks ──
+  // ── my decks (BL-65, 2026-11-04): the Decks page — a shelf of deck boxes and
+  //    the chosen deck's preview — and the builder, the pool over the table.
+  //    Every state is checked for its page's root class ──
   const decks = [{ click: btn('deck-openpage') }];
-  const deck = name => [...decks, { click: btn('deck-open'), text: name }];
-  add('decks', 'first', '/', { ...me, steps: decks });
-  add('decks', 'public-deck', '/', { ...me, steps: deck('Ember Rush') });
-  add('decks', 'curve', '/', { ...me, steps: [...deck('Ember Rush'), { click: tab('deck-tab', 'mana') }] });
-  add('decks', 'games', '/', { ...me, steps: [...deck('Ember Rush'), { click: tab('deck-tab', 'games') }] });
-  add('decks', 'maybeboard', '/', { ...me, steps: [...deck('Grove Keepers'), { click: tab('deck-tab', 'maybe') }] });
-  add('decks', 'card-focus', '/', { ...me, steps: [...deck('Ember Rush'), { click: btn('deck-focus') }] });
-  add('decks', 'group-cost', '/', { ...me, steps: [...deck('Ember Rush'), { click: '[data-btn="deck-group"][data-group="cost"]' }] });
-  add('decks', 'add-drawer', '/', { ...me, steps: [...deck('Tidecaller'), { click: btn('deck-adding') }] });
-  add('decks', 'settings', '/', { ...me, steps: [...deck('Ember Rush'), { click: btn('deck-settings') }], pages: 1 });
-  add('decks', 'describe', '/', { ...me, steps: [...deck('Ember Rush'), { click: btn('deck-desc-edit') }], pages: 1 });
-  add('decks', 'export', '/', { ...me, steps: [...deck('Ember Rush'), { click: btn('deck-settings') }, { click: btn('deck-export') }], pages: 1 });
-  add('decks', 'import', '/', { ...me, steps: [...decks, { click: btn('deck-import-open') }], pages: 1 });
-  add('tabletop', 'deck', '/', { ...me, steps: [...deck('Ember Rush'), { click: btn('deck-tabletop') }], pages: 1 });
+  // a box's text is its name then its count ("Ember Rush30 cards…"), so a name
+  // is anchored on both sides: "Ember Rush (Competitive)" is another deck
+  const deck = name => [...decks, { click: btn('deck-open'), text: `^${name}\\d` }];
+  const onDecks = { ...me, ...PORTRAIT, check: '.deckpage' };
+  const onBuilder = { ...me, ...PORTRAIT, check: '.ttpage', pages: 1 };
+  add('decks', 'shelf', '/', { ...onDecks, steps: decks });
+  add('decks', 'selected', '/', { ...onDecks, steps: deck('Ember Rush') });
+  add('decks', 'maybe', '/', { ...onDecks, steps: deck('Grove Keepers') });
+  add('decks', 'card-focus', '/', { ...onDecks, steps: [...deck('Ember Rush'), { click: btn('deck-focus') }] });
+  add('decks', 'import', '/', { ...onDecks, steps: [...decks, { click: btn('deck-import-open') }] });
+  add('decks', 'share', '/', { ...onDecks, steps: [...deck('Ember Rush'), { click: btn('deck-share') }] });
+  add('decks', 'export', '/', { ...onDecks, steps: [...deck('Ember Rush'), { click: btn('deck-export') }] });
+  add('decks', 'delete', '/', { ...onDecks, steps: [...deck('Ember Rush'), { click: btn('deck-delete') }] });
+  add('decks', 'games', '/', { ...onDecks, steps: [...deck('Ember Rush'), { click: btn('deck-games') }] });
+  add('decks', 'signed-out', '/', { ...PORTRAIT, check: '.deckpage', steps: decks });
+  add('builder', 'deck', `/?table=${fx.decks.pub}`, onBuilder);
+  add('builder', 'deck-info', `/?table=${fx.decks.pub}`, { ...onBuilder, steps: [{ click: btn('deck-settings') }] });
+  add('builder', 'stats', `/?table=${fx.decks.pub}`, { ...onBuilder, steps: [{ click: btn('tt-stats') }] });
+  add('builder', 'more-filters', `/?table=${fx.decks.pub}`, { ...onBuilder, steps: [{ click: btn('tt-filters') }] });
+  add('builder', 'card-menu', `/?table=${fx.decks.pub}`, { ...onBuilder, steps: [{ click: '.tttable [data-btn="tt-card"]' }], check: '.ttpop' });
+  add('builder', 'maybe', `/?table=${fx.decks.maybe}`, onBuilder);
 
   // ── the card browser ──
   add('cards', 'browse', '/?cards=1');
@@ -107,11 +123,10 @@ export function SCENARIOS(fx) {
   add('cards', 'list-view', '/?cards=1', { steps: [{ click: '[data-btn="cards-view"][data-view="list"]' }] });
   add('cards', 'text-view', '/?cards=1', { steps: [{ click: '[data-btn="cards-view"][data-view="text"]' }] });
   add('cards', 'pinned', '/?card=Soul%20Swallower');
-  add('cards', 'deckbuilding', '/', { ...me, steps: [...deck('Tidecaller'), { click: btn('deck-browse') }] });
 
   // ── metagame ──
   add('meta', 'decks', '/?meta=1', me);
-  add('meta', 'shared-deck', `/?deck=${fx.sharedDeck}`, me);
+  add('meta', 'shared-deck', `/?deck=${fx.sharedDeck}`, { ...me, ...PORTRAIT });
   add('meta', 'card-ladder', '/?cardladder=1');
   add('cardstats', 'cards', '/?cardstats=1', me);
   for (const v of ['elements', 'highlights', 'game']) {
@@ -140,8 +155,10 @@ export function SCENARIOS(fx) {
     add('challenge', `board-${t}`, '/?challenge=1', { ...me, steps: [{ click: tab('ch-tab', t) }] });
   }
   add('challenge', 'past-week', `/?challenge=1&board=${fx.challenge.past}`, me);
-  // the tabletop, not the challenge page: not in the app frame yet
-  add('challenge', 'builder', `/?table=ch:${fx.challenge.current}`, { ...me, pages: 1, noScroll: false });
+  // the challenge deck on the builder (BL-65: in the app frame now)
+  add('challenge', 'builder', `/?table=ch:${fx.challenge.current}`, { ...me, ...PORTRAIT, pages: 1, check: '.ttpage' });
+  add('challenge', 'builder-import', `/?table=ch:${fx.challenge.current}`,
+    { ...me, ...PORTRAIT, pages: 1, check: '.ttpage', steps: [{ click: btn('ch-import') }] });
 
   // ── admin ──
   add('admin', 'refused', '/?admin=1', me);
@@ -180,6 +197,10 @@ export function SCENARIOS(fx) {
   // near the end: opening the bell marks the notes read, which changes the
   // unread count every later page shows
   home('bell-open', { ...me, steps: [{ click: '[data-inbox="bell"]' }], pages: 1 });
+  // ── decks that WRITE: each makes a new (empty, so not legal) deck. After
+  //    every state that shows a deck list, so none of them shows it ──
+  add('decks', 'not-legal', '/', { ...onDecks, steps: [...decks, { click: btn('deck-new'), settle: 600 }, { click: btn('tt-close') }] });
+  add('builder', 'whats-wrong', '/', { ...onBuilder, steps: [...decks, { click: btn('deck-new'), settle: 600 }, { click: btn('tt-problems') }] });
   // last: it creates a room on the server (seeded code, so the same one each run)
   add('waiting', 'constructed', '/', { ...me, steps: [
     constructedTab,
@@ -194,10 +215,12 @@ export function SCENARIOS(fx) {
   if (fx.cc) {
     const ccDeck = [...decks, { click: btn('deck-open'), text: 'Competitive' }];
     home('cc-your-matches', me);
-    add('decks', 'cc-sideboard', '/', { ...me, steps: [...ccDeck, { click: tab('deck-tab', 'side') }] });
-    add('tabletop', 'cc-sideboard', `/?table=${fx.cc.deck}`, { ...me, pages: 1 });
+    // the deck with a sideboard: its preview (Bo3 ready, Side n), and on the builder (the rail's Sideboard n/7)
+    add('decks', 'cc-deck', '/', { ...onDecks, steps: ccDeck });
+    add('builder', 'cc-sideboard', `/?table=${fx.cc.deck}`, onBuilder);
+    // between games: the sideboarding table (the builder's table, paused here)
     add('match', 'between-paused', `/?ws=1&room=${fx.cc.room}&seat=${fx.cc.seat}&mode=constructed`,
-      { ...me, steps: [{ settle: 1500 }], check: '#app' });
+      { ...me, ...PORTRAIT, steps: [{ settle: 1500 }], check: '#app' });
     // last: it creates a match room (seeded code, so the same one each run)
     add('match', 'registration', '/', { ...me, steps: [
       constructedTab,

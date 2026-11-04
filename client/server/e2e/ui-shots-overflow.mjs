@@ -77,7 +77,7 @@ export const overflowJs = (width) => `(${overflowWalk.toString()})(${Number(widt
  * THE PAGE SCROLLS: the document is taller or wider than the window. The home
  * screen must never (client/docs/24-redesign/, principle 2: "no page
  * scrolling"; a region may scroll inside itself) — ui-shots fails a state
- * marked `noScroll` at desktop and tablet when this is true. Phones are
+ * marked `noScroll` at desktop, tablet and portrait when this is true. Phones are
  * stacked and may scroll. `ov` is what overflowWalk returned.
  * @param {{ scrollW: number, scrollH: number, W: number, H: number }} ov
  */
@@ -98,5 +98,22 @@ export function regionScrolls(ov) {
   return !!ov.region && ov.region.scrollH > ov.region.H + 1;
 }
 
-/** the viewports a `noScroll` state is held to (a phone may scroll) */
-export const NO_SCROLL_VIEWPORTS = ['desktop', 'tablet'];
+/** the viewports a `noScroll` state is held to (a phone may scroll; an
+ * upright iPad may not, BL-65) */
+export const NO_SCROLL_VIEWPORTS = ['desktop', 'tablet', 'portrait'];
+
+/** viewports a state is shot at only when it names them in `also` (the
+ * upright iPad: the deck screens are laid out for it, BL-65; the rest of the
+ * pages are not yet, and a full run is not a quarter longer for them) */
+export const OPT_IN_VIEWPORTS = ['portrait'];
+
+/**
+ * Does state `s` get a picture at viewport `vpName`? Its `viewports` (only
+ * these) wins; an opt-in viewport needs the state to name it in `also`.
+ * @param {{ viewports?: string[], also?: string[] }} s
+ * @param {string} vpName
+ */
+export function shotAt(s, vpName) {
+  if (s.viewports) return s.viewports.includes(vpName);
+  return !OPT_IN_VIEWPORTS.includes(vpName) || (s.also ?? []).includes(vpName);
+}

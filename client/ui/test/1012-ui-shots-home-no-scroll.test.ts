@@ -17,13 +17,13 @@ import { readFileSync } from 'node:fs';
 import { NO_SCROLL_VIEWPORTS, pageScrolls } from '../../server/e2e/ui-shots-overflow.mjs';
 import { SCENARIOS } from '../../server/e2e/ui-shots-states.mjs';
 
-const FX = { seasons: { running: 's1' }, challenge: { current: 'c1', past: 'c0' }, sharedDeck: 'd1', cc: { deck: 'd2', room: 'R', seat: 0 } };
+const FX = { seasons: { running: 's1' }, challenge: { current: 'c1', past: 'c0' }, sharedDeck: 'd1', decks: { pub: 'dp', unlisted: 'du', maybe: 'dm' }, cc: { deck: 'd2', room: 'R', seat: 0 } };
 
 test('1012 §1 pageScrolls: taller or wider than the window is a scroll; exactly the window is not', () => {
   assert.equal(pageScrolls({ scrollW: 1440, scrollH: 900, W: 1440, H: 900 }), false);
   assert.equal(pageScrolls({ scrollW: 1440, scrollH: 901, W: 1440, H: 900 }), true, 'one pixel taller');
   assert.equal(pageScrolls({ scrollW: 1025, scrollH: 768, W: 1024, H: 768 }), true, 'one pixel wider');
-  assert.deepEqual([...NO_SCROLL_VIEWPORTS].sort(), ['desktop', 'tablet']);
+  assert.deepEqual([...NO_SCROLL_VIEWPORTS].sort(), ['desktop', 'portrait', 'tablet'], 'the upright iPad too (BL-65)');
 });
 
 test('1012 §2 every home state is held to the window', () => {
