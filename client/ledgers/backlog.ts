@@ -1149,9 +1149,12 @@ const OPEN: Entry[] = [
     touches: [
       'client/ui/decks.ts',
       'client/ui/tabletop.ts',
-      'client/ui/binder.ts',
-      'client/ui/styles/pages/23-decks.css',
-      'client/ui/styles/pages/24-tabletop.css',
+      'client/ui/pages/decks.ts',
+      'client/ui/pages/builder.ts',
+      'client/ui/pages/table.ts',
+      'client/ui/pages/pool.ts',
+      'client/ui/styles/pages/51-decks-shelf.css',
+      'client/ui/styles/pages/52-builder.css',
     ],
     notes: 'The rooms, cards and metagame pages already draw parts of it (the deck picker, the deck strip, '
       + 'the card panel): reuse them. The account agent asked for a vertical ui-tabs variant, likely useful here.',
