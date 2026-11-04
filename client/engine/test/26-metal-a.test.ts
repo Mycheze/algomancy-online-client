@@ -954,7 +954,9 @@ test('Deformant: "sacrifice me AND another ally" is ONE payment, made in the CAS
   pass(h);                                                  // A passes → D may act
   h.do({ type: 'activateAbility', seat: D, entityId: def, abilityIndex: 0 });
   // the SOURCE half carries no choice, so it is charged first and outright…
-  assert.ok(!ent(h, def), 'the Deformant is already sacrificed');
+  // (CR 713.6e / CT-435: charged, not yet dead — it dies with the ally it is
+  // paid with, in one batch, once the cost is paid in full; it used to die here)
+  assert.ok(ent(h, def), 'the Deformant is named but waits for the rest of its cost');
   // …and the picker for "another ally" is open with NOTHING on the stack yet
   assert.equal(h.state.decision!.kind, 'targets');
   assert.equal(h.state.stack.length, 0,
@@ -962,7 +964,7 @@ test('Deformant: "sacrifice me AND another ally" is ONE payment, made in the CAS
   notOffered(h, { unit: def }, 'the source is not on its own "another ALLY" menu');
   pick(h, { unit: ally });
   assert.equal(h.state.stack.length, 1, 'only once BOTH are paid does it reach the stack');
-  assert.ok(!ent(h, ally) && ent(h, spare), 'exactly the two sacrifices, no more');
+  assert.ok(!ent(h, def) && !ent(h, ally) && ent(h, spare), 'exactly the two sacrifices, no more');
   // and there is no priority window BETWEEN cost and effect: the first thing
   // either player may do after the payment is respond to the item itself
   assert.equal(h.state.decision, null, 'no further decision between cost and effect');

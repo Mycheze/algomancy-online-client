@@ -14133,6 +14133,23 @@ export const CLOSED: TodoEntry[] = [
     status: 'done',
   },
   {
+    id: 435, area: "engine", severity: "minor",
+    cards: ["Infernal Cultivator", "Malevolent Machinations"],
+    title: "a [Sacrifice X units] cost destroys its units one at a time, so they are not one death batch; whether they should be needs a source",
+    detail: "CT-414 made the units one sacrifice instruction takes die together (Caleb: \"Sacrifices are resolved simultaneously\"). Costs were left alone: the engine's cost payer (sacrificeUnits) still destroys one unit at a time for Infernal Cultivator, Malevolent Machinations and the other multi-unit sacrifice costs. Caleb's words were about an effect, not a cost.",
+    evidence: "Pass D mop-up 2026-10-25 (zero-handoff/PM-engine.md, new defect 1).",
+    fix: "Find a source on a multi-unit sacrifice cost (designer, then RAQ, then the owner). If they die together, pay through sacrificeTogether, guard with an Ancient One among the paid units, and replay stored games.",
+    proof: null,
+    verify: "Pay a two-unit sacrifice cost with an Ancient One beside a unit with a when-I-die line among the two: count its borrowed triggers.",
+    guards: [
+      '1139-sacrifice-cost-one-batch.test.ts::CR 714.9, 713.6e / CT-435: Infernal Cultivator paid with an Ancient One and its neighbour',
+      '1139-sacrifice-cost-one-batch.test.ts::CR 706.8c, 713.6e / CT-435: a Refuse Reclaimer paid first into Malevolent Machinations',
+      '1139-sacrifice-cost-one-batch.test.ts::CR 111.7a, 713.6e / CT-435: Deformant',
+    ],
+    closed: "FIXED 2026-11-04 (steward), because a designer source settles it. A player asked (rules-questions 2025-06-02) whether they could pay Malevolent Machinations by sacrificing a Maelstrom Charger first and then the Ancient One borrowing its ability, and whether the Ancient One would lose it meanwhile. Caleb [1379132774207848589]: \"Technically it should be within the same game action so I don't think order matters\". The cost payer now names each unit as it is picked and destroys them all in one destroyBatch when the cost is paid in full (E.commitCostSacrifices): a fixed cost once settled, a variable one when X closes. That covers Infernal Cultivator, Malevolent Machinations and Deformant's \"me and another ally\". The menu and the payability check leave out the units already named (E.costSacrificePool). New rule CR 713.6e. 1139's three tests failed before; destroying the named units one at a time turns all three red. Found on the way: CT-525 (an augment's death listener on an early batch member).",
+    status: 'done',
+  },
+  {
     id: 470, area: "client", severity: "minor",
     title: "the in-game judge box always sends an empty history, so a follow-up question loses its thread",
     detail: "client/server/main.ts /api/judge posts `history: []` to bot/app.py, which already accepts a history. A follow-up such as \"So do they enter the bin?\" is answered with no context.",

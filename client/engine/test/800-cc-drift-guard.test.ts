@@ -23,6 +23,14 @@
  * NEVER re-bless this golden to make it pass. A red here means an existing
  * game now plays differently; that is a rules change for every saved game and
  * needs its own round.
+ *
+ * Re-blessed ONCE, ONE entry, for a deliberate rules change (2026-11-04, CT-435,
+ * CR 713.6e, staged for the owner): `shared:6` pays Deformant's "sacrifice me
+ * and another ally" at its step 301, and the Deformant now stays in play
+ * while the ally is picked (the two die together). Measured before the
+ * re-bless: the walk picks the same 500 actions and ends in the same state
+ * (log aside) on both engines; marks 0–29 are unchanged and every other run
+ * here, reference and fuzz, still matches the pre-CC golden.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

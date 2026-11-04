@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:af9be9f7c5afc315",
+ "generated_from": "sha256:f4ec0e8b198493a7",
  "rules": [
   {
    "num": "100.1",
@@ -25486,6 +25486,31 @@
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
+  },
+  {
+   "num": "713.6e",
+   "key": "effects.state.together.sacrifice-costs",
+   "title": null,
+   "section": "713",
+   "sectionTitle": "State Checks",
+   "chapterTitle": "7. Spells, Abilities and Effects",
+   "parent": "713.6",
+   "text": "The units one cost makes a player sacrifice (\"Sacrifice X units\", \"sacrifice me and another ally\") die together in one batch once the cost is paid in full; the order they are chosen in does not matter (706.8c, 714.9). No player can act between the choices. See rules 111.2, 706.8c, 714.9.",
+   "see": [
+    "706.8c",
+    "714.9"
+   ],
+   "examples": [
+    "Infernal Cultivator's cost is paid with an Ancient One and the unit beside it that says \"When I die, draw a card\". The two die together, so the Ancient One still has that ability as it dies, and both trigger.",
+    "Malevolent Machinations is played by sacrificing a Refuse Reclaimer and then a Good Whale. The Reclaimer triggers for the Whale, because the two die together."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": null
   },
   {
    "num": "713.7",

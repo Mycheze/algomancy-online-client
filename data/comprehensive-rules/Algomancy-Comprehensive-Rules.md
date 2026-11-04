@@ -7600,6 +7600,14 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 1 gate test file · Printed: card: Perish · Designer: RQ 1442175942838718518; RQ 1442177903952396430 · Engine: destroyBatch · Tests: 683-sacrifices-die-together.test.ts · Example tests: 683-sacrifices-die-together.test.ts::CR 706.8c, 713.6 / CT-414: a Refuse Reclaimer sacrificed first to Perish still triggers on every other unit Perish takes (the designer example), 683-sacrifices-die-together.test.ts::CR 706.8c, 714.9 / CT-414: Maw of Damnation sacrifices an Ancient One with its neighbour in one batch, so it borrows that neighbour when-I-die line · Key: effects.state.together.sacrifices</sub>
 
+<a id="r713.6e"></a>**713.6e** The units one cost makes a player sacrifice ("Sacrifice X units", "sacrifice me and another ally") die together in one batch once the cost is paid in full; the order they are chosen in does not matter (706.8c, 714.9). No player can act between the choices. See rules 111.2, 706.8c, 714.9. See rules 706.8c, 714.9.
+
+> *Example: Infernal Cultivator's cost is paid with an Ancient One and the unit beside it that says "When I die, draw a card". The two die together, so the Ancient One still has that ability as it dies, and both trigger.*
+
+> *Example: Malevolent Machinations is played by sacrificing a Refuse Reclaimer and then a Good Whale. The Reclaimer triggers for the Whale, because the two die together.*
+
+<sub>Basis: Mixed · Verified: not verified; 1 gate test file · Printed: card: Malevolent Machinations · Designer: RQ 1379132774207848589 · Engine: commitCostSacrifices, destroyBatch · Tests: 1139-sacrifice-cost-one-batch.test.ts · Example tests: 1139-sacrifice-cost-one-batch.test.ts::CR 714.9, 713.6e / CT-435: Infernal Cultivator paid with an Ancient One and its neighbour — the Ancient One still borrows that neighbour's when-I-die line as it dies, 1139-sacrifice-cost-one-batch.test.ts::CR 706.8c, 713.6e / CT-435: a Refuse Reclaimer paid first into Malevolent Machinations still hears the unit paid after it · Key: effects.state.together.sacrifice-costs</sub>
+
 <a id="r713.7"></a>**713.7.** A unit sent out to counterattack, which does not exist until round 1 ends, is not checked for death while it is away. It is checked as it comes back. See rules 505.3b, 610.
 
 > *Example: Prickly Protector, alive only through its own static, survives being declared as a counterattacker.*
@@ -10852,7 +10860,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1865 numbered rules.
+1866 numbered rules.
 
 | basis | rules |
 |---|---|
@@ -10860,7 +10868,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 | Designer | 202 |
 | Owner call | 677 |
 | Engine only | 47 |
-| Mixed | 486 |
+| Mixed | 487 |
 
 ### Verification
 
@@ -10871,7 +10879,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 7 |
-| not verified | 1 |
+| not verified | 2 |
 | text changed | 0 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
@@ -11487,7 +11495,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1870 rules and 99 sections.
+- New: 1871 rules and 99 sections.
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)
 - Removed: 901.8 `formats.constructed.single-card`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)
 - Removed: 901.8a `formats.constructed.single-card.copies`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)

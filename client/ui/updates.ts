@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-04', kind: 'fix', text: 'Units sacrificed together to pay one cost (Infernal Cultivator, Malevolent Machinations, Deformant) now die at the same moment, so each one sees the others die and the order you pick them in no longer matters.' },
   { date: '2026-11-04', kind: 'fix', text: 'On the deck table, the bar between the card pool and your piles can always be dragged back down, even after shrinking the pool all the way.' },
   { date: '2026-11-04', kind: 'new', text: 'Decks are rebuilt: your decks sit on a shelf you pick from, and building is one table — every card above, your piles below, the sideboard and maybe beside them. Drag or tap, with undo and redo.' },
   { date: '2026-11-04', kind: 'fix', text: 'You can always get back home: leaving a test game shows its end screen right away, and a finished game, a game you are watching, or a room that closed while you were away all have a Home button.' },
