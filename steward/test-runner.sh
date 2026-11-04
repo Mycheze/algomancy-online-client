@@ -15,6 +15,7 @@
 #   git push benshomeserver.local:steward-test-origin.git <branch>:master       (from the laptop)
 #   STEWARD_TEST_REMOTE=~/steward-test-origin.git STEWARD_TEST_ROOT=~/steward-test-local steward/test-runner.sh
 set -uo pipefail
+export PATH="$HOME/.local/bin:$HOME/.local/node/bin:$PATH"   # the runner sets this itself; the harness's own node calls need it too
 MAIN="$HOME/algomancy-steward/repo"
 T="${STEWARD_TEST_ROOT:-$HOME/steward-test}"
 pass=0; fail=0
@@ -125,7 +126,7 @@ if run regate; then
   f=$(ls "$T/state/redgate/"*.json 2>/dev/null | head -1)
   [ -n "$f" ] && [ "$(jq -r .masterRed "$f")" = true ] && ok "a branch red while master was red is marked masterRed" || bad "redgate: $(cat $f 2>/dev/null)"
   jq -cn --arg s "$sha" '{sha:$s,rc:0,log:"(test)",failures:[]}' > "$T/state/master-gate.json"
-  STEWARD_STATE="$T/state" node "$T/repo/steward/queue.mjs" 2>/dev/null | grep -q '^repair ' && bad "a masterRed branch was queued for a Claude repair" || ok "…and is not queued for a Claude repair, even on a green master"
+  (cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs) | grep -q '^repair ' && bad "a masterRed branch was queued for a Claude repair" || ok "…and is not queued for a Claude repair, even on a green master"
   tick skip >/dev/null
   grep '"note":"re-gated green once master was"' "$T/state/journal.jsonl" | grep -q '"outcome":"dry-shipped"' && [ -z "$(ls "$T/state/redgate/" 2>/dev/null)" ] \
     && ok "once master is green it is re-gated without Claude → dry-shipped" || bad "no re-gate row: $(tail -3 "$T/state/journal.jsonl")"
