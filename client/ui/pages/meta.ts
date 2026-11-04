@@ -12,9 +12,8 @@
  * aggregate; decide for itself who may be seen) is in meta.ts's header.
  */
 import * as acct from '../account.ts';
-import { artHtml, cardPanelHtml, deckStripHtml } from '../cardpanel.ts';
-import { cardLinker, clipDescription, descSummary } from '../cardlinks.ts';
-import { mdToHtml } from '../markdown.ts';
+import { artHtml, cardPanelHtml } from '../cardpanel.ts';
+import { descSummary } from '../cardlinks.ts';
 import { rowFor } from '../cardindex.ts';
 import { analyzeDeck, deckElements } from '../deckstats.ts';
 import { GROUPINGS, deckSections, needsCountBadge, stackLayers } from '../decklayout.ts';
@@ -26,7 +25,8 @@ import { artUrl } from '../assets.ts';
 import type { CardStanding, MetaState, PublicDeck } from '../meta.ts';
 import { cardStatsHtml, cardStatsView, paintCardStats, type CardStatsView } from './cardstats.ts';
 import type { CardStatsState } from '../cardstats.ts';
-import { segmented } from '../components/index.ts';
+import { button, segmented } from '../components/index.ts';
+import { deckPreviewHtml, deckPreviewView } from './decks.ts';
 import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
 
 type Sort = MetaState['sort'];
@@ -329,36 +329,32 @@ function deckHtml(v: MetaView): string {
     </div>`, { title: 'Deck' });
   }
   const d = one;
-  const a = analyzeDeck(d.cards);
-  const desc = d.description ?? '';
-  const { text: shownDesc, clipped } = v.descOpen ? { text: desc, clipped: false } : clipDescription(desc, 400);
   const link = v.link;
   const by = `by ${esc(d.owner.username)}${
     d.copiedFrom ? ` · after ${esc(d.copiedFrom.owner)}’s ${esc(d.copiedFrom.name)}` : ''}${
     d.visibility === 'unlisted' ? ' · unlisted — only people with the link see this' : ''}`;
-  // two columns that each scroll: what the deck IS on the left (who made it,
-  // its record, its primer, how to take it), the cards on the right
-  return metaFrame(v, 'metadeck', `
-    ${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
-    ${deckStripHtml(d.name, a, { lead: 'Deck' })}
-    <div class="metadeckwork">
-      <aside class="metadeckinfo" data-scroll="meta-deck-info">
+  // the Decks page's preview panel, read-only (BL-65): its own buttons are the
+  // record (with the floor's rule, recordLine), Copy to my decks, the link and
+  // the export. The record is left out of the preview's meta line: it is here.
+  const preview = deckPreviewView({ ...d, record: undefined }, { descOpen: v.descOpen, focusBtn: 'meta-focus', descBtn: 'meta-desc-toggle' });
+  const actions = `<div class="metadeckacts">
         <div class="deckrecline">${recordLine(d, v.minGames)}</div>
-        ${desc.trim() ? `<div class="deckdesc">
-          <div class="deckdescbody">${mdToHtml(shownDesc, { inline: cardLinker({ focusBtn: 'meta-focus' }) })}</div>
-          ${clipped || v.descOpen
-            ? `<button class="cblink" data-btn="meta-desc-toggle">${v.descOpen ? 'show less' : 'read more'}</button>`
-            : ''}</div>` : ''}
         <div class="dkaddrow">
-          ${v.signedIn && !v.mine
-            ? '<button class="primary" data-btn="meta-take">Copy this deck to my collection</button>'
-            : ''}
+          ${v.signedIn && !v.mine ? button({ label: 'Copy to my decks', variant: 'primary', dataBtn: 'meta-take' }) : ''}
           ${v.mine ? '<span class="hint">Yours — edit it on your decks page.</span>' : ''}
         </div>
         <div class="sharebar">Send somebody this link:
           <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
           <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>
         ${v.exporting ? exportHtml(v) : '<button class="dkadd" data-btn="meta-export">Export this deck</button>'}
+      </div>`;
+  // two columns that each scroll: what the deck IS on the left (the preview),
+  // the cards on the right
+  return metaFrame(v, 'metadeck', `
+    ${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
+    <div class="metadeckwork">
+      <aside class="metadeckinfo" data-scroll="meta-deck-info">
+        ${deckPreviewHtml(preview, { readOnly: true, actionsHtml: actions })}
       </aside>
       <div class="dkwork metadeckcards">
         <div class="dkworkmain" data-scroll="meta-deck-cards">${deckGrid(d, v.deckGroup, v.statsOpen)}</div>

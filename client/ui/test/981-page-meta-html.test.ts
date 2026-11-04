@@ -5,7 +5,8 @@
  *
  * §1 the published-deck list: loading, empty, filtered to nothing, typical, an error
  * §2 the card duel ladder: ranked, unranked under the divider, the filter
- * §3 one shared deck: not found, typical, yours, someone else's while signed in
+ * §3 one shared deck: not found, typical, yours, someone else's while signed in — the left side is the Decks
+ *    page's preview panel, read-only (BL-65), with Copy to my decks, the link and the export as its actions
  * §4 the shared deck's export panel, stats and pinned card
  * §5 text is escaped: names, builders, descriptions, messages, the filter box
  * §6 the tab row marks the view, and the card stats view draws the stats page
@@ -85,7 +86,16 @@ test('981 §3 one shared deck: not found, typical, yours, another\'s', () => {
     assert.ok(btns(html).has(b), `${b} is drawn`);
   }
   assert.doesNotMatch(html, /meta-take/, 'signed out: nothing to copy into');
-  assert.match(metaHtml(view({ view: 'deck', one: d, signedIn: true })), /<button class="primary" data-btn="meta-take">/);
+  assert.match(metaHtml(view({ view: 'deck', one: d, signedIn: true })), /<button class="ui-button ui-button--primary" data-btn="meta-take" type="button">Copy to my decks<\/button>/);
+  // the left side is the Decks page's preview, read-only: no Edit, no Play, no icon row, no Games
+  const info = html.slice(html.indexOf('<aside class="metadeckinfo"'), html.indexOf('<div class="dkwork metadeckcards"'));
+  assert.match(info, /<section class="dkprev" aria-label="Deck 3">/, 'the preview panel');
+  assert.doesNotMatch(info, /data-btn="deck-(?:tabletop|play|duplicate|share|export|delete|games)"/, 'read-only');
+  assert.match(info, /class="dklrow" type="button" data-btn="meta-focus"/, 'its card rows pin a card on this page');
+  assert.match(info, /class="deckrecline"/, 'the record, with the floor’s rule');
+  assert.doesNotMatch(info, /class="dkprevmeta">[^<]*\d+W–\d+L/, 'and only once (not again in the preview’s meta line)');
+  assert.match(info, /data-btn="meta-desc-toggle"|<strong>bold<\/strong>/);
+  assert.match(html.slice(html.indexOf('<div class="dkwork metadeckcards"')), /class="dkgrid"/, 'the card column stays on the right');
   const yours = metaHtml(view({ view: 'deck', one: d, signedIn: true, mine: true }));
   assert.doesNotMatch(yours, /meta-take/);
   assert.match(yours, /Yours — edit it on your decks page\./);

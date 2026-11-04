@@ -87,6 +87,11 @@
 .metadeckinfo .sharebar .sharelink { width: 100%; min-width: 0; }
 .metadeckinfo .sharebar button { align-self: flex-start; }
 .metadeckinfo .dkadd { align-self: flex-start; }
+/* the left side is the Decks page's preview, read-only (BL-65): it scrolls as one column here, its own
+   actions (record, Copy to my decks, link, export) under the head */
+.metadeckinfo > .dkprev { flex: none; overflow: visible; }
+.metadeckinfo .dkprevlist { overflow: visible; columns: 1; }
+.metadeckacts { flex: none; display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-5) var(--space-6) 0; }
 .metadeck .metadeckcards { min-height: 0; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
 .metadeck .metadeckcards > .dkworkmain { min-height: 0; overflow-y: auto; }
 .metadeckgone { margin: auto; text-align: center; }
