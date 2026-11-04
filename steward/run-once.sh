@@ -66,7 +66,10 @@ journal() { # journal item outcome [key=value …]   (values are strings; json= 
   jq -cn "${args[@]}" "$expr" >> "$STATE/journal.jsonl"
 }
 
+# the owner hears through the #steward forum's night log (steward/discord.mjs); the webhook is the fallback
+discord() { STEWARD_REPO="$REPO" STEWARD_STATE="$STATE" node "$BIN/discord.mjs" "$@"; }
 notify() {
+  discord log "🛠 $*" 2>>"$LOGS/runner.log" && return 0
   [ -n "${STEWARD_WEBHOOK:-}" ] || return 0
   jq -cn --arg c "🛠 steward: $*" '{content:$c[0:1900]}' \
     | curl -fsS -m 15 -H 'content-type: application/json' -d @- "$STEWARD_WEBHOOK" >/dev/null || true
@@ -93,6 +96,46 @@ in_eve_or_window() { in_hours $(( (10#${STEWARD_WINDOW%-*} + 23) % 24 )) $((10#$
 # itself is extracted from origin/master by the unit's ExecStartPre.)
 trust() {
   g show origin/master:steward/policy.mjs > "$BIN/policy.mjs" || { log "cannot extract policy.mjs from origin/master"; exit 1; }
+  # the owner's channel: it decides what an owner message means, so it is judged code too
+  g show origin/master:steward/discord.mjs > "$BIN/discord.mjs" 2>/dev/null || rm -f "$BIN/discord.mjs"
+}
+
+# ── the owner's replies on Discord → the same actions as steward/review.sh ──
+discord_sync() {
+  [ -f "$BIN/discord.mjs" ] || return 0
+  local acts verb item why approved=0
+  acts=$(discord sync 2>>"$LOGS/runner.log") || log "discord sync failed (see the lines above)"
+  [ -n "$acts" ] || return 0
+  while read -r verb item why; do
+    case "$verb" in
+      approve)
+        if [ "$STEWARD_MODE" = live ]; then
+          g push -q origin "refs/remotes/origin/steward/$item:refs/heads/steward-approved/$item" ":refs/heads/steward/$item" && approved=1
+        else log "DRY: would approve $item"; fi
+        journal "$item" approved by=owner via=discord; log "approved on Discord: $item" ;;
+      reject|retry)
+        if [ "$STEWARD_MODE" = live ] && g rev-parse -q --verify "origin/steward/$item" >/dev/null; then
+          g push -q origin "refs/remotes/origin/steward/$item:refs/archive/steward/$item" ":refs/heads/steward/$item"
+        fi
+        mv -f "$STATE/handoffs/$item.md" "$STATE/handoffs/done/" 2>/dev/null; rm -f "$STATE/redgate/$item.json"
+        journal "$item" "$([ "$verb" = retry ] && echo rejected-retry || echo rejected)" note="$why" by=owner via=discord
+        log "$verb on Discord: $item — $why" ;;
+      pause)  touch "$STATE/paused"; log "paused from Discord" ;;
+      resume) rm -f "$STATE/paused" "$STATE/backoff-until"; log "resumed from Discord" ;;
+    esac
+  done <<<"$acts"
+  [ $approved = 1 ] && g fetch -q --prune origin '+refs/heads/*:refs/remotes/origin/*'
+  return 0
+}
+
+# a staged branch the owner must look at always has a handoff — it is what the
+# Discord post (and review.sh status) is made from
+ensure_handoff() { # item needs [detail]
+  local f="$STATE/handoffs/$(slug "$1").md"
+  [ -f "$f" ] && return 0
+  local title; title=$(jq -r '.title // empty' "$STATE/outcome.json" 2>/dev/null)
+  printf '# %s — %s\n\n**Needs from you:** %s\n\n## What I found\n%s\n\n## What I changed\nBranch `steward/%s`.%s\n' \
+    "$1" "${title:-staged branch}" "$2" "$(jq -r '.summary // "(no write-up — see the branch)"' "$STATE/outcome.json" 2>/dev/null)" "$(slug "$1")" "${3:+ $3}" > "$f"
 }
 policy() { (cd "$REPO" && node "$BIN/policy.mjs" "$@"); }
 
@@ -184,6 +227,8 @@ regate_master_red() {
       mv -f "$STATE/handoffs/$(slug "$item").md" "$STATE/handoffs/done/" 2>/dev/null
     else
       branch=$(stage_head "$item"); final=staged
+      rm -f "$STATE/outcome.json"   # ensure_handoff must not borrow tonight's verdict for an older branch
+      ensure_handoff "$item" "approve the branch (or reject it with a reason)" "Re-gated green once master was. $(jq -r '.reasons|join("; ")' <<<"$pol")"
     fi
     [ "$STEWARD_MODE" != live ] && final="dry-$final"
     journal "$(slug "$item")" "$final" branch="$branch" gate="$glog" policy="$(jq -r '.reasons|join("; ")' <<<"$pol")" sha="$(g rev-parse --short HEAD)" note="re-gated green once master was"
@@ -459,6 +504,12 @@ EOF
   # a resumed item has used its answer
   [ -f "$STATE/answers/$(slug "$item").md" ] && mv -f "$STATE/answers/$(slug "$item").md" "$STATE/answers/done/"
 
+  case "$final" in
+    staged) ensure_handoff "$item" "approve the branch (or reject it with a reason)" "${reasons:+Not shipped on its own because: $reasons.}" ;;
+    gate-red-twice) ensure_handoff "$item" "the gate went red twice — look at the branch, or reject it" "Gate log: $glog" ;;
+    needs-human) ensure_handoff "$item" "a decision (the summary below says which)" ;;
+    shipped|already-fixed|not-a-bug) mv -f "$STATE/handoffs/$(slug "$item").md" "$STATE/handoffs/done/" 2>/dev/null ;;
+  esac
   [ "$STEWARD_MODE" != live ] && final="dry-$final"
   journal "$(slug "$item")" "$final" title="$title" summary="$summary" branch="$branch" gate="$glog" policy="$reasons" \
     sha="$(g rev-parse --short HEAD)" run="$rlog" minutes="$(( ( $(date +%s) - START ) / 60 ))"
@@ -484,6 +535,7 @@ main() {
   [ -d "$REPO/.git" ] || { log "no clone at $REPO"; exit 1; }
   g fetch -q --prune origin '+refs/heads/*:refs/remotes/origin/*' || { log "git fetch failed"; exit 0; }
   trust
+  discord_sync
 
   try_deploy
   [ -f "$STATE/paused" ] && { log "paused ($STATE/paused)"; exit 0; }
@@ -495,12 +547,18 @@ main() {
     master_gate && regate_master_red
     try_deploy
   fi
-  in_window || exit 0
+  if ! in_window; then
+    # the morning summary, once a day, after the window closes (discord.mjs keeps the day)
+    in_hours $((10#${STEWARD_WINDOW#*-})) $(( (10#${STEWARD_WINDOW%-*} + 23) % 24 )) && [ -f "$BIN/discord.mjs" ] && { discord summary 2>>"$LOGS/runner.log" || true; }
+    discord_sync
+    exit 0
+  fi
   if [ -f "$STATE/backoff-until" ] && [ "$(date +%s)" -lt "$(cat "$STATE/backoff-until")" ]; then exit 0; fi
   # no new item in the last hour of the window: a cut-off run wastes the night
   [ "$(window_left)" -lt 3600 ] && exit 0
   work_one
   try_deploy
+  discord_sync
 }
 
 main "$@"

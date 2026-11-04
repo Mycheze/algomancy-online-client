@@ -77,7 +77,31 @@ owner say "obviously", it is not a question. A real question arrives in the
 handoff with both readings, their quoted evidence, and a Discord-ready
 version to paste.
 
-## The owner's morning
+## The owner's morning — on Discord
+
+The owner should not have to know a command (2026-11-04). Everything that
+waits on him arrives as a post in **#steward**, a private forum in Ben's
+Personal Server that only he and the bot can see (`steward/discord.mjs`):
+
+- **one post per item** — what is needed, the short version, the full write-up
+  attached, and the "Discord-ready" question as a message of its own, so asking
+  the wider server is a forward;
+- **📓 night log** — every ship, stage, deploy and red as it happens, and a
+  summary of the night after the window closes.
+
+He replies in the post: **approve** · **reject** <why> · **retry** <why> · or
+just answers in words, with screenshots if he likes (they are saved beside the
+answer for the worker to look at). **pause** / **resume** in the night log.
+Only his messages count (`STEWARD_DISCORD_OWNER`); a ✅ means it was taken.
+The runner reads the replies at the start of every tick, any hour, so an
+approval starts landing within minutes. `node steward/test-discord.mjs` runs
+the whole loop against a fake Discord.
+
+Config on the box (`~/.config/algomancy-steward/env`): `STEWARD_DISCORD_TOKEN`
+(the bot's token), `STEWARD_DISCORD_FORUM` (the forum's channel id),
+`STEWARD_DISCORD_OWNER` (his user id). Unset = the old webhook, if any.
+
+### The same from a terminal
 
 ```bash
 steward/review.sh                 # what happened, what is waiting
