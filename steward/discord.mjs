@@ -3,8 +3,9 @@
  * answers it, without a terminal (owner, 2026-11-04: "I can't just know these
  * things"; he checks Discord every morning anyway).
  *
- * A PRIVATE forum (#steward in Ben's Personal Server, only Ben and the bot can
- * see it): one post per item waiting on the owner, and one "night log" post.
+ * #steward in Ben's Personal Server: one thread per item waiting on the owner,
+ * and one "night log" thread. In a text channel each is a PRIVATE thread with
+ * only the owner added (hidden even if the channel is not); in a forum, a post.
  * The owner replies in a post:
  *
  *   approve            the runner lands the branch (rebase, full gate, master, deploy)
@@ -24,7 +25,7 @@
  *   node steward/discord.mjs summary       the morning summary of the night (the runner calls it once a day)
  *   node steward/discord.mjs selftest      the parsing, offline
  *
- * Env: STEWARD_DISCORD_TOKEN, STEWARD_DISCORD_FORUM (the forum channel id),
+ * Env: STEWARD_DISCORD_TOKEN, STEWARD_DISCORD_FORUM (the channel id: text or forum),
  * STEWARD_DISCORD_OWNER (his user id); STEWARD_STATE; STEWARD_REPO (the clone).
  * Unconfigured = a quiet no-op, exit 0. A Discord failure never fails a tick.
  */
@@ -140,20 +141,29 @@ function firstMessage(slug, md) {
 }
 const mdFile = (slug, md) => [{ name: `${slug}.md`, data: md }];
 
+/** a new thread holding `content` (+ files) as its first message; returns its id */
+async function openThread(db, name, content, files) {
+  if (db.channelType === undefined) db.channelType = (await api('GET', `/channels/${FORUM}`)).type;
+  const message = { content, allowed_mentions: { parse: [] } };
+  if (db.channelType === 15) return (await api('POST', `/channels/${FORUM}/threads`, { name, message }, files)).id;
+  // a text channel: a PRIVATE thread (type 12), the owner added — only he (and server
+  // moderators) can see it, even when the channel itself is not private
+  const t = await api('POST', `/channels/${FORUM}/threads`, { name, type: 12, invitable: false, auto_archive_duration: 10080 });
+  await api('PUT', `/channels/${t.id}/thread-members/${OWNER}`);
+  await api('POST', `/channels/${t.id}/messages`, message, files);
+  return t.id;
+}
+
 async function ensureLog(db) {
   if (db.log) return db.log;
-  const t = await api('POST', `/channels/${FORUM}/threads`, {
-    name: '📓 night log',
-    message: { content: 'What the steward did, as it happens, and a summary every morning.\n-# Type **pause** or **resume** here to stop or restart the worker.' },
-  });
+  const t = { id: await openThread(db, '📓 night log',
+    'What the steward did, as it happens, and a summary every morning.\n-# Type **pause** or **resume** here to stop or restart the worker.') };
   db.log = { thread: t.id, lastSeen: t.id }; save(db);
   return db.log;
 }
 
 async function postItem(db, slug, md) {
-  const t = await api('POST', `/channels/${FORUM}/threads`,
-    { name: clip(`${slug} — ${titleOf(md, slug).replace(/^\S+\s+—\s+/, '')}`, 100), message: { content: firstMessage(slug, md), allowed_mentions: { parse: [] } } },
-    mdFile(slug, md));
+  const t = { id: await openThread(db, clip(`${slug} — ${titleOf(md, slug).replace(/^\S+\s+—\s+/, '')}`, 100), firstMessage(slug, md), mdFile(slug, md)) };
   const ready = discordReadyOf(md);
   if (ready) await say(t.id, `**Discord-ready** — forward this message to ask the server:\n\n${ready}`);
   db.items[slug] = { thread: t.id, hash: hash(md), lastSeen: t.id, closed: false };

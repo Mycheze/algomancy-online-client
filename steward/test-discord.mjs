@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* steward/discord.mjs against a FAKE Discord — the owner's whole reply loop,
- * offline, in a second:   node steward/test-discord.mjs
+ * offline, in a second:   node steward/test-discord.mjs   (a text channel; `… 15` = a forum)
  *
  * What it proves: a handoff becomes a post (and its Discord-ready block a
  * forwardable message of its own); the owner's "approve" becomes exactly one
@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OWNER = '111', STRANGER = '222', BOT = '999', FORUM = '500';
+const KIND = Number(process.argv[2] ?? 0);   // 0 = a text channel (private threads), 15 = a forum
 let next = 1000n; const id = () => String(next++);
 const threads = new Map(); // id → { name, archived, msgs: [{id, author, content, attachments, files}] }
 const PNG = Buffer.from('89504e470d0a1a0a', 'hex');
@@ -39,10 +40,14 @@ const server = createServer(async (req, res) => {
   const json = (o, code = 200) => { res.writeHead(code, { 'content-type': 'application/json' }); res.end(JSON.stringify(o)); };
   let m;
   if (p === '/files/shot.png') { res.writeHead(200); return res.end(PNG); }
+  if (req.method === 'GET' && p === `/channels/${FORUM}`) return json({ id: FORUM, type: KIND });
   if (req.method === 'POST' && (m = /^\/channels\/(\d+)\/threads$/.exec(p)) && m[1] === FORUM) {
-    const t = id(); threads.set(t, { name: body.name, archived: false, msgs: [{ id: t, author: { id: BOT, bot: true }, content: body.message.content, files: body.__files || [] }] });
+    const t = id();
+    if (KIND === 15) threads.set(t, { name: body.name, archived: false, members: [], msgs: [{ id: t, author: { id: BOT, bot: true }, content: body.message.content, files: body.__files || [] }] });
+    else { if (body.type !== 12) return json({ message: 'a text-channel thread must be private (type 12)' }, 400); threads.set(t, { name: body.name, archived: false, members: [], msgs: [] }); }
     return json({ id: t });
   }
+  if (req.method === 'PUT' && (m = /^\/channels\/(\d+)\/thread-members\/(\d+)$/.exec(p))) { threads.get(m[1]).members.push(m[2]); res.writeHead(204); return res.end(); }
   if (req.method === 'POST' && (m = /^\/channels\/(\d+)\/messages$/.exec(p))) {
     const t = threads.get(m[1]); const msg = { id: id(), author: { id: BOT, bot: true }, content: body.content, files: body.__files || [] }; t.msgs.push(msg); return json(msg);
   }
@@ -79,6 +84,7 @@ let fail = 0; const ok = (c, what) => { console.log(`${c ? '✓' : '✗'} ${what
 try {
   ok((await run('sync')) === '' && threads.size === 2, 'two handoffs → two posts, no actions');
   const t1 = db().items['CT-1'].thread, t2 = db().items['CT-2'].thread;
+  if (KIND === 0) ok([...threads.values()].every(t => t.members.includes(OWNER)), 'text channel: every thread is private with the owner added');
   ok(/approve/.test(threads.get(t1).msgs[0].content) && threads.get(t1).msgs[0].files.includes('CT-1.md'), 'a branch post says how to approve and carries the write-up');
   ok(!/\*\*approve\*\*/.test(threads.get(t2).msgs[0].content), 'a question with no branch does not offer approve');
   ok(threads.get(t2).msgs[1]?.content.includes('Does X do Y?') && !threads.get(t2).msgs[1].content.includes('> '), 'the Discord-ready question is its own forwardable message, unquoted');
