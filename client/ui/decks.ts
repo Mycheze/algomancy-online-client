@@ -478,7 +478,7 @@ let pendingTable: string | null = null;
  * deck, which is why the host is only ever made by `tabletopHostFor`, which
  * opens this one first.
  */
-function tabletopHost(id: string): tt.TableHost & { note?: () => string | null } {
+function tabletopHost(id: string): tt.TableHost {
   const deck = (): DeckView | null => decks?.find(d => d.id === id) ?? null;
   return {
     kind: 'deck',

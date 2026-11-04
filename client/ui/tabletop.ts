@@ -138,6 +138,9 @@ export interface TableHost {
   titleBtn?: string;
   /** shown, not editable: no drag, no card menu, no pool */
   readOnly?: boolean;
+  /** the host's own word for the note row (an import's answer), shown when
+   * the table has none of its own (a refusal, "Tap where it goes.") */
+  note?(): string | null;
 }
 
 /** the toolbar's count pill (TableHost.pill) */
@@ -669,7 +672,7 @@ function viewOf(h: TableHost): Omit<BuilderView, 'chrome'> {
     canUndo: canUndo(hist, h.key),
     canRedo: canRedo(hist, h.key),
     stats: deck,
-    note: note ?? (armed && c ? 'Tap where it goes.' : null),
+    note: note ?? (armed && c ? 'Tap where it goes.' : null) ?? h.note?.() ?? null,
     pool: poolView(h),
     split: readSplit(),
     head: { label: deck ? 'Main deck' : 'Scratch table', count: piles.reduce((n, p) => n + p.cards.length, 0), tools: !ro },

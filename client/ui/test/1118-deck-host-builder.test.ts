@@ -7,6 +7,7 @@
  *      Esc closes the sheet
  *   §3 Back lands on the Decks page, on that deck
  *   §4 + New deck and a successful Import open the builder straight away, the import with its note
+ *      in the builder's note row
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -125,6 +126,8 @@ test('§4 + New deck and Import open the builder straight away', async () => {
   html = ui.html();
   assert.match(html, /class="[^"]*\bttpage"/, 'the import opens on the table');
   assert.match(html, /tttitlebtn" data-btn="deck-settings"[^>]*>Imported /);
-  const host = dk.tabletopHostFor('dImp') as { note?: () => string | null };
+  assert.match(html, /<div class="ttnote" role="status">Imported 28 cards; 2 short of 30\.<\/div>/,
+    'the import\'s note is in the builder\'s note row');
+  const host = dk.tabletopHostFor('dImp')!;
   assert.equal(host.note?.(), 'Imported 28 cards; 2 short of 30.', 'its note is the host\'s, for the builder\'s note row');
 });
