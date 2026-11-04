@@ -91,3 +91,5 @@
 @import "pages/48-legal.css";
 /* the app frame every page after the home is drawn in (ui/pages/frame.ts, 2026-11-04) */
 @import "pages/49-frame.css";
+/* the rules reader over every page and the board (ui/rules.ts, ui/crreader.ts, 2026-11-04) */
+@import "shared/50-rules-reader.css";

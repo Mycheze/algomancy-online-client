@@ -35,6 +35,8 @@ import { esc } from './util.ts';
 import { TUTORIAL, tutorialListHtml, tutorialSearch } from './tutorial.ts';
 import { CR_PAGE_URL, RULEBOOK_URL } from './assets.ts';
 import { DISCORD_INVITE } from './legal.ts';
+import { iconButton, segmented } from './components/index.ts';
+import { crChanged, crEnter, crNavListHtml, crOpenAt, crReaderHtml, crQuery, loadCr, setCrQuery } from './crreader.ts';
 
 export interface RulesEntry {
   /** the heading — game markup ({Haste}, [Augment]) is drawn as icons */
@@ -720,7 +722,7 @@ export function rulesListHtml(q: string): string {
   return hits.map(sectionHtml).join('');
 }
 
-/** the jump bar: one chip per section on screen */
+/** the left pane's section list: one button per section on screen */
 function jumpHtml(tab: HelpTab, q: string): string {
   const secs = tab === 'rules' ? rulesSearch(q) : tutorialSearch(q).map(s => ({ id: s.id, title: s.title }));
   if (!secs.length) return '';
@@ -728,56 +730,66 @@ function jumpHtml(tab: HelpTab, q: string): string {
     `<button data-btn="helpjump" data-sec="${esc(tab === 'rules' ? `rs-${s.id}` : `tt-${s.id}`)}">${esc(s.title)}</button>`).join('')}</div>`;
 }
 
-/** The Rulebook tab: the Manual itself, framed, with a way out to a tab of its
- * own — a phone or an iPad draws a framed PDF badly, or only its first page.
- * Owner, 2026-09-15: host the book so a new player can read it right here. */
+/** The Rulebook tab: the Manual itself, framed, filling the reader. Its way
+ * out to a tab of its own is in the reader's bar — a phone or an iPad draws a
+ * framed PDF badly, or only its first page. Owner, 2026-09-15: host the book
+ * so a new player can read it right here. */
 export function bookHtml(): string {
-  return `<div class="helpscroll bookscroll">
-    <p class="rulesblurb">The Algomancy Manual — the complete illustrated rulebook. It can take a moment to load.</p>
-    <div class="bookbar">
-      <a class="bookopen" href="${RULEBOOK_URL}" target="_blank" rel="noopener">Open the rulebook in a new tab ↗</a>
-      <a href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">Ask the players on Discord ↗</a>
-    </div>
+  return `<div class="rrsingle bookscroll">
     <iframe class="bookframe" src="${RULEBOOK_URL}" title="The Algomancy Manual"></iframe>
-    <p class="rulesblurb">In a game, the ⚖ judge button answers rules questions.</p>
   </div>`;
 }
 
-/** The Comprehensive rules tab: every rule, numbered — the generated page
- * framed like the book, opened at `at` (a rule number) when a link named one.
- * Owner, 2026-11-01: public, in this box; the review page stays the judges'. */
-export function crHtml(at: string | null): string {
-  const src = CR_PAGE_URL + (at ? `#r${encodeURIComponent(at.replace(/^r/i, ''))}` : '');
-  return `<div class="helpscroll bookscroll">
-    <p class="rulesblurb">Every rule of the game, numbered. These are the unofficial comprehensive rules that this client follows.</p>
-    <div class="bookbar">
-      <a class="bookopen" href="${esc(src)}" target="_blank" rel="noopener">Open the comprehensive rules in a new tab ↗</a>
-      <a href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">Ask the players on Discord ↗</a>
-    </div>
-    <iframe class="bookframe crframe" src="${esc(src)}" title="The Algomancy comprehensive rules"></iframe>
-  </div>`;
+/** The Comprehensive rules tab: every rule, numbered, read natively
+ * (ui/crreader.ts, 2026-11-04 — it framed the generated page until then). */
+export function crHtml(): string {
+  loadCr();
+  return crReaderHtml(CR_PAGE_URL);
 }
 
-/** the overlay's box: tabs, then the search box, the jump bar and the list —
- * or, on the Rulebook tab, the book. The modal scrim around it belongs to
- * whoever shows it: ui/main.ts's on the board, ui/helplayer.ts's off it. */
+/** the reader's tabs, in the bar's centre */
+const TABS: readonly (readonly [HelpTab, string])[] = [
+  ['rules', 'Reference'], ['book', 'Rulebook'], ['cr', 'Comprehensive rules'], ['tutorial', 'Interface'],
+];
+
+/** what each tab adds to the bar's end: the way out to a page of its own */
+function barLinksHtml(tab: HelpTab): string {
+  const out = (href: string, label: string, cls = 'bookopen'): string =>
+    `<a class="${cls}" href="${esc(href)}" target="_blank" rel="noopener">${label}</a>`;
+  return (tab === 'book' ? out(RULEBOOK_URL, 'Open in a new tab ↗') : '')
+    + (tab === 'cr' ? out(CR_PAGE_URL, 'Full edition, with sources ↗') : '')
+    + `<a class="rrdiscord" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">Ask on Discord ↗</a>`;
+}
+
+/** THE RULES READER (2026-11-04): one box that fills the window off the board,
+ * and the play area on it (the board's own toolbar stays beside it). A bar —
+ * Close, "Rules", the four tabs, the tab's links — over the tab: the
+ * reference and the interface guide as a section list beside the text, the
+ * comprehensive rules as contents beside one section at a time, the rulebook
+ * framed. The modal scrim around it belongs to whoever shows it: ui/main.ts's
+ * on the board, ui/helplayer.ts's off it. */
 export function rulesBoxHtml(tab: HelpTab, q: string): string {
-  const tabBtn = (t: HelpTab, label: string): string =>
-    `<button class="helptab${tab === t ? ' on' : ''}" data-btn="helptab" data-tab="${t}">${label}</button>`;
-  const placeholder = tab === 'rules'
-    ? 'search the rules…'
-    : 'search the guide…';
-  const body = tab === 'book' ? bookHtml() : tab === 'cr' ? crHtml(crAt) : `<input id="rules-q" class="rulesq" type="search" spellcheck="false" autocomplete="off"
-      placeholder="${placeholder}" value="${esc(q)}">
-    ${jumpHtml(tab, q)}
-    <div class="helpscroll" id="rules-list">${tab === 'rules' ? rulesListHtml(q) : tutorialListHtml(q)}</div>`;
-  return `<div class="overlaybox helpbox">
-    <div class="helphead">
-      <h3>${TAB_TITLE[tab]}</h3>
-      <div class="helptabs">${tabBtn('rules', 'Rules')}${tabBtn('book', 'Rulebook')}${tabBtn('cr', 'Comprehensive rules')}${tabBtn('tutorial', 'How to use the interface')}</div>
-    </div>
+  const tabs = segmented({
+    ariaLabel: 'Rules', className: 'rrtabs',
+    options: TABS.map(([t, label]) => ({ label, value: t, on: tab === t, dataBtn: 'helptab', className: 'helptab', attrs: { 'data-tab': t } })),
+  });
+  const placeholder = tab === 'rules' ? 'search the rules…' : 'search the guide…';
+  const body = tab === 'book' ? bookHtml() : tab === 'cr' ? crHtml() : `<div class="rrsplit">
+    <aside class="rrnav">
+      <input id="rules-q" class="rulesq" type="search" spellcheck="false" autocomplete="off"
+        placeholder="${placeholder}" value="${esc(q)}">
+      <div class="rrnavlist">${jumpHtml(tab, q)}</div>
+    </aside>
+    <div class="helpscroll rrtext" id="rules-list"><div class="rrpage">${tab === 'rules' ? rulesListHtml(q) : tutorialListHtml(q)}</div></div>
+  </div>`;
+  return `<div class="overlaybox helpbox rulesreader rr-${tab}" role="dialog" aria-label="${esc(TAB_TITLE[tab])}">
+    <header class="rrbar">
+      <div class="rrzone rrstart">${iconButton({ label: 'Close', icon: 'close', dataBtn: 'helpclose', className: 'rrclose', title: 'close the rules (Esc)' })}
+        <h2 class="rrtitle">Rules</h2></div>
+      <div class="rrzone rrcenter">${tabs}</div>
+      <div class="rrzone rrend">${barLinksHtml(tab)}</div>
+    </header>
     ${body}
-    <button data-btn="helpclose">Close</button>
   </div>`;
 }
 
@@ -792,17 +804,23 @@ export function setHelpTab(t: string | undefined): void {
   tab = t === 'tutorial' || t === 'book' || t === 'cr' ? t : 'rules';
 }
 /** the rule the Comprehensive rules tab opens at (`?rules=cr&at=608.2b`); null is the top */
-let crAt: string | null = null;
-export function setCrAt(at: string | null): void { crAt = at && /^r?\d{3}(\.\d+[a-z]?)?$/i.test(at) ? at : null; }
+export function setCrAt(at: string | null): void {
+  crOpenAt(at && /^r?(?:\d{3}(\.\d+[a-z]?)?|D\d+(\.\d+[a-z]?)?)$/i.test(at) ? at : null);
+}
 
 /** the box as ui/main.ts draws it, off the tab and query kept here */
 export const helpBoxHtml = (): string => rulesBoxHtml(tab, query);
 
 /** the list, repainted in place for the current query — never a board repaint */
 function patchList(): void {
-  if (tab === 'book' || tab === 'cr') return;   // no search on a framed page
+  if (tab === 'book') return;   // no search on the framed book
+  if (tab === 'cr') {
+    const nav = document.getElementById('cr-nav');
+    if (nav) { nav.innerHTML = crNavListHtml(); nav.scrollTop = 0; }
+    return;
+  }
   const list = document.getElementById('rules-list');
-  if (list) list.innerHTML = tab === 'rules' ? rulesListHtml(query) : tutorialListHtml(query);
+  if (list) list.innerHTML = `<div class="rrpage">${tab === 'rules' ? rulesListHtml(query) : tutorialListHtml(query)}</div>`;
 }
 
 /** put the caret in the search box once the overlay is on screen */
@@ -831,6 +849,7 @@ export function installRulesOverlay(): void {
   document.addEventListener('input', e => {
     const el = e.target as HTMLInputElement | null;
     if (!el || el.id !== 'rules-q') return;
+    if (tab === 'cr') { setCrQuery(el.value); patchList(); return; }
     query = el.value;
     patchList();
     // the jump bar shrinks with the results; cheap to redraw, so redraw it
@@ -841,8 +860,15 @@ export function installRulesOverlay(): void {
   });
   document.addEventListener('keydown', e => {
     const el = e.target as HTMLInputElement | null;
-    if (!el || el.id !== 'rules-q' || e.key !== 'Escape' || !query) return;
-    query = '';
+    if (!el || el.id !== 'rules-q') return;
+    // the comprehensive rules: Enter on a rule number goes straight there
+    if (e.key === 'Enter' && tab === 'cr') {
+      if (crEnter()) { el.value = ''; e.preventDefault(); crChanged(); }
+      return;
+    }
+    const q = tab === 'cr' ? crQuery() : query;
+    if (e.key !== 'Escape' || !q) return;
+    if (tab === 'cr') setCrQuery(''); else query = '';
     el.value = '';
     patchList();
     e.preventDefault();

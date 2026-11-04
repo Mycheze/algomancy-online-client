@@ -71,6 +71,7 @@ import { glossaryHits, GLOSSARY } from './glossary.ts';
 import {
   focusRulesSearch, helpBoxHtml, installRulesOverlay, jumpToSection, setCrAt, setHelpTab,
 } from './rules.ts';
+import { crAfterPaint, handleCrButton, onCrChange } from './crreader.ts';
 import { mdToHtml } from './markdown.ts';
 import { installHelpLayer, openHelp } from './helplayer.ts';
 import { alertTab, installTabAlert } from './tabalert.ts';
@@ -4976,6 +4977,8 @@ const glossRow = (e: GlossEntry): string =>
  * is wired once, here, with a delegated listener, because every paint
  * replaces the overlay's DOM. */
 installRulesOverlay();
+// the comprehensive rules arrive (or Enter in its search moved): redraw the board's box
+onCrChange(() => { if (helpOpen) render(); });
 function helpOverlayHtml(): string {
   return `<div class="overlay mainonly">${helpBoxHtml()}</div>`;
 }
@@ -7865,7 +7868,8 @@ function ensureBlockKeys(): void {
  * itself — the one the playtest report was about. */
 // '#rules-list' is the rules/tutorial dialog's own scroller: a push mid-read
 // used to throw it back to the top (owner, 2026-09-05)
-const SCROLLERS = ['.main', '#rules-list'] as const;
+// the rules reader's panes too: the reference's list, the CR's contents and text
+const SCROLLERS = ['.main', '#rules-list', '#cr-nav', '#cr-text'] as const;
 
 
 /** Paint the whole UI. Returns false when it painted something that is NOT a
@@ -7971,6 +7975,7 @@ function renderNow(): boolean {
   maybePickSetChain();        // the picker's second answer (ui/pickset.ts)
   publishBuilding();
   rewireInputs(snap);
+  crAfterPaint(document);   // a move in the comprehensive rules: after the scrolls went back
   return true;
 }
 
@@ -10796,6 +10801,9 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   // the search box is not a button — ui/rules.ts wires it by delegation
   helptab: btn => { setHelpTab(btn.dataset['tab']); focusRulesSearch(); },
   helpjump: btn => { jumpToSection(btn.dataset['sec']); return 'no-repaint'; },
+  // the comprehensive rules: a rule, a section or the contents (crgo), and Back
+  crgo: btn => { handleCrButton(btn); },
+  crback: btn => { handleCrButton(btn); },
   judgeopen: () => { judgeOpen = true; },
   judgeclose: () => { judgeOpen = false; },
   inspectclose: () => { inspect = null; },

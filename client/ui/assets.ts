@@ -47,3 +47,6 @@ export const RULEBOOK_URL = '/data/rules/Algomancy-Manual.pdf';
  * preview; deploy/Caddyfile lets the site frame it. Public: the review page
  * with its comments (?crreview) is the judges' and admins'. */
 export const CR_PAGE_URL = '/comprehensive-rules';
+/** …and as data, for the rules reader's Comprehensive rules tab (ui/rules.ts):
+ * the same rules without their provenance (server/main.ts crDataBody) */
+export const CR_DATA_URL = '/comprehensive-rules.json';

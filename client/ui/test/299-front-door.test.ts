@@ -97,9 +97,11 @@ test('§4 the Rulebook tab frames the book, links it out, and has no search box'
   assert.match(book, new RegExp(`<iframe class="bookframe" src="${esc(RULEBOOK_URL)}"`));
   assert.match(book, new RegExp(`<a class="bookopen" href="${esc(RULEBOOK_URL)}" target="_blank" rel="noopener">`),
     'no way out to a full tab — a phone shows a framed PDF badly');
+  // (the link sits in the reader's bar since 2026-11-04, captioned "Open in a new tab ↗")
   assert.ok(book.includes(DISCORD_INVITE), 'the Rulebook tab no longer points at the Discord');
   assert.doesNotMatch(book, /id="rules-q"/, 'there is nothing to search on the book tab');
-  assert.match(book, /class="helptab on" data-btn="helptab" data-tab="book"/);
+  // the tabs are a segmented control in the reader's bar since 2026-11-04
+  assert.match(book, /class="ui-segmented__option on helptab" data-btn="helptab" type="button" data-value="book" aria-pressed="true" data-tab="book"/);
   // the tab the box remembers accepts "book", and nothing unknown
   setHelpTab('book');
   assert.match(helpBoxHtml(), /<iframe/);

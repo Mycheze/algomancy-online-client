@@ -34,7 +34,7 @@ const pick = (sel, re) => ({ eval: `(() => { const s = document.querySelector(${
 
 /** the pages drawn in the app frame (ui/pages/frame.ts, 2026-11-04): one
  * window each, like the home — every one of their states is `noScroll` */
-export const FRAME_PAGES = ['cards', 'meta', 'cardstats', 'queue'];
+export const FRAME_PAGES = ['cards', 'meta', 'cardstats', 'queue', 'rules'];
 
 export function SCENARIOS(fx) {
   const S = [];
@@ -149,6 +149,14 @@ export function SCENARIOS(fx) {
   // answered with a plain placeholder page; the tab around it is the picture.
   add('rules', 'rulebook', '/?rules=book', { pages: 1, stub: ['*.pdf'] });
   add('rules', 'cr', '/?rules=cr', { pages: 1 });
+  // the comprehensive rules read natively (ui/crreader.ts, 2026-11-04): a search,
+  // a link straight to a sub-rule, and a rule followed from another with Back
+  add('rules', 'cr-search', '/?rules=cr', { steps: [{ type: '#rules-q', text: 'deadly' }, { settle: 300 }], pages: 1 });
+  add('rules', 'cr-at', '/?rules=cr&at=608.2b', { pages: 1, check: '.rdrule.at' });
+  add('rules', 'cr-follow', '/?rules=cr', { steps: [{ click: '.rdrule .rdref', text: '^104$' }, { settle: 300 }], pages: 1, check: '.rdback' });
+  // …and over a game: the board's own toolbar stays beside the reader (the ?demo table)
+  add('rules', 'board-cr', '/?demo=1', { steps: [{ click: '[data-btn="helpopen"]' }, { click: '[data-btn="helptab"][data-tab="cr"]' }, { settle: 600 }], pages: 1, noScroll: false });
+  add('rules', 'cr-glossary', '/?rules=cr', { steps: [{ click: '[data-btn="crgo"][data-to="glossary"]' }, { settle: 300 }], pages: 1 });
   add('rules', 'interface', '/?rules=tutorial', { pages: 1 });
   add('learn', 'menu', '/?learn', { pages: 1 });
   add('learn', 'lessons', '/?learn', { steps: [{ click: '.learnmenu summary, [data-learn] summary, details summary', text: 'lesson' }], pages: 1 });

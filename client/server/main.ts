@@ -295,6 +295,35 @@ function crRule(num: string): { num: string; text: string; heading: string } | n
   } catch { return null; }
 }
 
+/** The comprehensive rules as the client's rules reader reads them (ui/rules.ts,
+ * the Comprehensive rules tab, 2026-11-04): the generated .json without its
+ * provenance — the sources, verdicts and discrepancies are the review page's
+ * and the full edition's business, not a player's. Built once per edition (its
+ * mtime) and served with an ETag. ui/assets.ts CR_DATA_URL is the browser's
+ * spelling of the path. */
+const CR_DATA_URL = '/comprehensive-rules.json';
+let crData: { mtimeMs: number; body: string; etag: string } | null = null;
+function crDataBody(): { body: string; etag: string } | null {
+  try {
+    const m = statSync(CR_JSON).mtimeMs;
+    if (!crData || crData.mtimeMs !== m) {
+      type R = { num: string; title: string | null; section: string; sectionTitle: string; chapterTitle: string; parent: string;
+        text: string; see: string[]; examples: string[]; engineDiffers: boolean; untested: boolean };
+      const doc = JSON.parse(readFileSync(CR_JSON, 'utf8')) as {
+        edition: unknown; rules: R[]; annexD: R[]; glossary: { term: string; text: string; see: string[]; obsolete: boolean }[];
+      };
+      const lean = (r: R) => ({ num: r.num, title: r.title, section: r.section, sectionTitle: r.sectionTitle, chapterTitle: r.chapterTitle,
+        parent: r.parent, text: r.text, see: r.see, examples: r.examples, engineDiffers: r.engineDiffers, untested: r.untested });
+      const body = JSON.stringify({
+        edition: doc.edition, rules: doc.rules.map(lean), annexD: doc.annexD.map(lean),
+        glossary: doc.glossary.filter(g => !g.obsolete).map(g => ({ term: g.term, text: g.text, see: g.see })),
+      });
+      crData = { mtimeMs: m, body, etag: `"${createHash('sha1').update(body).digest('hex').slice(0, 16)}"` };
+    }
+    return { body: crData.body, etag: crData.etag };
+  } catch { return null; }
+}
+
 /** what a link preview may know — each answer what a signed-out stranger may see */
 function previewCtx(req: import('node:http').IncomingMessage): PreviewCtx {
   const card = (name: string) => {
@@ -1227,6 +1256,15 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // with a link preview of its own.
   if (path === CR_PAGE_URL) {
     return serveHtml(req, res, await crPageHtml(previewFor(new URL('/?rules=cr', url), previewCtx(req))));
+  }
+  // …and the same rules as data, for the client's own reader (crDataBody)
+  if (path === CR_DATA_URL) {
+    const cr = crDataBody();
+    if (!cr) { res.writeHead(503, { 'content-type': 'text/plain' }); return res.end('the comprehensive rules are not built'); }
+    const headers = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-cache', etag: cr.etag };
+    if (req.headers['if-none-match'] === cr.etag) { res.writeHead(304, headers); return res.end(); }
+    res.writeHead(200, headers);
+    return res.end(cr.body);
   }
   // the rulebook the ? rules overlay frames (ui/assets.ts RULEBOOK_URL) — that
   // ONE file: data/rules/ is the bot's corpus, not a download area. Revalidated,

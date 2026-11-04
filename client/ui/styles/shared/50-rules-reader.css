@@ -1,0 +1,119 @@
+/* ── the rules reader (ui/rules.ts rulesBoxHtml, ui/crreader.ts; 2026-11-04) ──
+   Owner, 2026-11-04: "the rules absolutely need a lot of work … the CR are
+   really clunky to read and navigate as a modal". The help box is a reader
+   now: it fills the window off the board (ui/helplayer.ts's .helpscrim) and
+   the play area on it (main.ts's .overlay.mainonly, the board's toolbar
+   staying beside it). A bar — Close, "Rules", the four tabs, the tab's links
+   — over a tab laid out as two panes that scroll by themselves: the sections
+   (or the CR's contents, or what a search found) on the left, the text at
+   reading width on the right. Everything is scoped to .rulesreader: .helprow,
+   .helpbox and .overlaybox are also the board's other dialogs and the card
+   inspector's, which must not move. */
+
+/* the scrim holds the reader edge to edge, with no dimmed margin */
+.helpscrim:has(> .rulesreader), .overlay:has(> .rulesreader) { padding: 0; align-items: stretch; justify-content: stretch; }
+.helpbox.rulesreader { width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; gap: 0;
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--color-bg); color: var(--color-text); border: 0; border-radius: 0; box-shadow: none; }
+
+/* the bar: the app frame's toolbar, drawn for a layer */
+.rrbar { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center;
+  gap: var(--space-4); min-height: var(--shell-bar-h); padding: var(--space-2) var(--space-6);
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border); }
+.rrzone { display: flex; align-items: center; gap: var(--space-5); min-width: 0; }
+.rrcenter { justify-content: center; }
+.rrend { justify-content: flex-end; flex-wrap: wrap; gap: var(--space-3) var(--space-6); font-size: var(--text-13); }
+.rrend a { color: var(--color-link); text-decoration: none; white-space: nowrap; }
+.rrend a:hover { text-decoration: underline; }
+.rrtitle { margin: 0; color: var(--color-text); font-size: var(--text-22); font-weight: 700; letter-spacing: .02em; }
+.rulesreader .rrtabs .helptab { opacity: 1; font-size: var(--text-14); font-weight: 400; padding: 0 var(--space-6); }
+
+/* two panes, each scrolling by itself */
+.rrsplit { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 300px minmax(0, 1fr); }
+.rrsingle { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; padding: var(--space-5) var(--space-6); }
+.rrnav { min-height: 0; display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-5) var(--space-4) 0 var(--space-6);
+  background: var(--color-surface-sunken); border-right: 1px solid var(--color-border); }
+.rulesreader .rulesq { flex: none; min-height: var(--icon-button-min-h); padding: 0 var(--space-6); border-radius: var(--radius-pill);
+  background: var(--color-surface); border: 1px solid var(--color-border-strong); font-size: var(--text-14); }
+.rulesreader .rulesq:focus { border-color: var(--color-accent); }
+.rrnavlist { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0 var(--space-2) var(--space-7) 0; }
+/* the reference's and the guide's sections, as a list */
+.rulesreader .rulesjump { display: flex; flex-direction: column; gap: var(--space-1); }
+.rulesreader .rulesjump button { justify-content: flex-start; text-align: left; padding: var(--space-3) var(--space-4); font-size: var(--text-14);
+  background: none; border: 1px solid transparent; border-radius: var(--radius-md); color: var(--color-text); }
+.rulesreader .rulesjump button:hover { background: var(--color-surface-raised); border-color: transparent; }
+
+/* the text pane: one reading column */
+.rrtext, .rdtext { min-height: 0; overflow-y: auto; scroll-padding-top: var(--space-7); }
+.rrpage, .rdpage { max-width: 760px; margin: 0 auto; padding: var(--space-7) var(--space-7) var(--space-9); }
+.rulesreader .rulesec h4 { margin: var(--space-8) 0 var(--space-4); color: var(--color-accent); font-size: var(--text-13); letter-spacing: .08em; }
+.rulesreader .rulesec:first-child h4 { margin-top: 0; }
+.rulesreader .helprow { gap: var(--space-6); padding: var(--space-4) 0; border-bottom: 1px solid var(--color-border); line-height: 1.55; font-size: var(--text-14); }
+.rulesreader .helprow b { width: 180px; }
+.rulesreader .helprow > span { color: var(--color-text-muted); }
+
+/* the comprehensive rules: the contents */
+.rdtoc { padding-bottom: var(--space-4); }
+.rdtocchap { position: sticky; top: 0; z-index: 1; padding: var(--space-4) var(--space-4) var(--space-2); background: var(--color-surface-sunken);
+  color: var(--color-text-muted); font-size: var(--text-11); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.rdtocsec { display: flex; gap: var(--space-4); width: 100%; text-align: left; padding: var(--space-2) var(--space-4); font-size: var(--text-13);
+  background: none; border: 1px solid transparent; border-radius: var(--radius-md); color: var(--color-text); line-height: 1.35; }
+.rdtocsec:hover { background: var(--color-surface-raised); border-color: transparent; }
+.rdtocsec.on, .rdtocsec.on:hover { background: var(--color-surface-raised); border-color: var(--color-accent); color: var(--color-accent); }
+.rdtocsec .rdnum { flex: none; width: 34px; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+/* …or what the search found */
+.rdhits { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.rdhits button { display: block; width: 100%; text-align: left; padding: var(--space-4); background: none; border: 1px solid transparent;
+  border-radius: var(--radius-md); color: var(--color-text); font-size: var(--text-13); line-height: 1.4; }
+.rdhits button:hover { background: var(--color-surface-raised); border-color: transparent; }
+.rdhitnum { color: var(--color-accent); font-variant-numeric: tabular-nums; }
+.rdhitsnip { display: block; margin-top: var(--space-1); color: var(--color-text-muted); font-size: var(--text-12); }
+.rdhitsnip mark { background: var(--color-accent-wash); color: var(--color-text); border-radius: 2px; }
+.rdnone, .rdwait { color: var(--color-text-muted); padding: var(--space-5) var(--space-4); }
+
+/* …and one section, at reading width */
+.rdfront { margin-bottom: var(--space-8); padding-bottom: var(--space-6); border-bottom: 1px solid var(--color-border); }
+.rdfront h1 { margin: 0 0 var(--space-4); font-family: var(--font-display); font-size: var(--text-26); }
+.rdfront p { margin: 0; color: var(--color-text-muted); font-size: var(--text-13); line-height: 1.55; }
+.rdchap { color: var(--color-text-muted); font-size: var(--text-11); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.rdpage h2 { margin: var(--space-2) 0 var(--space-6); color: var(--color-accent); font-size: var(--text-22); }
+.rdpage h2 .rdnum { color: var(--color-text-muted); }
+.rdrule { padding: var(--space-3) var(--space-4); margin: 0 calc(-1 * var(--space-4)); border-radius: var(--radius-md); }
+.rdrule.sub { padding-left: var(--space-8); }
+.rdrule.at { background: var(--color-surface); box-shadow: inset 3px 0 0 var(--color-accent); }
+.rdrule p { margin: 0; font-size: var(--text-14); line-height: 1.6; }
+.rdrule .rdnum { color: var(--color-text-muted); font-variant-numeric: tabular-nums; font-weight: 600; }
+.rdrule p.rdex { margin-top: var(--space-3); padding-left: var(--space-6); color: var(--color-text-muted); font-size: var(--text-13); }
+.rdrule p.rdex > span { font-style: italic; }
+.rdrule p.rdmarks { margin-top: var(--space-2); display: flex; gap: var(--space-3); }
+.rdmark { padding: 0 var(--space-3); border: 1px solid var(--color-border-strong); border-radius: var(--radius-sm);
+  color: var(--color-text-muted); font-size: var(--text-11); }
+.rdmark.rddiffers { border-color: var(--color-warning); color: var(--color-warning); }
+.rdref { display: inline; padding: 0; background: none; border: 0; color: var(--color-link); font: inherit; cursor: pointer; }
+.rdref:hover { text-decoration: underline; background: none; border: 0; }
+.rdback { margin-bottom: var(--space-6); padding: var(--space-3) var(--space-5); border-radius: var(--radius-pill); font-size: var(--text-13); }
+.rdgloss { margin: 0; }
+.rdgloss dt { margin-top: var(--space-6); font-weight: 700; }
+.rdgloss dd { margin: var(--space-2) 0 0; color: var(--color-text-muted); font-size: var(--text-14); line-height: 1.55; }
+.rdsteps { display: flex; justify-content: space-between; gap: var(--space-5); margin-top: var(--space-9); padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border); }
+.rdstep { display: flex; flex-direction: column; gap: var(--space-1); max-width: 48%; padding: var(--space-4) var(--space-5); text-align: left;
+  border-radius: var(--radius-lg); font-size: var(--text-13); }
+.rdstep.next { align-items: flex-end; text-align: right; margin-left: auto; }
+.rdstep span { color: var(--color-text-muted); font-size: var(--text-11); letter-spacing: .06em; text-transform: uppercase; }
+
+/* the rulebook: the frame takes the reader's height */
+.rulesreader .bookframe { flex: 1 1 auto; height: auto; min-height: 0; }
+
+/* an iPad upright, or the board's narrower play area: the left pane narrows */
+@media (max-width: 1100px) {
+  .rrsplit { grid-template-columns: 240px minmax(0, 1fr); }
+  .rrpage, .rdpage { padding: var(--space-6) var(--space-6) var(--space-9); }
+  .rulesreader .helprow b { width: 140px; }
+}
+
+/* a rule number in running text is a link, not a finger-sized button: the
+   touch piece's `html.touch .overlay button` floor (and base.css's padding)
+   would open a gap under every line that cites a rule. The contents, the
+   search results and Back are real buttons and keep their size. */
+.rulesreader .rdref, html.touch .rulesreader .rdref { min-height: 0; height: auto; padding: 0; line-height: inherit; vertical-align: baseline; }

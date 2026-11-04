@@ -23,6 +23,8 @@
  *   · a board coming up closes it — in a game, the rail's ? rules is the way in.
  */
 import { focusRulesSearch, helpBoxHtml, jumpToSection, setHelpTab } from './rules.ts';
+import { crAfterPaint, handleCrButton, onCrChange } from './crreader.ts';
+import { restoreScrolls, scrollsIn } from './pages/frame.ts';
 
 let open = false;
 let layer: HTMLElement | null = null;
@@ -31,9 +33,15 @@ let installed = false;
 const appEl = (): HTMLElement | null => document.getElementById('app');
 const onBoard = (): boolean => !!appEl()?.classList?.contains('board');
 
+/** Draw the box (or nothing). The reader's panes keep their scroll across a
+ * repaint by their data-scroll keys (pages/frame.ts), and a move in the
+ * comprehensive rules then takes the text pane to its rule. */
 function paint(): void {
   if (!layer) return;
+  const kept = scrollsIn(layer as unknown as Parameters<typeof scrollsIn>[0]);
   layer.innerHTML = open ? `<div class="helpscrim" id="helpscrim">${helpBoxHtml()}</div>` : '';
+  restoreScrolls(layer as unknown as Parameters<typeof restoreScrolls>[0], kept);
+  crAfterPaint(document);
 }
 
 /** open the box on `tab` (rules / book / tutorial), unless a board is up */
@@ -59,6 +67,8 @@ export function installHelpLayer(): void {
   const app = appEl();
   if (!app || !document.body || typeof document.body.appendChild !== 'function') return;
   installed = true;
+  // the comprehensive rules arrive (or a move is made from the keyboard): redraw if open
+  onCrChange(() => { if (open) paint(); });
   layer = document.createElement('div');
   layer.id = 'helplayer';
   document.body.appendChild(layer);
@@ -80,6 +90,7 @@ export function installHelpLayer(): void {
       case 'helpclose': closeHelp(); return;
       case 'helptab': setHelpTab(btn.dataset['tab']); paint(); focusRulesSearch(); return;
       case 'helpjump': jumpToSection(btn.dataset['sec']); return;
+      case 'crgo': case 'crback': if (btn && handleCrButton(btn)) paint(); return;
       default: return;   // a link (the rulebook, Discord) keeps its default
     }
   }, { capture: true });
@@ -92,6 +103,8 @@ export function installHelpLayer(): void {
     if (!open) return;
     const el = e.target as HTMLInputElement | null;
     if (e.key === 'Escape' && el?.id === 'rules-q' && el.value) return;
+    // …and Enter there: the comprehensive rules' search goes to a rule number (ui/rules.ts)
+    if (e.key === 'Enter' && el?.id === 'rules-q') return;
     e.stopPropagation();
     if (e.key === 'Escape') closeHelp();
   }, { capture: true });
