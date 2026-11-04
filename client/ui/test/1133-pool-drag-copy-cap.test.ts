@@ -104,7 +104,7 @@ test('§3 the tap at the cap says the same', () => {
 test('§4 the refusal is inside the one door', () => {
   const tt = code('tabletop.ts');
   const place = tt.slice(tt.indexOf('export function place('), tt.indexOf('export function tabletopChanged('));
-  assert.match(place, /carry\.from === 'binder' \? capNote\(h, name, to\) : null;\s*if \(capped\) \{ note = capped; paintPending = true; return false; \}/,
+  assert.match(place, /const capped = capNote\(h, carry, to\);\s*if \(capped\) \{ note = capped; paintPending = true; return false; \}/,
     'place() refuses a new copy at the cap, before anything is taken or put');
   assert.equal([...tt.matchAll(/capNote\(/g)].length, 2, 'its definition and place(): no caller checks beside it');
 });

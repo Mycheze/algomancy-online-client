@@ -325,9 +325,10 @@ export function place(h: TableHost, carry: Carry | null, to: Place): boolean {
     piles = movePile(piles, from, to.pos);
   } else {
     const { name } = carry;
-    // 0 — a NEW copy from the pool (a tap, Add another, or a drag) stops at the
-    // copy cap, the same note for all three: nothing moves
-    const capped = carry.from === 'binder' ? capNote(h, name, to) : null;
+    // 0 — a copy ENTERING the deck (a new one from the pool, tapped, dragged
+    // or Add another; or one from Maybe or the Sideboard) stops at the copy
+    // cap, the same note for all: nothing moves
+    const capped = capNote(h, carry, to);
     if (capped) { note = capped; paintPending = true; return false; }
     // 1 — take it from where it was. A copy leaving the deck for good (the
     // pool, Maybe) leaves the deck list; one moving inside the table does not
@@ -503,13 +504,19 @@ function validSelection(h: TableHost, piles: DeckPile[]): void {
 /** copies of `name` the cap counts: the deck and the sideboard together */
 const capCount = (h: TableHost, name: string): number => count(h.cards(), name) + count(h.side?.() ?? [], name);
 
-/** the refusal of a new copy at the copy cap — place() asks it for every copy
- * the pool sends, tapped or dragged (an imported over-cap deck still saves,
- * flagged). The sideboard's is the host's rule */
-function capNote(h: TableHost, name: string, to: Place): string | null {
+/** the refusal of a copy entering the deck at the copy cap — place() asks it
+ * for every carry: a new copy from the pool (tapped or dragged) and one from
+ * Maybe count against the deck and sideboard together; one from the Sideboard
+ * is already counted, so it stops only when the deck itself is full. A copy
+ * moving inside the deck adds nothing (an imported over-cap deck still saves,
+ * flagged). Into the Sideboard is the host's rule */
+function capNote(h: TableHost, carry: Exclude<Carry, { from: 'head' }>, to: Place): string | null {
   if (h.cap === undefined || h.kind !== 'deck') return null;
-  if (to.at === 'maybe' || to.at === 'side') return null;
-  return capCount(h, name) >= h.cap ? `Max ${h.cap} of ${name}.` : null;
+  if (to.at === 'maybe' || to.at === 'side' || to.at === 'binder') return null;
+  const { name } = carry;
+  const full = carry.from === 'binder' || carry.from === 'maybe' ? capCount(h, name) >= h.cap
+    : carry.from === 'side' ? count(h.cards(), name) >= h.cap : false;
+  return full ? `Max ${h.cap} of ${name}.` : null;
 }
 
 /** what can be done to what is picked — its whole menu */
