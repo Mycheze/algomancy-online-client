@@ -441,6 +441,10 @@ order.
 
 <sub>Basis: Engine only · Verified: confirmed in round 3; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Engine: createGame · Tests: 34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4, 412-cr-general.test.ts · Demonstrated by test: 34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4 · Key: concepts.starting.constructed.opening-hand</sub>
 
+<a id="r103.3c"></a>**103.3c** In constructed, as in a live draft, one player is chosen at random to have the initiative. See rules 103.1c, 500, 508.
+
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.10; Manual p.11 · Engine: createGame · Tests: 412-cr-general.test.ts · Demonstrated by test: 412-cr-general.test.ts::cr:concepts.starting.constructed.initiative — a constructed game's first initiative is a seeded coin flip, as in a live draft: either seat can get it, and the same seed gives the same seat · Key: concepts.starting.constructed.initiative</sub>
+
 <a id="r104"></a>
 ### 104. Ending the Game
 
@@ -10564,7 +10568,7 @@ order.
 
 <sub>Basis: Owner call · adopted 2026-11-02 · Verified: untested in round 4; verifier ran no tests; no gate test · Key: formats.constructed.competitive.swaps</sub>
 
-<a id="r901.9d"></a>**901.9d** The initiative player of a match's first game is chosen at random, as in any game. In each later game of the match, the player who lost the previous game chooses which player takes the initiative. See rules 103.1c, D8.6c.
+<a id="r901.9d"></a>**901.9d** The initiative player of a match's first game is chosen at random, as in any game. In each later game of the match, the player who lost the previous game chooses which player takes the initiative. See rules 103.3c, D8.6c.
 
 > *Example: Whichever player is chosen to take the initiative, both decks are shuffled exactly as they would have been, and the chosen player holds the initiative.*
 
@@ -10852,11 +10856,11 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1865 numbered rules.
+1866 numbered rules.
 
 | basis | rules |
 |---|---|
-| Printed | 453 |
+| Printed | 454 |
 | Designer | 202 |
 | Owner call | 677 |
 | Engine only | 47 |
@@ -10866,7 +10870,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 | verdict | rules |
 |---|---|
-| confirmed | 1851 |
+| confirmed | 1852 |
 | partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
@@ -11487,7 +11491,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1870 rules and 99 sections.
+- New: 1871 rules and 99 sections.
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)
 - Removed: 901.8 `formats.constructed.single-card`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)
 - Removed: 901.8a `formats.constructed.single-card.copies`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)

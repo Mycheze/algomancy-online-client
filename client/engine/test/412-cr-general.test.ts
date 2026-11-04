@@ -265,6 +265,22 @@ test('cr:concepts.starting.constructed.first-draw — the only draws of a new co
   assert.deepEqual(c.state.bottomDone, [false, false]);
 });
 
+test('cr:concepts.starting.constructed.initiative — a constructed game\'s first initiative is a seeded coin flip, as in a live draft: either seat can get it, and the same seed gives the same seat', () => {
+  // CT-504: the Manual's setup spread (p.10-11) is written for every format —
+  // "In constructed formats, there will be no shared deck …" — and its player
+  // preparation says "Randomly assign a player The Initiative." Competitive
+  // Constructed's first game (CR 901.9d) is this roll too.
+  const seen = new Set<number>();
+  for (let s = 81300; s < 81340; s++) {
+    const c = constructed(s);
+    assert.equal(c.state.mode, 'constructed');
+    assert.ok(c.state.initiative === 0 || c.state.initiative === 1);
+    seen.add(c.state.initiative);
+    assert.equal(constructed(s).state.initiative, c.state.initiative, 'deterministic per seed');
+  }
+  assert.deepEqual([...seen].sort(), [0, 1], 'both seats win the flip across seeds');
+});
+
 /* ---------- 104 ending the game ---------- */
 
 test('cr:concepts.ending.elimination.immediate — a player at 0 is out only once the effect has finished, and a lone life change is checked at once', () => {

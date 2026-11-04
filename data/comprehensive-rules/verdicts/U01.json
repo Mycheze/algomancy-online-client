@@ -2465,6 +2465,59 @@
     "carried": "demoted-example 2026-10-11"
   },
   {
+    "key": "concepts.starting.constructed.initiative",
+    "textHash": "fd13a9de5f89712d",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U01-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "the same initRoll decides initiative in every mode, constructed included (rules.initiative override only for Competitive Constructed games 2-3)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/412-cr-general.test.ts",
+        "pattern": "cr:concepts.starting.constructed.initiative",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/412-cr-general.test.ts",
+        "pattern": "cr:concepts.starting.live-draft.initiative",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.10",
+        "supports": "yes",
+        "note": "the setup spread addresses constructed formats explicitly, so its player preparation applies to them"
+      },
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "PLAYER PREPARATION: random initiative"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "In constructed formats, there will be no shared deck and players’ individual decks will go in the location of their “pack”."
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Randomly assign a player The Initiative. Give this"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "concepts.starting.constructed.opening-hand",
     "textHash": "229a5f36a4b2d13f",
     "verdict": "confirmed",

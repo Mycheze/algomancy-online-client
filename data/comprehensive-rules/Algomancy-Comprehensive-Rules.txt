@@ -337,6 +337,9 @@ CONTENTS
 103.3b (Digital client) In constructed, each player's opening hand is 4 cards. No source gives the constructed opening hand; it is the client's convention. See rules 103.3a, 103.2.
       [Basis: Engine only | Verified: confirmed in round 3; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files | Engine: createGame | Tests: 34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4, 412-cr-general.test.ts | Demonstrated by test: 34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4 | Key: concepts.starting.constructed.opening-hand]
 
+103.3c In constructed, as in a live draft, one player is chosen at random to have the initiative. See rules 103.1c, 500, 508.
+      [Basis: Printed | Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file | Printed: Manual p.10; Manual p.11 | Engine: createGame | Tests: 412-cr-general.test.ts | Demonstrated by test: 412-cr-general.test.ts::cr:concepts.starting.constructed.initiative -- a constructed game's first initiative is a seeded coin flip, as in a live draft: either seat can get it, and the same seed gives the same seat | Key: concepts.starting.constructed.initiative]
+
 104. Ending the Game
 
 104.1. A player whose life total is 0 or less is eliminated (when that is checked: 104.1a). A life total can go below 0. See rule 112.
@@ -6718,7 +6721,7 @@ No rules drafted yet.
 901.9c Between the games of a match a player may exchange any cards between their deck and their sideboard, in any numbers, as long as the deck keeps at least 30 cards (rule 901.2) and the sideboard at most 7. No exchange is made before the first game. See rule 901.2. (Untested: no executed test demonstrates it.)
       [Basis: Owner call | adopted 2026-11-02 | Verified: untested in round 4; verifier ran no tests; no gate test | Key: formats.constructed.competitive.swaps]
 
-901.9d The initiative player of a match's first game is chosen at random, as in any game. In each later game of the match, the player who lost the previous game chooses which player takes the initiative. See rules 103.1c, D8.6c.
+901.9d The initiative player of a match's first game is chosen at random, as in any game. In each later game of the match, the player who lost the previous game chooses which player takes the initiative. See rules 103.3c, D8.6c.
       Example: Whichever player is chosen to take the initiative, both decks are shuffled exactly as they would have been, and the chosen player holds the initiative.
       [Basis: Mixed | Verified: untested in round 4; verifier ran 1 test, passed; 1 gate test file | Owner call | adopted 2026-11-02 | Engine: createGame | Tests: 801-cc-rules-and-initiative.test.ts | Example test: 801-cc-rules-and-initiative.test.ts::CC rules: a chosen initiative keeps the RNG stream, the same shuffle with the chosen seat | Key: formats.constructed.competitive.initiative]
 
@@ -6919,11 +6922,11 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 Basis
 
-1865 numbered rules.
+1866 numbered rules.
 
 | basis | rules |
 |---|---|
-| Printed | 453 |
+| Printed | 454 |
 | Designer | 202 |
 | Owner call | 677 |
 | Engine only | 47 |
@@ -6933,7 +6936,7 @@ Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1851 |
+| confirmed | 1852 |
 | partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
@@ -7554,7 +7557,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 First generation (draft)
 
-- New: 1870 rules and 99 sections.
+- New: 1871 rules and 99 sections.
 - Removed: 801.12c keywords.actions.rockfall.repeated: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by effects.copies.spells)
 - Removed: 901.8 formats.constructed.single-card: duplicate of Annex D8.2 (CT-389) (replaced by annexd.modes.single-card-duel)
 - Removed: 901.8a formats.constructed.single-card.copies: duplicate of Annex D8.2 (CT-389) (replaced by annexd.modes.single-card-duel)

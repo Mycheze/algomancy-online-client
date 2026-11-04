@@ -14202,6 +14202,20 @@ export const CLOSED: TodoEntry[] = [
     status: 'done',
   },
   {
+    id: 504, area: "engine", severity: "minor",
+    title: "no printed rule says who takes the initiative in a constructed game's first game",
+    detail: "formats.constructed.competitive.initiative says the first game's initiative is \"chosen at random, as in any game\", but the only starting rule for initiative is concepts.starting.live-draft.initiative, which covers a live draft. No record or printed rule sets it for constructed, casual or Competitive.",
+    evidence: "The Competitive register (var/records/cc-round-2026-11-02-register.md, W1 \"TO FILE: CT-504\"); re-checked 2026-11-03: no other record pairs initiative with random.",
+    fix: "Find the source (the Manual's constructed section, a RAQ thread, or the owner) and write a starting record for constructed that the Competitive record can point at; until then the random first game is an owner call.",
+    proof: null,
+    verify: "Grep the rules records for an initiative rule that applies to a constructed game.",
+    guards: [
+      "412-cr-general.test.ts::cr:concepts.starting.constructed.initiative — a constructed game",
+    ],
+    closed: "FIXED 2026-11-04 (steward): the source is the Manual's setup spread, p.10-11. It is written for every format: p.10 says what changes in constructed (\"In constructed formats, there will be no shared deck…\"), and p.11's player preparation, which unlike element selection is not scoped to live draft, says \"Randomly assign a player The Initiative.\" CR 103.3c (concepts.starting.constructed.initiative) now states it, printed basis, confirmed by a fresh verifier in a polish round 4 (both decoys caught); 901.9d points at it. The engine already rolled it in createGame for every mode; the guard was seen red with the roll forced to seat 0.",
+    status: 'done',
+  },
+  {
     id: 508, area: "engine", severity: "major",
     title: "a Competitive game's rules were not threaded through every place that deals or replays a game",
     detail: "A Competitive game is dealt with rules (sequential steps, undo until Done) that a casual game does not have. The server stream threaded them through rooms.ts, but stats, the card ledger, the replay room, the replay probe and the browser's replay server still dealt without them, so a replay of a Competitive game would have run as a casual one.",

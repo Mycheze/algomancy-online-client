@@ -2397,6 +2397,49 @@
     "sourceHashes": {}
   },
   {
+    "key": "concepts.starting.constructed.initiative",
+    "parent": "concepts.starting.constructed",
+    "order": 3,
+    "text": "In constructed, as in a live draft, one player is chosen at random to have the initiative.",
+    "examples": [
+      {
+        "text": null,
+        "test": "412-cr-general.test.ts::cr:concepts.starting.constructed.initiative — a constructed game's first initiative is a seeded coin flip, as in a live draft: either seat can get it, and the same seed gives the same seat"
+      }
+    ],
+    "see": [
+      "concepts.starting.live-draft.initiative",
+      "500",
+      "508"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.10",
+          "quote": "In constructed formats, there will be no shared deck and players’ individual decks will go in the location of their “pack”."
+        },
+        {
+          "ref": "Manual p.11",
+          "quote": "Randomly assign a player The Initiative. Give this"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [
+        "createGame"
+      ],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "CT-504. The Manual's setup spread (p.10-11) is written for every format: its p.10 says what changes in constructed (no shared deck; each deck goes where the pack would) and p.11's player preparation, which is not scoped to a mode (element selection is: 'In the live draft game mode'), says 'Randomly assign a player The Initiative.' No source gives constructed any other way. The engine rolls the initiative in createGame for every mode. Competitive Constructed's first game (formats.constructed.competitive.initiative) is this rule.",
+    "sourceHashes": {}
+  },
+  {
     "key": "concepts.golden.no-qualifier",
     "parent": "101",
     "order": 7,

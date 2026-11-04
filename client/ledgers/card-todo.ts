@@ -340,16 +340,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 504, area: "engine", severity: "minor",
-    title: "no printed rule says who takes the initiative in a constructed game's first game",
-    detail: "formats.constructed.competitive.initiative says the first game's initiative is \"chosen at random, as in any game\", but the only starting rule for initiative is concepts.starting.live-draft.initiative, which covers a live draft. No record or printed rule sets it for constructed, casual or Competitive.",
-    evidence: "The Competitive register (var/records/cc-round-2026-11-02-register.md, W1 \"TO FILE: CT-504\"); re-checked 2026-11-03: no other record pairs initiative with random.",
-    fix: "Find the source (the Manual's constructed section, a RAQ thread, or the owner) and write a starting record for constructed that the Competitive record can point at; until then the random first game is an owner call.",
-    proof: null,
-    verify: "Grep the rules records for an initiative rule that applies to a constructed game.",
-    status: 'open',
-  },
-  {
     id: 511, area: "coverage", severity: "minor",
     title: "several tests fail or hang only under machine load, and a parallel gate will make that worse",
     detail: "Seen during the 2026-11-02/03 rounds, each passing alone: server 594 (replay report run) flakes under load; server 486 timed out twice in a gate under agent load (7/7 alone); server 615 hung once; ui 294 section 4 (the prophecy meter) intermittent; ui 226 section 1a (log and naming) once with three ui-shots runs going.",

@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:37a0517953d599d7",
+ "generated_from": "sha256:163ed5ed81442c3f",
  "rules": [
   {
    "num": "100.1",
@@ -997,6 +997,29 @@
    "examples": [],
    "basis": "engine",
    "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "103.3c",
+   "key": "concepts.starting.constructed.initiative",
+   "title": null,
+   "section": "103",
+   "sectionTitle": "Starting the Game",
+   "chapterTitle": "1. Game Concepts",
+   "parent": "103.3",
+   "text": "In constructed, as in a live draft, one player is chosen at random to have the initiative.",
+   "see": [
+    "103.1c",
+    "500",
+    "508"
+   ],
+   "examples": [],
+   "basis": "printed",
+   "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
    "openQuestion": false,
@@ -36276,7 +36299,7 @@
    "parent": "901.9",
    "text": "The initiative player of a match's first game is chosen at random, as in any game. In each later game of the match, the player who lost the previous game chooses which player takes the initiative.",
    "see": [
-    "103.1c",
+    "103.3c",
     "D8.6c"
    ],
    "examples": [

@@ -1109,7 +1109,7 @@
       }
     ],
     "see": [
-      "103.1c",
+      "concepts.starting.constructed.initiative",
       "annexd.modes.competitive.initiative-choice"
     ],
     "sources": {
@@ -1133,7 +1133,7 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Game 1 random: the engine's initiative roll, as in every constructed game (no printed rule covers constructed; 103.1c is live draft's). Later games: the owner's answer of 2026-11-02.",
+    "notes": "Game 1 random: concepts.starting.constructed.initiative (the Manual's setup, p.10-11, covers constructed; CT-504), which is the engine's initiative roll in every constructed game. Later games: the owner's answer of 2026-11-02.",
     "sourceHashes": {}
   },
   {

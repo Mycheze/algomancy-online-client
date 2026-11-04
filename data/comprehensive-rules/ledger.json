@@ -48,6 +48,7 @@
     {"num":"103.3","key":"concepts.starting.constructed","since":"First generation (draft)"},
     {"num":"103.3a","key":"concepts.starting.constructed.first-draw","since":"First generation (draft)"},
     {"num":"103.3b","key":"concepts.starting.constructed.opening-hand","since":"First generation (draft)"},
+    {"num":"103.3c","key":"concepts.starting.constructed.initiative","since":"First generation (draft)"},
     {"num":"104","key":"concepts.ending","kind":"section","since":"First generation (draft)"},
     {"num":"104.1","key":"concepts.ending.elimination","since":"First generation (draft)"},
     {"num":"104.1a","key":"concepts.ending.elimination.immediate","since":"First generation (draft)"},

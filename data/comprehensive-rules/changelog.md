@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1870 rules and 99 sections.
+- New: 1871 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -48,6 +48,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 103.3 `concepts.starting.constructed`
   - 103.3a `concepts.starting.constructed.first-draw`
   - 103.3b `concepts.starting.constructed.opening-hand`
+  - 103.3c `concepts.starting.constructed.initiative`
   - 104.1 `concepts.ending.elimination`
   - 104.1a `concepts.ending.elimination.immediate`
   - 104.1b `concepts.ending.elimination.simultaneous`
