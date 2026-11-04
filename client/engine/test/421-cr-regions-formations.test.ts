@@ -602,7 +602,11 @@ test('cr:combat.formations.placement.defending — after blocks the defender is 
   finishBattle(h);
 });
 
-test('cr:combat.formations.placement.defending-emptied-block — with no blocker left standing the emptied blocking column is not offered, only the front of the unblocked column', () => {
+// CT-428: this test used to pin the opposite (the emptied column NOT offered
+// once no blocker is left standing). The designer, rules-questions 2024-05-07
+// (RQ 1237434283786768415): "You could play it directly into a blocking
+// formation even if you had no units".
+test('cr:combat.formations.placement.defending-emptied-block — with no blocker left standing the emptied blocking column is still offered, beside the front of the unblocked column', () => {
   const h = new Harness(73104);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -613,8 +617,39 @@ test('cr:combat.formations.placement.defending-emptied-block — with no blocker
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b0] } });
   kill(h, b0);
-  assert.deepEqual(new E(h.state).formationSlots(D).map(s => s.spot), [{ kind: 'block', column: 1 }],
-    'only the unblocked second column; the emptied first column is not offered');
+  assert.deepEqual(new E(h.state).formationSlots(D).map(s => s.spot),
+    [{ kind: 'hole', column: 0 }, { kind: 'block', column: 1 }],
+    'the emptied first column, and the unblocked second column');
+  finishBattle(h);
+});
+
+test('cr:combat.formations.placement.defending-emptied-block — every blocker dies after blocks, and the defender plays Tiderunner Initiate into the emptied blocking column, where it fights that attacker', () => {
+  const h = new Harness(73107);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const a = tok(h, A, 1, 20);
+  const b0 = tok(h, D, 1, 1);
+  giveResources(h, D, 'water', 1);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[a]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b0] } });
+  kill(h, b0);
+  assert.deepEqual(h.state.battle!.blocks[0], [], 'the defender has no unit left in the battle');
+  passTo(h, D);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tiderunner Initiate') });
+  const d = h.state.decision;
+  assert.equal(d?.kind, 'formationSlot', 'a spot is asked for at cast');
+  const at = d!.options.findIndex(o => (o.value as { kind: string; column?: number }).kind === 'hole');
+  assert.ok(at >= 0, `the emptied blocking column is offered: ${d!.options.map(o => o.label).join(' | ')}`);
+  h.do({ type: 'decide', seat: D, choice: at });
+  pass(h); pass(h);                                                      // the play resolves
+  assert.equal(h.state.battle!.blocks[0]!.length, 1, 'it stands in the blocking column');
+  passToStep(h, 'afterWindow');
+  const r = unitsOf(h, D).find(u => u.card === 'Tiderunner Initiate');
+  assert.ok(r, 'it entered play');
+  assert.ok(r!.damage >= 1, 'it fought the attacker of that column');
+  assert.ok(ent(h, a)!.damage >= 1, 'and hit it');
   finishBattle(h);
 });
 

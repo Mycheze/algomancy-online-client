@@ -14422,4 +14422,19 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-04 by the steward. The divergence was not the window schedule (608.3d agrees with the thread since CT-378) but 608.2f: every sub-step read the column's live attributes, so a column given Swift after the Swift sub-step, or stripped of Sluggish before the Sluggish one, dealt no combat damage. The designer's final scheme in the same thread (RQ 1363287109401710603): \"remaining columns will deal normal damage unless sluggish (even if given swift in this step ...)\" and \"remaining columns will deal sluggish damange here (even if given swift or sluggish is removed here ...)\". E.strikes now reads the struck marks once a sub-step is dealt (E.subDealt, read off the damage-step cursor; a state field of its own drifted test 800 on 2026-11-04); 608.2f redrafted and re-rendered. Mutation-checked: reverting either half turns its 1064 guard red.",
     status: 'done',
   },
+  {
+    id: 428, area: "engine", severity: "minor",
+    title: "a blocking formation with no living unit offers no position; the designer lets a unit be played into it even with no units",
+    detail: "CR 602.6k states the owner's 2026-08-22 prose: \"with no living unit in the grid the answer is \\\"no slots\\\"\". Caleb, rules-questions 2024-05-07 [1237434283786768415], asked how a unit that joins a formation works with no units: \"You could play it directly into a blocking formation even if you had no units, but you can't play it into an attacking formation with no units because you just couldn't declare an attack with no units.\" The defender half differs.",
+    evidence: "CR pass D 2026-10-25 (zero-handoff/PD-cr.md, tier-3 stretch): discrepancy D-U10-10, the quote checked against the rules-questions export.",
+    fix: "Decide with the owner whether Caleb's 2024 answer stands. If it does, a unit played during a battle with an empty blocking side may enter the defending formation (a front slot facing an attacker); change the slot offer, redraft 602.6k and 602.7c, add a test and replay stored games.",
+    proof: null,
+    verify: "In a battle where you defend with no units, play a unit that may join a formation: is a blocking position offered?",
+    guards: [
+      "421-cr-regions-formations.test.ts::with no blocker left standing the emptied blocking column is still offered",
+      "421-cr-regions-formations.test.ts::every blocker dies after blocks, and the defender plays Tiderunner Initiate into the emptied blocking column",
+    ],
+    closed: "DONE 2026-11-04 by the steward. Not a question: calebgannon's own answer (RQ 1237434283786768415, indexed into rules-questions.snapshot.jsonl, read in the export with flappl.'s question about Tiderunner Initiate) is above an owner call in the CR's authority order. Since the owner's 2026-10-09 call the engine already let a defender who declared NO blockers play in front of an unblocked attacker (602.6c), so that half already agreed with him. What remained was a defender whose blockers had ALL left after blocks: formationSlots returned only the unblocked columns, because 602.6k read 'no living unit' as 'no formation', and 421 pinned it ('the emptied first column is not offered'). Now a defender who declared blocks keeps that blocking formation, and each emptied blocking column's front slot is offered (engine.ts formationSlots). 602.6j, 602.6k and 602.7c are redrafted with the RQ quote cited and stamped; D-U10-10 moved to tier 2. The attacker half (no attack, no attacking formation; an attacking line emptied after blocks offers nothing) stands, and the designer's sentence backs it. Mutation-checked: dropping the defender clause turns both guards red. The 800 drift guard is green.",
+    status: 'done',
+  },
 ];
