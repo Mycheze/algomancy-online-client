@@ -1494,6 +1494,11 @@
       "ours": [],
       "owner": [
         {
+          "quote": "Yes, the stolen unit is a normal unit on their side that can block and/or counterattack.",
+          "adopted": "2026-11-04",
+          "from": "owner, Discord 2026-11-04 (CT-424: may a unit the defender steals before blocks block or counterattack for them?)"
+        },
+        {
           "quote": "**it sits out until regroup.**",
           "adopted": "2026-08-25",
           "from": "register@72de434"
@@ -1509,7 +1514,7 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) rules a one-sided theft (Download). Organic Exchange's printed 'swap their positions' is the exception clause: the card itself gives each unit the other's position (the round-2 verifier measured both staying in formation, swapped). Card text added from printed.json, not from this unit's pack. See D-U10-11. The earlier engineDiffers (F-U10-4) is withdrawn: the engine follows the card. CT-424: the designer (RQ 1414660063162798082, 2025-09-08) lets the defender who steals an attacker before blocks block with it; the owner's 'sits out' is the after-blocks case.",
+    "notes": "The owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) rules a one-sided theft (Download). Organic Exchange's printed 'swap their positions' is the exception clause: the card itself gives each unit the other's position (the round-2 verifier measured both staying in formation, swapped). Card text added from printed.json, not from this unit's pack. See D-U10-11. The earlier engineDiffers (F-U10-4) is withdrawn: the engine follows the card. CT-424: the designer (RQ 1414660063162798082, 2025-09-08) lets the defender who steals an attacker before blocks block with it; the owner's 'sits out' is the after-blocks case. The owner confirmed the block and the counterattack on Discord 2026-11-04.",
     "sourceHashes": {
       "RQ 1414660063162798082": "d4fbacc2796c7ea20ef66bfcdd0629e578c1345e5e30adccf1a845bb9fd31f24"
     }

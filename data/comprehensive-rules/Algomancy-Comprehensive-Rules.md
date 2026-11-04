@@ -4488,7 +4488,7 @@ order.
 
 > *Example: After attacks, the defender casts Organic Exchange on an attacking Bubb and their own 1/1, which is in no formation. The two swap positions as the card says: the 1/1 takes Bubb's attack slot and deals the combat damage, and Bubb is in no formation.*
 
-<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 3 gate test files · Printed: card: Organic Exchange · Designer: RQ 1414660063162798082 · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 145-erase-routes.test.ts, 24-wood-b.test.ts, 421-cr-regions-formations.test.ts · Example tests: 145-erase-routes.test.ts::CR 711.3 (viii): Download — a Robot token stolen mid-battle is OUT of the formation, 145-erase-routes.test.ts::CR 711.3 (ix): Download — the stolen Robot token joins its NEW controller's side at regroup, 145-erase-routes.test.ts::CR 711.3 (x): Download before blocks, 24-wood-b.test.ts::Organic Exchange: control swaps and the attack slot passes to the exchanged unit · Key: combat.formations.outside.stolen</sub>
+<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 3 gate test files · Printed: card: Organic Exchange · Designer: RQ 1414660063162798082 · Owner call · adopted 2026-11-04; Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 145-erase-routes.test.ts, 24-wood-b.test.ts, 421-cr-regions-formations.test.ts · Example tests: 145-erase-routes.test.ts::CR 711.3 (viii): Download — a Robot token stolen mid-battle is OUT of the formation, 145-erase-routes.test.ts::CR 711.3 (ix): Download — the stolen Robot token joins its NEW controller's side at regroup, 145-erase-routes.test.ts::CR 711.3 (x): Download before blocks, 24-wood-b.test.ts::Organic Exchange: control swaps and the attack slot passes to the exchanged unit · Key: combat.formations.outside.stolen</sub>
 
 <sub>Discrepancies: D-U10-11 (discrepancies.md)</sub>
 
@@ -7340,7 +7340,7 @@ order.
 
 > *Example: Before blocks, the defending player steals an attacking Robot token with Download and sends it out to counterattack.*
 
-<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 1 gate test file · Designer: RQ 1414660063162798082; RQ 1414660063162798082 · Owner ruling, adopted 2026-08-23, 2026-08-25 (quoted from the retired ruling register) · Tests: 145-erase-routes.test.ts · Example tests: 145-erase-routes.test.ts::CR 711.3 (viii): Download, 145-erase-routes.test.ts::CR 711.3 (ix): Download, 145-erase-routes.test.ts::CR 711.3 (x): Download before blocks, 145-erase-routes.test.ts::CR 711.3 (xi): Download before blocks · Key: effects.control.formation</sub>
+<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 1 gate test file · Designer: RQ 1414660063162798082; RQ 1414660063162798082 · Owner call · adopted 2026-11-04; Owner ruling, adopted 2026-08-23, 2026-08-25 (quoted from the retired ruling register) · Tests: 145-erase-routes.test.ts · Example tests: 145-erase-routes.test.ts::CR 711.3 (viii): Download, 145-erase-routes.test.ts::CR 711.3 (ix): Download, 145-erase-routes.test.ts::CR 711.3 (x): Download before blocks, 145-erase-routes.test.ts::CR 711.3 (xi): Download before blocks · Key: effects.control.formation</sub>
 
 <sub>Discrepancies: D-U16-11 (discrepancies.md)</sub>
 

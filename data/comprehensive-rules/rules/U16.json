@@ -1681,6 +1681,11 @@
       "ours": [],
       "owner": [
         {
+          "quote": "Yes, the stolen unit is a normal unit on their side that can block and/or counterattack.",
+          "adopted": "2026-11-04",
+          "from": "owner, Discord 2026-11-04 (CT-424: may a unit the defender steals before blocks block or counterattack for them?)"
+        },
+        {
           "quote": "it sits out until regroup.",
           "adopted": "2026-08-25",
           "from": "register@72de434"
@@ -1704,7 +1709,7 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Designer, rules-questions 2025-09-08 (RQ 1414660063162798082), on Download stealing an attacking token before blocks: it is no longer attacking and may block. That outranks the owner's 2026-08-25 call (\"it sits out until regroup\"), which now covers a steal after blocks, when there is no declaration left for the unit to join. The counterattack clause is the permissive reading of his 1v1 sentence and is what the engine does (checkBlocks asks only controller, presence and region). CT-424, D-U16-11.",
+    "notes": "Designer, rules-questions 2025-09-08 (RQ 1414660063162798082), on Download stealing an attacking token before blocks: it is no longer attacking and may block. That outranks the owner's 2026-08-25 call (\"it sits out until regroup\"), which now covers a steal after blocks, when there is no declaration left for the unit to join. The counterattack clause was the permissive reading of his 1v1 sentence; the owner confirmed it on Discord 2026-11-04 (\"can block and/or counterattack\"). It is what the engine does (checkBlocks asks only controller, presence and region). CT-424, D-U16-11.",
     "sourceHashes": {
       "RQ 1414660063162798082": "d4fbacc2796c7ea20ef66bfcdd0629e578c1345e5e30adccf1a845bb9fd31f24"
     }
