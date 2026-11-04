@@ -430,16 +430,10 @@ function ensureListeners(): void {
     if (title?.firstChild?.nodeType === 3) title.firstChild.nodeValue = `${box.value} `;
     scheduleSave(d.id);
   });
-  // Esc closes the open sheet. The builder's own sheets and its pick take Esc
-  // first (tabletop.ts listens in the capture phase and stops it)
+  // Esc closes the Decks page's open sheet. On the builder, Deck info is the
+  // host's sheet, and tabletop.ts's Esc closes it (TableHost.closeSheet)
   document.addEventListener('keydown', e => {
-    if (e.key !== 'Escape' || !open) return;
-    if (tt.screen()) {
-      if (!infoOpen) return;
-      closeInfo();
-      tt.tabletopChanged();
-      return;
-    }
+    if (e.key !== 'Escape' || !open || tt.screen()) return;
     if (!pageSheet) return;
     pageSheet = null;
     paint();
@@ -501,6 +495,7 @@ function tabletopHost(id: string): tt.TableHost {
     pill: () => deckPill(deck() ?? { id, name: '', cards: [], cover: null }),
     titleBtn: 'deck-settings',
     toolsHtml: () => deckInfoButtonHtml(infoOpen),
+    closeSheet: () => { if (!infoOpen) return false; closeInfo(); return true; },
     sheetHtml: () => {
       const d = deck();
       return infoOpen && d ? deckInfoHtml(deckInfoView(d, { editing: descEditing, draft: descDraft, syntax: syntaxOpen, base: base() })) : '';

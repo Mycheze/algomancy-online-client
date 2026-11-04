@@ -49,8 +49,6 @@ export interface StripView {
   list: readonly string[];
   /** the opening hand's size, as the engine deals it; null = cannot be dealt */
   hand: number | null;
-  /** why the deck cannot be played yet, or null */
-  problem: string | null;
   /** the card width and height the page draws at */
   cw: number;
   ch: number;
@@ -60,7 +58,9 @@ export interface StripView {
   picked?: number;
 }
 
-/** The deck strip, with its Play button: the markup under the scratch table. */
+/** The deck strip: the markup under the scratch table. Play is the builder's
+ * toolbar's (ui/challengebuild.ts tableToolsHtml), and why the deck cannot be
+ * played yet is the toolbar's pill and its "What's wrong" sheet. */
 export function challengeStripHtml(v: StripView): string {
   const n = v.list.length;
   const Sx = stripStep(v.cw);
@@ -76,8 +76,6 @@ export function challengeStripHtml(v: StripView): string {
   return `<section class="ttdeck">
     <div class="ttdeckhead">
       <b>Your deck</b><span class="dim">dealt left to right, 1 on top · ${n} card${n === 1 ? '' : 's'}</span>
-      ${v.problem ? `<span class="chproblem">${esc(v.problem)}</span>` : ''}
-      <button class="cta primary ttplay" data-btn="ch-play" ${v.problem ? 'disabled' : ''}>Play</button>
     </div>
     <div class="ttstripbox" data-scroll="tt-strip">
       <div class="ttstripzone" data-tt-zone="strip" data-tt-axis="x" data-tt-s="${Sx}" data-tt-n="${n}" data-btn="tt-to">

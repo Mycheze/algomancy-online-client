@@ -111,14 +111,6 @@ export function initChallenge(opts: { app: HTMLElement; rerender: () => void }):
     // submits the kept run (sendKept) once there is an account
     if (url.get('signin') === '1') acct.signInThenReturn();
   }
-  // Esc closes the Import sheet on the table (the builder's own sheets are its)
-  if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
-    document.addEventListener('keydown', e => {
-      if (e.key !== 'Escape' || !importing || !tt.screen()) return;
-      importing = false;
-      tt.tabletopChanged();
-    });
-  }
 }
 
 
@@ -413,6 +405,8 @@ function tableHost(id: string): tt.TableHost {
     pool: true,
     pill: () => tablePill(self.cards()),
     toolsHtml: () => tableToolsHtml(self.cards(), importing),
+    // Esc closes the Import sheet (tabletop.ts's Esc asks)
+    closeSheet: () => { if (!importing) return false; importing = false; return true; },
     sheetHtml: () => (importing ? sheet({
       open: true, placement: 'side', width: 'sm', title: 'Import a deck', bodyHtml: importListHtml(importable()),
       dismissBtn: 'ch-import', id: 'ch-importsheet',
@@ -424,7 +418,7 @@ function tableHost(id: string): tt.TableHost {
       const hand = d && !problem ? openingHand(d, l) : null;
       const c = tt.selected(self);
       return tableNoteHtml(d ? goalText(d.goal) : null) + challengeStripHtml({
-        list: l, hand: hand ? hand.length : null, problem, ...cardSize(),
+        list: l, hand: hand ? hand.length : null, ...cardSize(),
         front: tt.frontIn('strip'), picked: c?.from === 'strip' ? c.index : undefined,
       });
     },

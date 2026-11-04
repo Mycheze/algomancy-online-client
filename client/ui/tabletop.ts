@@ -114,9 +114,6 @@ export interface TableHost {
   commit(next: TableNext): void;
   /** Back: save what is waiting and repaint the page underneath */
   close(): void;
-  /** the full card browser with this query. Optional since BL-65: the
-   * builder's pool and its More filters sheet replace it (W3 removes it) */
-  fullBrowser?(query: string): void;
 
   // ── BL-65 (2026-11-04): the builder in the app frame. All additive and
   // optional: a host that sets none of these draws as before ──────────────
@@ -134,6 +131,9 @@ export interface TableHost {
   /** trusted markup: the host's own sheet when one is open, else '' (Deck
    * info, the challenge's import). Drawn inside the page, after the table */
   sheetHtml?(): string;
+  /** Esc: close the host's own sheet, if one is open — true when it was (the
+   * table then repaints). The table's own sheets close first */
+  closeSheet?(): boolean;
   /** the title's own button (the deck name ✎ opens Deck info: `deck-settings`) */
   titleBtn?: string;
   /** shown, not editable: no drag, no card menu, no pool */
@@ -1246,10 +1246,11 @@ function ensureListeners(): void {
       if (!place(host, null, { at: 'arrange', edit: { op } })) paint();
       return;
     }
-    // Escape: the sheet, then the pick. The page itself has no Escape: it is a
-    // page, not a dialog
+    // Escape: the table's sheet, then the host's, then the pick. The page
+    // itself has no Escape: it is a page, not a dialog
     if (e.key !== 'Escape') return;
     if (sheetOpen) { e.stopPropagation(); sheetOpen = null; paint(); return; }
+    if (host.closeSheet?.()) { e.stopPropagation(); paint(); return; }
     if (!selected(host)) return;
     e.stopPropagation();
     putDown();

@@ -13,8 +13,6 @@
 .ttsummary .ttchnote { margin: var(--space-1) 0 0; font-size: var(--text-12); }
 .ttdeck { flex: none; padding: var(--space-3) var(--space-5) var(--space-2); background: var(--felt); border-top: 1px solid var(--line); }
 .ttdeckhead { display: flex; align-items: center; gap: var(--space-2) var(--space-4); flex-wrap: wrap; min-height: 32px; font-size: var(--text-13); }
-.ttdeckhead .chproblem { margin: 0; }
-.ttdeckhead .ttplay { margin-left: auto; padding: var(--space-3) var(--space-7); font-weight: 700; }
 .ttstripbox { overflow-x: auto; overflow-y: hidden; overscroll-behavior: contain; touch-action: pan-x;
   scrollbar-color: var(--color-border-strong) transparent; scrollbar-width: thin; }
 .ttstripzone { position: relative; box-sizing: border-box; min-width: 100%; width: max-content;

@@ -142,7 +142,7 @@ test('§4 Play on the toolbar waits for a deck the engine would deal', () => {
 });
 
 test('§5 the card browser’s bridge is gone from the challenge', () => {
-  for (const f of ['challenge.ts', 'challengebuild.ts']) {
+  for (const f of ['challenge.ts', 'challengebuild.ts', 'tabletop.ts']) {
     assert.doesNotMatch(code(f), /fullBrowser|bridgeFor|useDeck|DeckBridge|openBrowser/, `${f} has no card browser bridge`);
   }
 });

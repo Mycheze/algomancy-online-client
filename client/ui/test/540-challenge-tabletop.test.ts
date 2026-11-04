@@ -105,6 +105,7 @@ test('§1 a reload on ?table=ch:<id> lands on the table: the strip is the draft,
   // the builder's toolbar (BL-65): a count pill, Import a deck, Play — no card browser bridge
   assert.match(html, new RegExp(`>${LIST.length} in the deck<`), 'the pill is a count: a challenge deck has no size to reach');
   assert.match(html, /data-btn="ch-import"[^>]*>Import a deck</);
+  assert.equal([...html.matchAll(/data-btn="ch-play"/g)].length, 1, 'one Play, the toolbar\'s');
   assert.match(html, /data-btn="ch-play"[^>]*>Play</);
   assert.match(html, /data-btn="tt-undo"/, 'Undo and Redo are the builder’s');
   assert.match(html, /data-btn="tt-add"/, 'the pool is over the table');
@@ -123,12 +124,12 @@ test('§2 the Turn-1 bracket is the engine’s deal: its width, and the cards un
   assert.deepEqual(sorted(names(html).slice(0, hand.length)), sorted(hand), 'over exactly the dealt cards');
   // a deck smaller than a hand is all hand: the bracket spans the whole fan
   const small = units.slice(0, 3);
-  const all = challengeStripHtml({ list: small, hand: dealt(small).length, problem: null, cw: 132, ch: 183 });
+  const all = challengeStripHtml({ list: small, hand: dealt(small).length, cw: 132, ch: 183 });
   assert.equal(bracketPx(all), stripWidth(3, stripStep(132), 132));
-  // an undealable deck has no bracket at all, and Play waits
-  const none = challengeStripHtml({ list: ['Training Construct'], hand: null, problem: 'not a deck card', cw: 132, ch: 183 });
+  // an undealable deck has no bracket at all (Play waiting is the toolbar's: 1124 §4)
+  const none = challengeStripHtml({ list: ['Training Construct'], hand: null, cw: 132, ch: 183 });
   assert.equal(bracketPx(none), 0);
-  assert.match(none, /data-btn="ch-play" disabled/);
+  assert.doesNotMatch(none, /data-btn="ch-play"|chproblem/, 'the strip has no Play of its own, and no problem line');
 });
 
 test('§3 the tap route: a strip card lands before the card tapped, and the draft keeps the order', () => {
