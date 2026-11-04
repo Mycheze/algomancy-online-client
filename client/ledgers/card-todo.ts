@@ -268,15 +268,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 434, area: "engine", severity: "minor",
-    title: "the declineCost branch of the grafted cast-cost decision is believed dead since the cost became a cast-time payment",
-    detail: "engine.ts, the grafted cast-cost decision: \"if ('declineCost' in obj) {\". Since CR 111.15 and CT-216 a grafted cost is paid as the composite goes on the stack, and nothing is believed to reach the decline branch. CT-391 kept it and described it as believed dead, because that pass made no behaviour change.",
-    evidence: "Pass D paperwork 2026-10-25 (zero-handoff/PD-paper.md, new defect 5), closing CT-391.",
-    fix: "Prove nothing reaches it (a throw in the branch under the whole engine suite), delete it with 393's two guards as the net, and replay stored games.",
-    proof: () => still('engine/src/engine.ts', "if ('declineCost' in obj) {"),
-    status: 'open',
-  },
-  {
     id: 435, area: "engine", severity: "minor",
     cards: ["Infernal Cultivator", "Malevolent Machinations"],
     title: "a [Sacrifice X units] cost destroys its units one at a time, so they are not one death batch; whether they should be needs a source",

@@ -2091,7 +2091,7 @@ export function stackXMark(item: StackItem): string {
 export interface DecisionOptionLike { label: string; card?: CardName; value: unknown }
 
 /** the value shapes the engine uses for "stop" rather than "do" */
-const DECLINE_KEYS = ['doneTargets', 'doneCost', 'doneMods', 'declineCost'];
+const DECLINE_KEYS = ['doneTargets', 'doneCost', 'doneMods'];
 
 /** a decision option whose value names something on the board (or in a public
  * zone) — the kind the player is meant to click on the table */

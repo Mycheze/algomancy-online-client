@@ -907,7 +907,7 @@ test('partitionOptions puts every option in exactly one bucket', () => {
 });
 
 test('every shape of decline lands in the decline bucket', () => {
-  for (const v of [{ doneTargets: true }, { doneCost: true }, { doneMods: true }, { declineCost: true }]) {
+  for (const v of [{ doneTargets: true }, { doneCost: true }, { doneMods: true }]) {
     assert.deepEqual(partitionOptions([{ label: 'stop', value: v }]).decline, [0], JSON.stringify(v));
   }
   // …and an affirmative that happens to be an object does NOT

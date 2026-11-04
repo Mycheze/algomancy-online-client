@@ -85,7 +85,7 @@ export function boardKey(s: BoardSubject): string {
   }
 }
 
-const DECLINE_KEYS = ['doneTargets', 'doneCost', 'doneMods', 'declineCost'];
+const DECLINE_KEYS = ['doneTargets', 'doneCost', 'doneMods'];
 
 /** a stack item the strip draws: one waiting on the stack, or the one resolving */
 const stripItem = (s: GameState, id: number) =>
