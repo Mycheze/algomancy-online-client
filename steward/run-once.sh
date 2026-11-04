@@ -201,6 +201,9 @@ regate_master_red() {
     [ -e "$f" ] || continue
     [ "$(jq -r '.masterRed // false' "$f")" = true ] || continue
     item=$(jq -r .item "$f"); sha=$(jq -r '.sha // empty' "$f"); intent=$(jq -r '.intent // "stage"' "$f")
+    # an owner answer the worker has not read yet may change the work: never ship over it
+    # (2026-11-04: his CT-428 reply added a case the branch had to be checked against)
+    [ -f "$STATE/answers/$(slug "$item").md" ] && intent=stage
     [ -n "$sha" ] || sha=$(g rev-parse -q --verify "$(jq -r .branch "$f")") || { jq '.masterRed=false' "$f" > "$f.t" && mv "$f.t" "$f"; continue; }
     governor_on || return 0
     log "re-gating $item (red while master was red) on green master"
