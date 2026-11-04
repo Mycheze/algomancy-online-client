@@ -98,7 +98,8 @@ test('§5 the card width per screen', () => {
 
 test('§6 the CSS: placed cards, z-index by index, the dropped card in front, no cascade', () => {
   const at = CSS.indexOf('/* ── THE TABLETOP');
-  const end = CSS.indexOf('/* ── THE BINDER');
+  // (it ended at the binder's piece until BL-65 deleted it; the deck strip's comes next now)
+  const end = CSS.indexOf('/* ── TABLETOP: DECK STRIP');
   assert.ok(at > 0 && end > at, 'the tabletop block is where it was');
   const block = CSS.slice(at, end);
   assert.ok(at < CSS.indexOf('THE REGIONS BOARD'), 'above the regions banner (318 §6)');

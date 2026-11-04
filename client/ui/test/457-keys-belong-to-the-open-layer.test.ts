@@ -129,6 +129,7 @@ const NOT_GAME_KEYS: Record<string, string> = {
   'main.ts:primeAudio': 'the first key press unlocks audio — it acts on nothing',
   'crsearch.ts:input.focus()': "'/' focuses the comprehensive-rules search on the review page; it skips text boxes and open dialogs itself",
   'rules.ts:rules-q': 'Escape in the rules search box clears it; it reads only that box',
+  'decks.ts:pageSheet = null': 'Escape closes the Decks page\'s open sheet (never while the builder is up); it reads no other key',
 };
 
 const UI = new URL('../', import.meta.url);
