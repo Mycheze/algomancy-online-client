@@ -208,17 +208,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 435, area: "engine", severity: "minor",
-    cards: ["Infernal Cultivator", "Malevolent Machinations"],
-    title: "a [Sacrifice X units] cost destroys its units one at a time, so they are not one death batch; whether they should be needs a source",
-    detail: "CT-414 made the units one sacrifice instruction takes die together (Caleb: \"Sacrifices are resolved simultaneously\"). Costs were left alone: the engine's cost payer (sacrificeUnits) still destroys one unit at a time for Infernal Cultivator, Malevolent Machinations and the other multi-unit sacrifice costs. Caleb's words were about an effect, not a cost.",
-    evidence: "Pass D mop-up 2026-10-25 (zero-handoff/PM-engine.md, new defect 1).",
-    fix: "Find a source on a multi-unit sacrifice cost (designer, then RAQ, then the owner). If they die together, pay through sacrificeTogether, guard with an Ancient One among the paid units, and replay stored games.",
-    proof: null,
-    verify: "Pay a two-unit sacrifice cost with an Ancient One beside a unit with a when-I-die line among the two: count its borrowed triggers.",
-    status: 'open',
-  },
-  {
     id: 438, area: "coverage", severity: "minor",
     title: "after the replacement-order round, 472's first title and the engine.ts replacement comment still describe the old fixed order",
     detail: "472-counter-thief-and-rot-order.test.ts: \"CR 708.4a: two Counter Thieves — the player whose unit the counters were for is asked which keeps them\". Since the round the thieves' controller orders them; the test passes because in it that player owns both. The title is bound by CR 708.4a's record. The engine.ts comment above the replacement hooks still says the player the event happens to is asked, lists \"Cosmic Conspirators\" as order-insensitive (not so beside an Automaton) and says there is deliberately no general framework; E.replaceEvent is one now.",
@@ -373,6 +362,17 @@ const OPEN: TodoEntry[] = [
     proof: () => body('ui/main.ts', "if (s.phase === 'gameover') {", 'Playtest 2026-08-20').includes('data-btn="pg-reopen"')
       && text('ui/main.ts').split('data-btn="pg-reopen"').length === 2,
     reportId: 324,
+    status: 'open',
+  },
+  {
+    id: 525, area: "engine", severity: "minor",
+    cards: ["Refuse Reclaimer", "Deformant"],
+    title: "in a death batch, a when-a-unit-dies line an earlier member got from an augment does not hear the members that die after it",
+    detail: "CR 706.8c: a unit destroyed in the same batch \"still triggers on their deaths … as it would have had it survived\". It does for its own printed text: a Refuse Reclaimer CARD destroyed first in a batch still triggers on the next member. It does not for a line it carries as an augment: a unit token carrying Refuse Reclaimer as an augment, destroyed first in the same batch, queues nothing for the member destroyed after it; destroyed last it does. The mod leaves play with its host before the later member dies. (destroyBatch already snapshots neighbours for Ancient One, CR 714.9; nothing does the same for a member's own mods.)",
+    evidence: "Steward CT-435 run 2026-11-04: destroyBatch([Deformant carrying Refuse Reclaimer as an augment, Good Whale]) in battle queued no Reclaimer trigger; the reverse order queued one; a Refuse Reclaimer card first in the same order queued one.",
+    fix: "Have the death-batch listener sweep read a dying member's mods as they were before the batch began (as deathBatchAdjacent does for neighbours), so its augment lines hear the whole batch; guard with an augmented Refuse Reclaimer destroyed first in a batch of two, and replay stored games.",
+    proof: null,
+    verify: "destroyBatch of [a unit token carrying Refuse Reclaimer as an augment, another unit], in that order, in battle: does a Reclaimer trigger queue?",
     status: 'open',
   },
 ];

@@ -1105,6 +1105,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 713.6b `effects.state.together.delete-all`
   - 713.6c `effects.state.together.one-damage`
   - 713.6d `effects.state.together.sacrifices`
+  - 713.6e `effects.state.together.sacrifice-costs`
   - 713.7 `effects.state.absent`
   - 713.7a `effects.state.absent.home`
   - 713.8 `effects.state.dying`

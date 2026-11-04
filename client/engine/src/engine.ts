@@ -10782,7 +10782,13 @@ export class E {
       while (!this.costSettled(part, cost)) {
         const done = this.costPaidSoFar(part, cost);
         const owed = total === null ? 1 : total - done;
-        if (!this.canPayCastCost(seat, this.costOwing(cost, owed, done), item.region, 0, item.sourceId, this.activationManaReserve(item))) {
+        // CR 713.6e / CT-435: once a sacrifice cost has named a unit, the units it
+        // named are still in play (they die together when it is paid in full),
+        // so what is still owed is asked of the pool without them
+        const payable = cost.kind === 'sacrificeUnits' && cost.from !== 'self' && done > 0
+          ? this.costSacrificePool(item, part, cost).length >= owed
+          : this.canPayCastCost(seat, this.costOwing(cost, owed, done), item.region, 0, item.sourceId, this.activationManaReserve(item));
+        if (!payable) {
           if (total === null) {
             // a variable cost simply stops when nothing more can be paid —
             // what was paid stands, and X is what it is
@@ -10804,7 +10810,9 @@ export class E {
         // SOURCE half carries no choice, so it is charged FIRST and outright —
         // in this same cast window, before the menu for the remainder is
         // raised. `canPayCastCost` above already demanded both halves, so the
-        // source never dies for a cost the rest of which cannot be paid.
+        // source is never named for a cost the rest of which cannot be paid.
+        // Charged is not dead: it dies with the ally, in one batch, once both
+        // are named (CR 713.6e / CT-435, `commitCostSacrifices`).
         if (cost.kind === 'sacrificeUnits' && cost.includeSelf && done === 0) {
           this.chargeCastCost(item, part, cost);
           continue;
@@ -10948,14 +10956,10 @@ export class E {
     // CR 111.2: 'recallUnit'/'eraseMod' join the no-`n` list for the same reason
     if (cost.kind === 'sacrificeUnit' || cost.kind === 'gainDebt'
       || cost.kind === 'recallUnit' || cost.kind === 'eraseMod') return cost;
-    // `includeSelf`: the source half is paid first and choice-free, so once it
-    // IS paid what is still owing is a plain n-unit sacrifice. Asking about
-    // `includeSelf` again would look for a source that is now dead and declare
-    // the rest unpayable, skipping the part after half of it had been charged.
-    if (cost.kind === 'sacrificeUnits' && cost.includeSelf && done > 0) {
-      const { includeSelf: _paid, ...rest } = cost;
-      return { ...rest, n: owed, xMin: 0 };
-    }
+    // (a sacrifice cost that has named a unit is never asked about through
+    // here: the collector reads `costSacrificePool` instead, which leaves out
+    // the units already named — CR 713.6e / CT-435. That covers `includeSelf`'s
+    // remainder too, which this used to restate as a plain n-unit sacrifice.)
     // Report 273: the points of a variable life cost are COUNTED as they are
     // chosen and LOST together when X closes (finishVariableCost), so the life
     // total has not moved yet — CR 111.6b is asked of the whole running total.
@@ -10972,6 +10976,8 @@ export class E {
     paid.x = this.costPaidSoFar(part, cost);
     paid.xDone = true;
     this.ev('info', `${item.label}: X = ${paid.x} (${this.castCostLabel(cost)}).`);
+    // CR 713.6e / CT-435: "[Sacrifice X units]" — the X units die together now
+    if (cost.kind === 'sacrificeUnits') this.commitCostSacrifices(part);
     // Report 273: "[Pay X life]" is ONE payment of X life — one life change,
     // so "when you lose life, create THAT MANY" (Life Plant, [once]) hears X,
     // not a run of 1s whose first spends the use. The points were counted one
@@ -11018,16 +11024,7 @@ export class E {
     // default if it is ever asked about.
     if (cost.kind === 'sacrificeUnit'
       || (cost.kind === 'sacrificeUnits' && cost.from !== 'self')) {
-      // a multi-unit sacrifice may not name the same unit twice — but each one
-      // is really gone by the time the next is asked for, so "still in play"
-      // already guarantees it and no explicit spent-set is needed.
-      // `includeSelf` ("me AND another ALLY"): the source is not on the menu.
-      // It has already been charged, choice-free, so it is not there to pick
-      // anyway — but saying it here is what makes "another" mean another, and
-      // keeps the menu honest if the two halves are ever reordered.
-      const self = cost.kind === 'sacrificeUnits' && cost.includeSelf ? item.sourceId : undefined;
-      return this.unitsOf(seat, item.region)
-        .filter(u => u.id !== self)
+      return this.costSacrificePool(item, part, cost)
         .map(u => ({ label: this.targetLabel({ unit: u.id }), value: { unit: u.id }, card: u.card }));
     }
     if (cost.kind === 'discardCard') {
@@ -11119,6 +11116,42 @@ export class E {
     return [{ label: `Pay: ${this.castCostLabel(cost)}`, value: { payCost: true } }];
   }
 
+  /**
+   * CR 111.2, 713.6e / CT-435: the units a chosen sacrifice cost may still name.
+   * A multi-unit sacrifice may not name the same unit twice, and the units
+   * already named are STILL IN PLAY — they die together when the cost is paid
+   * in full (`commitCostSacrifices`) — so they are left out by the receipt,
+   * not by being gone. `includeSelf` ("me AND another ALLY"): the source is
+   * never on the menu, which is what makes "another" mean another. The ONE
+   * reading the option list and the collector's payability check share.
+   */
+  private costSacrificePool(item: StackItem, part: EffectPart, cost: CastCost): Entity[] {
+    const picked = new Set((part.costPaid?.sacrificedUnits ?? []).map(r => r.unit));
+    const self = cost.kind === 'sacrificeUnits' && cost.includeSelf ? item.sourceId : undefined;
+    return this.unitsOf(item.controller, item.region).filter(u => u.id !== self && !picked.has(u.id));
+  }
+
+  /**
+   * CR 111.2, 713.6e / CT-435 — the units ONE sacrifice cost takes die TOGETHER,
+   * in one death batch, once the cost is paid in full: each is named as it is
+   * picked and none dies until the last is, so an Ancient One paid with its
+   * neighbour still has the neighbour's abilities as it dies (CR 714.9) and a
+   * unit that hears deaths hears the others paid with it (CR 706.8c). Caleb,
+   * rules-questions 2025-06-02, on paying Malevolent Machinations with a
+   * Maelstrom Charger and then the Ancient One beside it: "Technically it
+   * should be within the same game action so I don't think order matters"
+   * (RQ 1379132774207848589). No window opens between picks — the cast window
+   * holds priority — so nothing can act on a named unit before it dies.
+   * Called when a fixed cost is settled and when a variable one closes; a
+   * unit already out of play is skipped, so a second call does nothing.
+   */
+  private commitCostSacrifices(part: EffectPart): void {
+    const named = (part.costPaid?.sacrificedUnits ?? [])
+      .map(r => this.entity(r.unit))
+      .filter((u): u is Entity => !!u && u.kind === 'unit' && !u.absent);
+    if (named.length) this.destroyBatch(named, 'is sacrificed');
+  }
+
   /** charge a choice-free bracketed cost and write its receipt */
   private chargeCastCost(item: StackItem, part: EffectPart, cost: CastCost): void {
     const seat = item.controller;
@@ -11150,7 +11183,9 @@ export class E {
         unit: u.id, card: u.card, power: p, defense: t, counters: u.counters,
       });
       this.ev('info', `${this.pname(seat)} sacrifices ${u.card} — the cost of ${item.label}.`);
-      this.destroy(u, 'is sacrificed');
+      // CR 713.6e / CT-435: "[Sacrifice me]" is settled at once and dies now;
+      // Deformant's "me" waits for its "another ally", and the two die together
+      if (this.costSettled(part, cost)) this.commitCostSacrifices(part);
     }
   }
 
@@ -11276,6 +11311,9 @@ export class E {
     const u = this.entity(id);
     this.need(u && u.kind === 'unit' && u.controller === item.controller && !u.absent
       && u.region === item.region, 'bad cost choice');
+    // CR 713.6e / CT-435: a unit already named for this cost is still in play
+    // until the cost is paid in full; it may not be named twice
+    this.need(cost.kind !== 'sacrificeUnits' || this.costSacrificePool(item, part, cost).includes(u!), 'bad cost choice');
     const [p, t] = this.effStats(u);
     // 'sacrificeUnit' keeps the singular receipt every existing card reads
     // (batch-fire-a, batch-fire-b, batch-metal-b, batch-hybrids-wm-b all read
@@ -11296,7 +11334,11 @@ export class E {
       paid.sacrificed = { card: u!.card, power: p, defense: t };
     }
     this.ev('info', `${this.pname(item.controller)} sacrifices ${u!.card} — the cost of ${item.label}.`);
-    this.destroy(u!, 'is sacrificed');
+    // CR 713.6e / CT-435: the plural kind's units die together when the cost is
+    // paid in full — here once a fixed one is settled, in finishVariableCost
+    // when a variable one closes
+    if (cost.kind !== 'sacrificeUnits') this.destroy(u!, 'is sacrificed');
+    else if (this.costSettled(part, cost)) this.commitCostSacrifices(part);
   }
 
   /** CR 111.2: the units one choice-bearing activation-cost atom may name.
