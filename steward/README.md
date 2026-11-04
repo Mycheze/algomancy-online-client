@@ -53,8 +53,8 @@ the box back to the previous commit and **pauses the steward**.
 
 A red master turns every branch red (the first night, 2026-11-03: one
 hand-written path in `vps-fetch.sh`, six items, six red gates). So the runner
-gates clean master on the eve (the hour before the window) and whenever master
-moves, into `state/master-gate.json`. Red → a journal row, a webhook note, and
+gates clean master whenever master moves, at any hour (no Claude is spent;
+the governor keeps it silent), into `state/master-gate.json`. Red → a journal row, a webhook note, and
 `fix-master` first in the queue; repairs wait. A branch that went red while
 master was red is marked `masterRed` and, once master is green, re-gated by the
 runner alone (rebase + gate, no Claude) and shipped or staged as the agent

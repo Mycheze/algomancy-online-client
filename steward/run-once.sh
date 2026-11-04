@@ -85,9 +85,6 @@ in_hours() { # start end → is the local hour in [start,end)?
   else [ "$h" -ge "$start" ] || [ "$h" -lt "$end" ]; fi
 }
 in_window() { in_hours $((10#${STEWARD_WINDOW%-*})) $((10#${STEWARD_WINDOW#*-})); }
-# the window plus the hour before it: master's own gate runs on the eve, so the
-# night starts knowing whether master is green (no Claude is spent on the eve)
-in_eve_or_window() { in_hours $(( (10#${STEWARD_WINDOW%-*} + 23) % 24 )) $((10#${STEWARD_WINDOW#*-})); }
 
 # ── trusted copies ──────────────────────────────────────────────────────────
 # The agent works in $REPO and may edit anything there, steward/ included. So
@@ -542,11 +539,11 @@ main() {
   land_approved
   try_deploy
 
-  # the eve and the night: know master's colour; re-gate what was red only because of it
-  if in_eve_or_window; then
-    master_gate && regate_master_red
-    try_deploy
-  fi
+  # any hour (no Claude is spent, and the governor keeps it silent): know master's
+  # colour, and re-gate what was red only because of it — so the night starts on
+  # a known-green master instead of spending its first hours on gates
+  master_gate && regate_master_red
+  try_deploy
   if ! in_window; then
     # the morning summary, once a day, after the window closes (discord.mjs keeps the day)
     in_hours $((10#${STEWARD_WINDOW#*-})) $(( (10#${STEWARD_WINDOW%-*} + 23) % 24 )) && [ -f "$BIN/discord.mjs" ] && { discord summary 2>>"$LOGS/runner.log" || true; }
