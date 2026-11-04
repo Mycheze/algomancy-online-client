@@ -8480,9 +8480,14 @@ export class E {
     // designer, rules-questions 2024-05-07 (RQ 1237434283786768415), on
     // Tiderunner Initiate: "You could play it directly into a blocking
     // formation even if you had no units". A block entry is sticky (CR 602.5a),
-    // so its emptied front slot is still a place to block from.
+    // so its emptied front slot is still a place to block from — but only while
+    // there is still something to block. The owner, on Discord 2026-11-04:
+    // "if there is still an attacking formation, then there's still technically
+    // an empty blocking formation. But if ALL the units on both side are
+    // suddenly gone, then there is no formation at all."
     const standing = grid.some(col => col.some(id => this.entity(id)))
-      || (seat === b.defender && Object.keys(b.blocks).length > 0);
+      || (seat === b.defender && Object.keys(b.blocks).length > 0
+        && b.columns.some(col => col.some(id => this.entity(id))));
     if (!remembered && !standing) return flash;
     const out: { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string; spot: FormationSpot }[] = [];
     // Only the ATTACKING grid can widen. A blocking column is keyed to an

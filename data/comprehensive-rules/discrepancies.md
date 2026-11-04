@@ -363,8 +363,9 @@ The owner ruling of 2026-08-19 (“Rot: start of deployment, damage equal…”)
 - owner ruling, adopted 2026-08-22: "all — with no living unit in the grid the answer is "no slots", not "open a"
 - owner ruling, adopted 2026-08-25: "legal exactly while its battle runs; **emptying it does not remove it**"
 - RQ 1237434283786768415: "You could play it directly into a blocking formation even if you had no units"
+- owner ruling, adopted 2026-11-04: "Yes, if there is still an attacking formation, then there's still technically an empty blocking formation. But if ALL the units on both side are suddenly gone, then there is no formation at all."
 
-**Resolution:** The designer settles it (CT-428). The attacker half of 602.6k stands. A defender who declared blocks keeps that blocking formation when every blocker has left it: the front slot of each emptied blocking column is offered (602.6j, 602.7c), and the unblocked columns are offered too (602.6c, the owner ruling of 2026-10-09 (“A blocker put in after blocks…”)). The owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”) is about a formation as a TARGET and does not speak to joining one. For an effect whose source has left play, see D-U10-6.
+**Resolution:** The designer settles it (CT-428). The attacker half of 602.6k stands. A defender who declared blocks keeps that blocking formation when every blocker has left it: the front slot of each emptied blocking column is offered (602.6j, 602.7c), and the unblocked columns are offered too (602.6c, the owner ruling of 2026-10-09 (“A blocker put in after blocks…”)). The owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”) is about a formation as a TARGET and does not speak to joining one. For an effect whose source has left play, see D-U10-6. The owner confirmed it on 2026-11-04 (CT-428) and bounded it: the emptied blocking formation lasts while an attacking formation does; once every unit on both sides is gone there is no formation at all.
 
 ### D-U10-6 · Other · rule 602.6f
 
