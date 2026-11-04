@@ -10,10 +10,6 @@
 .ccscore .ccgame { font-size: var(--text-14); font-weight: 700; }
 .ccscore .cccount { color: var(--accent); font-variant-numeric: tabular-nums; }
 .ccreset { margin-bottom: var(--space-4); }
-.ccboards { display: flex; flex-direction: column; gap: var(--space-4); }
-.ccboard h3 { margin: 0 0 var(--space-3); font-size: var(--text-14); }
-.ccchip { padding: var(--space-3) var(--space-4); margin: 0 var(--space-2) var(--space-2) 0; font-size: var(--text-13); text-transform: none; min-height: 32px; }
-.ccchip:disabled { opacity: .75; cursor: default; }
 .cclegal { margin: var(--space-4) 0 0; }
 .ccready { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); margin: var(--space-5) 0 0; }
 .ccready > p { flex-basis: 100%; margin: 0; }

@@ -1,5 +1,0 @@
-/* ── the deck page's modals: gone (BL-65, 2026-11-04) ──
- * The settings, description, export and import modals became side sheets
- * (components/sheet.ts, placement 'side'): the Decks page's in
- * pages/51-decks-shelf.css, the builder's Deck info there too. This piece is
- * left empty for the integration round to take out of index.css. */

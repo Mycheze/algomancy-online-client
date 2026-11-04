@@ -2,8 +2,8 @@
    One page in the frame (bleed): the pool band with its filters across the top, the divider, the table
    of piles under it with the Sideboard and Maybe rail on the right, the stats strip at its foot, and the
    card menu. Constructed, the weekly challenge and Competitive sideboarding all draw this table. After
-   the frame and the Decks shelf; the old tabletop and binder pieces (24-tabletop.css, 25-binder.css)
-   come earlier. Tokens only (921). */
+   the frame and the Decks shelf; the older tabletop piece (24-tabletop.css) comes earlier. Tokens
+   only (921). */
 
 /* the page: the frame's main region (bleed + fill) holds one column — the note, the pool, the
    divider, the table. The pool and the table share the height by --pool-f (ui/splitter.ts) */
@@ -26,7 +26,6 @@
 .ttpill.ttpill--warn { color: var(--color-warning); border-color: var(--color-warning); }
 .ttpill.ttpill--bad { color: var(--color-danger); border-color: var(--color-danger); }
 .ttsummary { min-width: 0; font-size: var(--text-13); font-weight: 400; letter-spacing: 0; }
-.ttsummary .cbdeckbar { position: static; margin: 0; padding: 0; border: 0; background: none; }
 /* the captions may go under 1100px: the icons stay, with their titles */
 @media (max-width: 1100px) {
   .ttpage .frametop .ui-icon-button__label { display: none; }

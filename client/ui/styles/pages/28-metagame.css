@@ -20,7 +20,6 @@
 .deckdesc.empty { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap;
   background: none; border-style: dashed; }
 .deckdesc.empty .hint { margin: 0; }
-.deckdescfoot { display: flex; gap: var(--space-5); margin-top: var(--space-3); }
 .deckdescbody { font-size: var(--text-14); line-height: 1.5; }
 .deckdescbody > :first-child { margin-top: 0; }
 .deckdescbody > :last-child { margin-bottom: 0; }

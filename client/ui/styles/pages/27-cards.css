@@ -165,13 +165,6 @@
 .cbkeys td { padding: var(--space-1) var(--space-4) var(--space-1) 0; border-top: 1px solid var(--line); vertical-align: top; }
 .cbflags { font-size: var(--text-12); line-height: 1.9; }
 
-/* deckbuilding mode */
-.cbdeckbar { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap;
-  border: 1px solid var(--accent); border-radius: var(--radius-lg); background: var(--panel2);
-  padding: var(--space-3) var(--space-5); font-size: var(--text-13); margin-bottom: var(--space-4); }
-.cbdeckbar .ok { color: var(--glow); }
-.cbdeckbar .warn { color: var(--accent); }
-
 /* BL-34: the deck page's work area — the grid and the add drawer in one
    column, the pinned card in the other. The panel is `.cbdetail`, the same
    element the browser pins (ui/cardpanel.ts), so it inherits the sticky
@@ -180,10 +173,6 @@
 .dkwork:has(.cbdetail) { grid-template-columns: minmax(0, 1fr) 320px; }
 @media (max-width: 1000px) { .dkwork, .dkwork:has(.cbdetail) { grid-template-columns: 1fr; } }
 .dkworkmain { min-width: 0; }
-/* The strip says what you are building while you build it, so it has to stay
-   on screen — the complaint it answers is "you can't see the cards in the deck
-   without scrolling up". */
-.deckpage .cbdeckbar { position: sticky; top: 4px; z-index: 5; }
 
 /* the deck page's own drawer grew a way in here */
 .dkaddrow { display: flex; gap: var(--space-3); margin-top: var(--space-3); }
@@ -198,25 +187,14 @@
 /* the keyboard cursor through the results */
 .cbtile.sel { outline: 2px solid var(--accent); outline-offset: -2px; }
 .cbrow.sel { background: var(--panel2); box-shadow: inset 2px 0 0 var(--accent); }
-/* the deckbuilding strip's curve and element spread */
-.cbdeckname, .cbdeckcount { white-space: nowrap; }
-.cbminicurve { display: inline-flex; align-items: flex-end; gap: var(--space-1); height: 26px; }
-.cbcbar { display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-  width: 15px; height: 100%; }
-.cbcbar i { display: block; width: 100%; min-height: 1px; background: var(--accent);
-  opacity: .75; border-radius: 1px 1px 0 0; }
-.cbcbar em { font-style: normal; font-size: var(--text-11); color: var(--dim); line-height: 1.1; }
-.cbdeckels { display: inline-flex; gap: var(--space-3); align-items: center; }
-.cbdeckel { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--text-12); color: var(--dim); }
-.cbdeckel .elicon { width: 13px; height: 13px; }
 
 
 /* ── the card browser in the app frame (2026-11-04, docs/24) ──────────────
    One window: the rail, the results and the pinned card are three columns
    that each scroll inside themselves (pages/frame.ts carries their scroll
    across a repaint by their data-scroll keys); the search sits fixed over
-   the results. Everything here is scoped to .cbpage: .cbtools, .cbdetail and
-   .cbdeckbar are also drawn by the deck and metagame pages. */
+   the results. Everything here is scoped to .cbpage: .cbtools and .cbdetail
+   are also drawn by the deck and metagame pages. */
 .cbpage .ui-app-shell__main { gap: var(--space-5); }
 .cbpage .cbmain { position: relative; flex: 1 1 auto; min-height: 0; align-items: stretch;
   grid-template-columns: 232px minmax(0, 1fr); gap: var(--space-6); }

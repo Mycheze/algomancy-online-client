@@ -7,9 +7,6 @@
    the stacked-tile geometry engine test 222 parses. */
 .homedecks { margin-top: var(--space-3); }
 
-/* the old deck title's type (test 903 pins this rule: a font shorthand that mixed `inherit` in) */
-.deckname { font-family: inherit; font-weight: 700; font-size: 19px; line-height: 1.2;
-  border: 1px solid transparent; padding: var(--space-2) var(--space-4); width: 100%; }
 .acctcount.bad { color: var(--danger); font-weight: 700; }
 .deckrecline { font-size: var(--text-12); }
 .deckrecline a { color: var(--accent); margin-left: var(--space-3); }
@@ -31,7 +28,6 @@
 .dktile { position: relative; border-radius: var(--radius-md); overflow: hidden; background: var(--panel2);
   border: 1px solid var(--line); aspect-ratio: 63 / 88; }
 .dktile.iscover { border-color: var(--accent); }
-.dktile.overcap { border-color: var(--danger); }
 .dktile[data-btn] { cursor: pointer; }
 .dkart { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
 /* COPIES ARE DRAWN, NOT COUNTED. Owner, 2026-08-29: "instead of showing a x2

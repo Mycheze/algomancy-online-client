@@ -10,7 +10,6 @@
    bottom is the binder sheet's top, and the floor pushed the strip (and the
    table's foot) under the sheet */
 #app > .ttpage { min-height: 0 !important; }
-.ttsummary .ttchnote { margin: var(--space-1) 0 0; font-size: var(--text-12); }
 .ttdeck { flex: none; padding: var(--space-3) var(--space-5) var(--space-2); background: var(--felt); border-top: 1px solid var(--line); }
 .ttdeckhead { display: flex; align-items: center; gap: var(--space-2) var(--space-4); flex-wrap: wrap; min-height: 32px; font-size: var(--text-13); }
 .ttstripbox { overflow-x: auto; overflow-y: hidden; overscroll-behavior: contain; touch-action: pan-x;
@@ -29,18 +28,8 @@
 .ttstripnums > span { position: absolute; top: 0; padding-left: var(--space-2); color: var(--dim); font-size: var(--text-11);
   font-variant-numeric: tabular-nums; pointer-events: none; }
 .ttstripempty { position: absolute; left: 18px; top: 45%; pointer-events: none; }
-/* the Report button and the bell sit above the strip, never over its cards
-   (the strip is a card's height and ~90px of head, bracket and numbers) */
-html.binderup:has(.ttdeck) .reportfab, html.binderup:has(.ttdeck) .inboxbell { bottom: 285px; }
-html.touch.binderup:has(.ttdeck) .reportfab, html.touch.binderup:has(.ttdeck) .inboxbell { bottom: 252px; }
-@media (max-width: 1366px) {
-  html.binderup:has(.ttdeck) .reportfab, html.binderup:has(.ttdeck) .inboxbell { bottom: 252px; }
-}
 @media (max-width: 900px) {
   .ttdeck { padding: var(--space-2) var(--space-4) var(--space-1); }
-  .ttsummary .ttchnote { display: none; }
-  html.binderup:has(.ttdeck) .reportfab, html.binderup:has(.ttdeck) .inboxbell,
-  html.touch.binderup:has(.ttdeck) .reportfab, html.touch.binderup:has(.ttdeck) .inboxbell { bottom: calc(var(--ddh) + 252px); }
 }
 
 /* ── the curve ── */
@@ -74,7 +63,6 @@ html.touch.binderup:has(.ttdeck) .reportfab, html.touch.binderup:has(.ttdeck) .i
 .dkdemandrow { display: inline-flex; align-items: center; gap: var(--space-2); }
 .dkdemandrow .costbox { display: inline-flex; gap: var(--space-1); }
 .dkdemandrow img { width: 14px; height: 14px; }
-.dkmodalbox .dkexport { margin-top: var(--space-4); border: 0; padding: 0; }
 .dkexport { margin-top: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-4);
   background: var(--panel2); }
 .dkexporttext { width: 100%; font: 12px/1.45 ui-monospace, monospace; background: var(--bg);

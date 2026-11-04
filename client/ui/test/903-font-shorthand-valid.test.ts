@@ -26,11 +26,11 @@ test('a CSS-wide keyword in a font shorthand stands alone', () => {
   assert.deepEqual(bad, [], 'invalid: the browser drops the whole declaration');
 });
 
-test('the four rules that had it say what they meant', () => {
+test('the rules that had it say what they meant', () => {
   // through resolveTokens: since the design tokens a size may be spelled `var(--text-13)`; what the
   // rule MEANS is the size it computes to, and a token whose value moved still fails here
   const body = (sel: string): string => resolveTokens(css.match(new RegExp(`(?:^|\\})\\s*${sel.replace(/\./g, '\\.')}\\s*\\{([^}]*)\\}`))?.[1] ?? '', css);
-  assert.match(body('.deckname'), /font-weight: 700; font-size: 19px; line-height: 1\.2/);
+  // (the fourth, the deck page's `.deckname`, went with that page: BL-65, 2026-11-04)
   assert.match(body('.rulesq'), /font-family: inherit; font-size: 14px; line-height: 1\.4/);
   assert.match(body('.cbrowname'), /font-weight: 600; font-size: 13px; line-height: 1\.3/);
   assert.match(body('.ljask input'), /font-family: inherit; font-size: 14px; line-height: 1\.4/);

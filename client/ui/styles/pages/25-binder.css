@@ -1,5 +1,0 @@
-/* ── THE BINDER is gone (BL-65, 2026-11-04): the builder's pool (pages/pool.ts,
-   52-builder.css) replaced it. This piece stays registered until the round's
-   integration removes its line from index.css; what is left is the deck page's
-   result count, which ui/decks.ts still draws. ── */
-.dkresultcount { color: var(--dim); font-size: var(--text-11); margin-bottom: var(--space-3); }

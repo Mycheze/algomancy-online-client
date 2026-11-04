@@ -1,7 +1,8 @@
-/* THE PINNED CARD PANEL, and the strip that says what you are building.
+/* THE PINNED CARD PANEL. (The deck-building strip that lived here went with
+ * the card browser's Building mode, BL-65, 2026-11-04.)
  *
- * Both of these were written for the card browser (BL-33) and both are wanted
- * verbatim on the deck page (BL-34). The reason they live here rather than
+ * It was written for the card browser (BL-33) and is wanted verbatim on the
+ * deck screens (BL-34, and the builder's Details sheet). The reason it lives here rather than
  * being copied is the reason ui/cardindex.ts exists: the client already had
  * one episode of "the deck drawer's filter and the browser's filter", and
  * `212-card-browser-wiring.test.ts` exists to stop it recurring. A second card
@@ -24,7 +25,7 @@ import { meaningOf } from './cardsynonyms.ts';
 import type { CardRow } from './cardindex.ts';
 import { rowFor } from './cardindex.ts';
 import { printsStats } from '../engine/src/cards/dsl.ts';   // CR 206.2
-import { esc, elIcon } from './util.ts';
+import { esc } from './util.ts';
 
 import { artUrl as scanUrl } from './assets.ts';
 const artUrl = (r: CardRow): string => scanUrl(r.image || r.name.replace(/ /g, '-') + '.jpg');
@@ -198,57 +199,6 @@ export function cardPanelHtml(name: string, opts: PanelOpts): string {
       : '<p class="hint">no recorded rulings for this card.</p>'}</div>`
     : ''}
   </section>`;
-}
-
-/** What the strip prints — exactly what ui/deckstats.ts's `analyzeDeck` knows,
- * so neither host does deck arithmetic of its own. */
-export interface DeckSummary {
-  total: number;
-  legal: boolean;
-  problems: string[];
-  curve: { mana: number; total: number }[];
-  elements: Record<string, number>;
-}
-
-/**
- * The strip that says what you are building, and moves as you build it.
- *
- * The curve and the element spread are on it rather than further down the page
- * because they are the two things you are deciding ABOUT while you search: a
- * card is a good pick or a bad one relative to what the deck already has, and
- * making you scroll away to find that out is what made the browser feel
- * separate from the deckbuilder — and what made the deck page's own add drawer
- * unusable, since the deck it was adding to was a screen above it.
- */
-export function deckStripHtml(
-  name: string,
-  s: DeckSummary,
-  opts: {
-    /** the button on the right, as markup — the host's, like the panel's */
-    trailing?: string;
-    /** the word before the name. "Building" is right where you are editing the
-     * deck and wrong on a shared one you are only reading, which is the whole
-     * reason this is a parameter rather than a literal. */
-    lead?: string;
-  } = {},
-): string {
-  const peak = Math.max(1, ...s.curve.map(c => c.total));
-  const spread = Object.entries(s.elements).filter(([, n]) => n > 0)
-    .sort((a, b) => b[1] - a[1]);
-  return `<div class="cbdeckbar">
-    <span class="cbdeckname">${esc(opts.lead ?? 'Building')} <b>${esc(name)}</b></span>
-    <span class="cbdeckcount">${s.total} card${s.total === 1 ? '' : 's'}</span>
-    ${s.legal
-    ? '<span class="ok">legal</span>'
-    : `<span class="warn">${esc(s.problems[0] ?? 'not legal yet')}</span>`}
-    <span class="cbminicurve" title="the mana curve, lowest first">${s.curve.map(c =>
-    `<span class="cbcbar" title="${c.mana} mana: ${c.total}"><i style="height:${
-      Math.round((c.total / peak) * 100)}%"></i><em>${c.mana}</em></span>`).join('')}</span>
-    <span class="cbdeckels">${spread.map(([el, n]) =>
-    `<span class="cbdeckel" title="${esc(el)}">${elIcon(el)}${Math.round(n * 10) / 10}</span>`).join('')}</span>
-    <span class="cbspacer"></span>
-    ${opts.trailing ?? ''}
-  </div>`;
 }
 
 /**

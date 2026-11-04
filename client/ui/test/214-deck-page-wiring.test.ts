@@ -41,8 +41,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import '../../engine/src/cards/registry.ts';
 import { allRows } from '../cardindex.ts';
-import { analyzeDeck } from '../deckstats.ts';
-import { cardPanelHtml, deckStripHtml, similarQuery } from '../cardpanel.ts';
+import { cardPanelHtml, similarQuery } from '../cardpanel.ts';
 import { deckPreviewHtml, deckPreviewView } from '../pages/decks.ts';
 
 const UI = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -89,25 +88,6 @@ test('rulings print only when they are for the card on screen', () => {
   assert.match(mine, /R1: it works/);
   const stale = cardPanelHtml(CARD, { close: 'x', rulings: { name: other, lines: ['R1: it works'] } });
   assert.doesNotMatch(stale, /R1: it works/, 'a rulings fetch for another card must not leak onto this one');
-});
-
-test('the deck strip says the count, the legality and the curve', () => {
-  const a = analyzeDeck([CARD, CARD]);
-  const strip = deckStripHtml('My Deck', a);
-  assert.match(strip, /My Deck/);
-  assert.match(strip, /2 cards/);
-  assert.match(strip, /class="warn"/, 'two cards is not a legal deck, and it says so');
-  assert.match(strip, /cbminicurve/);
-  assert.doesNotMatch(strip, /back to the deck/, 'the trailing button is the host’s, not the strip’s');
-  assert.match(deckStripHtml('x', a, { trailing: '<button>go</button>' }), /<button>go<\/button>/);
-  // "Building" is right where you are editing and wrong on a deck you are only
-  // reading, which is why the lead-in is the host's word too
-  assert.match(strip, /Building/, 'the default is the deckbuilder’s word');
-  assert.match(deckStripHtml('x', a, { lead: 'Deck' }), /Deck <b>x<\/b>/);
-});
-
-test('one card is one card, however the strip is asked', () => {
-  assert.match(deckStripHtml('x', analyzeDeck([CARD])), /1 card</, 'no stray plural');
 });
 
 test('"similar" is one notion, and it is a query you can read', () => {
