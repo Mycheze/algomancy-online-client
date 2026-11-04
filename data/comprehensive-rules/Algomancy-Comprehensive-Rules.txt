@@ -2983,16 +2983,17 @@ CONTENTS
       Example: Hooba-Pon attacks and its controller plays a spell unit from hand through it. The spell resolves, and then the unit appears in the chosen position.
       [Basis: Designer | Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file | Printed: card: Hooba-Pon | Designer: RAQ 1461450216874967235#0 | Tests: 396-raq-timing.test.ts | Example test: 396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: the spell part happens, then the unit spawns into the formation | Key: combat.formations.placement.spell-unit]
 
-602.6j After blocks, while the defending formation still holds at least one unit, a unit placed into it may also take the front slot of a blocking column whose blockers have all left it. The unit then blocks that column. See rules 602.6c, 602.6a, 602.6k.
+602.6j After blocks, a unit placed into the defending formation may also take the front slot of a blocking column whose blockers have all left it, even if no unit is left standing in the defending formation. The unit then blocks that column. See rules 602.6c, 602.6a, 602.6k.
       Example: The defender's only blocker in the second column dies after blocks. An effect that puts a unit into the defender's formation may put it in front of the second attacking column.
-      [Basis: Mixed | Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file | Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) | Engine: formationSlots | Tests: 421-cr-regions-formations.test.ts | Example test: 421-cr-regions-formations.test.ts::cr:combat.formations.placement.defending-emptied-block -- after blocks a blocking column whose blocker died offers its front slot, and a unit placed there blocks that column | Key: combat.formations.placement.defending-emptied-block]
+      Example: After blocks, the defender's only blocker dies. The defender plays Tiderunner Initiate in front of the attacker that blocker faced, and it fights that attacker.
+      [Basis: Designer | Verified: not verified (the text changed after verification); 1 gate test file | Designer: RQ 1237434283786768415 | Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) | Engine: formationSlots | Tests: 421-cr-regions-formations.test.ts | Example tests: 421-cr-regions-formations.test.ts::cr:combat.formations.placement.defending-emptied-block -- after blocks a blocking column whose blocker died offers its front slot, and a unit placed there blocks that column, 421-cr-regions-formations.test.ts::cr:combat.formations.placement.defending-emptied-block -- every blocker dies after blocks, and the defender plays Tiderunner Initiate into the emptied blocking column | Key: combat.formations.placement.defending-emptied-block]
 
-602.6k A player with no unit standing in a formation in the battle, because they have not formed one or because every unit in it has left, is offered no position in it, not even a hole, and a unit cannot be played or placed into it. Rules 602.6c and 602.6f are the exceptions. See rules 602.1d, 602.6f, 602.7c, 602.6c.
+602.6k A player with no unit standing in a formation in the battle, because they have not formed one or because every unit in it has left, is offered no position in it, not even a hole, and a unit cannot be played or placed into it. Rules 602.6c, 602.6f and 602.6j are the exceptions. See rules 602.1d, 602.6f, 602.7c, 602.6c, 602.6j.
       Example: The attacker has attacked and the defender has not yet declared blocks. The defender stands in no formation, so an effect that puts a unit into the defender's formation has nowhere to put it.
       Example: After blocks, every attacking unit dies. The attacker then plays Tiderunner Initiate; it cannot be played into the attacking line, not even into a hole, and enters play outside any formation.
       Example: The defender declares no blockers. An effect that puts a unit into the defender's formation may still put it in front of the unblocked attacking column (rule 602.6c); the attacker is offered no such spot.
       Example: A living Hooba-Lin whose line has emptied around it is offered nothing; only a source that has left play keeps its remembered formation.
-      [Basis: Owner ruling, adopted 2026-08-22, 2026-10-09 (quoted from the retired ruling register) | Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 4 gate test files | Tests: 66-formation-placement.test.ts, 400-raq-fix-blocks.test.ts, 421-cr-regions-formations.test.ts, 561-remembered-empty-formation.test.ts | Example tests: 66-formation-placement.test.ts::CR 602.6k: a formation you are not standing in cannot be joined at all, 421-cr-regions-formations.test.ts::cr:combat.formations.placement.empty-formation -- after blocks every attacking unit dies, the attacker is offered no position, not even the hole, and Tiderunner Initiate enters play outside any formation, 400-raq-fix-blocks.test.ts::CR 607.2c the attacker is never offered a blocking spot, 561-remembered-empty-formation.test.ts::CR 602.6k / CT-250: the remembered exception is the dead source only | Key: combat.formations.placement.empty-formation]
+      [Basis: Mixed | Verified: not verified (the text changed after verification); 4 gate test files | Designer: RQ 1237434283786768415; RQ 1237434283786768415 | Owner ruling, adopted 2026-08-22, 2026-10-09 (quoted from the retired ruling register) | Tests: 66-formation-placement.test.ts, 400-raq-fix-blocks.test.ts, 421-cr-regions-formations.test.ts, 561-remembered-empty-formation.test.ts | Example tests: 66-formation-placement.test.ts::CR 602.6k: a formation you are not standing in cannot be joined at all, 421-cr-regions-formations.test.ts::cr:combat.formations.placement.empty-formation -- after blocks every attacking unit dies, the attacker is offered no position, not even the hole, and Tiderunner Initiate enters play outside any formation, 400-raq-fix-blocks.test.ts::CR 607.2c the attacker is never offered a blocking spot, 561-remembered-empty-formation.test.ts::CR 602.6k / CT-250: the remembered exception is the dead source only | Key: combat.formations.placement.empty-formation]
 
 602.7. Some cards say they may be played into a formation (Tiderunner Initiate, Trench Stalker). The position is chosen as the card is cast, from the positions rule 602.6 allows, and the unit is already in that position when it enters play. See rules 602.6, 702.
       Example: Tiderunner Initiate's spot is asked for while it is being cast, and it enters play already standing in that spot.
@@ -3007,11 +3008,12 @@ CONTENTS
       Example: When casting Tiderunner Initiate, its controller may choose to have it stay out of the formation.
       [Basis: Printed | Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file | Printed: card: Tiderunner Initiate | Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) | Tests: 73-play-into-formation.test.ts | Example test: 73-play-into-formation.test.ts::CR 602.7b "stay out of formation" is still on the menu | Key: combat.formations.play-into.optional]
 
-602.7c Such a card can be played into a formation only if its controller has a formation in that battle that still holds at least one unit: they attacked, or they declared blocks, and not every unit in it has left. As an exception, after blocks are declared and until combat damage has been dealt, the defending player may play it in front of an unblocked attacking column (rule 602.6c) even if they declared no blockers. Otherwise it is played normally, outside any formation. See rules 602.6c, 602.6k.
+602.7c Such a card can be played into a formation only if its controller has a formation in that battle that still holds at least one unit: they attacked, or they declared blocks, and not every unit in it has left. There are two exceptions for the defending player once blocks are declared. Until combat damage has been dealt, they may play it in front of an unblocked attacking column (rule 602.6c), even if they declared no blockers. And if they declared blockers, they may play it into the front slot of a blocking column whose blockers have all left (rule 602.6j), even if none of their units is left. Otherwise it is played normally, outside any formation. See rules 602.6c, 602.6k, 602.6j.
       Example: Before blocks, the defending player has no formation. They cast Tiderunner Initiate; nothing is asked and it enters play outside any formation.
       Example: After blocks, the defender plays a unit in front of an unblocked attacking column. That column is blocked, and stays blocked when the unit is removed.
       Example: After blocks, every attacking unit dies. The attacker plays Tiderunner Initiate; nothing is asked and it enters play outside any formation.
-      [Basis: Owner ruling, adopted 2026-08-18, 2026-08-22, 2026-10-09 (quoted from the retired ruling register) | Verified: confirmed in round 3; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files | Tests: 73-play-into-formation.test.ts, 388-raq-blocks-and-windows.test.ts, 421-cr-regions-formations.test.ts | Example tests: 73-play-into-formation.test.ts::CR 602.7c with NO formation of your own the play is legal and asks nothing, 388-raq-blocks-and-windows.test.ts::RAQ Blocked: a unit played in as a blocker after blocks blocks that column, 421-cr-regions-formations.test.ts::cr:combat.formations.play-into.needs-formation -- after blocks every attacker dies, and the attacker casts Tiderunner Initiate: nothing is asked and it enters play outside any formation | Key: combat.formations.play-into.needs-formation]
+      Example: After blocks, the defender's only blocker dies. The defender casts Tiderunner Initiate and is asked for a spot; the emptied blocking column is one.
+      [Basis: Mixed | Verified: not verified (the text changed after verification); 3 gate test files | Designer: RQ 1237434283786768415; RQ 1237434283786768415 | Owner ruling, adopted 2026-08-18, 2026-08-22, 2026-10-09 (quoted from the retired ruling register) | Tests: 73-play-into-formation.test.ts, 388-raq-blocks-and-windows.test.ts, 421-cr-regions-formations.test.ts | Example tests: 73-play-into-formation.test.ts::CR 602.7c with NO formation of your own the play is legal and asks nothing, 388-raq-blocks-and-windows.test.ts::RAQ Blocked: a unit played in as a blocker after blocks blocks that column, 421-cr-regions-formations.test.ts::cr:combat.formations.play-into.needs-formation -- after blocks every attacker dies, and the attacker casts Tiderunner Initiate: nothing is asked and it enters play outside any formation, 421-cr-regions-formations.test.ts::cr:combat.formations.placement.defending-emptied-block -- every blocker dies after blocks, and the defender plays Tiderunner Initiate into the emptied blocking column | Key: combat.formations.play-into.needs-formation]
 
 603. Columns, Adjacency and Edges
 
@@ -6924,22 +6926,22 @@ Basis
 | basis | rules |
 |---|---|
 | Printed | 453 |
-| Designer | 202 |
-| Owner call | 677 |
+| Designer | 203 |
+| Owner call | 675 |
 | Engine only | 47 |
-| Mixed | 486 |
+| Mixed | 487 |
 
 Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1851 |
+| confirmed | 1848 |
 | partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 7 |
 | not verified | 1 |
-| text changed | 0 |
+| text changed | 3 |
 
 Engine-only rules (awaiting the owner's sign-off)
 

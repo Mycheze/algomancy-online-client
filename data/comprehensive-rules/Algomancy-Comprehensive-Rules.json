@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:af9be9f7c5afc315",
+ "generated_from": "sha256:44ba9a1adf28b3d9",
  "rules": [
   {
    "num": "100.1",
@@ -15687,16 +15687,17 @@
    "sectionTitle": "Formations",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "602.6",
-   "text": "After blocks, while the defending formation still holds at least one unit, a unit placed into it may also take the front slot of a blocking column whose blockers have all left it. The unit then blocks that column.",
+   "text": "After blocks, a unit placed into the defending formation may also take the front slot of a blocking column whose blockers have all left it, even if no unit is left standing in the defending formation. The unit then blocks that column.",
    "see": [
     "602.6c",
     "602.6a",
     "602.6k"
    ],
    "examples": [
-    "The defender's only blocker in the second column dies after blocks. An effect that puts a unit into the defender's formation may put it in front of the second attacking column."
+    "The defender's only blocker in the second column dies after blocks. An effect that puts a unit into the defender's formation may put it in front of the second attacking column.",
+    "After blocks, the defender's only blocker dies. The defender plays Tiderunner Initiate in front of the attacker that blocker faced, and it fights that attacker."
    ],
-   "basis": "mixed",
+   "basis": "designer",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
@@ -15704,7 +15705,7 @@
    ],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "602.6k",
@@ -15714,12 +15715,13 @@
    "sectionTitle": "Formations",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "602.6",
-   "text": "A player with no unit standing in a formation in the battle, because they have not formed one or because every unit in it has left, is offered no position in it, not even a hole, and a unit cannot be played or placed into it. Rules 602.6c and 602.6f are the exceptions.",
+   "text": "A player with no unit standing in a formation in the battle, because they have not formed one or because every unit in it has left, is offered no position in it, not even a hole, and a unit cannot be played or placed into it. Rules 602.6c, 602.6f and 602.6j are the exceptions.",
    "see": [
     "602.1d",
     "602.6f",
     "602.7c",
-    "602.6c"
+    "602.6c",
+    "602.6j"
    ],
    "examples": [
     "The attacker has attacked and the defender has not yet declared blocks. The defender stands in no formation, so an effect that puts a unit into the defender's formation has nowhere to put it.",
@@ -15727,7 +15729,7 @@
     "The defender declares no blockers. An effect that puts a unit into the defender's formation may still put it in front of the unblocked attacking column (rule 602.6c); the attacker is offered no such spot.",
     "A living Hooba-Lin whose line has emptied around it is offered nothing; only a source that has left play keeps its remembered formation."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
@@ -15735,7 +15737,7 @@
    ],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "602.7",
@@ -15812,23 +15814,25 @@
    "sectionTitle": "Formations",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "602.7",
-   "text": "Such a card can be played into a formation only if its controller has a formation in that battle that still holds at least one unit: they attacked, or they declared blocks, and not every unit in it has left. As an exception, after blocks are declared and until combat damage has been dealt, the defending player may play it in front of an unblocked attacking column (rule 602.6c) even if they declared no blockers. Otherwise it is played normally, outside any formation.",
+   "text": "Such a card can be played into a formation only if its controller has a formation in that battle that still holds at least one unit: they attacked, or they declared blocks, and not every unit in it has left. There are two exceptions for the defending player once blocks are declared. Until combat damage has been dealt, they may play it in front of an unblocked attacking column (rule 602.6c), even if they declared no blockers. And if they declared blockers, they may play it into the front slot of a blocking column whose blockers have all left (rule 602.6j), even if none of their units is left. Otherwise it is played normally, outside any formation.",
    "see": [
     "602.6c",
-    "602.6k"
+    "602.6k",
+    "602.6j"
    ],
    "examples": [
     "Before blocks, the defending player has no formation. They cast Tiderunner Initiate; nothing is asked and it enters play outside any formation.",
     "After blocks, the defender plays a unit in front of an unblocked attacking column. That column is blocked, and stays blocked when the unit is removed.",
-    "After blocks, every attacking unit dies. The attacker plays Tiderunner Initiate; nothing is asked and it enters play outside any formation."
+    "After blocks, every attacking unit dies. The attacker plays Tiderunner Initiate; nothing is asked and it enters play outside any formation.",
+    "After blocks, the defender's only blocker dies. The defender casts Tiderunner Initiate and is asked for a spot; the emptied blocking column is one."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "603.1",

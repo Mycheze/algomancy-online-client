@@ -8475,7 +8475,15 @@ export class E {
     // CR 602.6k, and its CR 602.6f exception: a formation nobody stands in is
     // joined only through a source that left play remembering it (`remembered`,
     // see `remembersFormation`) — then its holes and ends are still there.
-    if (!remembered && !grid.some(col => col.some(id => this.entity(id)))) return flash;
+    // CR 602.6j (CT-428): a DEFENDER who declared blocks keeps the blocking
+    // formation they declared even once every blocker has left it — the
+    // designer, rules-questions 2024-05-07 (RQ 1237434283786768415), on
+    // Tiderunner Initiate: "You could play it directly into a blocking
+    // formation even if you had no units". A block entry is sticky (CR 602.5a),
+    // so its emptied front slot is still a place to block from.
+    const standing = grid.some(col => col.some(id => this.entity(id)))
+      || (seat === b.defender && Object.keys(b.blocks).length > 0);
+    if (!remembered && !standing) return flash;
     const out: { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string; spot: FormationSpot }[] = [];
     // Only the ATTACKING grid can widen. A blocking column is keyed to an
     // attacking column (CR 602.6c), so a new one has no index to exist at.

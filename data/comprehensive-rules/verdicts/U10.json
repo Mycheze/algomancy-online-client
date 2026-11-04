@@ -1722,7 +1722,7 @@
     "quote_spans": [
       {
         "file": "client/engine/src/engine.ts",
-        "text": "if (!remembered && !grid.some(col => col.some(id => this.entity(id)))) return flash;"
+        "text": "const standing = grid.some(col => col.some(id => this.entity(id)))"
       },
       {
         "file": "client/engine/test/421-cr-regions-formations.test.ts",

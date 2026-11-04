@@ -201,16 +201,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 428, area: "engine", severity: "minor",
-    title: "a blocking formation with no living unit offers no position; the designer lets a unit be played into it even with no units",
-    detail: "CR 602.6k states the owner's 2026-08-22 prose: \"with no living unit in the grid the answer is \\\"no slots\\\"\". Caleb, rules-questions 2024-05-07 [1237434283786768415], asked how a unit that joins a formation works with no units: \"You could play it directly into a blocking formation even if you had no units, but you can't play it into an attacking formation with no units because you just couldn't declare an attack with no units.\" The defender half differs.",
-    evidence: "CR pass D 2026-10-25 (zero-handoff/PD-cr.md, tier-3 stretch): discrepancy D-U10-10, the quote checked against the rules-questions export.",
-    fix: "Decide with the owner whether Caleb's 2024 answer stands. If it does, a unit played during a battle with an empty blocking side may enter the defending formation (a front slot facing an attacker); change the slot offer, redraft 602.6k and 602.7c, add a test and replay stored games.",
-    proof: null,
-    verify: "In a battle where you defend with no units, play a unit that may join a formation: is a blocking position offered?",
-    status: 'open',
-  },
-  {
     id: 429, area: "card", severity: "minor",
     cards: ["Life Channel", "Arbiter of Vitality"],
     title: "Life Channel under Arbiter of Vitality gives +3/+3, not +6/+6: X adds the printed 3, not the life the spell gained",

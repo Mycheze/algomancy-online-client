@@ -6,7 +6,7 @@ Every place where the sources disagree, the register contradicts itself, or a ru
 
 None.
 
-## 2. Record and test fixes (66)
+## 2. Record and test fixes (67)
 
 ### D-U01-10 · Other · rule 102.4
 
@@ -355,6 +355,16 @@ The owner ruling of 2026-08-19 (“Rot: start of deployment, damage equal…”)
 - owner ruling, adopted 2026-09-01: "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *"Even during deployment, nothing"
 
 **Resolution:** Mark the owner ruling of 2026-08-19 (“Rot: start of deployment, damage equal…”)’s no-priority clause as amended by the owner ruling of 2026-09-01 (“deployment DOES use the stack, and…”) in the register (the reason why rot cannot be responded to). The rule that rot itself cannot be responded to stands either way, because rot damage never goes on a stack (owner ruling of 2026-08-19, “The haste step ends, and deployment…”). The engine gap, no priority stop on your own deployment stack, is already CT-185. It is not filed again here. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.] Settled 2026-10-22: the owner ruled that no player holds priority in deployment ("you CANNOT hold priority during Deployment"), so the 2026-08-19 no-priority clause is the law again and the 2026-09-01 per-seat priority is replaced; CT-185 closed as wontfix. rule 507.5 and rule 703.7 state it.
+
+### D-U10-10 · Sources disagree · rule 602.6k
+
+'A formation with no living unit offers no position' is the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s own prose, not the owner's quoted words. The designer, asked how Tiderunner Initiate joins a formation when its player has no units, says it can be played into a blocking formation even then, but not into an attacking one, because no attack can be declared with no units.
+
+- owner ruling, adopted 2026-08-22: "all — with no living unit in the grid the answer is "no slots", not "open a"
+- owner ruling, adopted 2026-08-25: "legal exactly while its battle runs; **emptying it does not remove it**"
+- RQ 1237434283786768415: "You could play it directly into a blocking formation even if you had no units"
+
+**Resolution:** The designer settles it (CT-428). The attacker half of 602.6k stands. A defender who declared blocks keeps that blocking formation when every blocker has left it: the front slot of each emptied blocking column is offered (602.6j, 602.7c), and the unblocked columns are offered too (602.6c, the owner ruling of 2026-10-09 (“A blocker put in after blocks…”)). The owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”) is about a formation as a TARGET and does not speak to joining one. For an effect whose source has left play, see D-U10-6.
 
 ### D-U10-6 · Other · rule 602.6f
 
@@ -761,7 +771,7 @@ The owner ruling of 2026-08-30 (“nothing may exist only in the…”) still sa
 
 **Resolution:** Mark the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s closing count as answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) in the register ("its log-only count answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”)"); CT-236 tracks the stale sentence. The rules follow the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) (rule D7.4b). rule D7.4 states the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s standard; its engine-differs marker for F-U24-4 (CT-236) has been dropped, because the toast tier gives every such announcement a surface. D-U24-9 is this item from the rule's side: its count of nineteen against the inventory test's 21 is the same stale sentence. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]
 
-## 3. Engine-only and owner-only rules (84)
+## 3. Engine-only and owner-only rules (83)
 
 ### D-U01-13 · Engine only · rule 103.3a
 
@@ -1035,15 +1045,6 @@ Cards print "in this battle", but no printed or designer source says the count i
 - card: Seabed Shellcaster: "When the second nontoken spell is played in {/n}this battle"
 
 **Resolution:** Owner call stands. Sources are silent on the scope of "this battle".
-
-### D-U10-10 · Owner call only · rule 602.6k
-
-'A formation with no living unit offers no position' is the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s own prose, not the owner's quoted words. The owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”) rules that an emptied formation is still a formation while its battle runs, which a reader might take to leave its hole open to a late play.
-
-- owner ruling, adopted 2026-08-22: "all — with no living unit in the grid the answer is "no slots", not "open a"
-- owner ruling, adopted 2026-08-25: "legal exactly while its battle runs; **emptying it does not remove it**"
-
-**Resolution:** The rules state the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) (602.6k, 602.7c), basis owner, medium confidence, with two exceptions: The owner ruling of 2026-10-09 (“A blocker put in after blocks…”)’s after-blocks spot for the defender (602.6c) and the designer's remembered formation (602.6f). The engine follows the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) and the owner ruling of 2026-10-09 (“A blocker put in after blocks…”). The owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”) is about a formation as a TARGET and does not speak to joining one. Awaits owner sign-off with the other owner-only rules. For an effect whose source has left play, see D-U10-6.
 
 ### D-U10-4 · Owner call only · rule 602.6a
 

@@ -2399,7 +2399,7 @@
     "key": "combat.formations.play-into.needs-formation",
     "parent": "combat.formations.play-into",
     "order": 3,
-    "text": "Such a card can be played into a formation only if its controller has a formation in that battle that still holds at least one unit: they attacked, or they declared blocks, and not every unit in it has left. As an exception, after blocks are declared and until combat damage has been dealt, the defending player may play it in front of an unblocked attacking column (rule 602.6c) even if they declared no blockers. Otherwise it is played normally, outside any formation.",
+    "text": "Such a card can be played into a formation only if its controller has a formation in that battle that still holds at least one unit: they attacked, or they declared blocks, and not every unit in it has left. There are two exceptions for the defending player once blocks are declared. Until combat damage has been dealt, they may play it in front of an unblocked attacking column (rule 602.6c), even if they declared no blockers. And if they declared blockers, they may play it into the front slot of a blocking column whose blockers have all left (rule 602.6j), even if none of their units is left. Otherwise it is played normally, outside any formation.",
     "examples": [
       {
         "text": "Before blocks, the defending player has no formation. They cast Tiderunner Initiate; nothing is asked and it enters play outside any formation.",
@@ -2412,15 +2412,29 @@
       {
         "text": "After blocks, every attacking unit dies. The attacker plays Tiderunner Initiate; nothing is asked and it enters play outside any formation.",
         "test": "421-cr-regions-formations.test.ts::cr:combat.formations.play-into.needs-formation — after blocks every attacker dies, and the attacker casts Tiderunner Initiate: nothing is asked and it enters play outside any formation"
+      },
+      {
+        "text": "After blocks, the defender's only blocker dies. The defender casts Tiderunner Initiate and is asked for a spot; the emptied blocking column is one.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.formations.placement.defending-emptied-block — every blocker dies after blocks, and the defender plays Tiderunner Initiate into the emptied blocking column"
       }
     ],
     "see": [
       "combat.formations.placement.defending",
-      "combat.formations.placement.empty-formation"
+      "combat.formations.placement.empty-formation",
+      "combat.formations.placement.defending-emptied-block"
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1237434283786768415",
+          "quote": "You could play it directly into a blocking formation even if you had no units"
+        },
+        {
+          "ref": "RQ 1237434283786768415",
+          "quote": "you can't play it into an attacking formation with no units because you just couldn't declare an attack with no units"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -2451,11 +2465,13 @@
         "421-cr-regions-formations.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The owner ruling of 2026-10-09 (“A blocker put in after blocks…”) is not in this unit's pack; added from the register. 'Still holds a unit' is the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s ('a formation you are not standing in cannot be joined'), which the owner ruling of 2026-08-18 (“\"An open spot in your formation\" […]”)’s placement shares; see 602.6k and D-U10-10. The bound 'until combat damage has been dealt' is the owner ruling of 2026-10-09 (“A blocker put in after blocks…”)’s encoding note; the round-2 verifier measured nothing offered in the after-combat window. See D-U10-12.",
-    "sourceHashes": {}
+    "notes": "The owner ruling of 2026-10-09 (“A blocker put in after blocks…”) is not in this unit's pack; added from the register. 'Still holds a unit' is the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s ('a formation you are not standing in cannot be joined'), which the owner ruling of 2026-08-18 (“\"An open spot in your formation\" […]”)’s placement shares; see 602.6k and D-U10-10. The bound 'until combat damage has been dealt' is the owner ruling of 2026-10-09 (“A blocker put in after blocks…”)’s encoding note; the round-2 verifier measured nothing offered in the after-combat window. See D-U10-12. CT-428: the designer (RQ 1237434283786768415) on Tiderunner Initiate: \"You could play it directly into a blocking formation even if you had no units, but you can't play it into an attacking formation with no units because you just couldn't declare an attack with no units.\"",
+    "sourceHashes": {
+      "RQ 1237434283786768415": "08c5543d34a903a0f9aa9f72138524768907c3919b4dd617324ad8ebc086f593"
+    }
   },
   {
     "key": "combat.columns.definition",
@@ -3117,11 +3133,15 @@
     "key": "combat.formations.placement.defending-emptied-block",
     "parent": "combat.formations.placement",
     "order": 10,
-    "text": "After blocks, while the defending formation still holds at least one unit, a unit placed into it may also take the front slot of a blocking column whose blockers have all left it. The unit then blocks that column.",
+    "text": "After blocks, a unit placed into the defending formation may also take the front slot of a blocking column whose blockers have all left it, even if no unit is left standing in the defending formation. The unit then blocks that column.",
     "examples": [
       {
         "text": "The defender's only blocker in the second column dies after blocks. An effect that puts a unit into the defender's formation may put it in front of the second attacking column.",
         "test": "421-cr-regions-formations.test.ts::cr:combat.formations.placement.defending-emptied-block — after blocks a blocking column whose blocker died offers its front slot, and a unit placed there blocks that column"
+      },
+      {
+        "text": "After blocks, the defender's only blocker dies. The defender plays Tiderunner Initiate in front of the attacker that blocker faced, and it fights that attacker.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.formations.placement.defending-emptied-block — every blocker dies after blocks, and the defender plays Tiderunner Initiate into the emptied blocking column"
       }
     ],
     "see": [
@@ -3131,7 +3151,12 @@
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1237434283786768415",
+          "quote": "You could play it directly into a blocking formation even if you had no units"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -3147,17 +3172,19 @@
         "421-cr-regions-formations.test.ts"
       ]
     },
-    "basis": "mixed",
+    "basis": "designer",
     "scope": "game",
-    "confidence": "low",
-    "notes": "ENGINE-ONLY. The owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s hole is a column emptied of ATTACKERS; the owner ruling of 2026-10-09 (“A blocker put in after blocks…”)’s extra spot is a column with no block entry. Neither names a blocking column emptied of its blockers. The round-1 verifier measured the engine offering its front slot ('column N (an empty slot in the line)'). See D-U10-9. The round-2 verifier measured the spot only while another unit remains in the defending formation; once it holds none, rule 602.6k applies.",
-    "sourceHashes": {}
+    "confidence": "medium",
+    "notes": "Engine-only until CT-428. The owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s hole is a column emptied of ATTACKERS; the owner ruling of 2026-10-09 (“A blocker put in after blocks…”)’s extra spot is a column with no block entry. Neither names a blocking column emptied of its blockers. The round-1 verifier measured the engine offering its front slot ('column N (an empty slot in the line)'). See D-U10-9. The round-2 verifier measured the spot only while another unit remains in the defending formation; once it holds none, rule 602.6k applies. CT-428: the designer (rules-questions 2024-05-07, RQ 1237434283786768415), asked how Tiderunner Initiate joins a formation when its player has no units, says it can be played into a blocking formation even then. The condition 'while the defending formation still holds at least one unit' is gone: a defender who declared blocks keeps that formation when every blocker has left it.",
+    "sourceHashes": {
+      "RQ 1237434283786768415": "08c5543d34a903a0f9aa9f72138524768907c3919b4dd617324ad8ebc086f593"
+    }
   },
   {
     "key": "combat.formations.placement.empty-formation",
     "parent": "combat.formations.placement",
     "order": 11,
-    "text": "A player with no unit standing in a formation in the battle, because they have not formed one or because every unit in it has left, is offered no position in it, not even a hole, and a unit cannot be played or placed into it. Rules 602.6c and 602.6f are the exceptions.",
+    "text": "A player with no unit standing in a formation in the battle, because they have not formed one or because every unit in it has left, is offered no position in it, not even a hole, and a unit cannot be played or placed into it. Rules 602.6c, 602.6f and 602.6j are the exceptions.",
     "examples": [
       {
         "text": "The attacker has attacked and the defender has not yet declared blocks. The defender stands in no formation, so an effect that puts a unit into the defender's formation has nowhere to put it.",
@@ -3180,11 +3207,21 @@
       "combat.formations.definition.empty",
       "combat.formations.placement.source-gone",
       "combat.formations.play-into.needs-formation",
-      "combat.formations.placement.defending"
+      "combat.formations.placement.defending",
+      "combat.formations.placement.defending-emptied-block"
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1237434283786768415",
+          "quote": "you can't play it into an attacking formation with no units because you just couldn't declare an attack with no units"
+        },
+        {
+          "ref": "RQ 1237434283786768415",
+          "quote": "You could play it directly into a blocking formation even if you had no units"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -3211,10 +3248,12 @@
         "561-remembered-empty-formation.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Stated in the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s own prose, not in the owner's quoted words; the owner ruling of 2026-10-09 (“A blocker put in after blocks…”) (designer-backed) adds the defender's after-blocks spot, and the designer's answer for a source that has left play (602.6f) is the second exception. The round-2 verifier measured the engine following the rule plus the owner ruling of 2026-10-09 (“A blocker put in after blocks…”) exception, so the earlier engineDiffers (F-U10-5) is withdrawn. The 602.6f exception is not followed for a lone source: F-U10-6, on 602.6f. It sits uneasily with the owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”) ('emptying it does not remove it'): D-U10-6, D-U10-10. Round 2026-10-22 (CT-250): the 602.6f exception is now built (561), which answers the partial verdict's objection.",
-    "sourceHashes": {}
+    "notes": "Stated in the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s own prose, not in the owner's quoted words; the owner ruling of 2026-10-09 (“A blocker put in after blocks…”) (designer-backed) adds the defender's after-blocks spot, and the designer's answer for a source that has left play (602.6f) is the second exception. The round-2 verifier measured the engine following the rule plus the owner ruling of 2026-10-09 (“A blocker put in after blocks…”) exception, so the earlier engineDiffers (F-U10-5) is withdrawn. The 602.6f exception is not followed for a lone source: F-U10-6, on 602.6f. It sits uneasily with the owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”) ('emptying it does not remove it'): D-U10-6, D-U10-10. Round 2026-10-22 (CT-250): the 602.6f exception is now built (561), which answers the partial verdict's objection. CT-428: the designer's answer on Tiderunner Initiate (RQ 1237434283786768415) backs the attacker half (no attack, no attacking formation) and makes the defender's emptied blocking formation a third exception (602.6j).",
+    "sourceHashes": {
+      "RQ 1237434283786768415": "08c5543d34a903a0f9aa9f72138524768907c3919b4dd617324ad8ebc086f593"
+    }
   }
 ]
