@@ -140,6 +140,9 @@ export interface FrameProps {
   fill?: boolean;
   /** a wider column than the home's (the card browser's grid) */
   wide?: boolean;
+  /** the main region edge to edge: the whole window's width and the height between the bars, no column and no
+   * padding (the builder's table, BL-65). The bars keep their column. Usually with `fill` */
+  bleed?: boolean;
 }
 
 /** A page in the frame. Pure. */
@@ -152,7 +155,7 @@ export function frameHtml(p: FrameProps): string {
   return appShell({
     contained: true,
     fill: p.fill,
-    className: `apppage${p.wide ? ' framewide' : ''} ${p.page}`,
+    className: `apppage${p.wide ? ' framewide' : ''}${p.bleed ? ' framebleed' : ''} ${p.page}`,
     topHtml: shellBar({ className: 'frametop', startHtml: start, centerHtml: p.centerHtml, endHtml: end }),
     mainHtml: p.mainHtml,
     bottomHtml: shellBar({ className: 'framebottom', startHtml: CLIENT_INFO }),

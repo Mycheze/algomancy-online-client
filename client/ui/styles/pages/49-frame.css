@@ -26,6 +26,10 @@
    than the home's; the bars' content moves out with it */
 .framewide { --shell-content-max: var(--shell-content-max-wide); }
 
+/* a page that needs the window edge to edge (frameHtml `bleed`: the builder's table, BL-65): the
+   main region has no column and no padding; the bars keep theirs. Above the contained shell's rule. */
+.apppage.framebleed > .ui-app-shell__main { padding: 0; }
+
 /* a page's toolbar row (the filters over a list): one line, wrapping only if it must */
 .framebar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) var(--space-5); flex: none; }
 .framebar .framespacer { flex: 1; }

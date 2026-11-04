@@ -11,6 +11,8 @@
  *    region) is read before a repaint and put back after it, by key; a key the
  *    new markup has not got is dropped, and a card's name in a key is quoted
  * §4 the chrome comes from the source main.ts sets — signed out until then
+ * §5 `bleed` (BL-65): the builder's main region edge to edge, one class on the
+ *    root; a page that does not ask is untouched
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -79,4 +81,14 @@ test('1071 §4 the chrome is the source main.ts sets; signed out until then', ()
   setChromeSource(() => IN);
   assert.deepEqual(frameChromeView(), IN);
   setChromeSource(() => OUT);
+});
+
+test('1071 §5 bleed (BL-65): the main region edge to edge — one class on the root, nothing else; absent, no trace', () => {
+  const base = { page: 'ttpage', title: 'T', back: { dataBtn: 'tt-close', label: 'Decks', icon: 'back' as const }, chrome: OUT, mainHtml: '<!--MAIN-->', fill: true };
+  const bled = frameHtml({ ...base, bleed: true });
+  assert.match(bled, /^<div class="ui-app-shell ui-app-shell--contained ui-app-shell--fill apppage framebleed ttpage">/,
+    'framebleed before the page\'s class, which stays LAST (287)');
+  assert.equal(bled.replace(' framebleed', ''), frameHtml(base), 'bleed changes the root\'s class and nothing else');
+  assert.doesNotMatch(frameHtml(base), /framebleed/);
+  assert.match(frameHtml({ ...base, wide: true, bleed: true }), /class="[^"]* apppage framewide framebleed ttpage"/);
 });
