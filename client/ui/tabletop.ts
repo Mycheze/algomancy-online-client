@@ -512,7 +512,8 @@ const capCount = (h: TableHost, name: string): number => count(h.cards(), name) 
  * flagged). Into the Sideboard is the host's rule */
 function capNote(h: TableHost, carry: Exclude<Carry, { from: 'head' }>, to: Place): string | null {
   if (h.cap === undefined || h.kind !== 'deck') return null;
-  if (to.at === 'maybe' || to.at === 'side' || to.at === 'binder') return null;
+  if (to.at === 'maybe' || to.at === 'side') return null;
+  if (to.at === 'binder') return null; // back to the pool: out of the deck
   const { name } = carry;
   const full = carry.from === 'binder' || carry.from === 'maybe' ? capCount(h, name) >= h.cap
     : carry.from === 'side' ? count(h.cards(), name) >= h.cap : false;
