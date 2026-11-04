@@ -49,6 +49,25 @@ unsure. A deploy that restarts a service waits until no game or challenge
 file on the VPS has been written for 10 minutes; a failed health check rolls
 the box back to the previous commit and **pauses the steward**.
 
+### When master itself is red
+
+A red master turns every branch red (the first night, 2026-11-03: one
+hand-written path in `vps-fetch.sh`, six items, six red gates). So the runner
+gates clean master on the eve (the hour before the window) and whenever master
+moves, into `state/master-gate.json`. Red → a journal row, a webhook note, and
+`fix-master` first in the queue; repairs wait. A branch that went red while
+master was red is marked `masterRed` and, once master is green, re-gated by the
+runner alone (rebase + gate, no Claude) and shipped or staged as the agent
+meant — only a branch still red after that reaches the agent as a repair.
+
+The fetched report rows (`client/ledgers/*.snapshot.jsonl`) belong to the
+triage item alone; on any other item the runner puts them back to master's
+before it commits or gates.
+
+The code that judges the agent never runs from the tree it worked in:
+`policy.mjs` is extracted from `origin/master` at the start of each tick, and
+the unit copies `run-once.sh` from `origin/master` too.
+
 ### Rules questions
 
 The skill makes the agent work the CR, the RAQ threads, the designer's Q&A,
