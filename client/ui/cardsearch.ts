@@ -921,3 +921,99 @@ export function withDisplay(src: string, key: 'sort' | 'dir' | 'view', value: st
   if (dflt) return stripped;
   return stripped ? `${stripped} ${key}:${value}` : `${key}:${value}`;
 }
+
+/* ── the builder's pool chips: OR inside a group, AND between groups ──────
+ *
+ * BL-65 (architecture §0 ruling 4). The builder's pool shows three groups of
+ * chips at all times: cost, element, unit/spell. Inside a group the chosen
+ * values OR (cost 2 or 3; fire or metal = a card having ANY of them); the
+ * groups AND with each other and with whatever else is typed. The Cards page's
+ * chips (withChip above) AND everything and are untouched.
+ *
+ * Same rule as withChip: the STRING is the state. A group is written in the
+ * language everyone already reads — one value is a plain top-level term
+ * (`el:fire`, which the Cards page's chip lights too), two or more a
+ * parenthesised OR of them (`(el:fire OR el:metal)`) — and edited on the
+ * source text, so the rest of what was typed survives a tap untouched. A group
+ * is found at the TOP level only: a term inside a parenthesised query the user
+ * built by hand, or a negated one, is theirs, not the chips'. */
+
+/** the three always-visible groups, and the key each writes */
+export const POOL_GROUP_KEY = { cost: 'mana', element: 'el', kind: 'kind' } as const;
+export type PoolGroup = keyof typeof POOL_GROUP_KEY;
+export const POOL_GROUPS = Object.keys(POOL_GROUP_KEY) as PoolGroup[];
+
+/** a `key:value` term token of `canon`, its value unquoted; null if not one */
+function groupTerm(tk: Tok | undefined, canon: string): string | null {
+  if (!tk || tk.t !== 'word') return null;
+  const m = TERM_RE.exec(tk.s);
+  if (!m || m[2] !== ':') return null;
+  if ((BY_KEY.get(m[1]!.toLowerCase())?.key ?? m[1]!.toLowerCase()) !== canon) return null;
+  const v = m[3]!.replace(/^["']|["']$/g, '');
+  return v === '' ? null : v;
+}
+
+/** Where a group sits in the source: the first top-level, un-negated `key:v`
+ * or `(key:a OR key:b …)` of its key, with the values it holds. */
+function findGroup(src: string, group: PoolGroup): { start: number; end: number; values: string[] } | null {
+  const canon = POOL_GROUP_KEY[group];
+  const toks = tokenize(src, []);
+  let depth = 0;
+  for (let i = 0; i < toks.length; i++) {
+    const tk = toks[i]!;
+    const negated = i > 0 && toks[i - 1]!.t === 'not';
+    if (tk.t === 'rparen') { depth--; continue; }
+    if (tk.t === 'lparen') {
+      if (depth === 0 && !negated) {
+        // a parenthesised OR of this key's terms and nothing else
+        const values: string[] = [];
+        let j = i + 1;
+        let ok = true;
+        for (;; j++) {
+          const v = groupTerm(toks[j], canon);
+          if (v === null) { ok = false; break; }
+          values.push(v);
+          if (toks[j + 1]?.t === 'or') { j++; continue; }
+          ok = toks[j + 1]?.t === 'rparen';
+          j++;
+          break;
+        }
+        if (ok && values.length) return { start: tk.at, end: toks[j]!.at + 1, values };
+      }
+      depth++;
+      continue;
+    }
+    if (depth !== 0 || negated) continue;
+    // a lone term — but not one branch of a top-level OR the user typed (`el:fire OR mana:2`)
+    if (toks[i - 1]?.t === 'or' || toks[i + 1]?.t === 'or') continue;
+    const v = groupTerm(tk, canon);
+    if (v !== null) return { start: tk.at, end: tk.at + tk.s.length, values: [v] };
+  }
+  return null;
+}
+
+/** The values chosen in a group, read off the query (as written: `2`, `fire`, `unit`). */
+export function poolChosen(src: string, group: PoolGroup): string[] {
+  return findGroup(src, group)?.values ?? [];
+}
+
+/** The query with a group set to exactly `values` (none: the group's term is
+ * removed). Everything else in the string is left as it was typed. */
+export function withPoolGroup(src: string, group: PoolGroup, values: readonly string[]): string {
+  const key = POOL_GROUP_KEY[group];
+  const uniq = values.filter((v, i) => values.findIndex(w => w.toLowerCase() === v.toLowerCase()) === i);
+  const terms = uniq.map(v => `${key}:${quoteValue(v)}`);
+  const written = terms.length === 0 ? '' : terms.length === 1 ? terms[0]! : `(${terms.join(' OR ')})`;
+  const at = findGroup(src, group);
+  if (at) return `${src.slice(0, at.start)}${written}${src.slice(at.end)}`.replace(/\s{2,}/g, ' ').trim();
+  if (!written) return src.trim();
+  const base = hasTopLevelOr(src) ? `(${src.trim()})` : src.trim();
+  return base ? `${base} ${written}` : written;
+}
+
+/** Tap a pool chip: the value joins its group (OR) or leaves it. */
+export function togglePoolChip(src: string, group: PoolGroup, value: string): string {
+  const chosen = poolChosen(src, group);
+  const has = chosen.some(v => v.toLowerCase() === value.toLowerCase());
+  return withPoolGroup(src, group, has ? chosen.filter(v => v.toLowerCase() !== value.toLowerCase()) : [...chosen, value]);
+}
