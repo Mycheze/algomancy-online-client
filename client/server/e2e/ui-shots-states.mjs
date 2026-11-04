@@ -94,9 +94,10 @@ export function SCENARIOS(fx) {
   //    the chosen deck's preview — and the builder, the pool over the table.
   //    Every state is checked for its page's root class ──
   const decks = [{ click: btn('deck-openpage') }];
-  // a box's text is its name then its count ("Ember Rush30 cards…"), so a name
-  // is anchored on both sides: "Ember Rush (Competitive)" is another deck
-  const deck = name => [...decks, { click: btn('deck-open'), text: `^${name}\\d` }];
+  // a box's text is its name then its count ("Ember Rush30 cards…"), after the
+  // "Bo3 ready" badge when it has one — so the name is anchored on both sides by
+  // the start or that badge, and a digit: "Ember Rush (Competitive)" is another deck
+  const deck = name => [...decks, { click: btn('deck-open'), text: `(^|ready)${name}\\d` }];
   const onDecks = { ...me, ...PORTRAIT, check: '.deckpage' };
   const onBuilder = { ...me, ...PORTRAIT, check: '.ttpage', pages: 1 };
   add('decks', 'shelf', '/', { ...onDecks, steps: decks });
