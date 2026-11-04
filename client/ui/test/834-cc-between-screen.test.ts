@@ -4,9 +4,13 @@
  *
  * Since 2026-11-03 (owner: "I wanted something like MTGO. Your deck laid out
  * below, on the table … then the sideboard above") the screen is a card table:
- * the deck as the tabletop's piles, the sideboard as a row of cards, each a
- * zone (`data-cc-zone`). The chip lists these sections used to read are gone;
- * what they assert is unchanged. 1060–1062 hold the table itself.
+ * the deck as the tabletop's piles, the sideboard beside it, each a zone
+ * (`data-cc-zone`). The chip lists these sections used to read are gone;
+ * what they assert is unchanged. 1060–1062 hold the table itself. Since BL-65
+ * (2026-11-04) it is the builder's table in the app frame: the deck's region
+ * first, then the Sideboard in the rail, then the strip at its foot — so a
+ * zone's cards now run deck → rail → footer, and the room's title is the
+ * frame's (as on the registration screen).
  *
  *   §1 the header: the format, the score from this seat's side, both frozen
  *      clocks and the countdown
@@ -42,11 +46,11 @@ const lobby = (over: Record<string, unknown> = {}, t = 'update'): string => ui.p
   t, room: 'UIDRIVER', seat: 0, waiting: { have: [true, true], match: info(over) }, peers: [true, true], names: ['Ann', 'Bo'],
 });
 const cc = (): Record<string, unknown>[] => ui.sent().filter(m => m['t'] === 'cc');
-/** a zone of the table: the sideboard's row runs to the deck, the deck's piles to the bottom bar */
+/** a zone of the table: the deck's region runs to the rail's sideboard, the sideboard to the foot strip */
 const board = (html: string, which: 'Main' | 'Sideboard'): string => {
   const at = html.indexOf(`data-cc-zone="${which === 'Main' ? 'main' : 'side'}"`);
   assert.ok(at >= 0, `no ${which} zone on screen`);
-  return html.slice(at, html.indexOf(which === 'Main' ? '<footer' : 'data-cc-zone="main"', at));
+  return html.slice(at, html.indexOf(which === 'Main' ? 'data-cc-zone="side"' : '<footer', at));
 };
 const readyBtn = (html: string): string => /<button data-btn="cc-ready"[^>]*>Ready<\/button>/.exec(html)?.[0] ?? '';
 
@@ -55,7 +59,7 @@ ui.sent();
 
 test('§1 the header: format, score, both frozen clocks, the countdown', () => {
   const html = ui.html();
-  assert.match(html, /Competitive — Best of 3 — room <span class="roomcode">UIDRIVER<\/span>/);
+  assert.match(html, /<h1 class="frametitle">Competitive<span class="ccsbbo"> — Best of 3<\/span><small>room <span class="roomcode">UIDRIVER<\/span><\/small>/);
   assert.match(html, /Game 2 of 3 — you lead 1–0/);
   assert.match(html, /Your clock <b>38:00<\/b> · Bo <b>41:05<\/b>/);
   assert.match(html, /of 45:00/);
@@ -64,12 +68,12 @@ test('§1 the header: format, score, both frozen clocks, the countdown', () => {
 
 test('§2 one tap moves one copy; an illegal deck is not sent and Ready waits', () => {
   let html = ui.click({ btn: 'cc-move', from: 'main', card: N[0]! });
-  assert.match(board(html, 'Main'), /<b>Deck<\/b> <span class="ttpilecount bad">29<\/span>/);
+  assert.match(board(html, 'Main'), /<span class="ttheadlabel">Main deck<\/span><b class="ttheadcount bad">29<\/b>/);
   assert.match(html, /Main deck needs 30 — you have 29\./, 'the legality line says why');
   assert.match(readyBtn(html), /disabled/, 'Ready is disabled while the deck is illegal');
   assert.deepEqual(cc(), [], 'an illegal configuration never goes to the server');
   assert.match(board(html, 'Sideboard'), new RegExp(`${N[0]}`), 'the copy is in the sideboard');
-  assert.match(board(html, 'Sideboard'), /8\/7/);
+  assert.match(board(html, 'Sideboard'), /<span\s+class="ttpilecount bad">8\/7<\/span>/);
   // …and back the other way, by finger: a side card into the main deck
   html = ui.tap({ btn: 'cc-move', from: 'side', card: N[15]! });
   assert.doesNotMatch(html, /cclegal/, 'legal again: no legality line');

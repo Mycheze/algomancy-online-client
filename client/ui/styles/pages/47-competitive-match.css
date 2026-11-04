@@ -25,73 +25,76 @@
 .ccresult.won b { color: var(--glow); }
 
 /* ── THE SIDEBOARDING TABLE (pages/match.ts sideboardTableHtml; owner
- * 2026-11-03: "like MTGO … your deck laid out below, on the table, then the
- * sideboard above and you slide cards in and out"). The window, and nothing
- * scrolls but the deck's own pane: a bar on top (the match), the sideboard as
- * a row of whole cards, the deck as the tabletop's piles on the felt
- * (24-tabletop draws every .ttpile/.ttcard), a bar at the bottom (this game's
- * deck and Ready). The bottom bar keeps clear of the report pill and the bell,
- * which float in its right-hand corner. The page is fixed to the window, so
- * the legal footer (behind it, shorter than the window) adds no scroll. ── */
-.ccsbtable { position: fixed; inset: 0; z-index: 1; display: flex; flex-direction: column; background: var(--bg);
-  --cw: 108px; --ch: 150px; }
-.ccsbtop { flex: none; display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3) var(--space-6);
-  padding: var(--space-3) var(--space-5); background: var(--panel); border-bottom: 1px solid var(--line); }
-.ccsbtitle { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-1); }
-.ccsbroom { font-size: var(--text-11); color: var(--dim); letter-spacing: .04em; }
-.ccsbtop .ccscore { margin: 0; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-6); }
-.ccsbtop .ccgame { font-size: var(--text-16); }
-.ccsbtop .cccount { font-size: var(--text-16); }
-.ccsbmatch { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3); }
-.ccsbzone { flex: none; padding: var(--space-3) var(--space-5); transition: background .12s; }
-.ccsbhead { display: flex; align-items: baseline; gap: var(--space-3); height: 22px; margin-bottom: var(--space-2);
-  font-size: var(--text-13); white-space: nowrap; overflow: hidden; }
-.ccsbhead .ttpilecount { margin-left: 0; font-size: var(--text-13); }
-.ccsbside { background: var(--felt); border-bottom: 1px solid var(--line); }
-.ccsbrow { display: flex; gap: var(--space-3); height: var(--ch); overflow-x: auto; overflow-y: hidden;
-  overscroll-behavior: contain; scrollbar-width: thin; touch-action: pan-x; }
-/* a pile's card is placed in its fan; in the sideboard's row it flows */
-.ttcard.ccsbcard { position: relative; flex: none; z-index: auto; touch-action: pan-x pan-y; }
-.ccsbempty { display: flex; align-items: center; justify-content: center; height: var(--ch); min-width: min(100%, 420px);
-  padding: 0 var(--space-6); border: 1px dashed var(--color-border-strong); border-radius: var(--radius-md);
-  color: var(--dim); font-size: var(--text-13); }
-.ccsbdeck { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin;
-  scrollbar-color: var(--color-border-strong) var(--felt); touch-action: pan-y;
-  background: radial-gradient(ellipse at 50% 0%, var(--color-bg) 0%, var(--felt) 70%); }
-.ccsbdeck .ttrow { column-gap: var(--space-2); }
-.ccsbdeck .ccsbempty { min-height: var(--ch); height: auto; }
-.ccsbpile .ttpilehead { cursor: default; }
+ * 2026-11-03: "like MTGO"; BL-65 2026-11-04: the builder's own table,
+ * pages/table.ts). A page in the frame (fill + bleed): the toolbar holds the
+ * match, a row under it any question waiting (Concede? a pause offer), then
+ * the table — the deck as piles on the felt, the Sideboard in the rail
+ * (24-tabletop draws .tttablewrap/.ttpile/.ttcard/.ttrail) — and at its foot
+ * this game's deck and Ready. Only the table's own regions scroll. ── */
+
+/* the toolbar: Leave and the room | the match, taking what the sides leave | the tools */
+.ccsbtable .frametop { grid-template-columns: auto minmax(0, 1fr) auto; }
+.ccsbtable .frametitle { font-size: var(--text-16); }
+.ccsbinfo { display: flex; flex-direction: column; align-items: center; min-width: 0; max-width: 100%; overflow: hidden; }
+.ccsbline1 { display: flex; align-items: baseline; gap: var(--space-6); max-width: 100%; white-space: nowrap; }
+.ccsbline1 .ccsbclock { flex: none; }
+.ccsbline1 .ccsbopp, .ccsbline1 .ccsbopp .lobbyseat { min-width: 0; }
+.ccsbline1 .ccsbopp span { overflow: hidden; text-overflow: ellipsis; }
+.ccsbclock { font-size: var(--text-14); font-weight: 700; }
+.ccsbclock .cccount { font-size: var(--text-16); color: var(--accent); font-variant-numeric: tabular-nums; }
+.ccsbline1 .ccsbopp { flex-wrap: nowrap; }
+.ccsbline2 { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: var(--text-12); color: var(--color-text-muted); }
+.ccsbline2 .ccgame { color: var(--color-text); font-weight: 700; }
+.ccsbline2 b { color: var(--color-text); }
+.ccflag { font-size: var(--text-22); line-height: 1; }
+/* the question waiting on you, one row over the table */
+.ccsbask { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-7);
+  padding: var(--space-3) var(--space-6); font-size: var(--text-13);
+  background: var(--color-accent-wash); border-bottom: 1px solid var(--line); }
+.ccsbaskpause { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+
+/* the table: the felt's padding is what PANE_CHROME (pages/match.ts) counts */
+.ccsbwrap .tttable { padding: var(--space-3) var(--space-4); }
+.ccsbwrap .tthead { display: flex; align-items: baseline; gap: var(--space-3); height: 24px; margin: 0 0 var(--space-2) var(--space-2);
+  font-size: var(--text-13); }
+.ccsbwrap .ttheadlabel { color: var(--dim); text-transform: uppercase; letter-spacing: .06em; font-size: var(--text-11); font-weight: 700; }
+.ccsbwrap .ttheadcount { font-variant-numeric: tabular-nums; }
+.ccsbwrap .ttheadcount.bad { color: var(--danger); }
+.ccsbwrap .ttrow { column-gap: var(--space-2); }
+/* the sideboard's box is the whole rail: a drop anywhere on it lands there */
+.ccsbwrap .ttrailside { flex: 1 0 auto; border-radius: var(--radius-lg); transition: background .12s; }
+.ccsbwrap .ttpilehead { cursor: default; }
 .ccsblocked .ttcard { cursor: default; }
-/* the zone the carried card would land in: a soft tint, as the tabletop's pile */
-.ccsbtable .ccsbzone.dropover { outline: none; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--glow) 55%, var(--felt));
+/* the zone the carried card would land in: a soft tint, as the builder's pile */
+.ccsbwrap [data-cc-zone].dropover { outline: none; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--glow) 55%, var(--felt));
   background-color: color-mix(in srgb, var(--text) 7%, var(--felt)); }
-.ccsbtable .ccsbdeck.dropover { background: color-mix(in srgb, var(--text) 6%, var(--felt)); }
-.ccsbslot { flex: none; width: var(--cw); height: var(--ch); border: 1px dashed var(--color-border-strong);
-  border-radius: var(--radius-md); opacity: .6; }
-.ccsbopp { flex: none; }
-/* the bottom bar: this game's deck on the left, Ready on the right — clear of
-   the report pill and the bell in the corner (they float over the bar) */
+
+/* the strip at the table's foot: this game's deck on the left, Ready on the right */
 .ccsbbar { flex: none; display: flex; align-items: center; gap: var(--space-3) var(--space-6);
-  min-height: 64px; padding: var(--space-3) 215px var(--space-3) var(--space-5);
+  min-height: 56px; padding: var(--space-3) var(--space-6);
   background: var(--panel); border-top: 1px solid var(--line); }
-.ccsbdeckline { flex: 0 1 auto; display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2) var(--space-5); min-width: 0; }
+.ccsbdeckline { flex: 1 1 auto; display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2) var(--space-5); min-width: 0; }
 .ccsbverdict { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-1) var(--space-4); font-size: var(--text-14); }
 .ccsbcounts, .ccsbok, .ccsbbar .ccreset button { white-space: nowrap; }
 .ccsbcounts b.bad { color: var(--danger); }
 .ccsbok { color: var(--glow); font-weight: 700; }
 .ccsbbar .cclegal, .ccsbbar .deckmsg { margin: 0; }
-.ccsbbar .ccreset { margin: 0; }
-.ccsbbar .ccready { flex: 1 1 auto; margin: 0; gap: var(--space-2) var(--space-3); justify-content: flex-end; }
+.ccsbbar .ccreset { margin: 0 var(--space-3) 0 0; }
+.ccsbbar .ccready { flex: 0 1 auto; margin: 0; gap: var(--space-2) var(--space-3); justify-content: flex-end; }
 .ccsbbar .ccready > p { flex-basis: 100%; text-align: right; font-size: var(--text-13); }
 /* Ready is this screen's one confirm */
 .ccsbbar button[data-btn="cc-ready"]:not([data-ready="0"]):not(:disabled) {
   background: var(--color-confirm); border-color: var(--color-confirm-border); color: var(--color-text-on-accent); }
+/* a narrower window: the room code, "Best of 3" (Game 2 of 3 says it) and the clock's total go first,
+   then the captions of this page's own tools (the icon stays, and its name) */
 @media (max-width: 1180px) {
-  .ccsbdeckline { flex: 0 1 300px; flex-direction: column; align-items: flex-start; }
+  .ccsbtable .frametitle small, .ccsbtable .ccsbbo, .ccsbinfo .ccof { display: none; }
 }
+@media (max-width: 1100px) {
+  .ccsbtable .frametools .ui-icon-button__label { display: none; }
+}
+/* an upright iPad: the page's name goes too (Leave stays) — the countdown needs the room */
 @media (max-width: 900px) {
-  .ccsbtop, .ccsbzone { padding-left: var(--space-4); padding-right: var(--space-4); }
-  .ccsbbar { flex-wrap: wrap; padding: var(--space-3) var(--space-4) 64px; }
-  .ccsbbar .ccready { justify-content: flex-start; }
-  .ccsbbar .ccready > p { text-align: left; }
+  .ccsbtable .frametitle { display: none; }
 }

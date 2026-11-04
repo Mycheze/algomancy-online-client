@@ -94,6 +94,10 @@ let bestOf: 1 | 3 = (() => {
 let pickId: string | null = null;
 /** the configuration being worked out, keyed to the match and game it is for */
 let draft: { key: string; cfg: MatchConfig } | null = null;
+/** the moves this game's sideboarding can take back, last first (`cc-undo`):
+ * each is the copy's way home — `from` is the zone it now sits in. Keyed like
+ * the draft; an undo is moveCopy again, so it can do nothing a tap could not */
+let undo: { key: string; moves: { from: 'main' | 'side'; card: string }[] } | null = null;
 /** Concede match asks once before it counts */
 let concedeAsk = false;
 /** "Your matches": null until the first answer */
@@ -157,17 +161,35 @@ function moved(cfg: MatchConfig, from: 'main' | 'side', card: string): MatchConf
  * (the drag provider below) — one intent, two routes, so a drag can never do
  * what a tap could not. True when the copy moved.
  */
-function moveCopy(a: MatchActions, from: 'main' | 'side', card: string): boolean {
+function moveCopy(a: MatchActions, from: 'main' | 'side', card: string, record = true): boolean {
   const w = a.lobby();
   if (!w?.mine || w.locked || w.phase !== 'between') return false;
   const next = moved(shown(w)!, from, card);
   if (!next) return false;
   draft = { key: keyOf(w), cfg: next };
+  if (record) {
+    if (undo?.key !== keyOf(w)) undo = { key: keyOf(w), moves: [] };
+    undo.moves.push({ from: from === 'main' ? 'side' : 'main', card });
+  }
   // only a legal configuration goes to the server — it would refuse the
   // rest and keep the last legal one, which is what the lock deals
   if (checkSwap(w.mine.registered, next).ok) a.send({ t: 'cc', op: 'config', main: next.main, side: next.side });
   a.rerender();
   return true;
+}
+
+/** a move of this game's sideboarding to take back (the table's Undo) */
+export function canUndo(w: MatchLobbyInfo): boolean {
+  return !!undo && undo.key === keyOf(w) && undo.moves.length > 0 && !w.locked && w.phase === 'between';
+}
+
+/** Undo: the last move's copy goes home, through moveCopy. A move the board
+ * no longer allows (a config pushed from another device) is dropped */
+function undoMove(a: MatchActions): void {
+  const w = a.lobby();
+  if (!w || !canUndo(w)) return;
+  const last = undo!.moves.pop()!;
+  if (!moveCopy(a, last.from, last.card, false)) a.rerender();
 }
 
 // ── the home card ────────────────────────────────────────────────────
@@ -284,11 +306,14 @@ export function handleMatchButton(btn: HTMLElement, a: MatchActions): boolean {
     case 'cc-move':
       moveCopy(a, btn.dataset['from'] === 'side' ? 'side' : 'main', btn.dataset['card'] ?? '');
       return true;
+    case 'cc-undo': undoMove(a); return true;
     case 'cc-reset':
       // back to the deck as registered (docs/22 §8 Q3: one tap away) — an
-      // ordinary configuration; the server's push of it is the repaint
+      // ordinary configuration; the server's push of it is the repaint. It
+      // is a fresh start: nothing before it is taken back
       if (!w?.mine || w.locked) return true;
       draft = null;
+      undo = null;
       a.send({ t: 'cc', op: 'config', main: [...w.mine.registered.main], side: [...w.mine.registered.side] });
       return true;
     case 'cc-ready': {

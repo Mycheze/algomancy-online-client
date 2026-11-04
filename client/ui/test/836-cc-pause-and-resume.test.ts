@@ -35,12 +35,14 @@ const cc = (): unknown[] => ui.sent().filter(m => m['t'] === 'cc');
 
 test('§1 offer, withdraw; asked, accept or decline', () => {
   let html = lobby();
-  assert.match(html, /<button data-btn="cc-pause">Offer pause<\/button>/);
+  // a toolbar tool since BL-65 (2026-11-04, the sideboarding table in the frame): an icon over its caption
+  assert.match(html, /data-btn="cc-pause"[^>]*>(?:(?!<\/button>)[\s\S])*ui-icon-button__label">Offer pause<\/span><\/button>/);
   ui.sent();
   ui.click({ btn: 'cc-pause' });
   assert.deepEqual(cc(), [{ t: 'cc', op: 'pause' }]);
   html = lobby({ pause: { offeredBy: 0, pausedAt: null, resume: [false, false] } });
   assert.match(html, /You offered a pause\./);
+  assert.doesNotMatch(html, /Offer pause/, 'offered: the row under the toolbar says so, the tool is gone');
   ui.click({ btn: 'cc-unpause' });
   assert.deepEqual(cc(), [{ t: 'cc', op: 'unpause' }], 'withdraw');
   html = lobby({ pause: { offeredBy: 1, pausedAt: null, resume: [false, false] } });

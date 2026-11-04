@@ -2,8 +2,9 @@
  *
  * docs/22 §5.4: "Ready is disabled while the configuration is illegal", with a
  * live legality line. On the table (owner 2026-11-03, "like MTGO") the bottom
- * bar always shows the counts — "Deck 30 · Sideboard 7/7" — and the verdict
- * beside them: ✓ Legal, or the reason. An in-between step of a swap (a card
+ * bar always shows the counts — "Main 30 · Side 7/7" since BL-65 (2026-11-04,
+ * the strip at the foot of the builder's table) — and the verdict beside
+ * them: ✓ Legal, or the reason. An in-between step of a swap (a card
  * out before its replacement is in) is illegal, so this is the screen's
  * commonest state, and it must never look like a broken button.
  *
@@ -39,7 +40,7 @@ const readies = (html: string): string[] => [...bar(html).matchAll(/<button[^>]*
 
 test('§1 legal: the counts, ✓ Legal, and both of the loser\'s Ready buttons live', () => {
   const b = bar(ui.html());
-  assert.match(b, /Deck <b class="">31<\/b>\s*· Sideboard <b class="">7\/7<\/b>/);
+  assert.match(b, /Main <b class="">31<\/b>\s*· Side <b class="">7\/7<\/b>/);
   assert.match(b, /<span class="ccsbok">✓ Legal<\/span>/);
   const r = readies(ui.html());
   assert.equal(r.length, 2);
@@ -50,7 +51,7 @@ test('§2 a deck under 30: red count, the reason, every Ready off', () => {
   ui.click({ btn: 'cc-move', from: 'main', card: N[0]! });          // 30 / 8
   let html = ui.click({ btn: 'cc-move', from: 'main', card: N[1]! }); // 29 / 9
   const b = bar(html);
-  assert.match(b, /Deck <b class="bad">29<\/b>/);
+  assert.match(b, /Main <b class="bad">29<\/b>/);
   assert.match(b, /role="status">Main deck needs 30 — you have 29\.<\/p>/, 'the reason, in the bar beside the counts');
   assert.doesNotMatch(b, /✓ Legal/);
   for (const t of readies(html)) assert.match(t, /disabled/, `${t} is off`);
@@ -64,9 +65,9 @@ test('§2 a deck under 30: red count, the reason, every Ready off', () => {
 test('§3 a sideboard over 7: red count, that reason, every Ready off', () => {
   const html = ui.click({ btn: 'cc-move', from: 'main', card: N[15]! });   // 30 / 8
   const b = bar(html);
-  assert.match(b, /Sideboard <b class="bad">8\/7<\/b>/);
+  assert.match(b, /Side <b class="bad">8\/7<\/b>/);
   assert.match(b, /role="status">Sideboard holds 7 — you have 8\.<\/p>/);
-  assert.match(html, /<b>Sideboard<\/b> <span class="ttpilecount bad">8\/7<\/span>/, 'the zone\'s own header says it too');
+  assert.match(html, /<span class="ttpilelabel">Sideboard<\/span><span\s+class="ttpilecount bad">8\/7<\/span>/, 'the zone\'s own header says it too');
   for (const t of readies(html)) assert.match(t, /disabled/);
 });
 

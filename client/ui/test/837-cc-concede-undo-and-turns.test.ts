@@ -71,7 +71,8 @@ test('§2 the between screen: Concede match asks, then sends', () => {
   assert.match(html, /Concede the match\? You lose it\./);
   assert.deepEqual(ui.sent(), [], 'asking sends nothing');
   html = ui.click({ btn: 'cc-concede-no' });
-  assert.match(html, /data-btn="cc-concede">🏳 Concede match/);
+  // a toolbar tool since BL-65 (2026-11-04, the sideboarding table in the frame): the flag over its caption
+  assert.match(html, /data-btn="cc-concede"[^>]*>(?:(?!<\/button>)[\s\S])*🏳(?:(?!<\/button>)[\s\S])*>Concede match<\/span><\/button>/);
   ui.click({ btn: 'cc-concede' });
   ui.click({ btn: 'cc-concede-yes' });
   assert.deepEqual(ui.sent(), [{ t: 'concedeMatch' }]);

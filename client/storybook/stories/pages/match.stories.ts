@@ -53,11 +53,15 @@ export const Registration = {
   name: 'Game 1: register a deck',
   render: () => page(matchRoomHtml(room({ w: lobby({ game: 1, phase: 'game', score: [0, 0], mine: null, ready: [false, false] }), decks: DECKS, pick: DECKS[0]!, peers: [true, false] }))),
 };
-// the sideboarding table (owner 2026-11-03, "like MTGO"): the deck as the tabletop's piles, the sideboard above
+// the sideboarding table (owner 2026-11-03, "like MTGO"; BL-65: the builder's table — the deck as piles, the Sideboard in the rail)
 const DESK = { cw: 132, ch: 183, paneH: 540 };
 export const Between = {
   name: 'Between games: sideboarding (a full sideboard, the opponent ready)',
   render: () => page(matchRoomHtml(room({ table: DESK }))),
+};
+export const UndoOn = {
+  name: 'Between games: a move to take back (Undo on)',
+  render: () => page(matchRoomHtml(room({ table: DESK, undo: true, shown: { main: MAIN.slice(1), side: [...SIDE, MAIN[0]!] } }))),
 };
 export const BetweenTouch = { name: 'Between games: sideboarding (iPad size)', render: () => page(matchRoomHtml(room())) };
 export const OpponentNotReady = {

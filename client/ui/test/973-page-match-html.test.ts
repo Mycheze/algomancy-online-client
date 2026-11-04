@@ -11,7 +11,9 @@
  * §3 game 1: register a deck; the deck is in
  * §4 between games: score, clocks, countdown, the reset, the table's two zones, the legality line, Ready
  *    (owner 2026-11-03: sideboarding on the tabletop — the deck as piles below, the sideboard above;
- *    the chip lists §4 used to read are gone, 1060–1062 hold the table)
+ *    the chip lists §4 used to read are gone, 1060–1062 hold the table. BL-65, 2026-11-04: it is the
+ *    builder's table (pages/table.ts) in the app frame — the Sideboard in the rail, Main n · Side n/7
+ *    and the verdict in the strip at its foot)
  * §5 paused, and a match that ended while the page waited
  * §6 names, rooms and card names are escaped
  */
@@ -58,8 +60,11 @@ test('973 §0 positive control: there is no DOM here', () => {
     // the rooms are drawn in the app frame since 2026-11-04 (pages/lobby.ts roomFrameHtml): the shell is the root,
     // the page's class still LAST (report.ts pageOf), and the kind of room + its code is the toolbar's title
   assert.match(matchRoomHtml(room({ w: lobby({ game: 1, phase: 'game', mine: null }) })), /^<div class="ui-app-shell ui-app-shell--contained apppage ccpage">/);
-  // between games the page is the sideboarding table; `ccpage` stays its LAST class (report.ts pageOf)
-  assert.match(matchRoomHtml(room()), /^<div class="ccsbtable ccpage" style="--cw:108px;--ch:150px">/);
+  // between games the page is the sideboarding table, in the frame too (BL-65, 2026-11-04: edge to edge, the
+  // builder's table); `ccpage` stays its LAST class (report.ts pageOf), `ccsbtable` marks the screen
+  const between = matchRoomHtml(room());
+  assert.match(between, /^<div class="ui-app-shell ui-app-shell--contained ui-app-shell--fill apppage framewide framebleed ccsbtable ccpage">/);
+  assert.match(between, /<div class="tttablewrap ccsbwrap" style="--cw:108px;--ch:150px">/, 'the card size is the table\'s');
 });
 
 test('973 §1 the Competitive card', () => {
@@ -117,13 +122,15 @@ test('973 §3 game 1: register a deck, then it is in', () => {
 
 test('973 §4 between games: score, clocks, countdown, reset, boards, legality, Ready', () => {
   const html = matchRoomHtml(room());
-  assert.match(html, /Game 2 of 3 — you lead 1–0 · <span class="cccount" data-cc-until="1090000">1:30<\/span> to sideboard/);
+  // the table's toolbar (BL-65): the countdown on its own line first, then the score and the clocks
+  assert.match(html, /<span class="ccsbclock"><span class="cccount" data-cc-until="1090000">1:30<\/span> to sideboard<\/span>/);
+  assert.match(html, /<span class="ccgame">Game 2 of 3 — you lead 1–0<\/span>/);
   assert.match(html, /Your clock <b>38:00<\/b> · Bo <b>41:05<\/b>/);
   assert.match(html, /<button data-btn="cc-reset" disabled>Back to the registered deck<\/button>/, 'already the registered deck');
   assert.doesNotMatch(html, /cc-preset/, 'no saved swaps (owner, 2026-11-03)');
-  assert.match(html, /<b>Deck<\/b> <span class="ttpilecount">30<\/span>/);
-  assert.match(html, /<b>Sideboard<\/b> <span class="ttpilecount">2\/7<\/span>/);
-  assert.match(html, /Deck <b class="">30<\/b>\s*· Sideboard <b class="">2\/7<\/b><\/span>\s*<span class="ccsbok">✓ Legal<\/span>/);
+  assert.match(html, /<span class="ttheadlabel">Main deck<\/span><b class="ttheadcount">30<\/b>/);
+  assert.match(html, /<span class="ttpilelabel">Sideboard<\/span><span\s+class="ttpilecount">2\/7<\/span>/);
+  assert.match(html, /Main <b class="">30<\/b>\s*· Side <b class="">2\/7<\/b><\/span>\s*<span class="ccsbok">✓ Legal<\/span>/);
   assert.match(html, new RegExp(`data-btn="cc-move" data-from="main" data-tt-src="main\\|[^"]*" data-tt-i="\\d+" data-card="${MAIN[0]!.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
   assert.doesNotMatch(html, /cclegal/, 'a legal deck: no legality line');
   assert.match(html, /<button data-btn="cc-ready" >Ready<\/button>/);

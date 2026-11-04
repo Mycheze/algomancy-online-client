@@ -41,7 +41,8 @@ const configs = (): Array<{ main: string[]; side: string[] }> =>
 function zoneCards(html: string, z: 'main' | 'side'): string[] {
   const at = html.indexOf(`data-cc-zone="${z}"`);
   assert.ok(at >= 0, `no ${z} zone on screen`);
-  const end = html.indexOf(z === 'main' ? '<footer' : 'data-cc-zone="main"', at);
+  // the builder's table (BL-65): the deck's region, then the rail's sideboard, then the strip at the foot
+  const end = html.indexOf(z === 'main' ? 'data-cc-zone="side"' : '<footer', at);
   return [...html.slice(at, end).matchAll(/data-card="([^"]+)"/g)].map(m => m[1]!);
 }
 const sorted = (l: readonly string[]): string[] => [...l].sort();

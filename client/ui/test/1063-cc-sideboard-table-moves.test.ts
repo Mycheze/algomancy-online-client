@@ -5,7 +5,9 @@
  * much time building, then the sideboard above and you slide cards in and
  * out." So the between screen is a table (pages/match.ts sideboardTableHtml):
  * the deck as the tabletop's piles (`data-cc-zone="main"`), the sideboard as a
- * row of cards above it (`data-cc-zone="side"`). A card moves by one tap —
+ * row of cards above it (`data-cc-zone="side"`) — since BL-65 (2026-11-04) the
+ * builder's own table (pages/table.ts), the Sideboard a pile in its rail on the
+ * right, so it is one thing to learn. A card moves by one tap —
  * mouse or finger — and by a drag (ui/drag.ts, ui/match.ts sideboardDrag),
  * whose drop is the tap's own `moveCopy`.
  *
@@ -14,8 +16,8 @@
  *   §2 a DROP does the same: the provider picks up a card of the table (and
  *      nothing else), lights only the OTHER zone, and its drop lands the copy
  *      there — the same config the tap sends
- *   §3 every card is a scan on the table (the tabletop's own markup), and the
- *      deck is laid out as piles by cost
+ *   §3 every card is a scan on the table (the tabletop's own markup), the
+ *      deck is laid out as piles by cost, and the sideboard is the rail's pile
  *
  * Driven through the real client (ui-driver.ts) with the server's payload shape.
  */
@@ -46,7 +48,8 @@ const cc = (): Record<string, unknown>[] => ui.sent().filter(m => m['t'] === 'cc
 function zoneCards(html: string, z: 'main' | 'side'): string[] {
   const at = html.indexOf(`data-cc-zone="${z}"`);
   assert.ok(at >= 0, `no ${z} zone on screen`);
-  const end = html.indexOf(z === 'main' ? '<footer' : 'data-cc-zone="main"', at);
+  // the builder's table (BL-65): the deck's region, then the rail's sideboard, then the strip at the foot
+  const end = html.indexOf(z === 'main' ? 'data-cc-zone="side"' : '<footer', at);
   return [...html.slice(at, end).matchAll(/data-card="([^"]+)"/g)].map(m => m[1]!);
 }
 const count = (l: string[], n: string): number => l.filter(x => x === n).length;
@@ -112,15 +115,20 @@ test('§2b no drag once the window has locked, or when the move would do nothing
   lobby();
 });
 
-test('§3 the table is the tabletop: piles of scans for the deck, whole cards for the sideboard', () => {
+test('§3 the table is the tabletop: piles of scans for the deck, the sideboard the rail\'s pile', () => {
   const html = ui.html();
-  const deck = html.slice(html.indexOf('data-cc-zone="main"'), html.indexOf('<footer'));
+  assert.match(html, /<div class="tttable" data-scroll="cc-table" data-cc-zone="main">/, 'the builder\'s table region is the deck\'s zone');
+  const deck = html.slice(html.indexOf('data-cc-zone="main"'), html.indexOf('data-cc-zone="side"'));
   assert.match(deck, /<section class="ttpile ccsbpile" data-tt-zone="main\|/, 'the deck is the tabletop\'s piles');
   assert.ok((deck.match(/class="ttpile /g) ?? []).length >= 2, 'by cost: more than one pile');
   assert.equal((deck.match(/class="ttcard/g) ?? []).length, 30, 'every copy a card of its own');
   assert.equal((deck.match(/<img [^>]*class="ttart"|class="ttart[^"]*"/g) ?? []).length, 30, 'every card its scan');
-  const side = html.slice(html.indexOf('data-cc-zone="side"'), html.indexOf('data-cc-zone="main"'));
-  assert.equal((side.match(/class="ttcard ccsbcard"/g) ?? []).length, 6);
-  assert.equal((side.match(/class="ccsbslot"/g) ?? []).length, 1, 'the room left up to seven, as an empty place');
+  const side = html.slice(html.lastIndexOf('<aside class="ttrail"', html.indexOf('data-cc-zone="side"')), html.indexOf('<footer'));
+  assert.match(side, /^<aside class="ttrail" data-scroll="tt-rail"><div class="ttrailbox ttrailside" data-cc-zone="side"><section class="ttpile ttsidepile" data-tt-zone="side"/,
+    'the sideboard is the rail\'s pile, its box the zone');
+  assert.equal((side.match(/class="ttcard/g) ?? []).length, 6, 'every sideboard copy a card');
+  assert.equal((side.match(/data-btn="cc-move" data-from="side"/g) ?? []).length, 6, '…each one tap from the deck');
+  assert.match(side, /class="ttpilecount">6\/7</, 'counted against seven');
+  assert.doesNotMatch(side, /ttrailmaybe/, 'no Maybe here: only the registered cards');
   assert.doesNotMatch(html, /draggable="true"|<img (?![^>]*draggable="false")/, 'no scan is natively draggable (Firefox, ui/drag.ts)');
 });
