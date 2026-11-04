@@ -27,10 +27,10 @@ here (see "Adding a variant").
 | Empty state | `empty-state.ts` | boxed (default) / `bare` · `title` · `actionHtml` |
 | Dialog | `dialog.ts` | native `<dialog>` · width `md` / `lg` / `xl` · `closable` · `openDialog` / `closeDialog` / `installDialogClose` |
 | Toast | `toast.ts` | `success` / `info` / `danger` · `toastHtml` (markup) and `showToast` (one region on `<body>`) |
-| Icon | `icon.ts` | `icon(name, { size, title })` · one outline style, 24×24, `currentColor` · `ICON_NAMES` · 1em unless `size` (px or a CSS length) · decorative unless `title` |
+| Icon | `icon.ts` | `icon(name, { size, title })` · one outline style, 24×24, `currentColor` · `ICON_NAMES` (the deck screens added `undo` `redo` `edit` `filter` `plus` `import` `export` `share` `copy` `trash`, BL-65) · 1em unless `size` (px or a CSS length) · decorative unless `title` |
 | Icon button | `icon-button.ts` | the toolbar button: icon + caption · layout `stack` / `inline` · `badge` (a count, 99+, or `'dot'`) · `on` · `disabled` · `href` · `iconHtml` (an avatar) · ≥48px |
 | Segmented | `segmented.ts` | one of a few: each option its own `dataBtn`/`attrs`/`on`/`disabled`/`title` · size `md` / `sm` · `full` · `ariaLabel` (root `role="group"`) |
-| Sheet | `sheet.ts` | drawn from state (`open: false` → '') · placement `center` / `anchor-bottom-left` / `-bottom-right` / `-top-left` / `-top-right` · width `sm` / `md` / `lg` · `dismissBtn` on scrim and ✕ · `footerHtml` · `installSheetEsc` |
+| Sheet | `sheet.ts` | drawn from state (`open: false` → '') · placement `center` / `side` (docked right, full height, a light scrim that leaves the toolbar's strip to tap off: the deck screens' sheets, BL-65) / `anchor-bottom-left` / `-bottom-right` / `-top-left` / `-top-right` · width `sm` / `md` / `lg` · `dismissBtn` on scrim and ✕ · `footerHtml` · `installSheetEsc` |
 | Setting row | `setting-row.ts` | one setting of a form: `label` left at `--setting-row-label`, `controlHtml` right, `hintHtml` under it · stacks below a tablet |
 | App shell | `app-shell.ts` | `appShell({ topHtml, mainHtml, bottomHtml })`: 100dvh, only the main region scrolls; stacked flow under 760×600 · `fill` (the main region does not scroll; the page's own regions do) · `contained` (the bars' content and the main region in one centred column, `--shell-content-max` / `--shell-gutter`) · `shellBar({ startHtml, centerHtml, endHtml })` |
 
@@ -107,8 +107,9 @@ Every page under `../pages/` draws with these where one reproduces its look.
 What each page still writes by hand, and why, is in its module's header comment
 and in `../pages/README.md`; the larger leftovers:
 
-- **My decks, the tabletop builder, the binder, the rules review, How to play**
-  are not under `pages/` yet, so they use no component.
+- **The rules review, How to play** are not under `pages/` yet, so they use no
+  component. (The deck screens — the Decks page, the builder, the Competitive
+  sideboarding table — are, since BL-65, 2026-11-04.)
 - The metagame, ladder, card stats and shared-deck headers: their Back button
   sits beside the title, `pageHeader` puts it at the edge. An owner call.
 - The profile's cards are still `<section class="acctcard">` (`panel` can take
