@@ -26,6 +26,7 @@ import { Harness } from './harness.ts';
 import { canonicalCardName, getCard } from './cards/dsl.ts';
 import { DECK_LIST } from './cards/registry.ts';
 import { ANY_ACTIVATIONS, type LessonDeal } from './lessondeal.ts';
+import { rngShuffle } from './rng.ts';
 
 // ── the definition ────────────────────────────────────────────────────
 
@@ -91,8 +92,31 @@ export const DUMMY_DECK: CardName[] = Array.from({ length: 30 }, () => 'Training
 
 /** The constructed opening hand — createGame's constructed branch deals 4
  * and turn 1's draw phase (draw 4, bottom 2) nets the usual 6. Test 498
- * holds this equal to what a real constructed game deals. */
-const CONSTRUCTED_OPENING_HAND = 4;
+ * holds this equal to what a real constructed game deals. Exported for the
+ * deck builder's sample hand (BL-65). */
+export const CONSTRUCTED_OPENING_HAND = 4;
+
+/**
+ * A sample opening hand (BL-65, the builder's Stats sheet): the top `size`
+ * cards of a shuffled copy of `deck` — what a constructed game deals before
+ * turn 1's draw phase. Pure: the deck is not touched. `rng` is a seed (the
+ * engine's own shuffle, rng.ts mulberry32, so a seed always deals the same
+ * hand) or a function returning a float in [0, 1) (Math.random, for "deal
+ * another"). `size` defaults to the constructed opening hand; a larger one
+ * (opening hand + turn 1's draw) is the caller's to ask for.
+ */
+export function sampleOpeningHand<T>(deck: readonly T[], rng: number | (() => number), size: number = CONSTRUCTED_OPENING_HAND): T[] {
+  let shuffled: T[];
+  if (typeof rng === 'number') [shuffled] = rngShuffle(deck, rng);
+  else {
+    shuffled = deck.slice();
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
+    }
+  }
+  return shuffled.slice(0, Math.max(0, size));
+}
 
 const SEAT_NAMES: [string, string] = ['Challenger', 'Dummy'];
 
