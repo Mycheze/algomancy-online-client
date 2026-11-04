@@ -12,8 +12,9 @@
  * so there is no import cycle; what account.ts imports from meta.ts (the
  * cover art) arrives in the view as a URL.
  *
- * Components: the header (ui-page-header, keeping .accthead), its buttons and
- * Return to Lobby (ui-button, ui-back-link), the tabs (ui-tabs, caps), the
+ * Drawn in the app frame since 2026-11-04 (pages/frame.ts): a sidebar with
+ * who this is, the tabs and the buttons; the tab beside it scrolls by itself.
+ * Components: the buttons (ui-button), the tabs (ui-tabs, caps), the
  * friends tab's message line (ui-status) and its "Everyone here" table
  * (ui-table). The cards stay `<section class="acctcard">`: ui-panel's title
  * is text only, and four of the profile's cards carry a count in theirs. The
@@ -23,7 +24,8 @@
 import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
 import { esc } from '../util.ts';
 import { ICON_BASE } from '../assets.ts';
-import { button, pageHeader, statusMessage, table, tabs } from '../components/index.ts';
+import { button, segmented, statusMessage, table, tabs } from '../components/index.ts';
+import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
 import type { AchievementState, FriendView, LeaderRow, LeagueTrophy, Me, MatchRow } from '../account.ts';
 import type { PublicDeck } from '../meta.ts';
 import { elChip } from './signin.ts';
@@ -218,6 +220,8 @@ export interface ProfileView {
   ladder: Ladder | null;
   /** the published decks, each with its cover's URL (or null) */
   decks: { deck: PublicDeck; cover: string | null }[];
+  /** the toolbar's account and bell (pages/frame.ts) */
+  chrome: FrameChrome;
 }
 
 export function profileView(s: ProfileState, now = Date.now()): ProfileView {
@@ -228,6 +232,7 @@ export function profileView(s: ProfileState, now = Date.now()): ProfileView {
     friendMsg: s.friendMsg, pwMsg: s.pwMsg, favMsg: s.favMsg, leaders: s.leaders, leadersFailed: s.leadersFailed,
     ladderMode: s.ladderMode, ladder: s.ladder,
     decks: (s.me.decks ?? []).map(deck => ({ deck, cover: deck.cover ? s.artFor(deck.cover) : null })),
+    chrome: frameChromeView(),
   };
 }
 
@@ -550,19 +555,22 @@ function friendRow(f: FriendView, kind: 'friend' | 'incoming' | 'outgoing'): str
  * with what they can count.
  */
 function ladderTab(ladder: Ladder | null, ladderMode: LadderMode): string {
-  const modes = (['constructed', 'draft'] as const).map(m =>
-    `<button class="elchip${m === ladderMode ? ' on' : ''}" data-btn="acct-ladder-mode" data-mode="${m}">${
-      m === 'draft' ? 'Live draft' : 'Constructed'}</button>`).join('');
+  const modes = segmented({
+    ariaLabel: 'Ladder', size: 'sm',
+    options: (['constructed', 'draft'] as const).map(m => ({
+      label: m === 'draft' ? 'Live draft' : 'Constructed', value: m, on: m === ladderMode, dataBtn: 'acct-ladder-mode', attrs: { 'data-mode': m },
+    })),
+  });
 
   if (!ladder) {
     return `<section class="acctcard"><h3>Ladder</h3>
-      <div class="elrow">${modes}</div>
+      <div class="acctmodes">${modes}</div>
       <div class="hint">loading…</div></section>`;
   }
 
   if (ladder.failed) {
     return `<section class="acctcard"><h3>Ladder</h3>
-      <div class="elrow">${modes}</div>
+      <div class="acctmodes">${modes}</div>
       ${statusMessage({ tone: 'error', text: 'Could not load the ladder.' })}
       <button data-btn="acct-ladder-mode" data-mode="${ladderMode}">Try again</button></section>`;
   }
@@ -596,7 +604,7 @@ function ladderTab(ladder: Ladder | null, ladderMode: LadderMode): string {
 
   return `<section class="acctcard">
       <h3>Ladder</h3>
-      <div class="elrow">${modes}</div>
+      <div class="acctmodes">${modes}</div>
       ${meLine}
       ${board}
       <div class="hint">Everyone starts at 1000. Only games from the <b>matchmaking queue</b> are
@@ -668,9 +676,10 @@ function historyTab(me: Me): string {
 
 // ── the page ──────────────────────────────────────────────────────────
 
-/** the header's buttons, before Return to Lobby. The Admin and Rules review
- * buttons are drawn from what the SERVER sent about this account (tests 301
- * and 439 read these two lines and run their conditions). */
+/** the sidebar's buttons: the pages this one leads to, then refresh and log
+ * out. The Admin and Rules review buttons are drawn from what the SERVER sent
+ * about this account (tests 301 and 439 read these two lines and run their
+ * conditions). */
 function headerButtons(me: Me): string {
   return [
     button({ label: '🏅 League', dataBtn: 'nav-league', title: 'the league: sign up, your matches, the standings' }),
@@ -683,6 +692,11 @@ function headerButtons(me: Me): string {
   ].filter(Boolean).join('\n        ');
 }
 
+/** The profile, in the app frame (pages/frame.ts, 2026-11-04). One window:
+ * a sidebar — who this is, the six tabs one under another, the pages it leads
+ * to and Log out — and the tab beside it, scrolling inside itself. The
+ * toolbar is the frame's: Home (`acct-close`, Return to Lobby's button) and
+ * the shared tools. */
 export function profileHtml(v: ProfileView): string {
   const me = v.me, p = me.profile, tab = v.tab;
   const counts: Partial<Record<ProfileTab, string>> = {
@@ -690,30 +704,38 @@ export function profileHtml(v: ProfileView): string {
     friends: `${me.friends.length}${me.incoming.length ? ` +${me.incoming.length}` : ''}`,
     decks: `${me.decks?.length ?? 0}`,
   };
-  return `<div class="acctpage">
-    ${pageHeader({
-      title: me.username,
-      titleHtml: `${elChip(me.favoriteElement)} ${badgeChipsHtml(me.badge)} ${trophyChipsHtml(me.trophies)}`,
-      subtitleHtml: `${p.games} game${p.games === 1 ? '' : 's'} · ${p.wins}W–${p.losses}L${
-        p.unresolved ? ` · ${p.unresolved} with no recorded result` : ''
-      } · playing since ${shortDate(p.firstPlayed ?? me.createdAt)}`,
-      actionsHtml: headerButtons(me),
-      back: { dataBtn: 'acct-close' },
-      className: 'accthead',
-    })}
-    ${tabs({ items: PROFILE_TABS.map(id => ({ id, count: counts[id] })), active: tab, variant: 'caps', dataBtn: 'acct-tab' })}
-    <div class="acctbody">${
+  const chips = `${badgeChipsHtml(me.badge)} ${trophyChipsHtml(me.trophies)}`.trim();
+  const side = `<aside class="acctside" data-scroll="acct-side">
+      <div class="acctwhois">
+        <h2 class="acctme">${esc(me.username)} ${elChip(me.favoriteElement)}</h2>
+        ${chips ? `<div class="acctchips">${chips}</div>` : ''}
+        <p class="acctsum">${p.games} game${p.games === 1 ? '' : 's'} · ${p.wins}W–${p.losses}L${
+          p.unresolved ? ` · ${p.unresolved} with no recorded result` : ''
+        } · playing since ${shortDate(p.firstPlayed ?? me.createdAt)}</p>
+      </div>
+      ${tabs({ items: PROFILE_TABS.map(id => ({ id, count: counts[id] })), active: tab, variant: 'caps', dataBtn: 'acct-tab', className: 'acctnav' })}
+      <div class="accthbtns">
+        ${headerButtons(me)}
+      </div>
+    </aside>`;
+  return frameHtml({
+    page: 'acctpage', title: 'Profile',
+    back: { dataBtn: 'acct-close', label: 'Home' },
+    chrome: v.chrome, fill: true,
+    mainHtml: `<div class="acctlayout">${side}
+    <div class="acctbody" data-scroll="acct-${esc(tab)}">${
       tab === 'stats' ? statsTab(v)
       : tab === 'achievements' ? achievementsTab(me)
       : tab === 'ladder' ? ladderTab(v.ladder, v.ladderMode)
       : tab === 'friends' ? friendsTab(v)
       : tab === 'decks' ? decksTab(v.decks)
       : historyTab(me)}</div>
-  </div>`;
+    </div>`,
+  });
 }
 
 export function paintProfile(app: HTMLElement, v: ProfileView): void {
-  app.innerHTML = profileHtml(v);
+  paintFrame(app, profileHtml(v));
 }
 
 /** the type a profile's tab is checked against before it is believed */

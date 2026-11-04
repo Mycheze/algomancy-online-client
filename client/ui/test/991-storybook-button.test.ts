@@ -62,7 +62,7 @@ async function profile(): Promise<string> {
   ui.click({ btn: 'acct-open-profile' });
   await settle(); await settle();
   const html = ui.html();
-  assert.match(html, /class="[^"]*\baccthead\b/, 'the profile did not paint');
+  assert.match(html, /class="[^"]*\bacctpage\b/, 'the profile did not paint');
   return html;
 }
 const BTN = /<button [^>]*data-btn="nav-storybook"[^>]*>🎨 Design \(Storybook\)<\/button>/;
@@ -91,5 +91,5 @@ test('§3 the button opens a window in the click, gets a ticket with the session
   assert.deepEqual(POSTS, [{ url: '/api/storybook/ticket', auth: 'Bearer tok' }]);
   assert.deepEqual(replaced, ['/storybook/?ticket=T1'], 'the window goes to the ticket URL the server answered');
   assert.equal(popup.opener, null, 'Storybook gets no handle on the game page');
-  assert.match(ui.html(), /class="[^"]*\baccthead\b/, 'the profile stays where it was');
+  assert.match(ui.html(), /class="[^"]*\bacctpage\b/, 'the profile stays where it was');
 });

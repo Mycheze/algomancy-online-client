@@ -10,13 +10,15 @@
  * paints #app through paintSignin(). Nothing here imports account.ts except
  * its types, so there is no import cycle.
  *
- * The markup is byte for byte what account.ts drew (tests 267 and 905 read
- * it). The buttons stay the page's: in `.homebtns` the gold `.primary` is
- * the census's gold-over-green copy, and swapping in the button component
- * would change it (the redesign's call). */
+ * The sign-in screen is drawn in the app frame since 2026-11-04 (one card,
+ * the heading in the toolbar, the frame's Back); tests 267 and 905 read its
+ * warning and its message line. The buttons stay the page's `.homebtns`. The
+ * identity bar is the home's slot and is drawn exactly as it was. */
 import { esc } from '../util.ts';
 import { ICON_BASE } from '../assets.ts';
 import type { Me } from '../account.ts';
+import { settingRow } from '../components/index.ts';
+import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
 
 // ── the identity bar (the home screen's slot) ─────────────────────────
 
@@ -83,46 +85,55 @@ export interface SigninView {
   msg: string;
   /** a sign-in is in flight */
   busy: boolean;
+  /** the toolbar's account and bell (pages/frame.ts) */
+  chrome: FrameChrome;
 }
 
 export function signinView(s: { mode: 'login' | 'register'; me: Me | null; msg: string; busy: boolean }): SigninView {
-  return { mode: s.mode, username: s.me?.username ?? '', msg: s.msg, busy: s.busy };
+  return { mode: s.mode, username: s.me?.username ?? '', msg: s.msg, busy: s.busy, chrome: frameChromeView() };
 }
 
+/** The screen, in the app frame (pages/frame.ts, 2026-11-04): one card in the
+ * middle of the window, as matchmaking's is. The heading is the toolbar's
+ * title, and Back is the frame's — `acct-close`, as the old Back button was. */
 export function signinHtml(v: SigninView): string {
   // the two screens are one function with one flag: test 267 holds the
   // no-reset warning to the `isRegister` arm
   const isRegister = v.mode === 'register';
   const authMsg = v.msg;
-  return `<div class="joinscreen home acctscreen">
-    <h1 class="homelogo">ALGOMANCY</h1>
-    <h2>${isRegister ? 'Create an account' : 'Log in'}</h2>
+  return frameHtml({
+    page: 'acctscreen', title: isRegister ? 'Create an account' : 'Log in',
+    back: { dataBtn: 'acct-close', label: 'Back', icon: 'back' },
+    chrome: v.chrome,
+    mainHtml: `<section class="acctform" aria-label="${isRegister ? 'Create an account' : 'Log in'}">
     <p class="hint">${isRegister
       ? 'A username and a password, nothing else — no email, no recovery.'
       : 'Signed in, every game you play is recorded to your profile.'}</p>
     ${isRegister ? `<p class="pwwarn" data-warn="nopwreset"><b>DO NOT FORGET YOUR PASSWORD.
       THERE IS NO PASSWORD RESET.</b> There is no email address on this account to send one to.
       Write it down.</p>` : ''}
-    <label class="namerow">Username <input id="a-user" maxlength="20" autocomplete="username"
-      spellcheck="false" value="${esc(v.username)}"></label>
-    <label class="namerow">Password <input id="a-pass" type="password" maxlength="200"
-      autocomplete="${isRegister ? 'new-password' : 'current-password'}"></label>
+    <div class="acctrows">
+    ${settingRow({ label: 'Username', controlHtml: `<input id="a-user" maxlength="20" autocomplete="username"
+      spellcheck="false" value="${esc(v.username)}" aria-label="Username">` })}
+    ${settingRow({ label: 'Password', controlHtml: `<input id="a-pass" type="password" maxlength="200"
+      autocomplete="${isRegister ? 'new-password' : 'current-password'}" aria-label="Password">` })}
+    </div>
     ${authMsg ? `<p class="deckmsg">${esc(authMsg)}</p>` : ''}
     <div class="homebtns">
       <button class="primary" data-btn="acct-submit" ${v.busy ? 'disabled' : ''}>
         ${v.busy ? 'working…' : isRegister ? 'Create account' : 'Log in'}</button>
       <button data-btn="acct-toggle-mode">${isRegister
         ? 'I already have an account' : "I'm new here — create an account"}</button>
-      <button data-btn="acct-close">Back</button>
     </div>
     ${isRegister ? `<p class="hint">Sign up with a name you have played under here and those games
       come with it.</p>` : ''}
-  </div>`;
+  </section>`,
+  });
 }
 
 /** paint the screen, then wire Enter to submit and put the caret in the box being asked for */
 export function paintSignin(app: HTMLElement, v: SigninView): void {
-  app.innerHTML = signinHtml(v);
+  paintFrame(app, signinHtml(v));
   const submit = (): void => (document.querySelector('[data-btn="acct-submit"]') as HTMLElement | null)?.click();
   for (const id of ['a-user', 'a-pass']) {
     document.getElementById(id)?.addEventListener('keydown', e => {

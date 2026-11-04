@@ -42,7 +42,9 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .acctscreen .namerow input { flex: 1; }
 
 /* the profile page is its own full-width layout, not a 340px join card */
-.acctpage { grid-column: 1 / -1; max-width: 1100px; margin: 0 auto; padding: var(--space-5); width: 100%; }
+/* (since 2026-11-04 the profile's root is the app frame's shell — the window,
+   with no size of its own; `:not(.apppage)` keeps this box off it) */
+.acctpage:not(.apppage) { grid-column: 1 / -1; max-width: 1100px; margin: 0 auto; padding: var(--space-5); width: 100%; }
 .accthead { display: flex; align-items: flex-start; gap: var(--space-6); flex-wrap: wrap;
   border-bottom: 1px solid var(--line); padding-bottom: var(--space-4); margin-bottom: var(--space-5); }
 .accthead h1 { margin: 0 0 var(--space-2); letter-spacing: .04em; display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
@@ -150,3 +152,57 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .fdot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-border-strong); flex: none; }
 .fdot.on { background: var(--glow); box-shadow: 0 0 6px var(--glow); }
 
+
+/* ── the profile and the sign-in screen in the app frame (2026-11-04, docs/24) ──
+   One window each. The profile: a sidebar (who this is, the six tabs one under
+   another, the pages it leads to, Log out) and the tab beside it, scrolling by
+   itself. Sign-in: one card in the middle, as matchmaking's is. Everything is
+   scoped to `.apppage`: .acctcard, .acctbody, .statgrid and .acctscreen are
+   drawn by the deck, league, challenge and metagame pages too. */
+.acctlayout { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: var(--space-7); }
+.acctside { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-6); padding-right: var(--space-2); }
+.acctwhois { display: flex; flex-direction: column; gap: var(--space-3); }
+.acctme { margin: 0; display: flex; align-items: center; gap: var(--space-3); color: var(--color-text);
+  font-size: var(--text-22); font-weight: 700; letter-spacing: .02em; overflow-wrap: anywhere; }
+.acctchips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+/* a badge chip is sized in em off its heading (.badgechip: .55em, shared/10);
+   it sat in the old header's h1, so this row gives it that size again */
+.acctchips { font-size: var(--text-22); line-height: 1.2; }
+.acctsum { margin: 0; color: var(--color-text-muted); font-size: var(--text-12); line-height: 1.5; }
+/* the tabs, one under another: rows, not a stack of boxes */
+.acctside .acctnav { flex-direction: column; flex-wrap: nowrap; gap: var(--space-1); margin: 0; }
+.acctside .acctnav .ui-tabs__tab { display: flex; justify-content: space-between; align-items: center; width: 100%;
+  min-height: 40px; text-align: left; background: none; border-color: transparent; border-radius: var(--radius-md); }
+.acctside .acctnav .ui-tabs__tab:hover { background: var(--color-surface-raised); border-color: transparent; }
+.acctside .acctnav .ui-tabs__tab.on { background: var(--color-surface-raised); border-color: var(--color-border); }
+/* the pages the profile leads to, each a row; refresh and Log out share the last */
+.acctside .accthbtns { margin: 0; justify-content: flex-start; padding-top: var(--space-5); border-top: 1px solid var(--color-border); }
+.acctside .accthbtns > [data-btn^="nav-"] { flex: 1 1 100%; text-align: left; }
+.acctside .accthbtns > [data-btn="acct-logout"] { flex: 1 1 auto; }
+
+.acctpage.apppage .acctbody { min-height: 0; overflow-y: auto; align-content: start; padding-right: var(--space-2); }
+/* flatter: a stat is a number and its label inside its card, not a box in a box */
+.acctpage.apppage .statgrid { grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: var(--space-3) var(--space-4); }
+.acctpage.apppage .statcell { background: none; border: 0; border-radius: 0; padding: var(--space-2) 0; text-align: left; }
+/* …and the achievements are tiles on the page, not tiles inside one big card */
+.acctpage.apppage .acctcard.wide:has(> .achgroup) { background: none; border: 0; padding: 0; }
+.acctmodes { margin-bottom: var(--space-4); }
+/* the published decks are rows inside their card, hairlines between, as the metagame's list is */
+.acctpage.apppage .acctcard .metalist { gap: 0; margin: 0; }
+.acctpage.apppage .acctcard .metarow { background: none; border: 0; border-radius: 0; padding: var(--space-4) var(--space-2); }
+.acctpage.apppage .acctcard .metarow + .metarow { border-top: 1px solid var(--color-border); }
+.acctpage.apppage .acctcard .metarow:hover { background: var(--color-surface-raised); }
+
+.acctscreen.apppage .ui-app-shell__main { display: flex; }
+.acctform { margin: auto; width: min(100%, 520px); display: flex; flex-direction: column; gap: var(--space-5);
+  padding: var(--space-7); background: var(--color-surface); border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-2); }
+.acctform p { margin: 0; }
+.acctform .pwwarn { margin: 0; }
+.acctrows { display: flex; flex-direction: column; gap: var(--space-5); }
+.acctform .ui-setting-row__control, .acctform .ui-setting-row__control input { width: 100%; }
+
+@media (max-width: 759.98px), (max-height: 599.98px) {
+  .acctlayout { grid-template-columns: minmax(0, 1fr); }
+  .acctside, .acctpage.apppage .acctbody { overflow: visible; }
+}

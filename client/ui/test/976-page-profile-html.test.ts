@@ -56,7 +56,8 @@ const btns = (html: string): string[] => [...html.matchAll(/data-btn="([^"]+)"/g
 
 test('976 §0 positive control: there is no DOM here', () => {
   assert.equal(typeof (globalThis as Record<string, unknown>)['document'], 'undefined');
-  assert.match(profileHtml(view()), /^<div class="acctpage">/, 'the root report.ts reads the page off (pageOf → "acct")');
+  // the app frame (pages/frame.ts, 2026-11-04): the shell, its page class last — what report.ts reads (pageOf → "acct")
+  assert.match(profileHtml(view()), /^<div class="ui-app-shell ui-app-shell--contained ui-app-shell--fill apppage acctpage">/);
 });
 
 test('976 §1 every tab draws, and the current one is the one that is on', () => {
@@ -77,15 +78,18 @@ test('976 §1 every tab draws, and the current one is the one that is on', () =>
 });
 
 test('976 §2 the header: the server\'s flags draw Admin and Rules review, and nothing else does', () => {
+  // since 2026-11-04 "the header" is the sidebar: who this is, the tabs, the buttons
   const html = profileHtml(view());
-  assert.match(html, /<header class="ui-page-header accthead">/);
-  assert.match(html, /<h1 class="ui-page-header__title">Quill &lt;on&gt; <span class="acctel icon fire"/);
+  assert.match(html, /<h1 class="frametitle">Profile<\/h1>/);
+  assert.match(html, /<h2 class="acctme">Quill &lt;on&gt; <span class="acctel icon fire"/);
+  assert.match(html, /<div class="acctbody" data-scroll="acct-stats">/, 'the tab scrolls by itself, its own key per tab');
   assert.match(html, /Judge L2<\/span>/);
   assert.match(html, /12 games · 7W–5L · playing since/);
   for (const b of ['nav-league', 'nav-challenge', 'nav-admin', 'nav-crreview', 'acct-refresh', 'acct-logout', 'acct-close']) {
     assert.ok(btns(html).includes(b), b);
   }
-  assert.match(html, /class="ui-button ui-button--primary ui-back-link" data-btn="acct-close"[^>]*>Return to Lobby</);
+  // Return to Lobby is the frame's Home button now, the same data-btn
+  assert.match(html, /<button class="ui-icon-button ui-icon-button--stack frameback" data-btn="acct-close" type="button">[\s\S]*?>Home<\/span>/);
   const plain = profileHtml(view({ me: { ...ME, admin: undefined, badge: null } }));
   assert.ok(!btns(plain).includes('nav-admin') && !btns(plain).includes('nav-crreview'), 'a plain account: neither');
 });

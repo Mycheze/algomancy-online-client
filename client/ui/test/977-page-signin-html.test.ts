@@ -15,28 +15,30 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { identityBarHtml, signinHtml, type IdentityBarView, type SigninView } from '../pages/signin.ts';
 
-const view = (over: Partial<SigninView> = {}): SigninView => ({ mode: 'login', username: '', msg: '', busy: false, ...over });
+const view = (over: Partial<SigninView> = {}): SigninView => ({ mode: 'login', username: '', msg: '', busy: false, chrome: { signedIn: false, alerts: 0 }, ...over });
 const btns = (html: string): string[] => [...html.matchAll(/data-btn="([^"]+)"/g)].map(m => m[1]!);
 
 test('977 §0 positive control: there is no DOM here', () => {
   assert.equal(typeof (globalThis as Record<string, unknown>)['document'], 'undefined');
-  assert.match(signinHtml(view()), /^<div class="joinscreen home acctscreen">/, 'the root report.ts reads the page off (pageOf → "acct")');
+  // the app frame (pages/frame.ts, 2026-11-04): its page class last, what report.ts reads (pageOf → "acct")
+  assert.match(signinHtml(view()), /^<div class="ui-app-shell ui-app-shell--contained apppage acctscreen">/);
 });
 
 test('977 §1 log in and create, and the warning only where an account is made', () => {
   const login = signinHtml(view());
-  assert.match(login, /<h2>Log in<\/h2>/);
+  assert.match(login, /<h1 class="frametitle">Log in<\/h1>/, 'the heading is the toolbar\'s title');
   assert.match(login, /data-btn="acct-submit" >\s*Log in<\/button>/);
   assert.match(login, /autocomplete="current-password"/);
   assert.doesNotMatch(login, /nopwreset/, 'no warning on the log-in screen');
   const create = signinHtml(view({ mode: 'register' }));
-  assert.match(create, /<h2>Create an account<\/h2>/);
+  assert.match(create, /<h1 class="frametitle">Create an account<\/h1>/);
   assert.match(create, /<p class="pwwarn" data-warn="nopwreset"><b>DO NOT FORGET YOUR PASSWORD\.\s+THERE IS NO PASSWORD RESET\.<\/b>/);
   assert.match(create, /autocomplete="new-password"/);
 });
 
 test('977 §2 every data-btn, and a sign-in in flight disables the submit', () => {
-  assert.deepEqual(btns(signinHtml(view())), ['acct-submit', 'acct-toggle-mode', 'acct-close']);
+  // Back is the frame's back button (first, in the toolbar), still acct-close
+  assert.deepEqual(btns(signinHtml(view())), ['acct-close', 'acct-submit', 'acct-toggle-mode']);
   const busy = signinHtml(view({ busy: true }));
   assert.match(busy, /data-btn="acct-submit" disabled>\s*working…/);
 });
