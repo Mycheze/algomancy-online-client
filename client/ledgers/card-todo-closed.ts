@@ -14362,4 +14362,18 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-04 (steward): the order answers a creation's tokens were asked under now hold for the whole creation (CR 708.4a, 708.9). An Automaton the creation put ahead of a Conspirator judges a token that Conspirator swapped as it stood before the swap, and does not see copies made by an Automaton that came after it, so a later Poison made a Robot is not copied. Conspirator first still copies it. Seen red with the rule disabled.",
     status: 'done',
   },
+  {
+    id: 433, area: "client", severity: "minor",
+    title: "the glossary {Reaping} row says one kill draws a card; CR 802.21a says killing one or more units draws one card",
+    detail: "ui/glossary.ts row Reaping: \"When it kills a unit, its controller draws a card.\" CR 802.21a: a reaping source that kills one or more units draws one card. Players see the printed sentence (scan-reminders.json), but the full row text is the old paraphrase. 156 derives KILL_RIDERS from this row text, so a reword must keep that derivation.",
+    evidence: "Pass D paperwork 2026-10-25 (zero-handoff/PD-paper.md, new defect 4), while fixing CT-173's comments.",
+    fix: "Reword the row to CR 802.21a, then run 156, 177 and 227.",
+    proof: null,
+    verify: "Open the Rules reference and look up Reaping: it should say one card for one or more kills.",
+    guards: [
+      '177-glossary-conformance.test.ts::the {Reaping} row draws ONE card for one or more kills',
+    ],
+    closed: "FIXED 2026-11-04 (steward): the row now reads 'When it kills one or more units, its controller draws one card.' and cites attr.reaping.draw (CR 802.21a). 156's KILL_RIDERS derivation still finds it (156 green). The new 177 guard went red with the old sentence restored.",
+    status: 'done',
+  },
 ];

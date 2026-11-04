@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-04', kind: 'fix', text: 'The rules reference now says Reaping right: killing one or more units draws one card, not a card for each unit killed.' },
   { date: '2026-11-04', kind: 'fix', text: 'Automaton of Abundance and Cosmic Conspirator: when you choose the Automaton first, that choice now holds for every token the effect makes, so a Poison the Conspirator later turns into a Robot is no longer copied.' },
   { date: '2026-11-04', kind: 'fix', text: 'On the deck table, the bar between the card pool and your piles can always be dragged back down, even after shrinking the pool all the way.' },
   { date: '2026-11-04', kind: 'new', text: 'Decks are rebuilt: your decks sit on a shelf you pick from, and building is one table — every card above, your piles below, the sideboard and maybe beside them. Drag or tap, with undo and redo.' },
