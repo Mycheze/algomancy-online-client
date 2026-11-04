@@ -70,6 +70,8 @@ const git = (...a) => execFileSync('git', ['-C', REPO, ...a], { stdio: 'pipe' })
 git('init', '-q'); git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-q', '--allow-empty', '-m', 'x');
 git('update-ref', 'refs/remotes/origin/steward/CT-1', 'HEAD');
 writeFileSync(join(STATE, 'handoffs', 'CT-1.md'), '# CT-1 — a fix\n\n**Needs from you:** approve the branch\n\n## What I found\nVerified: it was broken.\n');
+writeFileSync(join(STATE, 'handoffs', 'CT-3.md'), '# CT-3 — answered already\n\n**Needs from you:** answer Q1\n\n**Discord-ready:**\n> Ask?\n');
+mkdirSync(join(STATE, 'answers'), { recursive: true }); writeFileSync(join(STATE, 'answers', 'CT-3.md'), '# Owner answer — CT-3\n\nReading B.\n');
 writeFileSync(join(STATE, 'handoffs', 'CT-2.md'), '# CT-2 — a rules question\n\n**Needs from you:** answer Q1\n\n## What I found\nTwo readings.\n\n## Questions\n### Q1 — A or B?\n\n**Discord-ready:**\n> Does X do Y?\n\nAnswer with: …\n');
 
 const envv = { ...process.env, STEWARD_DISCORD_API: base, STEWARD_DISCORD_TOKEN: 't', STEWARD_DISCORD_FORUM: FORUM, STEWARD_DISCORD_OWNER: OWNER, STEWARD_STATE: STATE, STEWARD_REPO: REPO };
@@ -82,7 +84,9 @@ const stranger = (t, content) => threads.get(t).msgs.push({ id: id(), author: { 
 let fail = 0; const ok = (c, what) => { console.log(`${c ? '✓' : '✗'} ${what}`); if (!c) fail++; };
 
 try {
-  ok((await run('sync')) === '' && threads.size === 2, 'two handoffs → two posts, no actions');
+  ok((await run('sync')) === '' && threads.size === 3, 'three handoffs → three posts, no actions');
+  const t3 = db().items['CT-3'].thread; const m3 = threads.get(t3).msgs.map(m => m.content).join('\n');
+  ok(/already answered/.test(m3) && /Reading B/.test(m3) && !/Discord-ready/.test(m3), 'an item answered before its post shows the answer instead of asking again');
   const t1 = db().items['CT-1'].thread, t2 = db().items['CT-2'].thread;
   if (KIND === 0) ok([...threads.values()].every(t => t.members.includes(OWNER)), 'text channel: every thread is private with the owner added');
   ok(/approve/.test(threads.get(t1).msgs[0].content) && threads.get(t1).msgs[0].files.includes('CT-1.md'), 'a branch post says how to approve and carries the write-up');

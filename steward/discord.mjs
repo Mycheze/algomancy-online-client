@@ -164,8 +164,14 @@ async function ensureLog(db) {
 
 async function postItem(db, slug, md) {
   const t = { id: await openThread(db, clip(`${slug} — ${titleOf(md, slug).replace(/^\S+\s+—\s+/, '')}`, 100), firstMessage(slug, md), mdFile(slug, md)) };
-  const ready = discordReadyOf(md);
-  if (ready) await say(t.id, `**Discord-ready** — forward this message to ask the server:\n\n${ready}`);
+  const answered = join(STATE, 'answers', `${slug}.md`);
+  if (existsSync(answered)) {
+    // answered already (in a terminal, or before this channel existed): say so, do not ask again
+    await say(t.id, `✅ **You already answered this** — the worker picks it up on its next night run:\n> ${clip(readFileSync(answered, 'utf8').replace(/^# .*\n+/, '').trim(), 1500).replace(/\n/g, '\n> ')}`);
+  } else {
+    const ready = discordReadyOf(md);
+    if (ready) await say(t.id, `**Discord-ready** — forward this message to ask the server:\n\n${ready}`);
+  }
   db.items[slug] = { thread: t.id, hash: hash(md), lastSeen: t.id, closed: false };
   save(db);
 }
