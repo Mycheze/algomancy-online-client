@@ -11,7 +11,7 @@
  */
 import { execFile, execFileSync } from 'node:child_process';
 import { promisify } from 'node:util';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync, appendFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync, appendFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -22,6 +22,7 @@ const OWNER = '111', STRANGER = '222', BOT = '999', FORUM = '500';
 const KIND = Number(process.argv[2] ?? 0);   // 0 = a text channel (private threads), 15 = a forum
 let next = 1000n; const id = () => String(next++);
 const threads = new Map(); // id → { name, archived, msgs: [{id, author, content, attachments, files}] }
+const channelMsgs = [];     // the channel's own (top-level) messages — the inbox
 const PNG = Buffer.from('89504e470d0a1a0a', 'hex');
 
 const server = createServer(async (req, res) => {
@@ -35,7 +36,7 @@ const server = createServer(async (req, res) => {
     });
     body = JSON.parse(parts.find(x => /name="payload_json"/.test(x.head)).data);
     body.__files = parts.map(x => /filename="([^"]+)"/.exec(x.head)?.[1]).filter(Boolean);
-  } else if (raw) body = JSON.parse(raw);
+  } else if (raw) body = JSON.parse(Buffer.concat(chunks).toString('utf8'));
   const u = new URL(req.url, 'http://x'); const p = u.pathname.replace(/^\/api/, '');
   const json = (o, code = 200) => { res.writeHead(code, { 'content-type': 'application/json' }); res.end(JSON.stringify(o)); };
   let m;
@@ -48,6 +49,13 @@ const server = createServer(async (req, res) => {
     return json({ id: t });
   }
   if (req.method === 'PUT' && (m = /^\/channels\/(\d+)\/thread-members\/(\d+)$/.exec(p))) { threads.get(m[1]).members.push(m[2]); res.writeHead(204); return res.end(); }
+  if (req.method === 'GET' && p === `/channels/${FORUM}/messages`) {
+    const after = BigInt(u.searchParams.get('after') || '0');
+    return json(channelMsgs.filter(x => BigInt(x.id) > after).reverse());
+  }
+  if (req.method === 'POST' && (m = /^\/channels\/(\d+)\/messages\/(\d+)\/threads$/.exec(p)) && m[1] === FORUM) {
+    const t = id(); threads.set(t, { name: body.name, archived: false, members: [], onMessage: m[2], msgs: [] }); return json({ id: t });
+  }
   if (req.method === 'POST' && (m = /^\/channels\/(\d+)\/messages$/.exec(p))) {
     const t = threads.get(m[1]); const msg = { id: id(), author: { id: BOT, bot: true }, content: body.content, files: body.__files || [] }; t.msgs.push(msg); return json(msg);
   }
@@ -114,6 +122,27 @@ try {
   renameSync(join(STATE, 'handoffs', 'CT-1.md'), join(STATE, 'handoffs', 'done', 'CT-1.md'));
   appendFileSync(join(STATE, 'journal.jsonl'), JSON.stringify({ ts: new Date().toISOString(), item: 'CT-1', outcome: 'landed', sha: 'abcdef1234' }) + '\n');
   (await run('sync')); ok(threads.get(t1).archived && /Closed:\*\* landed/.test(threads.get(t1).msgs.at(-1).content), 'a finished item closes its post with the outcome');
+
+  // ── the inbox: his plain messages in the channel become requests ──
+  if (KIND === 0) {
+    const ask = id(); channelMsgs.push({ id: ask, type: 0, author: { id: OWNER }, content: 'The Debt chip is too small on iPad\nsee screenshot', attachments: [{ url: `${base}/files/shot.png`, filename: 'shot.png' }] });
+    channelMsgs.push({ id: id(), type: 0, author: { id: STRANGER }, content: 'fix everything', attachments: [] });
+    channelMsgs.push({ id: id(), type: 0, author: { id: BOT, bot: true }, content: 'a bot line', attachments: [] });
+    channelMsgs.push({ id: id(), type: 18, author: { id: OWNER }, content: '', attachments: [] });   // a "started a thread" system message
+    ok((await run('sync')) === '', 'an inbox message is not an action');
+    const slug = `inbox-${ask}`, f = join(STATE, 'inbox', `${slug}.md`);
+    const inboxFiles = existsSync(join(STATE, 'inbox')) ? readdirSync(join(STATE, 'inbox')) : [];
+    ok(inboxFiles.length === 1 && existsSync(f) && /Debt chip is too small/.test(readFileSync(f, 'utf8')) && /Screenshots/.test(readFileSync(f, 'utf8')),
+      `only the owner's plain message became a request, with its screenshot (${inboxFiles.join(', ')})`);
+    const it = db().items[slug]; const th = it && threads.get(it.thread);
+    ok(th && th.onMessage === ask && /queued as/.test(th.msgs[0]?.content || ''), 'a thread is opened on his message, saying it is queued');
+    ok((await run('sync')) === '' && readdirSync(join(STATE, 'inbox')).length === 1 && !threads.get(it.thread).archived, 'the next sync takes nothing twice, and a waiting request stays open');
+    owner(it.thread, 'only on the iPad, desktop is fine');
+    await run('sync'); ok(/desktop is fine/.test(readFileSync(join(STATE, 'answers', `${slug}.md`), 'utf8')), 'a reply in a request thread is an answer to it');
+    appendFileSync(join(STATE, 'journal.jsonl'), JSON.stringify({ ts: new Date().toISOString(), item: slug, outcome: 'shipped', title: 'the Debt chip is bigger on iPad', summary: 'Raised it to 44px on touch.' }) + '\n');
+    await run("sync"); const last = threads.get(it.thread).msgs.at(-1).content;
+    ok(threads.get(it.thread).archived && /shipped — the Debt chip is bigger/.test(last) && /44px/.test(last), 'when it is done the thread says what was done, and closes');
+  }
 
   owner(t2, 'reject: wrong approach, do it in one batch');
   ok((await run('sync')) === 'reject CT-2 wrong approach, do it in one batch', 'reject carries its reason');

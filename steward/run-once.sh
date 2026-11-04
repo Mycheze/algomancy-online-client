@@ -31,11 +31,12 @@ STATE="$ROOT/state"
 LOGS="$ROOT/logs"
 BIN="$ROOT/bin"
 CONF="${STEWARD_CONF:-$HOME/.config/algomancy-steward/env}"
-mkdir -p "$STATE"/{handoffs,answers,redgate,outcomes,handoffs/done,answers/done} "$LOGS" "$BIN"
+mkdir -p "$STATE"/{handoffs,answers,redgate,outcomes,inbox,handoffs/done,answers/done} "$LOGS" "$BIN"
 
 [ -f "$CONF" ] && { set -a; . "$CONF"; set +a; }
 : "${STEWARD_TZ:=Europe/Prague}"
-: "${STEWARD_WINDOW:=23-08}"          # local hours [start,end) in which Claude may run
+: "${STEWARD_WINDOW:=23-08}"          # local hours [start,end) in which Claude may run, or "always"
+: "${STEWARD_SUMMARY_HOUR:=8}"        # the morning summary posts at the first tick from this local hour
 : "${STEWARD_MODE:=dry}"              # dry = never touch master, a branch or the VPS (work goes to refs/steward-dry/*); live = for real
 : "${STEWARD_MODEL:=opus}"
 : "${STEWARD_RUN_HOURS:=4}"           # one item's hard cap
@@ -84,7 +85,10 @@ in_hours() { # start end → is the local hour in [start,end)?
   if [ "$start" -le "$end" ]; then [ "$h" -ge "$start" ] && [ "$h" -lt "$end" ]
   else [ "$h" -ge "$start" ] || [ "$h" -lt "$end" ]; fi
 }
-in_window() { in_hours $((10#${STEWARD_WINDOW%-*})) $((10#${STEWARD_WINDOW#*-})); }
+# "always" (owner, 2026-11-04: the plan's limit became one weekly budget, so the
+# nightly window no longer protects anything; he pauses it from Discord when he
+# wants the quota for himself)
+in_window() { [ "$STEWARD_WINDOW" = always ] && return 0; in_hours $((10#${STEWARD_WINDOW%-*})) $((10#${STEWARD_WINDOW#*-})); }
 
 # ── trusted copies ──────────────────────────────────────────────────────────
 # The agent works in $REPO and may edit anything there, steward/ included. So
@@ -238,6 +242,7 @@ regate_master_red() {
 
 # seconds until the window closes (for the run's timeout)
 window_left() {
+  [ "$STEWARD_WINDOW" = always ] && { echo 999999; return; }
   local end=$((10#${STEWARD_WINDOW#*-})) now endts
   now=$(date +%s)
   endts=$(TZ="$STEWARD_TZ" date -d "today $end:00" +%s)
@@ -448,7 +453,7 @@ EOF
     title=$(jq -r '.title // ""' "$STATE/outcome.json"); summary=$(jq -r '.summary // ""' "$STATE/outcome.json")
   fi
   if [ -z "${item:-}" ]; then
-    item=$(awk '{print ($1=="report"||$1=="repair"||$1=="resume"||$1=="triage") ? $2 : $1}' <<<"$first")
+    item=$(awk '{print ($1=="report"||$1=="repair"||$1=="resume"||$1=="triage"||$1=="inbox") ? $2 : $1}' <<<"$first")
     [ "${first%% *}" = triage ] && item=triage
     outcome=failed; title="(no verdict written)"; summary="claude exited $rc without an outcome.json (timeout=124)"
   fi
@@ -547,12 +552,9 @@ main() {
   # a known-green master instead of spending its first hours on gates
   master_gate && regate_master_red
   try_deploy
-  if ! in_window; then
-    # the morning summary, once a day, after the window closes (discord.mjs keeps the day)
-    in_hours $((10#${STEWARD_WINDOW#*-})) $(( (10#${STEWARD_WINDOW%-*} + 23) % 24 )) && [ -f "$BIN/discord.mjs" ] && { discord summary 2>>"$LOGS/runner.log" || true; }
-    discord_sync
-    exit 0
-  fi
+  # the morning summary: the first tick from STEWARD_SUMMARY_HOUR on (discord.mjs posts it once a day)
+  in_hours "$((10#$STEWARD_SUMMARY_HOUR))" 24 && [ -f "$BIN/discord.mjs" ] && { discord summary 2>>"$LOGS/runner.log" || true; }
+  if ! in_window; then discord_sync; exit 0; fi
   if [ -f "$STATE/backoff-until" ] && [ "$(date +%s)" -lt "$(cat "$STATE/backoff-until")" ]; then exit 0; fi
   # no new item in the last hour of the window: a cut-off run wastes the night
   [ "$(window_left)" -lt 3600 ] && exit 0

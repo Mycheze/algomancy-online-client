@@ -50,7 +50,7 @@ EOF
 S="$STEWARD_STATE"; first=$(head -1 "$S/queue.txt")
 # sweep: take the first item that is NOT triage (the fetched rows are not this item's)
 [ "$STUB_SCENARIO" = sweep ] && first=$(grep -v '^triage' "$S/queue.txt" | head -1)
-id=$(awk '{print ($1=="report"||$1=="repair"||$1=="resume")?$2:$1}' <<<"$first")
+id=$(awk '{print ($1=="report"||$1=="repair"||$1=="resume"||$1=="inbox")?$2:$1}' <<<"$first")
 w() { printf '{"item":"%s","outcome":"%s","title":"stub %s","summary":"stub"}' "$id" "$1" "$1" > "$S/outcome.json"; }
 case "$STUB_SCENARIO" in
   skip)        w skip ;;
@@ -132,6 +132,20 @@ if run regate; then
   grep '"note":"re-gated green once master was"' "$T/state/journal.jsonl" | grep -q '"outcome":"dry-shipped"' && [ -z "$(ls "$T/state/redgate/" 2>/dev/null)" ] \
     && ok "once master is green it is re-gated without Claude → dry-shipped" || bad "no re-gate row: $(tail -3 "$T/state/journal.jsonl")"
   rm -f "$T/state/redgate/"*.json; fi
+if run inbox; then
+  printf '# Inbox — from the owner\n\nthe Debt chip is too small on iPad\n' > "$T/state/inbox/inbox-1.md"
+  nq=$(cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs 2>/dev/null | head -1)
+  grep -q '^inbox inbox-1 ' <<<"$nq" && ok "an inbox request is offered first" || bad "queue starts: $nq"
+  r=$(tick ship); [ "$(jq -r .item <<<"$r")" = inbox-1 ] && [ "$(last_outcome "$r")" = dry-shipped ] && ok "…and is worked as an item (inbox-1 → dry-shipped)" || bad "inbox → $r"
+  jq -cn '{ts:"2099-01-01T00:00:00Z",item:"inbox-1",outcome:"shipped"}' >> "$T/state/journal.jsonl"
+  (cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs 2>/dev/null) | grep -q 'inbox-1' && bad "a finished request was offered again" || ok "…and once finished is never offered again"
+  rm -f "$T/state/inbox/inbox-1.md"; fi
+if run always; then
+  sed -i 's/^STEWARD_WINDOW=.*/STEWARD_WINDOW=always/' "$T/env"; r=$(tick skip)
+  [ "$(last_outcome "$r")" = dry-skip ] && ok "STEWARD_WINDOW=always works an item at any hour" || bad "always → $r"
+  h=$(( 10#$(TZ=Europe/Prague date +%H) )); sed -i "s/^STEWARD_WINDOW=.*/STEWARD_WINDOW=$(printf %02d $(( (h + 2) % 24 )))-$(printf %02d $(( (h + 3) % 24 )))/" "$T/env"
+  r=$(tick skip); [ -z "$r" ] && ok "…and a window that excludes now still runs nothing" || bad "ran outside its window: $r"
+  sed -i "s/^STEWARD_WINDOW=.*/STEWARD_WINDOW=$(printf %02d $h)-$(printf %02d $(( (h + 3) % 24 )))/" "$T/env"; fi
 if run pause; then touch "$T/state/paused"; r=$(tick skip); [ -z "$r" ] && ok "paused → nothing runs" || bad "ran while paused: $r"; rm -f "$T/state/paused"; fi
 
 # clean the dry refs this test left on origin
