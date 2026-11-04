@@ -103,6 +103,12 @@ html:not(.ttcarrypile) .ttpage .ttend.dropover::before { content: ''; display: b
 .ttrail { flex: none; width: calc(var(--cw) + 30px); overflow-y: auto; overscroll-behavior: contain;
   display: flex; flex-direction: column; gap: var(--space-5);
   padding: 14px 10px 40px; background: var(--felt); border-left: 1px solid var(--line); touch-action: pan-y; }
+/* under 900px the cards are 88 wide, too narrow a header for "SIDEBOARD 0/7":
+   the rail's two boxes take the 108 a tablet's header has */
+@media (max-width: 899.98px) {
+  .ttrail { width: calc(var(--cw) + 40px); }
+  .ttrail .ttsidepile, .ttrail .ttmaybepile { width: auto; }
+}
 .ttrailbox { flex: none; }
 .ttrailmaybe { flex: 1 0 auto; display: flex; flex-direction: column; }
 /* Maybe is never the deck: dashed, hatched, and it says so */
