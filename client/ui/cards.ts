@@ -1,4 +1,4 @@
-/* THE CARD BROWSER: look at the whole pool, ask it a real question, build.
+/* THE CARD BROWSER: look at the whole pool, ask it a real question.
  *
  * Same contract as ui/decks.ts and ui/account.ts, which main.ts already knows
  * how to drive: screen() says whether this page owns the app element,
@@ -20,11 +20,10 @@
  * PAINTED at once (CHUNK), and the button that reveals the rest says how many
  * are left. A count that is the truth is the whole point of a search.
  *
- * DECKBUILDING MODE. Opened from a deck (`useDeck`), every tile grows the
- * add/cut controls and `in:` / `copies:` start answering. The browser never
- * touches the deck itself: it calls the bridge ui/decks.ts handed it, so every
- * edit still goes through that file's one `edit()` -> `scheduleSave()` funnel
- * and the debounce rules stay where they are documented.
+ * NO DECKBUILDING MODE (BL-65, 2026-11-04). The browser used to have one: a
+ * deck lent it a bridge (`useDeck`), and every tile grew add/cut buttons. Decks
+ * are built on the builder now (ui/tabletop.ts), whose pool searches with the
+ * same ui/cardsearch.ts, so the browser went back to being only a browser.
  */
 import { similarQuery } from './cardpanel.ts';
 import { allRows, rowFor } from './cardindex.ts';
@@ -42,40 +41,12 @@ import { CHUNK, cardsView, paintCards, type CardsHooks } from './pages/cards.ts'
 const QUERY_KEY = 'algoCardQuery';
 const SAVED_KEY = 'algoCardSearches';
 
-/** What ui/decks.ts lends the browser so it can build a deck without either
- * file importing the other's state. See the header. */
-export interface DeckBridge {
-  id: () => string | null;
-  name: () => string;
-  copies: (name: string) => number;
-  maybe: (name: string) => number;
-  add: (name: string) => void;
-  remove: (name: string) => void;
-  toMaybe: (name: string) => void;
-  /** this deck has no maybeboard (a weekly challenge's): no » button */
-  noMaybe?: true;
-  /** everything the deck strip paints: the count, whether it is legal yet, and
-   * the two numbers you actually build against — the curve and the element
-   * spread. All of it from ui/deckstats.ts's `analyzeDeck`, so the browser
-   * does no deck arithmetic of its own. */
-  summary: () => {
-    total: number;
-    legal: boolean;
-    problems: string[];
-    curve: { mana: number; total: number }[];
-    elements: Record<string, number>;
-  };
-  /** go back to the deck page */
-  back: () => void;
-}
-
 // ── module state ──────────────────────────────────────────────────────
 
 let $app: HTMLElement | null = null;
 let rerenderHost: () => void = () => {};
 let open = false;
 let q = '';
-let bridge: DeckBridge | null = null;
 let focus: string | null = null;
 let shown = CHUNK;
 let helpOpen = false;
@@ -123,13 +94,6 @@ export function initCards(opts: { app: HTMLElement; rerender: () => void }): voi
 /** the link that opens the search page with `name` pinned */
 export const cardLink = (name: string): string => `${location.origin}/?card=${encodeURIComponent(name)}`;
 
-/** Hand the browser a deck to build, or null to leave deckbuilding mode. */
-export function useDeck(b: DeckBridge | null): void {
-  bridge = b;
-}
-
-/** Open the browser. `query` seeds the box; deckbuilding mode is whatever the
- * last `useDeck` said. */
 /** Ask once, when the page opens. A failure is silence, not an error: the
  * count is a nicety and the browser works without the server. */
 function fetchPlayed(): void {
@@ -140,6 +104,7 @@ function fetchPlayed(): void {
     .catch(() => { playedIn = {}; });
 }
 
+/** Open the browser. `query` seeds the box. */
 export function openBrowser(query?: string): void {
   if (query !== undefined) q = query;
   open = true;
@@ -169,11 +134,8 @@ const savedSearches = (): { name: string; q: string }[] => load(SAVED_KEY, [] as
 
 /* ── running the query ─────────────────────────────────────────────────── */
 
-const ctx = (): { copies?: (n: string) => number; maybe?: (n: string) => number } =>
-  (bridge ? { copies: bridge.copies, maybe: bridge.maybe } : {});
-
 function run(): SearchResult {
-  return search(q, { ctx: ctx() });
+  return search(q, { ctx: {} });
 }
 
 /* ── the page ──────────────────────────────────────────────────────────── */
@@ -183,7 +145,6 @@ function run(): SearchResult {
 export interface CardsState {
   q: string;
   res: SearchResult;
-  bridge: DeckBridge | null;
   focus: string | null;
   shown: number;
   helpOpen: boolean;
@@ -195,7 +156,7 @@ export interface CardsState {
 }
 
 const state = (): CardsState => ({
-  q, res: run(), bridge, focus, shown, helpOpen, railOpen, rulings, playedIn, saved: savedSearches(), cursor,
+  q, res: run(), focus, shown, helpOpen, railOpen, rulings, playedIn, saved: savedSearches(), cursor,
 });
 
 /** what paintCards wires the query box and the sort menu to */
@@ -337,14 +298,7 @@ export function handleButton(btn: HTMLElement): boolean {
       helpOpen = false;
       focus = null;
       clearUrl();
-      if (bridge) bridge.back(); else rerenderHost();
-      return true;
-
-    case 'cards-toDeck':
-      open = false;
-      focus = null;
-      clearUrl();
-      bridge?.back();
+      rerenderHost();
       return true;
 
     case 'cards-chip': {
@@ -455,21 +409,6 @@ export function handleButton(btn: HTMLElement): boolean {
       paint();
       return true;
 
-    case 'cards-add':
-      bridge?.add(card);
-      paint();
-      return true;
-
-    case 'cards-less':
-      bridge?.remove(card);
-      paint();
-      return true;
-
-    case 'cards-maybe':
-      bridge?.toMaybe(card);
-      paint();
-      return true;
-
     default:
       return false;
   }
@@ -480,7 +419,7 @@ export function handleButton(btn: HTMLElement): boolean {
  *
  * `/` focuses the box, Escape backs out of whatever is on top, and the arrows
  * walk the results so you can scan without the mouse. Enter opens the detail
- * pane; `+` and `-` add and cut in deckbuilding mode. main.ts owns the keydown
+ * pane. main.ts owns the keydown
  * listener and offers it here first — before its own `if (!inGame) return`,
  * since this is a pre-game page.
  */
@@ -522,19 +461,6 @@ export function handleKey(e: KeyboardEvent): boolean {
       focus = rows[cursor]!.name;
       rulings = null;
       syncUrl();
-      paint();
-      return true;
-    }
-    case '+':
-    case '=': {
-      if (cursor < 0 || !bridge) return false;
-      bridge.add(rows[cursor]!.name);
-      paint();
-      return true;
-    }
-    case '-': {
-      if (cursor < 0 || !bridge) return false;
-      bridge.remove(rows[cursor]!.name);
       paint();
       return true;
     }

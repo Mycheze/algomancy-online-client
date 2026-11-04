@@ -13,21 +13,11 @@ const PINNED = CARDS[3]!;
 
 function view(q: string, over: Partial<CardsView> = {}): CardsView {
   return {
-    q, res: search(q), cardCount: allRows().filter(r => r.cls === 'card').length, deck: null, facets: facets(false),
+    q, res: search(q), cardCount: allRows().filter(r => r.cls === 'card').length, facets: facets(false),
     railOpen: { element: true, cost: true, kind: true }, hints: [], saved: [], helpOpen: false,
     focus: null, focusRow: null, played: 0, rulings: null, cursor: -1, shown: CHUNK, chrome: CHROME, ...over,
   };
 }
-
-const DECK: NonNullable<CardsView['deck']> = {
-  name: 'Ember Rush', noMaybe: false,
-  copies: Object.fromEntries(CARDS.slice(0, 6).map((r, i) => [r.name, i === 2 ? 3 : 2])),
-  summary: {
-    total: 13, legal: false, problems: ['17 cards short of 30'],
-    curve: [{ mana: 1, total: 2 }, { mana: 2, total: 5 }, { mana: 3, total: 4 }, { mana: 4, total: 2 }],
-    elements: { fire: 9, water: 4 },
-  },
-};
 
 export default {
   title: 'Pages/Cards',
@@ -48,11 +38,4 @@ export const Pinned = {
     rulings: { name: PINNED.name, lines: ['A made-up ruling about when this resolves.'] },
     saved: [{ name: 'cheap fire', q: 'el:fire mana<=2' }],
   }),
-};
-export const Deckbuilding = {
-  args: view('el:fire', { deck: DECK, facets: facets(true), railOpen: { element: true, building: true } }),
-};
-export const ChallengeDeck = {
-  name: 'Deckbuilding (a challenge: no maybeboard)',
-  args: view('el:fire', { deck: { ...DECK, noMaybe: true }, facets: facets(true) }),
 };

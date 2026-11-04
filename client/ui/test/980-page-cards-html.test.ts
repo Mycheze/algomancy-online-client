@@ -9,8 +9,8 @@
  * §2 the list and text views, and the keyboard cursor
  * §3 the syntax sheet, generated from the parser's tables
  * §4 a pinned card: its actions, the published-deck count, its rulings
- * §5 deckbuilding mode: the strip, the per-tile buttons, the copies, no » for a challenge
- * §6 text is escaped: the query, a deck name, a saved search, a ruling
+ * §5 no deckbuilding mode (retired in BL-65): Home is the way back, no strip, no per-tile add/cut, no copies
+ * §6 text is escaped: the query, a saved search, a ruling
  * §7 nothing matches
  */
 import { test } from 'node:test';
@@ -21,11 +21,11 @@ import { allRows, rowFor } from '../cardindex.ts';
 import { CHUNK, cardsHtml, facets, type CardsView } from '../pages/cards.ts';
 
 const CARDS = allRows().filter(r => r.cls === 'card' && r.playable);
-const A = CARDS[0]!, B = CARDS[1]!;
+const A = CARDS[0]!;
 
 function view(over: Partial<CardsView> = {}, q = ''): CardsView {
   return {
-    q, res: search(q), cardCount: 450, deck: null, facets: facets(false),
+    q, res: search(q), cardCount: 450, facets: facets(false),
     railOpen: { element: true, cost: true, kind: true }, hints: [], saved: [], helpOpen: false,
     focus: null, focusRow: null, played: 0, rulings: null, cursor: -1, shown: CHUNK, chrome: { signedIn: true, alerts: 0 }, ...over,
   };
@@ -100,33 +100,22 @@ test('980 §4 a pinned card: the panel, its actions, the count, the rulings', ()
   assert.doesNotMatch(cardsHtml(view({ focus: 'Nope', focusRow: null })), /cbdetail/, 'an unknown card pins nothing');
 });
 
-test('980 §5 deckbuilding mode', () => {
-  const deck = {
-    name: 'Mine', noMaybe: false, copies: { [A.name]: 2, [B.name]: 3 },
-    summary: { total: 5, legal: false, problems: ['too few'], curve: [{ mana: 2, total: 5 }], elements: { fire: 5 } },
-  };
-  const v = view({ deck, facets: facets(true), focus: A.name, focusRow: A, railOpen: { building: true } });
-  const html = cardsHtml(v);
-  // the way back is to the deck, with a back arrow, not Home
-  assert.match(html, /data-btn="cards-close" type="button" title="back to Mine">[\s\S]*?ui-icon--back[\s\S]*?<span class="ui-icon-button__label">Deck<\/span>/);
-  assert.match(html, /data-btn="cards-toDeck"/, 'the strip has its own way back');
-  assert.match(html, /data-section="building"/);
-  for (const b of ['cards-add', 'cards-less', 'cards-maybe']) assert.ok(btns(html).has(b), `${b} is drawn`);
-  assert.match(html, /<button class="primary" data-btn="cards-add" data-card="[^"]+">add to Mine<\/button>/);
-  assert.match(html, /<span class="dkn bad">×3<\/span>/, 'over the cap the count turns red');
-  const challenge = cardsHtml({ ...v, deck: { ...deck, noMaybe: true } });
-  assert.doesNotMatch(challenge, /data-btn="cards-maybe"/, 'a challenge deck has no maybeboard');
+test('980 §5 no deckbuilding mode: the browser is only a browser', () => {
+  const html = cardsHtml(view({ focus: A.name, focusRow: A }, 'el:fire'));
+  assert.ok(btns(html).has('cards-focus') && btns(html).has('cards-similar'), 'non-vacuous: tiles and a pinned card are drawn');
+  assert.match(html, /data-btn="cards-close" type="button">[\s\S]*?<span class="ui-icon-button__label">Home<\/span>/, 'the way back is Home');
+  for (const b of ['cards-add', 'cards-less', 'cards-maybe', 'cards-toDeck']) assert.ok(!btns(html).has(b), `no ${b}`);
+  assert.doesNotMatch(html, /class="cbdeckbar"|class="dkbtns"|class="dkn/, 'no deck strip, no per-tile buttons, no copies');
+  assert.doesNotMatch(html, /data-section="building"/);
 });
 
 test('980 §6 text is escaped', () => {
   const html = cardsHtml(view({
     saved: [{ name: '<b>x</b>', q: 'a"b' }],
-    deck: { name: 'Deck <i>', noMaybe: false, copies: {}, summary: { total: 0, legal: true, problems: [], curve: [], elements: {} } },
   }, 'name:"<script>"'));
-  assert.doesNotMatch(html, /<script>|<b>x<\/b>|<i>/);
+  assert.doesNotMatch(html, /<script>|<b>x<\/b>/);
   assert.match(html, /value="name:&quot;&lt;script&gt;&quot;"/);
   assert.match(html, /&lt;b&gt;x&lt;\/b&gt;/);
-  assert.match(html, /Deck &lt;i&gt;/);
 });
 
 test('980 §7 nothing matches', () => {

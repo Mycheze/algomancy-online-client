@@ -77,7 +77,6 @@
 .metaempty { margin: var(--space-8) var(--space-6); text-align: center; }
 
 /* one shared deck: what it is on the left, its cards on the right, each scrolling */
-.metadeck .cbdeckbar { flex: none; margin: 0; }
 .metadeckwork { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: var(--space-6); }
 .metadeckinfo { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-5); }
 .metadeckinfo .deckdesc { margin: 0; max-height: none; }

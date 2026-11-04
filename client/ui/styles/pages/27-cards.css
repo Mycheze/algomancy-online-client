@@ -218,7 +218,6 @@
    the results. Everything here is scoped to .cbpage: .cbtools, .cbdetail and
    .cbdeckbar are also drawn by the deck and metagame pages. */
 .cbpage .ui-app-shell__main { gap: var(--space-5); }
-.cbpage .cbdeckbar { flex: none; margin: 0; }
 .cbpage .cbmain { position: relative; flex: 1 1 auto; min-height: 0; align-items: stretch;
   grid-template-columns: 232px minmax(0, 1fr); gap: var(--space-6); }
 .cbpage .cbmain:has(.cbdetail) { grid-template-columns: 232px minmax(0, 1fr) 320px; }

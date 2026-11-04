@@ -11,9 +11,10 @@
  *   1. ONE PREDICATE. The deck drawer and the browser both go through
  *      ui/cardsearch.ts. The drawer used to own a private filter; that is the
  *      drift this replaced, and a future edit could quietly reintroduce it.
- *   2. ONE SAVE FUNNEL. The browser reaches the open deck only through the
- *      bridge, so BL-14's debounce rules still hold. Direct access would look
- *      like it worked and would lose a cut inside the 500ms window.
+ *   2. THE BROWSER BUILDS NOTHING. Its deckbuilding mode (a bridge a deck lent
+ *      it, add/cut on every tile) was retired in BL-65: decks are built on the
+ *      builder's pool, through the table's one door. The browser must not
+ *      grow a way back into a deck's state.
  *   3. THE HELP SHEET IS GENERATED. It prints KEYS/FLAGS, so it cannot claim a
  *      filter that does not exist — which is exactly what a hand-written cheat
  *      sheet does six months later.
@@ -61,19 +62,23 @@ test('the pool offers only what is deck-legal', () => {
   assert.ok(allRows().length > allRows().filter(r => r.playable).length);
 });
 
-test('the browser reaches the open deck only through the bridge', () => {
+test('the browser builds no deck: no bridge, no add/cut, no deck state', () => {
   const cards = code('cards.ts');
   // it must not know the deck page exists
   assert.doesNotMatch(cards, /from '\.\/decks\.ts'/, 'the browser must not import the deck page');
   for (const forbidden of ['scheduleSave', 'flushSave', '\\bdecks\\b\\s*=', 'd\\.cards\\s*=']) {
     assert.doesNotMatch(cards, new RegExp(forbidden), `the browser touched deck state directly (${forbidden})`);
   }
-  for (const via of ['bridge?.add(', 'bridge?.remove(', 'bridge?.toMaybe(']) {
-    assert.ok(cards.includes(via), `every edit goes through the bridge — missing ${via}`);
+  // BL-65: deckbuilding mode is retired, and with it the bridge and its buttons and keys
+  for (const f of ['cards.ts', 'pages/cards.ts']) {
+    assert.doesNotMatch(code(f), /\bbridge\b|DeckBridge|useDeck|cards-(?:add|less|maybe|toDeck)\b/, `${f} has a deckbuilding mode again`);
   }
-  // BL-65: the deck page no longer lends the browser a bridge (bridgeToOpenDeck is gone; the builder's pool
+  assert.doesNotMatch(code('cards.ts'), /case '\+'|case '-'|case '='/, 'the + / - keys built a deck');
+  // the deck page no longer lends the browser a bridge (bridgeToOpenDeck is gone; the builder's pool
   // adds through the table's one door), so no deck can be edited from the browser any more
-  assert.doesNotMatch(code('decks.ts'), /useDeck\(/, 'the deck page handed the browser a deck again');
+  for (const f of ['decks.ts', 'tabletop.ts', 'challenge.ts']) {
+    assert.doesNotMatch(code(f), /useDeck\(/, `${f} handed the browser a deck again`);
+  }
 });
 
 test('the deck page does not paint underneath the browser', () => {

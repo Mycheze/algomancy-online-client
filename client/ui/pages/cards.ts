@@ -1,5 +1,6 @@
 /* THE CARD BROWSER, DRAWN (`?cards`): browse, search, the syntax sheet, the
- * grid / list / text views, a pinned card, and deckbuilding mode.
+ * grid / list / text views and a pinned card. (Its deckbuilding mode is gone:
+ * decks are built on the builder's pool, BL-65.)
  *
  * ui/cards.ts keeps the state (the query IS the page — see its header), the
  * fetches, the URL, the clicks and the keys; this file is the page contract
@@ -14,7 +15,7 @@
  * (test/907).
  */
 import { iconizeText } from '../cardtext.ts';
-import { artHtml, cardPanelHtml, costHtml, deckStripHtml } from '../cardpanel.ts';
+import { artHtml, cardPanelHtml, costHtml } from '../cardpanel.ts';
 import type { CardRow } from '../cardindex.ts';
 import { allRows, rowFor } from '../cardindex.ts';
 import { printsStats } from '../../engine/src/cards/dsl.ts';   // CR 206.2
@@ -22,7 +23,7 @@ import { SORTS, VIEWS, type SearchResult } from '../cardsearch.ts';
 import { suggest } from '../cardsynonyms.ts';
 import { esc } from '../util.ts';
 import { icon, segmented, sheet } from '../components/index.ts';
-import type { CardsState, DeckBridge } from '../cards.ts';
+import type { CardsState } from '../cards.ts';
 import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
 import { CARDS_BTNS, facets, filterRailHtml, syntaxHelpHtml, type Facet } from './cardfilters.ts';
 
@@ -41,15 +42,6 @@ export interface CardsView {
   res: SearchResult;
   /** how many deck-legal cards there are ("The 450 cards.") */
   cardCount: number;
-  /** deckbuilding mode: the deck being built, or null */
-  deck: {
-    name: string;
-    summary: ReturnType<DeckBridge['summary']>;
-    /** a weekly challenge's deck has no maybeboard */
-    noMaybe: boolean;
-    /** copies in the deck of every card painted this time */
-    copies: Record<string, number>;
-  } | null;
   facets: Facet[];
   railOpen: Record<string, boolean>;
   /** "did you mean" suggestions for the query */
@@ -72,17 +64,11 @@ export interface CardsView {
 
 /** Gather the page from cards.ts's state. */
 export function cardsView(st: CardsState): CardsView {
-  const b = st.bridge;
-  const page = st.res.rows.slice(0, st.shown);
   return {
     q: st.q,
     res: st.res,
     cardCount: allRows().filter(r => r.cls === 'card').length,
-    deck: b ? {
-      name: b.name(), summary: b.summary(), noMaybe: !!b.noMaybe,
-      copies: Object.fromEntries(page.map(r => [r.name, b.copies(r.name)])),
-    } : null,
-    facets: facets(!!b),
+    facets: facets(false),
     railOpen: { ...st.railOpen },
     hints: suggest(st.q),
     saved: st.saved,
@@ -105,18 +91,6 @@ function railHtml(v: CardsView): string {
 
 /* ── results ───────────────────────────────────────────────────────────── */
 
-/** The per-card controls, which only exist when a deck is open. */
-function tileButtons(v: CardsView, r: CardRow): string {
-  const deck = v.deck;
-  if (!deck || !r.playable) return '';
-  const n = deck.copies[r.name] ?? 0;
-  return `<span class="dkbtns">
-    ${n ? `<button data-btn="cards-less" data-card="${esc(r.name)}" title="cut one">−</button>` : ''}
-    <button data-btn="cards-add" data-card="${esc(r.name)}" title="add a copy">+</button>
-    ${!deck.noMaybe ? `<button data-btn="cards-maybe" data-card="${esc(r.name)}" title="add to the maybeboard">»</button>` : ''}
-  </span>`;
-}
-
 /**
  * One card tile.
  *
@@ -134,18 +108,16 @@ function tileButtons(v: CardsView, r: CardRow): string {
  *    one, so the native one goes.
  *  - NO `i` BUTTON. The whole tile is the target: *"The i clicking doesn't need
  *    to be its own button, just clicking the card should pin it like that."*
- *    The add/cut buttons still work, because main.ts's delegation asks
- *    `closest('[data-btn]')` and they are nearer than the tile.
  */
 function tileHtml(v: CardsView, r: CardRow, at = -1): string {
-  const n = v.deck?.copies[r.name] ?? 0;
-  const over = n > 2;
-  return `<div class="dktile cbtile${over ? ' overcap' : ''}${r.cls === 'card' ? '' : ' noncard'}${at === v.cursor ? ' sel' : ''}"
+  // the two empty slots are where deckbuilding mode drew the copies and the
+  // add/cut buttons (BL-65); kept as '' so the page is the same, byte for byte
+  return `<div class="dktile cbtile${r.cls === 'card' ? '' : ' noncard'}${at === v.cursor ? ' sel' : ''}"
       data-prev="${esc(r.name)}" data-btn="cards-focus" data-card="${esc(r.name)}">
     ${artHtml(r, 'dkart')}
-    ${n ? `<span class="dkn${over ? ' bad' : ''}">×${n}</span>` : ''}
+    ${''}
     ${r.cls === 'card' ? '' : `<span class="cbclass">${esc(r.cls)}</span>`}
-    ${tileButtons(v, r)}
+    ${''}
   </div>`;
 }
 
@@ -156,7 +128,6 @@ const oneLine = (text: string): string =>
   iconizeText(text).replace(/<br\s*\/?>/gi, ' ').replace(/\s{2,}/g, ' ');
 
 function rowHtml(v: CardsView, r: CardRow, at = -1): string {
-  const n = v.deck?.copies[r.name] ?? 0;
   return `<div class="cbrow${at === v.cursor ? ' sel' : ''}"
       data-prev="${esc(r.name)}" data-btn="cards-focus" data-card="${esc(r.name)}">
     <span class="cbrowcost">${costHtml(r)}</span>
@@ -168,8 +139,8 @@ function rowHtml(v: CardsView, r: CardRow, at = -1): string {
         which looked like a text bug and was a layout one. */ ''
     }<span class="cbpt">${printsStats(r.kind) ? `${r.power}/${r.toughness}` : ''}</span>
     <span class="cbrowtext">${oneLine(r.text)}</span>
-    ${n ? `<span class="dkn">×${n}</span>` : ''}
-    ${tileButtons(v, r)}
+    ${/* deckbuilding mode's copies and add/cut buttons were here (BL-65) */ ''}
+    ${''}
   </div>`;
 }
 
@@ -210,9 +181,8 @@ function resultsHtml(v: CardsView): string {
 
 /* ── the detail pane ───────────────────────────────────────────────────── */
 
-/** This page's pinned card: the shared panel (ui/cardpanel.ts) plus the two
- * buttons that only mean something here, and the add button deckbuilding mode
- * puts on it. */
+/** This page's pinned card: the shared panel (ui/cardpanel.ts) plus the
+ * buttons that only mean something here. */
 function detailHtml(v: CardsView): string {
   const { focus, focusRow: r } = v;
   if (!focus) return '';
@@ -234,7 +204,7 @@ function detailHtml(v: CardsView): string {
     actions: `<button data-btn="cards-similar" data-card="${esc(r.name)}">find similar</button>
       <button data-btn="cards-rulings" data-card="${esc(r.name)}">rulings</button>
       <button data-btn="cards-copylink" data-card="${esc(r.name)}" title="a link to this card, to paste in Discord or anywhere">copy link</button>
-      ${v.deck && r.playable ? `<button class="primary" data-btn="cards-add" data-card="${esc(r.name)}">add to ${esc(v.deck.name)}</button>` : ''}`,
+      ${/* deckbuilding mode's "add to <deck>" was here (BL-65) */ ''}`,
   });
 }
 
@@ -249,21 +219,6 @@ function helpHtml(v: CardsView): string {
 }
 
 /* ── the page ──────────────────────────────────────────────────────────── */
-
-/**
- * The strip that says what you are building, and moves as you build it.
- *
- * The curve and the element spread are here rather than back on the deck page
- * because they are the two things you are deciding ABOUT while you search: a
- * card is a good pick or a bad one relative to what the deck already has, and
- * making you click away to find that out is what makes a browser feel separate
- * from the deckbuilder.
- */
-function deckSideHtml(v: CardsView): string {
-  if (!v.deck) return '';
-  return deckStripHtml(v.deck.name, v.deck.summary,
-    { trailing: '<button data-btn="cards-toDeck">back to the deck</button>' });
-}
 
 function barHtml(v: CardsView): string {
   const { res, q, hints, saved } = v;
@@ -310,13 +265,11 @@ export function cardsHtml(v: CardsView): string {
   return frameHtml({
     page: 'cbpage',
     title: 'Cards',
-    back: v.deck
-      ? { dataBtn: 'cards-close', label: 'Deck', icon: 'back', title: `back to ${v.deck.name}` }
-      : { dataBtn: 'cards-close', label: 'Home' },
+    back: { dataBtn: 'cards-close', label: 'Home' },
     chrome: v.chrome,
     fill: true,
     wide: true,
-    mainHtml: `${deckSideHtml(v)}
+    mainHtml: `
     <div class="cbmain">
       ${railHtml(v)}
       <section class="cbresults">${barHtml(v)}${resultsHtml(v)}</section>
