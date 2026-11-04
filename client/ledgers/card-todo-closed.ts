@@ -14467,4 +14467,18 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-04 (steward): the row now reads 'When it kills one or more units, its controller draws one card.' and cites attr.reaping.draw (CR 802.21a). 156's KILL_RIDERS derivation still finds it (156 green). The new 177 guard went red with the old sentence restored.",
     status: 'done',
   },
+  {
+    id: 434, area: "engine", severity: "minor",
+    title: "the declineCost branch of the grafted cast-cost decision is believed dead since the cost became a cast-time payment",
+    detail: "engine.ts, the grafted cast-cost decision: \"if ('declineCost' in obj) {\". Since CR 111.15 and CT-216 a grafted cost is paid as the composite goes on the stack, and nothing is believed to reach the decline branch. CT-391 kept it and described it as believed dead, because that pass made no behaviour change.",
+    evidence: "Pass D paperwork 2026-10-25 (zero-handoff/PD-paper.md, new defect 5), closing CT-391.",
+    fix: "Prove nothing reaches it (a throw in the branch under the whole engine suite), delete it with 393's two guards as the net, and replay stored games.",
+    proof: () => still('engine/src/engine.ts', "if ('declineCost' in obj) {"),
+    guards: [
+      "393-raq-mods.test.ts::RAQ Graft 101 point 11: a payable [cost] graft must be paid — no opting out of it",
+      "393-raq-mods.test.ts::RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composite off the stack — the host and the other grafts too",
+    ],
+    closed: "FIXED 2026-11-04 (the steward). Proven dead first: a tripwire written into the branch (a file append, not a throw, so no caught error could hide it) stayed silent through the engine suite (4526 tests, including the CC drift guard's committed reference runs and fuzz walks), the ui suite (2299) and the server unit suite (580). It could not be reached by construction either: no engine site offers a {declineCost} option, and both answer paths (doDecide's cast arm and ctx.choose via decisionValue) only hand payCastCost an offered option's value. Deleted, with the two stale comments that described it (collectCastCosts' header said a graft part may decline; refundPart's said the engine offers the decline), and the dead 'declineCost' key in the client's two DECLINE_KEYS lists (ui/boardpick.ts, ui/inspect.ts) with the two test fixtures that fed it (50-ui-inspect, 260). CR 111.15: a grafted cost must be paid; it cannot be declined. This entry's proof is the regression guard that the branch stays gone.",
+    status: 'done',
+  },
 ];

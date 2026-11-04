@@ -10717,9 +10717,10 @@ export class E {
   /**
    * Cast-time bracketed costs (CR 702.4): every part whose effect declares a
    * castCost gets it chosen and PAID here, before the item reaches the stack.
-   * Spell parts must pay (castability already required a payable cost); graft
-   * parts riding a composite may decline — the rider is then skipped. An
-   * unpayable cost skips the part the same way.
+   * Every part must pay: castability already required a payable cost for a
+   * spell part, and no part may decline (CR 111.15). An unpayable grafted cost
+   * withholds the whole composite of a triggered or activated ability; on a
+   * played spell's {Modular} graft part it skips only that part (CR 724.4c).
    *
    * Costs that carry no choice (pay a fixed life, gain debt) are simply
    * charged here; every other kind suspends via 'cast'/'cost' once per unit
@@ -11160,25 +11161,6 @@ export class E {
     const part = item.parts[partIndex]!;
     const cost = effectByKey(part.effectKey).castCost!;
     const obj = val !== null && typeof val === 'object' ? val as Record<string, unknown> : {};
-    if ('declineCost' in obj) {
-      // CR 111.14: the rider is paid N times or not at all — declining the first
-      // copy declines every copy
-      const copies = this.costCopySiblings(item, part);
-      for (const p of copies) p.spent = true;
-      this.ev('info', `${item.label}: the [cost] is declined — that effect is skipped${copies.length > 1 ? ` (all ${copies.length} copies)` : ''}.`);
-      // CARD-TODO #18. Its most reachable shape was a bounded [Switch1] rider
-      // met as a graft, declined at composite cast time; CR 111.15 (CT-216)
-      // since made a grafted cost mandatory, so no graft reaches this branch
-      // now and it is believed dead (kept, not deleted, in a no-behaviour
-      // pass). Where a part is declined here, it is spent before it ever runs, so it can
-      // never reach `ctx.refundBudget()` — but the ruling is about the
-      // OUTCOME, not the route: the player said no and the ability did
-      // nothing, so the use is not spent. Paid here rather than deferred to
-      // resolution because a spent part is skipped at resolution and a fizzled
-      // item never resolves at all.
-      this.refundPart(item, part);
-      return;
-    }
     if ('doneCost' in obj) { this.finishVariableCost(item, part, cost); return; }
     if ('payCost' in obj) { this.chargeCastCost(item, part, cost); return; }
     const paid = (part.costPaid ??= {});
@@ -13301,12 +13283,10 @@ export class E {
    *
    * The half of `settleBudgetRefund` that does the work, split out so the
    * CAST-TIME routes can reach it too. CR 109.9a: the fizzle branch of `resolveItem`
-   * used to call this as well — it does not any more, and must not again. A cast [cost] that is DECLINED or
-   * UNPAYABLE marks its part `spent` before the run exists (the engine offers the decline; CR 111.15
-   * says a grafted cost cannot be declined, and CR 724.4c skips an unpayable Modular graft part), so that part
-   * can never call `ctx.refundBudget()` — and "the [cost] is declined" is the
-   * most reachable decline in the pool, because a bounded [Switch1] rider is
-   * usually met as a graft on somebody else's composite.
+   * used to call this as well — it does not any more, and must not again. A cast [cost] that is
+   * UNPAYABLE marks its part `spent` before the run exists (CR 724.4c skips an unpayable Modular
+   * graft part; CR 111.15: no cost can be declined, so there is no decline route — CT-434 deleted
+   * the dead one), so that part can never call `ctx.refundBudget()`.
    */
   private refundPart(item: StackItem, part: EffectPart): void {
     part.refunded = true;

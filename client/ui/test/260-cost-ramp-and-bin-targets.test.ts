@@ -217,7 +217,6 @@ test('CR D7.2c that is enough is a full button, and the plain declines stay quie
   // …and every stop that BACKS OUT stays quiet: only doneCost commits
   for (const o of [
     { label: 'No more targets', value: { doneTargets: true } },
-    { label: "Don't pay — skip this effect", value: { declineCost: true } },
     { label: 'No more mods', value: { doneMods: true } },
   ]) assert.equal(declineButtonClass(o), 'declinebtn', `${o.label} was promoted — only doneCost commits; the rest back out`);
 });
