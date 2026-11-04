@@ -132,6 +132,12 @@ if run regate; then
   grep '"note":"re-gated green once master was"' "$T/state/journal.jsonl" | grep -q '"outcome":"dry-shipped"' && [ -z "$(ls "$T/state/redgate/" 2>/dev/null)" ] \
     && ok "once master is green it is re-gated without Claude → dry-shipped" || bad "no re-gate row: $(tail -3 "$T/state/journal.jsonl")"
   rm -f "$T/state/redgate/"*.json; fi
+if run always; then
+  sed -i 's/^STEWARD_WINDOW=.*/STEWARD_WINDOW=always/' "$T/env"; r=$(tick skip)
+  [ "$(last_outcome "$r")" = dry-skip ] && ok "STEWARD_WINDOW=always works an item at any hour" || bad "always → $r"
+  h=$(( 10#$(TZ=Europe/Prague date +%H) )); sed -i "s/^STEWARD_WINDOW=.*/STEWARD_WINDOW=$(printf %02d $(( (h + 2) % 24 )))-$(printf %02d $(( (h + 3) % 24 )))/" "$T/env"
+  r=$(tick skip); [ -z "$r" ] && ok "…and a window that excludes now still runs nothing" || bad "ran outside its window: $r"
+  sed -i "s/^STEWARD_WINDOW=.*/STEWARD_WINDOW=$(printf %02d $h)-$(printf %02d $(( (h + 3) % 24 )))/" "$T/env"; fi
 if run pause; then touch "$T/state/paused"; r=$(tick skip); [ -z "$r" ] && ok "paused → nothing runs" || bad "ran while paused: $r"; rm -f "$T/state/paused"; fi
 
 # clean the dry refs this test left on origin

@@ -13,7 +13,7 @@ review is a few minutes of `steward/review.sh`.
    └─ run-once.sh  ── the RUNNER: deterministic bash, owns every side effect
         1. any hour   deploy that was waiting for a quiet server
                       land approved branches (steward-approved/*): rebase → full gate → master → deploy
-        2. 23–08 Prague only, unless paused / backing off:
+        2. inside STEWARD_WINDOW (23-08 Prague, or "always"), unless paused / backing off:
                       fetch reports → queue.mjs → ONE `claude -p` (the steward skill)
                       → outcome.json → full gate HERE → policy.mjs → ship | stage
 ```
@@ -87,7 +87,7 @@ Personal Server that only he and the bot can see (`steward/discord.mjs`):
   attached, and the "Discord-ready" question as a message of its own, so asking
   the wider server is a forward;
 - **📓 night log** — every ship, stage, deploy and red as it happens, and a
-  summary of the night after the window closes.
+  summary every morning (the first tick from 08:00 Prague, `STEWARD_SUMMARY_HOUR`).
 
 He replies in the post: **approve** · **reject** <why> · **retry** <why> · or
 just answers in words, with screenshots if he likes (they are saved beside the
@@ -134,7 +134,9 @@ Done on 2026-11-03; kept here so it can be redone.
    ```
    CLAUDE_CODE_OAUTH_TOKEN=…
    STEWARD_MODE=live          # dry = do everything but push and deploy
-   STEWARD_WINDOW=23-08
+   STEWARD_WINDOW=23-08        # or "always" — since 2026-11-04 the plan's limit is one weekly budget,
+                               # so the owner runs it round the clock and types "pause" in the night log
+                               # when he wants the quota for himself
    STEWARD_TZ=Europe/Prague
    STEWARD_WEBHOOK=           # optional: a Discord webhook URL for one line per event
    ```
