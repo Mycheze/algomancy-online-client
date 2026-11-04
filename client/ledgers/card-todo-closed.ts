@@ -14407,4 +14407,19 @@ export const CLOSED: TodoEntry[] = [
     closed: "DONE 2026-11-03 by the steward. Not a question: the CR's authority order puts calebgannon's own words above an owner call, and his 2025-09-08 answer (RQ 1414660063162798082, indexed into rules-questions.snapshot.jsonl) is checked against the export with its question. The ENGINE ALREADY DID WHAT HE SAYS — giveControl unslots the stolen attacker and checkBlocks asks only controller, presence and region, so the thief who defends can block with it or send it to counterattack (probed, then pinned by 145 (x)-(xi)). What was wrong was the rule: CR 711.3 and 602.2b said 'blocks for nobody' for every mid-battle steal. Both are redrafted (the owner's 'sits out until regroup' now covers a steal after blocks), D-U16-11 moved to tier 2 as settled by the designer, and the engine/Download comments say the same. The counterattack half is the permissive reading of his 1v1 sentence and is what the engine has always done.",
     status: 'done',
   },
+  {
+    id: 427, area: "engine", severity: "minor",
+    title: "a split damage step fixes its schedule when the step begins; the designer says a column that dealt Swift damage deals no normal damage",
+    detail: "CR 608.3 and 608.3d (combat.damage.split) state the owner's 2026-09-16 call: windows open after a sub-step only when it struck and a later one will, and the schedule is fixed when the step begins. Caleb, rules-questions 2025-04-20 [1363292630443626568]: \"If a column dealt swift damage, it won't deal normal damage. / If a column dealt normal damage it won't deal sluggish damage.\" That tracks what each column dealt rather than a schedule fixed at the start, which differs when a column gains or loses Swift or Sluggish mid-step.",
+    evidence: "CR pass D 2026-10-25 (zero-handoff/PD-cr.md, tier-3 stretch): discrepancy D-U12-9, the quote checked against the rules-questions export.",
+    fix: "Read the thread around the quote, then check 608.3d (redrafted in pass B+C) and the engine's strike memory (CR 608.2e) against it: a column that dealt Swift damage must not deal normal damage, and one that dealt normal must not deal Sluggish. If they disagree, change the engine or the rule, with a test.",
+    proof: null,
+    verify: "Give a Swift column Sluggish after it struck, and a normal column Sluggish after the normal sub-step: which strike again?",
+    guards: [
+      "1064-damage-speed-tracks-what-a-column-dealt.test.ts::a column given Swift in the after-Swift window still deals normal damage",
+      "1064-damage-speed-tracks-what-a-column-dealt.test.ts::a column that loses Sluggish in the before-Sluggish window still deals Sluggish damage",
+    ],
+    closed: "FIXED 2026-11-04 by the steward. The divergence was not the window schedule (608.3d agrees with the thread since CT-378) but 608.2f: every sub-step read the column's live attributes, so a column given Swift after the Swift sub-step, or stripped of Sluggish before the Sluggish one, dealt no combat damage. The designer's final scheme in the same thread (RQ 1363287109401710603): \"remaining columns will deal normal damage unless sluggish (even if given swift in this step ...)\" and \"remaining columns will deal sluggish damange here (even if given swift or sluggish is removed here ...)\". E.strikes now reads the struck marks once a sub-step is dealt (BattleState.dealtSubs); 608.2f redrafted and re-rendered. Mutation-checked: reverting either half turns its 1064 guard red.",
+    status: 'done',
+  },
 ];

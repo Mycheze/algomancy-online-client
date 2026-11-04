@@ -759,7 +759,17 @@ export interface BattleState {
    */
   struck?: Record<string, DamageSubStep[]>;
   /**
-   * CR 606.4 — the attacking-column indices `doDeclareBlocks` opened EMPTY so a
+   * CR 608.2f (CT-427) — the combat-damage sub-steps this battle round has already
+   * DEALT, in order. Once the Swift sub-step is in here, Swift no longer sends a
+   * column anywhere: the `struck` marks do (the designer, rules-questions
+   * 2025-04-20 [1363287109401710603]: "remaining columns will deal normal damage
+   * unless sluggish (even if given swift in this step ...)"). Absent in states
+   * saved before it existed, which reads as "nothing dealt yet": the column's
+   * attributes decide, the old behaviour.
+   */
+  dealtSubs?: DamageSubStep[];
+  /**
+   * CR 606.4— the attacking-column indices `doDeclareBlocks` opened EMPTY so a
    * side-block had a column to stand in (re-keyed by `E.rekeyColumns`). Only
    * the log reads it: a CR 602.5a hole's blockers "have nothing to fight" because
    * their attackers left; a side-block never had any.

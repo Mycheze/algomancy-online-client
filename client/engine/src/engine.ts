@@ -14829,8 +14829,12 @@ export class E {
         const sub = b.damageStep;
         // deaths + promotion between sub-steps, no priority (CR 608.3e); the
         // sub-step's Deadly / collapsed / Pure victims in the same batch (CT-413)
-        this.checkDeaths(this.combatSubStep(sub));
-        const next = sub === 'Swift' ? 'normal' : sub === 'normal' ? 'Sluggish' : 'after';
+        const doomed = this.combatSubStep(sub);
+        // CR 608.2f: the sub-step has been dealt (a suspension inside it throws
+        // before this line, and the sub-step re-enters from scratch)
+        if (!(b.dealtSubs ??= []).includes(sub)) b.dealtSubs.push(sub);
+        this.checkDeaths(doomed);
+        const next =sub === 'Swift' ? 'normal' : sub === 'normal' ? 'Sluggish' : 'after';
         /**
          * CR 608.3b — A SPLIT DAMAGE STEP IS SEVERAL STEPS, and this is the
          * boundary between two of them.
@@ -14897,14 +14901,35 @@ export class E {
    * unit is removed is still marked, and so is a Tiderunner played into it
    * once it is emptied. A Swift column may still gain Sluggish and strike
    * again ("for effective doublestrike") — a Swift mark bars only `normal`.
+   *
+   * CR 608.2f (CT-427) — and once a sub-step has been DEALT, the attribute that
+   * would have sent a column into it stops mattering; what the column dealt
+   * decides. The designer's final scheme (rules-questions 2025-04-20
+   * [1363287109401710603]): "After swift priority<- remaining columns will deal
+   * normal damage unless sluggish (even if given swift in this step, they didn't
+   * hit for swift damage and aren't marked as swift)" and "Before sluggish
+   * priority <- remaining columns will deal sluggish damange here (even if given
+   * swift or sluggish is removed here, they didn't hit for swift or normal
+   * damage)". Before a sub-step is dealt, the column's attributes stand in for
+   * the mark it is about to get, so asked ahead (the schedule, CR 608.3d; the
+   * trigger reads, CR 608.9a) this answers exactly as the attribute rule did.
    */
   private strikes(b: BattleState, side: 'atk' | 'blk', ci: number, colIds: EntityId[],
     sub: DamageSubStep, pure: boolean): boolean {
-    if (!this.scheduled(colIds, sub, pure)) return false;
+    if (sub === 'Swift') return this.scheduled(colIds, sub, pure);
     const done = b.struck?.[`${side}:${ci}`] ?? [];
     if (sub === 'normal' && done.includes('Swift')) return false;
     if (sub === 'Sluggish' && done.includes('normal')) return false;
-    return true;
+    const attrs = pure ? new Set<string>() : this.colAttrs(colIds);
+    const dealt = b.dealtSubs ?? [];
+    // CR 608.2f: once the Swift sub-step is dealt, only the column's mark says Swift
+    const swift = dealt.includes('Swift') ? done.includes('Swift') : attrs.has('Swift');
+    if (sub === 'normal') return !swift && !attrs.has('Sluggish');
+    // Sluggish, asked before the normal sub-step: the column with Sluggish
+    if (!dealt.includes('normal')) return attrs.has('Sluggish');
+    // after it: every column that struck in neither, Sluggish or not, and a
+    // column that struck in Swift again only with Sluggish (CR 608.2c)
+    return !swift || attrs.has('Sluggish');
   }
 
   /** CR 608.2e: column `ci`'s `side` struck in `sub` — remember it for the battle */

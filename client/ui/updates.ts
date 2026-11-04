@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-05', kind: 'fix', text: 'A column that gains Swift after Swift damage now deals its normal damage, and one that loses Sluggish before Sluggish damage still strikes then. Before, either one dealt no combat damage at all.' },
   { date: '2026-11-04', kind: 'fix', text: 'When several units die at once, the game log now puts each "Deadly" or "Unaware" reason right before that unit\'s own death line, instead of listing all the reasons first.' },
   { date: '2026-11-04', kind: 'fix', text: 'Automaton of Abundance and Cosmic Conspirator: when you choose the Automaton first, that choice now holds for every token the effect makes, so a Poison the Conspirator later turns into a Robot is no longer copied.' },
   { date: '2026-11-04', kind: 'fix', text: 'On the deck table, the bar between the card pool and your piles can always be dragged back down, even after shrinking the pool all the way.' },
