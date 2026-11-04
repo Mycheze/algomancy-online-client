@@ -180,6 +180,8 @@ regate_master_red() {
     if [ "$intent" = ship ] && [ "$(jq -r .verdict <<<"$pol")" = ship ] && ship_head "$item" origin/master >/dev/null; then
       final=shipped
       [ "$STEWARD_MODE" = live ] && g push -q origin ":refs/heads/steward/$(slug "$item")" 2>/dev/null
+      # it is on master: whatever its handoff asked of the owner is answered
+      mv -f "$STATE/handoffs/$(slug "$item").md" "$STATE/handoffs/done/" 2>/dev/null
     else
       branch=$(stage_head "$item"); final=staged
     fi
