@@ -191,16 +191,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 426, area: "engine", severity: "minor",
-    title: "a Virus on a resolving spell unit stays on as an augment; the designer says a spell carrying a Virus is erased on resolution",
-    detail: "CR 723.4c (effects.virus.spell-host.spell-unit) states the owner's 2026-08-22 exception: a spell unit enters play with the Virus as an augment instead of being erased. Caleb, rules-questions 2025-03-06 [1347270455198879858]: \"It's very similar to how regular viruses work. So you can hit enemy spells, the spell gets erased on resolution\". No source makes the spell-unit exception; the record says no ruling asks for it.",
-    evidence: "CR pass D 2026-10-25 (zero-handoff/PD-cr.md, tier-3 stretch): discrepancy D-U17-3, the quote checked against the rules-questions export.",
-    fix: "Ask the owner whether Caleb's \"the spell gets erased on resolution\" covers a spell unit. If it does, a virused spell unit is erased on resolution (it never arrives); change the resolution path, redraft 723.4c, add a test and replay stored games. If not, record the owner's answer as the source of 723.4c.",
-    proof: null,
-    verify: "Augment a Virus onto a spell unit on the stack and let it resolve: does the unit arrive with the Virus on it?",
-    status: 'open',
-  },
-  {
     id: 427, area: "engine", severity: "minor",
     title: "a split damage step fixes its schedule when the step begins; the designer says a column that dealt Swift damage deals no normal damage",
     detail: "CR 608.3 and 608.3d (combat.damage.split) state the owner's 2026-09-16 call: windows open after a sub-step only when it struck and a later one will, and the schedule is fixed when the step begins. Caleb, rules-questions 2025-04-20 [1363292630443626568]: \"If a column dealt swift damage, it won't deal normal damage. / If a column dealt normal damage it won't deal sluggish damage.\" That tracks what each column dealt rather than a schedule fixed at the start, which differs when a column gains or loses Swift or Sluggish mid-step.",

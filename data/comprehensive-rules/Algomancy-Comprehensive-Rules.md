@@ -8285,7 +8285,7 @@ order.
 
 <a id="r723.4c"></a>**723.4c** A spell unit carrying a Virus is not erased when it resolves. It enters play with the Virus attached as an augment, and so has {Unstable}. See rule 303.
 
-<sub>Basis: Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 67-resolving-and-stack-viruses.test.ts · Demonstrated by test: 67-resolving-and-stack-viruses.test.ts::CR 723.4c: a spell UNIT carries its virus into play as an augment mod · Key: effects.virus.spell-host.spell-unit</sub>
+<sub>Basis: Owner call · adopted 2026-11-04; Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 67-resolving-and-stack-viruses.test.ts · Demonstrated by test: 67-resolving-and-stack-viruses.test.ts::CR 723.4c: a spell UNIT carries its virus into play as an augment mod · Key: effects.virus.spell-host.spell-unit</sub>
 
 <sub>Discrepancies: D-U17-3 (discrepancies.md)</sub>
 

@@ -13523,7 +13523,8 @@ export class E {
       // CR 723.4c: a spell UNIT's card does not leave — it arrives. Its viruses ride
       // it in, as the augment mods they always were, which is also what makes
       // the body Unstable. Erasing the card here instead would delete a unit
-      // on its way into play, which no ruling asks for.
+      // on its way into play; the owner confirmed it 2026-11-04 (CT-426): Caleb's
+      // "the spell gets erased on resolution" covers spells that go to the discard.
       for (const a of item.augments ?? []) {
         // CR 102.4 / CT-343: applied by `by`, still owned by its owner
         this.attachMod(u, a.card, a.by, 'augment', undefined, a.owner !== undefined ? { owner: a.owner } : {});

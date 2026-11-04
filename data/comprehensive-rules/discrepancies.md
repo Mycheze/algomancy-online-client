@@ -1291,8 +1291,9 @@ Caleb says a spell carrying a Virus "gets erased on resolution". The owner rulin
 
 - owner ruling, adopted 2026-08-22: "> and the spell gets erased on resolution**. You can augment spells during"
 - owner ruling, adopted 2026-08-22: "*arrives*. Erasing its card would delete a unit on its way into play, which no"
+- owner ruling, adopted 2026-11-04: "A spell unit carrying a Virus is NOT erased on resolution: it enters play as a unit with the Virus attached as an augment (so it is modded, and Unstable from then on)."
 
-**Resolution:** The rule states the owner ruling of 2026-08-22 (“A Virus may be augmented onto…”)’s exception, basis owner. Its reasoning: {Unstable} replaces a bin entry (owner ruling of 2026-08-22, “A token entering a ZONE is…”), and a resolving spell unit does not go to a bin. Owner sign-off needed; question for the owner only if he reads Caleb's "the spell gets erased" as covering spell units.
+**Resolution:** Settled by the owner on 2026-11-04 (CT-426), asked whether Caleb's "the spell gets erased on resolution" covers a spell unit: "Caleb's 'the spell gets erased on resolution' covers spells that go to the discard; a spell unit enters play instead." The exception stands as stated in rule 723.4c, now carrying his words; the engine already does it.
 
 ### D-U18-11 · Owner call only · rule 801.2e
 

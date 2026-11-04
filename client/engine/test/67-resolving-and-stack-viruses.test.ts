@@ -354,6 +354,9 @@ test('CR 723.4e: only SPELLS are legal hosts — not abilities, not units mid-ca
   }), IllegalAction, 'one host, not two');
 });
 
+// The owner, 2026-11-04 (CT-426): Caleb's "the spell gets erased on resolution"
+// (RQ 1347270455198879858) covers spells that go to the discard; a spell unit
+// enters play instead, with the Virus as an augment, and is Unstable from then on.
 test('CR 723.4c: a spell UNIT carries its virus into play as an augment mod', () => {
   const { h, A, D } = attackWindow(6718);
   giveResources(h, D, 'wood', 2);                    // Hush Mush gg/2 — a {Battle} SPELL UNIT

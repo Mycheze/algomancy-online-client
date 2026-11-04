@@ -4506,6 +4506,11 @@
           "quote": "they always were, via `attachMod` — which makes the **body** Unstable, exactly",
           "adopted": "2026-08-22",
           "from": "register@72de434"
+        },
+        {
+          "quote": "A spell unit carrying a Virus is NOT erased on resolution: it enters play as a unit with the Virus attached as an augment (so it is modded, and Unstable from then on).",
+          "adopted": "2026-11-04",
+          "from": "owner, steward answer 2026-11-04 (CT-426: does Caleb's \"the spell gets erased on resolution\" cover a spell unit?)"
         }
       ],
       "engine": [],
@@ -4515,8 +4520,8 @@
     },
     "basis": "owner",
     "scope": "game",
-    "confidence": "medium",
-    "notes": "The owner ruling of 2026-08-22 (“A Virus may be augmented onto…”) says \"no ruling asks for\" erasing a spell unit and decides the exception itself: D-U17-3.",
+    "confidence": "high",
+    "notes": "The owner ruling of 2026-08-22 (“A Virus may be augmented onto…”) says \"no ruling asks for\" erasing a spell unit and decides the exception itself: D-U17-3. Confirmed by the owner 2026-11-04 (CT-426), asked whether Caleb's \"the spell gets erased on resolution\" (RQ 1347270455198879858) covers a spell unit: it does not; it covers spells that go to the discard, and a spell unit enters play instead (Caleb, RQ 1126563875148550154: \"enters play as a unit instead of going to the discard upon resolution\").",
     "sourceHashes": {}
   },
   {
