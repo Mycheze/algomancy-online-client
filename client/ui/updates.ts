@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-04', kind: 'new', text: 'Decks are rebuilt: your decks sit on a shelf you pick from, and building is one table — every card above, your piles below, the sideboard and maybe beside them. Drag or tap, with undo and redo.' },
   { date: '2026-11-04', kind: 'fix', text: 'You can always get back home: leaving a test game shows its end screen right away, and a finished game, a game you are watching, or a room that closed while you were away all have a Home button.' },
   { date: '2026-11-04', kind: 'change', text: 'The rules open full screen. The comprehensive rules read like a book: contents on the side, one section at a time, a search that finds rules and jumps to a number like 608.2b, and every rule number a link with a Back button.' },
   { date: '2026-11-04', kind: 'change', text: 'Every page now shares the home screen’s look and fits on one screen: Cards, Metagame, Matchmaking, your profile, sign-in, League, the weekly challenge, the rooms and Admin. Each has the same toolbar, and its lists scroll by themselves.' },
