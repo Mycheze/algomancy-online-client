@@ -201,16 +201,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 427, area: "engine", severity: "minor",
-    title: "a split damage step fixes its schedule when the step begins; the designer says a column that dealt Swift damage deals no normal damage",
-    detail: "CR 608.3 and 608.3d (combat.damage.split) state the owner's 2026-09-16 call: windows open after a sub-step only when it struck and a later one will, and the schedule is fixed when the step begins. Caleb, rules-questions 2025-04-20 [1363292630443626568]: \"If a column dealt swift damage, it won't deal normal damage. / If a column dealt normal damage it won't deal sluggish damage.\" That tracks what each column dealt rather than a schedule fixed at the start, which differs when a column gains or loses Swift or Sluggish mid-step.",
-    evidence: "CR pass D 2026-10-25 (zero-handoff/PD-cr.md, tier-3 stretch): discrepancy D-U12-9, the quote checked against the rules-questions export.",
-    fix: "Read the thread around the quote, then check 608.3d (redrafted in pass B+C) and the engine's strike memory (CR 608.2e) against it: a column that dealt Swift damage must not deal normal damage, and one that dealt normal must not deal Sluggish. If they disagree, change the engine or the rule, with a test.",
-    proof: null,
-    verify: "Give a Swift column Sluggish after it struck, and a normal column Sluggish after the normal sub-step: which strike again?",
-    status: 'open',
-  },
-  {
     id: 428, area: "engine", severity: "minor",
     title: "a blocking formation with no living unit offers no position; the designer lets a unit be played into it even with no units",
     detail: "CR 602.6k states the owner's 2026-08-22 prose: \"with no living unit in the grid the answer is \\\"no slots\\\"\". Caleb, rules-questions 2024-05-07 [1237434283786768415], asked how a unit that joins a formation works with no units: \"You could play it directly into a blocking formation even if you had no units, but you can't play it into an attacking formation with no units because you just couldn't declare an attack with no units.\" The defender half differs.",

@@ -3392,9 +3392,11 @@ CONTENTS
       Example: After Dune Drifter's column strikes in the Swift sub-step, Dune Drifter is recalled and Tiderunner Initiate is played into the emptied column. Tiderunner Initiate deals no normal combat damage.
       [Basis: Mixed | Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files | Designer: RAQ 1363298910528864318#1; RAQ 1363298910528864318#3; RAQ 1363298910528864318#4 | Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) | Engine: struck | Tests: 388-raq-blocks-and-windows.test.ts, 400-raq-fix-blocks.test.ts | Example tests: 388-raq-blocks-and-windows.test.ts::RAQ Swift: a column that dealt Swift damage deals no normal damage, 388-raq-blocks-and-windows.test.ts::RAQ Swift: a Tiderunner played into an emptied Swift column deals no normal damage | Demonstrated by test: 400-raq-fix-blocks.test.ts::CR 608.2e a struck mark moves with its column when a new column opens on the left | Key: combat.damage.substeps.struck-mark]
 
-608.2f Whether a half-column strikes in a sub-step is determined as that sub-step begins, from the units then in the column and the attributes they then share. See rule 603.
+608.2f Whether a half-column strikes in a sub-step is determined as that sub-step begins, from the units then in the column. Until the Swift sub-step has been dealt, the attributes those units then share decide, as rule 608.2a says. After it, what the half-column has already dealt decides instead (rule 608.2e): a half-column that did not strike in the Swift sub-step strikes in the normal sub-step unless it has Sluggish, even if it has gained Swift since; a half-column that struck in neither the Swift nor the normal sub-step strikes in the Sluggish sub-step, even if it has lost Sluggish since; and a half-column that struck in the Swift sub-step strikes again in the Sluggish sub-step only if it has Sluggish then (rule 608.2c). See rule 603.
       Example: A column strikes in the Swift sub-step and then gains Sluggish. It strikes again in the Sluggish sub-step.
-      [Basis: Mixed | Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file | Printed: Manual p.24 | Designer: RAQ 1363298910528864318#2 | Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) | Tests: 388-raq-blocks-and-windows.test.ts | Example test: 388-raq-blocks-and-windows.test.ts::RAQ Swift: a Swift column that gains Sluggish strikes again in the Sluggish sub-step | Key: combat.damage.substeps.live-attributes]
+      Example: Dune Drifter (2/1, Swift) and a 3/3 attack in separate columns. After the Swift sub-step, the 3/3 is given Swift. It did not strike in the Swift sub-step, so it deals its 3 in the normal sub-step.
+      Example: A 1/1 and Ambling Mountaintop (4/5, Sluggish) attack in separate columns. After the normal sub-step, the Mountaintop loses all its attributes. It struck in neither earlier sub-step, so it still deals its 4 in the Sluggish sub-step.
+      [Basis: Mixed | Verified: not verified (the text changed after verification); 2 gate test files | Printed: Manual p.24 | Designer: RAQ 1363298910528864318#2; RQ 1363287109401710603; RQ 1363287109401710603 | Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) | Engine: strikes | Tests: 388-raq-blocks-and-windows.test.ts, 1064-damage-speed-tracks-what-a-column-dealt.test.ts | Example tests: 388-raq-blocks-and-windows.test.ts::RAQ Swift: a Swift column that gains Sluggish strikes again in the Sluggish sub-step, 1064-damage-speed-tracks-what-a-column-dealt.test.ts::CR 608.2f / CT-427: a column given Swift in the after-Swift window still deals normal damage, 1064-damage-speed-tracks-what-a-column-dealt.test.ts::CR 608.2f / CT-427: a column that loses Sluggish in the before-Sluggish window still deals Sluggish damage | Key: combat.damage.substeps.live-attributes]
 
 608.3. A combat damage step is split if, when the step begins, half-columns are scheduled to strike in two or more different sub-steps. Otherwise it is unsplit. Only Swift and Sluggish can split a step. See rules 802.4, 802.5.
       Example: Dune Drifter (Swift) is blocked by a unit without Swift or Sluggish. The attacking half strikes in the Swift sub-step and the blocking half in the normal one, so the step is split.
@@ -6933,13 +6935,13 @@ Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1851 |
+| confirmed | 1850 |
 | partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 7 |
 | not verified | 1 |
-| text changed | 0 |
+| text changed | 1 |
 
 Engine-only rules (awaiting the owner's sign-off)
 

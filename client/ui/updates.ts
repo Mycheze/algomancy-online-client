@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-04', kind: 'fix', text: 'A column that gains Swift after Swift damage now deals its normal damage, and one that loses Sluggish before Sluggish damage still strikes then. Before, either one dealt no combat damage at all.' },
   { date: '2026-11-03', kind: 'change', text: 'Sideboarding between Competitive games happens on the deck table: your deck below, your sideboard above. Tap a card or drag it across.' },
   { date: '2026-11-03', kind: 'fix', text: 'The board is easier to read: tooltips fit their text, card text sits in one box, the action bar keeps one height and shows its notices instead of popping them up, and empty block slots and live counts lose their clutter.' },
   { date: '2026-11-03', kind: 'change', text: 'A new look: the site now uses the colours of the official rulebook, deep purple with orange highlights, and the comprehensive rules are dark like everything else.' },

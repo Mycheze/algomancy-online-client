@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:622620d0b86164cc",
+ "generated_from": "sha256:7b1d9fe18edd0c5c",
  "rules": [
   {
    "num": "100.1",
@@ -17927,12 +17927,14 @@
    "sectionTitle": "Combat Damage Step",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "608.2",
-   "text": "Whether a half-column strikes in a sub-step is determined as that sub-step begins, from the units then in the column and the attributes they then share.",
+   "text": "Whether a half-column strikes in a sub-step is determined as that sub-step begins, from the units then in the column. Until the Swift sub-step has been dealt, the attributes those units then share decide, as rule 608.2a says. After it, what the half-column has already dealt decides instead (rule 608.2e): a half-column that did not strike in the Swift sub-step strikes in the normal sub-step unless it has Sluggish, even if it has gained Swift since; a half-column that struck in neither the Swift nor the normal sub-step strikes in the Sluggish sub-step, even if it has lost Sluggish since; and a half-column that struck in the Swift sub-step strikes again in the Sluggish sub-step only if it has Sluggish then (rule 608.2c).",
    "see": [
     "603"
    ],
    "examples": [
-    "A column strikes in the Swift sub-step and then gains Sluggish. It strikes again in the Sluggish sub-step."
+    "A column strikes in the Swift sub-step and then gains Sluggish. It strikes again in the Sluggish sub-step.",
+    "Dune Drifter (2/1, Swift) and a 3/3 attack in separate columns. After the Swift sub-step, the 3/3 is given Swift. It did not strike in the Swift sub-step, so it deals its 3 in the normal sub-step.",
+    "A 1/1 and Ambling Mountaintop (4/5, Sluggish) attack in separate columns. After the normal sub-step, the Mountaintop loses all its attributes. It struck in neither earlier sub-step, so it still deals its 4 in the Sluggish sub-step."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -17940,7 +17942,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "608.3",
