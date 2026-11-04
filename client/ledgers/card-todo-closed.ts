@@ -14318,4 +14318,19 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-02 by the orchestrator (41cb2b66).",
     status: 'done',
   },
+  {
+    id: 429, area: "card", severity: "minor",
+    cards: ["Life Channel", "Arbiter of Vitality"],
+    title: "Life Channel under Arbiter of Vitality gives +3/+3, not +6/+6: X adds the printed 3, not the life the spell gained",
+    detail: "Life Channel prints \"You gain 3 life, then [Switch1] Target unit gains +X/+X until regroup, where X is the life you've gained in this battle.\" The spell run (batch-light-b.ts) reads the battle ledger before the gain and adds the printed 3 (\"const x = before + 3;\"). Measured under Arbiter of Vitality: life went up 6 and Good Whale went from 7/5 to 10/8. The card's xPreview says 3 too, so the stack caption matches the engine; both are wrong against the printed \"the life you've gained\".",
+    evidence: "Pass D mop-up 2026-10-25 (zero-handoff/PM-client.md, new defect 1): the client agent, measuring CT-412's captions.",
+    fix: "Read lifeGainedThisBattle after the gain (or use gainLife's return value) in the spell run and in xPreview; guard under Arbiter.",
+    proof: () => still('engine/src/cards/sets/batch-light-b.ts', 'const x = before + 3;'),
+    guards: [
+      "39-light-b.test.ts::CT-429: Life Channel under Arbiter of Vitality: X is the 6 life actually gained",
+      "39-light-b.test.ts::CT-429: Life Channel whose gain Nullbringer replaces: no life gained, so X is 0",
+    ],
+    closed: "FIXED 2026-11-04 by the steward. The spell reads the lifeGained ledger AFTER its own gain, so X is what landed (6 under Arbiter, 0 when Nullbringer replaces the gain or the life total is locked); its hand preview prices the 3 through E.amountPreview, the stack caption's read. Swept: no other card adds a printed amount to a ledger read. Both guards mutation-checked against the old code.",
+    status: 'done',
+  },
 ];

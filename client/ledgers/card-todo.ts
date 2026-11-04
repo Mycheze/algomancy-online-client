@@ -221,16 +221,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 429, area: "card", severity: "minor",
-    cards: ["Life Channel", "Arbiter of Vitality"],
-    title: "Life Channel under Arbiter of Vitality gives +3/+3, not +6/+6: X adds the printed 3, not the life the spell gained",
-    detail: "Life Channel prints \"You gain 3 life, then [Switch1] Target unit gains +X/+X until regroup, where X is the life you've gained in this battle.\" The spell run (batch-light-b.ts) reads the battle ledger before the gain and adds the printed 3 (\"const x = before + 3;\"). Measured under Arbiter of Vitality: life went up 6 and Good Whale went from 7/5 to 10/8. The card's xPreview says 3 too, so the stack caption matches the engine; both are wrong against the printed \"the life you've gained\".",
-    evidence: "Pass D mop-up 2026-10-25 (zero-handoff/PM-client.md, new defect 1): the client agent, measuring CT-412's captions.",
-    fix: "Read lifeGainedThisBattle after the gain (or use gainLife's return value) in the spell run and in xPreview; guard under Arbiter.",
-    proof: () => still('engine/src/cards/sets/batch-light-b.ts', 'const x = before + 3;'),
-    status: 'open',
-  },
-  {
     id: 430, area: "coverage", severity: "minor",
     title: "dsl.ts still calls the amount multipliers SUMMED and the additive-versus-multiplier order unanswered",
     detail: "The amountMultipliers doc comment in engine/src/cards/dsl.ts says \"the claiming factors are SUMMED into one multiplier (the owner's n*2*v)\"; E.amountFactor multiplies (2^n, CR 708.6), as the AmountMultiplier comment itself says. That AmountMultiplier comment still says how a multiplier composes with an additive AmountMod \"IS NOT ANSWERED\"; Caleb and the owner answered it (CT-425, the replacement-order round). Comments only.",
