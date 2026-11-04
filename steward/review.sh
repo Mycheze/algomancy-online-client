@@ -42,7 +42,12 @@ status)
   box "bash -s" <<'EOF'
 S=~/algomancy-steward/state
 echo "── worker"
-systemctl --user is-active -q algomancy-steward.service && echo "  running an item now" || echo "  idle between ticks"
+# a oneshot tick is "activating" for its whole run, never "active"
+case "$(systemctl --user show -p ActiveState --value algomancy-steward.service)" in
+  activating|active) echo "  running a tick now (since $(systemctl --user show -p ExecMainStartTimestamp --value algomancy-steward.service))"; tail -n 1 ~/algomancy-steward/logs/runner.log | sed 's/^/    /' ;;
+  *) echo "  idle between ticks" ;;
+esac
+[ -f $S/master-gate.json ] && jq -r '"  master \(.sha[0:8]) gate: \(if .rc == 0 then "green" else "RED — \(.failures[0:3]|join(" | "))" end)  (\(.ts // "?"))"' $S/master-gate.json
 [ -f $S/paused ] && echo "  ⏸  PAUSED  (steward/review.sh resume)"
 [ -f $S/backoff-until ] && [ "$(date +%s)" -lt "$(cat $S/backoff-until)" ] && echo "  usage limit: backing off until $(date -d @$(cat $S/backoff-until))"
 [ -f $S/pending-deploy ] && echo "  deploy waiting for a quiet server: $(jq -r '.why|join(", ")' $S/pending-deploy)"

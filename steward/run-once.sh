@@ -44,6 +44,7 @@ mkdir -p "$STATE"/{handoffs,answers,redgate,outcomes,handoffs/done,answers/done}
 # TEST SEAMS, and nothing else: steward/test-runner.sh swaps in a stub Claude and a stub gate
 : "${STEWARD_CLAUDE_BIN:=claude}"
 : "${STEWARD_GATE_CMD:=npm --prefix $REPO/client run check}"
+: "${STEWARD_FETCH_CMD:=node $REPO/client/engine/scripts/fetch-reports.mjs}"
 VPS=algomancy-vps
 VREPO=/home/bena/Documents/Algomancy
 SITE=https://algomancy.online
@@ -75,10 +76,117 @@ slug() { echo "$1" | sed -E 's/^#/report-/; s/[^A-Za-z0-9._-]+/-/g; s/^-+|-+$//g
 
 g() { git -C "$REPO" "$@"; }
 
-in_window() {
-  local h start end; h=$((10#$(TZ="$STEWARD_TZ" date +%H))); start=$((10#${STEWARD_WINDOW%-*})); end=$((10#${STEWARD_WINDOW#*-}))
+in_hours() { # start end → is the local hour in [start,end)?
+  local h start=$1 end=$2; h=$((10#$(TZ="$STEWARD_TZ" date +%H)))
   if [ "$start" -le "$end" ]; then [ "$h" -ge "$start" ] && [ "$h" -lt "$end" ]
   else [ "$h" -ge "$start" ] || [ "$h" -lt "$end" ]; fi
+}
+in_window() { in_hours $((10#${STEWARD_WINDOW%-*})) $((10#${STEWARD_WINDOW#*-})); }
+# the window plus the hour before it: master's own gate runs on the eve, so the
+# night starts knowing whether master is green (no Claude is spent on the eve)
+in_eve_or_window() { in_hours $(( (10#${STEWARD_WINDOW%-*} + 23) % 24 )) $((10#${STEWARD_WINDOW#*-})); }
+
+# ── trusted copies ──────────────────────────────────────────────────────────
+# The agent works in $REPO and may edit anything there, steward/ included. So
+# the code that JUDGES its work never runs from the tree it just left: policy.mjs
+# comes from origin/master, extracted before the agent starts. (run-once.sh
+# itself is extracted from origin/master by the unit's ExecStartPre.)
+trust() {
+  g show origin/master:steward/policy.mjs > "$BIN/policy.mjs" || { log "cannot extract policy.mjs from origin/master"; exit 1; }
+}
+policy() { (cd "$REPO" && node "$BIN/policy.mjs" "$@"); }
+
+# ── master's own gate ───────────────────────────────────────────────────────
+# $STATE/master-gate.json = {sha, rc, log, failures[]} for the last master sha
+# gated. A red master turns every branch red, so the queue puts `fix-master`
+# first and holds repairs until it is green (2026-11-03: one hand-written path
+# in steward/ made every one of the night's six gates red).
+MG="$STATE/master-gate.json"
+mg_record() { # sha rc log
+  local fails='[]'
+  [ "$2" != 0 ] && [ -f "$3" ] && fails=$(grep -E '^not ok' "$3" | sed -E 's/^not ok [0-9]+ - //' | head -20 | jq -Rsc 'split("\n")|map(select(length>0))')
+  jq -cn --arg s "$1" --argjson rc "$2" --arg l "$3" --argjson f "$fails" --arg ts "$(date -u +%FT%TZ)" \
+    '{sha:$s,rc:$rc,log:$l,failures:$f,ts:$ts}' > "$MG"
+}
+mg_red_at() { [ -f "$MG" ] && [ "$(jq -r .sha "$MG")" = "$1" ] && [ "$(jq -r .rc "$MG")" != 0 ]; }
+mg_green_at() { [ -f "$MG" ] && [ "$(jq -r .sha "$MG")" = "$1" ] && [ "$(jq -r .rc "$MG")" = 0 ]; }
+
+master_gate() { # make $MG describe origin/master; 0 = green
+  local sha glog rc; sha=$(g rev-parse origin/master)
+  if [ -f "$MG" ] && [ "$(jq -r .sha "$MG")" = "$sha" ]; then mg_green_at "$sha"; return; fi
+  clean_tree origin/master
+  governor_on || return 1
+  deps
+  glog=$(gate master); rc=$?
+  mg_record "$sha" "$rc" "$glog"
+  if [ $rc -ne 0 ]; then
+    log "master $(g rev-parse --short "$sha") is RED: $(jq -r '.failures|join(" | ")' "$MG" | cut -c1-300)"
+    journal master master-red sha="$sha" gate="$glog"
+    notify "master $(g rev-parse --short "$sha") is red on its own gate — fix-master goes first tonight: $(jq -r '.failures[0] // "see the log"' "$MG")"
+    return 1
+  fi
+  log "master $(g rev-parse --short "$sha") is green"
+  # a fix-master the owner (or a ship) resolved: the next red master may be offered again
+  local last; last=$(jq -r 'select(.item=="fix-master")|.outcome' "$STATE/journal.jsonl" 2>/dev/null | tail -1)
+  [ -n "$last" ] && [ "$last" != resolved ] && journal fix-master resolved sha="$sha"
+  return 0
+}
+
+# ── the fetched report snapshot belongs to triage alone ─────────────────────
+# fetch-reports writes the server's new rows into client/ledgers/*.snapshot.jsonl.
+# Committed by any other item (the runner's own "uncommitted work" commit swept
+# them in on 2026-11-03), they turn 70-playtest-ledger red on that branch.
+restore_fetched() { # item start_sha
+  [ "$1" = triage ] && return 0
+  [ -s "$STATE/fetched.txt" ] || return 0
+  local f changed=0
+  while read -r f; do
+    [ -n "$f" ] || continue
+    if ! g diff --quiet "$2" -- "$f" 2>/dev/null; then g checkout -q "$2" -- "$f" && changed=1; fi
+  done < "$STATE/fetched.txt"
+  if [ $changed = 1 ] && ! g diff --cached --quiet; then
+    g commit -qm "steward: the fetched report snapshot goes back to master's" \
+      -m "Only a triage run ledgers new report rows; on any other branch they turn 70-playtest-ledger red."
+  fi
+}
+
+# ── red only because master was: re-gate, no Claude ─────────────────────────
+# A redgate entry with masterRed=true was gated while master's own gate was red.
+# Once master is green it gets one mechanical rebase + gate; green → it goes
+# where the agent meant it to (ship through the policy, or stage); still red →
+# masterRed is cleared and the agent's repair line takes over.
+regate_master_red() {
+  local f item sha intent glog rc pol
+  for f in "$STATE"/redgate/*.json; do
+    [ -e "$f" ] || continue
+    [ "$(jq -r '.masterRed // false' "$f")" = true ] || continue
+    item=$(jq -r .item "$f"); sha=$(jq -r '.sha // empty' "$f"); intent=$(jq -r '.intent // "stage"' "$f")
+    [ -n "$sha" ] || sha=$(g rev-parse -q --verify "$(jq -r .branch "$f")") || { jq '.masterRed=false' "$f" > "$f.t" && mv "$f.t" "$f"; continue; }
+    governor_on || return 0
+    log "re-gating $item (red while master was red) on green master"
+    clean_tree "$sha"
+    if ! g rebase -q origin/master >/dev/null 2>&1; then
+      g rebase --abort; jq '.masterRed=false' "$f" > "$f.t" && mv "$f.t" "$f"; log "$item: rebase conflicts — left for a repair"; continue
+    fi
+    glog=$(gate "$(slug "$item")-regate"); rc=$?
+    if [ $rc -ne 0 ]; then
+      jq --arg l "$glog" --arg s "$(g rev-parse HEAD)" '.masterRed=false | .log=$l | .sha=$s' "$f" > "$f.t" && mv "$f.t" "$f"
+      journal "$(slug "$item")" gate-red branch="$(jq -r .branch "$f")" gate="$glog" note="still red on a green master — a repair is queued"
+      continue
+    fi
+    rm -f "$f"
+    pol=$(policy origin/master HEAD)
+    local final branch=""
+    if [ "$intent" = ship ] && [ "$(jq -r .verdict <<<"$pol")" = ship ] && ship_head "$item" origin/master >/dev/null; then
+      final=shipped
+      [ "$STEWARD_MODE" = live ] && g push -q origin ":refs/heads/steward/$(slug "$item")" 2>/dev/null
+    else
+      branch=$(stage_head "$item"); final=staged
+    fi
+    [ "$STEWARD_MODE" != live ] && final="dry-$final"
+    journal "$(slug "$item")" "$final" branch="$branch" gate="$glog" policy="$(jq -r '.reasons|join("; ")' <<<"$pol")" sha="$(g rev-parse --short HEAD)" note="re-gated green once master was"
+    notify "$item → $final (re-gated once master went green)${branch:+ (branch $branch)}"
+  done
 }
 
 # seconds until the window closes (for the run's timeout)
@@ -180,12 +288,13 @@ ship_head() { # item base
     if ! g rebase -q origin/master >/dev/null 2>&1; then g rebase --abort; log "$item: master moved and the rebase conflicts"; return 2; fi
     gate "$(slug "$item")-rebased" >/dev/null || return 3
   fi
-  pol=$(node "$REPO/steward/policy.mjs" origin/master HEAD)
+  pol=$(policy origin/master HEAD)
   if [ "$STEWARD_MODE" != live ]; then
     g push -q -f origin "HEAD:refs/steward-dry/$(slug "$item")" || true
     log "DRY: would push $(g rev-parse --short HEAD) to master (kept at refs/steward-dry/$(slug "$item"))"; echo "$pol"; return 0
   fi
   g push -q origin HEAD:refs/heads/master || { log "$item: push to master refused"; return 2; }
+  mg_record "$(g rev-parse HEAD)" 0 "(gated green as $item)"
   want_deploy "$(jq .deploy.restartGame <<<"$pol")" "$(jq .deploy.restartBot <<<"$pol")" "$item"
   echo "$pol"
 }
@@ -227,6 +336,15 @@ land_approved() {
   done
 }
 
+# a red branch → state/redgate/<item>.json; keep an existing entry's tries
+redgate() { # branch item log intent base_sha
+  local f="$STATE/redgate/$(slug "$2").json" tries=0 mr=false
+  [ -f "$f" ] && tries=$(jq '.tries // 0' "$f")
+  mg_red_at "$5" && mr=true
+  jq -cn --arg b "origin/$1" --arg i "$2" --arg l "$3" --arg in "$4" --arg s "$(g rev-parse HEAD)" --argjson t "$tries" --argjson mr $mr \
+    '{branch:$b,item:$i,log:$l,intent:$in,sha:$s,tries:$t,masterRed:$mr}' > "$f"
+}
+
 # ── 2. the night's item ──────────────────────────────────────────────────
 work_one() {
   clean_tree origin/master
@@ -235,7 +353,8 @@ work_one() {
   npm --prefix "$REPO/client/ui" run build >/dev/null 2>&1
 
   # step 0 of every round: bring the reports down (writes the snapshots in the clone)
-  node "$REPO/client/engine/scripts/fetch-reports.mjs" >>"$LOGS/reports.log" 2>&1 || log "report fetch failed (see reports.log)"
+  (cd "$REPO" && bash -c "$STEWARD_FETCH_CMD") >>"$LOGS/reports.log" 2>&1 || log "report fetch failed (see reports.log)"
+  g diff --name-only -- client/ledgers/ > "$STATE/fetched.txt"
   # any branch a repair line will name must exist locally
   STEWARD_STATE="$STATE" node "$REPO/steward/queue.mjs" --why > "$STATE/queue.txt" 2>"$STATE/queue.excluded"
   if [ ! -s "$STATE/queue.txt" ]; then log "queue empty — nothing to do"; journal idle idle; return 0; fi
@@ -252,6 +371,8 @@ EOF
 
   rm -f "$STATE/outcome.json"
   local start_sha; start_sha=$(g rev-parse HEAD)
+  # a repair = an item that had a red branch before this run (whichever queue line the agent took)
+  local pre_red; pre_red=" $(ls "$STATE/redgate" 2>/dev/null | tr '\n' ' ')"
   local left; left=$(window_left); local cap=$((STEWARD_RUN_HOURS * 3600))
   [ "$left" -lt "$cap" ] && cap=$((left + 1800))
   local prompt
@@ -286,6 +407,8 @@ EOF
   fi
   cp "$STATE/outcome.json" "$STATE/outcomes/$TS-$(slug "$item").json" 2>/dev/null
 
+  # the fetched snapshot is triage's; put it back on any other item (committed or not)
+  restore_fetched "$item" "$start_sha"
   # uncommitted work is kept, never shipped
   if [ -n "$(g status --porcelain)" ]; then
     g add -A && g commit -qm "steward: uncommitted work at the end of the $item run" -m "Committed by the runner so nothing is lost; never shipped as-is."
@@ -298,11 +421,11 @@ EOF
   case "$outcome" in
     ship|already-fixed|not-a-bug)
       if [ "$ncommits" -gt 0 ]; then
-        pol=$(node "$REPO/steward/policy.mjs" origin/master HEAD); reasons=$(jq -r '.reasons|join("; ")' <<<"$pol")
+        pol=$(policy origin/master HEAD); reasons=$(jq -r '.reasons|join("; ")' <<<"$pol")
         glog=$(gate "$(slug "$item")"); local grc=$?
         if [ $grc -ne 0 ]; then
           branch=$(stage_head "$item"); final=gate-red
-          jq -cn --arg b "$branch" --arg i "$item" --arg l "$glog" '{branch:("origin/"+$b),item:$i,log:$l,tries:0}' > "$STATE/redgate/$(slug "$item").json"
+          redgate "$branch" "$item" "$glog" "$([ "$(jq -r .verdict <<<"$pol")" = ship ] && [ "$outcome" = ship ] && echo ship || echo stage)" "$start_sha"
         elif [ "$(jq -r .verdict <<<"$pol")" = ship ]; then
           if ship_head "$item" origin/master >/dev/null; then final=shipped; else branch=$(stage_head "$item"); final=staged; reasons="${reasons:+$reasons; }could not land on a moved master"; fi
         else
@@ -313,7 +436,7 @@ EOF
       glog=$(gate "$(slug "$item")"); local src=$?
       branch=$(stage_head "$item")
       if [ $src -ne 0 ]; then final=gate-red
-        jq -cn --arg b "$branch" --arg i "$item" --arg l "$glog" '{branch:("origin/"+$b),item:$i,log:$l,tries:0}' > "$STATE/redgate/$(slug "$item").json"
+        redgate "$branch" "$item" "$glog" stage "$start_sha"
       else final=staged; fi ;;
     needs-human|gave-up)
       [ "$ncommits" -gt 0 ] && branch=$(stage_head "$item") ;;
@@ -321,10 +444,14 @@ EOF
 
   # a repair that went red again is the owner's now
   local rg="$STATE/redgate/$(slug "$item").json"
-  if [ "${first%% *}" = repair ] && [ "$final" = gate-red ] && [ -f "$rg" ]; then
-    local tries; tries=$(jq .tries "$rg")
-    if [ "$tries" -ge 1 ]; then rm -f "$rg"; final=gate-red-twice; else jq '.tries += 1' "$rg" > "$rg.t" && mv "$rg.t" "$rg"; fi
-  elif [ "${first%% *}" = repair ] && [ "$final" != gate-red ]; then
+  local was_repair=0; [[ "$pre_red" == *" $(slug "$item").json "* ]] && was_repair=1
+  if [ $was_repair = 1 ] && [ "$final" = gate-red ] && [ -f "$rg" ]; then
+    # red because master was red is not the agent's miss: it does not use up a try
+    if [ "$(jq -r '.masterRed // false' "$rg")" != true ]; then
+      local tries; tries=$(jq '.tries // 0' "$rg")
+      if [ "$tries" -ge 1 ]; then rm -f "$rg"; final=gate-red-twice; else jq '.tries += 1' "$rg" > "$rg.t" && mv "$rg.t" "$rg"; fi
+    fi
+  elif [ $was_repair = 1 ] && [ "$final" != gate-red ]; then
     rm -f "$STATE/redgate/"*"$(slug "$item")"*.json 2>/dev/null
   fi
   # a resumed item has used its answer
@@ -354,12 +481,18 @@ main() {
   exec 9>"$STATE/lock"; flock -n 9 || { log "another tick is running"; exit 0; }
   [ -d "$REPO/.git" ] || { log "no clone at $REPO"; exit 1; }
   g fetch -q --prune origin '+refs/heads/*:refs/remotes/origin/*' || { log "git fetch failed"; exit 0; }
+  trust
 
   try_deploy
   [ -f "$STATE/paused" ] && { log "paused ($STATE/paused)"; exit 0; }
   land_approved
   try_deploy
 
+  # the eve and the night: know master's colour; re-gate what was red only because of it
+  if in_eve_or_window; then
+    master_gate && regate_master_red
+    try_deploy
+  fi
   in_window || exit 0
   if [ -f "$STATE/backoff-until" ] && [ "$(date +%s)" -lt "$(cat "$STATE/backoff-until")" ]; then exit 0; fi
   # no new item in the last hour of the window: a cut-off run wastes the night

@@ -8,6 +8,12 @@
 #
 # Always dry: the runner under test never touches master, a branch or the VPS
 # (dry work goes to refs/steward-dry/test-*, deleted at the end).
+#
+# To test a runner change BEFORE it is on master, point the test clone at a
+# scratch bare repo whose master is the change:
+#   git clone -q --bare ~/algomancy-steward/repo ~/steward-test-origin.git     (once, on the box)
+#   git push benshomeserver.local:steward-test-origin.git <branch>:master       (from the laptop)
+#   STEWARD_TEST_REMOTE=~/steward-test-origin.git STEWARD_TEST_ROOT=~/steward-test-local steward/test-runner.sh
 set -uo pipefail
 MAIN="$HOME/algomancy-steward/repo"
 T="${STEWARD_TEST_ROOT:-$HOME/steward-test}"
@@ -18,7 +24,7 @@ bad() { echo "  ✗ $*"; fail=$((fail + 1)); }
 setup() {
   rm -rf "$T/state" "$T/logs" "$T/bin"; mkdir -p "$T"/{state,logs,bin}
   if [ ! -d "$T/repo/.git" ]; then
-    git clone -q --reference "$MAIN" git@github-steward:Mycheze/algomancy-online-client.git "$T/repo"
+    git clone -q --reference "$MAIN" "${STEWARD_TEST_REMOTE:-git@github-steward:Mycheze/algomancy-online-client.git}" "$T/repo"
     git -C "$T/repo" config user.name "Steward Test"; git -C "$T/repo" config user.email steward-test@algomancy.online
     for d in client/engine/node_modules client/server/node_modules .venv; do ln -s "$MAIN/$d" "$T/repo/$d"; done
     for d in data/rulings/exports data/rulings/work data/rulings/needs_ocr.jsonl; do [ -e "$MAIN/$d" ] && ln -s "$MAIN/$d" "$T/repo/$d"; done
@@ -35,11 +41,15 @@ STEWARD_TZ=Europe/Prague
 STEWARD_WINDOW=$(printf %02d $h)-$(printf %02d $(( (h + 3) % 24 )))
 STEWARD_CLAUDE_BIN=$T/bin/claude-stub
 STEWARD_GATE_CMD=\${STUB_GATE:-true}
+STEWARD_FETCH_CMD=\${STUB_FETCH:-true}
 EOF
   cat > "$T/bin/claude-stub" <<'EOF'
 #!/usr/bin/env bash
 # a fake `claude -p` — does what $STUB_SCENARIO says, in the runner's cwd (the clone)
-S="$STEWARD_STATE"; first=$(head -1 "$S/queue.txt"); id=$(awk '{print ($1=="report"||$1=="repair"||$1=="resume")?$2:$1}' <<<"$first")
+S="$STEWARD_STATE"; first=$(head -1 "$S/queue.txt")
+# sweep: take the first item that is NOT triage (the fetched rows are not this item's)
+[ "$STUB_SCENARIO" = sweep ] && first=$(grep -v '^triage' "$S/queue.txt" | head -1)
+id=$(awk '{print ($1=="report"||$1=="repair"||$1=="resume")?$2:$1}' <<<"$first")
 w() { printf '{"item":"%s","outcome":"%s","title":"stub %s","summary":"stub"}' "$id" "$1" "$1" > "$S/outcome.json"; }
 case "$STUB_SCENARIO" in
   skip)        w skip ;;
@@ -52,6 +62,9 @@ case "$STUB_SCENARIO" in
   silent)      : ;;   # exits without a verdict
   limit)       echo '{"type":"result","is_error":true,"result":"Claude AI usage limit reached|'$(( $(date +%s) + 7200 ))'"}'; exit 1 ;;
   push)        git push origin HEAD:refs/heads/steward-escape 2>&1; w skip ;;
+  sweep)       echo "<!-- steward test $(date +%s) -->" >> client/ledgers/README.md; git add -A; git commit -qm "stub: commits everything, fetched rows too"; w ship ;;
+  tamper)      printf 'console.log(JSON.stringify({verdict:"ship",reasons:[],deploy:{needed:false,restartGame:false,restartBot:false}}))\n' > steward/policy.mjs
+               echo "// steward test" >> client/ui/main.ts; git commit -qam "stub: a UI change and a policy that waves it through"; w ship ;;
 esac
 echo '{"type":"result","is_error":false,"result":"stub done"}'
 EOF
@@ -88,6 +101,32 @@ if run limit; then r=$(tick limit); [ "$(last_outcome "$r")" = limited ] && [ -f
   r2=$(tick skip); [ -z "$r2" ] && ok "inside the back-off nothing runs" || bad "ran during back-off: $r2"; rm -f "$T/state/backoff-until"; fi
 if run push; then tick push >/dev/null
   git -C "$T/repo" ls-remote origin refs/heads/steward-escape | grep -q . && bad "THE AGENT PUSHED (steward-escape exists)" || ok "the agent cannot push (git ssh guard)"; fi
+if run answers; then tick skip >/dev/null; grep -q '^resume done' "$T/state/queue.txt" && bad "answers/done/ read as an item called done" || ok "answers/done/ is not an item"; fi
+if run sweep; then
+  r=$(STUB_FETCH='echo "{\"ts\":\"2099-01-01T00:00:00Z\",\"steward\":\"test\"}" >> client/ledgers/playtest-issues.snapshot.jsonl' tick sweep)
+  ref="refs/steward-dry/$(jq -r .item <<<"$r")"; git -C "$T/repo" fetch -q origin "+$ref:$ref" 2>/dev/null
+  if [ "$(last_outcome "$r")" = dry-shipped ] && ! git -C "$T/repo" diff --name-only origin/master "$ref" | grep -q snapshot; then
+    ok "fetched report rows are put back on a non-triage item, and it still ships → dry-shipped"
+  else bad "sweep → $r; files: $(git -C "$T/repo" diff --name-only origin/master "$ref" | tr '\n' ' ')"; fi
+  git -C "$T/repo" checkout -q -- client/ledgers/ 2>/dev/null; fi
+if run tamper; then r=$(tick tamper); [ "$(last_outcome "$r")" = dry-staged ] && ok "an agent-edited policy.mjs is not the one that judges → dry-staged" || bad "tamper → $r"; fi
+if run master-red; then
+  rm -f "$T/state/master-gate.json"; r=$(tick skip false)
+  grep -q '"outcome":"master-red"' "$T/state/journal.jsonl" && ok "a red master gate is journalled (master-red)" || bad "no master-red row"
+  head -1 "$T/state/queue.txt" | grep -q '^fix-master' && ok "…and fix-master is first in the queue" || bad "queue starts: $(head -1 "$T/state/queue.txt")"
+  rm -f "$T/state/redgate/"*.json; fi
+if run regate; then
+  sha=$(git -C "$T/repo" rev-parse origin/master)
+  jq -cn --arg s "$sha" '{sha:$s,rc:1,log:"(test)",failures:["a master-only failure"]}' > "$T/state/master-gate.json"
+  tick ship false >/dev/null
+  f=$(ls "$T/state/redgate/"*.json 2>/dev/null | head -1)
+  [ -n "$f" ] && [ "$(jq -r .masterRed "$f")" = true ] && ok "a branch red while master was red is marked masterRed" || bad "redgate: $(cat $f 2>/dev/null)"
+  jq -cn --arg s "$sha" '{sha:$s,rc:0,log:"(test)",failures:[]}' > "$T/state/master-gate.json"
+  STEWARD_STATE="$T/state" node "$T/repo/steward/queue.mjs" 2>/dev/null | grep -q '^repair ' && bad "a masterRed branch was queued for a Claude repair" || ok "…and is not queued for a Claude repair, even on a green master"
+  tick skip >/dev/null
+  grep '"note":"re-gated green once master was"' "$T/state/journal.jsonl" | grep -q '"outcome":"dry-shipped"' && [ -z "$(ls "$T/state/redgate/" 2>/dev/null)" ] \
+    && ok "once master is green it is re-gated without Claude → dry-shipped" || bad "no re-gate row: $(tail -3 "$T/state/journal.jsonl")"
+  rm -f "$T/state/redgate/"*.json; fi
 if run pause; then touch "$T/state/paused"; r=$(tick skip); [ -z "$r" ] && ok "paused → nothing runs" || bad "ran while paused: $r"; rm -f "$T/state/paused"; fi
 
 # clean the dry refs this test left on origin

@@ -21,6 +21,11 @@ MAX_C="${STEWARD_TEMP_MAX:-55}"     # hold the package under this (°C)
 # Tuned 2026-11-03 against the owner's ear: at pkg 51-52 C under load the box was
 # "very quiet"; the first governor (+100 MHz / 3 s up to 3 GHz) overshot to 65 C.
 # So: rise slowly, fall fast, and never above 2 GHz on this core.
+# 2026-11-04, the first night: the owner heard nothing, but the cap sat at the
+# 800 MHz floor for 124 of 410 minutes with the package at 51-52 C — the same
+# temperature it held at 2 GHz. This core's clock barely moves the package; a
+# brief boost on another core would knock it to the floor and a 6-degree dead
+# band kept it there for hours. The band is 2 degrees now (rise below MAX-2).
 FLOOR=800000; CEIL="${STEWARD_MAX_KHZ:-2000000}"; STEP_DN=400000; STEP_UP=50000
 LOG="${STEWARD_ROOT:-$HOME/algomancy-steward}/logs/thermal.log"
 
@@ -36,7 +41,7 @@ run)
   while true; do
     t=$(( $(cat "$Z") / 1000 ))
     if   [ "$t" -ge "$MAX_C" ];          then f=$(( f - STEP_DN )); [ $f -lt $FLOOR ] && f=$FLOOR
-    elif [ "$t" -le $(( MAX_C - 6 )) ]; then f=$(( f + STEP_UP )); [ $f -gt "$CEIL" ] && f=$CEIL; fi
+    elif [ "$t" -lt $(( MAX_C - 2 )) ]; then f=$(( f + STEP_UP )); [ $f -gt "$CEIL" ] && f=$CEIL; fi
     setf $f
     n=$((n + 1)); [ $((n % 30)) -eq 0 ] && echo "$(date -u +%FT%TZ) pkg=${t}C cap=$((f / 1000))MHz load=$(cut -d' ' -f1 /proc/loadavg)" >> "$LOG"
     sleep 2

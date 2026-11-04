@@ -7,11 +7,17 @@
  * Deterministic on purpose: the agent takes the first line, so the ORDER is a
  * policy, and a policy belongs in code you can read rather than in a prompt.
  *
+ *   0. fix-master        master's OWN gate is red (state/master-gate.json, at this
+ *                        sha): every branch is red until it is fixed, so it goes
+ *                        first, and repairs wait for it
  *   1. triage #a-#b      report rows the ledger has no entry for yet, or a
  *                        verdict/marks snapshot the fetch just changed. FIRST,
  *                        because an unledgered row turns 70-playtest-ledger red
- *                        and every other item's gate with it.
- *   2. repair <branch>   a staged branch whose gate went red (state/redgate/)
+ *                        and every other item's gate with it. Not offered while a
+ *                        triage branch is waiting on the owner (it already has them).
+ *   2. repair <branch>   a staged branch whose gate went red (state/redgate/); not
+ *                        one that was red only because master was (masterRed —
+ *                        the runner re-gates those itself once master is green)
  *   3. resume <item>     the owner answered a handoff (state/answers/)
  *   4. report #N         playtest-ledger entries still live / partial ('agreed-fix'
  *                        is a CLOSED status: a player's take-back, no defect)
@@ -65,7 +71,8 @@ const WAITING = new Set(['staged', 'needs-human', 'stage', 'gate-red', 'gate-red
 const COOLDOWN = new Set(['skip', 'gave-up', 'not-a-bug', 'failed']);
 const WEEK = 7 * 864e5;
 
-const answered = new Set(ls(join(STATE, 'answers')).map(f => f.replace(/\.md$/, '')));
+// answers/<item>.md only: answers/done/ (used answers) is a directory, not an item called "done"
+const answered = new Set(ls(join(STATE, 'answers')).filter(f => f.endsWith('.md')).map(f => f.replace(/\.md$/, '')));
 const excluded = [];
 function blocked(item) {
   item = slug(item);
@@ -87,19 +94,32 @@ const push = (item, line) => {
   else out.push(line);
 };
 
+// 0. master's own gate (the runner runs it on the eve and whenever master moves)
+const head = execFileSync('git', ['-C', REPO, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+let mg = null;
+try { mg = JSON.parse(readFileSync(join(STATE, 'master-gate.json'), 'utf8')); } catch { /* never gated */ }
+const masterRed = !!(mg && mg.sha === head && mg.rc !== 0);
+if (masterRed) push('fix-master', `fix-master  (master ${head.slice(0, 8)} is red on its own gate: ${(mg.failures || []).slice(0, 3).join(' | ') || 'see the log'}; gate log ${mg.log})`);
+
 // 1. reports the ledger has not seen, and snapshots the fetch changed
 const snap = readLines(join(LEDGERS, 'playtest-issues.snapshot.jsonl')).filter(l => l.trim());
 const ledgered = new Set(LEDGER.map(e => e.id));
 const fresh = snap.map((_, i) => i).filter(i => !ledgered.has(i));
 const dirty = execFileSync('git', ['-C', REPO, 'status', '--porcelain', '--', 'client/ledgers/'], { encoding: 'utf8' })
   .split('\n').filter(l => /snapshot\.jsonl$/.test(l)).map(l => l.slice(3).replace('client/ledgers/', ''));
-// never cooled down or held: an unledgered row turns every other item's gate red
-if (fresh.length) out.push( `triage #${fresh[0]}-#${fresh.at(-1)}  (${fresh.length} new report row${fresh.length > 1 ? 's' : ''})`);
+// never cooled down or held: an unledgered row turns every other item's gate red —
+// but a triage branch waiting on the owner already carries them (2026-11-03: the
+// queue offered the same seven rows again on every tick of the night)
+const triageWaits = existsSync(join(STATE, 'redgate', 'triage.json')) || WAITING.has(journal.get('triage')?.outcome);
+if (triageWaits && (fresh.length || dirty.length)) excluded.push(`triage: a triage branch is waiting on the owner (${journal.get('triage')?.outcome ?? 'gate-red'})`);
+else if (fresh.length) out.push( `triage #${fresh[0]}-#${fresh.at(-1)}  (${fresh.length} new report row${fresh.length > 1 ? 's' : ''})`);
 else if (dirty.length) out.push(`triage snapshots  (${dirty.join(', ')} changed on the fetch)`);
 
 // 2. red staged branches
-for (const f of ls(join(STATE, 'redgate'))) {
+for (const f of ls(join(STATE, 'redgate')).filter(f => f.endsWith('.json'))) {
   const r = JSON.parse(readFileSync(join(STATE, 'redgate', f), 'utf8'));
+  if (masterRed) { excluded.push(`repair ${r.item}: master is red — repairs wait for fix-master`); continue; }
+  if (r.masterRed) { excluded.push(`repair ${r.item}: red while master was; the runner re-gates it on a green master`); continue; }
   out.push(`repair ${r.branch}  (${r.item}; gate log ${r.log})`);
 }
 

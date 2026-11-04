@@ -14,5 +14,7 @@ p="${1:?usage: steward/vps-fetch.sh var/games/<ROOM>.json}"
   || { echo "vps-fetch: refusing '$p' (games, challenge runs and report journals only)" >&2; exit 2; }
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 mkdir -p "$REPO/$(dirname "$p")"
-scp -q -o BatchMode=yes -o ConnectTimeout=15 "algomancy-vps:/home/bena/Documents/Algomancy/$p" "$REPO/$p"
+# the remote spelling comes from paths.mjs (test 255 §1: a hand-written host:path rots)
+SRC="$(node --input-type=module -e 'const m = await import(process.argv[1]); console.log(m.remote(process.argv[2]))' "$REPO/client/engine/scripts/paths.mjs" "$REPO/$p")"
+scp -q -o BatchMode=yes -o ConnectTimeout=15 "$SRC" "$REPO/$p"
 echo "fetched $p ($(wc -c <"$REPO/$p") bytes)"
