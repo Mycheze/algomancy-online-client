@@ -1,0 +1,5 @@
+/* ── the Decks page: the shelf of deck boxes and the preview (ui/pages/decks.ts, BL-65, 2026-11-04) ──
+   The shelf bar (+ New deck, Import, the sort, "8 of 20"), the deck boxes (cover, name, count, the
+   problems flag), and the open deck's preview panel beside them. It sits after the frame so it may
+   lay out regions inside it; the old deck page's rules (23-decks.css, 35-deck-modals.css) come
+   earlier and go away when the page that used them does. Tokens only (921). */

@@ -93,3 +93,7 @@
 @import "pages/49-frame.css";
 /* the rules reader over every page and the board (ui/rules.ts, ui/crreader.ts, 2026-11-04) */
 @import "shared/50-rules-reader.css";
+/* the deck screens (BL-65, 2026-11-04): after the frame they are drawn in, so they
+   lay out its regions; after every older deck piece, which they replace */
+@import "pages/51-decks-shelf.css";
+@import "pages/52-builder.css";

@@ -1,0 +1,6 @@
+/* ── the builder: the pool over the table (ui/pages/builder.ts, pages/table.ts, pages/pool.ts, BL-65, 2026-11-04) ──
+   One page in the frame (bleed): the pool band with its filters across the top, the divider, the table
+   of piles under it with the Sideboard and Maybe rail on the right, the stats strip at its foot, and the
+   card menu. Constructed, the weekly challenge and Competitive sideboarding all draw this table. After
+   the frame and the Decks shelf; the old tabletop and binder pieces (24-tabletop.css, 25-binder.css)
+   come earlier. Tokens only (921). */
