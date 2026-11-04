@@ -9198,20 +9198,20 @@ function renderHome(): void {
   // the rules review page: right after the account screen, because its
   // "Sign in to comment" goes through that screen and comes straight back
   if (crr.screen()) { crr.renderScreen(); return; }
-  // …and so does the deck collection
-  // …and the card browser, which is checked FIRST because it can be opened
-  // from ON TOP of the deck page (deckbuilding mode leaves that page open)
+  // …and the card browser (checked before the deck screens, as it always was:
+  // its Building mode, which opened it over the deck page, went with BL-65)
   if (cb.screen()) { cb.renderScreen(); return; }
-  // …then the tabletop deck builder, which sits on top of the deck page or
+  // …then the builder (ui/tabletop.ts), which sits on top of the Decks page or
   // the challenge page that opened it (both stay open under it, so Back is a
-  // repaint of that page) — below the card browser its binder can open
+  // repaint of that page)
   if (tt.screen()) { tt.renderScreen(); return; }
+  // …and the Decks page
   if (dk.screen()) { dk.renderScreen(); return; }
   // …and the metagame list / a shared deck, which is where a `?deck=` link lands
   if (meta.screen()) { meta.renderScreen(); return; }
   // …and the league page (docs/20-league.md), which is where a `?league` link lands
   if (lg.screen()) { lg.renderScreen(); return; }
-  // …and the weekly challenge (docs/21), below the card browser it builds with
+  // …and the weekly challenge (docs/21), below the builder it builds with
   if (chal.screen()) { chal.renderScreen(); return; }
   // BL-16: …and the admin dashboard, which owns the page outright when open
   if (admin.screen()) { admin.renderScreen(); return; }
