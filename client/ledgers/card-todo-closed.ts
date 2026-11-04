@@ -14332,4 +14332,20 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-02 by the orchestrator (41cb2b66).",
     status: 'done',
   },
+  {
+    id: 437, area: "engine", severity: "minor",
+    cards: ["Automaton of Abundance", "Cosmic Conspirator", "Omniwield Evoker"],
+    title: "in a mixed token batch with Automaton chosen first, a later spell token that Cosmic Conspirator turns into a Robot is still copied",
+    detail: "The replacement-order round treats one creation batch as one event, but tokens are still created inline. In a mixed batch (a Robot and a Conspirator-kind spell token from one effect) where Automaton-first was chosen at the Robot, a later Poison that the Conspirator turns into a Robot is still copied; in the strict whole-batch reading it would not be, because Automaton had already applied to the batch. Only Omniwield Evoker graft combinations can make such a batch.",
+    evidence: "The replacement-order design, zero-handoff/REPLACEMENT-ORDER.md section 4.1.1 (\"Known approximation\"), kept by the build (zero-handoff/RO.md section 5, item 4).",
+    fix: "Deferring creation is not possible (three callers use the returned entity). Either record the batch order answer per event so a re-tested Automaton sees it has applied, or state the approximation in CR 708.9. Guard with an Evoker grafted with a Robot maker and a Poison maker.",
+    proof: null,
+    verify: "Omniwield Evoker grafted to make a Robot and a Poison, Automaton first at the Robot, the Poison turned into a Robot: is it copied?",
+    guards: [
+      '1139-mixed-token-batch-order.test.ts::Automaton first at the Robot, a later Poison the Conspirator turns into a Robot is not copied',
+      '1139-mixed-token-batch-order.test.ts::two Automatons, one before the Conspirator and one after',
+    ],
+    closed: "FIXED 2026-11-04 (steward): the order answers a creation's tokens were asked under now hold for the whole creation (CR 708.4a, 708.9). An Automaton the creation put ahead of a Conspirator judges a token that Conspirator swapped as it stood before the swap, and does not see copies made by an Automaton that came after it, so a later Poison made a Robot is not copied. Conspirator first still copies it. Seen red with the rule disabled.",
+    status: 'done',
+  },
 ];

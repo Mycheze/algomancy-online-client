@@ -6317,10 +6317,35 @@ export class E {
           },
         });
       });
-      // the Automatons: a copy of each unique token this one has not copied yet
+      // CT-437, CR 708.4a, 708.9: the order answers are for the whole creation.
+      // Does copier `d` come before the swapper `face` in it? Each kept answer
+      // (`batch.order`, "n|faces" → the face that went next) put its pick
+      // before every other face it was asked among; with two copiers of one
+      // face, the first k of them by holder (the order `replaceEvent` applies
+      // the same face in) went before, k the answers that picked that face.
+      const ahead = (d: (typeof copiers)[number], face: string): boolean => {
+        const k = Object.entries(batch.order).filter(([key, v]) =>
+          v === d.face && key.slice(key.indexOf('|') + 1).split('+').includes(face)).length;
+        return copiers.filter(c => c.face === d.face).indexOf(d) < k;
+      };
+      // the Automatons: a copy of each unique token this one has not copied yet.
+      // An Automaton the creation put AHEAD of a Conspirator has applied to
+      // the creation before it, and does not apply again to what came after
+      // (CR 708.4a): a token that Conspirator swapped is judged as it stood
+      // before the swap (a later Poison made a Robot is not copied), and a
+      // copy made by an Automaton that came after that Conspirator is not
+      // seen at all. With no such answer, nothing changes.
       const fresh = (d: (typeof copiers)[number], ev: TokenEntry[]): TokenRequest[] => {
         const done = batch.copied[`${d.holder.id}|${d.face}`] ?? [];
-        return (d.def.replaceTokenBatch!(this, d.anchor, ev.map(e => e.req)) ?? [])
+        const before = swappers.map(s => s.face).filter(f => ahead(d, f));
+        const seen = !before.length ? ev.map(e => e.req) : ev
+          .filter(e => {
+            if (!e.copy) return true;
+            const c = copiers.find(x => x.holder.id === e.copy!.holder && x.face === e.copy!.by);
+            return !!c && before.every(f => ahead(c, f));
+          })
+          .map(e => e.swaps?.find(s => before.includes(s.face))?.was ?? e.req);
+        return (d.def.replaceTokenBatch!(this, d.anchor, seen) ?? [])
           .filter(r => !done.includes(tokenUniqueKey(r)));
       };
       copiers.forEach(d => {

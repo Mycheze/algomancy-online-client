@@ -288,17 +288,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 437, area: "engine", severity: "minor",
-    cards: ["Automaton of Abundance", "Cosmic Conspirator", "Omniwield Evoker"],
-    title: "in a mixed token batch with Automaton chosen first, a later spell token that Cosmic Conspirator turns into a Robot is still copied",
-    detail: "The replacement-order round treats one creation batch as one event, but tokens are still created inline. In a mixed batch (a Robot and a Conspirator-kind spell token from one effect) where Automaton-first was chosen at the Robot, a later Poison that the Conspirator turns into a Robot is still copied; in the strict whole-batch reading it would not be, because Automaton had already applied to the batch. Only Omniwield Evoker graft combinations can make such a batch.",
-    evidence: "The replacement-order design, zero-handoff/REPLACEMENT-ORDER.md section 4.1.1 (\"Known approximation\"), kept by the build (zero-handoff/RO.md section 5, item 4).",
-    fix: "Deferring creation is not possible (three callers use the returned entity). Either record the batch order answer per event so a re-tested Automaton sees it has applied, or state the approximation in CR 708.9. Guard with an Evoker grafted with a Robot maker and a Poison maker.",
-    proof: null,
-    verify: "Omniwield Evoker grafted to make a Robot and a Poison, Automaton first at the Robot, the Poison turned into a Robot: is it copied?",
-    status: 'open',
-  },
-  {
     id: 438, area: "coverage", severity: "minor",
     title: "after the replacement-order round, 472's first title and the engine.ts replacement comment still describe the old fixed order",
     detail: "472-counter-thief-and-rot-order.test.ts: \"CR 708.4a: two Counter Thieves — the player whose unit the counters were for is asked which keeps them\". Since the round the thieves' controller orders them; the test passes because in it that player owns both. The title is bound by CR 708.4a's record. The engine.ts comment above the replacement hooks still says the player the event happens to is asked, lists \"Cosmic Conspirators\" as order-insensitive (not so beside an Automaton) and says there is deliberately no general framework; E.replaceEvent is one now.",

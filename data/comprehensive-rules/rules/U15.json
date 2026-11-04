@@ -3139,7 +3139,8 @@
         "136-triggers-and-modes.test.ts",
         "87-replacement-layer.test.ts",
         "458-automaton-copies-stats.test.ts",
-        "700-token-batch-is-the-effect.test.ts"
+        "700-token-batch-is-the-effect.test.ts",
+        "1139-mixed-token-batch-order.test.ts"
       ]
     },
     "basis": "mixed",
