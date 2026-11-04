@@ -1,4 +1,4 @@
-/* 1072 — THE LEGAL PAGES ARE A SHEET (ui/legal.ts legalPageHtml, 2026-11-04).
+/* 1073 — THE LEGAL PAGES ARE A SHEET (ui/legal.ts legalPageHtml, 2026-11-04).
  *
  * About / AI disclosure / Privacy / Terms open as components/sheet.ts over
  * whatever page is up: the page's title in the sheet's head, the four pages
@@ -16,7 +16,7 @@ import { UNOFFICIAL, legalPageHtml } from '../legal.ts';
 
 const PAGES = { about: 'About &amp; attribution', ai: 'AI disclosure', privacy: 'Privacy', terms: 'Terms' } as const;
 
-test('1072 §1 each page: the sheet, its title, the switch, its text', () => {
+test('1073 §1 each page: the sheet, its title, the switch, its text', () => {
   for (const [k, title] of Object.entries(PAGES)) {
     const html = legalPageHtml(k);
     assert.match(html, /^<div class="ui-sheet ui-sheet--center ui-sheet--lg lgsheet" id="legalsheet"/);
@@ -27,14 +27,14 @@ test('1072 §1 each page: the sheet, its title, the switch, its text', () => {
   }
 });
 
-test('1072 §2 the hooks: data-legal and the sheet dismiss, never data-btn', () => {
+test('1073 §2 the hooks: data-legal and the sheet dismiss, never data-btn', () => {
   const html = legalPageHtml('privacy');
   for (const k of Object.keys(PAGES)) assert.match(html, new RegExp(`data-legal="${k}"`));
   assert.equal([...html.matchAll(/data-sheet-dismiss/g)].length, 2, 'the scrim and the ✕');
   assert.doesNotMatch(html, /data-btn=/, 'a data-btn would reach main.ts as well');
 });
 
-test('1072 §3 About says it is unofficial; an unknown page draws nothing', () => {
+test('1073 §3 About says it is unofficial; an unknown page draws nothing', () => {
   assert.ok(legalPageHtml('about').includes(UNOFFICIAL));
   assert.equal(legalPageHtml('nope'), '');
 });
