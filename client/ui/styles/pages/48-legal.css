@@ -41,26 +41,21 @@
 .lgbuy.primary { border-color: var(--accent); color: var(--accent); }
 .lgdim { color: var(--dim); font-size: 11.5px; }
 
-/* THE PANEL SCROLLS, NOT THE OVERLAY. The tab row has to stay reachable on a
-   page this long, and 'position: sticky' inside a padded scroll container puts
-   it at the padding edge rather than the top — the row above it stays visible
-   and scrolls out over the header. Making the body the scroller is the version
-   with no browser disagreement in it, and it keeps the scrim clickable. */
-#legalover { position: fixed; inset: 0; z-index: 90; background: var(--color-scrim-strong);
-  display: flex; align-items: flex-start; justify-content: center; overflow: hidden; padding: 4vh 16px; }
-#legalover .lgpanel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
-  max-width: 760px; width: 100%; max-height: 92vh; display: flex; flex-direction: column; min-height: 0; }
-#legalover .lghead { flex: none; background: var(--panel); border-bottom: 1px solid var(--line);
-  border-radius: 12px 12px 0 0; padding: 12px 22px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-#legalover .lghead .lgtabs { display: flex; gap: 6px; flex-wrap: wrap; }
-#legalover .lghead button[data-legal].on { border-color: var(--accent); color: var(--accent); }
-#legalover .lgclose { margin-left: auto; }
-#legalover .lgbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 4px 22px 26px; }
-#legalover h2 { font-size: 15px; color: var(--accent); margin: 22px 0 8px;
+/* THE PAGES ARE A SHEET (components/sheet.ts, 2026-11-04): #legalover is only
+   the layer that holds it. The sheet is the scrim, the panel and its head; its
+   body is NOT the scroller here — the four pages' switch stays fixed at the
+   top and only .lgbody scrolls (sticky inside a padded scroller sits at the
+   padding edge, not the top, which is why this was a split in the first place). */
+.lgsheet .ui-sheet__panel { height: 100%; }
+.lgsheet .ui-sheet__body { display: flex; flex-direction: column; gap: var(--space-4); overflow: hidden; padding-bottom: 0; }
+.lgsheet .lgtabs { flex: none; }
+#legalover .lgbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  margin: 0 calc(-1 * var(--space-6)); padding: 0 var(--space-6) var(--space-7); }
+#legalover .lgbody h2 { font-size: 15px; color: var(--accent); margin: 22px 0 8px;
   letter-spacing: .04em; text-transform: uppercase; }
-#legalover h2:first-child { margin-top: 14px; }
-#legalover p { margin: 0 0 10px; line-height: 1.62; color: var(--text); font-size: 13px; }
-#legalover a { color: var(--accent); }
+#legalover .lgbody h2:first-child { margin-top: 14px; }
+#legalover .lgbody p { margin: 0 0 10px; line-height: 1.62; color: var(--text); font-size: 13px; }
+#legalover .lgbody a { color: var(--accent); }
 #legalover .lgloud { background: var(--panel2); border-left: 3px solid var(--accent);
   border-radius: 0 6px 6px 0; padding: 10px 13px; }
 #legalover .lgstore { list-style: none; margin: 0 0 14px; padding: 0;

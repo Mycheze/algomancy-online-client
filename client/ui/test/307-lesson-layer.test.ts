@@ -27,7 +27,7 @@ test('§1 no Learn to Play scrim uses the board overlay class', () => {
   const html = [windowHtml(model()), menuHtml(null, 'fire'), pillHtml('x')].join('');
   assert.doesNotMatch(html, /class="[^"]*\boverlay\b/);
   assert.match(html, /class="lessonscrim"/);
-  assert.match(html, /class="learnscrim"/);
+  assert.match(html, /class="[^"]*\blearnscrim\b[^"]*"/, 'the menu is a sheet since 2026-11-04; its root keeps learnscrim');
 });
 
 test('§2 [[card]] becomes a hover link to a real card; an unknown name stays plain text', () => {

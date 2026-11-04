@@ -19,14 +19,15 @@ const lm = (html: string): string[] => [...html.matchAll(/data-lmenu="([^"]+)"/g
 
 test('987 §0 positive control: there is no DOM here', () => {
   assert.equal(typeof (globalThis as Record<string, unknown>)['document'], 'undefined');
-  assert.match(learnMenuHtml(learnMenuView(null, 'fire')), /^<div class="learnscrim" id="learnscrim">/);
+  // a sheet since 2026-11-04 (components/sheet.ts); the root keeps the layer's learnscrim id and class
+  assert.match(learnMenuHtml(learnMenuView(null, 'fire')), /^<div class="ui-sheet ui-sheet--center ui-sheet--md learnscrim learnsheet" id="learnscrim"/);
 });
 
 test('987 §1 nothing saved: Start, the elements with the picked one on, every lesson', () => {
   const v = learnMenuView(null, 'water');
   assert.equal(v.saved, false);
   const html = learnMenuHtml(v);
-  assert.match(html, /data-lmenu="start">Start the water game</);
+  assert.match(html, /class="ui-button ui-button--primary learngobtn" type="button" data-lmenu="start">Start the water game</);
   assert.doesNotMatch(html, /data-lmenu="continue"/);
   assert.equal([...html.matchAll(/class="learnel /g)].length, LEARN_ELEMENTS.length);
   assert.match(html, /class="learnel el-water on" data-lmenu="el" data-el="water"/);
@@ -35,7 +36,7 @@ test('987 §1 nothing saved: Start, the elements with the picked one on, every l
 
 test('987 §2 a saved game: Continue and Start over for its element, Start for another', () => {
   const html = learnMenuHtml(learnMenuView(saved('fire'), 'fire'));
-  assert.match(html, /data-lmenu="continue">Continue your fire game<\/button><button data-lmenu="fresh">Start over</);
+  assert.match(html, /data-lmenu="continue">Continue your fire game<\/button><button class="ui-button ui-button--secondary learngobtn" type="button" data-lmenu="fresh">Start over</);
   assert.match(learnMenuHtml(learnMenuView(saved('fire'), 'earth')), /data-lmenu="start">Start the earth game</);
 });
 
@@ -44,5 +45,7 @@ test('987 §3 a lesson already shown is ticked; every routed data-lmenu is drawn
   const html = learnMenuHtml(learnMenuView(saved('fire', [first.id]), 'fire'));
   assert.equal([...html.matchAll(/class="learnseen"/g)].length, 1);
   assert.match(html, new RegExp(`data-i="0">${first.n}\\. [^<]+</button> <span class="learnseen">✓</span>`));
-  for (const k of ['close', 'el', 'continue', 'fresh', 'read']) assert.ok(lm(html).includes(k), k);
+  for (const k of ['el', 'continue', 'fresh', 'read']) assert.ok(lm(html).includes(k), k);
+  // closing is the sheet's: its scrim and its ✕ carry data-sheet-dismiss, which ui/learnmenu.ts closes on
+  assert.equal([...html.matchAll(/data-sheet-dismiss/g)].length, 2, 'the scrim and the ✕');
 });

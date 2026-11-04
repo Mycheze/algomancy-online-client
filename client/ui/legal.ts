@@ -50,6 +50,8 @@
  * EQUAL — both directions. Add a field to `Account` and the suite fails until
  * this page says what it is.
  */
+import { segmented, sheet } from './components/index.ts';
+
 
 // ── the two links, exactly as the owner gave them ─────────────────────
 
@@ -418,6 +420,23 @@ const PAGES: Record<string, { title: string; body: () => string }> = {
   terms: { title: 'Terms', body: termsHtml },
 };
 
+/** One page, as a sheet (components/sheet.ts, 2026-11-04): the page's title in
+ * the sheet's head, the four pages as a segmented control fixed under it, and
+ * only the page's text scrolling. Closed by tapping off it, its ✕ or Esc —
+ * the scrim and the ✕ carry the sheet's `data-sheet-dismiss`, every other
+ * control here is `data-legal` (installLegal's listener takes both). */
+export function legalPageHtml(name: string): string {
+  const page = PAGES[name];
+  if (!page) return '';
+  return sheet({
+    open: true, id: 'legalsheet', title: page.title, width: 'lg', className: 'lgsheet',
+    bodyHtml: segmented({
+      ariaLabel: 'About this client', size: 'sm', full: true, className: 'lgtabs',
+      options: Object.entries(PAGES).map(([k, p]) => ({ label: p.title, value: k, on: k === name, attrs: { 'data-legal': k } })),
+    }) + `<div class="lgbody">${page.body()}</div>`,
+  });
+}
+
 // ── the furniture ─────────────────────────────────────────────────────
 
 /** The footer: the notice, the pitch, the three pages. The only legal
@@ -505,18 +524,10 @@ export function installLegal(): void {
     if (!page) return;
     closeOver();
     open = name;
+    // the layer: a plain holder for the sheet, which is the dialog
     const over = document.createElement('div');
     over.id = 'legalover';
-    over.setAttribute('role', 'dialog');
-    over.setAttribute('aria-label', page.title);
-    over.innerHTML = `<div class="lgpanel">
-      <div class="lghead">
-        <div class="lgtabs">${Object.entries(PAGES).map(([k, p]) =>
-          `<button data-legal="${k}"${k === name ? ' class="on"' : ''}>${p.title}</button>`).join('')}</div>
-        <button class="lgclose" data-legal="close">Close</button>
-      </div>
-      <div class="lgbody">${page.body()}</div>
-    </div>`;
+    over.innerHTML = legalPageHtml(name);
     document.body.appendChild(over);
   };
 
@@ -526,8 +537,9 @@ export function installLegal(): void {
   document.addEventListener('click', e => {
     const t = (e.target as HTMLElement | null)?.closest?.('[data-legal]') as HTMLElement | null;
     if (!t) {
-      // clicking the scrim, but not the panel, closes
-      if (open && (e.target as HTMLElement | null)?.id === 'legalover') closeOver();
+      // off the panel (the sheet's scrim) or its ✕ closes
+      const off = (e.target as HTMLElement | null)?.closest?.('#legalover [data-sheet-dismiss]');
+      if (open && off) { e.preventDefault(); e.stopPropagation(); closeOver(); }
       return;
     }
     e.preventDefault();

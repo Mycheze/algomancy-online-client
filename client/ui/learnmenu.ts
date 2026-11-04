@@ -45,7 +45,8 @@ export function installLearnMenu(): void {
     if (opener) { e.preventDefault(); e.stopPropagation(); openLearnMenu(); return; }
     if (!open || !layer || !target || !layer.contains(target)) return;
     e.stopPropagation();
-    if (target.id === 'learnscrim') { open = false; paint(); return; }
+    // off the panel (the sheet's root, its scrim) or its ✕: the sheet's dismiss (pages/learn.ts)
+    if (target.id === 'learnscrim' || target.closest('[data-sheet-dismiss]')) { open = false; paint(); return; }
     const btn = target.closest('[data-lmenu]') as HTMLElement | null;
     const go = (fresh: boolean): void => { location.search = `?learn=play&el=${picked}${fresh ? '&new=1' : ''}`; };
     switch (btn?.dataset['lmenu']) {
