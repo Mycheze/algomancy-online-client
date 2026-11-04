@@ -27,6 +27,9 @@ export const WithTabs = { name: 'Tabs in the toolbar', args: { ...base, centerHt
 export const BackToSomewhere = { name: 'Back to the deck', args: { ...base, back: { dataBtn: 'x', label: 'Deck', icon: 'back' } } };
 /** the page's own tools before the shared ones */
 export const PageTools = { name: 'With a page tool', args: { ...base, toolsHtml: '<button class="primary">Copy</button>' } };
+/** the main region edge to edge (BL-65: the builder's table): no column, no padding; the bars keep theirs */
+export const Bleed = { name: 'Bleed (edge to edge)', args: { ...base, bleed: true,
+  mainHtml: '<div style="flex:1;min-height:0;background:var(--color-surface-sunken);display:flex;align-items:center;justify-content:center">the whole width and height between the bars</div>' } };
 export const SignedOut = { name: 'Signed out (no bell)', args: { ...base, chrome: { signedIn: false, alerts: 0 } } };
 /** the shared tools alone, as the home draws all five */
 export const AllTools = { name: 'The shared tools', render: () => `<div style="display:flex">${toolsHtml(CHROME, TOOL_NAMES)}</div>` };
