@@ -295,12 +295,12 @@ function crRule(num: string): { num: string; text: string; heading: string } | n
   } catch { return null; }
 }
 
-/** The comprehensive rules as the client's rules reader reads them (ui/rules.ts,
- * the Comprehensive rules tab, 2026-11-04): the generated .json without its
- * provenance — the sources, verdicts and discrepancies are the review page's
- * and the full edition's business, not a player's. Built once per edition (its
- * mtime) and served with an ETag. ui/assets.ts CR_DATA_URL is the browser's
- * spelling of the path. */
+/** The comprehensive rules as the client's rules reader SEARCHES them (ui/crreader.ts,
+ * 2026-11-04): each rule's number, section and words, nothing else. What the
+ * reader SHOWS is the whole edition, /api/cr/review (api-crreview.ts) — the
+ * same document the full edition and the review page are drawn from. Built
+ * once per edition (its mtime) and served with an ETag. ui/assets.ts
+ * CR_DATA_URL is the browser's spelling of the path. */
 const CR_DATA_URL = '/comprehensive-rules.json';
 let crData: { mtimeMs: number; body: string; etag: string } | null = null;
 function crDataBody(): { body: string; etag: string } | null {
@@ -310,13 +310,13 @@ function crDataBody(): { body: string; etag: string } | null {
       type R = { num: string; title: string | null; section: string; sectionTitle: string; chapterTitle: string; parent: string;
         text: string; see: string[]; examples: string[]; engineDiffers: boolean; untested: boolean };
       const doc = JSON.parse(readFileSync(CR_JSON, 'utf8')) as {
-        edition: unknown; rules: R[]; annexD: R[]; glossary: { term: string; text: string; see: string[]; obsolete: boolean }[];
+        edition: unknown; rules: R[]; annexD: R[]; glossary: { term: string; key: string; text: string; see: string[]; obsolete: boolean }[];
       };
       const lean = (r: R) => ({ num: r.num, title: r.title, section: r.section, sectionTitle: r.sectionTitle, chapterTitle: r.chapterTitle,
         parent: r.parent, text: r.text, see: r.see, examples: r.examples, engineDiffers: r.engineDiffers, untested: r.untested });
       const body = JSON.stringify({
         edition: doc.edition, rules: doc.rules.map(lean), annexD: doc.annexD.map(lean),
-        glossary: doc.glossary.filter(g => !g.obsolete).map(g => ({ term: g.term, text: g.text, see: g.see })),
+        glossary: doc.glossary.filter(g => !g.obsolete).map(g => ({ term: g.term, key: g.key, text: g.text, see: g.see })),
       });
       crData = { mtimeMs: m, body, etag: `"${createHash('sha1').update(body).digest('hex').slice(0, 16)}"` };
     }
@@ -1991,8 +1991,15 @@ function recordFinishedGame(room: Room): void {
   // CR D8.4: a scenario room is a test fixture, not a game — see history.ts's
   // matching guard in syncGamesDir(). Folding one into somebody's win/loss
   // record would let the instrument quietly rewrite the numbers it exists to
-  // check. The post-game screen still works; only the RECORD is skipped.
-  if (room.scenario) return;
+  // check. Only the RECORD is skipped: the post-game screen still goes out,
+  // HERE. It did not until 2026-11-04 — this return came before the send
+  // below, so test mode's "Leave the match" ended the game and left a dead
+  // board until a reload, whose rejoin path sent the screen (owner: "you have
+  // to reload the page to get it to show up"). Test mode is a scenario room.
+  if (room.scenario) {
+    for (const seat of [0, 1] as Seat[]) sendGameOver(room, seat, { row: null, unlocked: [], account: accountById(room.users[seat]) });
+    return;
+  }
   // docs/22 §5.5 — A COMPETITIVE MATCH'S GAME, FIRST. This is the one choke
   // point a win, a concede and a flag all reach: the score moves, the banks
   // are written, and the match either ends or creates its next room (and

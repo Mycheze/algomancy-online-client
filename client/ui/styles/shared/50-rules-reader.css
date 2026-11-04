@@ -71,36 +71,29 @@
 .rdhitsnip mark { background: var(--color-accent-wash); color: var(--color-text); border-radius: 2px; }
 .rdnone, .rdwait { color: var(--color-text-muted); padding: var(--space-5) var(--space-4); }
 
-/* …and one section, at reading width */
-.rdfront { margin-bottom: var(--space-8); padding-bottom: var(--space-6); border-bottom: 1px solid var(--color-border); }
-.rdfront h1 { margin: 0 0 var(--space-4); font-family: var(--font-display); font-size: var(--text-26); }
+/* …and one place, at reading width: the edition's own words, drawn by the
+   renderer and styled by the review page's .crdoc rules (pages/45-crreview.css);
+   these only fit them to the reader */
+.rdfront { margin-bottom: var(--space-7); }
+.rdfront h1 { margin: 0 0 var(--space-3); font-family: var(--font-display); font-size: var(--text-26); }
 .rdfront p { margin: 0; color: var(--color-text-muted); font-size: var(--text-13); line-height: 1.55; }
-.rdchap { color: var(--color-text-muted); font-size: var(--text-11); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-.rdpage h2 { margin: var(--space-2) 0 var(--space-6); color: var(--color-accent); font-size: var(--text-22); }
-.rdpage h2 .rdnum { color: var(--color-text-muted); }
-.rdrule { padding: var(--space-3) var(--space-4); margin: 0 calc(-1 * var(--space-4)); border-radius: var(--radius-md); }
-.rdrule.sub { padding-left: var(--space-8); }
-.rdrule.at { background: var(--color-surface); box-shadow: inset 3px 0 0 var(--color-accent); }
-.rdrule p { margin: 0; font-size: var(--text-14); line-height: 1.6; }
-.rdrule .rdnum { color: var(--color-text-muted); font-variant-numeric: tabular-nums; font-weight: 600; }
-.rdrule p.rdex { margin-top: var(--space-3); padding-left: var(--space-6); color: var(--color-text-muted); font-size: var(--text-13); }
-.rdrule p.rdex > span { font-style: italic; }
-.rdrule p.rdmarks { margin-top: var(--space-2); display: flex; gap: var(--space-3); }
-.rdmark { padding: 0 var(--space-3); border: 1px solid var(--color-border-strong); border-radius: var(--radius-sm);
-  color: var(--color-text-muted); font-size: var(--text-11); }
-.rdmark.rddiffers { border-color: var(--color-warning); color: var(--color-warning); }
-.rdref { display: inline; padding: 0; background: none; border: 0; color: var(--color-link); font: inherit; cursor: pointer; }
-.rdref:hover { text-decoration: underline; background: none; border: 0; }
+.rdchap { margin-bottom: var(--space-2); color: var(--color-text-muted); font-size: var(--text-11); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.rulesreader .rddoc { max-width: none; margin: 0; padding: 0; background: none; border: 0; }
+.rulesreader .rddoc > h2:first-child, .rulesreader .rddoc > h3:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.rulesreader .rddoc a[data-to] { cursor: pointer; }
+/* the element a link or a search went to */
+.rulesreader .rddoc .rd-at { background: var(--color-surface); box-shadow: inset 3px 0 0 var(--color-accent); border-radius: var(--radius-md);
+  padding-left: var(--space-5); padding-right: var(--space-4); }
 .rdback { margin-bottom: var(--space-6); padding: var(--space-3) var(--space-5); border-radius: var(--radius-pill); font-size: var(--text-13); }
-.rdgloss { margin: 0; }
-.rdgloss dt { margin-top: var(--space-6); font-weight: 700; }
-.rdgloss dd { margin: var(--space-2) 0 0; color: var(--color-text-muted); font-size: var(--text-14); line-height: 1.55; }
 .rdsteps { display: flex; justify-content: space-between; gap: var(--space-5); margin-top: var(--space-9); padding-top: var(--space-6);
   border-top: 1px solid var(--color-border); }
 .rdstep { display: flex; flex-direction: column; gap: var(--space-1); max-width: 48%; padding: var(--space-4) var(--space-5); text-align: left;
   border-radius: var(--radius-lg); font-size: var(--text-13); }
 .rdstep.next { align-items: flex-end; text-align: right; margin-left: auto; }
 .rdstep span { color: var(--color-text-muted); font-size: var(--text-11); letter-spacing: .06em; text-transform: uppercase; }
+/* a part on its own in the contents (the Introduction, Annex P …) */
+.rdtocone { padding-bottom: var(--space-1); }
+.rdtocone .rdtocsec { font-weight: 600; }
 
 /* the rulebook: the frame takes the reader's height */
 .rulesreader .bookframe { flex: 1 1 auto; height: auto; min-height: 0; }
@@ -112,8 +105,7 @@
   .rulesreader .helprow b { width: 140px; }
 }
 
-/* a rule number in running text is a link, not a finger-sized button: the
-   touch piece's `html.touch .overlay button` floor (and base.css's padding)
-   would open a gap under every line that cites a rule. The contents, the
-   search results and Back are real buttons and keep their size. */
-.rulesreader .rdref, html.touch .rulesreader .rdref { min-height: 0; height: auto; padding: 0; line-height: inherit; vertical-align: baseline; }
+/* a rule number in running text is a link, not a finger-sized button (the
+   touch piece's `html.touch .overlay button` floor); the contents, the search
+   results and Back are real buttons and keep their size */
+.rulesreader .rddoc a, html.touch .rulesreader .rddoc a { min-height: 0; }

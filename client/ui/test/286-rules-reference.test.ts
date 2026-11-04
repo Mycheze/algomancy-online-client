@@ -287,10 +287,10 @@ test('the overlay has the search box, the four tabs, the jump bar and the close 
   assert.deepEqual([...html.matchAll(/data-btn="helptab"[^>]*data-tab="([a-z]+)"/g)].map(m => m[1]),
     ['rules', 'book', 'cr', 'tutorial']);
   // the comprehensive rules are read natively since 2026-11-04 (ui/crreader.ts,
-  // test 1072): no frame; the full edition, with its sources, is a link in the bar
+  // test 1072): no frame, and — the whole edition being the tab — no second one linked
   const cr = rulesBoxHtml('cr', '');
   assert.doesNotMatch(cr, /<iframe/, 'the comprehensive rules are framed again');
-  assert.match(cr, /<a class="bookopen" href="\/comprehensive-rules" target="_blank" rel="noopener">Full edition, with sources/);
+  assert.doesNotMatch(cr, /Full edition/);
   // the reader: a bar with Close and the tabs, over the tab
   assert.match(html, /^<div class="overlaybox helpbox rulesreader rr-rules"/);
   assert.match(html, /<header class="rrbar">/);

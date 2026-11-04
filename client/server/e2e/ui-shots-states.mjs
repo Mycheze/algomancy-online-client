@@ -161,8 +161,8 @@ export function SCENARIOS(fx) {
   // the comprehensive rules read natively (ui/crreader.ts, 2026-11-04): a search,
   // a link straight to a sub-rule, and a rule followed from another with Back
   add('rules', 'cr-search', '/?rules=cr', { steps: [{ type: '#rules-q', text: 'deadly' }, { settle: 300 }], pages: 1 });
-  add('rules', 'cr-at', '/?rules=cr&at=608.2b', { pages: 1, check: '.rdrule.at' });
-  add('rules', 'cr-follow', '/?rules=cr', { steps: [{ click: '.rdrule .rdref', text: '^104$' }, { settle: 300 }], pages: 1, check: '.rdback' });
+  add('rules', 'cr-at', '/?rules=cr&at=608.2b', { pages: 1, check: '.rddoc .rd-at' });
+  add('rules', 'cr-follow', '/?rules=cr', { steps: [{ click: '[data-btn="crgo"][data-to="s100"]' }, { click: '.rddoc a[data-to="r104"]', text: '104' }, { settle: 300 }], pages: 1, check: '.rdback' });
   // …and over a game: the board's own toolbar stays beside the reader (the ?demo table)
   add('rules', 'board-cr', '/?demo=1', { steps: [{ click: '[data-btn="helpopen"]' }, { click: '[data-btn="helptab"][data-tab="cr"]' }, { settle: 600 }], pages: 1, noScroll: false });
   add('rules', 'cr-glossary', '/?rules=cr', { steps: [{ click: '[data-btn="crgo"][data-to="glossary"]' }, { settle: 300 }], pages: 1 });

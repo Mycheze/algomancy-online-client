@@ -740,8 +740,11 @@ export function bookHtml(): string {
   </div>`;
 }
 
-/** The Comprehensive rules tab: every rule, numbered, read natively
- * (ui/crreader.ts, 2026-11-04 — it framed the generated page until then). */
+/** The Comprehensive rules tab: the whole edition — every rule with its
+ * sources, the annexes, the glossary, the changelog, the discrepancy report —
+ * read natively (ui/crreader.ts, 2026-11-04; it framed the generated page
+ * until then). There is no second, fuller edition to link to (owner,
+ * 2026-11-04: "Just the main Comprehensive Rules should be everything"). */
 export function crHtml(): string {
   loadCr();
   return crReaderHtml(CR_PAGE_URL);
@@ -757,7 +760,6 @@ function barLinksHtml(tab: HelpTab): string {
   const out = (href: string, label: string, cls = 'bookopen'): string =>
     `<a class="${cls}" href="${esc(href)}" target="_blank" rel="noopener">${label}</a>`;
   return (tab === 'book' ? out(RULEBOOK_URL, 'Open in a new tab ↗') : '')
-    + (tab === 'cr' ? out(CR_PAGE_URL, 'Full edition, with sources ↗') : '')
     + `<a class="rrdiscord" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">Ask on Discord ↗</a>`;
 }
 

@@ -347,6 +347,21 @@ async function main(): Promise<void> {
     them.ws.close();
   }
 
+  // THE WAY OUT (owner, 2026-11-04): "Leave the match" ended a test game but
+  // drew no end screen until a reload — recordFinishedGame returned for a
+  // scenario room before it sent one. Leaving puts the post-game screen up at
+  // once (its Home button is the way back), and still records nothing.
+  again.msgs.length = 0;
+  again.lastAt = Date.now();
+  again.send({ t: 'action', action: { type: 'concede', seat: 0 } });
+  const over = await again.next(m => m.t === 'gameover').catch(() => null);
+  ok(over !== null, 'leaving a test game puts the post-game screen up at once, with no reload');
+  {
+    const { syncGamesDir } = await import('../history.ts');
+    const report = syncGamesDir(process.env['ALGO_GAMES_DIR']!, { force: true });
+    ok(!report.rows.some(r => r.code === ROOM), '…and the test game is still in nobody\'s record');
+  }
+
   again.ws.close();
   await server.stop();
   rmSync(SCRATCH, { recursive: true, force: true });
