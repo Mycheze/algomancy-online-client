@@ -35,8 +35,13 @@ import os
 import subprocess
 from types import SimpleNamespace as NS
 
-import httpx
 import openai
+# the HTTP library openai ITSELF uses: openai 3.x moved to httpx2 (same API, new
+# name), older releases use httpx. The fakes below must be built from the same one,
+# and a fresh `pip install -r bot/requirements.txt` has only the one openai pulls in
+# (2026-11-04: the steward box and the VPS had openai 3, no httpx; the laptop, both).
+import openai._base_client as _openai_base
+httpx = getattr(_openai_base, "httpx2", None) or _openai_base.httpx
 from openai.types import CompletionUsage
 
 for k in ("ALGO_TOOLS", "ALGO_BOT_TOKEN", "LLM_REASONING", "DEEPSEEK_REASONING"):

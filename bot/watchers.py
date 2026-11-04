@@ -51,10 +51,14 @@ def _read() -> dict:
     global _cache
     path = paths.queue_watch_file()
     try:
-        stamp = path.stat().st_mtime_ns
+        st = path.stat()
     except FileNotFoundError:
         _cache = None
         return {"version": 1, "watches": {}}
+    # mtime alone is not a version: two writes inside one filesystem clock tick
+    # share it (the steward box, 2026-11-04 — a rewrite right after a save read
+    # back the stale copy). Size and inode change with the content or the rename.
+    stamp = (st.st_mtime_ns, st.st_size, st.st_ino)
     if _cache is not None and _cache[0] == stamp:
         return _cache[1]
     data = _read_file(path)
