@@ -2,18 +2,13 @@
  * Four dense tables behind ?admin=1. Deliberately plain: this is an operator
  * page, the only thing it owes anybody is legibility at a glance, and every
  * row of it is real data somebody may have to act on. */
-.adminpage { max-width: 1400px; margin: 0 auto; padding: 1rem; }
-.adminhead { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; }
-.adminhead h1 { margin: 0; }
-.adminwho { color: var(--dim); font-size: .85em; margin-right: auto; }
-.admintabs { display: flex; gap: .4rem; flex-wrap: wrap; margin: .8rem 0; }
-/* the tabs are the ui-tabs component; the current one keeps the page's accent FILL
-   (the component's own .on is accent text on the raised surface) */
-.admintabs .ui-tabs__tab.on { background: var(--accent); color: var(--color-text-on-accent); }
+/* (.adminpage is the app frame's root since 2026-11-04 — the shell, exactly
+   the window; the frame block at the end of this piece lays the page out. The
+   tabs are a segmented control in the toolbar's centre.) */
 .adminnote { color: var(--dim); font-size: .85em; line-height: 1.5; }
 .adminnote label { margin-left: .8rem; }
 /* the error line is the ui-status component (error tone); bold, and spaced as the <p> it was */
-.adminmsg { font-weight: 600; margin: 1em 0; }
+.adminmsg { font-weight: 600; margin: 0; flex: none; }
 /* the tables scroll sideways rather than squeezing a column to nothing — a
  * report note that wraps to one character per line is not readable */
 .admintablewrap { overflow-x: auto; }
@@ -43,3 +38,27 @@
 .dot.off { background: rgba(255,255,255,.2); }
 .unk { color: var(--dim); font-style: normal; cursor: help; }
 
+
+/* ── the dashboard in the app frame (2026-11-04, docs/24) ─────────────────
+   The note fixed at the top, the table under it in ONE surface that scrolls
+   both ways by itself, its header row stuck to the top. The page never
+   scrolls. The refused page is one sentence in the middle of the window. */
+.adminpage .ui-app-shell__main { display: flex; flex-direction: column; gap: var(--space-4); }
+.adminpage .adminnote { flex: none; margin: 0; }
+.adminpage .adminrefused { margin: auto; max-width: 60ch; text-align: center; font-size: var(--text-14); }
+.adminpage .admintablewrap { flex: 0 1 auto; min-height: 0; overflow: auto;
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+.adminpage .admintable th, .adminpage .admintable td { border-bottom-color: var(--color-border); }
+.adminpage .admintable tbody tr:last-child td { border-bottom: 0; }
+.adminpage .admintable thead th { position: sticky; top: 0; z-index: 1; background: var(--color-surface-raised); }
+.adminpage .admintable th:first-child, .adminpage .admintable td:first-child { padding-left: var(--space-5); }
+.adminpage .adminrefresh { min-height: var(--segmented-h-sm); padding: 0 var(--space-5); border-radius: var(--radius-pill); }
+/* an upright iPad: five tabs, the name and the tools share the bar — the
+   tabs take their small size and the "signed in as" line goes */
+@media (max-width: 1100px) {
+  .adminpage .admintabs .ui-segmented__option { min-height: var(--segmented-h-sm); padding: 0 var(--space-4); font-size: var(--text-13); }
+  .adminpage .frametitle small { display: none; }
+}
+@media (max-width: 759.98px), (max-height: 599.98px) {
+  .adminpage .admintablewrap { overflow-x: auto; overflow-y: visible; }
+}
