@@ -131,7 +131,7 @@ test('§4 the cap across both boards refuses, and says why', () => {
 
 test('§5 Back saves the sideboard the table built', () => {
   const html = ui.click({ btn: 'tt-close' });
-  assert.match(html, /<div class="deckpage"/);
+  assert.match(html, /class="[^"]*\bdeckpage"/, 'back on the Decks page (in the app frame since BL-65)');
   const last = POSTS.filter(p => p.url === '/api/decks/update').at(-1);
   assert.ok(last, 'the table’s edits were saved');
   assert.equal((last!.body['sideboard'] as string[]).length, 9);

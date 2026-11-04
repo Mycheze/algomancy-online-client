@@ -205,8 +205,10 @@ test('§4a every page that draws a stack hands the CSS the stack depth', () => {
   // land exactly on top of each other and the stack silently vanishes. That is
   // the same shape of fault as patching a style into "<img ": invisible until
   // somebody looks at the one card it breaks.
-  assert.ok(STACK_PAGES.length >= 2,
-    `expected the builder and the shared page to draw stacks — found [${STACK_PAGES.join(', ')}]`);
+  // BL-65: the deck page's tile grid went (its list is a list now, and the builder draws copies as cards on
+  // the table), so the shared deck page is the one surface that stacks tiles
+  assert.ok(STACK_PAGES.length >= 1,
+    `expected the shared page to draw stacks — found [${STACK_PAGES.join(', ')}]`);
   for (const f of STACK_PAGES) {
     assert.match(read(f), /--d:\$\{layers\.length\}/,
       `${f} must write the stack depth onto the tile, or its piles collapse to one card`);
@@ -232,90 +234,35 @@ test('§4b a card with no scan still stacks, because the ghost and the front are
   assert.doesNotMatch(fn, /<img /, 'deckTile must not hand-roll an <img>: that is the artless hole');
 });
 
-/* ══ §5 the grey belongs to the drawer ══════════════════════════════════ */
-
-const decksSrc = read('decks.ts');
-const tileFn = decksSrc.slice(decksSrc.indexOf('function tile('), decksSrc.indexOf('function groupedTiles('));
-
-test('§5a the cap withholds the plus everywhere, and greys only where you are shopping', () => {
-  // ⚠ BL-34 ASKED FOR BOTH SIGNALS AND THE OWNER HAS SINCE SPLIT THEM. The
-  // requirement — "you already have two of this, and the page said so before
-  // you added a third" — is unchanged and is still carried by the withheld +
-  // and, over the cap, by the red number. What changed is that the GREY is a
-  // sentence about shopping: in the drawer it answers the question you are
-  // asking, and in the deck it colours a whole deck of two-ofs grey for no
-  // reason. Measured: 15 of 15 tiles.
-  assert.ok(tileFn.length > 100, 'tile() moved — this test needs updating');
-  // since docs/22 §4.5 the two copies are counted over the deck AND the
-  // sideboard (`total`, which is `n` on a deck with no sideboard)
-  assert.match(tileFn, /const atCap = where !== 'maybe' && total >= 2;/,
-    'the cap itself is unchanged: two copies, anywhere you can add one');
-  // 2026-11-03: the Sideboard tab got its own add drawer ('addside'), which is shopping too
-  const grey = /const (\w+) = atCap && (?:where === 'add'|\(where === 'add' \|\| where === 'addside'\));/.exec(tileFn);
-  assert.ok(grey, 'the greying must be a SEPARATE flag, true only in the add drawers');
-  assert.match(tileFn, new RegExp(`\\$\\{${grey![1]!} \\? ' atcap' : ''\\}`),
-    'and it must be what writes the atcap class');
-  assert.doesNotMatch(tileFn, /\$\{atCap \? ' atcap' : ''\}/,
-    'the cap flag must not write the grey class again');
-});
-
-test('§5b the grey is a dimming, not a disabling', () => {
-  // it has to read as "nothing more to take here" and not as "broken", so:
-  // dimmed art, ordinary border, and the over-cap tile keeps its colour
-  // because its red border and red number are the message there.
-  const greyed = rulesFor('atcap').filter(r => decl(r, 'filter') !== null);
-  assert.ok(greyed.length > 0, 'the atcap tile must dim its art');
-  for (const r of greyed) {
-    assert.doesNotMatch(r.body, /pointer-events|opacity: 0|display: none/,
-      `${r.sel} disables the tile — the cap is an affordance, not a gate`);
-  }
-  assert.ok(greyed.some(r => /overcap/.test(r.sel) && decl(r, 'filter') === 'none'),
-    'an over-cap tile keeps its colour: the red border and the red number are the signal there');
-});
+/* ══ §5 the grey belonged to the drawer — retired (BL-65) ═════════════════
+ *
+ * The deck page's tile grid and its add drawer went in BL-65 (2026-11-04), and
+ * with them `tile()` and its `.atcap` grey. Shopping happens in the builder's
+ * pool now: its own cap mark is the pool's (pages/pool.ts, guarded by the
+ * builder's tests), and the deck on the table draws no grey at all. */
 
 /* ══ §6 an edit does not move the page under the cursor ═════════════════ */
 
-test('§6a a repaint puts the scroll and the caret back where they were', () => {
-  // Every edit rewrites the whole of #app — one write, ~19ms, which is not the
-  // problem. The problem is PLACE: the new tree has no scroll and no focus.
-  // Measured before this: adding one card from the drawer threw the page 537px
-  // up the document, so the card you clicked was no longer under the cursor.
-  assert.match(decksSrc, /const was = perch\(\);/, 'paint must record where you were, first');
-  const paintFn = decksSrc.slice(decksSrc.indexOf('function paint('), decksSrc.indexOf('function wire('));
-  const write = paintFn.lastIndexOf('$app.innerHTML');
-  assert.ok(write > 0, 'paint() moved — this test needs updating');
-  assert.ok(paintFn.indexOf('const was = perch();') < write,
-    'the perch must be taken BEFORE the write that destroys it');
-  assert.match(paintFn, /wire\(was\)/, 'and handed to the wiring that puts it back');
-  const wireFn = decksSrc.slice(decksSrc.indexOf('function wire('), decksSrc.indexOf('export function renderScreen'));
-  assert.match(wireFn, /alight\(was\)/, 'wire() must land the page back where it was');
+const decksSrc = read('decks.ts');
+const pageSrc = read('pages/decks.ts');
+
+test('§6a a repaint puts every scrolling region back where it was', () => {
+  // The old page scrolled the WINDOW and carried it by hand (perch/alight). The Decks page is in the app frame
+  // since BL-65: the window never scrolls, its regions do, and paintFrame puts every [data-scroll] back.
+  const paint = pageSrc.slice(pageSrc.indexOf('export function paintDecks('));
+  assert.match(paint, /paintFrame\(app,/, 'the page must be painted through the frame, which carries the scrolls');
+  assert.match(pageSrc, /class="dkshelf" data-scroll="deck-shelf"/, 'the shelf is a carried region');
+  assert.match(pageSrc, /class="dkprevlist" data-scroll="deck-list\|\$\{esc\(v\.id\)\}"/,
+    'and so is the open deck\'s list, keyed by the deck so another deck starts at the top');
 });
 
-test('§6b the search box is not re-focused on every repaint', () => {
-  // ⚠ RESTORING THE SCROLL ALONE DOES NOT FIX IT. `wire()` ended with a bare
-  // `box.focus()`, and focusing an input scrolls it into view — so the
-  // viewport was dragged to the search box after every single edit, and the
-  // caret was stamped to the end of whatever had been typed. Opening the
-  // drawer SHOULD claim the caret; nothing else may.
-  const wireFn = decksSrc.slice(decksSrc.indexOf('function wire('), decksSrc.indexOf('export function renderScreen'));
-  assert.doesNotMatch(wireFn, /^\s*box\?\.focus\(\);/m, 'the unconditional focus came back');
-  assert.match(wireFn, /if \(focusSearch && box\)/, 'the focus is claimed once, by an explicit flag');
-  assert.match(wireFn, /focusSearch = false;/, 'and the flag is consumed, not left standing');
-  assert.match(decksSrc, /case 'deck-adding':\n\s*adding = true; focusSearch = true;/,
-    'and it is the click that OPENS the drawer that sets it');
-  assert.match(decksSrc, /focus\(\{ preventScroll: true \}\)/,
-    'restoring a focus must not undo the scroll that was just restored');
-});
-
-test('§6c what the drawer is reading is held still, not the document', () => {
-  // Adding a card grows the DECK GRID, which is ABOVE the drawer, so holding
-  // scrollTop still slides the results down under the cursor — measured at
-  // 136px, a full row, which is exactly far enough to make the next click land
-  // on a different card.
-  assert.match(decksSrc, /function anchorTop\(\)/, 'there must be an anchor to hold still');
-  const anchor = decksSrc.slice(decksSrc.indexOf('function anchorTop('), decksSrc.indexOf('function perch('));
-  assert.match(anchor, /getElementById\('dk-results'\)/, 'and it is the drawer, the thing being read');
-  const alight = decksSrc.slice(decksSrc.indexOf('function alight('), decksSrc.indexOf('let focusSearch'));
-  assert.match(alight, /p\.scroll \+ \(/, 'the scroll is CORRECTED by how far the anchor moved');
-  assert.match(alight, /now - p\.anchor/, 'by exactly that far');
+test('§6b typing never repaints', () => {
+  // The 537px jump began with a repaint that re-took the focus. Typing a deck's name or its description now
+  // writes state and saves; it never repaints, so the caret and the scroll stay where they are.
+  const input = decksSrc.slice(decksSrc.indexOf("document.addEventListener('input'"), decksSrc.indexOf("document.addEventListener('keydown'"));
+  assert.ok(input.length > 100, 'the input listener moved — this test needs updating');
+  assert.match(input, /'dk-desc'/, 'the description box is listened to');
+  assert.match(input, /'dk-name'/, 'and the name box');
+  assert.match(input, /scheduleSave\(/, 'the name saves itself');
+  assert.doesNotMatch(input, /\b(re)?paint\(|tabletopChanged\(/, 'a keystroke repainted the page under the caret');
 });

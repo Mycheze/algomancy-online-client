@@ -18,19 +18,21 @@
  *      first and the deck page had none; the failure mode this guards is the
  *      deck page growing a SECOND one, which is how the two card filters
  *      drifted before ui/cardindex.ts existed.
- *   2. THE TILE CAN BE READ. `data-prev` is the whole hover box, and it is one
+ *   2. THE LIST CAN BE READ. `data-prev` is the whole hover box, and it is one
  *      attribute — an attribute that was missing here for a whole release
- *      while the identical grid in the browser had it.
- *   3. THE CAP IS OFFERED, NOT ENFORCED. At two copies the `+` goes and `−`
- *      stays. Turning it into a refusal would contradict server/collection.ts's
- *      stated commitment that a saved deck may be illegal while you build.
+ *      while the identical grid in the browser had it. (BL-65: the deck page's
+ *      tile grid became the Decks page preview's list; the claim moved with it.)
+ *   3. OVER THE CAP IS SAID, NOT REFUSED. A deck holding three still saves and
+ *      shows; its third copy is the red ×3. (BL-65: the tile's withheld `+` went
+ *      with the tile; a tap at two in the builder's pool refuses with a note,
+ *      which the builder's tests guard.)
  *   4. ONE CLIPBOARD PATH. The deck page's copy button and main.ts's share
  *      link go through the same helper. They diverged once — one had the
  *      execCommand fallback the plain-http deploy needs and the other did not
  *      — and the duplication is what allowed it.
- *   5. THE TABLETOP IS A BUTTON AWAY (2026-10-21). "Build on the table" opens
- *      ui/tabletop.ts on top of this page; this page must not paint over it,
- *      and its save must carry the piles the table arranged.
+ *   5. THE TABLE IS A BUTTON AWAY (2026-10-21; BL-65 "Edit on the table").
+ *      It opens ui/tabletop.ts on top of this page; this page must not paint
+ *      over it, and its save must carry the piles the table arranged.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -41,6 +43,7 @@ import '../../engine/src/cards/registry.ts';
 import { allRows } from '../cardindex.ts';
 import { analyzeDeck } from '../deckstats.ts';
 import { cardPanelHtml, deckStripHtml, similarQuery } from '../cardpanel.ts';
+import { deckPreviewHtml, deckPreviewView } from '../pages/decks.ts';
 
 const UI = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (f: string): string => readFileSync(join(UI, f), 'utf8');
@@ -119,62 +122,37 @@ test('"similar" is one notion, and it is a query you can read', () => {
 
 test('both pages pin the SAME panel — neither has one of its own', () => {
   // the browser's markup is pages/cards.ts since the design-system round
-  for (const f of ['decks.ts', 'pages/cards.ts']) {
+  // the Decks page's card sheet is pages/decks.ts since BL-65
+  for (const f of ['pages/decks.ts', 'pages/cards.ts']) {
     assert.match(read(f), /from '\.\.?\/cardpanel\.ts'/, `${f} must use the shared panel`);
   }
   // the shape the browser's private copy had: a <section class="cbdetail">
   // built inline. Exactly one file may emit it, and it is not a page.
-  for (const f of ['decks.ts', 'cards.ts', 'meta.ts', 'pages/cards.ts', 'pages/meta.ts', 'pages/cardstats.ts']) {
+  for (const f of ['decks.ts', 'cards.ts', 'meta.ts', 'pages/cards.ts', 'pages/decks.ts', 'pages/meta.ts', 'pages/cardstats.ts']) {
     assert.doesNotMatch(code(f), /<section class="cbdetail">/,
       `${f} grew its own card panel again`);
   }
   assert.match(read('cardpanel.ts'), /<section class="cbdetail">/, 'the one panel lives here');
 });
 
-test('the deck page’s tiles can be read without opening the art in another tab', () => {
-  const decks = code('decks.ts');
-  const tile = decks.slice(decks.indexOf('function tile('), decks.indexOf('function groupedTiles('));
-  assert.ok(tile.length > 100, 'tile() moved — this test needs updating');
-  assert.match(tile, /data-prev="\$\{esc\(name\)\}"/,
-    'the hover box is data-prev, and it is the whole feature');
-  assert.match(tile, /data-btn="deck-focus"/, 'and the tile pins the panel');
-  // the two the browser dropped for the owner's stated reasons, which apply
-  // to the identical grid here: a native tooltip that competes with the hover
-  // box, and a banner across the printed text
-  assert.doesNotMatch(tile, /\btitle="\$\{esc\(name\)\}/, 'the competing native tooltip came back');
-  assert.doesNotMatch(tile, /class="dkname"/, 'the name banner came back over the card text');
+test('the Decks page’s list can be read without opening the card', () => {
+  // called for real: the preview of a deck holding three of a card (an import, say)
+  const v = deckPreviewView({ id: 'd', name: 'D', cards: [CARD, CARD, CARD], cover: null });
+  const html = deckPreviewHtml(v);
+  const row = /<button class="dklrow"[^>]*>[\s\S]*?<\/button>/.exec(html)?.[0] ?? '';
+  assert.ok(row, 'a row a card');
+  assert.match(row, new RegExp(`data-prev="${CARD.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`), 'the hover box is data-prev, and it is the whole feature');
+  assert.match(row, /data-btn="deck-focus"/, 'and the row opens the card panel');
+  assert.doesNotMatch(row, /\btitle=/, 'no native tooltip competing with the hover box');
 });
 
-test('at two copies the tile stops OFFERING a third, and still allows a cut', () => {
-  const decks = code('decks.ts');
-  const tile = decks.slice(decks.indexOf('function tile('), decks.indexOf('function groupedTiles('));
-  assert.match(tile, /atCap/, 'the cap must be marked on the tile');
-  // every + is behind the cap...
-  for (const add of tile.matchAll(/data-btn="(deck-add|deck-more)"/g)) {
-    const before = tile.slice(0, tile.indexOf(add[0]));
-    assert.match(before.slice(-120), /atCap \? '' :/,
-      `${add[1]} is offered without checking the cap`);
-  }
-  // ...and no − is
-  assert.match(tile, /data-btn="deck-less"/, 'cutting a copy must still be offered');
-  const less = tile.slice(0, tile.indexOf('data-btn="deck-less"'));
-  assert.doesNotMatch(less.slice(-80), /atCap \? '' :/, 'the cap must not disable cutting');
-  // ⚠ BL-34's REQUIREMENT SURVIVES; ITS MECHANISM DID NOT. The rule here was
-  // "the count is what makes the grey legible, and hiding it in the drawer is
-  // what made a third copy easy to add without noticing", and a ×n badge from
-  // two up was how that was met. The owner has since ruled the other way on
-  // the mechanism — *"instead of showing a x2 for cards with 2 copies,
-  // actually show two of those cards, just stacked"* — so the badge at two is
-  // gone and the STACK is what says you already have two.
-  //
-  // The requirement is unchanged and is still asserted, by all three of the
-  // signals that now carry it: the copies are drawn, the tile greys at the
-  // cap, and the + is withheld (both checked above).
-  assert.match(tile, /stackLayers\(n\)/, 'two copies must be DRAWN as two cards');
-  assert.doesNotMatch(tile, /n < 2 \? '' :/, 'the old unconditional ×n badge is gone');
-  assert.match(tile, /needsCountBadge\(n\)/,
-    'and the NUMBER still comes back over the cap, where "too many of these" is exactly what '
-    + 'must not be left to counting overlapping corners by eye');
+test('a third copy is said, in red, and the deck still shows', () => {
+  const rest = allRows().filter(r => r.playable && r.cls === 'card' && r.scripted && r.name !== CARD).slice(0, 27).map(r => r.name);
+  const html = deckPreviewHtml(deckPreviewView({ id: 'd', name: 'D', cards: [CARD, CARD, CARD, ...rest], cover: null }));
+  assert.match(html, /<span class="dkln bad">×3<\/span>/, 'over the cap: the number, red');
+  assert.match(html, /max 2 copies of each card/, 'and the legality line says why it cannot be played');
+  const two = deckPreviewHtml(deckPreviewView({ id: 'd', name: 'D', cards: [CARD, CARD], cover: null }));
+  assert.match(two, /<span class="dkln">×2<\/span>/, 'two is ordinary');
 });
 
 test('there is one clipboard path, and both buttons take it', () => {
@@ -187,7 +165,7 @@ test('there is one clipboard path, and both buttons take it', () => {
   // and the fault that made the deck page's copy button do nothing: it selected
   // the textarea and then repainted the page out from under the selection
   const decks = code('decks.ts');
-  const handler = decks.slice(decks.indexOf("case 'deck-copy-list'"), decks.indexOf("case 'deck-adding'"));
+  const handler = decks.slice(decks.indexOf("case 'deck-copy-list'"), decks.indexOf("case 'deck-download'"));
   assert.ok(handler.length > 40, "the copy-list handler moved — this test needs updating");
   assert.doesNotMatch(handler, /paint\(\)/, 'a repaint here destroys the selection it just made');
 });
@@ -221,15 +199,17 @@ test('the metagame page never decides for itself who may be seen', () => {
   }
 });
 
-test('the tabletop is one button away, and the page under it neither paints over it nor loses its piles', () => {
-  // the deck page offers the table by a BUTTON (the installed web app has no
-  // address bar), beside ▶ and ⚙ — and nothing else of the table
+test('the table is one button away, and the page under it neither paints over it nor loses its piles', () => {
+  // the Decks page offers the table by a BUTTON (the installed web app has no
+  // address bar): Edit on the table, the preview's primary action (BL-65)
+  const page = code('pages/decks.ts');
+  assert.match(page, /<div class="dkprevmain">\$\{\s*button\(\{ label: 'Edit on the table', variant: 'primary', dataBtn: 'deck-tabletop'/,
+    'the button leads the preview\'s actions');
   const dk = code('decks.ts');
-  assert.match(dk, /<div class="deckacts">[\s\S]*?data-btn="deck-settings"[\s\S]*?data-btn="deck-tabletop"[\s\S]*?<\/div>/,
-    'the button sits in the action column');
-  assert.match(dk, /case 'deck-tabletop':[\s\S]*?flushSave\(\);[\s\S]*?tt\.openTabletop\(/, 'it flushes, then opens the table');
-  // the table sits on top of this still-`open` page and every drop is edit() → paint()
-  assert.match(dk, /function paint\(\): void \{[\s\S]{0,200}?if \(cb\.screen\(\)\) return;\s*if \(tt\.screen\(\)\) return;/,
+  assert.match(dk, /case 'deck-tabletop':[\s\S]*?flushSave\(\);[\s\S]*?openBuilder\(/, 'it flushes, then opens the table');
+  assert.match(dk, /function openBuilder\([\s\S]*?tt\.openTabletop\(host\)/, 'through tabletop.ts');
+  // the table sits on top of this still-`open` page and every drop is edit()
+  assert.match(dk, /function paint\(\): void \{[\s\S]{0,400}?if \(cb\.screen\(\)\) return;[\s\S]{0,200}?if \(tt\.screen\(\)\) return;/,
     'paint must step aside while the table is up, as it does for the browser');
   // the arrangement rides the same debounced save as everything else
   assert.match(dk, /function flushSave\(\)[\s\S]*?piles: deck\.piles \?\? null,[\s\S]*?\}\)\.then/, 'the save sends the piles');

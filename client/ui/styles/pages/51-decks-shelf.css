@@ -1,5 +1,144 @@
 /* ── the Decks page: the shelf of deck boxes and the preview (ui/pages/decks.ts, BL-65, 2026-11-04) ──
-   The shelf bar (+ New deck, Import, the sort, "8 of 20"), the deck boxes (cover, name, count, the
-   problems flag), and the open deck's preview panel beside them. It sits after the frame so it may
-   lay out regions inside it; the old deck page's rules (23-decks.css, 35-deck-modals.css) come
-   earlier and go away when the page that used them does. Tokens only (921). */
+   The shelf bar (+ New deck, Import, the sort, "8 of 20"), the deck boxes (cover, name, elements, count ·
+   record, the Bo3 badge), and the open deck's preview panel beside them; then the page's side sheets and
+   the builder's Deck info sheet. It sits after the frame so it may lay out regions inside it. The page
+   never scrolls: the shelf scrolls inside itself if it has to, and so does the preview's card list.
+   Tokens only (921). */
+
+/* the two columns: the shelf takes what the preview leaves */
+.deckpage .dkshelfpage { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(340px, 400px);
+  gap: var(--space-6); }
+.dkshelfcol { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; min-height: 0; }
+.dkshelfbar { gap: var(--space-4) var(--space-5); }
+.dkshelfcount { color: var(--color-text-muted); font-size: var(--text-13); white-space: nowrap; }
+.dkshelfnote { flex: none; margin: 0; }
+
+/* ── the shelf ── */
+.dkshelf { flex: 0 1 auto; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(156px, 1fr));
+  gap: var(--space-6); align-content: start; padding: var(--space-1); }
+.dkbox { position: relative; display: flex; flex-direction: column; padding: 0; text-align: left; min-width: 0;
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden;
+  color: var(--color-text); cursor: pointer; }
+.dkbox:hover { border-color: var(--color-border-strong); }
+.dkbox.on { border-color: var(--color-accent); box-shadow: 0 0 0 1px var(--color-accent); }
+.dkboxart { display: block; height: 104px; overflow: hidden; background: var(--color-surface-raised); }
+/* the scan is 63:88: crop to the art, which is the top of the card */
+.dkboxart img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 28%; display: block; }
+.dkboxcc { position: absolute; top: var(--space-4); left: var(--space-4); }
+.dkboxbody { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4) var(--space-5) var(--space-5); }
+/* the bundled names are long and differ only at the end ("Single-Box Battle Deck – Water"): two lines */
+.dkboxname { font-weight: 600; font-size: var(--text-14); line-height: 1.25; min-height: 2.5em; overflow: hidden;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.dkboxmeta { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3);
+  color: var(--color-text-muted); font-size: var(--text-12); }
+.dkboxcount { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dkboxcount.warn { color: var(--color-warning); font-weight: 600; }
+.dkdots { display: inline-flex; gap: var(--space-2); flex: none; }
+.dkdot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 1px var(--color-border); }
+.dkempty { margin: var(--space-7) 0; }
+
+/* ── the preview ── */
+.dkprev { display: flex; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden;
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+.dkprev--none { align-items: center; justify-content: center; }
+.dkprevbanner { flex: none; height: 116px; overflow: hidden; position: relative; background: var(--color-surface-raised); }
+.dkprevbanner img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; display: block; }
+.dkprevbanner::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, var(--color-surface)); }
+.dkprevhead { flex: none; padding: 0 var(--space-6); margin-top: calc(-1 * var(--space-7)); position: relative; }
+.dkprevname { margin: 0 0 var(--space-2); font-family: var(--font-display); font-size: var(--text-26); font-weight: 600; line-height: 1.1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dkprevmeta { color: var(--color-text-muted); font-size: var(--text-12); }
+.dkprevmeta a { color: var(--color-accent); }
+.dkprevdesc { flex: none; margin: var(--space-4) var(--space-6) 0; font-size: var(--text-13); line-height: 1.45; }
+.dkprevdesc .deckdescbody { max-height: 4.4em; overflow: hidden; }
+.dkprevdesc .deckdescbody > :first-child { margin-top: 0; }
+.dkprevdesc .deckdescbody > :last-child { margin-bottom: 0; }
+.dkprevdesc.on { max-height: 34%; overflow-y: auto; }
+.dkprevdesc.on .deckdescbody { max-height: none; }
+.dkprevmore { padding-left: 0; padding-right: 0; }
+.dkprevmain { flex: none; display: flex; gap: var(--space-4); padding: var(--space-5) var(--space-6) 0; }
+.dkprevedit { flex: 1; }
+.dkprevplay.on { border-color: var(--color-success); color: var(--color-success); }
+.dkprevacts { flex: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); padding: var(--space-3) var(--space-5) 0; }
+.dkprevacts .ui-icon-button { min-width: 0; }
+.dkprevlisthead { flex: none; display: flex; justify-content: space-between; gap: var(--space-4); padding: var(--space-5) var(--space-6) var(--space-3);
+  color: var(--color-text-muted); font-size: var(--text-11); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+/* the list by cost, in two columns; it scrolls inside itself when the panel is short */
+.dkprevlist { flex: 1 1 auto; min-height: 0; overflow-y: auto; columns: 2; column-gap: var(--space-6);
+  padding: 0 var(--space-6) var(--space-3); border-top: 1px solid var(--color-border); padding-top: var(--space-3); }
+.dklrow { display: flex; align-items: center; gap: var(--space-3); width: 100%; min-height: 22px; padding: 0; break-inside: avoid;
+  background: none; border: 0; color: var(--color-text); font-size: var(--text-12); text-align: left; cursor: pointer; }
+.dklrow:hover .dklname { color: var(--color-accent); }
+.dklcost { flex: none; width: 17px; height: 17px; border-radius: 50%; background: var(--color-surface-raised); border: 1px solid var(--color-border-strong);
+  font-size: var(--text-11); font-weight: 700; line-height: 15px; text-align: center; }
+.dklname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dkln { flex: none; color: var(--color-text-muted); font-size: var(--text-11); }
+.dkln.bad { color: var(--color-danger); font-weight: 700; }
+.dkprevempty { margin: var(--space-4) 0; color: var(--color-text-muted); font-size: var(--text-12); }
+.dkprevfoot { flex: none; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+  padding: var(--space-4) var(--space-6); border-top: 1px solid var(--color-border); font-size: var(--text-12); }
+.dkprevlegal--warn { color: var(--color-warning); }
+.dkprevlegal--bad { color: var(--color-danger); }
+.dkprevgames { flex: none; }
+
+/* ── the sheets (the Decks page's, and the builder's Deck info) ── */
+.dksheetform { display: flex; flex-direction: column; gap: var(--space-5); align-items: flex-start; }
+.dksheetform .ui-field { align-self: stretch; }
+.dksheetnote { margin: var(--space-4) 0; color: var(--color-text-muted); font-size: var(--text-13); }
+.dksheeth { margin: var(--space-7) 0 var(--space-4); color: var(--color-accent); font-size: var(--text-12);
+  letter-spacing: .08em; text-transform: uppercase; }
+.dksharebar { display: flex; gap: var(--space-4); align-items: center; margin-top: var(--space-5); }
+.dksharebar .sharelink { flex: 1; min-width: 0; }
+.sharebar.off { opacity: .55; }
+.dksheet .dkexporttext { width: 100%; margin-top: var(--space-4); font: 12px ui-monospace, monospace; }
+.dkgamesrec { margin: 0 0 var(--space-5); }
+.dkgamesrec .good { color: var(--color-success); }
+.dkgamesrec .bad { color: var(--color-danger); }
+/* the card's own × would sit beside the sheet's */
+.dkcardsheet .cbclose { display: none; }
+.dkcardsheet .cbdetail { position: static; width: auto; max-height: none; box-shadow: none; border: 0; padding: 0; background: none; }
+
+/* Deck info: the cover picker, every distinct card in the deck at once */
+.dkcoverbar { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-4); }
+.dkcovergrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+  gap: var(--space-3); max-height: 220px; overflow: auto; padding: var(--space-1); }
+.dkcovertile { padding: 0; border-radius: var(--radius-md); overflow: hidden; background: var(--color-surface-raised);
+  border: 2px solid transparent; line-height: 0; }
+.dkcovertile img { width: 100%; display: block; aspect-ratio: auto 18 / 25; }
+.dkcovertile:hover { border-color: var(--color-border); }
+.dkcovertile.on { border-color: var(--color-accent); }
+.dkinfodesc { margin-bottom: var(--space-4); font-size: var(--text-13); line-height: 1.45; max-height: 160px; overflow: auto; }
+.dkdescedit { display: flex; flex-direction: column; gap: var(--space-4); }
+.dkdescedit textarea { min-height: 180px; }
+.dkdescbtns { display: flex; align-items: center; gap: var(--space-4); }
+/* the description syntax note in the editor */
+.dksyntax { background: var(--color-surface-raised); border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5); font-size: var(--text-13); line-height: 1.5; max-height: 40vh; overflow: auto; }
+.dksyntax h3 { margin: var(--space-4) 0 var(--space-3); color: var(--color-accent); font-size: var(--text-13); }
+.dksyntax h3:first-child { margin-top: 0; }
+.dksyntax p, .dksyntax ul { margin: 0 0 var(--space-4); }
+.dksyntax ul { padding-left: 20px; }
+.dksyntax code { background: var(--color-bg); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-2);
+  font: 12px ui-monospace, monospace; }
+.dksyntax .accttable td:first-child { white-space: nowrap; }
+
+/* ── smaller windows: a tablet, landscape and upright ── */
+@media (max-width: 1100px) {
+  .deckpage .dkshelfpage { grid-template-columns: minmax(0, 1fr) minmax(320px, 360px); gap: var(--space-5); }
+  .dkshelf { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-5); }
+}
+@media (max-width: 900px) {
+  /* an upright iPad: the shelf is one narrow column of boxes beside a wide preview */
+  .deckpage .dkshelfpage { grid-template-columns: minmax(170px, 1fr) minmax(0, 1.8fr); }
+  .dkshelf { grid-template-columns: minmax(0, 1fr); }
+  .dkshelfbar .dksort { order: 9; }
+}
+@media (max-height: 820px) {
+  .dkprevbanner { height: 84px; }
+  .dkboxart { height: 84px; }
+}
+/* below a tablet the shell lets go and the page scrolls; so do the regions */
+@media (max-width: 759.98px), (max-height: 599.98px) {
+  .deckpage .dkshelfpage { grid-template-columns: minmax(0, 1fr); }
+  .dkshelf, .dkprevlist { overflow: visible; }
+}

@@ -42,5 +42,6 @@ test('the pages it is for really draw data-prev on things that are not .card', (
   assert.match(read('pages/cards.ts'), /<div class="dktile cbtile[^"]*"\s+data-prev=/);
   assert.match(read('pages/meta.ts'), /data-prev="\$\{esc\(name\)\}" data-btn="meta-focus"/);
   assert.match(read('pages/cardstats.ts'), /<button class="csname" data-btn="meta-cs-focus" data-card="\$\{esc\(name\)\}" data-prev=/);
-  assert.match(read('decks.ts'), /data-prev=/);
+  // the Decks page's list since BL-65 (the deck page's tile grid is gone)
+  assert.match(read('pages/decks.ts'), /<button class="dklrow" type="button" data-btn="\$\{esc\(v\.focusBtn\)\}" data-card="\$\{esc\(r\.name\)\}" data-prev=/);
 });

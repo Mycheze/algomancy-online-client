@@ -41,10 +41,11 @@ const code = (f: string): string => read(f)
   .replace(/\/\*[\s\S]*?\*\//g, ' ')
   .replace(/(^|[^:])\/\/.*$/gm, '$1');
 
-test('the deck drawer and the browser share one predicate', () => {
-  const decks = read('decks.ts');
+// BL-65: the deck page's add drawer is gone; the builder's pool (ui/tabletop.ts) is what searches beside a deck now
+test('the builder\'s pool and the browser share one predicate', () => {
+  const decks = read('tabletop.ts');
   const cards = read('cards.ts');
-  assert.match(decks, /from '\.\/cardsearch\.ts'/, 'the drawer must use the shared parser');
+  assert.match(decks, /from '\.\/cardsearch\.ts'/, 'the pool must use the shared parser');
   assert.match(cards, /from '\.\/cardsearch\.ts'/, 'so must the browser');
   // the private filter this replaced, in the shape it had
   assert.doesNotMatch(decks, /let searchEl\b/, 'the drawer grew its own element filter again');
@@ -52,10 +53,10 @@ test('the deck drawer and the browser share one predicate', () => {
   assert.doesNotMatch(decks, /name\.toLowerCase\(\)\.includes\(q\)/, 'the drawer grew its own substring matcher again');
 });
 
-test('the drawer offers only what is deck-legal, and says the whole pool is elsewhere', () => {
-  const decks = read('decks.ts');
-  assert.match(decks, /allRows\(\)\.filter\(r => r\.playable\)/, 'the drawer pool must be the legal subset');
-  assert.match(decks, /data-btn="deck-browse"/, 'the drawer must offer the full browser');
+test('the pool offers only what is deck-legal', () => {
+  // BL-65: the drawer's "browse all cards" went with the drawer; the pool's More filters sheet replaces it
+  const decks = read('tabletop.ts');
+  assert.match(decks, /allRows\(\)\.filter\(r => r\.playable\)/, 'the pool must be the legal subset');
   // and the claim that makes that honest: the browser really does have more
   assert.ok(allRows().length > allRows().filter(r => r.playable).length);
 });
@@ -70,14 +71,9 @@ test('the browser reaches the open deck only through the bridge', () => {
   for (const via of ['bridge?.add(', 'bridge?.remove(', 'bridge?.toMaybe(']) {
     assert.ok(cards.includes(via), `every edit goes through the bridge — missing ${via}`);
   }
-  // and the bridge on the other side goes through the one funnel
-  const decks = read('decks.ts');
-  const bridgeBody = decks.slice(decks.indexOf('function bridgeToOpenDeck'), decks.indexOf('// ── clicks'));
-  assert.ok(bridgeBody.length > 100, 'bridgeToOpenDeck moved — this test needs updating');
-  for (const m of bridgeBody.matchAll(/^\s{4}(add|remove|toMaybe):/gm)) {
-    const line = bridgeBody.slice(bridgeBody.indexOf(m[0]));
-    assert.match(line.split('\n')[0]!, /edit\(/, `${m[1]} must go through edit()`);
-  }
+  // BL-65: the deck page no longer lends the browser a bridge (bridgeToOpenDeck is gone; the builder's pool
+  // adds through the table's one door), so no deck can be edited from the browser any more
+  assert.doesNotMatch(code('decks.ts'), /useDeck\(/, 'the deck page handed the browser a deck again');
 });
 
 test('the deck page does not paint underneath the browser', () => {
@@ -87,7 +83,7 @@ test('the deck page does not paint underneath the browser', () => {
   // Measured over CDP at 6 writes for 3 clicks before this, 3 after.
   const decks = read('decks.ts');
   const body = decks.slice(decks.indexOf('function paint(): void {'));
-  const head = body.slice(0, body.indexOf('$app.classList.remove'));
+  const head = body.slice(0, body.indexOf('paintDecks('));
   assert.match(head, /if \(cb\.screen\(\)\) return;/,
     'decks.ts paint() must yield to the card browser before it writes anything');
 });

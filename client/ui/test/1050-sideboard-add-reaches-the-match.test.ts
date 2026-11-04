@@ -11,10 +11,13 @@
  *   §1 the empty Sideboard pile keeps one card's room, outlined — a drop slot
  *      as tall as a card, so the column under its header IS the sideboard
  *   §2 every add route, end to end through the REAL deck routes
- *      (server/api-decks.ts over server/collection.ts, in process): the
- *      binder's SB on the table, the Sideboard tab's own add drawer, the cards
- *      drawer's SB and a deck tile's SB — each card is in the sideboard, and
- *      still there after the collection is fetched again
+ *      (server/api-decks.ts over server/collection.ts, in process). BL-65
+ *      (2026-11-04) took the deck page's Sideboard tab, its drawers and its
+ *      tiles' SB away; the routes now are the builder's: the pool with its
+ *      Add to switch on Side (the owner's own route, the old binder SB), and a
+ *      deck card's menu To sideboard (a move — one more card into the deck
+ *      keeps it at thirty). Each card is in the sideboard, and still there
+ *      after the collection is fetched again
  *   §3 and it reaches the match: the Competitive registration's deck verdict
  *      (server/match.ts registrationFor) carries that sideboard
  */
@@ -74,9 +77,8 @@ await settle();
 const pileOf = (html: string, zone: string): string =>
   new RegExp(`<section class="ttpile[^"]*" data-tt-zone="${zone}"[\\s\\S]*?</section>`).exec(html)?.[0] ?? '';
 const namesIn = (pile: string): string[] => [...pile.matchAll(/data-tt-i="\d+" data-card="([^"]+)"/g)].map(m => m[1]!);
-/** the sideboard tab's tiles, by name */
-const sideTiles = (html: string): string[] =>
-  [...html.matchAll(/data-btn="deck-from-side" data-card="([^"]+)"/g)].map(m => m[1]!);
+/** the preview's sideboard count */
+const sideCount = (html: string): string => /<span>Side (\d+\/7) ·/.exec(html)?.[1] ?? '';
 /** a card the button offers that is in neither board */
 const freshFrom = (html: string, attr: string, taken: readonly string[]): string => {
   const hit = [...html.matchAll(new RegExp(`${attr} data-card="([^"]+)"`, 'g'))].map(m => m[1]!)
@@ -103,47 +105,39 @@ test('§1 the empty Sideboard pile keeps a card\'s room — somewhere to drop', 
 });
 
 test('§2 every add route puts the card in the sideboard, and a refetch still has it', async () => {
-  // the table: the binder's SB (the owner's own route), then Back
-  let html = ui.html();
-  const viaBinder = freshFrom(html, 'data-dd="side"', ADDED);
-  html = ui.click({ dd: 'side', card: viaBinder });
-  ADDED.push(viaBinder);
-  assert.deepEqual(namesIn(pileOf(html, 'side')), [viaBinder], 'on the table');
-  ui.click({ btn: 'tt-close' });
-  await settle();
-  // the Sideboard tab: its own add drawer, whose + is the sideboard's
-  html = ui.click({ btn: 'deck-tab', tab: 'side' });
-  assert.match(html, /data-btn="deck-adding">\+ Add cards to the sideboard</, 'the sideboard tab can add');
-  assert.doesNotMatch(html, /data-btn="deck-browse"/, 'and does not offer the browser, which adds to the deck');
-  html = ui.click({ btn: 'deck-adding' });
-  assert.doesNotMatch(/<div id="dk-results"[\s\S]*$/.exec(html)![0], /data-btn="deck-add"/, 'its + is not the deck\'s');
-  assert.doesNotMatch(html, /data-btn="deck-browse"/, 'open, no browse either');
-  const viaSideDrawer = freshFrom(html, 'data-btn="deck-add-side"', ADDED);
-  html = ui.click({ btn: 'deck-add-side', card: viaSideDrawer });
-  ADDED.push(viaSideDrawer);
-  ui.click({ btn: 'deck-adding-close' });
-  // the cards tab: the drawer's SB, and a deck tile's SB (a move — so one more
-  // card into the deck keeps it at thirty)
-  html = ui.click({ btn: 'deck-tab', tab: 'cards' });
-  html = ui.click({ btn: 'deck-adding' });
-  const viaDrawerSb = freshFrom(html, 'data-btn="deck-add-side"', ADDED);
-  ui.click({ btn: 'deck-add-side', card: viaDrawerSb });
-  ADDED.push(viaDrawerSb);
+  // the pool, its switch on Side: a tap adds a copy there (the owner's own route)
+  let html = ui.click({ btn: 'tt-target', to: 'side' });
+  const viaPool = freshFrom(html, 'data-btn="tt-add" data-tt-src="binder\\|[^"]+"', ADDED);
+  html = ui.click({ btn: 'tt-add', 'tt-src': `binder|${viaPool}` });
+  ADDED.push(viaPool);
+  assert.deepEqual(namesIn(pileOf(html, 'side')), [viaPool], 'on the table');
+  const viaPool2 = freshFrom(html, 'data-btn="tt-add" data-tt-src="binder\\|[^"]+"', ADDED);
+  html = ui.click({ btn: 'tt-add', 'tt-src': `binder|${viaPool2}` });
+  ADDED.push(viaPool2);
+  // a deck card's menu: To sideboard moves a copy across
   const moved = MAIN0[0]!;
-  ui.click({ btn: 'deck-to-side', card: moved });
+  const src = [...html.matchAll(/data-tt-src="(pile\|[^"]+)"/g)].map(m => m[1]!).find(k => k.endsWith(`|${moved}`))!;
+  ui.click({ 'tt-src': src });
+  html = ui.click({ btn: 'tt-toside' });
   ADDED.push(moved);
+  assert.deepEqual(namesIn(pileOf(html, 'side')), ADDED, 'three in the sideboard, in the order they came');
+  // one more card into the deck keeps it at thirty: the switch back on Deck
+  ui.click({ btn: 'tt-target', to: 'deck' });
   html = ui.html();
-  const refill = freshFrom(html, 'data-btn="deck-add"', ADDED);
-  ui.click({ btn: 'deck-add', card: refill });
+  const refill = freshFrom(html, 'data-btn="tt-add" data-tt-src="binder\\|[^"]+"', ADDED);
+  ui.click({ btn: 'tt-add', 'tt-src': `binder|${refill}` });
+  ui.click({ btn: 'tt-close' });
   ui.tick();                                   // the save's debounce
   await settle();
   // the server's copy, and the page's after a fresh fetch
   assert.deepEqual([...(decksOf(me).find(d => d.id === DECK.id)!.sideboard ?? [])].sort(), [...ADDED].sort(), 'stored');
-  ui.click({ btn: 'deck-refresh' });
+  html = ui.click({ btn: 'deck-refresh' });
   await settle();
-  html = ui.click({ btn: 'deck-tab', tab: 'side' });
-  assert.deepEqual(sideTiles(html).sort(), [...ADDED].sort(), 'shown in the SB after a refetch');
-  assert.match(html, /data-tab="side">sideboard <span class="acctcount">4\/7<\/span>/);
+  html = ui.click({ btn: 'deck-open', id: DECK.id });
+  assert.equal(sideCount(html), '3/7', 'the Decks page counts them after a refetch');
+  html = ui.click({ btn: 'deck-tabletop' });
+  assert.deepEqual([...namesIn(pileOf(html, 'side'))].sort(), [...ADDED].sort(), 'and the table shows them');
+  ui.click({ btn: 'tt-close' });
 });
 
 test('§3 the registration\'s deck verdict carries that sideboard', () => {
@@ -151,5 +145,5 @@ test('§3 the registration\'s deck verdict carries that sideboard', () => {
   assert.ok(!('error' in reg), `registrable: ${'error' in reg ? reg.error : ''}`);
   assert.deepEqual([...reg.side].sort(), [...ADDED].sort());
   assert.equal(reg.main.length, 30);
-  assert.ok(!reg.main.includes(ADDED[3]!), 'the moved copy left the main deck');
+  assert.ok(!reg.main.includes(ADDED[2]!), 'the moved copy left the main deck');
 });

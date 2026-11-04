@@ -187,13 +187,16 @@ test('§3d the NUMBER comes back over the legal cap, and only there', () => {
 const decksSrc = readFileSync(join(UI, 'decks.ts'), 'utf8');
 // the shared deck's grid is drawn by pages/meta.ts since the design-system round
 const metaSrc = readFileSync(join(UI, 'pages', 'meta.ts'), 'utf8');
+// BL-65 (2026-11-04): the deck page's grouped tile grid is gone. The Decks page shows a deck as a LIST by cost
+// (pages/decks.ts), and the builder lays its copies out as cards on the table, so the shared deck page is the
+// one surface left that groups tiles and stacks them; §4a and §4c ask it alone. §4b still asks both files.
 
-test('§4a both pages group through the shared module', () => {
+test('§4a the shared deck groups through the shared module', () => {
   // ⚠ THE IMPORT, not a mention. A break-test that shadowed `deckSections`
   // with a local `const` walked straight through a `/deckSections\(/` check —
   // the symbol was there, it just was not the shared one. So the assertion is
   // that the name is bound BY the import from decklayout.ts.
-  for (const [name, src] of [['decks.ts', decksSrc], ['meta.ts', metaSrc]] as const) {
+  for (const [name, src] of [['meta.ts', metaSrc]] as const) {
     const imports = [...src.matchAll(/import \{([^}]*)\} from '\.\.?\/decklayout\.ts';/g)]
       .flatMap(m => m[1]!.split(',').map(x => x.trim()));
     assert.ok(imports.includes('deckSections'),
@@ -214,8 +217,8 @@ test('§4b neither page kept a bucketing of its own', () => {
   }
 });
 
-test('§4c both pages draw copies rather than counting them', () => {
-  for (const [name, src] of [['decks.ts', decksSrc], ['meta.ts', metaSrc]] as const) {
+test('§4c the shared deck draws copies rather than counting them', () => {
+  for (const [name, src] of [['meta.ts', metaSrc]] as const) {
     assert.match(src, /stackLayers\(/, `${name} must draw the copies`);
     assert.match(src, /needsCountBadge\(/, `${name} must use the one cap rule`);
     // the old unconditional badge, in either page's spelling

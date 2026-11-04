@@ -1,88 +1,19 @@
-/* ── the deck collection (ui/decks.ts) ─────────────────────────────────
-   A two-column page: the decks you own down the left, the open one on the
-   right. The card grid is real card art on purpose — the whole request was
-   "I want to see my decks visually and make cuts" — so a tile is a scan with
-   its controls sitting on top of it rather than a row in a list. Sizes are
-   set so a 30-card deck grouped by mana is one screenful on a laptop. */
-/* 12/22px like every other page — this was `4px 2px`, and on any window
-   narrower than 1400px the grid ran to within 2px of the viewport edge */
-.deckpage { max-width: 1400px; margin: 0 auto; padding: var(--space-5) var(--space-7) var(--space-7); }
-.deckpage h1 { margin: 0; font-size: var(--text-22); letter-spacing: .04em; }
-.deckmain { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: var(--space-5); align-items: start; }
-@media (max-width: 900px) { .deckmain { grid-template-columns: 1fr; } }
-
+/* ── deck tiles and the deck pieces other pages borrow ───────────────────
+   The old deck page (a deck list down the left, the open deck's tabs and tile
+   grid on the right) went in BL-65 (2026-11-04): the Decks page is
+   pages/51-decks-shelf.css and the builder is the table. What stays here is
+   what other surfaces still draw — the shared deck's tile grid and its
+   toolbar (pages/meta.ts), the card browser's tiles (pages/cards.ts) — and
+   the stacked-tile geometry engine test 222 parses. */
 .homedecks { margin-top: var(--space-3); }
 
-/* ── the rail ── */
-.decklist { display: flex; flex-direction: column; gap: var(--space-3); position: sticky; top: 8px; }
-.deckmakebtns { display: flex; gap: var(--space-3); flex-wrap: wrap; }
-.deckmakebtns button { flex: 1; }
-.deckimportbox { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
-  padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
-.deckimportbox textarea { width: 100%; }
-
-.deckrow { display: grid; grid-template-columns: 46px minmax(0, 1fr) 18px; gap: var(--space-4); align-items: center;
-  text-align: left; padding: var(--space-3); background: var(--panel); border: 1px solid var(--line);
-  border-radius: var(--radius-lg); cursor: pointer; }
-.deckrow.on { border-color: var(--accent); background: var(--panel2); }
-.deckrowart { width: 46px; height: 46px; border-radius: var(--radius-md); overflow: hidden; background: var(--panel2);
-  display: block; }
-/* the scan is 63:88 — crop to the art, which is the top of the card */
-.deckrowart img { width: 100%; height: auto; margin-top: -18%; display: block; }
-.deckrowbody { min-width: 0; display: flex; flex-direction: column; gap: var(--space-1); }
-/* the bundled deck names are long and differ only at the end
-   ("Single-Box Battle Deck - Water v1.1.0"), so a one-line ellipsis made all
-   five rows read identically — two lines is what tells them apart */
-.deckrowname { font-weight: 700; overflow: hidden; display: -webkit-box;
-  -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2; }
-.deckrowmeta { color: var(--dim); font-size: var(--text-11); }
-.deckrowrec { font-size: var(--text-11); color: var(--text); }
-.deckflag { font-weight: 700; text-align: center; }
-.deckflag.ok { color: var(--glow); }
-.deckflag.bad { color: var(--accent); }
-
-/* ── the open deck ── */
-.deckdetail { min-width: 0; }
-.deckhero { display: grid; grid-template-columns: 132px minmax(0, 1fr) auto; gap: var(--space-5);
-  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-5);
-  margin-bottom: var(--space-4); }
-.deckcover { width: 132px; border-radius: var(--radius-md); overflow: hidden; background: var(--panel2);
-  display: flex; align-items: center; justify-content: center; min-height: 100px; }
-/* Report [142]: reserve the box, same as `.card img` — the deck page is the other half
-   of report [142] ("it happens on most pages, deck building"), and a cover that
-   is 0px tall until it loads shortens the page under `alight()`'s restore in
-   exactly the way it shortens the board under restoreViewport's. */
-.deckcover img { width: 100%; display: block; aspect-ratio: auto 18 / 25; }
-.deckheroinfo { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
+/* the old deck title's type (test 903 pins this rule: a font shorthand that mixed `inherit` in) */
 .deckname { font-family: inherit; font-weight: 700; font-size: 19px; line-height: 1.2;
   border: 1px solid transparent; padding: var(--space-2) var(--space-4); width: 100%; }
-.deckname:hover { border-color: var(--line); }
-.deckname:focus { border-color: var(--accent); outline: none; }
-.deckfacts { color: var(--dim); display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
-.deckstatus { font-size: var(--text-12); border-radius: var(--radius-md); padding: var(--space-2) var(--space-4); }
-.deckstatus.ok { color: var(--glow); background: var(--color-success-bg); }
-.deckstatus.bad { color: var(--accent); background: var(--color-accent-wash); }
-.deckcc { align-self: flex-start; }
 .acctcount.bad { color: var(--danger); font-weight: 700; }
-/* under the main list: the way to the sideboard tab (owner, 2026-11-03) */
-.dksidelink { margin-top: var(--space-4); }
 .deckrecline { font-size: var(--text-12); }
 .deckrecline a { color: var(--accent); margin-left: var(--space-3); }
-.deckbtns { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-1); }
 .dkdanger { border-color: var(--danger); color: var(--danger); }
-
-/* the action column: ▶ and ⚙, on the side rather than under the facts. Two
-   square buttons, because the words they used to carry are in their tooltips
-   and the one thing that genuinely needed saying in prose — why ▶ is disabled
-   — is the .deckstatus line to their left. */
-.deckacts { display: flex; flex-direction: column; gap: var(--space-3); align-self: start; }
-.dkicon { width: 38px; height: 38px; padding: 0; font-size: var(--text-14); line-height: 1;
-  display: inline-flex; align-items: center; justify-content: center; flex: none; }
-.dkicon.play { font-size: var(--text-14); }
-.dkicon.play:not(.on):not(:disabled) { border-color: var(--accent); color: var(--accent); }
-.dkicon.play.on { border-color: var(--glow); color: var(--glow); background: var(--color-success-bg); }
-.dkicon:disabled { opacity: .4; }
-.sharebar .dkicon, .dkmodalhead .dkicon { width: 30px; height: 30px; font-size: var(--text-13); }
 .deckbody { margin-top: var(--space-4); }
 
 /* ── the card grid ── */
@@ -101,21 +32,6 @@
   border: 1px solid var(--line); aspect-ratio: 63 / 88; }
 .dktile.iscover { border-color: var(--accent); }
 .dktile.overcap { border-color: var(--danger); }
-/* AT THE CAP, IN THE ADD DRAWER ONLY. Two copies is the cap, so the tile stops
-   OFFERING a third everywhere (BL-34) — but the GREY is news only where you are
-   shopping. In the drawer "you already have the most of this" is the answer to
-   the question you are asking; in the deck's own grid it is not, because a deck
-   of two-ofs is what a deck looks like. Shipped without that split, a normal
-   constructed deck rendered entirely in greyscale (measured: 15/15 tiles), and
-   the owner read it as damage: *"the cards are weirdly greyed out, for some
-   reason."* `ui/decks.ts::tile` therefore writes this class only where the card
-   is being shopped for; the withheld `+` still carries the rule everywhere.
-
-   It is not disabled either — the buttons that remain still work and a deck
-   holding three still saves — so it has to read as "nothing more to take here"
-   and not as "broken": dimmed art, normal border. */
-.dktile.atcap .dkart { filter: grayscale(.55) brightness(.72); }
-.dktile.atcap.overcap .dkart { filter: none; }
 .dktile[data-btn] { cursor: pointer; }
 .dkart { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
 /* COPIES ARE DRAWN, NOT COUNTED. Owner, 2026-08-29: "instead of showing a x2
@@ -207,9 +123,6 @@
 .dkbtns button:hover { background: var(--accent); color: var(--color-text-on-accent); }
 
 .dkadd { margin-top: var(--space-3); }
-.dkdrawer { margin-top: var(--space-4); border: 1px solid var(--accent); border-radius: var(--radius-lg); padding: var(--space-4);
-  background: var(--panel2); }
-.dkdrawerhead { display: flex; gap: var(--space-3); margin-bottom: var(--space-3); }
 .dksearch { flex: 1; }
 .dkfilters { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-3); }
 

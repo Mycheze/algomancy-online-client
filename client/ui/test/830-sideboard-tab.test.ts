@@ -1,16 +1,18 @@
-/* THE SIDEBOARD TAB AND THE COMPETITIVE CHIP (docs/22 §4.5) — ui/decks.ts,
+/* THE SIDEBOARD ON THE DECKS PAGE, AND THE COMPETITIVE CHECK (docs/22 §4.5) — ui/decks.ts,
  * driven through the real client.
  *
- *   §1 the deck page has a sideboard tab, second (owner, 2026-11-03; test
- *      1051), counting n/7, and a Competitive chip beside the legality line
- *   §2 the tab draws the sideboard as tiles: − and « on every one, + only
- *      under the copy cap counted across BOTH boards
- *   §3 a copy moves to the sideboard and back; an eighth card turns the
- *      chip red with its reason and the count red
- *   §4 the cap across both boards refuses a move that would break it, with
- *      the reason; a move between the boards never is
- *   §5 the save carries the sideboard — and never `swaps`, even from a reply
- *      that still has them (saved swaps were taken out on 2026-11-03)
+ * Rewritten for BL-65 (2026-11-04): the deck page's Sideboard TAB, its tiles with − « +,
+ * and the Competitive chip beside the legality line are gone. The sideboard is the rail of
+ * the builder's table (831), the Decks page says it in the preview and on the box, and the
+ * builder's count pill carries the Competitive problem. What this file guarded survives:
+ *
+ *   §1 the preview counts Side n/7 and says "Legal · Competitive ready"; the box wears Bo3 ready
+ *   §2 an eighth sideboard card: no Bo3 badge, and the preview and the builder's pill say why
+ *   §3 a copy to the sideboard and back on the table, and the Decks page follows
+ *   §4 the cap across both boards refuses a move that would break it, with the reason; a move
+ *      between the boards never is
+ *   §5 the save carries the sideboard — and never `swaps`, even from a reply that still has
+ *      them (saved swaps were taken out on 2026-11-03)
  *   §6 the export file carries the sideboard, and no swaps
  */
 import { test } from 'node:test';
@@ -20,20 +22,22 @@ import { DECK_LIST } from '../../engine/src/cards/registry.ts';
 const N = DECK_LIST.filter(n => /^[A-Za-z ]+$/.test(n)).slice(0, 30);
 const MAIN = N.slice(0, 16).flatMap(n => [n, n]);            // 32 cards
 const SIDE = N.slice(16, 23);                                // 7 singles
+const base = {
+  maybe: [], cover: null, author: 'you', createdAt: '2026-11-02T00:00:00Z', updatedAt: '2026-11-02T00:00:00Z',
+  problems: [], ccProblems: [], record: { games: 0, wins: 0, losses: 0, unresolved: 0, lastPlayed: null },
+};
 const DECK = {
-  id: 'd830', name: 'Side deck', cards: MAIN, maybe: [], sideboard: SIDE,
+  ...base, id: 'd830', name: 'Side deck', cards: MAIN, sideboard: SIDE,
   // a deck saved while swaps existed — an older reply may still carry them
   swaps: [{ id: 'w1', name: 'vs control', out: [N[0]], in: [N[16]] }],
-  cover: null, author: 'you', createdAt: '2026-11-02T00:00:00Z', updatedAt: '2026-11-02T00:00:00Z',
-  problems: [], ccProblems: [],
-  record: { games: 0, wins: 0, losses: 0, unresolved: 0, lastPlayed: null },
 };
+const EIGHT = { ...base, id: 'd8', name: 'Eight', cards: MAIN, sideboard: N.slice(16, 24), updatedAt: '2026-11-01T00:00:00Z' };
 const POSTS: { url: string; body: Record<string, unknown> }[] = [];
 const g = globalThis as Record<string, unknown>;
 g['__UI_DRIVER_SEARCH'] = '';
 g['__UI_DRIVER_STORE'] = { algoToken: 't830' };
 g['__UI_DRIVER_FETCH'] = async (url: string, init?: { body?: string }) => {
-  if (url === '/api/decks') return { status: 200, json: async () => ({ ok: true, decks: [DECK] }) };
+  if (url === '/api/decks') return { status: 200, json: async () => ({ ok: true, decks: [DECK, EIGHT] }) };
   if (init?.body) POSTS.push({ url, body: JSON.parse(init.body) as Record<string, unknown> });
   return new Promise(() => {});
 };
@@ -45,52 +49,54 @@ await flush();
 ui.click({ btn: 'deck-openpage' });
 await flush();
 
-/** the tab buttons' data-tab values, in order */
-const tabs = (html: string): string[] => [...html.matchAll(/class="accttab[^"]*" data-btn="deck-tab" data-tab="(\w+)"/g)].map(m => m[1]!);
-/** the tile for `name` in the grid on screen, as markup */
-const tileOf = (html: string, name: string): string => {
-  const at = html.indexOf(`data-btn="deck-focus" data-card="${name}"`);
-  assert.ok(at >= 0, `no tile for ${name}`);
-  return html.slice(at, html.indexOf('</span>', html.indexOf('class="dkbtns"', at)));
-};
-const chip = (html: string): string => /<span class="deckstatus (?:ok|bad) deckcc"[^>]*>[^<]*<\/span>/.exec(html)?.[0] ?? '';
+const box = (html: string, id: string): string =>
+  new RegExp(`<button class="dkbox[^"]*" type="button" data-btn="deck-open" data-id="${id}"[\\s\\S]*?</button>`).exec(html)?.[0] ?? '';
+const sideHead = (html: string): string => /<div class="dkprevlisthead">[\s\S]*?<\/div>/.exec(html)?.[0] ?? '';
+const legal = (html: string): string => /dkprevlegal[^>]*>([^<]*)</.exec(html)?.[1] ?? '';
+const pileOf = (html: string, zone: string): string =>
+  new RegExp(`<section class="ttpile[^"]*" data-tt-zone="${zone.replace(/\|/g, '\\|')}"[\\s\\S]*?</section>`).exec(html)?.[0] ?? '';
+const namesIn = (pile: string): string[] => [...pile.matchAll(/data-tt-i="\d+" data-card="([^"]+)"/g)].map(m => m[1]!);
+const srcsIn = (pile: string): string[] => [...pile.matchAll(/data-tt-src="([^"]+)"/g)].map(m => m[1]!);
+const firstPile = (html: string): string => /data-tt-zone="(pile\|[^"]+)"/.exec(html)![1]!;
 
-test('§1 a sideboard tab, second, and a Competitive chip', () => {
-  const html = ui.html();
-  assert.deepEqual(tabs(html), ['cards', 'side', 'mana', 'maybe', 'games']);
-  assert.match(html, /data-tab="side">sideboard <span class="acctcount">7\/7<\/span>/, 'counting n/7');
-  assert.match(chip(html), /class="deckstatus ok deckcc">Competitive ✓/, 'a 32 + 7 deck is Competitive legal');
+test('§1 the preview counts the sideboard and says it is Competitive ready; so does the box', () => {
+  const html = ui.click({ btn: 'deck-open', id: 'd830' });
+  assert.match(sideHead(html), /<span>Main deck 32<\/span><span>Side 7\/7 · Maybe 0<\/span>/, 'counting n/7');
+  assert.equal(legal(html), 'Legal · Competitive ready', 'a 32 + 7 deck is Competitive legal');
+  assert.match(box(html, 'd830'), />Bo3 ready</);
 });
 
-test('§2 the tab draws the sideboard, + only under the cap across both boards', () => {
-  let html = ui.click({ btn: 'deck-tab', tab: 'side' });
-  assert.match(html, /<h3>Sideboard <span class="acctcount">7\/7<\/span><\/h3>/);
-  for (const n of SIDE) assert.ok(html.includes(`data-btn="deck-from-side" data-card="${n}"`), `${n} has its « into the deck`);
-  assert.match(tileOf(html, SIDE[0]!), /data-btn="deck-side-more"/, 'one copy in all: + is offered');
-  assert.match(tileOf(html, SIDE[0]!), /data-btn="deck-side-less"/);
-  html = ui.click({ btn: 'deck-side-more', card: SIDE[0]! });
-  assert.doesNotMatch(tileOf(html, SIDE[0]!), /data-btn="deck-side-more"/, 'two in the sideboard: no +');
-  assert.match(tileOf(html, SIDE[0]!), /data-btn="deck-side-less"/, 'and − stays');
-  ui.click({ btn: 'deck-side-less', card: SIDE[0]! });
-  // one copy on each board is the cap too
-  ui.click({ btn: 'deck-tab', tab: 'cards' });
-  html = ui.click({ btn: 'deck-to-side', card: N[0]! });
-  assert.doesNotMatch(tileOf(html, N[0]!), /data-btn="deck-more"/, 'the deck tile: one here + one there = no +');
-  html = ui.click({ btn: 'deck-tab', tab: 'side' });
-  assert.doesNotMatch(tileOf(html, N[0]!), /data-btn="deck-side-more"/, 'the sideboard tile: the same');
-  ui.click({ btn: 'deck-from-side', card: N[0]! });
+test('§2 an eighth card: no badge, and the preview and the builder say why', () => {
+  let html = ui.click({ btn: 'deck-open', id: 'd8' });
+  assert.doesNotMatch(box(html, 'd8'), /Bo3 ready/);
+  assert.match(sideHead(html), /Side 8\/7/);
+  assert.equal(legal(html), 'Legal · not Competitive: a sideboard holds at most 7 cards (got 8)', 'the chip says no, and why');
+  html = ui.click({ btn: 'deck-tabletop' });
+  assert.match(html, /ttpill--warn"[^>]*data-btn="tt-problems"/, 'the builder\'s pill is amber');
+  html = ui.click({ btn: 'tt-problems' });
+  assert.match(html, /Competitive: a sideboard holds at most 7 cards \(got 8\)/);
+  ui.click({ btn: 'tt-sheet-close' });
+  ui.click({ btn: 'tt-close' });
 });
 
-test('§3 a copy to the sideboard and back; an eighth turns the chip and the count red', () => {
-  ui.click({ btn: 'deck-tab', tab: 'cards' });
-  let html = ui.click({ btn: 'deck-to-side', card: MAIN[0]! });
-  assert.match(html, /data-tab="side">sideboard <span class="acctcount bad">8\/7<\/span>/, '8/7, red');
-  assert.match(chip(html), /class="deckstatus bad deckcc"[^>]*>Competitive ✗ · a sideboard holds at most 7 cards \(got 8\)/,
-    'the chip says no, and why');
-  html = ui.click({ btn: 'deck-tab', tab: 'side' });
-  html = ui.click({ btn: 'deck-from-side', card: MAIN[0]! });
-  assert.match(chip(html), /Competitive ✓/, 'and back');
-  assert.match(html, /<span class="acctcount">7\/7<\/span>/);
+test('§3 a copy to the sideboard and back on the table, and the Decks page follows', () => {
+  ui.click({ btn: 'deck-open', id: 'd830' });
+  let html = ui.click({ btn: 'deck-tabletop' });
+  const src = srcsIn(pileOf(html, firstPile(html)))[0]!;
+  ui.click({ 'tt-src': src });
+  html = ui.click({ btn: 'tt-toside' });
+  assert.equal(namesIn(pileOf(html, 'side')).length, 8, 'onto the sideboard');
+  html = ui.click({ btn: 'tt-close' });
+  assert.match(sideHead(html), /Side 8\/7/, 'the preview counts it');
+  assert.match(legal(html), /^Legal · not Competitive: a sideboard holds at most 7 cards \(got 8\)$/);
+  assert.doesNotMatch(box(html, 'd830'), /Bo3 ready/);
+  html = ui.click({ btn: 'deck-tabletop' });
+  const back = srcsIn(pileOf(html, 'side')).at(-1)!;
+  ui.click({ 'tt-src': back });
+  ui.click({ btn: 'tt-todeck' });
+  html = ui.click({ btn: 'tt-close' });
+  assert.equal(legal(html), 'Legal · Competitive ready', 'and back');
+  assert.match(box(html, 'd830'), />Bo3 ready</);
 });
 
 test('§4 the cap across both boards refuses, with the reason; a move between them never is', () => {
@@ -100,38 +106,33 @@ test('§4 the cap across both boards refuses, with the reason; a move between th
     `Max 2 of ${N[0]} across the deck and sideboard.`, 'a third copy into the sideboard is refused');
   assert.equal(dk.crossCapRefusal({ main: [N[0]!, N[0]!], side: [] }, { main: [N[0]!, N[0]!, N[0]!], side: [] }), null,
     'a third copy in the deck alone stays what it was: allowed, and red');
-  // through the page: the pinned panel's "to the sideboard" on a card with
-  // two in the sideboard already is a refusal, and the status line says so
-  ui.click({ btn: 'deck-tab', tab: 'side' });
-  ui.click({ btn: 'deck-side-more', card: SIDE[1]! });
-  let html = ui.click({ btn: 'deck-side-less', card: SIDE[1]! });
-  html = ui.click({ btn: 'deck-focus', card: SIDE[1]! });
-  assert.match(html, /data-btn="deck-to-side" data-card="[^"]+">to the sideboard/, 'one copy: the panel offers it');
-  ui.click({ btn: 'deck-to-side', card: SIDE[1]! });
-  html = ui.html();
-  assert.match(tileOf(html, SIDE[1]!), /dkbtns/);
-  assert.doesNotMatch(tileOf(html, SIDE[1]!), /data-btn="deck-side-more"/, 'two in the sideboard: no + on it');
-  assert.doesNotMatch(html, /data-btn="deck-to-side" data-card="[^"]+">to the sideboard/, 'nor in the panel');
-  ui.click({ btn: 'deck-side-less', card: SIDE[1]! });
+  // through the table: the host refuses inside the table's one door, and the table says why
+  let html = ui.click({ btn: 'deck-tabletop' });
+  ui.click({ btn: 'tt-target', to: 'side' });
+  html = ui.click({ btn: 'tt-add', 'tt-src': `binder|${N[0]}` });
+  assert.equal(namesIn(pileOf(html, 'side')).length, 7, 'nothing moved');
+  assert.match(html, new RegExp(`<div class="ttnote" role="status">Max 2 of ${N[0]} across the deck and sideboard\\.</div>`));
+  ui.click({ btn: 'tt-target', to: 'deck' });
+  ui.click({ btn: 'tt-close' });
 });
 
 test('§5 the save carries the sideboard, and never swaps', () => {
   ui.tick();
-  const last = POSTS.filter(p => p.url === '/api/decks/update').at(-1);
+  const last = POSTS.filter(p => p.url === '/api/decks/update' && p.body['id'] === 'd830').at(-1);
   assert.ok(last, 'an edit was saved');
   assert.deepEqual([...(last!.body['sideboard'] as string[])].sort(), [...SIDE].sort(), 'the sideboard as it stands');
   assert.ok(!('swaps' in last!.body), 'saved swaps are gone: never sent');
 });
 
 test('§6 the export file carries the sideboard, and no swaps', () => {
-  ui.click({ btn: 'deck-settings' });
-  const html = ui.click({ btn: 'deck-export', format: 'file' });
+  ui.click({ btn: 'deck-export', format: 'text' });        // the preview's Export opens the sheet
+  const html = ui.click({ btn: 'deck-export', format: 'file' });  // and the sheet picks the file
   const text = /<textarea class="dkexporttext"[^>]*>([\s\S]*?)<\/textarea>/.exec(html)![1]!
     .replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'");
   const file = JSON.parse(text) as { version: number; sideboard?: { name: string }[]; swaps?: { name: string }[] };
   assert.equal(file.version, 2);
   assert.deepEqual(file.sideboard?.map(e => e.name).sort(), [...SIDE].sort());
   assert.ok(!('swaps' in file), 'no swaps in the file');
-  assert.match(html, /cover, sideboard, maybeboard/, 'and the hint does not promise them');
+  assert.match(html, /cover, sideboard, maybeboard/, 'and the note does not promise them');
   assert.doesNotMatch(html, /deck-swap|deck-try|Save as a swap/, 'nor anywhere on the page');
 });
