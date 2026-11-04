@@ -440,6 +440,51 @@ test('Life Channel: X counts OTHER life gained this battle too, and never double
   finishBattle(h);
 });
 
+// CT-429: "where X is the life you've gained in this battle" is the life that
+// actually landed, not the printed 3. The spell used to read the ledger before
+// its own gain and add a literal 3 back, so a doubled gain (Arbiter of Vitality,
+// CR 708.6) still gave +3/+3, and a gain that never happened (Nullbringer,
+// CR 708.10) still gave +3/+3. Its hand preview had the same literal.
+test('CT-429: Life Channel under Arbiter of Vitality: X is the 6 life actually gained, and the preview says 6', () => {
+  const h = new Harness(3935);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');                    // 1/1
+  spawn(h, D, 'Arbiter of Vitality');                       // in the battle's region
+  giveResources(h, D, 'light', 2);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  while (h.state.priority !== D) pass(h);
+  const region = h.state.battle!.region;
+  assert.deepEqual(getCard('Life Channel').xPreviewRows!(new E(h.state), D, region)!.map(r => r.x), [6],
+    'the hand preview prices the 3 through Arbiter too');
+  const life = h.state.players[D]!.life;
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Life Channel') });
+  pick(h, { unit: atk });
+  while (h.state.stack.length) pass(h);
+  assert.equal(h.state.players[D]!.life, life + 6, 'Arbiter doubles the gain');
+  assert.deepEqual(effStats(h, atk), [7, 7], 'X = the 6 gained → +6/+6');
+  finishBattle(h);
+});
+
+test('CT-429: Life Channel whose gain Nullbringer replaces: no life gained, so X is 0', () => {
+  const h = new Harness(3936);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');                    // 1/1
+  spawn(h, D, 'Nullbringer');
+  giveResources(h, A, 'light', 2);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  const life = h.state.players[A]!.life;
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Life Channel') });
+  pick(h, { unit: atk });
+  while (h.state.stack.length) pass(h);
+  assert.ok(h.state.players[A]!.life < life, 'the gain became a loss');
+  assert.deepEqual(effStats(h, atk), [1, 1], 'nothing was gained this battle → +0/+0');
+  finishBattle(h);
+});
+
 test('Life Channel: the [Switch1] graft rider reads the ledger straight', () => {
   const h = new Harness(3934);
   toDeployment(h);

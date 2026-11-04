@@ -47,8 +47,8 @@
  *  - `lifeGained:<seat>` is the exact mirror of `lifeLost:<seat>`, bumped by
  *    E.gainLife. Life Channel and Riftspawn Remnant were already written to
  *    read it and became correct without a code change: Life Channel counts
- *    every point gained this battle (it reads the ledger BEFORE gaining its
- *    own 3 and adds the 3 back, so nothing is double-counted), and Riftspawn
+ *    every point gained this battle (it reads the ledger AFTER its own gain,
+ *    so X is what landed — CT-429: it once added a printed 3), and Riftspawn
  *    Remnant's "gained or lost" is live on both halves.
  *  - `Entity.spawnedTurn` unparked Banishment.
  *  - `data.from` on the play events unparked Proph.
@@ -417,12 +417,18 @@ card('Life Channel', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Life Channel: target unit gains +X/+X until regroup' },
     run: (g, ctx) => {
-      // read the ledger BEFORE the gain, then add this spell's own 3 back in
-      const before = lifeGainedThisBattle(g, ctx.region, ctx.controller);
       g.gainLife(ctx.controller, 3, 'Life Channel');
       const t = ctx.targets[0];
       if (!isEnt(t)) return;
-      const x = before + 3;
+      // CT-429: X is read off the ledger AFTER the gain, so it counts what
+      // actually landed: 6 under Arbiter of Vitality (CR 708.6), none when
+      // Nullbringer replaces the gain or the life total is locked (CR 708.10).
+      // It used to add a literal 3 to the ledger read before the gain.
+      const x = lifeGainedThisBattle(g, ctx.region, ctx.controller);
+      if (x <= 0) {
+        g.ev('info', `Life Channel: X is 0 — ${t.card} gains nothing.`);
+        return;
+      }
       g.addTemp(t, x, x);
     },
   },
@@ -445,9 +451,13 @@ card('Life Channel', {
   // #85: X reads the `lifeGained:<seat>` battle ledger, which the board never
   // prints. One row, because the card only ever reads its OWN controller's
   // total — the opponent's life gain is irrelevant to it. The spell half adds
-  // its own 3 before buffing, so that is the number a card in hand is worth.
+  // its own 3 before buffing, so that is the number a card in hand is worth —
+  // priced through the amount layer (CT-429: Arbiter of Vitality makes it 6),
+  // the same read the stack caption's "Gain 6 life" uses. Like that caption it
+  // does not see a replacement of the whole gain (Nullbringer).
   xPreviewRows: (g, seat, region) => [
-    { label: 'you (this spell\'s own +3 included)', x: lifeGainedThisBattle(g, region, seat) + 3 },
+    { label: 'you (this spell\'s own gain included)',
+      x: lifeGainedThisBattle(g, region, seat) + g.amountPreview({ kind: 'lifeGain', seat, n: 3 }).n },
   ],
 });
 

@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-05', kind: 'fix', text: 'Life Channel now counts the life you actually gained: under Arbiter of Vitality its 3 becomes 6 and the unit gets +6/+6, and if the gain is stopped the unit gets nothing extra. The number shown in your hand agrees.' },
   { date: '2026-11-05', kind: 'fix', text: 'If all your blockers die after blocks, you can still play a unit like Tiderunner Initiate into the column they were blocking, and it blocks there. Before, you were offered only the unblocked columns.' },
   { date: '2026-11-05', kind: 'fix', text: 'A column that gains Swift after Swift damage now deals its normal damage, and one that loses Sluggish before Sluggish damage still strikes then. Before, either one dealt no combat damage at all.' },
   { date: '2026-11-04', kind: 'fix', text: 'When several units die at once, the game log now puts each "Deadly" or "Unaware" reason right before that unit\'s own death line, instead of listing all the reasons first.' },

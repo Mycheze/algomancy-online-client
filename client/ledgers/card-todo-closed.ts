@@ -14438,4 +14438,19 @@ export const CLOSED: TodoEntry[] = [
     closed: "DONE 2026-11-04 by the steward. Not a question: calebgannon's own answer (RQ 1237434283786768415, indexed into rules-questions.snapshot.jsonl, read in the export with flappl.'s question about Tiderunner Initiate) is above an owner call in the CR's authority order. Since the owner's 2026-10-09 call the engine already let a defender who declared NO blockers play in front of an unblocked attacker (602.6c), so that half already agreed with him. What remained was a defender whose blockers had ALL left after blocks: formationSlots returned only the unblocked columns, because 602.6k read 'no living unit' as 'no formation', and 421 pinned it ('the emptied first column is not offered'). Now a defender who declared blocks keeps that blocking formation, and each emptied blocking column's front slot is offered (engine.ts formationSlots). 602.6j, 602.6k and 602.7c are redrafted with the RQ quote cited and stamped; D-U10-10 moved to tier 2. The attacker half (no attack, no attacking formation; an attacking line emptied after blocks offers nothing) stands, and the designer's sentence backs it. Mutation-checked: dropping the defender clause turns both guards red. The 800 drift guard is green. The owner confirmed it on Discord 2026-11-04 and bounded it: \"if there is still an attacking formation, then there's still technically an empty blocking formation. But if ALL the units on both side are suddenly gone, then there is no formation at all.\" So the defender keeps the emptied blocking formation only while a living attacking unit remains (engine.ts formationSlots); 602.6j and 602.7c say so, and 602.6j, 602.6k and 602.7c carry his words in sources.owner. The third guard went red before that clause and goes red without it.",
     status: 'done',
   },
+  {
+    id: 429, area: "card", severity: "minor",
+    cards: ["Life Channel", "Arbiter of Vitality"],
+    title: "Life Channel under Arbiter of Vitality gives +3/+3, not +6/+6: X adds the printed 3, not the life the spell gained",
+    detail: "Life Channel prints \"You gain 3 life, then [Switch1] Target unit gains +X/+X until regroup, where X is the life you've gained in this battle.\" The spell run (batch-light-b.ts) reads the battle ledger before the gain and adds the printed 3 (\"const x = before + 3;\"). Measured under Arbiter of Vitality: life went up 6 and Good Whale went from 7/5 to 10/8. The card's xPreview says 3 too, so the stack caption matches the engine; both are wrong against the printed \"the life you've gained\".",
+    evidence: "Pass D mop-up 2026-10-25 (zero-handoff/PM-client.md, new defect 1): the client agent, measuring CT-412's captions.",
+    fix: "Read lifeGainedThisBattle after the gain (or use gainLife's return value) in the spell run and in xPreview; guard under Arbiter.",
+    proof: () => still('engine/src/cards/sets/batch-light-b.ts', 'const x = before + 3;'),
+    guards: [
+      "39-light-b.test.ts::CT-429: Life Channel under Arbiter of Vitality: X is the 6 life actually gained",
+      "39-light-b.test.ts::CT-429: Life Channel whose gain Nullbringer replaces: no life gained, so X is 0",
+    ],
+    closed: "FIXED 2026-11-04 by the steward. The spell reads the lifeGained ledger AFTER its own gain, so X is what landed (6 under Arbiter, 0 when Nullbringer replaces the gain or the life total is locked); its hand preview prices the 3 through E.amountPreview, the stack caption's read. Swept: no other card adds a printed amount to a ledger read. Both guards mutation-checked against the old code.",
+    status: 'done',
+  },
 ];
