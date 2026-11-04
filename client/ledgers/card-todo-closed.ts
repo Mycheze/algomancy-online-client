@@ -14362,4 +14362,19 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-04 (steward): the order answers a creation's tokens were asked under now hold for the whole creation (CR 708.4a, 708.9). An Automaton the creation put ahead of a Conspirator judges a token that Conspirator swapped as it stood before the swap, and does not see copies made by an Automaton that came after it, so a later Poison made a Robot is not copied. Conspirator first still copies it. Seen red with the rule disabled.",
     status: 'done',
   },
+  {
+    id: 436, area: "client", severity: "minor",
+    title: "in a mixed death batch every \"Deadly\" and \"Unaware\" line is logged before the first \"dies → bin\" line",
+    detail: "Since CT-413 the Deadly, collapsed and Pure victims die in one batch with the lethal-damage deaths. The sweeps announce their victims as they decide, so all of a batch's \"Deadly — X dies.\" and \"Unaware: …\" lines come before the first \"dies → bin\" line instead of beside the unit each is about. Cosmetic.",
+    evidence: "Pass D mop-up 2026-10-25 (zero-handoff/PM-engine.md, new defect 2).",
+    fix: "Carry each doomed unit's line with it into destroyBatch and print it just before that unit's death line; keep the four literal ev() sites ui 244 counts.",
+    proof: null,
+    verify: "Deadly and lethal damage killing three units in one sub-step: read the log order.",
+    guards: [
+      '1140-death-lines-beside-their-unit.test.ts::two Deadly kills and a lethal one in one combat sub-step',
+      '1140-death-lines-beside-their-unit.test.ts::a Deadly effect killing a row',
+    ],
+    closed: "FIXED 2026-11-04 (steward): checkDeaths no longer calls every decided victim's announcement before the batch; each rides into destroyBatch and is printed just before its own unit's death line (the four ev() sites are unchanged). Which units die, and in what order, is unchanged: 680, 660, 627, 800 and 827 pass. Both 1140 tests were red before the fix and red again with the call removed.",
+    status: 'done',
+  },
 ];

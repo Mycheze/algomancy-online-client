@@ -7548,15 +7548,18 @@ export class E {
   checkDeaths(doomed: readonly Doomed[] = []): Entity[] {
     // CR 608.7b, 713.6 / CT-413: the units a sweep already decided die (Deadly,
     // the collapsed and the Pure readings) die in the SAME batch as the lethal
-    // ones, first and in the order decided; a unit doomed twice is announced once
+    // ones, first and in the order decided; a unit doomed twice is announced once.
+    // CT-436: each announcement rides into the batch and is printed just before
+    // its own unit's death line, not all of them ahead of the first one.
     const dead: Entity[] = [];
+    const say = new Map<Entity, () => void>();
     for (const d of doomed) {
       if (this.entity(d.u.id) !== d.u || dead.includes(d.u)) continue;
-      d.say();
+      say.set(d.u, d.say);
       dead.push(d.u);
     }
     for (const u of Object.values(this.s.entities)) if (!dead.includes(u) && this.isLethal(u)) dead.push(u);
-    this.destroyBatch(dead, 'dies');
+    this.destroyBatch(dead, 'dies', say);
     this.repairFormation();
     return dead;
   }
@@ -7579,8 +7582,11 @@ export class E {
    * Muck Rummager stopped hearing the rest, and an Ancient One deleted after
    * its neighbour lost that neighbour's "when I die" (CT-351's snapshot).
    * They come through here now. A unit already out of play is skipped.
+   * `say` (checkDeaths' decided victims) prints a unit's announcement just
+   * before its own death line (CT-436).
    */
-  destroyBatch(units: readonly Entity[], verb: 'dies' | 'is deleted' | 'is sacrificed'): void {
+  destroyBatch(units: readonly Entity[], verb: 'dies' | 'is deleted' | 'is sacrificed',
+    say?: ReadonlyMap<Entity, () => void>): void {
     const batch = units.filter(u => this.entity(u.id) === u);
     if (!batch.length) return;
     const prevBatch = this.deathBatch, prevSelf = this.disposingSelf;
@@ -7592,6 +7598,9 @@ export class E {
     try {
       for (const u of batch) {
         this.disposingSelf = u.id;
+        // CT-436: a decided victim's reason ("Deadly — X dies.") goes just before
+        // its own death line, and only if it is still here to die
+        if (this.entity(u.id) === u) say?.get(u)?.();
         this.destroy(u, verb);
       }
     } finally {

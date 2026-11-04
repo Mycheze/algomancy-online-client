@@ -278,16 +278,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 436, area: "client", severity: "minor",
-    title: "in a mixed death batch every \"Deadly\" and \"Unaware\" line is logged before the first \"dies → bin\" line",
-    detail: "Since CT-413 the Deadly, collapsed and Pure victims die in one batch with the lethal-damage deaths. The sweeps announce their victims as they decide, so all of a batch's \"Deadly — X dies.\" and \"Unaware: …\" lines come before the first \"dies → bin\" line instead of beside the unit each is about. Cosmetic.",
-    evidence: "Pass D mop-up 2026-10-25 (zero-handoff/PM-engine.md, new defect 2).",
-    fix: "Carry each doomed unit's line with it into destroyBatch and print it just before that unit's death line; keep the four literal ev() sites ui 244 counts.",
-    proof: null,
-    verify: "Deadly and lethal damage killing three units in one sub-step: read the log order.",
-    status: 'open',
-  },
-  {
     id: 438, area: "coverage", severity: "minor",
     title: "after the replacement-order round, 472's first title and the engine.ts replacement comment still describe the old fixed order",
     detail: "472-counter-thief-and-rot-order.test.ts: \"CR 708.4a: two Counter Thieves — the player whose unit the counters were for is asked which keeps them\". Since the round the thieves' controller orders them; the test passes because in it that player owns both. The title is bound by CR 708.4a's record. The engine.ts comment above the replacement hooks still says the player the event happens to is asked, lists \"Cosmic Conspirators\" as order-insensitive (not so beside an Automaton) and says there is deliberately no general framework; E.replaceEvent is one now.",
