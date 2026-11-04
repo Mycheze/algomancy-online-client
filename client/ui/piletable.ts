@@ -27,6 +27,13 @@ import { esc } from './util.ts';
 export const CARD_ASPECT = 1000 / 720;
 /** the narrowest strip a crowded pile shrinks to, in px */
 export const MIN_STRIP = 14;
+/** where a scan's name bar ends — cost, name and stats — as a share of the
+ * card's height (the bar's lower edge is 100px down a 1000px scan) */
+export const NAME_BAR_SHARE = 0.105;
+
+/** the tightest strip that still shows a card's whole name bar: a pile never
+ * fans tighter, it grows and the table scrolls inside itself instead */
+export const readableStrip = (ch: number): number => Math.max(MIN_STRIP, Math.ceil(ch * NAME_BAR_SHARE));
 /** a strip's share of a card's height when there is room */
 export const STRIP_SHARE = 0.2;
 
@@ -42,14 +49,15 @@ export const cardHeight = (cw: number): number => Math.round(cw * CARD_ASPECT);
 
 /**
  * The strip S each card of an n-card pile shows: a fifth of the card, shrunk
- * (never under MIN_STRIP) when the pile would be taller than the pane.
- * `S = clamp(MIN_STRIP, (paneH − ch) / (n − 1), STRIP_SHARE · ch)`.
+ * when the pile would be taller than the pane — but never under a readable
+ * name bar (readableStrip): past that the pile runs on and the pane scrolls.
+ * `S = clamp(readableStrip(ch), (paneH − ch) / (n − 1), STRIP_SHARE · ch)`.
  */
 export function stripOf(n: number, paneH: number, ch: number): number {
   const most = Math.round(ch * STRIP_SHARE);
   if (n <= 1) return most;
   const fit = Math.floor((paneH - ch) / (n - 1));
-  return Math.max(MIN_STRIP, Math.min(fit, most));
+  return Math.max(readableStrip(ch), Math.min(fit, most));
 }
 
 /** the fan's height for n cards at strip S */

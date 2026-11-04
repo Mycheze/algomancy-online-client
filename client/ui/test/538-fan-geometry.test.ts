@@ -21,14 +21,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import '../../engine/src/cards/registry.ts';
 import {
-  CARD_ASPECT, MIN_STRIP, cardHeight, cardWidth, fanHeight, insertIndexAt, previewShift, stripIndexAt, stripOf,
+  CARD_ASPECT, MIN_STRIP, cardHeight, readableStrip, cardWidth, fanHeight, insertIndexAt, previewShift, stripIndexAt, stripOf,
 } from '../piletable.ts';
 import { movePileCard } from '../deckarrange.ts';
 import { readStyles } from './read-styles.ts';
 
 const CSS = readStyles();
 
-test('§1 the strip: a fifth of the card, tightened to fit, never under 14px', () => {
+test('§1 the strip: a fifth of the card, tightened to fit, never under a readable name bar', () => {
   const ch = cardHeight(132);
   assert.equal(ch, Math.round(132 * CARD_ASPECT));
   assert.equal(stripOf(1, 800, ch), Math.round(ch * 0.2), 'one card: the full strip (unused)');
@@ -36,7 +36,8 @@ test('§1 the strip: a fifth of the card, tightened to fit, never under 14px', (
   const S = stripOf(20, 600, ch);
   assert.ok(fanHeight(20, S, ch) <= 600, `20 cards fit a 600px pane at S=${S}`);
   assert.ok(S < Math.round(ch * 0.2));
-  assert.equal(stripOf(200, 600, ch), MIN_STRIP, 'and never below the minimum');
+  assert.equal(stripOf(200, 600, ch), readableStrip(ch), 'and never below a readable name bar (BL-65 F12)');
+  assert.ok(readableStrip(ch) >= MIN_STRIP);
   assert.equal(fanHeight(0, 30, ch), 0);
   assert.equal(fanHeight(3, 30, ch), ch + 60);
 });
