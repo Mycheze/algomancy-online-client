@@ -653,7 +653,35 @@ test('cr:combat.formations.placement.defending-emptied-block — every blocker d
   finishBattle(h);
 });
 
-test('cr:combat.formations.outside.stolen — a blocker whose control passes to the attacker after blocks is in neither the attacking nor the defending formation', () => {
+// CT-428, the owner on Discord 2026-11-04: "if there is still an attacking
+// formation, then there's still technically an empty blocking formation. But if
+// ALL the units on both side are suddenly gone, then there is no formation at all."
+test('cr:combat.formations.placement.defending-emptied-block — once every blocker and every attacker has left, the defender is offered no position and Tiderunner Initiate enters play outside any formation', () => {
+  const h = new Harness(73108);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const a = tok(h, A, 1, 20);
+  const b0 = tok(h, D, 1, 1);
+  giveResources(h, D, 'water', 1);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[a]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b0] } });
+  kill(h, b0);
+  assert.equal(new E(h.state).formationSlots(D).length, 1, 'while the attacker stands, the emptied blocking column is offered');
+  kill(h, a);
+  assert.deepEqual(new E(h.state).formationSlots(D), [], 'with every unit on both sides gone there is no formation to join');
+  passTo(h, D);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tiderunner Initiate') });
+  assert.equal(h.state.decision, null, 'no spot is asked for');
+  pass(h); pass(h);
+  const r = unitsOf(h, D).find(u => u.card === 'Tiderunner Initiate');
+  assert.ok(r, 'it entered play');
+  assert.deepEqual(h.state.battle!.blocks[0], [], 'outside any formation');
+  finishBattle(h);
+});
+
+test('cr:combat.formations.outside.stolen —a blocker whose control passes to the attacker after blocks is in neither the attacking nor the defending formation', () => {
   const h = new Harness(73105);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
