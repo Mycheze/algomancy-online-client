@@ -287,16 +287,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 473, area: "client", severity: "minor",
-    title: "a stack does-line turns \"pays\" into \"pay\" when the player's name ends in \" 1\"",
-    detail: "renderTemplate's plural-to-singular rewrite also fires on a player name ending in \" 1\": a seat named \"Player 1\" reads \"Player 1 pay 5\" on Abduct.",
-    evidence: "r1101c text agent, 2026-11-01 (775 names its seats to avoid it).",
-    fix: "Apply the singular rewrite to the amount slot only, never to text that came from a player name.",
-    proof: null,
-    verify: "Abduct for 5 against a seat named \"Player 1\": read the stack line.",
-    status: 'open',
-  },
-  {
     id: 474, area: "client", severity: "minor",
     title: "an activatable unit's ~8px pulsing glow is cut by its section edge",
     detail: "After the #315 fix every card ring fits its zone, but the soft glow on a unit with an activatable ability is ~8px and is still clipped by its section and the window. Also: at a region's outer left edge the region's own coloured border now sits over the outer ~2px of a 3px ring.",
