@@ -423,7 +423,6 @@ card('Life Channel', {
       // CT-429: X is read off the ledger AFTER the gain, so it counts what
       // actually landed: 6 under Arbiter of Vitality (CR 708.6), none when
       // Nullbringer replaces the gain or the life total is locked (CR 708.10).
-      // It used to add a literal 3 to the ledger read before the gain.
       const x = lifeGainedThisBattle(g, ctx.region, ctx.controller);
       if (x <= 0) {
         g.ev('info', `Life Channel: X is 0 — ${t.card} gains nothing.`);
