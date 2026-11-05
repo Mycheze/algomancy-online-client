@@ -259,18 +259,6 @@ const OPEN: TodoEntry[] = [
     verify: "Write [[Bumblecrab]] in a description: does it show as a link with no brackets?",
     status: 'open',
   },
-  // ── the report triage of 2026-11-03 (reports #319-#325; the steward; filed as CT-520..522, renumbered 526..528 on landing) ───────
-  {
-    id: 525, area: "engine", severity: "minor",
-    cards: ["Refuse Reclaimer", "Deformant"],
-    title: "in a death batch, a when-a-unit-dies line an earlier member got from an augment does not hear the members that die after it",
-    detail: "CR 706.8c: a unit destroyed in the same batch \"still triggers on their deaths … as it would have had it survived\". It does for its own printed text: a Refuse Reclaimer CARD destroyed first in a batch still triggers on the next member. It does not for a line it carries as an augment: a unit token carrying Refuse Reclaimer as an augment, destroyed first in the same batch, queues nothing for the member destroyed after it; destroyed last it does. The mod leaves play with its host before the later member dies. (destroyBatch already snapshots neighbours for Ancient One, CR 714.9; nothing does the same for a member's own mods.)",
-    evidence: "Steward CT-435 run 2026-11-04: destroyBatch([Deformant carrying Refuse Reclaimer as an augment, Good Whale]) in battle queued no Reclaimer trigger; the reverse order queued one; a Refuse Reclaimer card first in the same order queued one.",
-    fix: "Have the death-batch listener sweep read a dying member's mods as they were before the batch began (as deathBatchAdjacent does for neighbours), so its augment lines hear the whole batch; guard with an augmented Refuse Reclaimer destroyed first in a batch of two, and replay stored games.",
-    proof: null,
-    verify: "destroyBatch of [a unit token carrying Refuse Reclaimer as an augment, another unit], in that order, in battle: does a Reclaimer trigger queue?",
-    status: 'open',
-  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

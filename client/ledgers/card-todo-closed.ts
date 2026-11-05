@@ -14654,4 +14654,20 @@ export const CLOSED: TodoEntry[] = [
     closed: "NOT A BUG, settled by the owner (steward 2026-11-05). With Pass all on, no priority window the arm answers runs the armed player's clock (SHXD replayed, see progress); the clock ran only while the game waited on that player for a real choice: a block or attack declaration, a target, a \"you may pay\". Asked whether those should stop too, the owner answered no (Discord, 2026-11-05): \"the clock should only tick down when there's an action for you to take. When you're holding up the game. … It should ONLY tick down when you have to do something, anything, in order for the game to progress.\" CR D3.2b (annexd.clocks.running.standing-pass) now carries that call as its owner source, basis owner; the engine is unchanged. Mutations: the clock ignoring the arm's stamp turns §1 red; the clock stopping for any armed seat (the answer he declined) turns §2 red.",
     status: 'done',
   },
+  {
+    id: 525, area: "engine", severity: "minor",
+    cards: ["Refuse Reclaimer", "Deformant"],
+    title: "in a death batch, a when-a-unit-dies line an earlier member got from an augment does not hear the members that die after it",
+    detail: "CR 706.8c: a unit destroyed in the same batch \"still triggers on their deaths … as it would have had it survived\". It does for its own printed text: a Refuse Reclaimer CARD destroyed first in a batch still triggers on the next member. It does not for a line it carries as an augment: a unit token carrying Refuse Reclaimer as an augment, destroyed first in the same batch, queues nothing for the member destroyed after it; destroyed last it does. The mod leaves play with its host before the later member dies. (destroyBatch already snapshots neighbours for Ancient One, CR 714.9; nothing does the same for a member's own mods.)",
+    evidence: "Steward CT-435 run 2026-11-04: destroyBatch([Deformant carrying Refuse Reclaimer as an augment, Good Whale]) in battle queued no Reclaimer trigger; the reverse order queued one; a Refuse Reclaimer card first in the same order queued one.",
+    fix: "Have the death-batch listener sweep read a dying member's mods as they were before the batch began (as deathBatchAdjacent does for neighbours), so its augment lines hear the whole batch; guard with an augmented Refuse Reclaimer destroyed first in a batch of two, and replay stored games.",
+    proof: null,
+    verify: "destroyBatch of [a unit token carrying Refuse Reclaimer as an augment, another unit], in that order, in battle: does a Reclaimer trigger queue?",
+    guards: [
+      '1146-batch-member-mods-still-listen.test.ts::an augmented Refuse Reclaimer destroyed FIRST in a batch still hears the member destroyed after it',
+      '1146-batch-member-mods-still-listen.test.ts::a Forager of the Fallen destroyed FIRST in a batch still fires its graft on the enemy destroyed after it',
+    ],
+    closed: "FIXED 2026-11-05 (steward). Root cause: fireEvent kept an already disposed batch member listening (deathBatch) but read its mods through entity(modId), and destroy deletes a body's mod entities with it; the batch already kept them (deathBatchMods, CT-351's snapshot for Ancient One) and nothing on the listener path read them. Two sites had that shape and both now read entityOrBatchMate: the augment-mod sweep in fireEvent (Refuse Reclaimer carried as an augment, destroyed first, now triggers on the member after it) and graftsJoining (a Forager of the Fallen destroyed first in a batch with an enemy unit lost its grafted Metamorphic Luminary's Crystal; it now joins). Reproduced before the fix (0 triggers host-first, 1 host-last); mutations: reverting either lookup turns its 1146 test red.",
+    status: 'done',
+  },
 ];

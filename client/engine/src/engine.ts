@@ -14007,8 +14007,9 @@ export class E {
       out.push({ card: cm.card, bounded: g.bounded, on: holder, key,
         part: { effectKey, targets: [], ...(g.bounded && (borrowed || nth) ? { budgetKey: key } : {}) } });
     }
+    // CT-525: a carrier disposed earlier in this death batch still has its grafts
     for (const modId of carrier.mods) {
-      const mod = this.entity(modId);
+      const mod = this.entityOrBatchMate(modId);
       if (!mod || mod.appliedAs !== 'graft') continue;
       const g = this.card(mod.card).graftEffect;
       if (!g) continue;
@@ -14125,9 +14126,12 @@ export class E {
       if (kept(E.PRINTED)) for (const { card, nth } of this.copiedAugmentBoxes(u, 'triggered')) {
         queued = this.collectTriggersFrom(u, card, 'augment', type, ev, src, undefined, nth) || queued;
       }
+      // CR 706.8c / CT-525: a batch member already disposed still hears the rest
+      // of its batch "as it would have had it survived" — its augment lines
+      // included. `destroy` deleted its mod entities with it; the batch kept them.
       for (const modId of u.mods) {
-        const mod = this.entity(modId);
-        if (mod && mod.appliedAs === 'augment' && kept(this.stampOf(mod.id))) {
+        const mod = this.entityOrBatchMate(modId);
+        if (mod && mod.appliedAs === 'augment' && kept(mod.stampAt ?? this.stampOf(mod.id))) {
           // CR 720.6d: the mod's OWN id rides along, so its donated text can say
           // "my other Augments" and mean every augment on this host except
           // this one entity — a second copy of the same card included.
