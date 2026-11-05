@@ -123,6 +123,25 @@ function noAnswersOnTheWire(h: Harness, a: Asked, label: string): void {
   }
 }
 
+/** CT-472: the asked seat's suspension carries no engine bookkeeping — not the
+ * card-written key of the pending question, not the count of events (any
+ * seat's) the part has emitted so far. The real state still has both. */
+function noBookkeepingOnTheWire(h: Harness, a: Asked, label: string): void {
+  const real = h.state.suspension as Record<string, unknown>;
+  assert.ok(typeof real['pendingKey'] === 'string' && real['pendingKey'] !== '', `${label}: the engine keeps its key`);
+  assert.equal(typeof real['shown'], 'number', `${label}: the engine keeps its count`);
+  const sus = viewFor(h.state, a.second).suspension as Record<string, unknown> | null;
+  assert.equal(sus?.['type'], 'resolve', `${label}: the asked seat is served the suspension`);
+  assert.equal(sus['pendingKey'], '', `${label}: suspension.pendingKey reaches the asked seat`);
+  assert.ok(!('shown' in sus), `${label}: suspension.shown reaches the asked seat`);
+}
+
+test("CT-472: the asked seat is not served the suspension's pendingKey or shown (Rockfall, General Smof, Cthyrian Culler)", () => {
+  const r = rockfall(0); noBookkeepingOnTheWire(r.h, r.a, 'Rockfall');
+  const s = smof(0); noBookkeepingOnTheWire(s.h, s.a, 'General Smof');
+  const c = culler(1); noBookkeepingOnTheWire(c.h, c.a, 'Cthyrian Culler');
+});
+
 // ── Rockfall ─────────────────────────────────────────────────────────────
 
 function rockfall(which: 0 | 1): { h: Harness; a: Asked } {

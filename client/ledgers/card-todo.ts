@@ -287,16 +287,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 472, area: "client", severity: "minor",
-    title: "the asked seat's view still carries suspension.pendingKey and .shown; audit them for another seat's information",
-    detail: "The 779 fix blanks suspension.answers for every seat. pendingKey is a card-written tag (rf:<seat>, sac:<seat>) and shown is a count of events emitted so far; neither carried a pick in the cards checked, but not every key in the pool was audited, and shown may count another seat's private lines.",
-    evidence: "r1101c leak agent, 2026-11-01.",
-    fix: "Sweep every ctx.choose key in the pool for one built from an answer; strip shown from the view if no client reads it.",
-    proof: null,
-    verify: "grep the client for suspension.shown / pendingKey readers; list ctx.choose keys built from template strings.",
-    status: 'open',
-  },
-  {
     id: 473, area: "client", severity: "minor",
     title: "a stack does-line turns \"pays\" into \"pay\" when the player's name ends in \" 1\"",
     detail: "renderTemplate's plural-to-singular rewrite also fires on a player name ending in \" 1\": a seat named \"Player 1\" reads \"Player 1 pay 5\" on Abduct.",

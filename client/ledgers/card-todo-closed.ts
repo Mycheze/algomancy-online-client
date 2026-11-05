@@ -14377,4 +14377,18 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-04 (steward): checkDeaths no longer calls every decided victim's announcement before the batch; each rides into destroyBatch and is printed just before its own unit's death line (the four ev() sites are unchanged). Which units die, and in what order, is unchanged: 680, 660, 627, 800 and 827 pass. Both 1140 tests were red before the fix and red again with the call removed.",
     status: 'done',
   },
+  {
+    id: 472, area: "client", severity: "minor",
+    title: "the asked seat's view still carries suspension.pendingKey and .shown; audit them for another seat's information",
+    detail: "The 779 fix blanks suspension.answers for every seat. pendingKey is a card-written tag (rf:<seat>, sac:<seat>) and shown is a count of events emitted so far; neither carried a pick in the cards checked, but not every key in the pool was audited, and shown may count another seat's private lines.",
+    evidence: "r1101c leak agent, 2026-11-01.",
+    fix: "Sweep every ctx.choose key in the pool for one built from an answer; strip shown from the view if no client reads it.",
+    proof: null,
+    verify: "grep the client for suspension.shown / pendingKey readers; list ctx.choose keys built from template strings.",
+    guards: [
+      "779-each-player-pick-stays-private.test.ts::CT-472: the asked seat is not served the suspension's pendingKey or shown",
+    ],
+    closed: "FIXED 2026-11-05 (steward): audit first. Every ctx.choose key in the pool (94 calls) is a literal or built from a seat, a loop index, a part or target index, an entity id already on the table, or the helper sequence; none from an answer, so neither field leaked a pick in any card checked, and the 779 non-interference tests stayed green. No client code reads either field (ui/ has no 'resolve' suspension reader at all) and the engine resumes from the room's own state, so viewFor now blanks pendingKey and deletes shown for every seat, as it already did answers and snapshot: the next card's key or a privateTo line counted in shown can no longer reach the wire. The guard went red on each field with its line removed.",
+    status: 'done',
+  },
 ];

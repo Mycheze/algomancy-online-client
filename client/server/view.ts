@@ -420,9 +420,21 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
   // travels as `decision.earlier` / `earlierPicks` above, classified by the
   // engine — never as the raw answer map.
   // server/test/779-each-player-pick-stays-private.test.ts.
+  //
+  // CT-472: `pendingKey` and `shown` go too, for the same reason — engine
+  // bookkeeping no client reads. `pendingKey` is a card-written tag
+  // (`0:sac:1`, `0:pick:2:1`, `0:keep:57#3`): an audit of every ctx.choose key
+  // in the pool (2026-11-05) found none built from an answer, but its
+  // counters (a loop index, the helper sequence `#n`) follow the part's
+  // control flow, and the next card's key could carry a pick outright.
+  // `shown` counts every event the part has emitted so far, including lines
+  // `privateTo` another seat. Neither is needed to resume: the engine reads
+  // both off the room's own state.
   if (v.suspension?.type === 'resolve') {
     delete v.suspension.snapshot;
     v.suspension.answers = {};
+    v.suspension.pendingKey = '';
+    delete v.suspension.shown;
   }
 
   // draft mode: identify the pack this seat is looking at (additive field —
