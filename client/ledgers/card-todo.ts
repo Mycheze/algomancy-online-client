@@ -261,18 +261,6 @@ const OPEN: TodoEntry[] = [
   },
   // ── the report triage of 2026-11-03 (reports #319-#325; the steward; filed as CT-520..522, renumbered 526..528 on landing) ───────
   {
-    id: 527, area: "client", severity: "minor",
-    cards: ["Spell Excavation", "Recall"],
-    title: "a player passed seven windows with a Spell Excavation'd Recall playable and says they were never given priority to play it",
-    detail: "KFCS turn 6 battle: Gember cast Spell Excavation on Recall [263-264] (\"you may play target spell from your bin until regroup\"). From [268] to [282] the engine offered seat 0 playFromBin on both Recalls (bin 7 and 8) at every one of Gember's seven priority windows, and Gember passed each one; ui/main.ts binUsableIndexes glows exactly those bin entries. The players then agreed a 2-life edit on each side to make up for it. The room file cannot say whether those passes were clicks or a standing Pass all: under 'all' mode passAllRelease deliberately asks no change clause (CR D2.2), so an option granted mid-phase would not hand priority back.",
-    evidence: "Report #321 (KFCS @283, agreed edit, mycheze proposed, Gember agreed): \"Gember didn't get to play Recall from her bin during that turn for some reason. She spell extracted it but didn't get priority to play it.\" legalActions replayed at each of [266]-[282] (2026-11-03).",
-    fix: "First find out: re-create the board (Spell Excavation resolving under a Pass all armed earlier in the battle) and see whether the chip passes through the new bin play. If it does, the question for the owner is whether an option your OWN resolving spell grants should release Pass all; if it does not, the problem is how visible a playable bin card is (a glow inside a pile) — ask the players which.",
-    proof: null,
-    verify: "Arm Pass all in a battle, cast Spell Excavation on a spell in your bin, let it resolve: are you given priority with the bin card playable?",
-    reportId: 321,
-    status: 'open',
-  },
-  {
     id: 528, area: "client", severity: "minor",
     title: "casting a Burst token asks you to pick the token you just clicked again, and places the last one for you",
     detail: "CR 803.5d: the caster orders a Burst group one token at a time. Clicking a token sends castSpellToken {entityId, ordered: true}, but doCastSpellToken calls burstStep with no `picked`, so the clicked token is ignored and the first prompt asks which token resolves first — the player clicks the same token a second time. burstStep also takes the last remaining token without asking (\"else the only one left\"). The owner wants the clicked token to BE the first pick, and the last one clicked rather than placed for them.",

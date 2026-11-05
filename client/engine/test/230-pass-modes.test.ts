@@ -58,7 +58,7 @@ import { legalActions } from '../src/apply.ts';
 import { viewFor } from '../../server/view.ts';
 import { armSnapshot, autoPassDecision, passAllRelease, passEndsBattlePhase } from '../../ui/battle.ts';
 import type { AutoPassArm, PassMode } from '../../ui/inspect.ts';
-import { pass, spawn, toDeployment, toNextBattle } from './util.ts';
+import { giveResources, give, pass, spawn, toDeployment, toNextBattle } from './util.ts';
 import { client } from '../../ui/test/ui-driver.ts';
 import type { Action, EntityId, GameState, Seat } from '../src/types.ts';
 
@@ -253,6 +253,63 @@ test('[123] a promise with no scope cannot finish, so an arm naming no stack nev
   };
   assert.equal(passAllRelease(s, D, legalActions(s, D), legacy), null,
     'an arm that carries no scope is not a finished one');
+});
+
+test('[321] a bin play your own resolving Spell Excavation grants hands pass through stack back, and not pass all', () => {
+  /*
+   * Report #321 (room KFCS, turn 6): Gember, defending, cast Spell Excavation
+   * on Recall with a stack under it and then passed seven windows with Recall
+   * playable from the bin, and the players agreed a life fix — "she didn't get
+   * priority to play it". The replay shows the engine offered `playFromBin`
+   * on both Recalls at every one of those windows. The room file does not say
+   * which button made the passes, so this pins what each one does on that
+   * board. The earlier tests here prove a new option with a spell token; this
+   * is the other kind a resolution grants — a play from the bin, keyed by the
+   * card in the slot (`optionKeys`), not the index.
+   *
+   *   Pass through stack  CR D2.2b: hands priority back the moment the option
+   *                       appears — so a player on it would have been asked.
+   *   Pass all            CR D2.2d: "a new option does not hand priority
+   *                       back", the owner's ruling — even one your own spell
+   *                       just granted.
+   */
+  const h = new Harness(23020);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Good Whale');
+  spawn(h, A, 'Conduit of Pain');           // something for the bin's Recall to recall
+  h.state.players[D]!.bin.push('Recall');
+  giveResources(h, D, 'water', 4);          // Excavation bb, Recall b
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  if (h.state.priority !== D) pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
+  const dec = h.state.decision!;
+  h.do({ type: 'decide', seat: D, choice: dec.options.findIndex(o => o.label.startsWith('Recall')) });
+  if (h.state.priority !== D) pass(h);
+
+  // the KFCS window: the Excavation on the stack, the player about to pass
+  const atClick = structuredClone(h.state);
+  const clickLegal = legalActions(atClick, D);
+  assert.equal(atClick.stack.length, 1, 'the Excavation is waiting on the stack');
+  assert.equal(clickLegal.some(a => a.type === 'playFromBin'), false,
+    'positive control: the bin play is not on offer yet when the button is clicked');
+  const scoped = armFor(atClick, clickLegal, 'stack');
+  const all = armFor(atClick, clickLegal, 'all');
+
+  pass(h);                                  // the opponent passed first; this pass resolves it
+  if (h.state.priority !== D) pass(h);
+  assert.equal(h.state.phase, 'battle');
+  const legal = legalActions(h.state, D);
+  assert.ok(legal.some(a => a.type === 'playFromBin'
+    && h.state.players[D]!.bin[a.binIndex] === 'Recall'),
+  'the Excavation resolved: Recall is playable from the bin, as KFCS offered it');
+  assert.equal(h.state.stack.length, 0, 'and its own scope is spent');
+
+  assert.equal(passAllRelease(h.state, D, legal, scoped), 'ability',
+    'pass through stack: the bin play is an option the player did not have at the click, so the window is theirs');
+  assert.equal(passAllRelease(h.state, D, legal, all), null,
+    'pass all: a new option does not hand priority back, even one the player s own spell granted');
 });
 
 /* ══ §2 — the three buttons, on the real board ══════════════════════════ */

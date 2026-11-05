@@ -124,8 +124,9 @@ const OPEN: LedgerEntry[] = [
   {
     id: 321, room: "KFCS", date: "2026-11-03",
     report: "mycheze, seat 1, agreed fix: set both players' life down by 2. \"Gember didn't get to play Recall from her bin during that turn for some reason. She spell extracted it but didn't get priority to play it\"",
-    status: 'live',
-    note: "Replayed: after Spell Excavation chose Recall [264], the engine offered Gember both Recalls from the bin at every one of her seven priority windows [268]-[282], and the bin glows a playable card; she passed each time. The room file cannot say whether a standing Pass all made those passes (in 'all' mode a newly granted play does not hand priority back, CR D2.2). CT-527.",
+    status: 'by-design',
+    guards: ['230-pass-modes.test.ts::a bin play your own resolving Spell Excavation grants hands pass through stack back, and not pass all'],
+    note: "By design (CT-527). Replayed: after Spell Excavation chose Recall [264], the engine offered Gember both Recalls from the bin at every one of her seven priority windows [268]-[282], and the bin glows a playable card. On those states a Pass through stack would have handed priority back at [268] (a new option, CR D2.2b); a Pass all keeps passing to the end of the phase by the owner's ruling (CR D2.2d). The room file cannot say which button made the passes. If a play your own spell grants should stop Pass all, that is a change to that ruling.",
   },
   {
     id: 322, room: "DQTX", date: "2026-11-03",

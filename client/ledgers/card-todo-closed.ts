@@ -14589,4 +14589,20 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-05 (steward). The class was wider than the seven: walking the pool for a label that says \"you may pay\" (a graft reads the label of the ability it was cut from) or a run that pays mana after offering Decline found fourteen lines that stated the effect as certain — the seven, their two grafts (Blightwalker, Rotling), and five augments (Xenopod Progenitor, Eminence of the Barrens, Biomass Devourer, Dragnol, Living Vault). Each now ends \"if you pay N\" with the printed N (Living Vault, whose X is the cached card's cost: \"if you pay its cost\"), the register Afflicting Anima and Sacrifice Dude already used. Thoughtripper's reads \"Gember discards a card if you pay 2\". 344 §2c failed on all fourteen with the old lines, and on a wrong number (Xenopod \"if you pay 2\"); a cost the other player may pay (Soul Tithe, Frosted Denial, Gravitational Correction) keeps its \"unless … pays\".",
     status: 'done',
   },
+  {
+    id: 527, area: "client", severity: "minor",
+    cards: ["Spell Excavation", "Recall"],
+    title: "a player passed seven windows with a Spell Excavation'd Recall playable and says they were never given priority to play it",
+    detail: "KFCS turn 6 battle: Gember cast Spell Excavation on Recall [263-264] (\"you may play target spell from your bin until regroup\"). From [268] to [282] the engine offered seat 0 playFromBin on both Recalls (bin 7 and 8) at every one of Gember's seven priority windows, and Gember passed each one; ui/main.ts binUsableIndexes glows exactly those bin entries. The players then agreed a 2-life edit on each side to make up for it. The room file cannot say whether those passes were clicks or a standing Pass all: under 'all' mode passAllRelease deliberately asks no change clause (CR D2.2), so an option granted mid-phase would not hand priority back.",
+    evidence: "Report #321 (KFCS @283, agreed edit, mycheze proposed, Gember agreed): \"Gember didn't get to play Recall from her bin during that turn for some reason. She spell extracted it but didn't get priority to play it.\" legalActions replayed at each of [266]-[282] (2026-11-03).",
+    fix: "First find out: re-create the board (Spell Excavation resolving under a Pass all armed earlier in the battle) and see whether the chip passes through the new bin play. If it does, the question for the owner is whether an option your OWN resolving spell grants should release Pass all; if it does not, the problem is how visible a playable bin card is (a glow inside a pile) — ask the players which.",
+    proof: null,
+    verify: "Arm Pass all in a battle, cast Spell Excavation on a spell in your bin, let it resolve: are you given priority with the bin card playable?",
+    reportId: 321,
+    guards: [
+      '230-pass-modes.test.ts::a bin play your own resolving Spell Excavation grants hands pass through stack back, and not pass all',
+    ],
+    closed: "NOT A BUG, nothing changed (steward 2026-11-05). The engine offered Recall from the bin at every one of Gember's seven windows ([268]-[282]), and the client's release list does what CR D2.2 says on that board: re-built from KFCS's own states, a Pass through stack clicked at [266] (the Excavation on the stack) releases at [268] with 'ability' the moment the bin play appears (D2.2b); a Pass all returns null at every window to the phase end (D2.2d, the owner's ruling: 'a new option does not hand priority back'). So either the passes were Pass all, or they were single Passes with the bin glowing; the room file records neither the arm nor click timing, so which it was cannot be known. The guard pins both answers on a fresh Spell Excavation board and went red ('done' instead of 'ability') with playFromBin dropped from optionKeys. Should a play your OWN resolving spell grants ever stop Pass all, that is a change to D2.2d for the owner to make.",
+    status: 'done',
+  },
 ];
