@@ -30,13 +30,17 @@ this, and it is exactly what the paste box accepts:
 2 Ignis Sprite
 …
 
+// sideboard
+2 Shard Sprite
+
 // maybeboard
 1 Rune Channeler
 ```
 
-What it cannot carry is the description, the cover card, the sideboard and the
-maybeboard as separate lists, or where the deck came
-from. That is what the deck file is for.
+The `// sideboard` and `// maybeboard` lines are dividers, not comments: the
+paste box puts the cards after each into that list (a bare `Sideboard:` or
+`Maybeboard` line works too). What the list cannot carry is the description,
+the cover card, or where the deck came from. That is what the deck file is for.
 
 ## Three rules the format rests on
 

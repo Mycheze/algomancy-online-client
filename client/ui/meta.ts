@@ -40,6 +40,8 @@ export interface PublicDeck {
   id: string;
   name: string;
   cards: string[];
+  /** the sideboard — part of the list, so a shared deck shows and exports it */
+  sideboard?: string[];
   cover: string | null;
   author: string;
   url?: string;
@@ -253,7 +255,7 @@ const state = (): MetaState => ({
 function exportBody(d: PublicDeck): string {
   return exporting === 'file'
     ? deckFileText(buildDeckFile(d, { origin: location.origin }))
-    : deckListText(d.name, d.cards, [], d.url);
+    : deckListText(d.name, d.cards, { sideboard: d.sideboard ?? [], ...(d.url ? { url: d.url } : {}) });
 }
 
 const HOOKS = {

@@ -328,7 +328,8 @@ export { deckStatsHtml };
  * What this deck exports as, in the Export sheet's format.
  *
  *   'text'  the card list — what you paste into a chat, into algomancer.cc,
- *           or back into the paste box here. Lossy on purpose: it is a list.
+ *           or back into the paste box here: the deck, the sideboard and
+ *           the maybeboard, and nothing else. Lossy on purpose: it is a list.
  *   'file'  the whole deck (ui/deckformat.ts) — the description, the cover,
  *           the maybeboard, who built it, where it came from.
  *
@@ -342,7 +343,7 @@ function exportBody(d: DeckView): string {
   const file = pageSheet?.kind === 'export' && pageSheet.format === 'file';
   return file
     ? deckFileText(buildDeckFile(d, { origin: location.origin }))
-    : deckListText(d.name, d.cards, d.maybe, d.url);
+    : deckListText(d.name, d.cards, { maybe: d.maybe, sideboard: d.sideboard ?? [], ...(d.url ? { url: d.url } : {}) });
 }
 
 /** Hand the browser a file. An object URL rather than a `data:` one because a

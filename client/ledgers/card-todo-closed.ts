@@ -14526,4 +14526,21 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-05 (steward, staged for the owner's call): the halo now fits the 3px In Play already lets a card paint past its edge, so no box moves. It was 0 0 3px 1px + 0 0 10px 2px at rest (reach 12px) and 0 0 4px 1px + 0 0 14px 3px at the peak (17px); it is 0 0 2px 1px at rest and 0 0 1px 2px, brighter, at the peak (3px each). 777 now adds up offset + spread + blur in the rule and every frame of its animation against the zone's clip margin; it went red with either old frame put back (12px, 17px). The other reading, room for the old halo, means a wider --ringpad round every block: in the handoff. The region ring over a 3px ring at the outer left edge is the same choice and is left with it.",
     status: 'done',
   },
+  {
+    id: 515, area: "client", severity: "minor",
+    title: "a deck's text export drops its sideboard, and pasting the export back puts its maybeboard in the deck",
+    detail: "ui/deckstats.ts deckListText writes the main list and then a \"// maybeboard\" divider with the maybeboard, and has no sideboard at all. server/decks.ts importDeckText skips every // line and adds every card line to the deck, so a round trip moves the maybeboard into the main deck and loses the sideboard. The rich file format carries both correctly.",
+    evidence: "The Competitive builder stream (register, W5 \"TO FILE at landing: CT-515\"), pre-existing in importDeckText; re-checked 2026-11-03 in both files.",
+    fix: "Give the text grammar a sideboard divider, export it, and make importDeckText read the divider lines (maybeboard and sideboard) into their own lists; extend 188's round trip to both.",
+    proof: null,
+    verify: "Export a deck with a sideboard and a maybeboard as a card list, paste it into the import box: are the sideboard and maybeboard their own lists again?",
+    guards: [
+      "188-deck-stats.test.ts::§6 CT-515: the sideboard and the maybeboard round-trip as their own lists",
+      "188-deck-stats.test.ts::§6 CT-515: the paste box reads a divider as a comment or bare",
+      "830-sideboard-tab.test.ts::§7 CT-515: the card list export carries the sideboard under its own divider",
+      "1141-shared-deck-text-export.test.ts::1141 CT-515: a shared deck",
+    ],
+    closed: "FIXED 2026-11-05 (steward): deckListText now takes { maybe, sideboard, url } and writes a '// sideboard' then a '// maybeboard' section (the deck file's order); importDeckText reads a divider line — '// sideboard', '# Sideboard', a bare 'Sideboard:' or 'Maybeboard', and 'main deck' back — and puts the cards after it into that list, so DeckInfo carries sideboard and maybe and /api/decks/import stores them (it already spread both). A sideboard miss is reported like the deck's; a shelf miss is not, as in the file importer. The class had a second site: the shared deck page's text export (ui/meta.ts) dropped the sideboard because its PublicDeck type had none, although the server sends it. Each guard went red with its one line undone (the divider branch, the exporter's sideboard section, each caller's sideboard).",
+    status: 'done',
+  },
 ];

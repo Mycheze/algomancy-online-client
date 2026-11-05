@@ -168,25 +168,52 @@ export async function importDeckUrl(url: string): Promise<DeckInfo> {
   };
 }
 
+/** Which list a divider line starts, or null when the line is not one. A
+ * divider is the section's name alone on its line — as a comment
+ * (`// sideboard`, what ui/deckstats.ts's deckListText writes) or bare, with
+ * or without a colon (`Sideboard:`, what other list tools write). No card is
+ * named any of these, so a bare one cannot be a card line. */
+function dividerOf(line: string): 'cards' | 'sideboard' | 'maybe' | null {
+  const word = line.replace(/^(\/\/|#)/, '').replace(/:$/, '').trim().toLowerCase();
+  if (word === 'sideboard') return 'sideboard';
+  if (word === 'maybeboard' || word === 'maybe') return 'maybe';
+  if (word === 'main' || word === 'main deck' || word === 'deck') return 'cards';
+  return null;
+}
+
 /** Parse a pasted list: one card per line, optional leading count
  * ("2 Ignis Sprite", "2x Ignis Sprite", or just "Ignis Sprite"). Blank lines
- * and #/// comments are skipped. */
+ * and #/// comments are skipped — except a divider (`dividerOf`), which sends
+ * the cards after it to the sideboard or the maybeboard, so the text export
+ * pastes back as the deck it was (CT-515). A miss in the maybeboard goes
+ * unreported, as in the other importers: the shelf is not the deck. */
 export function importDeckText(text: string): DeckInfo {
-  const cards: CardName[] = [];
+  const lists: Record<'cards' | 'sideboard' | 'maybe', CardName[]> = { cards: [], sideboard: [], maybe: [] };
+  let into: keyof typeof lists = 'cards';
   const problems: string[] = [];
   for (const rawLine of text.split(/\r?\n/)) {
     const line = rawLine.trim();
-    if (!line || line.startsWith('#') || line.startsWith('//')) continue;
+    if (!line) continue;
+    const divider = dividerOf(line);
+    if (divider) { into = divider; continue; }
+    if (line.startsWith('#') || line.startsWith('//')) continue;
     const m = /^(\d+)\s*[xX]?\s+(.+)$/.exec(line);
     const qty = m ? Math.max(1, Math.min(99, Number(m[1]))) : 1;
     const name = (m ? m[2]! : line).trim();
     const hit = resolveName(name);
-    if (hit) for (let i = 0; i < qty; i++) cards.push(hit);
-    else problems.push(`unknown card: ${name}`);
+    if (hit) for (let i = 0; i < qty; i++) lists[into].push(hit);
+    else if (into !== 'maybe') problems.push(`unknown card: ${name}`);
   }
-  if (!cards.length && !problems.length) problems.push('the pasted list is empty');
+  const { cards, sideboard, maybe } = lists;
+  if (!cards.length && !sideboard.length && !maybe.length && !problems.length) {
+    problems.push('the pasted list is empty');
+  }
   problems.push(...ruleProblems(cards));
-  return { name: 'Pasted deck', author: 'you', cards, problems };
+  return {
+    name: 'Pasted deck', author: 'you', cards, problems,
+    ...(maybe.length ? { maybe } : {}),
+    ...(sideboard.length ? { sideboard } : {}),
+  };
 }
 
 /**

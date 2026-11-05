@@ -218,12 +218,34 @@ test('§6 duplicates survive the round trip as a count, not as two lines', () =>
   assert.deepEqual([...importDeckText(text).cards].sort(), [...cards].sort());
 });
 
-test('§6 the maybeboard is exported as a comment-separated tail, and never as deck cards', () => {
-  const text = deckListText('with a shelf', copies('Ignis Sprite', 2), ['Rune Channeler']);
-  assert.match(text, /\/\/ maybeboard/);
-  // …and re-importing takes the WHOLE file, maybeboard included, because the
-  // paste format has no notion of one. That is the honest limit of a text
-  // deck list and the reason the collection stores the two lists apart.
+test('§6 CT-515: the sideboard and the maybeboard round-trip as their own lists', () => {
+  const main = defaultDecks()[0]!.cards;
+  const sideboard = [...copies('Ignis Sprite', 2), 'Rune Channeler'];
+  const maybe = ['Shard Sprite'];
+  const text = deckListText('with both', main, { sideboard, maybe });
+  // sideboard first, the deck file's order, each under its own divider
+  assert.match(text, /\n\n\/\/ sideboard\n2 Ignis Sprite\n1 Rune Channeler\n\n\/\/ maybeboard\n1 Shard Sprite$/);
   const back = importDeckText(text);
-  assert.equal(back.cards.length, 3, 'a paste of the export brings the shelf back as cards');
+  assert.deepEqual(back.problems, [], 'the export imports cleanly');
+  assert.deepEqual([...back.cards].sort(), [...main].sort(), 'the deck is the deck, and nothing from either tail');
+  assert.deepEqual([...(back.sideboard ?? [])].sort(), [...sideboard].sort(), 'the sideboard comes back as the sideboard');
+  assert.deepEqual(back.maybe, maybe, 'the maybeboard comes back as the maybeboard');
+  // a deck with neither writes no divider and imports with neither
+  const plain = importDeckText(deckListText('plain', main));
+  assert.ok(!('sideboard' in plain) && !('maybe' in plain));
+});
+
+test('§6 CT-515: the paste box reads a divider as a comment or bare, any case, colon or not', () => {
+  for (const [side, shelf] of [['// sideboard', '// maybeboard'], ['Sideboard:', 'Maybeboard'], ['# SIDEBOARD', 'maybe:']] as const) {
+    const r = importDeckText(`2 Ignis Sprite\n${side}\n1 Rune Channeler\n${shelf}\n1 Shard Sprite\nmain deck\n1 Rune Channeler`);
+    assert.deepEqual(r.cards, ['Ignis Sprite', 'Ignis Sprite', 'Rune Channeler'], `${side}: the deck, and "main deck" goes back to it`);
+    assert.deepEqual(r.sideboard, ['Rune Channeler'], side);
+    assert.deepEqual(r.maybe, ['Shard Sprite'], shelf);
+  }
+  // an ordinary comment is still only a comment
+  assert.deepEqual(importDeckText('// my sideboard ideas\n2 Ignis Sprite').cards, ['Ignis Sprite', 'Ignis Sprite']);
+  // a miss in the sideboard is reported like the deck's; one on the shelf is not
+  const miss = importDeckText('1 Ignis Sprite\n// sideboard\n1 Not A Card\n// maybeboard\n1 Nor This');
+  assert.ok(miss.problems.includes('unknown card: Not A Card'), 'the sideboard miss is named');
+  assert.ok(!miss.problems.some(p => p.includes('Nor This')), 'the shelf miss is not');
 });

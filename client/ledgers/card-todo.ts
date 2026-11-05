@@ -240,15 +240,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 515, area: "client", severity: "minor",
-    title: "a deck's text export drops its sideboard, and pasting the export back puts its maybeboard in the deck",
-    detail: "ui/deckstats.ts deckListText writes the main list and then a \"// maybeboard\" divider with the maybeboard, and has no sideboard at all. server/decks.ts importDeckText skips every // line and adds every card line to the deck, so a round trip moves the maybeboard into the main deck and loses the sideboard. The rich file format carries both correctly.",
-    evidence: "The Competitive builder stream (register, W5 \"TO FILE at landing: CT-515\"), pre-existing in importDeckText; re-checked 2026-11-03 in both files.",
-    fix: "Give the text grammar a sideboard divider, export it, and make importDeckText read the divider lines (maybeboard and sideboard) into their own lists; extend 188's round trip to both.",
-    proof: () => still('ui/decks.ts', 'deckListText(d.name, d.cards, d.maybe, d.url)') && still('server/decks.ts', "if (!line || line.startsWith('#') || line.startsWith('//')) continue;"),
-    status: 'open',
-  },
-  {
     id: 516, area: "client", severity: "minor",
     title: "the deck builder's sideboard pile was never tried in Firefox, by touch drag or on an iPad",
     detail: "The Competitive builder stream added a sideboard pile (5/7) to the tabletop builder and drove it in headless Chrome only. drag.ts has a Firefox guard and scans are draggable=false, but nobody has dragged a card to or from the sideboard pile with a finger or in Firefox. 2026-11-04 (BL-65): the rebuilt builder's Sideboard rail and the Competitive sideboarding table were dragged both ways in REAL Firefox 158 over BiDi and with Chrome touch emulation at 1024 and 768 (var/records/bl65/handoff-W5b.md). A real iPad is still untried.",

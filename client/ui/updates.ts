@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-05', kind: 'fix', text: 'A deck exported as a card list now includes its sideboard, and pasting that list back in puts the sideboard and the maybeboard where they belong instead of into the deck.' },
   { date: '2026-11-05', kind: 'fix', text: 'The soft green pulse round a unit whose ability you can use now stays whole at the edge of the table, instead of being cut off on the side that touches it.' },
   { date: '2026-11-05', kind: 'fix', text: 'A spell on the stack no longer drops the "s" from "pays" or "gains" when a player\'s or unit\'s name ends in 1, e.g. "unless Player 1 pays 5".' },
   { date: '2026-11-05', kind: 'fix', text: 'Units sacrificed together to pay one cost (Infernal Cultivator, Malevolent Machinations, Deformant) now die at the same moment, so each one sees the others die and the order you pick them in no longer matters.' },
