@@ -10886,8 +10886,8 @@ Generated from the records and the verdicts. Nothing here is a rule.
 |---|---|
 | Printed | 454 |
 | Designer | 202 |
-| Owner call | 674 |
-| Engine only | 47 |
+| Owner call | 675 |
+| Engine only | 46 |
 | Mixed | 490 |
 
 ### Verification
@@ -10920,7 +10920,6 @@ Generated from the records and the verdicts. Nothing here is a rule.
 - [D3.1d](#rD3.1d) A player's clock is shown as critical when it is down to a tenth of the game's bank or to one minute, whichever is less.
 - [D3.2](#rD3.2) A player's clock runs only while the game is waiting on that player, and only while both players are connected. Neither clock runs while a proposed fix waits for its answer (see rule D4.5e).
 - [D3.2a](#rD3.2a) In a step both players take at once, both clocks run; a player's clock stops when that player finishes the step.
-- [D3.2b](#rD3.2b) A player's clock does not run in a priority window that their standing pass is answering, and the other player, who has nothing to do there, is not billed either. A real choice is billed even while a standing pass is set. If the client's pass has not arrived within a short backstop, the server passes for the player, and that pass is logged like any other. While a proposed fix waits for its answer, the server does not pass for a standing pass.
 - [D3.2c](#rD3.2c) A player watching a recap is off the clock until the playback ends or the server's hold on it lapses. Acting ends the hold.
 - [D3.3](#rD3.3) A player whose clock runs out loses the game, and the log says they ran out of time. This happens even if neither player acts.
 - [D3.4](#rD3.4) A game is closed when nobody has moved in it for an hour, if fewer than five actions have been taken, or for twelve hours otherwise, and nobody (no player and no watcher) has been connected to it for the five-minute reconnect grace. An open tab keeps an idle game open. The waiting game of a paused Competitive Constructed match is the exception (rule D8.6e).

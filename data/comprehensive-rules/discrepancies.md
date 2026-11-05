@@ -1515,7 +1515,7 @@ That a standing pass stops the clock, with a server backstop pass, rests on an o
 - file: client/server/e2e/test-passall-clock.ts: " * The owner, 2026-09-28: *"When a player is 'Pass all'ed, their timer should"
 - file: client/server/e2e/test-passall-clock.ts: " * never go down."* He chose PAUSE + BACKSTOP: the client tells the server when"
 
-**Resolution:** The rule states the engine's behaviour as basis engine. Register the owner's call as a ruling if it is to count as owner basis.
+**Resolution:** Settled 2026-11-05: the owner's call is now recorded on the rule (sources.owner, basis owner). Asked on report #323 whether a choice made under Pass all should stop the clock too, he answered that the clock runs only when you have to do something for the game to progress, so the rule stands as written: pass windows a standing pass answers are unbilled, real choices are billed.
 
 ### D-U23-4 · Owner call only · rule D2.7a
 

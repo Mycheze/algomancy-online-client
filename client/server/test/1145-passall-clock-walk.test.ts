@@ -12,10 +12,13 @@
  * seats ran no clock; the only billed states under the arm were declareBlocks,
  * declareAttack (round 2), decide/targets and decide/payOrDecline.
  *
- * ⚠ §2 PINS THE CURRENT BEHAVIOUR AND NAMES AN OPEN QUESTION. Whether a
- * declaration (or a decision) made while Pass all is on should be unbilled too
- * is the owner's call, asked in the CT-523 handoff. If he says "stop the clock
- * there too", §2's last assertion flips; §1 stands either way.
+ * §2 IS THE OWNER'S CALL. Asked (report #323) whether a declaration or a
+ * decision made while Pass all is on should be unbilled too, he answered
+ * (Discord, 2026-11-05): *"No, the clock should only tick down when there's an
+ * action for you to take. When you're holding up the game. … It should ONLY
+ * tick down when you have to do something, anything, in order for the game to
+ * progress."* A block declaration is something you have to do, so it is
+ * billed; a window Pass all answers is not. CR D3.2b carries the call.
  *
  * Driven in-process on a real Room, as 353b is. Seeds 114400-114499.
  */
@@ -31,7 +34,7 @@ import type { Action, Seat } from '../../engine/src/types.ts';
 import { inPassWindow, optionKeys } from '../../ui/passrelease.ts';
 import type { Room } from '../rooms.ts';
 
-process.env['ALGO_GAMES_DIR'] = mkdtempSync(join(tmpdir(), 'algo-1144-'));
+process.env['ALGO_GAMES_DIR'] = mkdtempSync(join(tmpdir(), 'algo-1145-'));
 const { createRoom, applyToRoom, legalInRoom, setPassAll, settleClock } = await import('../rooms.ts');
 
 interface Seen { step: string; passWindow: boolean; billed: boolean; armed: boolean }
@@ -86,13 +89,13 @@ test('CT-523 §1 a seat on Pass all runs no clock in any priority window of the 
   assert.equal(before, undefined, 'the arm went up at the first window, so no window is unarmed');
 });
 
-test('CT-523 §2 the block declaration under Pass all is billed — pinned, the owner is asked whether it should be', () => {
+test('CT-523 §2 the block declaration under Pass all is billed — the owner: the clock runs while you have to do something', () => {
   const { seen, D } = walk(114401);
   const blocks = seen.find(x => x.step === 'blocks');
   assert.ok(blocks, `fixture: D (seat ${D}) is asked to declare blocks`);
   assert.equal(blocks.armed, true, 'the arm stands through the declaration (it is not a pass window, so nothing releases it)');
   assert.equal(blocks.passWindow, false);
-  // CR D3.2b "A real choice is billed even while a standing pass is set."
-  // OPEN (CT-523 handoff): the owner may want this unbilled too.
+  // CR D3.2b "A real choice is billed even while a standing pass is set." —
+  // the owner's call of 2026-11-05 (header).
   assert.equal(blocks.billed, true, 'declaring blocks is billed even with Pass all on');
 });

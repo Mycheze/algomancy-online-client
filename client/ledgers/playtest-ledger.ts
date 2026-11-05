@@ -140,8 +140,9 @@ const OPEN: LedgerEntry[] = [
   {
     id: 323, room: "SHXD", date: "2026-11-03",
     report: "mycheze, seat 1: when \"all passing\" your clock still ticks down and it shouldn't.",
-    status: 'live',
-    note: "The server stops a Pass-all seat's clock only in a pure priority window its arm is answering (CR D3.2b); declarations, decisions and deploy steps are billed, and the arm drops at a phase change. Which window ticked is not in the report or the file. Gember lost this game (game 3 of a match) on time. CT-523. Steward 2026-11-05: SHXD replayed through rooms.ts with an 'all' arm at each seat's first battle pass bills no pass window; the only billed states under the arm are declarations, targets and \"you may pay\" decisions (CR D3.2b). Whether those should stop too is asked in the CT-523 handoff.",
+    status: 'by-design',
+    guards: ['1145-passall-clock-walk.test.ts::CT-523 §1 a seat on Pass all runs no clock in any priority window of the battle'],
+    note: "By design, on the owner's own answer (CT-523). SHXD replayed through the real server with Pass all armed at each player's first battle pass: no window Pass all was passing in ran a clock; the clock ran only while the game waited on that player to declare blocks or an attack, pick a target or answer a \"you may pay\". Asked whether those should stop too, the owner said no (2026-11-05): \"It should ONLY tick down when you have to do something, anything, in order for the game to progress.\" CR D3.2b now cites that. Gember lost this game (game 3 of a match) on time; #325 is the dispute.",
   },
   {
     id: 325, room: "SHXD", date: "2026-11-03",

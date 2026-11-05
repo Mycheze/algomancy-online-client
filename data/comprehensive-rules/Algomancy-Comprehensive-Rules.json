@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:22a077d332192ba4",
+ "generated_from": "sha256:828b46b1328543bb",
  "rules": [
   {
    "num": "100.1",
@@ -39025,7 +39025,7 @@
     "D2.2"
    ],
    "examples": [],
-   "basis": "engine",
+   "basis": "owner",
    "scope": "digital",
    "engineDiffers": false,
    "discrepancies": [

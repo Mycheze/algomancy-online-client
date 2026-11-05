@@ -391,7 +391,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD3.2b"></a>**D3.2b** A player's clock does not run in a priority window that their standing pass is answering, and the other player, who has nothing to do there, is not billed either. A real choice is billed even while a standing pass is set. If the client's pass has not arrived within a short backstop, the server passes for the player, and that pass is logged like any other. While a proposed fix waits for its answer, the server does not pass for a standing pass. See rule D2.2.
 
-<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.clocks.running.standing-pass — the armed seat is not billed in the window its pass answers, the other seat neither, and the backstop pass after the delay goes in the log · Key: annexd.clocks.running.standing-pass</sub>
+<sub>Basis: Owner call · adopted 2026-11-05 · Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 3 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts, 1145-passall-clock-walk.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.clocks.running.standing-pass — the armed seat is not billed in the window its pass answers, the other seat neither, and the backstop pass after the delay goes in the log · Key: annexd.clocks.running.standing-pass</sub>
 
 <sub>Discrepancies: D-U23-3 (discrepancies.md)</sub>
 

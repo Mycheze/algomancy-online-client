@@ -261,18 +261,6 @@ const OPEN: TodoEntry[] = [
   },
   // ── the report triage of 2026-11-03 (reports #319-#325; the steward; filed as CT-520..522, renumbered 526..528 on landing) ───────
   {
-    id: 523, area: "client", severity: "minor",
-    title: "a clock is seen ticking while its player is on Pass all; which window it was is not known",
-    detail: "CR D3.2b: a player's clock does not run in a priority window their standing pass is answering. server/rooms.ts clockRunning honours it only where settlePassAll stamped the window: inPassWindow (no decision, the seat has priority, pass legal), the arm not released, no report dialog open, no proposal. Anything else is billed by design — a decision, a declaration, a deploy step — and the arm comes off at the phase change. The report does not say which window ticked. SHXD was game 3 of a Competitive match whose banks carry between games, and Gember lost it on time (clockMs [0, 539039]) at turn 4's planning.",
-    evidence: "Report #323 (SHXD @109, mycheze, owner): \"When 'all passing' your clock still ticks down and it shouldn't.\" Report #325, two minutes after the game ended on time, disputes the result: \"We don't really want this to count.\"",
-    fix: "Reproduce in a server test with a clocked room: arm Pass all in battle and walk the windows (opponent's stack items, the attack and block declarations, the battle-end pass, a deploy step), recording clockRun for the armed seat at each. Every billed window that is a pure pass window is the bug; the rest go to the owner as \"billed by design under D3.2b — should it be?\"",
-    proof: null,
-    verify: "Play a clocked game, arm Pass all at the start of a battle, and watch your own clock through the battle.",
-    progress: "STEWARD 2026-11-05: no pure pass window is billed. SHXD's 113 actions were replayed through rooms.ts (applyToRoom + settleClock, both seats connected) with an 'all' arm taken at each seat's first pass of turn 3's battle. Every priority window either seat's arm answered ran no clock for that seat. The ONLY billed states under a standing arm were real choices: seat 1 (mycheze) decide/targets @67-68 (its own cast), decide/payOrDecline @84, declareBlocks @104 (round 2); seat 0 (Gember) decide/targets @55,65,70-71, payOrDecline @58, declareBlocks @87, declareAttack @101. Guard 1144 §1 pins the pass windows; 1144 §2 pins the block declaration as billed. The remaining question, whether a declaration or decision made under Pass all should be unbilled too (owner 2026-09-28: \"their timer should never go down\"; the CR D3.2b carve-out \"A real choice is billed\" is basis engine, with no owner source), is in handoff CT-523. Building it needs a pause separate from the backstop's stamp: the backstop can only pass, so a stamped declaration would make the sweep's passPriority fail and drop the arm.",
-    reportId: 323,
-    status: 'open',
-  },
-  {
     id: 525, area: "engine", severity: "minor",
     cards: ["Refuse Reclaimer", "Deformant"],
     title: "in a death batch, a when-a-unit-dies line an earlier member got from an augment does not hear the members that die after it",

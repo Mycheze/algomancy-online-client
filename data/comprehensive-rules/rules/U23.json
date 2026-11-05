@@ -2616,17 +2616,24 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "owner": [],
+      "owner": [
+        {
+          "quote": "It should ONLY tick down when you have to do something, anything, in order for the game to progress.",
+          "adopted": "2026-11-05",
+          "from": "owner, Discord 2026-11-05 (answer to the report #323 handoff: \"No\" to stopping the clock for a choice made under Pass all)"
+        }
+      ],
       "engine": [],
       "tests": [
         "suite.test.ts",
-        "434-cr-digital-1.test.ts"
+        "434-cr-digital-1.test.ts",
+        "1145-passall-clock-walk.test.ts"
       ]
     },
-    "basis": "engine",
+    "basis": "owner",
     "scope": "digital",
-    "confidence": "medium",
-    "notes": "ENGINE-ONLY: client/server/e2e/test-passall-clock.ts, whose header quotes the owner (2026-09-28, 'their timer should never go down'). No R-ruling. D-U23-3. Last sentence: BL-46 (2026-10-16), settlePassAll in server/rooms.ts (a pass would land an action and end the proposal).",
+    "confidence": "high",
+    "notes": "Owner call 2026-11-05 (report #323, CT-523): asked whether a block, attack, target or 'you may pay' choice made while Pass all is on should be unbilled too, he answered no: the clock runs only while the game waits on you to do something. That settles the second sentence, which until then was basis engine; it refines his 2026-09-28 'their timer should never go down' (client/server/e2e/test-passall-clock.ts) to the windows Pass all answers. D-U23-3. Last sentence: BL-46 (2026-10-16), settlePassAll in server/rooms.ts (a pass would land an action and end the proposal).",
     "sourceHashes": {}
   },
   {
