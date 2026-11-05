@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:163ed5ed81442c3f",
+ "generated_from": "sha256:16425bb81064a576",
  "rules": [
   {
    "num": "100.1",
@@ -15293,13 +15293,14 @@
    "sectionTitle": "Formations",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "602.2",
-   "text": "A unit that comes under another player's control during a battle, after the formations are set, leaves its formation, unless the effect that changes its control itself gives it a position. It stays out of every formation for the rest of that battle, attacking and blocking for nobody, and joins its new controller's side at regroup.",
+   "text": "A unit that comes under another player's control during a battle, after the formations are set, leaves its formation, unless the effect that changes its control itself gives it a position. If blocks have not yet been declared, a defending player who gains control of it may declare it as a blocker or send it to counterattack (see rule 711.3). Otherwise it stays out of every formation for the rest of that battle, attacking and blocking for nobody, and joins its new controller's side at regroup.",
    "see": [
     "711"
    ],
    "examples": [
     "Download steals an enemy Robot token after blocks. The Robot leaves the formation and takes no further part in the battle.",
     "At regroup, the stolen Robot joins its new controller's side.",
+    "Before blocks, the defending player casts Download on an attacking Robot token. The Robot stops attacking, and its new controller declares it as a blocker; it blocks and deals its combat damage.",
     "After attacks, the defender casts Organic Exchange on an attacking Bubb and their own 1/1, which is in no formation. The two swap positions as the card says: the 1/1 takes Bubb's attack slot and deals the combat damage, and Bubb is in no formation."
    ],
    "basis": "mixed",
@@ -15310,7 +15311,7 @@
    ],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "602.3",
@@ -15710,14 +15711,16 @@
    "sectionTitle": "Formations",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "602.6",
-   "text": "After blocks, while the defending formation still holds at least one unit, a unit placed into it may also take the front slot of a blocking column whose blockers have all left it. The unit then blocks that column.",
+   "text": "After blocks, while at least one attacking unit is still in the attacking formation, a unit placed into the defending formation may also take the front slot of a blocking column whose blockers have all left it, even if no unit is left standing in the defending formation. The unit then blocks that column. Once every attacking unit and every blocker has left, there is no formation to join.",
    "see": [
     "602.6c",
     "602.6a",
     "602.6k"
    ],
    "examples": [
-    "The defender's only blocker in the second column dies after blocks. An effect that puts a unit into the defender's formation may put it in front of the second attacking column."
+    "The defender's only blocker in the second column dies after blocks. An effect that puts a unit into the defender's formation may put it in front of the second attacking column.",
+    "After blocks, the defender's only blocker dies. The defender plays Tiderunner Initiate in front of the attacker that blocker faced, and it fights that attacker.",
+    "After blocks, the defender's only blocker dies, and then the attacker's only attacking unit dies too. The defender casts Tiderunner Initiate; nothing is asked and it enters play outside any formation."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -15727,7 +15730,7 @@
    ],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "602.6k",
@@ -15737,12 +15740,13 @@
    "sectionTitle": "Formations",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "602.6",
-   "text": "A player with no unit standing in a formation in the battle, because they have not formed one or because every unit in it has left, is offered no position in it, not even a hole, and a unit cannot be played or placed into it. Rules 602.6c and 602.6f are the exceptions.",
+   "text": "A player with no unit standing in a formation in the battle, because they have not formed one or because every unit in it has left, is offered no position in it, not even a hole, and a unit cannot be played or placed into it. Rules 602.6c, 602.6f and 602.6j are the exceptions.",
    "see": [
     "602.1d",
     "602.6f",
     "602.7c",
-    "602.6c"
+    "602.6c",
+    "602.6j"
    ],
    "examples": [
     "The attacker has attacked and the defender has not yet declared blocks. The defender stands in no formation, so an effect that puts a unit into the defender's formation has nowhere to put it.",
@@ -15750,7 +15754,7 @@
     "The defender declares no blockers. An effect that puts a unit into the defender's formation may still put it in front of the unblocked attacking column (rule 602.6c); the attacker is offered no such spot.",
     "A living Hooba-Lin whose line has emptied around it is offered nothing; only a source that has left play keeps its remembered formation."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
@@ -15758,7 +15762,7 @@
    ],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "602.7",
@@ -15835,23 +15839,25 @@
    "sectionTitle": "Formations",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "602.7",
-   "text": "Such a card can be played into a formation only if its controller has a formation in that battle that still holds at least one unit: they attacked, or they declared blocks, and not every unit in it has left. As an exception, after blocks are declared and until combat damage has been dealt, the defending player may play it in front of an unblocked attacking column (rule 602.6c) even if they declared no blockers. Otherwise it is played normally, outside any formation.",
+   "text": "Such a card can be played into a formation only if its controller has a formation in that battle that still holds at least one unit: they attacked, or they declared blocks, and not every unit in it has left. There are two exceptions for the defending player once blocks are declared. Until combat damage has been dealt, they may play it in front of an unblocked attacking column (rule 602.6c), even if they declared no blockers. And if they declared blockers, they may play it into the front slot of a blocking column whose blockers have all left (rule 602.6j), even if none of their units is left, as long as an attacking unit is still in the attacking formation. Otherwise it is played normally, outside any formation.",
    "see": [
     "602.6c",
-    "602.6k"
+    "602.6k",
+    "602.6j"
    ],
    "examples": [
     "Before blocks, the defending player has no formation. They cast Tiderunner Initiate; nothing is asked and it enters play outside any formation.",
     "After blocks, the defender plays a unit in front of an unblocked attacking column. That column is blocked, and stays blocked when the unit is removed.",
-    "After blocks, every attacking unit dies. The attacker plays Tiderunner Initiate; nothing is asked and it enters play outside any formation."
+    "After blocks, every attacking unit dies. The attacker plays Tiderunner Initiate; nothing is asked and it enters play outside any formation.",
+    "After blocks, the defender's only blocker dies. The defender casts Tiderunner Initiate and is asked for a spot; the emptied blocking column is one."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "603.1",
@@ -17950,12 +17956,14 @@
    "sectionTitle": "Combat Damage Step",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "608.2",
-   "text": "Whether a half-column strikes in a sub-step is determined as that sub-step begins, from the units then in the column and the attributes they then share.",
+   "text": "Whether a half-column strikes in a sub-step is determined as that sub-step begins, from the units then in the column. Until the Swift sub-step has been dealt, the attributes those units then share decide, as rule 608.2a says. After it, what the half-column has already dealt decides instead (rule 608.2e): a half-column that did not strike in the Swift sub-step strikes in the normal sub-step unless it has Sluggish, even if it has gained Swift since; a half-column that struck in neither the Swift nor the normal sub-step strikes in the Sluggish sub-step, even if it has lost Sluggish since; and a half-column that struck in the Swift sub-step strikes again in the Sluggish sub-step only if it has Sluggish then (rule 608.2c).",
    "see": [
     "603"
    ],
    "examples": [
-    "A column strikes in the Swift sub-step and then gains Sluggish. It strikes again in the Sluggish sub-step."
+    "A column strikes in the Swift sub-step and then gains Sluggish. It strikes again in the Sluggish sub-step.",
+    "Dune Drifter (2/1, Swift) and a 3/3 attack in separate columns. After the Swift sub-step, the 3/3 is given Swift. It did not strike in the Swift sub-step, so it deals its 3 in the normal sub-step.",
+    "A 1/1 and Ambling Mountaintop (4/5, Sluggish) attack in separate columns. After the normal sub-step, the Mountaintop loses all its attributes. It struck in neither earlier sub-step, so it still deals its 4 in the Sluggish sub-step."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -17963,7 +17971,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "608.3",
@@ -24589,16 +24597,18 @@
    "sectionTitle": "Control Change",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "711",
-   "text": "A unit whose controller changes leaves its formation. If this happens during a battle, the unit stays in the battle out of formation for the rest of that battle: it attacks for nobody and blocks for nobody. It joins its new controller's side at regroup.",
+   "text": "A unit whose controller changes leaves its formation. If this happens during a battle, the unit stays in the battle out of formation. If blocks have not yet been declared and its new controller is the defending player, they may declare it as a blocker or send it to counterattack, like any other unit of theirs in the battle's region. Otherwise it attacks for nobody and blocks for nobody for the rest of that battle. It joins its new controller's side at regroup.",
    "see": [
     "602",
     "506.2a"
    ],
    "examples": [
-    "a Robot token stolen by Download mid-battle is out of the formation for the rest of the battle.",
-    "the stolen Robot joins its new controller's side at regroup."
+    "a Robot token stolen by Download after blocks is out of the formation for the rest of the battle.",
+    "the stolen Robot joins its new controller's side at regroup.",
+    "Before blocks, the defending player casts Download on an attacking Robot token. The Robot stops attacking, and its new controller declares it as a blocker; it blocks and deals its combat damage.",
+    "Before blocks, the defending player steals an attacking Robot token with Download and sends it out to counterattack."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
@@ -24606,7 +24616,7 @@
    ],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "711.3a",
@@ -25509,6 +25519,31 @@
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
+  },
+  {
+   "num": "713.6e",
+   "key": "effects.state.together.sacrifice-costs",
+   "title": null,
+   "section": "713",
+   "sectionTitle": "State Checks",
+   "chapterTitle": "7. Spells, Abilities and Effects",
+   "parent": "713.6",
+   "text": "The units one cost makes a player sacrifice (\"Sacrifice X units\", \"sacrifice me and another ally\") die together in one batch once the cost is paid in full; the order they are chosen in does not matter (706.8c, 714.9). No player can act between the choices. See rules 111.2, 706.8c, 714.9.",
+   "see": [
+    "706.8c",
+    "714.9"
+   ],
+   "examples": [
+    "Infernal Cultivator's cost is paid with an Ancient One and the unit beside it that says \"When I die, draw a card\". The two die together, so the Ancient One still has that ability as it dies, and both trigger.",
+    "Malevolent Machinations is played by sacrificing a Refuse Reclaimer and then a Good Whale. The Reclaimer triggers for the Whale, because the two die together."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": null
   },
   {
    "num": "713.7",

@@ -6,7 +6,7 @@ Every place where the sources disagree, the register contradicts itself, or a ru
 
 None.
 
-## 2. Record and test fixes (67)
+## 2. Record and test fixes (68)
 
 ### D-U01-10 · Other · rule 102.4
 
@@ -782,7 +782,7 @@ The owner ruling of 2026-08-30 (“nothing may exist only in the…”) still sa
 
 **Resolution:** Mark the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s closing count as answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) in the register ("its log-only count answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”)"); CT-236 tracks the stale sentence. The rules follow the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) (rule D7.4b). rule D7.4 states the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s standard; its engine-differs marker for F-U24-4 (CT-236) has been dropped, because the toast tier gives every such announcement a surface. D-U24-9 is this item from the rule's side: its count of nineteen against the inventory test's 21 is the same stale sentence. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]
 
-## 3. Engine-only and owner-only rules (83)
+## 3. Engine-only and owner-only rules (82)
 
 ### D-U01-13 · Engine only · rule 103.3a
 

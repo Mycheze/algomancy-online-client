@@ -4482,15 +4482,17 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.15; Manual p.43; Manual p.43; card: Aberrant Populace · Tests: 08-cards2.test.ts, 98-spawn-region.test.ts · Example test: 08-cards2.test.ts::Aberrant Populace: attack → two Wisps out of formation · Key: combat.formations.outside.spawned</sub>
 
-<a id="r602.2b"></a>**602.2b** A unit that comes under another player's control during a battle, after the formations are set, leaves its formation, unless the effect that changes its control itself gives it a position. It stays out of every formation for the rest of that battle, attacking and blocking for nobody, and joins its new controller's side at regroup. See rule 711.
+<a id="r602.2b"></a>**602.2b** A unit that comes under another player's control during a battle, after the formations are set, leaves its formation, unless the effect that changes its control itself gives it a position. If blocks have not yet been declared, a defending player who gains control of it may declare it as a blocker or send it to counterattack (see rule 711.3). Otherwise it stays out of every formation for the rest of that battle, attacking and blocking for nobody, and joins its new controller's side at regroup. See rule 711.
 
 > *Example: Download steals an enemy Robot token after blocks. The Robot leaves the formation and takes no further part in the battle.*
 
 > *Example: At regroup, the stolen Robot joins its new controller's side.*
 
+> *Example: Before blocks, the defending player casts Download on an attacking Robot token. The Robot stops attacking, and its new controller declares it as a blocker; it blocks and deals its combat damage.*
+
 > *Example: After attacks, the defender casts Organic Exchange on an attacking Bubb and their own 1/1, which is in no formation. The two swap positions as the card says: the 1/1 takes Bubb's attack slot and deals the combat damage, and Bubb is in no formation.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 3; verifier ran 4 tests (a probe it wrote), all passed; 3 gate test files · Printed: card: Organic Exchange · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 145-erase-routes.test.ts, 24-wood-b.test.ts, 421-cr-regions-formations.test.ts · Example tests: 145-erase-routes.test.ts::CR 711.3 (viii): Download — a Robot token stolen mid-battle is OUT of the formation, 145-erase-routes.test.ts::CR 711.3 (ix): Download — the stolen Robot token joins its NEW controller's side at regroup, 24-wood-b.test.ts::Organic Exchange: control swaps and the attack slot passes to the exchanged unit · Key: combat.formations.outside.stolen</sub>
+<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 3 gate test files · Printed: card: Organic Exchange · Designer: RQ 1414660063162798082 · Owner call · adopted 2026-11-04; Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 145-erase-routes.test.ts, 24-wood-b.test.ts, 421-cr-regions-formations.test.ts · Example tests: 145-erase-routes.test.ts::CR 711.3 (viii): Download — a Robot token stolen mid-battle is OUT of the formation, 145-erase-routes.test.ts::CR 711.3 (ix): Download — the stolen Robot token joins its NEW controller's side at regroup, 145-erase-routes.test.ts::CR 711.3 (x): Download before blocks, 24-wood-b.test.ts::Organic Exchange: control swaps and the attack slot passes to the exchanged unit · Key: combat.formations.outside.stolen</sub>
 
 <sub>Discrepancies: D-U10-11 (discrepancies.md)</sub>
 
@@ -4612,15 +4614,19 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Hooba-Pon · Designer: RAQ 1461450216874967235#0 · Tests: 396-raq-timing.test.ts · Example test: 396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: the spell part happens, then the unit spawns into the formation · Key: combat.formations.placement.spell-unit</sub>
 
-<a id="r602.6j"></a>**602.6j** After blocks, while the defending formation still holds at least one unit, a unit placed into it may also take the front slot of a blocking column whose blockers have all left it. The unit then blocks that column. See rules 602.6c, 602.6a, 602.6k.
+<a id="r602.6j"></a>**602.6j** After blocks, while at least one attacking unit is still in the attacking formation, a unit placed into the defending formation may also take the front slot of a blocking column whose blockers have all left it, even if no unit is left standing in the defending formation. The unit then blocks that column. Once every attacking unit and every blocker has left, there is no formation to join. See rules 602.6c, 602.6a, 602.6k.
 
 > *Example: The defender's only blocker in the second column dies after blocks. An effect that puts a unit into the defender's formation may put it in front of the second attacking column.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Engine: formationSlots · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.formations.placement.defending-emptied-block — after blocks a blocking column whose blocker died offers its front slot, and a unit placed there blocks that column · Key: combat.formations.placement.defending-emptied-block</sub>
+> *Example: After blocks, the defender's only blocker dies. The defender plays Tiderunner Initiate in front of the attacker that blocker faced, and it fights that attacker.*
+
+> *Example: After blocks, the defender's only blocker dies, and then the attacker's only attacking unit dies too. The defender casts Tiderunner Initiate; nothing is asked and it enters play outside any formation.*
+
+<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 1 gate test file · Designer: RQ 1237434283786768415 · Owner call · adopted 2026-11-04; Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Engine: formationSlots · Tests: 421-cr-regions-formations.test.ts · Example tests: 421-cr-regions-formations.test.ts::cr:combat.formations.placement.defending-emptied-block — after blocks a blocking column whose blocker died offers its front slot, and a unit placed there blocks that column, 421-cr-regions-formations.test.ts::cr:combat.formations.placement.defending-emptied-block — every blocker dies after blocks, and the defender plays Tiderunner Initiate into the emptied blocking column, 421-cr-regions-formations.test.ts::cr:combat.formations.placement.defending-emptied-block — once every blocker and every attacker has left, the defender is offered no position and Tiderunner Initiate enters play outside any formation · Key: combat.formations.placement.defending-emptied-block</sub>
 
 <sub>Discrepancies: D-U10-9 (discrepancies.md)</sub>
 
-<a id="r602.6k"></a>**602.6k** A player with no unit standing in a formation in the battle, because they have not formed one or because every unit in it has left, is offered no position in it, not even a hole, and a unit cannot be played or placed into it. Rules 602.6c and 602.6f are the exceptions. See rules 602.1d, 602.6f, 602.7c, 602.6c.
+<a id="r602.6k"></a>**602.6k** A player with no unit standing in a formation in the battle, because they have not formed one or because every unit in it has left, is offered no position in it, not even a hole, and a unit cannot be played or placed into it. Rules 602.6c, 602.6f and 602.6j are the exceptions. See rules 602.1d, 602.6f, 602.7c, 602.6c, 602.6j.
 
 > *Example: The attacker has attacked and the defender has not yet declared blocks. The defender stands in no formation, so an effect that puts a unit into the defender's formation has nowhere to put it.*
 
@@ -4630,7 +4636,7 @@ order.
 
 > *Example: A living Hooba-Lin whose line has emptied around it is offered nothing; only a source that has left play keeps its remembered formation.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-22, 2026-10-09 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 4 gate test files · Tests: 66-formation-placement.test.ts, 400-raq-fix-blocks.test.ts, 421-cr-regions-formations.test.ts, 561-remembered-empty-formation.test.ts · Example tests: 66-formation-placement.test.ts::CR 602.6k: a formation you are not standing in cannot be joined at all, 421-cr-regions-formations.test.ts::cr:combat.formations.placement.empty-formation — after blocks every attacking unit dies, the attacker is offered no position, not even the hole, and Tiderunner Initiate enters play outside any formation, 400-raq-fix-blocks.test.ts::CR 607.2c the attacker is never offered a blocking spot, 561-remembered-empty-formation.test.ts::CR 602.6k / CT-250: the remembered exception is the dead source only · Key: combat.formations.placement.empty-formation</sub>
+<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 4 gate test files · Designer: RQ 1237434283786768415; RQ 1237434283786768415 · Owner call · adopted 2026-11-04; Owner ruling, adopted 2026-08-22, 2026-10-09 (quoted from the retired ruling register) · Tests: 66-formation-placement.test.ts, 400-raq-fix-blocks.test.ts, 421-cr-regions-formations.test.ts, 561-remembered-empty-formation.test.ts · Example tests: 66-formation-placement.test.ts::CR 602.6k: a formation you are not standing in cannot be joined at all, 421-cr-regions-formations.test.ts::cr:combat.formations.placement.empty-formation — after blocks every attacking unit dies, the attacker is offered no position, not even the hole, and Tiderunner Initiate enters play outside any formation, 400-raq-fix-blocks.test.ts::CR 607.2c the attacker is never offered a blocking spot, 561-remembered-empty-formation.test.ts::CR 602.6k / CT-250: the remembered exception is the dead source only · Key: combat.formations.placement.empty-formation</sub>
 
 <sub>Discrepancies: D-U10-10 (discrepancies.md)</sub>
 
@@ -4654,7 +4660,7 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Tiderunner Initiate · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 73-play-into-formation.test.ts · Example test: 73-play-into-formation.test.ts::CR 602.7b "stay out of formation" is still on the menu · Key: combat.formations.play-into.optional</sub>
 
-<a id="r602.7c"></a>**602.7c** Such a card can be played into a formation only if its controller has a formation in that battle that still holds at least one unit: they attacked, or they declared blocks, and not every unit in it has left. As an exception, after blocks are declared and until combat damage has been dealt, the defending player may play it in front of an unblocked attacking column (rule 602.6c) even if they declared no blockers. Otherwise it is played normally, outside any formation. See rules 602.6c, 602.6k.
+<a id="r602.7c"></a>**602.7c** Such a card can be played into a formation only if its controller has a formation in that battle that still holds at least one unit: they attacked, or they declared blocks, and not every unit in it has left. There are two exceptions for the defending player once blocks are declared. Until combat damage has been dealt, they may play it in front of an unblocked attacking column (rule 602.6c), even if they declared no blockers. And if they declared blockers, they may play it into the front slot of a blocking column whose blockers have all left (rule 602.6j), even if none of their units is left, as long as an attacking unit is still in the attacking formation. Otherwise it is played normally, outside any formation. See rules 602.6c, 602.6k, 602.6j.
 
 > *Example: Before blocks, the defending player has no formation. They cast Tiderunner Initiate; nothing is asked and it enters play outside any formation.*
 
@@ -4662,7 +4668,9 @@ order.
 
 > *Example: After blocks, every attacking unit dies. The attacker plays Tiderunner Initiate; nothing is asked and it enters play outside any formation.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-18, 2026-08-22, 2026-10-09 (quoted from the retired ruling register) · Verified: confirmed in round 3; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Tests: 73-play-into-formation.test.ts, 388-raq-blocks-and-windows.test.ts, 421-cr-regions-formations.test.ts · Example tests: 73-play-into-formation.test.ts::CR 602.7c with NO formation of your own the play is legal and asks nothing, 388-raq-blocks-and-windows.test.ts::RAQ Blocked: a unit played in as a blocker after blocks blocks that column, 421-cr-regions-formations.test.ts::cr:combat.formations.play-into.needs-formation — after blocks every attacker dies, and the attacker casts Tiderunner Initiate: nothing is asked and it enters play outside any formation · Key: combat.formations.play-into.needs-formation</sub>
+> *Example: After blocks, the defender's only blocker dies. The defender casts Tiderunner Initiate and is asked for a spot; the emptied blocking column is one.*
+
+<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 3 gate test files · Designer: RQ 1237434283786768415; RQ 1237434283786768415 · Owner call · adopted 2026-11-04; Owner ruling, adopted 2026-08-18, 2026-08-22, 2026-10-09 (quoted from the retired ruling register) · Tests: 73-play-into-formation.test.ts, 388-raq-blocks-and-windows.test.ts, 421-cr-regions-formations.test.ts · Example tests: 73-play-into-formation.test.ts::CR 602.7c with NO formation of your own the play is legal and asks nothing, 388-raq-blocks-and-windows.test.ts::RAQ Blocked: a unit played in as a blocker after blocks blocks that column, 421-cr-regions-formations.test.ts::cr:combat.formations.play-into.needs-formation — after blocks every attacker dies, and the attacker casts Tiderunner Initiate: nothing is asked and it enters play outside any formation, 421-cr-regions-formations.test.ts::cr:combat.formations.placement.defending-emptied-block — every blocker dies after blocks, and the defender plays Tiderunner Initiate into the emptied blocking column · Key: combat.formations.play-into.needs-formation</sub>
 
 <a id="r603"></a>
 ### 603. Columns, Adjacency and Edges
@@ -5272,11 +5280,15 @@ order.
 
 <sub>Discrepancies: D-U12-16 (discrepancies.md)</sub>
 
-<a id="r608.2f"></a>**608.2f** Whether a half-column strikes in a sub-step is determined as that sub-step begins, from the units then in the column and the attributes they then share. See rule 603.
+<a id="r608.2f"></a>**608.2f** Whether a half-column strikes in a sub-step is determined as that sub-step begins, from the units then in the column. Until the Swift sub-step has been dealt, the attributes those units then share decide, as rule 608.2a says. After it, what the half-column has already dealt decides instead (rule 608.2e): a half-column that did not strike in the Swift sub-step strikes in the normal sub-step unless it has Sluggish, even if it has gained Swift since; a half-column that struck in neither the Swift nor the normal sub-step strikes in the Sluggish sub-step, even if it has lost Sluggish since; and a half-column that struck in the Swift sub-step strikes again in the Sluggish sub-step only if it has Sluggish then (rule 608.2c). See rule 603.
 
 > *Example: A column strikes in the Swift sub-step and then gains Sluggish. It strikes again in the Sluggish sub-step.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.24 · Designer: RAQ 1363298910528864318#2 · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 388-raq-blocks-and-windows.test.ts · Example test: 388-raq-blocks-and-windows.test.ts::RAQ Swift: a Swift column that gains Sluggish strikes again in the Sluggish sub-step · Key: combat.damage.substeps.live-attributes</sub>
+> *Example: Dune Drifter (2/1, Swift) and a 3/3 attack in separate columns. After the Swift sub-step, the 3/3 is given Swift. It did not strike in the Swift sub-step, so it deals its 3 in the normal sub-step.*
+
+> *Example: A 1/1 and Ambling Mountaintop (4/5, Sluggish) attack in separate columns. After the normal sub-step, the Mountaintop loses all its attributes. It struck in neither earlier sub-step, so it still deals its 4 in the Sluggish sub-step.*
+
+<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 2 gate test files · Printed: Manual p.24 · Designer: RAQ 1363298910528864318#2; RQ 1363287109401710603; RQ 1363287109401710603 · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Engine: strikes · Tests: 388-raq-blocks-and-windows.test.ts, 1064-damage-speed-tracks-what-a-column-dealt.test.ts · Example tests: 388-raq-blocks-and-windows.test.ts::RAQ Swift: a Swift column that gains Sluggish strikes again in the Sluggish sub-step, 1064-damage-speed-tracks-what-a-column-dealt.test.ts::CR 608.2f / CT-427: a column given Swift in the after-Swift window still deals normal damage, 1064-damage-speed-tracks-what-a-column-dealt.test.ts::CR 608.2f / CT-427: a column that loses Sluggish in the before-Sluggish window still deals Sluggish damage · Key: combat.damage.substeps.live-attributes</sub>
 
 <a id="r608.3"></a>**608.3.** A combat damage step is split if, when the step begins, half-columns are scheduled to strike in two or more different sub-steps. Otherwise it is unsplit. Only Swift and Sluggish can split a step. See rules 802.4, 802.5.
 
@@ -7332,13 +7344,17 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Rulebook 2023 p.15; Manual p.34 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 25-wood-c.test.ts, 24-wood-b.test.ts · Example test: 24-wood-b.test.ts::Mindspore Fiend gives away a MODDED blocker · Demonstrated by test: 25-wood-c.test.ts::CR 711.2: a stolen unit takes its MODS with it · Key: effects.control.mods</sub>
 
-<a id="r711.3"></a>**711.3.** A unit whose controller changes leaves its formation. If this happens during a battle, the unit stays in the battle out of formation for the rest of that battle: it attacks for nobody and blocks for nobody. It joins its new controller's side at regroup. See rules 602, 506.2a.
+<a id="r711.3"></a>**711.3.** A unit whose controller changes leaves its formation. If this happens during a battle, the unit stays in the battle out of formation. If blocks have not yet been declared and its new controller is the defending player, they may declare it as a blocker or send it to counterattack, like any other unit of theirs in the battle's region. Otherwise it attacks for nobody and blocks for nobody for the rest of that battle. It joins its new controller's side at regroup. See rules 602, 506.2a.
 
-> *Example: a Robot token stolen by Download mid-battle is out of the formation for the rest of the battle.*
+> *Example: a Robot token stolen by Download after blocks is out of the formation for the rest of the battle.*
 
 > *Example: the stolen Robot joins its new controller's side at regroup.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-23, 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 145-erase-routes.test.ts · Example tests: 145-erase-routes.test.ts::CR 711.3 (viii): Download, 145-erase-routes.test.ts::CR 711.3 (ix): Download · Key: effects.control.formation</sub>
+> *Example: Before blocks, the defending player casts Download on an attacking Robot token. The Robot stops attacking, and its new controller declares it as a blocker; it blocks and deals its combat damage.*
+
+> *Example: Before blocks, the defending player steals an attacking Robot token with Download and sends it out to counterattack.*
+
+<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 1 gate test file · Designer: RQ 1414660063162798082; RQ 1414660063162798082 · Owner call · adopted 2026-11-04; Owner ruling, adopted 2026-08-23, 2026-08-25 (quoted from the retired ruling register) · Tests: 145-erase-routes.test.ts · Example tests: 145-erase-routes.test.ts::CR 711.3 (viii): Download, 145-erase-routes.test.ts::CR 711.3 (ix): Download, 145-erase-routes.test.ts::CR 711.3 (x): Download before blocks, 145-erase-routes.test.ts::CR 711.3 (xi): Download before blocks · Key: effects.control.formation</sub>
 
 <sub>Discrepancies: D-U16-11 (discrepancies.md)</sub>
 
@@ -10864,27 +10880,27 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1866 numbered rules.
+1867 numbered rules.
 
 | basis | rules |
 |---|---|
 | Printed | 454 |
 | Designer | 202 |
-| Owner call | 677 |
+| Owner call | 674 |
 | Engine only | 47 |
-| Mixed | 487 |
+| Mixed | 490 |
 
 ### Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1852 |
+| confirmed | 1846 |
 | partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 7 |
 | not verified | 2 |
-| text changed | 0 |
+| text changed | 6 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
 
@@ -11499,7 +11515,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1871 rules and 99 sections.
+- New: 1872 rules and 99 sections.
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)
 - Removed: 901.8 `formats.constructed.single-card`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)
 - Removed: 901.8a `formats.constructed.single-card.copies`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)
