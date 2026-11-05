@@ -1212,7 +1212,13 @@ const OPEN: Entry[] = [
       + 'master) re-queues itself every tick; deleting that one branch on GitHub stops the loop by hand. Staged '
       + 'under its own id, not CT-521: approving a steward/CT-521 branch would push onto the stale '
       + 'steward-approved/CT-521 of the same name. A worker that meets "repair origin/steward-approved/CT-521" '
-      + 'before this lands: it is already on master; skip it for this entry.',
+      + 'before this lands: it is already on master; skip it for this entry. '
+      + 'FIX WRITTEN 2026-11-05 (the commit that adds this sentence): approved_finished() + the guard at the top '
+      + 'of land_approved\'s loop, journalling landed-elsewhere (dry-landed-elsewhere when dry), and the '
+      + 'test-runner.sh scenario "landed-elsewhere". The guard\'s jq was checked against the box\'s real journal '
+      + '(CT-521 → finished) and nine synthetic rows; test-runner.sh itself needs git network and was not run. '
+      + 'Left open because its only guard is a runner scenario, not a node test: close it with that commit once '
+      + 'the scenario has passed on the box.',
   },
 ];
 

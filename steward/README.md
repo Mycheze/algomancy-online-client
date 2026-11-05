@@ -182,7 +182,10 @@ Done on 2026-11-03; kept here so it can be redone.
 
 - **`steward/*` and `steward-approved/*` are the only branches besides master
   that may exist.** They are pending review, not unlanded rounds. A landed or
-  rejected one is archived at `refs/archive/steward/<item>` and deleted.
+  rejected one is archived at `refs/archive/steward/<item>` and deleted — and so
+  is an approved one whose item already shipped another way (a repair run that
+  re-applied it): the runner journals `landed-elsewhere` instead of rebasing it
+  onto its own landed patch and queueing the same repair every tick (BL-68).
 - **The agent never runs the full gate**; the runner does, once per item, on
   one pinned, frequency-governed core. The box must stay silent — that is the
   owner's one hard requirement for it — so the gate is slow there, and that is fine.
