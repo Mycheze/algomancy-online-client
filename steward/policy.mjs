@@ -4,7 +4,8 @@
  *
  *   node steward/policy.mjs <base> <head>     prints one JSON object
  *
- * The owner's rule (2026-11-03): "anything but UI flows" ships on a green gate.
+ * The owner's rule (2026-11-03): "anything but UI flows" ships on a green gate. A flow is a
+ * screen added, removed or rebuilt (2026-11-05) — a fix inside an existing screen ships.
  * Everything else here is a tripwire for a mistake no test would catch — each
  * one names the incident or contract it comes from. The agent may always ask
  * for `stage`; this can only turn a `ship` into a `stage`, never the reverse.
@@ -31,9 +32,17 @@ const isTest = p => /(^|\/)test\/|\.test\.ts$|(^|\/)test_[^/]*\.py$|(^|\/)e2e\//
 const isUiData = p => p === 'client/ui/updates.ts' || p === 'client/ui/does-lines.json';
 
 // ── 1. UI flows: the owner's own line ─────────────────────────────────────
-const ui = rows.map(r => r.path).filter(p => (p.startsWith('client/ui/') && !isUiData(p) && !isTest(p))
-  || p.startsWith('client/storybook/'));
-if (ui.length) reasons.push(`touches the UI (${ui.slice(0, 4).join(', ')}${ui.length > 4 ? ', …' : ''}) — the owner reviews UI flows`);
+// "Anything but UI flows" (2026-11-03) was first coded as "any file under client/ui/",
+// which is the whole front end: on 2026-11-05 a one-sentence glossary fix, a stack-line
+// grammar fix, dead-code removal and a deck-export fix all waited on the owner, ten
+// threads in one morning, and he said "I don't want to manually approve all those
+// things". A FLOW is a screen that appears, disappears or is rebuilt — not a fix inside
+// one. So: a new or deleted UI file, or a big UI rewrite, waits; a fix ships.
+const isUi = p => (p.startsWith('client/ui/') && !isUiData(p) && !isTest(p)) || p.startsWith('client/storybook/');
+const uiNew = status.filter(s => /^[AD]/.test(s[0]) && isUi(s.at(-1))).map(s => s.at(-1));
+if (uiNew.length) reasons.push(`adds or removes UI files (${uiNew.slice(0, 4).join(', ')}${uiNew.length > 4 ? ', …' : ''}) — a new or removed screen is a UI flow, the owner's call`);
+const uiLines = rows.filter(r => isUi(r.path)).reduce((n, r) => n + r.add + r.del, 0);
+if (uiLines > 250) reasons.push(`${uiLines} changed UI lines (over 250) — a rework of a screen, the owner's call`);
 
 // ── 2. the steward may not change its own leash, the deploy, or the deps ───
 const PROTECTED = [/^steward\//, /^\.claude\//, /^deploy\//, /^CLAUDE\.md$/, /(^|\/)package(-lock)?\.json$/,
@@ -50,7 +59,13 @@ for (const r of rows) {
   if (r.path === 'client/engine/src/cards/sets/index.ts' && r.del) reasons.push('removes lines from sets/index.ts (append-only: replays depend on its order)');
   if (r.path === 'data/comprehensive-rules/ledger.json' && r.del) reasons.push('removes lines from the CR number ledger (append-only)');
   // 2026-09-20: a corpus rebuilt without the gitignored rulings inputs dropped 76 rulings, exit 0
-  if (r.path === 'data/corpus/algomancy_corpus.jsonl' && r.del > r.add) reasons.push(`the bot corpus shrinks by ${r.del - r.add} lines (lost rulings?)`);
+  // counted without the CR's own chunks (id "cr:…"): a redrafted rule re-splits them, and on
+  // 2026-11-04 CT-428 was held for "shrinks by 1 line" that was one rule merged into its neighbour
+  if (r.path === 'data/corpus/algomancy_corpus.jsonl' && r.del > r.add) {
+    const nonCr = rev => { try { return git('show', `${rev}:${r.path}`).split('\n').filter(l => l && !l.startsWith('{"id": "cr:')).length; } catch { return 0; } };
+    const lost = nonCr(base) - nonCr(head);
+    if (lost > 0) reasons.push(`the bot corpus loses ${lost} non-rules rows (lost rulings?)`);
+  }
   if (/^client\/ledgers\/.*-closed\.ts$/.test(r.path) && r.del > r.add + 20) reasons.push(`${r.path} loses ${r.del - r.add} lines (closed entries are regression guards)`);
 }
 

@@ -62,7 +62,8 @@ spec, every player-visible change gets an update line in `client/ui/updates.ts`.
 ## 2. Pick
 
 Take the **first** queue line. Skip it only if one of these is true, and if you
-skip, say why in your verdict (outcome `skip`):
+skip, say why in your verdict (outcome `skip`; when you skip lines to take a
+later one, the reasons go in `skipped`, not the summary):
 
 - it is already fixed on master (then it is not a skip — close it: see §8,
   `already-fixed`);
@@ -157,7 +158,7 @@ only a judge can confirm.
 Never *recommend* a rules answer. State what the sources say, with quotes and
 where. Recommendations are for UX and process only.
 
-A real question goes in the handoff (template below) in two forms: one for the
+A real question goes in the handoff (§8b) in two forms: one for the
 owner (short, with the readings and their evidence) and a **Discord-ready**
 version he can paste as-is — self-contained, plain words, the card text quoted,
 no repo jargon, no rule numbers the reader cannot look up.
@@ -200,19 +201,55 @@ notes before editing. Then:
 
 ## 8. Decide — and write the verdict
 
+**The owner's standing order (2026-11-05):** the point of you is that things get
+fixed *without him*. On the morning of 2026-11-05 he woke to ten approval
+threads — a one-sentence glossary fix, a "pay"/"pays" typo, dead code, a
+sideboard export, a clipped glow — and said: *"I don't want to manually approve
+all those things I can just approve … make sure the actual approval requests are
+important."* Every thread you open costs him attention. Open one only when his
+answer would change what you do.
+
 | outcome | when | commits? |
 |---|---|---|
-| `ship` | fixed, guarded, mutation-checked, and **not a UI flow** | yes |
-| `stage` | anything a human should look at: UI flows, layout, feel, wording players read, a design choice, a large refactor, anything you are less than sure of | yes |
-| `needs-human` | blocked on an owner decision or a rules question; go as far as is sensible first | maybe (reproducer, plan) |
+| `ship` | **the default.** Fixed, guarded, mutation-checked. This includes: wording that now matches the rules or the printed card; a typo or grammar fix; a layout or styling fix inside an existing screen (clipping, overflow, a glow, an ellipsis); a fix that makes an existing button or export do what it says; dead code removed; ledger/CR work; a rules fix that follows a designer quote, a RAQ thread or an owner answer; a test baseline that moved *because of* your fix (§8a) | yes |
+| `stage` | **only** these: (1) a UI **flow** — a screen, dialog or step added, removed or rebuilt, or a button that now does something different from what players expect; (2) a choice with two genuinely different results players would notice, that no source settles and that is not cosmetic; (3) a refactor too big to read in a commit message; (4) your own harness (`steward/`, `.claude/skills/steward/`) | yes |
+| `needs-human` | blocked on a decision only the owner can make (a rules question that passed the "of course, you fool" test in §5, or a design call under `stage` (2)) — go as far as is sensible first | maybe (reproducer, plan) |
 | `already-fixed` | it is fixed on master; you closed the ledger entry with evidence | yes (ledger) |
 | `not-a-bug` | by design / cannot reproduce; ledger updated with the evidence | yes (ledger) |
 | `skip` | §2's reasons | no |
 | `gave-up` | stuck; say exactly what you tried and where it stopped | maybe |
 
-You can always choose `stage` over `ship`. The runner can downgrade your `ship`
-to `stage` (policy) — never the other way round. UI flows are the owner's call
-because agents are bad at them: when in doubt, stage.
+**Never stage for these** — each one was a real thread on 2026-11-05 that should
+not have been:
+
+- *"Wording players read."* If it now matches the CR and the printed card, ship.
+- *"No browser on the box could look at it."* The tests you wrote and broke are
+  the check. Ship, and say in the summary what you could not see.
+- *"The CT left a choice to the owner"* when the choice is cosmetic or minor
+  (glow size A vs B, which of two sensible defaults). Pick the one that changes
+  the least, ship, and name the other option in the summary — he can reverse it
+  with one message. ("This is minor and I don't care" — owner, on exactly that.)
+- *"It touches a UI file."* The runner's policy decides that, not you.
+- *"Someone should try it on a real iPad / device."* Ship what you have; put the
+  device check in `followups` (it appears in the night log). It is never an
+  approval request.
+- *"Less than sure."* Being unsure of a small fix means test it more, not ask.
+  Being unsure whether a *rule* is right is §5, and §5 almost always has an answer.
+
+### 8a. A golden or census test moved because of your fix
+
+`800-cc-drift-guard` ("NEVER re-bless"), the announcement censuses, and other
+pinned baselines exist to catch *unintended* change. When your fix is a rules
+change and the baseline moved because of it: replay or list exactly which
+entries moved, confirm **every** one involves the cards or the rule you changed,
+re-bless only those, and say so in the commit message and the summary ("800:
+one reference run changes — it pays Malevolent Machinations with two units,
+which now die together"). That is `ship`. If any moved entry has nothing to do
+with your change, you broke something: fix it, do not re-bless.
+
+You can always choose `stage` over `ship` — but only for the reasons above. The
+runner's policy can downgrade your `ship` (a new screen, protected files, size);
+never the other way round.
 
 Write `$STEWARD_STATE/outcome.json`. **`item` is exactly the queue line's id
 token** — `CT-424`, `#226`, `BL-56`, `triage`, `tidy` (for `repair`/`resume`,
@@ -223,7 +260,7 @@ the original item's id) — because the queue keys its memory on it:
   "item": "CT-424",
   "outcome": "ship",
   "title": "stolen units can block for their new controller",
-  "summary": "Two or three plain sentences: what was wrong, what you changed, how it is proven.",
+  "summary": "Two to four plain sentences a player could follow: what was wrong at the table, what it does now, and how you know. No test numbers, file names or rule numbers — those go in verified/guards.",
   "verified": ["replayed QJEY: action 212 refuses the block", "…"],
   "hypothesis": ["…"],
   "rootCause": "one sentence",
@@ -231,39 +268,62 @@ the original item's id) — because the queue keys its memory on it:
   "guards": ["client/engine/test/NNN-x.test.ts::title substring"],
   "mutationChecked": true,
   "playerVisible": true,
-  "followups": ["CT-NNN filed: …"]
+  "followups": ["CT-NNN filed: …", "worth a look on a real iPad: …"],
+  "skipped": "queue lines you passed over and why — never in the summary"
 }
 ```
 
-For `stage` and `needs-human`, also write `$STEWARD_STATE/handoffs/<file>.md`,
-where `<file>` is the item with a leading `#` spelled `report-` (`report-226.md`,
-`CT-424.md`, `BL-56.md`) — the same spelling as the branch the runner pushes:
+The `title` and `summary` are what the owner reads in the night log and when a
+thread closes. Write them in the "Recent updates" register (CLAUDE.md): what a
+player would notice, in plain words.
+
+### 8b. The handoff — only for `stage` and `needs-human`
+
+Write `$STEWARD_STATE/handoffs/<file>.md`, where `<file>` is the item with a
+leading `#` spelled `report-` (`report-226.md`, `CT-424.md`, `BL-56.md`) — the
+same spelling as the branch the runner pushes.
+
+**The reader** is the owner, on his phone, in Discord, first thing in the
+morning. He has *not* read the CT, the CR record, the test, or anything you
+read tonight; he does not remember what CT-474 is; he cannot run a command.
+The Discord post shows **Needs from you** and **In short**, and attaches the
+rest. Those two must stand alone: if he reads only them, he can answer.
+
+Rules for **Needs from you** and **In short** (the reviewer of 2026-11-05 could
+not decode *"Verified: the second gate's only failure was 409 (6), the
+stale-rules pin. Closed finding F-U24-4 quotes 244's …"*):
+
+- Name the card, the screen and the moment in the game, as a player would.
+- No test numbers, file names, function names, CR/rule numbers, finding ids,
+  branch names, commit hashes, "gate", "golden", "guard", "policy". No command
+  to run — ever. (The technical record goes under **Details**.)
+- Say what happens if he says yes, and what happens if he says no.
+- **Needs from you** is a question he can answer in one reply: "Should X or Y?",
+  "OK for the deck screen to work like this?" — never just "approve the branch".
 
 ```markdown
-# <item> — <title>
+# <item> — <plain title, what a player would notice>
 
-**Needs from you:** <one line: "approve the branch", "answer Q1", "approve this plan">
+**Needs from you:** <one question, answerable in one reply>
 
-## What I found
+## In short
+<3–6 plain sentences. What players saw before. What was wrong. What it does now
+(on this branch). Why this one needs him (the one §8 `stage`/`needs-human`
+reason, in plain words). What yes does, what no does.>
+
+## The choice          (only when there is one)
+- **A — <name>:** what players would see. <This branch / the engine today.>
+- **B — <name>:** what players would see.
+- For a UX choice, your pick and why. For a rules question, what the sources
+  say for each reading (quoted, with who said it) — never a recommendation.
+
+**Discord-ready:**      (rules questions only)
+> <self-contained question for the server, card text quoted, no jargon>
+
+## Details
 Verified: … · Hypothesis: …
-
-## What I changed
-Branch `steward/<item>` (the runner pushes it). Commits, files, guards.
-
-## Check it in two minutes
-<the exact steps: `steward/review.sh try <item>`, then what to open and click, what you should see>
-
-## Questions          (only if there are any)
-### Q1 — <the question in one line>
-- Reading A: … — supported by: <quote, source>
-- Reading B: … — supported by: <quote, source>
-- What the engine does now: A/B. What changes under the other: …
-- What I checked that did not settle it: CR …, RAQ titles …, rules-questions …
-
-**Discord-ready:**
-> <self-contained question, card text quoted, no jargon>
-
-Answer with: `steward/review.sh answer <item> "…"`
+Branch `steward/<item>`: commits, files, guards, the mutation check. Anything a
+developer would want; this part may be as technical as it needs to be.
 ```
 
 ## 9. `repair <branch>` — a staged branch whose gate went red
@@ -313,8 +373,8 @@ failures and the log. Nothing else can go green until this is fixed, so:
    the test itself is provably wrong (then say exactly why in the handoff).
 3. Item id `fix-master`. Outcome `ship` when the fix is ordinary code the policy
    allows; `stage` when it is in `steward/`, `.claude/` or anything else
-   protected (rule 5) — write the handoff so the owner can approve it in one
-   read: the failure, the cause commit, the fix, the targeted test passing.
+   protected (rule 5) — write the handoff (§8b) so the owner can approve it in one
+   read: what broke, why, the fix, in plain words; the technical record under Details.
 4. If the fix is in `deploy/`, `CLAUDE.md` or a lockfile, outcome `needs-human`
    with the exact change written out.
 
@@ -327,8 +387,8 @@ behave — but still prove before you change: reproduce a bug, find the rule for
 rules point (§5), find the code for a UI point.
 
 - **Small and clear** (a wording, a value, a bug he describes exactly): do it,
-  the usual way — evidence, fix, guard, mutation check. Outcome by §8 (a UI
-  change is `stage`).
+  the usual way — evidence, fix, guard, mutation check. Outcome by §8 (a fix ships; only a
+  new or rebuilt screen is `stage`).
 - **Too big for one run**: file it (a BL in `backlog.ts`, or a CT), with his
   words quoted and what you found; outcome `ship` (ledger-only), and the summary
   names the ticket.

@@ -31,23 +31,39 @@ review is a few minutes of `steward/review.sh`.
 | `thermal.sh` | the governor that keeps the box silent (see Install §4) |
 | `systemd/` | the user units, and the one root unit (the CPU cap) |
 
-### What ships without the owner (the owner's rule, 2026-11-03)
+### What ships without the owner (the owner's rule, 2026-11-03; sharpened 2026-11-05)
 
-"Anything but UI flows", on a green full gate the runner ran itself. In code
+"Anything but UI flows", on a green full gate the runner ran itself. On
+2026-11-05 he woke to ten approval threads, nearly all of them fixes he would
+have waved through ("I don't want to manually approve all those things"), so
+the line is now drawn at what actually needs him. A **flow** is a screen
+added, removed or rebuilt; a fix inside an existing screen (a wording, a
+clipped glow, an export that dropped the sideboard) ships. In code
 (`policy.mjs`), a `ship` is downgraded to `stage` when the diff:
 
-- touches `client/ui/` or `client/storybook/` (except `updates.ts`,
-  `does-lines.json` and tests);
+- adds or deletes a file under `client/ui/` or `client/storybook/` (tests,
+  `updates.ts` and `does-lines.json` excepted), or changes more than 250 lines
+  of them;
 - touches `steward/`, `.claude/`, `deploy/`, `CLAUDE.md`, a `package.json` or
   lockfile, `.gitignore`, `requirements.txt`;
 - deletes a test, removes lines from an append-only file (`sets/index.ts`, the
-  CR `ledger.json`), shrinks the bot corpus, or guts a `*-closed.ts` ledger;
+  CR `ledger.json`), loses non-rules rows from the bot corpus (lost rulings), or
+  guts a `*-closed.ts` ledger;
 - changes more than 600 lines outside tests, ledgers and generated rules.
 
-The agent may always choose `stage` itself, and is told to whenever it is
-unsure. A deploy that restarts a service waits until no game or challenge
+The agent may choose `stage` itself only for the reasons in the skill's §8 (a
+flow, a real choice no source settles, a big refactor, its own harness) — not
+"wording players read", "no browser could look", a cosmetic A/B, or "someone
+should try it on an iPad" (those ship, and go in the night log). A branch the
+worker cannot get green twice is archived and retried in a week, never posted.
+A deploy that restarts a service waits until no game or challenge
 file on the VPS has been written for 10 minutes; a failed health check rolls
 the box back to the previous commit and **pauses the steward**.
+
+A thread that does reach the owner opens on **Needs from you** (one question he
+can answer in one reply) and **In short** (plain words: what players saw, what
+changes, why it needs him, what yes and no do). No test numbers, file names,
+rule numbers or commands; the technical record is the attached file.
 
 ### When master itself is red
 
@@ -83,8 +99,8 @@ The owner should not have to know a command (2026-11-04). Everything that
 waits on him arrives as a post in **#steward**, a private forum in Ben's
 Personal Server that only he and the bot can see (`steward/discord.mjs`):
 
-- **one post per item** — what is needed, the short version, the full write-up
-  attached, and the "Discord-ready" question as a message of its own, so asking
+- **one post per item** — only when he is genuinely needed (above): the question, the
+  plain-words short version, the full write-up attached, and the "Discord-ready" question as a message of its own, so asking
   the wider server is a forward;
 - **📓 night log** — every ship, stage, deploy and red as it happens, and a
   summary every morning (the first tick from 08:00 Prague, `STEWARD_SUMMARY_HOUR`).

@@ -137,12 +137,20 @@ const HOWTO_Q = 'Reply here with your answer (screenshots welcome) — or **reje
 
 function firstMessage(slug, md) {
   const hasBranch = branchExists(slug);
-  const found = sectionOf(md, 'What I found');
-  const q = sectionOf(md, 'Questions');
+  // the post is "Needs from you" + "In short" (+ "The choice"), written for the owner;
+  // the technical record stays in the attached file (2026-11-05: posts that opened on
+  // "Verified: the second gate's only failure was 409 (6)…" could not be read)
+  const short = sectionOf(md, 'In short');
+  const choice = sectionOf(md, 'The choice').replace(/\*\*Discord-ready:?\*\*[\s\S]*$/, '').trim();
+  const found = short ? '' : sectionOf(md, 'What I found');          // a handoff written before 2026-11-05
+  const q = short ? '' : sectionOf(md, 'Questions');
   const parts = [`**Needs from you:** ${needsOf(md) || '(see the attached write-up)'}`];
+  if (short) parts.push(clip(short, choice ? 1000 : 1500));
+  if (choice) parts.push(clip(choice, 700));
   if (found) parts.push(clip(found, q ? 700 : 1300));
   if (q) parts.push(clip(q.replace(/\*\*Discord-ready:?\*\*[\s\S]*$/, '').trim(), 700));
-  parts.push(`-# ${hasBranch ? HOWTO : HOWTO_Q}${hasBranch ? `  ·  branch \`steward/${slug}\`` : ''}`);
+  parts.push('-# The full write-up, with the technical details, is the attached file.');
+  parts.push(`-# ${hasBranch ? HOWTO : HOWTO_Q}`);
   return clip(parts.join('\n\n'), 1990);
 }
 const mdFile = (slug, md) => [{ name: `${slug}.md`, data: md }];
@@ -244,7 +252,7 @@ async function readReplies(db, actions) {
         if (!branchExists(slug)) { await say(it.thread, `There is no branch to approve for ${slug} — reply with your answer instead.`); continue; }
         actions.push(`approve ${slug}`);
         await react(it.thread, m.id);
-        await say(it.thread, 'Approved — landing it now: rebase onto master, the full gate (40–80 min on the quiet core), then master and a deploy once nobody is in a game. I will post here when it is done.');
+        await say(it.thread, 'Approved. It runs through the full tests (about an hour), then goes live once nobody is in a game. I will post here when it is live.');
       } else if (c.verb === 'reject' || c.verb === 'retry') {
         actions.push(`${c.verb} ${slug} ${(c.why || '(no reason given)').replace(/\s+/g, ' ')}`);
         await react(it.thread, m.id);
@@ -345,6 +353,9 @@ function selftest() {
   eq(needsOf(md), 'answer Q1.', 'needs line');
   eq(sectionOf(md, 'What I found'), 'Verified: x', 'section');
   eq(discordReadyOf(md), 'Quick one.\nSecond line.', 'discord-ready block, unquoted');
+  const md2 = '# CT-9 — glow\n\n**Needs from you:** A or B?\n\n## In short\nThe glow is cut off.\n\n## The choice\n- **A:** smaller\n- **B:** more room\n\n## Details\nVerified: 777 red.\n';
+  eq(sectionOf(md2, 'In short'), 'The glow is cut off.', 'in-short section');
+  eq(sectionOf(md2, 'The choice'), '- **A:** smaller\n- **B:** more room', 'choice section');
   eq(chunks('a'.repeat(50) + '\n\n' + 'b'.repeat(50), 60).length, 2, 'chunks split at a paragraph');
   eq(chunks('x'.repeat(4500)).every(c => c.length <= 1900), true, 'chunks never exceed the limit');
 }

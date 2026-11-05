@@ -55,7 +55,8 @@ w() { printf '{"item":"%s","outcome":"%s","title":"stub %s","summary":"stub"}' "
 case "$STUB_SCENARIO" in
   skip)        w skip ;;
   ship)        echo "<!-- steward test $(date +%s) -->" >> client/ledgers/README.md; git commit -qam "stub: ledger-only change"; w ship ;;
-  ui)          echo "// steward test" >> client/ui/main.ts; git commit -qam "stub: a UI change"; w ship ;;
+  ui)          echo "export {};" > client/ui/steward-test-screen.ts; git add -A; git commit -qm "stub: a new UI file (a flow)"; w ship ;;
+  ui-fix)      echo "// steward test" >> client/ui/main.ts; git commit -qam "stub: a small UI fix"; w ship ;;
   stage)       echo "<!-- steward test -->" >> client/ledgers/README.md; git commit -qam "stub: staged"; w stage
                printf '# %s\n\n**Needs from you:** approve the branch\n' "$id" > "$S/handoffs/$id.md" ;;
   needs-human) w needs-human; printf '# %s\n\n**Needs from you:** answer Q1\n' "$id" > "$S/handoffs/$id.md" ;;
@@ -90,8 +91,9 @@ if run skip; then # dry verdicts must not be picked again
   q1=$(head -1 "$T/state/queue.txt"); r=$(tick skip); q2=$(head -1 "$T/state/queue.txt")
   [ "$q1" != "$q2" ] && ok "the next tick moves on ($q2)" || bad "the next tick repeats the same item: $q2"; fi
 if run ship; then r=$(tick ship); [ "$(last_outcome "$r")" = dry-shipped ] && ok "ledger-only ship, green gate → dry-shipped" || bad "ship → $r"; fi
-if run ui; then r=$(tick ui); [ "$(last_outcome "$r")" = dry-staged ] && ok "a UI change asked to ship is downgraded → dry-staged ($(jq -r .policy <<<"$r" | cut -c1-50))" || bad "ui → $r"; fi
-if run ui; then f="$T/state/handoffs/$(jq -r .item <<<"$r").md"; [ -f "$f" ] && grep -q '^\*\*Needs from you:\*\* approve' "$f" && ok "…and a staged branch with no write-up gets a handoff (what the Discord post is made of)" || bad "no handoff at $f"; fi
+if run ui; then r=$(tick ui-fix); [ "$(last_outcome "$r")" = dry-shipped ] && ok "a small fix inside an existing screen ships → dry-shipped" || bad "ui-fix → $r"; fi
+if run ui; then r=$(tick ui); [ "$(last_outcome "$r")" = dry-staged ] && ok "a new UI file (a flow) asked to ship is downgraded → dry-staged ($(jq -r .policy <<<"$r" | cut -c1-50))" || bad "ui → $r"; fi
+if run ui; then f="$T/state/handoffs/$(jq -r .item <<<"$r").md"; [ -f "$f" ] && grep -q '^## In short' "$f" && grep -q '^\*\*Needs from you:\*\* OK to put this live' "$f" && ok "…and a staged branch with no write-up gets a handoff (what the Discord post is made of)" || bad "no handoff at $f"; fi
 if run red; then r=$(tick ship false); [ "$(last_outcome "$r")" = dry-gate-red ] && ls "$T/state/redgate/"*.json >/dev/null 2>&1 && ok "red gate → dry-gate-red + a repair entry" || bad "red → $r"
   # the NEXT queue (queue.txt is the one this tick started from, before the red)
   nq=$(cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs 2>/dev/null | head -1)

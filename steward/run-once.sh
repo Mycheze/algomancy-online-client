@@ -96,6 +96,11 @@ in_window() { [ "$STEWARD_WINDOW" = always ] && return 0; in_hours $((10#${STEWA
 # comes from origin/master, extracted before the agent starts. (run-once.sh
 # itself is extracted from origin/master by the unit's ExecStartPre.)
 trust() {
+  # updates.ts is one entry per line and every round adds one at the top, so two
+  # branches always "conflict" there; a union merge keeps both (the gate's test 323
+  # still checks the result). Local to this clone (.git/info), never committed.
+  mkdir -p "$REPO/.git/info"
+  grep -qs 'updates.ts merge=union' "$REPO/.git/info/attributes" || echo 'client/ui/updates.ts merge=union' >> "$REPO/.git/info/attributes"
   g show origin/master:steward/policy.mjs > "$BIN/policy.mjs" || { log "cannot extract policy.mjs from origin/master"; exit 1; }
   # the owner's channel: it decides what an owner message means, so it is judged code too
   g show origin/master:steward/discord.mjs > "$BIN/discord.mjs" 2>/dev/null || rm -f "$BIN/discord.mjs"
@@ -134,9 +139,19 @@ discord_sync() {
 ensure_handoff() { # item needs [detail]
   local f="$STATE/handoffs/$(slug "$1").md"
   [ -f "$f" ] && return 0
-  local title; title=$(jq -r '.title // empty' "$STATE/outcome.json" 2>/dev/null)
-  printf '# %s — %s\n\n**Needs from you:** %s\n\n## What I found\n%s\n\n## What I changed\nBranch `steward/%s`.%s\n' \
-    "$1" "${title:-staged branch}" "$2" "$(jq -r '.summary // "(no write-up — see the branch)"' "$STATE/outcome.json" 2>/dev/null)" "$(slug "$1")" "${3:+ $3}" > "$f"
+  local title summary row
+  title=$(jq -r '.title // empty' "$STATE/outcome.json" 2>/dev/null)
+  summary=$(jq -r '.summary // empty' "$STATE/outcome.json" 2>/dev/null)
+  # the re-gate has no outcome.json of its own: the item's write-up is its last journal
+  # row with a summary (2026-11-05: CT-427 and CT-429 were posted as "staged branch"
+  # with nothing under "What I found")
+  if [ -z "$title$summary" ]; then
+    # the item's own write-up, not a later repair's ("the branch went red in …")
+    row=$(jq -sc --arg i "$(slug "$1")" 'map(select(.item == $i and (.summary // "") != "")) | (map(select((.title // "") | test("repair"; "i") | not)) | last) // last' "$STATE/journal.jsonl" 2>/dev/null)
+    title=$(jq -r '.title // empty' <<<"${row:-null}"); summary=$(jq -r '.summary // empty' <<<"${row:-null}")
+  fi
+  printf '# %s — %s\n\n**Needs from you:** %s\n\n## In short\n%s\n\n## Details\nBranch `steward/%s`.%s\n' \
+    "$1" "${title:-a staged change}" "$2" "${summary:-(the worker left no write-up — reply **reject** and it will be redone)}" "$(slug "$1")" "${3:+ $3}" > "$f"
 }
 policy() { (cd "$REPO" && node "$BIN/policy.mjs" "$@"); }
 
@@ -232,7 +247,7 @@ regate_master_red() {
     else
       branch=$(stage_head "$item"); final=staged
       rm -f "$STATE/outcome.json"   # ensure_handoff must not borrow tonight's verdict for an older branch
-      ensure_handoff "$item" "approve the branch (or reject it with a reason)" "Re-gated green once master was. $(jq -r '.reasons|join("; ")' <<<"$pol")"
+      ensure_handoff "$item" "OK to put this live? Reply **approve**, or say what to change." "Re-gated green once master was. $(jq -r '.reasons|join("; ")' <<<"$pol")"
     fi
     [ "$STEWARD_MODE" != live ] && final="dry-$final"
     journal "$(slug "$item")" "$final" branch="$branch" gate="$glog" policy="$(jq -r '.reasons|join("; ")' <<<"$pol")" sha="$(g rev-parse --short HEAD)" note="re-gated green once master was"
@@ -510,8 +525,15 @@ EOF
   [ -f "$STATE/answers/$(slug "$item").md" ] && mv -f "$STATE/answers/$(slug "$item").md" "$STATE/answers/done/"
 
   case "$final" in
-    staged) ensure_handoff "$item" "approve the branch (or reject it with a reason)" "${reasons:+Not shipped on its own because: $reasons.}" ;;
-    gate-red-twice) ensure_handoff "$item" "the gate went red twice — look at the branch, or reject it" "Gate log: $glog" ;;
+    staged) ensure_handoff "$item" "OK to put this live? Reply **approve**, or say what to change." "${reasons:+Held for you because it $reasons.}" ;;
+    # the worker's own miss, twice: not something the owner can fix from Discord (2026-11-05,
+    # CT-434's thread asked him to judge a stale-rules pin). Archive the branch; the queue
+    # offers the item again, fresh, in a week; the night log says so.
+    gate-red-twice)
+      if [ "$STEWARD_MODE" = live ] && [ -n "$branch" ]; then
+        g push -q origin "HEAD:refs/archive/steward/$(slug "$item")-red" ":refs/heads/$branch" 2>/dev/null || true
+      fi
+      mv -f "$STATE/handoffs/$(slug "$item").md" "$STATE/handoffs/done/" 2>/dev/null; branch="" ;;
     needs-human) ensure_handoff "$item" "a decision (the summary below says which)" ;;
     shipped|already-fixed|not-a-bug) mv -f "$STATE/handoffs/$(slug "$item").md" "$STATE/handoffs/done/" 2>/dev/null ;;
   esac
