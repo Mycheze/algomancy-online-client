@@ -5196,4 +5196,22 @@ export const CLOSED: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "Took back Gember's choice [264] of Tidal Reversion as Spell Excavation's target (\"you may play target spell from your bin until regroup\"); mycheze agreed. Replayed, Gember chose Recall from the bin instead [264]. The engine offered all five bin spells, as the card says; the wrong one was clicked. A misclick, as the reason says; no defect. (What happened to that Recall next is #321.)",
   },
+  {
+    id: 326, room: "USGH", date: "2026-11-04",
+    report: "Nyar, seat 0, agreed fix: back to the start of the step before (turn 1, the haste step). \"test\"",
+    status: 'agreed-fix',
+    note: "Took back both haste Dones and both no-attack passes of turn 1 [10]-[13]; MagicIshadow agreed. Nothing had been played: the two were trying the fix button on an empty board, as the reason says, and went straight on to the further take-back filed as #327. No defect.",
+  },
+  {
+    id: 327, room: "USGH", date: "2026-11-04",
+    report: "Nyar, seat 0, agreed fix: back to the start of the step before (turn 1, planning). \"test\"",
+    status: 'agreed-fix',
+    note: "Continues #326's run: took back all of turn 1's planning [0]-[10] (bottom cards, resources, prismite exchanges, both Dones); MagicIshadow agreed. Replayed, both players planned again and the game went on. A test of rewinding through a hidden step; no defect.",
+  },
+  {
+    id: 328, room: "GMKK", date: "2026-11-04",
+    report: "Nyar, seat 0, agreed fix: back to before MagicIshadow's choice: Robot, then further back to before MagicIshadow's augment (turn 4 battle). \"test\"",
+    status: 'agreed-fix',
+    note: "Two rewinds in one run: first MagicIshadow's two Scrap For Parts targets [107]-[108], then the Aberrant Statweaver Virus on Scrapyard Custodian, Nyar's pass and the Scrap For Parts cast [104]-[106]; MagicIshadow agreed both. Replayed, the same augment resolved first and Scrap For Parts then moved the Robot's counter to the Custodian, which got 2: MagicIshadow's Flux Resonator in play reads its own [Augment] box (CR 305.4: augment text works when the card is played normally). Labelled a test; no defect.",
+  },
 ];
