@@ -261,17 +261,6 @@ const OPEN: TodoEntry[] = [
   },
   // ── the report triage of 2026-11-03 (reports #319-#325; the steward; filed as CT-520..522, renumbered 526..528 on landing) ───────
   {
-    id: 526, area: "client", severity: "minor",
-    cards: ["Thoughtripper", "Reclaimer of Secrets", "Tempest Oracle", "Blightwalker", "Rotling", "Swarmling"],
-    title: "a \"you may pay [N]\" trigger's stack line states the effect as certain before the payment is decided",
-    detail: "Thoughtripper prints \"you may pay [2]: each opponent discards a card\"; its does-line is \"{opponent} discards a card\", so while it waits on the stack it reads as if the opponent will discard, though its controller has not yet chosen to pay. Seven of the nine \"you may pay\" triggers in the pool drop the condition: Reclaimer of Secrets (\"Recall {0}\"), Tempest Oracle, Blightwalker, Rotling, Thoughtripper and both Swarmling triggers. Afflicting Anima and Sacrifice Dude already say it (\"… if you pay 1\", \"… if you pay 2\").",
-    evidence: "Report #319 (KFCS @143, mycheze, owner): \"Helper text while Thoughtripper trigger on the stack says 'Gember WILL discard' but I haven't paid or not yet.\" Replayed: the board at 143 has Thoughtripper's trigger on the stack. Swept allCardNames() for labels matching /may pay/ against ui/does-lines.json (2026-11-03): the seven above have no condition in their line.",
-    fix: "Give each of the seven lines the condition in the register the two correct ones use (\"… if you pay 2\"), and add a ui test that walks every ability whose label says \"may pay\" and fails on a does-line without \"if you pay\" (or an agreed equivalent) — 344 walks the templates but asks nothing about optional costs.",
-    proof: () => still('ui/does-lines.json', '"ability:Thoughtripper#0": "{opponent} discards a card"'),
-    reportId: 319,
-    status: 'open',
-  },
-  {
     id: 527, area: "client", severity: "minor",
     cards: ["Spell Excavation", "Recall"],
     title: "a player passed seven windows with a Spell Excavation'd Recall playable and says they were never given priority to play it",

@@ -14573,4 +14573,20 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-05 (steward): the first of the two readings, the head row is not a target. Its MAIN DECK n row sat inside the table region, whose own zone is the end slot, and the drag provider's zoneAt walked up from it to that zone (tabletop.ts plan.zoneAt), as a tap did through the region's tt-to. The row is now its own data-tt-zone=\"off\" (pages/builder.ts headHtml): zoneAt stops there and returns no zone, so a drag flies home, and a tap there finds no place and leaves a picked card picked. The bare felt still makes a new pile (1143 §3); the Competitive table's head is unchanged. 1143 §2 went red with the walk's stop removed, §1, §2 and §4 with the markup removed. Staged for the owner, whose call the fix line left the choice of readings; he approved this reading on 2026-11-05.",
     status: 'done',
   },
+  {
+    id: 526, area: "client", severity: "minor",
+    cards: ["Thoughtripper", "Reclaimer of Secrets", "Tempest Oracle", "Blightwalker", "Rotling", "Swarmling"],
+    title: "a \"you may pay [N]\" trigger's stack line states the effect as certain before the payment is decided",
+    detail: "Thoughtripper prints \"you may pay [2]: each opponent discards a card\"; its does-line is \"{opponent} discards a card\", so while it waits on the stack it reads as if the opponent will discard, though its controller has not yet chosen to pay. Seven of the nine \"you may pay\" triggers in the pool drop the condition: Reclaimer of Secrets (\"Recall {0}\"), Tempest Oracle, Blightwalker, Rotling, Thoughtripper and both Swarmling triggers. Afflicting Anima and Sacrifice Dude already say it (\"… if you pay 1\", \"… if you pay 2\").",
+    evidence: "Report #319 (KFCS @143, mycheze, owner): \"Helper text while Thoughtripper trigger on the stack says 'Gember WILL discard' but I haven't paid or not yet.\" Replayed: the board at 143 has Thoughtripper's trigger on the stack. Swept allCardNames() for labels matching /may pay/ against ui/does-lines.json (2026-11-03): the seven above have no condition in their line.",
+    fix: "Give each of the seven lines the condition in the register the two correct ones use (\"… if you pay 2\"), and add a ui test that walks every ability whose label says \"may pay\" and fails on a does-line without \"if you pay\" (or an agreed equivalent) — 344 walks the templates but asks nothing about optional costs.",
+    proof: null,
+    verify: "Put Thoughtripper's trigger on the stack and read its line before choosing to pay: does it say \"if you pay 2\"?",
+    reportId: 319,
+    guards: [
+      '344-does-lines.test.ts::§2c a "you may pay" clause says "if you pay N"',
+    ],
+    closed: "FIXED 2026-11-05 (steward). The class was wider than the seven: walking the pool for a label that says \"you may pay\" (a graft reads the label of the ability it was cut from) or a run that pays mana after offering Decline found fourteen lines that stated the effect as certain — the seven, their two grafts (Blightwalker, Rotling), and five augments (Xenopod Progenitor, Eminence of the Barrens, Biomass Devourer, Dragnol, Living Vault). Each now ends \"if you pay N\" with the printed N (Living Vault, whose X is the cached card's cost: \"if you pay its cost\"), the register Afflicting Anima and Sacrifice Dude already used. Thoughtripper's reads \"Gember discards a card if you pay 2\". 344 §2c failed on all fourteen with the old lines, and on a wrong number (Xenopod \"if you pay 2\"); a cost the other player may pay (Soul Tithe, Frosted Denial, Gravitational Correction) keeps its \"unless … pays\".",
+    status: 'done',
+  },
 ];

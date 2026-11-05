@@ -143,6 +143,46 @@ test('§2b known amounts are numbers, multipliers are silent, one target is not 
   assert.deepEqual(bad, []);
 });
 
+/**
+ * §2c — A PAYMENT NOT YET MADE IS A CONDITION (report #319, CT-526). While
+ * Thoughtripper's trigger waited on the stack its line read "Gember discards
+ * a card", though its controller had not yet chosen to pay [2]. A clause whose
+ * controller MAY pay — the printed "you may pay" in its label (a graft reads
+ * the label of the ability it was cut from), or a run that pays mana after
+ * offering a Decline — says so, in the register Afflicting Anima and Sacrifice
+ * Dude already used: "… if you pay 2". A cost the OTHER player may pay reads
+ * "unless … pays". And the number is the printed one.
+ */
+const WORD_NUM: Record<string, string> = { one: '1', two: '2', three: '3', four: '4' };
+test('§2c a "you may pay" clause says "if you pay N" — the payment is not yet made', () => {
+  const bad: string[] = [];
+  let optional = 0;
+  for (const [key, def] of POOL) {
+    const [kind, rest] = [key.slice(0, key.indexOf(':')), key.slice(key.indexOf(':') + 1)];
+    const card = getCard(rest.split('#')[0]!);
+    const label = kind === 'ability' ? card.abilities?.[Number(rest.split('#')[1])]?.label ?? ''
+      : kind === 'augment' ? card.augmentText?.[Number(rest.split('#')[1])]?.label ?? ''
+      : kind === 'graft' ? (card.abilities ?? []).filter(a => a.graftCause).map(a => a.label ?? '').join(' ')
+      : '';
+    const src = String(def.run ?? '');
+    const printed = /you may pay/i.test(label);
+    if (!printed && !(/payMana\(/.test(src) && /['"]Decline['"]/.test(src))) continue;
+    optional++;
+    const tpl = DOES[key] ?? '';
+    if (!/\bif you pay\b/.test(tpl) && !/\bunless\b.*\bpays\b/.test(tpl)) {
+      bad.push(`${key}: the payment is optional — say "if you pay": "${tpl}"`);
+      continue;
+    }
+    const n = printed ? /you may pay\s*\[(\w+)\]/i.exec(label)?.[1]?.toLowerCase() : undefined;
+    const num = n === undefined ? undefined : WORD_NUM[n] ?? (/^\d+$/.test(n) ? n : undefined);
+    if (num !== undefined && !tpl.includes(`if you pay ${num}`)) {
+      bad.push(`${key}: the label pays [${n}], the line does not say "if you pay ${num}": "${tpl}"`);
+    }
+  }
+  assert.ok(optional >= 15, `only ${optional} optional payments found — the label or source match has drifted`);
+  assert.deepEqual(bad, []);
+});
+
 /** ordinary names, the length a real table has */
 const NAMES = ['Skybreaker', 'Chombot', 'Bubb', 'Graxxlid', 'Twin Flame'];
 const sample = (tpl: string, mode: unknown): string | null => renderTemplate(tpl, {

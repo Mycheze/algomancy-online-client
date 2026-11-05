@@ -122,12 +122,6 @@ import { CLOSED } from './playtest-ledger-closed.ts';
  *  2026-09-03 — live in playtest-ledger-closed.ts, unchanged and still run. */
 const OPEN: LedgerEntry[] = [
   {
-    id: 319, room: "KFCS", date: "2026-11-03",
-    report: "mycheze, seat 1: with Thoughtripper's trigger on the stack the helper text says Gember WILL discard, though I haven't decided whether to pay yet.",
-    status: 'live',
-    note: "Real. At [143] Thoughtripper's \"you may pay [2]: each opponent discards a card\" is on the stack and its line reads \"Gember discards a card\". A class: 7 of the pool's 9 \"you may pay\" triggers state the effect without the condition (2 already say \"if you pay N\"). CT-526.",
-  },
-  {
     id: 321, room: "KFCS", date: "2026-11-03",
     report: "mycheze, seat 1, agreed fix: set both players' life down by 2. \"Gember didn't get to play Recall from her bin during that turn for some reason. She spell extracted it but didn't get priority to play it\"",
     status: 'live',
