@@ -148,6 +148,15 @@ if run always; then
   h=$(( 10#$(TZ=Europe/Prague date +%H) )); sed -i "s/^STEWARD_WINDOW=.*/STEWARD_WINDOW=$(printf %02d $(( (h + 2) % 24 )))-$(printf %02d $(( (h + 3) % 24 )))/" "$T/env"
   r=$(tick skip); [ -z "$r" ] && ok "…and a window that excludes now still runs nothing" || bad "ran outside its window: $r"
   sed -i "s/^STEWARD_WINDOW=.*/STEWARD_WINDOW=$(printf %02d $h)-$(printf %02d $(( (h + 3) % 24 )))/" "$T/env"; fi
+if run landed-elsewhere; then # BL-68: an approved branch whose item already shipped is archived, never repaired
+  it=steward-test-landed; git -C "$T/repo" push -q origin "origin/master:refs/heads/steward-approved/$it"
+  jq -cn --arg i "$it" '{ts:"2099-01-01T00:00:00Z",item:$i,outcome:"shipped"}' >> "$T/state/journal.jsonl"
+  jq -cn --arg i "$it" '{branch:("origin/steward-approved/"+$i),item:$i,log:"rebase conflict onto master",tries:0}' > "$T/state/redgate/$it.json"
+  tick skip >/dev/null
+  grep "\"item\":\"$it\"" "$T/state/journal.jsonl" | tail -1 | grep -q '"outcome":"dry-landed-elsewhere"' && [ ! -f "$T/state/redgate/$it.json" ] \
+    && ok "an approved branch whose item already shipped is archived, and its repair entry goes" || bad "landed-elsewhere: $(grep "\"item\":\"$it\"" "$T/state/journal.jsonl" | tail -1)"
+  head -1 "$T/state/queue.txt" | grep -q "^repair .*$it" && bad "…but its repair was queued: $(head -1 "$T/state/queue.txt")" || ok "…and its repair is never queued"
+  git -C "$T/repo" push -q origin ":refs/heads/steward-approved/$it" 2>/dev/null; rm -f "$T/state/redgate/$it.json"; fi
 if run pause; then touch "$T/state/paused"; r=$(tick skip); [ -z "$r" ] && ok "paused → nothing runs" || bad "ran while paused: $r"; rm -f "$T/state/paused"; fi
 
 # clean the dry refs this test left on origin

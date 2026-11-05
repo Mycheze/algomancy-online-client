@@ -374,10 +374,34 @@ stage_head() { # item → pushes steward/<slug>
 }
 
 # ── 1a. approved branches: the owner signed off; land them ────────────────
+# Has this item's approved work already reached master some other way? The item's
+# last journal row, not counting the landing loop's own rows, says: a repair run
+# that re-applied it (shipped), a run that found it on master (already-fixed), …
+# A later "approved" row is a re-approval and is not finished, so it still lands.
+# (BL-68, 2026-11-05: CT-521's approved branch, superseded by c674d37c, rebased,
+# conflicted with its own landed patch and queued the same repair every tick.)
+approved_finished() { # item → 0 when its work is finished
+  [ -f "$STATE/journal.jsonl" ] || return 1
+  local last
+  last=$(jq -rs --arg i "$(slug "$1")" \
+    'map(select(.item == $i and ((.outcome // "") | IN("approved-conflict","approved-gate-red","landed-elsewhere","dry-landed-elsewhere") | not))) | last | .outcome // ""' \
+    "$STATE/journal.jsonl" 2>/dev/null)
+  case "$last" in shipped|landed|already-fixed|not-a-bug) return 0 ;; *) return 1 ;; esac
+}
+
 land_approved() {
   local ref item glog rc
   for ref in $(g for-each-ref --format='%(refname:short)' refs/remotes/origin/steward-approved/); do
     item="${ref#origin/steward-approved/}"
+    if approved_finished "$item"; then
+      log "approved $item already reached master another way — archiving its branch"
+      if [ "$STEWARD_MODE" = live ]; then
+        g push -q origin "$ref:refs/archive/steward/$item" ":refs/heads/steward-approved/$item" || true
+      fi
+      rm -f "$STATE/redgate/$item.json"
+      mv -f "$STATE/handoffs/$item.md" "$STATE/handoffs/done/" 2>/dev/null
+      journal "$item" "$([ "$STEWARD_MODE" = live ] || echo dry-)landed-elsewhere" branch="$ref"; continue
+    fi
     governor_on || return 0
     log "landing approved $item"
     clean_tree "$ref"
