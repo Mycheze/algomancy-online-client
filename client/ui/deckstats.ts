@@ -304,25 +304,33 @@ export function deckElements(a: DeckAnalysis, floor = 0.5): { el: string; share:
 /**
  * A deck as plain text, in the grammar server/decks.ts's importDeckText parses
  * back: one "<n> <card>" line per distinct card, cheapest first, with `//`
- * comment lines for the name, the source link and the maybeboard divider.
+ * comment lines for the name and the source link, and a `// sideboard` and a
+ * `// maybeboard` divider before those lists (sideboard first, the order the
+ * deck file writes them in).
  *
  * THE ROUND TRIP IS THE POINT. This is what you paste to somebody else, into
  * algomancer.cc, or straight back into this client — so it has to be the same
  * grammar the paste box accepts and not a prettier one that only reads well.
+ * The dividers are the grammar: importDeckText reads the cards under each into
+ * its own list (CT-515 — before that it skipped them as comments, so a pasted
+ * export put the maybeboard in the deck, and the sideboard was never written).
  * engine/test/188 asserts the round trip against the real importer rather than
  * against a second copy of the format.
  */
 export function deckListText(
-  name: string, cards: readonly string[], maybe: readonly string[] = [], url?: string,
+  name: string, cards: readonly string[],
+  extra: { maybe?: readonly string[]; sideboard?: readonly string[]; url?: string } = {},
 ): string {
   const lines = (list: readonly string[]): string[] => analyzeDeck(list).copies
     .sort((x, y) => (x.facts?.mana ?? 99) - (y.facts?.mana ?? 99) || x.name.localeCompare(y.name))
     .map(c => `${c.n} ${c.name}`);
-  const side = lines(maybe);
+  const section = (divider: string, list: readonly string[] = []): string[] =>
+    list.length ? ['', `// ${divider}`, ...lines(list)] : [];
   return [
     `// ${name} — ${cards.length} cards`,
-    ...(url ? [`// ${url}`] : []),
+    ...(extra.url ? [`// ${extra.url}`] : []),
     ...lines(cards),
-    ...(side.length ? ['', '// maybeboard', ...side] : []),
+    ...section('sideboard', extra.sideboard),
+    ...section('maybeboard', extra.maybe),
   ].join('\n');
 }

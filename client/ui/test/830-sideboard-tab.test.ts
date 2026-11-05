@@ -14,6 +14,7 @@
  *   §5 the save carries the sideboard — and never `swaps`, even from a reply that still has
  *      them (saved swaps were taken out on 2026-11-03)
  *   §6 the export file carries the sideboard, and no swaps
+ *   §7 CT-515: so does the card list, under its own divider
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -135,4 +136,14 @@ test('§6 the export file carries the sideboard, and no swaps', () => {
   assert.ok(!('swaps' in file), 'no swaps in the file');
   assert.match(html, /cover, sideboard, maybeboard/, 'and the note does not promise them');
   assert.doesNotMatch(html, /deck-swap|deck-try|Save as a swap/, 'nor anywhere on the page');
+});
+
+test('§7 CT-515: the card list export carries the sideboard under its own divider', () => {
+  const html = ui.click({ btn: 'deck-export', format: 'text' });  // the sheet is open from §6
+  const text = /<textarea class="dkexporttext"[^>]*>([\s\S]*?)<\/textarea>/.exec(html)![1]!
+    .replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'");
+  const [deck, side] = text.split('\n\n// sideboard\n');
+  assert.ok(side, 'a sideboard divider: ' + text.slice(0, 200));
+  assert.deepEqual(side!.split('\n').map(l => l.replace(/^1 /, '')).sort(), [...SIDE].sort(), 'every sideboard card, once, after it');
+  for (const n of SIDE) assert.ok(!new RegExp(`^\\d+ ${n}$`, 'm').test(deck!), `${n} is not in the deck part`);
 });
