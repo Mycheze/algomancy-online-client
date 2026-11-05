@@ -40,14 +40,16 @@ test('1074 §1 the table menu goes home where there is no live seat to play', ()
 });
 
 test('1074 §2 main.ts offers Home in exactly those cases, and it goes home', () => {
-  assert.match(MAIN, /const home = !NET \|\| spectating \|\| h\.state\.phase === 'gameover' \|\| !!NET\.frozen;/);
+  // #324: "over" is gameIsOver() — the state's phase or a post-game payload (a time loss)
+  assert.match(MAIN, /const over = gameIsOver\(\);\s*const home = !NET \|\| spectating \|\| over \|\| !!NET\.frozen;/);
+  assert.match(MAIN, /const gameIsOver = \(\): boolean => h\.state\.phase === 'gameover' \|\| \(!!NET && !!postGame\);/);
   assert.match(MAIN, /entry\.kind === 'home'\s*\?\s*\(\): void => \{ goHome\(\); \}/);
   assert.match(MAIN, /function goHome\(\): void \{\s*location\.href = location\.pathname;/);
   assert.match(MAIN, /if \(b === 'gohome'\) \{ goHome\(\); return true; \}/, 'the old gohome buttons go the same way');
 });
 
 test('1074 §3 the ended-game bar always has a way home; the dead button is gone', () => {
-  const bar = MAIN.slice(MAIN.indexOf("if (s.phase === 'gameover') {\n    const won"), MAIN.indexOf('// Playtest 2026-08-20: "when a decision is pending'));
+  const bar = MAIN.slice(MAIN.indexOf("if (gameIsOver()) {\n    const winner"), MAIN.indexOf('// Playtest 2026-08-20: "when a decision is pending'));
   assert.ok(bar.length > 200, 'positive control: the ended-game bar is read');
   assert.match(bar, /const home = '<button data-btn="gohome">Home<\/button>';/);
   assert.equal((bar.match(/\$\{home\}/g) ?? []).length, 2, 'both the net bar and the local one carry it');

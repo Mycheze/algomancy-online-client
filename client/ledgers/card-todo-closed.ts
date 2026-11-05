@@ -14621,4 +14621,20 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-05 (steward), as the owner asked in the report. A new castSpellToken field, firstPick (with ordered), makes the clicked token the first pick: it goes straight to its targets, and every later pick is a burstPick question, the last one included (a one-option question answered by clicking the token on the board). The client always sends it. ordered alone keeps the 2026-10-01 flow, so every logged game replays as it was played: DQTX ([129] ordered cast, [130] the extra first pick, [132] the last one placed) re-fetched and replayed FAITHFUL on this engine. The askLast flag rides the burstPick suspension and burstRest so doDecide resumes in the same mode; Undo last pick is hidden while the clicked #1 is aimed (the one step back is the whole cast, which is Start over); the undo-splice reference key carries 'first'. CR D1.2h says it now, with the owner's words. Mutations: dropping the last-token question, or not taking the clicked token as the first pick, turns 358's three firstPick tests red; the client sending ordered alone turns 358-ui §1/§2 and 676's two cast checks red.",
     status: 'done',
   },
+  {
+    id: 524, area: "client", severity: "minor",
+    title: "a game lost on time has no way back to the post-game summary once you view the board",
+    detail: "The post-game screen's \"view the final board\" (pg-close) hides it; the only way back is the prompt bar's \"Post-game summary\" button (pg-reopen), which ui/main.ts promptHtml renders only inside `if (s.phase === 'gameover')`. A game decided outside the state — a loss on time (BL-27, server decidedOutsideState) — never reaches phase 'gameover', so the bar shows the ordinary prompt and the summary is gone until a reload. SHXD ended on time at turn 4's planning step.",
+    evidence: "Report #324 (SHXD @113, mycheze, owner): \"There's no way to get back to the 'Game Over' summary after you 'View Board'.\" Replayed: SHXD's final state is turn 4, phase planning, Gember's clock 0.",
+    fix: "Key the bar's game-over branch (and the reopen button) on postGame being set, not on the state's phase, so a time loss and any other result decided off the state behave like a played-out one; a ui test rendering the bar with postGame set over a non-gameover state.",
+    proof: null,
+    verify: "Lose a clocked game on time, press 'view the final board': does the bar offer Post-game summary, and does the table menu offer Home and no Concede?",
+    reportId: 324,
+    guards: [
+      '1144-time-loss-post-game-way-back.test.ts::§1 lost on time, board viewed: the bar says who won and offers the way back to the summary',
+      '1144-time-loss-post-game-way-back.test.ts::§3 the table menu of a game lost on time goes home and does not offer a concede',
+    ],
+    closed: "FIXED 2026-11-05 (steward). The client's 'is this game over' was the state's phase alone, and a result stamped on the room (a loss on time, rooms.ts decidedOutsideState) never reaches phase 'gameover'. ui/main.ts gameIsOver() is now the phase OR the server's post-game payload having arrived (a join drops it in resetUi, so a rematch or the next game of a match starts clean). Every reader of the old test goes through it: the prompt bar's game-over branch (winner from the payload when the state has none, 'Game over.' when the payload names nobody), the phase icons' 'over' look and caption, and the table menu (Home offered; boardMenuEntries' new `over` opt drops Concede and Propose a fix, both of which the server refuses in a decided game). Same class, also fixed: SHXD's table menu still offered Concede after the time loss. Not covered: a spectator gets no post-game payload, so a spectator's view of a time loss is unchanged by this (there is no summary for them to return to; not checked). Mutations: the bar keyed on the phase again turns 1144 §1/§2 red; the menu ignoring `over` turns §3 red. 1074 §2/§3 re-pinned to the new source shape.",
+    status: 'done',
+  },
 ];

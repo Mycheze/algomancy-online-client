@@ -1496,6 +1496,15 @@ let pendingTrio: lob.TrioReveal | null = null;
  * been dismissed to look at the final board */
 let postGame: pg.GameOver | null = null;
 let postGameHidden = false;
+/**
+ * Report #324 / CT-524: is the game in front of you over? The state's phase
+ * is not enough. A game lost on time (and any result the server stamps on the
+ * room rather than the state, rooms.ts decidedOutsideState) never reaches
+ * phase 'gameover': the clock is not part of the state, so the board stays
+ * where the game stopped. The server's post-game payload is the other half of
+ * the answer, and a join (a new game, a rematch) drops it in resetUi.
+ */
+const gameIsOver = (): boolean => h.state.phase === 'gameover' || (!!NET && !!postGame);
 const resetUi = () => {
   ui = freshUi();
   playbackNow = null;
@@ -6361,8 +6370,11 @@ function promptHtml(): string {
       <span style="color:var(--dim)">${esc(autoPassing.pass === 'passall'
         ? passChipWhy() : AUTO_PASS_WHY[autoPassing.pass])}</span>${err}</div>`;
   }
-  if (s.phase === 'gameover') {
-    const won = s.players[s.winner!]!.name;
+  // #324: a game lost on time is over too, though its state never says so —
+  // its winner is the post-game payload's
+  if (gameIsOver()) {
+    const winner = s.phase === 'gameover' ? s.winner : postGame?.winner ?? null;
+    const won = winner === null ? null : s.players[winner]!.name;
     // net games get the full post-game screen; this bar is what is behind it
     // once you dismiss it to look at the board, so it has a way back
     // a rules question is nobody's game: its board is seen from seat 0, but
@@ -6371,9 +6383,10 @@ function promptHtml(): string {
     // a board with no server behind it (a replay, ?demo) had a "New game"
     // button nothing answered (2026-11-04: every screen is leavable)
     const home = '<button data-btn="gohome">Home</button>';
-    if (NET) return `<div class="promptbar"><span class="who">${s.winner === NET.seat && !asQuestion() && !NET.spectating ? 'You win! 🎉' : `${esc(won)} wins.`}</span>
+    if (NET) return `<div class="promptbar"><span class="who">${winner === NET.seat && !asQuestion() && !NET.spectating ? 'You win! 🎉'
+        : won === null ? 'Game over.' : `${esc(won)} wins.`}</span>
       ${postGame ? '<button data-btn="pg-reopen">Post-game summary</button>' : ''}${home}</div>`;
-    return `<div class="promptbar"><span class="who">${esc(won)} wins!</span>${home}</div>`;
+    return `<div class="promptbar"><span class="who">${won === null ? 'Game over.' : `${esc(won)} wins!`}</span>${home}</div>`;
   }
   // Playtest 2026-08-20: "when a decision is pending for the other player I
   // get the window for priority and it asks me to pass, but I can't." The
@@ -7502,7 +7515,7 @@ function phaseIconsHtml(): string {
   const pips = (round: 1 | 2, cur: boolean): string => `<span class="phpips">${[0, 1, 2, 3].map(i =>
     `<i class="${cur && i === step ? 'on' : cur && i < step ? 'done' : ''}"></i>`).join('')}</span>`;
   const caption = phaseCaption();
-  return `<div class="phicons${s.phase === 'gameover' ? ' over' : ''}" data-tip="phase" data-btn="infotip" aria-label="${esc(caption)}">
+  return `<div class="phicons${gameIsOver() ? ' over' : ''}" data-tip="phase" data-btn="infotip" aria-label="${esc(caption)}">
       <span class="phturn">${s.turn}</span>${steps.map(st =>
         `<span class="phi ${st.key}${st.cur ? ' cur' : ''}"><img src="${ICON_BASE}${st.icon}" alt="${st.label}">${
           st.round ? `<b class="phr">${st.round}</b>${pips(st.round, st.cur)}` : ''}</span>`).join('')}
@@ -7526,7 +7539,7 @@ function phaseCaption(): string {
   const turn = `Turn ${s.turn}`;
   const init = NET && !NET.spectating && s.initiative === NET.seat ? 'you have the initiative'
     : `${s.players[s.initiative]!.name} has the initiative`;
-  if (s.phase === 'gameover') return `Game over · ${turn}`;
+  if (gameIsOver()) return `Game over · ${turn}`;   // #324: a time loss too
   if (s.phase === 'battle') {
     const STEP: Record<string, string> = {
       declare: 'choosing attackers', attackWindow: 'attack — responses', blocks: 'choosing blockers',
@@ -11919,8 +11932,10 @@ function boardMenuItems(): MenuItem[] {
   const bestOf3 = !!NET && !NET.spectating && NET.match?.bestOf === 3 && (NET.match.phase === 'game' || NET.match.phase === 'between');
   const spectating = !!NET?.spectating;
   // the way home, wherever there is no live seat to play (ui/inspect.ts says why)
-  const home = !NET || spectating || h.state.phase === 'gameover' || !!NET.frozen;
-  return boardMenuEntries(h.state, NET ? NET.seat : null, { fixes: !!NET && amend.fixesOn(), reveals: revealCount(), bestOf3, spectating, home }).map(entry => ({
+  // #324: a game lost on time is over though its state is not (gameIsOver)
+  const over = gameIsOver();
+  const home = !NET || spectating || over || !!NET.frozen;
+  return boardMenuEntries(h.state, NET ? NET.seat : null, { fixes: !!NET && amend.fixesOn(), reveals: revealCount(), bestOf3, spectating, home, over }).map(entry => ({
     label: entry.label,
     confirm: entry.confirm,
     go: entry.kind === 'log'

@@ -755,8 +755,12 @@ export type BoardMenuEntry =
  * both (so both are offered) or none at all.
  */
 export function boardMenuEntries(s: GameState, mySeat: Seat | null,
-  opts: { fixes?: boolean; reveals?: number; bestOf3?: boolean; spectating?: boolean; home?: boolean } = {}): BoardMenuEntry[] {
+  opts: { fixes?: boolean; reveals?: number; bestOf3?: boolean; spectating?: boolean; home?: boolean; over?: boolean } = {}): BoardMenuEntry[] {
   const items: BoardMenuEntry[] = [];
+  // #324: `over` is a result the state does not carry — a game lost on time
+  // stays at the step where the clock ran out, and the server refuses a
+  // concede or a fix in it ("this game is already over")
+  const over = s.phase === 'gameover' || !!opts.over;
   // CT-124 / report #131: *"the game log would be better to hide by default.
   // Instead of always being on screen, it should be accessible by the
   // 'generic' right click menu."* It is FIRST because it is now the only way
@@ -785,11 +789,11 @@ export function boardMenuEntries(s: GameState, mySeat: Seat | null,
   // because a fix is about the game rather than a card. Only where the server
   // says this room takes fixes (`opts.fixes`: two people, a live game), and
   // only for a seat this client plays.
-  if (opts.fixes && mySeat !== null && !opts.spectating && s.phase !== 'gameover') {
+  if (opts.fixes && mySeat !== null && !opts.spectating && !over) {
     items.push({ kind: 'fix', confirm: true, label: '🛠 Beta: propose a fix' });
   }
   // a spectator has no seat to concede: the server refuses it (it is not in `conns`)
-  if (s.phase !== 'gameover' && !opts.spectating) {
+  if (!over && !opts.spectating) {
     // net: you may only concede your own seat. Hotseat: one person is driving
     // both, so both are offered — and priority can be null (planning, draft),
     // which is exactly when someone might want to stop.

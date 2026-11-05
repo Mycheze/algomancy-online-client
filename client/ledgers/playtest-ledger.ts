@@ -144,12 +144,6 @@ const OPEN: LedgerEntry[] = [
     note: "The server stops a Pass-all seat's clock only in a pure priority window its arm is answering (CR D3.2b); declarations, decisions and deploy steps are billed, and the arm drops at a phase change. Which window ticked is not in the report or the file. Gember lost this game (game 3 of a match) on time. CT-523.",
   },
   {
-    id: 324, room: "SHXD", date: "2026-11-03",
-    report: "mycheze, seat 1: there's no way to get back to the Game Over summary after you View Board.",
-    status: 'live',
-    note: "Real. The way back (\"Post-game summary\" in the prompt bar) is drawn only when the state's phase is 'gameover'; this game was lost on time, which is decided off the state (it ended at turn 4's planning step), so the button never appears. CT-524.",
-  },
-  {
     id: 325, room: "SHXD", date: "2026-11-03",
     report: "mycheze, seat 1, dispute (winner mycheze): \"We don't really want this to count.\"",
     status: 'wontfix',

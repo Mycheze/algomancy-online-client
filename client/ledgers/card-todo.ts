@@ -137,7 +137,7 @@ export interface TodoEntry {
 }
 import '../engine/src/cards/registry.ts';
 import { CLOSED } from './card-todo-closed.ts';
-import { body, still, text } from './card-todo-helpers.ts';
+import { still } from './card-todo-helpers.ts';
 
 // ── proofs for the comprehensive-rules findings (CT-226 on) ─────────────
 // Each finding was re-checked against HEAD before it was filed. A proof
@@ -269,17 +269,6 @@ const OPEN: TodoEntry[] = [
     proof: null,
     verify: "Play a clocked game, arm Pass all at the start of a battle, and watch your own clock through the battle.",
     reportId: 323,
-    status: 'open',
-  },
-  {
-    id: 524, area: "client", severity: "minor",
-    title: "a game lost on time has no way back to the post-game summary once you view the board",
-    detail: "The post-game screen's \"view the final board\" (pg-close) hides it; the only way back is the prompt bar's \"Post-game summary\" button (pg-reopen), which ui/main.ts promptHtml renders only inside `if (s.phase === 'gameover')`. A game decided outside the state — a loss on time (BL-27, server decidedOutsideState) — never reaches phase 'gameover', so the bar shows the ordinary prompt and the summary is gone until a reload. SHXD ended on time at turn 4's planning step.",
-    evidence: "Report #324 (SHXD @113, mycheze, owner): \"There's no way to get back to the 'Game Over' summary after you 'View Board'.\" Replayed: SHXD's final state is turn 4, phase planning, Gember's clock 0.",
-    fix: "Key the bar's game-over branch (and the reopen button) on postGame being set, not on the state's phase, so a time loss and any other result decided off the state behave like a played-out one; a ui test rendering the bar with postGame set over a non-gameover state.",
-    proof: () => body('ui/main.ts', "if (s.phase === 'gameover') {", 'Playtest 2026-08-20').includes('data-btn="pg-reopen"')
-      && text('ui/main.ts').split('data-btn="pg-reopen"').length === 2,
-    reportId: 324,
     status: 'open',
   },
   {

@@ -5223,4 +5223,13 @@ export const CLOSED: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "Two rewinds in one run: first MagicIshadow's two Scrap For Parts targets [107]-[108], then the Aberrant Statweaver Virus on Scrapyard Custodian, Nyar's pass and the Scrap For Parts cast [104]-[106]; MagicIshadow agreed both. Replayed, the same augment resolved first and Scrap For Parts then moved the Robot's counter to the Custodian, which got 2: MagicIshadow's Flux Resonator in play reads its own [Augment] box (CR 305.4: augment text works when the card is played normally). Labelled a test; no defect.",
   },
+  {
+    id: 324, room: "SHXD", date: "2026-11-03",
+    report: "mycheze, seat 1: there's no way to get back to the Game Over summary after you View Board.",
+    status: 'fixed',
+    guards: [
+      '1144-time-loss-post-game-way-back.test.ts::§1 lost on time, board viewed: the bar says who won and offers the way back to the summary',
+    ],
+    note: "Real. A game lost on time never reaches the state's game-over phase (the clock is not part of the state), and the prompt bar drew \"Post-game summary\" only in that phase, so after \"view the final board\" the bar fell back to an ordinary waiting bar (reproduced in the client: \"Waiting for Player 2…\") and the summary was gone until a reload. The client now also counts a game over once the server's post-game payload has arrived: the bar says who won and has Post-game summary and Home, and the table menu goes home instead of offering Concede. CT-524.",
+  },
 ];
