@@ -14498,4 +14498,18 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-04 (the steward). Proven dead first: a tripwire written into the branch (a file append, not a throw, so no caught error could hide it) stayed silent through the engine suite (4526 tests, including the CC drift guard's committed reference runs and fuzz walks), the ui suite (2299) and the server unit suite (580). It could not be reached by construction either: no engine site offers a {declineCost} option, and both answer paths (doDecide's cast arm and ctx.choose via decisionValue) only hand payCastCost an offered option's value. Deleted, with the two stale comments that described it (collectCastCosts' header said a graft part may decline; refundPart's said the engine offers the decline), and the dead 'declineCost' key in the client's two DECLINE_KEYS lists (ui/boardpick.ts, ui/inspect.ts) with the two test fixtures that fed it (50-ui-inspect, 260). CR 111.15: a grafted cost must be paid; it cannot be declined. This entry's proof is the regression guard that the branch stays gone.",
     status: 'done',
   },
+  {
+    id: 473, area: "client", severity: "minor",
+    title: "a stack does-line turns \"pays\" into \"pay\" when the player's name ends in \" 1\"",
+    detail: "renderTemplate's plural-to-singular rewrite also fires on a player name ending in \" 1\": a seat named \"Player 1\" reads \"Player 1 pay 5\" on Abduct.",
+    evidence: "r1101c text agent, 2026-11-01 (775 names its seats to avoid it).",
+    fix: "Apply the singular rewrite to the amount slot only, never to text that came from a player name.",
+    proof: null,
+    verify: "Abduct for 5 against a seat named \"Player 1\": read the stack line.",
+    guards: [
+      "344-does-lines.test.ts::§4b2 fixed amounts are numbers, live ones \"X (currently N)\", and one is singular",
+    ],
+    closed: "FIXED 2026-11-05 (steward): renderTemplate ran its singular rewrite (\"1 counters\" → \"1 counter\") over the whole filled line, so the digit closing a filled name counted as an amount of one: \"Player 1 pays 5\" read \"Player 1 pay 5\". The fill now holds every name it puts in (a target or list of targets, {N.controller}, {me}, {you}, {opponent}, {spell}, a mode's own slots, and the why note) out as a placeholder while the rewrite runs, and puts them back after; {X} and the template's own words are still rewritten, so \"Create 1 1/1 unit\" stands. It was the only site of the rewrite in the client. 344 §4b2 now fills Abduct's line for a seat named Player 1, a unit named Unit 1, the {you}/{opponent} slots and a mode with {me}; it went red (\"Player 1 pay 5\") with names left unheld.",
+    status: 'done',
+  },
 ];

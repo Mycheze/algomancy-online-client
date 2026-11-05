@@ -216,6 +216,16 @@ test('§4b2 fixed amounts are numbers, live ones "X (currently N)", and one is s
   assert.equal(renderTemplate('Glimpse {X}', ctx({ amount: undefined })), 'Glimpse X');
   assert.equal(renderTemplate('Put {X} -1/-1 counters on {0}', ctx({ amount: { x: 1, live: false } })), 'Put 1 -1/-1 counter on Bubb');
   assert.equal(renderTemplate('Create {X} 1/1 units', ctx({ amount: { x: 1, live: false } })), 'Create 1 1/1 unit');
+  // CT-473: the singular is for a filled number of one, never for a name's
+  // own digits — a seat named "Player 1" still pays, and "Player 1 cards" is a name
+  assert.equal(renderTemplate('Gain control of {0} unless {0.controller} pays {X}',
+    ctx({ controllerOf: () => 'Player 1', amount: { x: 5, live: false } })), 'Gain control of Bubb unless Player 1 pays 5');
+  assert.equal(renderTemplate('{0} {mode:lose=loses|gain=gains} {X} life', ctx({ target: () => 'Unit 1', count: 1, mode: 'gain' })),
+    'Unit 1 gains 3 life');
+  assert.equal(renderTemplate('{you} draws a card. {opponent} discards a card', ctx({ you: 'Bot 1', opponent: 'Seat 1' })),
+    'Bot 1 draws a card. Seat 1 discards a card');
+  assert.equal(renderTemplate('{mode:create=Create {X} 1/1 units|base=x} for {me}', ctx({ me: 'Player 1', mode: 'create', amount: { x: 1, live: false } })),
+    'Create 1 1/1 unit for Player 1', 'a mode\'s own slot names stay names too');
   // Nothyr, "up to one", nobody chosen: the owner's "Negate nothing"
   const it = item([{ effectKey: 'ability:Nothyr#0', targets: [] }], { kind: 'triggered', card: 'Nothyr' });
   assert.equal(doesLine(it, state(), name), 'Negate nothing');

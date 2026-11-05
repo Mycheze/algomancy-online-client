@@ -193,6 +193,21 @@ const OWN_DAMAGE_RE = /(^|[^}\w])([Dd]eal|\{me\} deals) (?:(\d+|\{X\}) )?damage\
 
 /** fill one template; null when every sentence of it dropped out */
 export function renderTemplate(tpl: string, c: SlotContext): string | null {
+  // CT-473: every name filled in (a target, a player, the item's card, a why)
+  // is held out as a placeholder while the singular rewrite runs, so a seat
+  // named "Player 1" still "pays": the rewrite is for a filled number of one
+  const held: string[] = [];
+  const line = fillTemplate(tpl, c, held);
+  if (line === null) return null;
+  // "Put 1 -1/-1 counters" → "counter": a filled number of one takes the singular
+  return line.replace(/(^|\s)1 ((?:[+-]?\d+\/[+-]?\d+ )?[a-z]+?)s\b/g, '$11 $2')
+    .replace(/\uE000(\d+)\uE001/g, (_m, k: string) => held[Number(k)]!);
+}
+
+/** renderTemplate without the singular rewrite: each name is pushed onto
+ * `held` and stands in the line as its placeholder */
+function fillTemplate(tpl: string, c: SlotContext, held: string[]): string | null {
+  const hold = (name: string): string => { held.push(name); return `\uE000${held.length - 1}\uE001`; };
   const sentences = tpl.split(/(?<=\.)\s+/).map(raw => {
     let missing = false;
     let live = false;
@@ -246,6 +261,7 @@ export function renderTemplate(tpl: string, c: SlotContext): string | null {
       why = [...why.filter(w => !p.why.includes(w)), ...p.why];
       return p.n;
     };
+    const held1 = (name: string | null): string | null => (name === null ? null : hold(name));
     let out = '';
     let last = 0;
     for (const m of sentence.matchAll(SLOT_RE)) {
@@ -257,13 +273,13 @@ export function renderTemplate(tpl: string, c: SlotContext): string | null {
         if (m[2] === '+') {
           const names: string[] = [];
           for (let j = i; j < c.count; j++) { const n = c.target(j); if (n) names.push(n); }
-          v = names.length ? listText(names) : null;
-        } else if (m[2] === '.controller') v = c.controllerOf(i);
-        else v = c.target(i);
-      } else if (m[3] === 'me') v = c.me;
-      else if (m[3] === 'you') v = c.you;
-      else if (m[3] === 'opponent') v = c.opponent;
-      else if (m[3] === 'spell') v = c.spell ?? null;
+          v = names.length ? hold(listText(names)) : null;
+        } else if (m[2] === '.controller') v = held1(c.controllerOf(i));
+        else v = held1(c.target(i));
+      } else if (m[3] === 'me') v = held1(c.me);
+      else if (m[3] === 'you') v = held1(c.you);
+      else if (m[3] === 'opponent') v = held1(c.opponent);
+      else if (m[3] === 'spell') v = held1(c.spell ?? null);
       else if (m[3] === 'X') {
         if (c.amount && !c.amount.live) v = String(xNow());
         else { v = 'X'; live = !!c.amount; }
@@ -271,7 +287,7 @@ export function renderTemplate(tpl: string, c: SlotContext): string | null {
       else if (m[4] !== undefined) {
         // a mode's words may hold a slot of their own ("Create {X} 1/1 units")
         const pick = m[4].split('|').map(o => o.split('=')).find(([k]) => k === String(c.mode));
-        v = pick ? renderTemplate(pick.slice(1).join('='), c) : null;
+        v = pick ? fillTemplate(pick.slice(1).join('='), c, held) : null;
       }
       if (v === null) { missing = true; break; }
       out += v;
@@ -281,12 +297,12 @@ export function renderTemplate(tpl: string, c: SlotContext): string | null {
     // a live amount says what it is now, once, at the end of its sentence;
     // a doubled one says why
     const cur = live ? xNow() : 0;
-    const now = live ? ` (currently ${cur}${why.length ? `, ${why.join(', ')}` : ''})`
-      : why.length ? ` (${why.join(', ')})` : '';
+    const said = why.length ? hold(why.join(', ')) : '';
+    const now = live ? ` (currently ${cur}${said ? `, ${said}` : ''})`
+      : said ? ` (${said})` : '';
     return out + c.text(tail.replace(/\.$/, '')) + now + (tail.endsWith('.') ? '.' : '');
   }).filter((s): s is string => s !== null && s.trim() !== '');
-  // "Put 1 -1/-1 counters" → "counter": a filled number of one takes the singular
-  return sentences.length ? sentences.join(' ').replace(/(^|\s)1 ((?:[+-]?\d+\/[+-]?\d+ )?[a-z]+?)s\b/g, '$11 $2') : null;
+  return sentences.length ? sentences.join(' ') : null;
 }
 
 /**
