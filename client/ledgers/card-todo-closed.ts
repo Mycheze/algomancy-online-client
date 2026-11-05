@@ -14391,4 +14391,18 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-05 (steward): audit first. Every ctx.choose key in the pool (94 calls) is a literal or built from a seat, a loop index, a part or target index, an entity id already on the table, or the helper sequence; none from an answer, so neither field leaked a pick in any card checked, and the 779 non-interference tests stayed green. No client code reads either field (ui/ has no 'resolve' suspension reader at all) and the engine resumes from the room's own state, so viewFor now blanks pendingKey and deletes shown for every seat, as it already did answers and snapshot: the next card's key or a privateTo line counted in shown can no longer reach the wire. The guard went red on each field with its line removed.",
     status: 'done',
   },
+  {
+    id: 474, area: "client", severity: "minor",
+    title: "an activatable unit's ~8px pulsing glow is cut by its section edge",
+    detail: "After the #315 fix every card ring fits its zone, but the soft glow on a unit with an activatable ability is ~8px and is still clipped by its section and the window. Also: at a region's outer left edge the region's own coloured border now sits over the outer ~2px of a 3px ring.",
+    evidence: "r1101c edges agent measurements, 2026-11-01.",
+    fix: "Owner call: give the glow room (spacing change) or shrink it to the ring's 3px.",
+    proof: null,
+    verify: "An activatable unit flush against the In Play edge: screenshot the glow.",
+    guards: [
+      '777-ring-room-at-zone-edges.test.ts::In Play: an activatable unit flush against the zone keeps its whole pulsing halo',
+    ],
+    closed: "FIXED 2026-11-05 (steward, staged for the owner's call): the halo now fits the 3px In Play already lets a card paint past its edge, so no box moves. It was 0 0 3px 1px + 0 0 10px 2px at rest (reach 12px) and 0 0 4px 1px + 0 0 14px 3px at the peak (17px); it is 0 0 2px 1px at rest and 0 0 1px 2px, brighter, at the peak (3px each). 777 now adds up offset + spread + blur in the rule and every frame of its animation against the zone's clip margin; it went red with either old frame put back (12px, 17px). The other reading, room for the old halo, means a wider --ringpad round every block: in the handoff. The region ring over a 3px ring at the outer left edge is the same choice and is left with it.",
+    status: 'done',
+  },
 ];

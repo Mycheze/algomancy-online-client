@@ -186,10 +186,15 @@
    them indicating you can activate their abilities". A DIFFERENT fact from
    .playable (which on a unit means "can be dragged into a formation"), and
    both can be true at once — so it is the asked-for green, but as a soft halo
-   that reads through a flat outline sitting on top of it. */
-@keyframes actpulse { 50% { box-shadow: 0 0 4px 1px rgba(111,195,111,.55), 0 0 14px 3px rgba(111,195,111,.4); } }
+   that reads through a flat outline sitting on top of it.
+   CT-474: the halo reached ~10-17px past the card (blur + spread) and In Play
+   lets a card paint only 3px past its edge (the zone's clip margin, #315), so
+   a unit against the zone's edge lost its glow on that side. It now pulses
+   inside those 3px — brighter at the peak instead of wider. Test 777 adds up
+   blur + spread in both frames against the clip margin. */
+@keyframes actpulse { 50% { box-shadow: 0 0 1px 2px rgba(111,195,111,.95); } }
 .card.activatable { cursor: pointer; border-radius: 6px;
-  box-shadow: 0 0 3px 1px rgba(111,195,111,.75), 0 0 10px 2px rgba(111,195,111,.3);
+  box-shadow: 0 0 2px 1px rgba(111,195,111,.6);
   animation: actpulse 1.8s ease-in-out infinite; }
 /* the shrink-and-ellipsise this used to carry alone is now on every `.badge`
    (BL-23) — the ability chip was just the first one long enough to need it */
