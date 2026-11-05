@@ -349,16 +349,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 520, area: "client", severity: "minor",
-    title: "at 768 wide a long deck name runs under the builder's card-count pill",
-    detail: "The builder's toolbar title (the deck name, tap to open Deck info) and the count pill share the toolbar's left side. At 768x1024 a long name such as 'Single-Box Battle Deck - Fire v1.1.0' runs under the pill instead of being cut short.",
-    evidence: "BL-65 W5b, real Firefox at 768x1024 (var/records/bl65/handoff-W5b.md, Found).",
-    fix: "Let the title shrink and ellipsize before the pill (min-width: 0, text-overflow on the title), measured at 768.",
-    proof: null,
-    verify: "Open a deck with a long name on the table at 768x1024: is the whole pill readable?",
-    status: 'open',
-  },
-  {
     id: 521, area: "client", severity: "minor",
     title: "a card dropped on the table's Main deck header row makes a new pile at the end",
     detail: "On the builder, the row that says MAIN DECK n with + Pile and Re-sort is part of the table's drop zone. A card let go there lands in a new pile after the last one, which reads as a stray pile the player did not ask for.",

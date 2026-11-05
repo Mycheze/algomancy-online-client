@@ -83,10 +83,12 @@ export function builderView(base: Omit<BuilderView, 'chrome'>): BuilderView {
 
 const TONE = { ok: 'success', warn: 'warning', bad: 'danger' } as const;
 
-/** the name (a button when the host gives it one), then the count pill */
+/** the name (a button when the host gives it one), then the count pill. The
+ *  name is its own span so a long one is cut short with … and never runs
+ *  under the pill (CT-520); decks.ts retypes that span as the name is edited */
 function titleHtml(v: BuilderView): string {
   const name = v.titleBtn
-    ? button({ labelHtml: `${esc(v.title)} ${icon('edit')}`, variant: 'ghost', dataBtn: v.titleBtn, className: 'tttitlebtn', title: 'Deck info' })
+    ? button({ labelHtml: `<span class="tttitlename">${esc(v.title)}</span>${icon('edit')}`, variant: 'ghost', dataBtn: v.titleBtn, className: 'tttitlebtn', title: 'Deck info' })
     : `<span class="tttitletext">${esc(v.title)}</span>`;
   let pill = '';
   if (v.pill) {

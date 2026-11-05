@@ -14391,4 +14391,19 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-05 (steward): audit first. Every ctx.choose key in the pool (94 calls) is a literal or built from a seat, a loop index, a part or target index, an entity id already on the table, or the helper sequence; none from an answer, so neither field leaked a pick in any card checked, and the 779 non-interference tests stayed green. No client code reads either field (ui/ has no 'resolve' suspension reader at all) and the engine resumes from the room's own state, so viewFor now blanks pendingKey and deletes shown for every seat, as it already did answers and snapshot: the next card's key or a privateTo line counted in shown can no longer reach the wire. The guard went red on each field with its line removed.",
     status: 'done',
   },
+  {
+    id: 520, area: "client", severity: "minor",
+    title: "at 768 wide a long deck name runs under the builder's card-count pill",
+    detail: "The builder's toolbar title (the deck name, tap to open Deck info) and the count pill share the toolbar's left side. At 768x1024 a long name such as 'Single-Box Battle Deck - Fire v1.1.0' runs under the pill instead of being cut short.",
+    evidence: "BL-65 W5b, real Firefox at 768x1024 (var/records/bl65/handoff-W5b.md, Found).",
+    fix: "Let the title shrink and ellipsize before the pill (min-width: 0, text-overflow on the title), measured at 768.",
+    proof: null,
+    verify: "Open a deck with a long name on the table at 768x1024: is the whole pill readable?",
+    guards: [
+      '1142-builder-title-ellipsis.test.ts::the name is its own span inside the Deck info button',
+      '1142-builder-title-ellipsis.test.ts::the button clips and shrinks, the name ellipsizes',
+    ],
+    closed: "FIXED 2026-11-05 (steward, staged for the owner's look at 768): the Deck info button (.tttitlebtn) had min-width 0 and max-width 32vw but was an inline-block with its text loose inside and nothing clipping it, so the button stopped and the name painted on past it, under the pill. The name is now its own span (.tttitlename: min-width 0, nowrap, overflow hidden, ellipsis) in a button that is a shrinking inline-flex row that clips; the pencil and the pill are flex: none. decks.ts's live retitle (typing in Deck info) now writes that span instead of the button's first text node. Not measured in a browser (the home box has none); 1142 went red with the span's clip removed and with the span removed.",
+    status: 'done',
+  },
 ];
