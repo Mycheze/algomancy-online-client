@@ -1022,7 +1022,7 @@
       },
       {
         "file": "client/ui/main.ts",
-        "text": "const cast: Action = { type: 'castSpellToken', seat: tok.controller, entityId: tok.id, ordered: true };"
+        "text": "const cast: Action = { type: 'castSpellToken', seat: tok.controller, entityId: tok.id, ordered: true, firstPick: true };"
       }
     ],
     "basis_ok": true,

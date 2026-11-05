@@ -45,28 +45,40 @@ function battle(seed: number): { h: Harness; A: Seat; D: Seat } {
 const tok = (D: Seat, x: number): number =>
   Object.values(ui.state().entities).find(t => t.kind === 'spellToken' && t.controller === D && t.x === x)!.id;
 
-test('§1 clicking a Fireball asks which resolves first, and a token on the board answers it', () => {
-  const { h, D } = battle(35810);
+test('§1 clicking a Fireball makes it #1 (report #322), and the board answers which resolves next — the last one too', () => {
+  const { h, A, D } = battle(35810);
   ui.show(structuredClone(h.state));
   ui.click({ act: 'token', id: tok(D, 1) });
-  assert.equal(ui.state().suspension?.type, 'burstPick', 'the ordered cast went out — the order question is up');
-  const html = ui.html();
-  assert.match(html, /pick the one that resolves first/);
-  for (const x of [1, 2, 3]) {
+  assert.equal(ui.state().suspension?.type, 'cast', 'the clicked token is the first pick — no "which resolves first?"');
+  let sus = ui.state().suspension;
+  assert.equal(sus?.type === 'cast' ? sus.item.x : undefined, 1, 'and it is the 1 that was clicked being aimed');
+  ui.click({ act: 'player', p: A });
+  assert.equal(ui.state().suspension?.type, 'burstPick', 'then which resolves second');
+  let html = ui.html();
+  assert.match(html, /pick the one that resolves second/);
+  for (const x of [2, 3]) {
     assert.match(html, new RegExp(`class="card[^"]*candidate[^"]*" data-act="token" data-id="${tok(D, x)}"`),
       `Fireball ${x} lights up on the board as an answer`);
   }
   ui.click({ act: 'token', id: tok(D, 3) });
   assert.equal(ui.state().suspension?.type, 'cast', 'the pick was taken; now it is aimed');
-  const sus = ui.state().suspension;
+  sus = ui.state().suspension;
   assert.equal(sus?.type === 'cast' ? sus.item.x : undefined, 3, 'and it is the 3 being aimed');
+  ui.click({ act: 'player', p: A });
+  assert.equal(ui.state().suspension?.type, 'burstPick', 'the last one is asked for, not placed for you');
+  html = ui.html();
+  assert.match(html, /pick the one that resolves third/);
+  assert.match(html, new RegExp(`class="card[^"]*candidate[^"]*" data-act="token" data-id="${tok(D, 2)}"`),
+    'the last Fireball lights up, and a click on it is the answer');
+  ui.click({ act: 'token', id: tok(D, 2) });
+  sus = ui.state().suspension;
+  assert.equal(sus?.type === 'cast' ? sus.item.x : undefined, 2, 'the 2 is aimed last');
 });
 
 test('§2 the bar numbers the order as it is built, with what each is aimed at', () => {
   const { h, A, D } = battle(35811);
   ui.show(structuredClone(h.state));
-  ui.click({ act: 'token', id: tok(D, 2) });
-  ui.click({ act: 'token', id: tok(D, 2) });                     // #1: the 2
+  ui.click({ act: 'token', id: tok(D, 2) });                     // #1: the 2, by the click that casts
   let html = ui.html();
   assert.match(html, /class="burststrip"/, 'the strip is up while #1 is aimed');
   assert.match(html, /bursttile now[\s\S]*?class="burstn">1</, 'the one being aimed is #1');
@@ -112,4 +124,21 @@ test('§4 Undo last pick sends one undo, only once a token is picked, and Cancel
   assert.equal(undos(), 1, 'one click, one undo');
   net.click({ btn: 'burstundo' });
   assert.equal(undos(), 0, 'and a second click on the same state sends no second one');
+});
+
+test('§5 #322: while the clicked #1 is aimed there is no Undo last pick — the one step back is Start over', async () => {
+  const { h, A, D } = battle(35814);
+  const ids = (x: number): number =>
+    Object.values(h.state.entities).find(t => t.kind === 'spellToken' && t.controller === D && t.x === x)!.id;
+  h.do({ type: 'castSpellToken', seat: D, entityId: ids(1), ordered: true, firstPick: true });
+  assert.equal(h.state.suspension?.type, 'cast');
+  const net = await client();
+  let html = net.join(viewFor(h.state, D), D, legalActions(h.state, D));
+  assert.ok(!net.has({ btn: 'burstundo' }), 'nothing but the cast itself to take back');
+  assert.match(html, /data-btn="castcancel"[^>]*>↺ Start over/, 'Start over is');
+  const aim = h.state.decision!.options.findIndex(o => JSON.stringify(o.value) === JSON.stringify({ player: A }));
+  h.do({ type: 'decide', seat: D, choice: aim });
+  assert.equal(h.state.suspension?.type, 'burstPick');
+  html = net.update(viewFor(h.state, D), legalActions(h.state, D));
+  assert.ok(net.has({ btn: 'burstundo' }), 'once #1 is aimed, its aim can be taken back');
 });

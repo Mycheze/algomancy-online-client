@@ -201,8 +201,8 @@ export const TUTORIAL: readonly TutorialSection[] = [
         btns: ['allyconfirm', 'allycancel'],
       },
       {
-        text: '✕ Cancel (Esc) takes the whole play back for as long as nothing has resolved. Casting a group of spell tokens, you pick '
-          + 'which resolves first, then next: Undo last pick steps back one, Start over (Esc) takes the whole group back.',
+        text: '✕ Cancel (Esc) takes the whole play back for as long as nothing has resolved. Casting a group of spell tokens, the one you click '
+          + 'resolves first, then you pick the next, and the next: Undo last pick steps back one, Start over (Esc) takes the whole group back.',
         btns: ['castcancel', 'burstundo'],
       },
       {

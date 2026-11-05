@@ -14605,4 +14605,20 @@ export const CLOSED: TodoEntry[] = [
     closed: "NOT A BUG, nothing changed (steward 2026-11-05). The engine offered Recall from the bin at every one of Gember's seven windows ([268]-[282]), and the client's release list does what CR D2.2 says on that board: re-built from KFCS's own states, a Pass through stack clicked at [266] (the Excavation on the stack) releases at [268] with 'ability' the moment the bin play appears (D2.2b); a Pass all returns null at every window to the phase end (D2.2d, the owner's ruling: 'a new option does not hand priority back'). So either the passes were Pass all, or they were single Passes with the bin glowing; the room file records neither the arm nor click timing, so which it was cannot be known. The guard pins both answers on a fresh Spell Excavation board and went red ('done' instead of 'ability') with playFromBin dropped from optionKeys. Should a play your OWN resolving spell grants ever stop Pass all, that is a change to D2.2d for the owner to make.",
     status: 'done',
   },
+  {
+    id: 528, area: "client", severity: "minor",
+    title: "casting a Burst token asks you to pick the token you just clicked again, and places the last one for you",
+    detail: "CR 803.5d: the caster orders a Burst group one token at a time. Clicking a token sends castSpellToken {entityId, ordered: true}, but doCastSpellToken calls burstStep with no `picked`, so the clicked token is ignored and the first prompt asks which token resolves first — the player clicks the same token a second time. burstStep also takes the last remaining token without asking (\"else the only one left\"). The owner wants the clicked token to BE the first pick, and the last one clicked rather than placed for them.",
+    evidence: "Report #322 (DQTX @134, mycheze, owner): \"the UI should force you to click on the first one again, it should automatically just assume the one you clicked is the first one you're casting. And the final one shouldn't be automatically selected. It throws off the whole sequence of actions.\" Replayed: [129] castSpellToken 46 ordered, then [130] the burstPick prompt.",
+    fix: "Pass the clicked entityId to burstStep as the first `picked`; decide with the owner whether the last token is then a one-option prompt or a click on the board, update 358-burst-order(-ui) and CR 803.5d's record if the wording changes. Replays: an old log's extra [130]-style pick would then be one decide too many — check replay-room on the logged games before landing.",
+    proof: null,
+    verify: "Cast three Fireballs in a battle: the one you click is #1 and asks for its target at once, and the last one waits for your click.",
+    reportId: 322,
+    guards: [
+      '358-burst-order.test.ts::CR 803.5d / #322: with firstPick the clicked Fireball is #1',
+      '358-burst-order-ui.test.ts::§1 clicking a Fireball makes it #1 (report #322)',
+    ],
+    closed: "FIXED 2026-11-05 (steward), as the owner asked in the report. A new castSpellToken field, firstPick (with ordered), makes the clicked token the first pick: it goes straight to its targets, and every later pick is a burstPick question, the last one included (a one-option question answered by clicking the token on the board). The client always sends it. ordered alone keeps the 2026-10-01 flow, so every logged game replays as it was played: DQTX ([129] ordered cast, [130] the extra first pick, [132] the last one placed) re-fetched and replayed FAITHFUL on this engine. The askLast flag rides the burstPick suspension and burstRest so doDecide resumes in the same mode; Undo last pick is hidden while the clicked #1 is aimed (the one step back is the whole cast, which is Start over); the undo-splice reference key carries 'first'. CR D1.2h says it now, with the owner's words. Mutations: dropping the last-token question, or not taking the clicked token as the first pick, turns 358's three firstPick tests red; the client sending ordered alone turns 358-ui §1/§2 and 676's two cast checks red.",
+    status: 'done',
+  },
 ];

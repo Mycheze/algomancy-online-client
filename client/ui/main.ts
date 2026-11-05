@@ -2498,7 +2498,10 @@ function maybeCostRamp(): void {
 function burstPicked(): boolean {
   const sus = h.state.suspension;
   if (sus?.type === 'burstPick') return sus.aimed.length > 0;
-  return sus?.type === 'cast' && !!sus.item.burstRest;
+  if (sus?.type !== 'cast' || !sus.item.burstRest) return false;
+  // #322: in a firstPick cast the first pick IS the click that cast the group,
+  // so while it is aimed the one step back is the whole cast — Start over
+  return !(sus.item.burstRest.askLast && sus.item.burstRest.aimed.length === 0);
 }
 /** an ordered {Burst} cast is under construction at all (first question included) */
 function burstBuilding(): boolean {
@@ -11065,8 +11068,9 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
         const at = ui.send.indexOf(tok.id);
         if (at >= 0) ui.send.splice(at, 1); else ui.send.push(tok.id);
       } else {
-        // CR D1.2h: always ordered — the caster picks the burst's resolve order
-        const cast: Action = { type: 'castSpellToken', seat: tok.controller, entityId: tok.id, ordered: true };
+        // CR D1.2h: always ordered — the caster picks the burst's resolve order,
+        // and the token clicked is the first pick (owner, report #322)
+        const cast: Action = { type: 'castSpellToken', seat: tok.controller, entityId: tok.id, ordered: true, firstPick: true };
         // CT-408 (owner): on touch the tap reads, and a Cast button on it casts
         if (tapToGo(t, tokenGoKey(tok.id), cast, e)) { render(); return; }
         act(cast);

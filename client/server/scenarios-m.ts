@@ -68,15 +68,15 @@ export const BATCH_M: Record<string, Scenario> = {
   'review-ui-burst-undo': {
     id: 'review-ui-burst-undo',
     card: 'Fireball',
-    why: 'Casting a group of spell tokens together asks which resolves first, one pick at a time. '
+    why: 'Casting a group of spell tokens together orders them one pick at a time; the one you click resolves first. '
       + 'A wrong pick used to cost the whole group; now Undo last pick steps back one, and Cancel '
       + 'reads Start over.',
     expect:
       'They attacked YOUR region with Trashling and The Foretold; you have priority. Your three Ignis Sprites\n'
       + 'each made a Fireball 1 when they arrived, so three Fireballs sit at home — they must be cast together.\n'
-      + 'TRY: click a Fireball. LOOK: "pick the one that resolves first" — all three light up; click one, then aim it.\n'
-      + 'LOOK: the strip numbers the order as you build it, each with its aim ("→ …").\n'
-      + 'TRY: Undo last pick — ONE step back each press: the last aim, then the last pick. It shows only once something is picked.\n'
+      + 'TRY: click a Fireball. LOOK: it is #1 — aim it. Then "pick the one that resolves second": the other two light up.\n'
+      + 'LOOK: the strip numbers the order as you build it, each with its aim ("→ …"). The last one is asked for too.\n'
+      + 'TRY: Undo last pick — ONE step back each press: the last aim, then the last pick. It shows once #1 is aimed.\n'
       + 'TRY: Start over drops the whole group back into play, nothing cast. Then cast all three for real and pass:\n'
       + 'they resolve in the order you numbered them.',
     initiative: OPPONENT,

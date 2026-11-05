@@ -605,7 +605,8 @@ function referenceKey(s: GameState, after: GameState, a: Action, sym: (id: Entit
     // older playCached keys exactly as it always did
     case 'playCached': parts.push(at(p?.cache, a.index), ...(a.mode ? [a.mode] : []),
       ...(a.eraseGrant ? ['erase'] : [])); break;
-    case 'castSpellToken': parts.push(sym(a.entityId), ...(a.ordered ? ['ordered'] : [])); break;
+    case 'castSpellToken': parts.push(sym(a.entityId), ...(a.ordered ? ['ordered'] : []),
+      ...(a.firstPick ? ['first'] : [])); break;
     case 'activateAbility':
       parts.push(sym(a.entityId), String(a.abilityIndex), viaKey(a.via, sym));
       break;

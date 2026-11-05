@@ -3960,10 +3960,10 @@ export const CLOSED: LedgerEntry[] = [
     status: 'fixed',
     guards: [
       "358-burst-order.test.ts::CR 803.5d: the caster picks each Fireball in RESOLVE order",
-      "358-burst-order-ui.test.ts::\u00a71 clicking a Fireball asks which resolves first",
+      "358-burst-order-ui.test.ts::\u00a71 clicking a Fireball makes it #1 (report #322), and the board answers which resolves next",
     ],
     note:
-      "CR 803.5d, D1.2h, efb7454 (deployed 2026-10-01): the caster picks each token in resolve order and aims it as picked, the group all or nothing, no auto-order (owner: \"Just force them to choose\"). Re-broken 2026-10-04 by ignoring `ordered`: four of the 358 tests went red.",
+      "CR 803.5d, D1.2h, efb7454 (deployed 2026-10-01): the caster picks each token in resolve order and aims it as picked, the group all or nothing, no auto-order (owner: \"Just force them to choose\"). Re-broken 2026-10-04 by ignoring `ordered`: four of the 358 tests went red. Refined 2026-11-05 by the owner's report #322: the token clicked to cast is #1 and the last one is picked too (CT-528); the ui guard follows its renamed test.",
   },
   {
     id: 184, room: "FXAE", date: "2026-10-01",

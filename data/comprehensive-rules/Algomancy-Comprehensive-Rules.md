@@ -10894,13 +10894,13 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 | verdict | rules |
 |---|---|
-| confirmed | 1846 |
+| confirmed | 1845 |
 | partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 7 |
 | not verified | 2 |
-| text changed | 6 |
+| text changed | 7 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
 

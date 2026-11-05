@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:16425bb81064a576",
+ "generated_from": "sha256:22a077d332192ba4",
  "rules": [
   {
    "num": "100.1",
@@ -37851,7 +37851,7 @@
    "sectionTitle": "General and Precedence",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D1.2",
-   "text": "The caster always chooses the order of a Burst group, one token at a time; the client offers no automatic order. A lone token is not asked to be ordered.",
+   "text": "The caster always chooses the order of a Burst group, one token at a time; the client offers no automatic order. The token clicked to cast the group is the first chosen, and every later token is chosen by the caster, the last one included. A lone token is not asked to be ordered.",
    "see": [
     "803"
    ],
@@ -37862,7 +37862,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "D1.2i",

@@ -59,7 +59,7 @@ function withADormantResource(seed: number): { state: GameState; i: number; lega
   return { state: h.state, i, legal: [{ type: 'activateResource', seat: me, index: i }] };
 }
 
-const CAST = (id: EntityId): Action => ({ type: 'castSpellToken', seat: me, entityId: id, ordered: true });
+const CAST = (id: EntityId): Action => ({ type: 'castSpellToken', seat: me, entityId: id, ordered: true, firstPick: true });
 
 test('CR 701.1b / CT-408: the control, a mouse click on my castable spell token still casts it', () => {
   const { state, id, legal } = withAToken(67601);

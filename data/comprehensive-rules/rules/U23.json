@@ -439,11 +439,15 @@
     "key": "annexd.general.player-decides.burst-order",
     "parent": "annexd.general.player-decides",
     "order": 7,
-    "text": "The caster always chooses the order of a Burst group, one token at a time; the client offers no automatic order. A lone token is not asked to be ordered.",
+    "text": "The caster always chooses the order of a Burst group, one token at a time; the client offers no automatic order. The token clicked to cast the group is the first chosen, and every later token is chosen by the caster, the last one included. A lone token is not asked to be ordered.",
     "examples": [
       {
         "text": null,
         "test": "358-burst-order.test.ts::CR 803.5d: a lone token is not asked to be ordered"
+      },
+      {
+        "text": null,
+        "test": "358-burst-order.test.ts::CR 803.5d / #322: with firstPick the clicked Fireball is #1 — it is aimed at once, nobody asks which resolves first"
       }
     ],
     "see": [
@@ -458,11 +462,17 @@
           "quote": "wanted no \"auto\" shortcut: *\"Just force them to choose the order.\"*",
           "adopted": "2026-10-01",
           "from": "register@72de434"
+        },
+        {
+          "quote": "it should automatically just assume the one you clicked is teh first one you're casting. And the final one shouldn't be automatically selected.",
+          "adopted": "2026-11-03",
+          "from": "report #322, room DQTX"
         }
       ],
       "engine": [],
       "tests": [
-        "358-burst-order.test.ts"
+        "358-burst-order.test.ts",
+        "358-burst-order-ui.test.ts"
       ]
     },
     "basis": "owner",

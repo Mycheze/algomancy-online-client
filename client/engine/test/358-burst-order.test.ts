@@ -103,3 +103,90 @@ test('an ordered burst is deterministic — the same actions from the same state
   assert.deepEqual(st, h.state, 'the burst questions are answered by index, like every decision');
   assert.deepEqual(st.stack.map(i => i.x), [1, 3, 2]);
 });
+
+/* Report #322 (owner, 2026-11-03, room DQTX): "it should automatically just
+ * assume the one you clicked is the first one you're casting. And the final one
+ * shouldn't be automatically selected. It throws off the whole sequence of
+ * actions." — `firstPick`: the token clicked to cast IS the first pick, and the
+ * last one is asked for like every other. `ordered` alone keeps the 2026-10-01
+ * flow above, which is what every ordered action logged before it replays as. */
+
+test('CR 803.5d / #322: with firstPick the clicked Fireball is #1 — it is aimed at once, nobody asks which resolves first', () => {
+  const { h, A, D } = burstInBattle(35805);
+  h.do({ type: 'castSpellToken', seat: D, entityId: byX(h, D, 1), ordered: true, firstPick: true });
+  assert.equal(h.state.suspension?.type, 'cast', 'no "which resolves first" — the clicked one is being aimed');
+  const sus = h.state.suspension;
+  assert.equal(sus?.type === 'cast' ? sus.item.x : null, 1, 'and it is the Fireball 1 that was clicked');
+  pick(h, { player: A });
+  assert.equal(h.state.suspension?.type, 'burstPick', 'then which resolves second');
+  assert.equal(h.state.decision!.options.length, 2);
+  pick(h, { unit: byX(h, D, 3) }); pick(h, { player: A });
+  assert.equal(h.state.stack.length, 0, 'nothing is on the stack yet');
+  finishFirstPick(h, A, D);
+});
+
+/** the tail both firstPick tests share: the last Fireball (the 2) is ASKED for */
+function finishFirstPick(h: Harness, A: Seat, D: Seat): void {
+  assert.equal(h.state.suspension?.type, 'burstPick', 'the last one is asked for, not placed for the caster');
+  assert.deepEqual(h.state.decision!.options.map(o => o.value), [{ unit: byX(h, D, 2) }], 'the one left is the only answer');
+  assert.match(h.state.decision!.prompt, /resolves third/);
+  pick(h, { unit: byX(h, D, 2) });
+  assert.equal(h.state.suspension?.type, 'cast', 'then it is aimed');
+  pick(h, { player: A });
+  assert.deepEqual(h.state.stack.map(i => i.x), [2, 3, 1],
+    'bottom → top: the clicked 1 is on top, so it resolves first');
+  assert.equal(h.state.priority, (1 - D), 'and only now does the opponent get priority');
+  finishBattle(h);
+}
+
+test('#322: a two-token burst cast with firstPick still asks for the second one', () => {
+  const h = new Harness(35806);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  const e = new E(h.state);
+  e.createSpellToken(D, 'Fireball', 1, e.homeRegion(D));
+  e.createSpellToken(D, 'Fireball', 2, e.homeRegion(D));
+  h.state = e.s;
+  pass(h);
+  h.do({ type: 'castSpellToken', seat: D, entityId: byX(h, D, 2), ordered: true, firstPick: true });
+  pick(h, { player: A });
+  assert.equal(h.state.suspension?.type, 'burstPick', 'the second, last, token is a question');
+  assert.equal(h.state.decision!.options.length, 1);
+  pick(h, { unit: byX(h, D, 1) }); pick(h, { player: A });
+  assert.deepEqual(h.state.stack.map(i => i.x), [1, 2], 'the clicked 2 is on top');
+  finishBattle(h);
+});
+
+test('#322: a firstPick burst is deterministic, and a firstPick lone token is not ordered', () => {
+  const { h, A, D } = burstInBattle(35807);
+  const before = structuredClone(h.state);
+  const from = h.actions.length;
+  h.do({ type: 'castSpellToken', seat: D, entityId: byX(h, D, 3), ordered: true, firstPick: true });
+  pick(h, { player: A });
+  pick(h, { unit: byX(h, D, 2) }); pick(h, { player: A });
+  pick(h, { unit: byX(h, D, 1) }); pick(h, { player: A });
+  let st = before;
+  for (const a of h.actions.slice(from)) st = apply(st, a).state;
+  assert.deepEqual(st, h.state, 'replayed by index, it lands on the same state');
+  assert.deepEqual(st.stack.map(i => i.x), [1, 2, 3]);
+  finishBattle(h);
+
+  const g = new Harness(35808);
+  toDeployment(g);
+  const A2 = g.state.initiative, D2 = (1 - A2) as Seat;
+  const atk = spawn(g, A2, 'Unit Token');
+  toNextBattle(g, A2);
+  g.do({ type: 'declareAttack', seat: A2, columns: [[atk]] });
+  const e = new E(g.state);
+  e.createSpellToken(D2, 'Fireball', 2, e.homeRegion(D2));
+  g.state = e.s;
+  pass(g);
+  g.do({ type: 'castSpellToken', seat: D2, entityId: fireballs(g, D2)[0]!.id, ordered: true, firstPick: true });
+  assert.equal(g.state.suspension?.type, 'cast', 'a lone token goes straight to its target');
+  pick(g, { player: A2 });
+  assert.equal(g.state.stack.length, 1);
+  finishBattle(g);
+});

@@ -131,8 +131,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 322, room: "DQTX", date: "2026-11-03",
     report: "mycheze, seat 1: casting spell tokens, the UI makes you click the first one again instead of taking the one you clicked as the first, and the final one is picked for you. It throws off the sequence.",
-    status: 'live',
-    note: "Real. [129] cast token 46 (ordered), then [130] the burst-order prompt asks which resolves first: the clicked token is ignored (burstStep is called with no pick), and the last token is taken without asking. The owner's ask changes the CR 803.5d flow. CT-528.",
+    status: 'fixed',
+    guards: [
+      '358-burst-order-ui.test.ts::§1 clicking a Fireball makes it #1 (report #322)',
+    ],
+    note: "Real. [129] cast token 46 (ordered), then [130] the burst-order prompt asks which resolves first: the clicked token is ignored (burstStep is called with no pick), and the last token is taken without asking. The owner's ask changes the CR 803.5d flow. CT-528. Fixed 2026-11-05: the token you click to cast a Burst group is #1 and goes straight to its aim; every later token is a pick on the board, the last one too (CR D1.2h).",
   },
   {
     id: 323, room: "SHXD", date: "2026-11-03",

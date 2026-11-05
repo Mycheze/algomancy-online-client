@@ -1049,7 +1049,7 @@ export interface StackItem {
   /** CR 803.5d: set only while this {Burst} token is being AIMED in an ordered
    * cast — the rest of the burst, so a target suspension resumes the burst
    * rather than committing this one item. Removed before the item commits. */
-  burstRest?: { region: number; aimed: StackItem[]; remaining: EntityId[] };
+  burstRest?: { region: number; aimed: StackItem[]; remaining: EntityId[]; askLast?: true };
   kind: 'unit' | 'spell' | 'spellUnit' | 'spellToken' | 'virus' | 'triggered' | 'activated' | 'ambush';
   card?: CardName;
   label: string;
@@ -1624,6 +1624,9 @@ export type Suspension =
       then: 'push' | 'resolve';
       aimed: StackItem[];
       remaining: EntityId[];
+      /** set by a `firstPick` cast: the last token is asked for too, never
+       * placed for the caster (owner, report #322) */
+      askLast?: true;
     }
   | {
       /** CR 706.12: which entity an UNTARGETED effect acts on (`EffectDef.subject`),
@@ -2022,8 +2025,12 @@ type ActionBody =
   /** `ordered` (CR 803.5d): the caster chooses the {Burst} group's RESOLVE order,
    * one token at a time, aiming each as it is picked — first picked resolves
    * first. Absent = the older fixed entity-id order, which is what every
-   * action logged before 2026-10-01 replays as. The client always sends it. */
-  | { type: 'castSpellToken'; seat: Seat; entityId: EntityId; ordered?: boolean }
+   * action logged before 2026-10-01 replays as. The client always sends it.
+   * `firstPick` (with `ordered`; owner, report #322, 2026-11-03): the token
+   * clicked to cast the group IS the first pick, and every later pick is
+   * asked — the last one too. Absent = the 2026-10-01 flow (first pick asked,
+   * the last one placed), which every ordered action logged before it replays as. */
+  | { type: 'castSpellToken'; seat: Seat; entityId: EntityId; ordered?: boolean; firstPick?: boolean }
   /** see ActivateVia. abilityIndex indexes the resolved list. */
   | { type: 'activateAbility'; seat: Seat; entityId: EntityId; abilityIndex: number; via?: ActivateVia }
   // CR 507.2: 'cache' is a legal mod source — "you CAN augment or graft from cache"

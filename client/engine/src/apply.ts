@@ -576,7 +576,7 @@ function dispatch(e: E, action: Action): void {
     case 'prophesy': return doProphesy(e, action.seat, action.from, action.index);
     case 'playCached': return doPlayCached(e, action.seat, action.index, action.mode, action.eraseGrant);
     case 'playFromBin': return doPlayFromBin(e, action.seat, action.binIndex);
-    case 'castSpellToken': return doCastSpellToken(e, action.seat, action.entityId, action.ordered === true);
+    case 'castSpellToken': return doCastSpellToken(e, action.seat, action.entityId, action.ordered === true, action.firstPick === true);
     case 'concede': return doConcede(e, action.seat);
     case 'activateAbility': return doActivateAbility(e, action.seat, action.entityId, action.abilityIndex, action.via);
     case 'augment': return doAugment(e, action.seat, action.from, action.index, action.hostId, action.hostStack);
@@ -1540,7 +1540,7 @@ function canPaySpellToken(e: E, seat: Seat, tok: Entity, region: number): boolea
   return e.openMana(seat) >= bill.mana && e.canPayLife(seat, bill.life.reduce((n, l) => n + l, 0));
 }
 
-function doCastSpellToken(e: E, seat: Seat, entityId: EntityId, ordered = false): void {
+function doCastSpellToken(e: E, seat: Seat, entityId: EntityId, ordered = false, firstPick = false): void {
   const tok = e.entity(entityId);
   e.need(tok && tok.kind === 'spellToken' && tok.controller === seat, 'not your spell token');
   const c = e.card(tok.card);
@@ -1586,8 +1586,10 @@ function doCastSpellToken(e: E, seat: Seat, entityId: EntityId, ordered = false)
     e.loseLife(seat, life, `${c.name} (added cost)`);
   }
   // CR 803.5d: the caster orders the burst — see burstStep
+  // `firstPick` (owner, report #322): the token clicked is the first pick, and
+  // the last one is asked for rather than placed
   if (ordered && group.length > 1) {
-    burstStep(e, seat, region, then, [], group.map(t => t.id));
+    burstStep(e, seat, region, then, [], group.map(t => t.id), firstPick ? entityId : undefined, firstPick);
     e.settle();
     return;
   }
@@ -1639,7 +1641,11 @@ function spellTokenItem(e: E, seat: Seat, region: number, t: Entity): StackItem 
  * (CR 803.5, 304.11g, "all or nothing") — only the order is the caster's now.
  *
  * One token at a time: which resolves next (a `burstPick` decision, answered
- * on the board — skipped when one is left), then that token's targets. Once
+ * on the board — skipped when one is left), then that token's targets.
+ * With `askLast` (a `firstPick` cast — owner, report #322, 2026-11-03: "it
+ * should automatically just assume the one you clicked is the first one
+ * you're casting. And the final one shouldn't be automatically selected") the
+ * clicked token arrives as `picked`, and the last one is asked for too. Once
  * every token is aimed the group is committed through the ordinary castChain:
  * REVERSED onto the stack in battle, so the first pick is on top and resolves
  * first; in pick order when there is no stack ('resolve'), where commit order
@@ -1647,13 +1653,13 @@ function spellTokenItem(e: E, seat: Seat, region: number, t: Entity): StackItem 
  * item (`burstRest`), and doDecide resumes here rather than committing it.
  */
 function burstStep(e: E, seat: Seat, region: number, then: 'push' | 'resolve',
-  aimed: StackItem[], remaining: EntityId[], picked?: EntityId): void {
+  aimed: StackItem[], remaining: EntityId[], picked?: EntityId, askLast = false): void {
   while (remaining.length) {
     // the token the caster just picked, else the only one left, else ask
     const id = picked ?? remaining[0]!;
-    if (picked === undefined && remaining.length > 1) {
+    if (picked === undefined && (remaining.length > 1 || askLast)) {
       const first = e.entity(id)!;
-      e.suspend({ type: 'burstPick', seat, region, then, aimed, remaining }, {
+      e.suspend({ type: 'burstPick', seat, region, then, aimed, remaining, ...(askLast ? { askLast: true as const } : {}) }, {
         seat, kind: 'targets',
         prompt: `${first.card}: pick the one that resolves ${ORDINALS[aimed.length] ?? `#${aimed.length + 1}`}`,
         options: remaining.map(r => {
@@ -1664,7 +1670,7 @@ function burstStep(e: E, seat: Seat, region: number, then: 'push' | 'resolve',
     }
     const rest = remaining.filter(r => r !== id);
     const item = spellTokenItem(e, seat, region, e.entity(id)!);
-    item.burstRest = { region, aimed, remaining: rest };
+    item.burstRest = { region, aimed, remaining: rest, ...(askLast ? { askLast: true as const } : {}) };
     e.collectTargets(item, then, []);   // may suspend; doDecide comes back here
     delete item.burstRest;
     aimed = [...aimed, item];
@@ -3165,7 +3171,7 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
       // CR 803.5d: this token is aimed — the burst goes on, it does not commit alone
       const k = sus.item.burstRest;
       delete sus.item.burstRest;
-      burstStep(e, seat, k.region, sus.then, [...k.aimed, sus.item], k.remaining);
+      burstStep(e, seat, k.region, sus.then, [...k.aimed, sus.item], k.remaining, undefined, k.askLast === true);
       e.settle();
       return;
     }
@@ -3180,7 +3186,7 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
     e.need(typeof choice === 'number' && dec.options[choice], 'bad choice');
     const v = dec.options[choice]!.value as { unit: EntityId };
     e.need(sus.remaining.includes(v.unit), 'that token is not in this burst');
-    burstStep(e, seat, sus.region, sus.then, sus.aimed, sus.remaining, v.unit);
+    burstStep(e, seat, sus.region, sus.then, sus.aimed, sus.remaining, v.unit, sus.askLast === true);
     e.settle();
     return;
   }

@@ -261,16 +261,6 @@ const OPEN: TodoEntry[] = [
   },
   // ── the report triage of 2026-11-03 (reports #319-#325; the steward; filed as CT-520..522, renumbered 526..528 on landing) ───────
   {
-    id: 528, area: "client", severity: "minor",
-    title: "casting a Burst token asks you to pick the token you just clicked again, and places the last one for you",
-    detail: "CR 803.5d: the caster orders a Burst group one token at a time. Clicking a token sends castSpellToken {entityId, ordered: true}, but doCastSpellToken calls burstStep with no `picked`, so the clicked token is ignored and the first prompt asks which token resolves first — the player clicks the same token a second time. burstStep also takes the last remaining token without asking (\"else the only one left\"). The owner wants the clicked token to BE the first pick, and the last one clicked rather than placed for them.",
-    evidence: "Report #322 (DQTX @134, mycheze, owner): \"the UI should force you to click on the first one again, it should automatically just assume the one you clicked is the first one you're casting. And the final one shouldn't be automatically selected. It throws off the whole sequence of actions.\" Replayed: [129] castSpellToken 46 ordered, then [130] the burstPick prompt.",
-    fix: "Pass the clicked entityId to burstStep as the first `picked`; decide with the owner whether the last token is then a one-option prompt or a click on the board, update 358-burst-order(-ui) and CR 803.5d's record if the wording changes. Replays: an old log's extra [130]-style pick would then be one decide too many — check replay-room on the logged games before landing.",
-    proof: () => still('engine/src/apply.ts', 'burstStep(e, seat, region, then, [], group.map(t => t.id));'),
-    reportId: 322,
-    status: 'open',
-  },
-  {
     id: 523, area: "client", severity: "minor",
     title: "a clock is seen ticking while its player is on Pass all; which window it was is not known",
     detail: "CR D3.2b: a player's clock does not run in a priority window their standing pass is answering. server/rooms.ts clockRunning honours it only where settlePassAll stamped the window: inPassWindow (no decision, the seat has priority, pass legal), the arm not released, no report dialog open, no proposal. Anything else is billed by design — a decision, a declaration, a deploy step — and the arm comes off at the phase change. The report does not say which window ticked. SHXD was game 3 of a Competitive match whose banks carry between games, and Gember lost it on time (clockMs [0, 539039]) at turn 4's planning.",
