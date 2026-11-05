@@ -1201,7 +1201,9 @@ const OPEN: Entry[] = [
     doneWhen: [
       'An approved branch whose item already shipped is archived on the next tick and its repair line never comes back',
     ],
-    decided: [],
+    decided: [
+      'An approved branch whose item already shipped, or was found already fixed, is finished: the runner archives it by itself. Owner, 2026-11-05, on Discord, asked whether the worker may tidy away an approved fix that already went live another way: "Yes of course. If an issue is fixed and no longer an issue, it\'s categorically \"solved\""',
+    ],
     asks: [],
     deps: [],
     touches: [
