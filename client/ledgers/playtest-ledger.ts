@@ -141,7 +141,7 @@ const OPEN: LedgerEntry[] = [
     id: 323, room: "SHXD", date: "2026-11-03",
     report: "mycheze, seat 1: when \"all passing\" your clock still ticks down and it shouldn't.",
     status: 'live',
-    note: "The server stops a Pass-all seat's clock only in a pure priority window its arm is answering (CR D3.2b); declarations, decisions and deploy steps are billed, and the arm drops at a phase change. Which window ticked is not in the report or the file. Gember lost this game (game 3 of a match) on time. CT-523.",
+    note: "The server stops a Pass-all seat's clock only in a pure priority window its arm is answering (CR D3.2b); declarations, decisions and deploy steps are billed, and the arm drops at a phase change. Which window ticked is not in the report or the file. Gember lost this game (game 3 of a match) on time. CT-523. Steward 2026-11-05: SHXD replayed through rooms.ts with an 'all' arm at each seat's first battle pass bills no pass window; the only billed states under the arm are declarations, targets and \"you may pay\" decisions (CR D3.2b). Whether those should stop too is asked in the CT-523 handoff.",
   },
   {
     id: 325, room: "SHXD", date: "2026-11-03",
