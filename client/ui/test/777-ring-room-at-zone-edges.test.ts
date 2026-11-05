@@ -147,3 +147,49 @@ test('the hand: the dock\'s scroller is inset by the ring, and no card moves', (
   const mh = decl(bodyOf('#app.board.v2 .handdock:not(.tucked) > .zone'), 'min-height') ?? '';
   assert.ok(mh.includes(`${pt}px`), `the one-card floor counts the ${pt}px inset: ${mh}`);
 });
+
+/* CT-474: the blurred halo on a unit with an activatable ability (the UZRG
+ * pulse) is not a hard ring, so the tests above do not count it — and it
+ * reached 10px past the card at rest and 17px at its peak, so a unit flush
+ * against In Play's edge lost the halo on that side. A blurred shadow fades
+ * out over its blur radius past its spread (a Gaussian of sigma = blur/2,
+ * ~2% left at 2 sigma), so its reach is offset + spread + blur. Both frames
+ * count: the rule's own shadow and every frame of the animation it names. */
+function glowOf(shadow: string | undefined): number {
+  let r = 0;
+  if (!shadow || shadow === 'none') return r;
+  for (const sh of shadow.split(/,(?![^(]*\))/)) {
+    if (/inset/.test(sh)) continue;
+    const n = sh.replace(/(rgba?|color-mix|var)\([^)]*\)/g, '').trim().split(/\s+/).filter(t => /^-?[\d.]/.test(t)).map(px);
+    const [x = 0, y = 0, blur = 0, spread = 0] = n;
+    r = Math.max(r, Math.max(Math.abs(x), Math.abs(y)) + spread + blur);
+  }
+  return r;
+}
+/** every box-shadow written in one @keyframes block */
+function keyframeShadows(name: string): string[] {
+  const at = CSS.search(new RegExp(`@keyframes\\s+${name}\\s*\\{`));
+  assert.ok(at >= 0, `no @keyframes ${name}`);
+  let depth = 0, i = CSS.indexOf('{', at);
+  const start = i;
+  for (; i < CSS.length; i++) {
+    if (CSS[i] === '{') depth++;
+    else if (CSS[i] === '}' && --depth === 0) break;
+  }
+  return [...CSS.slice(start, i).matchAll(/box-shadow\s*:\s*([^;}]+)/g)].map(m => m[1]!.trim());
+}
+
+test('In Play: an activatable unit flush against the zone keeps its whole pulsing halo', () => {
+  const b = bodyOf('.card.activatable');
+  const anim = decl(b, 'animation') ?? '';
+  const name = anim.split(/\s+/).find(t => /^[a-z][\w-]*$/i.test(t) && !/^(ease|linear|infinite|alternate|both|forwards)/.test(t));
+  assert.ok(name, `.card.activatable names its pulse: ${anim}`);
+  const frames = [decl(b, 'box-shadow'), ...keyframeShadows(name!)];
+  assert.ok(frames.length >= 2, 'the rest frame and the peak are both read');
+  const margin = px(decl(bodyOf('.lplay .regionmain .zone'), 'overflow-clip-margin'));
+  for (const f of frames) {
+    const reach = glowOf(f);
+    assert.ok(reach > 0, `a frame with no halo: ${f}`);
+    assert.ok(reach <= margin, `the halo reaches ${reach}px past the card and In Play paints ${margin}px past its edge: ${f}`);
+  }
+});

@@ -14512,4 +14512,18 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-05 (steward): renderTemplate ran its singular rewrite (\"1 counters\" → \"1 counter\") over the whole filled line, so the digit closing a filled name counted as an amount of one: \"Player 1 pays 5\" read \"Player 1 pay 5\". The fill now holds every name it puts in (a target or list of targets, {N.controller}, {me}, {you}, {opponent}, {spell}, a mode's own slots, and the why note) out as a placeholder while the rewrite runs, and puts them back after; {X} and the template's own words are still rewritten, so \"Create 1 1/1 unit\" stands. It was the only site of the rewrite in the client. 344 §4b2 now fills Abduct's line for a seat named Player 1, a unit named Unit 1, the {you}/{opponent} slots and a mode with {me}; it went red (\"Player 1 pay 5\") with names left unheld.",
     status: 'done',
   },
+  {
+    id: 474, area: "client", severity: "minor",
+    title: "an activatable unit's ~8px pulsing glow is cut by its section edge",
+    detail: "After the #315 fix every card ring fits its zone, but the soft glow on a unit with an activatable ability is ~8px and is still clipped by its section and the window. Also: at a region's outer left edge the region's own coloured border now sits over the outer ~2px of a 3px ring.",
+    evidence: "r1101c edges agent measurements, 2026-11-01.",
+    fix: "Owner call: give the glow room (spacing change) or shrink it to the ring's 3px.",
+    proof: null,
+    verify: "An activatable unit flush against the In Play edge: screenshot the glow.",
+    guards: [
+      '777-ring-room-at-zone-edges.test.ts::In Play: an activatable unit flush against the zone keeps its whole pulsing halo',
+    ],
+    closed: "FIXED 2026-11-05 (steward, staged for the owner's call): the halo now fits the 3px In Play already lets a card paint past its edge, so no box moves. It was 0 0 3px 1px + 0 0 10px 2px at rest (reach 12px) and 0 0 4px 1px + 0 0 14px 3px at the peak (17px); it is 0 0 2px 1px at rest and 0 0 1px 2px, brighter, at the peak (3px each). 777 now adds up offset + spread + blur in the rule and every frame of its animation against the zone's clip margin; it went red with either old frame put back (12px, 17px). The other reading, room for the old halo, means a wider --ringpad round every block: in the handoff. The region ring over a 3px ring at the outer left edge is the same choice and is left with it.",
+    status: 'done',
+  },
 ];

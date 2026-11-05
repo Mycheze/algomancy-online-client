@@ -216,16 +216,6 @@ const OPEN: TodoEntry[] = [
     proof: () => still('engine/test/472-counter-thief-and-rot-order.test.ts', 'the player whose unit the counters were for is asked') || still('engine/src/engine.ts', 'and Cosmic Conspirators (each asks its own controller'),
     status: 'open',
   },
-  {
-    id: 474, area: "client", severity: "minor",
-    title: "an activatable unit's ~8px pulsing glow is cut by its section edge",
-    detail: "After the #315 fix every card ring fits its zone, but the soft glow on a unit with an activatable ability is ~8px and is still clipped by its section and the window. Also: at a region's outer left edge the region's own coloured border now sits over the outer ~2px of a 3px ring.",
-    evidence: "r1101c edges agent measurements, 2026-11-01.",
-    fix: "Owner call: give the glow room (spacing change) or shrink it to the ring's 3px.",
-    proof: null,
-    verify: "An activatable unit flush against the In Play edge: screenshot the glow.",
-    status: 'open',
-  },
   // ── Competitive Constructed, 2026-11-02 (the round reserved CT-500..519; the
   //    open ones are here, the closed ones in card-todo-closed.ts; 503 was the
   //    corpus rebuild, done at landing in 3b7c7be6, and 505..507 were never used)
