@@ -108,10 +108,14 @@ function toolsHtml(v: BuilderView): string {
     + (v.stats ? iconButton({ label: 'Stats', icon: 'stats', dataBtn: 'tt-stats' }) : '');
 }
 
-/** the table's head: what is on it, + Pile, Re-sort */
+/** the table's head: what is on it, + Pile, Re-sort.
+ * It sits inside the table's region, whose bare felt is "a new pile at the
+ * end" — so it is its own zone, `off`: a card dropped or tapped onto it lands
+ * nowhere (a drag flies home, a picked card stays picked), never in a pile the
+ * player did not ask for (CT-521) */
 function headHtml(h: BuilderHead): string {
   const by = (v: string, label: string): string => button({ label, variant: 'ghost', size: 'sm', dataBtn: 'tt-resort', attrs: { 'data-tt-by': v } });
-  return `<div class="tthead"><span class="ttheadlabel">${esc(h.label)}</span><b class="ttheadcount">${h.count}</b>${h.tools
+  return `<div class="tthead" data-tt-zone="off" data-btn="tt-to"><span class="ttheadlabel">${esc(h.label)}</span><b class="ttheadcount">${h.count}</b>${h.tools
     ? `<span class="ttheadtools">${button({ label: '+ Pile', size: 'sm', dataBtn: 'tt-addpile' })}<details class="ttresort"><summary>Re-sort ▾</summary>
       <div class="ttmenu">${by('cost', 'By cost')}${by('type', 'By type')}${by('element', 'By element')}</div></details></span>` : ''}</div>`;
 }

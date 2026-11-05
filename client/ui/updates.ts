@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-05', kind: 'fix', text: 'On the deck table, letting go of a card over the "Main deck" row at the top no longer makes a new pile at the end: the card goes back where it came from.' },
   { date: '2026-11-05', kind: 'fix', text: 'On the deck table, a long deck name is now cut short with "…" instead of running under the card count beside it on narrower screens.' },
   { date: '2026-11-05', kind: 'fix', text: 'A deck exported as a card list now includes its sideboard, and pasting that list back in puts the sideboard and the maybeboard where they belong instead of into the deck.' },
   { date: '2026-11-05', kind: 'fix', text: 'The soft green pulse round a unit whose ability you can use now stays whole at the edge of the table, instead of being cut off on the side that touches it.' },

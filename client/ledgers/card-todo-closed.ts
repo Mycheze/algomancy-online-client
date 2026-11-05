@@ -14558,4 +14558,19 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-05 (steward, staged for the owner's look at 768): the Deck info button (.tttitlebtn) had min-width 0 and max-width 32vw but was an inline-block with its text loose inside and nothing clipping it, so the button stopped and the name painted on past it, under the pill. The name is now its own span (.tttitlename: min-width 0, nowrap, overflow hidden, ellipsis) in a button that is a shrinking inline-flex row that clips; the pencil and the pill are flex: none. decks.ts's live retitle (typing in Deck info) now writes that span instead of the button's first text node. Not measured in a browser (the home box has none); 1142 went red with the span's clip removed and with the span removed.",
     status: 'done',
   },
+  {
+    id: 521, area: "client", severity: "minor",
+    title: "a card dropped on the table's Main deck header row makes a new pile at the end",
+    detail: "On the builder, the row that says MAIN DECK n with + Pile and Re-sort is part of the table's drop zone. A card let go there lands in a new pile after the last one, which reads as a stray pile the player did not ask for.",
+    evidence: "BL-65 W5b real-input runs (var/records/bl65/handoff-W5b.md, Found).",
+    fix: "Make the header row not a drop target (the card goes back where it came from), or treat it as the end of the nearest pile; decide which with the owner.",
+    proof: null,
+    verify: "Drag a deck card onto the MAIN DECK header row and let go: does a new pile appear?",
+    guards: [
+      '1143-head-row-not-a-drop.test.ts::a drag over the head row has no drop zone, so the card flies home',
+      '1143-head-row-not-a-drop.test.ts::Move…, then a tap on the head row: nothing moves and the card stays picked',
+    ],
+    closed: "FIXED 2026-11-05 (steward): the first of the two readings, the head row is not a target. Its MAIN DECK n row sat inside the table region, whose own zone is the end slot, and the drag provider's zoneAt walked up from it to that zone (tabletop.ts plan.zoneAt), as a tap did through the region's tt-to. The row is now its own data-tt-zone=\"off\" (pages/builder.ts headHtml): zoneAt stops there and returns no zone, so a drag flies home, and a tap there finds no place and leaves a picked card picked. The bare felt still makes a new pile (1143 §3); the Competitive table's head is unchanged. 1143 §2 went red with the walk's stop removed, §1, §2 and §4 with the markup removed. Staged for the owner, whose call the fix line left the choice of readings; he approved this reading on 2026-11-05.",
+    status: 'done',
+  },
 ];
