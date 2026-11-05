@@ -42,7 +42,7 @@ test('§1 in the frame, ttpage last', () => {
 test('§2 the toolbar', () => {
   const html = builderHtml(V);
   const top = html.slice(0, html.indexOf('<main'));
-  assert.match(top, /data-btn="deck-settings"[^>]*>Ember &lt;Rush&gt; <svg/, 'the name opens Deck info, escaped');
+  assert.match(top, /data-btn="deck-settings"[^>]*><span class="tttitlename">Ember &lt;Rush&gt;<\/span><svg/, 'the name opens Deck info, escaped');
   assert.match(top, /data-btn="tt-problems"[^>]*>27 \/ 30</, 'the pill opens What’s wrong');
   assert.match(top, /class="[^"]*ttpill--warn/);
   const order = ['<!--SLOT:tools-->', 'data-btn="tt-undo"', 'data-btn="tt-redo"', 'data-btn="tt-stats"', 'data-help="rules"'].map(s => top.indexOf(s));

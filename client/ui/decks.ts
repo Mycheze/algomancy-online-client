@@ -427,8 +427,8 @@ function ensureListeners(): void {
     if (!d) return;
     d.name = box.value;
     // the builder's title follows without a repaint, so the caret stays put
-    const title = document.querySelector?.('.tttitlebtn');
-    if (title?.firstChild?.nodeType === 3) title.firstChild.nodeValue = `${box.value} `;
+    const title = document.querySelector?.('.tttitlebtn .tttitlename');
+    if (title) title.textContent = box.value;
     scheduleSave(d.id);
   });
   // Esc closes the Decks page's open sheet. On the builder, Deck info is the

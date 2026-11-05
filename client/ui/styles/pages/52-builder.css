@@ -25,7 +25,12 @@
 .ttpage .frametitle { display: flex; align-items: center; gap: var(--space-4); }
 .tttitlebtn { min-width: 0; max-width: 32vw; padding-left: var(--space-2); padding-right: var(--space-2);
   font-size: var(--text-22); font-weight: 700; letter-spacing: .02em; }
-.tttitlebtn > svg, .tttitlebtn .ui-icon { width: 16px; height: 16px; color: var(--color-text-muted); }
+/* a long name is cut short with … inside the button, so the pill after it stays whole: the button is a
+   shrinking flex row, the name the one part of it that gives (at 768 wide the name used to run on past
+   the button and under the pill, CT-520, test 1142) */
+.ttpage .tttitlebtn { display: inline-flex; align-items: center; gap: var(--space-2); flex: 0 1 auto; overflow: hidden; }
+.tttitlename { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tttitlebtn > svg, .tttitlebtn .ui-icon { flex: none; width: 16px; height: 16px; color: var(--color-text-muted); }
 .tttitletext { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .ttpill { flex: none; font-size: var(--text-13); font-weight: 600; letter-spacing: 0; }
 .ttpill.ttpill--ok { color: var(--color-success); border-color: var(--color-success); }

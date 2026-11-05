@@ -116,7 +116,7 @@ test('§4 + New deck and Import open the builder straight away', async () => {
   await flush();
   let html = ui.html();
   assert.match(html, /class="[^"]*\bttpage"/, 'a new deck opens on the table');
-  assert.match(html, /tttitlebtn" data-btn="deck-settings"[^>]*>New deck /);
+  assert.match(html, /tttitlebtn" data-btn="deck-settings"[^>]*><span class="tttitlename">New deck<\/span>/);
   ui.click({ btn: 'tt-close' });
   html = ui.click({ btn: 'deck-import-open' });
   assert.equal(sheetOf(html), 'import');
@@ -125,7 +125,7 @@ test('§4 + New deck and Import open the builder straight away', async () => {
   await flush();
   html = ui.html();
   assert.match(html, /class="[^"]*\bttpage"/, 'the import opens on the table');
-  assert.match(html, /tttitlebtn" data-btn="deck-settings"[^>]*>Imported /);
+  assert.match(html, /tttitlebtn" data-btn="deck-settings"[^>]*><span class="tttitlename">Imported<\/span>/);
   assert.match(html, /<div class="ttnote" role="status">Imported 28 cards; 2 short of 30\.<\/div>/,
     'the import\'s note is in the builder\'s note row');
   const host = dk.tabletopHostFor('dImp')!;
