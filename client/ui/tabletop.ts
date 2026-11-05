@@ -1156,7 +1156,11 @@ const provider: DragProvider = {
       targets: [],
       zoneAt(el) {
         let z = el?.closest?.('[data-tt-zone]') ?? null;
-        while (z && !ok(z)) z = z.parentElement?.closest('[data-tt-zone]') ?? null;
+        while (z && !ok(z)) {
+          // an `off` zone (the builder's head row) stops the walk: not the felt behind it
+          if ((z as HTMLElement).dataset['ttZone'] === 'off') return null;
+          z = z.parentElement?.closest('[data-tt-zone]') ?? null;
+        }
         // the bare felt means "a new pile at the end": light the end slot
         if (z && z.classList.contains('tttable')) z = z.querySelector('.ttend') ?? z;
         return z;

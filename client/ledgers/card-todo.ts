@@ -359,16 +359,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 521, area: "client", severity: "minor",
-    title: "a card dropped on the table's Main deck header row makes a new pile at the end",
-    detail: "On the builder, the row that says MAIN DECK n with + Pile and Re-sort is part of the table's drop zone. A card let go there lands in a new pile after the last one, which reads as a stray pile the player did not ask for.",
-    evidence: "BL-65 W5b real-input runs (var/records/bl65/handoff-W5b.md, Found).",
-    fix: "Make the header row not a drop target (the card goes back where it came from), or treat it as the end of the nearest pile; decide which with the owner.",
-    proof: null,
-    verify: "Drag a deck card onto the MAIN DECK header row and let go: does a new pile appear?",
-    status: 'open',
-  },
-  {
     id: 522, area: "client", severity: "minor",
     title: "[[Card Name]] in a deck description is not a card link",
     detail: "A description written with the common [[Card Name]] convention shows the brackets around the name. The description's card links come from ui/cardlinks.ts, which links names written plainly; master did the same before BL-65, so this is not a regression.",

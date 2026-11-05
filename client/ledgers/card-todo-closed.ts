@@ -14391,4 +14391,19 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-05 (steward): audit first. Every ctx.choose key in the pool (94 calls) is a literal or built from a seat, a loop index, a part or target index, an entity id already on the table, or the helper sequence; none from an answer, so neither field leaked a pick in any card checked, and the 779 non-interference tests stayed green. No client code reads either field (ui/ has no 'resolve' suspension reader at all) and the engine resumes from the room's own state, so viewFor now blanks pendingKey and deletes shown for every seat, as it already did answers and snapshot: the next card's key or a privateTo line counted in shown can no longer reach the wire. The guard went red on each field with its line removed.",
     status: 'done',
   },
+  {
+    id: 521, area: "client", severity: "minor",
+    title: "a card dropped on the table's Main deck header row makes a new pile at the end",
+    detail: "On the builder, the row that says MAIN DECK n with + Pile and Re-sort is part of the table's drop zone. A card let go there lands in a new pile after the last one, which reads as a stray pile the player did not ask for.",
+    evidence: "BL-65 W5b real-input runs (var/records/bl65/handoff-W5b.md, Found).",
+    fix: "Make the header row not a drop target (the card goes back where it came from), or treat it as the end of the nearest pile; decide which with the owner.",
+    proof: null,
+    verify: "Drag a deck card onto the MAIN DECK header row and let go: does a new pile appear?",
+    guards: [
+      '1143-head-row-not-a-drop.test.ts::a drag over the head row has no drop zone, so the card flies home',
+      '1143-head-row-not-a-drop.test.ts::Move…, then a tap on the head row: nothing moves and the card stays picked',
+    ],
+    closed: "FIXED 2026-11-05 (steward): the first of the two readings, the head row is not a target. Its MAIN DECK n row sat inside the table region, whose own zone is the end slot, and the drag provider's zoneAt walked up from it to that zone (tabletop.ts plan.zoneAt), as a tap did through the region's tt-to. The row is now its own data-tt-zone=\"off\" (pages/builder.ts headHtml): zoneAt stops there and returns no zone, so a drag flies home, and a tap there finds no place and leaves a picked card picked. The bare felt still makes a new pile (1143 §3); the Competitive table's head is unchanged. 1143 §2 went red with the walk's stop removed, §1, §2 and §4 with the markup removed. Staged for the owner, whose call the fix line left the choice of readings.",
+    status: 'done',
+  },
 ];
