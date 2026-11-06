@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:231a06392263547b",
+ "generated_from": "sha256:eeb1892606e71f23",
  "rules": [
   {
    "num": "100.1",
@@ -25012,9 +25012,10 @@
    "sectionTitle": "Stripping and Suppression",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "712",
-   "text": "The Everywhere's controller names a card during the haste step. Every unit with that name in The Everywhere's region loses all abilities, for as long as The Everywhere is in that region. Naming another card replaces the first, and a card that is not in play may be named. A token's name is not a card's name and cannot be named, even while a token with that name is in play (see rule 108.2a).",
+   "text": "The Everywhere's controller names a card as The Everywhere is played, and again whenever The Everywhere, or a unit carrying its augment ability, is modded; applying The Everywhere as a mod makes its host name one. A unit put into play without being played names nothing. Every unit with that name in The Everywhere's region loses all abilities, for as long as The Everywhere is in that region. Naming another card replaces the first, and a card that is not in play may be named. A token's name is not a card's name and cannot be named, even while a token with that name is in play (see rule 108.2a).",
    "see": [],
    "examples": [
+    "The Everywhere is applied to a unit as a mod: that unit names a card, and the silence reaches that unit's region.",
     "an enemy copy is silenced only once The Everywhere attacks into its region.",
     "With Unit Tokens in play, Unit Token is not among the names The Everywhere offers."
    ],

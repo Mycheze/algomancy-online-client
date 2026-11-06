@@ -20,7 +20,7 @@ import { Harness } from '../../engine/src/harness.ts';
 import { E } from '../../engine/src/engine.ts';
 import { suppressionBand, TYPE_BAR_HEIGHT } from '../inspect.ts';
 import { rowFor } from '../cardindex.ts';
-import { ent, pass, pick, skipHasteStep, spawn, toDeployment, toNextBattle } from '../../engine/test/util.ts';
+import { ent, pass, pick, playEverywhere, spawn, toDeployment, toNextBattle } from '../../engine/test/util.ts';
 import type { EntityId, Seat } from '../../engine/src/types.ts';
 import { readStyles } from './read-styles.ts';
 
@@ -57,14 +57,8 @@ test('report 208 - The Everywhere silencing a unit greys below the type bar and 
   const h = new Harness(3846);
   toDeployment(h);
   const A = h.state.deployPlayer!;
-  spawn(h, A, 'The Everywhere');
   const trisk = spawn(h, A, 'Triskaidekaphage');
-  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
-  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
-  h.do({ type: 'donePlanning', seat: 0 });
-  if (!h.state.decision) h.do({ type: 'donePlanning', seat: 1 });
-  if (!h.state.decision) skipHasteStep(h);
-  pick(h, 'Triskaidekaphage');
+  playEverywhere(h, A, 'Triskaidekaphage');                  // names as it is played (CR 702.3g)
   const { top, sup, band } = bandOf(h, trisk);
   assert.ok(sup.abilities && !sup.attrs, 'the premise: abilities off, attributes kept');
   assert.equal(band!.kind, 'abilities');

@@ -12,8 +12,8 @@
  *   augment:<Card>#<i> the effect of augmentText[i] (text-box [Augment] text)
  */
 import type {
-  Attr, CardName, EffectPart, EngineEvent, Entity, EntityId, EventType, NumericEntry, PickSetHint, Seat,
-  SpawnFace, StackItem,
+  Attr, CardName, DecisionOption, EffectPart, EngineEvent, Entity, EntityId, EventType, NumericEntry,
+  PickSetHint, Seat, SpawnFace, StackItem,
 } from '../types.ts';
 import type { E } from '../engine.ts';
 import printedJson from './printed.json' with { type: 'json' };
@@ -2243,6 +2243,30 @@ export interface CardBehavior {
    * (CR 707.5a): a redirect may take them, and "when you put counters on…" hears them.
    */
   spawnsWithCounters?: number;
+  /**
+   * CR 702.3g — "As I am played, name a card" printed on the card itself (The
+   * Everywhere, since the designer's 2026-11-06 errata). A choice THIS card
+   * offers as IT is played — the self-facing sibling of `asYouPlay`, which is
+   * offered by a card in play as ANOTHER card is played. Read off the card being
+   * played (`getCard(item.card)`), never radiated: a card on its way to the stack
+   * is not in play, so nothing about it can be silenced or projected yet.
+   *
+   * Collected as the 'asPlayed' stage of the cast window (E.collectTargets),
+   * after the costs and before the as-you-play options. It is part of the play,
+   * not an effect: it never goes on the stack, cannot be responded to, and the
+   * stack item carries the answer (`StackItem.named`), which `E.spawnUnit`
+   * writes to `Entity.named` as the body enters — so a continuous effect keyed
+   * on the name applies from the moment it is in play (CR 709.2). A unit put
+   * into play WITHOUT being played (copied, created, returned) passes through
+   * no cast window and names nothing, which is the printed "played".
+   *
+   * Units only: the one card printing it is a unit, and only `resolveItem`'s
+   * unit arm carries the answer to the body.
+   */
+  namesAsPlayed?: {
+    prompt: string;
+    options: (g: E, item: StackItem) => DecisionOption[];
+  };
   /** effect of a spell / spell unit / spell token when played */
   spellEffect?: EffectDef;
   /** the [Switch]-marked effect that transfers when this card is grafted */

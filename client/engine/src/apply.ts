@@ -3160,6 +3160,11 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
       // reaches no stack and no ability gate; the answers land on
       // StackItem.asYouPlay and E.applyAsYouPlay pays for the accepted ones.
       e.applyAsYouPlay(sus.item, val, sus.partIndex);
+    } else if (sus.stage === 'asPlayed') {
+      // CR 702.3g: a choice the card BEING PLAYED offers ("As I am played, name a
+      // card" — The Everywhere). Rides the item; spawnUnit puts it on the body.
+      e.need(typeof val === 'string', 'bad naming');
+      e.applyAsPlayedNaming(sus.item, val as CardName);
     } else {
       // CR 702.3c: a target slot (or the stop) — the one reader the inline
       // collector shares, `E.applyTargetAnswer`

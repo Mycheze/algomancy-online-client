@@ -334,16 +334,20 @@ export interface Entity {
   /** per-turn uses of bounded ([Switch1]/[once]) abilities, keyed by ability key (CR 803.4: per card) */
   budgets: Record<string, number>;
   /**
-   * CR 712.6: the card this entity has NAMED — "[Augment] During [Haste] name a
-   * card. My last named card loses all abilities. {i}(As long as I am in their
-   * region.)" (The Everywhere).
+   * CR 712.6: the card this entity has NAMED — "[Augment] As I am played or
+   * modded, name a card. My last named card loses all abilities. {i}(As long as
+   * I am in its region)." (The Everywhere; until the 2026-11-06 errata the
+   * naming was "During [Haste]").
    *
    * A STRING and not a budget, because `budgets` is numeric-only and what has
-   * to be remembered here is a CardName. It is the anchor's memory: for text
-   * donated by an [Augment] the naming trigger already fires with the HOST as
-   * `sourceId` (E.queueTrigger passes `host.id`), which is the same entity
-   * `staticsFor` picks as the static's anchor — so one field serves both the
-   * played-normally and the donated case, exactly as it does for Transmogrifant.
+   * to be remembered here is a CardName. It is the anchor's memory, written by
+   * two roads: the name chosen AS THE CARD IS PLAYED rides the stack item
+   * (`StackItem.named`) and `E.spawnUnit` stamps it on the body as it enters;
+   * the name chosen when the anchor is MODDED is written by the naming trigger,
+   * which for text donated by an [Augment] fires with the HOST as `sourceId`
+   * (E.queueTrigger passes `host.id`) — the same entity `staticsFor` picks as
+   * the static's anchor. So one field serves both the played-normally and the
+   * donated case, exactly as it does for Transmogrifant.
    *
    * ⚠ NOT cleared by the CR 506.2 step-3 regroup sweep, deliberately. "My LAST
    * named card" is a MEMORY, not an until-regroup effect: the duration clause
@@ -1107,6 +1111,17 @@ export interface StackItem {
    * (nothing is asked). Contrast CR 602.6, where placement is an EFFECT resolving
    * and is chosen then. */
   formationSpot?: FormationSpot;
+  /**
+   * CR 702.3g — "As I am played, name a card" (The Everywhere,
+   * `CardBehavior.namesAsPlayed`): the name the player chose while playing this
+   * card, in the cast window. It is part of the play, so it rides the item onto
+   * the stack (the opponent responds to a play whose name is already declared)
+   * and `resolveItem` hands it to `E.spawnUnit`, which writes it to
+   * `Entity.named` before the 'spawned' event exists. '' is "name no card".
+   * Also the stage's idempotence guard: `collectTargets` re-runs from the top
+   * after every answered decision. Absent on every other item.
+   */
+  named?: CardName;
   /** CR 602.6f — `formationSpot` names a slot of a formation the play's SOURCE
    * only remembers (it left play; CT-250, a dead Hooba-Pon), so the spot is
    * matched against that formation even when nobody is left standing in it.
@@ -1610,8 +1625,11 @@ export type Suspension =
        * play a nonunit spell, you may sacrifice me…" — Maelstrom Charger).
        * The LAST stage of the window, so everything else about the play is
        * declared before it is asked; the answers land on
-       * `StackItem.asYouPlay`, and `E.applyAsYouPlay` reads them back. */
-      stage?: 'x' | 'mods' | 'cost' | 'itemCost' | 'formation' | 'mode' | 'asYouPlay';
+       * `StackItem.asYouPlay`, and `E.applyAsYouPlay` reads them back.
+       * 'asPlayed' (CR 702.3g): a choice the card BEING PLAYED offers as it is
+       * played ("As I am played, name a card" — The Everywhere,
+       * `CardBehavior.namesAsPlayed`); the answer lands on `StackItem.named`. */
+      stage?: 'x' | 'mods' | 'cost' | 'itemCost' | 'formation' | 'mode' | 'asYouPlay' | 'asPlayed';
     }
   | {
       /** CR 803.5d: an ordered {Burst} cast — which of the group's REMAINING tokens

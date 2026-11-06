@@ -444,8 +444,12 @@ card('Deferral Drone', {
 
 // ─────────────────────── LIGHT / DARK (ld) ────────────────────────────
 
-// "When you trash another card, [Switch1] Each opponent loses 3 life and you
-// gain 3 life." — ld/3 2/2 Cosmic Horror Unit.
+// "When you trash another card, [Switch1] Each opponent loses 1 life and you
+// gain 1 life." — ld/2 2/2 Cosmic Horror Unit.
+//
+// ERRATA 2026-11-06 (the designer's new scan, via the owner): the cost went from
+// [3] to [2] and the drain from 3/3 to 1/1. The cost lives in printed.json; the
+// amounts are the DRAIN constant below.
 //
 // CR 801.2e 'trashed' event: "you trash" = the bin's owner is my controller (the
 // event carries the trasher's seat). "Another card" is free — a trigger source
@@ -453,19 +457,20 @@ card('Deferral Drone', {
 // can never be this entity. Region-scoped by the event (noteTrashed stamps
 // actionRegion, CR 601.1d). "Each opponent" = the region's other present seats
 // (CR 601.4d). Bounded cause + bounded graft ([Switch1], CR 722.5).
+const MURKSTALKER_DRAIN = 1;
 const murkstalkerDrain: EffectDef = {
   run: (g, ctx) => {
     for (const seat of g.seatsHere(ctx.region)) {
       if (seat === ctx.controller) continue;
-      g.loseLife(seat as Seat, 3, 'Murkstalker');
+      g.loseLife(seat as Seat, MURKSTALKER_DRAIN, 'Murkstalker');
     }
-    g.gainLife(ctx.controller, 3, 'Murkstalker');
+    g.gainLife(ctx.controller, MURKSTALKER_DRAIN, 'Murkstalker');
   },
 };
 card('Murkstalker', {
   abilities: [{
     type: 'triggered', events: ['trashed'], bounded: true, graftCause: true,
-    label: 'each opponent loses 3 life and you gain 3 life (you trashed a card)',
+    label: 'each opponent loses 1 life and you gain 1 life (you trashed a card)',
     when: (_g, self, ev) => ev.data?.seat === self.controller,
     effect: murkstalkerDrain,
   }],

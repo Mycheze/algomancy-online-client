@@ -67,6 +67,10 @@
  *    ATTACKS INTO the named unit's region and off again when it leaves —
  *    without ever reaching across regions, which is the rule Caleb said would
  *    never be violated. See the card for the full note.)
+ *  - THE EVERYWHERE's "As I am … MODDED, name a card" (errata 2026-11-06) is a
+ *    TRIGGER on 'modApplied', so it goes on the stack; the printed "as" makes
+ *    it part of the mod being applied. "As I am PLAYED" is exact (CR 702.3g, a
+ *    cast-window stage). See the card.
  *
  * UNPARKED by the engine wave that stamped the play events' source zone:
  *  - Stalwart Sentinel reads the play events' new `data.from` zone instead of
@@ -604,25 +608,77 @@ card('Stalwart Sentinel', {
   }],
 });
 
-// "[Augment] During [Haste] name a card. My last named card loses all
-// abilities. (As long as I am in their region.)" — l/4 3/3 {Haste} Spirit
+// "[Augment] As I am played or modded, name a card. My last named card loses
+// all abilities. {i}(As long as I am in its region)." — l/4 3/3 {Haste} Spirit
 // Unit.
 //
-// CR 712.6 — UNPARKED, as an approximation (see the batch header). The park note
-// said "a 'name a card' PLAYER ACTION. That is the only thing left", and that
-// was a stale claim about the engine on the day it was written: `ctx.choose`
-// takes an arbitrary option list, and `DecisionOption.card` exists precisely so
-// the client renders a real card scan instead of a text label (types.ts: "when
-// the option IS a card (hand looks, deck tops, bin picks), its name — the
-// client renders the real scan"). Naming is a Decision, and CR 504.6's 'endOfHaste'
-// fires inside a settle() window that is allowed to raise one — the same seam
-// Keeper of Tithes above uses for its end-of-[Haste] trigger.
+// ERRATA 2026-11-06 (the designer's new scan, via the owner). The card used to
+// read "[Augment] During [Haste] name a card. …", and named at the end of every
+// haste step ('endOfHaste'). Only WHEN the naming happens changed; the menu, the
+// memory and the continuous region-scoped silence below are as they were.
 //
-// WHAT IS EXACT: the naming happens once per haste step, it is mandatory, it is
-// made by the HOLDER's controller (text-box [Augment], so "I" is the host when
-// this is donated), it hits every copy of the named card rather than one unit
-// ("my last named CARD"), it is REGION-SCOPED, and "loses all abilities" is
-// CR 712.1a's suppression layer — the same one Suppression Field and Monke use.
+// WHEN IT NAMES. The sentence is in the [Augment] paragraph, so it is live on the
+// card played as a unit (CR 721.1d: a card played normally reads its whole text,
+// its augment text included) and on a host it is applied to (CR 721.1a: the host
+// gets the whole paragraph; CR 720.6c: on a mod's text "I" is the host). So:
+//
+//   (a) PLAYED AS A UNIT — names. CR 702.3g: an option a card offers "as you
+//       play" it is taken while the card is played, is not an effect, never
+//       goes on the stack and cannot be responded to. That is
+//       `namesAsPlayed` below: a stage of the cast window (E.collectTargets),
+//       answered before the card reaches the stack and carried on the item to
+//       the body (`StackItem.named` → `E.spawnUnit` → `Entity.named`), so the
+//       silence applies from the moment it enters (CR 709.2).
+//       "Played" is not "spawned" (CR 701.3): a copy, a unit put into play by an
+//       effect, a returned unit pass through no cast window and name nothing.
+//       Applying the card as a mod is not playing it either (CR 720.3).
+//   (b) APPLIED AS A MOD — names, for the host. A mod is being applied to the
+//       host, and Caleb's own templating is that "am modded" means "a mod is
+//       applied to me" (rules-questions, 2024-03-28). ⚠ OPEN: this reads the
+//       text as hearing its OWN application. Evolutionary Experiment spells
+//       that case out ("Whenever I am modded OR APPLIED AS A MOD"), which
+//       suggests the designer may not count it as "modded". The permissive
+//       reading is built and pinned (38-light-a), and the question is with the
+//       owner.
+//   (c) A UNIT WITH THIS TEXT IS MODDED LATER — names again: The Everywhere in
+//       play, or a host carrying it, gets another mod (augment or graft — both
+//       are mods, CR 720.1). A moved mod is not an applied one (CR 720.10c).
+//
+// ⚠ APPROXIMATION, (b) and (c) only: "As I am … modded" should happen as part of
+// the mod being applied, like (a). The engine applies mods in several places
+// (the deployment augment and graft actions, a Virus resolving, effects that
+// augment), none of which can stop for a decision part-way, so the naming is
+// the nearest thing it has: a triggered ability on 'modApplied' for this anchor
+// — Evolutionary Experiment's and Celestial Fluxmorph's shape. It goes on the
+// stack, so unlike the printed card it can be responded to (or negated) before
+// the name is chosen. The silence it sets up is the same either way.
+//
+// THE MENU — "NAME A CARD" IS UNRESTRICTED (CR 712.6), and it is the whole card
+// pool. It used to be `unitsIn(r).map(u => u.card)` — the names of the UNITS
+// standing on the board — with a comment calling that "every card name in
+// play". That is a qualifier the printed text does not carry (CR 707.7's lesson:
+// the shape of the mechanism that happened to exist got promoted into a rule
+// about the card), and it cost the card its best line of play: the silence is
+// CONTINUOUS and matches on a NAME, so naming a card that is not on the board
+// yet is how you turn off the thing your opponent is about to play.
+// The list is DECK_LIST's own filter — real pool cards, no token faces and no
+// resource faces — unioned with every CARD name actually in play, read through
+// `E.nameOf` for the same reason the static below is: Layer 0 (CR 201.5) means
+// a copy answers to its FACE, and the face is the name that has to be nameable
+// for the silence to bite.
+// ⚠ BUT A TOKEN'S NAME IS NOT A CARD'S NAME (report #274). CR 108.2a: "For card
+// text, a token is not a card: text that refers to a 'card' does not include a
+// token" — and this text says "name a CARD". A transformed back face or any other
+// nontoken face is offered; a Robot / Unit Token / Wisp face is not, even worn
+// by a nontoken copy (CR 108.4c), because the NAME is still a token's.
+// "Name no card" stays on the menu: it is how a later naming releases an
+// earlier one without silencing anyone new.
+//
+// WHAT IS EXACT: the naming is made by the HOLDER's controller (text-box
+// [Augment], so "I" is the host when this is donated), it hits every copy of
+// the named card rather than one unit ("my last named CARD"), it is
+// REGION-SCOPED, and "loses all abilities" is CR 712.1a's suppression layer — the
+// same one Suppression Field and Monke use.
 //
 // The region scoping is not a choice. Caleb, rules-questions, twice and
 // emphatically:
@@ -634,99 +690,63 @@ card('Stalwart Sentinel', {
 // So the silence reaches only copies standing in MY region.
 //
 // THE DURATION IS CONTINUOUS, and that clause is what gives the card its teeth.
-// This used to be the batch's last approximation: the silence was an
-// until-regroup E.suppress applied ONCE, at naming time, which mattered far
-// more than the phrase "until regroup" suggests. At the end of the haste step
-// every unit is still standing at home, so my region holds only my own side —
-// a one-shot stamped then could reach nothing but allies. The printed card
-// reaches an ENEMY because it ATTACKS INTO their region later in the same turn,
-// and the effect switches on at that moment.
+// The card reaches an ENEMY copy because it ATTACKS INTO their region later,
+// and the silence switches on at that moment. Two pieces carry it, and neither
+// needed new machinery:
 //
-// Both halves it was waiting on are below, and neither needed new machinery:
-//
-//   · `Entity.named` (types.ts) is the STRING the old note asked for, because
-//     `Entity.budgets` is numeric-only. It is a memory — "my LAST named card" —
-//     so regroup's CR 506.2 step-3 sweep deliberately does NOT clear it. A later
-//     naming overwrites it, which is exactly what "last" means.
-//   · the `statics` entry is CR 712.1a's CONTINUOUS half (`StaticMod.suppressAbilities`,
-//     read through E.suppressionOf / E.abilitiesSuppressed), matching on the
-//     remembered card NAME instead of an entity id. Nothing about a
-//     name-matching static needed engine work: `affects(g, self, target)`
-//     already receives the target Entity.
+//   · `Entity.named` (types.ts) is the STRING the old park note asked for,
+//     because `Entity.budgets` is numeric-only. It is a memory — "my LAST named
+//     card" — so regroup's CR 506.2 step-3 sweep deliberately does NOT clear it.
+//     A later naming overwrites it, which is exactly what "last" means.
+//   · the `statics` entry is CR 712.1a's CONTINUOUS half
+//     (`StaticMod.suppressAbilities`, read through E.suppressionOf /
+//     E.abilitiesSuppressed), matching on the remembered card NAME instead of an
+//     entity id.
 //
 // And the region clause is FREE. `staticsFor` walks anchors with
 // `anchor.region === target.region` and reads augment-donated statics from
-// their host — so "(As long as I am in their region.)" is that existing scope,
+// their host — so "(As long as I am in its region)" is that existing scope,
 // re-asked live every time anything reads the target's abilities, and the
 // [Augment] donation case falls out with no extra code (the Transmogrifant
-// shape). Nothing reaches across regions, which is the rule Caleb said would
-// never be violated; the card simply carries itself into their region.
-//
-// The naming is still a trigger, because naming is an ACTION taken at a time
-// ("During [Haste]"). What stopped being a trigger is the silence.
+// shape). Nothing reaches across regions; the card carries itself there.
+const NAME_NO_CARD = '';
+function everywhereMenu(g: E): { label: string; value: string; card?: string }[] {
+  const isCardName = (n: string): boolean => {
+    const c = getCard(n);
+    if (/\bResource\b/.test(c.type)) return false;
+    return !/Token/.test(c.type)
+      && (c.kind === 'unit' || c.kind === 'spell' || c.kind === 'spellUnit');
+  };
+  const names = [...new Set([
+    ...allCardNames().filter(isCardName),
+    ...g.s.regions.flatMap((_, r) => g.unitsIn(r)).map(u => g.nameOf(u)).filter(isCardName),
+  ])].sort();
+  return [
+    ...names.map(n => ({ label: n, value: n, card: n })),
+    { label: 'name no card (release my last naming)', value: NAME_NO_CARD },
+  ];
+}
 card('The Everywhere', {
+  // (a) "As I am played" — a stage of the cast window, never on the stack
+  namesAsPlayed: {
+    prompt: 'The Everywhere: name a card',
+    options: g => everywhereMenu(g),
+  },
   augmentText: [{
-    type: 'triggered', events: ['endOfHaste'],
-    label: 'during [Haste] name a card — my last named card loses all abilities',
+    // (b) and (c) "As I am … modded" — the approximation described above
+    type: 'triggered', events: ['modApplied'],
+    label: 'as I am modded, name a card — my last named card loses all abilities',
+    when: (_g, self, ev) => ev.data?.['host'] === self.id,
     effect: {
       run: (g, ctx) => {
-        // "NAME A CARD" IS UNRESTRICTED, and the menu is the whole card pool.
-        //
-        // It used to be `unitsIn(r).map(u => u.card)` — the names of the UNITS
-        // standing on the board right now — with a comment claiming that was
-        // "every card name in play". That is a qualifier the printed text does
-        // not carry (CR 707.7's lesson: the shape of the mechanism that happened to
-        // exist got promoted into a rule about the card), and it cost the card
-        // its best line of play: the silence below is CONTINUOUS and matches on
-        // a NAME, so naming a card that is not on the board yet is exactly how
-        // you turn off the thing your opponent is about to play into your
-        // region. Under the old menu that card could never be named.
-        //
-        // The list is DECK_LIST's own filter — real pool cards, no token faces
-        // and no resource faces — unioned with every CARD name actually in play.
-        // Read through `E.nameOf` for the same reason the static below does:
-        // Layer 0 (CR 201.5) means a copy answers to its FACE, and the face is the
-        // name that has to be nameable for the silence to bite.
-        //
-        // ⚠ BUT A TOKEN'S NAME IS NOT A CARD'S NAME (report #274). CR 108.2a:
-        // "For card text, a token is not a card: text that refers to a 'card'
-        // does not include a token" — and this text says "name a CARD". The
-        // in-play union used to put token faces back ("a Robot / Unit Token
-        // standing there is still nameable"), which was a promise to keep the
-        // OLD board-built menu's options, never a rules reading. So the union
-        // now admits only names that are cards: a transformed back face or any
-        // other nontoken face is still offered, a Robot / Unit Token / Wisp
-        // face is not — even worn by a nontoken copy (CR 108.4c), because the
-        // NAME is still a token's.
-        const isCardName = (n: string): boolean => {
-          const c = getCard(n);
-          if (/\bResource\b/.test(c.type)) return false;
-          return !/Token/.test(c.type)
-            && (c.kind === 'unit' || c.kind === 'spell' || c.kind === 'spellUnit');
-        };
-        const pool = allCardNames().filter(isCardName);
-        const names = [...new Set([
-          ...pool,
-          ...g.s.regions.flatMap((_, r) => g.unitsIn(r)).map(u => g.nameOf(u)).filter(isCardName),
-        ])].sort();
-        const NOBODY = '';
         const named = ctx.choose('name', {
           kind: 'payOrDecline', seat: ctx.controller,
           prompt: 'The Everywhere: name a card',
-          options: [
-            ...names.map(n => ({ label: n, value: n, card: n })),
-            // kept from the old menu, where it was the ONLY way to point at
-            // something the board did not already hold. With the whole pool
-            // above it is no longer that — it is just "name nothing", the way
-            // to release a previous naming without silencing anyone new.
-            { label: 'name no card (release my last naming)', value: NOBODY },
-          ],
+          options: everywhereMenu(g),
         }) as string;
         // The naming REMEMBERS; it does not silence. `Entity.named` is the
-        // memory ("my LAST named card" — a second naming simply overwrites it,
-        // and regroup deliberately does not wipe it), and the static below is
-        // the silence, re-asked every time anything reads a unit's abilities.
-        // That is what makes the duration continuous.
+        // memory, and the static below is the silence, re-asked every time
+        // anything reads a unit's abilities.
         //
         // `selfOf` is the ANCHOR in both play modes, which is why one field is
         // enough: E.queueTrigger stamps `sourceId: host.id`, so text donated by
@@ -734,13 +754,11 @@ card('The Everywhere', {
         // entity `staticsFor` anchors the static on (the Transmogrifant shape).
         const self = selfOf(g, ctx);
         if (!self) return;   // the namer left play mid-resolution: nothing to remember on
-        // "a card that is not in play" is REMEMBERED too, and that is the point
-        // of writing it before the early return: it is still a naming, so it
-        // becomes "my last named card" and whatever was silenced before is
-        // released. Empty string is a name no entity can ever carry, so the
-        // static below simply stops matching.
+        // "name no card" is REMEMBERED too: it is still a naming, so it becomes
+        // "my last named card" and whatever was silenced before is released.
+        // The empty string is a name no entity carries, so the static stops matching.
         self.named = named;
-        if (named === NOBODY) {
+        if (named === NAME_NO_CARD) {
           g.ev('info', 'The Everywhere names a card that is not in play — nothing is silenced.');
           return;
         }
@@ -756,7 +774,7 @@ card('The Everywhere', {
       },
     },
   }],
-  // CR 712.6's CONTINUOUS half, which is what "(As long as I am in their region.)"
+  // CR 712.6's CONTINUOUS half, which is what "(As long as I am in its region)"
   // is: a StaticMod matching on the remembered card NAME instead of an entity
   // id. `staticsFor` supplies the region scope and the anchoring for free —
   // it walks `anchor.region === target.region` and reads augment-donated

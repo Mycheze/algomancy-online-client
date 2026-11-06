@@ -40,23 +40,9 @@ import {
 import { GLOSSARY } from '../glossary.ts';
 import { glossaryFor, cardPanelHtml } from '../cardpanel.ts';
 import { rowFor } from '../cardindex.ts';
-import type { Seat } from '../../engine/src/types.ts';
-import { ent, give, giveResources, pick, skipHasteStep, spawn, toDeployment } from '../../engine/test/util.ts';
+import { ent, give, giveResources, pick, playEverywhere, spawn, toDeployment } from '../../engine/test/util.ts';
 
 const q = (h: Harness): E => new E(h.state);
-
-/** deployment → the next turn's END-OF-HASTE decision, where the naming
- * happens. Lifted from 38-light-a.test.ts's `toNaming`, for the same reason it
- * exists there: 'endOfHaste' (CR 504.6) fires inside a settle() window that may
- * suspend, so the usual toNextBattle() plumbing walks past the decision. */
-function toNaming(h: Harness, attacker?: Seat): void {
-  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
-  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
-  if (attacker !== undefined) h.state.initiative = attacker;
-  h.do({ type: 'donePlanning', seat: 0 });
-  if (!h.state.decision) h.do({ type: 'donePlanning', seat: 1 });
-  if (!h.state.decision) skipHasteStep(h);
-}
 
 /* ════════════════════════════════════════════════════════════════════════
  * 0. THE DERIVATION ITSELF — is it reading the pool, or a card name?
@@ -104,10 +90,8 @@ test('CT-163: the box of the card that named says WHICH card it named', () => {
   const h = new Harness(5901);
   toDeployment(h);
   const A = h.state.deployPlayer!;
-  const ev = spawn(h, A, 'The Everywhere');
   spawn(h, A, 'Triskaidekaphage');
-  toNaming(h, A);
-  pick(h, 'Triskaidekaphage');
+  const ev = playEverywhere(h, A, 'Triskaidekaphage');      // names as it is played (CR 702.3g)
 
   // ── non-vacuity, first: the memory really is set, and the box really is
   //    rendering the clause that talks about it
@@ -135,10 +119,8 @@ test('CT-163: with nothing named, the printed clause stands exactly as printed',
   const h = new Harness(5902);
   toDeployment(h);
   const A = h.state.deployPlayer!;
-  const ev = spawn(h, A, 'The Everywhere');
   spawn(h, A, 'Triskaidekaphage');
-  toNaming(h, A);
-  pick(h, '');                                    // "name no card"
+  const ev = playEverywhere(h, A, '');            // "name no card"
 
   const self = ent(h, ev)!;
   assert.equal(self.named, '', 'the release really was taken');
@@ -163,8 +145,7 @@ test('CT-168: the host wearing it as an augment says the named card too', () => 
     type: 'augment', seat: A, from: 'hand',
     index: give(h, A, 'The Everywhere'), hostId: host,
   });
-  toNaming(h, A);
-  pick(h, 'Triskaidekaphage');
+  pick(h, 'Triskaidekaphage');                    // "As I am … modded": the host names
 
   // ── non-vacuity: the mod is really on, the memory is really on the HOST
   //    (E.queueTrigger stamps sourceId: host.id), and CR 721.1's donated box is
@@ -198,10 +179,8 @@ test('CT-164: a switched-off unit states the suppression once, not three times',
   const h = new Harness(5904);
   toDeployment(h);
   const A = h.state.deployPlayer!;
-  spawn(h, A, 'The Everywhere');
   const victim = spawn(h, A, 'Triskaidekaphage');
-  toNaming(h, A);
-  pick(h, 'Triskaidekaphage');
+  playEverywhere(h, A, 'Triskaidekaphage');
 
   // ── non-vacuity: it really is switched off, the banner really names the
   //    culprit, and the lines really are struck through

@@ -6779,24 +6779,24 @@
     "detail": [
      {
       "element": "fire",
-      "margin": 0.242,
-      "score": 0.961
+      "margin": 0.253,
+      "score": 0.965
      },
      {
       "element": "dark",
       "margin": 0.223,
-      "score": 0.95
+      "score": 0.951
      }
     ],
     "pips": "dr"
    },
    "timing": {
     "read": "battle",
-    "score": 0.994
+    "score": 0.995
    },
    "typeAugment": {
     "read": false,
-    "score": 0.34598249197006226
+    "score": 0.3454488515853882
    }
   },
   "Mindspore Fiend": {
@@ -7186,7 +7186,7 @@
     "detail": [
      {
       "element": "light",
-      "margin": 0.229,
+      "margin": 0.23,
       "score": 0.875
      },
      {
@@ -7203,7 +7203,7 @@
    },
    "typeAugment": {
     "read": false,
-    "score": 0.3399963080883026
+    "score": 0.33993855118751526
    }
   },
   "Mycelial Mentor": {
@@ -9610,8 +9610,8 @@
     "detail": [
      {
       "element": "light",
-      "margin": 0.354,
-      "score": 0.981
+      "margin": 0.269,
+      "score": 0.899
      }
     ],
     "pips": "l"
@@ -9622,7 +9622,7 @@
    },
    "typeAugment": {
     "read": false,
-    "score": 0.26790186762809753
+    "score": 0.26682010293006897
    }
   },
   "Seismomancy": {
@@ -11152,8 +11152,8 @@
     "detail": [
      {
       "element": "light",
-      "margin": 0.36,
-      "score": 0.99
+      "margin": 0.268,
+      "score": 0.899
      }
     ],
     "pips": "l"
@@ -11164,7 +11164,7 @@
    },
    "typeAugment": {
     "read": false,
-    "score": 0.30505502223968506
+    "score": 0.3060547113418579
    }
   },
   "The Foretold": {

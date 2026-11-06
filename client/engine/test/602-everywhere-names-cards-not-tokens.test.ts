@@ -1,7 +1,8 @@
 /* Report #274 (room FVJQ, 2026-10-23): The Everywhere named "Unit Token".
  *
- * The Everywhere prints "[Augment] During [Haste] name a card. My last named
- * card loses all abilities." The menu was the card pool UNIONED with every
+ * The Everywhere printed "[Augment] During [Haste] name a card. My last named
+ * card loses all abilities." (since the 2026-11-06 errata: "As I am played or
+ * modded, name a card"; the menu is the same at both moments). The menu was the card pool UNIONED with every
  * name standing in play, and the union put token faces back in — the comment
  * said so on purpose ("a Robot / Unit Token standing there is still
  * nameable"), as a promise to keep the options of the old board-built menu,
@@ -17,23 +18,18 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import type { Seat } from '../src/types.ts';
-import { skipHasteStep, spawn, toDeployment } from './util.ts';
+import { give, giveResources, spawn, toDeployment } from './util.ts';
 
-/** deployment → the next turn's [Haste] naming decision (115's helper) */
-function toNaming(h: Harness, attacker: Seat): void {
-  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
-  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
-  h.state.initiative = attacker;
-  h.do({ type: 'donePlanning', seat: 0 });
-  if (!h.state.decision) h.do({ type: 'donePlanning', seat: 1 });
-  if (!h.state.decision) skipHasteStep(h);
+/** play The Everywhere and stop at its naming question, asked as it is played (CR 702.3g) */
+function toNaming(h: Harness, seat: Seat): void {
+  giveResources(h, seat, 'light', 4);                        // l/4
+  h.do({ type: 'playCard', seat, handIndex: give(h, seat, 'The Everywhere') });
 }
 
 test('CR 108.2a / report 274: The Everywhere cannot name a token standing in play', () => {
   const h = new Harness(60201);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
-  spawn(h, A, 'The Everywhere');
   spawn(h, D, 'Unit Token');
   spawn(h, D, 'Robot');
   spawn(h, A, 'Wisp');
@@ -50,7 +46,7 @@ test('CR 712.6 / report 274: the menu still holds every card in play and out of 
   const h = new Harness(60202);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
-  spawn(h, A, 'The Everywhere');
+  spawn(h, A, 'The Everywhere');                             // in play, so its name is on the board
   spawn(h, D, 'Unit Token');
   spawn(h, D, 'Good Whale');
   toNaming(h, A);

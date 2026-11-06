@@ -10829,11 +10829,11 @@
             "power": "2",
             "toughness": "2",
             "cost": "ld",
-            "total_cost": "3",
+            "total_cost": "2",
             "type": "Cosmic Horror Unit",
-            "text": "When you trash another card, [Switch1] Each opponent loses 3 life and you gain 3 life.",
+            "text": "When you trash another card, [Switch1] Each opponent loses 1 life and you gain 1 life.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905617/murkstalker_klmpmu.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-06 00:00:00.000000",
             "details": "",
             "factions": [
                 "light",
@@ -11629,11 +11629,11 @@
             "power": "0",
             "toughness": "1",
             "cost": "l",
-            "total_cost": "1",
+            "total_cost": "2",
             "type": "{Haste} Alien Unit",
             "text": "When I spawn or die, [Switch1] Glimpse 1.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905935/seer-of-empty-spaces_rpx1ye.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-06 00:00:00.000000",
             "details": "",
             "factions": [
                 "light"
@@ -11946,9 +11946,9 @@
             "cost": "l",
             "total_cost": "4",
             "type": "{Haste} Spirit Unit",
-            "text": "[Augment] During [Haste] name a card. My last named card loses all abilities. {i}(As long as I am in their region.)",
+            "text": "[Augment] As I am played or modded, name a card. My last named card loses all abilities. {i}(As long as I am in its region).",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772906136/the-everywhere_qvhkmm.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-06 00:00:00.000000",
             "details": "",
             "factions": [
                 "light"

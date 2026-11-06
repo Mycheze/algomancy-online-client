@@ -4271,44 +4271,80 @@
   },
   {
     "key": "effects.stripping.named-card",
-    "textHash": "43cf022e21092415",
+    "textHash": "1ae9013ff823180a",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:The Everywhere naming decision + suppressAbilities static scoped to region",
+        "loc": "client/engine/src/cards/sets/batch-light-a.ts:card('The Everywhere') (namesAsPlayed, augmentText modApplied trigger, augmentBox static, everywhereMenu)",
         "agrees": true,
-        "note": ""
+        "note": "Names as it is played, names when it or a carrying host is modded, never names when spawned; static matches on the named name, region-scoped by staticsFor; the menu is the card pool without token faces, plus 'name no card'. The engine comment flags the 'applied as a mod -> host names' case as an OPEN reading (permissive one built); the printed text read literally supports it (the host is modded and now carries 'As I am ... modded')."
       }
     ],
     "tests_run": [
       {
-        "file": "38-light-a.test.ts",
-        "pattern": "The Everywhere: naming a card during [Haste]",
+        "file": "client/engine/test/38-light-a.test.ts",
+        "pattern": "The Everywhere: naming a card as it is played silences EVERY copy",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "38-light-a.test.ts",
+        "file": "client/engine/test/38-light-a.test.ts",
+        "pattern": "The Everywhere: applied as a MOD, the host names",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/38-light-a.test.ts",
         "pattern": "The Everywhere: the silence is CONTINUOUS",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "38-light-a.test.ts",
+        "file": "client/engine/test/38-light-a.test.ts",
         "pattern": "The Everywhere: a second naming replaces the first",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "602-everywhere-names-cards-not-tokens.test.ts",
+        "file": "client/engine/test/38-light-a.test.ts",
+        "pattern": "The Everywhere: put into play WITHOUT being played",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/38-light-a.test.ts",
+        "pattern": "The Everywhere: MODDED LATER",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/38-light-a.test.ts",
+        "pattern": "The Everywhere: a host carrying it names again",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/38-light-a.test.ts",
+        "pattern": "The Everywhere: naming a card that is not in play silences nobody",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/38-light-a.test.ts",
+        "pattern": "The Everywhere: the silence LIFTS when I leave",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/602-everywhere-names-cards-not-tokens.test.ts",
         "pattern": "CR 108.2a / report 274",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "602-everywhere-names-cards-not-tokens.test.ts",
+        "file": "client/engine/test/602-everywhere-names-cards-not-tokens.test.ts",
         "pattern": "CR 712.6 / report 274",
         "passed": true,
         "asserts_claim": true
@@ -4319,18 +4355,36 @@
       {
         "ref": "card: The Everywhere",
         "supports": "yes",
-        "note": ""
+        "note": "Quote verbatim in printed.json and the oracle JSON (revision 2026-11-06). Supports naming as played/modded, 'last named' replacement, and the region duration; 'As I am played' implies a unit merely put into play names nothing."
       },
       {
-        "ref": "owner (register@72de434)",
+        "ref": "owner 2026-08-23 'every copy of the named card in the naming unit's own region'",
         "supports": "yes",
-        "note": "every copy in its own region; a card not in play; tokens are not cards"
+        "note": "Every copy in the region."
+      },
+      {
+        "ref": "owner 2026-08-23 '\"a card that is not in play\" (a no-op ...'",
+        "supports": "yes",
+        "note": "A card not in play may be named."
+      },
+      {
+        "ref": "owner 2026-08-24 'Tokens are NOT cards, however.'",
+        "supports": "yes",
+        "note": "A token's name cannot be named."
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/cards/printed.json",
-        "text": "During [Haste] name a card. My last named card loses all abilities."
+        "text": "[Augment] As I am played or modded, name a card. My last named card loses all abilities. {i}(As long as I am in its region)."
+      },
+      {
+        "file": "client/engine/test/602-everywhere-names-cards-not-tokens.test.ts",
+        "text": "assert.ok(!menu.includes(tok), `${tok} is a token, and a token is not a card`);"
+      },
+      {
+        "file": "client/engine/test/38-light-a.test.ts",
+        "text": "assert.equal(h.state.decision?.prompt, 'The Everywhere: name a card', 'the host is modded, so it names');"
       }
     ],
     "basis_ok": true,
@@ -4344,40 +4398,47 @@
     "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-light-a.ts:card('The Everywhere')",
+        "loc": "client/engine/src/cards/sets/batch-light-a.ts:card('The Everywhere') augmentBox static (affects by g.nameOf(t) === self.named) + engine.ts:E.abilitiesSuppressed",
         "agrees": true,
-        "note": "naming The Everywhere suppresses every copy in the region including the namer, and the naming persists"
+        "note": "The static is an unconditional veto on the named name; the namer's own suppression does not switch its strip off."
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/586-everywhere-names-itself.test.ts",
-        "pattern": "CT-329: The Everywhere that names The Everywhere strips itself",
+        "pattern": "CT-329: The Everywhere that names The Everywhere",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U16-1.test.ts",
+        "test": "probe U16-1: The Everywhere naming itself stays stripped (and keeps stripping its copy) across a battle and regroup",
+        "passed": true,
+        "demonstrates": "yes: the copy (which named nothing) stays stripped through a battle and regroup, so the stripped namer's own strip keeps applying."
+      }
+    ],
     "source_checks": [
       {
         "ref": "card: The Everywhere",
         "supports": "yes",
-        "note": "\"During [Haste] name a card. My last named card loses all abilities.\" — names any card, its own name included; strip covers every card of that name in its region"
+        "note": "'name a card' with no restriction lets it name itself; 'loses all abilities' in its region."
       },
       {
-        "ref": "owner \"Keeps applying\" (CT-329)",
+        "ref": "owner 2026-10-22 'Keeps applying'",
         "supports": "yes",
-        "note": "answers exactly whether the strip keeps applying once the namer is stripped"
+        "note": "The owner call on CT-329: the strip keeps applying; no printed or designer source speaks to it."
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/cards/printed.json",
-        "text": "During [Haste] name a card. My last named card loses all abilities. {i}(As long as I am in their region.)"
+        "text": "[Augment] As I am played or modded, name a card. My last named card loses all abilities. {i}(As long as I am in its region)."
       },
       {
         "file": "client/engine/test/586-everywhere-names-itself.test.ts",
-        "text": "'and still applies after the batch settles'"
+        "text": "assert.ok(h.q.abilitiesSuppressed(ent(h, namer)!), 'and still applies after the batch settles');"
       }
     ],
     "basis_ok": true,

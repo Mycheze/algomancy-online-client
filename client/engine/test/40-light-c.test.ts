@@ -696,7 +696,7 @@ test('Seer of Empty Spaces: the [Switch1] glimpse is bounded, and graftable onto
   // here Witness of the Crossing, whose base effect triples it (3 glimpses)
   const woc = spawn(h, A, 'Witness of the Crossing');
   const raider = spawn(h, D, 'Unit Token');
-  giveResources(h, A, 'light', 1);
+  giveResources(h, A, 'light', 2);                           // l/2 ([1] until the 2026-11-06 errata)
   h.do({ type: 'graft', seat: A, from: 'hand', index: give(h, A, 'Seer of Empty Spaces'), hostId: woc, position: 0 });
   const cached = cacheOf(h, A).length;
   toNextBattle(h, D);                                        // A defends → A's home is the battle region

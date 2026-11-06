@@ -890,6 +890,11 @@ test('the static/cost/flag sweep reports its population, and none of it is prova
   // And ADDED since (the number goes UP here, deliberately):
   //   Inexorable Miasma  +1 guard  report #171 — the after-combat bin trigger
   //                      only wakes when a unit in the region has a -1/-1 counter
+  //   The Everywhere     +1 guard  designer's errata 2026-11-06, CR 702.3g / 720.6c —
+  //                      "During [Haste] name a card" (an unguarded 'endOfHaste'
+  //                      trigger) became "As I am played or modded": the played half
+  //                      is a cast-window stage (`namesAsPlayed`, no guard), the
+  //                      modded half a 'modApplied' trigger guarded to its own host
   //
   // The augment-box work (round 34) moved 44 cards' statics / cost mods / replacement hooks
   // from the body channel into `augmentBox`, because that is where their text
@@ -905,7 +910,7 @@ test('the static/cost/flag sweep reports its population, and none of it is prova
   // convert a card, update these three numbers AND add a line to the table
   // above saying which card and which ruling. That is ~30 seconds, and it is
   // the only thing that stops the next seven going missing in silence.
-  const TALLY = { statics: 50, costMods: 6, guards: 93 };
+  const TALLY = { statics: 50, costMods: 6, guards: 94 };
   assert.deepEqual({ statics, costMods, guards }, TALLY,
     `the sweep now scans ${statics}/${costMods}/${guards}, pinned at `
     + `${TALLY.statics}/${TALLY.costMods}/${TALLY.guards}. This is NOT a floor and it is not `

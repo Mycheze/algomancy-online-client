@@ -2471,11 +2471,15 @@
     "key": "effects.stripping.named-card",
     "parent": "712",
     "order": 6,
-    "text": "The Everywhere's controller names a card during the haste step. Every unit with that name in The Everywhere's region loses all abilities, for as long as The Everywhere is in that region. Naming another card replaces the first, and a card that is not in play may be named. A token's name is not a card's name and cannot be named, even while a token with that name is in play (see rule concepts.cards.token.not-card).",
+    "text": "The Everywhere's controller names a card as The Everywhere is played, and again whenever The Everywhere, or a unit carrying its augment ability, is modded; applying The Everywhere as a mod makes its host name one. A unit put into play without being played names nothing. Every unit with that name in The Everywhere's region loses all abilities, for as long as The Everywhere is in that region. Naming another card replaces the first, and a card that is not in play may be named. A token's name is not a card's name and cannot be named, even while a token with that name is in play (see rule concepts.cards.token.not-card).",
     "examples": [
       {
         "text": null,
-        "test": "38-light-a.test.ts::The Everywhere: naming a card during [Haste] silences EVERY copy of it IN MY REGION"
+        "test": "38-light-a.test.ts::The Everywhere: naming a card as it is played silences EVERY copy of it IN MY REGION (CR 101.6, 712.6)"
+      },
+      {
+        "text": "The Everywhere is applied to a unit as a mod: that unit names a card, and the silence reaches that unit's region.",
+        "test": "38-light-a.test.ts::The Everywhere: applied as a MOD, the host names, and the silence radiates from the host (CR 720.6c, 721.1a)"
       },
       {
         "text": "an enemy copy is silenced only once The Everywhere attacks into its region.",
@@ -2499,7 +2503,7 @@
       "printed": [
         {
           "ref": "card: The Everywhere",
-          "quote": "During [Haste] name a card. My last named card loses all abilities. {i}(As long as I am in their region.)"
+          "quote": "[Augment] As I am played or modded, name a card. My last named card loses all abilities. {i}(As long as I am in its region)."
         }
       ],
       "designer": [],
@@ -2530,7 +2534,7 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Report 274 (2026-10-24): The Everywhere offered \"Unit Token\" while one was in play; \"name a card\" reaches cards only (108.2a, the owner's \"Tokens are NOT cards\"). Engine 61d84e9 (602).",
+    "notes": "The card's text changed on 2026-11-06 (the designer's new printing): it named \"During [Haste]\" and now names \"As I am played or modded\". Applying it as a mod counts as its host being modded (the permissive reading of 720.6c; 38-light-a pins it). Report 274 (2026-10-24): The Everywhere offered \"Unit Token\" while one was in play; \"name a card\" reaches cards only (108.2a, the owner's \"Tokens are NOT cards\"). Engine 61d84e9 (602).",
     "sourceHashes": {}
   },
   {
@@ -2551,7 +2555,7 @@
       "printed": [
         {
           "ref": "card: The Everywhere",
-          "quote": "During [Haste] name a card. My last named card loses all abilities. {i}(As long as I am in their region.)"
+          "quote": "[Augment] As I am played or modded, name a card. My last named card loses all abilities. {i}(As long as I am in its region)."
         }
       ],
       "designer": [],

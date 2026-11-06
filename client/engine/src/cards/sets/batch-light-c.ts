@@ -503,7 +503,8 @@ card('Reap the Due', {
   },
 });
 
-// "When I spawn or die, [Switch1] Glimpse 1." — l/1 0/1 {Haste} Alien Unit.
+// "When I spawn or die, [Switch1] Glimpse 1." — l/2 0/1 {Haste} Alien Unit
+// ([1] until the designer's 2026-11-06 errata; the text is unchanged).
 // The glimpse is the bounded graftable effect ([Switch1], CR 722.5), so grafting it
 // onto another host donates the glimpse to that host's own spawn/death.
 // CR 801.9b, 801.9f: glimpse reveals the top card, caches it, and stamps it playable until

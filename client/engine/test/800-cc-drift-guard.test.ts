@@ -31,6 +31,16 @@
  * re-bless: the walk picks the same 500 actions and ends in the same state
  * (log aside) on both engines; marks 0–29 are unchanged and every other run
  * here, reference and fuzz, still matches the pre-CC golden.
+ *
+ * Re-blessed a SECOND time, THREE entries, for a card errata rather than an
+ * engine change (2026-11-06, the designer's new scan: Seer of Empty Spaces
+ * costs [2], was [1]): `ref:2026-11-08-giant`, `ref:2026-12-13-health` and
+ * `ref:2027-01-10-doubleko`. Measured before the re-bless, replaying each with
+ * Seer patched back to [1] in memory: every run here matched the golden; at
+ * [2] those three differ at ONE step (13) and only in a seat's LEGAL LIST — a
+ * Seer in hand stops being affordable there — while the state and events of
+ * every step are byte-identical, so the runs play out the same game and still
+ * score their par (506). Every other entry is untouched.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

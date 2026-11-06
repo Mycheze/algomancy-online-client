@@ -73,7 +73,7 @@ test('Air Plant: prophesied for [2], released free once four unique unit costs a
   const e = new E(h.state);
   assert.ok(!e.cachePermission(p, 0), 'no permission yet — no unique costs on board');
   spawn(h, p, 'Splort');                                       // [2]
-  spawn(h, p, 'Murkstalker');                                  // [3]
+  spawn(h, p, 'Tidal Menace');                                 // [3] (was Murkstalker, [2] since 2026-11-06)
   spawn(h, p, 'Brough');                                       // [4]
   assert.ok(!new E(h.state).cachePermission(p, 0), 'three unique costs is not enough');
   spawn(h, p, 'Hammer of Justice');                            // [6] — the fourth
@@ -183,8 +183,8 @@ test('Cadaverous Cultivator: [Battle] discard a card to fire its grafts', () => 
   assert.ok(h.state.players[D]!.bin.includes('Brough'),
     'the cost was paid immediately — before anyone could respond');
   pass(h); pass(h);                                            // resolve the ability
-  assert.equal(h.state.players[A]!.life, foeLife - 3, 'the grafted Murkstalker rider fired');
-  assert.equal(h.state.players[D]!.life, 33, 'and gained the Cultivator’s controller 3');
+  assert.equal(h.state.players[A]!.life, foeLife - 1, 'the grafted Murkstalker rider fired (1 since the 2026-11-06 errata)');
+  assert.equal(h.state.players[D]!.life, 31, 'and gained the Cultivator’s controller 1');
   finishBattle(h);
 });
 
@@ -372,7 +372,7 @@ test('Deferral Drone: gain 4 debt → the next card you play this phase costs [3
   h.do(act!);
   assert.equal(debtOf(h, p), 4, 'the activation cost is real: 4 debt');
   assert.equal(costToPlay(h, p, 'Brough'), 1, '[4] card now costs [1]');
-  assert.equal(costToPlay(h, p, 'Murkstalker'), 0, '[3] card is free — clamped at zero, never negative');
+  assert.equal(costToPlay(h, p, 'Tidal Menace'), 0, '[3] card is free — clamped at zero, never negative');
 });
 
 test('Deferral Drone: only the NEXT card is discounted — the one after it pays in full', () => {
@@ -453,7 +453,7 @@ test('Deferral Drone: CR 111.10k — the charge SURVIVES the Drone leaving play 
   assert.equal(ent(h, drone), undefined, 'the Drone is off the board');
   assert.equal(costToPlay(h, p, 'Brough'), 1,
     'CR 111.10k: the ability RESOLVED and the debt is paid, so the source leaving play cannot claw the charge back');
-  assert.equal(costToPlay(h, p, 'Murkstalker'), 0, 'and it still clamps at zero rather than going negative');
+  assert.equal(costToPlay(h, p, 'Murkstalker'), 0, '[2] card: it still clamps at zero rather than going negative');
 });
 
 test('Deferral Drone: CR 111.10k — the charge is spent by the next play even with the Drone gone', () => {
@@ -752,7 +752,7 @@ test('Life Power Dude: odd life → all units -2/-0, even life → +2/+0 (live, 
 
 // ── Murkstalker ──────────────────────────────────────────────────────────
 
-test('Murkstalker: when YOU trash a card, drain 3 — bounded once per turn (CR 109.9, 801.2e)', () => {
+test('Murkstalker: when YOU trash a card, drain 1 — bounded once per turn (CR 109.9, 801.2e)', () => {
   const h = new Harness(4518);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -767,10 +767,11 @@ test('Murkstalker: when YOU trash a card, drain 3 — bounded once per turn (CR 
   assert.equal(ent(h, murk)!.region, h.state.battle!.region, 'setup: the battle is in its region');
   whiteBox(h, e => { e.discardFromHand(D, 0); });
   pass(h); pass(h);                                            // resolve the trigger
-  assert.equal(h.state.players[A]!.life, foeLife - 3, 'each opponent loses 3');
-  assert.equal(h.state.players[D]!.life, 33, 'and I gain 3');
+  // errata 2026-11-06 (designer's new scan): 3/3 became 1/1
+  assert.equal(h.state.players[A]!.life, foeLife - 1, 'each opponent loses 1');
+  assert.equal(h.state.players[D]!.life, 31, 'and I gain 1');
   whiteBox(h, e => { e.discardFromHand(D, 0); });
-  assert.equal(h.state.players[A]!.life, foeLife - 3, '[Switch1]: only once this turn');
+  assert.equal(h.state.players[A]!.life, foeLife - 1, '[Switch1]: only once this turn');
   finishBattle(h);
 });
 

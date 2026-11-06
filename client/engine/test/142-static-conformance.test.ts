@@ -58,7 +58,9 @@
  *               that agreement is a live cross-check on both classifiers.
  *   ACTIVATED   contains ':' (42).
  *   TRIGGER     opens with When / Whenever / If / At the … / After … /
- *               Before … / As you play … (251).
+ *               Before … / As you play … / As I am … (252). "As I am played
+ *               or modded" (The Everywhere, errata 2026-11-06) is an EVENT,
+ *               so it is never a standing fact.
  *   ANAPHOR     opens with Otherwise / Then / It / Its / They / That / Those —
  *               a continuation, which INHERITS the previous sentence's bucket.
  *               This is why Life Power Dude's "Otherwise they gain +2/+0."
@@ -103,8 +105,9 @@
  *     tried and REJECTED. Over the whole pool it caught two clauses and was
  *     right about one: Arbiter of Vitality's "[Augment] Double all life gain
  *     and life loss" (continuous) and The Everywhere's "[Augment] During
- *     [Haste] name a card" (a one-shot the player takes every haste step).
- *     One for two is not a rule.
+ *     [Haste] name a card" (a one-shot the player took every haste step; it
+ *     reads "As I am played or modded" since the 2026-11-06 errata, which the
+ *     TRIGGER rule now catches). One for two is not a rule.
  *
  * ── KNOWN AND DELIBERATE BLIND SPOTS ────────────────────────────────────
  *
@@ -197,7 +200,7 @@ const GRAFT = /^\[Switch1?\]/i;
  *  replacement bucket still matches 88's population exactly` asserts they do. */
 const isReplacement = (s: string): boolean =>
   (/\bwould\b/i.test(s) && /\binstead\b/i.test(s)) || /\b(?:deals?|dealt)\b[^.]*\bas\b/i.test(s);
-const TRIGGER = /^(?:when|whenever|if|at the |after |before |as you )/i;
+const TRIGGER = /^(?:when|whenever|if|at the |after |before |as you |as i am )/i;
 const ANAPHOR = /^(?:otherwise|then|it |its |they |those |that |them )/i;
 const TARGETED =
   /\btargets?\s+(?:unit|ally|allies|player|opponent|card|spell|effect|token|formation|nontoken|enemy|cached|creature)|\bany target\b|\btargets? (?:of|that|in|with|from)\b/i;
@@ -333,6 +336,13 @@ const INERT_KEYS: Record<string, string> = {
     + 'play, and answered — nothing about it is standing. The COPY it can buy DOES reach the '
     + 'stack, but that is CR 710.8\'s clone of the PLAYED SPELL\'s own item — the one thing the '
     + 'designer says the opponent may interact with — and not this channel putting an item there.',
+  namesAsPlayed:
+    'CR 702.3g — "As I am played, name a card" (The Everywhere, errata 2026-11-06): a choice the '
+    + 'card BEING PLAYED offers as it is played, collected as a stage of the CAST WINDOW '
+    + '(E.collectAsPlayedNaming) like `asYouPlay`, and carried on the stack item to the body. An '
+    + '"as" option is part of the play, not an effect: it never reaches the stack and cannot be '
+    + 'responded to. Not continuous either — it is asked once per play and answered; the standing '
+    + 'half of the card (the silence of the named card) is its `statics` entry.',
   augmentable:
     'a FLAG, not a layer — "this card may be applied as an augment even though it declares no '
     + 'augmentAttrs/augmentText, because its [Augment] text lives in `statics`". Deliberately NOT '

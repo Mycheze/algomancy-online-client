@@ -36,7 +36,7 @@ import { Harness } from '../src/harness.ts';
 import type { Seat } from '../src/types.ts';
 import {
   ent, finishBattle, give, giveResources, pass, pick,
-  resolveAfterCombat, skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
+  resolveAfterCombat, spawn, toDeployment, toNextBattle, unitsOf,
   withE, throughDamageWindows,
 } from './util.ts';
 
@@ -75,15 +75,14 @@ function vrootTriggers(h: Harness): number {
   return h.events.filter(ev => ev.type === 'triggered' && /Vroot/.test(ev.msg)).length;
 }
 
-/** deployment → the next turn's [Haste] naming decision (38-light-a's) */
-function toNaming(h: Harness, attacker: Seat): void {
-  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
-  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
-  h.state.initiative = attacker;
-  h.do({ type: 'donePlanning', seat: 0 });
-  if (!h.state.decision) h.do({ type: 'donePlanning', seat: 1 });
-  if (!h.state.decision) skipHasteStep(h);
+/** play The Everywhere and stop at its naming question — asked as it is played
+ * (CR 702.3g; "During [Haste]" until the 2026-11-06 errata) */
+function toNaming(h: Harness, seat: Seat): void {
+  giveResources(h, seat, 'light', 4);                        // l/4
+  h.do({ type: 'playCard', seat, handIndex: give(h, seat, 'The Everywhere') });
 }
+const everywhereOf = (h: Harness, seat: Seat): number =>
+  unitsOf(h, seat).find(u => u.card === 'The Everywhere')!.id;
 
 // ── Vroot: CR 608.9a's sub-step gate ──────────────────────────────────────────
 
@@ -160,19 +159,20 @@ test('The Everywhere: a card NOT in play can be named, and the silence bites whe
   const h = new Harness(11503);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
-  const ev = spawn(h, A, 'The Everywhere');
   toNaming(h, A);
   // RED-CHECK: the old menu was `unitsIn(r).map(u => u.card)` — the units
-  // standing on the board — and nothing but The Everywhere is in play here, so
-  // this pick throws "no option matching" without the fix.
+  // standing on the board — and nothing is in play here, so this pick throws
+  // "no option matching" without the fix.
   assert.ok(h.state.decision!.options.length > 100,
     'the menu is the card pool, not the board');
   pick(h, 'Good Whale');
+  const ev = everywhereOf(h, A);
   assert.equal(ent(h, ev)!.named, 'Good Whale', 'a card nobody has played is a legal name');
   // it arrives afterwards, in ITS OWN region: nothing is silenced yet (CR 601.1d)
   const whale = spawn(h, D, 'Good Whale');                   // 7/5, trigger-free
   assert.ok(!h.q.abilitiesSuppressed(ent(h, whale)!),
     'still in their own region — the naming reaches nothing across regions');
+  toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[ev]] });
   assert.ok(h.q.abilitiesSuppressed(ent(h, whale)!),
     'I attacked into their region, so my last named card loses all abilities');
@@ -188,15 +188,13 @@ test('The Everywhere: every CARD name the OLD menu offered is still offered', ()
   const h = new Harness(11504);
   toDeployment(h);
   const A = h.state.deployPlayer!;
-  const ev = spawn(h, A, 'The Everywhere');
   spawn(h, A, 'Good Whale');
   toNaming(h, A);
   const menu = (h.state.decision!.options).map(o => o.value);
   assert.ok(menu.includes('Good Whale'), 'a card standing on the board');
   assert.ok(menu.includes(''), 'and "name no card" survives — it releases a previous naming');
   pick(h, 'Good Whale');
-  assert.equal(ent(h, ev)!.named, 'Good Whale');
-  finishBattle(h);
+  assert.equal(ent(h, everywhereOf(h, A))!.named, 'Good Whale');
 });
 
 // ── Divine Foresight: LOOKING is not REVEALING ───────────────────────────

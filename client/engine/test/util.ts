@@ -118,6 +118,24 @@ export function spawn(h: Harness, seat: Seat, name: string): EntityId {
   return u.id;
 }
 
+/**
+ * CR 702.3g: PLAY The Everywhere from hand (in deployment, where it resolves at
+ * once), naming `named` as it is played — "As I am played, name a card" is a
+ * stage of the cast window, asked before the card reaches the stack. Returns the
+ * body. `spawn()` is NOT a play and names nothing (errata 2026-11-06).
+ */
+export function playEverywhere(h: Harness, seat: Seat, named: string): EntityId {
+  giveResources(h, seat, 'light', 4);                        // l/4
+  const before = new Set(Object.keys(h.state.entities));
+  h.do({ type: 'playCard', seat, handIndex: give(h, seat, 'The Everywhere') });
+  pick(h, named);
+  while (h.state.stack.length && h.state.priority !== null && !h.state.decision) pass(h);
+  const u = Object.values(h.state.entities).find(e =>
+    e.card === 'The Everywhere' && e.kind === 'unit' && !before.has(String(e.id)));
+  if (!u) throw new Error('playEverywhere: The Everywhere did not arrive');
+  return u.id;
+}
+
 export function ent(h: Harness, id: EntityId): Entity | undefined {
   return h.state.entities[id];
 }

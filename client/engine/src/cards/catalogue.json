@@ -16562,7 +16562,7 @@
    "dark"
   ],
   "cost": "ld",
-  "mana": 3,
+  "mana": 2,
   "power": 2,
   "toughness": 2,
   "type": "Cosmic Horror Unit",
@@ -16572,7 +16572,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When you trash another card, [Switch1] Each opponent loses 3 life and you gain 3 life.",
+  "text": "When you trash another card, [Switch1] Each opponent loses 1 life and you gain 1 life.",
   "image": "Murkstalker.jpg",
   "class": "card",
   "supertype": "Unit",
@@ -17744,7 +17744,7 @@
    "light"
   ],
   "cost": "l",
-  "mana": 1,
+  "mana": 2,
   "power": 0,
   "toughness": 1,
   "type": "{Haste} Alien Unit",
@@ -18214,7 +18214,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] During [Haste] name a card. My last named card loses all abilities. {i}(As long as I am in their region.)",
+  "text": "[Augment] As I am played or modded, name a card. My last named card loses all abilities. {i}(As long as I am in its region).",
   "image": "The-Everywhere.jpg",
   "class": "card",
   "supertype": "Unit",
@@ -18230,8 +18230,8 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.162,
-  "textTop": 0.78
+  "modPeek": 0.16,
+  "textTop": 0.782
  },
  "The Foretold": {
   "name": "The Foretold",

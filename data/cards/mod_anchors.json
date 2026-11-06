@@ -1573,7 +1573,7 @@
   "y": 872,
   "size": 34,
   "cut": 871,
-  "score": 0.9115
+  "score": 0.9105
  },
  "Mycelial Mentor": {
   "icon": "bounded_graft",
@@ -2133,7 +2133,7 @@
   "y": 906,
   "size": 32,
   "cut": 904,
-  "score": 0.9073
+  "score": 0.9072
  },
  "Self-Assembly": {
   "icon": "bounded_graft",
@@ -2444,8 +2444,8 @@
   "x": 78,
   "y": 840,
   "size": 32,
-  "cut": 838,
-  "score": 0.941
+  "cut": 840,
+  "score": 0.9269
  },
  "The Mighty Doot": {
   "icon": "augment",

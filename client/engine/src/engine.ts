@@ -4854,7 +4854,7 @@ export class E {
    * into play under an OPPONENT's control") passes the opponent as `seat` and
    * its owner as `opts.owner`.
    */
-  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin' | 'deck' | 'play'; spot?: FormationSpot; spotRemembered?: boolean; spotSeat?: Seat; owner?: Seat; wearing?: SpawnFace } = {}): Entity {
+  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin' | 'deck' | 'play'; spot?: FormationSpot; spotRemembered?: boolean; spotSeat?: Seat; owner?: Seat; wearing?: SpawnFace; named?: CardName } = {}): Entity {
     /**
      * CR 708.3: a UNIT TOKEN is a creation, and a creation is replaceable — before
      * anything exists. `token: true` is what makes this a creation; a plain
@@ -4896,6 +4896,11 @@ export class E {
     const u = this.newEntity({
       card: name, owner, controller: seat, kind: 'unit', region,
       ...(opts.token ? { token: true, tokenStats: opts.tokenStats } : {}),
+      // CR 702.3g, 709.2: the name chosen as this card was PLAYED ("As I am played,
+      // name a card" — The Everywhere) is on the body as it enters, before the
+      // 'spawned' event exists, so the silence keyed on it applies from the
+      // first moment and no listener hears the spawn unsilenced.
+      ...(opts.named !== undefined ? { named: opts.named } : {}),
     });
     // "I spawn with X counters" (Robot): counters are on before the spawn
     // event, and the AMOUNT LAYER is consulted first, exactly as addCounters
@@ -11620,11 +11625,48 @@ export class E {
     this.payActivationCost(item);                   // CR 705.3d: choice-free half
     this.collectItemCosts(item, then, moreItems);   // CR 705.3: the choice-bearing half
     this.collectCastCosts(item, then, moreItems, 'fixed');
+    // CR 702.3g: an option the card BEING PLAYED offers as it is played ("As I am
+    // played, name a card" — The Everywhere). Everything else about the play is
+    // declared; the name rides the item onto the stack.
+    this.collectAsPlayedNaming(item, then, moreItems);
     // CR 702.3: LAST — "As you play a nonunit spell, you may sacrifice me…"
     // (Maelstrom Charger). Everything about the play is declared by now, which
     // is what makes the option answerable, and nothing about the option itself
     // ever reaches the stack.
     this.collectAsYouPlay(item, then, moreItems);
+  }
+
+  /**
+   * CR 702.3g — "As I am played, name a card" (`CardBehavior.namesAsPlayed`, The
+   * Everywhere). A stage of the cast window, like the as-you-play options below
+   * and for the same reasons: an "as" option is taken while the card is being
+   * played, never goes on the stack and cannot be responded to. The answer is
+   * stored on the ITEM (`StackItem.named`, also the idempotence guard, since
+   * `collectTargets` re-runs from the top after each answer) and handed to the
+   * body by `resolveItem` → `spawnUnit`. Only a unit being PLAYED reaches here:
+   * a copy (`pushSpellCopy`) or a unit put into play by an effect never passes
+   * through a cast window, so it names nothing — CR 701.3, playing is not
+   * putting into play.
+   */
+  private collectAsPlayedNaming(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
+    if (item.kind !== 'unit' || !item.card || item.named !== undefined) return;
+    const spec = getCard(item.card).namesAsPlayed;
+    if (!spec) return;
+    this.suspend(
+      { type: 'cast', stage: 'asPlayed', item, partIndex: 0, targetIndex: 0, then, moreItems },
+      { seat: item.controller, kind: 'payOrDecline', prompt: spec.prompt, options: spec.options(this, item) },
+    );
+  }
+
+  /** CR 702.3g: the answer to `collectAsPlayedNaming`'s question, announced as it is
+   * made — a naming is open information (CR 102.3b), and it is declared before
+   * the card reaches the stack, so the table sees it before anyone may respond. */
+  applyAsPlayedNaming(item: StackItem, named: CardName): void {
+    item.named = named;
+    this.ev('info', named
+      ? `${this.pname(item.controller)} names ${named} as ${item.card} is played.`
+      : `${this.pname(item.controller)} names no card as ${item.card} is played.`,
+    { seat: item.controller, card: item.card, named });
   }
 
   /**
@@ -12828,6 +12870,7 @@ export class E {
         ...(item.owner !== undefined ? { owner: item.owner } : {}),   // CR 102.5a (CT-245)
         ...(item.formationRemembered ? { spotRemembered: true } : {}),
         ...(item.formationSeat !== undefined ? { spotSeat: item.formationSeat } : {}),
+        ...(item.named !== undefined ? { named: item.named } : {}),   // CR 702.3g (The Everywhere)
       });
       return;
     }

@@ -10,12 +10,12 @@
  * Seer's glimpse, Stalwart Sentinel's played-from-elsewhere), debt (Greed
  * Angel, including the automatic resource-step payment), self-copying in
  * formation (Hooba-God), the per-battle life-loss ledger (Retribution Thing),
- * multi-player targeting (Penance) and Keeper of Tithes. The Everywhere is
- * fully built: the naming and the region-scoped suppression (CR 712.6) landed first, and on
- * 2026-08-23 the last approximated clause — the CONTINUOUS duration, "(As long
- * as I am in their region.)" — landed as `Entity.named` plus a name-matching
- * `StaticMod.suppressAbilities`. Its `{ todo: true }` and its card-ledger entry
- * are gone; the four tests that replaced them are grouped below the card.
+ * multi-player targeting (Penance) and Keeper of Tithes. The Everywhere: the
+ * naming and the region-scoped suppression (CR 712.6) landed first, and on
+ * 2026-08-23 the CONTINUOUS duration, "(As long as I am in its region)", landed
+ * as `Entity.named` plus a name-matching `StaticMod.suppressAbilities`. Since the
+ * designer's 2026-11-06 errata it names "as I am played or modded" rather than
+ * during [Haste]; its tests are grouped below the card.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -23,7 +23,7 @@ import { Harness } from '../src/harness.ts';
 import { IllegalAction } from '../src/engine.ts';
 import { isGraftable } from '../src/cards/dsl.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick, playEverywhere,
   resolveAfterCombat, skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf, withE,
 } from './util.ts';
 import type { CachedCard, Seat } from '../src/types.ts';
@@ -657,48 +657,153 @@ test('Stalwart Sentinel: +2 counters for a card played from the cache, not from 
 });
 
 // ── The Everywhere ───────────────────────────────────────────────────────
+//
+// "[Augment] As I am played or modded, name a card. My last named card loses
+// all abilities. {i}(As long as I am in its region)." Until the designer's
+// 2026-11-06 errata it named "During [Haste]", at the end of every haste step.
+// Only WHEN it names changed. (a) PLAYED: the name is asked in the cast window
+// (CR 702.3g) and arrives on the body. (b) APPLIED AS A MOD: the host names (CR
+// 720.6c; the permissive reading of an open question, see the card). (c) A unit
+// carrying the text is MODDED LATER: it names again — a trigger, the engine's
+// approximation of "as".
 
-/** deployment → the next turn's END-OF-HASTE decision. CR 504.6 fires 'endOfHaste'
- * inside a settle() window that may suspend, which is where The Everywhere
- * names its card — so the usual toNextBattle() plumbing would walk straight
- * past (and then trip over) the pending decision. `attacker` pins round 1. */
-function toNaming(h: Harness, attacker?: Seat): void {
-  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
-  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
-  if (attacker !== undefined) h.state.initiative = attacker;
-  h.do({ type: 'donePlanning', seat: 0 });
-  if (!h.state.decision) h.do({ type: 'donePlanning', seat: 1 });
-  if (!h.state.decision) skipHasteStep(h);
+/** a cheap, harmless mod: Aetherflux Golem (ee/1, "[Augment] I gain +2/+2") */
+function modWithGolem(h: Harness, seat: Seat, hostId: number): void {
+  giveResources(h, seat, 'earth', 2);
+  h.do({ type: 'augment', seat, from: 'hand', index: give(h, seat, 'Aetherflux Golem'), hostId });
 }
 
 test('The Everywhere: plays as a 3/3 haste body and augments crash-free', () => {
   const h = new Harness(3823);
   toDeployment(h);
   const A = h.state.deployPlayer!;
-  const ev = spawn(h, A, 'The Everywhere');
+  const ev = playEverywhere(h, A, '');
   assert.deepEqual(effStats(h, ev), [3, 3]);
   const host = spawn(h, A, 'Unit Token');
   giveResources(h, A, 'light', 4);                           // l/4
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'The Everywhere'), hostId: host });
+  pick(h, '');                                               // the host is modded: it names
   assert.equal(ent(h, host)!.mods.length, 1);
   assert.deepEqual(effStats(h, host), [1, 1], 'the donated text grants no stats');
 });
 
-test('The Everywhere: naming a card during [Haste] silences EVERY copy of it IN MY REGION (CR 101.6, 712.6)', () => {
+test('The Everywhere: it names AS IT IS PLAYED — in the cast window, before the stack, and never at the end of the haste step (CR 702.3g)', () => {
+  const h = new Harness(3847);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const trisk = spawn(h, A, 'Triskaidekaphage');
+  giveResources(h, A, 'light', 4);
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'The Everywhere') });
+  // RED on the pre-errata engine: the play went straight through and nothing was asked
+  assert.equal(h.state.decision?.prompt, 'The Everywhere: name a card', 'the naming is asked as it is played');
+  assert.equal(h.state.decision!.seat, A, 'by the player playing it');
+  const sus = h.state.suspension as { type: string; stage?: string } | null;
+  assert.equal(sus?.type, 'cast', 'it is part of the play (the cast window) — not a trigger');
+  assert.equal(sus?.stage, 'asPlayed');
+  assert.equal(h.state.stack.length, 0, 'nothing is on the stack yet: an "as" option cannot be responded to');
+  assert.ok(!unitsOf(h, A).some(u => u.card === 'The Everywhere'), 'and the body is not in play yet');
+  pick(h, 'Triskaidekaphage');
+  const ev = unitsOf(h, A).find(u => u.card === 'The Everywhere')!;
+  assert.equal(ev.named, 'Triskaidekaphage', 'the name arrives on the body');
+  assert.ok(h.q.abilitiesSuppressed(ent(h, trisk)!), 'and the silence applies from the moment it enters');
+  assert.ok(h.log.some(l => l.includes('names Triskaidekaphage as The Everywhere is played')),
+    'the naming is announced (it is open information)');
+  // the old timing is gone: the next haste step ends without a question
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+  h.state.initiative = A;
+  h.do({ type: 'donePlanning', seat: 0 });
+  h.do({ type: 'donePlanning', seat: 1 });
+  skipHasteStep(h);
+  assert.equal(h.state.decision, null, 'no naming at the end of [Haste] any more');
+  assert.equal(h.state.phase, 'battle');
+  assert.equal(ent(h, ev.id)!.named, 'Triskaidekaphage', 'the played naming is still the last one');
+});
+
+test('The Everywhere: put into play WITHOUT being played, it names nothing (CR 701.3)', () => {
+  const h = new Harness(3848);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const ev = spawn(h, A, 'The Everywhere');                  // spawned by an effect, not played
+  assert.equal(h.state.decision, null, '"played" is not "spawned": nothing is asked');
+  assert.equal(ent(h, ev)!.named, undefined);
+  toNextBattle(h, A);
+  assert.equal(h.state.decision, null, 'and nothing is asked at the end of the haste step either');
+  assert.equal(ent(h, ev)!.named, undefined, 'so it has no named card, and silences nobody');
+});
+
+test('The Everywhere: applied as a MOD, the host names, and the silence radiates from the host (CR 720.6c, 721.1a)', () => {
+  const h = new Harness(3849);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const host = spawn(h, A, 'Unit Token');
+  const trisk = spawn(h, A, 'Triskaidekaphage');
+  giveResources(h, A, 'light', 4);
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'The Everywhere'), hostId: host });
+  // ⚠ OPEN QUESTION, permissive reading pinned: the augment's own application
+  // mods the host ("am modded" = "a mod is applied to me", Caleb 2024-03-28;
+  // CR 720.6c "I" is the host), so the host names now. The other reading —
+  // Evolutionary Experiment prints "or applied as a mod" separately — would ask
+  // nothing until the host is modded again.
+  assert.equal(h.state.decision?.prompt, 'The Everywhere: name a card', 'the host is modded, so it names');
+  assert.equal(h.state.decision!.seat, A, "the host's controller names");
+  pick(h, 'Triskaidekaphage');
+  assert.equal(ent(h, host)!.named, 'Triskaidekaphage', 'remembered on the HOST — the anchor of the donated static');
+  assert.ok(h.q.abilitiesSuppressed(ent(h, trisk)!), 'the named card in the host’s region is silenced');
+  assert.deepEqual(h.q.suppressionOf(ent(h, trisk)!).by, ['The Everywhere']);
+});
+
+test('The Everywhere: MODDED LATER, it names again, and the new name replaces the old — "my LAST named card"', () => {
+  const h = new Harness(3850);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const trisk = spawn(h, A, 'Triskaidekaphage');
+  const vroot = spawn(h, A, 'Vroot');
+  const ev = playEverywhere(h, A, 'Triskaidekaphage');
+  assert.ok(h.q.abilitiesSuppressed(ent(h, trisk)!));
+  assert.ok(!h.q.abilitiesSuppressed(ent(h, vroot)!));
+  modWithGolem(h, A, ev);                                    // "As I am … modded"
+  assert.equal(h.state.decision?.prompt, 'The Everywhere: name a card', 'a mod applied to it: it names again');
+  pick(h, 'Vroot');
+  assert.equal(ent(h, ev)!.named, 'Vroot');
+  assert.ok(h.q.abilitiesSuppressed(ent(h, vroot)!), 'the new name is silenced');
+  assert.ok(!h.q.abilitiesSuppressed(ent(h, trisk)!),
+    'and the OLD one is released — "my LAST named card" is one card, not a growing list');
+});
+
+test('The Everywhere: a host carrying it names again when it is modded again', () => {
+  const h = new Harness(3851);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const host = spawn(h, A, 'Unit Token');
+  const vroot = spawn(h, A, 'Vroot');
+  giveResources(h, A, 'light', 4);
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'The Everywhere'), hostId: host });
+  pick(h, '');
+  assert.ok(!h.q.abilitiesSuppressed(ent(h, vroot)!));
+  modWithGolem(h, A, host);
+  assert.equal(h.state.decision?.prompt, 'The Everywhere: name a card', 'the donated text hears the host being modded');
+  pick(h, 'Vroot');
+  assert.equal(ent(h, host)!.named, 'Vroot');
+  assert.ok(h.q.abilitiesSuppressed(ent(h, vroot)!));
+});
+
+test('The Everywhere: naming a card as it is played silences EVERY copy of it IN MY REGION (CR 101.6, 712.6)', () => {
   const h = new Harness(3841);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
-  const ev = spawn(h, A, 'The Everywhere');
   const mine1 = spawn(h, A, 'Triskaidekaphage');              // "when I attack, your life becomes 13"
   const mine2 = spawn(h, A, 'Triskaidekaphage');
   const theirs = spawn(h, D, 'Triskaidekaphage');
-  toNaming(h, A);
-  // CR 712.6: "name a card" IS a decision — the half the park note said did not exist
+  giveResources(h, A, 'light', 4);
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'The Everywhere') });
+  // CR 712.6: "name a card" IS a decision
   assert.equal(h.state.decision!.kind, 'payOrDecline');
   assert.equal(h.state.decision!.seat, A, "the holder's controller names the card");
-  assert.ok(h.state.decision!.options.some(o => o.value === 'Triskaidekaphage'),
+  assert.ok(h.state.decision!.options.some(o => o.value === 'Triskaidekaphage' && o.card === 'Triskaidekaphage'),
     'the menu offers real cards, with DecisionOption.card set for the scan');
   pick(h, 'Triskaidekaphage');
+  const ev = unitsOf(h, A).find(u => u.card === 'The Everywhere')!.id;
   assert.ok(h.q.abilitiesSuppressed(ent(h, mine1)!));
   assert.ok(h.q.abilitiesSuppressed(ent(h, mine2)!),
     'the named CARD, not one unit — every copy');
@@ -710,9 +815,10 @@ test('The Everywhere: naming a card during [Haste] silences EVERY copy of it IN 
   assert.ok(!h.q.abilitiesSuppressed(ent(h, theirs)!),
     'a copy in the other region is not silenced');
   // not just a flag: the silenced trigger never queues. The Everywhere attacks
-  // in its own column beside the named unit, because the silence is now scoped
+  // in its own column beside the named unit, because the silence is scoped
   // live to ITS region — a named ally that attacks alone leaves the projector
   // behind and gets its abilities back (see the "leaves" test below).
+  toNextBattle(h, A);
   const lifeA = h.state.players[A]!.life;
   h.do({ type: 'declareAttack', seat: A, columns: [[ev], [mine1]] });
   assert.equal(h.state.stack.length, 0, 'the on-attack trigger is silenced');
@@ -724,12 +830,11 @@ test('The Everywhere: naming a card that is not in play silences nobody (CR 712.
   const h = new Harness(3842);
   toDeployment(h);
   const A = h.state.deployPlayer!;
-  spawn(h, A, 'The Everywhere');
   const mine = spawn(h, A, 'Triskaidekaphage');
-  toNaming(h, A);
-  pick(h, '');                                               // "a card that is not in play"
+  playEverywhere(h, A, '');                                  // "a card that is not in play"
   assert.ok(!h.q.abilitiesSuppressed(ent(h, mine)!), 'nothing is silenced');
-  assert.ok(h.log.some(l => l.includes('names a card that is not in play')));
+  assert.ok(h.log.some(l => l.includes('names no card as The Everywhere is played')));
+  toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });
   pass(h); pass(h);
   assert.equal(h.state.players[A]!.life, 13, 'the unnamed card keeps its abilities');
@@ -738,13 +843,10 @@ test('The Everywhere: naming a card that is not in play silences nobody (CR 712.
 
 /* ── The Everywhere's CONTINUOUS silence ───────────────────────────────────
  *
- * These four replace the `{ todo: true }` that used to sit here (and the card
- * ledger entry that named it). Printed: "[Augment] During [Haste] name a card.
- * My last named card loses all abilities. {i}(As long as I am in their
- * region.)" — the parenthetical is a DURATION, and it is the clause the card
- * is built around. At the end of the haste step every unit is still standing
- * at home, so a one-shot stamped at naming time could only ever reach allies;
- * the printed card reaches an enemy by ATTACKING INTO their region afterwards.
+ * "{i}(As long as I am in its region)" is a DURATION, and it is the clause the
+ * card is built around. A unit played in deployment stands at home, so a
+ * one-shot stamped at naming time could only ever reach allies; the printed
+ * card reaches an enemy by ATTACKING INTO their region afterwards.
  *
  * Nothing here reaches across regions (Caleb: "the single rule we'll never
  * violate is 'nothing can send information across regions'"). The silence is a
@@ -757,18 +859,17 @@ test('The Everywhere: the silence is CONTINUOUS — an enemy copy is silenced on
   const h = new Harness(3843);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
-  const ev = spawn(h, A, 'The Everywhere');                  // 3/3 {Haste}
   const theirs = spawn(h, D, 'Triskaidekaphage');            // "when I attack or block, your life becomes 13"
-  toNaming(h, A);
-  pick(h, 'Triskaidekaphage');                               // a card in the OTHER region
+  const ev = playEverywhere(h, A, 'Triskaidekaphage');       // a card in the OTHER region; 3/3 {Haste}
   assert.equal(ent(h, ev)!.named, 'Triskaidekaphage', 'the naming is remembered on the anchor');
   assert.ok(!h.q.abilitiesSuppressed(ent(h, theirs)!),
     'nothing is silenced yet — we are still in our own regions');
+  toNextBattle(h, A);
   // the travel clause: attacking puts the projector in the defender's region
   h.do({ type: 'declareAttack', seat: A, columns: [[ev]] });
   assert.equal(ent(h, ev)!.region, ent(h, theirs)!.region, 'now we share a region');
   assert.ok(h.q.abilitiesSuppressed(ent(h, theirs)!),
-    '"(as long as I am in their region)" — the silence switches on with no new event');
+    '"(as long as I am in its region)" — the silence switches on with no new event');
   assert.deepEqual(h.q.suppressionOf(ent(h, theirs)!).by, ['The Everywhere']);
   // and it is not just a flag: the silenced trigger never queues
   const lifeD = h.state.players[D]!.life;
@@ -784,10 +885,9 @@ test('The Everywhere: the silence LIFTS when I leave — continuous, not until-r
   const h = new Harness(3844);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
-  const ev = spawn(h, A, 'The Everywhere');
   const theirs = spawn(h, D, 'Triskaidekaphage');
-  toNaming(h, A);
-  pick(h, 'Triskaidekaphage');
+  const ev = playEverywhere(h, A, 'Triskaidekaphage');
+  toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[ev]] });
   assert.ok(h.q.abilitiesSuppressed(ent(h, theirs)!), 'silenced while I am there');
   finishBattle(h);                                           // → regroup: everyone goes home
@@ -807,39 +907,34 @@ test('The Everywhere: a second naming replaces the first — it is my LAST named
   const h = new Harness(3845);
   toDeployment(h);
   const A = h.state.deployPlayer!;
-  const ev = spawn(h, A, 'The Everywhere');
   const trisk = spawn(h, A, 'Triskaidekaphage');
   const vroot = spawn(h, A, 'Vroot');
-  toNaming(h, A);
-  pick(h, 'Triskaidekaphage');
+  const ev = playEverywhere(h, A, 'Triskaidekaphage');
   assert.ok(h.q.abilitiesSuppressed(ent(h, trisk)!));
   assert.ok(!h.q.abilitiesSuppressed(ent(h, vroot)!));
+  toNextBattle(h, A);
   finishBattle(h);
-  toNaming(h, A);                                            // the next turn's [Haste] naming
+  assert.ok(h.q.abilitiesSuppressed(ent(h, trisk)!), 'a turn passing does not end it — only a new naming does');
+  modWithGolem(h, A, ev);                                    // the next deployment: modded → names
   pick(h, 'Vroot');
   assert.equal(ent(h, ev)!.named, 'Vroot');
   assert.ok(h.q.abilitiesSuppressed(ent(h, vroot)!), 'the new name is silenced');
   assert.ok(!h.q.abilitiesSuppressed(ent(h, trisk)!),
     'and the OLD one is released — "my LAST named card" is one card, not a growing list');
-  finishBattle(h);
 });
 
 test('The Everywhere: naming a card that is not in play RELEASES whatever I had named', () => {
   const h = new Harness(3846);
   toDeployment(h);
   const A = h.state.deployPlayer!;
-  const ev = spawn(h, A, 'The Everywhere');
   const trisk = spawn(h, A, 'Triskaidekaphage');
-  toNaming(h, A);
-  pick(h, 'Triskaidekaphage');
+  const ev = playEverywhere(h, A, 'Triskaidekaphage');
   assert.ok(h.q.abilitiesSuppressed(ent(h, trisk)!));
-  finishBattle(h);
-  toNaming(h, A);
+  modWithGolem(h, A, ev);
   pick(h, '');                                               // "a card that is not in play"
   assert.equal(ent(h, ev)!.named, '', 'the decline is still a naming, and it is the LAST one');
   assert.ok(!h.q.abilitiesSuppressed(ent(h, trisk)!),
     'so the previous silence ends — the empty name matches no card in play');
-  finishBattle(h);
 });
 
 // ── Triskaidekaphage ─────────────────────────────────────────────────────
