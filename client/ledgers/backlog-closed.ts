@@ -2973,4 +2973,45 @@ export const CLOSED: Entry[] = [
       + 'the whole critical path; the next cut is inside the engine (84-card-semantics, the drill, the '
       + 'fuzz walks: statics re-swept per query, a structuredClone per legalActions).',
   },
+  {
+    id: 'BL-69',
+    slug: 'steward-inbox-saves-linked-images',
+    title: 'The night worker ignores an image the owner links in #steward instead of attaching it',
+    area: 'server',
+    size: 'S',
+    status: 'done',
+    track: 'qol',
+    said:
+      'You fixed the Mindburn TEXT but the actual card image needs to be updated. Downloaded, replaced and used '
+      + 'as the actual card art: The new card image file is here: https://media.discordapp.net/attachments/… '
+      + '(2026-11-06)',
+    means:
+      'steward/discord.mjs saveAttachments() saves only m.attachments. On 2026-11-06 the owner twice gave the new '
+      + 'Mindburn scan as a media.discordapp.net link in the message text (inbox-1568281980213272787 and '
+      + 'inbox-1568323276030091455), so nothing reached state/answers/files/, and the worker itself cannot '
+      + 'download (the night run blocks network fetches). The text fix shipped without the scan, and the second '
+      + 'request had to go back to the owner. Discord CDN links also expire (the link\'s ex= param: about two '
+      + 'days), so fetching them at read time is the only time it works. Fix: in saveAttachments, also fetch '
+      + 'every https://cdn.discordapp.com/attachments/… and https://media.discordapp.net/attachments/… URL in '
+      + 'm.content (owner messages only, those two hosts only), saved beside the attachments, named after the '
+      + 'path\'s last segment; a test-discord.mjs case with a linked file.',
+    doneWhen: [
+      'An owner message that links a Discord-hosted image (no attachment) lands with that file saved under state/answers/files/',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'steward/discord.mjs',
+      'steward/test-discord.mjs',
+      'steward/fetch-file.mjs',
+    ],
+    evidence: { commit: 'c3b0781b', guards: ['1152-steward-fetches-linked-files.test.ts'] },
+    notes:
+      'DONE 2026-11-06 (c3b0781b): steward/fetch-file.mjs downloads any image/PDF link (a media.discordapp.net '
+      + 'proxy link is rewritten to the CDN original, signature kept), and discord.mjs runs it over every link in '
+      + 'an owner message — inbox or reply — on arrival, listing the files as ALREADY DOWNLOADED. The agent can '
+      + 'run it by hand (skill rule 6). Guards: 1152 (the link handling) and steward/test-discord.mjs (the loop, '
+      + 'with a linked image and a page link).',
+  },
 ];

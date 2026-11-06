@@ -45,6 +45,8 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-06', kind: 'change', text: 'The Everywhere has its new printing: it names a card as it is played, or when it or the unit it is on is modded, instead of during Haste.' },
+  { date: '2026-11-06', kind: 'change', text: 'Murkstalker and Seer of Empty Spaces have their new printings: Murkstalker costs 2 and drains 1 life instead of 3, and Seer costs 2.' },
   { date: '2026-11-06', kind: 'change', text: 'Mindburn\'s card picture is now its new printing, with the new art and the new text on the card itself.' },
   { date: '2026-11-06', kind: 'change', text: 'Mindburn now has its new text: each player sacrifices a nontoken unit, gains a rot or discards a card, X times. Gaining a rot is always an option, so nobody runs out of choices.' },
   { date: '2026-11-06', kind: 'new', text: 'Four or more identical units in one region, like a crowd of Robots, now stand as one overlapping stack with a count on it. Hover the stack, or tap its count, to fan them all out.' },
