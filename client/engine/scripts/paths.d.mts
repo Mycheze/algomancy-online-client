@@ -55,6 +55,7 @@ export const ENGINE_TEST_DIR: string;
 export const UI_TEST_DIR: string;
 export const SERVER_TEST_DIR: string;
 export const CLIENT_DOCS_DIR: string;
+export const CLIENT_README: string;
 export const SERVER_E2E_DIR: string;
 export const LEDGERS_DIR: string;
 export const LEAGUE_STORE_TS: string;

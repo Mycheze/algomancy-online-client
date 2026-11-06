@@ -180,15 +180,6 @@ const OPEN: TodoEntry[] = [
   },
   // ── Pass D, the mop-up and the replacement-order round, 2026-10-25: defects found and not fixed
   {
-    id: 431, area: "coverage", severity: "minor",
-    title: "client/README.md says the regions board is behind the board toggle; it has been the default since 2026-09-26",
-    detail: "The client/README.md row for docs/18-board-layout-v2.md reads \"the regions board: two interlocking Ls, region ≠ control, never scrolls — behind the ▦ board toggle\". The regions board is the default; the toggle now selects the classic board.",
-    evidence: "Pass D paperwork 2026-10-25 (zero-handoff/PD-paper.md, new defect 1).",
-    fix: "Reword the row: the regions board is the default, and the toggle selects the classic one.",
-    proof: () => still('README.md', 'never scrolls — behind the ▦ board toggle'),
-    status: 'open',
-  },
-  {
     id: 432, area: "coverage", severity: "minor",
     cards: ["Torrential Reclamation"],
     title: "test 182 still lists the Torrential Reclamation scaling question as open, quoting the old card text",

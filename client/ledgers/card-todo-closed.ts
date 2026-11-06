@@ -14701,4 +14701,17 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-06 (steward). Comments only, no behaviour change. The amountMultipliers comment now says the claiming factors MULTIPLY (×2^n, CR 708.6), as E.amountFactor folds them, and applies them after the additions by default (708.6a). The AmountMultiplier comment no longer calls the additive-versus-multiplier order unanswered: it states 708.6a as CT-425 left it (the controller of both chooses, additions first is the default, different controllers by initiative under 708.4a) and names lifePrice and lossOrder as where each order is priced. engine.ts's amountFactor and lifeAmount comments already said this. The proof now checks both stale phrases; restoring either one turns it true. The guards pin the behaviour the comments now describe: the exponential fold, the additions-first default, and the chosen doubling-first order.",
     status: 'done',
   },
+  {
+    id: 431, area: "coverage", severity: "minor",
+    title: "client/README.md says the regions board is behind the board toggle; it has been the default since 2026-09-26",
+    detail: "The client/README.md row for docs/18-board-layout-v2.md reads \"the regions board: two interlocking Ls, region ≠ control, never scrolls — behind the ▦ board toggle\". The regions board is the default; the toggle now selects the classic board.",
+    evidence: "Pass D paperwork 2026-10-25 (zero-handoff/PD-paper.md, new defect 1).",
+    fix: "Reword the row: the regions board is the default, and the toggle selects the classic one.",
+    proof: () => still('README.md', 'never scrolls — behind the ▦ board toggle', 'the toggle selects the classic'),
+    guards: [
+      '1147-readme-board-row.test.ts::client/README.md: the regions board row names no toggle or classic board while the spec says it is the only board',
+    ],
+    closed: "FIXED 2026-11-06 (steward). Docs only. The planned wording was stale by the time it was done: board round 8 (2026-10-29) deleted the classic board, the ▦ toggle and the algoLayout preference (docs/18-board-layout-v2.md's status block, ui/README.md, layout.ts's header), so \"the toggle selects the classic one\" would have been a second wrong row. The row now says the regions board is the only board since 2026-10-29. The proof also checks the planned wording. The guard reads the spec's status block and fails if the README row mentions a toggle, the classic board, ▦, algoLayout or a default while the spec says it is the only board. CLIENT_README joins paths.mjs for it.",
+    status: 'done',
+  },
 ];
