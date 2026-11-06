@@ -22,7 +22,8 @@ import {
   gameHistory, rebuildProfiles, saveAccounts, stashHistory, type RecordedGame, type RecordedMatchTag,
 } from './accounts.ts';
 import { getMatch, sanitizeMatchLink } from './match-store.ts';
-import { MIN_GAME_ACTIONS, summarizeGame, type GameRecord } from './stats.ts';
+import { MIN_GAME_ACTIONS, summarizeGame, type GameRecord, type GameSummary } from './stats.ts';
+import { summarizeOffThread } from './summarize-worker.ts';
 import { concessionWeight, sanitizeConcession, type Concession } from './concession.ts';
 import { singleCardsOf } from './cardladder.ts';
 import { sanitizeCustomRules, STANDARD_RULES, type CustomRules } from '../ui/customrules.ts';
@@ -84,6 +85,20 @@ export interface ImportOptions {
   aliases?: Map<string, string>;
   /** re-summarize even when the saved file has not changed since last time */
   force?: boolean;
+  /** CT-533: the summary, already worked out (in the worker) from exactly
+   * `summaryInput(raw, code, playedAt, opts)` — importGame does not replay */
+  summary?: GameSummary;
+}
+
+/** What importGame summarizes: the saved room under the names it is recorded as. */
+function summaryInput(raw: SavedRoom, code: string, playedAt: string, opts: ImportOptions): GameRecord & { names: [string, string] } {
+  const alias = (name: string): string =>
+    opts.aliases?.get(name.trim().toLowerCase()) ?? name;
+  const names: [string, string] = [
+    alias(raw.names?.[0] ?? 'Player 1'),
+    alias(raw.names?.[1] ?? 'Player 2'),
+  ];
+  return { ...raw, code, names, playedAt };
 }
 
 export interface ImportedRow {
@@ -98,13 +113,9 @@ export interface ImportedRow {
  * history and doing it per game would be quadratic.
  */
 export function importGame(raw: SavedRoom, code: string, playedAt: string, opts: ImportOptions = {}): ImportedRow {
-  const alias = (name: string): string =>
-    opts.aliases?.get(name.trim().toLowerCase()) ?? name;
-  const names: [string, string] = [
-    alias(raw.names?.[0] ?? 'Player 1'),
-    alias(raw.names?.[1] ?? 'Player 2'),
-  ];
-  const summary = summarizeGame({ ...raw, code, names, playedAt });
+  const input = summaryInput(raw, code, playedAt, opts);
+  const names = input.names;
+  const summary = opts.summary ?? summarizeGame(input);
   const previous = gameHistory().find(g => g.code === code);
   const game: RecordedGame = {
     code,
@@ -191,13 +202,8 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
   return { code, game, isNew };
 }
 
-/**
- * Record one game straight from a live room (the game just ended), rather than
- * from its file on disk. Same path as the directory sync — summarize, stash,
- * rebuild — so a game recorded live and the same game re-imported later come
- * out identical.
- */
-export function recordLiveGame(room: {
+/** The live room's fields recordLiveGame reads (rooms.ts Room has them all). */
+export type LiveRoom = {
   code: string; seed: number; mode: GameRecord['mode']; els: GameRecord['els'];
   names: [string, string]; users: [string | null, string | null];
   winner?: GameRecord['winner'];
@@ -223,48 +229,84 @@ export function recordLiveGame(room: {
   /** docs/22 §2.3: a CC game's rules (the summary deals them) and its match link */
   rules?: unknown;
   match?: unknown;
-}): ImportedRow {
-  const row = importGame(
-    {
-      seed: room.seed, mode: room.mode, els: room.els, names: room.names,
-      actions: room.actions, decks: room.decks, users: room.users,
-      // constructed: which saved deck each seat brought (collection.ts)
-      deckIds: room.deckIds,
-      // CR D8.4: carried so the replay inside summarizeGame deals the same board
-      // the game was played on. (A scenario room is normally filtered out
-      // before it gets here — see the guard in syncGamesDir and main.ts's
-      // recordFinishedGame — but a record that reaches the fold must still
-      // describe the game that happened.)
-      scenario: room.scenario,
-      // the room stamped this when the game was decided — do not re-derive it
-      winner: room.winner,
-      // BL-37: measured, never derived — see Room.matchMs
-      matchMs: room.matchMs,
-      // BL-02: stamped by the matchmaker at room creation — see Room.rated
-      rated: room.rated,
-      // CR D8.5: stamped by applyToRoom when the concede landed — see Room.concession
-      concession: room.concession,
-      // BL-43: the deal this game was dealt from, and the rules it was chosen as
-      ...(room.custom ? { custom: room.custom } : {}),
-      // CR D8.2e: the tag, so a live-recorded duel reaches the card ladder at once
-      ...(room.single ? { single: true } : {}),
-      // BL-46: the tag, so a live-recorded fixed game carries it at once
-      ...(room.amendments?.length ? { amendments: room.amendments } : {}),
-      // BL-48: and the disputes, in case one lands before the record does
-      ...(room.disputes?.length ? { disputes: room.disputes } : {}),
-      // docs/22: a CC game is summarized from the deal it was played with, and
-      // tagged with its match — exactly what its file would say on a re-import
-      ...(room.rules ? { rules: room.rules } : {}),
-      ...(room.match ? { match: room.match } : {}),
-    } as SavedRoom,
-    room.code,
-    new Date().toISOString(),
-  );
+};
+
+/** The live room as the saved room it would be re-imported from. A SNAPSHOT:
+ * the log and the seats are copied, so a record that lands later (CT-533)
+ * describes the game as it was decided, exactly as the synchronous record did. */
+function liveSavedRoom(room: LiveRoom): SavedRoom {
+  return {
+    seed: room.seed, mode: room.mode, els: room.els, names: room.names,
+    actions: [...room.actions], decks: room.decks, users: [...room.users] as [string | null, string | null],
+    // constructed: which saved deck each seat brought (collection.ts)
+    deckIds: room.deckIds,
+    // CR D8.4: carried so the replay inside summarizeGame deals the same board
+    // the game was played on. (A scenario room is normally filtered out
+    // before it gets here — see the guard in syncGamesDir and main.ts's
+    // recordFinishedGame — but a record that reaches the fold must still
+    // describe the game that happened.)
+    scenario: room.scenario,
+    // the room stamped this when the game was decided — do not re-derive it
+    winner: room.winner,
+    // BL-37: measured, never derived — see Room.matchMs
+    matchMs: room.matchMs,
+    // BL-02: stamped by the matchmaker at room creation — see Room.rated
+    rated: room.rated,
+    // CR D8.5: stamped by applyToRoom when the concede landed — see Room.concession
+    concession: room.concession,
+    // BL-43: the deal this game was dealt from, and the rules it was chosen as
+    ...(room.custom ? { custom: room.custom } : {}),
+    // CR D8.2e: the tag, so a live-recorded duel reaches the card ladder at once
+    ...(room.single ? { single: true } : {}),
+    // BL-46: the tag, so a live-recorded fixed game carries it at once
+    ...(room.amendments?.length ? { amendments: [...room.amendments] } : {}),
+    // BL-48: and the disputes, in case one lands before the record does
+    ...(room.disputes?.length ? { disputes: [...room.disputes] } : {}),
+    // docs/22: a CC game is summarized from the deal it was played with, and
+    // tagged with its match — exactly what its file would say on a re-import
+    ...(room.rules ? { rules: room.rules } : {}),
+    ...(room.match ? { match: room.match } : {}),
+  } as SavedRoom;
+}
+
+/** stash the row and refold: the half of a live record that is not the replay */
+function landLiveRecord(raw: SavedRoom, code: string, playedAt: string, summary?: GameSummary): ImportedRow {
+  const row = importGame(raw, code, playedAt, summary ? { summary } : {});
   // BL-28: no name sweep here. It ran after EVERY finished game and bound a
   // signed-out seat to whichever account owned the name typed into it.
   rebuildProfiles();
   saveAccounts();
   return row;
+}
+
+/**
+ * Record one game straight from a live room (the game just ended), rather than
+ * from its file on disk. Same path as the directory sync — summarize, stash,
+ * rebuild — so a game recorded live and the same game re-imported later come
+ * out identical.
+ */
+export function recordLiveGame(room: LiveRoom): ImportedRow {
+  return landLiveRecord(liveSavedRoom(room), room.code, new Date().toISOString());
+}
+
+/**
+ * CT-533: recordLiveGame with the replay in a worker (summarize-worker.ts), so
+ * the server keeps serving every other room meanwhile. The room is read NOW,
+ * as the synchronous record read it; the row is stashed and the profiles
+ * refolded when the summary lands, on the main thread, in one synchronous
+ * step that `beforeLanding` runs just ahead of (main.ts snapshots each seat's
+ * achievements there, so what this game unlocked is measured against the
+ * profile as it stood the moment before THIS record, not when the game
+ * ended). Never rejects for the worker's sake (it falls back to the main
+ * thread); importGame's own errors reject, as recordLiveGame's throw.
+ */
+export async function recordLiveGameOffThread(room: LiveRoom, beforeLanding?: () => void): Promise<ImportedRow> {
+  const raw = liveSavedRoom(room);
+  const code = room.code;
+  const playedAt = new Date().toISOString();
+  const summary = await summarizeOffThread(summaryInput(raw, code, playedAt, {}));
+  beforeLanding?.();
+  return landLiveRecord(raw, code, playedAt, summary);
 }
 
 export interface SyncReport {

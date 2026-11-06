@@ -110,5 +110,7 @@ test('§4 main.ts builds the post-game screen only from the kept row', () => {
   const calls = [...MAIN.matchAll(/summarizeRoom\(room\)/g)].map(m => MAIN.slice(Math.max(0, m.index! - 40), m.index! + 20));
   assert.deepEqual(calls.length, 1, 'summarizeRoom is called from exactly one place');
   assert.match(calls[0]!, /postgameRow\(room, \(\) => summarizeRoom\(room\)\)/, 'and that place is the kept row');
-  assert.match(MAIN, /keepPostgameRow\(room, row\.game\)/, 'recordFinishedGame keeps the live record\'s row');
+  // CT-533: with the stamp of the room as it was decided, when the record was
+  // summarized off the main thread and landed later (server test 1155)
+  assert.match(MAIN, /keepPostgameRow\(room, row\.game, asOf\)/, 'recordFinishedGame keeps the live record\'s row');
 });

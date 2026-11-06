@@ -117,8 +117,8 @@ import {
   OFFER_MS, pairable, pairUp, queueCounts, queued, bandFor,
   type Offer, type QueueEntry,
 } from './queue.ts';
-import { matchLengths, recordLiveGame, syncGamesDir } from './history.ts';
-import { keepPostgameRow, postgameRow } from './postgame-row.ts';
+import { matchLengths, recordLiveGame, recordLiveGameOffThread, syncGamesDir } from './history.ts';
+import { keepPostgameRow, postgameRow, postgameStamp, type PostgameStamp } from './postgame-row.ts';
 import { concessionWeight } from './concession.ts';
 import { gameElements, gameSides, summarizeGame } from './stats.ts';
 import { gamesDir, issuesFile, reportRunsFile, verdictsFile } from './statepaths.ts';
@@ -1977,6 +1977,22 @@ function pushView(room: Room, seat: Seat): void {
   sendUpdate(room, seat, []);
 }
 
+/** CT-533: from this many actions a finished game is summarized for its
+ * record in a worker (summarize-worker.ts) rather than on the event loop.
+ * Every real game is past it (the saved games on the home box ran 113 to 600
+ * actions, ~0.2-0.3 s each to replay there, MCHQ ~23 s); the scripted games
+ * of the server's own tests mostly are not, so they keep the synchronous
+ * record they were written against. ALGO_RECORD_OFF_THREAD_FROM=0 sends
+ * every game to the worker (server test 1155). */
+const RECORD_OFF_THREAD_FROM = ((): number => {
+  const n = Number(process.env['ALGO_RECORD_OFF_THREAD_FROM']);
+  return process.env['ALGO_RECORD_OFF_THREAD_FROM'] !== undefined && Number.isFinite(n) && n >= 0 ? n : 100;
+})();
+/** finished rooms whose record is still being summarized in the worker: their
+ * post-game screen goes out when it lands, to whoever is seated then, and a
+ * rejoin meanwhile does not replay the game a second time on the event loop */
+const recordPending = new WeakSet<Room>();
+
 /**
  * The game just ended: fold it into both players' stats and tell them what it
  * unlocked.
@@ -2021,11 +2037,34 @@ function recordFinishedGame(room: Room): void {
       console.error(`[league] could not record ${room.code} for ${room.league.match}:`, err);
     }
   }
-  const before = new Map<string, Set<string>>();
-  for (const id of room.users) {
-    const a = accountById(id);
-    if (a) before.set(a.id, new Set(Object.keys(a.achievements)));
+  // CT-533: a real game's record replays it (stats.ts summarizeGame): seconds
+  // on a crowded board, with every other room on the server waiting. From
+  // RECORD_OFF_THREAD_FROM actions on, the replay runs in a worker and the
+  // post-game screen goes out when it lands; a shorter game (a scripted test
+  // game, an early concede) is cheap and is recorded here and now, as before.
+  if (room.actions.length >= RECORD_OFF_THREAD_FROM) {
+    const asOf = postgameStamp(room);
+    let before: Map<string, Set<string>> | undefined;
+    recordPending.add(room);
+    recordLiveGameOffThread(room, () => { before = achievementsOf(room); })
+      .catch((err: unknown) => {
+        console.error(`[accounts] could not record ${room.code}:`, err);
+        return undefined;
+      })
+      .then(row => {
+        recordPending.delete(room);
+        // a game taken back out of its ending meanwhile gets no post-game screen
+        // over its live board (its record still stands, as it always did)
+        if (decidedWinner(room) === null) {
+          if (row) keepPostgameRow(room, row.game, asOf);
+          return;
+        }
+        gameRecorded(room, before ?? achievementsOf(room), row, asOf);
+      })
+      .catch((err: unknown) => console.error(`[accounts] ${room.code}: could not send the post-game screen:`, err));
+    return;
   }
+  const before = achievementsOf(room);
   let row;
   try {
     row = recordLiveGame(room);
@@ -2034,10 +2073,28 @@ function recordFinishedGame(room: Room): void {
     // the post-game screen below
     console.error(`[accounts] could not record ${room.code}:`, err);
   }
+  gameRecorded(room, before, row, postgameStamp(room));
+}
+
+/** each signed-in seat's achievements as they stand now */
+function achievementsOf(room: Room): Map<string, Set<string>> {
+  const before = new Map<string, Set<string>>();
+  for (const id of room.users) {
+    const a = accountById(id);
+    if (a) before.set(a.id, new Set(Object.keys(a.achievements)));
+  }
+  return before;
+}
+
+/** The record is in (or failed: `row` undefined): keep its row for the
+ * post-game screen and send the screen to both seats, with what this game
+ * unlocked — the achievements that are new since `before`. */
+function gameRecorded(room: Room, before: Map<string, Set<string>>,
+  row: ReturnType<typeof recordLiveGame> | undefined, asOf: PostgameStamp): void {
   if (row) {
     // CT-530: the post-game screen (now, and on every rejoin) reads this row
     // rather than replaying the game again
-    keepPostgameRow(room, row.game);
+    keepPostgameRow(room, row.game, asOf);
     console.log(`[accounts] recorded ${room.code}: ${row.game.names.join(' vs ')}, ` +
       `${row.game.finished ? `${row.game.names[row.game.winner ?? 0]} won` : 'unfinished'}`);
   }
@@ -2830,7 +2887,9 @@ wss.on('connection', ws => {
       if (account) send(ws, { t: 'me', me: privateView(account, isOnline) });
       // rejoining a game that is already over: the post-game screen is the
       // screen for that room now, so send it rather than a dead board
-      if (!roomWaiting(room) && decidedWinner(room) !== null) {
+      // (CT-533: unless its record is still being summarized in the worker —
+      // it goes out to this seat when the record lands)
+      if (!roomWaiting(room) && decidedWinner(room) !== null && !recordPending.has(room)) {
         sendGameOver(room, seat, { row: null, unlocked: [], account });
       }
       // let the other seat know a peer arrived (fresh view refreshes presence;

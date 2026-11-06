@@ -30,9 +30,19 @@ function keyOf(room: Summarized): string {
   return JSON.stringify([room.actions.length, room.winner, room.concession ?? null, room.amendments.length, room.users]);
 }
 
-/** Remember `row` as the summary of `room` as it stands now (the live record's row). */
-export function keepPostgameRow(room: Summarized, row: RecordedGame): void {
-  KEPT.set(room, { actions: room.actions, key: keyOf(room), row });
+/** What a summary of `room` as it stands now would be keyed on. CT-533: a
+ * record summarized off the main thread takes this when the game is decided
+ * and keeps its row against it when the row lands, so a room that changed in
+ * between (an agreed fix, a rewind) is not handed a row from before. */
+export type PostgameStamp = Pick<Kept, 'actions' | 'key'>;
+export function postgameStamp(room: Summarized): PostgameStamp {
+  return { actions: room.actions, key: keyOf(room) };
+}
+
+/** Remember `row` as the summary of `room` as it stood at `asOf` (default:
+ * now) — the live record's row. */
+export function keepPostgameRow(room: Summarized, row: RecordedGame, asOf: PostgameStamp = postgameStamp(room)): void {
+  KEPT.set(room, { ...asOf, row });
 }
 
 /** The kept row while it still describes `room`; otherwise `summarize()`, kept. */
