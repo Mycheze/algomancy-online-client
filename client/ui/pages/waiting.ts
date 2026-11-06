@@ -98,8 +98,10 @@ export function constructedWaitingView(net: WaitingNet, error: string): Construc
  * starts the moment both seats have brought a deck. Pure.
  *
  * A constructed LEAGUE match (owner, 2026-11-01): a deck for this game, any
- * deck. Both seats are bound, so there is no code to share — the draft league
- * lobby says the same (ui/lobby.ts).
+ * deck. Both seats are bound, so there is no code to share, and nothing to
+ * explain: the owner had the room's explanatory lines removed (report #329) —
+ * the seat rows already say who is here and whose deck is in. The draft league
+ * lobby is the same (ui/lobby.ts).
  *
  * Same furniture as the draft lobby (ui/lobby.ts): it is the same moment in
  * the same room, and the two screens looking different made it read as two
@@ -108,13 +110,10 @@ export function constructedWaitingHtml(v: ConstructedWaitingView): string {
   const oppLine = v.oppHere ? 'connected — still choosing a deck…' : 'not here yet';
   return roomFrameHtml({
     page: 'lobbypage', kind: v.league ? 'League match' : 'Constructed', room: v.room, chrome: v.chrome,
-    cardHtml: roomSection(v.league
-      ? (v.oppHere ? '' : '<p class="hint lobbywait">Waiting for your opponent. They join from their own League page — tell them on Discord you are here.</p>')
-      : shareBar('Send your opponent the room code', v.room, v.link))
+    cardHtml: roomSection(v.league ? '' : shareBar('Send your opponent the room code', v.room, v.link))
       + roomSection(v.league ? '' : v.friends)
       + roomSection(v.mineIn ? '' : `<div class="lobbypanel deckpicker">
-      ${settingRow({ label: `Your deck${v.league ? ' for this game' : ''}`, controlHtml: deckPickerHtml(v.deckPicker),
-        hintHtml: v.league ? 'Any deck. Keep it or change it every game.' : '' })}
+      ${settingRow({ label: `Your deck${v.league ? ' for this game' : ''}`, controlHtml: deckPickerHtml(v.deckPicker) })}
       <button class="cta primary" data-btn="deckjoin" ${v.deck ? '' : 'disabled'}>Play this deck</button>
     </div>`)
       + roomSection(`<div class="lobbyfoot">
@@ -129,7 +128,6 @@ export function constructedWaitingHtml(v: ConstructedWaitingView): string {
       </div>
     </div>`, 'roomsec--foot')
       + roomSection(v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''),
-    footHtml: '<p class="homefoot">Deals when both decks are in.</p>',
   });
 }
 

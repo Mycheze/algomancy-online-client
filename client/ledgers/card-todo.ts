@@ -183,16 +183,6 @@ const OPEN: TodoEntry[] = [
   //    closed, in card-todo-closed.ts; 503 was the corpus rebuild, done at
   //    landing in 3b7c7be6, and 505..507 were never used
   // ── the report triage of 2026-11-06 ────────────────────────────────────
-  {
-    id: 531, area: "client", severity: "minor",
-    title: "the league match waiting room carries three explanatory lines the owner wants gone",
-    detail: "Owner report #329 (page lobby, 2026-11-06): \"I don't like the redundant AI like text on the 'join a match' page. 'Deals when both decks are in.' can go and so can 'They join from their own League page — tell them on Discord you are here.' and 'Any deck. Keep it or change it every game.' as well. Just remove it.\" All three are in ui/pages/waiting.ts constructedWaitingHtml, the constructed (league) match room: the foot line \"Deals when both decks are in.\" (every constructed room), the deck row's hint \"Any deck. Keep it or change it every game.\" (league only), and the waiting hint \"Waiting for your opponent. They join from their own League page — tell them on Discord you are here.\" (league, opponent absent). The same waiting sentence is also printed by ui/pages/lobby.ts lobbyHtml for a random (league) live draft, and ui test 971 asserts it there (\"tell them on Discord you are here\").",
-    evidence: "Report #329 (mycheze, owner, 2026-11-06T08:08Z, kind ux, minor); the strings found by grep at 7daed329.",
-    fix: "Delete the three strings from constructedWaitingHtml (keep \"Waiting for your opponent.\" only if the hint would otherwise leave the room with no sign it is waiting — the seat row already says \"not here yet\"), drop the same League-page sentence from lobby.ts's league draft lobby, and move 971's assertion to their absence. Page test only; no flow changes.",
-    proof: () => still('ui/pages/waiting.ts', 'Deals when both decks are in.', 'tell them on Discord you are here', 'Keep it or change it every game.'),
-    reportId: 329,
-    status: 'open',
-  },
   // ── the report triage of 2026-11-07 ────────────────────────────────────
   {
     id: 534, area: "engine", severity: "major",

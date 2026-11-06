@@ -79,10 +79,17 @@ test('961 §3 a constructed league match: nothing to share, any deck', () => {
   const html = constructedWaitingHtml(cview({ league: true, friends: '' }));
   assert.match(html, /League match<small>room/);
   assert.doesNotMatch(html, /data-btn="copylink"/, 'both seats are bound: no code to share');
-  assert.match(html, /Waiting for your opponent\. They join from their own League page/);
   assert.match(html, /Your deck for this game/);
-  assert.doesNotMatch(constructedWaitingHtml(cview({ league: true, oppHere: true })), /lobbywait/,
-    'the waiting line goes when they arrive');
+  assert.match(html, /Bo — <span class="dim">not here yet/, 'the seat row says they are not here');
+});
+
+test('961 §3b the owner removed the waiting room explanatory lines (report #329): no League-page sentence, no deck hint, no deal footnote', () => {
+  for (const v of [cview({ league: true }), cview({ league: true, oppHere: true }), cview(), cview({ oppHere: true })]) {
+    const html = constructedWaitingHtml(v);
+    assert.doesNotMatch(html, /own League page|tell them on Discord|lobbywait/);
+    assert.doesNotMatch(html, /Keep it or change it every game/);
+    assert.doesNotMatch(html, /Deals when both decks are in/);
+  }
 });
 
 test('961 §4 a Single Card Duel room: the card picker, the draw, and a blind opponent', () => {
