@@ -6779,13 +6779,13 @@
     "detail": [
      {
       "element": "fire",
-      "margin": 0.241,
+      "margin": 0.242,
       "score": 0.961
      },
      {
       "element": "dark",
-      "margin": 0.226,
-      "score": 0.954
+      "margin": 0.223,
+      "score": 0.95
      }
     ],
     "pips": "dr"
@@ -6796,7 +6796,7 @@
    },
    "typeAugment": {
     "read": false,
-    "score": 0.34930703043937683
+    "score": 0.34598249197006226
    }
   },
   "Mindspore Fiend": {
@@ -11612,7 +11612,7 @@
     "detail": [
      {
       "element": "fire",
-      "margin": 0.245,
+      "margin": 0.244,
       "score": 0.957
      },
      {
@@ -11629,7 +11629,7 @@
    },
    "typeAugment": {
     "read": false,
-    "score": 0.3057011663913727
+    "score": 0.3014077842235565
    }
   },
   "Towering Colossus": {
@@ -12863,6 +12863,6 @@
   "agree": 322,
   "of": 322
  },
- "generated": "2026-10-18",
+ "generated": "2026-11-06",
  "generator": "bot/pipeline/read_card_faces.py"
 }

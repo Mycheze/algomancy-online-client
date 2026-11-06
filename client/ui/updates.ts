@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-06', kind: 'change', text: 'Mindburn\'s card picture is now its new printing, with the new art and the new text on the card itself.' },
   { date: '2026-11-06', kind: 'change', text: 'Mindburn now has its new text: each player sacrifices a nontoken unit, gains a rot or discards a card, X times. Gaining a rot is always an option, so nobody runs out of choices.' },
   { date: '2026-11-06', kind: 'new', text: 'Four or more identical units in one region, like a crowd of Robots, now stand as one overlapping stack with a count on it. Hover the stack, or tap its count, to fan them all out.' },
   { date: '2026-11-06', kind: 'fix', text: 'During a battle, when the board is short on room, your opponent\'s units no longer spread far apart across the screen, and the last of them no longer slips out of sight. They stand side by side, overlapping only when there are too many.' },

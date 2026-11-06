@@ -1,10 +1,10 @@
 {
  "_generated_by": "bot/pipeline/classify_complexity.py — never hand-edit",
  "_what": "the oracle file's `complexity` placeholders, read off the type-bar icon on each scan: silver = Simple, gold = Complex. `from` is the upstream value the entry replaces; the extractor refuses the entry if upstream no longer says that.",
- "generated": "2026-09-05",
+ "generated": "2026-11-06",
  "calibration": {
-  "agree": 371,
-  "known": 371,
+  "agree": 373,
+  "known": 373,
   "disagree": []
  },
  "cards": {
@@ -221,7 +221,7 @@
   "Feed to Hooba": {
    "from": "Common",
    "to": "Simple",
-   "score": 0.973,
+   "score": 0.998,
    "warmth": 0.0
   },
   "Fester": {
@@ -275,7 +275,7 @@
   "Greed Angel": {
    "from": "Common",
    "to": "Simple",
-   "score": 0.992,
+   "score": 0.993,
    "warmth": 0.0
   },
   "Gridxlan": {
@@ -419,8 +419,8 @@
   "Mindburn": {
    "from": "Common",
    "to": "Simple",
-   "score": 0.991,
-   "warmth": 2.5
+   "score": 0.951,
+   "warmth": 2.8
   },
   "Muck Rummager": {
    "from": "Common",
@@ -527,7 +527,7 @@
   "Proph": {
    "from": "Common",
    "to": "Simple",
-   "score": 0.962,
+   "score": 0.988,
    "warmth": 0.0
   },
   "Reality Siphoner": {
@@ -587,8 +587,8 @@
   "Sarcophage": {
    "from": "Common",
    "to": "Complex",
-   "score": 0.832,
-   "warmth": 94.8
+   "score": 0.831,
+   "warmth": 104.0
   },
   "Scholar of the Void": {
    "from": "Common",
@@ -707,7 +707,7 @@
   "Tithe Enforcer": {
    "from": "Common",
    "to": "Simple",
-   "score": 0.957,
+   "score": 0.958,
    "warmth": 0.0
   },
   "Trench Stalker": {
