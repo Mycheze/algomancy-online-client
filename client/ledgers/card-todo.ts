@@ -249,16 +249,6 @@ const OPEN: TodoEntry[] = [
     verify: "On an iPad, open a deck on the tabletop and drag a card onto the sideboard pile and back.",
     status: 'open',
   },
-  {
-    id: 522, area: "client", severity: "minor",
-    title: "[[Card Name]] in a deck description is not a card link",
-    detail: "A description written with the common [[Card Name]] convention shows the brackets around the name. The description's card links come from ui/cardlinks.ts, which links names written plainly; master did the same before BL-65, so this is not a regression.",
-    evidence: "BL-65 W3 screenshot of a shared deck (var/records/bl65/shots/W3/shared-deck-1440x900.png); W5a compared master f5f08c5c's renderer (handoff-W5a.md, F9).",
-    fix: "Accept [[Name]] in cardlinks as a link to Name and drop the brackets; keep plain names linking as they do.",
-    proof: null,
-    verify: "Write [[Bumblecrab]] in a description: does it show as a link with no brackets?",
-    status: 'open',
-  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

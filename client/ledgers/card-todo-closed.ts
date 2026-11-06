@@ -14670,4 +14670,19 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-05 (steward). Root cause: fireEvent kept an already disposed batch member listening (deathBatch) but read its mods through entity(modId), and destroy deletes a body's mod entities with it; the batch already kept them (deathBatchMods, CT-351's snapshot for Ancient One) and nothing on the listener path read them. Two sites had that shape and both now read entityOrBatchMate: the augment-mod sweep in fireEvent (Refuse Reclaimer carried as an augment, destroyed first, now triggers on the member after it) and graftsJoining (a Forager of the Fallen destroyed first in a batch with an enemy unit lost its grafted Metamorphic Luminary's Crystal; it now joins). Reproduced before the fix (0 triggers host-first, 1 host-last); mutations: reverting either lookup turns its 1146 test red.",
     status: 'done',
   },
+  {
+    id: 522, area: "client", severity: "minor",
+    title: "[[Card Name]] in a deck description is not a card link",
+    detail: "A description written with the common [[Card Name]] convention shows the brackets around the name. The description's card links come from ui/cardlinks.ts, which links names written plainly; master did the same before BL-65, so this is not a regression.",
+    evidence: "BL-65 W3 screenshot of a shared deck (var/records/bl65/shots/W3/shared-deck-1440x900.png); W5a compared master f5f08c5c's renderer (handoff-W5a.md, F9).",
+    fix: "Accept [[Name]] in cardlinks as a link to Name and drop the brackets; keep plain names linking as they do.",
+    proof: null,
+    verify: "Write [[Bumblecrab]] in a description: does it show as a link with no brackets?",
+    guards: [
+      '213-cardlinks.test.ts::[[Card Name]] is a link to the card, and the double brackets are consumed',
+      '213-cardlinks.test.ts::descSummary reads [[Card Name]] as the name, without its brackets',
+    ],
+    closed: "FIXED 2026-11-06 (steward). cardLinker knew two forms, a bare name and [Text](Name); [[Name]] matched neither, so the bare-name pass linked the name inside the brackets and both pairs printed. The matcher now tries [[Name]] first and resolves it exactly like the explicit form (rowFor, any class, so the glossary-word names like Battle link too; the index's spelling is shown; an unknown name stays literal, brackets and all). descSummary, the metagame list's one-line snippet, strips it to the name as well. Those are the only two readers of description syntax (pages/decks.ts's two renderers both go through cardLinker). Mutations: dropping the matcher alternative turned the 213 link test red, dropping the descSummary line turned its 213 test red.",
+    status: 'done',
+  },
 ];

@@ -46,6 +46,11 @@ import { esc } from './util.ts';
  * its own alternative so it wins wherever it appears. */
 const EXPLICIT = String.raw`\[([^\]\n]*)\]\(([^)\n]+)\)`;
 
+/** `[[Actual Card Name]]` — the wiki and forum convention, which writers use
+ * without being told (CT-522: a shared deck showed "[[" and "]]" around a
+ * bare-linked name). The same resolution as the explicit form, text = name. */
+const DOUBLE = String.raw`\[\[([^\[\]\n]+)\]\]`;
+
 const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** the one-word names that must not auto-link, derived from the glossary */
@@ -83,7 +88,7 @@ function matcher(): RegExp {
   // apostrophe or a hyphen, and \b around "Hooba-Bot" would match inside
   // "Hooba-Bots". Letters and digits on either side veto the match; punctuation
   // and whitespace do not.
-  MATCHER = new RegExp(`${EXPLICIT}|(?<![A-Za-z0-9])(?:${names})(?![A-Za-z0-9])`, 'g');
+  MATCHER = new RegExp(`${DOUBLE}|${EXPLICIT}|(?<![A-Za-z0-9])(?:${names})(?![A-Za-z0-9])`, 'g');
   return MATCHER;
 }
 
@@ -138,8 +143,12 @@ export function cardLinker(opts: LinkOpts = {}): (s: string) => string {
       // EVERY character outside a match goes through esc, here and only here
       out += esc(src.slice(at, m.index));
       at = m.index + m[0].length;
-      const [whole, text, target] = m;
-      if (target !== undefined) {
+      const [whole, named, text, target] = m;
+      if (named !== undefined) {
+        // [[Name]]: any name the index knows, shown as the index spells it
+        const row = rowFor(named.trim());
+        out += row ? link(row.name, row.name, opts) : esc(whole);
+      } else if (target !== undefined) {
         // the explicit form: any name the index knows, of any class
         const row = rowFor(target.trim());
         out += row ? link(row.name, text ?? '', opts) : esc(whole);
@@ -196,6 +205,7 @@ export function descSummary(src: string, budget = 150): string {
     .replace(/^\s{0,6}[-*+]\s+/gm, '')           // bullets
     .replace(/^\s{0,6}\d{1,3}[.)]\s+/gm, '')     // ordered items
     .replace(/^\s{0,3}>\s?/gm, '')               // quote marks
+    .replace(/\[\[([^[\]\n]+)\]\]/g, (_, name: string) => name.trim())   // [[Card Name]]
     .replace(/\[([^\]\n]*)\]\(([^)\n]+)\)/g, (_, text: string, target: string) =>
       // an explicit card link reads as its TEXT, or as the card when the text
       // is empty — which is what a reader of the rendered version would see

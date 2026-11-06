@@ -45,6 +45,28 @@ test('an unresolvable target is left as literal text, not a link', () => {
   assert.match(out, /\[this\]\(Not A Real Card At All\)/);
 });
 
+test('[[Card Name]] is a link to the card, and the double brackets are consumed', () => {
+  // CT-522: the common wiki/forum convention showed its brackets around a
+  // bare-linked name, "[[<a>Name</a>]]"
+  const out = linkify(`open on [[${CARD}]], then pass`);
+  assert.match(out, new RegExp(`^open on <a class="cardlink" data-prev="${CARD}">${CARD}</a>, then pass$`));
+  assert.doesNotMatch(out, /[[\]]/, 'no bracket survives');
+  // it reaches the one-word names that never auto-link, like the explicit form
+  const terms = new Set(GLOSSARY.map(g => g.term.toLowerCase()));
+  const word = allRows().find(r => r.playable && r.cls === 'card' && !r.name.includes(' ')
+    && terms.has(r.name.toLowerCase()))!.name;
+  assert.match(linkify(`[[${word}]]`), new RegExp(`^<a class="cardlink" data-prev="${word}">${word}</a>$`));
+  // spaces inside the brackets are forgiven
+  assert.match(linkify(`[[ ${CARD} ]]`), new RegExp(`^<a [^>]*>${CARD}</a>$`));
+});
+
+test('an unknown [[name]] stays literal text, brackets and all', () => {
+  const out = linkify('see [[Not A Real Card At All]] and [[<img onerror=x>]]');
+  assert.doesNotMatch(out, /<a/);
+  assert.match(out, /\[\[Not A Real Card At All\]\]/);
+  assert.doesNotMatch(out, /[<>]/, 'and nothing in it escapes into markup');
+});
+
 test('the focus button is opt-in, and hovering never needs it', () => {
   assert.doesNotMatch(linkify(CARD), /data-btn/);
   assert.match(withBtn(CARD), /data-btn="deck-focus"/);
@@ -115,6 +137,7 @@ test('THE SWEEP: only <a>, and only the four attributes, ever come out', () => {
     `${CARD} is the whole deck. [Also good](${CARD}).`,
     '<b onclick="x">no</b> [a](Nope) & <a href="javascript:1">z</a>',
     `[${CARD}](${CARD}) [](${CARD}) [x](  ${CARD}  )`,
+    `[[${CARD}]] [[ ${CARD} ]] [[Nope]] [[" onclick="x]] [[${CARD}](${CARD})`,
     'plain prose with no cards in it at all',
   ];
   for (const src of sources) {
@@ -180,6 +203,10 @@ test('descSummary is prose, not markdown, and never markup', () => {
 
 test('descSummary keeps the card name when the link text is empty', () => {
   assert.match(descSummary(`play [](${CARD}) early`), new RegExp(CARD.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+});
+
+test('descSummary reads [[Card Name]] as the name, without its brackets', () => {
+  assert.equal(descSummary(`play [[${CARD}]] early`), `play ${CARD} early`);
 });
 
 test('descSummary respects the budget', () => {
