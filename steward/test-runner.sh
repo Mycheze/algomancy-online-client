@@ -34,7 +34,7 @@ setup() {
   # MASTER's steward/ — land a runner change first (it is inert until the timer is on)
   git -C "$T/repo" fetch -q origin && git -C "$T/repo" checkout -q --detach origin/master
   # deps(): pre-agree the lockfile hash so the test never npm-cis into the shared node_modules
-  (cd "$T/repo" && cat client/engine/package-lock.json client/server/package-lock.json bot/requirements.txt | sha1sum | cut -c1-12) > "$T/state/.deps"
+  (cd "$T/repo" && cat client/engine/package-lock.json client/server/package-lock.json bot/requirements.txt bot/pipeline/requirements.txt | sha1sum | cut -c1-12) > "$T/state/.deps"
   local h; h=$(( 10#$(TZ=Europe/Prague date +%H) ))
   cat > "$T/env" <<EOF
 STEWARD_MODE=dry
@@ -43,6 +43,7 @@ STEWARD_WINDOW=$(printf %02d $h)-$(printf %02d $(( (h + 3) % 24 )))
 STEWARD_CLAUDE_BIN=$T/bin/claude-stub
 STEWARD_GATE_CMD=\${STUB_GATE:-true}
 STEWARD_FETCH_CMD=\${STUB_FETCH:-true}
+STEWARD_SUMMARY_HOUR=24
 EOF
   cat > "$T/bin/claude-stub" <<'EOF'
 #!/usr/bin/env bash
@@ -50,7 +51,7 @@ EOF
 S="$STEWARD_STATE"; first=$(head -1 "$S/queue.txt")
 # sweep: take the first item that is NOT triage (the fetched rows are not this item's)
 [ "$STUB_SCENARIO" = sweep ] && first=$(grep -v '^triage' "$S/queue.txt" | head -1)
-id=$(awk '{print ($1=="report"||$1=="repair"||$1=="resume"||$1=="inbox")?$2:$1}' <<<"$first")
+id=$(awk '{print ($1=="report"||$1=="repair"||$1=="resume"||$1=="inbox"||$1=="retro")?$2:$1}' <<<"$first")
 w() { printf '{"item":"%s","outcome":"%s","title":"stub %s","summary":"stub"}' "$id" "$1" "$1" > "$S/outcome.json"; }
 case "$STUB_SCENARIO" in
   skip)        w skip ;;
@@ -157,6 +158,16 @@ if run landed-elsewhere; then # BL-68: an approved branch whose item already shi
     && ok "an approved branch whose item already shipped is archived, and its repair entry goes" || bad "landed-elsewhere: $(grep "\"item\":\"$it\"" "$T/state/journal.jsonl" | tail -1)"
   head -1 "$T/state/queue.txt" | grep -q "^repair .*$it" && bad "…but its repair was queued: $(head -1 "$T/state/queue.txt")" || ok "…and its repair is never queued"
   git -C "$T/repo" push -q origin ":refs/heads/steward-approved/$it" 2>/dev/null; rm -f "$T/state/redgate/$it.json"; fi
+if run retro; then # the daily retro: the digest is written once, offered once, and worked as an item
+  # (STEWARD_SUMMARY_HOUR=24 keeps it out of every other scenario: it would put itself first)
+  sed -i 's/^STEWARD_SUMMARY_HOUR=.*/STEWARD_SUMMARY_HOUR=0/' "$T/env"
+  [ -s "$T/state/journal.jsonl" ] || tick skip >/dev/null          # at least one run to review
+  day=$(TZ=Europe/Prague date +%F); rm -f "$T/state/retro/$day.md"
+  r=$(tick ship)
+  [ -f "$T/state/retro/$day.md" ] && grep -q '^## Runs, worst first' "$T/state/retro/$day.md" && ok "the runner writes the day's retro digest" || bad "no digest at $T/state/retro/$day.md"
+  [ "$(jq -r .item <<<"$r")" = "retro-$day" ] && [ "$(last_outcome "$r")" = dry-shipped ] && ok "…offered as an item and worked (retro-$day → dry-shipped)" || bad "retro → $r"
+  (cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs 2>/dev/null) | grep -q '^retro ' && bad "a done retro was offered again" || ok "…and once done is not offered again"
+  sed -i 's/^STEWARD_SUMMARY_HOUR=.*/STEWARD_SUMMARY_HOUR=24/' "$T/env"; fi
 if run pause; then touch "$T/state/paused"; r=$(tick skip); [ -z "$r" ] && ok "paused → nothing runs" || bad "ran while paused: $r"; rm -f "$T/state/paused"; fi
 
 # clean the dry refs this test left on origin

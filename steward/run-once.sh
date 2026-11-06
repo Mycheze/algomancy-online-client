@@ -102,7 +102,9 @@ trust() {
   mkdir -p "$REPO/.git/info"
   grep -qs 'updates.ts merge=union' "$REPO/.git/info/attributes" || echo 'client/ui/updates.ts merge=union' >> "$REPO/.git/info/attributes"
   g show origin/master:steward/policy.mjs > "$BIN/policy.mjs" || { log "cannot extract policy.mjs from origin/master"; exit 1; }
-  # the owner's channel: it decides what an owner message means, so it is judged code too
+  # the owner's channel: it decides what an owner message means, so it is judged code too.
+  # fetch-file.mjs first: discord.mjs imports it (the links he sends are downloaded on arrival)
+  g show origin/master:steward/fetch-file.mjs > "$BIN/fetch-file.mjs" 2>/dev/null || rm -f "$BIN/fetch-file.mjs"
   g show origin/master:steward/discord.mjs > "$BIN/discord.mjs" 2>/dev/null || rm -f "$BIN/discord.mjs"
 }
 
@@ -272,12 +274,14 @@ clean_tree() { # back to a pristine detached origin/master; ignored files (node_
 
 # keep deps in step with the lockfiles
 deps() {
-  local h; h=$(cat "$REPO"/client/engine/package-lock.json "$REPO"/client/server/package-lock.json "$REPO"/bot/requirements.txt | sha1sum | cut -c1-12)
+  # bot/pipeline/requirements.txt too (2026-11-06): without PyMuPDF and numpy the worker could not
+  # rebuild the bot's corpus or re-read a card scan, so a card update shipped half done
+  local h; h=$(cat "$REPO"/client/engine/package-lock.json "$REPO"/client/server/package-lock.json "$REPO"/bot/requirements.txt "$REPO"/bot/pipeline/requirements.txt | sha1sum | cut -c1-12)
   [ "$(cat "$STATE/.deps" 2>/dev/null)" = "$h" ] && return 0
   log "deps changed → npm ci / pip install"
   npm --prefix "$REPO/client/engine" ci --no-audit --no-fund >>"$LOGS/deps.log" 2>&1 \
     && npm --prefix "$REPO/client/server" ci --no-audit --no-fund >>"$LOGS/deps.log" 2>&1 \
-    && VIRTUAL_ENV="$REPO/.venv" uv pip install -q -r "$REPO/bot/requirements.txt" >>"$LOGS/deps.log" 2>&1 \
+    && VIRTUAL_ENV="$REPO/.venv" uv pip install -q -r "$REPO/bot/requirements.txt" -r "$REPO/bot/pipeline/requirements.txt" >>"$LOGS/deps.log" 2>&1 \
     && echo "$h" > "$STATE/.deps"
 }
 
@@ -443,6 +447,14 @@ work_one() {
   deps
   npm --prefix "$REPO/client/ui" run build >/dev/null 2>&1
 
+  # once a day, from the summary hour: the retro digest of the last day's runs (steward/retro.mjs,
+  # no Claude) — the queue then offers `retro <day>`, the agent's look at its own weak points
+  local today; today=$(TZ="$STEWARD_TZ" date +%F)
+  if in_hours "$((10#$STEWARD_SUMMARY_HOUR))" 24 && [ ! -f "$STATE/retro/$today.md" ]; then
+    STEWARD_STATE="$STATE" node "$REPO/steward/retro.mjs" digest --day "$today" >/dev/null 2>>"$LOGS/runner.log" \
+      && log "retro digest for $today written"
+  fi
+
   # step 0 of every round: bring the reports down (writes the snapshots in the clone)
   (cd "$REPO" && bash -c "$STEWARD_FETCH_CMD") >>"$LOGS/reports.log" 2>&1 || log "report fetch failed (see reports.log)"
   g diff --name-only -- client/ledgers/ > "$STATE/fetched.txt"
@@ -492,7 +504,7 @@ EOF
     title=$(jq -r '.title // ""' "$STATE/outcome.json"); summary=$(jq -r '.summary // ""' "$STATE/outcome.json")
   fi
   if [ -z "${item:-}" ]; then
-    item=$(awk '{print ($1=="report"||$1=="repair"||$1=="resume"||$1=="triage"||$1=="inbox") ? $2 : $1}' <<<"$first")
+    item=$(awk '{print ($1=="report"||$1=="repair"||$1=="resume"||$1=="triage"||$1=="inbox"||$1=="retro") ? $2 : $1}' <<<"$first")
     [ "${first%% *}" = triage ] && item=triage
     outcome=failed; title="(no verdict written)"; summary="claude exited $rc without an outcome.json (timeout=124)"
   fi

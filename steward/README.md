@@ -27,6 +27,8 @@ review is a few minutes of `steward/review.sh`.
 | `hold.txt` | items the steward must leave alone (committed; edit freely) |
 | `review.sh` | **the owner's end**, on the laptop |
 | `vps-fetch.sh` | the agent's one read-only window onto the live server (game files) |
+| `fetch-file.mjs` | downloads an image/PDF the owner sent — `discord.mjs` fetches every link in his messages on arrival; the agent runs it by hand for anything else (curl/wget stay denied) |
+| `retro.mjs` | the daily digest of the last day's runs, read off their own transcripts (denials, errors, loops, half-done) — the input to the `retro` item |
 | `claude-settings.json` | the agent's permissions: no push, fetch, ssh, sudo, full gate |
 | `thermal.sh` | the governor that keeps the box silent (see Install §4) |
 | `systemd/` | the user units, and the one root unit (the CPU cap) |
@@ -45,7 +47,9 @@ clipped glow, an export that dropped the sideboard) ships. In code
   `updates.ts` and `does-lines.json` excepted), or changes more than 250 lines
   of them;
 - touches `steward/`, `.claude/`, `deploy/`, `CLAUDE.md`, a `package.json` or
-  lockfile, `.gitignore`, `requirements.txt`;
+  lockfile, `.gitignore`, `requirements.txt` — except the steward skill's own
+  text (`.claude/skills/steward/`), which ships up to 150 changed lines, so the
+  daily retro can improve the instructions by itself (owner, 2026-11-06);
 - deletes a test, removes lines from an append-only file (`sets/index.ts`, the
   CR `ledger.json`), loses non-rules rows from the bot corpus (lost rulings), or
   guts a `*-closed.ts` ledger;
@@ -83,6 +87,27 @@ before it commits or gates.
 The code that judges the agent never runs from the tree it worked in:
 `policy.mjs` is extracted from `origin/master` at the start of each tick, and
 the unit copies `run-once.sh` from `origin/master` too.
+
+### The daily retro (2026-11-06)
+
+Once a day, from the summary hour, the runner writes `state/retro/<day>.md`
+(`retro.mjs`, no Claude): every run of the last day ranked by how much it
+deserves a look — permission denials, tool errors, commands run over and over,
+minutes and turns, a summary that admits stopping short, the owner's replies.
+The queue then offers `retro retro-<day>` (after the owner's own asks), and the
+agent follows the skill's §15: open the worst transcripts, name the cause, and
+fix it in the skill (ships) or in `steward/` (staged for the owner). Why: on
+2026-11-06 a card update shipped half done because the run could not download
+the new scan; its transcript listed all three denied attempts, and nothing read it.
+
+### Card updates
+
+The designer's card changes reach us as a message in #steward ("Mindburn has a
+new version", the scan attached or linked). The skill's §14 is the whole recipe
+— scan into `data/cards/`, every field read off it, the scan readers re-run,
+engine, tests, challenges, the bot's corpus, the update line — and a short
+message is the whole brief. The scan is the authority; algomancer.cc is not
+evidence (the bot's daily check against it was retired the same day).
 
 ### Rules questions
 
@@ -150,7 +175,8 @@ Done on 2026-11-03; kept here so it can be redone.
    — `github-steward` is an ssh alias in `~/.ssh/config` for the WRITE deploy
    key `~/.ssh/algomancy_steward` ("algomancy-steward" on GitHub; the box's
    other key is read-only). `npm ci` in `client/engine` and `client/server`,
-   `uv venv --python 3.14 .venv && uv pip install -r bot/requirements.txt`,
+   `uv venv --python 3.14 .venv && uv pip install -r bot/requirements.txt -r bot/pipeline/requirements.txt`
+   (the runner keeps both in step; the pipeline half is what re-reads a card scan and rebuilds the corpus),
    then `steward/review.sh sync-rulings` from the laptop (the rulings export
    is gitignored and the rules due diligence needs it).
 3. `claude setup-token` (interactive, on any machine) and put the token in

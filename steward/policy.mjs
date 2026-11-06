@@ -47,8 +47,15 @@ if (uiLines > 250) reasons.push(`${uiLines} changed UI lines (over 250) — a re
 // ── 2. the steward may not change its own leash, the deploy, or the deps ───
 const PROTECTED = [/^steward\//, /^\.claude\//, /^deploy\//, /^CLAUDE\.md$/, /(^|\/)package(-lock)?\.json$/,
   /^\.gitignore$/, /^\.env/, /requirements\.txt$/, /^LICENSE$/, /^data\/NOTICE\.md$/];
-const prot = rows.map(r => r.path).filter(p => PROTECTED.some(re => re.test(p)));
+// …except the skill's own TEXT (2026-11-06). The owner asked for a daily retro that "does an
+// update to it to improve weak points" by itself; the skill is instructions, and what actually
+// holds the worker — its settings, this policy, the runner, the gate — stays protected above.
+// A big rewrite of the instructions still waits for him.
+const SKILL = /^\.claude\/skills\/steward\//;
+const prot = rows.map(r => r.path).filter(p => PROTECTED.some(re => re.test(p)) && !SKILL.test(p));
 if (prot.length) reasons.push(`touches protected files (${prot.join(', ')})`);
+const skillLines = rows.filter(r => SKILL.test(r.path)).reduce((n, r) => n + r.add + r.del, 0);
+if (skillLines > 150) reasons.push(`${skillLines} changed lines in the steward's own skill (over 150) — a rewrite of how it works, the owner's call`);
 
 // ── 3. deleting a test is never routine ───────────────────────────────────
 const delTests = deleted.filter(isTest);

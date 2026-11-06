@@ -24,6 +24,7 @@ let next = 1000n; const id = () => String(next++);
 const threads = new Map(); // id → { name, archived, msgs: [{id, author, content, attachments, files}] }
 const channelMsgs = [];     // the channel's own (top-level) messages — the inbox
 const PNG = Buffer.from('89504e470d0a1a0a', 'hex');
+const JPG = Buffer.from('ffd8ffe000104a464946', 'hex');
 
 const server = createServer(async (req, res) => {
   const chunks = []; for await (const c of req) chunks.push(c);
@@ -41,6 +42,9 @@ const server = createServer(async (req, res) => {
   const json = (o, code = 200) => { res.writeHead(code, { 'content-type': 'application/json' }); res.end(JSON.stringify(o)); };
   let m;
   if (p === '/files/shot.png') { res.writeHead(200); return res.end(PNG); }
+  // a LINKED file (2026-11-06: a card image pasted as a link was never fetched), and a page that is not one
+  if (p === '/attachments/1/2/Card_Scan.jpg') { res.writeHead(200, { 'content-type': 'image/jpeg' }); return res.end(JPG); }
+  if (p === '/about') { res.writeHead(200, { 'content-type': 'text/html' }); return res.end('<p>hi</p>'); }
   if (req.method === 'GET' && p === `/channels/${FORUM}`) return json({ id: FORUM, type: KIND });
   if (req.method === 'POST' && (m = /^\/channels\/(\d+)\/threads$/.exec(p)) && m[1] === FORUM) {
     const t = id();
@@ -108,7 +112,7 @@ try {
   const acts = (await run('sync')).split('\n');
   ok(JSON.stringify(acts) === JSON.stringify(['pause', 'approve CT-1']), `the owner's approve and pause, once each; the stranger's approve ignored (${acts.join(' | ')})`);
   const ans = readFileSync(join(STATE, 'answers', 'CT-2.md'), 'utf8');
-  ok(ans.includes('B — it enters with the Virus') && /Screenshots/.test(ans), 'the answer is written for the worker');
+  ok(ans.includes('B — it enters with the Virus') && /ALREADY DOWNLOADED/.test(ans), 'the answer is written for the worker');
   const shot = /- (\S+shot\.png)/.exec(ans)?.[1];
   ok(shot && existsSync(shot) && readFileSync(shot).equals(PNG), 'the screenshot is saved where the answer points');
   ok(threads.get(t2).msgs.some(m => /no branch to approve/.test(m.content || '')), 'approve on a question gets told there is nothing to approve');
@@ -125,7 +129,7 @@ try {
 
   // ── the inbox: his plain messages in the channel become requests ──
   if (KIND === 0) {
-    const ask = id(); channelMsgs.push({ id: ask, type: 0, author: { id: OWNER }, content: 'The Debt chip is too small on iPad\nsee screenshot', attachments: [{ url: `${base}/files/shot.png`, filename: 'shot.png' }] });
+    const ask = id(); channelMsgs.push({ id: ask, type: 0, author: { id: OWNER }, content: `The Debt chip is too small on iPad\nsee screenshot, the new scan is \`${base}/attachments/1/2/Card_Scan.jpg?ex=1&format=webp\` and ${base}/about`, attachments: [{ url: `${base}/files/shot.png`, filename: 'shot.png' }] });
     channelMsgs.push({ id: id(), type: 0, author: { id: STRANGER }, content: 'fix everything', attachments: [] });
     channelMsgs.push({ id: id(), type: 0, author: { id: BOT, bot: true }, content: 'a bot line', attachments: [] });
     channelMsgs.push({ id: id(), type: 18, author: { id: OWNER }, content: '', attachments: [] });   // a "started a thread" system message
@@ -136,8 +140,12 @@ try {
     ok(!existsSync(join(STATE, 'discord.lock')), 'and lets go of the lock');
     const slug = `inbox-${ask}`, f = join(STATE, 'inbox', `${slug}.md`);
     const inboxFiles = existsSync(join(STATE, 'inbox')) ? readdirSync(join(STATE, 'inbox')) : [];
-    ok(inboxFiles.length === 1 && existsSync(f) && /Debt chip is too small/.test(readFileSync(f, 'utf8')) && /Screenshots/.test(readFileSync(f, 'utf8')),
+    ok(inboxFiles.length === 1 && existsSync(f) && /Debt chip is too small/.test(readFileSync(f, 'utf8')) && /ALREADY DOWNLOADED/.test(readFileSync(f, 'utf8')),
       `only the owner's plain message became a request, with its screenshot (${inboxFiles.join(', ')})`);
+    const req = existsSync(f) ? readFileSync(f, 'utf8') : '';
+    const linked = /- (\S+Card_Scan\.jpg)\s+\(from his link/.exec(req)?.[1];
+    ok(linked && existsSync(linked) && readFileSync(linked).equals(JPG), 'an image he LINKED is downloaded beside it, and the request says where');
+    ok(!/about/.test(req.split('ALREADY DOWNLOADED')[1] || '') && !/did NOT download/.test(req), 'a link to a page is neither saved nor reported as a failure');
     const it = db().items[slug]; const th = it && threads.get(it.thread);
     ok(th && th.onMessage === ask && /queued as/.test(th.msgs[0]?.content || ''), 'a thread is opened on his message, saying it is queued');
     ok((await run('sync')) === '' && readdirSync(join(STATE, 'inbox')).length === 1 && !threads.get(it.thread).archived, 'the next sync takes nothing twice, and a waiting request stays open');

@@ -22,6 +22,10 @@
  *                        one that was red only because master was (masterRed —
  *                        the runner re-gates those itself once master is green)
  *   3. resume <item>     the owner answered a handoff (state/answers/)
+ *   3b. retro <day>      the daily look in the mirror: the runner wrote state/retro/<day>.md
+ *                        (steward/retro.mjs) — what made the last day's runs slow, stuck or
+ *                        half-done; the agent fixes the cause in its own harness (skill §15).
+ *                        Once per digest; after the owner's own asks, before the worker's debt.
  *   4. report #N         playtest-ledger entries still live / partial ('agreed-fix'
  *                        is a CLOSED status: a player's take-back, no defect)
  *   5. CT-N              open card-todo entries, high severity first
@@ -143,6 +147,14 @@ for (const item of answered) {
   const j = journal.get(slug(item));
   if (j && j.outcome === 'resumed') continue;
   out.push(`resume ${item}  (answer in ${join(STATE, 'answers', item + '.md')})`);
+}
+
+// 3b. the daily retro (owner, 2026-11-06: "a daily check to see what's making the skill take a
+// long time and do an update to it to improve weak points or stop it from getting stuck")
+for (const f of ls(join(STATE, 'retro')).filter(f => /^\d{4}-\d{2}-\d{2}\.md$/.test(f)).sort().slice(-1)) {
+  const day = f.replace(/\.md$/, '');
+  if (journal.has(`retro-${day}`)) { excluded.push(`retro ${day}: done (${journal.get(`retro-${day}`).outcome})`); continue; }
+  push(`retro-${day}`, `retro retro-${day}  (the digest: ${join(STATE, 'retro', f)})`);
 }
 
 // 4. reports agreed but not fixed

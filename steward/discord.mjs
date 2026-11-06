@@ -11,7 +11,7 @@
  *   approve            the runner lands the branch (rebase, full gate, master, deploy)
  *   reject <why>       dropped; the reason goes in the journal the worker reads
  *   retry <why>        dropped, but the worker may try again, differently
- *   anything else      his answer — screenshots are saved beside it — and the
+ *   anything else      his answer — screenshots, and any image or PDF he LINKS, are saved beside it — and the
  *                      worker resumes the item on its next night run
  *   (night log)        pause · resume
  *
@@ -47,6 +47,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSyn
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { download, linksIn } from './fetch-file.mjs';
 
 const env = process.env;
 const API = env.STEWARD_DISCORD_API || 'https://discord.com/api/v10';   // the override is a test seam (steward/test-discord.mjs)
@@ -227,17 +228,39 @@ async function newOwnerMessages(rec) {
   return msgs.filter(m => m.author?.id === OWNER && !m.author?.bot);
 }
 
+/** his attachments AND every image/PDF link in his text, saved now — a Discord link expires in about
+ *  a day, and a request can wait longer than that (2026-11-06: a card-image link in the text was never
+ *  fetched, and the worker, which cannot download, asked him to paste the image in). Returns
+ *  {saved: [{path, from}], failed: [{url, why}]}; a failure is reported to the agent, never fatal. */
 async function saveAttachments(slug, m) {
-  const dir = join(STATE, 'answers', 'files', slug); const paths = [];
+  const dir = join(STATE, 'answers', 'files', slug); const saved = [], failed = [];
   for (const a of m.attachments || []) {
     try {
-      const r = await fetch(a.url); if (!r.ok) continue;
+      const r = await fetch(a.url); if (!r.ok) { failed.push({ url: a.url, why: `${r.status}` }); continue; }
       mkdirSync(dir, { recursive: true });
       const p = join(dir, `${m.id}-${String(a.filename).replace(/[^A-Za-z0-9._-]/g, '_')}`);
-      writeFileSync(p, Buffer.from(await r.arrayBuffer())); paths.push(p);
-    } catch { /* a lost screenshot is not worth a failed tick */ }
+      writeFileSync(p, Buffer.from(await r.arrayBuffer())); saved.push({ path: p, from: 'attachment' });
+    } catch (e) { failed.push({ url: a.url, why: e.message }); }
   }
-  return paths;
+  const attached = new Set((m.attachments || []).map(a => String(a.url).split('?')[0]));
+  for (const url of linksIn(m.content, m.embeds)) {
+    if (attached.has(url.split('?')[0].replace('media.discordapp.net', 'cdn.discordapp.com'))) continue;
+    try { const f = await download(url, dir, { prefix: `${m.id}-` }); saved.push({ path: f.path, from: url }); }
+    catch (e) {
+      // a link to a web page is not a failure — only say so when it looked like a file
+      if (!/not an image or PDF/.test(e.message) || /\.(jpe?g|png|webp|gif|pdf)(\?|$)/i.test(url)) failed.push({ url, why: e.message });
+    }
+  }
+  return { saved, failed };
+}
+/** the lines the agent reads under his words */
+export function filesBlock({ saved, failed }) {
+  const out = [];
+  if (saved.length) out.push('Files he sent — ALREADY DOWNLOADED, Read them (a card image goes into data/cards/, see the skill):',
+    ...saved.map(f => `- ${f.path}${f.from === 'attachment' ? '' : `  (from his link ${f.from})`}`));
+  if (failed.length) out.push('Links that did NOT download — try `node steward/fetch-file.mjs <url>`; if that fails too, ask him to attach the file:',
+    ...failed.map(f => `- ${f.url} — ${f.why}`));
+  return out.length ? `\n${out.join('\n')}\n` : '';
 }
 
 async function readReplies(db, actions) {
@@ -268,7 +291,7 @@ async function readReplies(db, actions) {
         const f = join(STATE, 'answers', `${slug}.md`);
         mkdirSync(dirname(f), { recursive: true });
         const block = `${existsSync(f) ? '\n\n---\n\n' : `# Owner answer — ${slug} (${new Date().toISOString().slice(0, 10)}, on Discord)\n\n`}${text}` +
-          (files.length ? `\n\nScreenshots (Read them):\n${files.map(p => `- ${p}`).join('\n')}` : '');
+          filesBlock(files);
         appendFileSync(f, block + '\n');
         jnote(slug, 'answered', clip(text, 400));
         await react(it.thread, m.id);
@@ -293,8 +316,7 @@ async function readInbox(db) {
     const files = await saveAttachments(slug, m);
     const day = new Date(Number((BigInt(m.id) >> 22n) + 1420070400000n)).toISOString().slice(0, 10);
     mkdirSync(join(STATE, 'inbox'), { recursive: true });
-    writeFileSync(join(STATE, 'inbox', `${slug}.md`), `# Inbox — from the owner, ${day} (Discord message ${m.id})\n\n${text}\n` +
-      (files.length ? `\nScreenshots (Read them):\n${files.map(p => `- ${p}`).join('\n')}\n` : ''));
+    writeFileSync(join(STATE, 'inbox', `${slug}.md`), `# Inbox — from the owner, ${day} (Discord message ${m.id})\n\n${text}\n` + filesBlock(files));
     const first = text.split('\n').find(l => l.trim()) || 'request';
     const t = await api('POST', `/channels/${FORUM}/messages/${m.id}/threads`, { name: clip(first, 90), auto_archive_duration: 10080 });
     db.items[slug] = { thread: t.id, hash: null, lastSeen: t.id, closed: false, inbox: true };
@@ -364,6 +386,8 @@ function selftest() {
   eq(sectionOf(md2, 'The choice'), '- **A:** smaller\n- **B:** more room', 'choice section');
   eq(chunks('a'.repeat(50) + '\n\n' + 'b'.repeat(50), 60).length, 2, 'chunks split at a paragraph');
   eq(chunks('x'.repeat(4500)).every(c => c.length <= 1900), true, 'chunks never exceed the limit');
+  eq(filesBlock({ saved: [], failed: [] }), '', 'no files, no block');
+  eq(filesBlock({ saved: [{ path: '/s/a.jpg', from: 'https://x/a.jpg' }], failed: [] }).includes('ALREADY DOWNLOADED'), true, 'a linked file is announced as downloaded');
 }
 
 /** one discord.mjs at a time — every command loads discord.json, changes it and saves it whole, and
