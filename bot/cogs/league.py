@@ -269,7 +269,7 @@ class League(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        # Started here, not in __init__, for CardWatch's reason: build_bot()
+        # Started here, not in __init__: build_bot()
         # never logs in, and a loop started there dies in wait_until_ready.
         # on_ready fires on every reconnect, hence the guard.
         if gameserver.client.token and not self.deliver_loop.is_running():

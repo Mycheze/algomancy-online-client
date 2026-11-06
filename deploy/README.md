@@ -96,24 +96,15 @@ across the two files: `ALGO_BOT_TOKEN` (a mismatch is not an error, every
 at, and the one Origin besides the request's own Host allowed to open a
 WebSocket).
 
-### Watching for card errata
+### Card errata
 
-`ALGO_CARDWATCH_CHANNEL` in `.env` is the one setting `cogs/cardwatch.py` needs:
-the id of the channel in the owner's server that **follows** Caleb's
-`#card-changes`. Unset means the whole feature is off — no listener, no daily
-poll — which is the intended state for any deploy but this one.
-
-Set it and the bot does two things: it re-checks algomancer.cc whenever a post
-lands in that channel, and it checks once a day regardless. Both are needed. A
-channel follow only forwards posts the author *publishes*, and on 2026-09-21
-that mirror held nothing but its own two "now following" notices while nine
-cards had changed — so the poll is what catches a silent change, and the post is
-what tells you *why*, including for changes the feed cannot represent at all
-(it has no field for a Prophecy or Ambush banner, and Tithe Enforcer lost one).
-
-⚠ The report names cards; it does not transcribe them. **algomancer.cc does not
-OCR card text** — it stores a name, a colour and an image. Open the scan before
-editing `data/cards/AlgomancyCards-OracleText.json`.
+The bot used to diff algomancer.cc against our oracle every day and post
+"Card changes upstream" (`cogs/cardwatch.py`). It was retired on 2026-11-06: our
+oracle and scans are now ahead of that site, which is not Caleb's and is no
+longer kept up, so every report was a list of cards where the site was wrong.
+A card change now reaches the repo as a message in #steward with the new scan
+(the steward skill's card-update recipe). `ALGO_CARDWATCH_CHANNEL` in an old
+`.env` is ignored.
 
 ## Deploying a change
 
