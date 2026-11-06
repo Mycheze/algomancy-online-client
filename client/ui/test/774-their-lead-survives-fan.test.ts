@@ -19,6 +19,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { leadPx } from '../layout.ts';
+import { fitCards } from '../fit.ts';
 
 // EMNR at 1280×800: the seam 606px into a 1206px zone, one 46px card
 const TO_SEAM = 606, ROOM = 1206;
@@ -30,9 +31,12 @@ test('§1 a one-card fan starts at the seam, as a one-card grid does', () => {
 });
 
 test('§2 a fan that spans the band has no lead', () => {
-  // fitCards: step = (w - floor) / (perRow - 1), so the row reaches the far edge
-  const n = 40, step = Math.floor((ROOM - 46) / (n - 1));
-  assert.equal(leadPx(TO_SEAM, ROOM, n, 46, step), 0);
+  // fitCards spreads the row over the band, gaps counted, so what is left
+  // for a lead is only the step's rounding — under a pixel a card
+  const n = 40, p = fitCards(n, { w: ROOM, h: 70 }, { cw: 78, gap: 6 });
+  assert.equal(p.mode, 'fan');
+  const lead = leadPx(TO_SEAM, ROOM, n, p.cw, p.mode === 'fan' ? p.step : null);
+  assert.ok(lead < n - 1, `a band-wide fan starts at the far edge (lead ${lead}px)`);
 });
 
 test('§3 capped by the free room, never negative, nothing without cards', () => {

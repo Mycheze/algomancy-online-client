@@ -95,8 +95,30 @@ export function fitCards(n: number, box: FitBox, o: FitOpts): FitPlan {
   // row overlapping so the row spans the width and no more
   const rows = Math.max(1, capacity(floor, box, o.gap, ratio).rows);
   const perRow = Math.ceil(n / rows);
-  const step = perRow > 1 ? Math.max(minStep, Math.floor((box.w - floor) / (perRow - 1))) : 0;
-  return { mode: 'fan', cw: floor, cols: perRow, rows, step };
+  return { mode: 'fan', cw: floor, cols: perRow, rows, step: fanStep(perRow, box.w, floor, o.gap, minStep) };
+}
+
+/**
+ * A fanned row's step — the `--fanstep` each card after the first sits past
+ * the one before, BEFORE the zone's gap, which a fanned card keeps
+ * (style.css `margin-left: calc(var(--fanstep) - var(--cw))` beside the
+ * `.zone` gap). Owner, #steward 2026-11-06, building an attack against Nyar:
+ * "their units get spread out over a very large area and there's a huge gap
+ * between them … Nyar actually has *additional* units that are hidden and off
+ * screen". Two things, both here:
+ *
+ * - The gap counts. The step used to be the width over the cards with no gap,
+ *   so the row stood `gap × (perRow - 1)` px past its box, and the zone —
+ *   which wraps — put its last card on a line the band clips.
+ * - Never wider than side by side (`cw`). A band too short for even a
+ *   floor-sized card (a battle's In Play, a modded unit in it) has no grid and
+ *   fans ONE row; the step that spans the width then set six units ~300px
+ *   apart. A fan only ever closes cards up; a short row stands as a grid row
+ *   would, and the lead (ui/layout.ts theirLead) puts theirs at the seam.
+ */
+function fanStep(perRow: number, w: number, cw: number, gap: number, minStep: number): number {
+  if (perRow <= 1) return 0;
+  return Math.max(minStep, Math.min(cw, Math.floor((w - cw - gap * (perRow - 1)) / (perRow - 1))));
 }
 
 /** the counterattack send box's drop slot spans this many card widths
@@ -125,7 +147,11 @@ export const SEND_SLOT_SPAN = 2;
  */
 export function fitSendBox(cards: number, box: FitBox, o: FitOpts): FitPlan {
   const plan = fitCards(cards + SEND_SLOT_SPAN, box, o);
-  return plan.mode === 'fan' ? { ...plan, step: Math.min(plan.step, Math.floor(box.w / plan.cols)) } : plan;
+  if (plan.mode !== 'fan') return plan;
+  // its cards keep no gap (style.css `column-gap: 0`, each card `step` wide),
+  // so its step is the width over the row with none — not fitCards' step
+  const span = plan.cols > 1 ? Math.max(o.minStep ?? MIN_STEP, Math.floor((box.w - plan.cw) / (plan.cols - 1))) : 0;
+  return { ...plan, step: Math.min(span, Math.floor(box.w / plan.cols)) };
 }
 
 /**
