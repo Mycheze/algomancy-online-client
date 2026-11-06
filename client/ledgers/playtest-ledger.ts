@@ -153,8 +153,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 329, room: "", date: "2026-11-06",
     report: "mycheze (owner), the league match waiting room: remove the redundant explanatory text — \"Deals when both decks are in.\", \"They join from their own League page — tell them on Discord you are here.\" and \"Any deck. Keep it or change it every game.\"",
-    status: 'live',
-    note: "Real and as described: all three lines are printed by the constructed (league) match room, and the League-page sentence also by the league live-draft lobby. CT-531 removes them.",
+    status: 'fixed',
+    guards: [
+      "961-page-waiting-html.test.ts::961 §3b the owner removed the waiting room explanatory lines",
+    ],
+    note: "Real and as described: all three lines were printed by the constructed (league) match room, and the League-page sentence also by the league live-draft lobby. Removed from both (CT-531, 2026-11-06); the seat row's 'not here yet' still says who is missing.",
   },
   {
     id: 330, room: "MCHQ", date: "2026-11-06",

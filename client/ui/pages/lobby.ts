@@ -174,8 +174,7 @@ export function lobbyHtml(v: LobbyView): string {
     page: 'lobbypage',
     kind: v.custom ? 'Custom live draft' : lobby.method === 'random' ? 'League match' : 'Live draft',
     room, chrome: v.chrome,
-    cardHtml: roomSection(theyAreHere ? '' : lobby.method === 'random'
-      ? '<p class="hint lobbywait">Waiting for your opponent. They join from their own League page — tell them on Discord you are here.</p>'
+    cardHtml: roomSection(theyAreHere || lobby.method === 'random' ? ''
       : shareBar('Send your opponent the room code', room, link))
       + roomSection(theyAreHere || lobby.method === 'random' ? '' : v.friends ?? '')
       + roomSection(v.custom ? customPanelHtml(v.custom) : '')

@@ -70,7 +70,7 @@ test('971 §3 locked in: the choice is frozen, and Change my mind is the way bac
   assert.match(html, /Ann \(you\) — <b class="lockedin">ready<\/b>/);
 });
 
-test('971 §4 the opponent away: share the code (and invite a friend); a league room points at Discord', () => {
+test('971 §4 the opponent away: share the code (and invite a friend); a league room says nothing more (report #329)', () => {
   const away = lobbyHtml(view({ peers: [true, false] }));
   assert.match(away, /Send your opponent the room code <b>QXZZ<\/b>/);
   assert.match(away, /<!--SLOT:friends-->/);
@@ -78,7 +78,8 @@ test('971 §4 the opponent away: share the code (and invite a friend); a league 
   assert.doesNotMatch(lobbyHtml(view()), /sharebar/, 'both here: nothing to share');
   const league = lobbyHtml(view({ peers: [true, false], lobby: { ...view().lobby, method: 'random' } }));
   assert.match(league, /League match<small>room/);
-  assert.match(league, /tell them on Discord you are here/);
+  assert.doesNotMatch(league, /own League page|tell them on Discord|lobbywait/, 'the owner removed the League-page sentence');
+  assert.match(league, /has not arrived yet/, 'the seat row says they are not here');
   assert.doesNotMatch(league, /sharebar|SLOT:friends/);
   const custom = lobbyHtml(view({ custom: { summary: ['Packs of 5'], excluded: 1 } }));
   assert.match(custom, /Custom live draft<small>room/);
