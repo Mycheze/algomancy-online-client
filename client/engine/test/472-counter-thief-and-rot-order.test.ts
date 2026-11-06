@@ -6,8 +6,10 @@
  * 2026-10-16: "Ask the player now", and on two Counter Thieves, the counters
  * end on the SECOND thief when that is the order chosen.
  *
- * Who is asked: the player the event happens to — the controller of the unit
- * the counters were going to be put on; the player whose rot it is.
+ * Who is asked: the player who controls the replacements (the owner,
+ * 2026-10-25: "Each owner, INT first"; the seam, E.replaceEvent). In every
+ * test here that player also controls the unit the counters were for, or
+ * takes the rot; thieves of DIFFERENT players are 696's, and ask nothing.
  *
  * Where: a Counter Thief question raised while a spell resolves is an ordinary
  * mid-resolution question; one raised by Poisonous combat damage, or by the rot
@@ -70,12 +72,12 @@ function growth(seed: number, thieves: number) {
   return { h, A, D, ct, mark };
 }
 
-test('CR 708.4a: two Counter Thieves — the player whose unit the counters were for is asked which keeps them', () => {
+test('CR 708.4a: two Counter Thieves of one player — their controller is asked which keeps them', () => {
   // RED before: no question, and the higher-id thief kept them
   const r = growth(47201, 2);
   const dec = r.h.state.decision;
   assert.ok(dec, 'a question is open as the spell resolves');
-  assert.equal(dec!.seat, r.D, 'the controller of the unit the counters were going to');
+  assert.equal(dec!.seat, r.D, 'the thieves\' controller (here also the controller of The Foretold)');
   assert.match(dec!.prompt, /Counter Thief: which unit keeps the 2 counter\(s\) meant for The Foretold\?/);
   assert.deepEqual(dec!.options.map(o => (o.value as { unit: number }).unit).sort(), [...r.ct].sort(),
     'each thief is a choice, named by the unit on the board');

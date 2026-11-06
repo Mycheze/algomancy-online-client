@@ -137,7 +137,6 @@ export interface TodoEntry {
 }
 import '../engine/src/cards/registry.ts';
 import { CLOSED } from './card-todo-closed.ts';
-import { still } from './card-todo-helpers.ts';
 
 // ── proofs for the comprehensive-rules findings (CT-226 on) ─────────────
 // Each finding was re-checked against HEAD before it was filed. A proof
@@ -179,15 +178,6 @@ const OPEN: TodoEntry[] = [
     status: "open",
   },
   // ── Pass D, the mop-up and the replacement-order round, 2026-10-25: defects found and not fixed
-  {
-    id: 438, area: "coverage", severity: "minor",
-    title: "after the replacement-order round, 472's first title and the engine.ts replacement comment still describe the old fixed order",
-    detail: "472-counter-thief-and-rot-order.test.ts: \"CR 708.4a: two Counter Thieves — the player whose unit the counters were for is asked which keeps them\". Since the round the thieves' controller orders them; the test passes because in it that player owns both. The title is bound by CR 708.4a's record. The engine.ts comment above the replacement hooks still says the player the event happens to is asked, lists \"Cosmic Conspirators\" as order-insensitive (not so beside an Automaton) and says there is deliberately no general framework; E.replaceEvent is one now.",
-    evidence: "The replacement-order build, zero-handoff/RO.md section 5 item 6 and section 6 (\"Also stale\").",
-    fix: "Retitle 472's test to the controller rule and rebind 708.4a's example in the same change (cr scripts, re-verify); rewrite the engine.ts comment to point at E.replaceEvent.",
-    proof: () => still('engine/test/472-counter-thief-and-rot-order.test.ts', 'the player whose unit the counters were for is asked') || still('engine/src/engine.ts', 'and Cosmic Conspirators (each asks its own controller'),
-    status: 'open',
-  },
   // ── Competitive Constructed, 2026-11-02 (the round reserved CT-500..519; the
   //    open ones are here, the closed ones in card-todo-closed.ts; 503 was the
   //    corpus rebuild, done at landing in 3b7c7be6, and 505..507 were never used)

@@ -5760,23 +5760,30 @@ export class E {
   // out of the chain rather than being a rule of its own. `replaceEvent`
   // is the loop for the hooks whose substitute is still the same kind of event.
   //
-  // ORDER is the player's (CR 708.4a; Caleb: "you the player control how they
-  // stack"; the owner, 2026-10-16: "Ask the player now"). Where the order
-  // changes the outcome — two Counter Thieves (which keeps the counters), two
-  // Oorblaks (which takes the hit), two Skittering Blights or a Blight beside
-  // Beyond, Codex Incarnate (which replaces the rot) — the player the event
-  // happens to is asked (`askReplacement`); everywhere else, and where there
-  // is nowhere to ask, it is timestamp (entity id). Oorblak beside Blightsea
-  // Polyp is NOT a choice: a redirect always comes before "as 1 rot" (CR
-  // 608.8c, `replaceCombatDamage`). Not order-sensitive, so never asked:
-  // Nullbringers, Worldbenders, Automatons (summed), Polyps among themselves,
-  // and Cosmic Conspirators (each asks its own controller, who can reach any
-  // kind from any order).
+  // ORDER is the players' (CR 708.4a; Caleb: "you the player control how they
+  // stack"; the owner, 2026-10-16: "Ask the player now"; 2026-10-25: "Each
+  // owner, INT first"). Each player orders the replacements THEY CONTROL, and
+  // the initiative player's apply first, then the other player's — written
+  // once, in `replaceEvent` and `replaceBand` below, and not per family. A
+  // player with two or more that could apply is asked (`askReplacement`) only
+  // where the order changes the outcome: two Counter Thieves (which keeps the
+  // counters), two Oorblaks (which takes the hit), two Skittering Blights or a
+  // Blight beside Beyond, Codex Incarnate (which replaces the rot), Automaton
+  // of Abundance beside Cosmic Conspirator (which applies to the creation
+  // first), an amount change beside a redirect or a doubling (CR 708.6a,
+  // 708.7, where the order that never gives less is the default). Two
+  // replacements of different players are never a question. Oorblak beside
+  // Blightsea Polyp is NOT a choice: a redirect always comes before "as 1 rot"
+  // (CR 608.8c, the seam's `tier`). Where the order cannot change the result —
+  // Nullbringers, Worldbenders, Automatons among themselves (1 → 2 → 3),
+  // Polyps among themselves — nothing is asked and it is timestamp (entity id).
   //
-  // Deliberately NO general "any event" framework, for the reason
-  // replaceRotDamage's own comment already gives: one named hook per
-  // replaceable quantity, so every replaceable thing in the engine is
-  // greppable and nothing becomes replaceable by accident.
+  // ONE SEAM, NAMED HOOKS: `replaceEvent` is the general framework for the
+  // rule (one at a time, re-tested, each once, ordered as above); what can be
+  // replaced is still one named hook per replaceable quantity (counters
+  // placed, combat damage to a player, rot damage, token creation, …), each
+  // building its `Replacer`s and calling the seam, so every replaceable thing
+  // in the engine is greppable and nothing becomes replaceable by accident.
 
   /**
    * CR 708.4, 708.4a — THE SEAM: run one event through every replacement

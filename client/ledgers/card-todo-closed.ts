@@ -14728,4 +14728,18 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-06 (steward). Test only, no behaviour change. The Torrential Reclamation row is gone from OPEN_QUESTIONS (the tally now prints 2): the owner settled it on 2026-08-28 (the for-each scales the sacrifice too), and the oracle now carries the designer's reword (CT-374). A comment above the list records the question and its answer. A new test in 182 checks that each remaining row quotes words its named cards print today (case-folded; Shoreline Specter, Hand Peeper, Bripp, Thought Extraction all pass), so a question left behind by a reword goes red. Mutation: putting the old row back turns that test red, and the proof true.",
     status: 'done',
   },
+  {
+    id: 438, area: "coverage", severity: "minor",
+    title: "after the replacement-order round, 472's first title and the engine.ts replacement comment still describe the old fixed order",
+    detail: "472-counter-thief-and-rot-order.test.ts: \"CR 708.4a: two Counter Thieves — the player whose unit the counters were for is asked which keeps them\". Since the round the thieves' controller orders them; the test passes because in it that player owns both. The title is bound by CR 708.4a's record. The engine.ts comment above the replacement hooks still says the player the event happens to is asked, lists \"Cosmic Conspirators\" as order-insensitive (not so beside an Automaton) and says there is deliberately no general framework; E.replaceEvent is one now.",
+    evidence: "The replacement-order build, zero-handoff/RO.md section 5 item 6 and section 6 (\"Also stale\").",
+    fix: "Retitle 472's test to the controller rule and rebind 708.4a's example in the same change (cr scripts, re-verify); rewrite the engine.ts comment to point at E.replaceEvent.",
+    proof: () => still('engine/test/472-counter-thief-and-rot-order.test.ts', 'the player whose unit the counters were for is asked', 'Who is asked: the player the event happens to')
+      || still('engine/src/engine.ts', 'and Cosmic Conspirators (each asks its own controller', 'Automatons (summed)', 'happens to is asked (`askReplacement`)', 'Deliberately NO general "any event" framework'),
+    guards: [
+      '472-counter-thief-and-rot-order.test.ts::CR 708.4a: two Counter Thieves of one player — their controller is asked which keeps them',
+    ],
+    closed: "FIXED 2026-11-06 (steward). Test title and comments only, no behaviour change. 472's first test is retitled to the controller rule (two Counter Thieves of one player, their controller is asked) and its header's \"Who is asked\" now says the replacements' controller, pointing at 696 for thieves of different players; its seat assertion's message says the same. No CR record bound the old title (708.4a's examples name 472 only through its Skittering Blights test, and U23 through its Poisonous one), so there was nothing to rebind. The engine.ts comment above the replacement hooks now states the owner's 2026-10-25 order (each player orders their own, the initiative player's first, written once in replaceEvent/replaceBand), lists Automaton beside Cosmic Conspirator and the 708.6a/708.7 amount pairs among the order-sensitive ones, says Automatons chain 1 -> 2 -> 3 rather than sum, and calls replaceEvent the one seam with a named hook per replaceable quantity. The proof also covers those stale phrases. Mutation: putting the old title back turns the proof true.",
+    status: 'done',
+  },
 ];
