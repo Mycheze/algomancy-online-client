@@ -696,7 +696,11 @@ test('[CR D7.4] the derivation itself is alive: every filter it uses matches som
   // 233 → 232 with CT-434 (CR 111.15: a grafted cost cannot be declined):
   // payCastCost's declineCost branch was unreachable and is deleted, and its
   // "the [cost] is declined" line with it.
-  assert.equal(sites.length, 232,`the engine and apply make ${sites.length} announcements`);
+  // 232 → 233 with The Everywhere's 2026-11-06 printing ("As I am played or
+  // modded, name a card"): E.applyAsPlayedNaming says the name as the card is
+  // played, before it reaches the stack (CR 702.3g). It carries the seat; the
+  // name then shows on the unit's own text box once it is in play.
+  assert.equal(sites.length, 233,`the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');
@@ -719,7 +723,10 @@ test('[CR D7.4] the derived inventory of announcements that exist only in the lo
   // 39 → 38 with the Wraith ruling of 2026-10-16 (the site census above): the
   // stale-subject fizzle line is gone with the stale subject.
   // 38 → 37 with CT-434: the dead "the [cost] is declined" line is gone.
-  assert.equal(inv.length, 37,
+  // 37 → 38 with The Everywhere's 2026-11-06 printing: its as-played naming
+  // line is log-only while the card is being played ("names no card" is the
+  // ABSENCE half); once the unit is in play its text box carries the name.
+  assert.equal(inv.length, 38,
     'the count moved — a new announcement with no surface, or one that gained one.\n'
     + 'THE INVENTORY AS MEASURED NOW:\n' + show(inv));
 
@@ -735,7 +742,8 @@ test('[CR D7.4] the derived inventory of announcements that exist only in the lo
   // became an 'info' line, exactly like the other thirty-five.
   // info 36 → 35 with the Wraith ruling of 2026-10-16 (see the count above).
   // info 35 → 34 with CT-434 (likewise).
-  assert.deepEqual([...byType].sort(), [['erased', 1], ['fizzled', 2], ['info', 34]]);
+  // info 34 → 35 with The Everywhere's as-played naming (likewise).
+  assert.deepEqual([...byType].sort(), [['erased', 1], ['fizzled', 2], ['info', 35]]);
   assert.equal(read('../ui/main.ts').includes("info: 'ev-"), false,
     "'info' earns no colour in the log either — it is the plainest line the panel draws");
 });
@@ -753,7 +761,9 @@ test('[CR D7.4] the ranked half: the announcements where the absence cost the pl
   // 20 → 19 with CT-434: "the [cost] is declined" was a dead branch's line;
   // no cast-time cost can be declined (CR 111.15), so it is deleted.
   assert.equal(costly.length, 19, 'tier 1:\n' + costly.map(s => `  ${s.file}:${s.line} ${s.msg}`).join('\n'));
-  assert.equal(rest.length, 18);
+  // rest 18 → 19 with The Everywhere's as-played naming: a declaration, not a
+  // loss — bookkeeping, not tier 1.
+  assert.equal(rest.length, 19);
 
   /* THE TICKET LIST. Keyed on a stem of the sentence rather than a line
    * number, because engine.ts moves under this file every round. Every tier-1
