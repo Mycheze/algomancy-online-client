@@ -7,8 +7,8 @@ import '../engine/src/cards/registry.ts';
 import { getCard } from '../engine/src/cards/dsl.ts';
 import { Harness } from '../engine/src/harness.ts';
 import { E } from '../engine/src/engine.ts';
-import { spawn, toDeployment } from '../engine/test/util.ts';
-import type { Seat } from '../engine/src/types.ts';
+import { playEverywhere, spawn, toDeployment, withE } from '../engine/test/util.ts';
+import type { EntityId, Seat } from '../engine/src/types.ts';
 import { stripCode } from '../engine/test/stripcode.ts';
 
 export const SRC_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'engine', 'src');
@@ -54,6 +54,33 @@ export function eventsFrom(
   return g.events.length - before;
 }
 
+
+/**
+ * CT-532 (report #332): Cerebrox, a The Everywhere that named `named`, and
+ * Blurf, Prediction Prophet and Flourishing Flora, all in one region. `kill`
+ * disposes some of them as ONE death batch and returns how many Cerebrox
+ * triggers the batch itself queued — counted before they resolve, because each
+ * one's -1/-1 kills the small units and starts a batch of its own.
+ */
+export function everywhereBatch(seed: number, named = 'Cerebrox') {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const cerebrox = spawn(h, A, 'Cerebrox');
+  const everywhere = playEverywhere(h, A, named);
+  const others = ['Blurf', 'Prediction Prophet', 'Flourishing Flora'].map(n => spawn(h, A, n));
+  const kill = (ids: EntityId[]): number => {
+    let n = -1;
+    withE(h, e => {
+      const queued = () => e.s.triggerQueue.filter(t => t.sourceCard === 'Cerebrox').length;
+      const before = queued();
+      e.destroyBatch(ids.map(id => e.entity(id)!), 'dies');
+      n = queued() - before;
+    });
+    return n;
+  };
+  return { h, cerebrox, everywhere, others, kill };
+}
 
 // ── source readers for the comprehensive-rules finding proofs (CT-226 on) ──
 // Moved here from card-todo.ts on 2026-10-22 so a proof keeps working when its
