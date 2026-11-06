@@ -1,7 +1,8 @@
 {
   "permissions": {
     "defaultMode": "acceptEdits",
-    "allow": ["Bash", "Read", "Edit", "Write", "Glob", "Grep", "Agent", "TodoWrite", "Skill", "NotebookEdit"],
+    "allow": ["Bash", "Read", "Edit", "Write", "Glob", "Grep", "Agent", "TodoWrite", "Skill", "NotebookEdit",
+              "Edit(.claude/skills/steward/**)", "Write(.claude/skills/steward/**)"],
     "deny": [
       "Bash(git push:*)", "Bash(git fetch:*)", "Bash(git pull:*)", "Bash(git remote:*)",
       "Bash(git -C * push:*)", "Bash(git -C * fetch:*)",
