@@ -150,6 +150,24 @@ const OPEN: LedgerEntry[] = [
     status: 'wontfix',
     note: "Nothing to build: the dispute did its job (BL-48: it files this row, tags the game and changes no result). Filed two minutes after Gember lost game 3 of match MH4VMRK6WGV on time (clockMs [0, 539039]; the match carries banks between games). Whether the result stands is the owner's call; the defect that may lie behind it, a clock running under Pass all (#323), is CT-523.",
   },
+  {
+    id: 329, room: "", date: "2026-11-06",
+    report: "mycheze (owner), the league match waiting room: remove the redundant explanatory text — \"Deals when both decks are in.\", \"They join from their own League page — tell them on Discord you are here.\" and \"Any deck. Keep it or change it every game.\"",
+    status: 'live',
+    note: "Real and as described: all three lines are printed by the constructed (league) match room, and the League-page sentence also by the league live-draft lobby. CT-531 removes them.",
+  },
+  {
+    id: 330, room: "MCHQ", date: "2026-11-06",
+    report: "Nyar, seat 1, agreed fix: back to before Nyar's Mirrorback Ambusher (turn 5 battle, counterattack). \"control check for the stack\"",
+    status: 'agreed-fix',
+    note: "Took back Nyar's Mirrorback Ambusher ambush on their own Arcane Concentrator [156]-[157], put on the stack in the counterattack window; mycheze agreed. Replayed (600 of 600 actions, no divergence): Nyar played exactly the same two actions again [156]-[157], still held priority, and cast Leaping Lillik on Aberrant Statweaver on top [158]-[159]; the stack resolved Lillik, its two Concentrator triggers and Body Swap, then the ambush. The engine let Nyar keep priority over their own ambush, as it should; the take-back replayed the same play, so it was a check, as the reason says. No defect.",
+  },
+  {
+    id: 331, room: "MCHQ", date: "2026-11-06",
+    report: "Nyar, seat 1, agreed fix: back to before Nyar's augment (turn 9 battle, blocks declared). \"wrong order\"",
+    status: 'agreed-fix',
+    note: "Took back Nyar's Smouldering Inferno Virus augment on mycheze's Living Forge [318], played before anything else in the window; mycheze agreed. Replayed, Nyar cast Leaping Lillik on Automaton of Abundance first, ordered its triggers [318]-[320], then played the same augment on top [321], so it resolved first. The player's own sequencing, as the reason says; the engine took both orders. No defect.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
