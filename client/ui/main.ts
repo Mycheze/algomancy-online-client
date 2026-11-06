@@ -3936,6 +3936,72 @@ function invaderPileHtml(region: number, ents: readonly Entity[]): string {
 }
 
 /**
+ * A CROWD OF ALIKE UNITS AS ONE STACK (owner, #steward 2026-11-06: "For very
+ * large boards that have many of the same unit tokens (for example, a ton of
+ * Robot 2s) in play … semi overlap them (about half showing, like they're in a
+ * fan stack of some kind) and use a x5 counter in the corner. And hovering
+ * over them fans them all out, like with invaders. This would only work for
+ * IDENTICAL Units … that have 100% the same text, same counters, same
+ * everything and when there are 4 or more of them on the field at once, in the
+ * same region.").
+ *
+ * "The same everything" is read off what the board DRAWS: two units are alike
+ * when their card's markup is the same once their own ids are taken out — so
+ * the face, the stats and their colour, the damage, every badge (counters,
+ * keywords, lured, named, auto-yield …), and every affordance (playable, a
+ * pick's candidate, chosen, activatable, a placement warning) are all equal.
+ * A click on any card of a stack is then never ambiguous, as with the token
+ * stacks; a unit whose state changes leaves the stack on the next paint. A
+ * unit carrying mods never stacks: its strips hang under it and each strip is
+ * its own entity.
+ *
+ * The stack stands where its first unit stood and takes ALIKE_SPAN card
+ * slots of the row (ui/layout.ts counts it so, `data-span`), its cards spread
+ * evenly across them — about half of each card showing at four or five, more
+ * overlap past that. Every unit is still its own real card in the DOM (its
+ * `data-id`, its flight anchor), so picks, flights and the zoom work as before.
+ * Hovering fans it out over the row by transform — nothing else moves — and
+ * the count (a finger's way) holds it open, like an invader pile.
+ */
+const ALIKE_MIN = 4;
+const ALIKE_SPAN = 3;
+function unitLookKey(en: Entity, html: string): string | null {
+  if (en.kind !== 'unit' || modsOf(en).length) return null;
+  return html.replace(new RegExp(`(["':e])${en.id}(?=["'])`, 'g'), '$1#');
+}
+
+function fieldRowHtml(ents: readonly Entity[], draw: (en: Entity) => string): string {
+  const drawn = ents.map(en => ({ en, html: draw(en) }));
+  const groups = new Map<string, typeof drawn>();
+  for (const d of drawn) {
+    const k = unitLookKey(d.en, d.html);
+    if (k === null) continue;
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k)!.push(d);
+  }
+  const done = new Set<EntityId>();
+  const out: string[] = [];
+  for (const d of drawn) {
+    if (done.has(d.en.id)) continue;
+    const k = unitLookKey(d.en, d.html);
+    const g = k === null ? undefined : groups.get(k);
+    if (!g || g.length < ALIKE_MIN) { out.push(d.html); continue; }
+    g.forEach(x => done.add(x.en.id));
+    out.push(unitStackHtml(g));
+  }
+  return out.join('');
+}
+
+function unitStackHtml(stack: ReadonlyArray<{ en: Entity; html: string }>): string {
+  const k = stack.length;
+  const key = `units:${stack[0]!.en.id}`;
+  const open = openPiles.has(key);
+  return `<div class="ustack${open ? ' open' : ''}" data-zoomclear data-span="${ALIKE_SPAN}" style="--k:${k};--span:${ALIKE_SPAN}">${
+    stack.map((d, i) => `<div class="uslot" style="--i:${i}">${d.html}</div>`).join('')
+  }<button class="pilecount" data-btn="pilefan" data-pile="${key}" aria-label="${open ? 'close' : 'spread out'} the ${k} ${esc(faceOf(stack[0]!.en))}">×${k}</button></div>`;
+}
+
+/**
  * Everything the client is holding OUT of the region panels because it is part
  * of a formation: declared, being built by me, or being built by the opponent
  * as I watch.
@@ -4129,7 +4195,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
   // creature on the line, it is ammunition waiting to be spent, and mixing the
   // two made a formation impossible to read. Own strip, beside the bin.
   const isTok = (en: Entity): boolean => en.kind === 'spellToken';
-  const ownHere = here.filter(en => en.controller === p && !isTok(en)).map(entHtml).join('');
+  const ownHere = fieldRowHtml(here.filter(en => en.controller === p && !isTok(en)), entHtml);
   // CT-125 (#132): the tokens are drawn sorted into burst groups — same name
   // adjacent, the biggest X first (tokenViewOrder), id last so the order is
   // total — and alike ones stack. ⚠ A VIEWING order, not the cast order:

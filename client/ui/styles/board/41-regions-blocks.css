@@ -162,6 +162,32 @@
 .lboard .invpile .card .stats { font-size: max(8px, calc(var(--cw) * .3)); padding: 0 2px; line-height: 1.2; }
 /* the plate is smaller here, so the reserve beside it is too */
 .lboard .invpile .card:has(> .stats) > .badges { right: calc(max(8px, var(--cw) * .3) * 1.8 + 4px); }
+/* ── a stack of four or more alike units in an In Play row (main.ts
+      unitStackHtml; owner, #steward 2026-11-06). It takes --span card slots of
+      the row (ui/layout.ts counts it so), never more than the row's own
+      --zcols, and spreads its --k cards evenly across them: exactly as wide as
+      that many cards and their gaps (a fanned row's slot is --fanstep and the
+      gap). Hovered — or opened with its count — it fans out by transform to
+      side by side, from where ui/layout.ts stackFans says keeps it inside the
+      row; nothing else moves. ────────────────────────────────────────────── */
+.lboard .regionmain .zone > .ustack { --slotstep: calc(var(--cw) + 6px);
+  --ustep: calc((min(var(--span), var(--zcols, 99)) - 1) * var(--slotstep) / (var(--k) - 1));
+  position: relative; display: flex; flex: none; flex-wrap: nowrap; gap: 0; }
+.lboard [data-fitmode="fan"] .regionmain .zone > .ustack { --slotstep: calc(var(--fanstep) + 6px); }
+.lboard .ustack > .uslot { flex: none; width: var(--cw); transition: transform .14s ease-out; }
+.lboard .ustack > .uslot + .uslot { margin-left: calc(var(--ustep) - var(--cw)); }
+.lboard .ustack:hover, .lboard .ustack.open { z-index: 6; }
+.lboard .ustack:hover > .uslot, .lboard .ustack.open > .uslot {
+  transform: translateX(calc(var(--ufan0, 0px) + var(--i) * (var(--ufanstep, calc(var(--cw) + 2px)) - var(--ustep)))); }
+.lboard .ustack > .pilecount { position: absolute; right: -3px; bottom: -3px; z-index: 4;
+  font: inherit; font-size: max(11px, calc(var(--cw) * .2)); line-height: 1.25; padding: 0 5px; border-radius: 9px; cursor: pointer;
+  color: #fff; background: rgba(0, 0, 0, .78); border: 1px solid var(--line); }
+.lboard .ustack:hover > .pilecount { opacity: 0; }
+.lboard .ustack.open > .pilecount { opacity: .9; right: auto; left: -3px; }
+/* the row fanned past its floor: a stack steps like a card on either side */
+.lboard [data-fitmode="fan"] .regionmain .zone > .ustack + .card,
+.lboard [data-fitmode="fan"] .regionmain .zone > .card + .ustack,
+.lboard [data-fitmode="fan"] .regionmain .zone > .ustack + .ustack { margin-left: calc(var(--fanstep) - var(--cw)); }
 /* the Invaders row: the pile's row is as tall as its cards, no more */
 .linv .invaders { overflow: visible; }
 .lboard .linv { overflow: visible; }

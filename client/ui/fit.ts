@@ -99,6 +99,53 @@ export function fitCards(n: number, box: FitBox, o: FitOpts): FitPlan {
 }
 
 /**
+ * A ROW OF ITEMS, SOME WIDER THAN ONE CARD (owner, #steward 2026-11-06: four or
+ * more alike units stand as one stack, main.ts unitStackHtml). `spans` is each
+ * item's width in card slots, in row order: a card is 1, a stack STACK_SPAN —
+ * a stack of `s` slots is exactly as wide as `s` cards with their gaps
+ * (style.css `.ustack`), so the slot arithmetic is exact. A flex-wrap row puts
+ * an item that does not fit on the next line (next-fit), so the rows needed
+ * are counted by packing, not by `sum / cols`; an item wider than a whole row
+ * stands at the row's width (style.css caps a stack's span at `--zcols`). All
+ * spans 1 is fitCards exactly.
+ *
+ * The plan's `cols` is the row's width in slots, which the stylesheet reads
+ * back as `--zcols`.
+ */
+export function rowsFor(spans: readonly number[], cols: number): number {
+  if (cols <= 0) return spans.length ? Infinity : 0;
+  let rows = 0, used = cols;
+  for (const s0 of spans) {
+    const s = Math.min(s0, cols);
+    if (used + s > cols) { rows++; used = 0; }
+    used += s;
+  }
+  return rows;
+}
+
+export function fitSpans(spans: readonly number[], box: FitBox, o: FitOpts): FitPlan {
+  if (spans.every(s => s === 1)) return fitCards(spans.length, box, o);
+  const ratio = o.ratio ?? RATIO, floor = Math.min(o.floor ?? FLOOR, o.cw), minStep = o.minStep ?? MIN_STEP;
+  const total = spans.reduce((a, s) => a + s, 0);
+  if (box.w <= 0 || box.h <= 0) return { mode: 'grid', cw: o.cw, cols: 0, rows: 0 };
+  const fits = (cw: number): boolean => {
+    const c = capacity(cw, box, o.gap, ratio);
+    return rowsFor(spans, c.cols) <= c.rows;
+  };
+  const cw = largest(floor, Math.floor(o.cw), fits);
+  if (cw !== null) {
+    const c = capacity(cw, box, o.gap, ratio);
+    return { mode: 'grid', cw, cols: Math.min(total, c.cols), rows: rowsFor(spans, c.cols) };
+  }
+  // fan: the rows the height allows at the floor, and the narrowest row (in
+  // slots) the items pack into within them
+  const rows = Math.max(1, capacity(floor, box, o.gap, ratio).rows);
+  let perRow = Math.max(1, Math.ceil(total / rows));
+  while (perRow < total && rowsFor(spans, perRow) > rows) perRow++;
+  return { mode: 'fan', cw: floor, cols: perRow, rows, step: fanStep(perRow, box.w, floor, o.gap, minStep) };
+}
+
+/**
  * A fanned row's step — the `--fanstep` each card after the first sits past
  * the one before, BEFORE the zone's gap, which a fanned card keeps
  * (style.css `margin-left: calc(var(--fanstep) - var(--cw))` beside the

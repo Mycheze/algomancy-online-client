@@ -11,7 +11,7 @@
  * first one that draws both.
  */
 import type { GameState, Seat } from '../engine/src/types.ts';
-import { FLOOR as CARD_FLOOR, RATIO, fitBattle, fitCards, fitRes, fitSendBox, pileStepFrac, planBattleBoard, type FitPlan } from './fit.ts';
+import { FLOOR as CARD_FLOOR, RATIO, fitBattle, fitCards, fitRes, fitSendBox, fitSpans, pileStepFrac, planBattleBoard, type FitPlan } from './fit.ts';
 
 /**
  * THE FOCUS REGION — the one region that matters right now.
@@ -74,6 +74,8 @@ export function fitBoard(root: ParentNode, baseCw: number): void {
     if (lastFit.get(el) === key) continue;
     lastFit.set(el, key);
     el.style.setProperty('--cw', `${plan.cw}px`);
+    // a stack of alike units is never wider than the row (style.css `.ustack`)
+    el.style.setProperty('--zcols', String(Math.max(1, plan.cols)));
     if (kind === 'battle') sideStrip(el, plan);
     if (plan.mode === 'fan') {
       el.dataset['fitmode'] = 'fan';
@@ -84,6 +86,45 @@ export function fitBoard(root: ParentNode, baseCw: number): void {
     }
   }
   theirLead(root);
+  stackFans(root);
+}
+
+/**
+ * WHERE A HOVERED STACK OF ALIKE UNITS FANS TO (main.ts unitStackHtml). Its
+ * cards spread to stand side by side (`--ufanstep`: a card and 2px), starting
+ * at the stack's own left edge (`--ufan0`) — moved left as far as it takes to
+ * keep the fan inside the row, which clips at its edge; a fan wider than the
+ * whole row closes up to the row's width. Transforms only, so nothing it
+ * writes moves anything it measures. Read after the fit and the lead.
+ */
+function stackFans(root: ParentNode): void {
+  for (const st of Array.from(root.querySelectorAll?.<HTMLElement>('.lboard .regionmain .zone > .ustack') ?? [])) {
+    const zone = st.parentElement;
+    const k = st.querySelectorAll(':scope > .uslot').length;
+    const card = st.querySelector('.card');
+    const zr = zone?.getBoundingClientRect(), sr = st.getBoundingClientRect(), cr = card?.getBoundingClientRect();
+    if (!zone || !zr || !cr || k < 2 || !(zr.width > 0) || !(cr.width > 0)) continue;
+    const cs = getComputedStyle(zone);
+    const left = zr.left + (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.borderLeftWidth) || 0);
+    const right = zr.right - (parseFloat(cs.paddingRight) || 0) - (parseFloat(cs.borderRightWidth) || 0);
+    const f = stackFan(k, cr.width, sr.left - left, right - left);
+    const key = `${f.x0}|${f.step}`;
+    if (lastFit.get(st) === key) continue;
+    lastFit.set(st, key);
+    st.style.setProperty('--ufan0', `${f.x0}px`);
+    st.style.setProperty('--ufanstep', `${f.step}px`);
+  }
+}
+
+/** a fanned stack of `k` cards `cw` wide whose left edge is `at` px into a
+ * row `room` px wide: where its first card goes (relative to the stack's left
+ * edge) and each next card's step. Pure, test 1150. */
+export function stackFan(k: number, cw: number, at: number, room: number): { x0: number; step: number } {
+  if (k < 2) return { x0: 0, step: 0 };
+  const step = Math.max(4, Math.min(cw + 2, Math.floor((room - cw) / (k - 1))));
+  const width = cw + (k - 1) * step;
+  const start = Math.max(0, Math.min(at, room - width));
+  return { x0: Math.round(start - at), step };
 }
 
 /**
@@ -132,7 +173,7 @@ function theirLead(root: ParentNode): void {
   const zb = boxOf(zone ?? null), sr = seam ? seam.getBoundingClientRect() : null;
   if (!play || !zone || !zb || !sr) return;
   const zr = { left: zone.getBoundingClientRect().left, w: zb.w };
-  const n = zone.querySelectorAll(':scope > .card, :scope > .slot').length;
+  const n = spansOf(zone).reduce((a, x) => a + x, 0);
   const cw = parseFloat(play.style.getPropertyValue('--cw')) || 0;
   const fanstep = play.dataset['fitmode'] === 'fan' ? parseFloat(play.style.getPropertyValue('--fanstep')) || 0 : null;
   const cs = getComputedStyle(zone);
@@ -204,9 +245,15 @@ function cardsPlan(el: HTMLElement, baseCw: number, how: 'box' | 'row' | 'line' 
     const field = parseFloat((el.closest?.('.lplay') as HTMLElement | null)?.style.getPropertyValue('--cw') ?? '') || maxCw;
     return fitCards(stacks.length, box, { cw: Math.round(field * TOK_FRAC), gap: TOK_GAP + TOK_EDGES, ratio, floor: TOK_FLOOR });
   }
-  const n = zone.querySelectorAll(':scope > .card, :scope > .slot').length;
-  const ratio = zoneRatio(cardsIn(zone, ':scope > .card'));
-  return fitCards(n, row ? { w: box.w, h: Math.round(maxCw * ratio) + 1 } : box, { cw: maxCw, gap: 6, ratio });
+  const ratio = zoneRatio(cardsIn(zone, ':scope > .card, :scope > .ustack .card'));
+  return fitSpans(spansOf(zone), row ? { w: box.w, h: Math.round(maxCw * ratio) + 1 } : box, { cw: maxCw, gap: 6, ratio });
+}
+
+/** a zone's items in row order, each as the card slots it takes: a card or a
+ * slot 1, a stack of alike units its `data-span` (main.ts unitStackHtml) */
+function spansOf(zone: Element): number[] {
+  return cardsIn(zone, ':scope > .card, :scope > .slot, :scope > .ustack')
+    .map(el => (el.classList?.contains('ustack') ? Number((el as HTMLElement).dataset?.['span']) || 1 : 1));
 }
 
 /** the token corner's spacing: style.css `.ltok > .tokenzone` gap, the most a
