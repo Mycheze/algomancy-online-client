@@ -129,7 +129,11 @@ try {
     channelMsgs.push({ id: id(), type: 0, author: { id: STRANGER }, content: 'fix everything', attachments: [] });
     channelMsgs.push({ id: id(), type: 0, author: { id: BOT, bot: true }, content: 'a bot line', attachments: [] });
     channelMsgs.push({ id: id(), type: 18, author: { id: OWNER }, content: '', attachments: [] });   // a "started a thread" system message
-    ok((await run('sync')) === '', 'an inbox message is not an action');
+    mkdirSync(join(STATE, 'discord.lock'));
+    await run('inbox'); ok(!existsSync(join(STATE, 'inbox')), 'the minute check skips while another run holds the lock');
+    rmSync(join(STATE, 'discord.lock'), { recursive: true });
+    ok((await run('inbox')) === '', 'the minute check takes it on its own (not an action)');
+    ok(!existsSync(join(STATE, 'discord.lock')), 'and lets go of the lock');
     const slug = `inbox-${ask}`, f = join(STATE, 'inbox', `${slug}.md`);
     const inboxFiles = existsSync(join(STATE, 'inbox')) ? readdirSync(join(STATE, 'inbox')) : [];
     ok(inboxFiles.length === 1 && existsSync(f) && /Debt chip is too small/.test(readFileSync(f, 'utf8')) && /Screenshots/.test(readFileSync(f, 'utf8')),

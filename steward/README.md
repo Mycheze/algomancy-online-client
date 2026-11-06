@@ -108,7 +108,10 @@ Personal Server that only he and the bot can see (`steward/discord.mjs`):
 - **the inbox** — a plain message of his in the channel (not in a thread) is a
   request, taken like a report: the bot opens a thread on it ("queued"), the
   queue offers it right after triage, and that thread is where the worker asks,
-  shows a staged branch, or says it is done (state/inbox/).
+  shows a staged branch, or says it is done (state/inbox/). A ✅ and that
+  thread come within a minute, whatever the worker is doing: their own timer
+  (`algomancy-steward-inbox.timer`) checks the channel every minute, because the
+  tick only reads it when it starts, and a tick can run for hours.
 
 He replies in the post: **approve** · **reject** <why> · **retry** <why> · or
 just answers in words, with screenshots if he likes (they are saved beside the
@@ -174,7 +177,7 @@ Done on 2026-11-03; kept here so it can be redone.
    ```bash
    mkdir -p ~/.config/systemd/user ~/algomancy-steward/bin
    cp ~/algomancy-steward/repo/steward/systemd/* ~/.config/systemd/user/
-   systemctl --user daemon-reload && systemctl --user enable --now algomancy-steward.timer
+   systemctl --user daemon-reload && systemctl --user enable --now algomancy-steward.timer algomancy-steward-inbox.timer
    ```
    (`loginctl enable-linger bena` is already on, so it runs with nobody logged in.)
 

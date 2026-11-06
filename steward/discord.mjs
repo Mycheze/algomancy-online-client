@@ -29,15 +29,21 @@
  *                                          approve <slug> | reject <slug> <why> | retry <slug> <why> | pause | resume
  *   node steward/discord.mjs log "<text>"  one line in the night log
  *   node steward/discord.mjs summary       the morning summary of the night (the runner calls it once a day)
+ *   node steward/discord.mjs inbox         ONLY take new inbox messages (✅ + a "queued" thread). Its own
+ *                                          timer runs it every minute (algomancy-steward-inbox.timer), so a
+ *                                          request is acknowledged at once, not when the tick in progress
+ *                                          ends — that can be hours (owner, 2026-11-06: "when it's fully
+ *                                          silent … Idk what's happening"). It skips a minute if busy.
  *   node steward/discord.mjs selftest      the parsing, offline
  *
  * Env: STEWARD_DISCORD_TOKEN, STEWARD_DISCORD_FORUM (the channel id: text or forum),
  * STEWARD_DISCORD_OWNER (his user id); STEWARD_STATE; STEWARD_REPO (the clone).
  * Unconfigured = a quiet no-op, exit 0. A Discord failure never fails a tick.
+ * One run at a time (state/discord.lock): the tick and the inbox timer share discord.json.
  */
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -360,11 +366,27 @@ function selftest() {
   eq(chunks('x'.repeat(4500)).every(c => c.length <= 1900), true, 'chunks never exceed the limit');
 }
 
+/** one discord.mjs at a time — every command loads discord.json, changes it and saves it whole, and
+ *  the inbox timer runs beside the tick. mkdir is atomic; a lock older than ten minutes is a crash's. */
+function lock(waitMs) {
+  const L = join(STATE, 'discord.lock'); const until = Date.now() + waitMs;
+  mkdirSync(STATE, { recursive: true });
+  for (;;) {
+    try { mkdirSync(L); return () => rmSync(L, { recursive: true, force: true }); } catch (e) { if (e.code !== 'EEXIST') throw e; }
+    try { if (Date.now() - statSync(L).mtimeMs > 10 * 60e3) { rmSync(L, { recursive: true, force: true }); continue; } } catch { continue; }
+    if (Date.now() >= until) return null;
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 250);
+  }
+}
+
 const [cmd, ...rest] = process.argv.slice(2);
 if (cmd === 'selftest') selftest();
 else if (!TOKEN || !FORUM || !OWNER) { if (cmd === 'log') process.exitCode = 3; /* unconfigured: the runner falls back to its webhook */ }
 else {
-  const run = { sync, log: () => log(rest.join(' ')), summary }[cmd];
-  if (!run) { console.error('usage: discord.mjs sync | log "<text>" | summary | selftest'); process.exit(2); }
-  try { await run(); } catch (e) { console.error(`discord: ${e.message}`); process.exitCode = 1; }
+  const run = { sync, inbox: () => readInbox(load()), log: () => log(rest.join(' ')), summary }[cmd];
+  if (!run) { console.error('usage: discord.mjs sync | inbox | log "<text>" | summary | selftest'); process.exit(2); }
+  // the inbox check is every minute: busy now = next minute. The tick waits its turn (a check takes seconds).
+  const unlock = lock(cmd === 'inbox' ? 0 : 120e3);
+  if (!unlock) { if (cmd !== 'inbox') { console.error('discord: discord.json is locked'); process.exitCode = 1; } }
+  else try { await run(); } catch (e) { console.error(`discord: ${e.message}`); process.exitCode = 1; } finally { unlock(); }
 }

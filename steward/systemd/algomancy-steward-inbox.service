@@ -1,0 +1,13 @@
+[Unit]
+Description=Algomancy steward: acknowledge the owner's new #steward messages (✅ + a "queued" thread)
+After=network-online.target
+
+[Service]
+Type=oneshot
+# the tick's own vetted copy (run-once.sh extracts it from origin/master); an older copy without
+# "inbox" prints its usage and exits 2, harmlessly, until the next tick refreshes it
+ExecStart=/bin/bash -c 'set -a; . %h/.config/algomancy-steward/env; set +a; f=%h/algomancy-steward/bin/discord.mjs; [ -f "$f" ] || exit 0; STEWARD_STATE=%h/algomancy-steward/state STEWARD_REPO=%h/algomancy-steward/repo exec node "$f" inbox'
+Environment=PATH=%h/.local/bin:%h/.local/node/bin:/usr/local/bin:/usr/bin:/bin
+CPUAffinity=5 11
+Nice=19
+TimeoutStartSec=5min
