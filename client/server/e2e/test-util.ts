@@ -159,3 +159,38 @@ export function gamesDir(): string {
 export function gameFile(code: string): string {
   return join(gamesDir(), `${code}.json`);
 }
+
+/* ── CT-511: waiting on the EVENT, not on a guess at how long it takes ────
+ *
+ * A test that sleeps 300ms and then reads what the server wrote is right on
+ * an idle box and wrong on a loaded one (test 486 read the report journal,
+ * which dispute.ts appends ASYNCHRONOUSLY, that way). The deadline here is a
+ * failure line, not a wait: the probe passes the moment the thing is true.
+ * Same reasoning, and the same override shape, as STARTUP_MS above. */
+const WAIT_MS = Number(process.env['ALGO_TEST_WAIT_MS'] ?? 30_000);
+
+/** Poll `probe` until it returns something truthy, and return that. Throws
+ * `what` (with the deadline) if it never does. Use it for "the server has
+ * written X"; a check that something was NOT written still needs a wait. */
+export async function eventually<T>(probe: () => T, what: string, ms = WAIT_MS): Promise<NonNullable<T>> {
+  const deadline = Date.now() + ms;
+  for (;;) {
+    const v = probe();
+    if (v) return v as NonNullable<T>;
+    if (Date.now() >= deadline) throw new Error(`gave up after ${ms}ms waiting for: ${what}`);
+    await new Promise(r => setTimeout(r, 25));
+  }
+}
+
+/** Resolve when the socket is open; REJECT if it errors or closes first.
+ * Waiting on 'open' alone hangs the file for ever when the connection fails,
+ * which is a hang with no line saying why (CT-511: test 615 hung once). */
+export function opened(ws: WebSocket): Promise<void> {
+  if (ws.readyState === WebSocket.OPEN) return Promise.resolve();
+  return new Promise((res, rej) => {
+    if (ws.readyState !== WebSocket.CONNECTING) { rej(new Error('the socket is already closed')); return; }
+    ws.addEventListener('open', () => res(), { once: true });
+    ws.addEventListener('error', () => rej(new Error('the socket failed to open')), { once: true });
+    ws.addEventListener('close', ev => rej(new Error(`the socket closed before it opened (${(ev as CloseEvent).code})`)), { once: true });
+  });
+}

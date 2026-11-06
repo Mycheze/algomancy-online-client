@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-06', kind: 'fix', text: 'After you reconnect or reload mid-game, the table no longer flashes back to an older board for a moment before it catches up.' },
   { date: '2026-11-06', kind: 'fix', text: 'In a deck description, writing a card as [[Card Name]] now makes it a card link you can hover, without the brackets showing.' },
   { date: '2026-11-05', kind: 'fix', text: 'When several units die at once, a "whenever a unit dies" ability a dying unit got from an augment or a graft, like Refuse Reclaimer\'s, now still sees the others die, whichever order they go in.' },
   { date: '2026-11-05', kind: 'fix', text: 'After a game lost on time, "view the final board" no longer strands you: the bar says who won and has Post-game summary and Home, and the table menu no longer offers to concede a finished game.' },

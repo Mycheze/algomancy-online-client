@@ -26,7 +26,7 @@ import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Action, Seat } from '../../engine/src/types.ts';
-import { mintRoom, spawnServer, type ServerHandle } from '../e2e/test-util.ts';
+import { eventually, mintRoom, opened, spawnServer, type ServerHandle } from '../e2e/test-util.ts';
 import { analyze, reportLines, type RoomFile } from '../replay-room.ts';
 
 const DIR = mkdtempSync(join(tmpdir(), 'algo-486-'));
@@ -54,10 +54,8 @@ class Client {
     this.ws = new WebSocket(`ws://localhost:${port}`);
     this.ws.addEventListener('message', ev => this.onMsg(JSON.parse(String((ev as MessageEvent).data))));
   }
-  open(): Promise<void> {
-    if (this.ws.readyState === WebSocket.OPEN) return Promise.resolve();
-    return new Promise(res => this.ws.addEventListener('open', () => res(), { once: true }));
-  }
+  /** CT-511: fails, rather than hangs, when the connection does */
+  open(): Promise<void> { return opened(this.ws); }
   private onMsg(m: Msg): void {
     this.msgs.push(m);
     this.lastAt = Date.now();
@@ -209,8 +207,8 @@ test('§2 propose then accept: the edit lands for both, the clocks stop meanwhil
   assert.ok(pass, 'fixture: the seat with priority may pass');
   mover.send({ t: 'action', action: pass });
   await quiesce(a, b);
-  await sleep(300);
-  const rows = fixRows();
+  // CT-511: dispute.ts appends the row asynchronously — wait for it, not 300ms
+  const rows = await eventually(() => fixRows().length ? fixRows() : null, 'the move after the fix to file its report');
   assert.equal(rows.length, 1, 'the move after it filed the run, once');
   const row = rows.at(-1);
   assert.equal(row.room, ROOM);
@@ -330,8 +328,8 @@ test('§6 two fixes in a row file one report, and a restart in between does not 
   server = await spawnServer(ENV);
   a = new Client(server.port); b = new Client(server.port);
   await a.open(); await b.open();
-  await sleep(300);
-  const rows = fixRows();
+  // CT-511: boot files the persisted run asynchronously — wait for the row
+  const rows = await eventually(() => fixRows().length > filed ? fixRows() : null, 'the restarted server to file the persisted run');
   assert.equal(rows.length, filed + 1, 'ONE row for the two fixes');
   const row = rows.at(-1);
   assert.equal(row.fix.run, 2, 'it says it holds two');

@@ -876,8 +876,13 @@ class NetBackend implements Backend {
       // the room you were sitting in just filled: say so to a background tab
       if (this.waiting) alertTab('Your game has started');
       this.waiting = null;
-      // BL-46: an agreed rewind cut the log. Every update still queued here
-      // describes a board that no longer exists — drop them, not play them
+      // CT-511: a join is the live board, and on one socket every update still
+      // queued arrived before it — releasing one later painted an older board
+      // over this one. Drop them; the rate floor (`last`) stays.
+      this.paced = { queue: [], last: this.paced.last };
+      this.schedulePace();
+      // BL-46: an agreed rewind cut the log, so the playback to watch again is
+      // of a board that no longer exists either
       if (m.rewound) { this.paced = emptyPace(); lastPlayback = null; }
       amend.setFixInfo(m.fix ?? null);
       // the lobby just resolved: show what the trio is and how it got there

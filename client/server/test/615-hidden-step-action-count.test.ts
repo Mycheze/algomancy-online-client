@@ -26,7 +26,7 @@ import { join } from 'node:path';
 import type { Action, Seat } from '../../engine/src/types.ts';
 import type { Room } from '../rooms.ts';
 import { viewFor } from '../view.ts';
-import { mintRoom, spawnServer } from '../e2e/test-util.ts';
+import { mintRoom, opened, spawnServer } from '../e2e/test-util.ts';
 
 type Rooms = typeof import('../rooms.ts');
 
@@ -98,7 +98,7 @@ test('CR D6.1a / CT-334: over the wire, a seat rejoining mid-step is not served 
         next: p => new Promise((res, rej) => { waiters.push({ p, r: res }); setTimeout(() => rej(new Error('timeout')), 8000); }),
       };
     };
-    const opened = (ws: WebSocket): Promise<void> => new Promise(r => ws.addEventListener('open', () => r(), { once: true }));
+    // CT-511: test-util's opened() fails, rather than hangs, when the connection does
     const a = client(), b = client();
     await opened(a.ws); await opened(b.ws);
     const aj = a.next(m => m.t === 'joined');
