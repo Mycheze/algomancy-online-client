@@ -180,16 +180,6 @@ const OPEN: TodoEntry[] = [
   },
   // ── Pass D, the mop-up and the replacement-order round, 2026-10-25: defects found and not fixed
   {
-    id: 432, area: "coverage", severity: "minor",
-    cards: ["Torrential Reclamation"],
-    title: "test 182 still lists the Torrential Reclamation scaling question as open, quoting the old card text",
-    detail: "182-correctness-sample.test.ts OPEN_QUESTIONS[0] asks whether \"for each ally recalled this way\" scales the sacrifice too, quoting \"Recall X target nontoken allies. Then each player sacrifices a unit and you lose 1 life for each ally recalled this way.\" The owner settled it (2026-08-25/28), and the designer's reworded text, now in the oracle (CT-374), puts the sacrifice inside the \"for each\".",
-    evidence: "Pass D paperwork 2026-10-25 (zero-handoff/PD-paper.md, new defect 3).",
-    fix: "Drop the question from OPEN_QUESTIONS (the tally line counts them), or keep it as history with the answer and the new text.",
-    proof: () => still('engine/test/182-correctness-sample.test.ts', '"for each ally recalled this way" scale the SACRIFICE too'),
-    status: 'open',
-  },
-  {
     id: 438, area: "coverage", severity: "minor",
     title: "after the replacement-order round, 472's first title and the engine.ts replacement comment still describe the old fixed order",
     detail: "472-counter-thief-and-rot-order.test.ts: \"CR 708.4a: two Counter Thieves — the player whose unit the counters were for is asked which keeps them\". Since the round the thieves' controller orders them; the test passes because in it that player owns both. The title is bound by CR 708.4a's record. The engine.ts comment above the replacement hooks still says the player the event happens to is asked, lists \"Cosmic Conspirators\" as order-insensitive (not so beside an Automaton) and says there is deliberately no general framework; E.replaceEvent is one now.",

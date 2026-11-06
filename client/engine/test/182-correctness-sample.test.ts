@@ -1978,13 +1978,15 @@ test('Ghord: [Switch1] is bounded — my SECOND sacrifice this turn does not fir
  * is phrased so the owner can answer it in one line. Recorded rather than
  * decided in the engine's favour — §7.1's whole point is that a measurement
  * which quietly agrees with the implementation measures nothing.
+ *
+ * Each row is `<card>[ / <card>…] — "<quote>" …`, and the quote must be words
+ * the named cards print today (the test below checks it). Settled 2026-08-28
+ * and removed 2026-11-06 (CT-432): Torrential Reclamation's "does the for-each
+ * scale the sacrifice too" — the owner ruled both clauses scale, and the
+ * designer's reword ("For each ally recalled this way, each player sacrifices
+ * a unit and you lose 1 life.", CT-374) now prints it that way.
  */
 const OPEN_QUESTIONS = [
-  'Torrential Reclamation — "Recall X target nontoken allies. Then each player '
-  + 'sacrifices a unit and you lose 1 life for each ally recalled this way." Does '
-  + '"for each ally recalled this way" scale the SACRIFICE too, or only the life '
-  + 'loss? (Engine today: both. This file reads: only the life loss.)',
-
   'Shoreline Specter — "After combat, you may recall target ALLY." The Specter is '
   + 'offered as a target of its own trigger. Intended (it is an ally of its '
   + 'controller), or should "target ally" exclude the source?',
@@ -2027,4 +2029,20 @@ test('THE NUMBER — clauses asserted vs clauses correct, printed for the next r
     wrongs.map(w => `${w.card} :: ${w.clause}`).sort(), KNOWN_WRONG.slice().sort(),
     'KNOWN_WRONG must name exactly the divergences this file still finds — add a row '
     + 'when you find a new one, delete a row when you FIX one');
+});
+
+test('OPEN_QUESTIONS quote only words the named cards print today', () => {
+  // A question that quotes a sentence the card no longer prints has been
+  // overtaken — reworded, and usually answered by the reword (CT-432:
+  // Torrential Reclamation's sat here for two months after both).
+  const fold = (s: string) => s.toLowerCase().replace(/[’']/g, "'");
+  for (const q of OPEN_QUESTIONS) {
+    const m = /^(.+?) — "([^"]+)"/.exec(q);
+    assert.ok(m, `row is not "<card> — \\"<quote>\\" …": ${q.slice(0, 60)}`);
+    const [, names = '', quote = ''] = m;
+    for (const name of names.split(' / ')) {
+      assert.ok(fold(getCard(name).text).includes(fold(quote)),
+        `${name} no longer prints "${quote}" — reword the question, or drop it if the new text settles it`);
+    }
+  }
 });

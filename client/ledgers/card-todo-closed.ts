@@ -14714,4 +14714,18 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-06 (steward). Docs only. The planned wording was stale by the time it was done: board round 8 (2026-10-29) deleted the classic board, the ▦ toggle and the algoLayout preference (docs/18-board-layout-v2.md's status block, ui/README.md, layout.ts's header), so \"the toggle selects the classic one\" would have been a second wrong row. The row now says the regions board is the only board since 2026-10-29. The proof also checks the planned wording. The guard reads the spec's status block and fails if the README row mentions a toggle, the classic board, ▦, algoLayout or a default while the spec says it is the only board. CLIENT_README joins paths.mjs for it.",
     status: 'done',
   },
+  {
+    id: 432, area: "coverage", severity: "minor",
+    cards: ["Torrential Reclamation"],
+    title: "test 182 still lists the Torrential Reclamation scaling question as open, quoting the old card text",
+    detail: "182-correctness-sample.test.ts OPEN_QUESTIONS[0] asks whether \"for each ally recalled this way\" scales the sacrifice too, quoting \"Recall X target nontoken allies. Then each player sacrifices a unit and you lose 1 life for each ally recalled this way.\" The owner settled it (2026-08-25/28), and the designer's reworded text, now in the oracle (CT-374), puts the sacrifice inside the \"for each\".",
+    evidence: "Pass D paperwork 2026-10-25 (zero-handoff/PD-paper.md, new defect 3).",
+    fix: "Drop the question from OPEN_QUESTIONS (the tally line counts them), or keep it as history with the answer and the new text.",
+    proof: () => still('engine/test/182-correctness-sample.test.ts', '"for each ally recalled this way" scale the SACRIFICE too'),
+    guards: [
+      '182-correctness-sample.test.ts::OPEN_QUESTIONS quote only words the named cards print today',
+    ],
+    closed: "FIXED 2026-11-06 (steward). Test only, no behaviour change. The Torrential Reclamation row is gone from OPEN_QUESTIONS (the tally now prints 2): the owner settled it on 2026-08-28 (the for-each scales the sacrifice too), and the oracle now carries the designer's reword (CT-374). A comment above the list records the question and its answer. A new test in 182 checks that each remaining row quotes words its named cards print today (case-folded; Shoreline Specter, Hand Peeper, Bripp, Thought Extraction all pass), so a question left behind by a reword goes red. Mutation: putting the old row back turns that test red, and the proof true.",
+    status: 'done',
+  },
 ];
