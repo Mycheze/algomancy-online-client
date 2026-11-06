@@ -201,6 +201,16 @@ const OPEN: TodoEntry[] = [
     verify: "On an iPad, open a deck on the tabletop and drag a card onto the sideboard pile and back.",
     status: 'open',
   },
+  {
+    id: 530, area: "client", severity: "minor",
+    title: "the post-game summary waits on a full replay of the game, and a rejoin into a finished game replays it again",
+    detail: "server/main.ts recordFinishedGame sends the post-game payload only after recordLiveGame, which replays the whole game (stats.ts summarizeGame) on the event loop; sendGameOver's rejoin path (row: null) calls summarizeRoom, which replays it AGAIN, on every rejoin or reload into a finished room. CT-529 made the replay about six times cheaper on a crowded board, but MCHQ (600 actions, ~75 units) still takes ~4 s on the home box, and every room on the server waits that long each time.",
+    evidence: "Steward CT-529 run 2026-11-06: summarizeGame(MCHQ) 3.9 s after the fix; main.ts sendGameOver's `extra.row ?? summarizeRoom(room)` and the rejoin call with row: null.",
+    fix: "Keep the summary the record already computed on the room, so a rejoin reuses it; consider sending the screen's payload before (or without blocking on) the record, or doing the replay off the event loop (simulate-worker.ts is a worker precedent).",
+    proof: null,
+    verify: "Finish a long game on a test server, then reload: does the post-game screen come back without a multi-second pause, and do other rooms keep moving meanwhile?",
+    status: 'open',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

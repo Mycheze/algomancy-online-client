@@ -846,6 +846,21 @@ export class E {
    * query gets the identity face and nothing projected. */
   private inFaces = false;
   /**
+   * `projectedSources`' walk — the projectors in a region that radiate —
+   * kept by region for the length of ONE `staticsFor` read and reused by
+   * every face read under it; null outside one.
+   *
+   * Inbox 2026-11-06 (the owner's post-game summary never came, room MCHQ):
+   * `staticsFor` reads the faces of every radiator in the region, and each
+   * face read walked the whole board again looking for a projector. On a
+   * board of sixty Robots that is sixty board walks per stat read, and the
+   * post-game replay of that game took 25 seconds. Under `staticsFor` the
+   * walk's answer cannot differ between those reads: a read moves nothing,
+   * and its CR 712.1a filter (`radiates()`) is the shallow one throughout,
+   * because `inStatics` is up. Outside it nothing is kept.
+   */
+  private projectors: Map<number, { holder: Entity; anchor: Entity }[]> | null = null;
+  /**
    * CR 708.4a: reentrancy guard for the counter REDIRECT. Unlike the amount
    * modifiers above, a redirect really does re-enter — Counter Thief's
    * replacement puts the counters on ITSELF, and putting counters on a unit is
@@ -1994,10 +2009,15 @@ export class E {
     try {
       const mine = this.faceName(e);
       const live = this.radiates();
-      for (const { holder, anchor } of this.anchored((h, a) =>
-        this.ownBlocks(h, a).some(d => !!d.projects)          // CR 721.1: body or box
-        && a.region === e.region
-        && live(h, a))) {                                     // CR 712.1a, as staticsFor
+      let walk = this.projectors?.get(e.region);
+      if (!walk) {
+        walk = this.anchored((h, a) =>
+          this.ownBlocks(h, a).some(d => !!d.projects)          // CR 721.1: body or box
+          && a.region === e.region
+          && live(h, a));                                       // CR 712.1a, as staticsFor
+        this.projectors?.set(e.region, walk);
+      }
+      for (const { holder, anchor } of walk) {
         for (const pr of this.ownBlocks(holder, anchor).flatMap(d => d.projects ?? [])) {
           if (!(pr.onto ? pr.onto(this, anchor, e) : anchor.id === e.id)) continue;
           const facets = pr.facets ?? PROJECTED_FACETS;
@@ -2216,6 +2236,7 @@ export class E {
     if (this.inStatics) return [];
     const out: { holder: Entity; from: CardName; srcId: EntityId; mod: import('./cards/dsl.ts').StaticMod }[] = [];
     this.inStatics = true;
+    this.projectors = new Map();   // one projector walk per region for every face read below
     try {
       // the anchored() walk: statics radiate from units in play AND from
       // augment mods (text-box [Augment] statics transfer with the card —
@@ -2251,7 +2272,7 @@ export class E {
           }
         }
       }
-    } finally { this.inStatics = false; }
+    } finally { this.inStatics = false; this.projectors = null; }
     return out;
   }
 
