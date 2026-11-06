@@ -168,6 +168,42 @@ const OPEN: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "Took back Nyar's Smouldering Inferno Virus augment on mycheze's Living Forge [318], played before anything else in the window; mycheze agreed. Replayed, Nyar cast Leaping Lillik on Automaton of Abundance first, ordered its triggers [318]-[320], then played the same augment on top [321], so it resolved first. The player's own sequencing, as the reason says; the engine took both orders. No defect.",
   },
+  {
+    id: 332, room: "CFSG", date: "2026-11-06",
+    report: "invi, seat 1: \"Cerebrox and the everywhere are in the same fight. combat damage happens, everywhere dies, cerebrox triggers (as it should), but ONLY once, even though 4 cards were trashed during dmg\"",
+    status: 'live',
+    note: "Real. Replayed (372 of 372, no divergence): The Everywhere had named Cerebrox in the haste step; one combat damage killed Blurf, Prediction Prophet, Flourishing Flora and The Everywhere (and two Unit Tokens, which are not trashed). The engine walks the batch one death at a time, so the three trashes before The Everywhere's found Cerebrox still muted and The Everywhere's own found it free: one trigger, an artefact of the walk order. Whether the right answer is none or four is a reading the sources do not settle yet. CT-532.",
+  },
+  {
+    id: 333, room: "UAUS", date: "2026-11-06",
+    report: "Nyar, seat 1, agreed fix: back to before Yagamino's resource (turn 2 planning). \"test\"",
+    status: 'agreed-fix',
+    note: "Took back Yagamino's resource, Done planning and both haste Dones [30]-[33]; Yagamino agreed. Replayed (--branch): nothing had been played, and the two went straight on to the further take-back filed as #334. Trying the button, as the reason says; no defect.",
+  },
+  {
+    id: 334, room: "UAUS", date: "2026-11-06",
+    report: "Nyar, seat 1, agreed fix: back to the start of this step (turn 2, planning). \"test\"",
+    status: 'agreed-fix',
+    note: "Continues #333: took back all of turn 2's planning [20]-[29] (bottom cards, recycles, resources); Yagamino agreed. Replayed, both players planned again, in a different order, and the game went on to 358 actions. A test of rewinding through a hidden step; no defect.",
+  },
+  {
+    id: 335, room: "RGMY", date: "2026-11-06",
+    report: "invi, seat 0, agreed fix: back to the start of this step (turn 3, deployment). \"asd\"",
+    status: 'agreed-fix',
+    note: "Took back Yagamino's Bloated Manablub, its Molten Upheaval graft, invi's Darkblast graft on Maw of Despair and Yagamino's Molten Riftbreaker [115]-[118]; Yagamino agreed. Replayed (--branch): Yagamino deployed Molten Riftbreaker first and then Manablub with a graft, and invi did not graft Darkblast. The players redoing their own deployment; the engine took both. No defect.",
+  },
+  {
+    id: 336, room: "AXNJ", date: "2026-11-06",
+    report: "invi, seat 0, agreed fix: back to before invi's choice: Yagamino, then further back to before invi's choice: Molten Riftbreaker (turn 3 battle). \"asd\"",
+    status: 'agreed-fix',
+    note: "Two rewinds in one run: Dropslime's target (Yagamino's Molten Riftbreaker) [73] and Splort's (Yagamino) [74]; Yagamino agreed both. Replayed (--branch): invi chose the same two targets the other way round, Dropslime at Yagamino and Splort at the Riftbreaker [73]-[74]. Both triggers offered every target either time; the player swapping their own aims. No defect.",
+  },
+  {
+    id: 337, room: "QHBA", date: "2026-11-06",
+    report: "Yagamino, seat 1, agreed fix: back to the start of the step before (turn 1, planning). \"ghg\"",
+    status: 'agreed-fix',
+    note: "Took back all of turn 1's planning and invi's haste Done [0]-[12]; invi agreed. Replayed (--branch): the same kinds of plays again in another order, and the game went on to 150 actions. Nothing had happened yet; trying the button. No defect.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
