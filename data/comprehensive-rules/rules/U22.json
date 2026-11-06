@@ -1032,7 +1032,16 @@
     "parent": "formats.constructed.competitive",
     "order": 2,
     "text": "In Competitive Constructed each deck may have a sideboard of up to 7 cards. The limit of 2 copies of a card (rule formats.constructed.copies) counts the deck and its sideboard together.",
-    "examples": [],
+    "examples": [
+      {
+        "text": "A deck registered with a sideboard of 7 cards is accepted; one with a sideboard of 8 cards is refused.",
+        "test": "808-match-deck-registration.test.ts::§2 the sideboard holds at most seven cards"
+      },
+      {
+        "text": "A deck with one copy of a card and a sideboard with two more copies of it is refused: that is three copies across the two.",
+        "test": "808-match-deck-registration.test.ts::§3 the copy cap counts the main deck and the sideboard together"
+      }
+    ],
     "see": [
       "901.3"
     ],
@@ -1053,21 +1062,35 @@
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "808-match-deck-registration.test.ts"
+      ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
     "notes": "Owner's message of 2026-11-02. No printed or designer source mentions sideboards.",
-    "sourceHashes": {},
-    "untested": true
+    "sourceHashes": {}
   },
   {
     "key": "formats.constructed.competitive.swaps",
     "parent": "formats.constructed.competitive",
     "order": 3,
     "text": "Between the games of a match a player may exchange any cards between their deck and their sideboard, in any numbers, as long as the deck keeps at least 30 cards (rule formats.constructed.deck-size) and the sideboard at most 7. No exchange is made before the first game.",
-    "examples": [],
+    "examples": [
+      {
+        "text": "A player registered a 31-card deck and a 6-card sideboard. Before game 2 they move two cards from the deck to the sideboard and one card back: the deck is now 30 cards and the sideboard 7, and that is allowed.",
+        "test": "809-match-deck-swap.test.ts::§1 the same cards in any legal split pass"
+      },
+      {
+        "text": "An exchange that would leave the deck at 29 cards, or the sideboard at 8, is refused.",
+        "test": "809-match-deck-swap.test.ts::§3 the main deck stays at 30 or more and the sideboard at 7 or fewer"
+      },
+      {
+        "text": "Game 1 of a match is played with the decks exactly as they were registered; game 3 starts from the deck each player had in game 2.",
+        "test": "814-cc-bo3-runs.test.ts::§1-§4 a Bo3 runs game 1, 2 and 3 with the loser choosing and the banks carried"
+      }
+    ],
     "see": [
       "901.2"
     ],
@@ -1088,14 +1111,16 @@
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "809-match-deck-swap.test.ts",
+        "814-cc-bo3-runs.test.ts"
+      ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
     "notes": "Owner's message and his answer of 2026-11-02 ('Like Magic': any cards either way; the main deck's size may change as long as it stays at least 30). Doc 22 section 0.",
-    "sourceHashes": {},
-    "untested": true
+    "sourceHashes": {}
   },
   {
     "key": "formats.constructed.competitive.initiative",

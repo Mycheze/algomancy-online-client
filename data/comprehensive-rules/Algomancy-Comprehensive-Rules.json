@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:828b46b1328543bb",
+ "generated_from": "sha256:231a06392263547b",
  "rules": [
   {
    "num": "100.1",
@@ -36294,14 +36294,17 @@
    "see": [
     "901.3"
    ],
-   "examples": [],
+   "examples": [
+    "A deck registered with a sideboard of 7 cards is accepted; one with a sideboard of 8 cards is refused.",
+    "A deck with one copy of a card and a sideboard with two more copies of it is refused: that is three copies across the two."
+   ],
    "basis": "owner",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
    "openQuestion": false,
-   "untested": true,
-   "verdict": "untested"
+   "untested": false,
+   "verdict": "confirmed"
   },
   {
    "num": "901.9c",
@@ -36315,14 +36318,18 @@
    "see": [
     "901.2"
    ],
-   "examples": [],
+   "examples": [
+    "A player registered a 31-card deck and a 6-card sideboard. Before game 2 they move two cards from the deck to the sideboard and one card back: the deck is now 30 cards and the sideboard 7, and that is allowed.",
+    "An exchange that would leave the deck at 29 cards, or the sideboard at 8, is refused.",
+    "Game 1 of a match is played with the decks exactly as they were registered; game 3 starts from the deck each player had in game 2."
+   ],
    "basis": "owner",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
    "openQuestion": false,
-   "untested": true,
-   "verdict": "untested"
+   "untested": false,
+   "verdict": "confirmed"
   },
   {
    "num": "901.9d",
@@ -42606,14 +42613,17 @@
    "parent": "D8.6",
    "text": "Between games the players have 120 seconds to change their decks from their sideboards (rule 901.9c), or until both of them are ready, whichever comes first.",
    "see": [],
-   "examples": [],
+   "examples": [
+    "Once both players are back in the room after game 1, the 120 seconds start.",
+    "Both players press Ready before the 120 seconds are up: the next game is dealt at once."
+   ],
    "basis": "owner",
    "scope": "digital",
    "engineDiffers": false,
    "discrepancies": [],
    "openQuestion": false,
-   "untested": true,
-   "verdict": "untested"
+   "untested": false,
+   "verdict": "confirmed"
   },
   {
    "num": "D8.6c",
@@ -42627,14 +42637,17 @@
    "see": [
     "D1.2"
    ],
-   "examples": [],
+   "examples": [
+    "The player who lost game 1 readies up for game 2 by choosing who takes the initiative; the winner's Ready carries no choice, and the player chosen has the initiative in game 2.",
+    "Between games the player who lost the last game sees two Ready buttons, one for each choice, and neither is chosen for them."
+   ],
    "basis": "owner",
    "scope": "digital",
    "engineDiffers": false,
    "discrepancies": [],
    "openQuestion": false,
-   "untested": true,
-   "verdict": "untested"
+   "untested": false,
+   "verdict": "confirmed"
   },
   {
    "num": "D8.6d",

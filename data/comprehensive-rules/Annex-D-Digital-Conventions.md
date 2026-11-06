@@ -1404,13 +1404,21 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner call · adopted 2026-11-02, 2026-11-03 · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 4 gate test files · Tests: 1045-cc-match-clock-choice.test.ts, 1046-cc-clockless-match-carries.test.ts, 815-cc-flag-loses-the-match.test.ts, 1043-competitive-match-clock.test.ts · Example tests: 1045-cc-match-clock-choice.test.ts::1045 §1-§4 the creating join sets the match clock; the default is 45 minutes; the joiner sets nothing, 1046-cc-clockless-match-carries.test.ts::1046 §2 a timed match carries its own bank into game 2, 815-cc-flag-loses-the-match.test.ts::§1-§2 a flag in game 1 of a Bo3 loses the match, not just the game · Key: annexd.modes.competitive.clock</sub>
 
-<a id="rD8.6b"></a>**D8.6b** Between games the players have 120 seconds to change their decks from their sideboards (rule 901.9c), or until both of them are ready, whichever comes first. *(Untested: no executed test demonstrates it.)*
+<a id="rD8.6b"></a>**D8.6b** Between games the players have 120 seconds to change their decks from their sideboards (rule 901.9c), or until both of them are ready, whichever comes first.
 
-<sub>Basis: Owner call · adopted 2026-11-02 · Verified: untested in round 4; verifier ran no tests; no gate test · Key: annexd.modes.competitive.sideboard-window</sub>
+> *Example: Once both players are back in the room after game 1, the 120 seconds start.*
 
-<a id="rD8.6c"></a>**D8.6c** The player who lost the previous game makes the initiative choice (rule 901.9d) as they ready up for the next game. See rule D1.2. *(Untested: no executed test demonstrates it.)*
+> *Example: Both players press Ready before the 120 seconds are up: the next game is dealt at once.*
 
-<sub>Basis: Owner call · adopted 2026-11-02 · Verified: untested in round 4; verifier ran no tests; no gate test · Key: annexd.modes.competitive.initiative-choice</sub>
+<sub>Basis: Owner call · adopted 2026-11-02 · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Tests: 817-cc-sideboard-window.test.ts · Example tests: 817-cc-sideboard-window.test.ts::§1 the window opens when both seats are in, and runs 120 s, 817-cc-sideboard-window.test.ts::§5 both Ready deals at once, before the window ends · Key: annexd.modes.competitive.sideboard-window</sub>
+
+<a id="rD8.6c"></a>**D8.6c** The player who lost the previous game makes the initiative choice (rule 901.9d) as they ready up for the next game. See rule D1.2.
+
+> *Example: The player who lost game 1 readies up for game 2 by choosing who takes the initiative; the winner's Ready carries no choice, and the player chosen has the initiative in game 2.*
+
+> *Example: Between games the player who lost the last game sees two Ready buttons, one for each choice, and neither is chosen for them.*
+
+<sub>Basis: Owner call · adopted 2026-11-02 · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Tests: 814-cc-bo3-runs.test.ts, 835-cc-loser-chooses-initiative.test.ts · Example tests: 814-cc-bo3-runs.test.ts::§1-§4 a Bo3 runs game 1, 2 and 3 with the loser choosing and the banks carried, 835-cc-loser-chooses-initiative.test.ts::§1 the loser: two Ready buttons, no default, each naming a seat · Key: annexd.modes.competitive.initiative-choice</sub>
 
 <a id="rD8.6d"></a>**D8.6d** A player may also concede the match: during a game, between games, while the match is paused, or before its first game begins. The player who concedes it loses the match. During a game, that game is conceded first, so it is lost as well. See rule 901.9e.
 

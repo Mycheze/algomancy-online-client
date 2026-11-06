@@ -3382,40 +3382,66 @@
   },
   {
     "key": "annexd.modes.competitive.initiative-choice",
-    "textHash": "cb229454d1ab16d9",
-    "verdict": "untested",
+    "textHash": "af8c2b87eaa5d8d7",
+    "verdict": "confirmed",
     "round": 4,
     "verifier": "U24-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:createGame",
+        "loc": "client/server/match.ts:matchGameDecided",
         "agrees": true,
-        "note": "accepts a chosen initiative seat; no ready-up or loser's choice exists in server/ui"
+        "note": "between.chooser = other(winner); the winner's Ready initiative is ignored; the loser cannot ready without choosing"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/server/test/814-cc-bo3-runs.test.ts",
+        "pattern": "§1-§4 a Bo3 runs game 1, 2 and 3",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/835-cc-loser-chooses-initiative.test.ts",
+        "pattern": "§1 the loser: two Ready buttons",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/817-cc-sideboard-window.test.ts",
+        "pattern": "§2-§4 an illegal configuration",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "owner: Loser of last game chooses",
+        "ref": "owner chat 2026-11-02 (Loser of last game chooses)",
         "supports": "yes",
         "note": ""
       },
       {
-        "ref": "owner: Just make it a choice right before starting the games, as they ready up",
+        "ref": "owner chat 2026-11-02 (a choice ... as they ready up)",
         "supports": "yes",
-        "note": "answer to what happens if the loser has not picked when the window ends: the choice is made as they ready up"
+        "note": ""
       }
     ],
-    "quote_spans": [],
-    "scratch_spans": [
+    "quote_spans": [
       {
-        "file": "data/comprehensive-rules/build/verify-input/U24-r4.json",
-        "text": "Just make it a choice right before starting the games, as they ready up"
+        "file": "client/server/test/814-cc-bo3-runs.test.ts",
+        "text": "assert.equal(m.between!.initiative, null, 'and the winner\\'s Ready carries no choice');"
+      },
+      {
+        "file": "client/server/test/814-cc-bo3-runs.test.ts",
+        "text": "assert.equal(g2.state.initiative, 0, 'the chooser took the initiative');"
+      },
+      {
+        "file": "client/ui/test/835-cc-loser-chooses-initiative.test.ts",
+        "text": "for (const t of tags) assert.doesNotMatch(t, /class=\"[^\"]*(primary|on)/, `no default highlight: ${t}`);"
       }
     ],
     "basis_ok": true,
-    "problem": "Owner-only rule supported by its quotes; no match, ready-up or initiative choice exists in server/ui, so nothing demonstrates it."
+    "problem": ""
   },
   {
     "key": "annexd.modes.competitive.league-week",
@@ -3753,29 +3779,51 @@
   },
   {
     "key": "annexd.modes.competitive.sideboard-window",
-    "textHash": "daf022f3d8a7b645",
-    "verdict": "untested",
+    "textHash": "411eb4777a00460a",
+    "verdict": "confirmed",
     "round": 4,
     "verifier": "U24-r4",
-    "engine": [],
-    "tests_run": [],
+    "engine": [
+      {
+        "loc": "client/server/match.ts:SIDEBOARD_WINDOW_MS",
+        "agrees": true,
+        "note": "120_000; opens when both seats are in; both Ready deals at once"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/817-cc-sideboard-window.test.ts",
+        "pattern": "§1 the window opens when both seats are in",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/817-cc-sideboard-window.test.ts",
+        "pattern": "§5 both Ready deals at once",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "owner: ... plus 120 seconds for sideboarding (or until they both hit submit and ready)",
+        "ref": "owner chat 2026-11-02 (chess clock ... 120 seconds for sideboarding)",
         "supports": "yes",
-        "note": ""
+        "note": "120 s or until both submit and ready"
       }
     ],
-    "quote_spans": [],
-    "scratch_spans": [
+    "quote_spans": [
       {
-        "file": "data/comprehensive-rules/build/verify-input/U24-r4.json",
-        "text": "plus 120 seconds for sideboarding (or until they both hit submit and ready)"
+        "file": "client/server/test/817-cc-sideboard-window.test.ts",
+        "text": "assert.equal(m.between!.until, t + M.SIDEBOARD_WINDOW_MS, 'both in: 120 s from now');"
+      },
+      {
+        "file": "client/server/test/817-cc-sideboard-window.test.ts",
+        "text": "assert.equal(m.phase, 'game');"
       }
     ],
     "basis_ok": true,
-    "problem": "Owner-only rule supported by its quote; no sideboarding window exists in server/ui, so nothing demonstrates it."
+    "problem": ""
   },
   {
     "key": "annexd.modes.competitive.void",

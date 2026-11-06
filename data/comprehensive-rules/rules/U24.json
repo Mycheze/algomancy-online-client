@@ -4478,7 +4478,16 @@
     "parent": "annexd.modes.competitive",
     "order": 2,
     "text": "Between games the players have 120 seconds to change their decks from their sideboards (rule formats.constructed.competitive.swaps), or until both of them are ready, whichever comes first.",
-    "examples": [],
+    "examples": [
+      {
+        "text": "Once both players are back in the room after game 1, the 120 seconds start.",
+        "test": "817-cc-sideboard-window.test.ts::§1 the window opens when both seats are in, and runs 120 s"
+      },
+      {
+        "text": "Both players press Ready before the 120 seconds are up: the next game is dealt at once.",
+        "test": "817-cc-sideboard-window.test.ts::§5 both Ready deals at once, before the window ends"
+      }
+    ],
     "see": [],
     "sources": {
       "printed": [],
@@ -4492,21 +4501,31 @@
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "817-cc-sideboard-window.test.ts"
+      ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "high",
     "notes": "Owner's message of 2026-11-02.",
-    "sourceHashes": {},
-    "untested": true
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.competitive.initiative-choice",
     "parent": "annexd.modes.competitive",
     "order": 3,
     "text": "The player who lost the previous game makes the initiative choice (rule formats.constructed.competitive.initiative) as they ready up for the next game.",
-    "examples": [],
+    "examples": [
+      {
+        "text": "The player who lost game 1 readies up for game 2 by choosing who takes the initiative; the winner's Ready carries no choice, and the player chosen has the initiative in game 2.",
+        "test": "814-cc-bo3-runs.test.ts::§1-§4 a Bo3 runs game 1, 2 and 3 with the loser choosing and the banks carried"
+      },
+      {
+        "text": "Between games the player who lost the last game sees two Ready buttons, one for each choice, and neither is chosen for them.",
+        "test": "835-cc-loser-chooses-initiative.test.ts::§1 the loser: two Ready buttons, no default, each naming a seat"
+      }
+    ],
     "see": [
       "annexd.general.player-decides"
     ],
@@ -4527,14 +4546,16 @@
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "814-cc-bo3-runs.test.ts",
+        "835-cc-loser-chooses-initiative.test.ts"
+      ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "high",
     "notes": "Owner's answers of 2026-11-02.",
-    "sourceHashes": {},
-    "untested": true
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.competitive.concede-match",

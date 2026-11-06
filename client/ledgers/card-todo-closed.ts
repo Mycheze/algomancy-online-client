@@ -14742,4 +14742,23 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-06 (steward). Test title and comments only, no behaviour change. 472's first test is retitled to the controller rule (two Counter Thieves of one player, their controller is asked) and its header's \"Who is asked\" now says the replacements' controller, pointing at 696 for thieves of different players; its seat assertion's message says the same. No CR record bound the old title (708.4a's examples name 472 only through its Skittering Blights test, and U23 through its Poisonous one), so there was nothing to rebind. The engine.ts comment above the replacement hooks now states the owner's 2026-10-25 order (each player orders their own, the initiative player's first, written once in replaceEvent/replaceBand), lists Automaton beside Cosmic Conspirator and the 708.6a/708.7 amount pairs among the order-sensitive ones, says Automatons chain 1 -> 2 -> 3 rather than sum, and calls replaceEvent the one seam with a named hook per replaceable quantity. The proof also covers those stale phrases. Mutation: putting the old title back turns the proof true.",
     status: 'done',
   },
+  {
+    id: 502, area: "coverage", severity: "minor",
+    title: "four Competitive Constructed rules records name no test, though tests for them exist",
+    detail: "The CR records formats.constructed.competitive.sideboard (7 cards; the copy cap counts deck and sideboard), formats.constructed.competitive.swaps (any exchange between games, deck at least 30), annexd.modes.competitive.sideboard-window (120 s or both Ready) and annexd.modes.competitive.initiative-choice (the loser chooses) render with no \"Tests:\" line, so nothing re-checks them.",
+    evidence: "The Competitive register (var/records/cc-round-2026-11-02-register.md, W1 \"TO FILE: CT-502\"); re-checked 2026-11-03 in the rendered CR and Annex D, where those four keys carry no tests.",
+    fix: "Bind each record to the test that already exercises it through the cr scripts (808 for the sideboard cap, 817 for the window and the exchange, 835 for the loser's choice), re-verify and re-render.",
+    proof: () => {
+      const recs = [...JSON.parse(text('../data/comprehensive-rules/rules/U22.json')), ...JSON.parse(text('../data/comprehensive-rules/rules/U24.json'))] as { key: string; untested?: boolean; sources?: { tests?: string[] } }[];
+      return ['formats.constructed.competitive.sideboard', 'formats.constructed.competitive.swaps', 'annexd.modes.competitive.sideboard-window', 'annexd.modes.competitive.initiative-choice']
+        .some(k => { const r = recs.find(x => x.key === k); return !r || r.untested === true || !r.sources?.tests?.length; });
+    },
+    verify: "Search Algomancy-Comprehensive-Rules.md and Annex-D-Digital-Conventions.md for the four keys: does each \"Key:\" line have a \"Tests:\" part?",
+    guards: [
+      '409-comprehensive-rules.test.ts::(3) check.mjs finds no problems in the committed records',
+      '409-comprehensive-rules.test.ts::(1) re-rendering gives the committed document files, byte for byte, and no number is born',
+    ],
+    closed: "FIXED 2026-11-06 (steward). CR records only, no behaviour change. The four records now name their tests and carry examples bound to them: 901.9b (sideboard) to 808 §2 and §3; 901.9c (swaps) to 809 §1 and §3 and 814 §1-§4 (game 1 is the registration, game 3 starts from game 2's); D8.6b (the window) to 817 §1 and §5; D8.6c (the loser's choice) to 814 §1-§4 and 835 §1. A fresh verifier re-verified the four in a polish round 4 in a scratch mirror, ran every bound test, and caught all four planted decoys (two false examples, two false texts); all four confirmed, untested cleared, rendered, cr:check 0 problems, 0 stale. Corpus: the CR rows only, rebuilt through build_cr() and spliced (the splice of master's CR JSON reproduced master's corpus byte for byte); 2499 rows before and after. The proof reads the records: it is true while any of the four is untested or names no test. Mutation: untested put back on D8.6c turned 83 red on this entry's proof; a renamed bound title turned 409 (3) red; dropping 901.9b's tests turned 409 (1) red (the committed editions no longer match).",
+    status: 'done',
+  },
 ];

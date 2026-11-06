@@ -6728,11 +6728,16 @@ No rules drafted yet.
       Example: In deployment the non-initiative player cannot play a unit until the initiative player is done deploying.
       [Basis: Mixed | Verified: confirmed in round 4; verifier ran 6 tests, all passed; 3 gate test files | Printed: Manual p.27; Rulebook 2023 p.5; Rulebook 2023 p.5; Manual p.38 | Owner call | adopted 2026-11-02 | Engine: E.planning, E.hasting, E.deploying, legalActions, createGame | Tests: 802-cc-resource-step.test.ts, 803-cc-haste-and-deploy.test.ts, 804-cc-no-hidden-step.test.ts | Example tests: 802-cc-resource-step.test.ts::CC draw phase: both players bottom at once, the non-initiative player may go first, 802-cc-resource-step.test.ts::CC resource step: it opens only when both players have bottomed, 802-cc-resource-step.test.ts::CC resource step: the initiative player first, then the non-initiative player, 803-cc-haste-and-deploy.test.ts::CC deployment: only the initiative player deploys, then the other, and the log says so | Demonstrated by test: 803-cc-haste-and-deploy.test.ts::CC haste step: the initiative player first, then the non-initiative player | Key: formats.constructed.competitive.order]
 
-901.9b In Competitive Constructed each deck may have a sideboard of up to 7 cards. The limit of 2 copies of a card (rule 901.3) counts the deck and its sideboard together. See rule 901.3. (Untested: no executed test demonstrates it.)
-      [Basis: Owner call | adopted 2026-11-02 | Verified: untested in round 4; verifier ran no tests; no gate test | Key: formats.constructed.competitive.sideboard]
+901.9b In Competitive Constructed each deck may have a sideboard of up to 7 cards. The limit of 2 copies of a card (rule 901.3) counts the deck and its sideboard together. See rule 901.3.
+      Example: A deck registered with a sideboard of 7 cards is accepted; one with a sideboard of 8 cards is refused.
+      Example: A deck with one copy of a card and a sideboard with two more copies of it is refused: that is three copies across the two.
+      [Basis: Owner call | adopted 2026-11-02 | Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file | Tests: 808-match-deck-registration.test.ts | Example tests: 808-match-deck-registration.test.ts::§2 the sideboard holds at most seven cards, 808-match-deck-registration.test.ts::§3 the copy cap counts the main deck and the sideboard together | Key: formats.constructed.competitive.sideboard]
 
-901.9c Between the games of a match a player may exchange any cards between their deck and their sideboard, in any numbers, as long as the deck keeps at least 30 cards (rule 901.2) and the sideboard at most 7. No exchange is made before the first game. See rule 901.2. (Untested: no executed test demonstrates it.)
-      [Basis: Owner call | adopted 2026-11-02 | Verified: untested in round 4; verifier ran no tests; no gate test | Key: formats.constructed.competitive.swaps]
+901.9c Between the games of a match a player may exchange any cards between their deck and their sideboard, in any numbers, as long as the deck keeps at least 30 cards (rule 901.2) and the sideboard at most 7. No exchange is made before the first game. See rule 901.2.
+      Example: A player registered a 31-card deck and a 6-card sideboard. Before game 2 they move two cards from the deck to the sideboard and one card back: the deck is now 30 cards and the sideboard 7, and that is allowed.
+      Example: An exchange that would leave the deck at 29 cards, or the sideboard at 8, is refused.
+      Example: Game 1 of a match is played with the decks exactly as they were registered; game 3 starts from the deck each player had in game 2.
+      [Basis: Owner call | adopted 2026-11-02 | Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files | Tests: 809-match-deck-swap.test.ts, 814-cc-bo3-runs.test.ts | Example tests: 809-match-deck-swap.test.ts::§1 the same cards in any legal split pass, 809-match-deck-swap.test.ts::§3 the main deck stays at 30 or more and the sideboard at 7 or fewer, 814-cc-bo3-runs.test.ts::§1-§4 a Bo3 runs game 1, 2 and 3 with the loser choosing and the banks carried | Key: formats.constructed.competitive.swaps]
 
 901.9d The initiative player of a match's first game is chosen at random, as in any game. In each later game of the match, the player who lost the previous game chooses which player takes the initiative. See rules 103.3c, D8.6c.
       Example: Whichever player is chosen to take the initiative, both decks are shuffled exactly as they would have been, and the chosen player holds the initiative.
@@ -6949,11 +6954,11 @@ Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1845 |
+| confirmed | 1849 |
 | partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
-| untested | 7 |
+| untested | 3 |
 | not verified | 2 |
 | text changed | 7 |
 

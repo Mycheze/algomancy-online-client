@@ -182,16 +182,6 @@ const OPEN: TodoEntry[] = [
   //    open ones are here, the closed ones in card-todo-closed.ts; 503 was the
   //    corpus rebuild, done at landing in 3b7c7be6, and 505..507 were never used)
   {
-    id: 502, area: "coverage", severity: "minor",
-    title: "four Competitive Constructed rules records name no test, though tests for them exist",
-    detail: "The CR records formats.constructed.competitive.sideboard (7 cards; the copy cap counts deck and sideboard), formats.constructed.competitive.swaps (any exchange between games, deck at least 30), annexd.modes.competitive.sideboard-window (120 s or both Ready) and annexd.modes.competitive.initiative-choice (the loser chooses) render with no \"Tests:\" line, so nothing re-checks them.",
-    evidence: "The Competitive register (var/records/cc-round-2026-11-02-register.md, W1 \"TO FILE: CT-502\"); re-checked 2026-11-03 in the rendered CR and Annex D, where those four keys carry no tests.",
-    fix: "Bind each record to the test that already exercises it through the cr scripts (808 for the sideboard cap, 817 for the window and the exchange, 835 for the loser's choice), re-verify and re-render.",
-    proof: null,
-    verify: "Search Algomancy-Comprehensive-Rules.md and Annex-D-Digital-Conventions.md for the four keys: does each \"Key:\" line have a \"Tests:\" part?",
-    status: 'open',
-  },
-  {
     id: 511, area: "coverage", severity: "minor",
     title: "several tests fail or hang only under machine load, and a parallel gate will make that worse",
     detail: "Seen during the 2026-11-02/03 rounds, each passing alone: server 594 (replay report run) flakes under load; server 486 timed out twice in a gate under agent load (7/7 alone); server 615 hung once; ui 294 section 4 (the prophecy meter) intermittent; ui 226 section 1a (log and naming) once with three ui-shots runs going.",

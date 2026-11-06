@@ -418,82 +418,128 @@
   },
   {
     "key": "formats.constructed.competitive.sideboard",
-    "textHash": "9b24d3453b2dae76",
-    "verdict": "untested",
+    "textHash": "e47818f144d55776",
+    "verdict": "confirmed",
     "round": 4,
     "verifier": "U22-r4",
     "engine": [
       {
-        "loc": "client/server/decks.ts",
+        "loc": "client/engine/src/matchdeck.ts:checkMatchDeck",
         "agrees": true,
-        "note": "no sideboard in the client (algomancer.cc's sideboard is read as a maybeboard)"
+        "note": "SIDEBOARD_MAX = 7; copy cap over both boards"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/808-match-deck-registration.test.ts",
+        "pattern": "§2 the sideboard holds at most seven cards",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/808-match-deck-registration.test.ts",
+        "pattern": "§3 the copy cap counts the main deck and the sideboard together",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "owner: CC has sideboards.",
+        "ref": "owner chat 2026-11-02 (CC has sideboards.)",
         "supports": "yes",
         "note": ""
       },
       {
-        "ref": "owner: Each deck can have 7 cards (and the whole list can still only have max of 2 copies of a single card)",
+        "ref": "owner chat 2026-11-02 (Each deck can have 7 cards ...)",
         "supports": "yes",
-        "note": "in the sideboard context: 7-card sideboard, copy cap over the whole list"
-      }
-    ],
-    "quote_spans": [],
-    "scratch_spans": [
-      {
-        "file": "data/comprehensive-rules/build/verify-input/U22-r4.json",
-        "text": "Each deck can have 7 cards (and the whole list can still only have max of 2 copies of a single card)"
-      }
-    ],
-    "basis_ok": true,
-    "problem": "Owner-only rule supported by its quotes; no sideboard exists in engine/server/ui, so nothing demonstrates it."
-  },
-  {
-    "key": "formats.constructed.competitive.swaps",
-    "textHash": "01938b44dcb17067",
-    "verdict": "untested",
-    "round": 4,
-    "verifier": "U22-r4",
-    "engine": [
-      {
-        "loc": "client/server/decks.ts",
-        "agrees": true,
-        "note": "no sideboard exists: the algomancer.cc 'sideboard' is read as a maybeboard; no between-games window"
-      }
-    ],
-    "tests_run": [],
-    "probes": [],
-    "source_checks": [
-      {
-        "ref": "owner: that can be freely exchanged with the the cards in their mainboard between games (but not before the match starts)",
-        "supports": "yes",
-        "note": "free exchange between games, none before the match"
-      },
-      {
-        "ref": "owner: Like Magic (Recommended)",
-        "supports": "yes",
-        "note": "answer to how free the swaps are: any numbers, deck at its minimum, sideboard at its maximum (30 by formats.constructed.deck-size, 7 by formats.constructed.competitive.sideboard)"
+        "note": "7-card sideboard, max 2 copies over the whole list"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/server/decks.ts",
-        "text": "the maybeboard — algomancer.cc's `sideboard` lands here"
-      }
-    ],
-    "scratch_spans": [
+        "file": "client/engine/test/808-match-deck-registration.test.ts",
+        "text": "assert.equal(SIDEBOARD_MAX, 7);"
+      },
       {
-        "file": "data/comprehensive-rules/build/verify-input/U22-r4.json",
-        "text": "that can be freely exchanged with the the cards in their mainboard between games (but not before the match starts)"
+        "file": "client/engine/test/808-match-deck-registration.test.ts",
+        "text": "// one in main + two in side: legal on each board alone, three across both"
       }
     ],
     "basis_ok": true,
-    "problem": "Supported by the owner's calls (the 30/7 bounds by cross-reference to the deck-size and sideboard rules); no sideboard or between-games swap exists in the client, so nothing demonstrates it."
+    "problem": ""
+  },
+  {
+    "key": "formats.constructed.competitive.swaps",
+    "textHash": "c435e62c633b7adb",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U22-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/matchdeck.ts:checkSwap",
+        "agrees": true,
+        "note": "same registered cards, any split, main >= 30, side <= 7"
+      },
+      {
+        "loc": "client/server/match.ts:matchOp",
+        "agrees": true,
+        "note": "config op only between games; game 1 dealt from registrations"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/809-match-deck-swap.test.ts",
+        "pattern": "§1 the same cards in any legal split pass",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/809-match-deck-swap.test.ts",
+        "pattern": "§3 the main deck stays at 30 or more",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/814-cc-bo3-runs.test.ts",
+        "pattern": "§1-§4 a Bo3 runs game 1, 2 and 3",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner chat 2026-11-02 (freely exchanged)",
+        "supports": "yes",
+        "note": "free exchange between games, not before the match starts"
+      },
+      {
+        "ref": "owner chat 2026-11-02 (Like Magic)",
+        "supports": "yes",
+        "note": "answer to how free the swaps are"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/809-match-deck-swap.test.ts",
+        "text": "// two out, one in: main 30, side 7, main size changed"
+      },
+      {
+        "file": "client/engine/test/809-match-deck-swap.test.ts",
+        "text": "// two from main to side: main 29, side 8"
+      },
+      {
+        "file": "client/server/test/814-cc-bo3-runs.test.ts",
+        "text": "assert.deepEqual(g1.decks, [REG[0].main, REG[1].main], 'dealt from the two registered mains');"
+      },
+      {
+        "file": "client/server/test/814-cc-bo3-runs.test.ts",
+        "text": "assert.deepEqual(info.mine?.current, next0, 'seat 0 starts game 3 from its game 2 deck');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "formats.constructed.copies",
