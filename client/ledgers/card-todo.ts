@@ -202,16 +202,6 @@ const OPEN: TodoEntry[] = [
     verify: "On an iPad, open a deck on the tabletop and drag a card onto the sideboard pile and back.",
     status: 'open',
   },
-  {
-    id: 530, area: "client", severity: "minor",
-    title: "the post-game summary waits on a full replay of the game, and a rejoin into a finished game replays it again",
-    detail: "server/main.ts recordFinishedGame sends the post-game payload only after recordLiveGame, which replays the whole game (stats.ts summarizeGame) on the event loop; sendGameOver's rejoin path (row: null) calls summarizeRoom, which replays it AGAIN, on every rejoin or reload into a finished room. CT-529 made the replay about six times cheaper on a crowded board, but MCHQ (600 actions, ~75 units) still takes ~4 s on the home box, and every room on the server waits that long each time.",
-    evidence: "Steward CT-529 run 2026-11-06: summarizeGame(MCHQ) 3.9 s after the fix; main.ts sendGameOver's `extra.row ?? summarizeRoom(room)` and the rejoin call with row: null.",
-    fix: "Keep the summary the record already computed on the room, so a rejoin reuses it; consider sending the screen's payload before (or without blocking on) the record, or doing the replay off the event loop (simulate-worker.ts is a worker precedent).",
-    proof: null,
-    verify: "Finish a long game on a test server, then reload: does the post-game screen come back without a multi-second pause, and do other rooms keep moving meanwhile?",
-    status: 'open',
-  },
   // ── the report triage of 2026-11-06 ────────────────────────────────────
   {
     id: 531, area: "client", severity: "minor",
@@ -233,6 +223,17 @@ const OPEN: TodoEntry[] = [
     proof: null,
     verify: "Put The Everywhere naming Cerebrox and Cerebrox in one fight with three other units that die in the same combat damage: does Cerebrox trigger 0 or 4 times (not 1)?",
     reportId: 332,
+    status: 'open',
+  },
+  // ── filed by the steward's CT-530 run, 2026-11-06 ──────────────────────
+  {
+    id: 533, area: "client", severity: "minor",
+    title: "the post-game summary still waits on one full replay of the game, on the server's only thread",
+    detail: "Left over from CT-530. When a game ends, server/main.ts recordFinishedGame records it (history.ts recordLiveGame -> importGame -> stats.ts summarizeGame, a full replay) and only then sends the post-game payload, so both players wait for the replay and every other room on the server stands still meanwhile: ~3.9 s for MCHQ (600 actions, ~75 units) on the home box after CT-529. CT-530 removed the REPEATS (a rejoin or reload into a finished room, and the per-seat replays of an unrecorded room, now reuse the row: server/postgame-row.ts); the one replay at the end is still synchronous. The record needs it (the profile fold and the achievements diff the payload carries are computed from it), so it cannot just be skipped.",
+    evidence: "Steward CT-529 run 2026-11-06 (summarizeGame(MCHQ) 3.9 s after the fix); main.ts recordFinishedGame calls recordLiveGame before the sendGameOver loop.",
+    fix: "Do the replay off the event loop (simulate-worker.ts is a worker precedent) and send the payload when it lands, or keep the per-turn stats summarizeGame tallies up to date as the live game is played so the end needs no replay. Either reshapes recordFinishedGame's synchronous match/league/achievements order: plan it before starting.",
+    proof: null,
+    verify: "Finish a long game (MCHQ restored one pass before its end) on a test server: does the post-game screen come without a multi-second pause, and do other rooms keep moving meanwhile?",
     status: 'open',
   },
 ];

@@ -14776,4 +14776,21 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-06 (steward, from the owner's #steward request). E.projectors keeps projectedSources' walk (the same filtered walk as before, CR 712.1a filter included) by region for the length of one staticsFor read; staticsFor is latched, so nothing nested replaces it, and under it radiates() gives the shallow answer throughout, so every face read in the read would have walked to the same list. Outside a staticsFor read nothing is kept. A first draft that walked once and filtered afterwards was caught by 463 (every anchored walk must hold the strip filter itself). summarizeGame(MCHQ) 25.0 s -> 3.9 s on the home box; all six saved games on the box (DQTX, GMKK, KFCS, MCHQ, SHXD, USGH) summarize to byte-identical results before and after. On the restored MCHQ test server both seats now get the post-game payload. 1149 counts anchored() walks under one effStats: 5 vs 40 extra units give the same count with the fix; with the memo line removed, 24 vs 129. What is left is filed as CT-530: the payload still waits on a synchronous replay, and a rejoin into a finished game replays it again.",
     status: 'done',
   },
+  {
+    id: 530, area: "client", severity: "minor",
+    title: "the post-game summary waits on a full replay of the game, and a rejoin into a finished game replays it again",
+    detail: "server/main.ts recordFinishedGame sends the post-game payload only after recordLiveGame, which replays the whole game (stats.ts summarizeGame) on the event loop; sendGameOver's rejoin path (row: null) calls summarizeRoom, which replays it AGAIN, on every rejoin or reload into a finished room. CT-529 made the replay about six times cheaper on a crowded board, but MCHQ (600 actions, ~75 units) still takes ~4 s on the home box, and every room on the server waits that long each time.",
+    evidence: "Steward CT-529 run 2026-11-06: summarizeGame(MCHQ) 3.9 s after the fix; main.ts sendGameOver's `extra.row ?? summarizeRoom(room)` and the rejoin call with row: null.",
+    fix: "Keep the summary the record already computed on the room, so a rejoin reuses it; consider sending the screen's payload before (or without blocking on) the record, or doing the replay off the event loop (simulate-worker.ts is a worker precedent).",
+    proof: null,
+    verify: "Finish a long game on a test server, then reload: does the post-game screen come back without a multi-second pause, and do other rooms keep moving meanwhile?",
+    guards: [
+      '1154-postgame-row-kept.test.ts::a finished room is replayed once however many times its post-game screen is sent',
+      '1154-postgame-row-kept.test.ts::the row the live record made is the one every later send reads',
+      '1154-postgame-row-kept.test.ts::a change to anything the summary reads replays it again',
+      '1154-postgame-row-kept.test.ts::main.ts builds the post-game screen only from the kept row',
+    ],
+    closed: "FIXED 2026-11-06 (steward), the repeats; the one replay at game end is CT-533. server/postgame-row.ts keeps the row the post-game screen was built from per live Room (a WeakMap, never persisted): recordFinishedGame keeps the live record's row.game, and sendGameOver's fallback goes through postgameRow(room, () => summarizeRoom(room)), which replays only when something the summary reads has changed (the log array or its length, the winner, the concession, the agreed fixes, the seats' users). So a rejoin or reload into a finished room no longer replays it (it did, ~3.9 s on MCHQ, every time), an unrecorded room (scenario, or a record that threw) replays once for both seats instead of once each, and a room restored after a restart replays once on its first rejoin. The payload reads only winner, els/sides, turns, seats and concession off the row, which importGame and summarizeRoom both take from the same summarizeGame. Mutation: postgameRow never reusing turned 1154 §1-§3 red; dropping the log-identity check turned §3 red; main.ts back to a bare summarizeRoom(room) turned §4 red. e2e test-postgame and test-concede and server 520 pass.",
+    status: 'done',
+  },
 ];

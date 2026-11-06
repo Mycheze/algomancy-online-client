@@ -118,6 +118,7 @@ import {
   type Offer, type QueueEntry,
 } from './queue.ts';
 import { matchLengths, recordLiveGame, syncGamesDir } from './history.ts';
+import { keepPostgameRow, postgameRow } from './postgame-row.ts';
 import { concessionWeight } from './concession.ts';
 import { gameElements, gameSides, summarizeGame } from './stats.ts';
 import { gamesDir, issuesFile, reportRunsFile, verdictsFile } from './statepaths.ts';
@@ -2034,6 +2035,9 @@ function recordFinishedGame(room: Room): void {
     console.error(`[accounts] could not record ${room.code}:`, err);
   }
   if (row) {
+    // CT-530: the post-game screen (now, and on every rejoin) reads this row
+    // rather than replaying the game again
+    keepPostgameRow(room, row.game);
     console.log(`[accounts] recorded ${room.code}: ${row.game.names.join(' vs ')}, ` +
       `${row.game.finished ? `${row.game.names[row.game.winner ?? 0]} won` : 'unfinished'}`);
   }
@@ -2079,7 +2083,9 @@ function sendGameOver(room: Room, seat: Seat, extra: {
   // checked up front, not left to sendToSeat: summarizeRoom() replays the
   // whole game, which is not worth doing for an empty chair
   if (!room.sockets[seat]) return;
-  const row = extra.row ?? summarizeRoom(room);
+  // CT-530: and it replays it once per finished room, not once per rejoin or
+  // per seat — about four seconds of a stalled server on a crowded board
+  const row = extra.row ?? postgameRow(room, () => summarizeRoom(room));
   sendToSeat(room, seat, {
     t: 'gameover',
     seat,
