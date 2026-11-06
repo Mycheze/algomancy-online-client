@@ -17,6 +17,7 @@
  *     Reading the dir through here lets the runner point the whole suite at a
  *     throwaway directory.
  */
+import { mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { spawn, type ChildProcessByStdio } from 'node:child_process';
 import type { Readable } from 'node:stream';
@@ -77,6 +78,30 @@ export interface ServerHandle {
  * ALGO_TEST_STARTUP_MS if you are debugging a genuinely stuck boot. */
 const STARTUP_MS = Number(process.env['ALGO_TEST_STARTUP_MS'] ?? 60_000);
 
+/** The environment spawnServer() gives main.ts. `env` is the caller's.
+ *
+ * The live state (statepaths.ts) defaults to this process's scratch directory
+ * — UNDER process.env and the caller's env, so suite.test.ts's per-script
+ * directories and a test's own paths still win; see scratchVarDir() for why,
+ * and why it is one directory per process.
+ *
+ * ALGO_LEAGUE_FILE is a fresh throwaway per spawn, OVER process.env: the
+ * league's tick moves a live season on by itself, so a test server must never
+ * load the real one — even from a script run by hand, outside suite.test.ts.
+ * The weekly challenges' sweep likewise WRITES var/challenges/weeks.json
+ * whenever a week has closed, so it gets a throwaway directory too. */
+export function serverEnv(env: Record<string, string> = {}): NodeJS.ProcessEnv {
+  return {
+    ...scratchStateEnv(),
+    ...process.env,
+    ALGO_LEAGUE_FILE: join(tmpdir(), `algo-league-${process.pid}-${Math.random().toString(36).slice(2)}.json`),
+    ALGO_CHALLENGES_DIR: join(tmpdir(), `algo-challenges-${process.pid}-${Math.random().toString(36).slice(2)}`),
+    // docs/22: a Competitive match a test makes is written to a throwaway too
+    ALGO_MATCHES_DIR: join(tmpdir(), `algo-matches-${process.pid}-${Math.random().toString(36).slice(2)}`),
+    ...env, PORT: '0',
+  };
+}
+
 /** Boot main.ts on an OS-assigned port and resolve once it is listening.
  *
  * `env` is merged over process.env, so a caller can point this server at its
@@ -86,19 +111,7 @@ export function spawnServer(env: Record<string, string> = {}): Promise<ServerHan
   return new Promise((resolve, reject) => {
     const proc = spawn(process.execPath, [join(HERE, '..', 'main.ts')], {
       cwd: join(HERE, '..'),
-      // ALGO_LEAGUE_FILE defaults to a throwaway: the league's tick moves a
-      // live season on by itself, so a test server must never load the real
-      // one — even from a script run by hand, outside suite.test.ts. The
-      // weekly challenges' sweep likewise WRITES var/challenges/weeks.json
-      // whenever a week has closed, so it gets a throwaway directory too.
-      env: {
-        ...process.env,
-        ALGO_LEAGUE_FILE: join(tmpdir(), `algo-league-${process.pid}-${Math.random().toString(36).slice(2)}.json`),
-        ALGO_CHALLENGES_DIR: join(tmpdir(), `algo-challenges-${process.pid}-${Math.random().toString(36).slice(2)}`),
-        // docs/22: a Competitive match a test makes is written to a throwaway too
-        ALGO_MATCHES_DIR: join(tmpdir(), `algo-matches-${process.pid}-${Math.random().toString(36).slice(2)}`),
-        ...env, PORT: '0',
-      },
+      env: serverEnv(env),
       stdio: ['ignore', 'pipe', 'pipe'],
     }) as ServerProc;
 
@@ -149,10 +162,52 @@ export function spawnServer(env: Record<string, string> = {}): Promise<ServerHan
   });
 }
 
-/** Where saved rooms land — the same resolution rooms.ts and main.ts use, so
- * a test that reads a room file back finds it wherever the run put it. */
+/** THE SPAWNED SERVER NEVER SEES THE LIVE STATE UNLESS A TEST ASKS FOR IT.
+ *
+ * statepaths.ts falls back to var/ — on the deploy box, the live games, the
+ * account store, the reports and the owner's verdicts. spawnServer() used to
+ * throw away only the league, the challenges and the matches, so a test that
+ * passed no paths (768, run as a unit test, outside suite.test.ts's per-script
+ * directories) booted against var/: it RESTORED every saved room before it
+ * listened, and could write to the accounts. On the steward's box on
+ * 2026-11-06 that was six fetched games, one a 600-action crowded board — 22 s
+ * per boot idle, past the 60 s deadline under the gate's load, and the triage
+ * branch went red on a test that had nothing to do with it.
+ *
+ * ONE directory per process, not per spawn: a test that restarts its server
+ * (test-postgame, test-clock) must find its rooms again, and gamesDir() below
+ * must name the directory the server is writing. */
+let scratchVar: string | undefined;
+export function scratchVarDir(): string {
+  if (scratchVar === undefined) {
+    scratchVar = join(tmpdir(), `algo-testvar-${process.pid}-${Math.random().toString(36).slice(2)}`);
+    mkdirSync(scratchVar, { recursive: true });
+  }
+  return scratchVar;
+}
+
+/** Every statepaths.ts variable that names live data, pointed at the scratch
+ * directory. (ALGO_REPORT_RUNS_FILE follows ALGO_ISSUES_FILE by itself; the
+ * league, challenges and matches get their own throwaways in spawnServer.) */
+export function scratchStateEnv(): Record<string, string> {
+  const d = scratchVarDir();
+  return {
+    ALGO_GAMES_DIR: join(d, 'games'),
+    ALGO_ACCOUNTS_FILE: join(d, 'accounts', 'accounts.json'),
+    ALGO_ISSUES_FILE: join(d, 'issues.jsonl'),
+    ALGO_VERDICTS_FILE: join(d, 'verdicts.jsonl'),
+    ALGO_REPORT_MARKS_FILE: join(d, 'report-marks.jsonl'),
+    ALGO_CR_COMMENTS_FILE: join(d, 'cr-comments.jsonl'),
+    ALGO_OG_CACHE_DIR: join(d, 'og-cache'),
+  };
+}
+
+/** Where saved rooms land — the directory a spawnServer() with no
+ * ALGO_GAMES_DIR of its own writes to, so a test that reads a room file back
+ * finds it wherever the run put it. (It used to fall back to server/games/,
+ * where nothing has been written since the state moved to var/.) */
 export function gamesDir(): string {
-  return process.env['ALGO_GAMES_DIR'] ?? join(HERE, '..', 'games');
+  return process.env['ALGO_GAMES_DIR'] ?? scratchStateEnv()['ALGO_GAMES_DIR']!;
 }
 
 /** Path of one saved room file. */
