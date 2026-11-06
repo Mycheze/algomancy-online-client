@@ -2020,10 +2020,12 @@ export interface AmountMod {
  *   which agrees at n = 2 (×4) and was LINEAR beyond it (×6 at three). Asked
  *   about three (round-32 Q4), he answered "Make it exponential.": ×8.
  *
- * ⚠ AND HOW A MULTIPLIER COMPOSES WITH AN ADDITIVE `AmountMod` IS *NOT*
- * ANSWERED. The interim decision, now CR 708.6a, is to apply the multiplier AFTER
- * the additive mods, i.e. `(v + Σdelta) × factor` — and `E.lifeAmount` is where
- * that order is written down. A future ruling changes it there.
+ * HOW A MULTIPLIER COMPOSES WITH AN ADDITIVE `AmountMod` IS CR 708.6a, settled
+ * by Caleb and the owner (2026-10-25, CT-425): the player who controls both
+ * chooses which applies first, and the additions first — `(v + Σdelta) × factor`,
+ * which never gives less — is the default. When different players control them,
+ * CR 708.4a orders them (the initiative player's first). `E.lifePrice` computes
+ * the default order; the chosen order is priced where it is asked (`lossOrder`).
  *
  * Shaped exactly like `AmountMod`: the same `anchored()` walk, the same CR 101.6
  * region scope, the same shallow CR 712.1a guard, the same reentrancy latch, and the
@@ -2322,8 +2324,8 @@ export interface CardBehavior {
   /**
    * CR 708.6: continuous MULTIPLICATIVE amount modifiers — "double all life gain
    * and life loss" (Arbiter of Vitality). Same radiation rules as `amountMods`,
-   * but the claiming factors are SUMMED into one multiplier (the owner's
-   * `n*2*v`) and applied AFTER them. See `AmountMultiplier`.
+   * but the claiming factors MULTIPLY into one multiplier (n doublings give
+   * ×2^n), applied after them by default (CR 708.6a). See `AmountMultiplier`.
    */
   amountMultipliers?: AmountMultiplier[];
   /**

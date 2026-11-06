@@ -14685,4 +14685,20 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-06 (steward). cardLinker knew two forms, a bare name and [Text](Name); [[Name]] matched neither, so the bare-name pass linked the name inside the brackets and both pairs printed. The matcher now tries [[Name]] first and resolves it exactly like the explicit form (rowFor, any class, so the glossary-word names like Battle link too; the index's spelling is shown; an unknown name stays literal, brackets and all). descSummary, the metagame list's one-line snippet, strips it to the name as well. Those are the only two readers of description syntax (pages/decks.ts's two renderers both go through cardLinker). Mutations: dropping the matcher alternative turned the 213 link test red, dropping the descSummary line turned its 213 test red.",
     status: 'done',
   },
+  {
+    id: 430, area: "coverage", severity: "minor",
+    title: "dsl.ts still calls the amount multipliers SUMMED and the additive-versus-multiplier order unanswered",
+    detail: "The amountMultipliers doc comment in engine/src/cards/dsl.ts says \"the claiming factors are SUMMED into one multiplier (the owner's n*2*v)\"; E.amountFactor multiplies (2^n, CR 708.6), as the AmountMultiplier comment itself says. That AmountMultiplier comment still says how a multiplier composes with an additive AmountMod \"IS NOT ANSWERED\"; Caleb and the owner answered it (CT-425, the replacement-order round). Comments only.",
+    evidence: "Pass D mop-up 2026-10-25 (zero-handoff/PM-client.md, new defect 2; zero-handoff/RO.md section 5, item 5).",
+    fix: "Reword both comments to CR 708.6 and 708.6a as they stand after CT-425.",
+    proof: () => still('engine/src/cards/dsl.ts', 'the claiming factors are SUMMED into one multiplier')
+      || still('engine/src/cards/dsl.ts', 'COMPOSES WITH AN ADDITIVE `AmountMod` IS *NOT*'),
+    guards: [
+      '137-multiplier-and-mode.test.ts::CR 708.6: THREE Arbiters multiply — the fold is EXPONENTIAL in n',
+      '699-damage-addition-and-doubling-order.test.ts::CR 708.6a: Conduit of Pain and Arbiter of Vitality of one player, the default doubles the whole loss',
+      '699-damage-addition-and-doubling-order.test.ts::CR 708.6a: choosing Arbiter of Vitality first, the doubled loss has the addition added after',
+    ],
+    closed: "FIXED 2026-11-06 (steward). Comments only, no behaviour change. The amountMultipliers comment now says the claiming factors MULTIPLY (×2^n, CR 708.6), as E.amountFactor folds them, and applies them after the additions by default (708.6a). The AmountMultiplier comment no longer calls the additive-versus-multiplier order unanswered: it states 708.6a as CT-425 left it (the controller of both chooses, additions first is the default, different controllers by initiative under 708.4a) and names lifePrice and lossOrder as where each order is priced. engine.ts's amountFactor and lifeAmount comments already said this. The proof now checks both stale phrases; restoring either one turns it true. The guards pin the behaviour the comments now describe: the exponential fold, the additions-first default, and the chosen doubling-first order.",
+    status: 'done',
+  },
 ];

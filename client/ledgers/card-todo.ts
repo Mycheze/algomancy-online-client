@@ -180,15 +180,6 @@ const OPEN: TodoEntry[] = [
   },
   // ── Pass D, the mop-up and the replacement-order round, 2026-10-25: defects found and not fixed
   {
-    id: 430, area: "coverage", severity: "minor",
-    title: "dsl.ts still calls the amount multipliers SUMMED and the additive-versus-multiplier order unanswered",
-    detail: "The amountMultipliers doc comment in engine/src/cards/dsl.ts says \"the claiming factors are SUMMED into one multiplier (the owner's n*2*v)\"; E.amountFactor multiplies (2^n, CR 708.6), as the AmountMultiplier comment itself says. That AmountMultiplier comment still says how a multiplier composes with an additive AmountMod \"IS NOT ANSWERED\"; Caleb and the owner answered it (CT-425, the replacement-order round). Comments only.",
-    evidence: "Pass D mop-up 2026-10-25 (zero-handoff/PM-client.md, new defect 2; zero-handoff/RO.md section 5, item 5).",
-    fix: "Reword both comments to CR 708.6 and 708.6a as they stand after CT-425.",
-    proof: () => still('engine/src/cards/dsl.ts', 'the claiming factors are SUMMED into one multiplier'),
-    status: 'open',
-  },
-  {
     id: 431, area: "coverage", severity: "minor",
     title: "client/README.md says the regions board is behind the board toggle; it has been the default since 2026-09-26",
     detail: "The client/README.md row for docs/18-board-layout-v2.md reads \"the regions board: two interlocking Ls, region ≠ control, never scrolls — behind the ▦ board toggle\". The regions board is the default; the toggle now selects the classic board.",
