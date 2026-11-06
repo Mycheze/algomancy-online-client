@@ -647,40 +647,6 @@ const OPEN: Entry[] = [
   //    the other things into the backlog of todos that we want to take care of".
   //    Each was re-checked against the code before it was filed.
   {
-    id: 'BL-52',
-    slug: 'faster-gate',
-    title: 'The full gate takes ~12 minutes — make it faster',
-    area: 'engine',
-    size: 'M',
-    status: 'open',
-    track: 'qol',
-    said:
-      'put all the other things into the backlog of todos that we want to take care of '
-      + '(2026-11-03; the owner had noticed how long the gate runs)',
-    means:
-      '`npm --prefix client run check` is one && chain and took ~12 min on 2026-11-03: engine ~5.7, '
-      + 'ledgers ~2.8 (for 52 tests), ui ~1.4, server ~1.1, then the Python tests. Look at the '
-      + 'ledgers link first (its time is out of all proportion to its size), then run the suites in '
-      + 'parallel. Only the server suite binds a port, so it is the one that must stay alone.',
-    doneWhen: [
-      'The ledgers link takes a time in proportion to its tests, or the record says why it cannot',
-      'The gate runs the independent suites in parallel and still fails (non-zero exit, the failing suite named) when any one of them fails',
-      'Two gates still cannot deadlock on the server suite\'s port, and the full gate is measurably shorter than 12 minutes on the dev machine',
-    ],
-    decided: [],
-    asks: [],
-    deps: [],
-    touches: [
-      'client/package.json',
-      'client/ledgers/package.json',
-      'client/engine/package.json',
-    ],
-    notes:
-      'Timings from the design-system round register (var/records/ds-round-2026-11-03-register.md, '
-      + '"Ticket after landing"). Parallel runs make CPU load worse, and several tests already flake '
-      + 'under load (CT-511) — fix or pin those first or the faster gate will be a flakier one.',
-  },
-  {
     id: 'BL-53',
     slug: 'competitive-swap-presets',
     title: 'Competitive: saved sideboard swaps — plan the UX before building it again',

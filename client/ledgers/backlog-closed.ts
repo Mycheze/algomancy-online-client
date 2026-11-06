@@ -2926,4 +2926,51 @@ export const CLOSED: Entry[] = [
       + 'Decks page (pages/decks.ts): shelf + preview + side sheets. CC sideboarding, the challenge and the shared deck use the same table. Binder, deck tabs, add drawer, modals and the browser Building mode removed. '
       + 'Real Firefox 158 BiDi: every gesture at 1440/1024/768. Not tried on a real iPad (CT-516). Register: var/records/bl65/register.md.',
   },
+  {
+    id: 'BL-52',
+    slug: 'faster-gate',
+    title: 'The full gate took ~12 minutes — make it faster',
+    area: 'engine',
+    size: 'M',
+    status: 'done',
+    evidence: {
+      commit: 'e0e38153',
+      guards: ['153-typecheck-reach.test.ts'],
+    },
+    track: 'qol',
+    said:
+      'put all the other things into the backlog of todos that we want to take care of '
+      + '(2026-11-03; the owner had noticed how long the gate runs)',
+    means:
+      '`npm --prefix client run check` is one && chain and took ~12 min on 2026-11-03: engine ~5.7, '
+      + 'ledgers ~2.8 (for 52 tests), ui ~1.4, server ~1.1, then the Python tests. Look at the '
+      + 'ledgers link first (its time is out of all proportion to its size), then run the suites in '
+      + 'parallel. Only the server suite binds a port, so it is the one that must stay alone.',
+    doneWhen: [
+      'The ledgers link takes a time in proportion to its tests, or the record says why it cannot',
+      'The gate runs the independent suites in parallel and still fails (non-zero exit, the failing suite named) when any one of them fails',
+      'Two gates still cannot deadlock on the server suite\'s port, and the full gate is measurably shorter than 12 minutes on the dev machine',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/package.json',
+      'client/ledgers/package.json',
+      'client/engine/package.json',
+    ],
+    notes:
+      'DONE 2026-11-06 (e0e38153), measured on the dev laptop: 12½ min → 6.6 min (399 s, green). '
+      + 'Measured step by step first: the ledgers link was already 0.2 s — whatever made it ~2.8 min had '
+      + 'gone — so the time was engine 384 s, server e2e 168, ui 94, server unit 68, python 39. What '
+      + 'changed: `check` is scripts/check.mjs, running the steps of the `check:serial` && chain three '
+      + 'suites at a time (two on a two-CPU box); scripts/ts-cache.mjs strips each .ts once instead of once '
+      + 'per test process (0.8 → 0.06 s of CPU per engine import, ~850 processes); 147 §4 counts '
+      + 'identifiers once (150 s → <1 s); E.projectedSources skips its board walk when nothing can project; '
+      + 'the e2e scripts run four at a time (168 → 50 s). Running all six suites at once was tried and '
+      + 'timed out 486 §4b under the load, hence the cap. No test binds a fixed port (checked), so two '
+      + 'gates cannot deadlock — CLAUDE.md still says never run two, for the CPU. The engine suite is now '
+      + 'the whole critical path; the next cut is inside the engine (84-card-semantics, the drill, the '
+      + 'fuzz walks: statics re-swept per query, a structuredClone per legalActions).',
+  },
 ];
