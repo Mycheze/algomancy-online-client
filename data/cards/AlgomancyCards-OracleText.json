@@ -10758,9 +10758,9 @@
             "cost": "rd",
             "total_cost": "X",
             "type": "{Battle} Mystic Spell",
-            "text": "Each player sacrifices a nontoken unit or discards a card. Repeat this X times.",
+            "text": "Each player sacrifices a nontoken unit, gains a rot or discards a card. Do this X times.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772907232/mindburn_wxk5rw.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-06 00:00:00.000000",
             "details": "",
             "factions": [
                 "fire",

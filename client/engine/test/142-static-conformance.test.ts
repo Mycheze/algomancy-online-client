@@ -219,7 +219,7 @@ const PERMISSION = /\b(?:you|players)\s+(?:may|can)\b/i;
 const PERM_SCOPE = /\bas if\b|\beach (?:turn|deployment|battle)\b|\bplay me\b/i;
 /** an ACTION verb — the sentence does something rather than being true */
 const ONESHOT_VERB =
-  /^(?:draw|deal|create|delete|erase|put|negate|recall|recycle|remove|reveal|rockfall|skip|cache|change|choose|look|gain|play|exchange|augment|double|set|move|switch|repeat|end|glimpse|discard|trash|sacrifice|prevent|activate|during|for each|any number|starting with|two |target |each player|each opponent|its controller|the controller|you gain|you may|you also|you choose|i deal|i become)/i;
+  /^(?:draw|deal|create|delete|erase|put|negate|recall|recycle|remove|reveal|rockfall|skip|cache|change|choose|look|gain|play|exchange|augment|double|set|move|switch|repeat|do this|end|glimpse|discard|trash|sacrifice|prevent|activate|during|for each|any number|starting with|two |target |each player|each opponent|its controller|the controller|you gain|you may|you also|you choose|i deal|i become)/i;
 
 export interface Clause { card: string; raw: string; text: string; bucket: Bucket }
 

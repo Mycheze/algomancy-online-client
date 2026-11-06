@@ -146,6 +146,19 @@ test('CR 102.3b: Mindburn — a sacrificed unit is shown to the next chooser', (
   ]);
 });
 
+test('CR 102.3b: Mindburn — gaining a rot is shown to the next chooser (the rot is on the table)', () => {
+  const { h, A, D } = mindburnAsked(78106);
+  const first = h.state.decision!;
+  const i = first.options.findIndex(o => o.value === 'rot');
+  assert.ok(i >= 0, 'A can gain a rot instead (printed text of 2026-11-06)');
+  h.do({ type: 'decide', seat: A, choice: i });
+  const second = h.state.decision!;
+  assert.equal(second.seat, D);
+  assert.deepEqual(second.earlier, [
+    { seat: A, open: true, option: { label: 'Gain a rot', value: 'rot' }, kind: first.kind },
+  ]);
+});
+
 test('CR 102.3b: Mindburn — a discarded card is not shown, only that a choice was made', () => {
   const { h, A, D } = mindburnAsked(78105);
   const first = h.state.decision!;

@@ -8261,7 +8261,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Each player sacrifices a nontoken unit or discards a card. Repeat this X times.",
+  "text": "Each player sacrifices a nontoken unit, gains a rot or discards a card. Do this X times.",
   "image": "Mindburn.jpg"
  },
  "Muck Rummager": {

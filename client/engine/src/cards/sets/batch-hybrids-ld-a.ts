@@ -854,10 +854,14 @@ card('Uglk', {
 
 // ═══════════════════════ FIRE / DARK (rd) ═════════════════════════════
 
-// "Each player sacrifices a nontoken unit or discards a card. Repeat this X
-// times." — rd/X {Battle} Mystic Spell. X is chosen and paid at cast (CR 107.2a).
-// "Each player" is region-scoped (CR 601.4d); the choice is that player's own (CR 704.1a),
-// mandatory when anything is available (no decline option), and each round is
+// "Each player sacrifices a nontoken unit, gains a rot or discards a card. Do
+// this X times." — rd/X {Battle} Mystic Spell. X is chosen and paid at cast
+// (CR 107.2a). The printed text changed on 2026-11-06 (the owner, in #steward,
+// with the designer's new card image): "gains a rot" became a third choice and
+// "Repeat this" became "Do this". "Each player" is region-scoped (CR 601.4d);
+// the choice is that player's own (CR 704.1a) and mandatory (no decline
+// option). Gaining a rot is always open to every player, so the question is now
+// asked every round even of a player with no unit and no hand. Each round is
 // planned then committed before the next round reads fresh pools (the Maw of
 // Damnation precedent). Discarding is a TRASH (CR 801.3); sacrificing a nontoken
 // unit is too, since it dies into a bin from play.
@@ -867,37 +871,41 @@ card('Mindburn', {
       const x = ctx.x ?? 0;
       if (x <= 0) { g.ev('info', 'Mindburn: X = 0 — nothing happens.'); return; }
       for (let round = 0; round < Math.min(x, 50); round++) {
-        const plan: { seat: Seat; unit?: EntityId; hand?: number }[] = [];
+        const plan: { seat: Seat; unit?: EntityId; hand?: number; rot?: true }[] = [];
         for (const seat of presentSeats(g, ctx.region)) {
           const units = g.unitsOf(seat, ctx.region).filter(u => !u.token);
           const hand = g.player(seat).hand;
           const options = [
             ...units.map(u => ({ label: `Sacrifice ${u.card}`, value: `u:${u.id}` as unknown })),
+            { label: 'Gain a rot', value: 'rot' as unknown },
             ...hand.map((n, i) => ({ label: `Discard ${n}`, value: `h:${i}` as unknown, card: n })),
           ];
-          if (!options.length) continue;
           const v = options.length === 1
             ? options[0]!.value
             : ctx.choose(`pick:${round}:${seat}`, {
               kind: 'electricPath', seat,
-              // CR 102.3b: a unit in play is open, a card in hand is hidden —
-              // the next chooser sees which unit was picked, or only that a
-              // choice was made (owner, 2026-11-01).
-              info: v => String(v).startsWith('u:') ? 'open' : 'hidden',
-              prompt: `Mindburn (${round + 1} of ${x}): sacrifice a nontoken unit or discard a card`,
+              // CR 102.3b: a unit in play is open, and so is gaining a rot (the
+              // rot shows on the player); a card in hand is hidden — the next
+              // chooser sees only that a choice was made (owner, 2026-11-01).
+              info: v => String(v).startsWith('h:') ? 'hidden' : 'open',
+              prompt: `Mindburn (${round + 1} of ${x}): sacrifice a nontoken unit, gain a rot or discard a card`,
               options,
             });
           const s = String(v);
           if (s.startsWith('u:')) plan.push({ seat, unit: Number(s.slice(2)) });
-          else plan.push({ seat, hand: Number(s.slice(2)) });
+          else if (s.startsWith('h:')) plan.push({ seat, hand: Number(s.slice(2)) });
+          else plan.push({ seat, rot: true });
         }
         if (!plan.length) {
-          g.ev('info', 'Mindburn: nobody has a nontoken unit or a card — it stops.');
+          g.ev('info', 'Mindburn: no player is present here — it stops.');
           break;
         }
         // CR 713.6 / CT-414: the round's sacrifices are one death batch, after its
-        // discards (each discard in plan order, as before)
-        for (const p of plan) if (p.unit === undefined && p.hand !== undefined) g.discardFromHand(p.seat, p.hand);
+        // discards and rot (each in plan order, as before)
+        for (const p of plan) {
+          if (p.hand !== undefined) g.discardFromHand(p.seat, p.hand);
+          else if (p.rot) g.gainRot(p.seat, 1);
+        }
         sacrificeTogether(g, plan.flatMap(p => p.unit !== undefined ? [p.unit] : []));
       }
     },

@@ -185,7 +185,7 @@ export const BATCH_G: Record<string, Scenario> = {
       COMMON
       + 'The Tester Bot answers its own half of each question automatically.\n'
       + 'TRY:\n'
-      + '  · Mindburn (X = 2) — "sacrifice a nontoken unit or discard a card", twice: your nontoken\n'
+      + '  · Mindburn (X = 2) — "sacrifice a nontoken unit, gain a rot or discard a card", twice: your nontoken\n'
       + '    units AND your hand cards glow. The X choice itself is plain buttons.\n'
       + '  · Grim Bargain (pay [3] or [6] for it) — "sacrifice a unit": click one of yours.\n'
       + '  · Rebalance — "give an opponent control of one of your units": click it.',

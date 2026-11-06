@@ -497,7 +497,7 @@
  "spell:Maw of Damnation": "Each player sacrifices two units. If four or more were sacrificed, repeat",
  "spell:Meteor Shower": "Rockfall 3",
  "spell:Might of the Grove": "{0} gains +{X}/+{X} until regroup",
- "spell:Mindburn": "Each player sacrifices a nontoken unit or discards a card, {X} times",
+ "spell:Mindburn": "Each player sacrifices a nontoken unit, gains a rot or discards, {X} times",
  "spell:Molten Upheaval": "Create a Fireball 3",
  "spell:Necromantic Rebuke": "Negate {0} unless its controller erases {X} cards from their bin",
  "spell:Necromorph": "Exchange {0} for {1}",

@@ -25,7 +25,7 @@ import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { apply } from '../src/apply.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, offered, ownAttrs, pass, pick,
   skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
 import type { Seat } from '../src/types.ts';
@@ -855,7 +855,7 @@ test("Life Plant: only YOUR life changes count", () => {
 
 // ── Mindburn ─────────────────────────────────────────────────────────────
 
-test('Mindburn: each player sacrifices a nontoken unit or discards, X times (CR 107.2a, 801.2a)', () => {
+test('Mindburn: each player sacrifices a nontoken unit, gains a rot or discards, X times (CR 107.2a, 801.2a)', () => {
   const h = new Harness(4418);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -869,11 +869,43 @@ test('Mindburn: each player sacrifices a nontoken unit or discards, X times (CR 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Mindburn') });
   pick(h, 1);                                                // X = 1
   pass(h); pass(h);                                          // resolve
-  // each player had exactly one option (their unit; hands are empty) — forced
+  // hands are empty: each player chooses between their unit and a rot
+  assert.equal(h.state.decision?.seat, A, 'the initiative player chooses first');
+  assert.deepEqual(offered(h), [JSON.stringify(`u:${mine}`), JSON.stringify('rot')],
+    'A: sacrifice the unit, or gain a rot');
+  pick(h, `u:${mine}`);
+  assert.equal(h.state.decision?.seat, D);
+  assert.deepEqual(offered(h), [JSON.stringify(`u:${theirs}`), JSON.stringify('rot')]);
+  const rotBefore = h.state.players[D]!.rot ?? 0;
+  pick(h, 'rot');
   assert.ok(!ent(h, mine), "A's unit was sacrificed");
-  assert.ok(!ent(h, theirs), "D's unit was sacrificed");
   assert.ok(h.state.players[A]!.bin.includes('Gublin'), 'sacrificed → bin (CR 801.2a trash)');
-  assert.ok(h.state.players[D]!.bin.includes('Shib'), 'and theirs too');
+  assert.ok(ent(h, theirs), "D gained a rot instead, so D's unit lives");
+  assert.equal(h.state.players[D]!.rot ?? 0, rotBefore + 1, 'D gained exactly one rot');
+  finishBattle(h);
+});
+
+test('Mindburn: a player with no nontoken unit and no hand gains a rot, unasked, each time', () => {
+  const h = new Harness(4420);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const mine = spawn(h, A, 'Gublin');
+  toNextBattle(h, A);
+  clearZones(h);
+  giveResources(h, A, 'fire', 1);
+  giveResources(h, A, 'dark', 1);
+  h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Mindburn') });
+  const rotBefore = h.state.players[D]!.rot ?? 0;
+  pick(h, 2);                                                // X = 2
+  pass(h); pass(h);
+  for (let i = 0; i < 2; i++) {
+    assert.equal(h.state.decision?.seat, A, `round ${i + 1}: only A is asked`);
+    pick(h, 'rot');
+  }
+  assert.ok(ent(h, mine), 'A took a rot both times');
+  assert.equal(h.state.players[D]!.rot ?? 0, rotBefore + 2,
+    'D had nothing else, so D gained a rot each round — "Do this X times" never stops early now');
   finishBattle(h);
 });
 
