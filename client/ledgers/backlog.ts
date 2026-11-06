@@ -1188,6 +1188,39 @@ const OPEN: Entry[] = [
       + 'Left open because its only guard is a runner scenario, not a node test: close it with that commit once '
       + 'the scenario has passed on the box.',
   },
+  {
+    id: 'BL-69',
+    slug: 'steward-inbox-saves-linked-images',
+    title: 'The night worker ignores an image the owner links in #steward instead of attaching it',
+    area: 'server',
+    size: 'S',
+    status: 'open',
+    track: 'qol',
+    said:
+      'You fixed the Mindburn TEXT but the actual card image needs to be updated. Downloaded, replaced and used '
+      + 'as the actual card art: The new card image file is here: https://media.discordapp.net/attachments/… '
+      + '(2026-11-06)',
+    means:
+      'steward/discord.mjs saveAttachments() saves only m.attachments. On 2026-11-06 the owner twice gave the new '
+      + 'Mindburn scan as a media.discordapp.net link in the message text (inbox-1568281980213272787 and '
+      + 'inbox-1568323276030091455), so nothing reached state/answers/files/, and the worker itself cannot '
+      + 'download (the night run blocks network fetches). The text fix shipped without the scan, and the second '
+      + 'request had to go back to the owner. Discord CDN links also expire (the link\'s ex= param: about two '
+      + 'days), so fetching them at read time is the only time it works. Fix: in saveAttachments, also fetch '
+      + 'every https://cdn.discordapp.com/attachments/… and https://media.discordapp.net/attachments/… URL in '
+      + 'm.content (owner messages only, those two hosts only), saved beside the attachments, named after the '
+      + 'path\'s last segment; a test-discord.mjs case with a linked file.',
+    doneWhen: [
+      'An owner message that links a Discord-hosted image (no attachment) lands with that file saved under state/answers/files/',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'steward/discord.mjs',
+      'steward/test-discord.mjs',
+    ],
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
