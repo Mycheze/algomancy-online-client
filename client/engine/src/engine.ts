@@ -591,6 +591,19 @@ const PROPHECY_RULES: ProphecyRule[] = [
   },
 ];
 
+/** CR 710.7: can this card's text — its body or its [Augment] box — project a face
+ *  (`CardDef.projects`)? A printed fact, so read once per card. See `E.anyProjector`. */
+const PROJECTOR = new Map<CardName, boolean>();
+function canProject(card: CardName): boolean {
+  let v = PROJECTOR.get(card);
+  if (v === undefined) {
+    const d = getCard(card);
+    v = !!(d.projects?.length || d.augmentBox?.projects?.length);
+    PROJECTOR.set(card, v);
+  }
+  return v;
+}
+
 export class E {
   s: GameState;
   events: EngineEvent[] = [];
@@ -895,6 +908,17 @@ export class E {
    * Iteration is s.entities in Object.values order (numeric key order), which
    * callers rely on for determinism.
    */
+  /** could any holder `anchored()` admits carry a `projects` block (body or [Augment] box)?
+   *  A superset of the walk in `projectedSources` — false means that walk finds nothing. */
+  private anyProjector(): boolean {
+    const ents = this.s.entities;
+    for (const k in ents) {
+      const h = ents[k]!;
+      if ((h.kind === 'unit' || (h.kind === 'mod' && h.appliedAs === 'augment')) && canProject(h.card)) return true;
+    }
+    return false;
+  }
+
   private anchored(keep: (holder: Entity, anchor: Entity) => boolean): { holder: Entity; anchor: Entity }[] {
     const out: { holder: Entity; anchor: Entity }[] = [];
     for (const holder of Object.values(this.s.entities)) {
@@ -1989,6 +2013,13 @@ export class E {
   private projectedSources(e: Entity, facet: CopyFacet, everyCopy: boolean): { card: CardName; carrier?: EntityId; box?: true }[] {
     if (facet === 'name' || facet === 'stats') return [];   // never projected
     if (this.inFaces) return [];
+    // The walk below visits the whole board, and this runs on EVERY face read —
+    // `staticsFor` alone asks it once per radiator, so a sweep was board²: 40% of
+    // the card-semantics suite (2026-11-06). Almost no board holds a card that can
+    // project at all (Ancient One is the only one printed), so ask that first,
+    // allocation-free, over the same holders `anchored()` admits. A board with no
+    // possible projector gets the answer the walk would have given: none.
+    if (!this.anyProjector()) return [];
     const out: { card: CardName; carrier?: EntityId; box?: true }[] = [];
     this.inFaces = true;
     try {

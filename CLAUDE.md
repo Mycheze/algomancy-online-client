@@ -118,10 +118,15 @@ npm --prefix client run check     # typecheck + every suite + the UI bundle + th
 That one command fans out to engine, ui, server and ledgers, and
 `153-typecheck-reach.test.ts` proves every project it names reaches a real `tsc`.
 
-- It takes **~5 minutes. Run it in the background with a redirect**, never in the
-  foreground.
-- **Never run two at once.** The server suite binds a port; two runs deadlock and
-  the second just stalls with no error.
+- It takes **~7 minutes on the dev laptop. Run it in the background with a
+  redirect**, never in the foreground. `check` is `client/scripts/check.mjs`: it
+  runs the steps of the `check:serial` && chain (the definition — add a step
+  THERE) up to three suites at a time, prints each suite's output whole, ends
+  with one ✓/✗ line per step, and loads `scripts/ts-cache.mjs` into every node
+  process so each .ts file is type-stripped once, not once per test file.
+  `npm run check:serial` is the old one-after-another chain (~12½ min).
+- **Never run two at once.** Every suite already fills the CPUs, and the
+  server tests' reply timeouts are what go red under the extra load.
 - Python: `.venv/bin/python bot/test/run_all.py` runs every `bot/test/test_*.py`
   script and fails if any does; `run_all.py slash` runs one. Standalone scripts, not
   pytest — each prints its own pass line. They point `ALGO_VAR_DIR` at a

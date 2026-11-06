@@ -15,10 +15,18 @@
  * script, asserting it exits 0 — so the engine's `node --test` convention and
  * the server's spawn-the-real-thing convention can both stay as they are.
  *
- * Everything runs SEQUENTIALLY (node:test runs a file's top-level tests one
- * at a time) against a per-file throwaway ALGO_GAMES_DIR and
+ * Every script runs against a per-file throwaway ALGO_GAMES_DIR and
  * ALGO_ACCOUNTS_FILE. That matters: var/games/ and var/accounts/ are
  * live data on the deploy box, and `npm test` has to be safe to run there.
+ *
+ * SEVERAL AT ONCE since 2026-11-06 (PARALLEL below): one after another they
+ * took ~170 s of a gate that runs four or five times slower on the steward's
+ * box. It is safe because nothing is shared — each server binds port 0 (the
+ * CT-85 fix in test-util.ts) and has its own scratch files. Each script still
+ * reports as its own top-level test, in order, so a failure is a `not ok`
+ * line with the script's name, as before. Filtering by name
+ * (--test-name-pattern / --test-only) goes back to one at a time, so asking
+ * for one script does not start them all.
  *
  * There is no `test:integration` split. Eleven of the thirteen bind a port,
  * so splitting on "binds a port" would leave `npm test` running two files and
@@ -41,7 +49,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { availableParallelism, tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -248,9 +256,23 @@ function runScript(file: string): Promise<{ code: number; out: string }> {
   });
 }
 
+/** scripts in flight at once: up to four, never fewer than two (the steward's box has two CPUs) */
+const PARALLEL = Math.max(2, Math.min(4, availableParallelism()));
+const filtered = [...process.execArgv, ...process.argv].some(a => /^--test-(name-pattern|skip-pattern|only)/.test(a));
+/** at most PARALLEL calls of `fn` in flight; the rest wait their turn, in order */
+const limited = <T>(fn: () => Promise<T>): Promise<T> => new Promise<T>(res => {
+  const go = (): void => { inFlight++; fn().then(v => { inFlight--; waiting.shift()?.(); res(v); }); };
+  if (inFlight < PARALLEL) go(); else waiting.push(go);
+});
+let inFlight = 0;
+const waiting: (() => void)[] = [];
+// every script queued now, in SUITE order — each test below awaits its own
+const started = new Map(filtered ? [] : SUITE.map(s => [s.file, limited(() => runScript(s.file))] as const));
+const result = (file: string): Promise<{ code: number; out: string }> => started.get(file) ?? runScript(file);
+
 for (const { file, covers } of SUITE) {
   test(`${file} — ${covers}`, async () => {
-    const { code, out } = await runScript(file);
+    const { code, out } = await result(file);
     // the scripts print their own ✓/✗ lines; surface them only when it matters
     assert.equal(code, 0, `${file} exited ${code}\n${out}`);
   });

@@ -249,11 +249,20 @@ function leafCommands(dir: string, script: string, seen = new Set<string>()): { 
 /** a command that will actually run the TypeScript compiler */
 const RUNS_TSC = /(?:^|[\/\s])tsc(?:\s|$)/;
 
+/**
+ * Since 2026-11-06 the root `check` is `node scripts/check.mjs`, which runs
+ * the steps side by side, and the steps themselves are written as the old &&
+ * chain in `check:serial`. So §2 reads the chain — the definition — and the
+ * test after it proves the runner runs exactly that chain, command for command.
+ * Between the two, a project wired into the chain is a project the gate checks.
+ */
+const CHAIN = 'check:serial';
+
 test('§2 the root `check` script invokes every tsconfig project', () => {
   const cfgs = configs().map(c => path.dirname(c));
   assert.ok(cfgs.length >= 3, `only ${cfgs.length} tsconfig.json found — the config walk has gone blind`);
 
-  const leaves = leafCommands(CLIENT, 'check');
+  const leaves = leafCommands(CLIENT, CHAIN);
   assert.ok(leaves.length >= 3,
     `the root \`check\` script flattened to ${leaves.length} commands — either it is gone `
     + 'from client/package.json or the script-graph walk stopped following npm run');
@@ -281,6 +290,22 @@ test('§2 the root `check` script invokes every tsconfig project', () => {
     + `  checked:   ${[...checked].map(d => rel(d) || '.').sort().join(', ')}\n\n`
     + 'The root `check` flattens to:\n'
     + leaves.map(l => `  (${rel(l.dir) || '.'}) ${l.cmd}`).join('\n'));
+});
+
+test('§2 the side-by-side gate runs exactly the chain — nothing dropped, nothing added', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(CLIENT, 'package.json'), 'utf8')) as { scripts: Record<string, string> };
+  assert.equal(pkg.scripts['check'], 'node scripts/check.mjs',
+    'client `check` is no longer the side-by-side runner. If it is the && chain again, fold `check:serial` '
+    + 'back into it and delete this test and the CHAIN indirection above — together, never one without the other.');
+  const runner = JSON.parse(execFileSync(process.execPath, [path.join(CLIENT, 'scripts', 'check.mjs'), '--json'], { encoding: 'utf8' })) as
+    { dir: string; cmd: string; phase: number }[];
+  const ran = runner.flatMap(s => s.cmd.split(' && ').map(c => `(${s.dir || '.'}) ${c.trim()}`));
+  const chain = leafCommands(CLIENT, CHAIN).map(l => `(${rel(l.dir) || '.'}) ${l.cmd}`);
+  assert.deepEqual([...ran].sort(), [...chain].sort(),
+    'scripts/check.mjs and the `check:serial` chain disagree about what the gate runs');
+  // the e2e suite serves the ui bundle, so `build` must finish before any test starts
+  const build = runner.find(s => / build$/.test(`${s.dir} ${s.cmd}`) || /esbuild/.test(s.cmd));
+  assert.equal(build?.phase, 1, 'the ui bundle build is no longer in the compile phase, so the e2e suite can start before the bundle exists');
 });
 
 // ────────────────────── §3 · the load-bearing flags, by name ────────────────

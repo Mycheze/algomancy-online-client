@@ -959,6 +959,15 @@ test('§4 no card-file helper has zero call sites — nor any helper in src/ tes
   assert.ok(files.length >= 190,
     `only ${files.length} files in the declaration scan — the walk has gone blind`);
 
+  // Every identifier counted ONCE. `identRe(name)` matches `name` with no [\w$]
+  // on either side, which is exactly "a maximal [\w$] run equal to name", so
+  // this table gives the same count the per-name regex gave. Running that regex
+  // over every source for each of ~3000 declarations took 150 s of the engine
+  // suite (2026-11-06); the table takes well under a second.
+  // ⚠ ASCII \w, like identRe (no `u` flag) — keep the two in step.
+  const useCount = new Map<string, number>();
+  for (const s of sources) for (const m of s.matchAll(/[\w$]+/g)) useCount.set(m[0], (useCount.get(m[0]) ?? 0) + 1);
+
   let declsSeen = 0;
   let setsDeclsSeen = 0;
   const dead: string[] = [];
@@ -966,9 +975,7 @@ test('§4 no card-file helper has zero call sites — nor any helper in src/ tes
     for (const [name, line] of declarationsIn(f)) {
       declsSeen++;
       if (f.startsWith(path.join('src', 'cards', 'sets'))) setsDeclsSeen++;
-      const re = identRe(name);
-      let uses = 0;
-      for (const s of sources) uses += (s.match(re) ?? []).length;
+      const uses = useCount.get(name) ?? 0;
       if (uses > 1) continue;                                // the declaration itself is 1
       if (DEAD_EXEMPT.some(e => e.file === f && e.name === name)) continue;
       dead.push(`${f}:${line}  ${name} — declared, never called anywhere in `
