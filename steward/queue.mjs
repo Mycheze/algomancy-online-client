@@ -73,7 +73,7 @@ for (const l of readLines(join(STATE, 'journal.jsonl'))) {
   try { const r = JSON.parse(l); if (r.item) journal.set(slug(r.item), r); } catch { /* a torn line is not fatal */ }
 }
 // waiting on the owner, or on the runner's own repair/landing loop
-const WAITING = new Set(['staged', 'needs-human', 'stage', 'gate-red', 'approved', 'approved-conflict', 'approved-gate-red', 'rejected']);
+const WAITING = new Set(['staged', 'needs-human', 'stage', 'gate-red', 'approved', 'approved-repaired', 'approved-conflict', 'approved-gate-red', 'rejected']);
 // tried recently and came back empty: leave it a week ('rejected-retry' = the owner asked for another go)
 // ('gate-red-twice': the worker could not get its own branch green twice — not the owner's
 // problem, so not a thread; it is archived and the item comes back fresh in a week)

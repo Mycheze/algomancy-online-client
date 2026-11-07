@@ -93,7 +93,7 @@ approve)
   for item in "${items[@]}"; do
     s=$(slug "$item")
     g rev-parse -q --verify "origin/steward/$s" >/dev/null || { echo "  no branch steward/$s"; continue; }
-    g push -q origin "refs/remotes/origin/steward/$s:refs/heads/steward-approved/$s" ":refs/heads/steward/$s"
+    g push -q --atomic origin "+refs/remotes/origin/steward/$s:refs/heads/steward-approved/$s" ":refs/heads/steward/$s" || { echo "  ✗ $s: the push was refused"; continue; }
     jnote "$s" approved; echo "  ✓ $s approved — the worker lands it on its next tick"
   done ;;
 reject)
