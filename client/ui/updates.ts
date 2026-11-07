@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-07', kind: 'fix', text: 'Edits to a saved deck now reach your next constructed game. Before, a game used the list as it was when you picked "Play this deck", leaving out every change since — including changes made while you were queued.' },
   { date: '2026-11-07', kind: 'change', text: 'Your profile is redesigned: Overview, Achievements, Games, Players and a new Settings tab. Friends and the ladders are together under Players, and you can add a friend straight from the ladder.' },
   { date: '2026-11-07', kind: 'new', text: 'Accessible colours, for red-green colour blindness: turn them on in Profile, Settings. Fire, earth and wood are easier to tell apart, and the table\'s green glow turns cyan.' },
   { date: '2026-11-07', kind: 'fix', text: 'A unit The Everywhere has silenced stays silent while The Everywhere dies, even when other cards die alongside it: Cerebrox no longer triggers for some of them depending on the order they were binned.' },

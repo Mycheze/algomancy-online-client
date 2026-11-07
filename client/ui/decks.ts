@@ -197,6 +197,27 @@ function adopt(reply: DecksReply): void {
       return d ? { ...d, record: server.record } : server;
     });
   }
+  syncChosen();
+}
+
+/**
+ * THE BROWSER'S COPY OF THE CHOSEN DECK FOLLOWS THE COLLECTION.
+ *
+ * chooseDeck (ui/util.ts) stores the list as it was when "Play this deck" was
+ * pressed, and the home screen, the waiting room and the join all read that
+ * copy — so every edit since was left out (owner, 2026-11-07: *"when a deck is
+ * tweaked or tuned, it should be the list that's used in the next game with
+ * that deck"*). The server now deals a saved deck from the collection
+ * (server/collection.ts savedDeckNow); this keeps what the browser SHOWS and
+ * sends the same list. A chosen deck that is not in the collection (a default
+ * or a pasted list) is left alone.
+ */
+function syncChosen(): void {
+  const c = chosenDeck();
+  const d = c?.id ? decks?.find(x => x.id === c.id) : undefined;
+  if (!c || !d) return;
+  if (d.name === c.name && d.author === c.author && d.cards.join('\n') === c.cards.join('\n')) return;
+  chooseDeck({ id: d.id, name: d.name, author: d.author, ...(d.url ? { url: d.url } : {}), cards: d.cards });
 }
 
 /**
@@ -221,7 +242,7 @@ export function ensureCollection(then: () => void = () => {}): void {
     .then(r => r.json() as Promise<DecksReply>)
     .then(r => {
       loading = false;
-      if (r.ok && r.decks) { decks = r.decks; if (!openId) openId = decks[0]?.id ?? null; }
+      if (r.ok && r.decks) { decks = r.decks; if (!openId) openId = decks[0]?.id ?? null; syncChosen(); }
       else msg = r.error ?? 'could not load your decks';
       // a reload on `?table=<id>` asked for the table before the decks were here
       const want = pendingTable;
@@ -270,6 +291,7 @@ function flushSave(): void {
   const deck = decks?.find(d => d.id === savePending);
   savePending = null;
   if (!deck) return;
+  syncChosen();
   inflight++;
   void post('/api/decks/update', {
     id: deck.id, name: deck.name, cards: deck.cards, maybe: deck.maybe, cover: deck.cover,

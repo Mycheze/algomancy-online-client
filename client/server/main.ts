@@ -106,7 +106,7 @@ import { recordPlayed as leagueRecordPlayed, roomModeOf, tick as leagueTick, typ
 import { installLeagueMatchHooks, openLeagueMatch } from './league-match.ts';
 import { emit, since as eventsSince, BOOT_ID } from './hooks.ts';
 import { CODE_ALPHABET } from './link.ts';
-import { deckForPlay } from './collection.ts';
+import { deckForPlay, savedDeckNow } from './collection.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
 import { accountById, accountByName, accountForToken, gameHistory, issueSignupClaim, loadAccounts, privateView, setAdmin, setBadge } from './accounts.ts';
 // #190: the trio picker's history, draft rows only — a pure function so a test can hold it
@@ -2704,11 +2704,28 @@ wss.on('connection', ws => {
       const existing = getRoom(code);
       const single = existing ? !!existing.single : msg.mode === 'constructed' && msg.single !== undefined;
       let deckCards: CardName[] | null = null;
+      const saved = !single && typeof msg.deckId === 'string'
+        ? savedDeckNow(accountForToken(msg.token)?.id ?? null, msg.deckId) : null;
       if (single) {
         if (msg.single !== undefined) {
           const c = checkSingleCard(msg.single);
           if (c.ok) deckCards = c.cards;
           else if (!existing) return send(ws, { t: 'error', msg: `that card cannot be a deck: ${c.error}` });
+        }
+      } else if (saved) {
+        // A SAVED DECK IS PLAYED AS IT IS NOW, never as the browser's copy of
+        // it (collection.ts savedDeckNow): the join's `deck` is the list as it
+        // stood when "Play this deck" was pressed, and every edit since was
+        // being left out of the game (owner, 2026-11-07).
+        if (saved.ok) deckCards = saved.cards;
+        else {
+          const why = `your deck “${saved.name}” is not playable as it is now: ${saved.error}`;
+          if (msg.mode === 'constructed' && !existing) return send(ws, { t: 'error', msg: why });
+          // a waiting constructed seat that would have taken it is told why it
+          // got no deck; any other room (a draft, a dealt game, a match) ignores
+          // the deck, as it always has
+          if (existing && existing.mode === 'constructed' && roomWaiting(existing)
+            && takesJoinDeck(existing, msg.pick === true)) send(ws, { t: 'error', msg: why });
         }
       } else if (msg.deck !== undefined) {
         const c = checkDeck(msg.deck);
@@ -3448,7 +3465,17 @@ function resolveOffer(offer: Offer, settled: boolean): void {
   // Which of them takes seat 0 is a coin flip. Anything derivable — longer
   // wait, higher rating, alphabetical — would hand somebody a systematic
   // side, and initiative is not symmetric in this game.
-  const [first, second] = Math.random() < 0.5 ? [a, b] : [b, a];
+  const [shuffledA, shuffledB] = Math.random() < 0.5 ? [a, b] : [b, a];
+  // …and each brings its saved deck as it is NOW, not as it was when they
+  // queued: an edit made while searching is in the game (owner, 2026-11-07;
+  // collection.ts savedDeckNow). A deck edited into an illegal one keeps the
+  // list it queued with, which was checked then — an offer is no moment to
+  // refuse a game both players just accepted.
+  const current = (e: QueueEntry): QueueEntry => {
+    const now = e.deckId ? deckForPlay(e.userId, e.deckId) : null;
+    return now ? { ...e, deck: now.cards } : e;
+  };
+  const [first, second] = [current(shuffledA), current(shuffledB)];
   let room: Room;
   try {
     const code = freshRoomCode();

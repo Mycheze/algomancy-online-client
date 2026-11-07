@@ -633,13 +633,39 @@ export function duplicateDeck(account: Account, id: string, src?: CollectionDeck
  * says is in it.
  */
 export function deckForPlay(userId: string | null, id: string | null): { id: string; cards: CardName[] } | null {
+  const d = savedDeckNow(userId, id);
+  return d && d.ok ? { id: d.id, cards: d.cards } : null;
+}
+
+/**
+ * THE SAVED DECK AS IT IS NOW — what a constructed seat plays when its join
+ * names one of the player's own decks.
+ *
+ * Reported 2026-11-07 (owner, #steward): *"Some users have complained about
+ * editing decks and then not seeing those edits in their next constructed
+ * match with the deck … when a deck is tweaked or tuned, it should be the
+ * list that's used in the next game with that deck."* The browser keeps a
+ * COPY of the chosen deck's list (ui/util.ts chooseDeck), taken when "Play
+ * this deck" was pressed, and sent that copy on every join; main.ts dealt
+ * from the copy. So the list a game was dealt from is the collection's, read
+ * here, whenever the id is the caller's — the wire's list is only for a deck
+ * that is not in a collection (a logged-out pick, a pasted list).
+ *
+ * null: not the caller's deck (or no id). `ok: false`: it is theirs, and as
+ * edited it is not playable — the caller says so rather than dealing the
+ * stale list, which is the bug this exists to end.
+ */
+export function savedDeckNow(userId: string | null, id: string | null):
+  { ok: true; id: string; name: string; cards: CardName[] } | { ok: false; id: string; name: string; error: string } | null {
   if (!userId || !id) return null;
   const account = accountById(userId);
   if (!account) return null;
   const deck = deckById(account, id);
   if (!deck) return null;
   const c = checkDeck(deck.cards);
-  return c.ok ? { id: deck.id, cards: c.cards } : null;
+  return c.ok
+    ? { ok: true, id: deck.id, name: deck.name, cards: c.cards }
+    : { ok: false, id: deck.id, name: deck.name, error: c.error };
 }
 
 /**
