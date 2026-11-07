@@ -118,7 +118,9 @@ discord_sync() {
     case "$verb" in
       approve)
         if [ "$STEWARD_MODE" = live ]; then
-          g push -q origin "refs/remotes/origin/steward/$item:refs/heads/steward-approved/$item" ":refs/heads/steward/$item" && approved=1
+          # forced and atomic (BL-71): a re-approval replaces a stale approved tip, and a refused
+          # update never deletes the staged branch it was copying
+          g push -q --atomic origin "+refs/remotes/origin/steward/$item:refs/heads/steward-approved/$item" ":refs/heads/steward/$item" && approved=1
         else log "DRY: would approve $item"; fi
         journal "$item" approved by=owner via=discord; log "approved on Discord: $item" ;;
       reject|retry)
@@ -431,6 +433,16 @@ land_approved() {
   done
 }
 
+# Does the repaired HEAD carry the owner's approval of this approved branch? He approved the
+# change, not a commit hash: when the repair touches no file the approved tip did not, it is the
+# same change rebased. (BL-71, 2026-11-07: BL-61 was approved, conflicted, was repaired, re-staged
+# and asked for again, three times, while its stale approved tip conflicted on every tick.)
+approval_carries() { # approved-ref → 0 when HEAD is that change on today's master
+  local base; base=$(g merge-base origin/master "$1") || return 1
+  [ -n "$(g diff --name-only origin/master HEAD)" ] || return 1
+  [ -z "$(comm -13 <(g diff --name-only "$base" "$1" | sort) <(g diff --name-only origin/master HEAD | sort))" ]
+}
+
 # a red branch → state/redgate/<item>.json; keep an existing entry's tries
 redgate() { # branch item log intent base_sha
   local f="$STATE/redgate/$(slug "$2").json" tries=0 mr=false
@@ -545,9 +557,21 @@ EOF
       [ "$ncommits" -gt 0 ] && branch=$(stage_head "$item") ;;
   esac
 
-  # a repair that went red again is the owner's now
   local rg="$STATE/redgate/$(slug "$item").json"
   local was_repair=0; [[ "$pre_red" == *" $(slug "$item").json "* ]] && was_repair=1
+  # a green repair of an APPROVED branch replaces its stale tip and lands on the next tick,
+  # without asking the owner a second time (BL-71)
+  if [ $was_repair = 1 ] && [ "$final" = staged ] && [ -f "$rg" ]; then
+    local aref; aref=$(jq -r '.branch // ""' "$rg")
+    if [[ "$aref" == origin/steward-approved/* ]] && g rev-parse -q --verify "$aref" >/dev/null && approval_carries "$aref"; then
+      if [ "$STEWARD_MODE" != live ]; then
+        log "DRY: would carry the approval over: HEAD → steward-approved/$(slug "$item")"; final=approved-repaired; branch="${aref#origin/}"
+      elif g push -q --atomic -f origin "HEAD:refs/heads/steward-approved/$(slug "$item")" ":refs/heads/$branch"; then
+        final=approved-repaired; branch="${aref#origin/}"
+      else log "$item: could not carry the approval over to the repaired branch — left staged"; fi
+    fi
+  fi
+  # a repair that went red again is the owner's now
   if [ $was_repair = 1 ] && [ "$final" = gate-red ] && [ -f "$rg" ]; then
     # red because master was red is not the agent's miss: it does not use up a try
     if [ "$(jq -r '.masterRed // false' "$rg")" != true ]; then

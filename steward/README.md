@@ -215,6 +215,13 @@ Done on 2026-11-03; kept here so it can be redone.
   is an approved one whose item already shipped another way (a repair run that
   re-applied it): the runner journals `landed-elsewhere` instead of rebasing it
   onto its own landed patch and queueing the same repair every tick (BL-68).
+- **An approval is of the change, not of a commit.** When an approved branch
+  conflicts with master, the repair run's green result replaces the approved
+  tip (journal `approved-repaired`) and lands on the next tick — it is not
+  staged and asked for again — as long as it touches no file the approved
+  change did not; one that does is new work and goes back to the owner. An
+  approval is a forced push, so a re-approval also replaces a stale tip (BL-71:
+  BL-61 was approved once and asked for three times on 2026-11-07).
 - **The agent never runs the full gate**; the runner does, once per item, on
   one pinned, frequency-governed core. The box must stay silent — that is the
   owner's one hard requirement for it — so the gate is slow there, and that is fine.
