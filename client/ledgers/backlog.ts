@@ -598,7 +598,15 @@ const OPEN: Entry[] = [
       + 'files (`IssueRow.by`, report-fields.ts), which `npm run reports` prints beside each '
       + 'new row. Guards: server/e2e/test-badge.ts, server/e2e/test-report.ts §5. NOT yet: the in-game '
       + 'badge, the review queue over judge questions, and reports ORDERED by badge — those '
-      + 'are the doneWhen lines still open.',
+      + 'are the doneWhen lines still open.\n\n'
+      + '2026-11-07 (steward), REPORT ORDERING, half of the second doneWhen line: the admin dashboard\'s '
+      + 'Reports tab (ui/pages/admin.ts reportOrder) lists an unjudged report from a badged account first — '
+      + 'owner, then L3, L2, L1, newest first within a level — and once it is marked 👍/👎 it falls back '
+      + 'into date order; the who column shows the filer\'s badge chips. Guard: 975 §6. The rank is the '
+      + 'badge stamped on the report when it was filed (`IssueRow.by`), so granting a badge later does not '
+      + 'reorder old reports. NOT done: rules QUESTIONS (they need the review queue first — the web judge box '
+      + 'logs a session id, not an account: bot/app.py log_response user_id=req.session_id), and the steward\'s own queue still takes `report #N` lines by ledger id '
+      + '(steward/queue.mjs §4; a steward/ change, so the owner\'s to approve).',
   },
   {
     id: 'BL-51',

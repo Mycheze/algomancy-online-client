@@ -96,3 +96,32 @@ test('975 §5 loading, an action error and a server fault each say so', () => {
   assert.match(both, /role="alert">the server answered 500/);
   assert.doesNotMatch(adminHtml(view()), /role="alert"/, 'no error line when there is none');
 });
+
+/* §6 BL-17 — a report from a badged account is surfaced ahead of the others
+ * while nobody has judged it; judged, it is back in date order. */
+test('975 §6 unjudged reports from the owner and judges come first, highest level first', () => {
+  const base = view().reportRows[0]!;
+  // newest first, as the server sends them
+  const r = (id: number, by: AdminView['reportRows'][number]['by'], mark: 'real' | 'not' | null = null) =>
+    ({ ...base, id, ts: `2026-11-0${id}T10:00:00Z`, note: `report ${id}`, by, mark, markedBy: mark ? 'ops' : null });
+  const rows = [
+    r(9, { name: 'Pat' }),
+    r(8, { name: 'Lou', judge: 1 }),
+    r(7, null),
+    r(6, { name: 'Max', judge: 3 }, 'real'),
+    r(5, { name: 'Kim', judge: 3 }),
+    r(4, { name: 'Ops', owner: true, judge: 1 }),
+    r(3, { name: 'Ida', judge: 2 }),
+    r(2, { name: 'Lou', judge: 1 }),
+  ];
+  const order = (html: string) => [...html.matchAll(/report (\d)<\/td>/g)].map(m => Number(m[1]));
+  const html = adminHtml(view({ reportRows: rows }));
+  assert.deepEqual(order(html), [4, 5, 3, 8, 2, 9, 7, 6],
+    'owner, L3, L2, then the L1s newest first; then everybody else and the judged L3 in date order');
+  assert.deepEqual(order(adminHtml(view({ reportRows: rows, onlyUnmarked: true }))), [4, 5, 3, 8, 2, 9, 7]);
+  assert.deepEqual(rows.map(x => x.id), [9, 8, 7, 6, 5, 4, 3, 2], 'the view\'s own list is not reordered in place');
+  // and the who column says what the filer was
+  assert.match(html, /Ops <span class="badgechip owner">owner<\/span> <span class="badgechip judge">Judge L1<\/span><\/td>/);
+  assert.match(html, /<td>Pat<\/td>/, 'an unbadged filer is just a name');
+  assert.match(html, /<td><i>signed out<\/i><\/td>/);
+});

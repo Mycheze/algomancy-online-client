@@ -290,7 +290,9 @@ export interface Account {
    * the account files (report-fields.ts `ReportedBy`), which is what it is
    * for: the owner, 2026-09-05, triaging the first live game's reports, asked
    * to know "what kind of account left the report". Shown on the profile.
-   * The review queue, in-game badge and report ORDERING are still BL-17.
+   * The admin dashboard lists a badged account's unjudged reports first
+   * (ui/pages/admin.ts reportOrder, 2026-11-07). The review queue and the
+   * in-game badge are still BL-17.
    */
   badge?: AccountBadge;
 

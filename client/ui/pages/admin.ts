@@ -243,7 +243,7 @@ export function initAdmin(opts: { app: HTMLElement; rerender: () => void }): voi
 const day = (iso: string): string => (iso ? esc(iso.slice(0, 10)) : '—');
 const when = (iso: string): string => (iso ? esc(iso.slice(0, 16).replace('T', ' ')) : '—');
 
-function badgeChips(b: Badge | null | undefined): string {
+function badgeChips(b: { owner?: boolean; judge?: number } | null | undefined): string {
   if (!b) return '';
   const out: string[] = [];
   if (b.owner) out.push('<span class="badgechip owner">owner</span>');
@@ -285,14 +285,41 @@ function statusChip(r: ReportRow): string {
   return `<span class="stchip ${esc(r.status)}" title="${esc(t)}">${esc(label)}</span>`;
 }
 
+/**
+ * BL-17 — "Rules questions and bug reports from badged accounts are surfaced
+ * ahead of unbadged ones." How much a report's filer is trusted, highest
+ * first: the owner, then judges L3, L2, L1; 0 is everybody else (and a
+ * signed-out or pre-stamp report). The mark is the one the account held WHEN
+ * IT FILED (report-fields.ts), so granting a badge later does not reorder old
+ * reports.
+ */
+export function reportTrust(r: ReportRow): number {
+  if (r.by?.owner) return 4;
+  const j = r.by?.judge;
+  return j === 1 || j === 2 || j === 3 ? j : 0;
+}
+
+/**
+ * The order the reports tab lists them in. The server sends newest first; a
+ * report from a badged account that nobody has judged yet goes to the top,
+ * highest trust first, newest first within a level. Once it is judged (👍 or
+ * 👎) it falls back into its place by date — it has been surfaced, and a
+ * badged filer must not pin the list's head forever. Stable: equal rows keep
+ * the server's order.
+ */
+export function reportOrder(reports: readonly ReportRow[]): ReportRow[] {
+  const lift = (r: ReportRow): number => (r.mark ? 0 : reportTrust(r));
+  return reports.map((r, i) => ({ r, i })).sort((a, b) => lift(b.r) - lift(a.r) || a.i - b.i).map(x => x.r);
+}
+
 function reportsHtml(reports: ReportRow[], over: Overview | null, unmarkedOnly: boolean): string {
-  const shown = unmarkedOnly ? reports.filter(r => !r.mark) : reports;
+  const shown = reportOrder(unmarkedOnly ? reports.filter(r => !r.mark) : reports);
   const rows = shown.map(r => `
     <tr class="${r.mark === 'not' ? 'dim' : ''}">
       <td class="num" title="${r.ledgerId === null ? 'not in the committed snapshot yet — run npm run reports' : `ledger #${r.ledgerId}`}">#${r.id}${r.ledgerId === null ? '<i class="unk">*</i>' : ''}</td>
       <td>${when(r.ts)}</td>
       <td>${r.room ? esc(r.room) : `<i>${esc(r.page ?? 'page')}</i>`}</td>
-      <td>${r.by ? esc(r.by.name) : '<i>signed out</i>'}</td>
+      <td>${r.by ? `${esc(r.by.name)} ${badgeChips(r.by)}`.trim() : '<i>signed out</i>'}</td>
       <td>${esc(r.kind ?? '?')}${r.severity ? `/${esc(r.severity)}` : ''}</td>
       <td class="notecell">${esc(r.note)}</td>
       <td>${statusChip(r)}</td>
@@ -309,6 +336,7 @@ function reportsHtml(reports: ReportRow[], over: Overview | null, unmarkedOnly: 
   return `<p class="adminnote">
     ${s ? `${s.total} report(s) · ${s.unmarked} unjudged · 👍 ${s.real} · 👎 ${s.not} · ${s.live} still open on the ledger${s.unfetched ? ` · ${s.unfetched} marked <i class="unk">*</i> are not in the committed snapshot yet, so they can have no status until <code>npm run reports</code> runs` : ''}.` : ''}
     <label><input type="checkbox" data-btn="admin-unmarked" ${unmarkedOnly ? 'checked' : ''}> unjudged only</label>
+    <br>Unjudged reports from the owner and from judges come first, highest level first; once judged they fall back into date order.
     <br><b>Status is read-only</b> and comes from the ledger in the build this server is running —
     it says whether a report is fixed <i>in what people are playing right now</i>. Your 👍/👎 is
     the part you can change, and it comes down with <code>npm run reports</code>.</p>
