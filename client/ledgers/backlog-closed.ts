@@ -3204,4 +3204,45 @@ export const CLOSED: Entry[] = [
       + 'CLAUDE.md\'s generated-files table and the steward skill\'s card-update recipe do not name '
       + 'scan-reads.json yet (both protected from the worker).',
   },
+  {
+    id: 'BL-71',
+    slug: 'steward-repaired-approval-carries-over',
+    title: 'An approved fix that hit a merge conflict is sent back to the owner for approval again, and its stale branch conflicts on every tick',
+    area: 'server',
+    size: 'S',
+    status: 'done',
+    track: 'qol',
+    said:
+      'I don\'t want to manually approve all those things I can just approve … make sure the actual approval '
+      + 'requests are important. (2026-11-05)',
+    means:
+      'land_approved in steward/run-once.sh rebases origin/steward-approved/<item>; on a conflict it journals '
+      + 'approved-conflict and queues "repair origin/steward-approved/<item>". The repair run rebased the work, '
+      + 'but the runner treated it like any new item: the policy staged it, a handoff asked the owner to approve '
+      + 'again, and steward-approved/<item> stayed at the old tip, so the next tick conflicted on it again and '
+      + 'queued the same repair. A re-approval could not break the loop: the approve push was not forced and the '
+      + 'repaired branch is not a descendant of the stale tip, and it was not atomic, so the refused update could '
+      + 'still delete the staged branch. Seen on BL-61, 2026-11-07: approved 05:48, approved-conflict 05:48, 07:07 '
+      + 'and 08:25 on the stale 6912fcad, repaired and re-staged at 07:01 and 08:20, queued a fourth time as the '
+      + 'night\'s first line; report-329 the same. The approval was of the change, not of a commit hash.',
+    doneWhen: [
+      'An approved branch that conflicted and was repaired lands on the next tick without a second approval, and its stale tip never queues another repair',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'steward/run-once.sh',
+      'steward/review.sh',
+      'steward/queue.mjs',
+    ],
+    evidence: { commit: '4bdd7636', guards: ['1160-steward-approval-carries-over.test.ts'] },
+    notes:
+      'A repair carries the approval when it touches no file the approved change did not (approval_carries); '
+      + 'one that does is new work and is staged for the owner as before. The approve push from Discord and '
+      + 'review.sh is now forced and atomic. Not run: steward/test-runner.sh (it pushes to a remote, and its '
+      + 'stub cannot make an approved branch conflict without moving master); 1160 pins the decision and the '
+      + 'wiring instead. The skill\'s repair section could not be edited from the run (permission refused): it '
+      + 'should say to rebase the approved tip itself and touch no new file.',
+  },
 ];
