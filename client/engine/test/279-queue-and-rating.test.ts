@@ -198,7 +198,7 @@ test('BL-01 §4 the home screen shows the queue, and the post-game button is ali
 });
 
 test('BL-02 §4 the queue explains what is rated, where it is claimed', () => {
-  // the profile's ladder tab is ui/pages/profile.ts since the design-system round (2026-11-03)
+  // the profile's ladder is the Players tab's board (ui/pages/profile.ts) since the account redesign (2026-11-07)
   const ACCOUNT = readFileSync(new URL('../../ui/pages/profile.ts', import.meta.url), 'utf8');
   // Two friends passing a room code cannot move a rating, and a player who
   // does not know that will assume their games are counting and be wrong

@@ -620,7 +620,9 @@ function playersTab(v: ProfileView): string {
     ariaLabel: 'Board', size: 'sm',
     options: boards.map(([m, label]) => ({ label, value: m, on: m === v.board, dataBtn: 'acct-ladder-mode', attrs: { 'data-mode': m } })),
   });
-  const note = v.board === 'all' ? 'Everyone who has played here.' : 'Only matchmaking games are rated. Everyone starts at 1000.';
+  // BL-02 (engine test 279): the rule a player needs to read a rating that has not moved
+  const note = v.board === 'all' ? 'Everyone who has played here.'
+    : 'Only <b>matchmaking queue</b> games are rated. Constructed and live draft are rated separately; everyone starts at 1000.';
   return `<div class="pfplayers">
     ${friendsColumn(v)}
     <div class="pfpane">

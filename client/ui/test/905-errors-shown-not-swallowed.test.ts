@@ -46,15 +46,15 @@ test('the Link Discord handler never writes the sign-in screen\'s message', () =
   assert.match(h, /catch \{ linkMsg = 'could not reach the server'; \}/, 'a network failure is said too');
 });
 
-test('the Connections card draws linkMsg', () => {
-  const at = profile.indexOf('function connectionsHtml');
-  assert.ok(at >= 0, 'positive control: connectionsHtml');
+test('the Discord row draws linkMsg', () => {
+  // Settings' Discord row since the account redesign (2026-11-07); it was the Connections card
+  const at = profile.indexOf('function discordHtml');
+  assert.ok(at >= 0, 'positive control: discordHtml');
   const card = profile.slice(at, profile.indexOf('\n}\n', at));
-  assert.match(card, /const linkMsg = c\.linkMsg;/, 'the message the view carries');
-  // drawn as an error since 2026-11-03 (it was .deckmsg's gold), on BOTH faces of
-  // the card: Unlink's failure lands here too (test/997)
-  assert.match(card, /const msg = linkMsg \? statusMessage\(\{ tone: 'error', text: linkMsg \}\) : '';/);
-  assert.equal([...card.matchAll(/\$\{msg\}/g)].length, 2, 'the linked and the unlinked card both draw it');
+  // drawn as an error since 2026-11-03 (it was .deckmsg's gold), on EVERY face of
+  // the row: Unlink's failure lands here too (test/997)
+  assert.match(card, /const msg = c\.linkMsg \? statusMessage\(\{ tone: 'error', text: c\.linkMsg \}\) : '';/);
+  assert.equal([...card.matchAll(/\$\{msg\}/g)].length, 3, 'linked, code showing and unlinked all draw it');
 });
 
 test('authMsg is still drawn only by the sign-in screen (why the old write was invisible)', () => {
@@ -69,8 +69,8 @@ test('the ladder: a failed load is marked, and the tab says so', () => {
   const load = fn(src, 'async function loadLadder');
   assert.match(load, /if \(!res\.ok\) throw/, 'a non-200 is a failure, not an empty body');
   assert.match(load, /failed: true/);
-  const tab = fn(profile, 'function ladderTab');
-  assert.ok(tab.indexOf('if (ladder.failed)') >= 0 && tab.indexOf('if (ladder.failed)') < tab.indexOf('nobody has played'),
+  const tab = fn(profile, 'function boardHtml');
+  assert.ok(tab.indexOf('if (ladder.failed)') >= 0 && tab.indexOf('if (ladder.failed)') < tab.indexOf('Nobody has'),
     'the failure is drawn before (instead of) the empty-board sentence');
   assert.match(tab, /Could not load the ladder/);
 });
