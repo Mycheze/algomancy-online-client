@@ -84,6 +84,12 @@ class Client {
 }
 
 const sleep = (ms: number): Promise<void> => new Promise(r => setTimeout(r, ms));
+/** A life total to SET that is not the one the seat has now. The server picks
+ * this file's seed, and a life edit to the current total is refused ("that is
+ * already the life total", amend.ts) — so a fixed 23 was a coin-flip: the
+ * steward's triage gate of 2026-11-07 met a game where the seat stood at 23,
+ * the proposal was refused, and §4b sat out its 8s wait (1 run in 8). */
+const lifeOtherThan = (now: number, want: number): number => (now === want ? want - 1 : want);
 /** the report rows the agreed fixes of this room filed */
 const fixRows = (): any[] => (existsSync(ENV.ALGO_ISSUES_FILE) ? readFileSync(ENV.ALGO_ISSUES_FILE, 'utf8').trim().split('\n').filter(Boolean).map(l => JSON.parse(l)) : [])
   .filter(r => r.room === ROOM && r.fix);
@@ -225,8 +231,11 @@ test('§3 the proposer cannot accept their own fix; a decline cools them down', 
   const P = a.view.priority as Seat;
   const O = (P === 0 ? 1 : 0) as Seat;
   const prop = seatClient(P), opp = seatClient(O);
-  const life = { kind: 'life', target: O, life: 9 };
-  const up = await prop.ask({ t: 'amend', op: 'propose', edit: life, reason: 'the damage was dealt twice' }, m => m.t === 'amend' && m.how === 'proposed');
+  const nine = lifeOtherThan(prop.view.players[O].life, 9);
+  const life = { kind: 'life', target: O, life: nine };
+  const up = await prop.ask({ t: 'amend', op: 'propose', edit: life, reason: 'the damage was dealt twice' },
+    m => (m.t === 'amend' && m.how === 'proposed') || m.t === 'amenderr');
+  assert.equal(up.t, 'amend', `the fix was proposed, not refused (${up.msg ?? ''})`);
   const id = up.fix.proposal.id;
   const own = await prop.ask({ t: 'amend', op: 'accept', id }, m => m.t === 'amenderr');
   assert.match(own.msg ?? '', /other player answers/);
@@ -236,7 +245,7 @@ test('§3 the proposer cannot accept their own fix; a decline cools them down', 
   const again = await prop.ask({ t: 'amend', op: 'propose', edit: life, reason: 'please' }, m => m.t === 'amenderr');
   assert.match(again.msg ?? '', /declined — wait/);
   cooled = P;
-  assert.notEqual(opp.view.players[O].life, 9, 'nothing changed');
+  assert.notEqual(opp.view.players[O].life, nine, 'nothing changed');
 });
 
 test('§4 a rewind: both seats get a fresh view, and the file archives what was taken back', async () => {
@@ -267,13 +276,17 @@ test('§4b fixes inside the hidden planning and deploy steps reach the other sea
   const P = (cooled === 0 ? 1 : 0) as Seat, O = cooled;
   const prop = seatClient(P), opp = seatClient(O);
   for (const [step, edit, check] of [
-    ['planning', { kind: 'drawCards', target: P, n: 1 }, (before: any, after: any) => after.players[P].hand.length === before.players[P].hand.length + 1],
-    ['deploy', { kind: 'life', target: P, life: 23 }, (_b: any, after: any) => after.players[P].life === 23],
+    ['planning', (_b: any) => ({ kind: 'drawCards', target: P, n: 1 }), (before: any, after: any) => after.players[P].hand.length === before.players[P].hand.length + 1],
+    ['deploy', (b4: any) => ({ kind: 'life', target: P, life: lifeOtherThan(b4.players[P].life, 23) }),
+      (before: any, after: any) => after.players[P].life === lifeOtherThan(before.players[P].life, 23)],
   ] as const) {
     await driveUntil(a, b, v => v.phase === step && !v.decision && !v.pendingAsk);
     await quiesce(a, b);
     const before = opp.view;
-    const up = await prop.ask({ t: 'amend', op: 'propose', edit, reason: `${step}: the game skipped it` }, m => m.t === 'amend' && m.how === 'proposed');
+    // a refusal fails here, by name — not as a timeout waiting for 'proposed'
+    const up = await prop.ask({ t: 'amend', op: 'propose', edit: edit(before), reason: `${step}: the game skipped it` },
+      m => (m.t === 'amend' && m.how === 'proposed') || m.t === 'amenderr');
+    assert.equal(up.t, 'amend', `${step}: the fix was proposed, not refused (${up.msg ?? ''})`);
     const markO = opp.msgs.length;
     opp.send({ t: 'amend', op: 'accept', id: up.fix.proposal.id });
     const upd = await opp.next(m => m.t === 'update' && !!m.events?.some(e => /Agreed fix/.test(e.msg)), markO);
