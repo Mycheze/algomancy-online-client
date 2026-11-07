@@ -29,7 +29,9 @@
      exactly this box, so a deep stack tightens instead of bursting out */
   width: max-content; max-width: calc(var(--cw) * 3 + 26px);
   padding: 6px 12px 8px;
-  background: linear-gradient(180deg, rgba(24,30,38,.96), rgba(16,20,26,.96));
+  /* a palette surface, not the old slate (rgba(24,30,38) → rgba(16,20,26), a
+     navy seam on the purple table): BL-58, 2026-11-07, ui test 1157 */
+  background: var(--color-surface-overlay);
   border: 1px solid var(--accent); border-radius: 9px;
   box-shadow: 0 10px 34px rgba(0,0,0,.7), 0 0 0 1px rgba(0,0,0,.4);
   backdrop-filter: blur(3px);

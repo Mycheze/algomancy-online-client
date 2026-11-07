@@ -37,10 +37,15 @@
    — playtest UZRG is what a loud decline costs — so this is a class of its
    own, given only to `doneCost`, the one member that COMMITS. Green, because
    green already means "this is the affirmative one" on `button.primary`, and
-   filled, because the complaint is that it did not read as a button at all. */
-button.commitbtn { background: #3c5a2f; border: 1px solid #5b8747; border-style: solid;
-  color: var(--text); font-weight: 700; padding: 6px 14px; }
-button.commitbtn:hover:not(:disabled) { border-color: var(--glow); background: #476b37; }
+   filled, because the complaint is that it did not read as a button at all.
+   BL-58 (2026-11-07): `button.primary` stopped being green on 2026-11-03 (the
+   Manual's palette made it the filled orange), and this rule's three greens
+   were literals written to match the old one — so the commit button had become
+   the one green "confirm" on a table whose every other confirm is orange. It
+   reads the confirm roles now, the same as button.primary (ui test 1157). */
+button.commitbtn { background: var(--color-confirm); border: 1px solid var(--color-confirm-border); border-style: solid;
+  color: var(--color-text-on-accent); font-weight: 700; padding: 6px 14px; }
+button.commitbtn:hover:not(:disabled) { border-color: var(--color-confirm-border); background: var(--color-confirm-hover); }
 button.commitbtn:disabled { opacity: .45; cursor: default; }
 
 /* the ramp's own dial, sharing CR D7.2a's `.numentry` markup: on a cost question
