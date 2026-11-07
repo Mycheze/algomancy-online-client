@@ -1072,59 +1072,6 @@ const OPEN: Entry[] = [
     ],
   },
   {
-    id: 'BL-68',
-    slug: 'steward-approved-branch-already-landed',
-    title: 'The runner keeps re-landing an approved branch whose work already reached master another way',
-    area: 'server',
-    size: 'S',
-    status: 'open',
-    track: 'qol',
-    said:
-      'I don\'t want to manually approve all those things I can just approve … make sure the actual approval '
-      + 'requests are important. (2026-11-05)',
-    means:
-      'land_approved in steward/run-once.sh rebases every origin/steward-approved/* branch onto master and, on a '
-      + 'conflict, journals approved-conflict and writes state/redgate/<item>.json, which the queue turns into a '
-      + '"repair" line ahead of every report, CT and BL. When that repair re-applies the work as a NEW commit and '
-      + 'ships it (or the worker finds it already on master), the runner removes the redgate file but never '
-      + 'deletes the approved branch, so the next tick rebases it again, conflicts again (its patch is on master '
-      + 'now, with different ledger text) and queues the same repair again, without end. Seen 2026-11-05 on '
-      + 'CT-521: approved 06:48, conflicted 06:53 and 08:39, repaired and shipped as c674d37c at 09:29, '
-      + 'approved-conflict again at 09:35, and queued as "repair origin/steward-approved/CT-521" for the next '
-      + 'run, which found it already-fixed (its builder.ts, tabletop.ts and test 1143 hunks are identical to '
-      + 'c674d37c\'s). Every tick until it is fixed spends a Claude run on the same line. '
-      + 'The fix (one guard, in land_approved before the rebase): take the item\'s last journal row that is not '
-      + 'approved-conflict / approved-gate-red; if it is shipped, landed, already-fixed or not-a-bug, the approved '
-      + 'work is on master already, so archive the branch (push $ref:refs/archive/steward/$item and delete '
-      + 'refs/heads/steward-approved/$item, live mode only), remove state/redgate/$item.json, journal '
-      + '"landed-elsewhere", and continue. A later "approved" row (a re-approval) is not finished, so a real '
-      + 'second approval still lands. Then a test-runner.sh scenario: an approved branch with a finished journal '
-      + 'row is archived and never queued for repair.',
-    doneWhen: [
-      'An approved branch whose item already shipped is archived on the next tick and its repair line never comes back',
-    ],
-    decided: [
-      'An approved branch whose item already shipped, or was found already fixed, is finished: the runner archives it by itself. Owner, 2026-11-05, on Discord, asked whether the worker may tidy away an approved fix that already went live another way: "Yes of course. If an issue is fixed and no longer an issue, it\'s categorically \"solved\""',
-    ],
-    asks: [],
-    deps: [],
-    touches: [
-      'steward/run-once.sh',
-      'steward/test-runner.sh',
-    ],
-    notes: 'Until it lands, the stale ref origin/steward-approved/CT-521 (23d78f55, superseded by c674d37c on '
-      + 'master) re-queues itself every tick; deleting that one branch on GitHub stops the loop by hand. Staged '
-      + 'under its own id, not CT-521: approving a steward/CT-521 branch would push onto the stale '
-      + 'steward-approved/CT-521 of the same name. A worker that meets "repair origin/steward-approved/CT-521" '
-      + 'before this lands: it is already on master; skip it for this entry. '
-      + 'FIX WRITTEN 2026-11-05 (the commit that adds this sentence): approved_finished() + the guard at the top '
-      + 'of land_approved\'s loop, journalling landed-elsewhere (dry-landed-elsewhere when dry), and the '
-      + 'test-runner.sh scenario "landed-elsewhere". The guard\'s jq was checked against the box\'s real journal '
-      + '(CT-521 → finished) and nine synthetic rows; test-runner.sh itself needs git network and was not run. '
-      + 'Left open because its only guard is a runner scenario, not a node test: close it with that commit once '
-      + 'the scenario has passed on the box.',
-  },
-  {
     id: 'BL-70',
     slug: 'scan-readers-notice-a-replaced-scan',
     title: 'A replaced card scan leaves its scan-read data stale, and nothing notices',
