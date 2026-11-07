@@ -14560,6 +14560,22 @@ export const CLOSED: TodoEntry[] = [
     status: 'done',
   },
   {
+    id: 516, area: "client", severity: "minor",
+    title: "the deck builder's sideboard pile was never tried in Firefox, by touch drag or on an iPad",
+    detail: "The Competitive builder stream added a sideboard pile (5/7) to the tabletop builder and drove it in headless Chrome only. drag.ts has a Firefox guard and scans are draggable=false, but nobody had dragged a card to or from the sideboard pile with a finger or in Firefox. 2026-11-04 (BL-65): the rebuilt builder's Sideboard rail and the Competitive sideboarding table were dragged both ways in REAL Firefox 158 over BiDi and with Chrome touch emulation at 1024 and 768 (var/records/bl65/handoff-W5b.md). 2026-11-05 (steward): the missing touch case is in — ui test 1141 drives drag.ts's own listeners with a finger (the hold, the cancelled touchmove, the lift above the finger, a pointercancel mid-carry, no callout) from a deck card to the Sideboard rail and back; it went red with each of those three lines of drag.ts undone.",
+    evidence: "The Competitive register (W5 \"CT-516 not verified in Firefox / touch drag / iPad\").",
+    fix: "Drag cards both ways between the deck and the sideboard pile on a real iPad (Firefox and the touch case are done); fix what does not move.",
+    proof: null,
+    verify: "On an iPad, open a deck on the tabletop and drag a card onto the sideboard pile and back.",
+    guards: [
+      '1141-finger-drag-sideboard.test.ts::§2 held, then carried onto the Sideboard rail: the card goes to the sideboard',
+      '1141-finger-drag-sideboard.test.ts::§3 and back: a sideboard card carried onto the table lands in the deck',
+      '1141-finger-drag-sideboard.test.ts::§4 a pointercancel mid-carry (the browser took the gesture) drops nothing',
+    ],
+    closed: "CLOSED 2026-11-07 (steward), on the owner's standing order of 2026-11-05 that a real-device check is a follow-up, never an open ticket or an approval request. Of the three untried cases, Firefox (BL-65 W5b, real Firefox 158) and the finger drag (1141) are done; the 2026-11-05 handoff asking for an iPad check went unanswered and the branch landed with the batch. No report has ever named the sideboard drag. Re-checked tonight: 1141 passes 7/7, and with drag.ts's touchmove cancel (`if (live || press?.held) e.preventDefault()`) disabled §2 goes red. NOT SEEN: Safari's own gesture arbitration on a real iPad — no WebKit on the box. Carried in the night log as a follow-up; a report against it reopens this as a new CT.",
+    status: 'done',
+  },
+  {
     id: 520, area: "client", severity: "minor",
     title: "at 768 wide a long deck name runs under the builder's card-count pill",
     detail: "The builder's toolbar title (the deck name, tap to open Deck info) and the count pill share the toolbar's left side. At 768x1024 a long name such as 'Single-Box Battle Deck - Fire v1.1.0' runs under the pill instead of being cut short.",

@@ -179,19 +179,9 @@ const OPEN: TodoEntry[] = [
     status: "open",
   },
   // ── Pass D, the mop-up and the replacement-order round, 2026-10-25: defects found and not fixed
-  // ── Competitive Constructed, 2026-11-02 (the round reserved CT-500..519; the
-  //    open ones are here, the closed ones in card-todo-closed.ts; 503 was the
-  //    corpus rebuild, done at landing in 3b7c7be6, and 505..507 were never used)
-  {
-    id: 516, area: "client", severity: "minor",
-    title: "the deck builder's sideboard pile was never tried in Firefox, by touch drag or on an iPad",
-    detail: "The Competitive builder stream added a sideboard pile (5/7) to the tabletop builder and drove it in headless Chrome only. drag.ts has a Firefox guard and scans are draggable=false, but nobody has dragged a card to or from the sideboard pile with a finger or in Firefox. 2026-11-04 (BL-65): the rebuilt builder's Sideboard rail and the Competitive sideboarding table were dragged both ways in REAL Firefox 158 over BiDi and with Chrome touch emulation at 1024 and 768 (var/records/bl65/handoff-W5b.md). 2026-11-05 (steward): the missing touch case is in — ui test 1141 drives drag.ts's own listeners with a finger (the hold, the cancelled touchmove, the lift above the finger, a pointercancel mid-carry, no callout) from a deck card to the Sideboard rail and back; it went red with each of those three lines of drag.ts undone. What no test here can see is Safari's own gesture arbitration: a real iPad is still untried, and that check is the owner's.",
-    evidence: "The Competitive register (W5 \"CT-516 not verified in Firefox / touch drag / iPad\").",
-    fix: "Drag cards both ways between the deck and the sideboard pile on a real iPad (Firefox and the touch case are done); fix what does not move.",
-    proof: null,
-    verify: "On an iPad, open a deck on the tabletop and drag a card onto the sideboard pile and back.",
-    status: 'open',
-  },
+  // ── Competitive Constructed, 2026-11-02 (the round reserved CT-500..519): all
+  //    closed, in card-todo-closed.ts; 503 was the corpus rebuild, done at
+  //    landing in 3b7c7be6, and 505..507 were never used
   // ── the report triage of 2026-11-06 ────────────────────────────────────
   {
     id: 531, area: "client", severity: "minor",
