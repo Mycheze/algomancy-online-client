@@ -29,7 +29,8 @@ review is a few minutes of `steward/review.sh`.
 | `vps-fetch.sh` | the agent's one read-only window onto the live server (game files) |
 | `fetch-file.mjs` | downloads an image/PDF the owner sent — `discord.mjs` fetches every link in his messages on arrival; the agent runs it by hand for anything else (curl/wget stay denied) |
 | `retro.mjs` | the daily digest of the last day's runs, read off their own transcripts (denials, errors, loops, half-done) — the input to the `retro` item |
-| `claude-settings.json` | the agent's permissions: no push, fetch, ssh, sudo, full gate; it may edit its own skill (`.claude/` is otherwise write-protected by Claude Code, which blocked the first retro, 2026-11-06) |
+| `claude-settings.json` | the agent's permissions: no push, fetch, ssh, sudo, full gate |
+| `test-skill-hook.sh` | offline check of the runner's skill hand-over: Claude Code write-protects `.claude/` whatever the settings allow (an `Edit(.claude/skills/steward/**)` allow did not help, retro 2026-11-07), so the agent Writes the whole new skill to `$STATE/skill-next.md` and the runner commits it in place after the run |
 | `thermal.sh` | the governor that keeps the box silent (see Install §4) |
 | `systemd/` | the user units, and the one root unit (the CPU cap) |
 

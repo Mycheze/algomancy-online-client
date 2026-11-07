@@ -484,7 +484,7 @@ EOF
   chmod +x "$BIN/git-ssh-guard"
   cp "$REPO/steward/claude-settings.json" "$BIN/claude-settings.json"
 
-  rm -f "$STATE/outcome.json"
+  rm -f "$STATE/outcome.json" "$STATE/skill-next.md"   # skill-next.md: see after the run
   local start_sha; start_sha=$(g rev-parse HEAD)
   # a repair = an item that had a red branch before this run (whichever queue line the agent took)
   local pre_red; pre_red=" $(ls "$STATE/redgate" 2>/dev/null | tr '\n' ' ')"
@@ -524,6 +524,22 @@ EOF
 
   # the fetched snapshot is triage's; put it back on any other item (committed or not)
   restore_fetched "$item" "$start_sha"
+  # the skill's own text, handed over by the agent. Claude Code write-protects .claude/ whatever
+  # the settings allow: the retro of 2026-11-07 was refused again with the Edit(.claude/skills/
+  # steward/**) allow in place. So the agent Writes the WHOLE new SKILL.md to $STATE (which it can
+  # reach) and the runner puts it in place as its own commit. That one file only; the policy
+  # still counts its lines (over 150 stages). Removed before every run, so it is never stale:
+  # its base is the SKILL.md the agent read, which it cannot have changed.
+  if [ -s "$STATE/skill-next.md" ]; then
+    cp "$STATE/skill-next.md" "$REPO/.claude/skills/steward/SKILL.md"
+    if [ -n "$(g status --porcelain -- .claude/skills/steward/SKILL.md)" ]; then
+      local smsg="Steward skill ($item): its own instructions"; [ -n "${title:-}" ] && smsg="Steward skill ($item): $title"
+      g add .claude/skills/steward/SKILL.md && g commit -qm "$smsg" \
+        -m "Written by the agent to \$STATE/skill-next.md during the $item run (.claude/ is write-protected inside the run); put in place by the runner."
+      log "$item: skill text applied from skill-next.md"
+    fi
+    mv "$STATE/skill-next.md" "$STATE/outcomes/$TS-skill-next.md"
+  fi
   # uncommitted work is kept, never shipped
   if [ -n "$(g status --porcelain)" ]; then
     g add -A && g commit -qm "steward: uncommitted work at the end of the $item run" -m "Committed by the runner so nothing is lost; never shipped as-is."
