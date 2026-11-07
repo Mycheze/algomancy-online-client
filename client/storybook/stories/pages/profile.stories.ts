@@ -53,9 +53,10 @@ const LEADERS: LeaderRow[] = [
 ];
 
 const base: ProfileState = {
-  me: ME, tab: 'stats', discordLinking: true, linkCode: null, linkMsg: '', friendMsg: '', pwMsg: null, favMsg: '',
-  leaders: LEADERS, leadersFailed: false, ladderMode: 'constructed',
+  me: ME, tab: 'overview', discordLinking: true, linkCode: null, linkMsg: '', friendMsg: '', pwMsg: null, favMsg: '', claimMsg: '',
+  leaders: LEADERS, leadersFailed: false, board: 'constructed',
   ladder: { mode: 'constructed', players: LEADERS, you: { ...LEADERS[1]!, rank: 2 }, rated: 14, publicAfter: 5 },
+  prefs: { colours: 'standard', sound: true, motion: true, autoPass: false, bluffHaste: false },
   // no art server in Storybook: the cover falls back to its hidden image
   artFor: card => `../../ui/cards/${encodeURIComponent(card)}.webp`,
 };
@@ -66,18 +67,18 @@ export default {
   args: base,
 };
 
-export const Stats = {};
-export const StatsFailures = { name: 'Stats, a favourite and an unlink that did not take', args: { favMsg: 'could not reach the server', linkMsg: 'could not unlink', me: { ...ME, discord: 'quill' } } };
+export const Overview = {};
+export const OverviewNewPlayer = { name: 'Overview, a new player (no badge, not admin)', args: { me: { ...ME, admin: undefined, badge: null, trophies: [], opponents: [], topCards: [], decks: [] } } };
 export const Achievements = { args: { tab: 'achievements' } };
-export const Ladder = { args: { tab: 'ladder' } };
-export const LadderLoading = { name: 'Ladder, loading', args: { tab: 'ladder', ladder: null } };
-export const LadderFailed = { name: 'Ladder, failed', args: { tab: 'ladder', ladder: { ...base.ladder!, failed: true } } };
-export const Friends = { args: { tab: 'friends', friendMsg: 'request sent to Fennick' } };
-export const FriendsEveryoneFailed = { name: 'Friends, "Everyone here" failed', args: { tab: 'friends', leaders: null, leadersFailed: true } };
-export const Decks = { args: { tab: 'decks' } };
-export const DecksEmpty = { name: 'Decks, none published', args: { tab: 'decks', me: { ...ME, decks: [] } } };
-export const History = { args: { tab: 'history' } };
-export const HistoryEmpty = { name: 'History, no games', args: { tab: 'history', me: { ...ME, history: [] } } };
-export const NewPlayer = { name: 'A new player (no badge, not admin)', args: { me: { ...ME, admin: undefined, badge: null, trophies: [], opponents: [], topCards: [] } } };
-export const Guest = { name: 'A guest (no password box)', args: { me: { ...ME, provisional: true } } };
-export const DiscordCode = { name: 'Discord link code showing', args: { linkCode: { code: 'K7Q2', expiresAt: Number.MAX_SAFE_INTEGER } } };
+export const Games = { args: { tab: 'games' } };
+export const GamesEmpty = { name: 'Games, none yet', args: { tab: 'games', me: { ...ME, history: [] } } };
+export const Players = { args: { tab: 'players', friendMsg: 'request sent to Fennick' } };
+export const PlayersLoading = { name: 'Players, the ladder loading', args: { tab: 'players', ladder: null } };
+export const PlayersFailed = { name: 'Players, the ladder failed', args: { tab: 'players', ladder: { ...base.ladder!, failed: true } } };
+export const PlayersEveryone = { name: 'Players, Everyone', args: { tab: 'players', board: 'all' } };
+export const PlayersEveryoneFailed = { name: 'Players, Everyone failed', args: { tab: 'players', board: 'all', leaders: null, leadersFailed: true } };
+export const Settings = { args: { tab: 'settings' } };
+export const SettingsFailures = { name: 'Settings, a favourite and an unlink that did not take', args: { tab: 'settings', favMsg: 'could not reach the server', linkMsg: 'could not unlink', me: { ...ME, discord: 'quill' } } };
+export const SettingsAccessible = { name: 'Settings, accessible colours on', args: { tab: 'settings', prefs: { ...base.prefs, colours: 'accessible' } } };
+export const Guest = { name: 'Settings, a guest (name the account)', args: { tab: 'settings', me: { ...ME, provisional: true } } };
+export const DiscordCode = { name: 'Settings, Discord link code showing', args: { tab: 'settings', linkCode: { code: 'K7Q2', expiresAt: Number.MAX_SAFE_INTEGER } } };

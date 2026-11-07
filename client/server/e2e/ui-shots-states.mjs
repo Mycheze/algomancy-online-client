@@ -86,9 +86,17 @@ export function SCENARIOS(fx) {
   add('report', 'bug', '/', { ...me, steps: [{ click: '[data-report="open"]' }, { click: '.reportbox [role="radio"]', text: '^Bug$' }], pages: 1 });
 
   // ── the profile ──
-  for (const t of ['stats', 'achievements', 'ladder', 'friends', 'decks', 'history']) {
-    add('profile', t, '/', { ...me, steps: [{ click: btn('acct-open-profile') }, ...(t === 'stats' ? [] : [{ click: tab('acct-tab', t) }])] });
+  // the account redesign (2026-11-07): five tabs; the Players board's three
+  // boards; Settings for an admin (the Staff row) and with the accessible colours on
+  for (const t of ['overview', 'achievements', 'games', 'players', 'settings']) {
+    add('profile', t, '/', { ...me, steps: [{ click: btn('acct-open-profile') }, ...(t === 'overview' ? [] : [{ click: tab('acct-tab', t) }])] });
   }
+  for (const m of ['draft', 'all']) {
+    add('profile', `players-${m}`, '/', { ...me, steps: [{ click: btn('acct-open-profile') }, { click: tab('acct-tab', 'players') },
+      { click: `[data-btn="acct-ladder-mode"][data-mode="${m}"]` }] });
+  }
+  add('profile', 'settings-admin', '/', { ...admin, steps: [{ click: btn('acct-open-profile') }, { click: tab('acct-tab', 'settings') }] });
+  add('profile', 'accessible-colours', '/', { ...me, ls: { algoColors: 'accessible' }, steps: [{ click: btn('acct-open-profile') }] });
 
   // ── my decks (BL-65, 2026-11-04): the Decks page — a shelf of deck boxes and
   //    the chosen deck's preview — and the builder, the pool over the table.

@@ -45,6 +45,8 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-07', kind: 'change', text: 'Your profile is redesigned: Overview, Achievements, Games, Players and a new Settings tab. Friends and the ladders are together under Players, and you can add a friend straight from the ladder.' },
+  { date: '2026-11-07', kind: 'new', text: 'Accessible colours, for red-green colour blindness: turn them on in Profile, Settings. Fire, earth and wood are easier to tell apart, and the table\'s green glow turns cyan.' },
   { date: '2026-11-07', kind: 'fix', text: 'A unit The Everywhere has silenced stays silent while The Everywhere dies, even when other cards die alongside it: Cerebrox no longer triggers for some of them depending on the order they were binned.' },
   { date: '2026-11-07', kind: 'fix', text: 'The "That\'s enough" button when you choose how much to pay is orange now, like every other confirm button at the table, and the stack window floats on the table\'s purple instead of an old navy.' },
   { date: '2026-11-06', kind: 'fix', text: 'When a long game ends, the rest of the server no longer freezes while its Game summary is worked out. Other tables keep playing, and the summary appears as soon as it is ready.' },

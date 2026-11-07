@@ -141,10 +141,18 @@ test('§2 ALLOW names only pieces that exist and are in scope', () => {
  * ════════════════════════════════════════════════════════════════════════ */
 
 const TOKEN = /^--(color|text|space|radius|shadow|font|z|dur|ease)-/;
+/** THE one theme, decided by the owner (2026-11-07: Settings → Colours →
+ * Accessible, ui/prefs.ts). Its block re-points a few colour roles on :root
+ * when <html> carries the attribute; it is the only selector besides :root
+ * that may define a design token, and only a colour one. */
+const THEME = /^:root\[data-colors="(accessible|_{10})"\]$/;   // (declarations() masks a string's letters)
 
 test('§3 every design token is defined once, on :root in tokens.css, and nowhere else', () => {
   const tokens = pieces.find(p => isTokens(p.piece))!;
-  const defs = declarations(tokens.text).decls.filter(d => TOKEN.test(d.prop));
+  const all = declarations(tokens.text).decls.filter(d => TOKEN.test(d.prop));
+  const themed = all.filter(d => THEME.test(d.selector));
+  assert.deepEqual(themed.filter(d => !d.prop.startsWith('--color-')).map(d => d.prop), [], 'the theme moves colours only');
+  const defs = all.filter(d => !THEME.test(d.selector));
   assert.ok(defs.length >= 60, `only ${defs.length} design tokens in tokens.css`);
   assert.deepEqual(defs.filter(d => d.selector !== ':root').map(d => `${d.selector} { ${d.prop} }`), [],
     'a design token in tokens.css outside :root');

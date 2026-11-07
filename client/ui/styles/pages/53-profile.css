@@ -133,6 +133,7 @@
 .pfwatch .replaylink { color: var(--color-link); text-decoration: none; font-weight: 600; }
 .pfwatch .replaylink:hover { text-decoration: underline; }
 
+.pfboard td { height: 40px; }
 .pfboard tr.myrow td { background: var(--color-surface-raised); }
 .pfboard td .fdot { display: inline-block; margin-right: var(--space-3); vertical-align: middle; }
 .pfboard .pfrank { color: var(--color-text-muted); width: 2.5em; }
