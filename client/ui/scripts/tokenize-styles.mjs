@@ -3,16 +3,12 @@
  * client/docs/23-design-system.md, Phase 1: "tokens written; literals
  * replaced". This script does both, and changes NOTHING ON SCREEN:
  *
- *   1. TOKENS. If styles/tokens.css is still the split's verbatim copy of the
- *      old style.css head (the 40 legacy custom properties, checked one by
- *      one against LEGACY below), it is rewritten as TOKENS_CSS: the role-named
- *      set (--color-*, --font-*, --text-*, --space-*, --radius-*, --shadow-*,
- *      --z-*, --dur-*, --ease-*) whose values are TODAY's most common literals
- *      (the census, client/docs/23-ui-inventory/07-design-foundations.md §11),
- *      with every legacy name still defined — as an alias of its role token
- *      where it has one, as it was where it is a game token. If tokens.css
- *      already holds the role tokens it is left alone: from then on it is
- *      CANONICAL and hand-edited, and the codemod reads it.
+ *   1. TOKENS. styles/tokens.css is CANONICAL and hand-edited; this script
+ *      only READS its map from there (the role-named --color-*, --text-*,
+ *      --space-*, --radius-*, --shadow-* tokens). It wrote that file once, in
+ *      Phase 1b, from a template that was retired with BL-61 (2026-11-07):
+ *      the copy of the values it carried had gone stale. A tokens.css with no
+ *      role tokens is an error, not something to regenerate.
  *
  *   2. LITERALS → var(). Over styles/base.css, styles/pages/** and
  *      styles/shared/** — NEVER styles/board/**, the game board is out of
@@ -41,15 +37,20 @@
  *      design: the snap list's "through" rows, and only those, onto their
  *      token (§3b below says exactly which). Run it only AFTER the exact pass.
  *
- * IDEMPOTENT. A second run finds nothing to do. RE-RUNNABLE after a re-split,
- * in THIS ORDER — each step reads what the one before wrote:
+ * ⚠ IT DOES NOT RUN ON TODAY'S PALETTE (found 2026-11-07, BL-61): since the
+ * palette of 2026-11-03 --color-accent and --color-confirm are the same orange,
+ * and buildMap refuses a colour two tokens share until a PREFER rule says
+ * which one a literal of it becomes. That is a design call; make it before
+ * the next run.
  *
- *   node client/ui/scripts/split-styles.mjs --rev origin/master   # style.css → pieces, word for word
- *   node client/ui/scripts/tokenize-styles.mjs                    # tokens.css + exact literal → var()
+ * IDEMPOTENT. A second run finds nothing to do. In THIS ORDER — each step
+ * reads what the one before wrote:
+ *
+ *   node client/ui/scripts/tokenize-styles.mjs                    # exact literal → var()
  *   node client/ui/scripts/tokenize-styles.mjs --snap through     # the approved near-misses → var()
  *
- * The second alone is zero-change; the third moves pixels (the snap list's
- * "through" rows). ui/test/921's ALLOW is banked after the third.
+ * The first alone is zero-change; the second moves pixels (the snap list's
+ * "through" rows). ui/test/921's ALLOW is banked after the second.
  *
  * Flags:
  *   --check               write nothing; exit 1 if anything would change
@@ -75,142 +76,7 @@ import {
 } from './css-scan.mjs';
 import { stylesOrder } from './styles.mjs';
 
-/* ── 1. THE TOKENS ──────────────────────────────────────────────────────── */
-
-/** the split's tokens.css, declaration for declaration: the old style.css's first :root */
-const LEGACY = {
-  '--bg': '#12151a', '--panel': '#1a1f27', '--panel2': '#20262f', '--line': '#2e3742',
-  '--text': '#d6dde6', '--dim': '#8794a3', '--accent': '#d9a441', '--danger': '#d95454',
-  '--glow': '#6fc36f', '--target': '#e0b93c', '--pending': '#3fd2c0',
-  '--fire': '#d95436', '--water': '#3f8fd9', '--earth': '#8a6b3d', '--wood': '#4e8a3d',
-  '--metal': '#9aa5b0', '--light': '#f2ead6', '--dark': '#6a7382',
-  '--light-ink': '#2b2417', '--dark-ink': '#ffffff', '--metal-ink': '#222222',
-  '--bar-fire': '#821210', '--bar-water': '#1e3463', '--bar-earth': '#824a11', '--bar-wood': '#2f581e',
-  '--bar-metal': '#565656', '--bar-light': '#fafafa', '--bar-dark': '#1a1a1a',
-  '--card-title': "'Card Title', 'EB Garamond', Garamond, 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif",
-  '--cw': '78px', '--gap': '2px', '--gap-tight': '1px', '--ringpad': '5px',
-};
-
-/** the role-named tokens.css this script writes over the split's verbatim copy */
-export const TOKENS_CSS = `/* Algomancy prototype client — spreadsheet-simulator chic */
-/* THE DESIGN TOKENS. CANONICAL; edit by hand.
- *
- * Named by ROLE, not by look: --color-surface, not --grey-2. Every value is
- * the one the client ALREADY used most (the census:
- * client/docs/23-ui-inventory/07-design-foundations.md §11), so putting the
- * tokens in changed nothing on screen; the near-misses that would move
- * when snapped onto them are a list the owner approves first (design-system
- * plan, client/docs/23-design-system.md, Phase 1).
- *
- * ui/scripts/tokenize-styles.mjs wrote this file once (Phase 1b, 2026-11) and
- * replaced, in base.css, pages/ and shared/, every literal that is EXACTLY a
- * --color-*, --text-*, --space-*, --radius-* or --shadow-* value below with
- * its var(). It reads its map from HERE, so a token added here is one the
- * next run can use. The game board (board/) is out of scope.
- *
- * ⚠ A token is defined here, on :root, and NOWHERE ELSE. Redefining one in a
- * scope (as .crdoc does with --accent) makes every var() under that scope
- * paint something else — that is a theme, and it is a decision, not a fix.
- *
- * The legacy names (--bg, --panel, --accent, …) still work: those with a role
- * here are aliases of it; the game's own (elements, inks, printed bars,
- * --target, --pending, --glow, the board's --cw/--gap/--ringpad) are as they
- * were. New CSS uses the role names. */
-:root {
-  /* ── colour: the neutrals ── */
-  --color-bg: #12151a;               /* the page */
-  --color-surface-sunken: #0d1014;   /* below the page: wells, inputs (legal.ts's footer today) */
-  --color-surface: #1a1f27;          /* a panel */
-  --color-surface-raised: #20262f;   /* a panel on a panel; the base button */
-  --color-surface-overlay: rgba(20, 24, 30, .9);  /* a translucent floating panel */
-  --color-scrim: rgba(6, 8, 11, .72);             /* the dimmer behind a dialog */
-  --color-border: #2e3742;
-  --color-border-strong: #3b4654;    /* the slate borders (eleven near-copies today) */
-  --color-text: #d6dde6;
-  --color-text-muted: #8794a3;
-  --color-text-on-accent: #12151a;   /* dark ink on a gold or pale fill (the accent, Light's cream) */
-  --color-text-on-fill: #ffffff;     /* ink on a saturated or dark fill: element chips, red badges, captions */
-  /* ── colour: brand and interaction ── */
-  --color-accent: #d9a441;           /* gold: the brand, the page's main action, "on" */
-  --color-link: #7fc0ff;
-  --color-confirm: #3c5a2f;          /* green: button.primary, "confirm" at the table */
-  --color-confirm-border: #5b8747;
-  --color-confirm-hover: #476b37;
-  /* ── colour: status, each with a tinted background ── */
-  --color-success: #6fc36f;          /* the same green as the board's --glow, deliberately not tied to it */
-  --color-success-bg: #1d2b1a;
-  --color-warning: #e8b64c;          /* what the phantom var(--warn, #e8b64c) has been painting */
-  --color-warning-bg: #33270f;
-  --color-danger: #d95454;
-  --color-danger-bg: #2b1a1a;
-  --color-info: #7fb6e0;             /* the rules page's blue */
-  --color-info-bg: #1d3142;
-
-  /* ── type ── */
-  --font-ui: system-ui, sans-serif;
-  --font-mono: ui-monospace, monospace;
-  /* the printed title face: EB Garamond Bold (ui/fonts/, SIL OFL — OFL.txt
-     beside it), the nearest free cut to the scans' serif */
-  --font-display: 'Card Title', 'EB Garamond', Garamond, 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
-  /* the scale: seven steps, each the most used size of its band (the body is 13) */
-  --text-11: 11px; --text-12: 12px; --text-13: 13px; --text-14: 14px;
-  --text-16: 16px; --text-22: 22px; --text-26: 26px;
-
-  /* ── space, radius, elevation ── */
-  --space-1: 2px; --space-2: 4px; --space-3: 6px; --space-4: 8px; --space-5: 12px;
-  --space-6: 16px; --space-7: 24px; --space-8: 32px; --space-9: 48px;
-  --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px; --radius-pill: 999px;
-  --shadow-1: 0 3px 10px rgba(0, 0, 0, .7);    /* chips, toasts */
-  --shadow-2: 0 6px 24px rgba(0, 0, 0, .55);   /* menus, popovers */
-  --shadow-3: 0 14px 40px rgba(0, 0, 0, .75);  /* dialogs, the card zoom */
-
-  /* ── layers (today's values; several roles still share one — see the census §6) ── */
-  --z-sticky: 30; --z-dock: 55; --z-overlay: 60; --z-menu: 70;
-  --z-popover: 90; --z-toast: 90; --z-modal: 95; --z-drag: 95;
-
-  /* ── motion ── */
-  --dur-fast: .12s; --dur-base: .18s; --dur-slow: .45s;
-  --ease-out: ease-out; --ease-in-out: ease-in-out;
-  --ease-std: cubic-bezier(.35, .05, .2, 1);   /* anim.ts's FLIP and flights */
-
-  /* ── the legacy names. Aliases where a role above is the same thing ── */
-  --bg: var(--color-bg); --panel: var(--color-surface); --panel2: var(--color-surface-raised);
-  --line: var(--color-border); --text: var(--color-text); --dim: var(--color-text-muted);
-  --accent: var(--color-accent); --danger: var(--color-danger);
-  --card-title: var(--font-display);
-  /* …and the game's own, as they were: --glow (green = legal / next) and
-     --target (gold = targeting) are table roles, not --color-success and
-     --color-accent, even where the values agree. */
-  --glow: #6fc36f; --target: #e0b93c;
-  /* CR D6.12 "in progress": purple already means resolved, red means answered,
-     green means next and gold means targeting — so pending gets the one hue
-     none of them use. A teal that is not --water (#3f8fd9) either, because a
-     resolving card wears it as a border and the seat hairlines are elemental. */
-  --pending: #3fd2c0;
-  /* the seven elements, in ALL_ELEMENTS order. Light & Dark are the yin-yang
-     pair: Light is a warm cream (12.7:1 against --panel2, so it needs DARK ink
-     on it — see --light-ink), Dark is a slate grey, deliberately NOT charcoal,
-     because true charcoal on a #20262f panel is invisible. At #6a7382 it still
-     reads as "the dark one" next to cream while clearing 3:1 against the panel
-     and 4.8:1 for white text on top. */
-  --fire: #d95436; --water: #3f8fd9; --earth: #8a6b3d; --wood: #4e8a3d;
-  --metal: #9aa5b0; --light: #f2ead6; --dark: #6a7382;
-  --light-ink: #2b2417; --dark-ink: #ffffff; --metal-ink: #222222;
-  /* the PRINTED name bar, per element — not the UI chips above: the median
-     colour of each mono card's bar, read off the scans (2026-09-30, ~56 cards
-     an element, the quartiles within a few points). Light is the one white
-     bar, and prints black ink. */
-  --bar-fire: #821210; --bar-water: #1e3463; --bar-earth: #824a11; --bar-wood: #2f581e;
-  --bar-metal: #565656; --bar-light: #fafafa; --bar-dark: #1a1a1a;
-  --cw: 78px; /* card thumb width; jpgs are ~63:88 */
-  /* board round 8 (owner, 2026-10-27): the game screen's gaps between boxes —
-     1–2px, where they were 6–10. ui/layout.ts and ui/fit.ts mirror them. */
-  --gap: 2px; --gap-tight: 1px;
-  /* …and the buffer inside a region's blocks that keeps a card clear of the
-     ring's 2.5px stroke and its glow — padding, not a gap */
-  --ringpad: 5px;
-}
-`;
+/* ── 1. THE TOKENS: read, never written ─────────────────────────────────── */
 
 /** the custom properties a :root block of `text` defines, name → value (first :root only) */
 export function rootTokens(text) {
@@ -225,26 +91,15 @@ export function rootTokens(text) {
 
 const isRoleTokens = (text) => /--color-bg\s*:/.test(text);
 
-/** step 1: the tokens file, rewritten once. Returns { changed, text } */
+/** step 1: tokens.css as it is — it is CANONICAL and hand-edited. The template this
+ *  script once wrote it from (Phase 1b) was retired with BL-61 (2026-11-07): a copy
+ *  of the values here went stale the day the palette moved them. */
 export function tokensStep(text) {
-  if (isRoleTokens(text)) return { changed: false, text, note: 'tokens.css already holds the role tokens — left as it is (canonical)' };
-  const got = rootTokens(text);
-  const diff = [];
-  for (const [k, v] of Object.entries(LEGACY)) if (got[k] !== v) diff.push(`  ${k}: expected ${v}, found ${got[k] ?? '(absent)'}`);
-  for (const k of Object.keys(got)) if (!(k in LEGACY)) diff.push(`  ${k}: new (${got[k]})`);
-  if (diff.length) {
-    throw new Error('tokens.css is neither the split\'s legacy :root nor the role tokens — the old style.css head changed '
-      + 'upstream. Fold the change into LEGACY and TOKENS_CSS in this script, then re-run:\n' + diff.join('\n'));
+  if (!isRoleTokens(text)) {
+    throw new Error('tokens.css holds no role tokens (--color-bg and the rest). It is canonical: '
+      + 'restore it from git rather than regenerate it.');
   }
-  // every legacy name must still be defined, and still compute to what it did
-  const after = rootTokens(TOKENS_CSS);
-  for (const [k, v] of Object.entries(LEGACY)) {
-    const a = after[k];
-    const ref = /^var\((--[\w-]+)\)$/.exec(a ?? '');
-    const resolved = ref ? after[ref[1]] : a;
-    if (resolved !== v) throw new Error(`TOKENS_CSS: ${k} resolves to ${resolved}, not its legacy ${v}`);
-  }
-  return { changed: true, text: TOKENS_CSS };
+  return { changed: false, text };
 }
 
 /* ── 2. THE MAP: literal → token, read off tokens.css ───────────────────── */
@@ -283,6 +138,8 @@ export function buildMap(tokensText) {
   const shadow = new Map();   // shadowKey → name
   for (const [name, value] of Object.entries(toks)) {
     if (!TARGET.test(name) || /var\(/.test(value)) continue;
+    // a bare channel triplet (`--color-winrate-up-rgb: 79 179 201`, for rgb(var(--x) / a)) is not a colour value
+    if (/-rgb$/.test(name)) continue;
     const kind = TARGET.exec(name)[1];
     if (kind === 'color') {
       const c = parseColour(value);
@@ -766,7 +623,6 @@ function main(argv) {
 
   // 1. tokens
   const tok = tokensStep(read('tokens.css'));
-  if (tok.note) console.log(`tokenize-styles: ${tok.note}`);
   const map = buildMap(tok.text);
 
   // 2. pieces
@@ -800,10 +656,8 @@ function main(argv) {
     perFile.set(c.piece, (perFile.get(c.piece) ?? 0) + c.tokens.length);
   }
   const nRep = [...perToken.values()].reduce((a, b) => a + b, 0);
-  const tokChanged = tok.changed;
-  const changedFiles = [...outText.keys()].filter(p => p !== 'tokens.css' || tokChanged);
-  console.log(`tokenize-styles: ${tokChanged ? 'tokens.css rewritten as the role tokens; ' : ''}`
-    + `${nRep} literal(s) → var() in ${allChanges.length} declaration(s) across ${perFile.size} piece(s)`
+  const changedFiles = [...outText.keys()].filter(p => p !== 'tokens.css');
+  console.log(`tokenize-styles: ${nRep} literal(s) → var() in ${allChanges.length} declaration(s) across ${perFile.size} piece(s)`
     + (snapMode ? ` (exact AND --snap ${snapMode})` : ''));
   if (nRep) {
     for (const [t, n] of [...perToken].sort((a, b) => b[1] - a[1])) console.log(`  ${String(n).padStart(4)}  ${t}`);

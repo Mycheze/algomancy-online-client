@@ -131,7 +131,7 @@ Also already settled: Phase 0's two UX calls. Only data-losing actions ask "pres
 2. Re-run `node client/ui/scripts/tokenize-styles.mjs` (idempotent). Paste a new allowlist into 921 if it asks.
 3. Check that verdict U23's span still names the piece that holds the `.placewarn` radial-gradient (engine test 409).
 4. Run the full gate (`EXIT=0` in the log, not the notification). Then `git push origin ds-phase1b:master`.
-5. Tell the competitive-constructed session the commit. Its `cc-int` branch adds **two** CSS sections to `style.css` (sideboard/tabletop and the match screen) and will merge them into pieces itself. Delete `split-styles.mjs` only after cc has landed.
+5. Tell the competitive-constructed session the commit. Its `cc-int` branch adds **two** CSS sections to `style.css` (sideboard/tabletop and the match screen) and will merge them into pieces itself. Delete `split-styles.mjs` only after cc has landed. (Done 2026-11-07, BL-61: it is gone.)
 6. Visible-change phases get update lines; 1a, the tool and 1b-i get none.
 
 ### Found, not fixed (ticket material)

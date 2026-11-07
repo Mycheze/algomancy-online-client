@@ -216,7 +216,7 @@ export const SFX_DIR = join(UI_DIR, 'sfx');
  *  pieces (tokens.css, base.css, board/, pages/, shared/) that the build
  *  concatenates, byte for byte, in the order `styles/index.css` lists them.
  *  That order IS the cascade — the old single `style.css` was a changelog of
- *  overrides, and the split (2026-11-02, ui/scripts/split-styles.mjs) kept
+ *  overrides, and the split (2026-11-02, a one-shot script since retired) kept
  *  every line where it was. TESTS NEVER READ THESE THEMSELVES: they call
  *  `readStyles()` from ui/test/read-styles.ts (guarded by ui/test/910). */
 export const STYLES_DIR = join(UI_DIR, 'styles');

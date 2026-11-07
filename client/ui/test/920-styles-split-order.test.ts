@@ -5,7 +5,7 @@
  * not one file. It is the pieces under `client/ui/styles/` — tokens.css,
  * base.css, board/, pages/, shared/ — and `styles/index.css` lists them, one
  * `@import` each, in the order that IS the cascade: the old style.css grew as
- * a changelog of overrides, and the split (ui/scripts/split-styles.mjs) kept
+ * a changelog of overrides, and the split (a one-shot script, retired 2026-11-07) kept
  * every line where it was. The build writes `bundle.css` as their byte-for-byte
  * concatenation in that order; the tests read the same text through
  * readStyles(). Three ways for that to go quietly wrong, and this file fails
@@ -24,7 +24,10 @@
  *   §6  the old single file is gone. A branch cut before the split that still
  *       edits it merges as a modify/delete conflict — and resolving that by
  *       keeping it would leave CSS edits in a file nothing loads. Move them
- *       into the piece they belong to (or re-run the split on that file).
+ *       into the piece they belong to.
+ *   §7  the one-shot style scripts stay retired: the split script is gone, and
+ *       the tokens codemod carries no copy of the token values — tokens.css
+ *       is the only place they live (BL-61: the copy had gone stale).
  *
  * The one test besides read-styles.ts allowed to look at the layout on disk
  * (910 §2 names it).
@@ -113,4 +116,21 @@ test('§6 the old single stylesheet is gone', () => {
   assert.ok(!existsSync(old),
     'client/ui/style.css is back — nothing loads it since the split. A pre-split branch merged it in? '
     + 'Move its new lines into the piece under styles/ where they sat, then delete it.');
+});
+
+test('§7 the one-shot style scripts stay retired: no split script, no second copy of the tokens', () => {
+  const scripts = join(UI_DIR, 'scripts');
+  assert.ok(!existsSync(join(scripts, 'split-styles.mjs')),
+    'ui/scripts/split-styles.mjs is back. It cut the old style.css into styles/ once (2026-11-02) and was retired '
+    + 'with BL-61; there is no single stylesheet left for it to split.');
+  const codemod = readFileSync(join(scripts, 'tokenize-styles.mjs'), 'utf8');
+  // a CSS custom-property declaration at a line start (a template of tokens.css), or a JS map of name → value
+  const copies = [
+    ...codemod.matchAll(/^\s*(--[\w-]+)\s*:\s*[^;\n]+;/gm),
+    // (a ternary's `'--radius-md' : '--radius-lg'` is a name for a name, not a value)
+    ...codemod.matchAll(/['"](--[\w-]+)['"]\s*:\s*['"](?!--)/g),
+  ].map(m => m[1]);
+  assert.deepEqual(copies, [],
+    'ui/scripts/tokenize-styles.mjs carries token values again. tokens.css is canonical and the only place they '
+    + 'live; the script reads its map from there (BL-61: its old template went stale when the palette moved).');
 });

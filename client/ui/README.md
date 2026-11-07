@@ -124,8 +124,8 @@ current text beside it. `test/317` and `test/318` are its guards.
 - `styles/`: the stylesheet's SOURCE, canonical — `tokens.css`, `base.css`,
   then `board/`, `pages/` and `shared/` pieces, which `styles/index.css` lists
   one `@import` each in cascade order. The order is load-bearing: they were
-  cut word for word out of the old single `style.css` (2026-11-02,
-  `scripts/split-styles.mjs`), a changelog of overrides, so a piece moved past
+  cut word for word out of the old single `style.css` (2026-11-02, by a
+  one-shot script since retired), a changelog of overrides, so a piece moved past
   one it overrides changes the page. A new piece goes into `index.css` exactly
   once (`test/920`). Tests read the CSS only through `test/read-styles.ts`.
 - `scripts/`: `build-css.mjs` (the CSS half of `npm run build`) and

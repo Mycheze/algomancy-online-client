@@ -7,8 +7,8 @@
  *
  * The order is load-bearing. The stylesheet grew as a changelog — later
  * sections override earlier ones — so these pieces are in the order their
- * lines had in the old single style.css (split 2026-11-02 by
- * ui/scripts/split-styles.mjs, word for word). Moving a piece moves rules past
+ * lines had in the old single style.css (split 2026-11-02, word
+ * for word, by a one-shot script since retired). Moving a piece moves rules past
  * the rules they override. A new piece goes here exactly once, or the build
  * refuses it (ui/test/920 too).
  *

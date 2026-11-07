@@ -3,16 +3,15 @@
  * The client's CSS lives in pieces under `client/ui/styles/` (STYLES_DIR) and
  * the browser gets ONE file, `client/ui/bundle.css`, which is those pieces
  * concatenated byte for byte, no separator, in the order `styles/index.css`
- * lists them. Three things need that concatenation and all three come here:
+ * lists them. Two things need that concatenation and both come here:
  *
  *   ui/scripts/build-css.mjs   writes bundle.css (part of `npm run build`)
  *   ui/test/read-styles.ts     readStyles(), what every CSS-reading test sees
- *   ui/scripts/split-styles.mjs proves its split re-concatenates to the input
  *
  * WHY NOT esbuild. esbuild's CSS bundler re-prints the CSS: comments go,
  * whitespace changes, colours are shortened. Tests regex the stylesheet as
- * text with its comments in, and the split's proof is `cmp` against the old
- * style.css — both need the bytes left alone.
+ * text with its comments in, and the split of the old style.css (2026-11-02)
+ * was proved by `cmp` against it — both need the bytes left alone.
  *
  * THE ORDER FILE. `styles/index.css` is real CSS — a browser could load it —
  * but it may hold only comments and `@import "<relative path>";` lines, one
