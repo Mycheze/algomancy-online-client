@@ -207,6 +207,24 @@ const OPEN: LedgerEntry[] = [
     status: 'live',
     note: "Real on the CR's reading. Replayed (257/257): [222] invi ordered Splort's and Blightwalker's trash triggers; putting Splort's on cost a discard, Dropslime [225], whose trigger fired with Blightwalker still waiting, and [226] asked invi to order Blightwalker and Dropslime together, so Blightwalker went on top. CR 706.5 orders the triggers put on at the same time; CR 706.3a puts a trigger on once the action that made it trigger is complete, on top of what is already there, so Dropslime belongs above Blightwalker. CT-535.",
   },
+  {
+    id: 340, room: "PUQF", date: "2026-11-07",
+    report: "invi, seat 1, agreed fix: back to before invi's choice: Dropslime (turn 8 battle, counterattack). \"dfdf\"",
+    status: 'agreed-fix',
+    note: "Took back invi's pick of Dropslime for Blightwalker's \"recall another target unit from your bin\" and Yagamino's pass [346]-[347]; Yagamino agreed. Replayed (427/427, no divergence; --branch): invi picked Splort from the same bin instead [346] and paid [2] [349]. The trigger offered both cards either time; the player changing their own pick. No defect.",
+  },
+  {
+    id: 341, room: "ASSX", date: "2026-11-07",
+    report: "invi, seat 1 (feature): \"when targeting, cards that are already targeted should not only say that they are targeted, but also by what (because it's sometimes ambiguous)\"",
+    status: 'live',
+    note: "A fair request, not a defect. Replayed (298/298): at [276] two stack items aimed at Dropslime copies in invi's bin at once, Blightwalker's recall [269] and Combustible Bogwalker's recall (item 114); a bin card aimed at shows only the badge \"🎯 targeted\" (ui/main.ts binTargetBadge), which names nothing. The hover arrows from a stack row exist, but nothing on the card says which item aims at it. CT-537.",
+  },
+  {
+    id: 342, room: "ASSX", date: "2026-11-07",
+    report: "invi, seat 1: \"augments falling off of a recalled creature should count as trashed for dropslime\"",
+    status: 'live',
+    note: "Real. Replayed (298/298): Yagamino's Bloated Manablub was grafted (Molten Upheaval, Void Memory) at home in region 0 [226]-[227], attacked into invi's region 1 [250] and was recalled by Auric Ascendant [258]; both mods were trashed, but the battle tally counted them under region 0 (battleCounters [{trashed:2},{trashed:5}] at [294]), so each Dropslime [295], [297] dealt 5, not 7. The mods kept the region they were applied in: declaring an attack moves the attackers' region and not their mods'. CT-536.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
