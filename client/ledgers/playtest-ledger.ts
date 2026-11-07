@@ -201,6 +201,12 @@ const OPEN: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "Took back all of turn 1's planning and invi's haste Done [0]-[12]; invi agreed. Replayed (--branch): the same kinds of plays again in another order, and the game went on to 150 actions. Nothing had happened yet; trying the button. No defect.",
   },
+  {
+    id: 339, room: "YYAE", date: "2026-11-07",
+    report: "invi, seat 1: \"when putting a trigger on the stack triggers another trigger, the new trigger should always be on top of the others (i think, I'm not a 100 %)\"",
+    status: 'live',
+    note: "Real on the CR's reading. Replayed (257/257): [222] invi ordered Splort's and Blightwalker's trash triggers; putting Splort's on cost a discard, Dropslime [225], whose trigger fired with Blightwalker still waiting, and [226] asked invi to order Blightwalker and Dropslime together, so Blightwalker went on top. CR 706.5 orders the triggers put on at the same time; CR 706.3a puts a trigger on once the action that made it trigger is complete, on top of what is already there, so Dropslime belongs above Blightwalker. CT-535.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
