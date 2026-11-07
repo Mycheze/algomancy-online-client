@@ -3245,4 +3245,45 @@ export const CLOSED: Entry[] = [
       + 'wiring instead. The skill\'s repair section could not be edited from the run (permission refused): it '
       + 'should say to rebase the approved tip itself and touch no new file.',
   },
+  {
+    id: 'BL-61',
+    slug: 'retire-style-codemods',
+    title: 'Retire the one-shot style scripts: delete split-styles.mjs, drop tokenize-styles\' stale token template',
+    area: 'client',
+    size: 'S',
+    status: 'done',
+    track: 'qol',
+    said:
+      'put all the other things into the backlog of todos that we want to take care of (2026-11-03)',
+    means:
+      '`client/ui/scripts/split-styles.mjs` cut style.css into styles/ and was due for deletion once '
+      + 'Competitive Constructed landed (the landing runbook\'s step 6); it has landed. '
+      + '`tokenize-styles.mjs` still embeds TOKENS_CSS with the OLD values (e.g. --color-surface #1a1f27, '
+      + 'now #3e1d52 in tokens.css). Re-checked: its isRoleTokens guard leaves a tokens.css that already '
+      + 'holds role tokens alone, so a re-run does NOT overwrite it as the palette record feared, but the '
+      + 'stale template misleads anyone who reads it.',
+    doneWhen: [
+      'split-styles.mjs is gone and nothing references it (920, css-scan.mjs, docs/23, ui/README.md, engine/scripts/paths.mjs checked)',
+      'tokenize-styles.mjs carries no copy of the token values: tokens.css is the only place they live',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      // client/ui/scripts/split-styles.mjs was here: deleted by this entry
+      'client/ui/scripts/tokenize-styles.mjs',
+      'client/ui/test/920-styles-split-order.test.ts',
+      'client/ui/test/921-no-new-colour-literals.test.ts',
+    ],
+    evidence: { commit: '632d82d2', guards: ['920-styles-split-order.test.ts'] },
+    notes:
+      'DONE by the steward 2026-11-07 (632d82d2): split-styles.mjs deleted (nothing imported it; the comments '
+      + 'that named it in styles.mjs, paths.mjs, index.css, ui/README.md and 920 say "since retired", docs/23\'s '
+      + 'runbook step marks it done). tokenize-styles.mjs lost LEGACY and TOKENS_CSS; tokensStep only checks '
+      + 'that tokens.css holds the role tokens. 920 §7 fails if either comes back (mutation-checked both ways). '
+      + 'Found, not fixed: the codemod cannot run on today\'s tokens. The -rgb channel triplets made buildMap '
+      + 'throw (now skipped); --color-accent and --color-confirm are the same orange since the 2026-11-03 '
+      + 'palette, and buildMap refuses a shared colour without a PREFER rule. Which one an orange literal '
+      + 'becomes is a design call, written in the script header for whoever runs it next.',
+  },
 ];

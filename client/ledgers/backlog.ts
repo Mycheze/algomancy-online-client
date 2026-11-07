@@ -874,37 +874,6 @@ const OPEN: Entry[] = [
     ],
   },
   {
-    id: 'BL-61',
-    slug: 'retire-style-codemods',
-    title: 'Retire the one-shot style scripts: delete split-styles.mjs, drop tokenize-styles\' stale token template',
-    area: 'client',
-    size: 'S',
-    status: 'open',
-    track: 'qol',
-    said:
-      'put all the other things into the backlog of todos that we want to take care of (2026-11-03)',
-    means:
-      '`client/ui/scripts/split-styles.mjs` cut style.css into styles/ and was due for deletion once '
-      + 'Competitive Constructed landed (the landing runbook\'s step 6); it has landed. '
-      + '`tokenize-styles.mjs` still embeds TOKENS_CSS with the OLD values (e.g. --color-surface #1a1f27, '
-      + 'now #3e1d52 in tokens.css). Re-checked: its isRoleTokens guard leaves a tokens.css that already '
-      + 'holds role tokens alone, so a re-run does NOT overwrite it as the palette record feared, but the '
-      + 'stale template misleads anyone who reads it.',
-    doneWhen: [
-      'split-styles.mjs is gone and nothing references it (920, css-scan.mjs, docs/23, ui/README.md, engine/scripts/paths.mjs checked)',
-      'tokenize-styles.mjs carries no copy of the token values: tokens.css is the only place they live',
-    ],
-    decided: [],
-    asks: [],
-    deps: [],
-    touches: [
-      'client/ui/scripts/split-styles.mjs',
-      'client/ui/scripts/tokenize-styles.mjs',
-      'client/ui/test/920-styles-split-order.test.ts',
-      'client/ui/test/921-no-new-colour-literals.test.ts',
-    ],
-  },
-  {
     id: 'BL-62',
     slug: 'home-owner-calls',
     title: 'Owner to decide: what the new home left out of the sketch',
