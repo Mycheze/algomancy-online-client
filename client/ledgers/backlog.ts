@@ -764,37 +764,6 @@ const OPEN: Entry[] = [
       + 'pile on the tabletop has the same untried-device gap, filed as CT-516.',
   },
   {
-    id: 'BL-56',
-    slug: 'card-browser-sideboard',
-    title: 'The card browser has no "add to sideboard" button',
-    area: 'client',
-    size: 'S',
-    status: 'open',
-    track: 'qol',
-    said:
-      'Adding cards to your sideboard isn\'t working (2026-11-03; fixed that night on the deck page, the '
-      + 'tabletop and the pinned panel, but not in the full card browser)',
-    means:
-      'With a deck open, the full card browser\'s tiles (pages/cards.ts tileButtons) offer − / + / » '
-      + '(maybeboard) and nothing for the sideboard; on the deck page\'s Sideboard tab the 🔍 browse button '
-      + 'is simply not offered (decks.ts). While there: the browser\'s + is not capped at 2 copies, which '
-      + 'the deck page and the binder are.',
-    doneWhen: [
-      'With a deck open, a card browser tile can add a copy to the sideboard, within the 7-card and 2-copy limits',
-      'The Sideboard tab offers the browser like the other tabs do, and a card added there lands on the sideboard',
-      'The browser\'s + stops at 2 copies across deck and sideboard',
-    ],
-    decided: [],
-    asks: [],
-    deps: [],
-    touches: [
-      'client/ui/pages/cards.ts',
-      'client/ui/cards.ts',
-      'client/ui/decks.ts',
-    ],
-    notes: 'Sources: var/records/ds-round-2026-11-03-r2-C.md "Found, not fixed"; ds-w2c record (the + cap).',
-  },
-  {
     id: 'BL-57',
     slug: 'redesign-remaining-pages',
     title: 'Redesign the remaining pages to the docs/24 principles (one window, no page scroll, buttons)',

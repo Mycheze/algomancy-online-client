@@ -3014,4 +3014,45 @@ export const CLOSED: Entry[] = [
       + 'run it by hand (skill rule 6). Guards: 1152 (the link handling) and steward/test-discord.mjs (the loop, '
       + 'with a linked image and a page link).',
   },
+  {
+    id: 'BL-56',
+    slug: 'card-browser-sideboard',
+    title: 'The card browser has no "add to sideboard" button',
+    area: 'client',
+    size: 'S',
+    status: 'done',
+    track: 'qol',
+    said:
+      'Adding cards to your sideboard isn\'t working (2026-11-03; fixed that night on the deck page, the '
+      + 'tabletop and the pinned panel, but not in the full card browser)',
+    means:
+      'With a deck open, the full card browser\'s tiles (pages/cards.ts tileButtons) offer − / + / » '
+      + '(maybeboard) and nothing for the sideboard; on the deck page\'s Sideboard tab the 🔍 browse button '
+      + 'is simply not offered (decks.ts). While there: the browser\'s + is not capped at 2 copies, which '
+      + 'the deck page and the binder are.',
+    doneWhen: [
+      'With a deck open, a card browser tile can add a copy to the sideboard, within the 7-card and 2-copy limits',
+      'The Sideboard tab offers the browser like the other tabs do, and a card added there lands on the sideboard',
+      'The browser\'s + stops at 2 copies across deck and sideboard',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/pages/cards.ts',
+      'client/ui/cards.ts',
+      'client/ui/decks.ts',
+    ],
+    evidence: { commit: 'e3a0d899', guards: ['831-tabletop-sideboard.test.ts', '1133-pool-drag-copy-cap.test.ts'] },
+    notes:
+      'Sources: var/records/ds-round-2026-11-03-r2-C.md "Found, not fixed"; ds-w2c record (the + cap). '
+      + 'DONE BY BL-65, closed by the steward 2026-11-07: the card browser lost its deckbuilding mode in BL-65 W1 '
+      + '(e3a0d899), so its tiles have no add buttons at all, and the Sideboard tab is gone with the old deck page. '
+      + 'Decks are built on the tabletop builder, whose pool has an "Add to" switch (Deck / Side / Maybe): with Side '
+      + 'on, a tap or a drag puts the card on the Sideboard pile, whose header counts n/7 and turns red past seven '
+      + '(831 §3); a third copy across deck and sideboard is refused with "Max 2 of <card> across the deck and '
+      + 'sideboard." (831 §4, 830 §4); and a tap or drag of a third copy into the deck is refused (1133 §1-§3, '
+      + '537 §4). Mutation-checked: dropping Side from the pool\'s targets turns 831 §3-§5 red; removing the '
+      + 'pool\'s cap check turns 1133 §1-§3 and 537 §4 red.',
+  },
 ];
