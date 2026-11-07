@@ -108,6 +108,9 @@
      --target (gold = targeting) are table roles, not --color-success and
      --color-accent, even where the values agree. */
   --glow: #6fc36f; --target: #e0b93c;
+  /* …the same two as channels, for a glow or wash whose strength the rule sets:
+     rgb(var(--glow-rgb) / .5). Keep them in step with the two above. */
+  --glow-rgb: 111 195 111; --target-rgb: 224 185 60;
   /* CR D6.12 "in progress": purple already means resolved, red means answered,
      green means next and gold means targeting — so pending gets the one hue
      none of them use. A teal that is not --water (#3f8fd9) either, because a
@@ -166,3 +169,26 @@
   --sheet-w-sm: 320px; --sheet-w-md: 480px; --sheet-w-lg: 720px;
   --sheet-scrim-soft: rgba(6, 8, 11, .32);   /* behind an anchored sheet: the page stays readable */
 }
+
+/* ── ACCESSIBLE COLOURS (Settings → Display; ui/prefs.ts sets the attribute) ──
+   The one theme: the owner asked for it (2026-11-07). Red-green colour
+   blindness is the common case (about 1 man in 12), and the standard palette
+   fails it twice: fire, earth and wood are three browns to a protan or a
+   deutan (CIEDE2000 1.9 and 2.7 between the closest pair, where under ~10 is
+   hard to tell apart at chip size), and the table's "legal" green against its
+   red is 4.3 to a deutan. This block moves only the colours that collide, and
+   keeps each element's family: fire an orange, earth a deep brown, wood a
+   teal-green. Measured with Machado 2009 simulation, the closest element pair
+   across normal, protan, deutan and tritan vision is 15.8, and the table's
+   four roles (legal, targeting, in progress, danger) 24.1; white ink stays
+   over 3.2:1 on every element. Water, metal, light and dark already clear it
+   and do not move. Success (a win) turns cyan; danger (a loss) stays red,
+   33 apart to a deutan where the green and red were 4.3. */
+:root[data-colors="accessible"] {
+  --fire: #e76013; --earth: #7d4113; --wood: #1a7958;
+  --glow: #67ddde; --glow-rgb: 103 221 222;
+  --target: #eade4e; --target-rgb: 234 222 78;
+  --pending: #b553d5;
+  --color-success: #67ddde; --color-success-bg: #163b44;
+}
+

@@ -90,8 +90,8 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
    the picks the player has already learned. */
 .slot.fslot { border: 2px solid var(--target); border-style: dashed;
   color: var(--target); cursor: pointer; font-weight: 600;
-  background: rgba(224,185,60,.07); animation: fspulse 1.4s ease-in-out infinite; }
-.slot.fslot:hover { background: rgba(224,185,60,.22); border-style: solid; }
+  background: rgb(var(--target-rgb) / .07); animation: fspulse 1.4s ease-in-out infinite; }
+.slot.fslot:hover { background: rgb(var(--target-rgb) / .22); border-style: solid; }
 @keyframes fspulse { 0%, 100% { opacity: .72; } 50% { opacity: 1; } }
 /* the two columns that do not exist yet, and the "you MAY decline" answer:
    they stand in the .cols row like any other column, so the line reads
@@ -118,16 +118,16 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
    and legal hosts pulse while a mod placement is in progress */
 .regionbin.hasmods { border-left-color: var(--glow); box-shadow: inset 2px 0 0 var(--glow); }
 .binmodhint { color: var(--glow); font-size: 10px; margin-top: 4px; }
-.binmodbanner { background: rgba(111,195,111,.1); border: 1px solid var(--glow); border-radius: 5px;
+.binmodbanner { background: rgb(var(--glow-rgb) / .1); border: 1px solid var(--glow); border-radius: 5px;
   color: var(--glow); font-size: 12px; padding: 5px 8px; }
-@keyframes modpulse { 50% { box-shadow: 0 0 14px rgba(111,195,111,.95); } }
+@keyframes modpulse { 50% { box-shadow: 0 0 14px rgb(var(--glow-rgb) / .95); } }
 .card.modhost { outline: 3px solid var(--glow); cursor: pointer;
-  box-shadow: 0 0 8px rgba(111,195,111,.5); animation: modpulse 1.1s ease-in-out infinite; }
+  box-shadow: 0 0 8px rgb(var(--glow-rgb) / .5); animation: modpulse 1.1s ease-in-out infinite; }
 /* CR 723.4: a SPELL on the stack is the second kind of mod host (a virus may be
    augmented onto one — Caleb 2025-04-06). It is the same click, so it wears
    the same green pulse; the strip's own card is a .stackcard, not a .card. */
 .stackcard.modhost { outline: 3px solid var(--glow); cursor: pointer;
-  box-shadow: 0 0 8px rgba(111,195,111,.5); animation: modpulse 1.1s ease-in-out infinite; }
+  box-shadow: 0 0 8px rgb(var(--glow-rgb) / .5); animation: modpulse 1.1s ease-in-out infinite; }
 .stackcard .stackmodhost {
   position: absolute; bottom: -9px; left: 50%; transform: translateX(-50%);
   background: var(--glow); color: #0f1a0f; z-index: 3;

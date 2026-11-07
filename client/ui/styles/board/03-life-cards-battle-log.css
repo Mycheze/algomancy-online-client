@@ -38,8 +38,8 @@
 }
 .life.lifeup { animation: lifeup .8s ease-out; }
 @keyframes lifeup {
-  0%, 14% { background: #356b37; border-color: var(--glow); box-shadow: 0 0 12px 2px rgba(111,195,111,.5); }
-  100%    { background: var(--panel2); border-color: var(--line); box-shadow: 0 0 0 0 rgba(111,195,111,0); }
+  0%, 14% { background: #356b37; border-color: var(--glow); box-shadow: 0 0 12px 2px rgb(var(--glow-rgb) / .5); }
+  100%    { background: var(--panel2); border-color: var(--line); box-shadow: 0 0 0 0 rgb(var(--glow-rgb) / 0); }
 }
 
 /* the amount, rising off the pill — "you can't tell when it changes" is in
@@ -192,9 +192,9 @@
    a unit against the zone's edge lost its glow on that side. It now pulses
    inside those 3px — brighter at the peak instead of wider. Test 777 adds up
    blur + spread in both frames against the clip margin. */
-@keyframes actpulse { 50% { box-shadow: 0 0 1px 2px rgba(111,195,111,.95); } }
+@keyframes actpulse { 50% { box-shadow: 0 0 1px 2px rgb(var(--glow-rgb) / .95); } }
 .card.activatable { cursor: pointer; border-radius: 6px;
-  box-shadow: 0 0 2px 1px rgba(111,195,111,.6);
+  box-shadow: 0 0 2px 1px rgb(var(--glow-rgb) / .6);
   animation: actpulse 1.8s ease-in-out infinite; }
 /* the shrink-and-ellipsise this used to carry alone is now on every `.badge`
    (BL-23) — the ability chip was just the first one long enough to need it */

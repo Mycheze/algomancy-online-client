@@ -20,9 +20,11 @@
 import { artFor } from './meta.ts';
 import { identityBarHtml, identityBarView, paintSignin, signinView } from './pages/signin.ts';
 import {
-  badgeChipsHtml, concessionTag, customTag, disputedTag, fixedTag, gameElementsHtml, historyRowsHtml, isProfileTab,
-  modeName, paintProfile, profileView, trophyChipHtml, trophyChipsHtml, type Ladder, type LadderMode, type ProfileTab,
+  badgeChipsHtml, concessionTag, customTag, disputedTag, fixedTag, gameElementsHtml, historyRowsHtml,
+  modeName, paintProfile, profileTabFor, profileView, trophyChipHtml, trophyChipsHtml, type Ladder, type LadderMode,
+  type PlayersBoard, type ProfileTab,
 } from './pages/profile.ts';
+import { applyColourMode, isPrefName, readPrefs, setPref } from './prefs.ts';
 
 /* The screens are drawn by ui/pages/signin.ts and ui/pages/profile.ts
  * (design-system round, 2026-11-03): pure functions of a view this module's
@@ -186,12 +188,14 @@ let authMode: 'login' | 'register' = 'login';
 let authMsg = '';
 let busy = false;
 /** profile screen tab */
-let tab: ProfileTab = 'stats';
+let tab: ProfileTab = 'overview';
 let friendMsg = '';
 /** #296: the change-password box's last answer (the server's error, or done) */
 let pwMsg: { text: string; ok: boolean } | null = null;
 /** why choosing a favourite element did not take (shown under the picker) */
 let favMsg = '';
+/** a guest naming the account from Settings: why it did not take */
+let claimMsg = '';
 let leaders: LeaderRow[] | null = null;
 /** the last load of `leaders` failed: the friends tab says so (and offers to ask again) */
 let leadersFailed = false;
@@ -203,6 +207,8 @@ let leadersFailed = false;
  * carrying numbers it never displays. */
 let ladderMode: LadderMode = 'constructed';
 let ladder: Ladder | null = null;
+/** the Players tab's board: a format's ladder (ladderMode), or 'all' (leaders) */
+let board: PlayersBoard = 'constructed';
 
 export const token = (): string | null => localStorage.getItem(TOKEN_KEY);
 /** The headers a request to our own API carries: the bearer token when signed
@@ -292,6 +298,8 @@ export function signInThenReturn(): void {
 export function initAccounts(opts: { app: HTMLElement; rerender: () => void }): void {
   $app = opts.app;
   rerenderHost = opts.rerender;
+  // the accessible colours, before the first paint (ui/prefs.ts)
+  applyColourMode();
   if (token()) { resolving = true; void refreshMe(); }
 }
 
@@ -357,7 +365,8 @@ function renderAuth(): void {
 function renderProfile(): void {
   if (!me) { view = 'auth'; renderAuth(); return; }
   paintProfile($app!, profileView({
-    me, tab, discordLinking, linkCode, linkMsg, friendMsg, pwMsg, favMsg, leaders, leadersFailed, ladderMode, ladder, artFor,
+    me, tab, discordLinking, linkCode, linkMsg, friendMsg, pwMsg, favMsg, claimMsg, leaders, leadersFailed, board, ladder,
+    prefs: readPrefs(), artFor,
   }));
 }
 
@@ -392,7 +401,7 @@ async function submitAuth(): Promise<void> {
     me = r.me;
     if (returnAfterAuth) { returnAfterAuth = false; view = null; rerenderHost(); return; }
     view = 'profile';
-    tab = 'stats';
+    tab = 'overview';
     renderScreen();
   } catch {
     busy = false;
@@ -419,7 +428,7 @@ async function loadLadder(): Promise<void> {
     if (want !== ladderMode) return;
     ladder = { mode: want, players: [], you: null, rated: 0, publicAfter: 5, failed: true };
   }
-  if (view === 'profile' && tab === 'ladder') renderScreen();
+  if (view === 'profile' && tab === 'players') renderScreen();
 }
 
 async function loadLeaders(): Promise<void> {
@@ -436,7 +445,13 @@ async function loadLeaders(): Promise<void> {
     leaders = null;
     leadersFailed = true;
   }
-  if (view === 'profile' && tab === 'friends') renderScreen();
+  if (view === 'profile' && tab === 'players') renderScreen();
+}
+
+/** the Players tab's board: fetch it unless it is already here */
+function loadBoard(): void {
+  if (board === 'all') { if (!leaders) void loadLeaders(); }
+  else if (ladder?.mode !== ladderMode) void loadLadder();
 }
 
 /** main.ts hands every button click here first. Returns true when it was ours. */
@@ -453,7 +468,7 @@ export function handleButton(btn: HTMLElement): boolean {
       renderScreen(); return true;
 
     case 'acct-open-profile':
-      view = 'profile'; tab = 'stats'; pwMsg = null; favMsg = '';
+      view = 'profile'; tab = 'overview'; pwMsg = null; favMsg = ''; claimMsg = '';
       renderScreen();
       void refreshMe();
       return true;
@@ -594,30 +609,54 @@ export function handleButton(btn: HTMLElement): boolean {
     }
 
     case 'acct-tab': {
-      const t = btn.dataset['tab'];
-      // ⚠ 'decks' was missing from a hand-written list here, so the decks tab
-      // rendered the stats page. Checked against the list the tabs are DRAWN
-      // from (pages/profile.ts PROFILE_TABS), so the two cannot drift apart.
-      tab = isProfileTab(t) ? t : 'stats';
+      // ⚠ 'decks' was once missing from a hand-written list here, so the decks
+      // tab rendered the stats page. Checked against the list the tabs are
+      // DRAWN from (pages/profile.ts PROFILE_TABS); an old name maps across.
+      tab = profileTabFor(btn.dataset['tab']);
       friendMsg = '';
       renderScreen();
-      if (tab === 'friends' && !leaders) void loadLeaders();
-      if (tab === 'ladder' && ladder?.mode !== ladderMode) void loadLadder();
+      if (tab === 'players') loadBoard();
       return true;
     }
 
     case 'acct-ladder-mode': {
       const m = btn.dataset['mode'];
-      if (m === 'constructed' || m === 'draft') ladderMode = m;
-      ladder = null;
+      if (m === 'constructed' || m === 'draft' || m === 'all') board = m;
+      if (board === 'all') { leaders = null; leadersFailed = false; }
+      else { ladderMode = board; ladder = null; }
       renderScreen();
-      void loadLadder();
+      loadBoard();
+      return true;
+    }
+
+    case 'acct-pref': {
+      const name = btn.dataset['pref'];
+      if (isPrefName(name)) setPref(name, btn.dataset['v'] ?? '');
+      renderScreen();
+      return true;
+    }
+
+    /* a guest names the account from Settings: the post-game claim (pg-claim
+     * above), from the profile. A rename and a password, nothing moves. */
+    case 'acct-claim': {
+      const val = (id: string): string => (document.getElementById(id) as HTMLInputElement | null)?.value ?? '';
+      const username = val('acct-claim-name').trim(), password = val('acct-claim-pass');
+      if (!username || !password) { claimMsg = 'a username and a password, please'; renderScreen(); return true; }
+      void post<{ token?: string; me?: Me }>('/api/auth/claim', { username, password }).then(r => {
+        if (r.ok && r.token && r.me) {
+          localStorage.setItem(TOKEN_KEY, r.token);
+          localStorage.setItem('algoName', r.me.username);
+          me = r.me; claimMsg = '';
+        } else claimMsg = r.error ?? 'that did not work';
+        renderScreen();
+      }).catch(() => { claimMsg = 'could not reach the server'; renderScreen(); });
       return true;
     }
 
     case 'acct-friend-add': {
+      // the board's Add carries the name; the box under "Add a friend" is typed
       const input = document.getElementById('a-friend') as HTMLInputElement | null;
-      const username = input?.value.trim() ?? '';
+      const username = (btn.dataset['name'] ?? input?.value ?? '').trim();
       if (!username) return true;
       void post<{ me?: Me; friends?: boolean }>('/api/friends/request', { username }).then(r => {
         friendMsg = r.ok
@@ -625,7 +664,7 @@ export function handleButton(btn: HTMLElement): boolean {
           : (r.error ?? 'that did not work');
         if (r.me) me = r.me;
         renderScreen();
-        void loadLeaders();
+        if (board === 'all') void loadLeaders();
       }).catch(() => { friendMsg = 'could not reach the server'; renderScreen(); });
       return true;
     }

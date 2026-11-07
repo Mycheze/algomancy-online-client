@@ -4,7 +4,7 @@
 
 .clocktime { font: 700 13px/1 ui-monospace, monospace; color: var(--dim); padding: 1px 5px;
   border: 1px solid transparent; border-radius: 4px; }
-.clocktime.run { color: var(--glow); border-color: var(--glow); background: rgba(111,195,111,.08); }
+.clocktime.run { color: var(--glow); border-color: var(--glow); background: rgb(var(--glow-rgb) / .08); }
 .clocktime.exp { color: var(--danger); border-color: var(--danger); background: rgba(217,84,84,.1); }
 .clocktime.exp::after { content: " expired"; font-size: 10px; font-weight: 400; }
 /* BL-27: the bank going critical. ⚠ WHEN is not decided here — main.ts's

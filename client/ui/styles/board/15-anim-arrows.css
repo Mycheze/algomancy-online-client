@@ -28,8 +28,8 @@
 }
 .animbuff { animation: animbuff .7s ease-out; }
 @keyframes animbuff {
-  0%   { box-shadow: 0 0 0 3px var(--glow), 0 0 16px 4px rgba(111,195,111,.55); }
-  100% { box-shadow: 0 0 0 0 rgba(111,195,111,0); }
+  0%   { box-shadow: 0 0 0 3px var(--glow), 0 0 16px 4px rgb(var(--glow-rgb) / .55); }
+  100% { box-shadow: 0 0 0 0 rgb(var(--glow-rgb) / 0); }
 }
 
 /* ── targeting arrows ─────────────────────────────────────────────── */
@@ -47,8 +47,8 @@
 .arrow.src path { stroke: #7fc0ff; stroke-width: 2; stroke-dasharray: 7 5; }
 .arrow.src .arrowhead, .arrow.src .arrowdot { fill: #7fc0ff; }
 /* the always-on hint for the top of the stack — present, not shouting */
-.arrow.soft path { stroke: rgba(224,185,60,.5); stroke-width: 1.7; stroke-dasharray: 3 4; }
-.arrow.soft .arrowhead, .arrow.soft .arrowdot { fill: rgba(224,185,60,.6); }
+.arrow.soft path { stroke: rgb(var(--target-rgb) / .5); stroke-width: 1.7; stroke-dasharray: 3 4; }
+.arrow.soft .arrowhead, .arrow.soft .arrowdot { fill: rgb(var(--target-rgb) / .6); }
 
 .arrowlabel { fill: var(--text); font: 700 10px system-ui, sans-serif;
   paint-order: stroke; stroke: rgba(6,8,11,.9); stroke-width: 3px; stroke-linejoin: round; }

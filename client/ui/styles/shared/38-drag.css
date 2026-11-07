@@ -10,6 +10,6 @@
 html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-select: none; user-select: none; }
 .droptarget { outline: 2px dashed color-mix(in srgb, var(--glow) 70%, transparent); outline-offset: 2px; }
 .dropover { outline: 3px solid var(--glow); outline-offset: 2px;
-  box-shadow: 0 0 18px 4px rgba(111, 195, 111, .35); }
-.slot.dropover { background: rgba(111, 195, 111, .16); }
+  box-shadow: 0 0 18px 4px rgb(var(--glow-rgb) / .35); }
+.slot.dropover { background: rgb(var(--glow-rgb) / .16); }
 

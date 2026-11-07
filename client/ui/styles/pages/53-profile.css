@@ -1,0 +1,182 @@
+/* ── the profile (ui/pages/profile.ts; the account redesign, 2026-11-07) ──
+   Owner: "the boxes aren't aligned, they're hard to read, they're named a bit
+   weird". So: five tabs in the toolbar's centre; each tab is a few flat
+   SURFACES laid on one grid (equal columns, equal heights), each surface
+   holding SECTIONS split by hairlines — a heading in sentence case, then rows.
+   No box per number, no orange capitals. Every region that can grow scrolls
+   by itself; the page never does (FRAME_PAGES, ui-shots). */
+
+.pfbody { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: var(--space-5); }
+
+/* a surface, and its sections */
+.pfsurface, .pfcol { min-height: 0; background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: 0 var(--space-6) var(--space-5); }
+.pfscroll, .pfcol { overflow-y: auto; }
+.pfsec { padding-top: var(--space-5); }
+.pfsec + .pfsec { margin-top: var(--space-5); border-top: 1px solid var(--color-border); }
+.pfsechead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-4); }
+.pfsechead h3 { margin: 0; color: var(--color-text); font-size: var(--text-16); font-weight: 700; }
+.pfaside { color: var(--color-text-muted); font-size: var(--text-12); }
+.pfnone { margin: 0; color: var(--color-text-muted); font-size: var(--text-13); }
+.pfempty { padding: var(--space-7) 0; text-align: center; }
+.pfopp { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pfspacer { flex: 1; }
+
+/* the elements' colours, as the board paints them (they follow the accessible palette) */
+.pfswatch { display: inline-block; width: 10px; height: 10px; border-radius: var(--radius-sm); flex: none; background: var(--color-border-strong); }
+.pfswatch.fire { background: var(--fire); } .pfswatch.water { background: var(--water); }
+.pfswatch.earth { background: var(--earth); } .pfswatch.wood { background: var(--wood); }
+.pfswatch.metal { background: var(--metal); } .pfswatch.light { background: var(--light); }
+.pfswatch.dark { background: var(--dark); }
+.pfdots { display: inline-flex; align-items: center; gap: var(--space-1); vertical-align: middle; }
+.pfdots .pfswatch { width: 12px; height: 12px; border-radius: 50%; }
+.pfvs { margin: 0 var(--space-3); color: var(--color-text-muted); font-size: var(--text-11); }
+
+/* ── Overview ── */
+.pfoverview { flex: 1 1 auto; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: var(--space-5); }
+.pfhero { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-5) var(--space-7);
+  padding: var(--space-5) var(--space-6); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+.pfwho { display: flex; align-items: center; gap: var(--space-5); min-width: 0; }
+.pfcrest { width: 64px; height: 64px; flex: none; display: grid; place-items: center; border-radius: 50%;
+  background: var(--color-surface-sunken); border: 2px solid var(--color-border-strong); }
+.pfcrest img { width: 46px; height: 46px; display: block; }
+.pfcrest.fire { border-color: var(--fire); } .pfcrest.water { border-color: var(--water); }
+.pfcrest.earth { border-color: var(--earth); } .pfcrest.wood { border-color: var(--wood); }
+.pfcrest.metal { border-color: var(--metal); } .pfcrest.light { border-color: var(--light); }
+.pfcrest.dark { border-color: var(--dark); }
+.pfwhotext { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.pfname { margin: 0; color: var(--color-text); font-size: var(--text-26); font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
+/* a badge chip is sized in em off its heading (.badgechip: .55em, shared/10) */
+.pfchips { display: flex; flex-wrap: wrap; gap: var(--space-2); font-size: var(--text-22); line-height: 1.1; }
+.pfsince { color: var(--color-text-muted); font-size: var(--text-13); }
+.pftiles { display: flex; flex-wrap: wrap; }
+.pftile { display: flex; flex-direction: column; gap: var(--space-1); min-width: 116px; padding: var(--space-2) var(--space-6);
+  border-left: 1px solid var(--color-border); }
+.pftile:first-child { border-left: 0; }
+.pftile b { color: var(--color-text); font-size: var(--text-26); font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.pftile span { color: var(--color-text); font-size: var(--text-13); font-weight: 600; }
+.pftile small { color: var(--color-text-muted); font-size: var(--text-12); }
+
+.pfcols { min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-5); }
+
+.pfbar { display: flex; gap: 2px; height: 12px; border-radius: var(--radius-pill); overflow: hidden; }
+.pfbar .pfswatch { height: 100%; width: auto; border-radius: 0; }
+/* biggest first, reading DOWN the first column and then the second */
+.pflegend { list-style: none; margin: var(--space-4) 0 0; padding: 0; columns: 2; column-gap: var(--space-7); }
+.pflegend li { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-1) 0; font-size: var(--text-13); break-inside: avoid; }
+.pflegend li span:not(.pfswatch) { flex: 1; text-transform: capitalize; }
+.pflegend b { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* a card or deck row: the art's crop, the name, a number */
+.pfart { width: 48px; height: 34px; flex: none; overflow: hidden; border-radius: var(--radius-sm); background: var(--color-surface-sunken); }
+.pfart img { width: 100%; height: 160%; object-fit: cover; object-position: 50% 18%; display: block; }
+.pfcards { list-style: none; margin: 0; padding: 0; counter-reset: pfcard; }
+.pfcards li { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-2) 0; }
+.pfcards li + li { border-top: 1px solid var(--color-border); }
+.pfcardname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-13); }
+.pfcards b, .pfh2h b, .pfdeckrec { color: var(--color-text-muted); font-size: var(--text-13); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.pfh2h { list-style: none; margin: 0; padding: 0; }
+.pfh2h li { display: grid; grid-template-columns: minmax(0, 1fr) 72px 44px; align-items: center; gap: var(--space-4); padding: var(--space-3) 0; font-size: var(--text-13); }
+.pfh2h li + li { border-top: 1px solid var(--color-border); }
+.pfh2h b { text-align: right; }
+.pfwlbar { display: flex; gap: 2px; height: 6px; border-radius: var(--radius-pill); overflow: hidden; }
+.pfwlbar .w { background: var(--color-success); } .pfwlbar .l { background: var(--color-danger); }
+
+.pfdecks { display: flex; flex-direction: column; }
+.pfdeck { display: flex; align-items: center; gap: var(--space-4); width: 100%; padding: var(--space-2) var(--space-2); margin: 0 calc(-1 * var(--space-2));
+  background: none; border: 0; border-radius: var(--radius-md); color: var(--color-text); text-align: left; cursor: pointer; }
+.pfdeck + .pfdeck { border-top: 1px solid var(--color-border); border-radius: 0; }
+.pfdeck:hover { background: var(--color-surface-raised); }
+.pfdeckname { flex: 1; min-width: 0; font-weight: 600; font-size: var(--text-13); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.pfcareerband { min-height: 0; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+  padding: 0 var(--space-6) var(--space-4); }
+.pfcareerband .pfsec { padding-top: var(--space-4); }
+.pfcareerband .pfsechead { margin-bottom: var(--space-2); }
+.pfcareer { display: grid; grid-auto-flow: column; grid-template-rows: repeat(3, auto); grid-auto-columns: minmax(0, 1fr); column-gap: var(--space-7); }
+.pfrows { display: contents; }
+.pfrows > div { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-4); padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border); font-size: var(--text-13); }
+.pfrows dt { color: var(--color-text-muted); }
+.pfrows dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ── a pane: a line over one surface (Achievements, Games, the board) ── */
+.pfpane { flex: 1 1 auto; min-height: 0; min-width: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+.pfpane > .pfsurface { flex: 0 1 auto; }
+.pfpanehead { flex: none; display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-4) var(--space-6); color: var(--color-text); font-size: var(--text-14); }
+.pfmeter { width: 180px; height: 6px; border-radius: var(--radius-pill); background: var(--color-surface-raised); overflow: hidden; }
+.pfmeter span { display: block; height: 100%; background: var(--color-accent); }
+/* the achievements keep their cards (.ach, 17-accounts.css): a card IS the thing here */
+.pf-achievements .achgrid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: var(--space-3); }
+.pf-achievements .ach { height: 100%; }
+
+/* ── the tables: Games and the board ── */
+.pftable { width: 100%; border-collapse: collapse; font-size: var(--text-13); }
+.pftable th { position: sticky; top: 0; z-index: 1; padding: var(--space-5) var(--space-4) var(--space-3); background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-strong); color: var(--color-text-muted); font-size: var(--text-12); font-weight: 600; text-align: left; white-space: nowrap; }
+.pftable td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+.pftable tr:last-child td { border-bottom: 0; }
+.pftable th:first-child, .pftable td:first-child { padding-left: 0; }
+.pftable th:last-child, .pftable td:last-child { padding-right: 0; }
+.pftable .pfnum { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pftable .pfdim { color: var(--color-text-muted); }
+.pftable td .pfopp { display: inline; }
+.pfres { display: inline-block; min-width: 44px; padding: var(--space-1) var(--space-4); border-radius: var(--radius-pill);
+  font-size: var(--text-12); font-weight: 700; text-align: center; background: var(--color-surface-raised); color: var(--color-text-muted); }
+.res-win .pfres { background: var(--color-success-bg); color: var(--color-success); }
+.res-loss .pfres { background: var(--color-danger-bg); color: var(--color-danger); }
+.weight-walkover .pfres { background: none; text-decoration: line-through; }
+.pftags .constag { font-size: var(--text-11); }
+.pffmt::first-letter { text-transform: uppercase; }
+.pfwatch { text-align: right; white-space: nowrap; }
+.pfwatch .replaylink { color: var(--color-link); text-decoration: none; font-weight: 600; }
+.pfwatch .replaylink:hover { text-decoration: underline; }
+
+.pfboard tr.myrow td { background: var(--color-surface-raised); }
+.pfboard td .fdot { display: inline-block; margin-right: var(--space-3); vertical-align: middle; }
+.pfboard .pfrank { color: var(--color-text-muted); width: 2.5em; }
+.pfrating { color: var(--color-accent); }
+.pfboard .pfact { width: 1%; text-align: right; white-space: nowrap; }
+.pfyou { margin: var(--space-5) 0 0; font-size: var(--text-13); color: var(--color-text-muted); }
+.pfyou b { color: var(--color-text); }
+
+/* ── Players ── */
+.pfplayers { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(280px, 340px) minmax(0, 1fr); gap: var(--space-5); align-items: start; }
+.pfplayers > .pfsurface { max-height: 100%; }
+.pfplayers > .pfpane { height: 100%; }
+.pfadd { display: flex; gap: var(--space-3); }
+.pfadd input { flex: 1; min-width: 0; }
+.pflist { list-style: none; margin: 0; padding: 0; }
+.pffriend { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; font-size: var(--text-13); }
+.pffriend + .pffriend { border-top: 1px solid var(--color-border); }
+
+/* ── Settings ── */
+.pfsettings { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); align-items: start; }
+.pfsettings > .pfsurface { max-height: 100%; }
+.pfsettings .pfsec > .ui-setting-row + .ui-setting-row { margin-top: var(--space-6); }
+.pfsettings { --setting-row-label: 112px; }
+.pfform { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); width: min(300px, 100%); }
+.pfform input { width: 100%; }
+.pfinline { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-4); }
+.pfvalue { padding-top: var(--space-3); font-weight: 600; }
+.pfhint { color: var(--color-text-muted); font-size: var(--text-12); line-height: 1.45; }
+.pfpreview .pfswatch { width: 16px; height: 16px; }
+.pfsettings .favpick { margin: 0; }
+.pfsettings .ui-setting-row__control > .pfdots { align-self: flex-start; }
+
+/* the Players tab says when somebody is waiting on you */
+.acctnav [data-count]::after { content: attr(data-count); display: inline-block; margin-left: var(--space-3); min-width: var(--icon-button-badge);
+  padding: 0 var(--space-2); border-radius: var(--radius-pill); background: var(--color-accent); color: var(--color-text-on-accent);
+  font-size: var(--text-11); font-weight: 700; line-height: var(--icon-button-badge); text-align: center; }
+
+/* a tablet: the Overview's columns and the Players' friends get narrower; the tiles wrap under the name */
+@media (max-width: 1100px) {
+  .pftile { min-width: 96px; padding: var(--space-2) var(--space-5); }
+  .pfplayers { grid-template-columns: minmax(240px, 300px) minmax(0, 1fr); }
+}
+/* below a tablet the shell lets go and the page scrolls (no phone layout: docs/24) */
+@media (max-width: 759.98px), (max-height: 599.98px) {
+  .pfoverview, .pfcols, .pfplayers, .pfsettings { display: flex; flex-direction: column; }
+  .pfsurface, .pfcol, .pfscroll { overflow: visible; }
+}

@@ -167,6 +167,7 @@ export const BROWSER_KEYS: readonly StoredLine[] = [
   { covers: ['algoDeck', 'algoEls'], what: 'the deck and the element trio you last picked, so the home screen remembers' },
   { covers: ['algoCardQuery', 'algoCardSearches'], what: 'your last card-browser search and any searches you saved' },
   { covers: ['algoSound', 'algoMotion'], what: 'whether you turned sound and animation on or off' },
+  { covers: ['algoColors'], what: 'whether you chose the accessible colours' },
   { covers: ['algoAutopass', 'algoBluffHaste', 'algoLogVerbose'], what: 'three in-game display preferences: auto-pass, bluff haste, and how much the game log shows' },
   { covers: ['algoClockMs'], what: 'the clock length you last chose for a game you started' },
   { covers: ['algoMatchClockMs'], what: 'the clock you last chose for a Competitive match you started' },

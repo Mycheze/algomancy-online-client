@@ -95,3 +95,5 @@
    lay out its regions; after every older deck piece, which they replace */
 @import "pages/51-decks-shelf.css";
 @import "pages/52-builder.css";
+/* the profile, redesigned (ui/pages/profile.ts, 2026-11-07): after the frame and 17-accounts.css, whose cards it reuses */
+@import "pages/53-profile.css";
