@@ -984,8 +984,17 @@ const OPEN: Entry[] = [
       'client/server/e2e/ui-shots.mjs',
       'client/server/e2e/ui-shots-states.mjs',
       'client/server/e2e/ui-shots-compare.mjs',
+      'client/server/e2e/ui-shots-stable.mjs',
     ],
-    notes: 'Sources: the ds-pages, ds-base, ds-w2c and ds-w3a records under var/records/.',
+    notes: 'Sources: the ds-pages, ds-base, ds-w2c and ds-w3a records under var/records/. '
+      + '2026-11-07 (steward): three of the four causes are fixed in the tool, ui-shots-stable.mjs, guarded by '
+      + '1172-ui-shots-stable-runs.test.ts: Chrome browses one fixed origin (http://ui-shots.test, mapped to the '
+      + 'server\'s port by --host-resolver-rules; --port-origin puts 127.0.0.1:<port> back), focus is emulated, and '
+      + 'a shot waits for every visible "Loading…" line (and for its `check`), a page still loading being a failure. '
+      + 'NOT verified in a browser: the home box has no Chrome. Left: (a) a real two-port run to prove doneWhen — if '
+      + 'the run stops at once with "did not reach the server", the resolver mapping did not take; (b) the cardstats '
+      + 'thumbnails\' ±2 edge jitter (image downscaling), still absorbed by --fuzz 3, not cured; (c) decks__first '
+      + 'no longer exists (BL-65 rebuilt the deck screens), so its art jitter needs re-measuring on decks__*.',
   },
   {
     id: 'BL-66',

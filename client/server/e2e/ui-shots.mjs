@@ -15,6 +15,7 @@
  * matter within one build). A missing fixture is built on the spot.
  *
  * Options:  --port 5182 (5182–5185 are this tool's)   --viewports desktop,tablet,phone,portrait
+ *           --port-origin (pages on http://127.0.0.1:<port>, not the fixed ui-shots.test origin)
  *           --only <substring of page__state>          --pages N (screens per state, default 3)
  *           --chrome /usr/bin/google-chrome            --verbose
  *
@@ -36,7 +37,11 @@
  *     forced to sRGB, GPU off, and one raster thread with no partial raster
  *     (without those, anti-aliased corners came out ±1 in ~10% of pictures)
  *   · each shot waits for the network to go quiet, fonts and images to load,
- *     and then captures until two frames in a row are identical
+ *     every "Loading…" line to go, and then captures until two frames in a
+ *     row are identical
+ *   · the same page origin on any port, and a window that always has focus
+ *     (ui-shots-stable.mjs: two runs on two ports used to differ in every
+ *     share link, and a focused search box in whether Chrome had focus)
  *
  * The client's own Date is frozen, so its Date-driven pollers (the inbox
  * tick) never fall due again after the first paint: background repaints stop
@@ -61,6 +66,7 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { SHOTS_NOW, buildFixture, copyFixtureVar, fixtureEnv } from './ui-fixture.ts';
 import { NO_SCROLL_VIEWPORTS, overflowJs, pageScrolls, regionScrolls, shotAt } from './ui-shots-overflow.mjs';
+import { FOCUS_EMULATION, SHOTS_ORIGIN, originFlags, stillLoadingJs } from './ui-shots-stable.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 // ws is the server's own dependency, and CommonJS
@@ -148,7 +154,8 @@ const INIT_JS = `(() => {
   document.addEventListener('DOMContentLoaded', add);
 })();`;
 
-export async function launch(vpName, { chrome = '/usr/bin/google-chrome', verbose = false } = {}) {
+/** `port`: serve SHOTS_ORIGIN from the server on that port (ui-shots-stable.mjs) */
+export async function launch(vpName, { chrome = '/usr/bin/google-chrome', verbose = false, port = null } = {}) {
   const vp = VIEWPORTS[vpName];
   const prof = mkdtempSync(join(tmpdir(), 'algo-ui-shots-prof-'));
   const cdpPort = 9400 + Math.floor(Math.random() * 500);
@@ -164,6 +171,7 @@ export async function launch(vpName, { chrome = '/usr/bin/google-chrome', verbos
     '--num-raster-threads=1', '--disable-partial-raster', '--disable-checker-imaging',
     '--run-all-compositor-stages-before-draw', '--disable-threaded-animation', '--disable-threaded-scrolling',
     '--disable-gpu-rasterization', '--disable-zero-copy', '--disable-lcd-text', '--disable-font-subpixel-positioning',
+    ...(port ? originFlags(port) : []),
     `--window-size=${vp.w},${vp.h}`, 'about:blank',
   ], { stdio: 'ignore' }));
   let target;
@@ -236,6 +244,8 @@ export async function launch(vpName, { chrome = '/usr/bin/google-chrome', verbos
   });
   await send('Emulation.setTimezoneOverride', { timezoneId: 'Europe/London' });
   await send('Emulation.setLocaleOverride', { locale: 'en-GB' });
+  // the window always has focus: a focused box draws the same either way
+  await send(...FOCUS_EMULATION);
 
   const P = {
     vpName, vp, send, ev, errors,
@@ -336,6 +346,25 @@ export async function launch(vpName, { chrome = '/usr/bin/google-chrome', verbos
       await sleep(150);
       await P.settled();
     },
+    /** poll a page expression until it is truthy, then settle; → whether it was */
+    async until(expr, max = 20_000) {
+      const t0 = Date.now();
+      for (;;) {
+        if (await ev(expr).catch(() => false)) { await P.settled(); return true; }
+        if (Date.now() - t0 >= max) return false;
+        await sleep(200);
+      }
+    },
+    /** wait for every visible "Loading…" line to go; → the ones still there */
+    async untilLoaded(max = 20_000) {
+      const t0 = Date.now();
+      for (let waited = false; ; waited = true) {
+        const left = (await ev(stillLoadingJs()).catch(() => [])) ?? [];
+        if (!left.length) { if (waited) await P.settled(); return []; }
+        if (Date.now() - t0 >= max) return left;
+        await sleep(200);
+      }
+    },
     /** capture until two frames in a row are identical */
     async capture() {
       let prev = null, last = null;
@@ -387,15 +416,30 @@ async function runState(P, base, fx, s) {
     if (st.settle) { await sleep(st.settle); await P.settled(); }
     if (!ok && !st.optional) return `step ${i} ${JSON.stringify(st)}`;
   }
+  // the network went quiet, but a document may not be drawn yet
+  // (one still there is a failure, but the masks, the check and the picture
+  // still happen, as for a failed step)
+  const loading = await P.untilLoaded();
   if (s.css) {
     await P.ev(`(() => { const st = document.createElement('style'); st.textContent = ${JSON.stringify(s.css)}; document.head.appendChild(st); return true; })()`);
     await P.settled();
   }
   if (s.check) {
-    const okCheck = await P.ev(`!!document.querySelector(${JSON.stringify(s.check)})`);
+    const okCheck = await P.until(`!!document.querySelector(${JSON.stringify(s.check)})`);
     if (!okCheck) return `check ${s.check} not on the page`;
   }
-  return null;
+  return loading.length ? `still loading after 20s: ${loading.slice(0, 3).join(' · ')}` : null;
+}
+
+/** the page origin really reaches the server — else every state would fail
+ * the same way, on its first localStorage write */
+async function reachable(P, origin) {
+  await P.goto(`${origin}/favicon.ico`);
+  const at = await P.ev('location.origin').catch(() => null);
+  if (at !== origin) {
+    throw new Error(`Chrome did not reach the server at ${origin} (it is on ${at ?? 'nothing'}).`
+      + (origin === SHOTS_ORIGIN ? ' Its --host-resolver-rules mapping did not take: run with --port-origin.' : ''));
+  }
 }
 
 async function main() {
@@ -409,6 +453,7 @@ async function main() {
   const pages = Number(opt('pages', '3'));
   const verbose = args.includes('--verbose');
   const chrome = opt('chrome', '/usr/bin/google-chrome');
+  const portOrigin = args.includes('--port-origin');
 
   if (!existsSync(join(HERE, '..', '..', 'ui', 'bundle.js'))) {
     console.error('no client/ui/bundle.js — run `npm --prefix client/ui run build` first');
@@ -428,7 +473,7 @@ async function main() {
   const cleanup = async () => { for (const x of live) await x.close(); live.clear(); };
   for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { cleanup().finally(() => process.exit(130)); });
 
-  const manifest = { fixture: fixtureDir, frozenAt: SHOTS_NOW, viewports: {}, shots: {} };
+  const manifest = { fixture: fixtureDir, frozenAt: SHOTS_NOW, origin: portOrigin ? `http://127.0.0.1:${port}` : SHOTS_ORIGIN, viewports: {}, shots: {} };
   const problems = [];
   let noScrollFailed = false;
   const t0 = Date.now();
@@ -443,8 +488,11 @@ async function main() {
       const server = await startServer(fixtureDir, port);
       const srv = { close: () => server.stop() };
       live.add(srv);
-      let P = await launch(vpName, { chrome, verbose });
+      const browse = { chrome, verbose, port: portOrigin ? null : port };
+      const origin = portOrigin ? server.base : SHOTS_ORIGIN;
+      let P = await launch(vpName, browse);
       live.add(P);
+      await reachable(P, origin);
       let n = 0;
       for (const s of states) {
         if (!shotAt(s, vpName)) continue;
@@ -456,7 +504,7 @@ async function main() {
         try {
           P.errors.length = 0;
           let failed;
-          try { failed = await runState(P, server.base, fx, s); } catch (e) { failed = String(e?.message ?? e).slice(0, 300); }
+          try { failed = await runState(P, origin, fx, s); } catch (e) { failed = String(e?.message ?? e).slice(0, 300); }
           if (failed) entry.failed = failed;
           const ov = await P.ev(overflowJs(P.vp.w)).catch(() => null);
           entry.scroll = ov ? { w: ov.scrollW, h: ov.scrollH } : null;
@@ -489,7 +537,7 @@ async function main() {
           // a hung renderer: this state is lost, the run is not — a fresh Chrome
           entry.failed = `${entry.failed ? `${entry.failed}; ` : ''}${String(e?.message ?? e).slice(0, 200)} (Chrome restarted)`;
           await P.close(); live.delete(P);
-          P = await launch(vpName, { chrome, verbose });
+          P = await launch(vpName, browse);
           live.add(P);
         }
         if (entry.failed) { problems.push(`${name}: ${entry.failed}`); console.log(`✗ ${name}: ${entry.failed}`); }
