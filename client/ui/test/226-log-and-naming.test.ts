@@ -133,18 +133,32 @@ const textOf = (lines: string[]): string[] => lines.map(l => l.slice(l.indexOf('
  * reads a log the client has not finished telling and calls the curtain guilty
  * of what the beat queue was doing.
  *
+ * ⚠ CT-511 — S DOES NOTHING WHILE THE LOG IS OPEN, AND EVERY CALLER HAS IT
+ * OPEN. CT-135 (pinned by test 269 §3) keeps every hotkey, S included, off the
+ * board while any overlay is up, and the log is a modal. This helper used to
+ * press S over it, so it drained nothing: §1a–§1d read a log whose combat beats
+ * were still holding back its tail on the WALL CLOCK, and their later reads
+ * (the logmode toggles) saw whatever ~2.2s of real time had told by then. Fast
+ * enough, every read agreed; under machine load §1a's "toggle back gives the
+ * same view" failed, eight lines longer. So the log is put away for the drain,
+ * as a player would have to, and brought back. §1e holds the clock still and
+ * moves it on, which is the only way to see this from inside a test.
+ *
  * (Note: the skip chip no longer needs a repaint to appear — it is a live
  * slot, patched at the arrival. This helper is unaffected: it is draining the
  * two timed queues, not waiting for the chip.) */
 function settle(ui: { tick(): void; html(): string; has(w: Record<string, string | number>): boolean;
-  click(w: Record<string, string | number>): string; key(k: string): string }): string {
+  click(w: Record<string, string | number>): string; rightClick(w: Record<string, string | number>): string;
+  key(k: string): string }): string {
+  const logWasOpen = ui.has({ btn: 'logclose' });
+  if (logWasOpen) closeLog(ui);
   for (let i = 0; i < 8; i++) {
     ui.tick();
     // S: the player's own way out of the pacing, and the only one that does
     // not depend on wall-clock time passing inside a test
     ui.key('s');
   }
-  return ui.html();
+  return logWasOpen ? openLog(ui) : ui.html();
 }
 
 /* ══ §1 — [126] the game talking to itself ═══════════════════════════════ */
@@ -236,6 +250,30 @@ test('§1d the curtain says how much it is holding, and lifts on one click', asy
   // measure is indistinguishable from a deletion
   assert.equal(Number(m![1]), all.length - storyLines.length,
     'the count on screen is the real difference between the two views');
+  closeLog(ui);
+});
+
+test('§1e CT-511: settle() leaves the log with nothing more to tell — time passing changes no view', async t => {
+  /* The guard for settle() itself, which §1a–§1d all stand on. Real time is
+   * held still, so this is what a loaded machine would see: the reads above
+   * happen seconds apart, and a beat still holding the log's tail (CR D5.4)
+   * would tell it in between. With the drain done behind the open log, where
+   * S is inert (CT-135), the story view read here was eight lines short. */
+  t.mock.timers.enable({ apis: ['Date'], now: 9_000_000 });
+  const { h, seat } = board(22605);
+  const events = realGameEvents(22605);
+  const ui = await client();
+  ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat));
+  openLog(ui);   // CT-124/#131: the log is a modal now — this is the only way in
+  ui.update(viewFor(h.state, seat), legalActions(h.state, seat), { events });
+  const story = textOf(logLines(settle(ui)));
+  const all = textOf(logLines(ui.click({ btn: 'logmode' })));
+  t.mock.timers.tick(3000);   // longer than any beat schedule (MAX_LEAD_MS, 2.2s)
+  assert.deepEqual(textOf(logLines(ui.click({ btn: 'logmode' }))), story,
+    'the story view grew once the clock moved: settle() read it while beats were still holding lines');
+  assert.deepEqual(textOf(logLines(ui.click({ btn: 'logmode' }))), all,
+    'the full view grew once the clock moved');
+  ui.click({ btn: 'logmode' });                       // back to the story view
   closeLog(ui);
 });
 

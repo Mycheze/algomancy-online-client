@@ -237,5 +237,9 @@ if (CLI) {
     issue: row.ts ? issueFor(row.ts, flag('--issues')) : null,
   });
   for (const line of out.lines) console.log(line);
-  process.exit(out.exit);
+  // CT-511: NOT process.exit(). Into a pipe, console.log only queues what the
+  // pipe cannot take yet, and process.exit() drops the queue: test 594 saw this
+  // tool exit 0 with its log cut off at action 58 when two ran at once. Setting
+  // the code and running off the end lets node flush stdout first.
+  process.exitCode = out.exit;
 }

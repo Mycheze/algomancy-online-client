@@ -1438,11 +1438,19 @@ export const EXIT = {
   faithful: 0, usage: 1, diverged: 2, inconsistent: 3, unreplayable: 4, staleCopy: 5,
 } as const;
 
-if (CLI) {
+/** The command line, as a function that RETURNS its exit code (CT-511).
+ *
+ * It used to call process.exit() wherever it was done. Into a pipe, console.log
+ * only queues what the pipe cannot take yet, and process.exit() drops that
+ * queue: a long `--log` read through a pipe by anyone slower than this tool
+ * (a loaded box, a `| head`, a test runner) lost its tail and still exited 0.
+ * Setting process.exitCode and running off the end lets node flush first.
+ * Test 1156 reads one through a pipe it holds shut. */
+async function cli(): Promise<number> {
   const file = process.argv[2];
   if (!file) {
     console.error('usage: node replay-room.ts games/<CODE>.json [--log] [--as-recorded [--at <sha>]] [--json] | --branch | --report <ts> [actionIndex] [--issues <file>]');
-    process.exit(EXIT.usage);
+    return EXIT.usage;
   }
   const raw = JSON.parse(readFileSync(file, 'utf8')) as RoomFile;
   const source = crossCheck(file, raw);
@@ -1461,7 +1469,7 @@ if (CLI) {
       for (const line of r.lines) console.log(line);
       console.log(`  ${source.verdict === 'same' ? '✓' : '·'} source: ${source.note}`);
     }
-    process.exit(r.exit);
+    return r.exit;
   }
 
   // CT-326: a rewound branch, rebuilt — instead of the replay report
@@ -1482,11 +1490,11 @@ if (CLI) {
       const row = found ?? (idx !== undefined && /^\d+$/.test(idx) ? { ts: ts!, actionIndex: Number(idx), note: '(not in the journal read)' } : null);
       if (!ts || !row) {
         console.error(`--report needs a row's ts, found in the journal (${flag('--issues') ?? issuesFile()}), or the ts and its actionIndex`);
-        process.exit(EXIT.usage);
+        return EXIT.usage;
       }
       for (const line of reportBranchLines(file, raw, row, issues)) console.log(line);
     }
-    process.exit(EXIT.faithful);
+    return EXIT.faithful;
   }
 
   const an = analyze(raw);
@@ -1501,7 +1509,7 @@ if (CLI) {
     if (!sha) {
       console.error(`\n⛔ --as-recorded needs a commit to replay at, and ${basename(file)} does not name one:\n`
         + `    ${versions.why}\n`);
-      process.exit(EXIT.usage);
+      return EXIT.usage;
     }
     dl = await delta(file, raw, sha);
   }
@@ -1525,5 +1533,7 @@ if (CLI) {
   } else {
     for (const line of r.lines) console.log(line);
   }
-  process.exit(r.exit);
+  return r.exit;
 }
+
+if (CLI) process.exitCode = await cli();
