@@ -381,12 +381,20 @@ test('CR 410.7 conformance: neither call site keeps a second copy of the tail', 
 
   // destroy(): its own source, taken off the prototype so a moved method or a
   // renamed file cannot make this silently stop measuring
+  // CT-532 split destroy() in two: destroy() takes the CR 713.6f strip
+  // snapshot for a lone departure and hands the removal to destroyNow(), which
+  // is where the disposal lives. Both are read: the wrapper must delegate and
+  // carry no tail, the body must call the primitive and carry no copy of it.
   const destroySrc = E.prototype.destroy.toString();
-  assert.match(destroySrc, /disposeToBin\(/, 'E.destroy no longer calls the primitive at all');
-  for (const banned of ['eraseFromZone(', 'noteTrashed(', 'bin.push(']) {
-    assert.ok(!destroySrc.includes(banned),
-      `E.destroy contains \`${banned}\` again — that is the disposal tail coming back into it. `
-      + 'It belongs in E.disposeToBin (CR 410.7/CT-43), which destroy() already calls.');
+  const destroyNowSrc = (E.prototype as unknown as { destroyNow: () => void }).destroyNow.toString();
+  assert.match(destroySrc, /this\.destroyNow\(/, 'E.destroy no longer hands the removal to destroyNow');
+  assert.match(destroyNowSrc, /disposeToBin\(/, 'E.destroy no longer calls the primitive at all');
+  for (const [name, body] of [['destroy', destroySrc], ['destroyNow', destroyNowSrc]] as const) {
+    for (const banned of ['eraseFromZone(', 'noteTrashed(', 'bin.push(']) {
+      assert.ok(!body.includes(banned),
+        `E.${name} contains \`${banned}\` again — that is the disposal tail coming back into it. `
+        + 'It belongs in E.disposeToBin (CR 410.7/CT-43), which destroy() already calls.');
+    }
   }
 
   // exchangeInPlace(): the exchange ruling moved it out of batch-dark-b.ts and onto E, so
