@@ -3055,4 +3055,44 @@ export const CLOSED: Entry[] = [
       + '537 §4). Mutation-checked: dropping Side from the pool\'s targets turns 831 §3-§5 red; removing the '
       + 'pool\'s cap check turns 1133 §1-§3 and 537 §4 red.',
   },
+  {
+    id: 'BL-58',
+    slug: 'board-colour-literals',
+    title: 'Board colours the palette round left hard-coded: the commit button\'s green, the stack popup\'s navy',
+    area: 'client',
+    size: 'S',
+    status: 'done',
+    track: 'qol',
+    said:
+      'put all the other things into the backlog of todos that we want to take care of (2026-11-03)',
+    means:
+      'The Manual palette moved the board through tokens but left the board\'s own literals "for the '
+      + 'board\'s round". board-r1 then fixed the action bar\'s washes. Still literals: `button.commitbtn` '
+      + '(styles/board/29-cost-toasts.css: #3c5a2f / #5b8747 / #476b37), written to match the old green '
+      + '`button.primary`, which is orange now; and the stack item popup\'s navy (the old-slate family, a '
+      + 'seam on the purple but legible).',
+    doneWhen: [
+      'The commit button reads as the same primary as every other primary button',
+      'The stack item popup sits on a palette surface, not the old navy; test 921\'s board allowlist shrinks with it',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/styles/board/29-cost-toasts.css',
+      'client/ui/styles/board/20-stack.css',
+      'client/ui/test/921-no-new-colour-literals.test.ts',
+    ],
+    evidence: { commit: '2a3c5a03', guards: ['1157-board-confirm-and-stack-palette.test.ts'] },
+    notes:
+      'Sources: var/records/ds-round-2026-11-03-r2-theme.md "Left / for later" and '
+      + 'var/records/board-r1-2026-11-03.md "Not done / for later". The prompt bar\'s dark-gold wash on '
+      + 'the same list is fixed (board-r1 item 3). '
+      + 'DONE by the steward 2026-11-07 (2a3c5a03): button.commitbtn reads the confirm roles (--color-confirm, '
+      + '-border, -hover, --color-text-on-accent), so it paints exactly what button.primary does; the stack window '
+      + '(.stackboard.live, the floating stack — the "popup") sits on --color-surface-overlay instead of the '
+      + 'rgba(24,30,38)→rgba(16,20,26) slate gradient. Test 921 has no board allowlist to shrink (board/ is exempt '
+      + 'wholesale), so 1157 is the guard instead. Not done: the stack cards\' own slate border (#4a586a) and the '
+      + 'mod badges\' rgba(20,24,30,.9) on a stack item, same family, not named here.',
+  },
 ];

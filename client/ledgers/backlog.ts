@@ -801,39 +801,6 @@ const OPEN: Entry[] = [
     ],
   },
   {
-    id: 'BL-58',
-    slug: 'board-colour-literals',
-    title: 'Board colours the palette round left hard-coded: the commit button\'s green, the stack popup\'s navy',
-    area: 'client',
-    size: 'S',
-    status: 'open',
-    track: 'qol',
-    said:
-      'put all the other things into the backlog of todos that we want to take care of (2026-11-03)',
-    means:
-      'The Manual palette moved the board through tokens but left the board\'s own literals "for the '
-      + 'board\'s round". board-r1 then fixed the action bar\'s washes. Still literals: `button.commitbtn` '
-      + '(styles/board/29-cost-toasts.css: #3c5a2f / #5b8747 / #476b37), written to match the old green '
-      + '`button.primary`, which is orange now; and the stack item popup\'s navy (the old-slate family, a '
-      + 'seam on the purple but legible).',
-    doneWhen: [
-      'The commit button reads as the same primary as every other primary button',
-      'The stack item popup sits on a palette surface, not the old navy; test 921\'s board allowlist shrinks with it',
-    ],
-    decided: [],
-    asks: [],
-    deps: [],
-    touches: [
-      'client/ui/styles/board/29-cost-toasts.css',
-      'client/ui/styles/board/20-stack.css',
-      'client/ui/test/921-no-new-colour-literals.test.ts',
-    ],
-    notes:
-      'Sources: var/records/ds-round-2026-11-03-r2-theme.md "Left / for later" and '
-      + 'var/records/board-r1-2026-11-03.md "Not done / for later". The prompt bar\'s dark-gold wash on '
-      + 'the same list is fixed (board-r1 item 3).',
-  },
-  {
     id: 'BL-59',
     slug: 'ipad-one-height-bar-review',
     title: 'iPad: look at the side effects of the one-height action bar',
