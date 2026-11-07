@@ -3156,4 +3156,52 @@ export const CLOSED: Entry[] = [
       + 'Mutation-checked: dropping approved-conflict/approved-gate-red from the skipped rows, or not-a-bug from '
       + 'the finished ones, turns 1158 red. test-runner.sh landed-elsewhere still needs a push and was not run.',
   },
+  {
+    id: 'BL-70',
+    slug: 'scan-readers-notice-a-replaced-scan',
+    title: 'A replaced card scan leaves its scan-read data stale, and nothing notices',
+    area: 'client',
+    size: 'S',
+    status: 'done',
+    track: 'qol',
+    said:
+      'You fixed the Mindburn TEXT but the actual card image needs to be updated. (2026-11-06)',
+    means:
+      'Swapping Mindburn\'s scan (inbox-1568323276030091455) meant re-running the scan readers, and that rerun '
+      + 'moved rows for six OTHER cards: text-boxes.json (Torrential Reclamation\'s type bar 785 → 781 px, its '
+      + 'scan replaced 2026-10-25 by CT-374, 8128635d) and complexity-overrides.json (Feed to Hooba, Greed Angel, '
+      + 'Proph, Sarcophage, Tithe Enforcer: scores only, every Simple/Complex call unchanged; scans replaced '
+      + '2026-09-21 by 53750764, the file generated 2026-09-05). So each scan replacement so far left the data '
+      + 'read off it stale, and no test can tell. Also: the repo\'s own .venv has Pillow but no numpy, so none of '
+      + 'bot/pipeline/{classify_complexity,read_text_boxes,read_card_faces,build_anchors}.py runs in it (the '
+      + '2026-11-06 run borrowed a py3.10 venv that had both): bot/pipeline/requirements.txt names numpy, but the '
+      + 'home box\'s steward clone never installed it. And '
+      + 'build_anchors.py did not finish in 20 min on the steward\'s two cores (mod_anchors.json was not re-read: '
+      + 'it may be stale for the scans replaced 2026-09-21 too). Fix: each scan reader records a short sha256 of '
+      + 'every scan it read beside its row, and a node test hashes data/cards/*.jpg and fails naming the cards '
+      + 'whose derived rows were read off a different file; and the steward clone\'s venv gets '
+      + 'bot/pipeline/requirements.txt installed (a box change, not a repo one).',
+    doneWhen: [
+      'Replacing a card scan without re-running the scan readers fails a test that names the card',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'bot/pipeline/classify_complexity.py',
+      'bot/pipeline/read_text_boxes.py',
+      'bot/pipeline/read_card_faces.py',
+      'bot/pipeline/build_anchors.py',
+    ],
+    evidence: { commit: 'b5be3205', guards: ['1159-scan-reads-current.test.ts'] },
+    notes:
+      'HALF DONE 2026-11-06 (c3b0781b): the runner installs bot/pipeline/requirements.txt (numpy, PyMuPDF) '
+      + 'in the steward clone. DONE 2026-11-07 (b5be3205): bot/pipeline/scan_reads.py — each of the four readers '
+      + 'records sha256[:16] of every scan it opened (templates included) in data/cards/scan-reads.json when it '
+      + 'writes; 1159 hashes data/cards/*.jpg and names the card and the reader to re-run (and an oracle card\'s '
+      + 'scan no reader has read). All four re-run tonight: every row came out identical, so master\'s data '
+      + 'was already current, mod_anchors.json included (build_anchors: 51 min on two cores). Not done: '
+      + 'CLAUDE.md\'s generated-files table and the steward skill\'s card-update recipe do not name '
+      + 'scan-reads.json yet (both protected from the worker).',
+  },
 ];
