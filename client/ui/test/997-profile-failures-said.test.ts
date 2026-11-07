@@ -58,6 +58,9 @@ await settle(); await settle();
 const ui = home();
 ui.click({ btn: 'acct-open-profile' });
 await settle(); await settle();
+// the picker and the Discord row are on Settings since the account redesign (2026-11-07)
+ui.click({ btn: 'acct-tab', tab: 'settings' });
+await settle();
 
 /** the error line(s) on screen, as text */
 const errors = (): string[] =>
@@ -100,17 +103,18 @@ test('997 §2 an Unlink that fails says why, on the linked card', async () => {
   ui.click({ btn: 'acct-discord-unlink' });
   await settle(); await settle();
   assert.deepEqual(errors(), ['could not reach the server']);
-  const card = /<h3>Connections<\/h3>[\s\S]*?<\/section>/.exec(ui.html())?.[0] ?? '';
-  assert.match(card, /could not reach the server/, 'on the Connections card');
+  const card = /<h3>Account<\/h3>[\s\S]*?<\/section>/.exec(ui.html())?.[0] ?? '';
+  assert.match(card, /could not reach the server/, 'in the Account section, by the Discord row');
 });
 
 test('997 §3 the ladder\'s failure is drawn as an error, not as a gold note', () => {
   const html = profileHtml(profileView({
-    me: ME, tab: 'ladder', discordLinking: false, linkCode: null, linkMsg: '', friendMsg: '', pwMsg: null, favMsg: '',
-    leaders: null, leadersFailed: false, ladderMode: 'constructed',
-    ladder: { mode: 'constructed', players: [], you: null, rated: 0, publicAfter: 5, failed: true }, artFor: c => c,
+    me: ME, tab: 'players', discordLinking: false, linkCode: null, linkMsg: '', friendMsg: '', pwMsg: null, favMsg: '', claimMsg: '',
+    leaders: null, leadersFailed: false, board: 'constructed',
+    ladder: { mode: 'constructed', players: [], you: null, rated: 0, publicAfter: 5, failed: true },
+    prefs: { colours: 'standard', sound: true, motion: true, autoPass: false, bluffHaste: false }, artFor: c => c,
   }));
   assert.match(html, /<div class="ui-status ui-status--error" role="alert">Could not load the ladder\.<\/div>/);
   assert.doesNotMatch(html, /class="deckmsg"/);
-  assert.match(html, /data-btn="acct-ladder-mode" data-mode="constructed">Try again</, 'and it still asks again');
+  assert.match(html, /data-btn="acct-ladder-mode"[^>]*data-mode="constructed"[^>]*>Try again</, 'and it still asks again');
 });

@@ -90,9 +90,9 @@ async function profileHead(): Promise<string> {
   await settle(); await settle();
   if (!ui.has({ btn: 'acct-close' })) ui.click({ btn: 'acct-open-profile' });
   await settle();
-  // since 2026-11-04 the profile is in the app frame: who this is heads its sidebar,
-  // the name and then the badge and trophy chips (pages/profile.ts acctwhois)
-  const h1 = /<div class="acctwhois">([\s\S]*?)<p class="acctsum">/.exec(ui.html());
+  // since the account redesign (2026-11-07) who this is heads the Overview's band:
+  // the name and then the badge and trophy chips (pages/profile.ts heroHtml)
+  const h1 = /<div class="pfwhotext">([\s\S]*?)<div class="pfsince">/.exec(ui.html());
   assert.ok(h1, 'the profile header did not paint');
   return h1[1]!;
 }

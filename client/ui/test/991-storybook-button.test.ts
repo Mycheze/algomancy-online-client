@@ -61,11 +61,14 @@ async function profile(): Promise<string> {
   if (ui.has({ btn: 'acct-close' })) { ui.click({ btn: 'acct-close' }); await settle(); }
   ui.click({ btn: 'acct-open-profile' });
   await settle(); await settle();
+  // the staff's pages are on the Settings tab since the account redesign (2026-11-07)
+  ui.click({ btn: 'acct-tab', tab: 'settings' });
+  await settle();
   const html = ui.html();
   assert.match(html, /class="[^"]*\bacctpage\b/, 'the profile did not paint');
   return html;
 }
-const BTN = /<button [^>]*data-btn="nav-storybook"[^>]*>🎨 Design \(Storybook\)<\/button>/;
+const BTN = /<button [^>]*data-btn="nav-storybook"[^>]*>Design \(Storybook\)<\/button>/;
 
 test('§1 an admin has a Design (Storybook) button on the profile, beside Admin', async () => {
   who = admin;

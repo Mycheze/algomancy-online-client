@@ -61,22 +61,29 @@ async function profile(): Promise<string> {
   if (ui.has({ btn: 'acct-close' })) { ui.click({ btn: 'acct-close' }); await settle(); }
   ui.click({ btn: 'acct-open-profile' });
   await settle(); await settle();
+  // the password is on the Settings tab since the account redesign (2026-11-07)
+  ui.click({ btn: 'acct-tab', tab: 'settings' });
+  await settle();
   const html = ui.html();
   // the profile is drawn in the app frame since 2026-11-04 (pages/frame.ts), its class last
   assert.match(html, /<div class="ui-app-shell [^"]*apppage acctpage">/, 'the profile did not paint');
   return html;
 }
-const box = (html: string): string => /<section class="acctcard pwform">([\s\S]*?)<\/section>/.exec(html)?.[1] ?? '';
+/** the Settings tab's Account section, which holds the password row (or nothing: '' when there is no password form) */
+const box = (html: string): string => {
+  const sec = /<h3>Account<\/h3>([\s\S]*?)<\/section>/.exec(html)?.[1] ?? '';
+  return /pwform/.test(sec) ? sec : '';
+};
 
 test('§1 report 296: a signed-in named account has a Change password box on its own profile', async () => {
   who = named;
   const b = box(await profile());
   assert.ok(b, 'there is no password box on the profile');
-  assert.match(b, /<h3>Password<\/h3>/);
+  assert.match(b, /<div class="ui-setting-row__label">Password<\/div>/);
   assert.match(b, /id="acct-pw-old" type="password"[^>]*autocomplete="current-password"/);
   assert.match(b, /id="acct-pw-new" type="password"[^>]*autocomplete="new-password"/);
   assert.match(b, /id="acct-pw-again" type="password"[^>]*autocomplete="new-password"/);
-  assert.match(b, /<button type="button" data-btn="acct-password">Change password<\/button>/,
+  assert.match(b, /<button [^>]*data-btn="acct-password" type="button">Change password<\/button>/,
     'a plain button: a submit in a form would put the passwords in the address');
 });
 

@@ -4,14 +4,21 @@
  * keeps the state and hands it to profileView(); profileHtml(view) draws it.
  * This file drives profileHtml with made-up views and no DOM at all.
  *
+ * Redrawn by the account redesign (2026-11-07): five tabs in the toolbar's
+ * centre — Overview · Achievements · Games · Players · Settings.
+ *
  * §1 every tab draws, and the current one is the one that is on
- * §2 the header: name, chips, the buttons the server's flags allow, Return to Lobby
+ * §2 the Overview's header band; Settings' Staff row: the server's flags draw
+ *    Admin, Storybook and Rules review, and nothing else does
  * §3 every data-btn the account handler routes on is drawn
- * §4 the friends tab's "Everyone here": loading, the board, and a failed load
- *    that SAYS it failed (it used to draw an empty table) with a way to ask again
+ * §4 the Players tab's Everyone board: loading, the board (Add on a stranger,
+ *    not on a friend or yourself), and a failed load that SAYS it failed (it
+ *    used to draw an empty table) with a way to ask again
  * §5 text off the server is escaped (a username, a friend message, a deck name)
- * §6 profileView: the link code only while it is live, the covers through artFor
+ * §6 profileView: the link code only while it is live, the art through artFor,
+ *    a guest names the account instead of changing a password
  * §7 account.ts marks a failed load of that board, rather than emptying it
+ * §8 an old tab name (a link, a test) still lands on the tab that has its content
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -47,8 +54,10 @@ const LEADER: LeaderRow = { id: 'u2', username: 'Nyar', online: true, games: 3, 
 
 function state(over: Partial<ProfileState> = {}): ProfileState {
   return {
-    me: ME, tab: 'stats', discordLinking: false, linkCode: null, linkMsg: '', friendMsg: '', pwMsg: null, favMsg: '',
-    leaders: null, leadersFailed: false, ladderMode: 'constructed', ladder: null, artFor: c => `art/${c}.webp`, ...over,
+    me: ME, tab: 'overview', discordLinking: false, linkCode: null, linkMsg: '', friendMsg: '', pwMsg: null, favMsg: '', claimMsg: '',
+    leaders: null, leadersFailed: false, board: 'constructed', ladder: null,
+    prefs: { colours: 'standard', sound: true, motion: true, autoPass: false, bluffHaste: false },
+    artFor: c => `art/${c}.webp`, ...over,
   };
 }
 const view = (over: Partial<ProfileState> = {}): ProfileView => profileView(state(over), 0);
@@ -62,70 +71,90 @@ test('976 §0 positive control: there is no DOM here', () => {
 
 test('976 §1 every tab draws, and the current one is the one that is on', () => {
   const bodies: Record<string, RegExp> = {
-    stats: /<h3>Record<\/h3>/, achievements: /<h3>Achievements <span class="acctcount">1 of 1<\/span><\/h3>/,
-    ladder: /<h3>Ladder<\/h3>[\s\S]*loading…/, friends: /<h3>Add a friend<\/h3>/, decks: /<h3>Published decks<\/h3>/,
-    history: /<table class="accttable games">/,
+    overview: /<section class="pfhero">[\s\S]*<h3>Most played<\/h3>[\s\S]*<h3>Career<\/h3>/,
+    achievements: /<b>1 of 1<\/b> earned[\s\S]*<h3>Winning<\/h3>/,
+    games: /<table class="pftable pfgames">/,
+    players: /<h3>Add a friend<\/h3>[\s\S]*data-btn="acct-ladder-mode"/,
+    settings: /<h3>Account<\/h3>[\s\S]*<h3>At the table<\/h3>[\s\S]*<h3>Look<\/h3>/,
   };
+  assert.deepEqual([...PROFILE_TABS], ['overview', 'achievements', 'games', 'players', 'settings']);
   for (const t of PROFILE_TABS) {
     const html = profileHtml(view({ tab: t }));
     assert.match(html, bodies[t]!, `${t}: its body`);
-    const on = [...html.matchAll(/class="[^"]*\bon\b[^"]*" data-btn="acct-tab" data-tab="(\w+)"/g)].map(m => m[1]);
+    assert.match(html, new RegExp(`<div class="pfbody pf-${t}">`), `${t}: the body says which tab`);
+    const on = [...html.matchAll(/class="ui-segmented__option on" data-btn="acct-tab"[^>]*data-tab="(\w+)"/g)].map(m => m[1]);
     assert.deepEqual(on, [t], `${t}: the only tab that is on`);
   }
-  const tabsRow = profileHtml(view());
-  assert.match(tabsRow, /data-tab="achievements"[^>]*>achievements <span class="ui-tabs__count">1\/1<\/span>/);
-  assert.match(tabsRow, /data-tab="friends"[^>]*>friends <span class="ui-tabs__count">1 \+1<\/span>/, 'friends and the requests waiting');
+  // the tabs are the toolbar's centre; Players says somebody is waiting
+  const html = profileHtml(view());
+  assert.match(html, /ui-app-shell__zone--center"><div class="ui-segmented acctnav"/);
+  assert.match(html, /data-tab="players" data-count="1">Players</, 'one request waiting');
+  assert.doesNotMatch(profileHtml(view({ me: { ...ME, incoming: [] } })), /data-count/, 'none waiting, no count');
 });
 
-test('976 §2 the header: the server\'s flags draw Admin and Rules review, and nothing else does', () => {
-  // since 2026-11-04 "the header" is the sidebar: who this is, the tabs, the buttons
+test('976 §2 the Overview\'s band, and the Staff row the server\'s flags draw', () => {
   const html = profileHtml(view());
   assert.match(html, /<h1 class="frametitle">Profile<\/h1>/);
-  assert.match(html, /<h2 class="acctme">Quill &lt;on&gt; <span class="acctel icon fire"/);
-  assert.match(html, /<div class="acctbody" data-scroll="acct-stats">/, 'the tab scrolls by itself, its own key per tab');
+  assert.match(html, /<h2 class="pfname">Quill &lt;on&gt;<\/h2>/);
   assert.match(html, /Judge L2<\/span>/);
-  assert.match(html, /12 games · 7W–5L · playing since/);
-  for (const b of ['nav-league', 'nav-challenge', 'nav-admin', 'nav-crreview', 'acct-refresh', 'acct-logout', 'acct-close']) {
-    assert.ok(btns(html).includes(b), b);
-  }
-  // Return to Lobby is the frame's Home button now, the same data-btn
+  assert.match(html, /<b>7–5<\/b><span>Record<\/span><small>58% won · 12 games<\/small>/);
+  assert.match(html, /<b>1,012<\/b><span>Constructed<\/span><small>3 rated games<\/small>/);
+  assert.match(html, /<b>1,000<\/b><span>Live draft<\/span><small>not rated yet<\/small>/);
+  // Return to Lobby is the frame's Home button, the same data-btn
   assert.match(html, /<button class="ui-icon-button ui-icon-button--stack frameback" data-btn="acct-close" type="button">[\s\S]*?>Home<\/span>/);
-  const plain = profileHtml(view({ me: { ...ME, admin: undefined, badge: null } }));
-  assert.ok(!btns(plain).includes('nav-admin') && !btns(plain).includes('nav-crreview'), 'a plain account: neither');
+  const settings = profileHtml(view({ tab: 'settings' }));
+  for (const b of ['nav-admin', 'nav-storybook', 'nav-crreview', 'acct-logout']) assert.ok(btns(settings).includes(b), b);
+  assert.match(settings, /<h3>Staff<\/h3>/);
+  const plain = profileHtml(view({ tab: 'settings', me: { ...ME, admin: undefined, badge: null } }));
+  for (const b of ['nav-admin', 'nav-storybook', 'nav-crreview']) assert.ok(!btns(plain).includes(b), `a plain account: no ${b}`);
+  assert.doesNotMatch(plain, /<h3>Staff<\/h3>/, 'and no Staff section');
+  // League and Challenge left the profile: the home has both
+  assert.ok(!btns(html).includes('nav-league') && !btns(html).includes('nav-challenge'));
 });
 
 test('976 §3 every data-btn the account handler routes on is drawn', () => {
-  const all = PROFILE_TABS.flatMap(t => btns(profileHtml(view({ tab: t, discordLinking: true }))));
-  for (const b of ['acct-tab', 'acct-favorite', 'acct-password', 'acct-discord-link', 'acct-ladder-mode',
+  const all = PROFILE_TABS.flatMap(t => btns(profileHtml(view({ tab: t, discordLinking: true, leaders: [LEADER] }))));
+  for (const b of ['acct-tab', 'acct-favorite', 'acct-password', 'acct-discord-link', 'acct-ladder-mode', 'acct-pref', 'acct-logout',
     'acct-friend-add', 'acct-friend-accept', 'acct-friend-remove', 'meta-open']) assert.ok(all.includes(b), b);
+  assert.ok(btns(profileHtml(view({ tab: 'settings', me: { ...ME, provisional: true } }))).includes('acct-claim'), 'a guest: acct-claim');
+  // every setting has its buttons, one per value
+  const settings = profileHtml(view({ tab: 'settings' }));
+  for (const [pref, vals] of [['colours', ['standard', 'accessible']], ['sound', ['on', 'off']], ['motion', ['on', 'off']],
+    ['autoPass', ['on', 'off']], ['bluffHaste', ['on', 'off']]] as const) {
+    for (const v of vals) assert.match(settings, new RegExp(`data-btn="acct-pref"[^>]*data-pref="${pref}" data-v="${v}"`), `${pref}=${v}`);
+  }
 });
 
-test('976 §4 "Everyone here": loading, the board, and a failed load that says so', () => {
-  assert.match(profileHtml(view({ tab: 'friends' })), /<h3>Everyone here<\/h3>\s*<div class="hint">loading…<\/div>/);
-  const board = profileHtml(view({ tab: 'friends', leaders: [LEADER] }));
-  assert.match(board, /<table class="ui-table"><thead><tr><th scope="col"><\/th><th scope="col">player<\/th><th scope="col">games<\/th><th scope="col">record<\/th><th scope="col">badges<\/th><\/tr><\/thead>/);
-  assert.match(board, /<tr><td><span class="fdot on"><\/span><\/td><td>Nyar <\/td><td>3<\/td><td>2W–1L<\/td><td>4<\/td><\/tr>/);
-  const failed = profileHtml(view({ tab: 'friends', leadersFailed: true }));
-  const everyone = failed.slice(failed.indexOf('<h3>Everyone here</h3>'));
-  assert.doesNotMatch(everyone, /<table/, 'a failed load draws no (empty) table');
-  assert.match(everyone, /class="ui-status ui-status--error" role="alert">Could not load the players\.</);
-  assert.match(everyone, /data-btn="acct-tab"[^>]*data-tab="friends"[^>]*>Try again</, 'and the friends tab asks again');
+test('976 §4 Everyone: loading, the board, and a failed load that says so', () => {
+  assert.match(profileHtml(view({ tab: 'players', board: 'all' })), /<p class="pfnone">Loading…<\/p>/);
+  const stranger: LeaderRow = { ...LEADER, id: 'u9', username: 'Zed', online: false };
+  const board = profileHtml(view({ tab: 'players', board: 'all', leaders: [LEADER, stranger] }));
+  assert.match(board, /<table class="pftable pfboard"><thead><tr><th>Player<\/th><th class="pfnum">Games<\/th>/);
+  assert.match(board, /<span class="pfopp">Nyar<\/span>[\s\S]*?<td class="pfnum">3<\/td><td class="pfnum">2–1<\/td><td class="pfnum">4<\/td><td class="pfact"><\/td>/, 'a friend: no Add');
+  assert.match(board, /data-btn="acct-friend-add"[^>]*data-name="Zed"/, 'a stranger: Add, carrying the name');
+  const failed = profileHtml(view({ tab: 'players', board: 'all', leadersFailed: true }));
+  assert.doesNotMatch(failed, /<table class="pftable pfboard"/, 'a failed load draws no (empty) table');
+  assert.match(failed, /class="ui-status ui-status--error" role="alert">Could not load the players\.</);
+  assert.match(failed, /data-btn="acct-ladder-mode"[^>]*data-mode="all"[^>]*>Try again</, 'and Everyone asks again');
 });
 
 test('976 §5 text off the server is escaped', () => {
   assert.doesNotMatch(profileHtml(view()), /Quill <on>/);
-  assert.match(profileHtml(view({ tab: 'friends', friendMsg: 'no such <user>' })), /no such &lt;user&gt;/);
-  assert.match(profileHtml(view({ tab: 'decks' })), /<span class="metaname">Ember &lt;Rush&gt;<\/span>/);
+  assert.match(profileHtml(view({ tab: 'players', friendMsg: 'no such <user>' })), /no such &lt;user&gt;/);
+  assert.match(profileHtml(view()), /<span class="pfdeckname">Ember &lt;Rush&gt;<\/span>/);
 });
 
-test('976 §6 profileView: a live link code only, the covers through artFor, a guest has no password box', () => {
+test('976 §6 profileView: a live link code only, the art through artFor, a guest names the account', () => {
   const live = profileView(state({ discordLinking: true, linkCode: { code: 'ABC', expiresAt: 100 } }), 50);
   assert.equal(live.connections?.code, 'ABC');
   assert.equal(profileView(state({ discordLinking: true, linkCode: { code: 'ABC', expiresAt: 100 } }), 150).connections?.code, null);
-  assert.equal(profileView(state()).connections, null, 'no Discord bot, no Connections card');
+  assert.equal(profileView(state()).connections, null, 'no Discord bot, no Discord row');
   assert.equal(view().decks[0]!.cover, 'art/Ember.webp');
-  assert.doesNotMatch(profileHtml(view({ me: { ...ME, provisional: true } })), /pwform/);
-  assert.match(profileHtml(view()), /<section class="acctcard pwform">/);
+  assert.equal(view().topCards[0]!.art, 'art/Ember.webp');
+  const guest = profileHtml(view({ tab: 'settings', me: { ...ME, provisional: true } }));
+  assert.doesNotMatch(guest, /pwform/);
+  assert.match(guest, /id="acct-claim-name"[\s\S]*id="acct-claim-pass"/);
+  assert.match(profileHtml(view({ tab: 'settings' })), /<div class="pfform pwform">/);
 });
 
 test('976 §7 the load behind "Everyone here" marks a failure instead of an empty list', async () => {
@@ -138,4 +167,15 @@ test('976 §7 the load behind "Everyone here" marks a failure instead of an empt
   assert.match(load, /catch \{[\s\S]*leadersFailed = true;/, 'a failure is marked');
   assert.doesNotMatch(load, /leaders = \[\]/, 'and never turned into an empty board');
   assert.match(src, /profileView\(\{[^}]*\bleadersFailed\b/, 'the mark reaches the view');
+});
+
+test('976 §8 an old tab name lands on the tab that has its content', async () => {
+  const { profileTabFor } = await import('../pages/profile.ts');
+  assert.equal(profileTabFor('stats'), 'overview');
+  assert.equal(profileTabFor('decks'), 'overview');
+  assert.equal(profileTabFor('history'), 'games');
+  assert.equal(profileTabFor('friends'), 'players');
+  assert.equal(profileTabFor('ladder'), 'players');
+  assert.equal(profileTabFor('settings'), 'settings');
+  assert.equal(profileTabFor('nonsense'), 'overview');
 });

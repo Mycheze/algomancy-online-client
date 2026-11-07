@@ -149,12 +149,13 @@ test('§5 CT-372: the profile achievements tab shows the league achievements in 
   ui.click({ btn: 'acct-tab', tab: 'achievements' });
   await settle();
   const html = ui.html();
-  const head = /<h4>League <span class="acctcount">(\d+)\/(\d+)<\/span><\/h4>/.exec(html);
+  // a group is a section since the account redesign (2026-11-07): its heading, then "n of m"
+  const head = /<h3>League<\/h3><span class="pfaside">(\d+) of (\d+)<\/span>/.exec(html);
   assert.ok(head, 'the achievements tab has a League section');
   assert.equal(head[1], '2', 'two league achievements earned (League Regular, League Champion)');
   assert.equal(head[2], '4', 'four in the section: three rungs of seasons played, and the champion');
   const rest = html.slice(head.index);
-  const section = rest.slice(0, (rest.indexOf('<div class="achgroup">', 1) + 1 || rest.length + 1) - 1);
+  const section = rest.slice(0, (rest.indexOf('<section class="pfsec">', 1) + 1 || rest.length + 1) - 1);
   assert.match(section, /<div class="ach got ">[\s\S]*?League Champion/, 'League Champion shows, earned');
   // the seasons-played ladder collapses to its next rung, with a pip per rung
   assert.match(section, /League Stalwart[\s\S]*?title="1 of 3 earned"/, 'the ladder shows its next rung and one pip earned');
