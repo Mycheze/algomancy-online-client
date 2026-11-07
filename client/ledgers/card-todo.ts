@@ -193,6 +193,19 @@ const OPEN: TodoEntry[] = [
     reportId: 329,
     status: 'open',
   },
+  // ── the report triage of 2026-11-07 ────────────────────────────────────
+  {
+    id: 534, area: "engine", severity: "major",
+    cards: ["Blightwalker", "Splort", "Dropslime"],
+    title: "a grafted Blightwalker cannot recall the card whose trashing set it off: Splort's composite would not offer Dropslime",
+    detail: "Report #338 (invi, XWDS, 2026-11-07): \"I should be able to target dropslime with the trigger of splort (whos grafted blightwalker triggers with it)\". Blightwalker: \"When I am trashed, [Switch1] You may pay [2] to recall another target unit from your bin.\" Grafted onto Splort (\"When another card is trashed, [Switch1] I deal 2 damage to any target\"), the effect rides Splort's cause (CR 722.4), and on a mod's text \"I\", \"me\" and \"my\" mean the host (CR 720.6c): \"another\" excludes Splort, which is in play, so every unit card in the controller's bin is a legal target. The engine excluded Dropslime, the card whose trashing fired the composite. The cause: blightwalkerRecall's restrict (cards/sets/batch-dark-c.ts ~line 181) calls notSelfBinCard (cards/dsl.ts ~line 702), which excludes the bin slot the firing 'trashed' event names. That is right for Blightwalker's own \"when I am trashed\" (the event's card IS me), and wrong whenever the effect runs as a graft, where the event is the host's cause and its card is somebody else. The class: every graftEffect whose restrict or run reads ctx.event as \"me\"; notSelfBinCard is imported only by batch-dark-c.ts, but grep the sets for graftEffect beside ctx.event / eventBinSlot before calling it one card.",
+    evidence: "Report #338; XWDS fetched and rebuilt 2026-11-07 (steward triage): [166] invi discards Dropslime (\"Discard me\") in turn 5's block window; [167] orders Splort's and Dropslime's trash triggers; at [170] Splort's composite asks \"Blightwalker: pay [2] to recall another target unit from your bin\" with options Cthyrian Rector and No targets only, while invi's bin is [Cthyrian Rector, Darkblast, Dropslime]. Splort (unit 51) carries mods [53, 52]. Dropslime is a Blight Unit, so isUnitCard admits it; notSelfBinCard is what drops it.",
+    fix: "Make the \"another\" exclusion read who \"me\" is: on Blightwalker's own trigger the trashed card, on a graft the host (ctx.sourceId, in play, so no bin slot is excluded). EffectCtx already tells donated text apart (ctx.selfModId, CR 720.6d); find or add the equivalent for a running graft part. Reproducer: Splort with Blightwalker grafted, Dropslime discarded, the target menu must offer Dropslime; and Blightwalker's own trigger must still not offer itself (the existing guard in 135/Blightwalker tests). Sweep the class above.",
+    proof: () => still('engine/src/cards/sets/batch-dark-c.ts', "isUnitCard(t.binCard.card) && notSelfBinCard(g, t, ctx)")
+      && still('engine/src/cards/dsl.ts', "if (!d || d['card'] !== t.binCard.card || d['seat'] !== t.binCard.seat) return true;"),
+    reportId: 338,
+    status: 'open',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
