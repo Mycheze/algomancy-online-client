@@ -26,6 +26,16 @@
  * keeps its plain specificity; the components round (Phase 3) replaces it. */
 @font-face { font-family: 'Card Title'; font-weight: 700; font-style: normal; font-display: swap;
   src: url('fonts/EBGaramond-Bold.woff2') format('woff2'); }
+/* the brand's display face (the home's headings and wordmark, 2026-11-07):
+   Ethnocentric, the face of Caleb's site and the Manual's wordmark (owner's call).
+   Its file is NOT in git — the repo is public and the font is Typodermic's — so it
+   is on the serving machines only (deploy/README.md § The brand font). Where it
+   is missing, --font-brand falls back to Krona One (OFL, fonts/KronaOne-OFL.txt),
+   the closest free face, which IS committed. */
+@font-face { font-family: 'Algo Brand'; font-weight: 400; font-style: normal; font-display: swap;
+  src: url('fonts/Ethnocentric-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Algo Display'; font-weight: 400; font-style: normal; font-display: swap;
+  src: url('fonts/KronaOne-Regular.woff2') format('woff2'); }
 
 /* ── the document ──
    color-scheme: dark — the browser's own parts (scrollbars, a select's

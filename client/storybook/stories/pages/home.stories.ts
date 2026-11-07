@@ -2,6 +2,7 @@ import { homeHtml, type HomeView } from '../../../ui/pages/home.ts';
 import { clockPickHtml } from '../../../ui/pages/clockpick.ts';
 import { singleCardPickerHtml } from '../../../ui/pages/singlecard.ts';
 import { footHtml } from '../../../ui/legal.ts';
+import { artPick, backdropCard, challengeArtCard, drawModeArt, LEAGUE_ART, QUEUE_ART } from '../../../ui/homeart.ts';
 import { updatesListHtml, UPDATES } from '../../../ui/updates.ts';
 import {
   CHALLENGE_GLANCE, DECKS, INVITES, LEAGUE_GLANCE, LEAGUE_MATCHES, page, QUEUE_GLANCE, QUEUE_GLANCE_LIVE, RULES_BEGINNER, RULES_CARDS,
@@ -18,6 +19,12 @@ const CC_DECKS = [
   { id: 'd1', name: 'Ember Rush (Competitive)', error: null },
   { id: 'd2', name: 'Tidal Control', error: 'a sideboard holds at most 7 cards (got 9)' },
 ];
+
+/** a fixed draw for the stories: the live page draws a random card per load */
+function seeded(n: number): () => number {
+  let x = n;
+  return () => ((x = (x * 16807) % 2147483647) / 2147483647);
+}
 
 /** the home screen as a signed-out visitor first sees it */
 function view(over: Partial<HomeView> = {}): HomeView {
@@ -47,6 +54,10 @@ function view(over: Partial<HomeView> = {}): HomeView {
       info: footHtml(),
       updates: updatesListHtml(UPDATES, UPDATES.length - 2),
     },
+    art: {
+      backdrop: artPick(backdropCard(null)), ...drawModeArt(seeded(7)), league: artPick(LEAGUE_ART),
+      challenge: artPick(challengeArtCard('2026-10-25-crowd')), queue: artPick(QUEUE_ART),
+    },
     ...over,
   };
 }
@@ -61,6 +72,7 @@ function signedIn(over: Partial<HomeView> = {}): HomeView {
     deckPicker: { current: DECKS[0]!, signedIn: true, mine: DECKS, defaults: null, msg: '' },
     competitive: { signedIn: true, decks: CC_DECKS, bestOf: 3, pick: CC_DECKS[0]! },
     badges: { alerts: 3, join: 3, updates: 2 },
+    art: { ...v.art, backdrop: artPick(backdropCard('water')) },
     slots: { ...v.slots, queue: QUEUE_GLANCE_LIVE, invites: INVITES, yourMatches: YOUR_MATCHES, leagueMatches: LEAGUE_MATCHES },
     ...over,
   };

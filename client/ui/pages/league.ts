@@ -321,6 +321,14 @@ export interface LeagueGlanceView {
   status: 'in' | 'open' | 'closed' | '';
   /** the one date that matters next ('' when none) */
   next: string;
+  /** the season's steps as a track (Sign-ups · W1 · W2 · … · Final), where it is now */
+  track: { label: string; state: 'past' | 'now' | 'next' }[];
+  /** how many are in (withdrawn players not counted) */
+  players: number;
+  /** the top of the table once a week has been played (at most three) */
+  leaders: { name: string; points: number }[];
+  /** the viewer's next match to play: who, and the agreed time ('' when none) */
+  match: { opponent: string; when: string } | null;
 }
 
 const GLANCE_STATUS: Record<Exclude<LeagueGlanceView['status'], ''>, string> = {
@@ -339,16 +347,30 @@ export function leagueGlanceView(st: LeagueState | null, tz: string): LeagueGlan
     phase: `${competitive(s) ? 'Competitive' : constructed(s) ? 'Constructed' : 'Draft'} · ${s.label}`,
     status,
     next: nextText(s, tz),
+    track: s.phases.filter(p => p.phase <= s.weeks + 1).map(p => ({
+      label: p.phase <= 0 ? 'Sign-ups' : p.phase <= s.weeks ? `W${p.phase}` : 'Final',
+      state: p.phase < s.phase || s.champion ? 'past' as const : p.phase === s.phase ? 'now' as const : 'next' as const,
+    })),
+    players: s.entrants.filter(e => !e.withdrawn).length,
+    leaders: s.phase >= 1 ? s.standings.filter(r => r.w + r.l > 0).slice(0, 3).map(r => ({ name: r.name, points: r.points })) : [],
+    match: (() => {
+      const m = s.me?.matches.find(x => x.playable && !x.result);
+      return m ? { opponent: m.opponent.name, when: m.time?.agreed ? when(m.time.at, tz) : '' } : null;
+    })(),
   };
 }
 
 /** The League card's body: '' when there is no season (the card says so itself). Pure, no buttons. */
 export function leagueGlanceHtml(v: LeagueGlanceView | null): string {
   if (!v) return '';
+  const people = v.players ? `<span class="lgglplayers">${v.players} player${v.players === 1 ? '' : 's'}</span>` : '';
   return `<div class="lgglance">
     <div class="lgglname">${esc(v.name)}</div>
     <div class="lgglphase">${esc(v.phase)}</div>
-    ${v.status ? `<div class="lgglstate ${v.status}">${GLANCE_STATUS[v.status]}</div>` : ''}
+    ${v.track.length > 1 ? `<ol class="lggltrack">${v.track.map(t => `<li class="${t.state}">${esc(t.label)}</li>`).join('')}</ol>` : ''}
+    ${v.status || people ? `<div class="lgglrow">${v.status ? `<span class="lgglstate ${v.status}">${GLANCE_STATUS[v.status]}</span>` : ''}${people}</div>` : ''}
+    ${v.match ? `<div class="lgglmatch">Next: vs <b>${esc(v.match.opponent)}</b>${v.match.when ? ` · ${esc(v.match.when)}` : ''}</div>` : ''}
+    ${v.leaders.length ? `<ol class="lgglleaders">${v.leaders.map(r => `<li><span>${esc(r.name)}</span><b>${r.points}</b></li>`).join('')}</ol>` : ''}
     ${v.next ? `<div class="lgglnext">${esc(v.next)}</div>` : ''}
   </div>`;
 }

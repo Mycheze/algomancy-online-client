@@ -86,6 +86,7 @@ function view(): HomeView {
     competitive: { signedIn: false, decks: null, bestOf: 3, pick: null }, singleCard: null,
     leagueLive: false, challengeLive: false, badges: { alerts: 0, join: 0, updates: 0 },
     slots: { league: '', challenge: '', queue: '', invites: '', yourMatches: '', leagueMatches: '', scpicker: '', info: '', updates: '' },
+    art: { backdrop: { src: 'b.jpg', card: 'Backdrop Card', focusY: 30 }, draft: { src: 'd.jpg', card: 'Draft Card', focusY: 30 }, constructed: { src: 'c.jpg', card: 'Constructed Card', focusY: 30 }, league: { src: 'l.jpg', card: 'League Card', focusY: 30 }, challenge: { src: 'ch.jpg', card: 'Challenge Card', focusY: 30 }, queue: { src: 'q.jpg', card: 'Queue Card', focusY: 30 } },
   };
 }
 

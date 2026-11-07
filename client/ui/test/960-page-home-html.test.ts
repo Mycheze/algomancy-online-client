@@ -75,6 +75,7 @@ function view(over: Partial<HomeView> = {}): HomeView {
       invites: '<!--SLOT:invites-->', yourMatches: '<!--SLOT:yourMatches-->', leagueMatches: '<!--SLOT:leagueMatches-->',
       scpicker: '<!--SLOT:scpicker-->', info: '<!--SLOT:info-->', updates: '<!--SLOT:updates-->',
     },
+    art: { backdrop: { src: 'art/backdrop.jpg', card: 'Backdrop Card', focusY: 30 }, draft: { src: 'art/draft.jpg', card: 'Draft Card', focusY: 30 }, constructed: { src: 'art/constructed.jpg', card: 'Constructed Card', focusY: 30 }, league: { src: 'art/league.jpg', card: 'League Card', focusY: 30 }, challenge: { src: 'art/challenge.jpg', card: 'Challenge Card', focusY: 30 }, queue: { src: 'art/queue.jpg', card: 'Queue Card', focusY: 30 } },
     ...over,
   };
 }

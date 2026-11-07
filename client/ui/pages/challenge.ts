@@ -136,10 +136,15 @@ export function challengeGlanceHtml(v: ChallengeHomeView): string {
   const c = v.current;
   if (!c) return '';
   const best = v.best;
+  // how much of the week is gone: the bar empties as the week runs out
+  const span = c.closes - c.opens;
+  const left = span > 0 ? Math.max(0, Math.min(1, (c.closes - v.now) / span)) : 0;
   return `<div class="chglance">
     <div class="chgltitle">${esc(c.title)}</div>
     <div class="chglgoal">${esc(goalText(c.goal))}</div>
-    <div class="chglmeta">${esc(timeLeft(c.closes, v.now))}${best ? ` · your best: ${plural(best.score.turns, 'turn')} (#${best.rank} fastest)` : ''}</div>
+    <div class="chgltime"><span class="chglbar"><span style="width:${Math.round(left * 100)}%"></span></span>${esc(timeLeft(c.closes, v.now))}</div>
+    <div class="chglmeta">${best ? `<span class="chglbest">#${best.rank} fastest · ${plural(best.score.turns, 'turn')}</span>` : ''}${
+      c.entrants ? `<span>${plural(c.entrants, 'player')}</span>` : ''}</div>
   </div>`;
 }
 

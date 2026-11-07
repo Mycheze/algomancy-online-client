@@ -2,11 +2,11 @@
  * 2026-11-03).
  *
  * pages/challenge.ts challengeGlanceHtml draws the Challenge card's body from
- * challengeHomeView: this week's title and goal, the time left, and your
- * best. The whole card is the home's `nav-challenge` button, so the glance
+ * challengeHomeView: this week's title and goal, the time left (a bar that
+ * empties as the week runs out, 2026-11-07), your best, and how many entered. The whole card is the home's `nav-challenge` button, so the glance
  * has NO buttons (the old home card's Play is gone from it). No DOM here.
  *
- * §1 a current week, with and without your best
+ * §1 a current week, with and without your best; the bar is the share of the week left; no entrants, no count
  * §2 no current week → '' (the card says "No challenge this week"); a past week still counts for `any`
  * §3 no buttons; the title is escaped
  */
@@ -29,11 +29,18 @@ test('1025 §1 this week: the goal, the time left, your best', () => {
   assert.match(plain, /^<div class="chglance">/);
   assert.match(plain, /<div class="chgltitle">Full House<\/div>/);
   assert.match(plain, /<div class="chglgoal">Have 5 units in play at once<\/div>/);
-  assert.match(plain, /<div class="chglmeta">3d 5h left<\/div>/, 'no run yet: no best');
+  // opened 2 days ago, closes in 3d 5h: 77 of its 125 hours are left
+  assert.match(plain, /<div class="chgltime"><span class="chglbar"><span style="width:62%"><\/span><\/span>3d 5h left<\/div>/);
+  assert.match(plain, /<div class="chglmeta"><span>7 players<\/span><\/div>/, 'no run yet: no best');
+  assert.doesNotMatch(plain, /chglbest/);
   const best = challengeGlanceHtml(challengeHomeView(reply({
     mine: { cur: { fastest: { score: sc(4), rank: 2 }, leanest: { score: sc(4), rank: 1 }, purest: { score: sc(4), rank: 3 }, overall: { score: sc(4), rank: 2 } } },
   }), NOW));
-  assert.match(best, /3d 5h left · your best: 4 turns \(#2 fastest\)/);
+  assert.match(best, /<span class="chglbest">#2 fastest · 4 turns<\/span><span>7 players<\/span>/);
+  const lone = challengeGlanceHtml(challengeHomeView(reply({ current: week('cur', { entrants: 0 }) }), NOW));
+  assert.match(lone, /<div class="chglmeta"><\/div>/, 'nobody yet: no count (the CSS hides the empty line)');
+  const over = challengeGlanceHtml(challengeHomeView(reply({ current: week('cur', { closes: NOW - 1 }) }), NOW));
+  assert.match(over, /width:0%/, 'past its close the bar is empty, never negative');
 });
 
 test('1025 §2 no current week: nothing (the card says so)', () => {

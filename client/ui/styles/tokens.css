@@ -75,6 +75,9 @@
   /* ── type ── */
   --font-ui: system-ui, sans-serif;
   --font-mono: ui-monospace, monospace;
+  /* the brand's wide display face: headings on the home, the wordmark (base.css @font-face):
+     Ethnocentric where the machine has it, else Krona One */
+  --font-brand: 'Algo Brand', 'Algo Display', 'Krona One', 'Eurostile', system-ui, sans-serif;
   /* the printed title face: EB Garamond Bold (ui/fonts/, SIL OFL — OFL.txt
      beside it), the nearest free cut to the scans' serif */
   --font-display: 'Card Title', 'EB Garamond', Garamond, 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
@@ -111,6 +114,9 @@
   /* …the same two as channels, for a glow or wash whose strength the rule sets:
      rgb(var(--glow-rgb) / .5). Keep them in step with the two above. */
   --glow-rgb: 111 195 111; --target-rgb: 224 185 60;
+  /* the home's art (54-home-art.css): the shade laid over a painting so words
+     read on it, and the light hairlines drawn on one. Channels, for rgb(… / a). */
+  --art-shade-rgb: 15 6 22; --art-light-rgb: 255 255 255;
   /* CR D6.12 "in progress": purple already means resolved, red means answered,
      green means next and gold means targeting — so pending gets the one hue
      none of them use. A teal that is not --water (#3f8fd9) either, because a

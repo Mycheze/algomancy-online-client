@@ -52,6 +52,7 @@ import { footHtml } from '../legal.ts';
 import * as inbox from '../inbox.ts';
 import { markUpdatesSeen, updatesListHtml, updatesUnseen, wireUpdates } from '../updates.ts';
 import { ICON_BASE } from '../assets.ts';
+import { artPick, backdropCard, challengeArtCard, LEAGUE_ART, modeArt, QUEUE_ART, type ArtPick } from '../homeart.ts';
 import {
   appShell, button, chip, icon, iconButton, iconButtonBadge, installSheetEsc, segmented, settingRow, sheet, shellBar, statusMessage,
 } from '../components/index.ts';
@@ -246,6 +247,9 @@ export interface HomeView {
     updates: number;
   };
   slots: HomeSlots;
+  /** the pictures (ui/homeart.ts), as URLs: the page's backdrop, the Draft
+   * and Constructed tiles, and the three cards beside Play */
+  art: Record<'backdrop' | 'draft' | 'constructed' | 'league' | 'challenge' | 'queue', ArtPick>;
 }
 
 /** Gather everything the home screen shows. The slot calls run in the order
@@ -299,6 +303,14 @@ export function homeView(st: HomeState): HomeView {
       scpicker: singleCardPickerHtml(singleCardPickerView()),
       info: footHtml(),
       updates: updatesListHtml(),
+    },
+    art: {
+      backdrop: artPick(backdropCard(user?.favoriteElement)),
+      // a random card each, drawn once per page load (ui/homeart.ts)
+      ...modeArt(),
+      league: artPick(LEAGUE_ART),
+      challenge: artPick(challengeArtCard(chal.currentId() ?? '')),
+      queue: artPick(QUEUE_ART),
     },
   };
 }
@@ -423,6 +435,17 @@ function constructedRowsHtml(v: HomeView): { rows: string; go: string } {
   };
 }
 
+/** Draft | Constructed as two picture tiles, the chosen one lit (owner,
+ * 2026-11-07, after Caleb's mockups: each choice shows a painting) */
+function modeTilesHtml(v: HomeView): string {
+  const tile = (mode: HomeMode, label: string): string => {
+    const on = v.mode === mode;
+    return `<button class="homemodetile${on ? ' on' : ''}" data-btn="home-mode" type="button" aria-pressed="${on}" data-mode="${mode}">
+      ${artHtml(v.art[mode], 'homemodeart')}<span class="homemodelabel">${label}</span></button>`;
+  };
+  return `<div class="homemodes" role="group" aria-label="Game type">${tile('draft', 'Draft')}${tile('constructed', 'Constructed')}</div>`;
+}
+
 function playHtml(v: HomeView): string {
   const { rows, go } = v.mode === 'draft' ? draftRowsHtml(v) : constructedRowsHtml(v);
   const join = button({
@@ -433,13 +456,7 @@ function playHtml(v: HomeView): string {
   return `<section class="homeplay" aria-labelledby="home-play-h">
     <div class="homeplayhead">
       <h1 id="home-play-h">Play</h1>
-      ${segmented({
-        ariaLabel: 'Game type', full: true,
-        options: [
-          { label: 'Draft', value: 'draft', on: v.mode === 'draft', dataBtn: 'home-mode', attrs: { 'data-mode': 'draft' } },
-          { label: 'Constructed', value: 'constructed', on: v.mode === 'constructed', dataBtn: 'home-mode', attrs: { 'data-mode': 'constructed' } },
-        ],
-      })}
+      ${modeTilesHtml(v)}
       <p class="homeplaysub">${v.mode === 'draft'
         ? 'Draft from shared packs, then play with what you drafted.'
         : 'Bring a deck you built: 30 cards, at most 2 of each.'}</p>
@@ -457,9 +474,16 @@ function playHtml(v: HomeView): string {
 
 /** one of the three cards beside Play: the whole card opens its page (a
  * stretched button), and buttons inside it (Matchmaking's Join) still work */
+/** a card's painting behind a panel: decoration only, so no alt, and a scan
+ * that fails to load just leaves the panel's own colour. The crop is centred
+ * on the painting (ArtPick.focusY). */
+const artHtml = (a: ArtPick, cls: string): string =>
+  `<span class="homeart ${cls}" aria-hidden="true"><img src="${esc(a.src)}" alt="" loading="lazy" style="object-position:50% ${a.focusY}%" onerror="this.remove()"></span>`;
+
 function sideCardHtml(p: { kind: string; title: string; iconName: 'league' | 'challenge' | 'matchmaking'; dataBtn: string;
-  live: boolean; bodyHtml: string; empty: string; open: string }): string {
+  live: boolean; bodyHtml: string; empty: string; open: string; art: ArtPick }): string {
   return `<section class="homeside homeside--${p.kind}${p.live ? '' : ' off'}" aria-label="${esc(p.title)}">
+    ${artHtml(p.art, 'homesideart')}
     <h2 class="homesidetitle">${icon(p.iconName)}<span>${esc(p.title)}</span>${p.live ? icon('chevron-right') : ''}</h2>
     <div class="homesidebody">${p.bodyHtml || `<p class="homesideempty">${esc(p.empty)}</p>`}</div>
     ${p.live ? `<button class="homesideopen" data-btn="${esc(p.dataBtn)}" aria-label="${esc(p.open)}"></button>` : ''}
@@ -470,11 +494,13 @@ function sideHtml(v: HomeView): string {
   const s = v.slots;
   return `<div class="homesides">
     ${sideCardHtml({ kind: 'league', title: 'League', iconName: 'league', dataBtn: 'nav-league', live: v.leagueLive,
-      bodyHtml: s.league, empty: v.leagueLive ? 'Seasons, standings and your matches.' : 'No league running right now.', open: 'Open the League page' })}
+      bodyHtml: s.league, empty: v.leagueLive ? 'Seasons, standings and your matches.' : 'No league running right now.', open: 'Open the League page',
+      art: v.art.league })}
     ${sideCardHtml({ kind: 'challenge', title: 'Challenge', iconName: 'challenge', dataBtn: 'nav-challenge', live: v.challengeLive,
-      bodyHtml: s.challenge, empty: v.challengeLive ? 'Past weeks and their boards.' : 'No challenge this week.', open: 'Open the weekly challenge' })}
+      bodyHtml: s.challenge, empty: v.challengeLive ? 'Past weeks and their boards.' : 'No challenge this week.', open: 'Open the weekly challenge',
+      art: v.art.challenge })}
     ${sideCardHtml({ kind: 'queue', title: 'Matchmaking', iconName: 'matchmaking', dataBtn: 'queue-open', live: true,
-      bodyHtml: s.queue, empty: 'Find an opponent.', open: 'Open matchmaking' })}
+      bodyHtml: s.queue, empty: 'Find an opponent.', open: 'Open matchmaking', art: v.art.queue })}
   </div>`;
 }
 
@@ -482,7 +508,7 @@ function bottomHtml(v: HomeView): string {
   const n = v.badges.updates;
   return shellBar({
     className: 'homebottom',
-    startHtml: iconButton({ label: 'Algomancy Online (Unofficial Client)', icon: 'info', layout: 'inline', className: 'homeinfo',
+    startHtml: iconButton({ label: 'Algomancy Online (Unofficial Client)', labelHtml: '<span class="homewordmark">Algomancy</span> Online <span class="homewordsub">(Unofficial Client)</span>', icon: 'info', layout: 'inline', className: 'homeinfo',
       on: v.sheet === 'info', ...opens('info'), title: 'about this client: the game, the notice, buying it, privacy' }),
     endHtml: iconButton({ label: n > 0 ? `Updates · ${n} new` : 'Updates', icon: 'updates', layout: 'inline', badge: n > 0 ? 'dot' : undefined,
       className: 'homeupdates', on: v.sheet === 'updates', ...opens('updates'),
@@ -579,7 +605,7 @@ export function homeHtml(v: HomeView): string {
     // `apppage`: the page carries its own Report, Alerts and footer (pages/frame.ts)
     className: 'apppage homepage',
     topHtml: top,
-    mainHtml: `<div class="homemain">${playHtml(v)}${sideHtml(v)}</div>${sheetHtml(v)}`,
+    mainHtml: `${artHtml(v.art.backdrop, 'homebackdrop')}<div class="homemain">${playHtml(v)}${sideHtml(v)}</div>${sheetHtml(v)}`,
     bottomHtml: bottomHtml(v),
   });
 }

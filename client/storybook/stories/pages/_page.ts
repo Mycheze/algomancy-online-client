@@ -25,16 +25,21 @@ export const overlay = (html: string, height = 760): string =>
 export const LEAGUE_GLANCE = `<div class="lgglance">
     <div class="lgglname">November Constructed</div>
     <div class="lgglphase">Competitive · Week 2 of 3</div>
-    <div class="lgglstate in">✓ you're in</div>
-    <div class="lgglnext">Next match: Sun 9 Nov, 18:00</div>
+    <ol class="lggltrack"><li class="past">Sign-ups</li><li class="past">W1</li><li class="now">W2</li><li class="next">W3</li><li class="next">Final</li></ol>
+    <div class="lgglrow"><span class="lgglstate in">✓ you're in</span><span class="lgglplayers">14 players</span></div>
+    <div class="lgglmatch">Next: vs <b>Cy</b> · Sun 9 Nov, 18:00</div>
+    <ol class="lgglleaders"><li><span>Rashi</span><b>9</b></li><li><span>Quillon</span><b>6</b></li><li><span>Cy</span><b>6</b></li></ol>
+    <div class="lgglnext">Week 3 starts Sun, Nov 15</div>
   </div>`;
 export const CHALLENGE_GLANCE = `<div class="chglance">
     <div class="chgltitle">Full House</div>
     <div class="chglgoal">Win with five units on the battlefield</div>
-    <div class="chglmeta">2 days left · your best: 7 turns (#3 fastest)</div>
+    <div class="chgltime"><span class="chglbar"><span style="width:28%"></span></span>2d 0h left</div>
+    <div class="chglmeta"><span class="chglbest">#3 fastest · 7 turns</span><span>23 players</span></div>
   </div>`;
 export const QUEUE_GLANCE = `<div class="qglance">
-    <span class="qglcount">Nobody is waiting — be the first.</span>
+    <span class="qglcount">nobody waiting — be the first</span>
+    <ul class="qglmodes"><li class="">Constructed</li><li class="">Live draft</li></ul>
   </div>`;
 export const QUEUE_GLANCE_LIVE = `<div class="qglance">
     <span class="qglcount live">1 waiting · Live draft 1</span>

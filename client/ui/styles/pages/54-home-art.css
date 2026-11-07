@@ -1,0 +1,131 @@
+/* ── the home's art and display type (ui/homeart.ts, owner 2026-11-07) ──
+   "More colour, card images": Caleb's early mockups put full-bleed card art
+   behind every panel and set the headings in the brand's wide face. Here:
+   - the page sits on a resource card's orb (the favourite element's, else
+     the purple Shard), dimmed and vignetted so the panels stay the subject;
+   - Draft | Constructed are two picture tiles, the chosen one in colour,
+     each a random card per page load (ui/homeart.ts);
+   - League, Challenge and Matchmaking each sit on their own painting at
+     full strength, with the words on a dark glass panel (owner chose this,
+     "B", over a painting darkened under the words);
+   - titles and the wordmark are in --font-brand.
+   Every picture is decoration (aria-hidden, no alt): a scan that fails to
+   load removes itself and the panel keeps its own colour. */
+
+.homeart { position: absolute; inset: 0; overflow: hidden; pointer-events: none; border-radius: inherit; }
+.homeart img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* the backdrop: behind everything, fixed to the window */
+.homebackdrop { position: fixed; z-index: 0; border-radius: 0; }
+.homebackdrop img { opacity: .8; filter: saturate(1.15); transform: scale(1.04); }
+.homebackdrop::after { content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 75% at 50% 45%, color-mix(in srgb, var(--color-bg) 15%, transparent), var(--color-bg) 100%); }
+.homepage > .ui-app-shell__top, .homepage > .ui-app-shell__bottom { position: relative; z-index: 1;
+  background: color-mix(in srgb, var(--color-surface-sunken) 78%, transparent); backdrop-filter: blur(10px); }
+.homepage .homemain { position: relative; z-index: 1; }
+
+/* the brand face */
+.homeplayhead h1, .homesidetitle > span, .lgglname, .chgltitle, .homewordmark {
+  font-family: var(--font-brand); font-weight: 400; text-transform: uppercase; letter-spacing: .04em; }
+
+/* ── the Play card: Draft | Constructed as two picture tiles ── */
+.homeplayhead h1 { font-size: var(--text-26); }
+.homemodes { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+.homemodetile { position: relative; overflow: hidden; display: flex; align-items: flex-end; height: 96px; padding: var(--space-4) var(--space-6);
+  background: var(--color-surface-sunken); border: 2px solid var(--color-border); border-radius: var(--radius-lg);
+  color: var(--color-text-muted); cursor: pointer; text-align: left;
+  transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out); }
+.homemodeart img { filter: grayscale(.7) brightness(.55); transition: filter var(--dur-base) var(--ease-out), transform var(--dur-slow) var(--ease-out); }
+.homemodeart::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgb(var(--art-shade-rgb) / .85), rgb(var(--art-shade-rgb) / 0) 70%); }
+.homemodelabel { position: relative; font-family: var(--font-brand); font-size: var(--text-16); letter-spacing: .06em; text-transform: uppercase;
+  text-shadow: 0 2px 8px rgb(var(--art-shade-rgb) / .8); }
+.homemodetile:hover { border-color: var(--color-border-strong); color: var(--color-text); }
+.homemodetile:hover .homemodeart img { filter: grayscale(.3) brightness(.75); }
+.homemodetile.on { border-color: var(--color-accent); color: var(--color-text); box-shadow: 0 0 0 1px var(--color-accent), 0 6px 18px rgb(var(--art-shade-rgb) / .45); }
+.homemodetile.on .homemodeart img { filter: none; transform: scale(1.03); }
+.homemodetile:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* ── the three cards: each on its painting, the words on glass ── */
+.homeside { justify-content: space-between; gap: var(--space-3); background: var(--color-surface-sunken);
+  border-color: color-mix(in srgb, var(--color-border) 80%, transparent); box-shadow: var(--shadow-1); }
+.homeside > :not(.homeart):not(.homesideopen) { position: relative; z-index: 1; }
+.homesideart img { filter: saturate(1.2) brightness(1.05); transition: transform var(--dur-slow) var(--ease-out); }
+/* only the title's strip is shaded, so the painting reads */
+.homesideart::after { content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgb(var(--art-shade-rgb) / .85) 0%, rgb(var(--art-shade-rgb) / 0) 32%, rgb(var(--art-shade-rgb) / 0) 70%, rgb(var(--art-shade-rgb) / .35) 100%); }
+.homeside:has(> .homesideopen:hover) { background: var(--color-surface-sunken); }
+.homeside:has(> .homesideopen:hover) .homesideart img { transform: scale(1.04); }
+.homeside.off .homesideart img { filter: grayscale(.85) brightness(.7); }
+.homesidetitle { text-shadow: 0 2px 10px rgb(var(--art-shade-rgb) / .9); }
+.homesidetitle > span { font-size: var(--text-16); }
+.homesidetitle > svg:last-child:not(:first-child) { color: var(--color-text); }
+/* the glass: what the card says, over the painting's lower half */
+.homeside .homesidebody { align-self: flex-start; max-width: 100%; margin-bottom: var(--space-4); padding: var(--space-3) var(--space-5);
+  border: 1px solid rgb(var(--art-light-rgb) / .08); border-radius: var(--radius-md);
+  background: rgb(var(--art-shade-rgb) / .74); backdrop-filter: blur(8px); color: var(--color-text); }
+.homeside .homesideempty { color: var(--color-text-muted); }
+
+/* League */
+.homeside .lgglance { gap: var(--space-2); }
+.homeside .lgglname { font-size: var(--text-16); color: var(--color-text); line-height: 1.2; }
+.lggltrack { display: flex; gap: 3px; margin: var(--space-2) 0; padding: 0; list-style: none; max-width: 340px; }
+.lggltrack li { flex: 1 1 0; min-width: 0; padding-top: var(--space-3); border-top: 4px solid rgb(var(--art-light-rgb) / .22);
+  color: var(--color-text-muted); font-size: var(--text-11); font-weight: 600; text-align: center; white-space: nowrap; }
+.lggltrack li:first-child { border-radius: 2px 0 0 2px; }
+.lggltrack li.past { border-top-color: color-mix(in srgb, var(--color-accent) 55%, transparent); }
+.lggltrack li.now { border-top-color: var(--color-accent); color: var(--color-accent); }
+.lgglrow { display: flex; gap: var(--space-5); align-items: baseline; font-size: var(--text-13); }
+.lgglplayers { color: var(--color-text-muted); }
+.lgglmatch { font-size: var(--text-13); }
+.lgglleaders { display: flex; gap: var(--space-5); margin: 0; padding: 0; list-style: none; counter-reset: lgl; font-size: var(--text-12); }
+.lgglleaders li { counter-increment: lgl; display: flex; gap: var(--space-2); color: var(--color-text-muted); }
+.lgglleaders li::before { content: counter(lgl) '.'; color: var(--color-accent); font-weight: 700; }
+.lgglleaders b { color: var(--color-text); }
+
+/* Challenge */
+.homeside .chgltitle { font-size: var(--text-16); color: var(--color-text); letter-spacing: .04em; text-transform: uppercase; line-height: 1.2; }
+.homeside .chglgoal { color: var(--color-accent); font-size: var(--text-14); }
+.chgltime { display: flex; align-items: center; gap: var(--space-4); font-size: var(--text-12); color: var(--color-text-muted); }
+.chgltime { white-space: nowrap; }
+.chglbar { flex: 0 0 140px; height: 4px; border-radius: 2px; background: rgb(var(--art-light-rgb) / .22); overflow: hidden; }
+.chglbar > span { display: block; height: 100%; background: var(--color-accent); border-radius: inherit; }
+.homeside .chglmeta { display: flex; gap: var(--space-5); color: var(--color-text-muted); font-size: var(--text-12); }
+.homeside .chglmeta:empty { display: none; }
+.chglbest { color: var(--color-success); font-weight: 600; }
+
+/* Matchmaking */
+.qglmodes { display: flex; gap: var(--space-3); flex-wrap: wrap; margin: var(--space-2) 0 0; padding: 0; list-style: none; }
+.qglmodes li { padding: var(--space-1) var(--space-4); border: 1px solid rgb(var(--art-light-rgb) / .25); border-radius: var(--radius-pill);
+  background: rgb(var(--art-shade-rgb) / .45); color: var(--color-text-muted); font-size: var(--text-12); }
+.qglmodes li.live { border-color: var(--color-success); color: var(--color-text); }
+.qglmodes b { color: var(--color-success); }
+.homeside .qglcount { font-size: var(--text-13); color: var(--color-text); }
+.homeside .qopenrow { background: rgb(var(--art-shade-rgb) / .7); }
+
+/* ── the wordmark in the bottom bar ── */
+.homeinfo .homewordmark { font-size: var(--text-13); color: var(--color-text); }
+.homeinfo .homewordsub { color: var(--color-text-muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .homesideart img, .homemodeart img { transition: none; }
+  .homemodetile.on .homemodeart img { transform: none; }
+  .homeside:has(> .homesideopen:hover) .homesideart img { transform: none; }
+}
+
+/* a short window (the landscape iPad, 06-home's own breakpoint): the title
+   shares its line with the tiles, so the tiles are narrower and lower */
+@media (min-width: 760px) and (min-height: 600px) and (max-height: 819.98px) {
+  .homemodetile { height: 76px; padding: var(--space-3) var(--space-5); }
+  .homemodelabel { font-size: var(--text-13); letter-spacing: .03em; }
+  /* the three cards: League has the most to say, so it takes the height the
+     Challenge glass leaves over; the glass sits on the card's foot */
+  .homeside { padding: var(--space-5) var(--space-6); }
+  .homeside--league { flex-grow: 1.3; }
+  .homeside--challenge { flex-grow: .85; }
+  .homeside .homesidebody { margin-bottom: 0; }
+  .homeside .lgglance { gap: var(--space-1); }
+  .lggltrack { margin: var(--space-1) 0; }
+  /* an open game's row already says who waits: the count line gives way to it */
+  .homeside .qglance:has(.qopen) .qglcount { display: none; }
+  .homeside .qglance .qopen { margin-top: 0; }
+}

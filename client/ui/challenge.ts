@@ -239,6 +239,12 @@ export function homeGlanceHtml(): string {
   return challengeGlanceHtml(challengeHomeView(hint, Date.now() + skew));
 }
 
+/** this week's challenge id, or null — the home picks the Challenge card's art by it (ui/homeart.ts) */
+export function currentId(): string | null {
+  askHint();
+  return challengeHomeView(hint, Date.now() + skew).current?.id ?? null;
+}
+
 /** a current or a past week to show: the home's Challenge button is live */
 export function hasChallenge(): boolean {
   askHint();

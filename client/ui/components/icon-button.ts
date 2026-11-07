@@ -28,6 +28,9 @@ export type IconButtonLayout = typeof ICON_BUTTON_LAYOUTS[number];
 export interface IconButtonProps extends Common {
   /** the caption under (or beside) the icon, escaped. Also the accessible name */
   label: string;
+  /** trusted markup drawn in place of the caption (the home's wordmark);
+   * `label` stays the accessible name */
+  labelHtml?: string;
   icon?: IconName;
   /** trusted markup in place of `icon` */
   iconHtml?: string;
@@ -55,13 +58,14 @@ export function iconButton(p: IconButtonProps): string {
   const own = `ui-icon-button ui-icon-button--${layout}${p.on ? ' on' : ''}`;
   const glyph = p.iconHtml ?? (p.icon ? icon(p.icon) : '');
   const inner = `<span class="ui-icon-button__icon">${glyph}${iconButtonBadge(p.badge)}</span>`
-    + `<span class="ui-icon-button__label">${esc(p.label)}</span>`;
+    + `<span class="ui-icon-button__label">${p.labelHtml ?? esc(p.label)}</span>`;
+  const named = p.labelHtml !== undefined ? p.label : undefined;
   if (p.href !== undefined) {
     return `<a${rootAttrs(own, p, {
-      href: p.href, title: p.title, 'aria-current': p.on ? 'page' : undefined, 'aria-disabled': p.disabled ? 'true' : undefined,
+      href: p.href, title: p.title, 'aria-label': named, 'aria-current': p.on ? 'page' : undefined, 'aria-disabled': p.disabled ? 'true' : undefined,
     })}>${inner}</a>`;
   }
   return `<button${rootAttrs(own, p, {
-    type: 'button', title: p.title, 'aria-pressed': p.on === undefined ? undefined : p.on ? 'true' : 'false', disabled: p.disabled,
+    type: 'button', title: p.title, 'aria-label': named, 'aria-pressed': p.on === undefined ? undefined : p.on ? 'true' : 'false', disabled: p.disabled,
   })}>${inner}</button>`;
 }

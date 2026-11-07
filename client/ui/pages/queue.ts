@@ -63,9 +63,14 @@ export function queueStripHtml(v: QueueStripView): string {
  */
 export function queueGlanceHtml(v: QueueStripView): string {
   const counts = v.counts;
+  // the formats you can queue for, each lit with how many wait in it
+  const modes = `<ul class="qglmodes">${MODES.map(m => {
+    const n = counts?.byMode[m] ?? 0;
+    return `<li class="${n > 0 ? 'live' : ''}">${esc(MODE_LABEL[m])}${n > 0 ? ` <b>${n}</b>` : ''}</li>`;
+  }).join('')}</ul>`;
   return `<div class="qglance">
     <span class="qglcount${counts && counts.total > 0 ? ' live' : ''}">${esc(countsSummary(counts))}</span>
-    ${openListHtml(v.openGames)}
+    ${v.openGames.length ? openListHtml(v.openGames) : modes}
   </div>`;
 }
 

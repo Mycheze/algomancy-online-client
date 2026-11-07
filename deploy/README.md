@@ -96,6 +96,22 @@ across the two files: `ALGO_BOT_TOKEN` (a mismatch is not an error, every
 at, and the one Origin besides the request's own Host allowed to open a
 WebSocket).
 
+### The brand font
+
+The home page's titles are set in **Ethnocentric** (Typodermic), the face of
+Caleb's site and the Manual's wordmark. The font is not ours to publish, and
+the repo is public, so its file is gitignored (`client/ui/.gitignore`) and
+lives only on the machines that serve the client:
+`client/ui/fonts/Ethnocentric-Regular.woff2`. Without it the page falls back
+to Krona One (committed, OFL) and nothing breaks. To put it on a server,
+copy it from a machine that has it:
+
+    scp client/ui/fonts/Ethnocentric-Regular.woff2 algomancy-vps:Algomancy/client/ui/fonts/
+
+(It was made from the `.otf` Caleb's site serves, `ethnocentric-rg.otf`,
+re-wrapped as woff2 with fontTools; the glyphs are unchanged.) No restart: the
+next page load picks it up.
+
 ### Card errata
 
 The bot used to diff algomancer.cc against our oracle every day and post

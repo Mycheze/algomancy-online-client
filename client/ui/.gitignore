@@ -1,3 +1,6 @@
 bundle.js
 bundle.js.map
 bundle.css
+# the brand face (Ethnocentric, Typodermic): licensed for the site, NOT for a public repo.
+# It lives only on the machines that serve the client; deploy/README.md § The brand font
+fonts/Ethnocentric-*
