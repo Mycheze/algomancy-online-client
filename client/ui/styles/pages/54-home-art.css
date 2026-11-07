@@ -68,7 +68,7 @@
 /* League */
 .homeside .lgglance { gap: var(--space-2); }
 .homeside .lgglname { font-size: var(--text-16); color: var(--color-text); line-height: 1.2; }
-.lggltrack { display: flex; gap: 3px; margin: var(--space-2) 0; padding: 0; list-style: none; max-width: 340px; }
+.lggltrack { display: flex; gap: 3px; margin: var(--space-2) 0; padding: 0; list-style: none; width: 320px; max-width: 100%; }
 .lggltrack li { flex: 1 1 0; min-width: 0; padding-top: var(--space-3); border-top: 4px solid rgb(var(--art-light-rgb) / .22);
   color: var(--color-text-muted); font-size: var(--text-11); font-weight: 600; text-align: center; white-space: nowrap; }
 .lggltrack li:first-child { border-radius: 2px 0 0 2px; }
