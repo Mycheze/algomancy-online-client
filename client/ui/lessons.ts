@@ -37,6 +37,7 @@ import {
 } from './lessonflow.ts';
 import { figCardHtml } from './lessonlayer.ts';
 import { shopLinksHtml } from './legal.ts';
+import { ridableTokens } from './battle.ts';
 import {
   isAugmentCard, isBattleCard, isGraftCard, isHasteCard, isLearnElement, isVirus, learnerPool,
   type LearnElement,
@@ -138,6 +139,71 @@ const token = (stats: string): Exclude<FigCard, string> => ({ name: 'Unit Token'
 const inPlanning = (c: LessonCtx): boolean => c.state.phase === 'planning' && !c.state.hasteDone && canDo(c, 'donePlanning');
 const inDeploy = (c: LessonCtx): boolean => c.state.phase === 'deploy' && canDo(c, 'doneDeploying');
 const inBattle = (c: LessonCtx): boolean => c.state.phase === 'battle';
+
+// ── BL-11: the client's own controls, taught at the moment each one matters ──
+//
+// The owner's UI-tutorial checklist (BL-11, 2026-08-25) — priority passing,
+// yielding, the bin, multiple targets, attacks and counterattacks, bringing
+// spell tokens along — taught as INTERACTIONS, not rules: where you click.
+// Each is a compact nudge (the board stays visible and the real control
+// glows), optional (it never holds a lesson back), and placed after the
+// lesson that explains the idea behind it. The words follow ui/tutorial.ts,
+// which is written off the handlers; every selector here is one ui/main.ts
+// draws (1173-lesson-client-tips.test.ts checks both).
+
+export const CLIENT_TIPS: readonly Lesson[] = [
+  {
+    id: 'tip-undo', n: '', title: 'Taking it back',
+    compact: true, optional: true,
+    when: c => c.state.turn >= 2 && inDeploy(c),
+    pages: [{
+      title: 'Undo',
+      body: 'Played the wrong card? **↶** on the toolbar (or Ctrl+Z) takes back your last action. It works in planning and deployment, where your opponent has not seen what you did yet. In battle, what you do stands.',
+      highlight: ['[data-btn="undo"]'],
+    }],
+  },
+  {
+    id: 'tip-block', n: '', title: 'Blocking and counterattacking',
+    compact: true, optional: true,
+    when: c => canDo(c, 'declareBlocks') && c.state.battle?.round === 1 && myUnits(c).length > 0,
+    pages: [{
+      title: 'Your opponent is attacking',
+      body: 'To block, click one of your units, then the slot in front of the column you want to stop. To **counterattack** instead, put the unit on **send** — it attacks back in the second half of the battle. **Counterattack with the rest** sends every unit you have not placed. Then confirm.',
+      highlight: ['[data-act="sendslot"]', '[data-btn="sendrest"]', '[data-btn="confirmblocks"]'],
+    }],
+  },
+  {
+    id: 'tip-targets', n: '', title: 'Choosing a target',
+    compact: true, optional: true,
+    when: c => c.state.decision?.seat === c.seat && c.state.decision.kind === 'targets',
+    pages: [{
+      title: 'Pick what it aims at',
+      body: 'The bar says what to pick, and everything you may pick glows. Click it on the board, or its picture in the bar. A card with more than one target asks for them **one at a time**. Changed your mind while playing a card? **✕ Cancel** (Esc) takes the play back, for as long as the bar offers it.',
+      highlight: ['.actionbar', '[data-btn="castcancel"]'],
+    }],
+  },
+  {
+    id: 'tip-ride', n: '', title: 'Bringing spell tokens along',
+    compact: true, optional: true,
+    when: c => canDo(c, 'declareAttack') && ridableTokens(c.state, c.seat).length > 0,
+    pages: [{
+      title: 'Your tokens can come too',
+      body: 'A spell token stays in your region unless it comes with an attack. Click a token while you build your formation and it rides along with your units, ready to cast over there. If you attack without picking one, the bar asks first.',
+      highlight: ['[data-act="token"]', '[data-btn="confirmattack"]'],
+    }],
+  },
+  {
+    id: 'tip-pass', n: '', title: 'Passing faster',
+    compact: true, optional: true,
+    when: c => inBattle(c) && canDo(c, 'passPriority') && c.state.stack.length > 0,
+    pages: [{
+      title: 'More than one pass at a time',
+      body: '**Pass through stack** passes until everything now on the stack has resolved, and **Pass all** hands over priority until the next phase. Either one stops with the ⏩ on the toolbar. Tired of being asked about one of your own unit\'s triggers? Right-click the unit and choose **Auto-yield**. Under **⋯**, **auto-pass** passes for you whenever passing is all you could do.',
+      highlight: ['[data-btn="passstack"]', '[data-btn="passall"]', '[data-btn="settingsmenu"]'],
+    }],
+  },
+];
+const tip = (id: string): Lesson => CLIENT_TIPS.find(t => t.id === id)!;
 
 // ── the lessons ───────────────────────────────────────────────────────
 
@@ -386,6 +452,8 @@ ${lines}
     ],
   },
 
+  tip('tip-undo'),
+
   {
     id: 'combat', n: '4', title: 'Combat with units',
     // any battle moment the learner is asked to act in — not only a declaration:
@@ -470,6 +538,10 @@ Unblocked columns hit you for their full power. Use **next step** to watch one p
     ],
   },
 
+  tip('tip-block'),
+  tip('tip-targets'),
+  tip('tip-ride'),
+
   {
     id: 'battle-spells', n: '5', title: 'Battle spells and the stack',
     when: c => c.state.turn >= 3 && inBattle(c) && canPlay(c, isBattleCard),
@@ -514,6 +586,8 @@ Step through the rulebook's own example.`,
       },
     ],
   },
+
+  tip('tip-pass'),
 
   {
     id: 'augment', n: '6', title: 'Augmenting',
