@@ -137,7 +137,7 @@ export interface TodoEntry {
 }
 import '../engine/src/cards/registry.ts';
 import { CLOSED } from './card-todo-closed.ts';
-import { everywhereBatch, still } from './card-todo-helpers.ts';
+import { still } from './card-todo-helpers.ts';
 
 // ── proofs for the comprehensive-rules findings (CT-226 on) ─────────────
 // Each finding was re-checked against HEAD before it was filed. A proof
@@ -191,24 +191,6 @@ const OPEN: TodoEntry[] = [
     fix: "Delete the three strings from constructedWaitingHtml (keep \"Waiting for your opponent.\" only if the hint would otherwise leave the room with no sign it is waiting — the seat row already says \"not here yet\"), drop the same League-page sentence from lobby.ts's league draft lobby, and move 971's assertion to their absence. Page test only; no flow changes.",
     proof: () => still('ui/pages/waiting.ts', 'Deals when both decks are in.', 'tell them on Discord you are here', 'Keep it or change it every game.'),
     reportId: 329,
-    status: 'open',
-  },
-  {
-    id: 532, area: "engine", severity: "major",
-    cards: ["Cerebrox", "The Everywhere"],
-    title: "a unit muted by The Everywhere hears only part of a death batch the muter dies in: Cerebrox fired once for four trashed cards",
-    detail: "Report #332 (invi, CFSG, 2026-11-06): \"Cerebrox and the everywhere are in the same fight. combat damage happens, everywhere dies, cerebrox triggers (as it should), but ONLY once, even though 4 cards were trashed during dmg\". Cerebrox (unit, \"[Augment] Whenever another card is trashed, each other unit gains -1/-1 until regroup\") survived a combat whose damage killed Blurf, Prediction Prophet, Flourishing Flora (invi's) and The Everywhere (Yagamino's), which had named Cerebrox in the haste step (CR 712.6: a named unit in its region \"loses all abilities, for as long as The Everywhere is in that region\"). Two Unit Tokens died too; tokens are not trashed (CR 801.2d), so four cards. The engine disposes of the batch one death at a time: the three trashes before The Everywhere's left Cerebrox still muted and heard nothing; The Everywhere's own trash came after it had left play, so Cerebrox heard that one. The result depends on the order the batch is walked in, which is right under no reading. The two readings the sources leave open: Cerebrox, muted at the moment of the batch, hears none of the four; or, since the batch removes the muter with the rest (the spirit of CR 706.8c, \"units that die together hear each other\", which speaks only of listeners that die), it hears all four. CR 712.6 and 706.8c are silent on a SURVIVING listener whose muter dies in the batch; no RAQ thread names The Everywhere or Cerebrox. The class is every \"loses all abilities\" source (The Everywhere, Monke, Transmogrifant: the radiators engine.ts names around line 2847) dying in a batch alongside trashes a muted watcher listens for: the eight watchers of someone else's trash (Cerebrox, Cthyrian Culler, Cthyrian Rector, Muck Rummager, Murkdrop Distiller, Murkstalker, Splort, Unrelenting Horror; engine.ts noteTrashed's comment) and every \"whenever a unit dies\" listener.",
-    evidence: "Report #332; CFSG replayed on the triage branch (372/372, no divergence): combat damage at the turn's battle, then log lines \"invi trashes Blurf / Prediction Prophet / Flourishing Flora (from play)\" with no Cerebrox trigger, \"Yagamino trashes The Everywhere (from play)\" followed by \"Trigger: Cerebrox — each other unit gains -1/-1 until regroup\" once.",
-    fix: "Settle the reading first (CR 712.6 / 706.8c, the RAQ; it may need the owner). Then evaluate a death batch's listeners against ONE state, whichever the reading picks: either the state before the batch (muted: none) or the state with every dying unit gone (unmuted: all), never the walk order. Pin it with a test that kills The Everywhere together with three other cards next to a named Cerebrox, and another with the walk order reversed.",
-    // TRUE while the answer depends on the walk order: the same batch disposed
-    // with The Everywhere last fires Cerebrox once, with it first four times
-    // (measured 2026-11-06). Which single answer — 0 or 4 — is with the owner
-    // (steward handoff report-332); the reproducer's controls are 1153.
-    proof: () => {
-      const last = everywhereBatch(53200), first = everywhereBatch(53201);
-      return last.kill([...last.others, last.everywhere]) !== first.kill([first.everywhere, ...first.others]);
-    },
-    reportId: 332,
     status: 'open',
   },
 ];

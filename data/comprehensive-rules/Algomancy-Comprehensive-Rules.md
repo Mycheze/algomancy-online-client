@@ -7630,6 +7630,14 @@ order.
 
 <sub>Basis: Mixed · Verified: not verified; 1 gate test file · Printed: card: Malevolent Machinations · Designer: RQ 1379132774207848589 · Engine: commitCostSacrifices, destroyBatch · Tests: 1139-sacrifice-cost-one-batch.test.ts · Example tests: 1139-sacrifice-cost-one-batch.test.ts::CR 714.9, 713.6e / CT-435: Infernal Cultivator paid with an Ancient One and its neighbour — the Ancient One still borrows that neighbour's when-I-die line as it dies, 1139-sacrifice-cost-one-batch.test.ts::CR 706.8c, 713.6e / CT-435: a Refuse Reclaimer paid first into Malevolent Machinations still hears the unit paid after it · Key: effects.state.together.sacrifice-costs</sub>
 
+<a id="r713.6f"></a>**713.6f** A unit that has lost its abilities when units leave play together (706.8c) has lost them for that whole batch, even when the effect that took them is one of the units leaving: it does not trigger on any of the batch's deaths or trashes. The same holds when one unit leaves play on its own. Once the batch is over, the unit has its abilities back. See rules 706.8c, 712.6. See rules 706.8c, 712.6.
+
+> *Example: The Everywhere has named Cerebrox ("Whenever another card is trashed, each other unit gains -1/-1 until regroup"). One combat damage step kills The Everywhere and three other cards in its region. Cerebrox triggers for none of the four, whatever order they are put into the bin in.*
+
+> *Example: The Everywhere naming Cerebrox is deleted on its own. Cerebrox does not trigger for The Everywhere's card, but it triggers for the next card trashed after that.*
+
+<sub>Basis: Mixed · Verified: not verified; 1 gate test file · Printed: card: The Everywhere · Owner call · adopted 2026-11-07 · Engine: destroyBatch, fireEvent · Tests: 1153-death-batch-heard-in-one-state.test.ts · Example tests: 1153-death-batch-heard-in-one-state.test.ts::CR 713.6f / CT-532: The Everywhere dying last in the batch with three other cards — the Cerebrox it muted hears none of the four, 1153-death-batch-heard-in-one-state.test.ts::CR 713.6f / CT-532: once The Everywhere has gone, Cerebrox hears the next trash again · Key: effects.state.together.muted-listeners</sub>
+
 <a id="r713.7"></a>**713.7.** A unit sent out to counterattack, which does not exist until round 1 ends, is not checked for death while it is away. It is checked as it comes back. See rules 505.3b, 610.
 
 > *Example: Prickly Protector, alive only through its own static, survives being declared as a counterattacker.*
@@ -10892,7 +10900,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1867 numbered rules.
+1868 numbered rules.
 
 | basis | rules |
 |---|---|
@@ -10900,7 +10908,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 | Designer | 202 |
 | Owner call | 675 |
 | Engine only | 46 |
-| Mixed | 490 |
+| Mixed | 491 |
 
 ### Verification
 
@@ -10911,7 +10919,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 3 |
-| not verified | 2 |
+| not verified | 3 |
 | text changed | 7 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
@@ -11526,7 +11534,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1872 rules and 99 sections.
+- New: 1873 rules and 99 sections.
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)
 - Removed: 901.8 `formats.constructed.single-card`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)
 - Removed: 901.8a `formats.constructed.single-card.copies`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)

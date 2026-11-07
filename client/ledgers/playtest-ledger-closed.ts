@@ -5232,4 +5232,11 @@ export const CLOSED: LedgerEntry[] = [
     ],
     note: "Real. A game lost on time never reaches the state's game-over phase (the clock is not part of the state), and the prompt bar drew \"Post-game summary\" only in that phase, so after \"view the final board\" the bar fell back to an ordinary waiting bar (reproduced in the client: \"Waiting for Player 2…\") and the summary was gone until a reload. The client now also counts a game over once the server's post-game payload has arrived: the bar says who won and has Post-game summary and Home, and the table menu goes home instead of offering Concede. CT-524.",
   },
+  {
+    id: 332, room: "CFSG", date: "2026-11-06",
+    report: "invi, seat 1: \"Cerebrox and the everywhere are in the same fight. combat damage happens, everywhere dies, cerebrox triggers (as it should), but ONLY once, even though 4 cards were trashed during dmg\"",
+    status: 'fixed',
+    guards: ['1153-death-batch-heard-in-one-state.test.ts::CR 713.6f / CT-532: The Everywhere dying last in the batch with three other cards — the Cerebrox it muted hears none of the four'],
+    note: "Fixed 2026-11-07. Replayed (372 of 372, no divergence): The Everywhere had named Cerebrox in the haste step; one combat damage killed Blurf, Prediction Prophet, Flourishing Flora and The Everywhere (and two Unit Tokens, which are not trashed). The engine walked the batch one death at a time, so the three trashes before The Everywhere's found Cerebrox still muted and The Everywhere's own found it free: one trigger, an artefact of the walk order. Asked none or four, the owner answered none (2026-11-07): the cards leave together, while The Everywhere is still there, so Cerebrox hears none of them, in any order, and does not hear a lone The Everywhere's own card either. CT-532.",
+  },
 ];

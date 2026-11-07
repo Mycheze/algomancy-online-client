@@ -169,12 +169,6 @@ const OPEN: LedgerEntry[] = [
     note: "Took back Nyar's Smouldering Inferno Virus augment on mycheze's Living Forge [318], played before anything else in the window; mycheze agreed. Replayed, Nyar cast Leaping Lillik on Automaton of Abundance first, ordered its triggers [318]-[320], then played the same augment on top [321], so it resolved first. The player's own sequencing, as the reason says; the engine took both orders. No defect.",
   },
   {
-    id: 332, room: "CFSG", date: "2026-11-06",
-    report: "invi, seat 1: \"Cerebrox and the everywhere are in the same fight. combat damage happens, everywhere dies, cerebrox triggers (as it should), but ONLY once, even though 4 cards were trashed during dmg\"",
-    status: 'live',
-    note: "Real. Replayed (372 of 372, no divergence): The Everywhere had named Cerebrox in the haste step; one combat damage killed Blurf, Prediction Prophet, Flourishing Flora and The Everywhere (and two Unit Tokens, which are not trashed). The engine walks the batch one death at a time, so the three trashes before The Everywhere's found Cerebrox still muted and The Everywhere's own found it free: one trigger, an artefact of the walk order. Whether the right answer is none or four is a reading the sources do not settle yet. CT-532.",
-  },
-  {
     id: 333, room: "UAUS", date: "2026-11-06",
     report: "Nyar, seat 1, agreed fix: back to before Yagamino's resource (turn 2 planning). \"test\"",
     status: 'agreed-fix',

@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:eeb1892606e71f23",
+ "generated_from": "sha256:934012aebcc11aba",
  "rules": [
   {
    "num": "100.1",
@@ -25537,6 +25537,31 @@
    "examples": [
     "Infernal Cultivator's cost is paid with an Ancient One and the unit beside it that says \"When I die, draw a card\". The two die together, so the Ancient One still has that ability as it dies, and both trigger.",
     "Malevolent Machinations is played by sacrificing a Refuse Reclaimer and then a Good Whale. The Reclaimer triggers for the Whale, because the two die together."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": null
+  },
+  {
+   "num": "713.6f",
+   "key": "effects.state.together.muted-listeners",
+   "title": null,
+   "section": "713",
+   "sectionTitle": "State Checks",
+   "chapterTitle": "7. Spells, Abilities and Effects",
+   "parent": "713.6",
+   "text": "A unit that has lost its abilities when units leave play together (706.8c) has lost them for that whole batch, even when the effect that took them is one of the units leaving: it does not trigger on any of the batch's deaths or trashes. The same holds when one unit leaves play on its own. Once the batch is over, the unit has its abilities back. See rules 706.8c, 712.6.",
+   "see": [
+    "706.8c",
+    "712.6"
+   ],
+   "examples": [
+    "The Everywhere has named Cerebrox (\"Whenever another card is trashed, each other unit gains -1/-1 until regroup\"). One combat damage step kills The Everywhere and three other cards in its region. Cerebrox triggers for none of the four, whatever order they are put into the bin in.",
+    "The Everywhere naming Cerebrox is deleted on its own. Cerebrox does not trigger for The Everywhere's card, but it triggers for the next card trashed after that."
    ],
    "basis": "mixed",
    "scope": "game",

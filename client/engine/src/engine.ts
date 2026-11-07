@@ -7565,6 +7565,26 @@ export class E {
    * `destroy` resolves them before it deletes them, and a later member's
    * death still reads them (Ancient One borrowing a dead neighbour's mod). */
   private deathBatchMods = new Map<EntityId, Entity>();
+  /** CR 713.6f / CT-532: every unit's ability-strippers as the departure began,
+   * by id — a listener that was muted when a batch (or a lone unit) left play
+   * stays muted for all of it, even when its muter is one of the bodies
+   * leaving. Null when nothing leaving shares a region with an ability-stripper. */
+  private deathBatchStrips: Map<EntityId, Stamp[]> | null = null;
+  /** CT-532: the snapshot `deathBatchStrips` holds, for units about to leave
+   * play — or null when no continuous ability-stripper radiates in any of their
+   * regions, so a removal cannot change who is muted (almost every board). */
+  private stripsBefore(leaving: readonly Entity[]): Map<EntityId, Stamp[]> | null {
+    const regions = new Set(leaving.map(u => u.region));
+    // 463: unfiltered ON PURPOSE. This walk only decides whether to snapshot,
+    // so it must over-count: a stripper muted now can come back on mid-batch
+    // when ITS muter leaves, and that changes who is muted too.
+    const radiators = this.anchored((_h, a) => regions.has(a.region));
+    if (!radiators.some(({ holder, anchor }) => this.behaviorBlocks(holder, anchor, 'statics')
+      .some(b => b.def.statics?.some(m => m.suppressAbilities)))) return null;
+    const out = new Map<EntityId, Stamp[]>();
+    for (const e of Object.values(this.s.entities)) if (e.kind === 'unit') out.set(e.id, this.strippersOf(e, 'abilities'));
+    return out;
+  }
   /**
    * CR 714.9 / CT-351: `entity(id)`, or — while a simultaneous death batch is
    * being disposed — the batch member (or a member's mod) of that id that has
@@ -7655,6 +7675,9 @@ export class E {
     if (!batch.length) return;
     const prevBatch = this.deathBatch, prevSelf = this.disposingSelf;
     const prevAdj = this.deathBatchAdjacent, prevMods = this.deathBatchMods;
+    const prevStrips = this.deathBatchStrips;
+    // CR 713.6f / CT-532: who is muted, before anyone is removed
+    this.deathBatchStrips = this.stripsBefore(batch) ?? prevStrips;
     this.deathBatch = batch;
     // CR 714.9 / CT-351: every member's neighbours, before anyone is removed
     this.deathBatchAdjacent = new Map(batch.map(u => [u.id, this.adjacentInFormation(u.id).map(n => n.id)]));
@@ -7672,6 +7695,7 @@ export class E {
       this.disposingSelf = prevSelf;
       this.deathBatchAdjacent = prevAdj;
       this.deathBatchMods = prevMods;
+      this.deathBatchStrips = prevStrips;
     }
   }
 
@@ -7983,6 +8007,17 @@ export class E {
   destroy(u: Entity, verb: 'dies' | 'is deleted' | 'is sacrificed',
     opts: { binTo?: Seat; keepBinned?: boolean } = {}): void {
     if (!this.entity(u.id)) return;
+    // CR 713.6f / CT-532: a lone departure is heard as it began too — a unit
+    // its muter leaving with it does not hear the muter's own trash. A batch
+    // member's snapshot was taken by destroyBatch for the whole batch.
+    const strips = this.deathBatch.includes(u) ? null : this.stripsBefore([u]);
+    if (!strips) { this.destroyNow(u, verb, opts); return; }
+    const prev = this.deathBatchStrips;
+    this.deathBatchStrips = strips;
+    try { this.destroyNow(u, verb, opts); } finally { this.deathBatchStrips = prev; }
+  }
+  private destroyNow(u: Entity, verb: 'dies' | 'is deleted' | 'is sacrificed',
+    opts: { binTo?: Seat; keepBinned?: boolean }): void {
     this.stampLastKnown(u);                     // CR 714.1
     delete this.s.entities[u.id];
     // resolved BEFORE the disposal runs — a mod id whose entity is
@@ -14211,7 +14246,9 @@ export class E {
       // takes only what arrived BEFORE it. Its own text is the oldest thing on
       // it, so any stripper silences that; a mod attached or text granted
       // after the strip still listens.
-      const strips = this.strippersOf(u, 'abilities');
+      // CR 713.6f / CT-532: while units are leaving play, the strips they had
+      // as the departure began — never whichever bodies the walk has removed so far
+      const strips = this.deathBatchStrips?.get(u.id) ?? this.strippersOf(u, 'abilities');
       const kept = (at: Stamp): boolean => !strips.length || !E.strippedBy(at, strips);
       const src = sourceId ?? dyingUnit?.id;
       // CR 710.1: the triggered text comes off the FACE. A Unit Token that

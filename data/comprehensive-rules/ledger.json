@@ -1177,6 +1177,7 @@
     {"num":"713.6c","key":"effects.state.together.one-damage","since":"First generation (draft)"},
     {"num":"713.6d","key":"effects.state.together.sacrifices","since":"First generation (draft)"},
     {"num":"713.6e","key":"effects.state.together.sacrifice-costs","since":"First generation (draft)"},
+    {"num":"713.6f","key":"effects.state.together.muted-listeners","since":"First generation (draft)"},
     {"num":"713.7","key":"effects.state.absent","since":"First generation (draft)"},
     {"num":"713.7a","key":"effects.state.absent.home","since":"First generation (draft)"},
     {"num":"713.8","key":"effects.state.dying","since":"First generation (draft)"},

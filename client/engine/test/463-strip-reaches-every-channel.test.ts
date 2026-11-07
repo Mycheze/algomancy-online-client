@@ -153,6 +153,10 @@ test('463 every anchored walk in the engine applies a strip filter', () => {
     const window = src.slice(at, Math.min(next, src.indexOf(');', at) + 2));
     const line = src.slice(0, at).split('\n').length;
     if (/live\(h, a\)|textStripped\(h, a\)/.test(window)) continue;
+    // CT-532: a walk that collects no text, only whether ANY stripper is near
+    // (stripsBefore's gate), says so in the comment just above it; it must see muted
+    // strippers too
+    if (src.slice(Math.max(0, at - 300), at).includes('// 463: unfiltered ON PURPOSE')) continue;
     // the one-shot stamp alone is the bug this file guards, UNLESS the walk is
     // one of the two that feed phase A themselves (staticsFor, radiates)
     if (/textStrippedShallow\(h, a\)/.test(window)
