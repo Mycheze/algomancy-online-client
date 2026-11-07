@@ -162,9 +162,9 @@
 .pfinline { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-4); }
 .pfvalue { padding-top: var(--space-3); font-weight: 600; }
 .pfhint { color: var(--color-text-muted); font-size: var(--text-12); line-height: 1.45; }
-.pfpreview .pfswatch { width: 16px; height: 16px; }
+.pfpreview { display: inline-flex; gap: var(--space-3); }
+.pfpreview .elicon { width: 26px; height: 26px; }
 .pfsettings .favpick { margin: 0; }
-.pfsettings .ui-setting-row__control > .pfdots { align-self: flex-start; }
 
 /* the Players tab says when somebody is waiting on you */
 .acctnav [data-count]::after { content: attr(data-count); display: inline-block; margin-left: var(--space-3); min-width: var(--icon-button-badge);

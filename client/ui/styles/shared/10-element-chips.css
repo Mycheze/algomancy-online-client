@@ -20,3 +20,16 @@
 .elchip.light.on { border-color: var(--light); background: #2e2a20; color: var(--light); }
 .elchip.dark.on { border-color: var(--dark); background: #262c35; color: #cfd6e0; }
 
+
+/* ACCESSIBLE COLOURS (Settings → Colours; ui/prefs.ts, tokens.css's theme block).
+   The element icons are the game's own pictures, and they are most of the element
+   colour on screen, so the theme swaps the three that collide for red-green colour
+   blindness (fire's red, earth's orange, wood's green: 5.3 apart for a deutan) for
+   recoloured copies in data/icons/accessible/ (the same shading and glyph; the
+   closest pair is 16.1 under every simulated vision, and the black glyph keeps
+   4.5:1 on each). One rule per icon catches every place one is drawn, whatever
+   module drew it (elIcon, the profile, the board's text glyphs). The URL is
+   ICON_BASE's (ui/assets.ts), which test 247 pins. */
+:root[data-colors="accessible"] img[src$="/icons/fire.webp"] { content: url("/data/icons/accessible/fire.webp"); }
+:root[data-colors="accessible"] img[src$="/icons/earth.webp"] { content: url("/data/icons/accessible/earth.webp"); }
+:root[data-colors="accessible"] img[src$="/icons/wood.webp"] { content: url("/data/icons/accessible/wood.webp"); }

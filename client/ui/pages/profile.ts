@@ -19,7 +19,7 @@
  * (`.pfsurface`, `.pfsec`), never a box per number. Its CSS is
  * styles/pages/53-profile.css. */
 import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
-import { esc } from '../util.ts';
+import { elIcon, esc } from '../util.ts';
 import { ICON_BASE } from '../assets.ts';
 import { button, segmented, settingRow, statusMessage } from '../components/index.ts';
 import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
@@ -704,7 +704,7 @@ function looksSection(v: ProfileView): string {
     settingRow({ label: 'Your element', controlHtml: favoritePickerHtml(me) + (v.favMsg ? statusMessage({ tone: 'error', text: v.favMsg }) : ''),
       hintHtml: favHint ? esc(favHint) : '' }),
     settingRow({ label: 'Colours', controlHtml: `${choice('colours', 'Colours', v.prefs.colours, [['standard', 'Standard'], ['accessible', 'Accessible']])}
-        <span class="pfdots pfpreview">${ELEMENTS.map(swatch).join('')}</span>`,
+        <span class="pfpreview">${ELEMENTS.map(el => elIcon(el, el)).join('')}</span>`,
       hintHtml: 'Accessible is for red-green colour blindness.' }),
     settingRow({ label: 'Motion', controlHtml: onOff('motion', 'Motion', v.prefs.motion), hintHtml: 'Cards moving, and targeting arrows.' }),
   ].join(''));
