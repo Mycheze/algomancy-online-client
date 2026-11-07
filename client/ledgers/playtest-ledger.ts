@@ -201,12 +201,6 @@ const OPEN: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "Took back all of turn 1's planning and invi's haste Done [0]-[12]; invi agreed. Replayed (--branch): the same kinds of plays again in another order, and the game went on to 150 actions. Nothing had happened yet; trying the button. No defect.",
   },
-  {
-    id: 338, room: "XWDS", date: "2026-11-07",
-    report: "invi, seat 1: \"I should be able to target dropslime with the trigger of splort (whos grafted blightwalker triggers with it)\"",
-    status: 'live',
-    note: "Real. Rebuilt at [170]: invi discarded Dropslime [166], and Splort's trigger, carrying a grafted Blightwalker (\"recall another target unit from your bin\"), offered only Cthyrian Rector though Dropslime was in the bin too. On a graft \"another\" means other than the host (CR 720.6c), and Splort is in play; the engine excluded the trashed card instead, as it would for Blightwalker's own \"when I am trashed\". CT-534.",
-  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

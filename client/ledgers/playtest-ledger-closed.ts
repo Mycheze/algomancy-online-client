@@ -5239,4 +5239,11 @@ export const CLOSED: LedgerEntry[] = [
     guards: ['1153-death-batch-heard-in-one-state.test.ts::CR 713.6f / CT-532: The Everywhere dying last in the batch with three other cards — the Cerebrox it muted hears none of the four'],
     note: "Fixed 2026-11-07. Replayed (372 of 372, no divergence): The Everywhere had named Cerebrox in the haste step; one combat damage killed Blurf, Prediction Prophet, Flourishing Flora and The Everywhere (and two Unit Tokens, which are not trashed). The engine walked the batch one death at a time, so the three trashes before The Everywhere's found Cerebrox still muted and The Everywhere's own found it free: one trigger, an artefact of the walk order. Asked none or four, the owner answered none (2026-11-07): the cards leave together, while The Everywhere is still there, so Cerebrox hears none of them, in any order, and does not hear a lone The Everywhere's own card either. CT-532.",
   },
+  {
+    id: 338, room: "XWDS", date: "2026-11-07",
+    report: "invi, seat 1: \"I should be able to target dropslime with the trigger of splort (whos grafted blightwalker triggers with it)\"",
+    status: 'fixed',
+    guards: ['1171-grafted-another-from-bin.test.ts::CT-534: Splort with Blightwalker grafted offers the discarded Dropslime to recall'],
+    note: "Fixed 2026-11-07: a grafted Blightwalker now reads \"another\" as other than its host, so Dropslime is offered; its own trash trigger still excludes itself. Real. Rebuilt at [170]: invi discarded Dropslime [166], and Splort's trigger, carrying a grafted Blightwalker (\"recall another target unit from your bin\"), offered only Cthyrian Rector though Dropslime was in the bin too. On a graft \"another\" means other than the host (CR 720.6c), and Splort is in play; the engine excluded the trashed card instead, as it would for Blightwalker's own \"when I am trashed\". CT-534.",
+  },
 ];

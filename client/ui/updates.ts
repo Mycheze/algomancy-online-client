@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-07', kind: 'fix', text: 'A Blightwalker grafted onto another unit can now bring back the very card whose trashing set it off — Splort carrying Blightwalker can recall the Dropslime you just discarded. Blightwalker\'s own trigger still cannot pick itself.' },
   { date: '2026-11-07', kind: 'change', text: 'The league match waiting rooms are tidier: the extra explanatory lines are gone. The seat list still shows who has arrived and whose deck is in.' },
   { date: '2026-11-07', kind: 'change', text: 'The home page has colour: card art behind League, Challenge and Matchmaking, a different card behind Draft and Constructed each visit, and your favourite element\'s orb behind it all.' },
   { date: '2026-11-07', kind: 'fix', text: 'Edits to a saved deck now reach your next constructed game. Before, a game used the list as it was when you picked "Play this deck", leaving out every change since — including changes made while you were queued.' },

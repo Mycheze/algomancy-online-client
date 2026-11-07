@@ -14880,4 +14880,39 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-06 (steward). All three lines are gone from the constructed match room (ui/pages/waiting.ts constructedWaitingHtml): the League-page waiting sentence (league, opponent away), the deck row's 'Any deck. Keep it or change it every game.' (league), and the 'Deals when both decks are in.' footnote (every constructed room — it was one shared line). The same League-page sentence is gone from the league live-draft lobby (ui/pages/lobby.ts), and its now-unused .lobbywait rule from 44-league.css. Nothing replaces the waiting sentence: the seat row already says the opponent is 'not here yet' / 'has not arrived yet', and both tests now assert that. Left alone, not named by the owner: the Single Card Duel room's 'Deals when both cards are in.' and the match registration's 'Game 1 deals when both decks are in. Initiative is random.'. Mutation: the old page code put back turned 961 §3b and 971 §4 red.",
     status: 'done',
   },
+  {
+    id: 534, area: "engine", severity: "major",
+    cards: ["Blightwalker", "Splort", "Dropslime"],
+    title: "a grafted Blightwalker cannot recall the card whose trashing set it off: Splort's composite would not offer Dropslime",
+    detail: "Report #338 (invi, XWDS, 2026-11-07): \"I should be able to target dropslime with the trigger of splort (whos grafted blightwalker triggers with it)\". Blightwalker: \"When I am trashed, [Switch1] You may pay [2] to recall another target unit from your bin.\" Grafted onto Splort (\"When another card is trashed, [Switch1] I deal 2 damage to any target\"), the effect rides Splort's cause (CR 722.4), and on a mod's text \"I\", \"me\" and \"my\" mean the host (CR 720.6c): \"another\" excludes Splort, which is in play, so every unit card in the controller's bin is a legal target. The engine excluded Dropslime, the card whose trashing fired the composite. The cause: blightwalkerRecall's restrict (cards/sets/batch-dark-c.ts ~line 181) calls notSelfBinCard (cards/dsl.ts ~line 702), which excludes the bin slot the firing 'trashed' event names. That is right for Blightwalker's own \"when I am trashed\" (the event's card IS me), and wrong whenever the effect runs as a graft, where the event is the host's cause and its card is somebody else. The class: every graftEffect whose restrict or run reads ctx.event as \"me\"; notSelfBinCard is imported only by batch-dark-c.ts, but grep the sets for graftEffect beside ctx.event / eventBinSlot before calling it one card.",
+    evidence: "Report #338; XWDS fetched and rebuilt 2026-11-07 (steward triage): [166] invi discards Dropslime (\"Discard me\") in turn 5's block window; [167] orders Splort's and Dropslime's trash triggers; at [170] Splort's composite asks \"Blightwalker: pay [2] to recall another target unit from your bin\" with options Cthyrian Rector and No targets only, while invi's bin is [Cthyrian Rector, Darkblast, Dropslime]. Splort (unit 51) carries mods [53, 52]. Dropslime is a Blight Unit, so isUnitCard admits it; notSelfBinCard is what drops it.",
+    fix: "Make the \"another\" exclusion read who \"me\" is: on Blightwalker's own trigger the trashed card, on a graft the host (ctx.sourceId, in play, so no bin slot is excluded). EffectCtx already tells donated text apart (ctx.selfModId, CR 720.6d); find or add the equivalent for a running graft part. Reproducer: Splort with Blightwalker grafted, Dropslime discarded, the target menu must offer Dropslime; and Blightwalker's own trigger must still not offer itself (the existing guard in 135/Blightwalker tests). Sweep the class above.",
+    // TRUE while the bug is there: Splort with Blightwalker grafted, Dropslime
+    // discarded beside a Cthyrian Rector — the composite's target menu leaves
+    // Dropslime out (measured 2026-11-07 on XWDS and this rebuild).
+    proof: () => {
+      const h = new Harness(53400);
+      toDeployment(h);
+      const P = h.state.deployPlayer!;
+      const splort = spawn(h, P, 'Splort');
+      giveResources(h, P, 'dark', 6);
+      h.do({ type: 'graft', seat: P, from: 'hand', index: give(h, P, 'Blightwalker'), hostId: splort, position: 0 });
+      h.state.players[P]!.bin = ['Cthyrian Rector'];
+      const i = give(h, P, 'Dropslime');
+      withE(h, e => e.discardFromHand(P, i));
+      for (let guard = 0; guard < 30 && h.state.decision; guard++) {
+        const dec = h.state.decision;
+        if (/Blightwalker: pay \[2\] to recall/.test(dec.prompt)) return !dec.options.some(o => String(o.label).startsWith('Dropslime'));
+        h.do({ type: 'decide', seat: dec.seat, choice: dec.pickOrder ? dec.options.map((_, k) => k) : 0 });
+      }
+      return true;
+    },
+    reportId: 338,
+    guards: [
+      '1171-grafted-another-from-bin.test.ts::CT-534: Splort with Blightwalker grafted offers the discarded Dropslime to recall',
+      '1171-grafted-another-from-bin.test.ts::CT-534: the control — Blightwalker trashed FROM PLAY still excludes itself',
+    ],
+    closed: "FIXED 2026-11-07 (steward). notSelfBinCard (cards/dsl.ts) now excludes no bin slot when the source is a unit still in play: on a graft the text rides the host's cause and \"me\" is the host (CR 720.6c, 722.4), so \"another\" may name every unit card in the bin, the one whose trashing fired the cause included. A card's own trash trigger runs on a stand-in (id -1) or on the dead unit's id, which destroy has already deleted, so Blightwalker's own \"when I am trashed\" still excludes exactly its own slot (121's two bin tests, 1171's from-play control). Class swept: notSelfBinCard is used only by Blightwalker; no other graftEffect in the sets reads the firing event as \"me\" (Cthyrian Rector, Murkdrop Distiller and Biomass Devourer read it as \"the trashed card\", right on a graft too). Why nothing caught it: every Blightwalker bin test exercised its own trigger, and the graft tests (546) used an empty bin. Mutations: dropping the new line turned 1171's graft test red with the XWDS menu (Cthyrian Rector | No targets); making the restriction always true turned the from-play control red.",
+    status: 'done',
+  },
 ];

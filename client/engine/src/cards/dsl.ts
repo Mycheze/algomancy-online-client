@@ -698,9 +698,18 @@ export function binNthAt(g: E, seat: Seat, index: number): number {
  * and a triggered ability's restriction may already read
  * the event that fired it. If a copy leaves the bin in between, the ref simply
  * slides — the same interchangeability BinRef is built on (CR 405.6).
+ *
+ * CR 720.6c, 722.4 / CT-534 (report #338): the same text GRAFTED rides its
+ * host's cause, and on a mod's text "me" is the host. Then the firing event
+ * is the host's ("when another card is trashed": Splort's), its card is
+ * somebody else (Dropslime), and "me" is a unit still IN PLAY — so no bin
+ * slot is me and nothing is excluded. The test is the source's liveness: a
+ * card's own trash trigger runs on a stand-in (id -1) or on the dead unit's
+ * id, which `destroy` has already deleted from the entity table.
  */
 export const notSelfBinCard: TargetRestrict = (g, t, ctx) => {
   if (!('binCard' in t)) return true;
+  if (ctx.sourceId !== undefined && g.entity(ctx.sourceId) !== undefined) return true;
   const d = ctx.event?.data;
   if (!d || d['card'] !== t.binCard.card || d['seat'] !== t.binCard.seat) return true;
   const nth = d['binNth'];
