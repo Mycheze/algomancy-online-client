@@ -62,6 +62,8 @@ from datetime import date
 import numpy as np
 from PIL import Image
 
+import scan_reads
+
 from paths import CARDS_DIR, ORACLE_JSON, COMPLEXITY_OVERRIDES as OUT
 
 # The glyph's fixed column, with slack; the band of rows it can sit in.
@@ -89,6 +91,7 @@ def load_scan(name):
     p = CARDS_DIR / (name.replace(" ", "-") + ".jpg")
     if not p.exists():
         return None
+    scan_reads.note(p)
     return np.asarray(Image.open(p).convert("RGB"), dtype=np.float32)
 
 
@@ -213,6 +216,7 @@ def main():
     }
     OUT.write_text(json.dumps(payload, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"wrote {OUT.relative_to(CARDS_DIR.parent.parent)}")
+    scan_reads.record("classify_complexity")
 
 
 if __name__ == "__main__":

@@ -137,6 +137,7 @@ from PIL import Image
 
 from oracle import load_oracle
 from paths import CARDS_DIR, CARD_FACES as OUT
+import scan_reads
 
 # ⚠ THE TYPE BAR IS LOCATED BY THE COMPLEXITY DIAMOND, AND THAT LOCATOR IS
 # IMPORTED, NOT COPIED. classify_complexity.py finds the diamond down a fixed
@@ -383,6 +384,7 @@ def load_scan(name):
     p = scan_path(name)
     if not p.exists():
         return None
+    scan_reads.note(p)
     a = np.asarray(Image.open(p).convert('RGB'), dtype=np.float32) / 255.0
     return a if a.shape[:2] == (SCAN_H, SCAN_W) else None
 
@@ -787,6 +789,7 @@ def main(argv=None):
     }
     OUT.write_text(json.dumps(payload, indent=1, sort_keys=True) + '\n')
     print(f'\nwrote {OUT}')
+    scan_reads.record('read_card_faces')
     return 0
 
 

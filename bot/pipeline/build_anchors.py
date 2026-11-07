@@ -46,6 +46,7 @@ from PIL import Image
 # Locations live in paths.py.
 from oracle import load_oracle
 from paths import REPO_ROOT as ROOT, CARDS_DIR, ICONS_DIR, ORACLE_JSON, MOD_ANCHORS as OUT
+import scan_reads
 
 # The icon never appears above the text box; searching the art wastes time and
 # invites false peaks in busy illustration.
@@ -202,12 +203,16 @@ def find_icon(art_path, icon):
     return (peak, size, gx, gy, find_cut(g, gy, light_box))
 
 
+def scan_of(name):
+    return CARDS_DIR / (name.replace(" ", "-") + ".jpg")
+
+
 def _one(args):
     name, card = args
     icon = icon_for(card)
     if not icon:
         return name, None
-    art = CARDS_DIR / (name.replace(" ", "-") + ".jpg")
+    art = scan_of(name)
     if not art.exists():
         return name, None
     found = find_icon(art, icon)
@@ -246,6 +251,8 @@ def main():
 
     OUT.write_text(json.dumps(dict(sorted(anchors.items())), indent=1) + "\n")
     print(f"\nwrote {OUT.relative_to(ROOT)} — {len(anchors)} anchors")
+    # the scans were opened in the pool's workers: name them from here
+    scan_reads.record("build_anchors", [scan_of(n) for n, _ in todo])
     if missing:
         print(f"no anchor ({len(missing)}): {', '.join(missing)}")
     if weak:

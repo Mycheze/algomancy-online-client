@@ -34,6 +34,7 @@ import statistics
 import sys
 
 from paths import CARDS_DIR, ORACLE_JSON, TEXT_BOXES as OUT
+import scan_reads
 from classify_complexity import MIN_SCORE, X0, X1, Y0, Y1, build_templates, load_scan, luminance, ncc_best
 
 #: the diamond's top edge, below the type bar's top edge, in scan px
@@ -69,6 +70,8 @@ def main():
         print(f"  NOT FOUND {name} (best score {score:.2f})", file=sys.stderr)
     OUT.write_text(json.dumps(out, indent=1, sort_keys=True) + "\n", encoding="utf-8")
     print(f"wrote {OUT.relative_to(CARDS_DIR.parent.parent)}")
+    # classify_complexity.load_scan noted every scan this process opened
+    scan_reads.record("read_text_boxes")
 
 
 if __name__ == "__main__":
