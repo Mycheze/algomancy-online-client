@@ -25,6 +25,7 @@
  * — one back-button step per filter click would bury the rest of the app).
  */
 import * as acct from './account.ts';
+import * as dk from './decks.ts';
 import type { DeckGrouping } from './decklayout.ts';
 import { buildDeckFile, deckFileText } from './deckformat.ts';
 import { deckListText } from './deckstats.ts';
@@ -224,6 +225,13 @@ function openDeck(id: string): void {
 }
 
 function close(): void {
+  leave();
+  rerenderHost();
+}
+
+/** give up the page — the state and the URL — without painting anything:
+ * close() repaints Home; a copy taken to the builder has already painted it */
+function leave(): void {
   view = null; one = null; focus = null;
   try {
     const url = new URL(location.href);
@@ -233,7 +241,6 @@ function close(): void {
     url.searchParams.delete('cardstats');
     history.replaceState(null, '', url.toString());
   } catch { /* ignore */ }
-  rerenderHost();
 }
 
 // ── painting ──────────────────────────────────────────────────────────
@@ -382,8 +389,16 @@ export function handleButton(btn: HTMLElement): boolean {
       void fetch('/api/decks/take', {
         method: 'POST', headers: authHeaders(), body: JSON.stringify({ id }),
       })
-        .then(r => r.json() as Promise<{ ok: boolean; error?: string; note?: string }>)
+        .then(r => r.json() as Promise<Parameters<typeof dk.openTaken>[0] & { error?: string }>)
         .then(r => {
+          // inbox-1568909829345644666: the copy goes straight into the
+          // collection's list (the reply carries it) and opens in the
+          // builder, the way + New deck and Import do — this page, and a
+          // profile it was opened from, step aside for it (main.ts render
+          // checks the profile before the builder, so one left open would
+          // take the page back on the next repaint) — Back from the builder
+          // is the Decks page, and Back from that is Home
+          if (r.ok && dk.openTaken(r)) { msg = ''; acct.leaveScreen(); leave(); return; }
           msg = r.ok
             ? `Copied into your collection${r.note ? ` — ${r.note}` : ''}. It starts private.`
             : (r.error ?? 'could not copy that deck');

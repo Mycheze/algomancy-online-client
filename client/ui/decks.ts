@@ -565,6 +565,31 @@ function openBuilder(id: string, note: string | null = null): void {
   tt.openTabletop(host);
 }
 
+/**
+ * A SHARED DECK JUST COPIED INTO THE COLLECTION (ui/meta.ts's Copy to my
+ * decks) — take the server's list and open the copy in the builder.
+ *
+ * The owner, 2026-11-08 (inbox-1568909829345644666): *"When you copy a deck to
+ * your collection … it doesn't show up in your deck list until you RELOAD the
+ * page … Clicking "copy" on the deck should also just skip to opening it in
+ * your collection so you can edit and see it."* The take's reply always
+ * carried the whole collection (server/api-decks.ts `answer`), but the
+ * metagame page only read its note, so this module's copy — loaded once —
+ * went on without the deck until a reload. Now it is adopted like a duplicate
+ * or an import's reply, and the builder opens on the copy the way it does for
+ * those (Back lands on the Decks page, on it). Returns false when there is
+ * nothing to open (no id, or the collection never loaded): the caller says so.
+ */
+export function openTaken(reply: { ok: boolean; note?: string; id?: string; decks?: DeckView[] }): boolean {
+  adopt(reply);
+  if (!reply.id || !decks?.some(d => d.id === reply.id)) return false;
+  msg = '';
+  // the server's note is "copied from <owner>"
+  const said = reply.note ? reply.note.charAt(0).toUpperCase() + reply.note.slice(1) : 'Copied';
+  openBuilder(reply.id, `${said}. It starts private.`);
+  return true;
+}
+
 // ── clicks ────────────────────────────────────────────────────────────
 
 /** main.ts offers every button here. Returns true when it was ours. */
