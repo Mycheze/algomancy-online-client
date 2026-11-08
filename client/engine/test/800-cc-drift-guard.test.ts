@@ -24,6 +24,15 @@
  * game now plays differently; that is a rules change for every saved game and
  * needs its own round.
  *
+ * Re-blessed SIX fuzz entries on 2026-11-08 (report #342, CR 720.6): a unit's
+ * mods now move with it between regions (the attack, a counterattacker's
+ * arrival), where they used to keep the region they were applied in.
+ * `shared:2`, `shared:5`, `shared:6`, `draft:102`, `draft:103` and
+ * `constructed:206` moved. Measured before the re-bless, by recording every step
+ * on both engines: the same actions, the same events and the same legal lists at
+ * every step, and the states identical once each mod's region is set to its
+ * host's. Every reference run and the other fuzz entries are untouched.
+ *
  * Re-blessed WHOLE a second time on 2026-11-08: a trigger set off by a play or
  * activation now gives that player priority first (D2.9), on a judge's answer the
  * owner adopted. Only that order moved.

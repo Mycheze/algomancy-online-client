@@ -8309,6 +8309,21 @@ export class E {
   }
 
   /**
+   * CR 720.6: unit (or spell token) `u` goes to `region`, and its mods with it —
+   * a mod is part of its host, "not separate from it", but it is an entity of
+   * its own whose `region` is read wherever a mod's region matters (the region a
+   * trashed mod counts in, CR 505.6; a mod's own triggers). Report #342: an
+   * attack moved the host and not its mods, so a mod trashed off a recalled
+   * attacker counted in the home region and Dropslime missed it. Every move of
+   * a unit between regions goes through here; the fuzz invariant refuses a mod
+   * whose region is not its host's.
+   */
+  moveToRegion(u: Entity, region: number): void {
+    u.region = region;
+    for (const id of u.mods) { const m = this.entity(id); if (m) m.region = region; }
+  }
+
+  /**
    * CR 711.1: `to` gains control of unit `u`. The one control-change primitive —
    * four card batches used to carry their own copy, and they disagreed.
    *
@@ -8383,10 +8398,7 @@ export class E {
     u.controller = to;
     for (const id of u.mods) { const m = this.entity(id); if (m) m.controller = to; }
     if (!opts?.keepFormation) this.removeFromFormation(u.id);
-    if (!this.s.regions[u.region]!.presentSeats.includes(to)) {
-      u.region = this.homeRegion(to);
-      for (const id of u.mods) { const m = this.entity(id); if (m) m.region = u.region; }
-    }
+    if (!this.s.regions[u.region]!.presentSeats.includes(to)) this.moveToRegion(u, this.homeRegion(to));
     const ev = this.ev('controlChanged', `${this.pname(to)} gains control of ${u.card} (from ${this.pname(from)}).`,
       { unit: u.id, card: u.card, from, to, region: u.region });
     this.fireEvent('controlChanged', ev);
@@ -16716,7 +16728,7 @@ export class E {
       // units/tokens NIT sent out during blocks now arrive in IT's region
       for (const id of b.sentAttackers) {
         const u = this.entity(id);
-        if (u) { u.absent = false; u.region = this.homeRegion(this.initiative); }
+        if (u) { u.absent = false; this.moveToRegion(u, this.homeRegion(this.initiative)); }
       }
       // CR 610.2e: they exist again, in a NEW region, so this is the first moment
       // their stats can be read — and `checkDeaths` skipped them for as long
@@ -16747,8 +16759,10 @@ export class E {
     this.ev('regroup', 'Regroup: everyone returns home; damage, temporary changes and spell tokens are cleaned up.');
     // (1) all units and players return to their regions
     for (const e of Object.values(this.s.entities)) {
-      if (e.kind === 'unit') { e.region = this.homeRegion(e.controller); e.absent = false; }
-      if (e.kind === 'mod') { const h = e.modOf !== undefined ? this.entity(e.modOf) : undefined; if (h) e.region = h.region; }
+      // a unit's mods come home with it (CR 720.6). This used to be a second
+      // `kind === 'mod'` arm copying `host.region`, which read a stale host
+      // whenever the mod's id came before its host's (a mod moved onto a newer unit)
+      if (e.kind === 'unit') { this.moveToRegion(e, this.homeRegion(e.controller)); e.absent = false; }
       // a spell token comes home too. It never used to matter (every token was
       // erased two steps below), but one that SURVIVES regroup — Harbinger of
       // Immolation — must not be left stranded in the region the battle was

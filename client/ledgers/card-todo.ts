@@ -186,17 +186,6 @@ const OPEN: TodoEntry[] = [
   // ── the report triage of 2026-11-06 ────────────────────────────────────
   // ── the report triage of 2026-11-07 ────────────────────────────────────
   {
-    id: 536, area: "engine", severity: "major",
-    cards: ["Dropslime", "Bloated Manablub", "Molten Upheaval", "Void Memory", "Auric Ascendant"],
-    title: "a modded unit's mods stay behind in its home region when it attacks: a mod trashed in that battle is not counted for Dropslime",
-    detail: "Report #342 (invi, ASSX, 2026-11-07): \"augments falling off of a recalled creature should count as trashed for dropslime\". They do fire 'trashed', but noteTrashed (engine.ts ~line 3612) bumps the battle tally of `anchor.region`, and the anchor is the mod entity, whose region is stale. declareAttack moves the attackers into the battle region with `for (const id of [...columns.flat(), ...spellTokens]) e.entity(id)!.region = b.region;` (apply.ts ~line 2550) and never touches their mods, though every other region move does: the controller change (engine.ts ~line 8358, `for (const id of u.mods) … m.region = u.region`), a mod moved to a new host (~13957), and the regroup resync (~16650). So for the whole battle an attacker's mods report its home region. Dropslime (\"I deal damage equal to the cards trashed in this battle\") reads battleCounter(region, 'trashed'), Muck Rummager the per-seat one. The class, to sweep before calling it one counter: every reader of a mod entity's `.region` during battle — the two mod noteTrashed calls (engine.ts ~4578, ~7891), the radiator walk that groups anchors by `anchor.region` (~2939-2950: a radiating graft on an attacker may project into the wrong region), and anything keyed on `item.region` for a mod's own trigger.",
-    evidence: "Report #342; ASSX fetched and replayed 2026-11-07 (steward triage repair), 298/298, no divergence: [226]-[227] Yagamino grafts Molten Upheaval (mod 91) and Void Memory (mod 92) onto Bloated Manablub (unit 90) in region 0; [250] Manablub attacks into region 1; before [258] the state has unit 90 in region 1 and mods 91, 92 in region 0; [258] Auric Ascendant recalls Manablub, 'trashed' fires for both mods with region 0; at [294] battleCounters are [{trashed:2,'trashed:0':2},{trashed:5,…}], and the two Dropslimes [295], [297] deal 5 each where seven cards were trashed in the battle.",
-    fix: "Move the mods with their host when an attack is declared (the same one-liner engine.ts ~8358 uses), or better, have a mod's region always read through its host so it cannot go stale. Reproducer: a grafted or augmented unit attacks into the other region and is recalled or killed there; Dropslime's battle count must include its mods. Then sweep the class above, with a test for a radiating mod on an attacker if one exists.",
-    proof: () => still('engine/src/apply.ts', "for (const id of [...columns.flat(), ...spellTokens]) e.entity(id)!.region = b.region;"),
-    reportId: 342,
-    status: 'open',
-  },
-  {
     id: 538, area: "engine", severity: "major",
     cards: ["Throwing Boulder", "Carapace Devourer", "Skybreaker", "Sprouter", "Prismatic Observer"],
     title: "a unit sacrificed or erased as its own ability's cost forgets what its column shared with it: Throwing Boulder beside a Deadly unit throws a plain 3",

@@ -2548,7 +2548,8 @@ function doDeclareAttack(e: E, seat: Seat, columns: EntityId[][], spellTokens: E
   b.columns = columns.map(c => c.slice());
   b.happened = true;
   // attackers (and riding spell tokens, and the player) enter the region
-  for (const id of [...columns.flat(), ...spellTokens]) e.entity(id)!.region = b.region;
+  // (with their mods, CR 720.6 — report #342)
+  for (const id of [...columns.flat(), ...spellTokens]) e.moveToRegion(e.entity(id)!, b.region);
   const present = e.s.regions[b.region]!.presentSeats;
   if (!present.includes(seat)) present.push(seat);
   const ev = e.ev('attackDeclared', `${e.pname(seat)} attacks with ${columns.length} column(s).`, { seat, region: b.region });

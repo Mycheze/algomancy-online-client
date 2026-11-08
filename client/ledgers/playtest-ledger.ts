@@ -228,8 +228,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 342, room: "ASSX", date: "2026-11-07",
     report: "invi, seat 1: \"augments falling off of a recalled creature should count as trashed for dropslime\"",
-    status: 'live',
-    note: "Real. Replayed (298/298): Yagamino's Bloated Manablub was grafted (Molten Upheaval, Void Memory) at home in region 0 [226]-[227], attacked into invi's region 1 [250] and was recalled by Auric Ascendant [258]; both mods were trashed, but the battle tally counted them under region 0 (battleCounters [{trashed:2},{trashed:5}] at [294]), so each Dropslime [295], [297] dealt 5, not 7. The mods kept the region they were applied in: declaring an attack moves the attackers' region and not their mods'. CT-536.",
+    status: 'fixed',
+    guards: [
+      "1183-mods-travel-with-their-host.test.ts::a mod trashed off a recalled attacker counts as trashed in that battle",
+    ],
+    note: "Real. Replayed (298/298): Yagamino's Bloated Manablub was grafted (Molten Upheaval, Void Memory) at home in region 0 [226]-[227], attacked into invi's region 1 [250] and was recalled by Auric Ascendant [258]; both mods were trashed, but the battle tally counted them under region 0 (battleCounters [{trashed:2},{trashed:5}] at [294]), so each Dropslime [295], [297] dealt 5, not 7. The mods kept the region they were applied in: declaring an attack moves the attackers' region and not their mods'. CT-536. Fixed 2026-11-08: a unit's mods now move with it on every region move (the attack, a counterattacker's arrival, control change, regroup); replayed at its recording commit with the fix, both Dropslimes deal 7.",
   },
   {
     id: 343, room: "ZFHC", date: "2026-11-07",

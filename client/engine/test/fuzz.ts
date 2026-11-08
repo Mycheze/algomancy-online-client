@@ -185,6 +185,9 @@ export function checkInvariants(s: GameState): void {
       if (!m) { die(`ghost mod ${modId} on ${e.card}`); return; }
       if (m.modOf !== e.id) die(`mod ${m.card} does not point back to host ${e.card}`);
       if (m.kind !== 'mod') die(`non-mod in mod stack of ${e.card}`);
+      // CR 720.6: a mod is part of its host, so it is where its host is (report
+      // #342: an attack moved the host and left its mods' trashes counted at home)
+      if (m.region !== e.region) die(`mod ${m.card} is in region ${m.region}, its host ${e.card} in ${e.region}`);
     }
     if (e.kind === 'mod') {
       const host = e.modOf !== undefined ? s.entities[e.modOf] : undefined;
