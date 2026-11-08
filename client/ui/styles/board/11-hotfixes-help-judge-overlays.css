@@ -27,6 +27,8 @@
 /* CT-381: a usable bin card and, on touch only, the button that uses it (a
    finger's tap on the card itself only reads it — report #201) */
 .binentry { display: flex; flex-direction: column; gap: 4px; width: 92px; }
+/* CT-537: what a targeted bin card is aimed at by, under it in the bin dialog */
+.bintgtby { font-size: 11px; line-height: 1.25; color: var(--target); overflow-wrap: anywhere; }
 .binuse { display: none; }
 html.touch .binuse { display: block; width: 100%; padding: 4px 2px; font-size: 12px; }
 /* CT-408: the button a finger's tap leaves on its own spell token (Cast) or a

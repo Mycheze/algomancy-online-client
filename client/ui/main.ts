@@ -4325,7 +4325,8 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
    * hand-placed slots, and a fix that made the panel grow would move every
    * region's layout for a case that lasts one priority window.
    */
-  const binTgt = binTargetIndexes(p);
+  const binAim = binTargets(p);   // CT-537: and by what
+  const binTgt = [...binAim.keys()].sort((a, b) => a - b);
   const binShown = [
     ...pl.bin.map((_n, i) => i).filter(i => !binTgt.includes(i)).slice(-Math.max(0, 3 - binTgt.length)),
     ...binTgt.slice(-3),
@@ -4338,7 +4339,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
         return cardHtml(pl.bin[i]!, {
           anim: binView === p ? undefined : binKeys[i],
           playable: binLive.has(i),
-          ...(tgt ? { badges: [binTargetBadge(true)] } : {}),
+          ...(tgt ? { badges: [binTargetBadge(true, binAim.get(i) ?? [])] } : {}),
           data: `${binLive.has(i) ? `data-btn="binplay" data-p="${p}" data-i="${i}" ` : ''}${
             tgt ? 'data-bintgt="1"' : ''}`.trim(),
         });
@@ -4658,21 +4659,30 @@ function binUsableIndexes(legal: readonly Action[]): Set<number> {
  * `E.binIndexOf` resolves the ref, so a `nth` copy lands on the copy the
  * ENGINE will look up at resolution, and a ref whose card has left the bin
  * surfaces nothing rather than surfacing the wrong card.
+ *
+ * CT-537 (report #341, ASSX): it keeps WHAT aims at each entry too —
+ * bin index → the aiming stack items' names, bottom of the stack first, one
+ * name per item. "🎯 targeted" alone could not say which of two Dropslime
+ * copies Blightwalker's recall was on and which Combustible Bogwalker's.
+ * The name is the stack row's own (`it.card ?? it.label`), so the chip and
+ * the row a player hovers read the same.
  */
-function binTargetIndexes(seat: Seat): number[] {
+function binTargets(seat: Seat): Map<number, string[]> {
   const e = q();
-  const out: number[] = [];
+  const out = new Map<number, string[]>();
   for (const it of h.state.stack) {
+    const hit = new Set<number>();
     for (const p of it.parts) {
       if (p.spent) continue;   // a spent part will do nothing — it aims at nothing
       for (const t of p.targets) {
         if (!('bin' in t) || t.bin.seat !== seat) continue;
         const i = e.binIndexOf(t.bin);
-        if (i >= 0 && !out.includes(i)) out.push(i);
+        if (i >= 0) hit.add(i);
       }
     }
+    for (const i of hit) out.set(i, [...(out.get(i) ?? []), it.card ?? it.label]);
   }
-  return out.sort((a, b) => a - b);
+  return out;
 }
 
 /**
@@ -4688,11 +4698,17 @@ function binTargetIndexes(seat: Seat): number[] {
  * 40px sent-strip thumb and a 116px cache entry" — so the crosshair goes on
  * the thumb and the words go where there is room for them.
  */
-const binTargetBadge = (short: boolean): Badge => ({
-  t: short ? '🎯' : '🎯 targeted', cls: 'tgtnow',
-  title: 'something on the stack is aiming at this card — it is shown here so both '
-    + 'players can see it without opening the bin',
-});
+const binTargetBadge = (short: boolean, aimers: readonly string[]): Badge => {
+  // CT-537: say BY WHAT, on hover on both surfaces. The chip's own label stays
+  // short — the strip holds ~14 characters and "Combustible Bogwalker" is 21 —
+  // so the dialog spells the names out under the card instead (.bintgtby).
+  const who = aimers.length ? aimers.join(' and ') : 'something on the stack';
+  return {
+    t: short ? '🎯' : '🎯 targeted', cls: 'tgtnow',
+    title: `${who} ${aimers.length > 1 ? 'are' : 'is'} aiming at this card — it is shown here so both `
+      + 'players can see it without opening the bin',
+  };
+};
 
 /** the full-bin dialog (opened from a region's mini bin) — bin cards keep
  * their data-act so augment/graft-from-bin still works from here */
@@ -4704,7 +4720,7 @@ function binDialogHtml(): string {
   const legal = legalFor(p);
   const binKeys = nameKeys(pl.bin, `b${p}:`);
   const live = binUsableIndexes(legal);
-  const tgt = binTargetIndexes(p);   // CR D6.6d/CT-169
+  const aim = binTargets(p);   // CR D6.6d/CT-169, and CT-537's names
   let anyUsable = false;
   const items = pl.bin.map((n, i) => {
     // #4: bin cards that can be applied as mods RIGHT NOW carry a badge and glow
@@ -4727,7 +4743,8 @@ function binDialogHtml(): string {
     const badges: Badge[] = [];
     // CR D6.6d/CT-169: the same chip the region thumb wears, first, because "this
     // is what the spell is pointed at" outranks every route chip below it
-    if (tgt.includes(i)) badges.push(binTargetBadge(false));
+    const aimers = aim.get(i);
+    if (aimers) badges.push(binTargetBadge(false, aimers));
     if (canAug || canGraft) {
       badges.push({
         t: `${canAug ? txtIcon('augment', '+') : ''}${canGraft ? txtIcon('graft', '[Switch]') : ''} usable as mod`,
@@ -4738,16 +4755,19 @@ function binDialogHtml(): string {
     if (canPlay) badges.push({ t: '▶ playable from bin', cls: 'proph on' });
     const card = cardHtml(n, {
       playable: usable, badges, anim: binKeys[i],
-      data: `data-act="bin" data-p="${p}" data-i="${i}"${tgt.includes(i) ? ' data-bintgt="1"' : ''}`,
+      data: `data-act="bin" data-p="${p}" data-i="${i}"${aimers ? ' data-bintgt="1"' : ''}`,
     });
     // CT-381 (report #201): a finger's tap on the card only READS it, and a
     // dialog's cards never drag — so a usable card carries a button, the
     // finger's route to the same handleBinClick a mouse click on the card
     // reaches. Shown on touch only (style.css .binuse); a button is a button.
-    if (!usable) return card;
+    // CT-537 (report #341): under a targeted card, the whole of "by what", with
+    // room to wrap — two Dropslime copies, two recalls, each says whose it is
+    const by = aimers ? `<div class="bintgtby">by ${esc(aimers.join(' and '))}</div>` : '';
+    if (!usable) return by ? `<div class="binentry">${card}${by}</div>` : card;
     const routes = [canPlay, canProph, canAug || canGraft].filter(Boolean).length;
     const verb = routes > 1 ? 'Use…' : canPlay ? '▶ Play' : canProph ? '📜 Prophesy' : `${txtIcon('augment', '+')} Use as mod`;
-    return `<div class="binentry">${card}<button class="binuse" data-btn="binuse" data-p="${p}" data-i="${i}">${verb}</button></div>`;
+    return `<div class="binentry">${card}${by}<button class="binuse" data-btn="binuse" data-p="${p}" data-i="${i}">${verb}</button></div>`;
   }).join('');
   return `<div class="overlay mainonly"><div class="overlaybox binbox">
     <h3>${esc(pl.name)}'s bin (${pl.bin.length})</h3>
@@ -8410,7 +8430,7 @@ function targetSelectors(t: TargetRef): string[] {
   if ('unit' in t) return [`.card[data-anim="e${t.unit}"]`, `[data-anim="e${t.unit}"]`];
   if ('player' in t) return [`[data-animzone="life:${t.player}"]`];
   if ('stack' in t) return [`.stackcard[data-anim="s${t.stack}"]`];
-  // CR D6.6d/CT-169: the targeted card is now ON the strip (see `binTargetIndexes`),
+  // CR D6.6d/CT-169: the targeted card is now ON the strip (see `binTargets`),
   // so the arrow can land on the CARD and only fall back to the pile. The key
   // is `nameKeys`'s, recomputed rather than passed down, for the same reason
   // `binIndexOf` is the engine's: two spellings of one id is how the arrow

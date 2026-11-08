@@ -197,16 +197,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 537, area: "client", severity: "minor",
-    title: "a card that a stack item aims at says only that it is targeted, not by what",
-    detail: "Report #341 (invi, ASSX, 2026-11-07, feature): \"when targeting, cards that are already targeted should not only say that they are targeted, but also by what (because it's sometimes ambiguous)\". A bin card aimed at carries binTargetBadge (ui/main.ts ~line 4684): \"🎯\" on a region thumb, \"🎯 targeted\" in the bin dialog, with a tooltip that names nothing. The stack rows' hover arrows (stackArrows, main.ts ~8434) show the link one item at a time, from the stack side only. With two items aiming at copies of one card the player cannot tell which is which from the card.",
-    evidence: "Report #341; ASSX replayed 2026-11-07 (steward triage repair): at [276] Blightwalker's recall [269] and Combustible Bogwalker's recall (item 114) both aim at Dropslime copies in invi's bin. Hypothesis: that is the ambiguity invi meant; the report does not name the card.",
-    fix: "Name the aiming item(s) on the card: the badge's tooltip (and the dialog's long label) lists the stack items aiming at it, e.g. \"🎯 Blightwalker\". Check units on the board too, wherever a target mark is drawn. Small; a page/ui test over the badge text.",
-    proof: () => still('ui/main.ts', "t: short ? '🎯' : '🎯 targeted', cls: 'tgtnow',"),
-    reportId: 341,
-    status: 'open',
-  },
-  {
     id: 538, area: "engine", severity: "major",
     cards: ["Throwing Boulder", "Carapace Devourer", "Skybreaker", "Sprouter", "Prismatic Observer"],
     title: "a unit sacrificed or erased as its own ability's cost forgets what its column shared with it: Throwing Boulder beside a Deadly unit throws a plain 3",

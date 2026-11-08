@@ -219,8 +219,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 341, room: "ASSX", date: "2026-11-07",
     report: "invi, seat 1 (feature): \"when targeting, cards that are already targeted should not only say that they are targeted, but also by what (because it's sometimes ambiguous)\"",
-    status: 'live',
-    note: "A fair request, not a defect. Replayed (298/298): at [276] two stack items aimed at Dropslime copies in invi's bin at once, Blightwalker's recall [269] and Combustible Bogwalker's recall (item 114); a bin card aimed at shows only the badge \"🎯 targeted\" (ui/main.ts binTargetBadge), which names nothing. The hover arrows from a stack row exist, but nothing on the card says which item aims at it. CT-537.",
+    status: 'fixed',
+    guards: [
+      "1182-bin-target-names-its-aimer.test.ts::each copy names its own aimer (the ASSX case)",
+    ],
+    note: "A fair request, not a defect. Replayed (298/298): at [276] two stack items aimed at Dropslime copies in invi's bin at once, Blightwalker's recall [269] and Combustible Bogwalker's recall (item 114); a bin card aimed at shows only the badge \"🎯 targeted\" (ui/main.ts binTargetBadge), which names nothing. The hover arrows from a stack row exist, but nothing on the card says which item aims at it. CT-537. Fixed 2026-11-08: a targeted bin card's crosshair names the stack items aiming at it on hover, on the region strip and in the bin dialog, and in the dialog the card says it under itself (\"by Blightwalker\").",
   },
   {
     id: 342, room: "ASSX", date: "2026-11-07",
