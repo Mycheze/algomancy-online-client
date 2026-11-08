@@ -171,6 +171,7 @@ export const BROWSER_KEYS: readonly StoredLine[] = [
   { covers: ['algoAutopass', 'algoBluffHaste', 'algoLogVerbose'], what: 'three in-game display preferences: auto-pass, bluff haste, and how much the game log shows' },
   { covers: ['algoClockMs'], what: 'the clock length you last chose for a game you started' },
   { covers: ['algoMatchClockMs'], what: 'the clock you last chose for a Competitive match you started' },
+  { covers: ['algoCcDeck'], what: 'the deck you last picked to bring to a Competitive match, so a reload does not swap it for another' },
   { covers: ['algoHomeMode', 'algoHomeFormat'], what: 'whether the home screen’s Play card was last on Draft or Constructed, and Casual or Competitive' },
   { covers: ['algoCustomRules'], what: 'the custom rules you last set up for a live draft, so the panel remembers them' },
   { covers: ['algoSingleCard'], what: 'the card you last picked for a Single Card Duel' },
