@@ -20,6 +20,8 @@ Endpoints
   GET  /api/cardnames    every card name with art, for hover previews
   GET  /api/examples     example questions for the empty page
   GET  /api/draft        a reproducible p1p1/p1p6 pack
+  GET  /api/review/questions  the last answers, for the judges' review queue. The
+                         game server's, with ALGO_BOT_TOKEN in x-algo-bot; 404 otherwise
   GET  /art/{name}       card art image
   GET  /stack?q=A+B      the stacked art for a modified card
   /icons/...             game icon images (data/icons/)
@@ -31,6 +33,7 @@ Run
   # then open http://localhost:8000  (share it publicly with a Cloudflare Tunnel)
 """
 
+import hmac
 import os
 from pathlib import Path
 from urllib.parse import quote
@@ -57,7 +60,7 @@ import draft
 import mods
 import store
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, Header, HTTPException, Query
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -255,6 +258,26 @@ def api_feedback(req: FeedbackRequest):
         raise HTTPException(status_code=400, detail="rating must be good|weird|bad")
     store.log_feedback(req.response_id, req.rating, req.session_id or "web")
     return {"ok": True}
+
+
+# BL-17 — THE JUDGES' REVIEW QUEUE reads the answers from here. Only the game
+# server asks (client/server/api-judge-review.ts), and it decides which accounts
+# may see them (a judge or owner badge); this side checks only that the caller IS
+# the game server: the x-algo-bot header against ALGO_BOT_TOKEN, the same secret
+# the two halves already share. No token configured, or the wrong one, and the
+# path does not exist — a 404 like any other, so the log's questions are never
+# public. Read at call time, so a test can set it.
+def _bot_allowed(given: str | None) -> bool:
+    secret = os.getenv("ALGO_BOT_TOKEN", "")
+    return bool(secret) and hmac.compare_digest((given or "").encode(), secret.encode())
+
+
+@app.get("/api/review/questions")
+def api_review_questions(limit: int = Query(200, ge=1, le=500),
+                         x_algo_bot: str | None = Header(default=None)):
+    if not _bot_allowed(x_algo_bot):
+        raise HTTPException(status_code=404, detail="Not Found")
+    return {"questions": store.recent_answers(limit)}
 
 
 # mods.ComboError phrases its reasons in Discord markdown (**Card Name**). The page

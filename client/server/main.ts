@@ -95,6 +95,7 @@ import { currentChallenge, weekWindow } from './challenges.ts';
 import { allRows, rowFor } from '../ui/cardindex.ts';
 import { CR_DOC_HTML, CR_JSON } from '../engine/scripts/paths.mjs';
 import { crReviewRoutes } from './api-crreview.ts';
+import { judgeReviewRoutes, type BotAnswer } from './api-judge-review.ts';
 import { botRoutes } from './api-bot.ts';
 import { simulateInWorker, warmSimulator } from './simulate-worker.ts';
 import { linkRoutes } from './api-link.ts';
@@ -1170,6 +1171,21 @@ async function handleRequest(req: import('node:http').IncomingMessage,
       return res.end(JSON.stringify({ rulings: [], error: String(err instanceof Error ? err.message : err) }));
     }
   }
+
+  // BL-17 — the judges' review queue (api-judge-review.ts): the bot's recent
+  // answers, read off its log over the shared token, and the judges' flags on
+  // them. A badged account or an admin; a 404 to everybody else.
+  if (await judgeReviewRoutes(req, res, path, url, {
+    fetchQuestions: async (limit: number): Promise<BotAnswer[]> => {
+      if (!BOT_TOKEN) throw new Error('ALGO_BOT_TOKEN is not set on this server');
+      const r = await fetch(`${BOT_URL}/api/review/questions?limit=${limit}`, {
+        headers: { 'x-algo-bot': BOT_TOKEN }, signal: AbortSignal.timeout(10_000),
+      });
+      if (!r.ok) throw new Error(`the bot answered ${r.status}`);
+      const body = await r.json() as { questions?: BotAnswer[] };
+      return Array.isArray(body.questions) ? body.questions : [];
+    },
+  })) return;
 
   // the in-game judge popup: proxy to the rules bot (same box, :8000) so the
   // client needs no CORS and no second origin

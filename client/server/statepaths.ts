@@ -89,6 +89,16 @@ export const leagueFile = (): string => process.env['ALGO_LEAGUE_FILE'] ?? join(
 export const crCommentsFile = (): string => process.env['ALGO_CR_COMMENTS_FILE'] ?? join(VAR_DIR, 'cr-comments.jsonl');
 
 /**
+ * BL-17 — the judges' flags on the rules bot's answers (api-judge-review.ts):
+ * one JSON line per flag, unflag or resolve, append-only, folded last write
+ * wins per (answer, judge). A flag row carries a COPY of the question and the
+ * answer, so a flagged answer stays in the queue after it has scrolled out of
+ * the bot's log window, and after the bot's own log is gone. Each row carries
+ * the judge's account id; the page is never sent it.
+ */
+export const judgeFlagsFile = (): string => process.env['ALGO_JUDGE_FLAGS_FILE'] ?? join(VAR_DIR, 'judge-flags.jsonl');
+
+/**
  * Weekly challenges (docs/21-weekly-challenges.md, challenge-store.ts): a
  * directory of two files. `runs.jsonl` is every run anybody submitted —
  * account id and name, the ordered deck, the whole action log, the score the

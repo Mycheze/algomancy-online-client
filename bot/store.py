@@ -247,3 +247,97 @@ def read_games(user_id=None):
                     games.append(record)
     return games
 
+
+
+# --- the judges' review queue (BL-17) ------------------------------------
+# Badged judges read the answers the bot gave and flag the bad ones. The flags
+# are the GAME SERVER's (var/judge-flags.jsonl, keyed on response_id, with the
+# judge's account); this side only hands over what was asked and answered,
+# through app.py's token-gated GET /api/review/questions.
+
+REVIEW_TEXT_MAX = 6000      # one question or answer, as the review page shows it
+REVIEW_TURN_MAX = 1500      # one earlier turn of a follow-up's thread
+REVIEW_TURNS = 4            # how many earlier turns come with a follow-up
+
+
+def _tail_lines(path, want):
+    """The last `want` non-empty lines of `path`, newest first — read backwards
+    in blocks, because responses.jsonl carries every retrieved chunk in full and
+    is far too big to read whole for a page of fifty questions."""
+    out, rest = [], b""
+    with path.open("rb") as f:
+        f.seek(0, 2)
+        pos = f.tell()
+        while pos > 0 and len(out) < want:
+            step = min(1 << 16, pos)
+            pos -= step
+            f.seek(pos)
+            chunk = f.read(step) + rest
+            lines = chunk.split(b"\n")
+            rest = lines[0]               # may be cut mid-line; finished next block
+            for line in reversed(lines[1:]):
+                if line.strip():
+                    out.append(line)
+                    if len(out) >= want:
+                        break
+        if pos == 0 and rest.strip() and len(out) < want:
+            out.append(rest)
+    return out
+
+
+def _latest_ratings():
+    """response_id -> the last 👍/👎 anybody clicked on it (good | weird | bad)."""
+    path = feedback_log()
+    ratings = {}
+    if not path.exists():
+        return ratings
+    with path.open(encoding="utf-8") as f:
+        for line in f:
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if row.get("response_id") and row.get("rating"):
+                ratings[row["response_id"]] = row["rating"]
+    return ratings
+
+
+def recent_answers(limit=200):
+    """The last `limit` answers the bot gave, newest first, as the judges'
+    review page shows them: what was asked, what it said, where (web — the site
+    and the in-game judge box — or discord), the thread before a follow-up, and
+    the players' own rating. A failed call (`error`) answered nothing and is
+    left out. No user id of any kind: a judge reviews the answer, not the asker."""
+    path = responses_log()
+    if not path.exists():
+        return []
+    with _lock:
+        lines = _tail_lines(path, max(limit * 2, limit + 20))
+    ratings = _latest_ratings()
+    out = []
+    for line in lines:
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if row.get("error") or not row.get("response_id") or not row.get("answer"):
+            continue
+        surface = row.get("surface") or ("web" if row.get("channel_id") == "web" else "discord")
+        turns = [{"role": t.get("role"), "content": str(t.get("content", ""))[:REVIEW_TURN_MAX]}
+                 for t in (row.get("history") or [])[-REVIEW_TURNS:] if isinstance(t, dict)]
+        item = {
+            "id": row["response_id"],
+            "ts": row.get("ts"),
+            "kind": row.get("kind"),
+            "surface": surface,
+            "question": str(row.get("question", ""))[:REVIEW_TEXT_MAX],
+            "answer": str(row.get("answer", ""))[:REVIEW_TEXT_MAX],
+        }
+        if turns:
+            item["history"] = turns
+        if row["response_id"] in ratings:
+            item["rating"] = ratings[row["response_id"]]
+        out.append(item)
+        if len(out) >= limit:
+            break
+    return out
