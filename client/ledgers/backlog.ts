@@ -494,7 +494,14 @@ const OPEN: Entry[] = [
       + 'there is actually unreadable") is superseded for the PLAY ZONE by the owner\'s own '
       + 'request: the regions board, BL-45 / docs/18. Regions were unreadable — that is the '
       + 'case the clause allowed for. The rest of this entry (home, lobby, profile, post-game, '
-      + 'light and aimed away from the play area) stands.',
+      + 'light and aimed away from the play area) stands.\n\n'
+      + '2026-11-08 (steward): post-game — the box no longer scrolls as a whole. Its body is two columns '
+      + '(pages/postgame.ts .pgcols: .pgstats = the table + Unlocked, .pgside = the notes, keep-it forms, '
+      + 'buttons, peek); from 900px wide they sit side by side in a 920px box and each scrolls inside itself, '
+      + 'capped at 100dvh - 180px (19-postgame.css); narrower, they stack exactly as before. A full table plus '
+      + 'four buttons was ~870px, so at 1024x768 the buttons went under the fold. Guarded by '
+      + '1176-postgame-fits-window.test.ts. Reasoned, not looked at (the home box has no browser): worth an '
+      + 'eye at 1024x768 and 1440x900.',
   },
   {
     id: 'BL-11',

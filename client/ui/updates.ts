@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-08', kind: 'change', text: 'The end-of-game screen fits on one screen: on a computer or tablet the stats sit on the left and Rematch, Return to home and the rest on the right, so the buttons are never pushed out of sight.' },
   { date: '2026-11-08', kind: 'new', text: 'Competitive: a best-of-three\'s result now lists who won each game, not just the score. And the deck you pick for Competitive is remembered, so it is still chosen after a reload or when you come back.' },
   { date: '2026-11-08', kind: 'new', text: 'Judges and the site\'s owner now wear their badge at the table: a "Judge L1–L3" or "Owner" chip sits beside their name on the board, for both players and anyone watching.' },
   { date: '2026-11-07', kind: 'fix', text: 'A Blightwalker grafted onto another unit can now bring back the very card whose trashing set it off — Splort carrying Blightwalker can recall the Dropslime you just discarded. Blightwalker\'s own trigger still cannot pick itself.' },

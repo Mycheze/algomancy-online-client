@@ -9,6 +9,28 @@
 .pgbox.won { border-color: var(--glow); }
 .pgbox.lost { border-color: var(--color-border-strong); }
 
+/* BL-10, 2026-11-08: the box fits the window instead of scrolling as a whole.
+   Its body is two columns — what happened (.pgstats: the table, Unlocked) and
+   what to do next (.pgside: the notes, the keep-it forms, the buttons). Narrow,
+   they stack with the box's own gap, exactly as before; from 900px wide they
+   sit side by side, and only the stats column scrolls, so Rematch, Return to
+   home and the rest are never below the fold (a full stat table plus four
+   buttons was ~870px tall: the box scrolled at 1024x768 and the buttons went
+   under it, a guest's or a signed-out seat's keep-it form pushed them further).
+   test/1176. */
+.pgcols, .pgstats, .pgside { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }
+/* The columns' cap is in window units, not a percentage of the box: the box
+   has only a max-height, against which a percentage does not resolve. 180px is
+   what sits around them — the overlay's 16px and the box's 20px top and bottom,
+   the title block (~56px) and one gap — with room for a wrapped elements line;
+   the box keeps its own overflow: auto as the fallback for anything taller. */
+@media (min-width: 900px) {
+  .pgbox { width: min(920px, 100%); }
+  .pgcols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 320px); gap: var(--space-7);
+    align-items: start; }
+  .pgstats, .pgside { max-height: calc(100vh - 180px); max-height: calc(100dvh - 180px); overflow: auto; }
+}
+
 .pghead { text-align: center; }
 .pgtitle { font-size: 30px; font-weight: 700; letter-spacing: .02em; line-height: 1.1; }
 .pgbox.won .pgtitle { color: var(--glow); }

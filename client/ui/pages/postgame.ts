@@ -247,6 +247,7 @@ export function postGameHtml(v: PostGameView): string {
       <div class="pgsub">${sub}${v.elements !== null ? ` · ${v.elements}` : ''}</div>
     </div>
 
+    <div class="pgcols"><div class="pgstats">
     ${statTableHtml(o)}
 
     ${o.unlocked?.length ? `<div class="pgunlocked">
@@ -254,6 +255,7 @@ export function postGameHtml(v: PostGameView): string {
       ${o.unlocked.map(u => `<div class="pgach"><span class="achicon">${u.icon}</span>
         <span><b>${esc(u.name)}</b><br><span class="hint">${esc(u.desc)}</span></span></div>`).join('')}
     </div>` : ''}
+    </div><div class="pgside">
 
     ${concessionNote(o) ? `<div class="pgnote pgweight ${o.concession!.weight}">${concessionNote(o)}</div>` : ''}
     <div class="pgnote">${o.single
@@ -278,5 +280,6 @@ export function postGameHtml(v: PostGameView): string {
       ${button({ label: 'Join matchmaking queue', dataBtn: 'pg-queue' })}
     </div>
     <button class="pgpeek" data-btn="pg-close">view the final board</button>
+    </div></div>
   </div></div>`;
 }
