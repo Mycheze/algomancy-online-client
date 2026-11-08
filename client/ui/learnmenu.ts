@@ -3,7 +3,8 @@
  * Opened by anything carrying `data-learn` (the home screen's button), off the
  * board, as a layer beside #app — ui/helplayer.ts's pattern, including its
  * scrim rule: `.learnscrim`, never the board's overlay class. Pick an element
- * and start (or continue, or start over), or re-read any lesson.
+ * and start (or continue, or start over), start a "client tips only" game
+ * (BL-11: the rules lessons left out), or re-read any lesson.
  *
  * The markup is pages/learn.ts's (the design-system round, 2026-11-03); this
  * file keeps the layer, its clicks and its keys.
@@ -48,12 +49,13 @@ export function installLearnMenu(): void {
     // off the panel (the sheet's root, its scrim) or its ✕: the sheet's dismiss (pages/learn.ts)
     if (target.id === 'learnscrim' || target.closest('[data-sheet-dismiss]')) { open = false; paint(); return; }
     const btn = target.closest('[data-lmenu]') as HTMLElement | null;
-    const go = (fresh: boolean): void => { location.search = `?learn=play&el=${picked}${fresh ? '&new=1' : ''}`; };
+    const go = (fresh: boolean, tips = false): void => { location.search = `?learn=play&el=${picked}${fresh ? '&new=1' : ''}${tips ? '&tips=1' : ''}`; };
     switch (btn?.dataset['lmenu']) {
       case 'close': open = false; paint(); return;
       case 'el': if (isLearnElement(btn.dataset['el'])) picked = btn.dataset['el']; paint(); return;
       case 'start': case 'continue': go(false); return;
       case 'fresh': go(true); return;
+      case 'tips': go(true, true); return;   // BL-11: always a new game, the client tips only
       case 'read': {
         const l = ALL_LESSONS[Number(btn.dataset['i'])];
         if (l) { open = false; paint(); openLesson(l); }

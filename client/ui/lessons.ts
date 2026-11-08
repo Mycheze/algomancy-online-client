@@ -149,7 +149,7 @@ const inBattle = (c: LessonCtx): boolean => c.state.phase === 'battle';
 // glows), optional (it never holds a lesson back), and placed after the
 // lesson that explains the idea behind it. The words follow ui/tutorial.ts,
 // which is written off the handlers; every selector here is one ui/main.ts
-// draws (1173-lesson-client-tips.test.ts checks both).
+// draws (1180-lesson-client-tips.test.ts checks both).
 
 export const CLIENT_TIPS: readonly Lesson[] = [
   {
@@ -879,5 +879,23 @@ Ready for a person? Start a live draft from the home screen.`,
 
 /** every lesson a game can open, in order, ending with the end-of-game one */
 export const GAME_LESSONS: readonly Lesson[] = [...LESSONS, END];
+
+/** BL-11, the "tips only" start (owner, 2026-11-08, approving the tips in
+ * Learn to Play: one game, and a way in for players who already know
+ * Algomancy). The same game with none of the rules lessons: one nudge to say
+ * what this is, then only the client's controls, each at its moment. */
+export const TIPS_WELCOME: Lesson = {
+  id: 'tip-welcome', n: '', title: 'Client tips',
+  compact: true, optional: true,
+  when: () => true,
+  pages: [{
+    title: 'Just the controls',
+    body: 'This game skips the rules lessons. A small box like this one opens the first time each control of this client matters, and the button to use glows. The **prompt bar**, the yellow box above your hand, always says what to do next. **Hover** any card to read it; **right-click** it for everything else.',
+    highlight: ['.actionbar'],
+  }],
+};
+export const TIPS_LESSONS: readonly Lesson[] = [TIPS_WELCOME, ...CLIENT_TIPS, END];
+/** the lessons a Learn to Play game opens: all of them, or the client tips only */
+export const gameLessons = (tipsOnly: boolean): readonly Lesson[] => (tipsOnly ? TIPS_LESSONS : GAME_LESSONS);
 /** what the menu lists for re-reading (the compact nudge is not a lesson) */
 export const ALL_LESSONS: readonly Lesson[] = [...LESSONS.filter(l => !l.compact), FORMATS, INTERFACE];

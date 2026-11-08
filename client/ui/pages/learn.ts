@@ -21,6 +21,8 @@ export interface LearnMenuView {
   elements: readonly LearnElement[];
   /** a game in progress with the picked element: Continue and Start over */
   saved: boolean;
+  /** BL-11: that saved game is a "client tips only" one */
+  savedTips: boolean;
   /** every lesson, in order, and whether it has been shown already */
   lessons: { n: string; title: string; seen: boolean }[];
 }
@@ -32,6 +34,7 @@ export function learnMenuView(progress: LearnProgress | null, el: LearnElement):
     el,
     elements: LEARN_ELEMENTS,
     saved: !!(progress?.game && progress.element === el),
+    savedTips: !!(progress?.game && progress.element === el && progress.tips),
     lessons: ALL_LESSONS.map(l => ({ n: l.n, title: l.title, seen: seen.has(l.id) })),
   };
 }
@@ -42,7 +45,7 @@ export function learnMenuView(progress: LearnProgress | null, el: LearnElement):
  * reads a click on it, 307 and 1020 look for it); the scrim and the ✕ carry
  * the sheet's `data-sheet-dismiss`, which the layer closes on. */
 export function learnMenuHtml(v: LearnMenuView): string {
-  const { el, saved } = v;
+  const { el, saved, savedTips } = v;
   const els = v.elements.map(e =>
     `<button class="learnel el-${e} ${e === el ? 'on' : ''}" data-lmenu="el" data-el="${e}">${elIcon(e)}${e[0]!.toUpperCase()}${e.slice(1)}</button>`).join('');
   const lessons = v.lessons.map((l, i) =>
@@ -56,9 +59,11 @@ export function learnMenuHtml(v: LearnMenuView): string {
     <div class="learnels">${els}</div>
     <div class="learngo">
       ${saved
-        ? `${go(`Continue your ${el} game`, 'continue')}${go('Start over', 'fresh', 'secondary')}`
+        ? `${go(`Continue your ${el} ${savedTips ? 'tips ' : ''}game`, 'continue')}${go('Start over', 'fresh', 'secondary')}`
         : go(`Start the ${el} game`, 'start')}
     </div>
+    <p class="learnblurb">Already know Algomancy? Play the same game with no rules lessons, only short tips on this client's controls.</p>
+    <div class="learngo">${go('Client tips only', 'tips', 'secondary')}</div>
     <details class="learnlist"><summary>Read a lesson</summary><ol>${lessons}</ol></details>`,
   });
 }

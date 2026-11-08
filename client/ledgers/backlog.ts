@@ -562,7 +562,7 @@ const OPEN: Entry[] = [
       + 'client. Built on that, staged: five compact optional nudges (ui/lessons.ts CLIENT_TIPS — undo, '
       + 'blocking and send, targets, riding spell tokens, Pass through stack / Pass all / auto-yield / '
       + 'auto-pass), each opening the first time its control is usable and lighting the real control; '
-      + 'guarded by 1173-lesson-client-tips.test.ts (in ten real tutorial games the first four open in '
+      + 'guarded by 1180-lesson-client-tips.test.ts (in ten real tutorial games the first four open in '
       + 'every game, the token tip in three). NOT done, and the owner\'s call (handoff BL-11): whether '
       + 'this — plus a "client tips only" start for players who know the game — is the UI tutorial, or '
       + 'a separate scripted game is still wanted. Also open: the 📝 report button in a solo game was '

@@ -49,3 +49,15 @@ test('987 §3 a lesson already shown is ticked; every routed data-lmenu is drawn
   // closing is the sheet's: its scrim and its ✕ carry data-sheet-dismiss, which ui/learnmenu.ts closes on
   assert.equal([...html.matchAll(/data-sheet-dismiss/g)].length, 2, 'the scrim and the ✕');
 });
+
+test('987 §4 BL-11: "Client tips only" is always offered, and a saved tips game says so', () => {
+  const none = learnMenuHtml(learnMenuView(null, 'fire'));
+  assert.match(none, /data-lmenu="tips">Client tips only</);
+  assert.match(none, /Already know Algomancy\?/);
+  const tipsGame = { ...saved('fire'), tips: true } as LearnProgress;
+  assert.equal(learnMenuView(tipsGame, 'fire').savedTips, true);
+  assert.match(learnMenuHtml(learnMenuView(tipsGame, 'fire')), /data-lmenu="continue">Continue your fire tips game</);
+  assert.equal(learnMenuView(saved('fire'), 'fire').savedTips, false);
+  assert.equal(learnMenuView(tipsGame, 'water').savedTips, false, 'another element has no saved game');
+  assert.ok(lm(learnMenuHtml(learnMenuView(tipsGame, 'fire'))).includes('tips'));
+});

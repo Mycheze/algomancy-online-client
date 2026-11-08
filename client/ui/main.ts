@@ -170,7 +170,7 @@ import * as chrun from './challengerun.ts';
 import { DUMMY_DECK, challengeDeal, type ChallengeDef } from '../engine/src/challenge.ts';
 import { closeLesson, installLessonLayer, lessonTick } from './lessonlayer.ts';
 import { installLearnMenu, openLearnMenu } from './learnmenu.ts';
-import { GAME_LESSONS } from './lessons.ts';
+import { gameLessons } from './lessons.ts';
 // BL-06 — test mode's controls. A self-installing panel: it paints outside
 // #app, injects its own styles and claims its own clicks, and it draws nothing
 // unless the SERVER-pushed state says this room was dealt as a sandbox. Two
@@ -12328,7 +12328,7 @@ installReplayBar();
 // `?learn=play` game; off the board it is the reader the menu opens.
 installLearnMenu();
 installLessonLayer({
-  get lessons() { return learn.currentSolo() ? GAME_LESSONS : []; },
+  get lessons() { const cur = learn.currentSolo(); return cur ? gameLessons(!!cur.progress.tips) : []; },
   ctx: () => (learn.currentSolo() && NET?.joined && NET.state
     ? { state: NET.state, legal: NET.legal, seat: NET.seat } : null),
   seen: () => (learn.currentSolo()?.progress ?? learn.loadProgress())?.seen ?? [],
@@ -12362,7 +12362,7 @@ installLessonLayer({
       closeLesson();
       cur.server.rewindToTurn(NET.state.turn);
     } else if (btn === 'learn-new' && cur) {
-      location.search = `?learn=play&el=${cur.progress.element}&new=1`;
+      location.search = `?learn=play&el=${cur.progress.element}&new=1${cur.progress.tips ? '&tips=1' : ''}`;
     } else if (btn === 'learn-home') {
       location.href = location.pathname;
     }
@@ -12392,6 +12392,7 @@ if (params.has('room') && params.get('room')!.trim()) {
   // page. Everything from here on is the ordinary NET path, bot hidden and all.
   const solo = learn.startSolo(params.get('el'), {
     fresh: params.get('new') === '1',
+    tips: params.get('tips') === '1',   // BL-11: the client tips only (a new game; a resumed one keeps its kind)
     onBotStuck: why => noteBar(`the Tutorial Bot got stuck: ${why}`, { log: true }),
   });
   // a reload continues this game rather than dealing another

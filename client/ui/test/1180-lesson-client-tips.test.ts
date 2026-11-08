@@ -12,6 +12,9 @@
  *   §2 played for real: each tip opens at its own moment, never before the
  *      lesson that explains the idea, and the core lessons keep their order
  *   §3 a tip is a nudge: compact, optional, and not in the lesson menu
+ *   §4 the "client tips only" game (owner, 2026-11-08): the same game with
+ *      no rules lesson — a welcome nudge, then the tips at their moments —
+ *      and a saved tips game resumes as one
  *
  * Seeds 117300-117399.
  */
@@ -23,9 +26,9 @@ import '../../engine/src/index.ts';
 import type { Action, GameState } from '../../engine/src/types.ts';
 import { fallbackMove, tutorialBotV1 } from '../bot.ts';
 import { SoloServer } from '../solo.ts';
-import { newDeal } from '../learn.ts';
-import { dueLesson, pageBody, type LessonCtx } from '../lessonflow.ts';
-import { ALL_LESSONS, CLIENT_TIPS, GAME_LESSONS } from '../lessons.ts';
+import { newDeal, startSolo, loadProgress } from '../learn.ts';
+import { dueLesson, pageBody, type Lesson, type LessonCtx } from '../lessonflow.ts';
+import { ALL_LESSONS, CLIENT_TIPS, GAME_LESSONS, TIPS_LESSONS, TIPS_WELCOME, gameLessons } from '../lessons.ts';
 import { TUTORIAL } from '../tutorial.ts';
 import { LEARN_ELEMENTS } from '../lessondeck.ts';
 
@@ -53,7 +56,7 @@ function learner(s: GameState, legal: readonly Action[]): Action | undefined {
 interface Fired { id: string; turn: number; ctx: LessonCtx }
 
 /** one tutorial game, opening each lesson the moment it is due */
-function play(el: typeof LEARN_ELEMENTS[number], seed: number): Fired[] {
+function play(el: typeof LEARN_ELEMENTS[number], seed: number, lessons: readonly Lesson[] = GAME_LESSONS): Fired[] {
   const server = new SoloServer(newDeal(el, seed), tutorialBotV1());
   const msgs: { t: string; view?: GameState; legal?: Action[] }[] = [];
   const sock = server.socket();
@@ -64,7 +67,7 @@ function play(el: typeof LEARN_ELEMENTS[number], seed: number): Fired[] {
   for (let i = 0; i < 3000 && server.state.phase !== 'gameover'; i++) {
     const last = [...msgs].reverse().find(m => m.legal)!;
     const ctx: LessonCtx = { state: last.view!, legal: last.legal!, seat: 0 };
-    for (let l = dueLesson(GAME_LESSONS, { seen }, ctx); l; l = dueLesson(GAME_LESSONS, { seen }, ctx)) {
+    for (let l = dueLesson(lessons, { seen }, ctx); l; l = dueLesson(lessons, { seen }, ctx)) {
       seen.push(l.id);
       fired.push({ id: l.id, turn: ctx.state.turn, ctx });
     }
@@ -78,7 +81,7 @@ function play(el: typeof LEARN_ELEMENTS[number], seed: number): Fired[] {
 }
 
 test('§1 every control a tip lights up is drawn by the client', () => {
-  for (const t of CLIENT_TIPS) {
+  for (const t of [TIPS_WELCOME, ...CLIENT_TIPS]) {
     for (const p of t.pages) {
       assert.ok(p.highlight?.length, `${t.id}: points at something on the board`);
       for (const sel of p.highlight!) {
@@ -94,7 +97,7 @@ test('§1 every control a tip lights up is drawn by the client', () => {
 
 test('§1 every control a tip names in bold is named the same way in the interface guide', () => {
   const guide = TUTORIAL.flatMap(s => s.steps.map(st => `${st.label ?? ''} ${st.text}`)).join('\n').toLowerCase();
-  for (const t of CLIENT_TIPS) {
+  for (const t of [TIPS_WELCOME, ...CLIENT_TIPS]) {
     for (const p of t.pages) {
       const body = pageBody(p, null);
       for (const m of body.matchAll(/\*\*([^*]+)\*\*/g)) {
@@ -162,5 +165,42 @@ test('§3 a tip is a nudge: compact, optional, and not in the lesson menu', () =
     assert.ok(game.includes(t.id), `${t.id}: in the game's lesson order`);
     assert.ok(!ALL_LESSONS.some(l => l.id === t.id), `${t.id}: not a menu lesson`);
     assert.equal(t.n, '', `${t.id}: not numbered as a lesson`);
+  }
+});
+
+test('§4 tips only: no rules lesson ever opens; the welcome first, then every tip at its moment', () => {
+  assert.equal(gameLessons(false), GAME_LESSONS);
+  assert.equal(gameLessons(true), TIPS_LESSONS);
+  // the end-of-game screen (rewind, new game, the shop) is the same in both games; play() stops at game over
+  assert.ok(TIPS_LESSONS.at(-1)?.id === 'end' && TIPS_LESSONS.at(-1)?.anyOrder, 'a tips game ends with the end screen');
+  const rules = new Set(GAME_LESSONS.filter(l => !l.id.startsWith('tip-') && l.id !== 'end').map(l => l.id));
+  const at = new Map<string, number>();
+  for (const [i, el] of LEARN_ELEMENTS.entries()) {
+    const seed = 117320 + i;
+    const order = play(el, seed, TIPS_LESSONS).map(f => f.id);
+    const why = `${el}/${seed}: ${order}`;
+    assert.equal(order[0], 'tip-welcome', why);
+    assert.ok(!order.some(id => rules.has(id)), `${why}: a rules lesson opened`);
+    for (const id of order) at.set(id, (at.get(id) ?? 0) + 1);
+  }
+  for (const id of ['tip-undo', 'tip-block', 'tip-targets', 'tip-pass']) {
+    assert.equal(at.get(id) ?? 0, LEARN_ELEMENTS.length, `${id} opened in every tips-only game`);
+  }
+});
+
+test('§4 a tips game is saved as one: Continue keeps it, a new game asks again', () => {
+  const store = new Map<string, string>();
+  (globalThis as Record<string, unknown>)['localStorage'] = {
+    getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => { store.set(k, v); },
+    removeItem: (k: string) => { store.delete(k); },
+  };
+  try {
+    assert.equal(startSolo('water', { fresh: true, tips: true }).progress.tips, true);
+    assert.equal(loadProgress()?.tips, true, 'saved in this browser');
+    assert.equal(startSolo('water', {}).progress.tips, true, 'Continue resumes the tips game');
+    assert.equal(startSolo('water', { fresh: true }).progress.tips, undefined, 'Start over without tips is a full game');
+    assert.equal(startSolo('water', {}).progress.tips, undefined);
+  } finally {
+    delete (globalThis as Record<string, unknown>)['localStorage'];
   }
 });

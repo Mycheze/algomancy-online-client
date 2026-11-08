@@ -76,6 +76,7 @@ const NOT_A_PAGE: Record<string, string> = {
   els: 'a room setting', id: 'which challenge', mode: 'a room setting', new: 'a fresh lesson game',
   q: 'the card search query', ranked: 'a queue setting', run: 'which challenge run',
   seat: 'which seat of a room', signin: 'sign in, then the page', single: 'a room setting',
+  tips: 'a lesson game with the client tips only',
   vs: 'whose queued game', watch: 'spectate the room',
 };
 /* Pages that keep the home card on purpose. */

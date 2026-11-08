@@ -30,6 +30,8 @@ export interface LearnProgress {
   element: LearnElement;
   /** lesson page ids already shown (lessonflow.ts) */
   seen: string[];
+  /** BL-11: a "tips only" game — the client's controls, none of the rules lessons */
+  tips?: boolean;
   /** the game in progress, if any */
   game?: SoloSave;
 }
@@ -81,11 +83,13 @@ export function reportAttachment(server: SoloServer): LearnReportRun {
  * element, a fresh deal otherwise. Every change is saved.
  */
 
-export function startSolo(elParam: string | null, opts: { fresh?: boolean; onBotStuck?: (why: string) => void } = {}): { server: SoloServer; progress: LearnProgress } {
+export function startSolo(elParam: string | null, opts: { fresh?: boolean; tips?: boolean; onBotStuck?: (why: string) => void } = {}): { server: SoloServer; progress: LearnProgress } {
   const prior = loadProgress();
   const el: LearnElement = isLearnElement(elParam) ? elParam : prior?.element ?? 'fire';
   const resume = !opts.fresh && prior?.element === el && prior.game?.v === 1 ? prior.game : undefined;
-  const progress: LearnProgress = { v: 1, element: el, seen: resume ? prior!.seen : [] };
+  // a resumed game keeps the kind it was started as; a new one is what was asked for
+  const tips = resume ? !!prior!.tips : !!opts.tips;
+  const progress: LearnProgress = { v: 1, element: el, seen: resume ? prior!.seen : [], ...(tips ? { tips } : {}) };
   const deal = resume?.deal ?? newDeal(el);
   const server = new SoloServer(deal, tutorialBotV1(), resume, {
     onChange: s => { progress.game = s.save; saveProgress(progress); },
