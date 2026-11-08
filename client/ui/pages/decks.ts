@@ -229,8 +229,9 @@ export interface PreviewViewOpts {
   focusBtn?: string;
   /** the description's more/less (default deck-desc-toggle) */
   descBtn?: string;
-  /** how much description shows before "more" */
+  /** how much description shows before "more": characters, and source lines */
   budget?: number;
+  lines?: number;
 }
 
 /** A deck's preview, from any deck-shaped record. */
@@ -238,7 +239,7 @@ export function deckPreviewView(d: DeckSource, o: PreviewViewOpts = {}): DeckPre
   const focusBtn = o.focusBtn ?? 'deck-focus';
   const p = deckProblems(d);
   const src = (d.description ?? '').trim();
-  const { text, clipped } = o.descOpen ? { text: src, clipped: false } : clipDescription(src, o.budget ?? 240);
+  const { text, clipped } = o.descOpen ? { text: src, clipped: false } : clipDescription(src, o.budget ?? 160, o.lines ?? 3);
   const cover = d.cover ?? d.cards[0] ?? null;
   const edited = shortDate(d.updatedAt);
   const legalText = p.legal

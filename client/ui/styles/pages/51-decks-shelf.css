@@ -52,11 +52,13 @@
 .dkprevmeta { color: var(--color-text-muted); font-size: var(--text-12); }
 .dkprevmeta a { color: var(--color-accent); }
 .dkprevdesc { flex: none; margin: var(--space-4) var(--space-6) 0; font-size: var(--text-13); line-height: 1.45; }
-.dkprevdesc .deckdescbody { max-height: 4.4em; overflow: hidden; }
+/* the collapsed description is as tall as its text: deckPreviewView clips the
+   TEXT (characters and lines) and offers "more" exactly when it did. A height cap
+   here hid descriptions too short to earn a "more", with no way to read the rest
+   (inbox-1568909930319187990) — never cap .deckdescbody again. */
 .dkprevdesc .deckdescbody > :first-child { margin-top: 0; }
 .dkprevdesc .deckdescbody > :last-child { margin-bottom: 0; }
 .dkprevdesc.on { max-height: 34%; overflow-y: auto; }
-.dkprevdesc.on .deckdescbody { max-height: none; }
 .dkprevmore { padding-left: 0; padding-right: 0; }
 .dkprevmain { flex: none; display: flex; gap: var(--space-4); padding: var(--space-5) var(--space-6) 0; }
 .dkprevedit { flex: 1; }

@@ -172,10 +172,25 @@ export function cardLinker(opts: LinkOpts = {}): (s: string) => string {
  * tag. It stops at a sentence end where it can and at a word boundary where it
  * cannot, and it never reports a clip it did not make — a description shorter
  * than the budget comes back whole, with `clipped: false`, so the caller knows
- * not to offer a "more" button that would reveal nothing.
+ * not to offer a "more" button that would reveal nothing. `lines` caps the
+ * source's non-blank lines as well.
  */
-export function clipDescription(src: string, budget = 220): { text: string; clipped: boolean } {
+export function clipDescription(src: string, budget = 220, lines = Infinity): { text: string; clipped: boolean } {
   const s = String(src ?? '').trim();
+  // A box a few lines high fills on LINES as well as characters: three short
+  // paragraphs or a list fill it long before the budget does, and a box that
+  // hides them with no "more" is a description nobody can read
+  // (inbox-1568909930319187990). So the clip counts the source's lines too —
+  // and the box itself caps nothing: what this returns is what shows.
+  const rows = s.split('\n');
+  let seen = 0;
+  for (let i = 0; i < rows.length; i++) {
+    if (!rows[i]!.trim()) continue;
+    if (++seen > lines) {
+      const head = rows.slice(0, i).join('\n').trim();
+      return { text: clipDescription(head, budget).text, clipped: true };
+    }
+  }
   if (s.length <= budget) return { text: s, clipped: false };
   const head = s.slice(0, budget);
   // the last sentence end that leaves something worth reading

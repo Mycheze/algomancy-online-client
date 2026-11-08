@@ -189,6 +189,16 @@ test('clipDescription cuts the source, never the markup, and admits what it did'
   assert.doesNotMatch(w.text.replace(/…$/, ''), /wor$/, 'clipped mid-word');
 });
 
+test('clipDescription counts lines as well as characters, when asked', () => {
+  const paras = 'One.\n\nTwo.\n\nThree.\n\nFour.';
+  assert.deepEqual(clipDescription(paras), { text: paras, clipped: false }, 'no line cap unless asked');
+  assert.deepEqual(clipDescription(paras, 220, 3), { text: 'One.\n\nTwo.\n\nThree.', clipped: true }, 'blank lines do not count');
+  assert.deepEqual(clipDescription('One.\nTwo.', 220, 3), { text: 'One.\nTwo.', clipped: false });
+  const c = clipDescription(`${'word '.repeat(60)}\nmore\nand more\nlast`, 100, 3);
+  assert.equal(c.clipped, true);
+  assert.ok(c.text.length <= 101, 'the character budget still holds inside the lines');
+});
+
 test('descSummary is prose, not markdown, and never markup', () => {
   const src = `## How it works\n\nIt leans on **cheap units**.\n\n- Lead on the two-drop\n- Save [the finisher](${CARD})\n`;
   const out = descSummary(src);

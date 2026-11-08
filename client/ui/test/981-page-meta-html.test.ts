@@ -7,6 +7,7 @@
  * §2 the card duel ladder: ranked, unranked under the divider, the filter
  * §3 one shared deck: not found, typical, yours, someone else's while signed in — the left side is the Decks
  *    page's preview panel, read-only (BL-65), with Copy to my decks, the link and the export as its actions
+ * §3c its whole description can always be read: shown whole, or "more"
  * §4 the shared deck's export panel, stats and pinned card
  * §5 text is escaped: names, builders, descriptions, messages, the filter box
  * §6 the tab row marks the view, and the card stats view draws the stats page
@@ -17,6 +18,7 @@ import '../../engine/src/cards/registry.ts';
 import { allRows } from '../cardindex.ts';
 import { metaHtml, metaTabsHtml, type MetaView } from '../pages/meta.ts';
 import type { PublicDeck } from '../meta.ts';
+import { readStyles } from './read-styles.ts';
 
 const NAMES = allRows().filter(r => r.cls === 'card' && r.playable).map(r => r.name);
 
@@ -125,6 +127,38 @@ test('981 §3b a shared deck has Back to where it was opened from, not Home (inb
   // opened from a profile: Back closes the metagame, which puts the profile back
   assert.deepEqual(frameBack(metaHtml(view({ view: 'deck', one: d, backTo: 'host' }))),
     { btn: 'meta-close', label: 'Back', title: 'back to the profile' });
+});
+
+test('981 §3c a shared deck\'s whole description can always be read (inbox-1568909930319187990)', () => {
+  // The owner: "you can't actually see and read the whole deck description or
+  // expand it". The box was cut to three lines by the stylesheet, while "more"
+  // only came past 160 or 240 characters, so a description of four short
+  // paragraphs, or one long one, showed its start and hid the rest with nothing
+  // to press. Now the text is clipped (characters AND lines), the box caps
+  // nothing, and "more" comes exactly when the text was clipped.
+  const paras = 'Aggro.\n\nLead on a two-drop.\n\nHold the removal for blockers.\n\nFinish with the big flyer on turn five.';
+  const body = (h: string): string => /<div class="deckdescbody">([\s\S]*?)<\/div>/.exec(h)![1]!;
+  const page = (description: string, descOpen = false): string =>
+    metaHtml(view({ view: 'deck', one: deck(3, { description }), descOpen }));
+  const shut = page(paras);
+  assert.match(shut, /data-btn="meta-desc-toggle"[^>]*>more</, 'four paragraphs fill the box long before 160 characters: "more"');
+  assert.doesNotMatch(body(shut), /big flyer/, 'and the part it hides is behind that button');
+  const open = page(paras, true);
+  assert.match(body(open), /big flyer/, '"more" shows the rest');
+  assert.match(open, /data-btn="meta-desc-toggle"[^>]*>less</);
+  // whatever the description, the collapsed box either shows all of it or offers "more"
+  for (const d of ['Short.', 'One. Two.\nThree.', paras, 'A long sentence about the plan, '.repeat(8) + 'and the end.', '- a\n- b\n- c\n- d']) {
+    const h = page(d);
+    const last = d.trim().split(/\s+/).at(-1)!.replace(/^[-*]/, '');
+    assert.ok(/data-btn="meta-desc-toggle"[^>]*>more</.test(h) || body(h).includes(last), `${JSON.stringify(d)}: shown whole, or "more"`);
+  }
+  // and nothing in the stylesheet cuts the description's text short behind the
+  // clip's back: no height cap, no line clamp, no hidden overflow on its body
+  const css = readStyles().replace(/\/\*[\s\S]*?\*\//g, '');
+  for (const m of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (!/\.deckdescbody\b/.test(m[1]!)) continue;
+    assert.doesNotMatch(m[2]!, /max-height\s*:\s*(?!none)|line-clamp|overflow[^:]*:\s*hidden/, `${m[1]!.trim()} must not cap the description`);
+  }
 });
 
 test('981 §4 the export panel, the stats and the pinned card', () => {
