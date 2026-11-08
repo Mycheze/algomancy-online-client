@@ -138,6 +138,7 @@ export interface TodoEntry {
 import '../engine/src/cards/registry.ts';
 import { CLOSED } from './card-todo-closed.ts';
 import { still } from './card-todo-helpers.ts';
+import { readStyles } from '../ui/test/read-styles.ts';
 
 // ── proofs for the comprehensive-rules findings (CT-226 on) ─────────────
 // Each finding was re-checked against HEAD before it was filed. A proof
@@ -275,7 +276,7 @@ const OPEN: TodoEntry[] = [
     detail: "Report #352 (mycheze, home, 2026-11-08, ux): \"The header text on the League and Challenge and Matchmaking is an unclickable row. It's weird and the whole card should be able to be clicked\". Each side card is meant to open its page wherever it is clicked: a stretched transparent button, `.homesideopen` (ui/pages/home.ts sideCardHtml; styles/pages/06-home.css ~line 153, `position: absolute; inset: 0`), covers it. But styles/pages/54-home-art.css line 51, `.homeside > :not(.homeart):not(.homesideopen) { position: relative; z-index: 1; }`, lifts the title, the body's glass and everything else above that button, so a click on them lands on a heading or a div and nothing happens; only the gaps between them open the page.",
     evidence: "Report #352 (page: home, no room). Code read 2026-11-08 (steward triage): the z-index lift above is the only rule stacking the card's children, and the title and body carry no click handler of their own. Not seen in a browser (none on the box).",
     fix: "Let the click through to the stretched button everywhere except real controls: `pointer-events: none` on the lifted children with `pointer-events: auto` back on buttons and links inside them (Matchmaking's Join), keeping the lift so the words still draw over the painting. A ui test over the CSS (read through ui/test/read-styles.ts) that the title and body do not take pointer events while a Join button inside does.",
-    proof: () => still('ui/styles/pages/54-home-art.css', ".homeside > :not(.homeart):not(.homesideopen) { position: relative; z-index: 1; }"),
+    proof: () => readStyles().replace(/\s+/g, ' ').includes(".homeside > :not(.homeart):not(.homesideopen) { position: relative; z-index: 1; }"),
     reportId: 352,
     status: 'open',
   },
