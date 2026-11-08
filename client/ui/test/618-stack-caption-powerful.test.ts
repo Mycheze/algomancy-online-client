@@ -43,7 +43,7 @@ test('CR 802.10d / CT-194: a Powerful Fireball says the damage it will deal, and
     const seen = v.stack.find(i => i.id === it.id)!;
     assert.equal(doesLine(seen, v, nameIn(v)), 'Deal 2 damage to The Foretold (Powerful)', `seat ${seat}`);
   }
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, victim)!.damage, 2, 'and it resolves as the line says');
 });
 
@@ -55,7 +55,7 @@ test('CR 802.10d / CT-194: without the grant the line is the printed number, unc
 test('CR 802.10f / CT-194: aimed at a Pure unit the grant does nothing, and the line says the printed number', () => {
   const { h, it, victim } = fireball(61802, true, 'Just a Unit');
   assert.equal(doesLine(it, h.state, nameIn(h.state)), 'Deal 1 damage to Just a Unit');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, victim)!.damage, 1, 'and it resolves as the line says');
 });
 

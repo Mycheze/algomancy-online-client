@@ -40,7 +40,7 @@ function drain(h: Harness): void {
     const d = h.state.decision;
     if (d?.pickOrder) h.do({ type: 'decide', seat: d.seat, choice: d.options.map((_, i) => i) });
     else if (d) pick(h, d.options[0]!.value);
-    else { pass(h); pass(h); }
+    else pass(h);
   }
 }
 
@@ -119,7 +119,7 @@ test('CR 710.2d: a Borrower that copied a Graxxlid-augmented unit can use Graxxl
   const handD = h.state.players[D]!.hand.length;
   h.do({ type: 'activateAbility', seat: A, entityId: bof, abilityIndex: 0, via: { face: 'Graxxlid', text: 'augment' } });
   pick(h, { stack: boon });
-  pass(h); pass(h);                                           // Graxxlid's negate resolves
+  pass(h); // Graxxlid's negate resolves
   assert.ok(!h.state.stack.some(i => i.id === boon), 'the Boon is negated');
   assert.equal(h.state.players[D]!.hand.length, handD + 1, 'and its controller draws');
   assert.equal(ent(h, bof)!.budgets['augment:Graxxlid#0'], 1, 'the [once] is spent on the copy (the real mod\'s key)');

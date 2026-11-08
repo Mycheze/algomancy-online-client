@@ -301,13 +301,10 @@ test('BL-18 §3 the switch reaches the SERVER, on the join and on every change',
 /* ══ §4 — hold priority, measured ══════════════════════════════════════ */
 
 test('BL-18 §4 you can respond to your own spell with the first still on the stack', () => {
-  // doneWhen line 3, and ⚠ IT IS NOT WHAT IT LOOKS LIKE. Casting does not keep
-  // the window here: `engine.ts` hands priority to the other seat as soon as
-  // an item goes on the stack, so "cast two in a row with nobody looking in
-  // between" is FALSE today and would be an engine change. What the line
-  // literally asks for is true — the window does not close, the first spell is
-  // still there to respond to — and that is what is pinned here, so the
-  // difference is on the record rather than in somebody's head.
+  // doneWhen line 3. A cast hands priority to the other seat unless the caster
+  // asks to keep it (CR 703.2a), and that unheld cast counts as the caster's
+  // pass (CR 703.2b), so the opponent's pass resolves it. Responding to your
+  // own spell therefore takes the ask: this is what Ctrl sends.
   const h = new Harness(27209);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -319,17 +316,10 @@ test('BL-18 §4 you can respond to your own spell with the first still on the st
   pass(h);
   assert.equal(h.state.priority, D, 'fixture: the defender holds the window');
 
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Phytochemical Protection') });
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Phytochemical Protection'), holdPriority: true });
   pick(h, { unit: wall });
-  assert.equal(h.state.stack.length, 1, 'the first spell is on the stack');
-  assert.equal(h.state.priority, A,
-    'MEASURED, and it is the finding: casting hands priority to the OPPONENT here. If this ever '
-    + 'becomes D, the engine has been given MTGO retain-priority and BL-18 line 3 means something '
-    + 'stronger than this test asserts');
-
-  h.do({ type: 'passPriority', seat: A });
-  assert.equal(h.state.priority, D, 'the window comes back');
-  assert.equal(h.state.stack.length, 1, 'with the first spell STILL UNRESOLVED — it did not close');
+  assert.equal(h.state.stack.length, 1, 'the first spell is on the stack, still unresolved');
+  assert.equal(h.state.priority, D, 'and the caster who asked still holds the window');
   const second = give(h, D, 'Phytochemical Protection');
   assert.ok(legalActions(h.state, D).some(a => a.type === 'playCard'),
     'and a second cast is legal in it');

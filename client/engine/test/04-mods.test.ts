@@ -41,7 +41,7 @@ test('virus augment during battle: on the stack, donated to an enemy, text-only 
   h.do({ type: 'augment', seat: p, from: 'hand', index: si, hostId: rc });
   assert.equal(h.state.stack.length, 1, 'virus went on the stack');
   assert.equal(h.state.stack[0]!.kind, 'virus');
-  pass(h); pass(h);                        // resolve the virus
+  pass(h); // resolve the virus
   assert.ok(ent(h, rc)!.mods.length === 1, 'host modded by virus');
   // Smouldering Inferno's [Augment] is in its TEXT BOX, so only the text
   // transfers — Piercing stays put (the prototype donated it wrongly; the

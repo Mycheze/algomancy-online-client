@@ -86,7 +86,7 @@ test('Tides of the Cosmos for one seat shows the other seat all 8 cards in the n
   h.q.deckOf(D).unshift(...eight);
   const mark = h.events.length;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tides of the Cosmos') });
-  pass(h); pass(h);                                    // resolve -> the first pick
+  pass(h); // resolve -> the first pick
   assert.equal(h.state.decision?.seat, D, 'the caster is asked to pick');
   decide(h, l => l === 'Done');
   const batch = h.events.slice(mark);
@@ -121,7 +121,7 @@ test('Tides of the Cosmos with nothing it may play shows the caster the cards to
   deck.splice(0, deck.length, ...Array<CardName>(10).fill(big[0]!));
   const mark = h.events.length;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tides of the Cosmos') });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!h.state.decision || h.state.decision.seat !== D || !/Tides/.test(h.state.decision.prompt),
     'no pick is asked: nothing fits the budget');
   const batch = h.events.slice(mark);
@@ -142,7 +142,7 @@ test('Big Glimpse Card shows the caster all 7 in the notice while the opponent s
   const mark = h.events.length;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Big Glimpse Card') });
   pick(h, { player: A });                              // target opponent
-  pass(h); pass(h);                                    // resolve -> the split
+  pass(h); // resolve -> the split
   const split = h.state.decision!;
   assert.equal(split.seat, A, 'the opponent splits');
   assert.deepEqual(split.options.filter(o => o.card).map(o => o.card), seven,

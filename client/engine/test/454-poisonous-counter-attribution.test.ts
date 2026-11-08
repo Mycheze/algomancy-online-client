@@ -140,7 +140,7 @@ test('Phytochemical Protection: the +1/+1 counters for prevented COMBAT damage a
   h.do({ type: 'declareAttack', seat: A, columns: [[atk], [cust]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Phytochemical Protection') });
   pick(h, { unit: atk });
-  pass(h); pass(h);                                      // resolve the shield
+  pass(h); // resolve the shield
   assert.equal(ent(h, atk)!.damageShield, 'Phytochemical Protection', 'the shield is on');
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blk] } });

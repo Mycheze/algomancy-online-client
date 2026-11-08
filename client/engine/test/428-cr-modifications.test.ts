@@ -70,7 +70,7 @@ function returnToNature(h: Harness, D: Seat): void {
   if (h.state.priority !== D) pass(h);
   assert.equal(h.state.priority, D, 'setup: D holds priority');
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Return to Nature') });
-  pass(h); pass(h);
+  pass(h);
 }
 
 /** A battle with a {Battle} graft card (Burning Vengeance) in hand: returns the Spellbind mod menu. */
@@ -401,7 +401,7 @@ test('cr:effects.mods.what.virus-modular — a Virus applied in battle is an aug
   assert.ok(act, 'the Virus is offered');
   assert.equal(act!.type, 'augment', 'as an augment');
   h.do({ type: 'augment', seat: D, from: 'hand', index: golem, hostId: atk });
-  pass(h); pass(h);
+  pass(h);
   const m = ent(h, atk)!.mods.map(id => ent(h, id)!);
   assert.equal(m.length, 1, 'the Virus attached');
   assert.equal(m[0]!.appliedAs, 'augment', 'applied as an augment');
@@ -540,7 +540,7 @@ test('cr:effects.augment.hosts — in deployment an augment goes only onto your 
   const golem = give(b, Y, 'Aetherflux Golem');                   // {Virus}
   assert.ok(mods(b, Y).some(a => a.index === golem && a.hostId === atk), 'a Virus onto the opposing attacker: offered');
   b.do({ type: 'augment', seat: Y, from: 'hand', index: golem, hostId: atk });
-  pass(b); pass(b);
+  pass(b);
   assert.equal(ent(b, atk)!.mods.length, 1, 'and it attached to the opposing unit');
   finishBattle(b);
 });
@@ -616,7 +616,7 @@ test('cr:effects.virus.what — a Virus is applied as an augment from hand in ba
   giveResources(b, Y, 'earth', 4);
   const g = give(b, Y, 'Aetherflux Golem');
   b.do({ type: 'augment', seat: Y, from: 'hand', index: g, hostId: atk });
-  pass(b); pass(b);
+  pass(b);
   assert.equal(ent(b, atk)!.mods.length, 1, 'battle: applied from hand as an augment');
   finishBattle(b);
 

@@ -112,7 +112,7 @@ test('Volatile Toxicity: sacrifice a unit → Poison X and Fireball X, X = its d
   pick(h, { unit: fodder });                                  // cast cost (CR 107.8a): the 2/4 dies NOW, X = 4
   assert.ok(!ent(h, fodder), 'the unit is sacrificed at cast');
   assert.ok(h.state.players[D]!.bin.includes('Resonant Form'), 'sacrificed nontoken → bin');
-  pass(h); pass(h);                                           // resolve
+  pass(h); // resolve
   const toks = tokensOf(h, D);
   assert.ok(toks.some(t => t.card === 'Poison' && t.x === 4), 'a Poison 4 is created');
   assert.ok(toks.some(t => t.card === 'Fireball' && t.x === 4), 'a Fireball 4 is created');
@@ -162,7 +162,7 @@ test('Dematerialize: negates a target stack effect; its controller Glimpses 3 �
   const top3 = h.q.deckOf(A).slice(0, 3);
   const deckLen = h.q.deckOf(A).length;
   const trashesBefore = h.events.filter(ev => ev.type === 'trashed').length;
-  pass(h); pass(h);                                           // resolve Dematerialize
+  pass(h); // resolve Dematerialize
   // CR 801.9a, 801.9d: the GLIMPSER chooses — here the negated effect's controller, A
   const dec = h.state.decision!;
   assert.equal(dec.seat, A, "the negated effect's controller glimpses, so A chooses");
@@ -200,7 +200,7 @@ test('Temporal Rift: negates all stack effects and ends the battle', () => {
   pick(h, { player: D });                                     // … at D
   const lifeD = h.state.players[D]!.life;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Temporal Rift') });
-  pass(h); pass(h);                                           // resolve the Rift (top of stack)
+  pass(h); // resolve the Rift (top of stack)
   assert.equal(h.state.players[D]!.life, lifeD, 'the Fireball never resolved — no damage');
   assert.equal(h.state.stack.length, 0, 'the stack is wiped');
   assert.equal(h.state.battle, null, 'the battle is over');
@@ -263,7 +263,7 @@ test('Abduct: controller may pay [x] to keep the unit; otherwise control flips (
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Abduct') });
   pick(h, 1);                                                 // X = 1
   pick(h, { unit: atk });
-  pass(h); pass(h);                                           // resolve
+  pass(h); // resolve
   pick(h, true);                                              // A pays [1] to keep it
   assert.equal(ent(h, atk)!.controller, A, 'ransom paid — the Scuttler stays');
   // X = 3: A spent its only open mana on the ransom → cannot pay → the Sentry is abducted
@@ -271,7 +271,7 @@ test('Abduct: controller may pay [x] to keep the unit; otherwise control flips (
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Abduct') });
   pick(h, 3);                                                 // X = 3 at cast — the cost-3 unit qualifies
   pick(h, { unit: sentry });
-  pass(h); pass(h);                                           // resolve — no ransom possible
+  pass(h); // resolve — no ransom possible
   assert.equal(ent(h, sentry)!.controller, D, 'D gains control of the unit');
   assert.ok(!h.state.battle!.columns.flat().includes(sentry), 'the flipped unit left the formation');
   finishBattle(h);                                            // → regroup → deploy
@@ -378,13 +378,13 @@ test('Wither and Bloom: modal — -1/-1 on each enemy, or +1/+1 on each of your 
   assert.equal(h.state.stack.length, 0, 'asked before the stack');
   pick(h, 'wither');                                          // -1/-1 on each enemy
   assert.equal(h.state.stack[0]?.parts[0]?.mode, 'wither', 'and the opponent can read it');
-  pass(h); pass(h);                                           // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, a1) && !ent(h, a2), 'both enemy 1/1s withered away');
   assert.equal(ent(h, sentry)!.counters, 0, 'your own units are untouched by wither');
   pass(h);                                                    // priority → D again
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Wither and Bloom') });
   pick(h, 'bloom');                                           // +1/+1 on each of your units
-  pass(h); pass(h);                                           // resolve
+  pass(h); // resolve
   assert.equal(ent(h, sentry)!.counters, 1, 'the Sentry bloomed');
   assert.deepEqual(effStats(h, sentry), [3, 5], '2/4 with a +1/+1 counter');
   finishBattle(h);
@@ -431,7 +431,7 @@ test('Galactic Germination: a 1/1 per unit in target formation — arriving in t
   // 2026-08-25 that "target formation" is the WHOLE SIDE, which is what the
   // old unit proxy already counted).
   pick(h, { formation: D });                                  // D's attacking formation
-  pass(h); pass(h);                                           // resolve
+  pass(h); // resolve
   const battle = h.state.battle!.region;
   const made = unitsOf(h, D).filter(u => u.token && u.card === 'Unit Token' && u.region === battle);
   assert.equal(made.length, 2, 'two 1/1s — one per unit in the attacking formation');

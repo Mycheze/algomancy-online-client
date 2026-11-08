@@ -1138,7 +1138,7 @@
   },
   {
     "key": "effects.casting.spell-tokens",
-    "textHash": "691ea000149638f5",
+    "textHash": "e87e789974a8ffbb",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U14-r4",
@@ -1146,15 +1146,15 @@
       {
         "loc": "client/engine/src/apply.ts:doCastSpellToken",
         "agrees": true,
-        "note": "needs priority and tok.region === battle region; asks the target and pushes like a hand play"
+        "note": "The cast goes through the normal target and stack path; a token outside the battle region is refused."
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
-        "pattern": "cr:effects.casting.spell-tokens",
+        "file": "425-cr-casting-and-stack.test.ts",
+        "pattern": "cr:effects.casting.spell-tokens — ",
         "passed": true,
-        "asserts_claim": "yes: in the attack window D (defending) casts a Fireball 3 in the battle region, picks the attacking player, it goes on the stack with priority to A, two passes and A loses 3"
+        "asserts_claim": true
       }
     ],
     "probes": [],
@@ -1162,13 +1162,21 @@
       {
         "ref": "Rulebook 2023 p.4",
         "supports": "yes",
-        "note": "spell tokens are 'cast' from play, which functions the same way as if they were cast from your hand, but you may only cast spell tokens in the region the token is in"
+        "note": "Cast from play, same way as from hand, only in the token's region."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "e.need(tok.region === e.s.battle!.region, 'spell tokens are castable only in their region');"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "only cast spell tokens in the region the token is in."
+      },
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "text": "assert.equal(refused(h, { type: 'castSpellToken', seat: D, entityId: far }), true, 'and is refused');"
+      },
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "text": "assert.equal(h.state.stack.length, 1, 'on the stack');"
       },
       {
         "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
@@ -3170,72 +3178,110 @@
   },
   {
     "key": "effects.priority.priority.no-response-to-pass",
-    "textHash": "2b5bb7dea18ca100",
+    "textHash": "b68fcc599cf310b9",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
         "loc": "client/engine/src/engine.ts:passPriority",
         "agrees": true,
-        "note": "a pass only increments passes; two passes resolve or advance"
+        "note": "The second pass in succession resolves the top item at once."
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "425-cr-casting-and-stack.test.ts",
+        "pattern": "cr:effects.priority.priority.no-response-to-pass",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
         "ref": "Rulebook 2023 p.13",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "Both sentences of the record are the quoted text."
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
-        "text": "Notice how you cannot respond to an opponent passing priority"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Notice how you cannot respond to an opponent passing priority. Once you pass, you may not get another chance to act."
+      },
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "text": "assert.equal(h.state.stack.length, 0, 'the item resolved at once');"
+      },
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "text": "assert.notEqual(h.state.battle?.step, 'attackWindow', 'the step ended; the first passer got no further chance');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.priority.priority.pass",
-    "textHash": "79f77669548a72e6",
+    "textHash": "aa86da249531a770",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:pushItem / passPriority",
+        "loc": "client/engine/src/engine.ts:passPriority",
         "agrees": true,
-        "note": ""
+        "note": "An unheld action counts as the actor's pass and priority moves to the other player; a held action followed by a pass does the same."
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "425-cr-casting-and-stack.test.ts",
+        "pattern": "cr:effects.priority.priority.pass — ",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "568-hold-priority.test.ts",
+        "pattern": "CR 703.2a / CT-253: a holder who passes",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.30",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "\"each other player will receive priority to get a chance to respond\"; continues until all pass."
       },
       {
-        "ref": "Manual p.30",
+        "ref": "Rulebook 2023 p.13",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "A casts, B passes: the spell resolves."
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "Once a player passes priority after taking one or more"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "chance to respond to their actions. This process continues until all players pass priority."
+      },
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "text": "assert.equal(h.state.priority, A, 'and after their response, the first player may respond again');"
+      },
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "text": "assert.equal(h.state.stack.length, 1, 'two passes in succession resolve the top');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.priority.priority.teams",
@@ -3775,45 +3821,67 @@
   },
   {
     "key": "effects.priority.window.resolve",
-    "textHash": "d589881657afff2f",
+    "textHash": "94e87e87802bd7f8",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:passPriority / finishResolutionTail",
+        "loc": "client/engine/src/engine.ts:passPriority",
         "agrees": true,
-        "note": "two passes resolve the top; the window restarts from initiative; two passes on an empty stack advance the step"
+        "note": "Resolves the top item while the stack holds one, otherwise advanceBattleStep."
+      },
+      {
+        "loc": "client/engine/src/engine.ts:advanceBattleStep",
+        "agrees": true,
+        "note": ""
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "425-cr-casting-and-stack.test.ts",
+        "pattern": "cr:effects.priority.window.resolve — two passes",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.30",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
-      },
-      {
-        "ref": "Manual p.30",
-        "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "Top effect resolves, all gain priority in order again, repeats until an empty-stack pass moves to the next step."
       },
       {
         "ref": "Rulebook 2023 p.13",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "The sentence the quote opens continues: \"spell or ability also creates a priority window.\""
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "an empty stack, which will move them to the next step"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "with eachother. The resolution of an effect, such as a"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "spell or ability also creates a priority window."
+      },
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "text": "assert.equal(h.state.battle!.step, 'attackWindow', 'still the same step');"
+      },
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "text": "assert.equal(h.state.priority, A, 'a new window, from the initiative player');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.priority.window.steps",

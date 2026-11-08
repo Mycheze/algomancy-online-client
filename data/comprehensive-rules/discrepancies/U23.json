@@ -274,7 +274,7 @@
     "sides": [
       {
         "source": "file: client/ui/test/272-full-control.test.ts",
-        "quote": "// the window here: `engine.ts` hands priority to the other seat as soon as"
+        "quote": "// doneWhen line 3. A cast hands priority to the other seat unless the caster"
       }
     ],
     "resolution": "F-U14-2 (CT-253) was upheld on 2026-10-22: the owner ruled to follow the Manual, and the engine keeps priority with a player who asks (568). The Annex D rule was not withdrawn but rewritten to the client's convention, \"auto-pass, hold to keep\": priority passes after an action unless the player asks with the Control key or the Hold priority toggle (annexd.auto-pass.no-retain)."

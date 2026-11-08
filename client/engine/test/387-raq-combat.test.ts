@@ -87,7 +87,7 @@ function shieldedTombBoard(seed: number, power: number, attrs: Attr[]) {
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Phytochemical Protection') });
   pick(h, { unit: tomb });
-  pass(h); pass(h);                                 // the shield resolves
+  pass(h); // the shield resolves
   assert.equal(ent(h, tomb)!.damageShield, 'Phytochemical Protection', 'the shield is up');
   pass(h); pass(h);                                 // close the attack window
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [tomb, back] } });
@@ -198,7 +198,7 @@ test('RAQ Poisonous: a shielded Jollyglop hit by a Poisonous unit takes no count
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Phytochemical Protection') });
   pick(h, { unit: glop });
-  pass(h); pass(h);
+  pass(h);
   pass(h); pass(h);
   const before = unitsOf(h, D).length;
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [glop] } });
@@ -241,7 +241,7 @@ test('RAQ Tough: Burgeon on that 1/10 makes it 1/20, and losing Tough to Monke l
   assert.deepEqual(effStats(h, id), [1, 20], '"That\'s 1/20 now"');
   giveResources(h, A, 'metal', 1);                  // Monke m/1
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Monke') });
-  pass(h); pass(h);                                 // Monke resolves: other units lose all attributes during battle
+  pass(h); // Monke resolves: other units lose all attributes during battle
   assert.deepEqual(effStats(h, id), [1, 10],
     '"if this unit would loose Tough (eg. Monke), then it\'s back to being 1/10"');
   finishBattle(h);
@@ -376,7 +376,7 @@ test('RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8 — 4 of the 6 kill it, 
   const { h, A, ancient, behind } = ancientBoard(38715);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Arc Lightning') });
   pick(h, { unit: ancient });
-  pass(h); pass(h);
+  pass(h);
   pick(h, behind!);                                  // CR 802.17: the jump is the controller's choice
   assert.ok(!ent(h, ancient), '"you need 4 damage to kill it, because this 4 damage would be doubled on him"');
   assert.ok(!ent(h, behind!), '"you are left with 2 damage to distribute further"');
@@ -388,7 +388,7 @@ test('RAQ Vulnerable: Electric "can be" — all 6 may stay on the Vulnerable uni
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Arc Lightning') });
   pick(h, { unit: ancient });
   const mark = h.events.length;
-  pass(h); pass(h);
+  pass(h);
   // the controller must be ASKED whether the excess goes on — even with one
   // neighbour, which the engine used to walk without asking
   const dec = h.state.decision;
@@ -408,7 +408,7 @@ test('RAQ Vulnerable: Electric damage with nowhere to jump is still dealt — al
   const mark = h.events.length;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Arc Lightning') });
   pick(h, { unit: ancient });
-  pass(h); pass(h);                                  // Arc Lightning resolves
+  pass(h); // Arc Lightning resolves
   const dealt = h.events.slice(mark).filter(e => e.type === 'damage' && e.data?.['unit'] === ancient)
     .map(e => e.data!['n'] as number);
   assert.deepEqual(dealt, [12],

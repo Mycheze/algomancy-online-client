@@ -623,7 +623,7 @@ test('cr:annexd.auto-pass.regroup-confirm.card-ended — the pass under Temporal
   const passer = h.state.priority as Seat;
   assert.equal(passEndsBattlePhase(h.state, passer), false, 'no warning: the pass that resolves the Rift is not known to end the battle');
   const mark = h.events.length;
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.battle, null, 'the card ended the battle');
   assert.ok(h.events.slice(mark).some(e => e.type === 'erased' && /loses 1 unused spell token\(s\) to regroup/.test(e.msg)),
     'and the announcement of the lost token was made all the same');
@@ -950,7 +950,7 @@ test('cr:annexd.undo.seen-cards.measured — a glimpse, a draw and a look at a h
   const D = otherSeat(df.state.initiative);
   df.do({ type: 'decide', seat: D, choice: 0 });
   let look = false;
-  for (let g = 0; g < 4 && !look && df.state.priority !== null; g++) {
+  for (let g = 0; g < 4 && !look && df.state.priority !== null && !df.state.decision; g++) {
     const a: Action = { type: 'passPriority', seat: df.state.priority };
     look = sawHidden(seen(df.state, a, ctx(null, false)), D);
     df.do(a);

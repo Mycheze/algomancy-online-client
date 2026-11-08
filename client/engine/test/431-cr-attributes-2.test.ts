@@ -513,7 +513,7 @@ test('cr:attr.blessed.own-damage — Godray aimed at its own controller at 3 lif
   h.state.players[A]!.life = 3;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Godray') });
   pick(h, { player: A });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.players[A]!.life, 3, 'damaged 3 and healed 3 on the same check');
   assert.equal(h.state.winner ?? null, null, 'nobody lost');
 });

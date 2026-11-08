@@ -53,7 +53,7 @@ test('Abyssal Evocation: in this battle, you may play spells from your bin', () 
     'and nothing is offered');
 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Abyssal Evocation') });
-  pass(h); pass(h);                                  // resolve
+  pass(h); // resolve
   assert.equal(canPlay(), true, '"in this battle, you may play spells from your bin"');
   const offers = h.legal(A).filter(a => a.type === 'playFromBin');
   assert.equal(offers.length, 1, 'the Arc in the bin is offered');
@@ -77,7 +77,7 @@ test('Abyssal Evocation: a bin-played spell is {Unstable} — it is ERASED, neve
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.state.players[A]!.bin = ['Luminous Arc'];
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Abyssal Evocation') });
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(h.state.players[A]!.bin, ['Luminous Arc', 'Abyssal Evocation'],
     'the Arc is still there, and the Evocation joined it');
 
@@ -85,7 +85,7 @@ test('Abyssal Evocation: a bin-played spell is {Unstable} — it is ERASED, neve
   assert.deepEqual(h.state.players[A]!.bin, ['Abyssal Evocation'],
     'the Arc left the BIN as it was played (index 0)');
   pick(h, { unit: victim });
-  pass(h); pass(h);                                  // resolve it
+  pass(h); // resolve it
   // 7, not the Arc's printed 6: the replacement-layer ruling (now CR 708.5) made Conduit of Pain live, and the
   // attacker above is one — "[Augment] If an allied source would deal
   // noncombat damage, it deals that much damage plus 1 instead". The bin-play
@@ -112,7 +112,7 @@ test('Abyssal Evocation: the permission is this REGION\'s battle, and lapses at 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   const region = h.state.battle!.region;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Abyssal Evocation') });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(new E(h.state).mayPlaySpellsFromBin(A, region), true, 'granted here');
   const other = h.state.regions.findIndex((_r, i) => i !== region);
   assert.equal(new E(h.state).mayPlaySpellsFromBin(A, other), false,
@@ -155,7 +155,7 @@ test('CR 702.2a Abyssal Evocation: a bin-played card obeys its PRINTED timing (s
   // Flame Juggle is a DEPLOY-timing spell; Luminous Arc is {Battle}
   h.state.players[A]!.bin = ['Flame Juggle', 'Luminous Arc'];
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Abyssal Evocation') });
-  pass(h); pass(h);
+  pass(h);
   const offers = h.legal(A).filter(a => a.type === 'playFromBin')
     .map(a => h.state.players[A]!.bin[(a as { binIndex: number }).binIndex]);
   // the Evocation itself is in the bin now and is a {Battle} spell, so it is
@@ -184,10 +184,10 @@ test('Abyssal Evocation: a bin-played SPELL UNIT stamps its BODY, and "until reg
   assert.equal(getCard('Jelly').timing, 'battle', 'and battle timing');
   giveResources(h, A, 'water', 3);                   // Jelly is b / 3
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Abyssal Evocation') });
-  pass(h); pass(h);
+  pass(h);
   h.do({ type: 'playFromBin', seat: A, binIndex: 0 });
   pick(h, { unit: atk });                            // "target unit gains -2/-2"
-  pass(h); pass(h);
+  pass(h);
   const body = unitsOf(h, A).find(u => u.card === 'Jelly');
   assert.ok(body, 'the body spawned');
   assert.equal(body!.unstable, true, 'and it carries the Unstable stamp');
@@ -209,10 +209,10 @@ test('Abyssal Evocation: a bin-played SPELL UNIT stamps its BODY, and "until reg
   g.state.players[gA]!.bin = ['Jelly'];
   giveResources(g, gA, 'water', 3);
   g.do({ type: 'playCard', seat: gA, handIndex: give(g, gA, 'Abyssal Evocation') });
-  pass(g); pass(g);
+  pass(g);
   g.do({ type: 'playFromBin', seat: gA, binIndex: 0 });
   pick(g, { unit: gAtk });
-  pass(g); pass(g);
+  pass(g);
   const body2 = unitsOf(g, gA).find(u => u.card === 'Jelly')!;
   assert.equal(body2.unstable, true, 'stamped while the turn lasts');
   finishBattle(g);
@@ -237,7 +237,7 @@ test('Animated Spark: each nontoken spell played in battle gives your units +1/+
   // STATIC: the bonus is live the moment the spell is PLAYED (ledger bump) —
   // no trigger, no stack round-trip
   assert.deepEqual(effStats(h, spark), [1, 1], 'Spark itself +1/+0');
-  pass(h); pass(h);                                  // Immolate resolves → draw
+  pass(h); // Immolate resolves → draw
   finishBattle(h);
 });
 
@@ -380,7 +380,7 @@ test('Conduit of Pain: an allied source deals its noncombat damage plus one', ()
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: victim });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, victim)!.damage, 7, 'the printed 6 was dealt as 7');
   finishBattle(h);
 });
@@ -403,7 +403,7 @@ test('Conduit of Pain: two Conduits both apply, and neither applies to itself', 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk], [atk2]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: victim });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, victim)!.damage, 8, '6 + 1 + 1, not 6 + 1 and then +1 of that again');
   finishBattle(h);
 });
@@ -427,7 +427,7 @@ test('Conduit of Pain: an ENEMY Conduit does not boost your spell', () => {
   // the room, so the enemy's spell is not boosted.
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Luminous Arc') });
   pick(h, { unit: victim });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, victim)!.damage, 6, 'an enemy Conduit does not boost your spell');
   finishBattle(h);
 });
@@ -447,7 +447,7 @@ test('Conduit of Pain: the extra damage never reaches the stack, so nothing can 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: victim });
   const before = h.events.length;
-  pass(h); pass(h);
+  pass(h);
   const after = h.events.slice(before);
   assert.equal(after.filter(ev => ev.type === 'triggered').length, 0,
     'the Conduit queued nothing');
@@ -552,7 +552,7 @@ test('Emberflame Enlightener: your SPELLS gain {Powerful} too — a spell effect
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Luminous Arc') });
   pick(h, { unit: victim });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, victim)!.damage, 12, '"I deal 6 damage" from a Powerful source is 12');
   finishBattle(h);
 });
@@ -572,7 +572,7 @@ test('Emberflame Enlightener: "YOUR spells" — the opponent\'s spell in the sam
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: victim });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, victim)!.damage, 6, "the ATTACKER's spell is not \"your\" spell");
   finishBattle(h);
 });
@@ -601,7 +601,7 @@ test('Emberflame Enlightener: the SPELLS aura is DONATED too (mod-carried effect
   while (h.state.priority !== A) pass(h);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: victim });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, victim)!.damage, 12, 'the donated aura doubles the host controller\'s spell');
   finishBattle(h);
 });
@@ -639,7 +639,7 @@ test('Emberflame Enlightener: "your spells" INCLUDES your spell tokens (CR 300.5
   while (h.state.priority !== D) pass(h);
   h.do({ type: 'castSpellToken', seat: D, entityId: tokensOf(h, D)[0]!.id });
   pick(h, { unit: victim });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, victim)!.damage, 6, 'a Fireball 3 under the aura deals 6, not 3');
   finishBattle(h);
 });
@@ -669,7 +669,7 @@ test('Emberflame Enlightener: the stack reports the granted Powerful before it r
   assert.deepEqual(e.stackItemGrants(item, item.parts[0]!), ['Powerful'], 'granted, not printed');
   // "YOUR spells": the same Fireball under the opponent's control is plain
   assert.ok(!e.stackItemAttrs({ ...item, controller: A }).has('Powerful'), 'an opponent spell is not granted it');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, victim)!.damage, 6, 'and it resolves as it said: 3 doubled');
   finishBattle(h);
   // one assembly, not two: resolveParts hands each part exactly this
@@ -742,7 +742,7 @@ test('Envoy of Lightning: your single-target spell effects are Electric', () => 
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Luminous Arc') });
   pick(h, { unit: front });
-  pass(h); pass(h);                                   // resolve
+  pass(h); // resolve
   pick(h, back);                                      // CR 802.17: the jump is the controller's choice
   assert.ok(!ent(h, front), '1/1 dies to the first point');
   assert.equal(ent(h, back)!.damage, 5,
@@ -778,7 +778,7 @@ test('Envoy of Lightning: two DECLARED targets is not "a single target", even af
   const e = new E(h.state);
   e.destroy(e.entity(other)!, 'dies'); e.settle();
   h.state = e.s;
-  pass(h); pass(h);                                   // resolve with one live target
+  pass(h); // resolve with one live target
   assert.ok(!ent(h, front), 'the surviving target still takes its 2 and dies');
   assert.equal(ent(h, back)!.damage, 0,
     '"it still has 2 targets, but one of them is invalid" — NOT Electric, so the excess is lost');
@@ -804,7 +804,7 @@ test('Envoy of Lightning: one declared target on the SAME spell is Electric (the
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Twin Flame') });
   pick(h, { unit: front });
   pick(h, { doneTargets: true });                     // "up to two" — stop at one
-  pass(h); pass(h);
+  pass(h);
   // CR 802.17: two units are adjacent to the dead 1/1 (its column-mate and the
   // neighbouring column's front), so the Electric excess asks its controller
   // which way to go — an electricPath decision existing AT ALL is the proof
@@ -959,7 +959,7 @@ test('Flame Shield: negates the rest of the stack; a Fireball per nontoken spell
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: whale });
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Flame Shield') });
-  pass(h); pass(h);                                  // Flame Shield resolves first
+  pass(h); // Flame Shield resolves first
   const fires = tokensOf(h, D).filter(t => t.card === 'Fireball');
   assert.equal(fires.length, 1, 'one nontoken spell negated → one Fireball');
   assert.equal(fires[0]!.x, 1, 'Fireball 1');
@@ -1043,7 +1043,7 @@ test('Gravitational Correction: retargets the effect unless its controller pays 
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Gravitational Correction') });
   pick(h, 2);                                        // X = 2, chosen and paid AT CAST (CR 107.2a)
   pick(h, { stack: arcId });
-  pass(h); pass(h);                                  // resolve the Correction
+  pass(h); // resolve the Correction
   assert.equal(h.state.decision?.kind, 'payOrDecline');
   assert.equal(h.state.decision!.seat, A, "the EFFECT's controller decides (CR 702.5a)");
   assert.ok(h.state.decision!.options.some(o => o.value === true), 'pay [2] is affordable & offered');
@@ -1078,7 +1078,7 @@ test('Gravitational Correction: retargets the effect unless its controller pays 
   pick(g, { stack: arc2 });
   withE(g, e => e.destroy(e.entity(whale2)!, 'dies'));   // the Arc's only target is gone
   assert.equal(ent(g, whale2), undefined, 'premise: the original target has left play');
-  pass(g); pass(g);                                  // resolve the Correction
+  pass(g); // resolve the Correction
   pick(g, false);                                    // the Arc's controller declines to pay
   pick(g, { unit: conduit2 });                       // the Correction's controller redirects it
   pass(g); pass(g);                                  // the Arc resolves
@@ -1243,7 +1243,7 @@ test('Immolate: sacrifice a unit to draw a card', () => {
   pick(h, { unit: atk });                            // cast cost (CR 702.4): paid BEFORE the stack push
   assert.ok(!ent(h, atk), 'unit sacrificed at cast');
   assert.ok(h.state.players[A]!.bin.includes('Conduit of Pain'), 'sacrifice → bin');
-  pass(h); pass(h);                                  // resolve → draw
+  pass(h); // resolve → draw
   assert.ok(h.state.players[A]!.bin.includes('Immolate'), 'the spell → bin');
   assert.equal(h.state.players[A]!.hand.length, handBefore + 1, 'drew a card');
   finishBattle(h);

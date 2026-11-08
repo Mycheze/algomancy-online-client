@@ -120,7 +120,7 @@ test('CR 102.4 / CT-343: a battle Virus out of the hand keeps its owner on the m
   h.do({ type: 'declareAttack', seat: A, columns: [[mentor]] });
   h.do({ type: 'augment', seat: A, from: 'hand', index: giveForeign(h, A, 'Reality Bender', D), hostId: mentor });
   assert.equal(h.state.stack.at(-1)?.owner, D, 'the Virus item carries the owner of its card');
-  pass(h); pass(h);                                   // the virus resolves, the Mentor triggers
+  pass(h); // the virus resolves, the Mentor triggers
   pass(h); pass(h);                                   // the trigger resolves
   const m = modOn(h, mentor, 'Reality Bender');
   assert.ok(m, 'the virus attached');
@@ -158,13 +158,12 @@ test('CR 102.4 / CT-343: a foreign-owned Virus on a spell unit on the stack ride
   giveResources(h, D, 'earth', 2);
   giveResources(h, A, 'water', 2);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Premonition') });
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush') });
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush'), holdPriority: true });  // CR 703.2a: keeps priority to act again
   pick(h, { stack: h.state.stack.find(i => i.card === 'Premonition')!.id });
-  pass(h);                                           // A declines
   const mush = h.state.stack.find(i => i.card === 'Hush Mush')!;
   // D applies a Chitin Shredder that A owns, out of D's own hand
   h.do({ type: 'augment', seat: D, from: 'hand', index: giveForeign(h, D, 'Chitin Shredder', A), hostStack: mush.id });
-  pass(h); pass(h);                                  // the virus attaches to the item
+  pass(h); // the virus attaches to the item
   assert.deepEqual(h.state.stack.find(i => i.card === 'Hush Mush')!.augments,
     [{ card: 'Chitin Shredder', by: D, owner: A }], 'the riding augment says who applied it and whose card it is');
   pass(h); pass(h);                                  // Hush Mush resolves and spawns

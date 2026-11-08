@@ -35,7 +35,7 @@ test('Pull Under: deletes the target; it and its mods land in YOUR bin (not eras
   // modded: destroy() would ERASE base+mods (Unstable); Pull Under bins them for the caster
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Pull Under') });
   pick(h, { unit: whale });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, whale), 'whale deleted');
   assert.ok(h.state.players[A]!.bin.includes('Good Whale'), "victim → caster's bin");
   assert.ok(h.state.players[A]!.bin.includes('Ephemeral Skywalker'), "its mod → caster's bin");
@@ -43,7 +43,7 @@ test('Pull Under: deletes the target; it and its mods land in YOUR bin (not eras
   // unmodded: destroy() bins to the owner; Pull Under reroutes to the caster
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Pull Under') });
   pick(h, { unit: plain });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, plain));
   assert.equal(h.state.players[A]!.bin.filter(c => c === 'Curio Drifter').length, 1, "unmodded victim → caster's bin");
   assert.deepEqual(h.state.players[D]!.bin, [], "owner's bin stays empty");
@@ -62,7 +62,7 @@ test('Pull Under: a MODDED victim and its mods are trashed by the CASTER (CR 801
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Pull Under') });
   pick(h, { unit: whale });
-  pass(h); pass(h);
+  pass(h);
   const trashes = h.events.filter(ev => ev.type === 'trashed');
   // before the funnel fix this branch fired NO trash at all: destroy() erases
   // an Unstable modded unit, and Pull Under pushed the cards into the bin by
@@ -90,7 +90,7 @@ test('Pull Under: deleting YOUR OWN unmodded unit trashes it in your name, exact
   h.do({ type: 'declareAttack', seat: A, columns: [[atk, mine]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Pull Under') });
   pick(h, { unit: mine });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, mine));
   assert.equal(h.state.players[A]!.bin.filter(c => c === 'Good Whale').length, 1, "one copy, in the caster's bin");
   const trashes = h.events.filter(ev => ev.type === 'trashed' && ev.data?.['card'] === 'Good Whale');
@@ -125,7 +125,7 @@ test('Pull Under: an ENEMY unmodded victim is trashed by the CASTER, exactly onc
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Pull Under') });
   pick(h, { unit: plain });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(h.state.players[A]!.bin.includes('Good Whale'), "the CARD is in the right bin (the caster's)");
   assert.deepEqual(h.state.players[D]!.bin, [], 'and not in the owner\'s');
   const trashes = h.events.filter(ev => ev.type === 'trashed' && ev.data?.['card'] === 'Good Whale');
@@ -148,7 +148,7 @@ test('Pull Under: a TOKEN victim enters the CASTER bin untrashed (CR 801.2d), th
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Pull Under') });
   pick(h, { unit: tok });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, tok), 'the token is gone');
   // CR 410.5a: a token does enter a bin — `binTo` sends it to the CASTER's — and the
   // state-based sweep erases it from there. CR 801.2d: it is NOT trashed there (a
@@ -177,7 +177,7 @@ test('Recall: each player recalls a unit and loses 2 life (region-scoped, CR 601
   h.do({ type: 'declareAttack', seat: A, columns: [[wh]] });
   pass(h);                                                 // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Recall') });
-  pass(h); pass(h);                                        // resolve (single candidates auto-pick)
+  pass(h); // resolve (single candidates auto-pick)
   assert.ok(!ent(h, wh) && !ent(h, dr), 'both units left play');
   assert.ok(h.state.players[A]!.hand.includes('Good Whale'), "A's unit → A's hand");
   assert.ok(h.state.players[D]!.hand.includes('Curio Drifter'), "D's unit → D's hand");
@@ -304,7 +304,7 @@ test('Seabed Shellcaster: SECOND nontoken spell this battle → each player reca
   // first nontoken spell: no trigger
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Channeled Boon') });
   pick(h, { unit: d2 });
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(effStats(h, d2), [11, 9], 'Boon #1 resolved, no Shellcaster trigger');
   assert.ok(ent(h, sc) && ent(h, atk), 'nothing recalled yet');
   // second nontoken spell: trigger goes on the stack above it
@@ -353,7 +353,7 @@ test('Soul Siphon: no life lost yet → X = 0, resolves cleanly, no unit', () =>
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Soul Siphon') });
   decide(h, (_, v) => JSON.stringify(v) === JSON.stringify({ player: A }));   // CR 110.3c: at cast
-  pass(h); pass(h);                                        // then it resolves
+  pass(h); // then it resolves
   assert.ok(!unitsOf(h, D).some(u => u.card === 'Unit Token'), 'X = 0 → no unit created');
   assert.ok(h.state.players[D]!.bin.includes('Soul Siphon'), 'spell → bin');
   assert.ok(h.log.some(l => l.includes('X = 0')), 'logged the empty result');
@@ -375,7 +375,7 @@ test('Soul Siphon: X = life the target player lost THIS battle (engine lifeLost 
   pass(h);                                                 // afterWindow: A passes → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Soul Siphon') });
   decide(h, (_, v) => JSON.stringify(v) === JSON.stringify({ player: D }));   // CR 110.3c: at cast
-  pass(h); pass(h);                                        // X = life D lost this battle
+  pass(h); // X = life D lost this battle
   const made = unitsOf(h, D).filter(u => u.card === 'Unit Token');
   assert.equal(made.length, 1, 'a unit was created');
   assert.deepEqual(effStats(h, made[0]!.id), [7, 7], 'X = 7 → a 7/7');
@@ -393,7 +393,7 @@ test('Spawntender: creates an 8/8, then its own 2/2 body spawns (spell unit)', (
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spawntender') });
-  pass(h); pass(h);
+  pass(h);
   const big = unitsOf(h, D).filter(u => u.card === 'Unit Token' && u.tokenStats?.[0] === 8);
   assert.equal(big.length, 1, 'one 8/8 token');
   assert.deepEqual(effStats(h, big[0]!.id), [8, 8]);
@@ -416,7 +416,7 @@ test('Spell Excavation: GRANTS the bin play until regroup; playing it costs mana
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
   decide(h, l => l.startsWith('Luminous Arc'));            // CR 110.1a: declared at cast
-  pass(h); pass(h);                                        // the Excavation resolves
+  pass(h); // the Excavation resolves
   // CR 405.9: what resolved is a PERMISSION, not the play. The Arc is still in
   // the bin, unpaid for, and the seat picks its own moment before regroup.
   assert.ok(h.state.players[D]!.bin.includes('Luminous Arc'), 'still in the bin — the grant is the effect');
@@ -427,7 +427,7 @@ test('Spell Excavation: GRANTS the bin play until regroup; playing it costs mana
   // and it is a REAL cast now: a stack item with a declared target (CR 110.1a),
   // where the inline play used to pick for you and resolve unrespondably
   pick(h, { unit: atk });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, atk), 'Luminous Arc dealt its 6 — the 2/2 died');
   assert.ok(!h.state.players[D]!.bin.includes('Luminous Arc'), 'unstable: erased, not binned');
   assert.ok(h.state.players[D]!.bin.includes('Spell Excavation'), 'Excavation itself → bin');
@@ -458,13 +458,13 @@ test('CR 407.1: the spell Spell Excavation played reaches the public ERASED pile
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
   decide(h, l => l.startsWith('Luminous Arc'));            // CR 110.1a: declared at cast
-  pass(h); pass(h);
+  pass(h);
   // CR 405.9: the grant resolved; taking it up is a real play from the bin, and
   // the {Unstable} stamp E.dischargeItem reads is what files the erase
   if (h.state.priority !== D) pass(h);
   h.do({ type: 'playFromBin', seat: D, binIndex: h.state.players[D]!.bin.indexOf('Luminous Arc') });
   pick(h, { unit: atk });
-  pass(h); pass(h);
+  pass(h);
   const e = new E(h.state);
   assert.ok(!h.state.players[D]!.bin.includes('Luminous Arc'), 'it left the bin…');
   assert.ok(e.erased(D).includes('Luminous Arc'),
@@ -544,7 +544,7 @@ test('Tidal Reversion: recalls one unit per player (no life loss)', () => {
   pick(h, { unit: wh });
   notOffered(h, { unit: wh }, 'already chosen');
   pick(h, { unit: dr });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, wh) && !ent(h, dr), 'one unit per player recalled');
   assert.ok(h.state.players[A]!.hand.includes('Good Whale'));
   assert.ok(h.state.players[D]!.hand.includes('Curio Drifter'));
@@ -585,7 +585,7 @@ test('Tiderunner Initiate: played during battle, may join an open formation spot
   const dec = h.state.decision!;                           // the CAST asks, at once
   assert.equal(dec.seat, A);
   decide(h, l => l.includes('behind Good Whale'));
-  pass(h); pass(h);                                        // the unit resolves, into the line
+  pass(h); // the unit resolves, into the line
   const tid = unitsOf(h, A).find(u => u.card === 'Tiderunner Initiate')!;
   assert.ok(h.state.battle!.columns[0]!.includes(tid.id), 'joined column 1 behind the whale');
   finishBattle(h);
@@ -608,7 +608,7 @@ test('Tides of the Cosmos: reveal 8, play up to two with total cost ≤ 8 for fr
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tides of the Cosmos') });
-  pass(h); pass(h);                                        // resolve → pick #1
+  pass(h); // resolve → pick #1
   decide(h, l => l.startsWith('Tidal Menace'));            // cost 3
   const dec2 = h.state.decision!;                          // pick #2: budget 5 left
   assert.ok(!dec2.options.some(o => o.label.startsWith('Good Whale')),
@@ -659,7 +659,7 @@ test('CR 406.4a: Tides plays "Erase me." (Suspend) for free → the ERASED pile,
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tides of the Cosmos') });
-  pass(h); pass(h);                                        // resolve → pick #1
+  pass(h); // resolve → pick #1
   decide(h, l => l.startsWith('Suspend'));
   // CR 702.3c: Suspend's "target player" is DECLARED with the play (it goes on the
   // stack, so CR 110.1a applies to it like any other cast) — and then the second
@@ -699,7 +699,7 @@ test('CR 405.4a: Tides plays an ORDINARY spell for free → the bin, and it is N
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tides of the Cosmos') });
-  pass(h); pass(h);
+  pass(h);
   decide(h, l => l.startsWith('Burn the Blight'));
   while (h.state.decision) {
     const dec = h.state.decision;
@@ -735,7 +735,7 @@ test('Upheaval: each player recalls two units; 4+ recalled → it repeats (then 
   h.do({ type: 'declareAttack', seat: A, columns: [[a1], [a2]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Upheaval') });
-  pass(h); pass(h);                                        // resolve (≤2 units each: no choices)
+  pass(h); // resolve (≤2 units each: no choices)
   assert.ok(!ent(h, a1) && !ent(h, a2) && !ent(h, d1) && !ent(h, d2), 'all four recalled');
   assert.ok(h.state.players[A]!.hand.includes('Good Whale'));
   assert.ok(h.state.players[A]!.hand.includes('Whispering Mantid'));

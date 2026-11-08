@@ -280,13 +280,20 @@ test('[321] a bin play your own resolving Spell Excavation grants hands pass thr
   spawn(h, A, 'Conduit of Pain');           // something for the bin's Recall to recall
   h.state.players[D]!.bin.push('Recall');
   giveResources(h, D, 'water', 4);          // Excavation bb, Recall b
+  giveResources(h, A, 'fire', 2);           // Channeled Boon, the response below
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   if (h.state.priority !== D) pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
   const dec = h.state.decision!;
   h.do({ type: 'decide', seat: D, choice: dec.options.findIndex(o => o.label.startsWith('Recall')) });
-  if (h.state.priority !== D) pass(h);
+  // CR 703.2b: casting it was D's pass, so D's own pass can only resolve it in
+  // a later window. A responds, that resolves, and A (initiative) passes first.
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Channeled Boon') });
+  h.do({ type: 'decide', seat: A, choice: h.state.decision!.options.findIndex(o => JSON.stringify(o.value) === JSON.stringify({ unit: atk })) });
+  pass(h);                                  // D: the Boon resolves
+  pass(h);                                  // A passes on the Excavation
+  assert.equal(h.state.priority, D, 'fixture: D is about to pass');
 
   // the KFCS window: the Excavation on the stack, the player about to pass
   const atClick = structuredClone(h.state);
@@ -297,8 +304,9 @@ test('[321] a bin play your own resolving Spell Excavation grants hands pass thr
   const scoped = armFor(atClick, clickLegal, 'stack');
   const all = armFor(atClick, clickLegal, 'all');
 
-  pass(h);                                  // the opponent passed first; this pass resolves it
-  if (h.state.priority !== D) pass(h);
+  // the opponent passed first; this pass resolves it
+  pass(h);
+  if (h.state.priority !== D) pass(h);       // the new window opens with the initiative player
   assert.equal(h.state.phase, 'battle');
   const legal = legalActions(h.state, D);
   assert.ok(legal.some(a => a.type === 'playFromBin'

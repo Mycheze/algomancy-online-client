@@ -97,7 +97,7 @@ test('#85: Soul Siphon previews a row PER PLAYER, and the row is the size of the
   const opp = rows![1]!.x;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Soul Siphon') });
   decide(h, v => JSON.stringify(v) === JSON.stringify({ player: D }));   // CR 110.1a: target at cast
-  pass(h); pass(h);
+  pass(h);
   const made = unitsOf(h, A).filter(u => u.card === 'Unit Token');
   assert.equal(made.length, 1, 'the X/X unit was created');
   assert.deepEqual(effStats(h, made[0]!.id), [opp, opp],
@@ -204,7 +204,7 @@ test('#85: The Silent previews the surcharge each player is paying, both seats',
   // move for A and stay put for D
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Soul Siphon') });
   decide(h, v => JSON.stringify(v) === JSON.stringify({ player: D }));
-  pass(h); pass(h);
+  pass(h);
   const rows = previewRows(viewFor(h.state, A), 'The Silent', A)!;
   assert.equal(rows.length, 2);
   assert.equal(rows[0]!.label, 'you');

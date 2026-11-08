@@ -69,7 +69,7 @@ function duel(seed: number, aNth: number, dNth: number): { h: Harness; A: Seat; 
   pick(h, ref(D, aNth));
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Collect Remains') });
   pick(h, ref(D, dNth));
-  pass(h); pass(h);                                  // D Collect Remains resolves
+  pass(h); // D Collect Remains resolves
   return s;
 }
 

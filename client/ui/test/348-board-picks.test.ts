@@ -341,7 +341,7 @@ test('§2f the resolving Gravitational Correction, offered as a new target, is c
   if (h.state.decision?.kind !== 'targets') h.do({ type: 'decide', seat: h.state.decision!.seat, choice: 0 });   // X
   pick(h, { stack: drone });
   const gc = h.state.stack.at(-1)!.id;
-  pass(h); pass(h);
+  pass(h);
   const pay = h.state.decision!;
   h.do({ type: 'decide', seat: pay.seat, choice: pay.options.findIndex(o => o.value === false) });   // D declines
   const s = h.state;

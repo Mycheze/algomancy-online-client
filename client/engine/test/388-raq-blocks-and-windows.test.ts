@@ -54,7 +54,7 @@ test('RAQ Blocked: a unit played in as a blocker after blocks blocks that column
   assert.ok(dec && dec.options.some(o => /column 1/.test(o.label)),
     '"during after block window as defender I put Tiderunner Initiate as blocker" — the spot opposite column 1 is offered at cast');
   h.do({ type: 'decide', seat: dec.seat, choice: dec.options.findIndex(o => /column 1/.test(o.label)) });
-  pass(h); pass(h);
+  pass(h);
   const runner = unitsOf(h, D).find(u => u.card === 'Tiderunner Initiate')!;
   assert.ok(h.state.battle!.blocks[0]?.includes(runner.id), 'it stands in the block of column 1');
   const g = new E(h.state);
@@ -247,7 +247,7 @@ test('RAQ Swift: a Tiderunner played into an emptied Swift column deals no norma
   const spot = dec.options.findIndex(o => /^column 1 /.test(o.label));
   assert.ok(spot >= 0, `the emptied column is offered (menu: ${dec.options.map(o => o.label).join(' | ')})`);
   h.do({ type: 'decide', seat: dec.seat, choice: spot });
-  pass(h); pass(h);                                  // it resolves into the spot
+  pass(h); // it resolves into the spot
   finishBattle(h);
   assert.equal(h.state.players[D]!.life, 30 - 2 - 1, 'the plain column strikes; the Tiderunner in the spent column does not');
 });
@@ -267,7 +267,7 @@ test('RAQ Squish: the unit is the source — a Powerful ally deals double its de
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Squish') });
   pick(h, { unit: ally });
   pick(h, { unit: wall });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, wall)!.damage, 6, '"you would need to target ally unit which is Powerful to deal double damage"');
   finishBattle(h);
 });
@@ -283,14 +283,13 @@ test('RAQ Squish: a Powerful Squish does not double — the spell is not the sou
   giveResources(h, A, 'earth', 4);                   // Squish e/2 + Chitin Shredder ee/2
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[ally]] });
-  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Squish') });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Squish'), holdPriority: true });
   pick(h, { unit: ally });
   pick(h, { unit: wall });
   const squish = h.state.stack[h.state.stack.length - 1]!;
   assert.equal(squish.card, 'Squish');
-  passTo(h, A);
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Chitin Shredder'), hostStack: squish.id });
-  pass(h); pass(h);                                  // the virus resolves first
+  pass(h); // the virus resolves first
   assert.deepEqual(h.state.stack.find(i => i.id === squish.id)?.augments, [{ card: 'Chitin Shredder', by: A }],
     'Squish carries the {Powerful} virus');
   pass(h); pass(h);                                  // Squish resolves
@@ -312,7 +311,7 @@ test('RAQ Squish: Squish damage is the unit dealing it, so Ember of Life does no
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Squish') });
   pick(h, { unit: ally });
   pick(h, { unit: wall });
-  pass(h); pass(h);
+  pass(h);
   pass(h); pass(h);
   assert.equal(ent(h, wall)!.damage, 3, 'Squish dealt the 3');
   assert.equal(unitsOf(h, A).length, before, '"Damage resulting from Squish/Fight/Battle won\'t trigger Ember of Life"');
@@ -332,7 +331,7 @@ function squishBoard(seed: number, mine: (h: Harness, A: Seat) => EntityId, thei
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Squish') });
   pick(h, { unit: ally });
   pick(h, { unit: victim });
-  pass(h); pass(h);
+  pass(h);
   return { h, A, D, ally, victim };
 }
 const robot = (n: number) => (h: Harness, seat: Seat): EntityId => {
@@ -372,7 +371,7 @@ test('RAQ Squish: Bubb in a column with Good Whale squishes with Piercing — th
   pick(h, { unit: bubb });
   pick(h, { unit: victim });
   const life = h.state.players[D]!.life;
-  pass(h); pass(h);
+  pass(h);
   assignDefault(h);   // CR 802.16j: "can be dealt" is elective — the default lets the 5 through
   assert.ok(!ent(h, victim));
   assert.equal(life - h.state.players[D]!.life, 5, 'Bubb deals 6; 1 kills the 1/1 and 5 pierce');
@@ -400,7 +399,7 @@ test('RAQ Life lost: life lost in a battle adds up the losses and ignores the ga
   const before = unitsOf(h, A).map(u => u.id);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Soul Siphon') });
   pick(h, { player: D });
-  pass(h); pass(h);
+  pass(h);
   const made = unitsOf(h, A).filter(u => !before.includes(u.id));
   assert.equal(made.length, 1);
   assert.deepEqual(new E(h.state).effStats(made[0]!), [13, 13], '"Total life lost = 10+3 = 13 life lost"');

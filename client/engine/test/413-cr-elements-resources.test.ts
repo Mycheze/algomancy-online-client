@@ -169,7 +169,7 @@ function blazeAtResolutionProbe(): void {
   pick(h, { unit: target });
   assert.equal(new E(h.state).affinity(D, 'fire'), 2, 'two fire when the spell is cast');
   withE(h, e => { e.player(D).resources.push({ kind: 'fire', state: 'open' }); });   // a third fire arrives with the spell on the stack
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, target)!.damage, 3, 'damage = 3: the amount was counted at resolution');
 }
 
@@ -207,7 +207,7 @@ test('cr:concepts.numbers.copy-x — a Maelstrom Charger copy of Wildfire uses t
   const xs = h.state.stack.map(i => ({ copy: !!i.copy, x: (i as { x?: number }).x }));
   assert.deepEqual(xs, [{ copy: false, x: 2 }, { copy: true, x: 2 }], 'the copy carries the original X');
   assert.equal(h.state.players[D]!.resources.filter(r => r.state === 'open').length, 1, 'only the original X = 2 was paid');
-  pass(h); pass(h); pass(h); pass(h);
+  pass(h); pass(h); pass(h);
   assert.equal(ent(h, whale)!.damage, 4, '2 from the copy + 2 from the original');
 });
 
@@ -352,7 +352,7 @@ test('cr:concepts.numbers.amounts-at-resolution.cost-snapshot — Volatile Toxic
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Volatile Toxicity') });
   pick(h, { unit: whale });                                   // the sacrifice is paid now
   assert.ok(!ent(h, whale) || ent(h, whale)!.absent, 'the Whale has left play');
-  pass(h); pass(h);
+  pass(h);
   const toks = Object.values(h.state.entities).filter(e => e.kind === 'spellToken' && e.controller === D);
   assert.ok(toks.some(t => t.card === 'Poison' && t.x === 7), 'Poison 7: the in-play defense, not the printed 5');
   assert.ok(toks.some(t => t.card === 'Fireball' && t.x === 7), 'Fireball 7');
@@ -402,7 +402,7 @@ test('cr:concepts.numbers.symbols.mana — [3b] is three mana at one water pip, 
   f.do({ type: 'playCard', seat: A2, handIndex: give(f, A2, 'Frosted Denial') });
   pick(f, 2);
   pick(f, { stack: ow });
-  pass(f); pass(f);
+  pass(f);
   const d = f.state.decision;
   assert.ok(d && d.seat === D2, `the controller of the target effect is asked to pay [x]; decision ${JSON.stringify(d?.options.map(o => o.label))}`);
   const payIdx = d!.options.findIndex(o => o.label === 'pay 2');

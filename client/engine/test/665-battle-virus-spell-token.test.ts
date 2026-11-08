@@ -67,13 +67,13 @@ test('CR 721.4a / CT-407: a Virus gives a Fireball token in play Powerful mid-ba
   const { h, A, mine, victim } = battle(66502);
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Chitin Shredder'), hostId: mine });
   assert.equal(h.state.stack.at(-1)?.kind, 'virus', 'a battle Virus uses the stack (CR 723.3)');
-  pass(h); pass(h);                                              // the Virus resolves
+  pass(h); // the Virus resolves
   assert.equal(ent(h, mine)!.mods.length, 1, 'the Virus is attached to the token');
   assert.ok(h.log.some(l => /Chitin Shredder augments Fireball — the spell gains \{Powerful\}/.test(l)), 'and the log says the spell gains only the attribute');
   if (h.state.priority !== A) pass(h);
   h.do({ type: 'castSpellToken', seat: A, entityId: mine });
   pick(h, { unit: victim });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, victim), 'a Fireball 3 wearing {Powerful} deals 6 and kills a 3/3');
   assert.ok(h.log.some(l => /Fireball deals 6 /.test(l)), 'and the log shows the doubled number');
   finishBattle(h);

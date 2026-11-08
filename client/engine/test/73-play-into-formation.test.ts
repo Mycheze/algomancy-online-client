@@ -69,7 +69,7 @@ test('CR 602.7 THE REPORT: Tiderunner is never in the invader’s zone, and neve
   assert.deepEqual(invaders(h, A), [], 'no invader while the play is on the stack');
   assert.equal(h.state.priority, D, 'the opponent gets their normal response window');
 
-  pass(h); pass(h);                                        // the play resolves
+  pass(h); // the play resolves
   const tr = unitsOf(h, A).find(u => u.card === 'Tiderunner Initiate')!;
   assert.ok(tr, 'it entered play');
   assert.deepEqual(invaders(h, A), [],
@@ -124,7 +124,6 @@ test('CR 602.7 the spawn event itself already sees it in the formation', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[wh]] });
   playTiderunner(h, A);
   pick(h, { kind: 'behind', unit: wh });
-  pass(h);
   const events = h.do({ type: 'passPriority', seat: h.state.priority! });
 
   const at = events.findIndex(e => e.type === 'spawned' && e.data?.['card'] === 'Tiderunner Initiate');
@@ -179,7 +178,7 @@ test('CR 602.7b "stay out of formation" is still on the menu — the text says M
   playTiderunner(h, A);
   assert.ok(h.state.decision!.options.some(o => o.label === 'stay out of formation'));
   pick(h, { kind: 'out' });
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(invaders(h, A), ['Tiderunner Initiate'],
     'declining puts it in the region, outside the line — which is a CHOICE, not a window');
   finishBattle(h);
@@ -196,7 +195,7 @@ test('CR 602.7c with NO formation of your own the play is legal and asks nothing
   pass(h);                                                 // priority → D
   playTiderunner(h, D);                                    // D has declared no blocks
   assert.equal(h.state.decision, null, 'nothing to join — no prompt');
-  pass(h); pass(h);
+  pass(h);
   assert.ok(unitsOf(h, D).some(u => u.card === 'Tiderunner Initiate'), 'and it still entered play');
   finishBattle(h);
 });
@@ -221,7 +220,7 @@ test('CR 602.7a the slot is RE-DERIVED at resolution: the spot can be gone by th
   e.settle();
   assert.equal(ent(h, wh), undefined, 'the whale is gone');
 
-  pass(h); pass(h);
+  pass(h);
   const tr = unitsOf(h, A).find(u => u.card === 'Tiderunner Initiate')!;
   assert.ok(tr, 'the card still resolved');
   const line = h.state.battle!.columns.flat();
@@ -240,7 +239,7 @@ test('CR 602.7 a spot chosen at cast opens a NEW column at resolution, re-keying
   h.do({ type: 'declareAttack', seat: A, columns: [[wh]] });
   playTiderunner(h, A);
   pick(h, { kind: 'end', end: 'left' });
-  pass(h); pass(h);
+  pass(h);
   const tr = unitsOf(h, A).find(u => u.card === 'Tiderunner Initiate')!;
   assert.deepEqual(h.state.battle!.columns.map(c => [...c]), [[tr.id], [wh]],
     'the new column went in on the LEFT and everything else shifted right');

@@ -58,7 +58,7 @@ test('Channeled Boon: {Battle} spell gives target unit +4/+4 until regroup', () 
   pass(h);                                           // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channeled Boon') });
   pick(h, { unit: sprite });
-  pass(h); pass(h);                                  // resolve
+  pass(h); // resolve
   assert.deepEqual(effStats(h, sprite), [5, 5], '1/1 + 4/4 = 5/5');
   finishBattle(h);
 });
@@ -80,7 +80,7 @@ test('Burning Vengeance: damage = units that died this battle (CR 107.8 amount, 
   pass(h);                                           // afterWindow: A → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Burning Vengeance') });
   pick(h, { player: A });
-  pass(h); pass(h);                                  // resolve
+  pass(h); // resolve
   assert.equal(h.state.players[A]!.life, lifeA - 2, '2 units died → 2 damage');
   finishBattle(h);
 });

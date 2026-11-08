@@ -246,7 +246,7 @@ test('CR 407.4 (iii): a transformed Scholar of the Void ERASED BY BANISHMENT rea
 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Banishment') });
-  pass(h); pass(h);
+  pass(h);
   resolveAll(h);
 
   assertFrontFaceOnPile(h, D, scholar);
@@ -264,7 +264,7 @@ test('CR 407.4 (iv): a transformed Scholar of the Void ERASED BY CELESTIAL PURGE
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Celestial Purge') });
   pick(h, { unit: scholar });
-  pass(h); pass(h);
+  pass(h);
   resolveAll(h);                                            // the Glimpse 3 that follows
 
   assertFrontFaceOnPile(h, D, scholar);
@@ -369,7 +369,7 @@ test('(vii): Banishment still fires no \'died\' and no \'trashed\' — an erase 
 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Banishment') });
-  pass(h); pass(h);
+  pass(h);
   resolveAll(h);
 
   assert.equal(ent(h, victim), undefined, 'it was erased');
@@ -413,7 +413,7 @@ test('CR 711.3 (viii): Download — a Robot token stolen mid-battle is OUT of th
 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Download') });
   pick(h, { unit: robot });
-  pass(h); pass(h);
+  pass(h);
   resolveAll(h);
 
   assert.equal(ent(h, robot)!.controller, A, 'it changes controller IMMEDIATELY (CR 711.1)');
@@ -472,7 +472,7 @@ test('CR 711.3 (ix): Download — the stolen Robot token joins its NEW controlle
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Download') });
   pick(h, { unit: robot });
-  pass(h); pass(h);
+  pass(h);
   resolveAll(h);
   assert.equal(ent(h, robot)!.controller, A, 'stolen');
 
@@ -531,7 +531,7 @@ function stealAttackerBeforeBlocks(seed: number): { h: Harness; A: Seat; D: Seat
   pass(h);                                                  // A passes the attack window
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Download') });
   pick(h, { unit: robot });
-  pass(h); pass(h);
+  pass(h);
   resolveAll(h);
   assert.equal(ent(h, robot)!.controller, D, 'D stole the attacking Robot');
   assert.ok(!h.state.battle!.columns.some(col => col.includes(robot)),

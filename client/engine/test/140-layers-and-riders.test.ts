@@ -183,7 +183,7 @@ test('Origon that arrives mid-battle leaves alone a seat whose first spell of th
   // A's GENUINE first spell of this battle, played with no Origon anywhere.
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Structural Collapse') });
   pick(h, { unit: atk });               // CR 702.4 cast cost
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!h.log.some(m => m.includes('is negated')), 'nothing was in play to negate it');
   assert.equal(h.state.battleCounters[h.state.battle!.region]?.[`spellsPlayedAny:${A}`], 1,
     "the seat's own ledger counted it");
@@ -195,7 +195,7 @@ test('Origon that arrives mid-battle leaves alone a seat whose first spell of th
   // subject of that sentence is the PLAYER, not the Origon.
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Torrential Reclamation') });
   pick(h, 0);                           // X = 0 at cast (CR 107.2a)
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!h.log.some(m => m.includes('is negated')),
     "an Origon that arrived after the fact must not negate the seat's SECOND spell");
   assert.ok(h.state.players[A]!.bin.includes('Torrential Reclamation'),

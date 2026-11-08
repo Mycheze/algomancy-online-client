@@ -68,7 +68,7 @@ function growth(seed: number, thieves: number) {
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'T472 Growth') });
   pick(h, { unit: mark });
-  pass(h); pass(h);                                  // it resolves
+  pass(h); // it resolves
   return { h, A, D, ct, mark };
 }
 

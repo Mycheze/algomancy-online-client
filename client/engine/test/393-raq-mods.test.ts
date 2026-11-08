@@ -56,7 +56,7 @@ test('RAQ Reconfigure vs Despawn: moving Bubb and its Growing Plague onto a Robo
   pick(h, { unit: bubb });
   pick(h, { unit: robot });
   const before = handSize(h, A) + handSize(h, D);
-  pass(h); pass(h);                                           // Reconfigure resolves
+  pass(h); // Reconfigure resolves
   while (h.state.stack.length) { pass(h); pass(h); }          // and whatever it set off
   assert.ok(!ent(h, robot), 'the Robot, now Unaware, ignored its counters and died a 0/0');
   assert.equal(handSize(h, A) + handSize(h, D) - before, 2,
@@ -92,13 +92,13 @@ test('RAQ Reconfigure vs Once per Turn: a spent Graxxlid moved by Reconfigure on
   const boon = h.state.stack[0]!.id;
   h.do({ type: 'activateAbility', seat: D, entityId: bubb, abilityIndex: 0, via: { mod: grax } });
   pick(h, { stack: boon });
-  pass(h); pass(h);                                           // Graxxlid's negate resolves
+  pass(h); // Graxxlid's negate resolves
   assert.ok(!h.state.stack.some(i => i.id === boon), 'setup: the [once] was used');
   passTo(h, D);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Reconfigure') });
   pick(h, { unit: bubb });
   pick(h, { unit: scuttler });
-  pass(h); pass(h);                                           // Reconfigure resolves
+  pass(h); // Reconfigure resolves
   assert.ok(ent(h, scuttler)!.mods.some(m => ent(h, m)!.card === 'Graxxlid'), 'Graxxlid now rides the Scuttler');
   // a fresh effect aimed at the Scuttler: the moved Graxxlid may not answer it
   giveResources(h, A, 'fire', 2);
@@ -142,7 +142,7 @@ test('RAQ Reconfigure onto Perpetual Construct: each moved mod is its own trigge
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Reconfigure') });
   pick(h, { unit: bubb });
   pick(h, { unit: pc });
-  pass(h); pass(h);                                           // Reconfigure resolves
+  pass(h); // Reconfigure resolves
   while (h.state.stack.length) { pass(h); pass(h); }          // the Construct's triggers
   const made = unitsOf(h, D).filter(u => u.token).slice(tokensBefore).map(u => effStats(h, u.id)[0]).sort();
   assert.deepEqual(made, [1, 3, 4], 'one X/X per mod moved, X = that mod\'s cost');
@@ -156,7 +156,7 @@ function drain(h: Harness, answer?: unknown): void {
     const d = h.state.decision;
     if (d?.pickOrder) h.do({ type: 'decide', seat: d.seat, choice: d.options.map((_, i) => i) });
     else if (d) pick(h, answer ?? d.options[0]!.value);
-    else { pass(h); pass(h); }
+    else pass(h);
   }
 }
 
@@ -512,7 +512,7 @@ test('RAQ Graft 101 Plodding Pebble example: with no enemy on the board the graf
   h.do({ type: 'castSpellToken', seat: A, entityId: fire });
   pick(h, { unit: pebble });                                  // a Fireball 1 at the Pebble
   let guard = 6;
-  while (!h.state.decision && h.state.stack.length && guard-- > 0) { pass(h); pass(h); }
+  while (!h.state.decision && h.state.stack.length && guard-- > 0) { pass(h); }
   const dec = h.state.decision;
   assert.ok(dec, 'the target is asked for as the trigger goes on the stack');
   const values = dec!.options.map(o => JSON.stringify(o.value));
@@ -1130,7 +1130,7 @@ test('RAQ Borrower of Forms: a Borrower that copied a Robot costs 0, so Lumengro
   while ((h.state.decision || h.state.stack.length) && guard-- > 0) {
     const d = h.state.decision;
     if (d && /Lumengrove/.test(d.prompt)) { asked = d.options.map(o => JSON.stringify(o.value)); break; }
-    if (d) pick(h, d.options[0]!.value); else { pass(h); pass(h); }
+    if (d) pick(h, d.options[0]!.value); else pass(h);
   }
   assert.ok(asked, 'setup: the Lurker asked for its target');
   assert.ok(asked!.includes(JSON.stringify({ unit: bof })), `cost 0 ≤ 2: the Borrower is a legal target (offered ${asked})`);

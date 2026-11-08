@@ -56,7 +56,7 @@ test('Abduct is castable against a cost-1 attacker, its X menu starts at 1, and 
   assert.deepEqual(xs, [1, 2, 3, 4], 'X = 0 is not offered — at 0 there is no unit to take');
   pick(h, 1);                                     // X = 1
   pick(h, { unit: scuttler });
-  pass(h); pass(h);                               // resolve — A has nothing to ransom with
+  pass(h); // resolve — A has nothing to ransom with
   assert.equal(ent(h, scuttler)!.controller, D, 'D gains control of the Cinder Scuttler');
   assert.ok(!h.state.battle!.columns.flat().includes(scuttler), 'the flipped unit left the formation');
   void A;

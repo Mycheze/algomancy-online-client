@@ -97,7 +97,7 @@ test('Mirrorback Ambusher: Ambush [2be] recalls an ally and takes its position (
   pass(h);                                                    // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Mirrorback Ambusher'), mode: 'ambush' });
   pick(h, { unit: ally });
-  pass(h); pass(h);                                           // resolve the ambush
+  pass(h); // resolve the ambush
   assert.ok(h.state.players[D]!.hand.includes('Stasis Sentry'), 'the ally is recalled to hand');
   assert.ok(!ent(h, ally), 'the ally left play');
   assert.equal(unitsOf(h, D).filter(u => u.card === 'Mirrorback Ambusher').length, 1,
@@ -129,7 +129,7 @@ test('Origon: negates each player’s FIRST spell in this battle only (CR 505.6)
   // A's SECOND spell resolves normally (X = 0 chosen at cast → harmless no-op)
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Torrential Reclamation') });
   pick(h, 0);                                                 // X = 0 at cast (CR 107.2a)
-  pass(h); pass(h);
+  pass(h);
   assert.ok(h.state.players[A]!.bin.includes('Torrential Reclamation'), 'second spell resolved → bin');
   assert.equal(h.log.filter(m => m.includes('is negated')).length, 1, 'only the first was negated');
   finishBattle(h);
@@ -274,7 +274,7 @@ test('Channel Through: X is chosen at cast (CR 107.2a) — X=0 is a no-op, X=1 w
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channel Through') });
   pick(h, 0);                                                 // X = 0 at cast (CR 107.2a)
   pick(h, { player: A });                                     // CR 110.2b: target opponent
-  pass(h); pass(h);
+  pass(h);
   assert.ok(ent(h, tokA) && ent(h, tokD), 'X = 0: nobody was damaged');
   // X = 1: 2 damage to the targeted ally, 2 distributed onto the (auto-picked)
   // unit of the targeted opponent — both 1/1s die
@@ -283,7 +283,7 @@ test('Channel Through: X is chosen at cast (CR 107.2a) — X=0 is a no-op, X=1 w
   pick(h, 1);                                                 // X = 1 at cast (CR 107.2a), paid now
   pick(h, { player: A });                                     // CR 110.2b: slot 0 is the opponent
   pick(h, { unit: tokD });                                    // CR 110.1a: the ally is a CAST-TIME target
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, tokD), 'the targeted ally took 2 and died');
   assert.ok(!ent(h, tokA), 'the distributed 2 killed the opponent’s 1/1');
   finishBattle(h);
@@ -355,7 +355,7 @@ test('Structural Collapse: sacrifice a unit → opponents sacrifice up to its de
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Structural Collapse') });
   pick(h, { unit: sentry });                                  // cast cost (CR 702.4): the 2/4 dies NOW (bar = 4)
   assert.ok(!ent(h, sentry), 'the caster’s unit is sacrificed at cast');
-  pass(h); pass(h);                                           // resolve
+  pass(h); // resolve
   pick(h, t1);                                                // A picks sacrifices toward the bar…
   pick(h, t2);                                                // …third pick is forced (auto)
   assert.ok(!ent(h, t1) && !ent(h, t2) && !ent(h, t3),
@@ -446,7 +446,7 @@ test('Torrential Reclamation: recall X nontoken allies → per recall, sacrifice
   // not offered, and neither is anything of A's.
   notOffered(h, { unit: a1 }, "A's unit is not D's ally");
   pick(h, { unit: sentry });                                  // D recalls the Sentry
-  pass(h); pass(h);                                           // resolve
+  pass(h); // resolve
   pick(h, a1);                                                // A's sacrifice pick (D's is forced)
   assert.ok(h.state.players[D]!.hand.includes('Good Whale'), 'the ally is recalled to hand');
   assert.ok(!ent(h, tokD), 'D sacrificed a unit for the recall');

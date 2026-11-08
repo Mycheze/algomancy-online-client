@@ -44,7 +44,7 @@ function attrOn(h: Harness, id: EntityId, attr: Attr): void {
 function shield(h: Harness, seat: Seat, unit: EntityId): void {
   h.do({ type: 'playCard', seat, handIndex: give(h, seat, 'Phytochemical Protection') });
   pick(h, { unit });
-  pass(h); pass(h);                                   // the spell resolves
+  pass(h); // the spell resolves
   assert.equal(ent(h, unit)!.damageShield, 'Phytochemical Protection', 'the shield is up');
 }
 
@@ -123,13 +123,12 @@ test('Woodland Warding negates an enemy VIRUS aimed at your unit, and spares one
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);                                             // A passes → D holds priority
   // an enemy effect aimed at D's OWN unit — Woodland Warding must spare it
-  h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Aetherflux Golem'), hostId: theirs });
-  pass(h);                                             // A declines to answer → D again
+  h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Aetherflux Golem'), hostId: theirs, holdPriority: true });
   // and one aimed at MY unit — a targeted enemy effect with no parts at all
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Lithoghul'), hostId: atk });
   assert.equal(h.state.stack.filter(i => i.kind === 'virus').length, 2, 'both viruses are on the stack');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Woodland Warding') });
-  pass(h); pass(h);                                    // Warding (top) resolves
+  pass(h); // Warding (top) resolves
   assert.ok(!h.state.stack.some(i => i.card === 'Lithoghul'),
     'the virus targeting an allied unit is negated and off the stack');
   assert.ok(h.state.stack.some(i => i.card === 'Aetherflux Golem'),
@@ -158,7 +157,7 @@ test('Return to Nature erases a mod riding a SPELL TOKEN, not just mods on units
   e.settle();
   assert.ok(ownAttrs(h, tok.id).has('Inverted'), 'the token really is wearing the mod');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Return to Nature') });
-  pass(h); pass(h);                                    // it resolves
+  pass(h); // it resolves
   assert.equal(ent(h, tok.id)!.mods.length, 0, '"all mods" reached the spell token');
   assert.ok(!ent(h, mod.id), 'the mod entity is gone');
   assert.ok(!ownAttrs(h, tok.id).has('Inverted'), 'and the attribute it granted with it');

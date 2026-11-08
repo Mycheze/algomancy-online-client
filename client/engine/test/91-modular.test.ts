@@ -386,14 +386,13 @@ test('CR 803.8f: the {Modular} window and the virus window agree — either way 
       h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Spellbind') });
       applyMods(h, 'Chitin Shredder');
     } else {
-      h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Spellbind') });
+      h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Spellbind'), holdPriority: true });  // CR 703.2a: keeps priority to act again
       applyMods(h);                                  // no {Modular} mods — the virus comes later
-      pass(h);                                       // the opponent declines to answer
       h.do({
         type: 'augment', seat: A, from: 'hand',
         index: give(h, A, 'Chitin Shredder'), hostStack: item(h, 'Spellbind').id,
       });
-      pass(h); pass(h);                              // the virus is a response: it resolves first
+      pass(h); // the virus is a response: it resolves first
     }
     drain(h);
     return {
@@ -421,7 +420,7 @@ test('CR 724.5: a NEGATED modded Spellbind is erased too — Unstable is a bin r
   const target = item(h, 'Spellbind').id;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Soul Tithe') });   // "negate that effect"
   pickBy(h, o => JSON.stringify(o.value).includes(String(target)));
-  pass(h); pass(h);
+  pass(h);
   pickBy(h, o => /^Don't pay/.test(o.label));        // A has no mana left: the ransom goes unpaid
   drain(h);
   assert.equal(unitsNamed(h, 'Wraith').length, 0, 'the negation landed — no Wraiths');

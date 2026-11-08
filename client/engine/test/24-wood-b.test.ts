@@ -64,7 +64,7 @@ test('Might of the Grove: target unit gains +1/+1 per your units, live at resolu
   pass(h);                                            // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Might of the Grove') });
   pick(h, { unit: u1 });
-  pass(h); pass(h);                                   // resolve
+  pass(h); // resolve
   assert.deepEqual(effStats(h, u1), [3, 3], '1/1 + (+2/+2: D has 2 units in the region)');
   assert.deepEqual(effStats(h, u2), [1, 1], 'only the target is buffed');
   finishBattle(h);
@@ -138,7 +138,7 @@ test('Noxious Demise: -1/-1 counter kills the 1/1 → Reaping draws (hand-rolled
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Noxious Demise') });
   const handD = h.state.players[D]!.hand.length;
   pick(h, { unit: atk });
-  pass(h); pass(h);                                   // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, atk), 'the 1/1 died to the -1/-1 counter');
   assert.equal(h.state.players[D]!.hand.length, handD + 1, 'Reaping: the caster drew');
   finishBattle(h);
@@ -158,7 +158,7 @@ test('Organic Exchange: control swaps and the attack slot passes to the exchange
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Organic Exchange') });
   pick(h, { unit: bubb });                            // first target (at cast)
   pick(h, { unit: dtok });                            // second target (count: 2)
-  pass(h); pass(h);                                   // resolve
+  pass(h); // resolve
   assert.equal(ent(h, bubb)!.controller, D, 'Bubb changed sides');
   assert.equal(ent(h, dtok)!.controller, A, 'the 1/1 changed sides');
   assert.deepEqual(h.state.battle!.columns[0], [dtok], 'the 1/1 took Bubb\'s attack slot');
@@ -292,7 +292,7 @@ test('Phytochemical Protection: combat damage is prevented and paid back as +1/+
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Phytochemical Protection') });
   pick(h, { unit: mine });
-  pass(h); pass(h);                                   // resolve the shield
+  pass(h); // resolve the shield
   assert.equal(ent(h, mine)!.damageShield, 'Phytochemical Protection', 'the shield is up');
   pass(h); pass(h);                                   // close the attack window
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [mine] } });
@@ -430,7 +430,7 @@ test('Plague Bellower: [three] — each opponent picks a unit; a -1/-1 counter o
   h.do({ type: 'declareAttack', seat: A, columns: [[a1], [a2]] });
   pass(h);                                            // priority → D
   h.do({ type: 'activateAbility', seat: D, entityId: bell, abilityIndex: 0, via: 'augment' });
-  pass(h); pass(h);                                   // resolve → A's pick
+  pass(h); // resolve → A's pick
   pick(h, a2);                                        // A chooses Bubb
   assert.equal(ent(h, a2)!.counters, -1, 'the chosen unit got a -1/-1 counter');
   assert.equal(ent(h, a1)!.counters, 0, 'the unchosen unit is untouched');
@@ -544,7 +544,7 @@ test('Organic Exchange hands over MODDED units: each unit\'s mods follow it, and
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Organic Exchange') });
   pick(h, { unit: bubb });
   pick(h, { unit: dtok });
-  pass(h); pass(h);                                   // resolve
+  pass(h); // resolve
 
   assert.equal(ent(h, bubb)!.controller, D, 'Bubb changed sides');
   assert.equal(ent(h, modA)!.controller, D, 'and its augment went with it');

@@ -65,7 +65,7 @@ function playGodray(t: Table): void {
   const { h, A, D } = t;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Godray') });
   pick(h, { player: D });
-  pass(h); pass(h);                                           // Godray resolves
+  pass(h); // Godray resolves
   if (h.state.priority !== A) pass(h);                        // D hands priority back
   assert.equal(h.state.priority, A, 'A holds priority after Godray');
   assert.equal(h.state.stack.length, 0);

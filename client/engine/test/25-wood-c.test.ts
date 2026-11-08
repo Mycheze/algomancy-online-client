@@ -46,7 +46,7 @@ test('Ralph: [one] gives target opponent control of it, creates three 1/1s where
   h.do({ type: 'declareAttack', seat: A, columns: [[ralph]] });
   h.do({ type: 'activateAbility', seat: A, entityId: ralph, abilityIndex: 0 });
   pick(h, { player: D });                             // target opponent
-  pass(h); pass(h);                                   // resolve
+  pass(h); // resolve
   assert.equal(ent(h, ralph)!.controller, D, 'the opponent gained control of Ralph');
   assert.ok(!h.state.battle!.columns.flat().includes(ralph), 'Ralph dropped out of the attack formation');
   const tokens = unitsOf(h, A).filter(u => u.card === 'Unit Token');
@@ -73,7 +73,7 @@ test('Rebalance: each present player gives an opponent control of one of their u
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);                                            // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Rebalance') });
-  pass(h); pass(h);                                   // resolve → D's pick is asked
+  pass(h); // resolve → D's pick is asked
   pick(h, lurk);                                      // D gives the Lurker
   assert.equal(ent(h, atk)!.controller, D, "A's auto-picked attacker now belongs to D");
   assert.equal(ent(h, lurk)!.controller, A, "D's chosen Lurker now belongs to A");
@@ -102,7 +102,7 @@ test('CR 711.2: a stolen unit takes its MODS with it — they change controller 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Rebalance') });
-  pass(h); pass(h);                                   // D's only unit: the Lurker is auto-picked
+  pass(h); // D's only unit: the Lurker is auto-picked
   assert.equal(ent(h, lurk)!.controller, A, 'the Lurker is A\'s now');
   assert.equal(ent(h, modId)!.controller, A, 'and so is the mod riding it — mods are part of the unit');
   assert.ok([...new E(h.state).ownAttrs(ent(h, lurk)!)].includes('Evasive'), 'the granted attribute still applies');
@@ -299,7 +299,7 @@ test('Sudden Bloom: your in-region units get +1/+1 until regroup (and only until
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[u1], [u2]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Sudden Bloom') });
-  pass(h); pass(h);                                   // resolve
+  pass(h); // resolve
   assert.deepEqual(effStats(h, u1), [2, 2], 'attacker one buffed');
   assert.deepEqual(effStats(h, u2), [2, 2], 'attacker two buffed');
   assert.deepEqual(effStats(h, dUnit), [1, 1], 'enemy untouched ("your units")');
@@ -363,7 +363,7 @@ test('Verdant Vengeance: damage to target unit equals your in-region unit count 
   pass(h);                                            // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Verdant Vengeance') });
   pick(h, { unit: bubb });
-  pass(h); pass(h);                                   // resolve
+  pass(h); // resolve
   assert.equal(ent(h, bubb)!.damage, 3, 'D controls 3 in-region units → 3 damage');
   finishBattle(h);
 });
@@ -382,13 +382,13 @@ test('Wandering Blightshell: a -1/-1 counter you put on an enemy draws a card �
   const hand0 = h.state.players[A]!.hand.length;
   h.do({ type: 'castSpellToken', seat: A, entityId: t1.id });
   pick(h, { unit: lurk });
-  pass(h); pass(h);                                   // Poison resolves → counter → trigger
+  pass(h); // Poison resolves → counter → trigger
   pass(h); pass(h);                                   // the trigger resolves → draw
   assert.equal(h.state.players[A]!.hand.length, hand0 + 1, 'the counter drew a card');
   const t2 = new E(h.state).createSpellToken(A, 'Poison', 1, region);
   h.do({ type: 'castSpellToken', seat: A, entityId: t2.id });
   pick(h, { unit: lurk });
-  pass(h); pass(h);                                   // second counter: budget spent → no trigger
+  pass(h); // second counter: budget spent → no trigger
   assert.equal(h.state.players[A]!.hand.length, hand0 + 1, '[Switch1]: only one draw per turn');
   assert.equal(h.log.filter(m => m.includes('Trigger: Wandering Blightshell')).length, 1,
     'the trigger fired exactly once');
@@ -451,13 +451,12 @@ test('Woodland Warding: negates enemy effects aimed at your side, spares the res
   giveResources(h, D, 'wood', 3);                     // Woodland Warding ggg/3
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
-  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Channeled Boon') });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Channeled Boon'), holdPriority: true });
   pick(h, { unit: atk });                             // enemy effect aimed at A's OWN unit
-  pass(h);                                            // D passes; priority → A
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Verdant Vengeance') });
   pick(h, { unit: lurk });                            // enemy effect aimed at D's unit
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Woodland Warding') });
-  pass(h); pass(h);                                   // Warding (top) resolves
+  pass(h); // Warding (top) resolves
   // CR 704.4: the negated one is GONE from the stack; the spared one is still on it
   assert.ok(!h.state.stack.some(i => i.label.includes('Verdant Vengeance')),
     'the effect targeting an allied unit is negated and off the stack');

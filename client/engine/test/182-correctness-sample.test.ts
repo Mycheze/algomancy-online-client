@@ -400,7 +400,7 @@ test('Capture: the target goes to the CASTER’s hand, then the caster discards 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Capture') });
   assert.ok(offered(h).includes(JSON.stringify({ unit: victim })), 'an enemy unit is targetable');
   pick(h, { unit: victim });
-  pass(h); pass(h);                           // resolve
+  pass(h); // resolve
 
   assert.equal(ent(h, victim), undefined, 'the target left play');
   // "into YOUR hand" — the caster's, not the owner's. This is a STEAL.

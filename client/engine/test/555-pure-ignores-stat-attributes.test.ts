@@ -105,7 +105,7 @@ test('CR 802.25e / CT-260: in a Battle between Just a Unit and a Balanced 1/4, t
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Battle') });
   pick(h, { unit: jau });
   pick(h, { unit: bal });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(ent(h, jau), 'Just a Unit survives the fight');
   assert.equal(ent(h, jau)!.damage, 1, 'the fight read the Balanced 1/4 at its 1 power');
 });

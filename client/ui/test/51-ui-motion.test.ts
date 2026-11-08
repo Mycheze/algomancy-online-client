@@ -86,7 +86,7 @@ test('hand → stack → field: a spell unit is followed all the way in', () => 
   assert.equal(played.kind, 'move');
 
   const stackKey = played.to!;
-  pass(h); pass(h);            // resolve it: deletes the whale, spawns as a unit
+  pass(h); // resolve it: deletes the whale, spawns as a unit
   const unit = unitsOf(h, A).find(u => u.card === 'Leaping Lillik')!;
   const resolved = via(diffCensus(onStack, census(h.state)).moves, stackKey);
   assert.ok(resolved, 'the stack item was seen leaving the stack');
@@ -110,7 +110,7 @@ test('stack → bin: a spell that is not a unit lands in its owner’s bin', () 
   pick(h, { unit: victim });   // …fights theirs
   const onStack = census(h.state);
   const stackKey = `s${h.state.stack[0]!.id}`;
-  pass(h); pass(h);
+  pass(h);
   // CR 802.16j: each Good Whale is {Piercing} with 2 over lethal, so each side is
   // asked where its excess goes; the default sends it to the player
   for (let guard = 4; h.state.decision?.kind === 'assignDamage' && guard-- > 0;) {

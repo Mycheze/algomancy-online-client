@@ -73,7 +73,7 @@ test('CR D6.3: an item that suspends mid-resolution is off the stack but flagged
   assert.equal(h.state.stack.length, 1, 'the spell is on the stack, waiting');
   assert.equal(h.state.resolving ?? null, null, 'nothing is resolving yet');
 
-  pass(h); pass(h);                                  // both pass — it resolves…
+  pass(h); // both pass — it resolves…
 
   // …and stops dead in the middle of resolving, asking its controller to pick.
   assert.ok(h.state.decision, 'Glimpse 3 asks which card to cache');
@@ -104,7 +104,7 @@ test('CR D6.3: a resolving item cannot be responded to, negated or targeted', ()
   assert.ok(legalActions(h.state, A).some(a => a.type === 'augment' && a.hostStack === waiting.id),
     'CR 723.4d: and a legal virus host');
 
-  pass(h); pass(h);                                  // now it is RESOLVING
+  pass(h); // now it is RESOLVING
   assert.ok(h.state.resolving);
   const id = h.state.resolving!.id;
 
@@ -131,7 +131,7 @@ test('the flag survives the suspension rollback as ONE object, and the game stil
   giveResources(h, D, 'water', 3);
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Premonition') });
-  pass(h); pass(h);
+  pass(h);
   // resolveParts rolled the whole state back to the part boundary and re-pointed
   // the marker at the live item: state must hold ONE object, not two copies.
   const sus = h.state.suspension as { type: string; item: StackItem };
@@ -161,7 +161,7 @@ test('CR D6.3: every exit clears it — a fizzle, and a battle played to its end
   pick(h, { unit: h.state.battle!.columns[0]![0]! });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });   // kill it first
   pick(h, { unit: h.state.battle!.columns[0]![0]! });
-  pass(h); pass(h);                                  // A's Arc resolves, the 3/3 dies
+  pass(h); // A's Arc resolves, the 3/3 dies
   pass(h); pass(h);                                  // D's Arc fizzles
   assert.equal(h.state.resolving ?? null, null, 'a fizzle leaves nothing stranded');
   assert.equal(h.state.stack.length, 0);
@@ -179,7 +179,7 @@ test('CR D6.3: fuzzed play never strands a resolving item outside a pending deci
   giveResources(h, D, 'water', 3);
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Premonition') });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(h.state.resolving, 'seeded: Premonition is mid-resolution');
 
   let state = h.state;
@@ -218,15 +218,14 @@ test('CR 723.4: the powerful guy on a giant fireball — Chitin Shredder doubles
   giveResources(h, D, 'earth', 2);                   // Chitin Shredder ee/2
   const before = h.state.players[A]!.life;
   pass(h);
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Arc Lightning') });
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Arc Lightning'), holdPriority: true });  // CR 703.2a: keeps priority to act again
   pick(h, { player: A });
   const spell = onStack(h, 'Arc Lightning')!;
-  pass(h);                                           // A declines to answer
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Chitin Shredder'), hostStack: spell.id });
   assert.equal(h.state.stack.length, 2, 'the virus is a response: it sits ABOVE its host');
   assert.equal(h.state.stack[1]!.kind, 'virus');
 
-  pass(h); pass(h);                                  // the virus resolves first
+  pass(h); // the virus resolves first
   assert.equal(h.state.stack.length, 1);
   assert.deepEqual(onStack(h, 'Arc Lightning')!.augments, [{ card: 'Chitin Shredder', by: D }]);
 
@@ -245,7 +244,7 @@ test('CR 723.4: you can hit an ENEMY spell, and a virus on a unit still works un
   const spell = onStack(h, 'Arc Lightning')!;
   // A augments the OPPONENT's spell — legal, and a spectacularly bad idea here
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Chitin Shredder'), hostStack: spell.id });
-  pass(h); pass(h);
+  pass(h);
   pass(h); pass(h);
   assert.equal(before - h.state.players[A]!.life, 12, 'A doubled the spell aimed at A');
   // CR 723.4b: both are erased, each card to ITS OWN owner's erased pile
@@ -259,11 +258,10 @@ test('CR 723.4b ⚠: a spell that carried a virus is Unstable — it is ERASED, 
   giveResources(h, D, 'fire', 4);
   giveResources(h, D, 'earth', 2);
   pass(h);
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Arc Lightning') });
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Arc Lightning'), holdPriority: true });  // CR 703.2a: keeps priority to act again
   pick(h, { player: A });
-  pass(h);                                           // A declines
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Chitin Shredder'), hostStack: onStack(h, 'Arc Lightning')!.id });
-  pass(h); pass(h);
+  pass(h);
   pass(h); pass(h);
   assert.equal(count(binOf(h, D), 'Arc Lightning'), 0, 'the spell never reaches a bin');
   assert.equal(count(binOf(h, D), 'Chitin Shredder'), 0, 'nor does the virus');
@@ -277,13 +275,12 @@ test('CR 723.4b: negating the CARRIER erases it too; negating the VIRUS ITSELF b
   giveResources(h, D, 'earth', 2);
   giveResources(h, A, 'wood', 2);
   pass(h);
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Arc Lightning') });
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Arc Lightning'), holdPriority: true });  // CR 703.2a: keeps priority to act again
   pick(h, { player: A });
-  pass(h);                                           // A declines
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Chitin Shredder'), hostStack: onStack(h, 'Arc Lightning')!.id });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Hush Mush') });
   pick(h, { stack: h.state.stack.find(i => i.kind === 'virus')!.id });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(count(binOf(h, D), 'Chitin Shredder'), 1, 'a negated virus goes to the bin');
   assert.deepEqual(onStack(h, 'Arc Lightning')!.augments ?? [], [], 'and never attached');
 
@@ -293,14 +290,13 @@ test('CR 723.4b: negating the CARRIER erases it too; negating the VIRUS ITSELF b
   giveResources(g.h, g.D, 'earth', 2);
   giveResources(g.h, g.A, 'wood', 2);
   pass(g.h);
-  g.h.do({ type: 'playCard', seat: g.D, handIndex: give(g.h, g.D, 'Arc Lightning') });
+  g.h.do({ type: 'playCard', seat: g.D, handIndex: give(g.h, g.D, 'Arc Lightning'), holdPriority: true });  // CR 703.2a: keeps priority to act again
   pick(g.h, { player: g.A });
-  pass(g.h);                                         // A declines
   g.h.do({ type: 'augment', seat: g.D, from: 'hand', index: give(g.h, g.D, 'Chitin Shredder'), hostStack: onStack(g.h, 'Arc Lightning')!.id });
-  pass(g.h); pass(g.h);                              // the virus attaches
+  pass(g.h);                                         // the virus attaches
   g.h.do({ type: 'playCard', seat: g.A, handIndex: give(g.h, g.A, 'Hush Mush') });
   pick(g.h, { stack: onStack(g.h, 'Arc Lightning')!.id });
-  pass(g.h); pass(g.h);
+  pass(g.h);
   assert.equal(count(binOf(g.h, g.D), 'Arc Lightning'), 0, 'Unstable beats the negation bin (CR 406.4)');
   assert.deepEqual(erasedOf(g.h, g.D).slice(-2).sort(), ['Arc Lightning', 'Chitin Shredder']);
 });
@@ -311,14 +307,13 @@ test('CR 723.3a: a virus whose host leaves the stack first fizzles to the bin', 
   giveResources(h, D, 'earth', 2);
   giveResources(h, A, 'wood', 2);
   pass(h);
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Arc Lightning') });
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Arc Lightning'), holdPriority: true });  // CR 703.2a: keeps priority to act again
   pick(h, { player: A });
-  pass(h);                                           // A declines
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Chitin Shredder'), hostStack: onStack(h, 'Arc Lightning')!.id });
   // A's negate goes ABOVE the virus, so the host is gone before the virus runs
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Hush Mush') });
   pick(h, { stack: onStack(h, 'Arc Lightning')!.id });
-  pass(h); pass(h);                                  // Hush Mush negates the host
+  pass(h); // Hush Mush negates the host
   assert.equal(onStack(h, 'Arc Lightning'), undefined);
   assert.equal(count(binOf(h, D), 'Arc Lightning'), 1, 'a negated spell with no virus is binned (CR 704.4a)');
   drain(h);                                          // the virus fizzles
@@ -364,11 +359,10 @@ test('CR 723.4c: a spell UNIT carries its virus into play as an augment mod', ()
   giveResources(h, A, 'water', 2);
   // give Hush Mush something to negate so it does not fizzle
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Premonition') });
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush') });
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush'), holdPriority: true });  // CR 703.2a: keeps priority to act again
   pick(h, { stack: onStack(h, 'Premonition')!.id });
-  pass(h);                                           // A declines
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Chitin Shredder'), hostStack: onStack(h, 'Hush Mush')!.id });
-  pass(h); pass(h);                                  // the virus attaches
+  pass(h); // the virus attaches
   pass(h); pass(h);                                  // Hush Mush resolves and spawns
   const body = Object.values(h.state.entities).find(e => e.card === 'Hush Mush' && e.kind === 'unit');
   assert.ok(body, 'the spell unit arrived — it is not erased on its way into play');
@@ -403,12 +397,11 @@ test('CR 723.4a: a spell TOKEN is a legal host too (Caleb 2025-03-06 names them)
   const tok = new E(h.state).createSpellToken(D, 'Fireball', 3, h.state.battle!.region);
   const before = h.state.players[A]!.life;
   pass(h);                                           // A declines
-  h.do({ type: 'castSpellToken', seat: D, entityId: tok.id });
+  h.do({ type: 'castSpellToken', seat: D, entityId: tok.id, holdPriority: true });  // CR 703.2a: keeps priority to act again
   pick(h, { player: A });
   const item = onStack(h, 'Fireball')!;
-  pass(h);                                           // A declines again
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Chitin Shredder'), hostStack: item.id });
-  pass(h); pass(h);                                  // the virus attaches
+  pass(h); // the virus attaches
   pass(h); pass(h);                                  // the token resolves
   assert.equal(before - h.state.players[A]!.life, 6, '3 damage, doubled by {Powerful}');
   // a token has no card to bin either way (CR 704.2b); the virus is erased with it

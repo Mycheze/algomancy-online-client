@@ -39,7 +39,7 @@ function wake(seed: number, bins: { mine?: string[]; theirs?: string[] }, dDemat
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   const mark = h.events.length;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Wake the Dead') });
-  pass(h); pass(h);                                          // Wake the Dead resolves
+  pass(h); // Wake the Dead resolves
   return { h, A, D, victim, mark };
 }
 
@@ -77,7 +77,7 @@ test('CR 701.4 / CT-245: a unit Wake the Dead plays can be answered, and a negat
   assert.equal(h.state.priority, D, 'and the opponent gets a turn in it');
   h.do({ type: 'playCard', seat: D, handIndex: h.state.players[D]!.hand.indexOf('Dematerialize') });
   pick(h, { stack: item.id });
-  pass(h); pass(h);                                          // Dematerialize resolves
+  pass(h); // Dematerialize resolves
   const glimpse = h.state.decision as { seat: Seat } | null;   // (narrowed to null by the assert above)
   if (glimpse) h.do({ type: 'decide', seat: glimpse.seat, choice: 0 });   // its Glimpse
   assert.ok(!h.state.stack.some(i => i.card === 'Shard Sprite'), 'negated off the stack');

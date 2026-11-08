@@ -100,7 +100,7 @@ test('CR 702.4e / CT-332: Tides of the Cosmos playing Hyper Beam in a battle win
   h.state.sharedDeck.unshift('Hyper Beam');
   const before = h.state.players[A]!.debt ?? 0;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Tides of the Cosmos') });
-  pass(h); pass(h);                                          // Tides resolves
+  pass(h); // Tides resolves
   let guard = 10;
   while (h.state.decision && guard-- > 0) {
     const d = h.state.decision;

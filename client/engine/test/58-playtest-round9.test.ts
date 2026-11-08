@@ -61,7 +61,7 @@ test('Discharge pays its counters before the spell is respondable, and X is fixe
   pick(h, { unit: victim });
   assert.equal(h.state.stack.length, 1, 'only now is it a thing anyone can answer');
   assert.equal(h.state.stack[0]!.parts[0]!.costPaid!.x, 1, 'and its X is already fixed');
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, victim), '1 damage killed the 1/1');
   finishBattle(h);
 });
@@ -83,7 +83,7 @@ test('CR 702.4b: negating a spell does not refund the cost it already paid', () 
   pick(h, { unit: victim });
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Necromantic Rebuke') });
   pick(h, { stack: h.state.stack[0]!.id });            // X = 0 erase, so the ransom is trivially met…
-  pass(h); pass(h);
+  pass(h);
   drain(h);
   assert.equal(ent(h, ally)!.counters, 0, 'the counters stay spent whatever happens to the spell');
   finishBattle(h);
@@ -108,7 +108,7 @@ test('CR 702.6b: an unpayable variable cost is simply X = 0 — the cast is stil
   h.do({ type: 'declareAttack', seat: A, columns: [[ally]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Discharge') });
   pick(h, { unit: victim });                           // no cost to ask about: straight to the target
-  pass(h); pass(h);
+  pass(h);
   assert.ok(ent(h, victim), 'X = 0 deals nothing');
   assert.ok(h.log.some(l => l.includes('X is 0')), 'and says so');
   finishBattle(h);
@@ -134,7 +134,7 @@ test('CR 110.1a: Download names its token as it is cast, and only the enemy\'s',
   notOffered(h, { unit: atk }, 'a nontoken unit is not a token');
   pick(h, { unit: theirs });
   assert.equal(h.state.stack.length, 1, 'targeted before it reached the stack');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, theirs)!.controller, A);
   finishBattle(h);
 });
@@ -158,7 +158,7 @@ test("CR 110.3a: Reconfigure's first slot only offers cards that have [Augment]"
   assert.deepEqual(offered(h), [JSON.stringify({ unit: mover })], 'exactly one legal mover');
   pick(h, { unit: mover });
   pick(h, { unit: host });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, mover), 'it moved onto the host');
   finishBattle(h);
 });
@@ -217,7 +217,7 @@ test('a bin is a targetable zone, and two copies of one card are two targets', (
     'both copies are separate targets, the spell in the bin is not one, and both are required (CR 110.7)');
   pick(h, { bin: { seat: A, card: 'Curio Drifter' } });
   pick(h, { bin: { seat: A, card: 'Curio Drifter', nth: 1 } });
-  pass(h); pass(h);                                    // resolve → "then discard a card"
+  pass(h); // resolve → "then discard a card"
   pick(h, 0);
   assert.equal(h.state.players[A]!.bin.filter(c => c === 'Curio Drifter').length, 0,
     'both copies came back — a name-only reference could only ever have taken one');
@@ -286,7 +286,7 @@ test('CR 407.1a: erased cards are kept in a public pile', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Celestial Purge') });
   pick(h, { unit: victim });
-  pass(h); pass(h);
+  pass(h);
   drain(h);                                            // its controller Glimpses 3
   // erased is not dead: no bin, no death — but the card is now LOOKABLE-AT
   assert.ok(!ent(h, victim), 'gone from play');

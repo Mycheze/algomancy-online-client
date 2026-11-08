@@ -68,7 +68,7 @@ test('Rider of the Tides: a BIN recursion (Collect Remains) is a card entering a
   const mark = h.events.length;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Collect Remains') });
   pick(h, { bin: { seat: A, card: 'Good Whale' } });
-  pass(h); pass(h);                                      // the spell resolves
+  pass(h); // the spell resolves
   assert.ok(h.state.players[A]!.hand.includes('Good Whale'), 'the bin card reached the hand');
   const entries = handEntries(h, mark);
   assert.equal(entries.length, 1, 'exactly one hand entry was announced');
@@ -93,7 +93,7 @@ test("Xenopod Progenitor: a card taken out of an OPPONENT's hand (Bioremediation
   const mark = h.events.length;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Bioremediation') });
   pick(h, { player: D });
-  pass(h); pass(h);                                      // the spell resolves
+  pass(h); // the spell resolves
   assert.ok(h.state.players[A]!.hand.includes('Good Whale'), "the opponent's card reached my hand");
   const entries = handEntries(h, mark);
   assert.equal(entries.length, 1, 'one hand entry');
@@ -121,7 +121,7 @@ test('Galerider Eel: a BIN recursion into MY hand fires it — not a draw, not a
   h.do({ type: 'declareAttack', seat: A, columns: [[eel]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Collect Remains') });
   pick(h, { bin: { seat: A, card: 'Good Whale' } });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(queuedFor(h, 'Galerider Eel'), 1, 'the Eel heard it, exactly once');
   pass(h); pass(h);                                      // resolve the trigger
   assert.deepEqual(effStats(h, eel), [4, 8], '0/4 + 4/4');
@@ -167,7 +167,7 @@ test('a multi-card move fires exactly ONE handEntered, like a multi-card draw', 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Tilling the Graves') });
   pick(h, { bin: { seat: A, card: 'Curio Drifter' } });
   pick(h, { bin: { seat: A, card: 'Bumblecrab' } });
-  pass(h); pass(h);                                      // resolve → "then discard a card"
+  pass(h); // resolve → "then discard a card"
   pick(h, 0);
   let entries = handEntries(h, mark);
   assert.equal(entries.length, 1, 'TWO cards moved, ONE event');
@@ -359,7 +359,7 @@ test('Burn the Blight ANNOUNCES the rot and debt it removes (rotLost / debtLost)
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   const mark = h.events.length;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Burn the Blight') });
-  pass(h); pass(h);                                      // resolve
+  pass(h); // resolve
   assert.equal(h.q.rot(A), 0);
   assert.equal(h.q.rot(D), 0);
   assert.equal(h.q.debt(D), 0);

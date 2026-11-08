@@ -37,7 +37,7 @@ test('CR 110.12 / CT-331: with a Gatekeeper of Souls in the battle, a Virus may 
   assert.throws(() => h.do({ type: 'augment', seat: A, from: 'hand', index: idx, hostId: atk }),
     /must be targeted/, 'an ally included');
   h.do({ type: 'augment', seat: A, from: 'hand', index: idx, hostId: gk });
-  pass(h); pass(h);                                            // the Virus resolves
+  pass(h); // the Virus resolves
   assert.ok(ent(h, gk)!.mods.some(m => ent(h, m)?.card === 'Crumbling Ancient'), 'it landed on the Gatekeeper');
   finishBattle(h);
 });

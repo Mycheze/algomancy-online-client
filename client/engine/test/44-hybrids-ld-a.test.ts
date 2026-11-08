@@ -407,7 +407,7 @@ test('CR 710.1: a copied ACTIVATED ability is offered, accepted and really fires
   h.do({ type: 'activateAbility', seat: A, entityId: tok, abilityIndex: 0 });
   assert.ok(h.log.some(l => l.includes('Omniwield Evoker')),
     'the stack row names the FACE, not the physical Unit Token');
-  pass(h); pass(h);                                           // resolve it
+  pass(h); // resolve it
   assert.equal(ent(h, tok)!.counters, 1, 'and the ability actually did its thing');
   assert.deepEqual(effStats(h, tok), [3, 2], 'a 2/1 Evoker plus its own +1/+1 counter');
   finishBattle(h);
@@ -491,7 +491,7 @@ test('Big Glimpse Card: the opponent splits 7, the caster caches one pile playab
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Big Glimpse Card') });
   pick(h, { player: D });                                    // CR 110.1a: "target opponent", at cast
-  pass(h); pass(h);                                          // resolve
+  pass(h); // resolve
   // the SPLIT is the opponent's: two cards into pile 1, then done
   assert.equal(h.state.decision!.seat, D, 'the opponent splits the piles');
   pick(h, 0); pick(h, 1); pick(h, false);
@@ -752,7 +752,7 @@ test('Dream Lapse: recalls a spell off the stack to its hand, then its controlle
   const arcId = h.state.stack.find(i => i.card === 'Luminous Arc')!.id;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Dream Lapse') });
   pick(h, { stack: arcId });
-  pass(h); pass(h);                                          // resolve Dream Lapse
+  pass(h); // resolve Dream Lapse
   assert.ok(!h.state.stack.some(i => i.id === arcId), 'the Arc left the stack');
   assert.equal(ent(h, prey)!.damage, 0, 'it never resolved — no damage');
   // it went to hand, and the forced discard then trashed it
@@ -795,7 +795,7 @@ test('Hyper Beam: 8 damage + a draw, and its printed [Gain 4 debt] is charged (C
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Hyper Beam') });
   pick(h, { unit: prey });
-  pass(h); pass(h);                                          // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, prey), '8 damage killed the 7/4');
   assert.equal(h.state.players[A]!.hand.length, hand + 1, 'drew a card (the Beam itself left hand)');
   assert.equal(new E(h.state).debt(A), 4, 'the printed [Gain 4 debt] cost was charged (CR 112.14c)');
@@ -868,7 +868,7 @@ test('Mindburn: each player sacrifices a nontoken unit, gains a rot or discards,
   h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Mindburn') });
   pick(h, 1);                                                // X = 1
-  pass(h); pass(h);                                          // resolve
+  pass(h); // resolve
   // hands are empty: each player chooses between their unit and a rot
   assert.equal(h.state.decision?.seat, A, 'the initiative player chooses first');
   assert.deepEqual(offered(h), [JSON.stringify(`u:${mine}`), JSON.stringify('rot')],
@@ -898,7 +898,7 @@ test('Mindburn: a player with no nontoken unit and no hand gains a rot, unasked,
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Mindburn') });
   const rotBefore = h.state.players[D]!.rot ?? 0;
   pick(h, 2);                                                // X = 2
-  pass(h); pass(h);
+  pass(h);
   for (let i = 0; i < 2; i++) {
     assert.equal(h.state.decision?.seat, A, `round ${i + 1}: only A is asked`);
     pick(h, 'rot');
@@ -922,7 +922,7 @@ test('Mindburn: X = 0 does nothing', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Mindburn') });
   pick(h, 0);                                                // X = 0
-  pass(h); pass(h);
+  pass(h);
   assert.ok(ent(h, mine) && ent(h, theirs), 'nobody sacrificed anything');
   assert.ok(h.log.some(l => l.includes('X = 0')), 'said so in the log');
   finishBattle(h);
@@ -983,7 +983,7 @@ test('Reclaim the Fallen: unit mods leave the host and enter play; other mods st
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Reclaim the Fallen') });
   pick(h, { unit: host });
-  pass(h); pass(h);                                          // resolve
+  pass(h); // resolve
   assert.ok(unitsOf(h, D).some(u => u.card === 'Gublin'), "the unit mod is in play under the mod's controller");
   const left = ent(h, host)!.mods.map(id => ent(h, id)!.card);
   assert.deepEqual(left, ['Luminous Arc'], 'the nonunit mod stayed on the host');

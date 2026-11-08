@@ -72,7 +72,7 @@ test('Arbiter of Armistice: cards played during battle cost 2 life — everyone\
   assert.equal(h.state.players[D]!.life, lifeD - 2, 'the 2 life came off at cast time');
   assert.ok(h.log.some(l => l.includes('pays 2 life to play Flame of History')),
     'and the log says why');
-  pick(h, { player: A }); pass(h); pass(h);   // aim it, let it resolve
+  pick(h, { player: A }); pass(h); // aim it, let it resolve
   // …and the Arbiter's OWN controller pays it too ("cards", not "their cards")
   if (h.state.priority !== A) pass(h);
   giveResources(h, A, 'fire', 4);
@@ -177,7 +177,7 @@ test('Colony of the Interworld: +3 counters when your life moves in battle, once
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);                                                   // A passes → D acts
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Shard Sprite') });
-  pass(h); pass(h);                                          // the Sprite resolves and spawns
+  pass(h); // the Sprite resolves and spawns
   pass(h); pass(h);                                          // its "gain 3 life" trigger
   assert.equal(h.state.players[D]!.life, 33, 'D gained 3 life during battle');
   pass(h); pass(h);                                          // the Colony trigger
@@ -204,7 +204,7 @@ test('Divine Foresight: an opponent caches a chosen card with Prophecy — Three
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Divine Foresight') });
   pick(h, { player: D });
-  pass(h); pass(h);                                          // resolve → the hand pick
+  pass(h); // resolve → the hand pick
   assert.equal(h.state.decision!.seat, A, 'the caster chooses from the revealed hand');
   assert.equal(h.state.decision!.options.length, 2);
   pick(h, 1);                                                // Greed Angel
@@ -503,7 +503,7 @@ test('Penance: any number of target players each lose 1 life, then draw a card',
   h.do({ type: 'playCard', seat: A, handIndex: idx });
   pick(h, { player: D });
   pick(h, { player: A });                                    // "any number" — both players
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.players[D]!.life, 29);
   assert.equal(h.state.players[A]!.life, 29, 'you may target yourself');
   assert.equal(h.state.players[A]!.hand.length, hand, 'played one, drew one');
@@ -522,7 +522,7 @@ test('Penance: with no targets declared (min 0) the draw still happens', () => {
   const hand = h.state.players[A]!.hand.length;
   h.do({ type: 'playCard', seat: A, handIndex: idx });
   pick(h, { doneTargets: true });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.players[D]!.life, 30, 'nobody lost life');
   assert.equal(h.state.players[A]!.hand.length, hand, 'but the card was still drawn');
   finishBattle(h);
@@ -553,7 +553,7 @@ test('Prismatic Observer: sacrifice to recall a cached card (either cache, in ba
   assert.ok(ent(h, obs), 'still alive while you choose');
   pick(h, { cached: { seat: D, uid } });                     // CR 403.6: the enemy cache is targetable
   assert.ok(!ent(h, obs), 'sacrificed as a cost, before the ability resolves');
-  pass(h); pass(h);                                          // in battle the ability resolves off the stack
+  pass(h); // in battle the ability resolves off the stack
   assert.equal(cacheOf(h, D).length, 0, 'the entry (and its prophecy) is gone');
   assert.ok(h.state.players[D]!.hand.includes(bait), 'recalled to its owner\'s hand');
   assert.equal(h.state.players[A]!.life, life + 3, 'and you gain 3 life');
@@ -591,7 +591,7 @@ test('Retribution Thing: the "lost" mode makes X the life you have lost in this 
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Retribution Thing') });
   pick(h, { unit: atk });
   pick(h, 'lost');                                           // CR 205.3: named at cast
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, atk), '7 damage this battle kills the 7/5');
   assert.ok(h.state.players[A]!.bin.includes('Good Whale'));
   assert.ok(ent(h, target), 'the untargeted unit is untouched');
@@ -619,7 +619,7 @@ test('CR 205.3: the printed "[lost or gained]" is a MODE, so X is one ledger and
   // ledger and reads only that — see 136-triggers-and-modes for both halves.
   assert.equal(h.state.decision?.kind, 'mode', 'the bracket is a cast-time choice');
   pick(h, 'gained');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, victim)!.damage, 3, 'X = the 3 GAINED alone — not 5, and not the 2 lost');
   assert.ok(tough > 5, 'the victim survives, so the damage is readable');
   finishBattle(h);
@@ -963,7 +963,7 @@ test('Triskaidekaphage: as a Virus the text reads from the HOST — and can go U
   h.state.players[D]!.life = 5;
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Triskaidekaphage'), hostId: blocker });
-  pass(h); pass(h);                                          // the Virus resolves onto the enemy blocker
+  pass(h); // the Virus resolves onto the enemy blocker
   assert.equal(ent(h, blocker)!.mods.length, 1);
   pass(h); pass(h);                                          // the attack window closes
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blocker] } });

@@ -61,6 +61,9 @@
  *    {"do":"play","card":C,"targets":[REF…≤6],"x":N?,"mode":"ambush"|"discardMe"?}
  *    {"do":"augment","card":C,"host":REF}     {"do":"graft","card":C,"host":REF,"position":N?}
  *    {"do":"activate","unit":REF,"ability":N,"targets":[…]?,"x":N?}
+ *         Consecutive play/augment/graft/activate steps by one seat in battle keep
+ *         priority, as holding Ctrl does (CR 703.2a), so they stack; otherwise the
+ *         act is that seat's pass and the other seat's pass resolves it (CR 703.2b).
  *    {"do":"pass"}            pass priority (or, outside a window, the passive "done"). The
  *                             other seat passes first if it holds priority, so a bare
  *                             "pass" by you lets the top of the stack resolve.
@@ -120,7 +123,7 @@
 import type {
   Action, Attr, CardName, Decision, EngineEvent, Entity, EntityId, GameState, ResourceKind, Seat,
 } from '../engine/src/types.ts';
-import { apply, createGame, IllegalAction, legalActions } from '../engine/src/apply.ts';
+import { apply, createGame, IllegalAction, legalActions, withHoldPriority } from '../engine/src/apply.ts';
 import { E, Suspended } from '../engine/src/engine.ts';
 import { allCardNames, canonicalCardName, getCard } from '../engine/src/cards/dsl.ts';
 import { closeHasteStep, patchSide, type BoardSide } from './board.ts';
@@ -179,6 +182,11 @@ interface NSide {
   hand: CardName[]; play: NUnit[]; resources: Partial<Record<ResourceKind, number>>;
   life: number | null; bin: CardName[]; deckTop: CardName[];
 }
+/** the next step is the same seat acting again: this act keeps priority so both stack */
+function isSameSeatAct(st: NStep, next: NStep | undefined): boolean {
+  return !!next && ['play', 'augment', 'graft', 'activate'].includes(next.do) && (next.seat ?? 0) === (st.seat ?? 0);
+}
+
 interface NStep {
   i: number; seat: Seat | null; do: Do;
   card?: CardName; targets?: string[]; x?: number; mode?: 'ambush' | 'discardMe';
@@ -1062,7 +1070,7 @@ class Sim {
     return i;
   }
 
-  runAct(st: NStep): StepOut {
+  runAct(st: NStep, keepPriority: boolean): StepOut {
     const seat = st.seat ?? 0;
     this.waitFor(seat);
     const legal = legalActions(this.state, seat);
@@ -1089,6 +1097,7 @@ class Sim {
       want = legal.find(a => a.type === 'activateAbility' && a.entityId === id && a.abilityIndex === st.ability)
         ?? { type: 'activateAbility', seat, entityId: id, abilityIndex: st.ability ?? 0 };
     }
+    if (keepPriority && this.state.phase === 'battle') want = withHoldPriority(want);
     let did = `${sideOf(seat)} ${this.say(want)}`;
     try {
       this.do(want);
@@ -1391,7 +1400,7 @@ export function simulate(raw: unknown, opts: { engine?: string; budgetMs?: numbe
         : st.do === 'choose' ? sim.runChoose(st)
         : st.do === 'assign' ? sim.runAssign(st)
         : st.do === 'advance' ? sim.runAdvance(st)
-        : sim.runAct(st));
+        : sim.runAct(st, isSameSeatAct(st, spec.steps[st.i + 1])));
     } catch (err) {
       if (err instanceof Refusal) {
         steps.push({ i: st.i, ok: false, refused: err.msg, ...(err.legal ? { legal: err.legal } : {}), ...(err.options ? { options: err.options } : {}) });

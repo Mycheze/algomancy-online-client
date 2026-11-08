@@ -268,7 +268,7 @@ test('cr:attr.unaware.targets — a Robot 10 squishing Bubb deals 0, because the
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Squish') });
   pick(h, { unit: robot });
   pick(h, { unit: bubb });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, bubb)!.damage, 0, 'the Robot deals its printed defense, 0');
   finishBattle(h);
 });
@@ -289,7 +289,7 @@ test('cr:attr.powerful.unit-source — Squish on a unit that shares Powerful fro
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Squish') });
   pick(h, { unit: ally });
   pick(h, { unit: wall });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, wall)!.damage, 6, 'the ally deals its 3 defense, doubled by the shared Powerful');
   finishBattle(h);
 });

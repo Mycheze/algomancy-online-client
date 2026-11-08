@@ -50,7 +50,7 @@ function midGlimpse(seed: number): {
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Celestial Purge') });
   pick(h, { unit: slime });
   noteTable(mem, h.state);                                  // the spell waits, its target named
-  pass(h); pass(h);                                         // resolve → erase, then the Glimpse
+  pass(h); // resolve → erase, then the Glimpse
   noteTable(mem, h.state);
   const purge = h.state.resolving!;
   assert.ok(purge, 'the fixture is mid-resolution (CR D6.3)');

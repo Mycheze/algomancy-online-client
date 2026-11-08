@@ -40,7 +40,7 @@ function line(h: Harness, it: StackItem): string | null {
   return own;
 }
 
-const resolve = (h: Harness): void => { pass(h); pass(h); };
+const resolve = (h: Harness): void => { pass(h); };
 
 /** A attacks with Good Whale into D's region, where D's `mods` stand; D holds priority */
 function battle(seed: number, mods: string[], aMods: string[] = []): { h: Harness; A: Seat; D: Seat; whale: EntityId; mine: EntityId[] } {

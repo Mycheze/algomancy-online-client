@@ -123,7 +123,7 @@ test('Tiderunner (attacker): offered behind-survivor, a NEW column, or stay out'
   assert.ok(dec.options.some(o => o.label === 'a new column on the right'), 'the right end');
   assert.ok(dec.options.some(o => o.label === 'stay out of formation'), 'joining is optional');
   pick(h, dec.options.find(o => o.label === 'a new column on the right')!.value);
-  pass(h); pass(h);                                      // the cast resolves
+  pass(h); // the cast resolves
   const b = h.state.battle!;
   assert.equal(b.columns.length, 2, 'the formation widened');
   const tr = unitsOf(h, A).find(u => u.card === 'Tiderunner Initiate')!;
@@ -143,7 +143,7 @@ test('Tiderunner with NO formation of yours: no join prompt at all', () => {
   // D (defender, no blocks declared yet → no formation) plays it
   giveResources(h, D, 'water', 1);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tiderunner Initiate') });
-  pass(h); pass(h);                                      // resolve: spawns, NO trigger
+  pass(h); // resolve: spawns, NO trigger
   assert.equal(h.state.decision, null, 'nothing to join — no prompt');
   assert.ok(unitsOf(h, D).some(u => u.card === 'Tiderunner Initiate'), 'still entered play');
   finishBattle(h);
@@ -161,7 +161,7 @@ test("Bripp look is remembered in seenHand; the owner's draft merge clears it", 
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Bripp') });
   pick(h, { player: D });
-  pass(h); pass(h);                                      // resolve → hand look → pick pending
+  pass(h); // resolve → hand look → pick pending
   // the pending pick decision carries card names for the client
   const dec = h.state.decision!;
   assert.ok(dec.options.some(o => o.card !== undefined), 'options carry card refs');

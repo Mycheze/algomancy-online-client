@@ -414,7 +414,7 @@ test('Dream Lapse suspends AFTER mutating and the suspend replay does not double
   h.state.players[D]!.hand.push('Immolate');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Dream Lapse') });
   pick(h, { stack: arcId });
-  pass(h); pass(h);                                    // resolve Dream Lapse
+  pass(h); // resolve Dream Lapse
   const dec = h.state.decision;
   assert.ok(dec, 'the discard is a real question with two cards in hand');
   assert.equal(dec.seat, D, 'and the recalled spell\u2019s controller is the one who answers it');

@@ -128,7 +128,7 @@ function mindburnAsked(seed: number): { h: Harness; A: Seat; D: Seat } {
   h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Mindburn') });
   pick(h, 1);                                                // X = 1
-  pass(h); pass(h);                                          // resolve
+  pass(h); // resolve
   return { h, A, D };
 }
 

@@ -235,7 +235,7 @@ test('CR 701.4a: Insidious Invitation plays from each seat own hand, so neither 
   h.state.players[1 - A]!.hand = [];
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: 0 });
-  pass(h); pass(h);                                // the Invitation resolves (and draws 1)
+  pass(h); // the Invitation resolves (and draws 1)
   const drew = draws(h, A);
   decide(h, l => l === 'Echo of Despair');         // "starting with you"
   drain(h);                                        // the window, then the body lands
@@ -273,7 +273,7 @@ test('CR 410.6: Tides of the Cosmos plays off the top of the deck, so Proph draw
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tides of the Cosmos') });
-  pass(h); pass(h);                                // resolve → pick #1
+  pass(h); // resolve → pick #1
   const drew = draws(h, D);
   decide(h, l => l.startsWith('Tidal Menace'));    // cost 3
   decide(h, l => l === 'Done');                    // one pick is enough

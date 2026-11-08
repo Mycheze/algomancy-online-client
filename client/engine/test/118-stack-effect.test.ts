@@ -77,7 +77,7 @@ test('CR 704.4b: negating a unit on the stack — it never arrives, and its card
 
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Dematerialize') });
   pick(h, { stack: monke });
-  pass(h); pass(h);                                   // resolve Dematerialize
+  pass(h); // resolve Dematerialize
 
   assert.ok(h.log.some(l => l.includes('Monke is negated → bin')),
     'the unit item was negated and its CARD took the bin branch (NEGATE_BINS)');
@@ -101,7 +101,7 @@ test('negating a SPELL unit on the stack — no body, card binned', () => {
 
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Dematerialize') });
   pick(h, { stack: jelly.id });
-  pass(h); pass(h);
+  pass(h);
 
   assert.ok(h.log.some(l => l.includes('Jelly is negated → bin')));
   assert.ok(!named(h, A, 'Jelly'), 'the spell unit\'s body never spawned');
@@ -165,7 +165,7 @@ test('CR 700.1: Finality\'s "negate all other effects" still catches a unit on t
   monkeOnStack(h, A);
 
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Finality') });
-  pass(h); pass(h);                                   // resolve Finality
+  pass(h); // resolve Finality
 
   assert.ok(h.log.some(l => l.includes('Monke is negated')),
     'the audit had flagged this sweep as possibly too wide; CR 700.1 settles it the other way');
@@ -188,7 +188,7 @@ test('CR 700.1: an effect that walks the targeted item\'s parts survives a unit\
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Gravitational Correction') });
   h.do({ type: 'decide', seat: h.state.decision!.seat, choice: 0 });   // X = 0
   pick(h, { stack: monke });
-  pass(h); pass(h);
+  pass(h);
   // CT-306: nothing to change, so nobody is asked to pay the (zero) ransom
   assert.equal(h.state.decision, null, 'no payOrDecline over a unit with no targets');
 

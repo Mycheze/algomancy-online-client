@@ -47,7 +47,7 @@ function wake(seed: number, extra: string[] = []): { h: Harness; A: Seat; D: Sea
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Wake the Dead') });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(h.state.decision?.pickSet, 'fixture: Wake the Dead is asking its first question');
   assert.equal(h.state.decision!.seat, A);
   return { h, A, D };
@@ -239,7 +239,7 @@ test('Tides of the Cosmos shows the eight revealed cards in one pane and pings n
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tides of the Cosmos') });
-  pass(h); pass(h);
+  pass(h);
   const dec = h.state.decision!;
   assert.equal(dec.pickSet?.group, 'reveal');
   // its values are DECK POSITIONS, and the kind is electricPath, whose bare

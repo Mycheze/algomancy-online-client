@@ -48,7 +48,7 @@ test('Molten Riftbreaker: [Augment] text — my despawn negates all allied spell
   pick(h, { unit: whale });                          // D's spell sits on the stack
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: rift });
-  pass(h); pass(h);                                  // Arc resolves: Riftbreaker dies
+  pass(h); // Arc resolves: Riftbreaker dies
   assert.ok(!ent(h, rift), 'Riftbreaker died');
   pass(h); pass(h);                                  // the despawn trigger resolves
   assert.ok(h.log.some(l => l.includes('Jelly is negated')), 'allied spell negated');
@@ -89,7 +89,7 @@ test('Nimbus Eel: token spell → target gains +2/+0 ([Switch1]: once per turn)'
   pass(h);                                           // priority → D
   h.do({ type: 'castSpellToken', seat: D, entityId: tok2.id });
   pick(h, { player: A });
-  pass(h); pass(h);                                  // Fireball resolves, no trigger
+  pass(h); // Fireball resolves, no trigger
   assert.deepEqual(effStats(h, eel), [4, 1], 'bounded: no second buff this turn');
   finishBattle(h);
 });
@@ -227,7 +227,7 @@ test('Sacrificial Burst: sacrifice a unit, deal 4 to any target', () => {
   pick(h, { unit: fodder });                         // then the sacrifice
   assert.ok(!ent(h, fodder), 'the sacrifice is paid at cast');
   assert.ok(h.state.players[D]!.bin.includes('Curio Drifter'));
-  pass(h); pass(h);                                  // resolve
+  pass(h); // resolve
   assert.ok(ent(h, whale), 'the other unit was not touched');
   assert.equal(h.state.players[A]!.life, 26, '4 damage to A');
   finishBattle(h);
@@ -284,7 +284,7 @@ test('Soul Tithe: decline → the effect is negated and I draw', () => {
   const handBefore = h.state.players[D]!.hand.length;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Soul Tithe') });
   pick(h, { stack: arcId });
-  pass(h); pass(h);                                  // Tithe resolves → payment
+  pass(h); // Tithe resolves → payment
   assert.equal(h.state.decision?.kind, 'payOrDecline');
   assert.equal(h.state.decision!.seat, A, "the TARGET's controller decides");
   assert.deepEqual(h.state.decision!.options.map(o => o.label), ["Don't pay"],
@@ -314,7 +314,7 @@ test('Soul Tithe: pay [one] → the effect stands', () => {
   const handBefore = h.state.players[D]!.hand.length;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Soul Tithe') });
   pick(h, { stack: arcId });
-  pass(h); pass(h);                                  // Tithe resolves → payment
+  pass(h); // Tithe resolves → payment
   pick(h, true);                                     // pay [one]
   assert.equal(new E(h.state).openMana(A), 0, 'the [one] was expended');
   assert.equal(h.state.players[D]!.hand.length, handBefore, 'no draw on the pay branch');
@@ -401,7 +401,7 @@ test('Static Courier: [Augment] text — death makes a Fireball X (X = last-know
   h.do({ type: 'declareAttack', seat: A, columns: [[whale]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: courier });
-  pass(h); pass(h);                                  // Arc kills the 4/3 Courier
+  pass(h); // Arc kills the 4/3 Courier
   assert.ok(!ent(h, courier));
   pass(h); pass(h);                                  // death trigger resolves
   const fires = tokensOf(h, D).filter(t => t.card === 'Fireball');
@@ -438,7 +438,7 @@ test('Twin Flame: 2 damage to each of up to two target units', () => {
   assert.equal(h.state.decision?.kind, 'targets', 'second target asked at CAST');
   assert.ok(h.state.decision!.options.some(o => o.label === 'No more targets'), '"up to two"');
   pick(h, { unit: whale });                          // second target
-  pass(h); pass(h);                                  // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, sprite), 'the 1/1 died to 2 damage');
   assert.equal(ent(h, whale)!.damage, 2, 'the second target took its own 2');
   finishBattle(h);
@@ -489,7 +489,7 @@ test('Wildfire: X is chosen and paid AT CAST (CR 107.2a), then dealt to any targ
   assert.equal(new E(h.state).openMana(D), 1, 'X was paid at cast');
   pick(h, { player: A });
   assert.equal(h.state.stack.find(i => i.card === 'Wildfire')!.x, 4, 'X stored on the stack item');
-  pass(h); pass(h);                                  // resolve — X already fixed
+  pass(h); // resolve — X already fixed
   assert.equal(h.state.players[A]!.life, 26, '4 damage to A');
   finishBattle(h);
 });

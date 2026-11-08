@@ -222,7 +222,7 @@ test('Buffer Overflow: doubles counters on units and the rot/debt on players', (
   h.state.players[D]!.debt = 3;
   pass(h);                                                 // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Buffer Overflow') });
-  pass(h); pass(h);                                        // resolve
+  pass(h); // resolve
   assert.equal(ent(h, plus)!.counters, 4, '+2 doubled to +4');
   assert.equal(ent(h, minus)!.counters, -2, 'the NET is what doubles (-1 → -2)');
   assert.equal(rotOf(h, D), 2, 'rot doubled');
@@ -246,7 +246,7 @@ test('Capture: puts target unit into YOUR hand (a steal), then you discard a car
   pass(h);                                                 // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: 0 });
   pick(h, { unit: atk });
-  pass(h); pass(h);                                        // resolve
+  pass(h); // resolve
   assert.ok(h.state.decision, 'the discard is a mid-resolution choice');
   pick(h, 0);                                              // discard LDC Grunt, keep the loot
   assert.ok(!ent(h, atk), 'the unit left play');
@@ -407,7 +407,7 @@ test('Dragnol: declining pays nothing, and an OPPONENT\'s spell never offers', (
   // A's spell: "whenever YOU play a spell" — not this one
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'LDC Battle Spell') });
   assert.equal(h.state.stack.length, 1, 'only the spell — no Dragnol trigger on top of it');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.decision, null);
   // D's own spell does offer, and declining costs nothing
   pass(h);                                                 // priority → D
@@ -495,7 +495,7 @@ test('Haunting Memories: a life total becomes twice the cards in ALL bins (up or
   pass(h);                                                 // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Haunting Memories') });
   pick(h, { player: A });
-  pass(h); pass(h);                                        // resolve
+  pass(h); // resolve
   assert.equal(lifeOf(h, A), 10, 'set downwards from 30 to 2 × 5');
   assert.equal(lifeOf(h, D), 30, 'the untargeted player is untouched');
 });
@@ -513,7 +513,7 @@ test('Haunting Memories: empty bins set the target to 0 — which kills them', (
   h.state.players[D]!.bin.length = 0;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Haunting Memories') });
   pick(h, { player: A });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.phase, 'gameover');
   assert.equal(h.state.winner, D, 'a life total of 0 is a dead player');
 });
@@ -630,7 +630,7 @@ test('No Hand Killer: [once] discard X cards → each opponent sacrifices X unit
   pick(h, { discard: 0 });                                 // discard #2
   pick(h, { doneCost: true });                             // that's enough: X = 2, not 3
   assert.deepEqual(h.state.players[D]!.hand, ['LDC Brute'], 'exactly two cards discarded — at cast');
-  pass(h); pass(h);                                        // resolve the activated ability
+  pass(h); // resolve the activated ability
   pick(h, v1);                                             // A sacrifices, 1 of 2
   pick(h, v2);                                             // …and 2 of 2 (v3 survives)
   assert.ok(h.events.filter(ev => ev.type === 'trashed').length >= trashedBefore + 2,
@@ -681,7 +681,7 @@ test('No Hand Killer: with a card in hand, X = 1 forces one sacrifice', () => {
   // closes itself at X = 1 rather than asking again
   assert.equal(h.state.decision, null);
   assert.deepEqual(h.state.players[D]!.hand, [], 'the one card paid for X = 1');
-  pass(h); pass(h);
+  pass(h);
   // A controls exactly one unit, so their sacrifice is forced and auto-picked
   assert.ok(!ent(h, v1), 'X = 1 unit sacrificed');
   drainStack(h);

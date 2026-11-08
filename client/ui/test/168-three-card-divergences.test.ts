@@ -188,7 +188,7 @@ test('CR 405.9 Spell Excavation: "you may play target spell from your bin" is a 
     choice: dec.options.findIndex(o => o.label.startsWith('Luminous Arc')),
   });
   const mana = new E(h.state).openMana(D);
-  pass(h); pass(h);                                    // the Excavation resolves
+  pass(h); // the Excavation resolves
   assert.ok(h.state.players[D]!.bin.includes('Luminous Arc'),
     'the spell is STILL IN THE BIN — the effect was a permission, not a play');
   assert.equal(new E(h.state).openMana(D), mana,
@@ -211,7 +211,7 @@ test('CR 506.2d Spell Excavation: the window SURVIVES to regroup — the grant i
     type: 'decide', seat: dec.seat,
     choice: dec.options.findIndex(o => o.label.startsWith('Luminous Arc')),
   });
-  pass(h); pass(h);
+  pass(h);
   const arc = h.state.players[D]!.bin.indexOf('Luminous Arc');
   // walk the rest of the battle WITHOUT taking the grant up, and check it in
   // every window the seat is offered one. "Right now" was the whole defect:
@@ -342,7 +342,7 @@ test('§3c Cinder Scuttler: NONCOMBAT life loss never recalls it — the '
   // "Each player recalls a unit and loses 2 life" — a REAL life loss, in a real
   // battle, that is not combat damage. A's Cinder Scuttler must sit still.
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Recall') });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.players[D]!.life, lifeD - 2, 'the opponent really lost life…');
   // Recall took the only attacker home with it, so NO combat damage follows —
   // the noncombat loss above is the only thing this battle offers the card.

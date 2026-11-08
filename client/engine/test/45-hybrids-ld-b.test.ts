@@ -131,7 +131,7 @@ test("Blight's End: augments a Wraith (CR 721.6) onto X target units, enemies in
   pick(h, { unit: mine });
   pick(h, { unit: theirs });
   assert.equal(h.state.stack.length, 1, 'only now is it on the stack, fully aimed');
-  pass(h); pass(h);                                            // resolve
+  pass(h); // resolve
   for (const id of [mine, theirs]) {
     const mods = ent(h, id)!.mods.map(m => ent(h, m)!);
     assert.equal(mods.length, 1, 'exactly one mod landed');
@@ -182,7 +182,7 @@ test('Cadaverous Cultivator: [Battle] discard a card to fire its grafts', () => 
   h.do({ type: 'decide', seat: D, choice: 0 });
   assert.ok(h.state.players[D]!.bin.includes('Brough'),
     'the cost was paid immediately — before anyone could respond');
-  pass(h); pass(h);                                            // resolve the ability
+  pass(h); // resolve the ability
   assert.equal(h.state.players[A]!.life, foeLife - 1, 'the grafted Murkstalker rider fired (1 since the 2026-11-06 errata)');
   assert.equal(h.state.players[D]!.life, 31, 'and gained the Cultivator’s controller 1');
   finishBattle(h);
@@ -310,7 +310,7 @@ test('Darkblast: discard a card, deal 5 damage to any target (CR 702.4 cost, CR 
   h.do({ type: 'decide', seat: A, choice: 0 });                // discard Brough
   assert.ok(h.state.players[A]!.bin.includes('Brough'),
     'the discard cost was paid at cast and trashed (CR 801.3)');
-  pass(h); pass(h);                                            // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, victim), 'the target took 5 and died');
   finishBattle(h);
 });
@@ -574,7 +574,7 @@ test('Equilibriate: sets every life total to the floored average', () => {
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Equilibriate') });
-  pass(h); pass(h);                                            // resolve
+  pass(h); // resolve
   assert.equal(h.state.players[A]!.life, 13, 'the high player comes down');
   assert.equal(h.state.players[D]!.life, 13, 'the low player comes up');
   finishBattle(h);
@@ -615,7 +615,7 @@ test('Inexorable Miasma: target unit gains {Poisonous} until regroup', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Inexorable Miasma') });
   pick(h, { unit: victim });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(ownAttrs(h, victim).has('Poisonous'), 'the target is poisonous');
   assert.deepEqual(ent(h, victim)!.tempAttrs, ['Poisonous'], 'granted as a temp attr (clears at regroup)');
   finishBattle(h);
@@ -887,7 +887,7 @@ test("Vengeance: opponents' battle cards gain '[Sacrifice a unit]' — the payer
   assert.ok(ent(h, atk), 'and the other survived');
   assert.ok(h.log.some(l => l.includes('sacrifices Unit Token')), 'it died as a SACRIFICE');
   assert.equal(h.state.stack.length, 1, 'only once the cost is paid does the spell reach the stack');
-  pass(h); pass(h);
+  pass(h);
   finishBattle(h);
 });
 
@@ -917,7 +917,7 @@ test('Vengeance: no unit to sacrifice — the play is not offered, refused atomi
   pick(h, { player: A });
   pick(h, { unit: chump });
   assert.ok(!ent(h, chump), 'paid with the only unit');
-  pass(h); pass(h);
+  pass(h);
   finishBattle(h);
 });
 
@@ -934,7 +934,7 @@ test("Vengeance: its controller's OWN battle plays are untouched", () => {
   assert.equal(h.state.decision, null, '"your opponents" — no sacrifice asked of its own controller');
   assert.equal(h.state.stack.length, 1, 'the spell went straight to the stack');
   assert.ok(ent(h, v), 'and the Vengeance stands');
-  pass(h); pass(h);
+  pass(h);
   finishBattle(h);
 });
 
@@ -993,7 +993,7 @@ test('Vengeance: donated as an augment, the HOST\'s controller is "you" — thei
   assert.ok(h.state.decision, "the host's opponent is taxed — the mod anchors on the host (CR 720.6b anchoring)");
   pick(h, { unit: chump });
   assert.ok(!ent(h, chump) && ent(h, spare), 'one sacrifice, the payer chose which');
-  pass(h); pass(h);
+  pass(h);
   finishBattle(h);
 });
 
@@ -1036,7 +1036,7 @@ test('Vengeance: a pending sacrifice decision survives a JSON round-trip and dri
   pick(h, { unit: atk });
   assert.ok(!ent(h, atk) && ent(h, spare), 'the loaded game pays and plays on');
   assert.equal(h.state.stack.length, 1, 'and the spell reaches the stack as normal');
-  pass(h); pass(h);
+  pass(h);
   finishBattle(h);
 });
 
@@ -1067,7 +1067,7 @@ test('Vengeance: two of them impose TWO sacrifices — additive, and the gate co
   pick(h, { unit: t1 });
   pick(h, { unit: t2 });
   assert.ok(!ent(h, t1) && !ent(h, t2) && ent(h, atk), 'exactly two die, and the payer chose which');
-  pass(h); pass(h);
+  pass(h);
   finishBattle(h);
 });
 
@@ -1156,7 +1156,7 @@ test('CT-177 Vengeance, the scenario board: an ATTACKING Vengeance taxes the def
   assert.ok(h.state.players[opp]!.bin.includes('Bubb'), 'to THEIR bin, not the taxing side\'s');
   assert.equal(h.state.players[you]!.bin.length, 0, 'the Vengeance side paid nothing');
   assert.equal(h.state.stack.length, 1, 'and only now is the spell on the stack');
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(effStats(h, foretold), [4, 4],
     'and it resolved: "[Switch] Your units gain +1/+1" on a 3/3 they still control');
   finishBattle(h);

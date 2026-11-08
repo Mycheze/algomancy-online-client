@@ -53,7 +53,7 @@ test("Ember of Life: an OPPONENT's spell effect neither fires it nor spends [onc
   whiteBox(h, e => { fbA = e.createSpellToken(A, 'Fireball', 1, h.state.battle!.region).id; });
   h.do({ type: 'castSpellToken', seat: A, entityId: fbA });
   pick(h, { unit: ember });
-  pass(h); pass(h);                          // Fireball resolves — NO trigger
+  pass(h); // Fireball resolves — NO trigger
   assert.equal(ent(h, ember)!.damage, 1, "the opponent's Fireball landed on Ember");
   assert.equal(mintedOnes(h, D).length, 0, "an opponent's spell effect does not fire Ember");
   assert.equal(h.state.decision, null, 'nothing queued, nothing asked');
@@ -63,7 +63,7 @@ test("Ember of Life: an OPPONENT's spell effect neither fires it nor spends [onc
   whiteBox(h, e => { fbD = e.createSpellToken(D, 'Fireball', 1, h.state.battle!.region).id; });
   h.do({ type: 'castSpellToken', seat: D, entityId: fbD });
   pick(h, { unit: a1 });
-  pass(h); pass(h);                          // Fireball resolves, trigger → stack
+  pass(h); // Fireball resolves, trigger → stack
   pass(h); pass(h);                          // resolve the Ember trigger
   assert.equal(mintedOnes(h, D).length, 1,
     "D's own spell fires it — [once] was not consumed by the enemy spell");
@@ -87,7 +87,7 @@ test("Ember of Life: your spell hitting a player's FACE fires it; 1/1s arrive in
   whiteBox(h, e => { fb = e.createSpellToken(P, 'Fireball', 2, h.state.battle!.region).id; });
   h.do({ type: 'castSpellToken', seat: P, entityId: fb });
   pick(h, { player: O });
-  pass(h); pass(h);                          // Fireball → 2 to O's face, trigger → stack
+  pass(h); // Fireball → 2 to O's face, trigger → stack
   pass(h); pass(h);                          // resolve the Ember trigger
   assert.equal(h.state.players[O]!.life, lifeBefore - 2, 'the face damage landed');
   const minted = mintedOnes(h, P);

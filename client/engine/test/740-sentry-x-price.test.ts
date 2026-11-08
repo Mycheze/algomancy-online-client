@@ -70,7 +70,7 @@ test('report FXMF #304: Torrential Reclamation at X = 2 under a Stasis Sentry â€
   assert.equal(h.state.decision!.options.length, 2, '"but X=2": two targets to choose, not three');
   pick(h, { unit: a1 });
   pick(h, { unit: a2 });
-  pass(h); pass(h);                                  // resolve
+  pass(h); // resolve
   while (h.state.decision) answer(h);
   assert.ok(h.state.players[A]!.hand.includes('Good Whale') && h.state.players[A]!.hand.includes('Bubb'),
     'both allies were recalled');
@@ -98,7 +98,7 @@ function wildfire(seed: number, x: number, opts: { tranquility?: boolean } = {})
   pick(h, x);
   pick(h, { player: A });
   const paid = before - open(h, D);
-  pass(h); pass(h);
+  pass(h);
   const dealt = life - h.state.players[A]!.life;
   finishBattle(h);
   return { paid, dealt };

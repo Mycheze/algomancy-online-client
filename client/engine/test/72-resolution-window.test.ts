@@ -47,7 +47,6 @@ test('CR D6.3b Insidious Invitation: at the OPPONENT’s prompt, the caster’s 
   h.state.players[D]!.hand = ['Hooba-Pon'];
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: 0 });
-  h.do({ type: 'passPriority', seat: h.state.priority! });
   const toTheCaster = h.do({ type: 'passPriority', seat: h.state.priority! });
 
   // ── the FIRST question. "Draw a card" is printed before the invitations,
@@ -101,7 +100,6 @@ test('CR D6.3b Insidious Invitation: the replay narrates nothing twice', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   const from = h.log.length;
   h.do({ type: 'playCard', seat: A, handIndex: 0 });
-  h.do({ type: 'passPriority', seat: h.state.priority! });
   h.do({ type: 'passPriority', seat: h.state.priority! });
   answer(h, 'Echo of Despair');
   answer(h, 'Hooba-Pon');

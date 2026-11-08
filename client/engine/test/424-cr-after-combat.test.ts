@@ -66,7 +66,7 @@ test('cr:combat.counterattack.sent.not-targetable — a sent counterattacker is 
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [sent] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Maw of Damnation') });
-  pass(h); pass(h);
+  pass(h);
   let sawD = 0, guard = 20;
   while (h.state.decision && guard-- > 0) {
     const dec = h.state.decision;
@@ -146,7 +146,7 @@ test('cr:combat.after.window — initiative first; a spell cast in the window re
   const pi = dec.options.findIndex(o => JSON.stringify(o.value) === JSON.stringify({ player: A }));
   h.do({ type: 'decide', seat: D, choice: pi });
   assert.equal(h.state.stack.length, 1);
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.stack.length, 0, 'resolved');
   assert.equal(h.state.players[A]!.life, lifeA - 6);
   assert.equal(h.state.battle!.step, 'afterWindow', 'still the after-combat step');
@@ -177,7 +177,7 @@ test('cr:combat.counterattack.round-two.other-region-absent — the initiative a
   assert.ok(menu.includes(JSON.stringify({ unit: homeA })), `the initiative unit in the round-2 region is a target [${menu}]`);
   assert.ok(!menu.includes(JSON.stringify({ unit: atk })), `the initiative round-1 attacker, in the other region, is not [${menu}]`);
   h.do({ type: 'decide', seat: D, choice: menu.indexOf(JSON.stringify({ unit: homeA })) });
-  pass(h); pass(h);
+  pass(h);
   pass(h); pass(h);
   assert.equal(h.state.battle!.step, 'blocks');
   assert.throws(() => h.do({ type: 'declareBlocks', seat: A, blocks: { 0: [atk] } }), /another region/);

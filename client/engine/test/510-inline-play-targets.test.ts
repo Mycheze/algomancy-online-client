@@ -139,7 +139,7 @@ function viaHand(seed: number, scene: Scene, card: string, policy: 'first' | 'la
 function viaTides(seed: number, scene: Scene, card: string, policy: 'first' | 'last'): Run {
   const { h, D } = stage(seed, scene, 'tides', card);
   h.do({ type: 'playCard', seat: D, handIndex: 0 });
-  pass(h); pass(h);
+  pass(h);
   const d = h.state.decision;
   assert.ok(d?.pickSet, `${card}: Tides asks for its first pick`);
   const i = d.options.findIndex(o => (o as { card?: string }).card === card);

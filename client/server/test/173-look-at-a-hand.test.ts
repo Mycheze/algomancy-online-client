@@ -126,7 +126,7 @@ test("CR 402.2a Thought Extraction: \"Look at target player's hand\" — the han
   h.state.players[D]!.hand = ['Good Whale', 'Shard Sprite'];
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Thought Extraction') });
   pick(h, { player: D });
-  pass(h); pass(h);                                           // resolve → the discard pick
+  pass(h); // resolve → the discard pick
   pick(h, 0);                                                 // discard 'Good Whale'
 
   const naming = only(h, 'Thought Extraction reveals');
@@ -159,7 +159,7 @@ test('CR 402.2a Thought Extraction: aimed at YOUR OWN hand, the opponent is the 
   // "target PLAYER" — the targeting comment on this card says the player kind
   // is either seat; aiming at yourself is legal and the printed text allows it.
   pick(h, { player: A });
-  pass(h); pass(h);
+  pass(h);
   pick(h, 0);
 
   const naming = only(h, 'Thought Extraction reveals');
@@ -223,7 +223,7 @@ test("CR D6.5b Bripp: \"Look at target player's hand\" — and the card it recyc
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Bripp') });
   pick(h, { player: D });
   h.state.players[D]!.hand = ['Good Whale', 'Shard Sprite'];
-  pass(h); pass(h);                                           // resolve → the recycle pick
+  pass(h); // resolve → the recycle pick
   assert.ok(h.state.decision!.options.some(o => o.value === -1),
     'fixture: "decline" is on the menu — the printed "you MAY"');
 
@@ -270,7 +270,7 @@ test('CR 408.3 Bripp: aimed at YOUR OWN hand, both the hand and the recycled car
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Bripp') });
   pick(h, { player: A });                                     // "target player" includes yourself
   h.state.players[A]!.hand = ['Good Whale', 'Shard Sprite'];
-  pass(h); pass(h);                                           // resolve → the recycle pick
+  pass(h); // resolve → the recycle pick
 
   const naming = only(h, 'Bripp reveals');
   assert.ok(naming.msg.includes('Good Whale') && naming.msg.includes('Shard Sprite'),
@@ -318,7 +318,7 @@ test('CR 402.2a control — Hand Peeper: the same printed verb with NO naming li
   h.state.players[D]!.hand = ['Good Whale', 'Shard Sprite'];
   h.do({ type: 'activateAbility', seat: A, entityId: hp, abilityIndex: 0, via: 'augment' });
   pick(h, { player: D });
-  pass(h); pass(h);                                           // resolve
+  pass(h); // resolve
 
   assert.deepEqual(h.state.seenHand[A]!.cards, ['Good Whale', 'Shard Sprite'],
     'the look really happened — seenHand is the private channel that carries it');
@@ -347,7 +347,7 @@ test('CR 402.2a control — Bioremediation: a printed REVEAL is public, and its 
   h.state.players[A]!.hand = ['Good Whale', 'Shard Sprite'];
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Bioremediation') });
   pick(h, { player: A });
-  pass(h); pass(h);                                           // resolve → the take
+  pass(h); // resolve → the take
   pick(h, 0);                                                 // take 'Good Whale'
 
   const naming = only(h, 'Bioremediation reveals');
@@ -603,7 +603,7 @@ test('§4b CT-174(b) Bripp: the recycled card goes, and the card they DRAW never
   pick(h, { player: D });
   h.state.players[D]!.hand = ['Good Whale', 'Shard Sprite'];
   h.q.deckOf(D).unshift('Bubb');                              // what they will draw
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(seen(h, A), ['Good Whale', 'Shard Sprite'], 'fixture: the look saw both');
   pick(h, 0);                                                 // recycle 'Good Whale' → D draws
 
@@ -629,7 +629,7 @@ test('§4c CT-174(b) Thought Extraction: the same rule on a spell that discards,
   h.state.players[D]!.hand = ['Good Whale', 'Shard Sprite', 'Bubb'];
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Thought Extraction') });
   pick(h, { player: D });
-  pass(h); pass(h);
+  pass(h);
   pick(h, 0);                                                 // discard 'Good Whale'
   assert.deepEqual(seen(h, A), ['Shard Sprite', 'Bubb'], 'the discarded card is not in the list');
 
@@ -659,7 +659,7 @@ test('§4d CT-174(b) the other two shapes — a card TAKEN out of the hand (Bior
   h.state.players[A]!.hand = ['Good Whale', 'Shard Sprite'];
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Bioremediation') });
   pick(h, { player: A });
-  pass(h); pass(h);
+  pass(h);
   pick(h, 0);                                                 // take 'Good Whale'
   assert.deepEqual(seen(h, D), ['Shard Sprite'],
     'the taken card left their hand, so it leaves the list — it is in the looker\'s hand now');
@@ -677,7 +677,7 @@ test('§4d CT-174(b) the other two shapes — a card TAKEN out of the hand (Bior
   g2.state.players[E]!.hand = ['Good Whale', 'Shard Sprite'];
   g2.do({ type: 'playCard', seat: B, handIndex: give(g2, B, 'Divine Foresight') });
   pick(g2, { player: E });
-  pass(g2); pass(g2);
+  pass(g2); 
   pick(g2, 0);                                                // they cache 'Good Whale'
   assert.deepEqual(seen(g2, B), ['Shard Sprite'],
     'a cached card has left the hand too — the list is about the HAND, not about what the '

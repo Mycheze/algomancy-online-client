@@ -60,7 +60,7 @@ test('CR 722.4f: a graft composite that loses its ONLY target fizzles whole — 
   const li = give(h, D, 'Leaping Lillik');
   h.do({ type: 'playCard', seat: D, handIndex: li });
   pick(h, { unit: mush });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, mush), 'the Mushroom is gone — the composite has lost every target it declared');
   assert.equal(h.state.stack.length, 1, 'the composite is still on the stack, about to resolve');
 
@@ -245,7 +245,7 @@ test('CR 721.4a: only ATTRIBUTES transfer — the augmented token deals {Powerfu
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]], spellTokens: [tok] });
   h.do({ type: 'castSpellToken', seat: A, entityId: tok });
   pick(h, { unit: victim });
-  pass(h); pass(h);
+  pass(h);
   // {Powerful} doubles the damage its source deals — Caleb 2025-03-06 lists it
   // among the attributes this actually does something with ("mostly, deadly,
   // piercing and powerful are impacted by this")
@@ -300,7 +300,7 @@ test('CR 721.4a: the augment rides the token through a Harbinger regroup, and is
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]], spellTokens: [tok] });
   h.do({ type: 'castSpellToken', seat: A, entityId: tok });
   pick(h, { unit: victim });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, mod), 'the augment left the board with the token that carried it');
   assert.ok(h.state.players[A]!.erased!.includes('Chitin Shredder'),
     'erased, not binned: a modded card is Unstable however it leaves (CR 803.8e)');

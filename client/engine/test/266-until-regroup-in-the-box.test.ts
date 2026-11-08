@@ -251,7 +251,7 @@ test('CT-175 §3 Phytochemical Protection says so on the unit it shielded (repor
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Phytochemical Protection') });
   pick(h, { unit: prot });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, prot)!.damageShield, 'Phytochemical Protection',
     'fixture: the shield really went up, through the real card');
 

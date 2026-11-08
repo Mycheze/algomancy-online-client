@@ -153,7 +153,7 @@ test('Collect Remains: takes a card out of EITHER bin into your hand', () => {
   assert.equal(h.state.decision!.seat, A);
   assert.equal(h.state.decision!.options.length, 2, 'both bins are on offer');
   pickBy(h, o => String(o.label).startsWith('Good Whale'));
-  pass(h); pass(h);                                        // resolve
+  pass(h); // resolve
   assert.ok(hand(h, A).includes('Good Whale'), "the enemy's card comes to MY hand");
   assert.ok(!bin(h, D).includes('Good Whale'));
   // "Erase me." (CARD-TODO #15) — a bin-recursion spell that takes itself out
@@ -357,12 +357,11 @@ test('Finality: negates every other effect on the stack and erases both bins', (
   bin(h, D).push('Good Whale');
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
-  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Collect Remains') });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Collect Remains'), holdPriority: true });  // CR 703.2a: keeps priority to act again
   pickBy(h, o => String(o.label).startsWith('Good Whale'));  // CR 110.1a: targeted at cast
-  pass(h);                                                 // the responder declines
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Finality') });
   assert.equal(h.state.stack.length, 2);
-  pass(h); pass(h);                                        // Finality resolves first
+  pass(h); // Finality resolves first
   assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated effect left the stack at once');
   assert.ok(!hand(h, A).includes('Good Whale'), 'the negated Collect Remains did nothing');
   assert.deepEqual(bin(h, D), [], 'the enemy bin is erased');
@@ -779,7 +778,7 @@ test('Necromorph: exchanges a unit in play for a cheaper one in ITS controller\'
     [`Blightwalker (${h.state.players[D]!.name}'s bin)`],
     'only the cost-3 unit in D\'s bin is a legal exchange for a cost-6 Whale');
   pick(h, { bin: { seat: D, card: 'Blightwalker' } });
-  pass(h); pass(h);                                        // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, victim), 'the unit in play is gone');
   const fresh = unitsOf(h, D).find(u => u.card === 'Blightwalker');
   assert.ok(fresh, 'and its replacement arrived under the SAME controller');
@@ -1467,7 +1466,7 @@ test('Spellbind: {Modular} carrier — the applied mod rides along, and you gain
   assert.ok(h.state.decision, '{Modular} asks for mods as the card is played (CR 724.3 cast-time cost)');
   pickBy(h, o => String(o.label).startsWith('Primordial Coalescence'));
   assert.ok(h.state.stack[0]!.label.includes('Primordial Coalescence'), 'the mod rides on the stack with it');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.q.rot(A), 3, "Spellbind's own rot plus the rider's two");
   assert.equal(unitsNamed(h, 'Wraith').length, 3, "and the rider's three Wraiths");
   // The owner's 2026-08-23 ruling (now CR 724.5): a modded card is {Unstable} (Manual p.35), so the

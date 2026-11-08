@@ -221,7 +221,7 @@ test('CR 702.5: Burgeon names its half before the stack, and the opponent can re
   pick(h, 'defense');
   assert.equal(h.state.stack.length, 1, 'now it lands on the stack');
   assert.deepEqual(modesOnStack(h), ['defense'], 'wearing the half it chose');
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(effStats(h, whale), [5, 12], 'and it resolves as the half that was declared');
   finishBattle(h);
 });
@@ -243,7 +243,7 @@ test('CR 702.5: Wither and Bloom declares which half before anyone may respond',
   pick(h, 'wither');
   assert.equal(h.state.stack.length, 1);
   assert.deepEqual(modesOnStack(h), ['wither']);
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, a1), 'the enemy 1/1 withered');
   assert.equal(ent(h, sentry)!.counters, 0, 'and the caster\'s own units were untouched');
   finishBattle(h);
@@ -266,7 +266,7 @@ test('CR 702.5: Siphon Life says whether it is a burn or a heal before the respo
   pick(h, 'lose');
   assert.equal(h.state.stack.length, 1);
   assert.deepEqual(modesOnStack(h), ['lose'], 'the opponent can see it is a burn');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.players[D]!.life, dLife - 3);
   finishBattle(h);
 });
@@ -510,7 +510,7 @@ test('CR 205.3a: Void Memory declares its half at cast, and a hand with no card 
   pick(h, 'unit');
   assert.equal(h.state.stack.length, 1);
   assert.deepEqual(modesOnStack(h), ['unit'], 'the opponent can read the guess off the stack');
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(h.state.players[A]!.hand, ['Burgeon', 'Siphon Life'],
     'the guess missed: a hand of spells discards no unit, and the old reading — where the '
     + 'DISCARDING player picked the half — could never have missed at all');
@@ -530,7 +530,7 @@ test('Void Memory\'s victim still picks WHICH card, among the ones the half admi
   h.state.players[A]!.hand = ['Burgeon', 'Ignis Sprite', 'Wraith'];
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Void Memory') });
   pick(h, 'unit');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.decision?.seat, A, 'the discard is the HAND OWNER\'s pick');
   const offered = h.state.decision!.options.map(o => o.label).sort();
   assert.deepEqual(offered, ['Ignis Sprite', 'Wraith'],

@@ -1509,7 +1509,7 @@
     "key": "annexd.auto-pass.no-retain",
     "parent": "D2",
     "order": 9,
-    "text": "This client does not keep priority for a player who acts unless they ask: in battle, once their action is on the stack, priority goes to the opponent. A player asks to keep it by acting while holding the Control key (rule annexd.auto-pass.full-control) or with the Hold priority toggle beside Pass turned on; then they keep priority and may act again (rule effects.priority.priority.hold). A pass never asks. A player who did not keep priority can still respond to their own spell once priority comes back to them with it on the stack.",
+    "text": "This client treats a player's action as their pass unless they ask to keep priority: in battle, once their action is on the stack, priority goes to the opponent, and the opponent's pass resolves it. A player asks to keep it by acting while holding the Control key (rule annexd.auto-pass.full-control) or with the Hold priority toggle beside Pass turned on; then they keep priority and may act again (rule effects.priority.priority.hold). A pass never asks. A triggered ability is nobody's action, so no pass is made for it. A player who did not keep priority cannot respond to their own spell unless the opponent acts first.",
     "examples": [
       {
         "text": "With the toggle off and no Control key held, a play goes out as it always did, and priority passes to the opponent.",
@@ -1528,7 +1528,7 @@
         "test": "569-hold-priority-toggle.test.ts::CR 703.2a / CT-253: a pass never carries the ask"
       },
       {
-        "text": "The defender casts a spell, the attacker passes, and the defender casts a second spell on top of the first.",
+        "text": "The defender casts a spell keeping priority, then casts a second spell on top of the first.",
         "test": "272-full-control.test.ts::BL-18 §4 you can respond to your own spell with the first still on the stack"
       }
     ],
@@ -1541,6 +1541,16 @@
       "designer": [],
       "ours": [],
       "owner": [
+        {
+          "quote": "Autopassing should only happen when a direct clicking action they did put something of theirs onto the stack.",
+          "adopted": "2026-11-08",
+          "from": "owner, chat 2026-11-08 (no automatic pass for a trigger)"
+        },
+        {
+          "quote": "The caster always gets first response (which is usually auto passed), then responder is the final one who says if something resolves.",
+          "adopted": "2026-11-08",
+          "from": "owner, chat 2026-11-08 (the actor's automatic pass counts)"
+        },
         {
           "quote": "Auto-pass, hold to keep",
           "adopted": "2026-10-22",

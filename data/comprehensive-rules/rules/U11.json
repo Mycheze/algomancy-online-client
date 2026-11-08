@@ -873,7 +873,7 @@
     "text": "When all players pass priority in succession with the stack empty, the attack window ends and the block step begins (see 606).",
     "examples": [
       {
-        "text": "Luminous Arc is cast in the attack window; two passes resolve it and a new window opens. Two more passes on the empty stack end the attack window.",
+        "text": "Luminous Arc is cast in the attack window; the other player's pass resolves it and a new window opens. Two more passes on the empty stack end the attack window.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.window.resolve — two passes resolve the top item"
       }
     ],

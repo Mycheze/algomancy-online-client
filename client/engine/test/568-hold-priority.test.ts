@@ -75,10 +75,9 @@ test('CR 703.2a / CT-253: the holder stacks a second action before the opponent 
   pick(h, { unit: wall });
   assert.equal(h.state.stack.length, 2, 'both spells are on the stack with no look in between');
   assert.equal(h.state.priority, A, 'the second cast did not ask, so the opponent responds now');
-  // CR 703.2b / 703.3c: two passes in succession resolve the top item only
+  // CR 703.2b / 703.3c: that unheld second cast was the caster's pass, so the
+  // responder's pass completes the two in succession and resolves the top item only
   h.do({ type: 'passPriority', seat: A });
-  assert.equal(h.state.priority, D);
-  h.do({ type: 'passPriority', seat: D });
   assert.equal(h.state.stack.length, 1, 'two passes resolved the top item, not both');
 });
 
@@ -212,4 +211,46 @@ test('CR 703.2a / CT-253: every action that pushes its own item in battle can ca
     }
   }
   assert.ok(held > 0 && unheld > 0, `both branches are exercised (held ${held}, unheld ${unheld}; by type ${JSON.stringify([...pushedBy])})`);
+});
+
+test('CR 703.2b: an unheld action is its actor\'s pass — the owner\'s example, move by move', () => {
+  // The owner, 2026-11-08: "The caster always gets first response (which is
+  // usually auto passed), then responder is the final one who says if
+  // something resolves." Rulebook 2023 p.13: "If player A casts a spell and
+  // player B passes priority, player A's spell will resolve".
+  const h = new Harness(56900);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Oorblak');
+  const wall = spawn(h, D, 'Prickly Protector');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  giveResources(h, A, 'fire', 8);
+  giveResources(h, D, 'wood', 6);
+  // I play a kill spell: my pass is automatic, you are asked
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
+  pick(h, { unit: wall });
+  assert.equal(h.state.priority, D);
+  assert.equal(h.state.passes, 1, 'the caster\'s pass is counted');
+  // you respond: your pass is automatic, I am asked
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Phytochemical Protection') });
+  pick(h, { unit: wall });
+  assert.equal(h.state.priority, A, 'an action resets the passing, and the responder is asked');
+  assert.equal(h.state.passes, 1);
+  // my pass alone resolves your response
+  h.do({ type: 'passPriority', seat: A });
+  assert.equal(h.state.stack.length, 1, 'the responder\'s pass resolved the top item');
+  // the window restarts in initiative order, and each player passes once
+  assert.equal(h.state.priority, h.state.initiative);
+  assert.equal(h.state.passes, 0, 'nobody auto-passes after a resolution');
+  h.do({ type: 'passPriority', seat: A });
+  assert.equal(h.state.stack.length, 1, 'one pass does not resolve it now');
+  h.do({ type: 'passPriority', seat: D });
+  assert.equal(h.state.stack.length, 0, 'both passed: the kill spell resolves');
+  // the empty stack: initiative player, then the other, then the step ends
+  assert.equal(h.state.priority, A);
+  h.do({ type: 'passPriority', seat: A });
+  assert.equal(h.state.priority, D);
+  h.do({ type: 'passPriority', seat: D });
+  assert.equal(h.state.battle!.step, 'blocks');
 });

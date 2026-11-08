@@ -457,60 +457,61 @@
   },
   {
     "key": "combat.after.window",
-    "textHash": "a5a6648e35f82346",
+    "textHash": "5def7fc79af35566",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U13-r1",
+    "round": 4,
+    "verifier": "U13-r4",
     "engine": [
       {
-        "loc": "engine.ts:openPriority",
+        "loc": "client/engine/src/engine.ts:openPriority",
         "agrees": true,
-        "note": "priority = initiative"
-      },
-      {
-        "loc": "engine.ts:passPriority",
-        "agrees": true,
-        "note": "two consecutive passes: resolveTop if stack non-empty, else advanceBattleStep (afterWindow -> endBattleRound)"
-      },
-      {
-        "loc": "engine.ts:finishResolutionTail",
-        "agrees": true,
-        "note": "after resolution priority restarts at initiative"
+        "note": "Called with 'afterWindow' after combat damage."
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U13/u13-r1-verify-probes.test.ts",
-        "title": "combat.after.window: initiative first; a spell cast in the window resolves after both pass, priority returns to the initiative player; two passes on an empty stack end the step",
+        "file": "424-cr-after-combat.test.ts",
+        "pattern": "cr:combat.after.window",
         "passed": true,
-        "demonstrates": "yes: walks the illustrative example exactly"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.30",
         "supports": "yes",
-        "note": "After Combat step is a priority-window step; initiative first; repeated until all pass on an empty stack"
+        "note": "After Combat step is listed as followed by a priority window; initiative first; repeats until all pass on an empty stack, then next step."
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "Within a priority window, first the initiative player will receive"
       },
       {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "After Combat step"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "process is repeated until all players pass priority with"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "an empty stack, which will move them to the next step"
       },
       {
         "file": "client/engine/src/engine.ts",
-        "text": "this.s.priority = this.initiative;   // initiative acts first in every window"
+        "text": "this.openPriority('afterWindow');"
+      },
+      {
+        "file": "client/engine/test/424-cr-after-combat.test.ts",
+        "text": "assert.equal(h.state.priority, A, 'initiative receives priority again');"
       }
     ],
     "basis_ok": true,
-    "problem": "Illustrative example had no test; the probe demonstrates it.",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.after.window.then-regroup",

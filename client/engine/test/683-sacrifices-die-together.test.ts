@@ -41,7 +41,7 @@ test('CR 706.8c, 713.6 / CT-414: a Refuse Reclaimer sacrificed first to Perish s
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: mine.map(id => [id]) });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Perish') });   // "Each player sacrifices half of their units, rounded up."
-  pass(h); pass(h);
+  pass(h);
   // A sacrifices 2 of 4 (the Reclaimer FIRST, then a Whale), D 1 of 2
   const pickFor = (id: EntityId) => {
     const d = h.state.decision!;

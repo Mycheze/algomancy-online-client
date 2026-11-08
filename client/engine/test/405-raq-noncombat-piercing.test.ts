@@ -52,7 +52,7 @@ function bubbSquish(seed: number): { h: Harness; A: Seat; D: Seat; victim: Entit
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Squish') });
   pick(h, { unit: bubb });
   pick(h, { unit: victim });
-  pass(h); pass(h);
+  pass(h);
   return { h, A, D, victim };
 }
 
@@ -102,7 +102,7 @@ test('CR 802.16j Fight: a Piercing ally\'s excess is elective — 5 of its 7 kep
   pick(h, { unit: whale });
   pick(h, { unit: foe });
   const life = h.state.players[D]!.life;
-  pass(h); pass(h);
+  pass(h);
   const dec = h.state.decision!;
   assert.equal(dec.kind, 'assignDamage');
   assert.equal(dec.seat, A);
@@ -128,7 +128,7 @@ test('CR 802.16k Battle: the question belongs to the Piercing unit\'s controller
   pick(h, { unit: atk });
   pick(h, { unit: whale });
   const life = h.state.players[A]!.life;
-  pass(h); pass(h);
+  pass(h);
   const dec = h.state.decision!;
   assert.equal(dec.kind, 'assignDamage');
   assert.equal(dec.seat, D, 'the whale deals the damage, so its controller places the excess (as a blocker\'s does in combat)');
@@ -151,7 +151,7 @@ test('CR 802.16j control: no Piercing, no question — a plain ally\'s overkill 
   pick(h, { unit: ally });
   pick(h, { unit: victim });
   const life = h.state.players[D]!.life;
-  pass(h); pass(h);
+  pass(h);
   assert.notEqual(h.state.decision?.kind, 'assignDamage', 'nothing to elect without Piercing');
   assert.ok(!ent(h, victim));
   assert.equal(h.state.players[D]!.life, life);
@@ -171,7 +171,7 @@ test('CR 802.16 control: exactly lethal, no question — Good Whale squishes a 1
   pick(h, { unit: whale });
   pick(h, { unit: victim });
   const life = h.state.players[D]!.life;
-  pass(h); pass(h);
+  pass(h);
   assert.notEqual(h.state.decision?.kind, 'assignDamage', 'no excess, no election');
   assert.ok(!ent(h, victim));
   assert.equal(h.state.players[D]!.life, life);

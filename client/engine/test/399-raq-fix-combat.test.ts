@@ -128,7 +128,7 @@ test('the Resonant rider waits on the stack after combat, as its source, and can
   let guard = 6;
   while (h.state.priority !== D && guard-- > 0) pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Containment Protocol') });
-  pass(h); pass(h);                                    // Containment Protocol resolves
+  pass(h); // Containment Protocol resolves
   let g2 = 10;
   while (h.state.stack.length && g2-- > 0) pass(h);
   assert.equal(h.state.players[D]!.life, life, 'negated, the rider dealt nothing');
@@ -168,7 +168,7 @@ test('CR 801.11a: Fight — a fighter that GAINED Powerful deals double; its liv
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Fight') });
   pick(h, { unit: ally });
   pick(h, { unit: foe });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, foe)!.damage, 6, '"you would need to target ally unit which is Powerful to deal double damage"');
   finishBattle(h);
 });
@@ -182,14 +182,12 @@ test('Fight — a Powerful virus on the Fight spell does not double either fight
   giveResources(h, A, 'earth', 5);
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[ally]] });
-  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Fight') });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Fight'), holdPriority: true });
   pick(h, { unit: ally });
   pick(h, { unit: foe });
   const fight = h.state.stack[h.state.stack.length - 1]!;
-  let guard = 6;
-  while (h.state.priority !== A && guard-- > 0) pass(h);
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Chitin Shredder'), hostStack: fight.id });
-  pass(h); pass(h);                                    // the virus resolves onto Fight
+  pass(h); // the virus resolves onto Fight
   pass(h); pass(h);                                    // Fight resolves
   assert.equal(ent(h, foe)!.damage, 3, '"It doesn\'t matter if Squish is Powerful" — nor Fight');
   assert.equal(ent(h, ally)!.damage, 2);

@@ -149,7 +149,7 @@ test('cr:keywords.actions.delete — Throw off a Cliff deletes a unit: one died 
   const mark = h.events.length;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Throw off a Cliff') });
   pick(h, { unit: plain });
-  pass(h); pass(h);
+  pass(h);
   const died = h.events.slice(mark).filter(ev => ev.type === 'died' && ev.data!['card'] === 'Good Whale');
   assert.equal(died.length, 1, 'a delete is a death');
   assert.equal(died[0]!.data!['verb'], 'is deleted');
@@ -208,7 +208,7 @@ test('cr:keywords.actions.fight.not-spell-damage — the 3 damage Fight makes a 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Fight') });
   pick(h, { unit: ally });
   pick(h, { unit: wall });
-  pass(h); pass(h);
+  pass(h);
   pass(h); pass(h);
   assert.equal(ent(h, wall)!.damage, 3, 'the fight happened: the ally dealt its 3 power');
   assert.equal(unitsOf(h, A).length, before, 'no 1/1s: fight damage is the unit damage, not a spell effect damage');
@@ -251,7 +251,7 @@ test('cr:keywords.actions.fight.lost-one — Fight that loses one fighter resolv
   pick(h, { unit: theirs });
   withE(h, e => e.destroy(e.s.entities[theirs]!, 'dies'));
   const mark = h.events.length;
-  pass(h); pass(h);
+  pass(h);
   const after = h.events.slice(mark);
   assert.equal(after.filter(ev => ev.type === 'fizzled').length, 0, 'the item does not fizzle');
   assert.equal(ent(h, mine)!.damage, 0, 'and the survivor took nothing');

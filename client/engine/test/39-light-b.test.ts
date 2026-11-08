@@ -57,7 +57,7 @@ test('Banishment: erases units that spawned this turn, and spares the older ones
 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Banishment') });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, fresh), 'everything that spawned this turn is erased');
   assert.ok(ent(h, old), 'and everything older survives');
   assert.ok(!h.state.players[A]!.bin.includes('Unit Token'),
@@ -89,7 +89,7 @@ test('Banishment: a unit that spawned during [Haste] is erased too', () => {
   }
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Banishment') });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, hasted), 'the haste-step spawn is erased');
   assert.ok(ent(h, old), 'the older unit is not');
   finishBattle(h);
@@ -159,7 +159,7 @@ test("Divine Intervention: may change the targets of an effect on the stack", ()
   // … and A turns it around
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Divine Intervention') });
   pick(h, { stack: h.state.stack[0]!.id });
-  pass(h); pass(h);                                         // resolve Divine Intervention
+  pass(h); // resolve Divine Intervention
   assert.equal(h.state.decision!.seat, A, 'the caster is asked whether to change anything');
   pick(h, true);
   pick(h, { unit: blk });                                   // the new target
@@ -185,7 +185,7 @@ test('Divine Intervention: "you may" — declining leaves the targets alone', ()
   pick(h, { unit: atk });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Divine Intervention') });
   pick(h, { stack: h.state.stack[0]!.id });
-  pass(h); pass(h);
+  pass(h);
   pick(h, false);                                           // "leave them"
   pass(h); pass(h);
   assert.equal(ent(h, atk)!.counters, -1, 'the original target still takes it');
@@ -243,7 +243,7 @@ test('Divine Intervention: "target effect" reaches a TRIGGER on the stack, not j
     `CR 700.1: the triggered ability is a legal "target effect" — menu was [${offered(h)}]`);
   pick(h, { stack: trigItem.id });
 
-  pass(h); pass(h);                                         // resolve Divine Intervention
+  pass(h); // resolve Divine Intervention
   assert.equal(h.state.decision!.seat, A, 'the caster is asked whether to change anything');
   pick(h, true);
   pick(h, { unit: volt });                                  // send the damage back at its own source
@@ -388,7 +388,7 @@ test('Insatiable Want: even life sacrifices, odd life draws (parity snapshotted 
   const dHand = h.state.players[D]!.hand.length;
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Insatiable Want') });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.equal(h.state.decision!.seat, A, 'the even-life player picks their own sacrifice');
   pick(h, atk);
   assert.ok(!ent(h, atk), 'the even-life player sacrificed a unit');
@@ -411,7 +411,7 @@ test("Life Channel: gain 3 life, then target unit gains +X/+X (X = life gained t
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Life Channel') });
   pick(h, { unit: atk });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.players[A]!.life, life + 3, 'you gain 3 life');
   assert.deepEqual(effStats(h, atk), [4, 4], 'X = the 3 just gained → +3/+3 until regroup');
   finishBattle(h);
@@ -432,7 +432,7 @@ test('Life Channel: X counts OTHER life gained this battle too, and never double
     'E.gainLife bumps the per-battle ledger, mirroring lifeLost');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Life Channel') });
   pick(h, { unit: atk });
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(effStats(h, atk), [9, 9],
     'X = 5 already gained + this spell\'s own 3 = 8, counted exactly once');
   assert.equal(h.q.battleCounter(h.state.battle!.region, `lifeGained:${A}`), 8,
@@ -611,7 +611,7 @@ test('Ploosh: as a Virus on an enemy unit with an EVEN life total — the HOST i
   pass(h); pass(h);                                         // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [host] } });
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Ploosh'), hostId: host });
-  pass(h); pass(h);                                         // the Virus resolves onto the host
+  pass(h); // the Virus resolves onto the host
   assert.equal(ent(h, host)!.mods.length, 1, 'Ploosh rode on as a Virus');
   finishBattle(h);
   assert.ok(!ent(h, host), 'even life: "sacrifice me" reads the HOST');
@@ -725,7 +725,7 @@ test('Siphon Life: X is paid at cast; target player gains or loses X life', () =
   assert.equal(h.state.stack.length, 0, 'not on the stack until the half is named');
   pick(h, 'lose');
   assert.equal(h.state.stack[0]?.parts[0]?.mode, 'lose', 'and it rides on the stack');
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.equal(h.state.players[D]!.life, dLife - 3, 'the target player lost X');
   finishBattle(h);
 });
@@ -743,7 +743,7 @@ test('Siphon Life: the caster may choose "gains" instead', () => {
   pick(h, 2);
   pick(h, { player: A });
   pick(h, 'gain');                                          // CR 702.5: declared at cast
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.players[A]!.life, aLife + 2, 'a heal for X instead');
   finishBattle(h);
 });
@@ -763,7 +763,7 @@ test('Stellar Fission: erases a unit and pays its controller power + defense in 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Stellar Fission') });
   pick(h, { unit: whale });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, whale), 'erased');
   assert.equal(h.state.players[D]!.bin.length, dBin, 'no bin, so no trash (CR 801.2c)');
   assert.equal(h.state.players[D]!.life, dLife + 12, 'its controller gains 7 + 5 life');
@@ -835,7 +835,7 @@ test("Waxen Witness: caches target unit with 'One Battle Passes', then arrives a
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Waxen Witness') });
   pick(h, { unit: whale });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, whale), 'the target left play');
   assert.equal(cacheOf(h, D)[0]!.card, 'Good Whale', "into its controller's cache (CR 400.4), D here");
   assert.equal(cacheOf(h, D)[0]!.prophecy!.norm, '1 battle passes');
@@ -863,7 +863,7 @@ test('CR 400.4 / CT-391: Waxen Witness caches a stolen unit into its CONTROLLER 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk], [whale]] });   // the stolen whale attacks, so it is in the fight
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Waxen Witness') });
   pick(h, { unit: whale });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, whale), 'the target left play');
   assert.deepEqual(cacheOf(h, A).map(c => c.card), ['Good Whale'], 'into the cache of A, who controlled it');
   assert.deepEqual(cacheOf(h, D).map(c => c.card), [], 'not into the cache of D, its owner');
@@ -885,7 +885,7 @@ test('Waxen Witness: mods on the cached unit stay behind and are trashed (CR 403
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Waxen Witness') });
   pick(h, { unit: whale });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(cacheOf(h, D)[0]!.card, 'Good Whale', 'the card is cached');
   assert.ok(h.state.players[D]!.bin.includes('Aberrant Statweaver'),
     'its mod did NOT travel — it went to the bin (CR 403.7)');

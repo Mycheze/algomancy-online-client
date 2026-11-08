@@ -127,7 +127,7 @@ test('cr:concepts.costs.activation — a negated Infernal Cultivator activation 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Dematerialize') });
   pick(h, { stack: item.id });
   drainDecisions(h);
-  pass(h); pass(h);
+  pass(h);
   drainDecisions(h);
   while (h.state.stack.length) { pass(h); drainDecisions(h); }
   assert.ok(!h.state.stack.some(i => i.id === item.id), 'the ability is gone');
@@ -150,7 +150,7 @@ test('cr:concepts.costs.activation.gate-first — the Throwing Boulder adjacency
   assert.ok(!ent(h, boulder), 'the sacrifice cost is paid as the ability goes on the stack');
   whiteBox(h, e => e.destroy(e.entity(ally)!, 'dies'));      // the adjacent ally is gone before resolution
   assert.ok(!ent(h, ally));
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.players[D]!.life, 27, 'it still resolves for 3: the condition was a gate, checked once');
   finishBattle(h);
 });
@@ -352,7 +352,7 @@ test('cr:concepts.debt.as-cost — Hyper Beam negated by Dematerialize deals no 
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Dematerialize') });
   pick(h, { stack: item.id });
   drainDecisions(h);
-  pass(h); pass(h);                                           // Dematerialize resolves: Hyper Beam negated
+  pass(h); // Dematerialize resolves: Hyper Beam negated
   drainDecisions(h);
   while (h.state.stack.length) pass(h);
   assert.equal(ent(h, target)!.damage, 0, 'negated: no damage');
@@ -412,7 +412,7 @@ test('cr:concepts.life.basics.gain-and-loss — damage to a player and a paid li
   let mark = h.events.length, life = h.state.players[D]!.life;
   h.do({ type: 'activateAbility', seat: A, entityId: boulder, abilityIndex: 0, via: 'augment' });
   pick(h, { player: D });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.players[D]!.life, life - 3, 'the 3 damage took 3 life');
   assert.deepEqual(lostBy(D, mark), [3], 'as one loss of 3 life');
   assert.equal(gainedBy(D, mark), 0);

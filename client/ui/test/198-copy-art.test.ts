@@ -154,7 +154,7 @@ test('CR D6.8: a Borrower of Forms is DRAWN as the card it borrowed', () => {
   giveResources(h, A, 'metal', 7);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
   pick(h, { unit: whale });
-  pass(h); pass(h);                                          // CR 303.11: one resolution
+  pass(h); // CR 303.11: one resolution
 
   const bof = unitsOf(h, A).find(u => u.card === 'Borrower of Forms')!;
   // disbelieve the ticket first: the engine really has put a face on this body
@@ -289,7 +289,7 @@ test('CR D6.8: a copy is marked even when the borrowed body matches its own', ()
   giveResources(h, A, 'metal', 7);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
   pick(h, { unit: siren });
-  pass(h); pass(h);
+  pass(h);
   const bof = unitsOf(h, A).find(u => u.card === 'Borrower of Forms')!;
 
   const html = ui.show(structuredClone(h.state));
@@ -322,7 +322,7 @@ test('CR D6.8: the borrowed face is a PICTURE — the bin still shows the cardbo
   giveResources(h, A, 'metal', 7);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
   pick(h, { unit: whale });
-  pass(h); pass(h);
+  pass(h);
   const bof = unitsOf(h, A).find(u => u.card === 'Borrower of Forms')!;
 
   const before = ui.show(structuredClone(h.state));

@@ -265,7 +265,7 @@ test('Morphic Mentor: your battle augment gives +2/+2 until regroup; an enemy au
   h.do({ type: 'declareAttack', seat: A, columns: [[mentor]] });
   // A virus-augments Reality Bender onto the Mentor during battle
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Reality Bender'), hostId: mentor });
-  pass(h); pass(h);                                   // virus resolves → mod applied → trigger
+  pass(h); // virus resolves → mod applied → trigger
   pass(h); pass(h);                                   // resolve the trigger
   // CR 802.8a: Reality Bender is the convenient cheap Virus here, and its type-line
   // [Augment] donates {Inverted} to the Mentor along the way — so stat layer 5
@@ -277,7 +277,7 @@ test('Morphic Mentor: your battle augment gives +2/+2 until regroup; an enemy au
   // the ENEMY applying an augment ("you") buffs nothing
   pass(h);                                            // A passes, priority → D
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Reality Bender'), hostId: d1 });
-  pass(h); pass(h);                                   // virus resolves — no Mentor trigger
+  pass(h); // virus resolves — no Mentor trigger
   assert.deepEqual(effStats(h, mentor), [0, 1], "an opponent's augment is not \"you apply\"");
   finishBattle(h);
 });
@@ -364,7 +364,7 @@ test('Oorblak: as a Virus, "me" is the HOST — an enemy host eats its own contr
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Oorblak'), hostId: host });
-  pass(h); pass(h);                                   // the Virus resolves → attaches
+  pass(h); // the Virus resolves → attaches
   assert.equal(ent(h, host)!.mods.length, 1, 'applies as an augment/virus (augmentable)');
   pass(h); pass(h);                                   // attack window (now empty) → block step
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
@@ -409,7 +409,7 @@ test("Oorblak: Caleb's case — 5 Piercing redirected, 1 kills the body, the rem
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);                                            // A passes → D holds priority
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Oorblak'), hostId: host });
-  pass(h); pass(h);                                   // the Virus resolves → attaches
+  pass(h); // the Virus resolves → attaches
   assert.equal(ent(h, host)!.mods.length, 1, 'Oorblak is on the 1/1');
   pass(h); pass(h);                                   // attack window → block step
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
@@ -434,7 +434,7 @@ test('Oorblak: a NON-Piercing overkill is absorbed whole — nothing spills onto
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);                                            // A passes → D holds priority
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Oorblak'), hostId: host });
-  pass(h); pass(h);                                   // the Virus resolves → attaches
+  pass(h); // the Virus resolves → attaches
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
@@ -563,7 +563,7 @@ test('Return to Nature: negates everything on the stack and erases all mods in t
   h.do({ type: 'declareAttack', seat: A, columns: [[ml]] });   // Luminary trigger → stack
   pass(h);                                            // CR 605.1a: A acts first, and passes
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Return to Nature') });
-  pass(h); pass(h);                                   // Return to Nature resolves first
+  pass(h); // Return to Nature resolves first
   assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated trigger left the stack with it');
   assert.equal(tokensOf(h, A).filter(t => t.card === 'Crystal').length, 0,
     'the Crystal trigger was negated — no Crystal');

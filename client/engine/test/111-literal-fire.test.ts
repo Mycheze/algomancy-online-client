@@ -86,7 +86,7 @@ test('Emberflame Enlightener: a cast Fireball 1 under the aura deals DOUBLE (CR 
     const fb = tokensOf(h, D).find(t => t.card === 'Fireball')!;
     h.do({ type: 'castSpellToken', seat: D, entityId: fb.id });
     pick(h, { unit: whale });
-    pass(h); pass(h);
+    pass(h);
     const dmg = ent(h, whale)!.damage;
     finishBattle(h);
     return dmg;

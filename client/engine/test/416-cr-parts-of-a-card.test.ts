@@ -29,7 +29,7 @@ function drain(h: Harness): void {
     const d = h.state.decision;
     if (d?.pickOrder) h.do({ type: 'decide', seat: d.seat, choice: d.options.map((_, i) => i) });
     else if (d) pick(h, d.options[0]!.value);
-    else { pass(h); pass(h); }
+    else { pass(h); }
   }
 }
 /** pass until `seat` holds priority */

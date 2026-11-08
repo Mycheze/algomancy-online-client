@@ -78,7 +78,7 @@ test('Insidious Invitation: "play a unit from hand" lets each player play a SPEL
   h.state.players[D]!.hand = ['Oracle of Foretelling'];   // Polyform Oracle SPELL Unit
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: 0 });
-  pass(h); pass(h);                                    // resolve: draw, then the invitations
+  pass(h); // resolve: draw, then the invitations
 
   assert.equal(h.state.decision!.seat, A, 'the caster is invited first');
   const mine = h.state.players[A]!.hand.indexOf('Spawntender');

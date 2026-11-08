@@ -207,7 +207,7 @@ test('cr:zones.hand.hidden.look-at — Thought Extraction aimed at the opponent 
   h.state.players[D]!.hand = ['Good Whale', 'Shard Sprite'];
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Thought Extraction') });
   pick(h, { player: D });
-  pass(h); pass(h);
+  pass(h);
   if (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
   assert.ok(logFor(h, A).some(l => l.includes('Shard Sprite') || l.includes('Good Whale')), 'the looker is told the hand');
   // in 1v1 the only other seat is the hand's owner, so check the naming line is private to the looker
@@ -222,7 +222,7 @@ test('cr:zones.hand.hidden.look-at — Thought Extraction aimed at the hand of i
   h.state.players[A]!.hand = ['Good Whale', 'Shard Sprite'];
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Thought Extraction') });
   pick(h, { player: A });
-  pass(h); pass(h);
+  pass(h);
   if (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
   assert.deepEqual(logFor(h, D).filter(l => l.includes('Shard Sprite') || l.includes('Thought Extraction reveals')), [],
     'the opponent reads none of the caster hand');
@@ -235,7 +235,7 @@ test('cr:zones.hand.hidden.look-at — a hand revealed by Bioremediation is show
   h.state.players[A]!.hand = ['Good Whale', 'Shard Sprite'];
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Bioremediation') });
   pick(h, { player: A });
-  pass(h); pass(h);
+  pass(h);
   pick(h, 0);
   for (const s of [A, D]) {
     assert.ok(logFor(h, s).some(l => l.includes('Shard Sprite')), `seat ${s} sees the whole revealed hand`);
@@ -256,7 +256,7 @@ test('cr:zones.recycle.hidden — Bripp recycles a card out of the opponent hand
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Bripp') });
   pick(h, { player: D });
   h.state.players[D]!.hand = ['Good Whale', 'Shard Sprite'];
-  pass(h); pass(h);
+  pass(h);
   pick(h, 0);                                       // recycle 'Good Whale'
   assert.ok(!h.state.players[D]!.hand.includes('Good Whale'), 'the card left the hand');
   assert.ok(logFor(h, A).some(l => l.includes('recycles Good Whale')), 'the looker who chose it is told');
@@ -314,7 +314,7 @@ test('cr:zones.general.active — a printed Unstable card is erased leaving play
     const item = h.state.stack.find(i => i.card === 'Aberrant Statweaver')!;
     h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Hush Mush') });
     pick(h, { stack: item.id });
-    pass(h); pass(h);
+    pass(h);
     assert.ok(!h.state.stack.some(i => i.id === item.id), 'negated off the stack');
     assert.equal(count(erasedOf(h, D), 'Aberrant Statweaver'), 1, 'from the stack: erased');
     assert.equal(count(h.state.players[D]!.bin, 'Aberrant Statweaver'), 0, 'from the stack: not binned');
@@ -614,7 +614,7 @@ test('cr:zones.bin.entering — a resolved spell, a negated spell and a spell th
     const item = h.state.stack.find(i => i.card === 'Luminous Arc')!;
     h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Hush Mush') });
     pick(h, { stack: item.id });
-    pass(h); pass(h);
+    pass(h);
     assert.ok(!h.state.stack.some(i => i.id === item.id), 'negated');
     assert.equal(count(h.state.players[D]!.bin, 'Luminous Arc'), 1, 'negated → bin');
     assert.ok(ent(h, atk), 'and it did nothing');
@@ -671,7 +671,7 @@ test('cr:zones.stack.what — two spells wait on the stack and the one put there
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: y });
   assert.deepEqual(h.state.stack.map(i => i.controller), [D, A], 'both wait on the stack, A on top');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.stack.length, 1, 'one resolved');
   assert.equal(h.state.stack[0]!.controller, D, 'the last one put there (A) resolved first');
   assert.ok(!ent(h, y) || ent(h, y)!.damage > 0, 'A spell hit its target');

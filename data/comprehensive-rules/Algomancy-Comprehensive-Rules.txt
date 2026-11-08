@@ -3168,8 +3168,8 @@ CONTENTS
       [Basis: Printed | Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files | Printed: Manual p.30; Rulebook 2023 p.13 | Tests: 425-cr-casting-and-stack.test.ts, 422-cr-attacking-blocking.test.ts | Demonstrated by test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.window -- in an empty attack window each player receives priority in turn | Key: combat.attack-window.general.initiative-first]
 
 605.1b When all players pass priority in succession with the stack empty, the attack window ends and the block step begins (see 606). See rules 606, 703.
-      Example: Luminous Arc is cast in the attack window; two passes resolve it and a new window opens. Two more passes on the empty stack end the attack window.
-      [Basis: Printed | Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file | Printed: Rulebook 2023 p.13 | Tests: 425-cr-casting-and-stack.test.ts | Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.window.resolve -- two passes resolve the top item | Key: combat.attack-window.general.end]
+      Example: Luminous Arc is cast in the attack window; the other player's pass resolves it and a new window opens. Two more passes on the empty stack end the attack window.
+      [Basis: Printed | Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file | Printed: Rulebook 2023 p.13 | Tests: 425-cr-casting-and-stack.test.ts | Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.window.resolve -- two passes resolve the top item | Key: combat.attack-window.general.end]
 
 605.1c Until blocks are declared, a column of the attacking formation that loses its last unit closes up: the columns on its sides move in to fill the gap (see 602). See rules 602, 607.1b.
       Example: The middle column of a three-column attack is killed in the block step, before blocks are declared. The right-hand column slides left into the gap, and the attack is two columns wide.
@@ -3607,8 +3607,8 @@ CONTENTS
       [Basis: Printed | Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file | Printed: Manual p.20; Manual p.20; Manual p.27 | Tests: 420-cr-battle-regroup-deploy.test.ts | Demonstrated by test: 420-cr-battle-regroup-deploy.test.ts::cr:turn.battle.rounds.round-1 -- round 1 walks | Key: combat.after.what-it-is.each-round]
 
 609.2. The after combat step is a priority window. The initiative player receives priority first, then priority passes to the non-initiative player in the region. When all players pass priority in succession with the stack empty, the after combat step ends. See rule 703.
-      Example: After combat, the initiative player passes, the non-initiative player casts a spell, and both then pass. The spell resolves and the initiative player receives priority again. When both pass with the stack empty, the step ends.
-      [Basis: Printed | Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file | Printed: Manual p.30; Manual p.30; Manual p.30; Manual p.30 | Tests: 424-cr-after-combat.test.ts | Example test: 424-cr-after-combat.test.ts::cr:combat.after.window -- initiative first; a spell cast in the window resolves after both pass, priority returns to the initiative player; two passes on an empty stack end the step | Key: combat.after.window]
+      Example: After combat, the initiative player passes, the non-initiative player casts a spell, and the initiative player passes. The spell resolves and the initiative player receives priority again. When both pass with the stack empty, the step ends.
+      [Basis: Printed | Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file | Printed: Manual p.30; Manual p.30; Manual p.30; Manual p.30 | Tests: 424-cr-after-combat.test.ts | Example test: 424-cr-after-combat.test.ts::cr:combat.after.window -- initiative first; a spell cast in the window resolves after both pass, priority returns to the initiative player; two passes on an empty stack end the step | Key: combat.after.window]
 
 609.2a When the after combat step of the first battle round ends and units were sent to counterattack, the battle phase does not end: the second battle round begins (see rule 610). See rule 610.
       Example: With counterattackers sent, passing in round 1's after-combat window does not end the battle.
@@ -3936,7 +3936,7 @@ CONTENTS
       [Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) | Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file | Tests: 36-cache-prophecy.test.ts | Example test: 36-cache-prophecy.test.ts::CR 803.7j: a fulfilled prophecy releases an X spell for X = 0 | Key: effects.casting.x.free]
 
 702.7. A spell token is cast from play, and only in the region the token is in. Otherwise it is cast the same way as a spell from the hand. See rule 304.
-      Example: In the attack window the defending player casts their Fireball 3 token in the battle region. They choose its target, the attacking player, and it goes on the stack, where the attacker may respond; when both pass it deals 3.
+      Example: In the attack window the defending player casts their Fireball 3 token in the battle region. They choose its target, the attacking player, and it goes on the stack, where the attacker may respond; when the attacker passes it deals 3.
       [Basis: Printed | Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file | Printed: Rulebook 2023 p.4; Rulebook 2023 p.4 | Tests: 425-cr-casting-and-stack.test.ts | Example test: 425-cr-casting-and-stack.test.ts::cr:effects.casting.spell-tokens -- casting a spell token asks for its target and puts it on the stack, as a spell from hand would | Key: effects.casting.spell-tokens]
 
 702.7a A modifier to the cost of playing spells applies to casting a spell token, and a spell token cast counts as a spell played. See rule 111.
@@ -3994,12 +3994,12 @@ CONTENTS
       [Basis: Mixed | Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file | Printed: Manual p.30; Manual p.30 | Owner call | adopted 2026-10-22 | Tests: 568-hold-priority.test.ts | Example tests: 568-hold-priority.test.ts::CR 703.2a / CT-253: the holder stacks a second action before the opponent gets a look, then CR 703.2b, 568-hold-priority.test.ts::CR 703.2a / CT-253: a holder who passes hands the window over, and the item waits for both passes | Key: effects.priority.priority.hold]
 
 703.2b When a player passes priority after taking one or more actions, each other player receives priority, so that they can respond. This continues until all players pass priority in succession.
-      Example: after a cast the other player receives priority and responds; the first player then receives priority again, and the top item resolves only after both pass in succession.
-      [Basis: Printed | Verified: confirmed in round 1; verifier ran no tests; 1 gate test file | Printed: Manual p.30; Manual p.30 | Tests: 425-cr-casting-and-stack.test.ts | Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.priority.pass -- after an action the other player receives priority, and the item resolves only once both pass in succession | Key: effects.priority.priority.pass]
+      Example: after a cast the other player receives priority and responds; the first player then receives priority again, and their pass resolves that response.
+      [Basis: Printed | Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file | Printed: Rulebook 2023 p.13; Manual p.30; Manual p.30 | Tests: 425-cr-casting-and-stack.test.ts | Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.priority.pass -- after an action the other player receives priority, and the item resolves only once both pass in succession | Key: effects.priority.priority.pass]
 
 703.2c A player cannot respond to another player passing priority. A player who passes may not get another chance to act.
-      Example: the defender passes on an Arc and the attacker passes; the Arc resolves at once, with no further chance for the defender.
-      [Basis: Printed | Verified: confirmed in round 1; verifier ran no tests; 1 gate test file | Printed: Rulebook 2023 p.13 | Tests: 425-cr-casting-and-stack.test.ts | Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.priority.no-response-to-pass -- after one player passes, the other passing resolves the item with no further chance for the first | Key: effects.priority.priority.no-response-to-pass]
+      Example: the attacker casts an Arc and the defender passes; the Arc resolves at once, with no further chance for the attacker.
+      [Basis: Printed | Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file | Printed: Rulebook 2023 p.13 | Tests: 425-cr-casting-and-stack.test.ts | Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.priority.no-response-to-pass -- after one player passes, the other passing resolves the item with no further chance for the first | Key: effects.priority.priority.no-response-to-pass]
 
 703.2d All players on a team share priority and can act in whichever order they choose among themselves. Teams pass and receive priority as one. See rule 904. (Untested: no executed test demonstrates it.)
       [Basis: Printed | Verified: confirmed in round 1; verifier ran no tests; no gate test | Printed: Manual p.30; Manual p.30 | Key: effects.priority.priority.teams]
@@ -4016,8 +4016,8 @@ CONTENTS
       [Basis: Mixed | Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file | Printed: Manual p.30 | Designer: RAQ 1363298910528864318#0 | Tests: 297-damage-substeps-are-steps.test.ts | Key: effects.priority.window.steps]
 
 703.3c When all players pass priority in succession with an effect on the stack, the top effect resolves. All players then receive priority in order again, which is a new priority window. When all players pass priority with the stack empty, the game moves to the next step.
-      Example: two passes resolve Luminous Arc; a new window opens in the same step with the initiative player; two passes on the empty stack end the step.
-      [Basis: Printed | Verified: confirmed in round 1; verifier ran no tests; 1 gate test file | Printed: Manual p.30; Manual p.30; Rulebook 2023 p.13 | Tests: 425-cr-casting-and-stack.test.ts | Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.window.resolve -- two passes resolve the top item, a new window opens, and two passes on the empty stack end the step | Key: effects.priority.window.resolve]
+      Example: the other player's pass resolves Luminous Arc; a new window opens in the same step with the initiative player; two passes on the empty stack end the step.
+      [Basis: Printed | Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file | Printed: Manual p.30; Manual p.30; Rulebook 2023 p.13 | Tests: 425-cr-casting-and-stack.test.ts | Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.window.resolve -- two passes resolve the top item, a new window opens, and two passes on the empty stack end the step | Key: effects.priority.window.resolve]
 
 703.4. When several effects are put on the stack at the same time, each player chooses the order of their own. The initiative player puts all of theirs on first, then the non-initiative player, so the non-initiative player's effects resolve first. See rule 706.
       Example: with one trigger per player, the initiative player's trigger is at the bottom of the stack.

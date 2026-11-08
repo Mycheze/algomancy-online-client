@@ -211,7 +211,7 @@ test('Suppression Field: the printed line is struck and names the culprit', () =
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suppression Field') });
   pick(h, { unit: sprite });
-  pass(h); pass(h);
+  pass(h);
   const box = entityTextBox(q(h), ent(h, sprite)!);
   assert.deepEqual(box.suppressed, { attrs: true, abilities: true, by: ['Suppression Field'] });
   assert.equal(box.lines[0]!.active, false, 'the printed text is doing nothing');
@@ -239,7 +239,7 @@ test('Monke: a continuous suppressor is named on every box it reaches', () => {
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Monke') });
-  pass(h); pass(h);
+  pass(h);
   const box = entityTextBox(q(h), ent(h, theirs)!);
   assert.deepEqual(box.suppressed.by, ['Monke']);
   assert.equal(box.attrs.find(a => a.attr === 'Flying')!.active, false);
@@ -329,7 +329,7 @@ test('granted text is its own line, attributed to the card that gave it', () => 
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Reforge the Dead') });
-  pass(h); pass(h);
+  pass(h);
   const box = entityTextBox(q(h), ent(h, tok)!);
   const g = box.lines.find(l => l.origin === 'granted')!;
   assert.ok(g, 'the grant is on the box');

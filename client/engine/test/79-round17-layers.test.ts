@@ -218,7 +218,7 @@ test('CR 802.1c layer 5: {Inverted} is shared down the COLUMN, like every other 
 
   // {Inverted} lands on the FRONT unit only, and the whole column has it
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Reality Bender'), hostId: front });
-  pass(h); pass(h);                                   // resolve the virus
+  pass(h); // resolve the virus
   assert.deepEqual(effStats(h, front), [6, 6], 'the host: -2/-2 inverted to +2/+2');
   assert.deepEqual(effStats(h, back), [7, 7], "its column-mate shares it: -1/-1 inverted to +1/+1");
   finishBattle(h);
@@ -327,7 +327,7 @@ test('CR 713.4: report #114 — the owner\'s Nectar Ridge Oracle, and the damage
 
   pass(h);                                            // the attacker's window
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Rampart Guardian'), hostId: oracle });
-  pass(h); pass(h);                                   // resolve the virus
+  pass(h); // resolve the virus
   assert.ok(ownAttrs(h, oracle).has('Tough'), 'the defender\'s virus donated {Tough}');
   assert.deepEqual(effStats(h, oracle), [1, 6], 'Tough: +0/+3, the 1/3 stands as a 1/6');
 
@@ -355,7 +355,7 @@ test('CR 713.4: report #114 — the owner\'s Nectar Ridge Oracle, and the damage
 
   // and now for real, with his own card
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Reality Bender'), hostId: oracle });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, oracle), undefined,
     "#115: 'tough + inverted always kills the unit' — his own Reality Bender did it");
   finishBattle(h);
@@ -419,7 +419,7 @@ test('CR 802.8d: the column wipe — {Inverted} on the front unit, {Tough} on th
   h.do({ type: 'declareAttack', seat: A, columns: [[front, back]] });
 
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Reality Bender'), hostId: front });
-  pass(h); pass(h);
+  pass(h);
   // Δ = 0 on both, so {Inverted} ALONE is a no-op — this is the half that
   // makes the wipe invisible until the second card lands.
   assert.deepEqual(effStats(h, front), [4, 4], '{Inverted} with nothing to invert changes nothing');
@@ -432,7 +432,7 @@ test('CR 802.8d: the column wipe — {Inverted} on the front unit, {Tough} on th
   assert.ok(new E(h.state).effAttrs(ent(h, back)!).has('Inverted'), '…and has it anyway');
 
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Rampart Guardian'), hostId: back });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, back), undefined, 'the {Tough} host dies: 2·6 − 12 = 0');
   assert.equal(ent(h, front), undefined,
     'AND the front unit dies, having been touched by neither card in the sequence');

@@ -28,7 +28,7 @@ function drain(h: Harness): void {
     const d = h.state.decision;
     if (d?.pickOrder) h.do({ type: 'decide', seat: d.seat, choice: d.options.map((_, i) => i) });
     else if (d) pick(h, d.options[0]!.value);
-    else { pass(h); pass(h); }
+    else pass(h);
   }
 }
 
@@ -61,7 +61,7 @@ test('CR 304.11d: Download takes a Fireball already on the stack, and its new co
   passTo(h, A);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Download') });
   pick(h, { stack: item });
-  pass(h); pass(h);                                           // Download resolves: the retarget question
+  pass(h); // Download resolves: the retarget question
   assert.equal(h.state.decision?.seat, A, 'the new controller chooses the targets');
   pick(h, { unit: wall });
   const stolen = h.state.stack.find(i => i.id === item)!;
@@ -89,7 +89,7 @@ test('CR 304.11d: Arcane Echo copies a Fireball already on the stack as a fresh 
   passTo(h, A);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Arcane Echo') });
   pick(h, { stack: item });
-  pass(h); pass(h);                                           // Arcane Echo resolves
+  pass(h); // Arcane Echo resolves
   const made = tokensOf(h, A).filter(t => t.card === 'Fireball');
   assert.equal(made.length, 1, 'A has a Fireball token of its own');
   assert.equal(made[0]!.x, 2, 'the same X');

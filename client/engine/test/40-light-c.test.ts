@@ -81,7 +81,7 @@ test('Calming Force: negates every OTHER effect on the stack', () => {
   whiteBox(h, e => { e.cacheCard(D, 'Calming Force', 'deck', { playable: true }); });
   h.do({ type: 'playCached', seat: D, index: 0 });
   assert.equal(h.state.stack.length, 2);
-  pass(h); pass(h);                                           // Calming Force resolves (top)
+  pass(h); // Calming Force resolves (top)
   assert.ok(h.log.some(l => l.includes('Calming Force negates 1 other effect')), 'the sweep is logged');
   assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Godray left the stack at once');
   assert.equal(h.state.players[D]!.life, lifeD, 'no damage, no blessed gain');
@@ -168,7 +168,7 @@ test('Feed to Hooba: DELETES a unit — it dies to its owner\'s bin — and leav
   h.do({ type: 'declareAttack', seat: A, columns: [[front, back]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Feed to Hooba') });
   pick(h, { unit: front });
-  pass(h); pass(h);                                           // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, front), 'the target is gone');
   assert.ok(h.state.players[A]!.bin.includes('Blessed Thing'),
     'DELETED, so it died to the bin — an erase would have sent it to the erased pile');
@@ -220,7 +220,7 @@ test('Gatekeeper of Souls: "I must be targeted if able" — it takes the hit', (
   assert.deepEqual(h.state.decision!.options.map(o => o.value), [{ unit: gk }],
     'every other unit is off the menu while the Gatekeeper is a legal target');
   pick(h, { unit: gk });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, gk)!.damage, 6, 'the wall took the Arc');
   assert.equal(ent(h, prize)!.damage, 0, 'and the 8/3 was never reachable');
   finishBattle(h);
@@ -261,7 +261,7 @@ test('Godray: 3 damage to any target, and {Blessed} gains its controller 3 (CR 8
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Godray') });
   pick(h, { unit: target });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, target)!.damage, 3, 'the unit took 3');
   assert.equal(h.state.players[A]!.life, lifeA + 3, 'blessed: the caster gained 3');
   assert.equal(h.state.players[D]!.life, lifeD, 'the defender lost nothing');
@@ -279,7 +279,7 @@ test('Godray: aimed at a player it damages AND heals on the same check', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Godray') });
   pick(h, { player: D });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.players[D]!.life, lifeD - 3);
   assert.equal(h.state.players[A]!.life, lifeA + 3);
   finishBattle(h);
@@ -301,7 +301,7 @@ test('Hand Peeper: pay 3 life to look at target player\'s hand', () => {
   const lifeA = h.state.players[A]!.life;
   h.do({ type: 'activateAbility', seat: A, entityId: hp, abilityIndex: 0, via: 'augment' });
   pick(h, { player: D });
-  pass(h); pass(h);                                           // resolve
+  pass(h); // resolve
   assert.equal(h.state.players[A]!.life, lifeA - 3, 'the 3 life was paid (at resolution — see header)');
   assert.deepEqual(h.state.seenHand[A]!.cards, h.state.players[D]!.hand, 'D\'s whole hand was revealed to A');
   assert.ok(h.state.seenHand[A]!.cards.includes('Godray'), 'including what we planted');
@@ -335,7 +335,7 @@ test('Hand Peeper: CR 111.6b — at exactly 3 life the cost is unpayable and the
   assert.equal(h.state.players[A]!.life, 4, 'nothing paid while you are still choosing');
   pick(h, { player: D });
   assert.equal(h.state.players[A]!.life, 1, 'the 3 life is paid at cast, once aimed');
-  pass(h); pass(h);
+  pass(h);
   assert.ok(h.state.seenHand[A], 'and the hand was seen');
   finishBattle(h);
 });
@@ -608,7 +608,7 @@ test('Reap the Due: its controller may gain 2x your [l] debt to save the unit (C
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Reap the Due') });
   pick(h, { unit: victim });
-  pass(h); pass(h);                                           // resolve → the victim's controller decides
+  pass(h); // resolve → the victim's controller decides
   const dec = h.state.decision!;
   assert.equal(dec.seat, D, 'the TARGET\'s controller pays or declines');
   assert.equal(dec.kind, 'payOrDecline');
@@ -630,7 +630,7 @@ test('Reap the Due: declining erases the unit outright (no bin, no trash)', () =
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Reap the Due') });
   pick(h, { unit: victim });
-  pass(h); pass(h);
+  pass(h);
   pick(h, false);
   assert.ok(!ent(h, victim), 'erased');
   assert.equal(h.state.players[D]!.debt, 0, 'no debt');
@@ -658,7 +658,7 @@ test('Reap the Due: the payment is never free — casting it at all costs [l] (C
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Reap the Due') });
   pick(h, { unit: victim });
-  pass(h); pass(h);
+  pass(h);
   const dec = h.state.decision!;
   assert.equal(dec.kind, 'payOrDecline', 'a real choice, not a free save');
   assert.ok(dec.prompt.includes('2 debt'), `the floor is 2 debt, got: ${dec.prompt}`);
@@ -960,7 +960,7 @@ test("Suspend: the target's life total can't change in either direction this bat
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suspend') });
   pick(h, { player: D });
-  pass(h); pass(h);
+  pass(h);
   whiteBox(h, e => e.loseLife(D, 7, 'test'));
   assert.equal(h.state.players[D]!.life, lifeD, 'no loss');
   whiteBox(h, e => e.gainLife(D, 7, 'test'));
@@ -985,7 +985,7 @@ test('Suspend: the lock is this battle only, and lapses with the battle that mad
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suspend') });
   pick(h, { player: D });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.q.lifeLocked(D), true, 'locked while the battle runs');
   finishBattle(h);
   assert.equal(h.q.lifeLocked(D), false, 'and not afterwards');
@@ -1086,7 +1086,7 @@ test('Void Mandible: a spell TOKEN does not trigger it ("nontoken")', () => {
   h.do({ type: 'castSpellToken', seat: A, entityId: tok });
   pick(h, { player: D });
   assert.ok(ent(h, vm), 'the Mandible is untouched by a token spell');
-  pass(h); pass(h);
+  pass(h);
   finishBattle(h);
 });
 
@@ -1217,7 +1217,7 @@ test('parked cards still register, play and attach without crashing', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suspend') });
   pick(h, { player: D });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!h.state.players[A]!.bin.includes('Suspend'), '"Erase me": no bin');
   assert.ok((h.state.players[A]!.erased ?? []).includes('Suspend'), 'the erased pile instead');
   finishBattle(h);

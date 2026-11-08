@@ -78,7 +78,7 @@ function play(c: Case): { kept: boolean; T: Seat; P: Seat } {
   h.do({ type: 'declareAttack', seat: P, columns: [[token], [bubb]] });
   for (let guard = 8; h.state.priority !== T && guard-- > 0;) pass(h);
   h.do({ type: 'playCard', seat: T, handIndex: give(h, T, 'Rebalance') });
-  pass(h); pass(h);
+  pass(h);
   for (let guard = 0; h.state.decision && guard < 4; guard++) {
     const dec = h.state.decision;
     const want = dec.seat === P ? token : bones;

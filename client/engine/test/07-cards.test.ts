@@ -39,7 +39,7 @@ test('Flame of History: Reaping — killing a unit draws a card', () => {
   h.do({ type: 'playCard', seat: D, handIndex: fh });
   pick(h, { unit: sprite });
   const handBefore = h.state.players[D]!.hand.length;
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, sprite), '1 damage killed the 1/1');
   assert.equal(h.state.players[D]!.hand.length, handBefore + 1, 'Reaping drew a card');
 });
@@ -58,7 +58,7 @@ test('All-Consuming Blaze: damage equals your fire affinity (expended counts, do
   const blaze = give(h, D, 'All-Consuming Blaze');
   h.do({ type: 'playCard', seat: D, handIndex: blaze });
   pick(h, { unit: target });
-  pass(h); pass(h);
+  pass(h);
   // affinity: 2 open fire + 1 expended fire = 3 (dormant excluded, prismites give none)
   assert.ok(h.log.some(l => l.includes('deals 3 to Good Whale')),
     '2 open + 1 expended fire = 3; dormant and prismites excluded');
@@ -122,7 +122,7 @@ test('Dune Drifter: virus augment grants Swift (type-line [Augment])', () => {
   giveResources(h, p, 'earth', 2);   // Dune Drifter is ee / 1
   const dd = give(h, p, 'Dune Drifter');
   h.do({ type: 'augment', seat: p, from: 'hand', index: dd, hostId: target });
-  pass(h); pass(h);   // resolve the virus
+  pass(h); // resolve the virus
   assert.ok(ownAttrs(h, target).has('Swift'), 'host gained Swift from the type line');
 });
 

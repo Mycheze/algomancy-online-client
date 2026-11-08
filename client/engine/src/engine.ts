@@ -10265,36 +10265,50 @@ export class E {
     if (solo) return;
     this.s.passes = 0;
     /**
-     * CR 703.3a, 605.1a, 604.3c, 703.2a — WHO RESPONDS FIRST DEPENDS ON WHY THE ITEM IS HERE.
+     * CR 703.2a, 703.2b, 703.3a, 604.3c — WHO ACTS NEXT DEPENDS ON WHY THE ITEM IS HERE.
      *
      * A PLAY or ACTIVATION (anything but a trigger) is a player acting with
-     * priority, and by default priority goes to the opponent: whoever did NOT
-     * act responds first — unless the actor asked to keep it (below).
+     * priority. Unless they asked to keep it (below), acting IS their pass:
+     * priority goes to the responder, and the responder's pass alone resolves
+     * the item. Rulebook 2023, p.13: "If player A casts a spell and player B
+     * passes priority, player A's spell will resolve, creating another priority
+     * window." The owner, 2026-11-08: "The caster always gets first response
+     * (which is usually auto passed), then responder is the final one who says
+     * if something resolves."
      *
-     * A TRIGGER is not anybody acting. It goes on the stack as a window opens
-     * (CR 604.3c: on-attack triggers "are put on the stack before the attack
-     * window opens, so players can respond to them in that window"), after a
-     * resolution (CR 703.3c: a new window), or inside a player's action — and
-     * in each case priority is already where that event put it:
-     * `openPriority` and `finishResolutionTail` give it to the initiative
-     * player (CR 703.3a), and a play has already given it to the opponent.
-     * So a trigger leaves it alone.
+     * ⚠ `passes` USED TO STAY 0 HERE, which asked the caster a second time and
+     * gave them the last word on their own spell, while a caster who held
+     * priority and passed got only the one. A resolution restarts the window
+     * in `finishResolutionTail`, so a play made DURING a resolution (CR 703.5)
+     * is not a direct action and this count does not survive it.
      *
-     * ⚠ Report #234 (RCUY@180): this line used to flip priority for EVERY
-     * push, so Rousing Spirit's attack trigger handed the attack window to
-     * the defender before the attacker had acted in it. Keyed on the item's
-     * kind, not on a flag, because a target-suspended trigger is pushed later
-     * from doDecide and must behave exactly as if it had not suspended.
+     * A TRIGGER is not anybody acting, so nobody auto-passes for it. The owner:
+     * "Autopassing should only happen when a direct clicking action they did
+     * put something of theirs onto the stack." It goes in window order, the
+     * initiative player first (CR 703.3a) — whether it arrived as a window
+     * opened (CR 604.3c), after a resolution (CR 703.3c), or inside a player's
+     * action. ⚠ Report #234 (RCUY@180): flipping priority on EVERY push handed
+     * Rousing Spirit's attack window to the defender. Keyed on the item's kind,
+     * not on a flag, because a target-suspended trigger is pushed later from
+     * doDecide and must behave exactly as if it had not suspended.
      */
-    if (item.kind === 'triggered') return;
+    if (this.s.priority === null) return;
+    if (item.kind === 'triggered') {
+      // a player keeping priority (CR 703.2a) keeps it through their own action
+      if (this.s.holdPriority === undefined) this.s.priority = this.initiative;
+      return;
+    }
     /**
      * CR 703.2a / CT-253: unless the action that put it here asked to keep
      * priority (`Action.holdPriority`, carried as `GameState.holdPriority`
-     * across a cast's own suspensions) — then the actor keeps it and must act
-     * again or pass, and the opponent gets their look once they do (CR 703.2b).
+     * across a cast's own suspensions) — then the actor keeps it and has not
+     * passed: they must act again or pass (CR 703.2b).
      */
-    if (this.s.priority !== null) {
-      this.s.priority = this.s.holdPriority === item.controller ? item.controller : other(item.controller);
+    if (this.s.holdPriority === item.controller) {
+      this.s.priority = item.controller;
+    } else {
+      this.s.priority = other(item.controller);
+      this.s.passes = 1;
     }
   }
 

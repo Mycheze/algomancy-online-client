@@ -129,7 +129,7 @@ function opponentResponds(h: Harness, A: Seat): void {
 }
 
 /** both seats pass — the ability resolves. */
-function resolve(h: Harness): void { pass(h); pass(h); }
+function resolve(h: Harness): void { pass(h); }
 
 // ── 1. Celestial Shifter ────────────────────────────────────────────────
 //

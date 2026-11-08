@@ -106,7 +106,7 @@ test('#43 a cast X reaches the REAL stack wearing its number', () => {
 
 test("#45 Awoken Tomb's trigger says what X is while it is ON the stack", () => {
   const { h, D } = tombFixture(5922);
-  pass(h); pass(h);                          // Channel Through resolves → 2 to the Tomb
+  pass(h); // Channel Through resolves → 2 to the Tomb
 
   // again the responder's view: D is the one who has to decide whether to
   // answer the trigger, and it is D's screen the report was written from

@@ -69,7 +69,7 @@ test('Stormsowing Nimbus: CR 701.2a/nontoken — neither a mod application nor a
   // 1. a virus augment applied during battle is a MOD, not a play (CR 701.2a)
   passTo(h, D);
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Reality Bender'), hostId: host });
-  pass(h); pass(h);                                        // the virus-shaped item resolves
+  pass(h); // the virus-shaped item resolves
   assert.equal(made().length, 0, 'CR 701.2a: a mod application makes no 1/1');
   // 2. a TOKEN spell is filtered by "nontoken"
   const region = h.state.battle!.region;
@@ -77,7 +77,7 @@ test('Stormsowing Nimbus: CR 701.2a/nontoken — neither a mod application nor a
   passTo(h, D);
   h.do({ type: 'castSpellToken', seat: D, entityId: poison.id });
   pick(h, { unit: atk });
-  pass(h); pass(h);                                        // Poison resolves
+  pass(h); // Poison resolves
   assert.equal(made().length, 0, 'a token spell does not count as "nontoken"');
   // 3. positive control: a real nontoken battle spell makes exactly one 1/1
   passTo(h, D);
@@ -129,7 +129,7 @@ test('Channeled Amalgam: a token spell neither feeds it nor spends the [once] �
   passTo(h, D);
   h.do({ type: 'castSpellToken', seat: D, entityId: poison.id });
   pick(h, { unit: atk });
-  pass(h); pass(h);                                        // Poison resolves
+  pass(h); // Poison resolves
   assert.equal(ent(h, amalgam)!.counters, 0, 'a token spell feeds nothing');
   passTo(h, D);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Twin Flame') });
@@ -178,7 +178,7 @@ test('Stalwart Sentinel: CR 405.9 — a spell played from the BIN counts (+2), a
   // playing the granting spell from HAND is the ordinary place — no counters
   passTo(h, D);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Abyssal Evocation') });
-  pass(h); pass(h);                                        // grant resolves
+  pass(h); // grant resolves
   assert.equal(ent(h, sent)!.counters, 0, 'a hand play never counts');
   // CR 405.9: the bin spell is offered and played — spellPlayed carries from:"bin"
   passTo(h, D);
@@ -198,7 +198,7 @@ test('Stalwart Sentinel: CR 405.9 — a spell played from the BIN counts (+2), a
   const rubbishIdx = h.state.players[D]!.bin.indexOf('A Pile of Rubbish');
   assert.ok(rubbishIdx >= 0, 'the augment is still in the bin');
   h.do({ type: 'augment', seat: D, from: 'bin', index: rubbishIdx, hostId: host });
-  pass(h); pass(h);                                        // the virus-shaped item resolves
+  pass(h); // the virus-shaped item resolves
   assert.ok(ent(h, host)!.mods.length === 1, 'the bin mod really attached');
   assert.equal(ent(h, sent)!.counters, 2,
     'CR 701.2a: a mod applied FROM THE BIN is still not "playing a card" — no third counter');
@@ -258,7 +258,7 @@ test('Origon: a virus applied during battle is not a spell — not negated, and 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   // CR 723.3b: a virus augment during battle rides the stack, but it is a MOD
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Reality Bender'), hostId: atk });
-  pass(h); pass(h);                                        // the virus resolves
+  pass(h); // the virus resolves
   assert.ok(ent(h, atk)!.mods.length === 1, 'the mod landed');
   assert.ok(!h.log.some(m => m.includes('is negated')), 'nothing was negated — a mod is not a spell');
   // the countdown is intact: A's FIRST actual spell is still the one negated

@@ -54,7 +54,7 @@ test('cr:concepts.abilities.granted.is-ability — a Reforge the Dead grant made
     const strip = (): void => withE(h, e => e.suppress(e.s.entities[tok]!, 'Suppression Field', { abilities: true }));
     if (stripFirst) strip();
     h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Reforge the Dead') });
-    pass(h); pass(h);
+    pass(h);
     assert.equal(ent(h, tok)!.granted?.length, 1, 'the grant landed');
     if (!stripFirst) strip();
     {
@@ -169,7 +169,7 @@ function boonSetup(seed: number) {
 test('cr:concepts.targets.change.rescue — control: a spell whose only target is gone, left alone, fizzles', () => {
   const { h, warder } = boonSetup(33601);
   const start = h.log.length;
-  pass(h); pass(h);
+  pass(h);
   assert.ok(h.log.slice(start).some(l => /Channeled Boon fizzles/.test(l)), h.log.slice(start).join('\n'));
   assert.deepEqual(effStats(h, warder), [1, 2], 'nothing was buffed');
   finishBattle(h);
@@ -180,7 +180,7 @@ test('cr:concepts.targets.change.rescue — the same spell given a new legal tar
   if (h.state.priority === A) pass(h);
   h.do({ type: 'activateAbility', seat: D, entityId: warder, abilityIndex: 0, via: 'augment' });
   pick(h, { stack: boonId });
-  pass(h); pass(h);                                          // the Warder resolves
+  pass(h); // the Warder resolves
   const start = h.log.length;
   pass(h); pass(h);                                          // the Boon resolves
   assert.ok(!h.log.slice(start).some(l => /fizzles/.test(l)), h.log.slice(start).join('\n'));
@@ -252,7 +252,7 @@ test('cr:concepts.targets.must-be-targeted.choice-only — a Gatekeeper of Souls
   let gk = -1;
   withE(h, e => { gk = e.spawnUnit(D, 'Gatekeeper of Souls', h.state.battle!.region).id; });
   assert.ok(ent(h, gk), 'setup: a Gatekeeper now stands in the battle region');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, victim), undefined, 'the 1/1 chosen before the Gatekeeper arrived still took the damage');
   assert.equal(ent(h, gk)!.damage ?? 0, 0, 'and the Gatekeeper was not substituted');
   finishBattle(h);
@@ -328,7 +328,7 @@ test('cr:concepts.abilities.activated.when — Living Forge activates twice in o
   assert.equal(h.state.priority, P, 'the Forge controller holds priority');
   const before = unitsOf(h, P).filter(u => u.card === 'Robot').length;
   h.do({ type: 'activateAbility', seat: P, entityId: lf, abilityIndex: 0, via: 'augment' });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(unitsOf(h, P).filter(u => u.card === 'Robot').length, before + 1, 'and in battle');
   finishBattle(h);
 });
@@ -393,7 +393,7 @@ test('cr:concepts.abilities.replacement — Flux Resonator changes the Robot cou
   h.do({ type: 'activateAbility', seat: P, entityId: lf, abilityIndex: 0, via: 'augment' });
   assert.equal(h.state.stack.length, 1, 'only the Forge ability is on the stack');
   const start = h.log.length;
-  pass(h); pass(h);                                           // one round of passes resolves it
+  pass(h); // one round of passes resolves it
   assert.equal(h.state.stack.length, 0, 'nothing was added to the stack by the replacement');
   const robot = unitsOf(h, P).find(u => u.card === 'Robot')!;
   assert.equal(robot.counters, 3, 'the Robot 2 arrived with 2 + 1 counters');
@@ -424,7 +424,7 @@ test('cr:concepts.targets.not-target.distribution — Channel Through distribute
   let guard = 10;
   while (h.state.stack.length && guard-- > 0) {
     if (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
-    else { pass(h); pass(h); }
+    else { pass(h); }
   }
   assert.equal(ent(h, mohr)!.damage, 2, `the 2 damage was divided onto Mohruung at resolution:\n${h.log.slice(start).join('\n')}`);
   assert.ok(!h.log.slice(start).some(l => /^Trigger: Mohruung/.test(l)), `and it was never targeted:\n${h.log.slice(start).join('\n')}`);

@@ -125,7 +125,7 @@ test('CR 706.9 Earthbound Replicator: a spell played at something ELSE and retar
   toPriority(h, D);
   h.do({ type: 'activateAbility', seat: D, entityId: repl, abilityIndex: 0, via: { mod: warderMod } });
   pick(h, { stack: h.state.stack[0]!.id });                     // aim the Warder at the Burgeon
-  pass(h); pass(h);                                             // the retarget resolves
+  pass(h); // the retarget resolves
   assert.ok(h.state.stack[0]!.parts[0]!.targets.some(t => 'unit' in t && t.unit === repl),
     'setup: the Burgeon really is aimed at me now');
 
@@ -159,7 +159,7 @@ test('CR 706.9 Earthbound Replicator: a spell played AT ME and retargeted away s
   toPriority(h, D);
   h.do({ type: 'activateAbility', seat: D, entityId: warder, abilityIndex: 0, via: 'augment' });
   pick(h, { stack: h.state.stack[0]!.id });
-  pass(h); pass(h);                                              // the retarget resolves
+  pass(h); // the retarget resolves
   assert.ok(!h.state.stack[0]!.parts[0]!.targets.some(t => 'unit' in t && t.unit === repl),
     'setup: the Burgeon no longer points at me');
 
@@ -387,7 +387,7 @@ test('CR 720.10 Reconfigure: the moved unit\'s own mods re-parent through the sa
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Reconfigure') });
   pick(h, { unit: dd });                                         // the unit to move
   pick(h, { unit: host });                                       // the unit it augments onto
-  pass(h); pass(h);
+  pass(h);
 
   assert.deepEqual(modsOn(h, host).map(m => m.card), ['Decay Distributor', 'Aetherflux Golem'],
     '"…and all of its mods onto another target unit"');

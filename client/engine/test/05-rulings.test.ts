@@ -32,7 +32,7 @@ test('CR 109.3a: trigger conditions check at event time; amounts compute at reso
   assert.equal(h.state.priority, D, 'then D may respond to the stacked trigger');
   h.do({ type: 'playCard', seat: D, handIndex: 0 });
   pick(h, { unit: tide });                     // Arc the 0/6 for 6 — kills it!
-  pass(h); pass(h);                            // resolve Arc: Tidewraith dies
+  pass(h); // resolve Arc: Tidewraith dies
   assert.ok(!ent(h, tide), 'Tidewraith died before its trigger resolved');
   const lifeBefore = h.state.players[D]!.life;
   pass(h); pass(h);                            // resolve the trigger anyway (CR 109.3a:
@@ -119,7 +119,7 @@ test('CR 802.17: electric excess follows a controller-chosen non-overlapping pat
   const arc = give(h, D, 'Arc Lightning');         // {Electric} 6 damage
   h.do({ type: 'playCard', seat: D, handIndex: arc });
   pick(h, { unit: front1 });
-  pass(h); pass(h);                                // resolve: 2 lethal, 4 excess
+  pass(h); // resolve: 2 lethal, 4 excess
   // two adjacent candidates (back1 vertically, front2 horizontally) → decision
   assert.equal(h.state.decision?.kind, 'electricPath', 'controller chooses the path (CR 802.17)');
   assert.equal(h.state.decision!.seat, D, "the Electric SOURCE's controller chooses");
@@ -149,7 +149,7 @@ test('CR 704.6: all targets gone → fizzle; a fizzled spell unit never spawns',
   const arc = give(h, A, 'Luminous Arc');
   h.do({ type: 'playCard', seat: A, handIndex: arc });
   pick(h, { unit: target });
-  pass(h); pass(h);                                // Arc resolves, target dies
+  pass(h); // Arc resolves, target dies
   assert.ok(!ent(h, target));
   pass(h); pass(h);                                // Jelly: all targets gone
   assert.ok(h.log.some(l => l.includes('Jelly fizzles')), 'fizzled');
@@ -197,7 +197,7 @@ test('CR 111.9: "unless its controller pays" is part of resolution — pay branc
   const ex = give(h, D, 'Test Extortion');
   h.do({ type: 'playCard', seat: D, handIndex: ex });
   pick(h, { unit: target });
-  pass(h); pass(h);                                // resolve → payment decision
+  pass(h); // resolve → payment decision
   assert.equal(h.state.decision?.kind, 'payOrDecline');
   assert.equal(h.state.decision!.seat, A, "the TARGET's controller decides");
   const payIdx = h.state.decision!.options.findIndex(o => o.value === true);
@@ -220,7 +220,7 @@ test('CR 111.9: decline branch deletes', () => {
   const ex = give(h, D, 'Test Extortion');
   h.do({ type: 'playCard', seat: D, handIndex: ex });
   pick(h, { unit: target });
-  pass(h); pass(h);
+  pass(h);
   const declineIdx = h.state.decision!.options.findIndex(o => o.value === false);
   h.do({ type: 'decide', seat: A, choice: declineIdx });
   assert.ok(!ent(h, target), 'declined → deleted');
@@ -390,7 +390,7 @@ test('CR 802.9: Unaware is printed and carried on Bubb / Trashling / Haboob, and
   h.do({ type: 'declareAttack', seat: A, columns: [[pumped]] });
   while (h.state.priority !== D) pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Haboob') });
-  pass(h); pass(h);                                       // resolve Haboob
+  pass(h); // resolve Haboob
 
   assert.ok(!ent(h, pumped), 'Haboob read the printed 1 toughness and killed it');
   finishBattle(h);
@@ -438,7 +438,7 @@ test('CR 506.2: regroup runs its exact sequence (return → damage → temp → 
   const j = give(h, D, 'Jelly');                   // -2/-2 temp on the attacker
   h.do({ type: 'playCard', seat: D, handIndex: j });
   pick(h, { unit: atk });
-  pass(h); pass(h);
+  pass(h);
   ent(h, atk)!.damage = 1;                         // mark some damage too
   ent(h, propped)!.tempToughness = 3;              // 4/6 for the moment …
   ent(h, propped)!.damage = 4;                     // … carrying 4, lethal to a 4/3
@@ -475,5 +475,5 @@ test('CR 601.1a: regions are exclusive — home units are not targetable in anot
   assert.ok(offered.includes(JSON.stringify({ unit: atk })), 'attacker (in region) targetable');
   assert.ok(!offered.includes(JSON.stringify({ unit: home })), 'home unit does not exist here (CR 601.1a)');
   pick(h, { unit: atk });
-  pass(h); pass(h);
+  pass(h);
 });

@@ -113,7 +113,7 @@ function castWildfireForX(seed: number, x: number, sentry: boolean): number {
   pick(h, x);                                       // CR 107.2a: X chosen and PAID here
   pick(h, { player: A });                           // "any target"
   const spent = before - open(h, D);
-  pass(h); pass(h);                                 // let it resolve
+  pass(h); // let it resolve
   finishBattle(h);
   return spent;
 }
@@ -136,7 +136,7 @@ test('CR 107.5 (Caleb, 2026-11-01) — under a Stasis Sentry the X menu starts a
   pick(h, 1);
   assert.equal(before - open(h, D), 3, 'X = 1 costs [3]');
   pick(h, { player: A });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.players[A]!.life, life - 1, 'and deals 1 — X is still 1');
   finishBattle(h);
 });
@@ -175,7 +175,7 @@ test('CR 111.10i (Caleb, 2026-11-01) — the raised price gates castability: an 
   pick(h, 7);
   assert.equal(open(h, D), 0, 'and X=7 really took [7]');
   pick(h, { player: A });
-  pass(h); pass(h);
+  pass(h);
   finishBattle(h);
 });
 
@@ -316,7 +316,7 @@ test('CR 111.11 — Null Drone already read the paid X, and still does', () => {
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Wildfire') });
   pick(h, 4);
   pick(h, { player: D });
-  pass(h); pass(h);
+  pass(h);
   const drone = h.state.players[D]!.life;
   assert.ok(drone > 0);
   // a Wildfire for X=5 is ABOVE the bar — Null Drone cannot negate it
@@ -325,7 +325,7 @@ test('CR 111.11 — Null Drone already read the paid X, and still does', () => {
   pick(h, { player: D });
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Null Drone') });
   pick(h, { stack: h.state.stack[0]!.id });
-  pass(h); pass(h);                                 // resolve the Drone
+  pass(h); // resolve the Drone
   assert.ok(h.log.some(m => m.includes('costs 5 > 4')),
     'the Drone priced the spell at its paid X (5), not at 0 and not at its pips');
   assert.equal(h.state.stack.length, 1, 'the Wildfire is still on the stack');

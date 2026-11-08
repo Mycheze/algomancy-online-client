@@ -159,7 +159,7 @@ test('Premonition: the Glimpse X reveal is public to the opponent (CR D6.2c, 801
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Premonition') });
   const revealed = h.q.deckOf(A).slice(0, 3);
   const mark = h.events.length;
-  pass(h); pass(h);                                   // resolve
+  pass(h); // resolve
   assertOpponentSeesReveal(h, D, since(h, mark), revealed, 'Premonition');
   assert.equal(h.state.decision!.seat, A, 'the glimpser is the one being asked');
   h.do({ type: 'decide', seat: A, choice: 0 });
@@ -184,7 +184,7 @@ test('Celestial Purge: the victim\'s Glimpse 3 reveal is public to the caster (C
   pick(h, { unit: slime });
   const revealed = h.q.deckOf(D).slice(0, 3);
   const mark = h.events.length;
-  pass(h); pass(h);                                   // resolve → erase + glimpse
+  pass(h); // resolve → erase + glimpse
   // here the GLIMPSER is D, so the seat that must be shown the reveal is A —
   // the caster, who is the one pricing what they just did.
   assertOpponentSeesReveal(h, A, since(h, mark), revealed, 'Celestial Purge');
@@ -214,7 +214,7 @@ test('Dematerialize: the negated controller\'s Glimpse 3 reveal is public to the
   pick(h, { stack: h.state.stack.find(it => it.controller === A)!.id });
   const revealed = h.q.deckOf(A).slice(0, 3);
   const mark = h.events.length;
-  pass(h); pass(h);                                   // resolve Dematerialize
+  pass(h); // resolve Dematerialize
   // A's spell is negated and A glimpses 3 — D, who cast Dematerialize, must
   // see what their own spell revealed.
   assertOpponentSeesReveal(h, D, since(h, mark), revealed, 'Dematerialize');
@@ -238,7 +238,7 @@ test('Foretell: the Glimpse 1 reveal is public to the opponent (CR D6.2c, 801.9)
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Foretell') });
   const revealed = h.q.deckOf(A).slice(0, 1);
   const mark = h.events.length;
-  pass(h); pass(h);                                   // resolve — N=1 raises no decision
+  pass(h); // resolve — N=1 raises no decision
   assertOpponentSeesReveal(h, D, since(h, mark), revealed, 'Foretell');
   assert.equal(h.state.decision, null, 'Glimpse 1 asks nothing (CR 801.9b)');
   assert.deepEqual(viewFor(h.state, D, null).players[A]!.cache?.map(c => c.card), revealed,

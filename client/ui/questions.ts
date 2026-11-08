@@ -161,7 +161,7 @@ export const QUESTIONS: RulesQuestion[] = [
         { type: 'declareAttack', seat: A, columns: [[robot!], [bubb!], [defender!]] },
         { type: 'passPriority', seat: A },
         { type: 'playCard', seat: B, handIndex: 0 },
-        { type: 'passPriority', seat: A }, { type: 'passPriority', seat: B },
+        { type: 'passPriority', seat: A },
         { type: 'decide', seat: A, choice: 2 },   // Player A gives Earnest Defender
         { mark: 'Before the switch', note: 'Rebalance is resolving and Player B is about to give away The Bonesculptor. Player A\'s units still have Piercing; Restitution still has no abilities.' },
         { type: 'decide', seat: B, choice: 0 },   // Player B gives The Bonesculptor

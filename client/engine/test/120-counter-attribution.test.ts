@@ -156,7 +156,7 @@ test('a card that puts counters attributes them to its controller, on the event'
   const evs = during(h, () => {
     h.do({ type: 'castSpellToken', seat: A, entityId: crystal.id });
     pick(h, { unit: victim });
-    pass(h); pass(h);                                 // the Crystal resolves
+    pass(h); // the Crystal resolves
     pass(h); pass(h);                                 // the trigger resolves
   });
   const changed = evs.filter(e => e.type === 'countersChanged');
@@ -184,7 +184,7 @@ test("an opponent's card countering their OWN unit is their placement, not yours
     pass(h);                                          // priority → D
     h.do({ type: 'castSpellToken', seat: D, entityId: poison.id });
     pick(h, { unit: theirs });
-    pass(h); pass(h);                                 // the Poison resolves
+    pass(h); // the Poison resolves
   });
   const changed = evs.filter(e => e.type === 'countersChanged');
   assert.equal(changed.length, 1);

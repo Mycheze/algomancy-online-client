@@ -51,7 +51,7 @@ for (const first of ['defender', 'attacker'] as const) {
     pick(h, { player: order[0] });
     pick(h, { player: order[1] });
     const init = h.state.initiative;
-    pass(h); pass(h);
+    pass(h);
     assert.equal(h.state.phase, 'gameover');
     assert.equal(h.state.players[A]!.life, 0, 'both losses were applied');
     assert.equal(h.state.players[D]!.life, 0, 'both losses were applied');
@@ -68,7 +68,7 @@ for (const [aLife, dLife] of [[1, 2], [2, 1]] as const) {
     h.state.players[D]!.life = dLife;
     const idx = give(h, A, 'Recall');
     h.do({ type: 'playCard', seat: A, handIndex: idx });
-    pass(h); pass(h);
+    pass(h);
     while (h.state.decision && h.state.phase !== 'gameover') h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
     assert.equal(h.state.phase, 'gameover');
     assert.equal(h.state.players[A]!.life, aLife - 2);
@@ -113,7 +113,7 @@ test('CR 104.1a / CT-409: with one player at 0 the other still wins, and an effe
   h.do({ type: 'playCard', seat: A, handIndex: idx });
   pick(h, { player: D });
   pick(h, { doneTargets: true });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.phase, 'gameover');
   assert.equal(h.state.winner, A);
   assert.equal(h.state.players[A]!.hand.length, hand, 'played one, drew one: the draw ran after the loss');

@@ -55,7 +55,7 @@ function line(h: Harness, it: StackItem): string | null {
   return own;
 }
 
-const resolve = (h: Harness): void => { pass(h); pass(h); };
+const resolve = (h: Harness): void => { pass(h); };
 
 test('CR 112.9 / CT-370: under Conduit of Pain the caption says the 1 more it deals, and it deals it', () => {
   const { h, it, victim } = fireball(67800, { conduit: true });

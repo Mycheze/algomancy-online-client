@@ -117,7 +117,7 @@ test('CR 102.4 / CT-233: Wake the Dead playing a foreign-owned card out of its o
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Wake the Dead') });
-  pass(h); pass(h);                                           // Wake the Dead resolves
+  pass(h); // Wake the Dead resolves
   pick(h, `${A}:${h.state.players[A]!.bin.indexOf('Shard Sprite')}`);
   if (h.state.decision?.options.some(o => o.value === 'done')) pick(h, 'done');
   for (let i = 0; i < 4 && h.state.stack.length; i++) pass(h);

@@ -384,7 +384,7 @@ test('cr:combat.block-window.late-blocker.when — between the Swift and normal 
   const i = dec.options.findIndex(o => /^column 2, blocking it/.test(o.label));
   assert.ok(i >= 0, dec.options.map(o => o.label).join(' | '));
   h.do({ type: 'decide', seat: dec.seat, choice: i });
-  pass(h); pass(h);
+  pass(h);
   const runner = unitsOf(h, D).find(u => u.card === 'Tiderunner Initiate')!;
   assert.ok(h.state.battle!.blocks[1]?.includes(runner.id));
   let guard = 10;
@@ -426,7 +426,7 @@ test('cr:combat.block-window.late-blocker.not-declared — no blocked event fire
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tiderunner Initiate') });
   const dec = h.state.decision!;
   h.do({ type: 'decide', seat: dec.seat, choice: dec.options.findIndex(o => /blocking it/.test(o.label)) });
-  pass(h); pass(h);
+  pass(h);
   const runner = unitsOf(h, D).find(u => u.card === 'Tiderunner Initiate')!;
   assert.ok(h.state.battle!.blocks[0]?.includes(runner.id), 'it is blocking');
   assert.ok(!h.events.slice(mark).some(e => e.type === 'blocked' || e.type === 'blocksDeclared'), 'no block event');

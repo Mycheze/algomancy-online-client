@@ -127,7 +127,10 @@ function dependsOnHidden(before: GameState, action: Action, after: GameState, ev
   seat: Seat, c: SeenContext): boolean {
   const actor = action.seat;
   const base = shown(after, events, seat, actor, c);
-  const keep = new Set<Seat>([seat, actor]);
+  // the actor's own hand stays put only because their action may index into
+  // it. A pass names no card, and it is often the responder's pass that
+  // resolves the caster's look at that very hand, so reordering it is the test.
+  const keep = new Set<Seat>(action.type === 'passPriority' ? [seat] : [seat, actor]);
   for (const by of REORDERINGS) {
     const alt = structuredClone(before);
     reorderHidden(alt, keep, by);

@@ -107,7 +107,7 @@ test('§1a Retribution Thing wears its X on the stack, and it is the number it w
   const target = item!.parts.flatMap(p => p.targets).find(t => 'unit' in t)!;
   const before = h.state.entities[(target as { unit: number }).unit]!;
   const hpBefore = before.damage ?? 0;
-  pass(h); pass(h);
+  pass(h);
   const after = h.state.entities[before.id];
   const dealt = after ? (after.damage ?? 0) - hpBefore : 7;
   assert.equal(dealt, 7, 'the 7 the board promised is the 7 the card dealt');

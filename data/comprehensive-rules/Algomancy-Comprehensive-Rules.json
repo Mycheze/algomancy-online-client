@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:934012aebcc11aba",
+ "generated_from": "sha256:8569cc3b4c4114b2",
  "rules": [
   {
    "num": "100.1",
@@ -16676,7 +16676,7 @@
     "703"
    ],
    "examples": [
-    "Luminous Arc is cast in the attack window; two passes resolve it and a new window opens. Two more passes on the empty stack end the attack window."
+    "Luminous Arc is cast in the attack window; the other player's pass resolves it and a new window opens. Two more passes on the empty stack end the attack window."
    ],
    "basis": "printed",
    "scope": "game",
@@ -19049,7 +19049,7 @@
     "703"
    ],
    "examples": [
-    "After combat, the initiative player passes, the non-initiative player casts a spell, and both then pass. The spell resolves and the initiative player receives priority again. When both pass with the stack empty, the step ends."
+    "After combat, the initiative player passes, the non-initiative player casts a spell, and the initiative player passes. The spell resolves and the initiative player receives priority again. When both pass with the stack empty, the step ends."
    ],
    "basis": "printed",
    "scope": "game",
@@ -20862,7 +20862,7 @@
     "304"
    ],
    "examples": [
-    "In the attack window the defending player casts their Fireball 3 token in the battle region. They choose its target, the attacking player, and it goes on the stack, where the attacker may respond; when both pass it deals 3."
+    "In the attack window the defending player casts their Fireball 3 token in the battle region. They choose its target, the attacking player, and it goes on the stack, where the attacker may respond; when the attacker passes it deals 3."
    ],
    "basis": "printed",
    "scope": "game",
@@ -21141,7 +21141,7 @@
    "text": "When a player passes priority after taking one or more actions, each other player receives priority, so that they can respond. This continues until all players pass priority in succession.",
    "see": [],
    "examples": [
-    "after a cast the other player receives priority and responds; the first player then receives priority again, and the top item resolves only after both pass in succession."
+    "after a cast the other player receives priority and responds; the first player then receives priority again, and their pass resolves that response."
    ],
    "basis": "printed",
    "scope": "game",
@@ -21162,7 +21162,7 @@
    "text": "A player cannot respond to another player passing priority. A player who passes may not get another chance to act.",
    "see": [],
    "examples": [
-    "the defender passes on an Arc and the attacker passes; the Arc resolves at once, with no further chance for the defender."
+    "the attacker casts an Arc and the defender passes; the Arc resolves at once, with no further chance for the attacker."
    ],
    "basis": "printed",
    "scope": "game",
@@ -21278,7 +21278,7 @@
    "text": "When all players pass priority in succession with an effect on the stack, the top effect resolves. All players then receive priority in order again, which is a new priority window. When all players pass priority with the stack empty, the game moves to the next step.",
    "see": [],
    "examples": [
-    "two passes resolve Luminous Arc; a new window opens in the same step with the initiative player; two passes on the empty stack end the step."
+    "the other player's pass resolves Luminous Arc; a new window opens in the same step with the initiative player; two passes on the empty stack end the step."
    ],
    "basis": "printed",
    "scope": "game",
@@ -38877,7 +38877,7 @@
    "sectionTitle": "Priority and Auto-Pass",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D2",
-   "text": "This client does not keep priority for a player who acts unless they ask: in battle, once their action is on the stack, priority goes to the opponent. A player asks to keep it by acting while holding the Control key (rule D2.7) or with the Hold priority toggle beside Pass turned on; then they keep priority and may act again (rule 703.2a). A pass never asks. A player who did not keep priority can still respond to their own spell once priority comes back to them with it on the stack.",
+   "text": "This client treats a player's action as their pass unless they ask to keep priority: in battle, once their action is on the stack, priority goes to the opponent, and the opponent's pass resolves it. A player asks to keep it by acting while holding the Control key (rule D2.7) or with the Hold priority toggle beside Pass turned on; then they keep priority and may act again (rule 703.2a). A pass never asks. A triggered ability is nobody's action, so no pass is made for it. A player who did not keep priority cannot respond to their own spell unless the opponent acts first.",
    "see": [
     "703",
     "D2.7"
@@ -38887,7 +38887,7 @@
     "The Hold priority toggle sits beside Pass; a tap turns it on.",
     "Holding the Control key asks too; letting go stops asking.",
     "A pass never carries the ask.",
-    "The defender casts a spell, the attacker passes, and the defender casts a second spell on top of the first."
+    "The defender casts a spell keeping priority, then casts a second spell on top of the first."
    ],
    "basis": "owner",
    "scope": "digital",

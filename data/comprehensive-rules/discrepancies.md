@@ -743,7 +743,7 @@ The owner ruling of 2026-08-28 (“the haste step readies itself, and…”) des
 
 No ruling says a player cannot keep priority after acting. Test 272 records that casting hands priority to the opponent, and calls it a finding. U14's F-U14-2 (CT-253) suspects this contradicts the Manual's rule that a player who acts may keep priority.
 
-- file: client/ui/test/272-full-control.test.ts: "// the window here: `engine.ts` hands priority to the other seat as soon as"
+- file: client/ui/test/272-full-control.test.ts: "// doneWhen line 3. A cast hands priority to the other seat unless the caster"
 
 **Resolution:** F-U14-2 (CT-253) was upheld on 2026-10-22: the owner ruled to follow the Manual, and the engine keeps priority with a player who asks (568). The Annex D rule was not withdrawn but rewritten to the client's convention, "auto-pass, hold to keep": priority passes after an action unless the player asks with the Control key or the Hold priority toggle (rule D2.9).
 

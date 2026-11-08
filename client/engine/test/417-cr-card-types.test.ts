@@ -75,7 +75,7 @@ function fireballAt(seed: number, x: number): { h: Harness; foe: number } {
   passTo(h, D);
   h.do({ type: 'castSpellToken', seat: D, entityId: tok });
   pick(h, { unit: foe });
-  pass(h); pass(h);
+  pass(h);
   return { h, foe };
 }
 
@@ -104,7 +104,7 @@ test('cr:types.units.dies-to-bin — a unit that dies, or is deleted, is put int
 
 test('cr:types.units.no-summoning-sickness — a unit that spawned during the attack step may still be declared as a blocker', () => {
   const { h, D } = jellyBoard(60603);
-  pass(h); pass(h);                                        // the Jelly resolves and its body arrives
+  pass(h); // the Jelly resolves and its body arrives
   const jelly = unitsOf(h, D).find(u => u.card === 'Jelly')!;
   assert.ok(jelly, 'the body is in play');
   let guard = 6;
@@ -137,14 +137,14 @@ test('cr:types.spell-units.on-stack — a played spell unit (Jelly) is on the st
   const { h, D } = jellyBoard(60601);
   assert.ok(h.state.stack.some(i => i.card === 'Jelly' && i.kind === 'spellUnit'), 'Jelly is a spellUnit item on the stack');
   assert.ok(!Object.values(h.state.entities).some(e => e.card === 'Jelly'), 'no Jelly entity in play while it is on the stack');
-  pass(h); pass(h);
+  pass(h);
   assert.ok(unitsOf(h, D).some(u => u.card === 'Jelly'), 'it entered play when it resolved');
   finishBattle(h);
 });
 
 test('cr:types.spell-units.in-battle — a spell unit played normally in battle arrives in the battle region outside any formation', () => {
   const { h, D } = jellyBoard(60602);
-  pass(h); pass(h);
+  pass(h);
   const jelly = unitsOf(h, D).find(u => u.card === 'Jelly')!;
   const b = h.state.battle!;
   assert.equal(jelly.region, b.region, 'in the region where it resolved');
@@ -164,7 +164,7 @@ test('cr:types.spell-units.resolution — Spawntender creates its 8/8 before its
   passTo(h, D);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spawntender') });
   const mark = h.events.length;
-  pass(h); pass(h);
+  pass(h);
   const sp = h.events.slice(mark).filter(e => e.type === 'spawned').map(e => String(e.data?.['card']));
   const iTok = sp.indexOf('Unit Token'), iBody = sp.indexOf('Spawntender');
   assert.ok(iTok !== -1 && iBody !== -1, `both spawned: ${sp.join(', ')}`);
@@ -208,7 +208,7 @@ function wakeTheDeadCastsTheSpell(): void {
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   const mark = h.events.length;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Wake the Dead') });
-  pass(h); pass(h);
+  pass(h);
   pick(h, `${A}:0`);
   if (h.state.decision && h.state.decision.options.some(o => o.value === 'done')) pick(h, 'done');
   assert.ok(h.state.decision, 'a target is asked for the -2/-2 as the Jelly is played');
@@ -550,7 +550,7 @@ test('cr:types.units.defense — damage accumulates on a unit, and it dies once 
     passTo(h, D);
     h.do({ type: 'castSpellToken', seat: D, entityId: tok });
     pick(h, { unit: whale });
-    pass(h); pass(h);
+    pass(h);
   };
   burn(2);
   assert.ok(ent(h, whale), '2 damage of 5: it lives');
@@ -580,7 +580,7 @@ test('cr:types.spells.what — a spell (Manufacture) has its effect once and goe
 test('cr:types.spell-units.what — a played Jelly is a played spell with a one-time -2/-2, and then a unit with stats', () => {
   const { h, D, whale } = jellyBoard(60637);
   assert.ok(h.events.some(e => e.type === 'spellPlayed' && e.data?.['card'] === 'Jelly'), 'it was played as a spell');
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(effStats(h, whale), [5, 3], 'its spell part: -2/-2 on the whale');
   const jelly = unitsOf(h, D).find(u => u.card === 'Jelly')!;
   assert.ok(jelly, 'its body is a unit in play');

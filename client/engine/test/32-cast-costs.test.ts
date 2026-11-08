@@ -44,7 +44,7 @@ test('Immolate: the sacrifice is chosen and paid AT CAST, before the stack push'
   assert.ok(!ent(h, atk), 'sacrificed on the spot (a cost, not respondable)');
   assert.equal(h.state.stack.length, 1, 'NOW the spell is on the stack');
   const handBefore = h.state.players[A]!.hand.length;
-  pass(h); pass(h);                                  // resolve → draw
+  pass(h); // resolve → draw
   assert.equal(h.state.players[A]!.hand.length, handBefore + 1, 'drew a card');
   assert.ok(h.state.players[A]!.bin.includes('Immolate'));
 });
@@ -81,7 +81,7 @@ test('cast cost stays paid when the spell is negated (no refund)', () => {
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Soul Tithe') });
   pick(h, { stack: immId });
   const handBefore = h.state.players[A]!.hand.length;
-  pass(h); pass(h);                                  // Tithe resolves: A cannot pay [1]…
+  pass(h); // Tithe resolves: A cannot pay [1]…
   pick(h, false);                                    // …declines → Immolate negated, D draws
   assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Immolate left the stack at once');
   assert.ok(h.state.players[A]!.bin.includes('Immolate'), 'negated → bin');
@@ -127,7 +127,7 @@ test('Volatile Toxicity: X reads the defense snapshotted when the cost was paid'
   pick(h, { unit: whale });                          // cost: defense 5 snapshotted now
   const item = h.state.stack.find(i => i.card === 'Volatile Toxicity')!;
   assert.equal(item.parts[0]!.costPaid!.sacrificed!.defense, 5, 'receipt on the part');
-  pass(h); pass(h);                                  // resolve
+  pass(h); // resolve
   const toks = Object.values(h.state.entities).filter(e => e.kind === 'spellToken' && e.controller === D);
   assert.ok(toks.some(t => t.card === 'Poison' && t.x === 5), 'Poison 5');
   assert.ok(toks.some(t => t.card === 'Fireball' && t.x === 5), 'Fireball 5');
@@ -155,7 +155,7 @@ test('Wildfire: X is chosen at cast from affordable values, paid, and stored on 
   const wf = h.state.stack.find(i => i.card === 'Wildfire')!;
   assert.equal(wf.x, 3, 'X stored on the stack item');
   assert.ok(wf.label.includes('X=3'), 'the label announces X to the responder');
-  pass(h); pass(h);                                  // responses happen AFTER X is fixed
+  pass(h); // responses happen AFTER X is fixed
   assert.equal(ent(h, whale)!.damage, 3, 'resolution reads the stored X');
 });
 
@@ -193,7 +193,7 @@ test('X spells resolve from the stored X — a 0-mana caster may still cast for 
   assert.deepEqual(h.state.decision!.options.map(o => o.value), [0], 'X = 0 is the only option');
   pick(h, 0);
   pick(h, { unit: whale });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, whale)!.damage, 0, 'X = 0 dealt nothing (and nobody was silently charged)');
 });
 

@@ -50,7 +50,7 @@ function augmentMandible(h: Harness, seat: Seat, host: EntityId): void {
   h.do({ type: 'augment', seat, from: 'hand', index: idx, hostId: host });
   assert.equal(h.state.stack[h.state.stack.length - 1]!.kind, 'virus',
     'CR 701.2a: applying a mod is not playing a card — it is a virus item, and it fires no play event');
-  pass(h); pass(h);                       // the virus resolves and the mod attaches
+  pass(h); // the virus resolves and the mod attaches
   assert.ok(ent(h, host)!.mods.some(m => ent(h, m)?.card === 'Void Mandible'),
     'the Mandible is now riding the host');
 }
@@ -130,7 +130,7 @@ test('Void Mandible: a COPY on the stack is never negated — CR 706.13, a copy 
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Dematerialize') });
   pick(h, { stack: orig });
-  pass(h); pass(h);
+  pass(h);
   pick(h, h.state.decision!.options[0]!.value);         // Dematerialize's Glimpse 3
   assert.deepEqual(itemsOf(h, 'Burgeon'), [{ id: copy, copy: true }],
     'only the copy is left, and it is the bottom of the stack');
@@ -178,7 +178,7 @@ test('Void Mandible: a unit Wake the Dead plays (once an asPlay spawn) is negate
 
   // A {Battle} unit of D's, on the stack, sharing its name with the card in
   // the bin. This is the bystander a (card, controller) scan would reach.
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Shard Sprite') });
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Shard Sprite'), holdPriority: true });
   const bystander = h.state.stack.find(i => i.card === 'Shard Sprite')!.id;
 
   // Wake the Dead, played in response to D's own unit.
@@ -311,7 +311,7 @@ test('CR 720.9 Suppression Field: mods leave host and game, the host lives, and 
 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suppression Field') });
   pick(h, { unit: host });
-  pass(h); pass(h);
+  pass(h);
 
   assert.ok(ent(h, host), 'the HOST survives — this is an erase off a living body, not a disposal with it');
   assert.deepEqual(ent(h, host)!.mods, [], 'unlinked');
@@ -347,7 +347,7 @@ test('CR 720.9 Return to Nature: the site that already got CR 407.2 right still 
   assert.equal(ent(h, modId)!.controller, A, 'setup: A controls it with the host');
 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Return to Nature') });
-  pass(h); pass(h);
+  pass(h);
 
   assert.equal(ent(h, modId), undefined, 'the mod is erased');
   assert.ok(ent(h, host), 'off a host that survives');
@@ -371,7 +371,7 @@ test('CR 720.9 Reclaim the Fallen: leavesGame:false — the mod entity dies, the
 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Reclaim the Fallen') });
   pick(h, { unit: host });
-  pass(h); pass(h);
+  pass(h);
 
   assert.equal(ent(h, modId), undefined, 'the MOD entity is gone');
   assert.deepEqual(ent(h, host)!.mods, [], 'and unlinked from its host');

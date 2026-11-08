@@ -168,7 +168,6 @@ export const BATCH_H: Record<string, Scenario> = {
       // that visible (it says whose column should read "blocker gone").
       { type: 'decide', seat: OPPONENT, choice: ARC_WHALE },
       { type: 'passPriority', seat: YOU },
-      { type: 'passPriority', seat: OPPONENT },
       // Luminous Arc resolved and priority went back to the attacker. The
       // scripted bot only moves in answer to an action, so it cannot be left
       // holding priority at the deal: it passes here, and the board opens on

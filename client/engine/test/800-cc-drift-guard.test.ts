@@ -24,6 +24,11 @@
  * game now plays differently; that is a rules change for every saved game and
  * needs its own round.
  *
+ * Re-blessed WHOLE on 2026-11-08 for a deliberate rules change the owner ordered
+ * knowing old games would play differently: an unheld play or activation now
+ * counts as its actor's pass (CR 703.2b, D2.9), and the reference runs lost the
+ * extra pass each recorded.
+ *
  * Re-blessed ONCE, ONE entry, for a deliberate rules change (2026-11-04, CT-435,
  * CR 713.6e, staged for the owner): `shared:6` pays Deformant's "sacrifice me
  * and another ally" at its step 301, and the Deformant now stays in play

@@ -99,14 +99,14 @@ test('Seismomancy: 3 damage to any target; {Reaping} kill draws; player targets 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Seismomancy') });
   pick(h, { unit: vict });
   const handBefore = h.state.players[A]!.hand.length;
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, vict), '3 damage kills the 2/2');
   assert.ok(h.state.players[D]!.bin.includes('Curio Drifter'));
   assert.equal(h.state.players[A]!.hand.length, handBefore + 1, 'Reaping: the kill draws a card');
   // cast 2: at a player
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Seismomancy') });
   pick(h, { player: D });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.players[D]!.life, 27, '3 damage to the player');
   finishBattle(h);
 });
@@ -129,7 +129,7 @@ test('Skybreaker: paying "Erase me" negates all spell effects on the stack', () 
   // card reaches a bin and nothing died. Detail in 89-self-erase.
   assert.ok(!h.state.players[D]!.bin.includes('Skybreaker'), 'erased, not binned');
   assert.ok((h.state.players[D]!.erased ?? []).includes('Skybreaker'), 'the erased pile');
-  pass(h); pass(h);                                     // resolve the ability → Boon negated
+  pass(h); // resolve the ability → Boon negated
   assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Boon left the stack at once');
   assert.deepEqual(effStats(h, atk), [1, 1], 'the Boon was negated — no +4/+4');
   assert.ok(h.state.players[A]!.bin.includes('Channeled Boon'), 'negated spell → bin');
@@ -148,7 +148,7 @@ test('Squish: target ally deals its defense to another unit (amount at resolutio
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Squish') });
   pick(h, { unit: whale });                             // slot 0: the ally
   pick(h, { unit: vict });                              // slot 1: "another target unit" (CR 110.1a, cast-time)
-  pass(h); pass(h);                                     // resolve
+  pass(h); // resolve
   assignDefault(h);   // CR 802.16j: the whale is {Piercing} — 3 over lethal, elect the default
   assert.ok(!ent(h, vict), 'the drifter took 5 (= whale defense) and died');
   assert.ok(h.state.players[D]!.bin.includes('Curio Drifter'));
@@ -281,7 +281,7 @@ test('Throw off a Cliff: deletes a 4+-defense target; an under-4 target is not o
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Throw off a Cliff') });
   pick(h, { unit: big });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, big), '5 defense ≥ 4 → deleted');
   assert.ok(h.state.players[D]!.bin.includes('Good Whale'));
   // CR 110.3a: "with 4 or more defense" gates the candidate list — a 2/2 is not on
@@ -290,7 +290,7 @@ test('Throw off a Cliff: deletes a 4+-defense target; an under-4 target is not o
   notOffered(h, { unit: small }, '2 defense < 4');
   notOffered(h, { unit: atk }, '1 defense < 4');
   pick(h, { unit: big2 });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, big2), '5 defense ≥ 4 → deleted');
   assert.ok(ent(h, small), 'the 2/2 was never touched');
   assert.equal(ent(h, small)!.damage, 0, 'no damage either');
@@ -327,7 +327,7 @@ test('CR 111.7b: Throwing Boulder with an adjacent ally — offered, and it conn
   assert.ok(h.state.players[A]!.bin.includes('Throwing Boulder'), '→ bin');
   assert.equal(h.state.stack.length, 1, 'and the ability has not resolved yet');
   assert.equal(h.state.players[D]!.life, 30, 'so no damage has been dealt yet either');
-  pass(h); pass(h);                                     // resolve
+  pass(h); // resolve
   assert.equal(h.state.players[D]!.life, 27, '3 damage to the player');
   finishBattle(h);
 });

@@ -276,7 +276,7 @@ test('Containment Protocol RESOLVING negates nothing a replacement did', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Containment Protocol') });
-  const evs = during(h, () => { pass(h); pass(h); });
+  const evs = during(h, () => { pass(h); });
   assert.equal(typesIn(evs, 'negated').length, 0,
     'seven replacement cards in play and the Protocol negated nothing — a replacement is '
     + 'neither an activated nor a triggered effect');
@@ -422,7 +422,7 @@ test('a locked life total stops the replacement layer too — there is nothing l
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suspend') });
   pick(h, { player: D });
-  pass(h); pass(h);
+  pass(h);
   const lifeD = h.state.players[D]!.life;
   const evs = during(h, () => whiteBox(h, e => e.gainLife(D, 5, 'test')));
   assert.equal(h.state.players[D]!.life, lifeD, 'no gain and no loss');

@@ -39,7 +39,7 @@ function fightTheBrute(seed: number): { h: Harness; A: Seat; D: Seat; a0: number
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Fight') });
   pick(h, { unit: a0 });
   pick(h, { unit: volt });
-  pass(h); pass(h);
+  pass(h);
   return { h, A, D, a0, a1, volt };
 }
 

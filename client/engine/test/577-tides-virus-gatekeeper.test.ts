@@ -34,7 +34,7 @@ test('CR 110.12 / CT-331: a Virus played by Tides of the Cosmos goes onto the Ga
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tides of the Cosmos') });
-  pass(h); pass(h);
+  pass(h);
   decide(h, l => l.startsWith('Molten Riftbreaker'));
   if (h.state.decision?.options.some(o => o.label === 'Done')) decide(h, l => l === 'Done');
   decide(h, l => /as a Virus/.test(l));

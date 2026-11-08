@@ -156,7 +156,7 @@ test('CR 405.9b / CT-400: Spell Excavation lets its caster play the card it targ
   assert.deepEqual(binPlaysOffered(h, D), [], 'no bin play before the permission');
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
   decide(h, l => l.startsWith('Luminous Arc'));
-  pass(h); pass(h);                                         // the Excavation resolves
+  pass(h); // the Excavation resolves
   if (h.state.priority !== D) pass(h);
   const offered = binPlaysOffered(h, D);
   assert.ok(offered.length > 0, 'the targeted card may now be played from the bin');
@@ -164,7 +164,7 @@ test('CR 405.9b / CT-400: Spell Excavation lets its caster play the card it targ
     `only Luminous Arc is covered, not the other spell in the bin (offered: ${offered})`);
   h.do({ type: 'playFromBin', seat: D, binIndex: offered[0]! });
   pick(h, { unit: atk });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.players[D]!.bin.filter(c => c === 'Luminous Arc').length, 1, 'the other copy is still in the bin');
   if (h.state.battle && h.state.priority !== D) pass(h);
   assert.deepEqual(binPlaysOffered(h, D), [], 'and the permission is used up: neither the other copy nor any other spell is offered');

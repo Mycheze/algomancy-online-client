@@ -221,7 +221,6 @@ async function main(): Promise<void> {
   const lith = you.legal.find(a => a.type === 'augment' && (a as any).hostId === host.id);
   ok(!!lith, 'augmenting Lithoghul onto the ENEMY unit is offered (it is a {Virus})');
   await you.act(lith!);
-  await you.act({ type: 'passPriority', seat: 0 });
   // the bot answers, the virus resolves and attaches — with nobody in seat 1
   const wearing = Object.values(you.view.entities as Record<string, any>)
     .find((e: any) => e.card === 'Towering Colossus')?.mods ?? [];
@@ -234,7 +233,6 @@ async function main(): Promise<void> {
   const optIdx = (you.view.decision.options as any[]).findIndex(o => o.value?.unit === host.id);
   ok(optIdx >= 0, 'the enemy host is on the target menu');
   await you.act({ type: 'decide', seat: 0, choice: optIdx } as Action);
-  await you.act({ type: 'passPriority', seat: 0 });
   // the Arc resolves, Lithoghul's donated trigger goes on the stack, and the
   // bot passes it through as well
   for (let i = 0; i < 4 && (you.view.stack?.length ?? 0) > 0; i++) {
@@ -386,6 +384,8 @@ async function main(): Promise<void> {
     /** the opponent's own label on a target menu — read off the view rather than
      *  typed, so renaming the scripted seat cannot silently aim a spell elsewhere */
     const them = (c: Client): string => String(c.view.players[1].name);
+    const playHeld = (c: Client, card: string): Promise<void> =>
+      c.act({ type: 'playCard', seat: 0, handIndex: hand(c).indexOf(card), holdPriority: true } as Action);
     const play = (c: Client, card: string, mode?: 'discardMe'): Promise<void> =>
       c.act({ type: 'playCard', seat: 0, handIndex: hand(c).indexOf(card), ...(mode ? { mode } : {}) } as Action);
     const augment = (c: Client, card: string, hostCard: string): Promise<void> =>
@@ -402,7 +402,6 @@ async function main(): Promise<void> {
       ok(c.legal.some(a => a.type === 'augment' && (a as any).hostId === entOf(c, 'Towering Colossus').id),
         '   augmenting the Rector onto YOUR OWN unit is offered (it is a {Virus})');
       await augment(c, 'Cthyrian Rector', 'Towering Colossus');
-      await pass(c);
       eq(modsOf(c, 'Towering Colossus'), ['Cthyrian Rector'],
         '   it attached with nobody in seat 1');
       ok(c.legal.some(a => a.type === 'playCard' && (a as any).handIndex === hand(c).indexOf('Darkblast')),
@@ -430,7 +429,6 @@ async function main(): Promise<void> {
       eq(c.view.phase, 'battle', '   the prologue landed in the battle window');
       eq(c.view.priority, 0, '   and priority is yours');
       await augment(c, 'Slag Spewer', 'Ambling Mountaintop');
-      await pass(c);
       eq(modsOf(c, 'Ambling Mountaintop'), ['Slag Spewer'], '   Slag Spewer is riding the host');
       const act = c.legal.find(a => a.type === 'activateAbility');
       ok(!!act, '   its [Augment] ability is offered on the host');
@@ -469,7 +467,6 @@ async function main(): Promise<void> {
       eq(optionLabels(c), ["Lithoghul (Owner's)"],
         '   the Arc has exactly one legal target — your own Lithoghul');
       await decide(c, 'Lithoghul');
-      await pass(c);
       eq((c.view.stack as any[]).map(i => i.kind), ['triggered'],
         "   the Arc resolved and Lithoghul's trigger is on the stack, aimed at YOU");
       ok(c.legal.some(a => a.type === 'playCard' && (a as any).mode === 'discardMe'),
@@ -478,7 +475,6 @@ async function main(): Promise<void> {
       ok(optionLabels(c).some(l => l.startsWith('Lithoghul: I deal that much damage')),
         '   THE CLAUSE: the TRIGGERED ability is on the "nonspell effect" target menu');
       await decide(c, 'Lithoghul: I deal');
-      await pass(c);
       eq(lives(c), [30, 30],
         '   THE CLAUSE: the trigger was negated — you are still on 30 (unanswered it is 24)');
       eq(units(c, 0), ['Lithoghul'], '   and Lithoghul is still standing');
@@ -493,13 +489,12 @@ async function main(): Promise<void> {
       eq(c.view.priority, 0, '   and priority is yours');
       eq(modsOf(c, 'Carapace Devourer'), ['Skybreaker'],
         '   the prologue played Skybreaker from hand onto the host');
-      await play(c, 'Luminous Arc'); await decide(c, 'Ambling Mountaintop');
-      await play(c, 'Luminous Arc'); await decide(c, 'Bubb');
+      await playHeld(c, 'Luminous Arc'); await decide(c, 'Ambling Mountaintop');
+      await playHeld(c, 'Luminous Arc'); await decide(c, 'Bubb');
       eq((c.view.stack as any[]).length, 2, '   two spells on the stack, one per enemy body');
       const act = c.legal.find(a => a.type === 'activateAbility');
       ok(!!act, '   "Erase me: negate all spell effects" is offered');
       await c.act(act!);
-      await pass(c); await pass(c); await pass(c);
       eq(units(c, 1), ['Ambling Mountaintop', 'Bubb'],
         '   THE CLAUSE: BOTH enemy units survive — the printed word is "all"');
       eq([entOf(c, 'Ambling Mountaintop').damage ?? 0, entOf(c, 'Bubb').damage ?? 0], [0, 0],
@@ -518,13 +513,12 @@ async function main(): Promise<void> {
       eq(c.view.phase, 'battle', '   the prologue landed in the battle window');
       eq(c.view.priority, 0, '   and priority is yours');
       eq(units(c, 0), ['Rook', 'Towering Colossus'], '   Rook and the host are both attacking');
-      await play(c, 'Luminous Arc'); await decide(c, 'Ambling Mountaintop');
+      await playHeld(c, 'Luminous Arc'); await decide(c, 'Ambling Mountaintop');
       eq((c.view.stack as any[]).map(i => i.card), ['Luminous Arc'],
         '   Arc #1 is on the stack, aimed at Ambling Mountaintop');
       ok(c.legal.some(a => a.type === 'augment'),
         "   Rook's printed permission makes the non-Virus Void Mandible augmentable mid-battle");
       await augment(c, 'Void Mandible', 'Towering Colossus');
-      await pass(c);
       eq(modsOf(c, 'Towering Colossus'), ['Void Mandible'],
         '   it attached, and applying a mod fired no play event (CR 701.2a) — nothing triggered');
       eq((c.view.stack as any[]).map(i => i.card), ['Luminous Arc'],
@@ -552,8 +546,8 @@ async function main(): Promise<void> {
       await decide(c, them(c));
       eq(optionLabels(c), ['Cinder Scuttler'], '   the discard cost has exactly one option');
       await decide(c, 'Cinder Scuttler');
-      eq(bin(c), ['Cinder Scuttler'], '   the discard trashed it into your bin (CR 801.3)');
-      await pass(c);
+      // Darkblast is there too: acting was your pass, so the bot's pass already resolved it
+      eq(bin(c), ['Cinder Scuttler', 'Darkblast'], '   the discard trashed it into your bin (CR 801.3)');
       eq(lives(c), [30, 25], '   Darkblast resolves for 5 at the opponent');
       eq(hand(c), [],
         '   THE CONTROL: that 5 is NOT combat damage, and Cinder Scuttler did not move');
@@ -675,10 +669,10 @@ import type { Action as CAction, GameState as CState } from '../../engine/src/ty
       if (i < 0) throw new Error(`batch C: no target matching; menu = ${JSON.stringify(opts.map(o => o.label))}`);
       this.act({ type: 'decide', seat: 0, choice: i } as CAction);
     }
-    play(card: string): void {
+    play(card: string, hold = false): void {
       const i = this.s.players[0]!.hand.indexOf(card);
       if (i < 0) throw new Error(`batch C: ${card} is not in hand`);
-      this.act({ type: 'playCard', seat: 0, handIndex: i } as CAction);
+      this.act({ type: 'playCard', seat: 0, handIndex: i, ...(hold ? { holdPriority: true } : {}) } as CAction);
     }
     /** pass / decline until a phase is reached, the way the owner would */
     passTo(phase: string): void {
@@ -832,14 +826,13 @@ import type { Action as CAction, GameState as CState } from '../../engine/src/ty
     const aug = r.legal().find(a => a.type === 'augment' && (a as any).hostId === host.id);
     ok(!!aug, 'Molten Riftbreaker: a {Virus} augment is offered in the BATTLE window (a plain one would not be)');
     r.act(aug!);
-    r.act({ type: 'passPriority', seat: 0 } as CAction);
     ok(r.said('Molten Riftbreaker augments The Foretold'),
       'Molten Riftbreaker: it attached with nobody sitting in seat 1');
     ok(!r.said('Fireball'), 'Molten Riftbreaker: no Fireballs — augmenting is not spawning');
-    r.play('Arc Lightning');
+    r.play('Arc Lightning', true);
     r.aim(l => l === 'Tester Bot');                 // their face: 6 damage, if it ever resolves
     eq(r.s.stack.length, 1, 'Molten Riftbreaker: Arc Lightning is on the stack, unresolved');
-    r.play('Luminous Arc');
+    r.play('Luminous Arc', true);
     r.aim(l => l.includes("The Foretold (You's)"));  // kill your own host
     eq(r.s.stack.length, 2, 'Molten Riftbreaker: both spells are on the stack');
     r.act({ type: 'passPriority', seat: 0 } as CAction);
@@ -998,10 +991,10 @@ import type { Action as DAction, GameState as DState } from '../../engine/src/ty
       if (i < 0) throw new Error(`batch D: no target for ${what}; menu = ${JSON.stringify(opts.map(o => o.label))}`);
       this.act({ type: 'decide', seat: 0, choice: i } as DAction);
     }
-    play(card: string): void {
+    play(card: string, hold = false): void {
       const i = this.s.players[0]!.hand.indexOf(card);
       if (i < 0) throw new Error(`batch D: ${card} is not in hand (${JSON.stringify(this.hand(0))})`);
-      this.act({ type: 'playCard', seat: 0, handIndex: i } as DAction);
+      this.act({ type: 'playCard', seat: 0, handIndex: i, ...(hold ? { holdPriority: true } : {}) } as DAction);
     }
     pass(): void { this.act({ type: 'passPriority', seat: 0 } as DAction); }
   }
@@ -1086,7 +1079,6 @@ import type { Action as DAction, GameState as DState } from '../../engine/src/ty
 
     const beforeHandPlay = r.mark();
     r.play('Abyssal Evocation');
-    r.pass();
     ok(r.said('Abyssal Evocation: You may play spells from their bin'),
       'Stalwart Sentinel: the hand play resolved and opened the bin');
     eq(r.counters('Stalwart Sentinel', 0), 0,
@@ -1097,7 +1089,7 @@ import type { Action as DAction, GameState as DState } from '../../engine/src/ty
     const binIdx = r.s.players[0]!.bin.indexOf('Abyssal Evocation');
     ok(binIdx >= 0, 'Stalwart Sentinel: the spell is in your bin, where the second play comes from');
     r.act({ type: 'playFromBin', seat: 0, binIndex: binIdx } as DAction);
-    r.pass();
+    r.pass();   // the Sentinel's trigger is on top: you, then the bot
     ok(r.said("Abyssal Evocation is played from You's bin"),
       'Stalwart Sentinel: the SAME card, this time out of the bin');
     eq(r.counters('Stalwart Sentinel', 0), 2,
@@ -1156,10 +1148,9 @@ import type { Action as DAction, GameState as DState } from '../../engine/src/ty
     eq(r.life(1), 30, 'Null Drone: the opponent starts on 30');
     r.play('Seismomancy');
     r.aim(l => l === 'Tester Bot', 'the opponent himself');
-    r.pass();
     eq(r.life(1), 27, 'Null Drone: 3 damage to the face — three life lost IN THIS BATTLE');
 
-    r.play('Seismomancy');
+    r.play('Seismomancy', true);
     r.aim(l => l === 'Tester Bot', 'the opponent himself');
     eq(r.s.stack.length, 1, 'Null Drone: the second Seismomancy is waiting on the stack');
     eq(r.s.priority, 0, 'Null Drone: and priority came back to you with it still there');
@@ -1168,7 +1159,6 @@ import type { Action as DAction, GameState as DState } from '../../engine/src/ty
     eq((r.s.decision?.options ?? []).length, 1,
       'Null Drone: exactly one thing on the stack to aim at — no wrong click available');
     r.aim(l => l.includes('Seismomancy'), 'the Seismomancy on the stack');
-    r.pass();
 
     ok(r.said('Seismomancy is negated'),
       'Null Drone: cost 3 against 3 life lost — "less than or EQUAL to" is met, and it negates');
@@ -1412,10 +1402,10 @@ import type { Action as BAction, GameState as BState } from '../../engine/src/ty
       const a = { type: 'decide', seat, choice: i } as BAction;
       if (seat === 1) this.actOpp(a); else this.act(a);
     }
-    play(card: string, seat: 0 | 1 = 0): void {
+    play(card: string, seat: 0 | 1 = 0, hold = false): void {
       const i = this.s.players[seat]!.hand.indexOf(card);
       if (i < 0) throw new Error(`batch B: ${card} is not in seat ${seat}'s hand`);
-      const a = { type: 'playCard', seat, handIndex: i } as BAction;
+      const a = { type: 'playCard', seat, handIndex: i, ...(hold ? { holdPriority: true } : {}) } as BAction;
       if (seat === 1) this.actOpp(a); else this.act(a);
     }
     augment(card: string, hostCard: string): void {
@@ -1505,7 +1495,7 @@ import type { Action as BAction, GameState as BState } from '../../engine/src/ty
       + 'be paid out of, and NO hand card was spent doing it');
     eq(r.units(0).length, 1, 'Necromantic Rebuke: one attacker survived that combat');
     eq(r.life(1), 27, 'Necromantic Rebuke: and the unblocked column got through');
-    r.play('Luminous Arc');
+    r.play('Luminous Arc', 0, true);
     eq(r.labels().length, 1,
       "Necromantic Rebuke: the Arc's only legal target is your own survivor — the setup cannot "
       + 'be misclicked');
@@ -1523,7 +1513,6 @@ import type { Action as BAction, GameState as BState } from '../../engine/src/ty
       'Necromantic Rebuke: your OWN effect is on the menu — "up to one target effect" carries no '
       + 'ownership qualifier, and this is what puts the refusal in one pair of hands');
     r.pick('Luminous Arc');
-    r.pass();
     eq(r.s.decision?.kind, 'payOrDecline',
       'Necromantic Rebuke: the ransom is offered at resolution');
     eq(r.s.decision?.seat, 0,

@@ -54,7 +54,7 @@ test('CR 601.2a / CT-234: Molten Riftbreaker dying in the other region does not 
   assert.ok(!h.state.stack.some(i => i.region !== battle), 'nothing is left on the home stack');
   assert.equal(h.state.priority, priority, 'the battle window priority was not touched');
   assert.equal(h.state.passes, passes, 'nor its passes');
-  pass(h); pass(h);
+  pass(h);
   finishBattle(h);
 });
 

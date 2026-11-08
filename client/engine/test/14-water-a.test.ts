@@ -79,7 +79,7 @@ test('Bripp: look at target player\'s hand, recycle a card, they draw; 4/2 Feebl
   assert.deepEqual(offered(h).sort(), [JSON.stringify({ player: A }), JSON.stringify({ player: D })].sort(),
     'both seats, and only the seats — "target player" may legally be yourself');
   pick(h, { player: D });                                   // target player
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   const dHand = h.state.players[D]!.hand.slice();
   const deckTop = h.state.sharedDeck[0]!;
   const picked = dHand[0]!;
@@ -112,7 +112,7 @@ test('Celestial Purge: erases target unit (no bin); its controller Glimpses 3 �
   const top3 = h.q.deckOf(D).slice(0, 3);
   const deckBefore = h.q.deckOf(D).length;
   const dHandBefore = [...h.state.players[D]!.hand];
-  pass(h); pass(h);                                         // resolve → erase + glimpse
+  pass(h); // resolve → erase + glimpse
   // CR 801.9a, 801.9d: the GLIMPSER chooses which one to cache — here the erased unit's
   // controller, D, not the caster
   const dec = h.state.decision!;
@@ -151,7 +151,7 @@ test('Cosmic Reversal: recalls all other spell effects on the stack to hands', (
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Overwhelm') });
   pick(h, { unit: tok });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Cosmic Reversal') });
-  pass(h); pass(h);                                         // resolve Reversal first
+  pass(h); // resolve Reversal first
   assert.equal(h.state.stack.length, 0, 'Overwhelm left the stack without resolving');
   assert.ok(h.state.players[D]!.hand.includes('Overwhelm'), 'recalled to its controller\'s hand');
   assert.ok(!h.state.players[D]!.bin.includes('Overwhelm'), 'not binned');
@@ -175,7 +175,7 @@ test('Dreadspawn Horror: 7/5 on an empty hand; the virus augment DONATES the liv
   h.state.players[A]!.hand.length = 0;                      // empty again — the host must survive
   h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Dreadspawn Horror'), hostId: host });
-  pass(h); pass(h);                                         // resolve the virus
+  pass(h); // resolve the virus
   const hostEnt = ent(h, host)!;
   assert.equal(hostEnt.mods.length, 1, 'virus augment attached in battle');
   assert.equal(ent(h, hostEnt.mods[0]!)!.card, 'Dreadspawn Horror');
@@ -299,7 +299,7 @@ test('Frosted Denial: controller cannot pay X → the effect is negated', () => 
   assert.equal(h.state.decision!.options[0]!.label, 'X = 1', "X can't be zero (xMin 1)");
   pick(h, 1);                                               // X = 1, paid at cast
   pick(h, { stack: owId });
-  pass(h); pass(h);                                         // resolve; D has 0 open → auto-negate
+  pass(h); // resolve; D has 0 open → auto-negate
   assert.equal(h.state.decision, null, 'no pay decision when the opponent cannot pay');
   assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Overwhelm left the stack at once');
   assert.ok(h.state.players[D]!.bin.includes('Overwhelm'), 'negated → bin');
@@ -327,7 +327,7 @@ test('Frosted Denial: controller pays X → the effect survives and you draw', (
   pick(h, 2);                                               // A chooses X = 2 at cast (CR 107.2a), paid now
   pick(h, { stack: owId });
   const aHand = h.state.players[A]!.hand.length;
-  pass(h); pass(h);                                         // resolve Frosted Denial
+  pass(h); // resolve Frosted Denial
   assert.equal(h.state.decision!.seat, D, 'controller may pay');
   pick(h, 1);                                               // D pays 2
   assert.equal(h.state.players[A]!.hand.length, aHand + 1, 'they paid → you draw');
@@ -352,7 +352,7 @@ test('Galerider Eel: a card recalled to my hand during battle → +4/+4 until re
   h.do({ type: 'declareAttack', seat: A, columns: [[eel], [ally]] });
   h.do({ type: 'playCard', seat: A, handIndex: h.state.players[A]!.hand.indexOf('Mirage Walker'), mode: 'ambush' });
   pick(h, { unit: ally });                                  // recall the ally → my hand
-  pass(h); pass(h);                                         // resolve the ambush
+  pass(h); // resolve the ambush
   pass(h); pass(h);                                         // resolve the Eel trigger
   assert.deepEqual(effStats(h, eel), [4, 8], '0/4 + 4/4');
   assert.ok(ownAttrs(h, eel).has('Flying'), 'flying granted (addTempAttr)');
@@ -423,7 +423,7 @@ test('Insidious Invitation: draw, then each player (you first) may play a unit a
   h.state.players[D]!.hand = ['Hooba-Pon'];
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: 0 });
-  pass(h); pass(h);                                         // resolve: draw, then the invitations
+  pass(h); // resolve: draw, then the invitations
   assert.equal(h.state.decision!.seat, A, 'caster is invited first');
   pick(h, h.state.players[A]!.hand.indexOf('Echo of Despair'));
   assert.equal(h.state.decision!.seat, D, 'then the opponent');
@@ -525,7 +525,7 @@ test('Mirage Walker: ambush [4bb] recalls an ally and takes its formation slot (
   h.do({ type: 'declareAttack', seat: A, columns: [[ally]] });
   h.do({ type: 'playCard', seat: A, handIndex: h.state.players[A]!.hand.indexOf('Mirage Walker'), mode: 'ambush' });
   pick(h, { unit: ally });
-  pass(h); pass(h);                                         // resolve the ambush
+  pass(h); // resolve the ambush
   const mw = unitsOf(h, A).find(u => u.card === 'Mirage Walker')!;
   assert.ok(mw, 'the ambusher spawned');
   assert.equal(h.state.battle!.columns[0]![0], mw.id, 'it took the ally\'s exact slot');
@@ -646,7 +646,7 @@ test('Null Drone: negates a spell costing ≤ the greatest life lost this battle
   const owId = h.state.stack[0]!.id;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Null Drone') });
   pick(h, { stack: owId });
-  pass(h); pass(h);                                         // resolve Null Drone: cost 1 ≤ 2 lost
+  pass(h); // resolve Null Drone: cost 1 ≤ 2 lost
   assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Overwhelm left the stack at once');
   assert.ok(h.state.players[D]!.bin.includes('Overwhelm'), 'negated → bin');
   assert.deepEqual(effStats(h, drone), [2, 1], 'the drone was never shrunk');
@@ -675,7 +675,7 @@ test('Null Drone: life loss is ledgered engine-side — no tracker unit needed i
   const owId = h.state.stack[0]!.id;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Null Drone') });
   pick(h, { stack: owId });
-  pass(h); pass(h);                                         // resolve Null Drone: cost 1 ≤ 1 lost
+  pass(h); // resolve Null Drone: cost 1 ≤ 1 lost
   assert.ok(h.log.some(l => l.includes('is negated')), 'Overwhelm negated');
   assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Overwhelm left the stack at once');
   assert.ok(h.state.players[D]!.bin.includes('Overwhelm'), 'negated → bin');
@@ -738,7 +738,7 @@ test('Overwhelm: target unit gains -1/-1 per card in your hand, until regroup', 
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Overwhelm') });
   pick(h, { unit: whale });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.deepEqual(effStats(h, whale), [5, 3], '2 cards in hand at resolution → -2/-2 (CR 107.8)');
   finishBattle(h);
   assert.deepEqual(effStats(h, whale), [7, 5], 'temporary — gone at regroup');
@@ -758,7 +758,7 @@ test('Premonition: Glimpse X where X is your water affinity; the permission dies
   const deckBefore = h.q.deckOf(A).length;
   const handBefore = [...h.state.players[A]!.hand];
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Premonition') });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   const dec = h.state.decision!;
   assert.equal(dec.options.length, 3, 'X = 3 water affinity → Glimpse 3, so three options');
   h.do({ type: 'decide', seat: A, choice: 2 });             // cache the LAST of the three
@@ -789,7 +789,7 @@ test('Protective Adaptations: target unit gains +1/+1 until regroup', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Protective Adaptations') });
   pick(h, { unit: tok });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.deepEqual(effStats(h, tok), [2, 2], '1/1 + 1/1');
   finishBattle(h);
   assert.deepEqual(effStats(h, tok), [1, 1], 'temporary — gone at regroup');
@@ -805,7 +805,7 @@ test('Protective Adaptations: the target also gains piercing until regroup', () 
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Protective Adaptations') });
   pick(h, { unit: tok });
-  pass(h); pass(h);                                         // resolve (addTempAttr)
+  pass(h); // resolve (addTempAttr)
   assert.ok(ownAttrs(h, tok).has('Piercing'), 'gains piercing');
   finishBattle(h);
   assert.ok(!ownAttrs(h, tok).has('Piercing'), 'temporary — gone at regroup');

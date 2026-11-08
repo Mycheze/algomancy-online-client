@@ -241,7 +241,7 @@ test('Foretell: Glimpse 1 — the top card goes to the CACHE, playable this turn
   assert.ok(!h.legal(A).some(a => a.type === 'playCard' && a.handIndex === inHand),
     'baseline: with no water affinity the copy IN HAND cannot be played');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Foretell') });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.ok(!h.state.decision, 'Glimpse 1 asks nothing — no suspension');
   assert.deepEqual(cacheOf(h, A).map(c => c.card), [top], 'the top card is CACHED, not drawn');
   assert.deepEqual(h.state.players[A]!.hand, [...handBefore, 'Premonition'],
@@ -411,7 +411,7 @@ test('Interdiction Rift: target opponent negates an effect they control', () => 
   assert.doesNotMatch(dec.prompt, /negates an effect/i,
     'the prompt does not ask for an effect — only a player can be clicked');
   pick(h, { player: D });                                   // target opponent
-  pass(h); pass(h);                                         // resolve the Rift
+  pass(h); // resolve the Rift
   // D controls exactly one effect → it is negated without a choice
   assert.equal(h.state.stack.length, 0, 'CR 704.4: the only effect D controls is negated and off the stack');
   assert.ok(h.state.players[D]!.bin.includes('Overwhelm'), 'negated → bin');
@@ -432,7 +432,7 @@ test('Invasive Reassignment: switches power and defense until regroup', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Invasive Reassignment') });
   pick(h, { unit: big });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.deepEqual(effStats(h, big), [3, 8], '8/3 → 3/8');
   finishBattle(h);
   assert.deepEqual(effStats(h, big), [8, 3], 'temporary — gone at regroup');
@@ -450,7 +450,7 @@ test('Invasive Reassignment: a 0-power victim dies swapped — printed Reaping d
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Invasive Reassignment') });
   pick(h, { unit: eel });
   const aHand = h.state.players[A]!.hand.length;
-  pass(h); pass(h);                                         // resolve: 0/4 → 4/0 → dies
+  pass(h); // resolve: 0/4 → 4/0 → dies
   assert.ok(!ent(h, eel), 'the swapped 4/0 died at the death check');
   assert.ok(h.state.players[D]!.bin.includes('Galerider Eel'), '→ bin');
   assert.equal(h.state.players[A]!.hand.length, aHand + 1, 'Reaping: the kill drew a card');
@@ -477,7 +477,7 @@ test('Linked Extinction: you sacrifice a unit; each opponent here sacrifices one
     'home units are outside the battle region — not offered as the cost (CR 111.3)');
   pick(h, { unit: a1 });                                    // pay with the attacker
   assert.ok(!ent(h, a1), 'the cost was paid at cast');
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   // D has exactly one unit in the region → sacrificed without a choice
   assert.ok(!ent(h, d1), 'the opponent sacrificed too');
   assert.ok(h.state.players[A]!.bin.includes('Unit Token'), 'caster\'s unit → bin');
@@ -543,7 +543,7 @@ test('Monke: plays as a battle-timing 1/1 into the battle', () => {
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Monke') });
-  pass(h); pass(h);                                         // the unit item resolves
+  pass(h); // the unit item resolves
   const monke = unitsOf(h, A).find(u => u.card === 'Monke')!;
   assert.ok(monke, 'spawned during battle');
   assert.deepEqual(effStats(h, monke.id), [1, 1]);
@@ -562,7 +562,7 @@ test('Monke: CR 712.1 — other units lose all attributes and abilities during b
   h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });
   assert.ok(ownAttrs(h, mine).has('Flying'), 'before Monke arrives');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Monke') });
-  pass(h); pass(h);                                         // the unit item resolves
+  pass(h); // the unit item resolves
   const monke = unitsOf(h, A).find(u => u.card === 'Monke')!;
   assert.equal(ownAttrs(h, mine).size, 0, '"other units" — mine included');
   assert.equal(ownAttrs(h, monke.id).size, 0, 'Monke is a vanilla 1/1 either way');
@@ -583,7 +583,7 @@ test('Monke: "other units" is both sides — it turns the whole battle vanilla',
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Monke') });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ownAttrs(h, theirs).size, 0, 'the text says units, not YOUR units');
   finishBattle(h);
 });
@@ -602,7 +602,7 @@ test('Nebula Drifter: a 1/1 flier; as a Virus augment it grants Flying', () => {
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Nebula Drifter'), hostId: host });
-  pass(h); pass(h);                                         // the virus resolves
+  pass(h); // the virus resolves
   assert.equal(ent(h, host)!.mods.length, 1, 'virus augment attached in battle');
   assert.ok(ownAttrs(h, host).has('Flying'), 'the type-line [Augment] grants Flying');
   finishBattle(h);
@@ -644,7 +644,7 @@ test('Perish: each player here sacrifices half of their units, rounded up', () =
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[a1], [a2], [a3]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Perish') });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.equal(h.state.decision!.seat, A, 'the caster picks first');
   pick(h, a1);                                              // A: 3 units → sacrifice 2
   pick(h, a2);
@@ -769,7 +769,7 @@ test('Reforge the Dead: CR 109.8 — your units gain "When I die, create a Robot
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Reforge the Dead') });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.ok(h.state.players[A]!.bin.includes('Reforge the Dead'), 'resolved → bin');
   assert.equal(ent(h, tok)!.granted?.length, 1, 'the grant landed on the unit');
   assert.equal(ent(h, tok)!.granted?.[0]?.text, 'When I die, create a Robot 3.');
@@ -796,7 +796,7 @@ test('Reforge the Dead: the grant is until regroup, and only for units already t
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[early]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Reforge the Dead') });
-  pass(h); pass(h);
+  pass(h);
   const late = spawn(h, A, 'Unit Token');
   assert.equal(ent(h, late)!.granted, undefined, 'arrived after the spell resolved');
   finishBattle(h);

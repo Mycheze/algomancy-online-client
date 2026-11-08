@@ -93,7 +93,7 @@ test('Body Swap exchanges bases, and says so in the log', () => {
   pick(h, { unit: mine });
   pick(h, { unit: theirs });
   const from = h.log.length;
-  pass(h); pass(h);
+  pass(h);
 
   assert.deepEqual(effStats(h, mine), [tp, tt], 'took the other unit’s stats');
   assert.deepEqual(effStats(h, theirs), [mp, mt], 'and vice versa');
@@ -422,7 +422,7 @@ test('the trigger goes on the stack, targets at cast (CR 110.1a), and can be NEG
   pass(h);                                                    // CR 605.1a: A acts first, and passes
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Dematerialize') });
   pick(h, { stack: item.id });
-  pass(h); pass(h);                                           // resolve Dematerialize
+  pass(h); // resolve Dematerialize
   h.do({ type: 'decide', seat: A, choice: 0 });               // its Glimpse 3
   assert.ok(h.log.some(m => /Alluring.*is negated/.test(m)), 'the trigger is negated');
   assert.equal(ent(h, d1)!.allured, undefined, 'so nothing was ever lured');

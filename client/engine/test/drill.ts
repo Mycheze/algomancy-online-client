@@ -33,7 +33,7 @@
  * reached this way it is not castable in a real game either, and that is a
  * finding rather than a limitation of the harness.
  */
-import { apply, createGame, legalActions, IllegalAction } from '../src/apply.ts';
+import { apply, createGame, legalActions, withHoldPriority, IllegalAction } from '../src/apply.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import { E } from '../src/engine.ts';
 import { checkInvariants } from './fuzz.ts';
@@ -1453,7 +1453,9 @@ export function drillCard(
       fundSeat(state, seat);
       const bp = safeLegal(state, seat).find(a =>
         a.type === 'playCard' && a.handIndex === h.indexOf(want) && !a.mode);
-      if (bp) { chosen = bp; pressPlays.shift(); isBait = true; }
+      // CR 703.2a: the bait is there to be answered by this seat's own ability,
+      // so it keeps priority; an unheld bait would resolve on the other seat's pass
+      if (bp) { chosen = state.phase === 'battle' ? withHoldPriority(bp) : bp; pressPlays.shift(); isBait = true; }
     }
 
     // ── otherwise take the action that moves the game along ────────────
@@ -1463,6 +1465,9 @@ export function drillCard(
     // the BAIT is a playCard too — counting it as "the card was played" is
     // what made all fifteen bait-drilled cards report a resolution they never
     // had, with the bait's own delta attributed to them
+    // CR 703.2a: while bait remains to be played on top of this activation, the
+    // drill keeps priority for it, as a player holding Ctrl would
+    if (opts.press && pressPlays.length && state.phase === 'battle' && chosen.type === 'activateAbility') chosen = withHoldPriority(chosen);
     const wasAttach = chosen.type === 'augment';
     const wasPlay = (chosen.type === 'playCard' && !isBait) || wasAttach;
     const snapBefore = tracking ? (prevSnap ?? snapshot(state, seat)) : null;

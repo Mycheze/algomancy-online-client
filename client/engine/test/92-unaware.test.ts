@@ -126,7 +126,7 @@ test('"Haboob kills anything that has 1 defense printed at the card level"', () 
   h.do({ type: 'declareAttack', seat: A, columns: [[pumped], [tough], [bubb]] });
   while (h.state.priority !== D) pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Haboob') });
-  pass(h); pass(h);                                          // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, pumped), '1 printed defense: dead, whatever the counters say');
   assert.ok(ent(h, tough), '2 printed defense: alive');
   assert.equal(ent(h, tough)!.damage, 1, 'and marked with the 1 it was dealt');
@@ -288,7 +288,7 @@ test('two units FIGHT: Bubb reads a Robot 7 as a 0/0 and kills it outright', () 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Battle') });
   pick(h, { unit: bubb });
   pick(h, { unit: robot });
-  pass(h); pass(h);                                            // resolve the fight
+  pass(h); // resolve the fight
   assert.ok(!ent(h, robot), 'a fight is an interaction: the Robot fought at printed 0/0');
   assert.ok(ent(h, bubb), 'Bubb took the Robot\'s printed 0 power');
   assert.equal(ent(h, bubb)!.damage, 0);

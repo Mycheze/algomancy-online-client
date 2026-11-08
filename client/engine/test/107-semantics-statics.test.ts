@@ -56,7 +56,7 @@ test('Rotspore Herald: a unit-sourced EFFECT from the region is deadly — 1 poi
   h.do({ type: 'activateAbility', seat: D, entityId: sr, abilityIndex: 0, via: 'augment' });
   pick(h, { counterFrom: sr });                             // the only counter → the cost closes: X = 1
   pick(h, { unit: whale });                                 // aim at the 7/5
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, whale),
     'one point of effect damage from a deadly-fied unit source KILLS the 7/5 — '
     + '"Any damage from a deadly source will kill a unit"');
@@ -78,7 +78,7 @@ test('Rotspore Herald: absent, the same 1-point ability only marks damage — th
   h.do({ type: 'activateAbility', seat: D, entityId: sr, abilityIndex: 0, via: 'augment' });
   pick(h, { counterFrom: sr });
   pick(h, { unit: whale });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(ent(h, whale), 'the 7/5 survives one plain point');
   assert.equal(ent(h, whale)!.damage, 1, 'X = 1 was dealt and merely marked');
   finishBattle(h);
@@ -105,7 +105,7 @@ test('Rotspore Herald: CR 707.7 — a SPELL resolving in the region is deadly, s
   pass(h);                                                  // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Flame of History') });
   pick(h, { unit: whale });                                 // CR 110.1a: targeted at cast
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, whale),
     'a 1-damage SPELL kills the 7/5 — the Herald deadly-fies the spell, not just units');
   finishBattle(h);
@@ -122,7 +122,7 @@ test('Rotspore Herald: CR 802.3f — without the Herald the same spell only mark
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Flame of History') });
   pick(h, { unit: whale });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(ent(h, whale), 'no Herald → the 7/5 survives');
   assert.equal(ent(h, whale)!.damage, 1, 'the point was dealt and merely marked');
   finishBattle(h);
@@ -144,7 +144,7 @@ test('Rotspore Herald: CR 707.7 — a SPELL TOKEN standing in the region is dead
     'the static is not filtered by entity kind any more — a spell token carries it');
   h.do({ type: 'castSpellToken', seat: D, entityId: fireball.id });
   pick(h, { unit: whale });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, whale), 'a Fireball 1 kills the 7/5 in the Herald\'s region');
   finishBattle(h);
 });
@@ -168,7 +168,7 @@ test('Rotspore Herald: CR 601.1d — the scope is the REGION: a spell resolving 
     'and its static does not reach the units fighting over there');
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Flame of History') });
   pick(h, { unit: whale });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(ent(h, whale), 'a Herald in ANOTHER region deadly-fies nothing here');
   assert.equal(ent(h, whale)!.damage, 1, 'just one plain point');
   finishBattle(h);

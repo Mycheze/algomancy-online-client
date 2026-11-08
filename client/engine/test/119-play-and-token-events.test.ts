@@ -215,13 +215,13 @@ test("'cardPlayed' rides BESIDE 'spellPlayed', and only for the kinds that are c
     "a SPELL still fires 'spellPlayed' exactly once — the narrow event is unchanged");
   assert.equal(seen(h, 'cardPlayed') - mark.card, 1,
     "and fires 'cardPlayed' beside it: a spell is a card");
-  pass(h); pass(h);
+  pass(h);
 
   const mark2 = { spell: seen(h, 'spellPlayed'), card: seen(h, 'cardPlayed') };
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Monke') });
   assert.equal(seen(h, 'spellPlayed') - mark2.spell, 0, 'a UNIT is not a spell');
   assert.equal(seen(h, 'cardPlayed') - mark2.card, 1, 'but it IS a card being played');
-  pass(h); pass(h);
+  pass(h);
   finishBattle(h);
 });
 

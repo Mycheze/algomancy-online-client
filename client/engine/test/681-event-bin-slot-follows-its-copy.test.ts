@@ -56,7 +56,7 @@ test('CR 405.6b / CT-415: an earlier copy taken from the bin in response leaves 
   pass(h);                                           // A passes with the trigger on the stack
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Collect Remains') });
   pick(h, { bin: { seat: A, card: X } as BinRef });
-  pass(h); pass(h);                                  // Collect Remains resolves
+  pass(h); // Collect Remains resolves
   assert.deepEqual(h.state.players[A]!.bin, [X], 'copy 1 left; the death copy is still there');
   let guard = 10;
   while (devourerItem(h) && !h.state.decision && guard-- > 0) pass(h);
@@ -72,7 +72,7 @@ test('CR 405.6b / CT-415: the death copy itself taken in response is gone, and t
   pass(h);                                           // A passes with the trigger on the stack
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Collect Remains') });
   pick(h, { bin: { seat: A, card: X, nth: 1 } as BinRef });
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(h.state.players[A]!.bin, [X], 'the death copy left; copy 1 stays');
   let guard = 10;
   while (devourerItem(h) && !h.state.decision && guard-- > 0) pass(h);

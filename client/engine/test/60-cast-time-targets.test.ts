@@ -76,7 +76,7 @@ test('CR 702.3c: a spell played in battle shows its declared target on the stack
   assert.equal(h.state.stack.length, 1, 'now it is on the stack');
   assert.deepEqual(aimedAt(h), [{ unit: whale }, { unit: atk }],
     'and the opponent can SEE what it is aimed at while they still hold priority');
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, whale) && !ent(h, atk), 'both recalled');
   finishBattle(h);
 });
@@ -160,7 +160,7 @@ test("CR 110.3c: plain \"target player\" ('player') may legally be YOURSELF", ()
   assert.ok(vals.includes(JSON.stringify({ player: D })), 'yourself is a legal target');
   assert.ok(vals.includes(JSON.stringify({ player: A })), 'so is the opponent');
   pick(h, { player: D });
-  pass(h); pass(h);
+  pass(h);
   const made = unitsOf(h, D).filter(u => u.card === 'Unit Token');
   assert.equal(made.length, 1);
   assert.deepEqual(new E(h.state).effStats(made[0]!), [7, 7], 'X = the 7 D lost');
@@ -210,7 +210,7 @@ test('CR 702.3: "X target units" asks for exactly X targets, after X is fixed an
   pick(h, { unit: theirs });
   assert.equal(h.state.stack.length, 1, 'fully aimed before it lands');
   assert.deepEqual(aimedAt(h), [{ unit: mine }, { unit: theirs }]);
-  pass(h); pass(h);
+  pass(h);
   for (const id of [mine, theirs]) {
     assert.equal(ent(h, id)!.mods.length, 1, 'a Wraith augmented each declared target');
   }
@@ -240,7 +240,7 @@ test('CR 110.1a: declaring the target is what lets CR 704.6 fizzle it when it di
   h.state = e.s;
   assert.ok(!h.state.stack[0]!.parts[0]!.targets.every(t => e.targetStillLegal(t)),
     'one declared target is gone');
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, atk), 'the surviving target still resolves (CR 704.6b partial)');
   finishBattle(h);
 });
@@ -281,6 +281,6 @@ test('CR 702.2a: a Spell Excavation in the bin is a legal target of another Spel
   assert.ok(!h.state.decision!.options.some(o => 'doneTargets' in (o.value as object)),
     'no decline: Spell Excavation must have its target');
   pick(h, h.state.decision!.options[0]!.value);
-  pass(h); pass(h);
+  pass(h);
   finishBattle(h);
 });

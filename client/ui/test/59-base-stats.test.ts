@@ -139,7 +139,7 @@ test('a rewrite is until-regroup; the Statweaver underneath it survives regroup'
   giveResources(h, A, 'metal', 2);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Unstable Refactor') });
   pick(h, { unit: whale });
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(baseOf(h, whale), [5, 0], 'the spell is the later rewrite');
   assert.deepEqual(effStats(h, whale), [8, 3], 'base 5/0 + 3 counters');
   finishBattle(h);
@@ -163,7 +163,7 @@ test('Unstable Refactor twice: the second RE-bases, it does not compound', () =>
   for (let i = 0; i < 2; i++) {
     h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Unstable Refactor') });
     pick(h, { unit: mine });
-    pass(h); pass(h);
+    pass(h);
   }
   // as a delta the second cast added another (5 − 5)/(−0)… off the CURRENT
   // base, which drifted: the base is a single number, so it cannot drift
@@ -227,7 +227,7 @@ test('Borrower of Forms copies the base a unit HAS, not the one it was printed w
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
   pick(h, { unit: victim });
-  pass(h); pass(h);                                         // resolve: erase + spawn
+  pass(h); // resolve: erase + spawn
   pass(h); pass(h);                                         // resolve the become-a-copy trigger
   assert.ok(!ent(h, victim), 'the victim is erased');
   const bof = unitsOf(h, A).find(u => u.card === 'Borrower of Forms')!;
@@ -259,7 +259,7 @@ test('Unmake: a rewrite can drop a unit INTO "base power 2 or less"', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Unmake') });
   pick(h, { unit: whale });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, whale), 'a printed 7/5 is Unmakeable once its base says 2');
   finishBattle(h);
 });
@@ -276,12 +276,12 @@ test('Unmake: a rewrite can lift a unit OUT of range', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Unstable Refactor') });
   pick(h, { unit: tok });
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(baseOf(h, tok), [5, 0], 'base power 5 now');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Unmake') });
   notOffered(h, { unit: tok }, 'the rewrite put its base power at 5');
   pick(h, { unit: atk });                                    // the one still in range
-  pass(h); pass(h);
+  pass(h);
   assert.ok(ent(h, tok), 'and it survives');
   finishBattle(h);
 });
@@ -303,7 +303,7 @@ test('Leave None Pure: a rewritten base counts as a stat change', () => {
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Leave None Pure') });
   notOffered(h, { unit: rewritten }, 'its base was rewritten — that is a stat change');
   pick(h, { unit: clean });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, clean), 'the untouched one is deleted');
   assert.ok(ent(h, rewritten), 'the rewritten one is not');
   finishBattle(h);

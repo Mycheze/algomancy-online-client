@@ -90,7 +90,7 @@ test('Reconfigure: moves target augment unit AND its mods onto another target un
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Reconfigure') });
   pick(h, { unit: dd });                                      // first pick: the unit to move
   pick(h, { unit: host });                                    // second pick: the new host
-  pass(h); pass(h);                                           // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, dd), 'the moved unit left play (silently — moved, not despawned)');
   assert.ok(!h.state.players[D]!.bin.includes('Decay Distributor'), 'not binned — moved');
   const mods = ent(h, host)!.mods.map(id => ent(h, id)!);
@@ -137,7 +137,7 @@ test('Rook: a NON-virus augment from HAND during battle — refused without it, 
   e.spawnUnit(A, 'Rook', h.state.battle!.region);
   e.settle(); h.state = e.s;
   h.do({ type: 'augment', seat: A, from: 'hand', index: idx, hostId: host });
-  pass(h); pass(h);                                           // the virus-shaped item resolves
+  pass(h); // the virus-shaped item resolves
   assert.ok(ent(h, host)!.mods.some(id => ent(h, id)!.card === 'Emberflame Enlightener'),
     'with Rook in the region it lands, on the stack, exactly as a Virus would');
   finishBattle(h);
@@ -163,7 +163,7 @@ test('Rook: augmenting from the BIN during battle takes the card out of the BIN,
   h.state.players[A]!.bin = ['Emberflame Enlightener'];
   giveResources(h, A, 'fire', 4);
   h.do({ type: 'augment', seat: A, from: 'bin', index: 0, hostId: host });
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(h.state.players[A]!.bin, [], 'the card left the BIN');
   assert.deepEqual(h.state.players[A]!.hand, ['Unit Token', 'Unit Token', 'Unit Token'],
     'and the hand is untouched — zoneTake, not hand.splice');
@@ -254,7 +254,7 @@ test('Rook: the [Augment] half works, and the permission belongs to the HOST', (
   h.state.players[p]!.bin = ['Emberflame Enlightener'];
   giveResources(h, p, 'fire', 4);
   h.do({ type: 'augment', seat: p, from: 'bin', index: 0, hostId: host });
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(h.state.players[p]!.bin, [], 'the donated permission opened the bin');
   finishBattle(h);
 });
@@ -518,7 +518,7 @@ test('Maelstrom Charger: sacrifice me as you play a nonunit spell → copy it; d
     'CR 702.3g: the sacrifice is COST-SHAPED, so it is spent the instant the option is taken — '
     + 'the re-aim that follows is about a copy already bought, not a plan that might be abandoned');
   pick(h, false);                                             // keep the original targets
-  pass(h); pass(h);                                           // resolve the COPY (CR 710.8: its own window)
+  pass(h); // resolve the COPY (CR 710.8: its own window)
   pass(h); pass(h);                                           // resolve the original Fireball
   assert.ok(!ent(h, chg), 'the Charger was sacrificed');
   assert.ok(h.state.players[D]!.bin.includes('Maelstrom Charger'), 'sacrificed → bin');
@@ -543,7 +543,7 @@ test('Maelstrom Charger: choosing NEW targets re-aims the copy; the original sti
   say(h, 'Sacrifice Maelstrom Charger');                      // CR 702.3g: in the cast window
   pick(h, true);                                              // choose new targets
   pick(h, { unit: atk });                                     // the copy re-aims at the attacker
-  pass(h); pass(h);                                           // resolve the COPY (CR 710.8: its own window)
+  pass(h); // resolve the COPY (CR 710.8: its own window)
   pass(h); pass(h);                                           // resolve the original Fireball
   assert.ok(!ent(h, chg), 'the Charger was sacrificed');
   assert.ok(!ent(h, atk), 'the copy killed its NEW target');
@@ -579,7 +579,7 @@ test('Maelstrom Charger: with NO legal new target there is no retarget question 
   // CR 710.8: the copy is a stack item, so a dead target fizzles it through the
   // ordinary CR 704.6 path — announced, in its own resolution, rather than being
   // swallowed by an inline "no target — no effect" line.
-  pass(h); pass(h);                                           // the copy fizzles (target gone)
+  pass(h); // the copy fizzles (target gone)
   assert.ok(h.log.some(m => m.includes('(copy) fizzles')), 'the copy fizzles and says so');
   pass(h); pass(h);                                           // the original Echo fizzles too (target gone)
   finishBattle(h);
@@ -611,7 +611,7 @@ test('Malevolent Machinations: sacrifice X units → negate up to X target effec
   assert.ok(!ent(h, d1), 'the sacrifice is paid as it is cast, not at resolution');
   pick(h, { stack: collapseId });                             // aim at the Collapse (X = 1 → the only one)
   assert.ok(ent(h, d2), 'only X = 1 unit sacrificed');
-  pass(h); pass(h);                                           // resolve Malevolent (top of stack)
+  pass(h); // resolve Malevolent (top of stack)
   assert.ok(h.log.some(m => m.includes('is negated')), 'the effect was negated');
   assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Collapse left the stack at once');
   assert.ok(h.state.players[A]!.bin.includes('Structural Collapse'), 'negated spell → bin');
@@ -660,7 +660,7 @@ test('Maw of Damnation: each player sacrifices two; 4+ sacrificed → it repeats
   h.do({ type: 'declareAttack', seat: A, columns: [[a1], [a2]] });
   pass(h);                                                    // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Maw of Damnation') });
-  pass(h); pass(h);                                           // resolve
+  pass(h); // resolve
   // CR 102.3a: the initiative player (A) picks first, then D — before the
   // 2026-11-01 ruling the region owner D was asked first
   assert.equal(h.state.decision?.seat, A, 'the initiative player picks first');
@@ -713,7 +713,7 @@ test('Ember of Life: [once] a spell effect deals N damage → create N 1/1 units
   whiteBox(h, e => { fb1 = e.createSpellToken(D, 'Fireball', 1, h.state.battle!.region).id; });
   h.do({ type: 'castSpellToken', seat: D, entityId: fb1 });
   pick(h, { unit: a1 });
-  pass(h); pass(h);                                           // Fireball resolves, trigger queued
+  pass(h); // Fireball resolves, trigger queued
   pass(h); pass(h);                                           // resolve the Ember trigger
   assert.ok(!ent(h, a1), 'the Fireball killed the 1/1');
   const minted = unitsOf(h, D).filter(u => u.card === 'Unit Token');
@@ -725,7 +725,7 @@ test('Ember of Life: [once] a spell effect deals N damage → create N 1/1 units
   whiteBox(h, e => { fb2 = e.createSpellToken(D, 'Fireball', 1, h.state.battle!.region).id; });
   h.do({ type: 'castSpellToken', seat: D, entityId: fb2 });
   pick(h, { unit: a2 });
-  pass(h); pass(h);                                           // resolve the second Fireball
+  pass(h); // resolve the second Fireball
   assert.ok(!ent(h, a2), 'the second Fireball landed');
   assert.equal(unitsOf(h, D).filter(u => u.card === 'Unit Token').length, 1,
     'no second minting (CR 109.9 [once])');

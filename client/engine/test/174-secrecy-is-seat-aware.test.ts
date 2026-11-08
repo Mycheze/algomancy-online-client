@@ -99,7 +99,6 @@ function selfLook(seed: number): { h: Harness; A: Seat; D: Seat; secret: string 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Thought Extraction') });
   pick(h, { player: A });
   h.do({ type: 'passPriority', seat: h.state.priority! });
-  h.do({ type: 'passPriority', seat: h.state.priority! });
   pick(h, 0);                                                 // discard 'Good Whale'
   // 'Shard Sprite' is never touched, so it exists in no public zone: any seat
   // that can read it read it out of a hand.

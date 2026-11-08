@@ -2128,7 +2128,7 @@
     "text": "A spell token is cast from play, and only in the region the token is in. Otherwise it is cast the same way as a spell from the hand.",
     "examples": [
       {
-        "text": "In the attack window the defending player casts their Fireball 3 token in the battle region. They choose its target, the attacking player, and it goes on the stack, where the attacker may respond; when both pass it deals 3.",
+        "text": "In the attack window the defending player casts their Fireball 3 token in the battle region. They choose its target, the attacking player, and it goes on the stack, where the attacker may respond; when the attacker passes it deals 3.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.spell-tokens — casting a spell token asks for its target and puts it on the stack, as a spell from hand would"
       }
     ],
@@ -2680,13 +2680,17 @@
     "text": "When a player passes priority after taking one or more actions, each other player receives priority, so that they can respond. This continues until all players pass priority in succession.",
     "examples": [
       {
-        "text": "after a cast the other player receives priority and responds; the first player then receives priority again, and the top item resolves only after both pass in succession.",
+        "text": "after a cast the other player receives priority and responds; the first player then receives priority again, and their pass resolves that response.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.priority.pass — after an action the other player receives priority, and the item resolves only once both pass in succession"
       }
     ],
     "see": [],
     "sources": {
       "printed": [
+        {
+          "ref": "Rulebook 2023 p.13",
+          "quote": "If player A casts a spell and player B passes priority, player A’s spell will resolve"
+        },
         {
           "ref": "Manual p.30",
           "quote": "Once a player passes priority after taking one or more"
@@ -2717,7 +2721,7 @@
     "text": "A player cannot respond to another player passing priority. A player who passes may not get another chance to act.",
     "examples": [
       {
-        "text": "the defender passes on an Arc and the attacker passes; the Arc resolves at once, with no further chance for the defender.",
+        "text": "the attacker casts an Arc and the defender passes; the Arc resolves at once, with no further chance for the attacker.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.priority.no-response-to-pass — after one player passes, the other passing resolves the item with no further chance for the first"
       }
     ],
@@ -2906,7 +2910,7 @@
     "text": "When all players pass priority in succession with an effect on the stack, the top effect resolves. All players then receive priority in order again, which is a new priority window. When all players pass priority with the stack empty, the game moves to the next step.",
     "examples": [
       {
-        "text": "two passes resolve Luminous Arc; a new window opens in the same step with the initiative player; two passes on the empty stack end the step.",
+        "text": "the other player's pass resolves Luminous Arc; a new window opens in the same step with the initiative player; two passes on the empty stack end the step.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.window.resolve — two passes resolve the top item, a new window opens, and two passes on the empty stack end the step"
       }
     ],

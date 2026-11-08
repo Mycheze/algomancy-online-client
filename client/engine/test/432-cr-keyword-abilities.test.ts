@@ -252,7 +252,7 @@ function tides(seed: number, deck: string[]) {
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tides of the Cosmos') });
-  pass(h); pass(h);
+  pass(h);
   return { h, A, D };
 }
 
@@ -316,10 +316,10 @@ test('cr:keywords.abilities.unstable.until-regroup — a bin-played spell unit b
   h.state.players[A]!.bin = ['Jelly'];
   giveResources(h, A, 'water', 3);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Abyssal Evocation') });
-  pass(h); pass(h);
+  pass(h);
   h.do({ type: 'playFromBin', seat: A, binIndex: 0 });
   pick(h, { unit: atk });
-  pass(h); pass(h);
+  pass(h);
   const body = unitsOf(h, A).find(u => u.card === 'Jelly')!;
   assert.equal(body.unstable, true, 'stamped while the battle runs');
   finishBattle(h);
@@ -342,11 +342,11 @@ test('cr:keywords.abilities.unstable.until-regroup — the stamp outlives the in
   h.state.players[A]!.bin = ['Jelly'];
   giveResources(h, A, 'water', 3);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Abyssal Evocation') });
-  pass(h); pass(h);
+  pass(h);
   const r1 = h.state.battle!.region;
   h.do({ type: 'playFromBin', seat: A, binIndex: 0 });
   pick(h, { unit: atk });
-  pass(h); pass(h);
+  pass(h);
   const body = unitsOf(h, A).find(u => u.card === 'Jelly')!;
   assert.equal(body.unstable, true, 'stamped in round 1');
   // drive round 1 to its end and stop as round 2 opens

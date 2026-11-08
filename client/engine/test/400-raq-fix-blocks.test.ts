@@ -134,7 +134,7 @@ test('CR 608.4d a Tiderunner put in front of an unblocked attacker fights it —
   passTo(h, D);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tiderunner Initiate') });
   place(h, /^column 1, blocking it/);
-  pass(h); pass(h);
+  pass(h);
   const runner = unitsOf(h, D).find(u => u.card === 'Tiderunner Initiate')!;
   let guard = 10;                                      // to the after-combat window (regroup wipes damage)
   while (h.state.battle?.step !== 'afterWindow' && guard-- > 0) pass(h);
@@ -181,7 +181,7 @@ test('CR 608.2e a struck mark moves with its column when a new column opens on t
   passTo(h, A);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Tiderunner Initiate') });
   place(h, /new column on the left/);
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.battle!.columns.findIndex(c => c.includes(back)), 1, 'the marked column is now column 2');
   {
     const g = new E(h.state);

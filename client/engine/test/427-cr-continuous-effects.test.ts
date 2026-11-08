@@ -228,7 +228,7 @@ test('cr:effects.continuous.switch — an 8/3 switched by Invasive Reassignment 
   h.do({ type: 'declareAttack', seat: A, columns: [[t]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Invasive Reassignment') });
   pick(h, { unit: big });
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(effStats(h, big), [3, 8]);
   withE(h, e => e.addTemp(e.entity(big)!, 2, 0));
   assert.deepEqual(effStats(h, big), [5, 8], 'the later +2/+0 lands on power, unswitched');

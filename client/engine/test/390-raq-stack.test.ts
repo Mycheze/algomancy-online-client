@@ -47,7 +47,7 @@ test('RAQ fizzles: Fight that loses one of its two targets does nothing to the s
   pick(h, { unit: theirs });
   withE(h, e => e.destroy(e.s.entities[theirs]!, 'dies'));      // the other fighter leaves first
   assert.ok(h.state.stack.some(i => i.card === 'Fight'), 'Fight is still on the stack');
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!h.state.stack.some(i => i.card === 'Fight'), 'it left the stack');
   assert.equal(ent(h, mine)!.damage, 0, 'and the survivor took nothing: no fight with nobody');
   finishBattle(h);
@@ -255,7 +255,7 @@ test('RAQ target requirements: Tidal Reversion still recalls the other unit when
   }
   while (h.state.decision) pick(h, h.state.decision.options[0]!.value);
   withE(h, e => e.destroy(e.s.entities[theirs]!, 'dies'));
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, mine), undefined, 'my unit was still recalled');
   assert.ok(h.state.players[A]!.hand.includes('Good Whale'), 'to my hand');
   finishBattle(h);
@@ -497,7 +497,7 @@ test('RAQ timestamps: a virus applied AFTER Monke still gives its attribute', ()
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Monke') });
-  pass(h); pass(h);                                           // Monke resolves: the battle goes vanilla
+  pass(h); // Monke resolves: the battle goes vanilla
   if (h.state.priority !== D) pass(h);
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Chitin Shredder'), hostId: host });
   while (h.state.stack.length) pass(h);
@@ -525,7 +525,7 @@ test('RAQ timestamps: Body Swap with a Statweavered unit trades the 3/3 base for
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Body Swap') });
   pick(h, { unit: mine });
   pick(h, { unit: wisp });
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(effStats(h, mine), [3, 3], 'my 1/1 took the 3/3 base');
   assert.deepEqual(effStats(h, wisp), [1, 1], 'the Wisp is base 1/1 although the Statweaver still stands');
   finishBattle(h);
@@ -740,7 +740,7 @@ test('RAQ trigger-like attributes: Containment Protocol negates a waiting Alluri
   assert.ok(h.state.stack.some(i => i.card === 'Tempest Wrangler'), 'the Alluring trigger waits on the stack');
   if (h.state.priority !== D) pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Containment Protocol') });
-  pass(h); pass(h);
+  pass(h);
   const lure = h.state.stack.find(i => i.card === 'Tempest Wrangler');
   assert.ok(!lure || lure.negated, 'the Alluring trigger was negated');
   finishBattle(h);

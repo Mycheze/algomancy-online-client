@@ -67,7 +67,7 @@ test('Bioremediation: target player reveals their hand; you take a chosen card',
   const handD = h.state.players[D]!.hand.length;
   const count = (seat: number) => h.state.players[seat]!.hand.filter(c => c === 'Bubb').length;
   const bubbsA = count(A), bubbsD = count(D);
-  pass(h); pass(h);                                   // resolve → the pick suspends
+  pass(h); // resolve → the pick suspends
   pick(h, h.state.players[A]!.hand.indexOf('Bubb'));  // choose a Bubb from the revealed hand
   assert.equal(count(A), bubbsA - 1, "a Bubb left A's hand");
   assert.equal(h.state.players[D]!.hand.length, handD + 1, "…and joined D's hand");
@@ -92,7 +92,7 @@ test('Boon of Protection: negates an effect aimed at something allied; an unalli
   const cb1 = h.state.stack[0]!.id;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Boon of Protection') });
   pick(h, { stack: cb1 });
-  pass(h); pass(h);                                   // Boon of Protection resolves
+  pass(h); // Boon of Protection resolves
   assert.ok(!h.state.stack.some(i => i.id === cb1), 'CR 704.4: the negated buff left the stack');
   assert.ok(h.state.players[A]!.bin.includes('Channeled Boon'), 'and went to its bin');
   assert.deepEqual(effStats(h, bubbD), [5, 6], 'no buff landed');
@@ -121,7 +121,7 @@ test('Boon of Protection: negates an effect aimed at something allied; an unalli
   assert.equal(binned(), binnedBefore, 'and this copy did not go to the bin');
   assert.ok(h.state.players[D]!.hand.includes('Boon of Protection'), 'it is still in hand');
   assert.ok(h.state.stack.some(i => i.id === cb2), 'the enemy buff is still on the stack');
-  pass(h); pass(h);                                   // Channeled Boon resolves
+  pass(h); // Channeled Boon resolves
   assert.deepEqual(effStats(h, atk), [5, 5], 'the buff landed');
   finishBattle(h);
 });
@@ -149,7 +149,7 @@ test('Burgeon: doubles the chosen stat of target unit until regroup', () => {
   assert.equal(h.state.stack.length, 1, 'now it is on the stack');
   assert.equal(h.state.stack[0]!.parts[0]!.mode, 'defense',
     'and the half it chose is readable there, all through the response window');
-  pass(h); pass(h);                                   // resolve
+  pass(h); // resolve
   assert.deepEqual(effStats(h, bubbD), [5, 12], 'defense doubled (6 → 12) until regroup');
   // playtest MNWK ("Burgeon resolving … just did nothing"): whatever it does,
   // it now SAYS what it did
@@ -176,7 +176,7 @@ test('Burgeon: doubling a 0 says so instead of resolving into silence', () => {
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Burgeon') });
   pick(h, { unit: wall });
   pick(h, 'power');                                   // CR 702.5: declared at cast
-  pass(h); pass(h);
+  pass(h);
   assert.equal(effStats(h, wall)[0], 0, 'twice nothing is still nothing');
   assert.ok(h.log.some(l => l.includes('has 0 power — doubling it changes nothing')),
     'and the log says why');
@@ -205,7 +205,7 @@ test('Corrupting Blight: defects after combat when played normally; steals the h
   toNextBattle(h2, A2);
   h2.do({ type: 'declareAttack', seat: A2, columns: [[tok]] });
   h2.do({ type: 'augment', seat: A2, from: 'hand', index: give(h2, A2, 'Corrupting Blight'), hostId: bubb });
-  pass(h2); pass(h2);                                 // the Virus resolves → attaches
+  pass(h2); // the Virus resolves → attaches
   assert.equal(ent(h2, bubb)!.mods.length, 1, 'the Virus attached to Bubb');
   finishBattle(h2);
   assert.equal(ent(h2, bubb)!.controller, A2, 'after combat, the host defected to the Virus player');
@@ -233,7 +233,7 @@ test('Earnest Defender: an ally targeted by an enemy spell → create a 1/1 unit
   // enemy spell targeting A's OWN unit → no trigger
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Channeled Boon') });
   pick(h, { unit: atk });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(unitsOf(h, D).length, before + 1, 'no ally targeted — no second 1/1');
   assert.equal(h.log.filter(m => m.includes('Trigger: Earnest Defender')).length, 1);
   finishBattle(h);
@@ -321,7 +321,7 @@ test('Hexbane Shiitake: exchanges the carrier for an enemy spell and retargets i
   // [once]: a second enemy spell does not re-trigger
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channeled Boon') });
   pick(h, { unit: atkD });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.log.filter(m => m.includes('Trigger: Hexbane Shiitake')).length, 1, '[once] spent (CR 109.9)');
   finishBattle(h);
 });
@@ -428,7 +428,7 @@ test('Hush Mush: negates target effect; that controller gains control of the spa
   const cbId = h.state.stack[0]!.id;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush') });
   pick(h, { stack: cbId });
-  pass(h); pass(h);                                   // Hush Mush resolves: negate + spawn
+  pass(h); // Hush Mush resolves: negate + spawn
   assert.ok(!h.state.stack.some(i => i.id === cbId), 'CR 704.4: the negated Boon left the stack');
   const mush = unitsOf(h, A).concat(unitsOf(h, D)).find(u => u.card === 'Hush Mush')!;
   assert.ok(mush, 'the spell unit spawned');
@@ -494,7 +494,7 @@ test('CR 303.10 #95: Hush Mush ENTERS under the negated effect\'s controller —
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush') });
   pick(h, { stack: cbId });
   const mark = h.events.length;
-  pass(h); pass(h);                                   // Hush Mush resolves
+  pass(h); // Hush Mush resolves
 
   // the SPAWN EVENT itself is the proof: there is no earlier state to catch,
   // so the only place the answer can be wrong is here.
@@ -537,7 +537,7 @@ test('CR 303.10 #96: the CASTER\'s Flourishing Flora takes NO counter off Hush M
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush') });
   pick(h, { stack: h.state.stack[0]!.id });
   const mark = h.events.length;
-  pass(h); pass(h);                                   // Hush Mush resolves
+  pass(h); // Hush Mush resolves
 
   // THE assertion of report #96, in the owner's own words — "I shouldn't be
   // getting a Flourishing Flora trigger here". It is checked on the QUEUEING,
@@ -573,13 +573,11 @@ test('CR 303.10: TWO Hush Mushes in one battle keep separate answers (the old le
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Channeled Boon') });
   pick(h, { unit: atk });
   const cbId = h.state.stack[0]!.id;
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Invigorate') });   // D's OWN spell
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Invigorate'), holdPriority: true });   // D's OWN spell
   pick(h, { unit: atk });
   const invId = h.state.stack[1]!.id;
-  pass(h);                                            // A declines
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush') });
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush'), holdPriority: true });
   pick(h, { stack: invId });                          // → this body stays D's
-  pass(h);                                            // A declines
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush') });
   pick(h, { stack: cbId });                           // → this body becomes A's
   const mark = h.events.length;
@@ -625,9 +623,8 @@ test('CR 303.10: a Hush Mush whose target has already left the stack fizzles and
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Channeled Boon') });
   pick(h, { unit: atk });
   const cbId = h.state.stack[0]!.id;
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush') });
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush'), holdPriority: true });
   pick(h, { stack: cbId });
-  pass(h);                                            // A declines
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush') });
   pick(h, { stack: cbId });                           // the same, doomed target
   const mark = h.events.length;
@@ -680,7 +677,7 @@ test('Hush Mush: "target effect" reaches a TRIGGERED ability, "target SPELL effe
     'Hush Mush is offered against a triggered ability');
   h.do({ type: 'playCard', seat: D, handIndex: hm });
   pick(h, { stack: trig.id });
-  pass(h); pass(h);                                   // Hush Mush resolves
+  pass(h); // Hush Mush resolves
   assert.ok(!h.state.stack.some(i => i.id === trig.id), 'CR 704.4: the negated trigger left the stack');
   assert.ok(!h.state.players[A]!.bin.includes('Warbloom Herald'),
     'CR 704.4a: a negated ABILITY has no card of its own — its source stays in play, nothing is binned');
@@ -718,7 +715,7 @@ test('Invigorate: target unit gains +0/+1 until regroup; draw a card', () => {
   const handD = h.state.players[D]!.hand.length;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Invigorate') });
   pick(h, { unit: bubbD });
-  pass(h); pass(h);                                   // resolve
+  pass(h); // resolve
   assert.deepEqual(effStats(h, bubbD), [5, 7], '+0/+1 until regroup');
   assert.equal(h.state.players[D]!.hand.length, handD + 1, 'played one (give), drew one — net +1 over the baseline');
   finishBattle(h);
@@ -796,7 +793,7 @@ test('Boon of Protection: a Virus being applied to an allied unit IS an allied t
     [{ stack: virus }], 'the Virus aimed at an ally is the legal target');
   h.do({ type: 'playCard', seat: D, handIndex: idx });
   pick(h, { stack: virus });
-  pass(h); pass(h);                                   // Boon of Protection resolves
+  pass(h); // Boon of Protection resolves
   assert.ok(!h.state.stack.some(i => i.id === virus), 'CR 704.4: the negated Virus left the stack');
   assert.ok(!ent(h, mine)!.mods.some(m => ent(h, m)?.card === 'Crumbling Ancient'),
     'and the mod never landed on the ally');

@@ -102,7 +102,7 @@ test('CR 110.1a: Fight takes both units as CAST-time targets', () => {
   // point of making the second one a real target
   const item = h.state.stack.find(i => i.card === 'Fight')!;
   assert.deepEqual(item.parts[0]!.targets, [{ unit: ally }, { unit: atk }]);
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, atk));
   finishBattle(h);
 });
@@ -129,7 +129,7 @@ test('CR 110.4c: the ally slot only offers allies OF THE CASTER', () => {
   assert.deepEqual(slot1, [{ unit: alsoMine }, { unit: atk }].map(v => JSON.stringify(v)).sort(),
     "slot 1 takes any other unit, and never repeats slot 0");
   pick(h, { unit: atk });
-  pass(h); pass(h);
+  pass(h);
   finishBattle(h);
 });
 
@@ -163,7 +163,7 @@ test('Enigmatic Warder cannot redirect an ENEMY into an ally slot', () => {
   while (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
   // CT-240: the Warder's ability resolves (two passes); Fight is still on the
   // stack under it, so its slots are read BEFORE Fight resolves, never behind an if
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!h.state.stack.some(i => i.card === 'Enigmatic Warder'), 'the Warder ability has resolved');
   const after = h.state.stack.find(i => i.card === 'Fight');
   assert.ok(after, 'and Fight is still on the stack, so its slots can be read');
@@ -212,7 +212,7 @@ test('Fight refuses at resolution if its ally slot stopped being an ally', () =>
   pick(h, { unit: enemy });
   // control of the ally changes while the spell sits on the stack
   ent(h, ally)!.controller = A;
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, enemy)!.damage, 0, 'no fight happened');
   assert.ok(h.log.some(m => m.includes('Fight') && m.includes('not')), 'and it said why');
   finishBattle(h);

@@ -143,7 +143,7 @@ test('Collect Remains: it takes the bin card AND leaves the game, instead of joi
   binOf(h, D).push('Good Whale');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Collect Remains') });
   pickLabel(h, 'Good Whale');                         // CR 110.1a: targeted at cast
-  pass(h); pass(h);
+  pass(h);
 
   // the OTHER half still happens — the erase is a second sentence, not a
   // replacement for the first
@@ -166,12 +166,12 @@ test('Collect Remains: having erased itself, it is not there for the next copy t
   binOf(h, D).push('Good Whale', 'Curio Drifter');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Collect Remains') });
   pickLabel(h, 'Good Whale');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(count(binOf(h, A), 'Collect Remains'), 0);
 
   // cast a second copy: the first is not on the menu, because it is not in a
   // bin to be targeted
-  while (h.state.priority !== A) pass(h);
+  for (let g = 8; g-- > 0 && h.state.priority !== A && h.state.priority !== null;) pass(h);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Collect Remains') });
   const menu = h.state.decision!.options.map(o => String(o.label));
   assert.ok(!menu.some(l => l.startsWith('Collect Remains')),
@@ -192,7 +192,7 @@ test('Suspend: the life lock lands for the battle and the spell erases itself on
   const lifeD = h.state.players[D]!.life;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suspend') });
   pick(h, { player: D });
-  pass(h); pass(h);
+  pass(h);
 
   // the OTHER half (the life lock, CR 708.10) still works
   const g = new E(h.state);
@@ -225,7 +225,7 @@ test('Temporal Rift: ending the battle does not carry off its own disposal — i
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: whale });
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Temporal Rift') });
-  pass(h); pass(h);
+  pass(h);
 
   // the OTHER half: everything negated, the battle over, the cascade run
   assert.equal(h.state.stack.length, 0, 'the stack is wiped');
@@ -282,7 +282,7 @@ test('Skybreaker: "Erase me" is paid as the activation cost, and an erase is not
     since.filter(ev => ev.type === 'despawned' && ev.data?.['card'] === 'Skybreaker').length, 1,
     'but it IS a despawn, and fires exactly one (CR 801.6a)');
 
-  pass(h); pass(h);                                  // the ability resolves
+  pass(h); // the ability resolves
   assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Boon left the stack at once');
   assert.ok(binOf(h, A).includes('Channeled Boon'), 'the negated spell is binned as usual');
   finishBattle(h);
@@ -358,9 +358,8 @@ test('a FIZZLED self-erase spell is binned too — its target went, so its text 
   const { h, A, D } = attackWindow(8908);
   giveResources(h, A, 'dark', 4);
   binOf(h, D).push('Good Whale');
-  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Collect Remains') });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Collect Remains'), holdPriority: true });  // CR 703.2a: keeps priority to act again
   pickLabel(h, 'Good Whale');
-  while (h.state.priority !== A) pass(h);             // back round to the caster
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Collect Remains') });
   pickLabel(h, 'Good Whale');
   assert.equal(h.state.stack.length, 2, 'both copies are waiting, aimed at the same card');
@@ -452,19 +451,19 @@ test('every card in the pool that prints a self-erase reaches the erased pile in
     [8920, (h: Harness, A: Seat, D: Seat) => {
       giveResources(h, A, 'dark', 2); binOf(h, D).push('Good Whale');
       h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Collect Remains') });
-      pickLabel(h, 'Good Whale'); pass(h); pass(h);
+      pickLabel(h, 'Good Whale'); pass(h);
       return 'Collect Remains';
     }],
     [8921, (h: Harness, A: Seat, D: Seat) => {
       giveResources(h, A, 'light', 2);
       h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suspend') });
-      pick(h, { player: D }); pass(h); pass(h);
+      pick(h, { player: D }); pass(h);
       return 'Suspend';
     }],
     [8922, (h: Harness, A: Seat, _D: Seat) => {
       giveResources(h, A, 'water', 2); giveResources(h, A, 'metal', 2);
       h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Temporal Rift') });
-      pass(h); pass(h);
+      pass(h);
       return 'Temporal Rift';
     }],
   ] as [number, (h: Harness, A: Seat, D: Seat) => string][]) {

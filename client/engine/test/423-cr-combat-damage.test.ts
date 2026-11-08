@@ -198,7 +198,7 @@ test('cr:combat.damage.dealing.prevention — a shielded blocker dealt COMBAT da
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Phytochemical Protection') });
   pick(h, { unit: tomb });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, tomb)!.damageShield, 'Phytochemical Protection');
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [tomb] } });

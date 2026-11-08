@@ -74,7 +74,7 @@ test('CR 723.2a: a glimpsed Virus in the cache goes onto an ENEMY unit in battle
   assert.equal(top.kind, 'virus', 'a Virus augment is a response on the stack');
   assert.equal(top.hostId, atk);
 
-  pass(h); pass(h);                                  // the virus resolves first
+  pass(h); // the virus resolves first
   const host = h.state.entities[atk]!;
   assert.ok(host.mods.some(m => h.state.entities[m]?.card === VIRUS), `${VIRUS} is a mod on the enemy attacker`);
   assert.equal(host.controller, A, 'still the enemy unit — a Virus goes onto anyone');
@@ -90,7 +90,7 @@ test('CR 723.2a: a glimpsed Virus in the cache goes onto a spell on the stack', 
   assert.equal(h.q.openMana(D), mana - 1);
   assert.ok(h.log.some(l => l.includes(`${VIRUS} augments out of`) && l.endsWith('ignoring affinity.')));
   assert.equal(h.state.stack.length, 2, 'above its host');
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(h.state.stack.find(i => i.id === spell.id)!.augments, [{ card: VIRUS, by: D }],
     'the spell now carries it');
 });
@@ -128,7 +128,7 @@ test('CR 803.6i: a glimpsed Ambush card ambushes out of the cache, paying the am
   const item = h.state.stack[h.state.stack.length - 1]!;
   assert.equal(item.kind, 'ambush');
   assert.equal(item.from, 'cache', 'the item knows where the card came from');
-  pass(h); pass(h);
+  pass(h);
   const units = Object.values(h.state.entities).filter(u => u.kind === 'unit' && u.controller === D && !u.absent);
   assert.ok(units.some(u => u.card === 'Lurking Slimebeast'), 'the ambusher is in play');
 });

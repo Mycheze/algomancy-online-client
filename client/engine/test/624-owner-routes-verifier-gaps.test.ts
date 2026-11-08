@@ -62,7 +62,7 @@ test('CR 102.4 / CT-343: a foreign-owned augment riding a spell token is filed a
   const item = h.state.stack.find(i => i.kind === 'spellToken');
   assert.deepEqual(item?.augments, [{ card: 'Chitin Shredder', by: A, owner: D }],
     'by = the player who applied it (A), owner = whose card it is (D)');
-  pass(h); pass(h);
+  pass(h);
   assert.ok((h.state.players[A]!.erased ?? []).includes('Chitin Shredder'),
     'CR 723.4b: erased with the token into the pile of its APPLIER');
   assert.ok(!(h.state.players[D]!.erased ?? []).includes('Chitin Shredder'), 'not into the card owner pile');
@@ -86,7 +86,7 @@ test('CR 102.4 / CT-344: Necromorph exchanges a unit for a foreign-owned card in
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Necromorph') });
   pick(h, { unit: victim });
   pick(h, { bin: { seat: D, card: 'Blightwalker' } });
-  pass(h); pass(h);
+  pass(h);
   for (let guard = 8; h.state.stack.length && guard > 0; guard--) pass(h);
   const u = unitsOf(h, D).find(x => x.card === 'Blightwalker');
   assert.ok(u, 'the replacement arrived under the bin seat (D)');

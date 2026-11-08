@@ -463,7 +463,6 @@ test('cr:annexd.reveal.glimpse.public — the cards a battle glimpse reveals are
   all.push(...applyToRoom(room, { type: 'playCard', seat: A, handIndex: giveCard(room, A, 'Foretell' as CardName) }));
   const revealed = deckOf(room.state, A).slice(0, 1);
   all.push(...applyToRoom(room, { type: 'passPriority', seat: room.state.priority! }));
-  all.push(...applyToRoom(room, { type: 'passPriority', seat: room.state.priority! }));
   for (const seat of [A, D]) {
     const g = onWire(all, seat).filter(e => e.type === 'glimpsed');
     assert.equal(g.length, 1, `seat ${seat} is sent the reveal`);
@@ -490,7 +489,6 @@ test('cr:annexd.reveal.resolving.battle-only — outside battle the other player
   const b = roomToAttack('U24T', 24408);
   giveRes(b.room, b.A, 'water', 3);
   applyToRoom(b.room, { type: 'playCard', seat: b.A, handIndex: giveCard(b.room, b.A, 'Premonition' as CardName) });
-  applyToRoom(b.room, { type: 'passPriority', seat: b.room.state.priority! });
   applyToRoom(b.room, { type: 'passPriority', seat: b.room.state.priority! });
   assert.equal(b.room.state.decision?.seat, b.A);
   assert.equal(viewFor(b.room.state, b.D, null).resolving?.card, 'Premonition', 'control: in battle the other player is shown the resolving item');
@@ -535,7 +533,7 @@ test('cr:annexd.reveal.hidden-names.look-at — Thought Extraction aimed at the 
   h.state.players[D]!.hand = ['Good Whale', 'Shard Sprite'] as CardName[];
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Thought Extraction') });
   pick(h, { player: D });
-  pass(h); pass(h);
+  pass(h);
   pick(h, 0);
   assert.ok(h.state.players[D]!.bin.includes('Good Whale'), 'control: the spell resolved and discarded');
   assert.ok(logFor(h, A).some(l => l.includes('Shard Sprite') && l.includes('Good Whale')), 'the looker is told the cards seen');
@@ -555,7 +553,7 @@ test('cr:annexd.reveal.hidden-names.moved-card — Bripp: the recycled card is n
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Bripp') });
   pick(h, { player: D });
   h.state.players[D]!.hand = ['Good Whale', 'Shard Sprite'] as CardName[];
-  pass(h); pass(h);
+  pass(h);
   pick(h, 0);
   assert.ok(logFor(h, A).some(l => l.includes('Bripp recycles Good Whale')), 'the chooser is told which card');
   assert.ok(!logFor(h, D).some(l => l.includes('Good Whale')), 'no line the other player receives names it');

@@ -121,7 +121,7 @@ test('CR 112.8: Channel Through gives a twice-hit unit ONE damage event (the Res
   pick(h, 1);                                           // X = 1, paid at cast (CR 107.2a)
   pick(h, { player: A });                               // CR 110.2b: slot 0, target opponent
   pick(h, { unit: ally });                              // the one cast-time ally target
-  pass(h); pass(h);                                     // resolve (both distributed points auto-aim)
+  pass(h); // resolve (both distributed points auto-aim)
   const hits = hitsOn(h.events.slice(mark), victim);
   assert.equal(hits.length, 1, 'the sole enemy unit took both points as ONE hit');
   assert.equal(hits[0]!.data?.n, 2, 'for 2');
@@ -144,7 +144,7 @@ test('CR 112.8: Awoken Tomb reads its OWN share as X, not the batch total', () =
   pick(h, 1);
   pick(h, { player: A });                               // CR 110.2b: slot 0, target opponent
   pick(h, { unit: ally });
-  pass(h); pass(h);                                     // Channel Through resolves
+  pass(h); // Channel Through resolves
   while (h.state.stack.length) pass(h);                 // and the Tomb's trigger after it
   const made = unitsOf(h, A).filter(u => u.card === 'Unit Token');
   assert.equal(made.length, 1, 'the Tomb made its one unit');
@@ -188,7 +188,7 @@ test('CR 112.8: "each unit" damage kills simultaneously — every unit hears the
   h.do({ type: 'declareAttack', seat: A, columns: [[x]] });
   const mark = h.events.length;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Haboob') });
-  pass(h); pass(h);
+  pass(h);
   const evs = damageEvents(h.events.slice(mark));
   assert.equal(evs.length, 2, 'one event per unit');
   assert.deepEqual(evs.map(e2 => e2.data?.total), [2, 2], 'both hear "this effect dealt 2"');
@@ -244,7 +244,7 @@ test('CR 110.2b: the distribution is NOT a target — nothing new reaches the st
   pick(h, { unit: ally });
   const declared = h.state.stack[h.state.stack.length - 1]!.parts[0]!.targets.length;
   assert.equal(declared, 2, 'two declared targets and no more, whatever the distribution does');
-  pass(h); pass(h);                                     // resolve
+  pass(h); // resolve
   // "then, when it resolves, you just distribute the damage without targeting
   // or going onto the stack or anything" — the two points are a mid-resolution
   // choose between the opponent's two units

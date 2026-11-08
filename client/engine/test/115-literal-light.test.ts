@@ -210,7 +210,7 @@ test("Divine Foresight: the opponent's hand does not go into the shared log", ()
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Divine Foresight') });
   pick(h, { player: D });
-  pass(h); pass(h);                                          // resolve → the hand pick
+  pass(h); // resolve → the hand pick
   const leak = h.events.filter(e => e.msg.includes('Shard Sprite'));
   assert.ok(leak.length, 'the looker still gets the line — it is a LOOK, not a secret');
   for (const e of leak) {

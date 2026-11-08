@@ -41,7 +41,7 @@ function exchangedBlocker(seed: number, name: string): { h: Harness; A: Seat; D:
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Organic Exchange') });
   pick(h, { unit: src });
   pick(h, { unit: a2 });
-  pass(h); pass(h);                                   // the exchange resolves
+  pass(h); // the exchange resolves
   const b = h.state.battle!;
   assert.deepEqual(b.columns[1], [src], `${name} now stands in the attacking line`);
   assert.equal(ent(h, src)!.controller, A, 'under the attacker');

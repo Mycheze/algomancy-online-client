@@ -75,7 +75,7 @@ test('Burn the Blight: removes counters from units AND the rot/debt on players',
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Burn the Blight') });
-  pass(h); pass(h);                                     // resolve
+  pass(h); // resolve
   assert.equal(ent(h, atk)!.counters, 0, 'counters gone from the attacker');
   assert.equal(ent(h, def)!.counters, 0, 'and from the defender');
   assert.deepEqual(effStats(h, def), [1, 1]);
@@ -118,7 +118,7 @@ test('Cull: each player sacrifices a unit (region-scoped, CR 601.4d)', () => {
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Cull') });
-  pass(h); pass(h);                                     // resolve → D picks (A has only one unit here)
+  pass(h); // resolve → D picks (A has only one unit here)
   assert.equal(h.state.decision!.seat, D, 'only the player with a choice is asked');
   pick(h, d2);
   assert.ok(!ent(h, atk), 'the attacker was auto-sacrificed (its only unit here)');
@@ -206,11 +206,11 @@ test('Leave None Pure: deletes only a unit with no stat changes', () => {
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Leave None Pure') });
   notOffered(h, { unit: dirty }, 'it has a +1/+1 counter');
   pick(h, { unit: atk });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(ent(h, dirty), 'a unit with a +1/+1 counter is not deleted');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Leave None Pure') });
   pick(h, { unit: clean });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, clean), 'an untouched unit is deleted');
   assert.ok(h.state.players[D]!.bin.includes('Unit Token'), 'deleted → bin');
   finishBattle(h);
@@ -439,7 +439,7 @@ test('Tilling the Graves: two bin units back to hand, then a discard', () => {
     'only UNITS in the bin are offered, and both are required (CR 110.7) — no "No targets"');
   pick(h, { bin: { seat: A, card: 'Curio Drifter' } });
   pick(h, { bin: { seat: A, card: 'Bumblecrab' } });
-  pass(h); pass(h);                                     // resolve
+  pass(h); // resolve
   assert.equal(h.state.decision!.kind, 'payOrDecline', 'and "then discard a card" follows');
   const chosen = String(h.state.decision!.options[0]!.label);
   pick(h, 0);
@@ -465,7 +465,7 @@ test('Wake the Dead: plays up to two units out of ANY bin, total cost 8 or less'
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Wake the Dead') });
-  pass(h); pass(h);                                     // resolve → the first pick
+  pass(h); // resolve → the first pick
   assert.equal(h.state.decision!.seat, A);
   pick(h, `${A}:0`);                                    // the cost-6 whale from my own bin
   pick(h, `${D}:0`);                                    // 2 left of the budget: the cost-1 drifter
@@ -490,7 +490,7 @@ test('Wake the Dead: the [8] budget is shared — a second pick over budget is n
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Wake the Dead') });
-  pass(h); pass(h);
+  pass(h);
   pick(h, `${A}:0`);                                    // 2 of the budget left
   assert.equal(h.state.decision, null, 'nothing else fits — no second choice is offered');
   while (h.state.stack.length && !h.state.decision) pass(h);   // CT-245: the play resolves

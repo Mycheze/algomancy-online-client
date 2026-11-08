@@ -63,7 +63,7 @@ test('Cosmic Reversal recalls the spell but not the Ambush, which stays and reso
   const { h, A, D, ally, amb } = ambushOverASpell(47501);
   passUntil(h, A);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Cosmic Reversal') });
-  pass(h); pass(h);                                    // resolve the Reversal only
+  pass(h); // resolve the Reversal only
   assert.ok(h.state.players[A]!.hand.includes('Flame of History'),
     'the spell effect was recalled to its controller\'s hand');
   assert.ok(h.state.stack.some(i => i.id === amb.id),

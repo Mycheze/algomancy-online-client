@@ -93,7 +93,7 @@ test('Battle: two target units fight (mutual power damage; both targets at cast)
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Battle') });
   pick(h, { unit: atk });                             // first target (at cast)
   pick(h, { unit: bubbD });                           // second target (at cast — count: 2)
-  pass(h); pass(h);                                   // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, atk), "the 1/1 died to Bubb's 5 power");
   assert.equal(ent(h, bubbD)!.damage, 1, "Bubb took the 1/1's 1 power back");
   finishBattle(h);
@@ -161,7 +161,7 @@ test('Crevice Lurker: CR 111.10f, 111.6 — in battle an activated [1] costs [2]
   h.do({ type: 'activateAbility', seat: D, entityId: auric, abilityIndex: 0 });
   assert.equal(openMana(h, D), 0, 'the activation spent [1] printed + [1] tax');
   pick(h, { recall: ally });                          // CR 111.2: the recall half of the cost
-  pass(h); pass(h);                                   // resolve
+  pass(h); // resolve
   finishBattle(h);
 });
 
@@ -218,14 +218,14 @@ test('Crevice Lurker: CR 111.10h — declining prevents the trigger and does NOT
   h.do({ type: 'declareAttack', seat: A, columns: [[lurker]] });   // the tax walks in with the Lurker
   pass(h);                                            // priority → D
   const hand0 = h.state.players[D]!.hand.length;
-  h.do({ type: 'activateAbility', seat: D, entityId: blob, abilityIndex: 0, via: 'augment' });
+  h.do({ type: 'activateAbility', seat: D, entityId: blob, abilityIndex: 0, via: 'augment', holdPriority: true });
   assert.equal(h.state.decision?.kind, 'payOrDecline',
     "the life loss queued the Painseeker draw — its controller is asked");
   pick(h, false);                                     // decline — the draw does not happen
   assert.equal(h.state.players[D]!.hand.length, hand0, 'prevented: no draw');
   assert.ok(!('ability:Astral Painseeker#0' in ent(h, seeker)!.budgets),
     'the declined trigger kept its [Switch1] (CR 109.9b)');
-  pass(h);                                            // A passes; D responds with a second activation
+  // D kept priority and makes a second activation
   h.do({ type: 'activateAbility', seat: D, entityId: blob, abilityIndex: 0, via: 'augment' });
   assert.equal(h.state.decision?.kind, 'payOrDecline',
     'the SAME [Switch1] asks again the same turn — the budget really was kept');
@@ -267,7 +267,7 @@ test('Crevice Lurker: CR 720.4a — applying an augment during battle is NOT tax
   pass(h);                                            // priority → D
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Soul Reaver'), hostId: host });
   assert.equal(openMana(h, D), 0, 'exactly the printed [3] — the tax does not touch a mod application');
-  pass(h); pass(h);                                   // the Virus item resolves off the stack (CR 723.3)
+  pass(h); // the Virus item resolves off the stack (CR 723.3)
   assert.equal(ent(h, host)!.mods.length, 1);
   finishBattle(h);
 });
@@ -309,7 +309,7 @@ test('Crevice Lurker: CR 111.10a — two Lurkers compound: CostMod deltas SUM, s
   h.do({ type: 'activateAbility', seat: D, entityId: auric, abilityIndex: 0 });
   assert.equal(openMana(h, D), 0, 'paid [3]');
   pick(h, { recall: ally });
-  pass(h); pass(h);
+  pass(h);
   finishBattle(h);
 });
 
@@ -441,7 +441,7 @@ test("Enigmatic Warder: [two] activated ([Augment] text, via: 'augment') redirec
   const boonId = h.state.stack[0]!.id;
   h.do({ type: 'activateAbility', seat: D, entityId: warder, abilityIndex: 0, via: 'augment' });
   pick(h, { stack: boonId });
-  pass(h); pass(h);                                   // Warder resolves: the Boon now targets it
+  pass(h); // Warder resolves: the Boon now targets it
   pass(h); pass(h);                                   // Boon resolves on the new target
   assert.deepEqual(effStats(h, warder), [5, 6], 'the Warder stole the +4/+4');
   assert.deepEqual(effStats(h, atk), [1, 1], 'the original target got nothing');
@@ -467,7 +467,7 @@ test('Fight: BOTH units are cast-time targets, ally first (CR 110.1a)', () => {
   assert.deepEqual(h.state.decision!.options.map(o => o.value), [{ unit: atk }],
     'the second slot offers the other units, and never the ally again');
   pick(h, { unit: atk });
-  pass(h); pass(h);                                   // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, atk), 'the 1/1 died to Bubb');
   assert.equal(ent(h, bubbD)!.damage, 1, 'Bubb took 1 back');
   finishBattle(h);
@@ -520,7 +520,7 @@ test('Graxxlid: [once][one] negates an effect targeting it; that controller draw
   const handA = h.state.players[A]!.hand.length;
   h.do({ type: 'activateAbility', seat: D, entityId: grax, abilityIndex: 0, via: 'augment' });
   pick(h, { stack: boonId });
-  pass(h); pass(h);                                   // Graxxlid resolves
+  pass(h); // Graxxlid resolves
   assert.ok(!h.state.stack.some(i => i.id === boonId), 'CR 704.4: the negated Boon left the stack');
   assert.ok(h.state.players[A]!.bin.includes('Channeled Boon'), 'and went to its bin');
   assert.equal(h.state.players[A]!.hand.length, handA + 1, "the Boon's controller drew a card");
@@ -593,7 +593,7 @@ test('Graxxlid: a Virus being applied to me IS an effect targeting me', () => {
     'the virus aimed at Graxxlid is a legal target for it');
   h.do({ type: 'activateAbility', seat: D, entityId: grax, abilityIndex: 0, via: 'augment' });
   pick(h, { stack: virus });
-  pass(h); pass(h);                                   // Graxxlid resolves
+  pass(h); // Graxxlid resolves
   assert.ok(!h.state.stack.some(i => i.id === virus), 'CR 704.4: the negated virus left the stack');
   assert.equal(h.state.players[A]!.hand.length, handA + 1, "the virus's controller drew a card");
   assert.ok(!ent(h, grax)!.mods.some(m => ent(h, m)?.card === 'Crumbling Ancient'),
@@ -612,7 +612,7 @@ test('Haboob: deals 1 damage to each unit in the battle region (both sides)', ()
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Haboob') });
-  pass(h); pass(h);                                   // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, atk), "the caster's own sweep killed the 1/1 attacker");
   assert.equal(ent(h, bubbD)!.damage, 1, "the caster's Bubb was hit too (each unit)");
   finishBattle(h);

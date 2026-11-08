@@ -59,7 +59,7 @@ test('Aberrant Statweaver: "your units are base 3/3" — in play and virus-donat
   h.do({ type: 'declareAttack', seat: A, columns: [[whale]] });
   assert.deepEqual(effStats(h, whale), [7, 5], 'in the battle region, away from the in-play copy');
   h.do({ type: 'augment', seat: A, from: 'hand', index: h.state.players[A]!.hand.indexOf('Aberrant Statweaver'), hostId: whale });
-  pass(h); pass(h);                                         // resolve the virus
+  pass(h); // resolve the virus
   assert.equal(ent(h, whale)!.mods.length, 1, 'virus augment attached in battle');
   assert.deepEqual(effStats(h, whale), [3, 3], 'the donated static sets the host base 3/3');
   finishBattle(h);
@@ -168,7 +168,7 @@ test('CR 710.7: Ancient One offers an adjacent ally\'s ACTIVATED ability, and lo
 
   // THE ACCEPT SIDE, which used to refuse what the other half offered
   h.do({ type: 'activateAbility', seat: A, entityId: ancient, abilityIndex: 0, via: { face: 'Omniwield Evoker' } });
-  pass(h); pass(h);                                         // resolve it
+  pass(h); // resolve it
   assert.equal(ent(h, ancient)!.counters, 1, '"me" is the Ancient One — it took the counter');
   assert.equal(ent(h, evoker)!.counters, 0, 'and the neighbour it was borrowed from did not');
   assert.deepEqual(effStats(h, ancient), [2, 2], 'a 1/1 with one +1/+1 counter');
@@ -209,7 +209,7 @@ test('the [once] budget is keyed by FACE — two projected faces do not share on
   }
 
   h.do({ type: 'activateAbility', seat: A, entityId: ancient, abilityIndex: 0, via: { face: 'Debt Blep', text: 'augment' } });
-  pass(h); pass(h);                                         // resolve it
+  pass(h); // resolve it
   assert.deepEqual(effStats(h, ancient), [4, 4], 'the borrowed +3/+3 landed on the Ancient One');
   assert.deepEqual(activations(h, A, ancient), [{ face: 'Deferral Drone', text: 'augment' }],
     'the Blep\'s [once] is spent and the Drone\'s is NOT — one budget each, keyed by face');
@@ -235,7 +235,7 @@ test('an activateAbility carrying via:{face} replays byte for byte', () => {
   const from = h.actions.length;
   h.do({ type: 'declareAttack', seat: A, columns: [[evoker, ancient]] });
   h.do({ type: 'activateAbility', seat: A, entityId: ancient, abilityIndex: 0, via: { face: 'Omniwield Evoker' } });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, ancient)!.counters, 1);
   assert.ok(h.actions.slice(from).some(a => JSON.stringify(a).includes('"face":"Omniwield Evoker"')),
     'the new via arm really is in the log being replayed');
@@ -262,7 +262,7 @@ test('Arcane Echo: creates a copy of a chosen token (the unit copy arrives in th
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Arcane Echo') });
   assert.equal(h.state.decision!.seat, A, 'the target is asked for as it is cast');
   pick(h, { unit: robot });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   const copies = unitsOf(h, A).filter(u => u.card === 'Robot');
   assert.equal(copies.length, 1, 'a Robot copy was created for the caster');
   assert.ok(copies[0]!.token, 'the copy is a token');
@@ -434,7 +434,7 @@ test('Body Swap: exchanges the base stats of two target units until regroup', ()
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Body Swap') });
   pick(h, { unit: tok });                                   // two targets, collected at cast
   pick(h, { unit: whale });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.deepEqual(effStats(h, tok), [7, 5], 'the 1/1 wears the whale\'s base');
   assert.deepEqual(effStats(h, whale), [1, 1], 'and vice versa');
   finishBattle(h);
@@ -456,7 +456,7 @@ test('Borrower of Forms: erases the target and takes its stats and counters', ()
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
   pick(h, { unit: whale });
-  pass(h); pass(h);                                         // CR 303.11: ONE resolution — erase, spawn, copy
+  pass(h); // CR 303.11: ONE resolution — erase, spawn, copy
   assert.ok(!ent(h, whale), 'the target was erased');
   assert.ok(!h.state.players[D]!.bin.includes('Good Whale'), 'erased, not binned');
   const bof = unitsOf(h, A).find(u => u.card === 'Borrower of Forms')!;
@@ -474,7 +474,7 @@ function borrow(h: Harness, A: Seat, target: EntityId): Entity {
   giveResources(h, A, 'metal', 7);                          // mmm/7
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
   pick(h, { unit: target });
-  pass(h); pass(h);                                         // resolve: erase + spawn, already copied
+  pass(h); // resolve: erase + spawn, already copied
   return unitsOf(h, A).find(u => u.card === 'Borrower of Forms')!;
 }
 
@@ -576,7 +576,7 @@ test('CR 710.2: Borrower of Forms offers the borrowed ACTIVATED ability, and kee
   assert.deepEqual(activations(h, A, bof.id), ['own'],
     'the erased unit\'s activated ability is offered on the body that became it');
   h.do({ type: 'activateAbility', seat: A, entityId: bof.id, abilityIndex: 0 });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, bof.id)!.counters, 1, 'and it fires');
   assert.deepEqual(effStats(h, bof.id), [3, 2], 'base 2/1 plus the counter it just gave itself');
   finishBattle(h);
@@ -626,7 +626,7 @@ test('CR 303.11: the Oracle\'s "defense > power" watcher sees the COPIED body, n
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
   pick(h, { unit: crab });
   const hand = h.state.players[A]!.hand.length;
-  pass(h); pass(h);                                         // resolve the spell
+  pass(h); // resolve the spell
   // As in the CR 303.10 tests: check the QUEUEING, which is the instant the watcher
   // read the body — not the card, which lands a whole resolution later.
   assert.ok(h.log.some(l => l.includes('Trigger: Nectar Ridge Oracle')),
@@ -647,7 +647,7 @@ test('CR 303.11: becoming the copy is NOT a trigger — no spurious trigger-orde
   assert.equal(ent(h, wanderer)!.region, region, 'the watcher is where the body will arrive');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
   pick(h, { unit: crab });
-  pass(h); pass(h);                                         // resolve the spell
+  pass(h); // resolve the spell
   assert.equal(h.state.decision, null,
     'the Borrower has no trigger of its own to race the Wanderer, so nothing is ordered');
   assert.deepEqual(h.state.stack.map(i => i.label), ['Boreal Wanderer: deal 2 damage to each opponent'],
@@ -689,7 +689,7 @@ test('CR 303.11: the body wears the borrowed IDENTITY from the instant it enters
   const seen = watchBorrowerSpawn(h, () => {
     h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
     pick(h, { unit: siren });
-    pass(h); pass(h);
+    pass(h);
   });
   assert.ok(seen, 'the body spawned and the spawn event fired');
   assert.equal(seen!.name, 'Sporebloom Siren',
@@ -709,7 +709,7 @@ test('CR 303.11 (negative control): a Borrower whose target is gone spawns no bo
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
   pick(h, { unit: crab });
   withE(h, e => e.destroy(e.entity(crab)!, 'dies'));         // the form walks away in response
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!unitsOf(h, A).some(u => u.card === 'Borrower of Forms'),
     'CR 704.6: the whole item fizzles, so there is no body to wear anything');
   assert.ok(h.state.players[A]!.bin.includes('Borrower of Forms'), 'and the card is binned (CR 406.4)');
@@ -728,13 +728,13 @@ test('CR 303.11: two Borrowers of Forms in ONE region each keep their own borrow
   const region = defendingCaster(h, A, D, 14);              // two castings
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
   pick(h, { unit: crab });
-  pass(h); pass(h);                                         // #1 resolves — body #1 is in play
+  pass(h); // #1 resolves — body #1 is in play
   const first = unitsOf(h, A).find(u => u.card === 'Borrower of Forms')!;
   assert.ok(first, 'the first body spawned');
   pass(h);                                                  // priority comes back round to A
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
   pick(h, { unit: slink });
-  pass(h); pass(h);                                         // #2 resolves in the SAME region
+  pass(h); // #2 resolves in the SAME region
   const second = unitsOf(h, A).find(u => u.card === 'Borrower of Forms' && u.id !== first.id)!;
   assert.ok(second, 'the second body spawned');
   const e = new E(h.state);
@@ -804,7 +804,7 @@ test('Containment Protocol: negates all triggered and activated effects on the s
   pick(h, { unit: dTok });                                  // the kraken trigger targets the token
   pass(h);                                                  // CR 605.1a: A acts first, and passes
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Containment Protocol') });
-  pass(h); pass(h);                                         // resolve the Protocol first
+  pass(h); // resolve the Protocol first
   assert.ok(h.log.some(l => l.includes('is negated')), 'the triggered effect was negated');
   assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated trigger left the stack at once');
   assert.ok(ent(h, dTok), 'the token was never recalled');
@@ -915,7 +915,7 @@ test('Deformant: sacrifice me + an ally, delete all units costing our counter to
   pick(h, { unit: ally });                                  // total counters: 1 + 2 = 3
   assert.ok(!ent(h, def) && !ent(h, ally), 'both sacrificed');
   assert.deepEqual(h.state.players[D]!.bin.sort(), ['Deformant', 'Unit Token']);
-  pass(h); pass(h);                                         // resolve the activation
+  pass(h); // resolve the activation
   assert.ok(!ent(h, b1) && !ent(h, b2), 'all cost-3 units in the region deleted');
   assert.equal(h.state.players[A]!.bin.filter(c => c === 'Bripp').length, 2, 'deleted → bin');
   finishBattle(h);
@@ -968,7 +968,7 @@ test('Deformant: "sacrifice me AND another ally" is ONE payment, made in the CAS
   // and there is no priority window BETWEEN cost and effect: the first thing
   // either player may do after the payment is respond to the item itself
   assert.equal(h.state.decision, null, 'no further decision between cost and effect');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.stack.length, 0, 'resolved');
   finishBattle(h);
 });
@@ -1005,7 +1005,7 @@ test('Deformant: the counter total is read off the RECEIPT as of payment, not of
     'the receipt names both units and their counters as of payment');
   // …changed after payment, and it must not move the total
   withE(h, e => { e.addCounters(e.entity(third)!, 4); });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, bripp), 'the cost-3 unit is deleted — the total is 1 + 2, not 9');
   assert.ok(ent(h, whale), 'and nothing else is');
   assert.ok(ent(h, third), 'the third unit was never part of the cost');
@@ -1062,7 +1062,7 @@ test('Discharge: remove X +1/+1 counters from allies, deal X to target unit', ()
   assert.equal(ent(h, a1)!.counters, 0, 'the counters are spent as the spell is cast…');
   assert.equal(h.state.stack.length, 1, '…and only then does it reach the stack');
   assert.equal(h.state.stack[0]!.parts[0]!.costPaid!.x, 3, 'X = 3, fixed at cast');
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, kraken), '3 damage kills the 5/3');
   assert.ok(h.state.players[D]!.bin.includes('Minor Kraken'));
   assert.equal(ent(h, a1)!.counters, 0, 'two counters paid');
@@ -1185,13 +1185,13 @@ test('Download: steals a chosen enemy token; a stolen Fireball recasts with new 
   assert.equal(h.state.decision!.options.length, 2, 'both enemy tokens offered — and only those');
   notOffered(h, { unit: atk }, 'your own attacker is not an enemy token');
   pick(h, { unit: fb });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.equal(ent(h, fb)!.controller, A, 'the Fireball swapped sides (CR 711.1)');
   assert.equal(ent(h, fb)!.owner, D, 'owner unchanged');
   // "you may choose new targets": the new controller casts it fresh
   h.do({ type: 'castSpellToken', seat: A, entityId: fb });
   pick(h, { unit: robot });
-  pass(h); pass(h);                                         // Fireball 3 resolves
+  pass(h); // Fireball 3 resolves
   assert.ok(!ent(h, robot), 'the stolen Fireball killed its old owner\'s Robot');
   finishBattle(h);
 });
@@ -1352,7 +1352,7 @@ test('Download steals a MODDED unit token: the augment changes controller with i
   const mark = h.events.length;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Download') });
   pick(h, { unit: robot });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
 
   assert.equal(ent(h, robot)!.controller, A, 'the Robot swapped sides (CR 711.1)');
   assert.equal(ent(h, robot)!.owner, D, 'owner unchanged');

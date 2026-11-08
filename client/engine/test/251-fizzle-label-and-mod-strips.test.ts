@@ -134,7 +134,7 @@ function jellyFizzle(seed: number): Fizzle {
   pick(h, { unit: target });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: target });
-  pass(h); pass(h);                                  // the Arc resolves; the whale dies
+  pass(h); // the Arc resolves; the whale dies
   assert.ok(!ent(h, target), 'the fixture really removed the only target');
   pass(h);                                           // …and the window that follows it
   const jelly = h.state.stack.find(i => i.card === 'Jelly');

@@ -54,7 +54,7 @@ function burnBoard(seed: number, mine: string[], victimSide: 'enemy' | 'ally', k
   const hand0 = handOf(h, A);
   const evs = during(h, () => {
     h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Burn the Blight') });
-    pass(h); pass(h); pass(h); pass(h);
+    pass(h); pass(h); pass(h);
   });
   return { h, A, D, victim, evs, hand0 };
 }
@@ -112,7 +112,7 @@ test('a MOVE removes from the source and puts on the destination: Flux Resonator
     h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Scrap For Parts') });
     pick(h, { unit: enemy });
     pick(h, { unit: mine });
-    pass(h); pass(h);
+    pass(h);
   });
   assert.equal(ent(h, enemy)!.counters, 0, 'the source is stripped bare, not pushed below zero');
   assert.equal(ent(h, mine)!.counters, 3, 'the destination is a placement by me: plus one');

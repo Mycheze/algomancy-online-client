@@ -485,7 +485,7 @@ export const BATCH_C: Record<string, Scenario> = {
       'You are going to put a Virus on your own unit, aim a big spell at their face, and then kill '
       + 'the host while that spell is still on the stack. The augment should eat your own spell.\n'
       + '1. Augment Molten Riftbreaker onto YOUR OWN "The Foretold". Pass so it attaches.\n'
-      + '2. Play Arc Lightning and aim it at "Tester Bot" — their face, 6 damage. DO NOT PASS: it '
+      + '2. Hold Ctrl and play Arc Lightning at "Tester Bot" — their face, 6 damage. It '
       + 'has to still be sitting on the stack.\n'
       + '3. Play Luminous Arc and aim it at your OWN "The Foretold" (6 damage — it is a 3/3, so it '
       + 'dies and the Riftbreaker goes with it). Now pass.\n'

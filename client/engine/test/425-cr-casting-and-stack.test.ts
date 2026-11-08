@@ -131,7 +131,7 @@ test('cr:effects.casting.other-zones.cache-widening — a glimpsed Virus in the 
   const opt = h.legal(D).find(a => a.type === 'augment' && a.from === 'cache' && a.hostId === atk);
   assert.ok(opt, 'offered onto the enemy unit in the battle');
   h.do(opt!);
-  pass(h); pass(h);
+  pass(h);
   assert.ok(h.state.entities[atk]!.mods.some(m => h.state.entities[m]?.card === "Möbius's Corruption"),
     'the Virus is on the attacking unit');
 });
@@ -178,7 +178,7 @@ test('cr:effects.resolution.fizzle.partial — Twin Flame with one of two target
   if (h.state.decision) pick(h, { unit: w2 });
   while (h.state.decision) pick(h, h.state.decision.options[0]!.value);
   withE(h, e => e.destroy(e.s.entities[w1]!, 'dies'));
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, w2)!.damage, 2, 'the remaining target received its 2 damage');
   finishBattle(h);
 });
@@ -254,7 +254,7 @@ test('cr:effects.resolution.fizzle.pair — Fight that loses one target does not
   pick(h, { unit: theirs });
   withE(h, e => e.destroy(e.s.entities[theirs]!, 'dies'));
   const before = h.log.length;
-  pass(h); pass(h);
+  pass(h);
   const tail = h.log.slice(before);
   assert.ok(!h.state.stack.some(i => i.card === 'Fight'), 'Fight has left the stack');
   assert.equal(ent(h, mine)!.damage, 0, 'the remaining target is not acted on');
@@ -279,7 +279,7 @@ test('cr:effects.resolution.fizzle.pair — Organic Exchange that loses one targ
   pick(h, { unit: theirs });
   while (h.state.decision) pick(h, h.state.decision.options[0]!.value);
   withE(h, e => e.destroy(e.s.entities[theirs]!, 'dies'));
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!h.state.stack.some(i => i.card === 'Organic Exchange'), 'Organic Exchange has left the stack');
   assert.equal(ent(h, mine)!.controller, A, 'the survivor stays with its controller');
   assert.equal(ent(h, third)!.controller, D, 'no other unit changes hands');
@@ -299,14 +299,14 @@ test('cr:effects.resolution.destination.unstable — a spell played from the bin
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.state.players[A]!.bin = ['Luminous Arc'];
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Abyssal Evocation') });
-  pass(h); pass(h);
+  pass(h);
   if (h.state.priority !== A) pass(h);
   const bi = h.state.players[A]!.bin.indexOf('Luminous Arc');
   h.do({ type: 'playFromBin', seat: A, binIndex: bi });
   if (h.state.decision) pick(h, { unit: victim });
   assert.ok(h.state.stack.some(i => i.card === 'Luminous Arc'), 'the Arc is on the stack');
   withE(h, e => { e.destroy(e.s.entities[victim]!, 'dies'); });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(h.log.some(l => /fizzles/.test(l)), 'the Arc fizzled');
   assert.equal(h.state.players[A]!.bin.includes('Luminous Arc'), false, 'not in the bin');
   assert.equal(new E(h.state).erased(A).includes('Luminous Arc'), true, 'erased instead');
@@ -384,7 +384,7 @@ test('cr:effects.playing.what-is-played — a unit and a spell played from hand 
   while (h.state.stack.length) pass(h);
   h.state.players[D]!.bin.push('Trench Stalker');
   give(h, D, 'Jelly'); give(h, D, 'Jelly');
-  while (h.state.priority !== D) pass(h);
+  for (let g = 8; g-- > 0 && h.state.priority !== D && h.state.priority !== null;) pass(h);
   const offer = h.legal(D).find(a => a.type === 'playFromBin');
   assert.ok(offer, 'the bin play is offered');
   const m2 = h.events.length;
@@ -446,7 +446,7 @@ test('cr:effects.playing.put-into-play — a unit Wake the Dead plays counts as 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Wake the Dead') });
   const m0 = h.events.length;
-  pass(h); pass(h);
+  pass(h);
   let g = 0;
   while (h.state.decision && g++ < 5) {
     const dec = h.state.decision;
@@ -646,7 +646,7 @@ test('cr:effects.casting.x.variable-cost — Discharge with two counters removed
   pick(h, { doneCost: true });
   pick(h, { unit: victim });
   assert.equal(h.state.stack[0]!.parts[0]!.costPaid!.x, 2, 'X is the amount paid');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, victim)!.damage, 2, 'it deals X');
 });
 
@@ -678,7 +678,7 @@ test('cr:effects.casting.spell-tokens — casting a spell token asks for its tar
   pick(h, { player: A });
   assert.equal(h.state.stack.length, 1, 'on the stack');
   assert.equal(h.state.priority, A, 'and answerable');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.players[A]!.life, life - 3, 'it resolves');
 });
 
@@ -708,7 +708,7 @@ test('cr:effects.priority.stack.add-while-resolving — after the top of a two-i
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Luminous Arc') });
   pick(h, { unit: u });
   assert.equal(h.state.stack.length, 2);
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.stack.length, 1, 'the top resolved, one still waiting');
   assert.equal(ent(h, u)!.damage, 6);
   assert.equal(h.state.priority, A);
@@ -716,7 +716,7 @@ test('cr:effects.priority.stack.add-while-resolving — after the top of a two-i
   pick(h, { unit: u });
   assert.equal(h.state.stack.length, 2, 'a new effect went on top of the stack mid-resolution');
   assert.equal(h.state.stack[1]!.controller, A);
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.stack.length, 1, 'the new one resolved first');
   assert.equal(h.state.stack[0]!.controller, A, 'the original bottom item is still waiting');
   assert.equal(ent(h, u)!.damage, 12);
@@ -746,11 +746,16 @@ test('cr:effects.priority.priority.pass — after an action the other player rec
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Luminous Arc') });
   pick(h, { unit: u });
   assert.equal(h.state.priority, A, 'and after their response, the first player may respond again');
-  pass(h);
-  assert.equal(h.state.stack.length, 2, 'one pass resolves nothing');
-  assert.equal(h.state.priority, D);
+  assert.equal(h.state.passes, 1, 'the responder\'s cast was their pass');
   pass(h);
   assert.equal(h.state.stack.length, 1, 'two passes in succession resolve the top');
+  // a new window on what is left: here each player passes for themselves
+  assert.equal(h.state.priority, A);
+  pass(h);
+  assert.equal(h.state.stack.length, 1, 'one pass resolves nothing');
+  assert.equal(h.state.priority, D);
+  pass(h);
+  assert.equal(h.state.stack.length, 0, 'and the second resolves it');
 });
 
 test('cr:effects.priority.priority.no-response-to-pass — after one player passes, the other passing resolves the item with no further chance for the first', () => {
@@ -758,11 +763,11 @@ test('cr:effects.priority.priority.no-response-to-pass — after one player pass
   const u = vanilla(h, D, 1, 30);
   giveResources(h, A, 'fire', 2);
   giveResources(h, D, 'fire', 2);
-  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc'), holdPriority: true });
   pick(h, { unit: u });
-  h.do({ type: 'passPriority', seat: D });
-  assert.equal(h.state.stack.length, 1, 'a pass is not an effect');
   h.do({ type: 'passPriority', seat: A });
+  assert.equal(h.state.stack.length, 1, 'a pass is not an effect');
+  h.do({ type: 'passPriority', seat: D });
   assert.equal(h.state.stack.length, 0, 'the item resolved at once');
   assert.equal(ent(h, u)!.damage, 6);
   // empty stack: initiative passes, then the other: the step moves on
@@ -791,7 +796,7 @@ test('cr:effects.priority.window.order — a new window opens with the initiativ
   assert.equal(h.state.priority, D, 'priority passes to the non-initiative player');
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Luminous Arc') });
   pick(h, { unit: u });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.stack.length, 0);
   assert.equal(h.state.priority, A, 'the new window starts with the initiative player again');
 });
@@ -802,7 +807,7 @@ test('cr:effects.priority.window.resolve — two passes resolve the top item, a 
   giveResources(h, A, 'fire', 2);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: u });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, u)!.damage, 6, 'the top effect resolved');
   assert.equal(h.state.battle!.step, 'attackWindow', 'still the same step');
   assert.equal(h.state.priority, A, 'a new window, from the initiative player');
@@ -821,7 +826,7 @@ test('cr:effects.priority.resolving — while Premonition is resolving it cannot
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Premonition') });
   const waiting = h.state.stack[0]!;
   assert.ok(h.legal(A).some(a => a.type === 'augment' && (a as { hostStack?: number }).hostStack === waiting.id), 'control: while waiting, it can be augmented');
-  pass(h); pass(h);
+  pass(h);
   assert.ok(h.state.resolving, 'it is resolving');
   const id = h.state.resolving!.id;
   assert.deepEqual(h.legal(A), [], 'nothing is offered to the other player');
@@ -856,7 +861,7 @@ test('cr:effects.resolution.order.no-window — the choice Premonition asks whil
   giveResources(h, D, 'water', 3);
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Premonition') });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(h.state.decision, 'a choice mid-resolution');
   assert.deepEqual(h.legal(A), [], 'no window for the other player');
   assert.equal(refused(h, { type: 'passPriority', seat: A }), true);
@@ -872,13 +877,13 @@ test('cr:effects.resolution.destination — a resolved spell goes to its control
   const u = vanilla(h, D, 1, 30);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: u });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(h.state.players[A]!.bin.includes('Luminous Arc'), 'in its controller bin');
   assert.ok(!h.state.players[D]!.bin.includes('Luminous Arc'));
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Jelly') });
   pick(h, { unit: atk });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(unitsOf(h, D).some(x => x.card === 'Jelly'), 'the spell unit is in play');
   assert.ok(!h.state.players[D]!.bin.includes('Jelly'), 'not in the bin');
 });
@@ -890,12 +895,12 @@ test('cr:effects.resolution.destination.not-trashed — a spell that resolves in
   const v = vanilla(h, D, 1, 30);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: u });
-  pass(h); pass(h);
+  pass(h);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: v });
   withE(h, e => e.destroy(e.s.entities[v]!, 'dies'));
   const t1 = h.events.filter(e => e.type === 'trashed').length;
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.players[A]!.bin.filter(c => c === 'Luminous Arc').length, 2, 'both are in the bin');
   assert.equal(seen(h, 'trashed') - t1, 0, 'the fizzle trashed nothing');
   assert.ok(!h.events.filter(e => e.type === 'trashed').some(e => e.data?.['card'] === 'Luminous Arc'), 'no Arc was ever trashed');
@@ -910,7 +915,7 @@ test('cr:effects.resolution.fizzle — Arc Lightning whose only target died fizz
   pick(h, { unit: u });
   withE(h, e => e.destroy(e.s.entities[u]!, 'dies'));
   const dmg0 = seen(h, 'damage');
-  pass(h); pass(h);
+  pass(h);
   assert.ok(h.events.some(e => e.type === 'fizzled'), 'it fizzled');
   assert.equal(seen(h, 'damage') - dmg0, 0, 'no damage was dealt');
   assert.equal(h.state.players[D]!.life, lifeD);
@@ -929,7 +934,7 @@ test('cr:effects.resolution.fizzle.ambush — Lurking Slimebeast whose ambush ta
   pick(h, { unit: raider });
   assert.equal(h.state.stack[0]!.kind, 'ambush');
   withE(h, e => e.destroy(e.s.entities[raider]!, 'dies'));
-  pass(h); pass(h);
+  pass(h);
   assert.ok(h.events.some(e => e.type === 'fizzled'), 'it fizzled');
   assert.ok(!Object.values(h.state.entities).some(x => x.card === 'Lurking Slimebeast'), 'never spawned');
   assert.ok(h.state.players[A]!.bin.includes('Lurking Slimebeast'), 'in the bin');
@@ -942,7 +947,7 @@ test('cr:effects.resolution.fizzle.virus — a virus whose host died before it r
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Gzxyclop'), hostId: atk });
   assert.equal(h.state.stack[0]!.kind, 'virus');
   withE(h, e => e.destroy(e.s.entities[atk]!, 'dies'));
-  pass(h); pass(h);
+  pass(h);
   assert.ok(h.state.players[D]!.bin.includes('Gzxyclop'), 'in the bin');
   spawn(h, A, FILLER);
   while (h.state.priority !== D && h.state.priority !== null) pass(h);

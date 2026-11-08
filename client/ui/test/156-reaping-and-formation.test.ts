@@ -106,7 +106,7 @@ test('Invasive Reassignment: a kill by a STAT SWAP pays {Reaping} — off the pr
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Invasive Reassignment') });
   pick(h, { unit: eel });
   const hand = h.state.players[A]!.hand.length;
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, eel), 'the swapped 4/0 died at the death check — no damage was dealt to it');
   assert.equal(h.state.players[A]!.hand.length, hand + 1, '{Reaping}: the kill drew the caster a card');
   assert.equal(reapDraws(h), 1, 'exactly one payout — the kill diff, not a hand-rolled rider as well');
@@ -126,7 +126,7 @@ test('Noxious Demise: a kill by a -1/-1 COUNTER pays {Reaping} — off the print
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Noxious Demise') });
   pick(h, { unit: atk });
   const hand = h.state.players[D]!.hand.length;
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, atk), 'the 1/1 died to the counter — no damage was dealt to it');
   assert.equal(h.state.players[D]!.hand.length, hand + 1, '{Reaping}: the caster drew');
   assert.equal(reapDraws(h), 1, 'exactly once');
@@ -145,7 +145,7 @@ test('Invasive Reassignment: a swap that kills NOBODY draws nothing — the diff
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Invasive Reassignment') });
   pick(h, { unit: big });
   const hand = h.state.players[A]!.hand.length;
-  pass(h); pass(h);
+  pass(h);
   assert.ok(ent(h, big), 'a 3/8 is very much alive');
   assert.equal(h.state.players[A]!.hand.length, hand, 'nothing died, so nothing was reaped');
   assert.equal(reapDraws(h), 0);
@@ -164,7 +164,7 @@ test('Seismomancy: a kill by DAMAGE still pays {Reaping} exactly once — the di
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Seismomancy') });
   pick(h, { unit: victim });
   const hand = h.state.players[A]!.hand.length;
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, victim), 'killed by damage');
   assert.equal(h.state.players[A]!.hand.length, hand + 1, 'ONE card, not two');
   assert.equal(reapDraws(h), 1, 'one payout for one kill, however it was reached');
@@ -188,12 +188,11 @@ test('{Blessed} does not fire on a non-damage kill — Noxious Demise carrying a
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Noxious Demise') });
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Noxious Demise'), holdPriority: true });
   pick(h, { unit: atk });
   const item = h.state.stack.find(i => i.card === 'Noxious Demise')!;
-  pass(h);                                                    // A declines to answer
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Blessed Thing'), hostStack: item.id });
-  pass(h); pass(h);                                           // the virus resolves onto the spell
+  pass(h); // the virus resolves onto the spell
   // the control is only worth anything if the attribute really is ON the item
   const live = new E(h.state);
   const attrs = live.itemAttrs(live.s.stack.find(i => i.card === 'Noxious Demise')!);
@@ -221,7 +220,7 @@ test('Umbral Decay: an {Afflicting} counter-kill rots and draws NOTHING — the 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Umbral Decay') });
   pick(h, { unit: victim });
   const hand = h.state.players[A]!.hand.length;
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, victim), 'killed purely by counters');
   assert.equal(rotOf(h, D), 1, 'CR 802.23c: {Afflicting} rides the same diff and still fires');
   assert.equal(h.state.players[A]!.hand.length, hand,
@@ -239,7 +238,7 @@ test('Noxious Demise: {Reaping} without {Afflicting} draws and rots NOBODY — t
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Noxious Demise') });
   pick(h, { unit: atk });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!ent(h, atk));
   assert.equal(reapDraws(h), 1, '{Reaping} fired');
   assert.equal(rotOf(h, A), 0, 'and {Afflicting} did not — Noxious Demise does not carry it');
@@ -364,7 +363,7 @@ test('Galactic Germination: "target formation" is THE WHOLE SIDE — three units
   germ(h, A);
   const before = oneOnes(h, A);
   pick(h, { formation: A });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(oneOnes(h, A) - before, 3,
     "the owner ruled (2026-08-25) that a formation is a player's ENTIRE side: 3 units in "
     + '2 columns is 3, not the 2 of the column that was aimed at and not 1');
@@ -376,7 +375,7 @@ test('Galactic Germination: the OTHER formation is the blocking side, counted th
   germ(h, A);
   const before = oneOnes(h, A);
   pick(h, { formation: D });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(oneOnes(h, A) - before, 1, "one blocker in D's formation, one 1/1");
   finishBattle(h);
 });
@@ -401,7 +400,7 @@ test('Galactic Germination: the formation is read LIVE at resolution — a mid-b
   e.settle();
   h.state = e.s;
   assert.equal(new E(h.state).formationUnits(A).length, 4, 'four in it at RESOLUTION');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(oneOnes(h, A) - before, 4,
     'four 1/1s — one per unit in the formation AS IT STANDS AT RESOLUTION, not the '
     + 'three that were in it when the spell was cast (the joiners are spawned nontoken, '
@@ -421,7 +420,7 @@ test('Galactic Germination: the target IS a formation — the menu offers format
   assert.match(e.targetLabel({ formation: D }), /formation \(blocking\)/);
   assert.ok(e.targetStillLegal({ formation: A }), 'a formation is legal while its battle runs');
   pick(h, { formation: A });
-  pass(h); pass(h);
+  pass(h);
   finishBattle(h);
 });
 
@@ -438,7 +437,7 @@ test("Galactic Germination: the 'targeted' event names the formation, carrying i
     'DELIBERATELY no `unit`: what was targeted is the formation, not each unit standing in '
     + "it, so a `self: true` \"when I become targeted\" listener must not match");
   assert.match(evs[0]!.msg, /targets .*'s formation/, 'and the log says so in words');
-  pass(h); pass(h);
+  pass(h);
   finishBattle(h);
 });
 
@@ -455,7 +454,7 @@ test('Gravitational Correction: a formation target can be REDIRECTED to the othe
   pick(h, 0);                                                 // X = 0
   pick(h, { stack: gid });
   const before = oneOnes(h, A);
-  pass(h); pass(h);                                           // resolve the Correction
+  pass(h); // resolve the Correction
   assert.equal(h.state.decision?.kind, 'payOrDecline');
   pick(h, false);                                             // A declines to keep its target
   assert.deepEqual(offered(h).map(s => JSON.parse(s) as TargetRef), [{ formation: A }, { formation: D }],
@@ -479,7 +478,7 @@ test('Gatekeeper of Souls cannot compel a formation target — "if able", and it
     'both formations still offered — a Gatekeeper cannot make a formation-targeting spell '
     + 'aim at a unit, because there is no unit slot to aim');
   pick(h, { formation: A });
-  pass(h); pass(h);
+  pass(h);
   finishBattle(h);
 });
 
@@ -492,7 +491,7 @@ test('Galactic Germination: an EMPTY formation is still a formation — it creat
   e.settle();
   h.state = e.s;
   const before = oneOnes(h, A);
-  pass(h); pass(h);
+  pass(h);
   assert.equal(oneOnes(h, A) - before, 0, 'nobody in it, nothing created');
   assert.ok(h.log.some(l => /Galactic Germination: there is nobody in .*'s formation/.test(l)),
     'an effect that resolves into silence is indistinguishable from a bug (65-effect-conformance)');

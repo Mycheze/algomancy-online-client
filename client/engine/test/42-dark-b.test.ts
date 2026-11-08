@@ -394,7 +394,7 @@ test('report BPNS #301/#302: Wildfire kills a modded Hooba-Nan → it dies and i
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Wildfire') });
   pick(h, 4);                                              // X = 4: lethal to a 5/4
   pick(h, { unit: nan });
-  pass(h); pass(h);
+  pass(h);
   resolveAll(h);
 
   assert.equal(ent(h, nan), undefined, 'Hooba-Nan is gone');
@@ -1142,7 +1142,7 @@ test('Necromantic Rebuke: the payer PICKS which cards the ransom erases — the 
   pickRef(h, { erase: 'Unit Token' });                     // X = 1, paid at cast
   const tgt = h.state.decision!;
   h.do({ type: 'decide', seat: tgt.seat, choice: tgt.options.findIndex(o => o.label.includes('Flame')) });
-  pass(h); pass(h);                                        // resolve the Rebuke → the ransom
+  pass(h); // resolve the Rebuke → the ransom
   const pay = h.state.decision!;
   assert.equal(pay.seat, D, 'the pay-or-decline goes to the payer');
   h.do({ type: 'decide', seat: D, choice: pay.options.findIndex(o => o.label === 'erase 1') });
@@ -1179,7 +1179,7 @@ test('Necromantic Rebuke: a bin of exactly X is a FORCED set — everything goes
   pickRef(h, { erase: 'Unit Token' });                     // the bin empties → X = 2, closed
   const tgt = h.state.decision!;
   h.do({ type: 'decide', seat: tgt.seat, choice: tgt.options.findIndex(o => o.label.includes('Flame')) });
-  pass(h); pass(h);                                        // resolve the Rebuke → the ransom
+  pass(h); // resolve the Rebuke → the ransom
   const pay = h.state.decision!;
   h.do({ type: 'decide', seat: pay.seat, choice: pay.options.findIndex(o => o.label === 'erase 2') });
   // a zero-choice erase asks nothing: no WHICH prompt for a forced total set
@@ -1241,7 +1241,7 @@ test('Necromantic Rebuke: the ransom pick survives a JSON round-trip mid-decisio
   pickRef(h, { erase: 'Unit Token' });                     // X = 2
   const tgt = h.state.decision!;
   h.do({ type: 'decide', seat: tgt.seat, choice: tgt.options.findIndex(o => o.label.includes('Flame')) });
-  pass(h); pass(h);
+  pass(h);
   const pay = h.state.decision!;
   h.do({ type: 'decide', seat: pay.seat, choice: pay.options.findIndex(o => o.label === 'erase 2') });
   h.state = JSON.parse(JSON.stringify(h.state));           // save + load mid-pick (1 of 2)

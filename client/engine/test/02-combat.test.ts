@@ -54,7 +54,7 @@ test('blocked column stays blocked; piercing still carries through dead blockers
   h.state.players[D]!.hand = ['Luminous Arc'];
   h.do({ type: 'playCard', seat: D, handIndex: 0 });
   h.do({ type: 'decide', seat: D, choice: h.state.decision!.options.findIndex(o => JSON.stringify(o.value) === JSON.stringify({ unit: chump })) });
-  pass(h); pass(h);   // resolve arc, blocker dies
+  pass(h); // resolve arc, blocker dies
   assert.ok(!ent(h, chump), 'blocker died before damage');
   pass(h); pass(h);   // damage
   // column is still blocked, but Piercing overflows everything past 0 blockers

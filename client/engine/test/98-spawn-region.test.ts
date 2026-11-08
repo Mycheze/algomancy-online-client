@@ -200,7 +200,7 @@ test('CR 601.5: Galactic Germination cast in the enemy region creates its 1/1s i
   // (two attackers) and the assertion (they arrive where the spell resolved)
   // exactly as they were.
   pick(h, { formation: A });
-  pass(h); pass(h);
+  pass(h);
 
   const made = unitsOf(h, A).filter(u => u.card === 'Unit Token' && u.id !== u1 && u.id !== u2);
   assert.equal(made.length, 2, 'two 1/1s — one per unit in the attacking formation');
@@ -224,7 +224,7 @@ test('CR 601.5: Arcane Echo cast in the enemy region copies a token INTO the ene
   assert.notEqual(battle, home, 'the spell is cast in the enemy region');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Arcane Echo') });
   pick(h, { unit: robot });                                   // CR 110.1a: the target is a cast-time choice
-  pass(h); pass(h);
+  pass(h);
 
   const copy = unitsOf(h, A).find(u => u.card === 'Robot')!;
   assert.ok(copy, 'a Robot copy was created for the caster');

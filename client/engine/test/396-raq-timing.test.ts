@@ -51,7 +51,7 @@ function tides(seed: number, deck: string[], setup?: (h: Harness, A: Seat, D: Se
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tides of the Cosmos') });
-  pass(h); pass(h);                                          // Tides resolves → the first pick
+  pass(h); // Tides resolves → the first pick
   return { h, A, D };
 }
 

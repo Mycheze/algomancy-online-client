@@ -303,8 +303,8 @@ export const BATCH_A: Record<string, Scenario> = {
       + 'in the repo says whether that price is intended.',
     expect:
       'Your Carapace Devourer is already wearing Skybreaker (it was augmented on for you).\n'
-      + '1. Play Luminous Arc at their AMBLING MOUNTAINTOP (6 damage — it is a 4/5, it would die).\n'
-      + '2. WITHOUT passing, play the second Luminous Arc at their BUBB (a 5/6 — it would die too).\n'
+      + '1. Hold Ctrl and play Luminous Arc at their AMBLING MOUNTAINTOP (6 damage — it is a 4/5, it would die).\n'
+      + '2. Still holding Ctrl, play the second Luminous Arc at their BUBB (a 5/6 — it would die too).\n'
       + '3. Both spells are now on the stack. Activate Skybreaker\'s "Erase me: negate all spell\n'
       + '   effects" on your Carapace Devourer, then pass.\n'
       + 'EXPECTED: BOTH enemy units are still there, with NO damage on them, and both Arcs are\n'
@@ -348,10 +348,8 @@ export const BATCH_A: Record<string, Scenario> = {
       // refuses anything else with "modding is a deployment action (or a battle
       // Virus)".
       { type: 'augment', seat: YOU, from: 'hand', index: 0, hostId: ids.you[0]! },
-      // ⚠ this order, not the other one: casting hands priority to the
-      // opponent, so YOU cannot pass until seat 1 has.
+      // applying it was YOUR pass, so the opponent's pass resolves it
       { type: 'passPriority', seat: OPPONENT },
-      { type: 'passPriority', seat: YOU },
     ],
     phase: 'battle',
     priority: YOU,
@@ -405,8 +403,8 @@ export const BATCH_A: Record<string, Scenario> = {
       + 'and the old wrong answer are exact mirror images of each other.',
     expect:
       'Rook is on your board only to let you augment during battle — that is its printed text.\n'
-      + '1. Play the first Luminous Arc at their AMBLING MOUNTAINTOP. Leave it on the stack.\n'
-      + '2. Play Void Mandible onto YOUR OWN Towering Colossus, then pass so it attaches.\n'
+      + '1. Hold Ctrl and play the first Luminous Arc at their AMBLING MOUNTAINTOP, so it stays on the stack.\n'
+      + '2. Let go of Ctrl and play Void Mandible onto YOUR OWN Towering Colossus. It attaches as soon as they pass.\n'
       + '   (Applying a mod is not playing a card, so nothing triggers yet.)\n'
       + '3. Now play the second Luminous Arc at their BUBB. Void Mandible fires at once — it is\n'
       + '   not optional — and when it resolves it sacrifices your Towering Colossus.\n'

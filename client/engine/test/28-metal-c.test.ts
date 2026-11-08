@@ -168,7 +168,7 @@ test('Riftwalker: [one] switches my position with a target ally in my formation;
   h.do({ type: 'declareAttack', seat: A, columns: [[rift], [ally]] });
   h.do({ type: 'activateAbility', seat: A, entityId: rift, abilityIndex: 0, via: 'augment' });
   pick(h, { unit: ally });                                  // the target ally
-  pass(h); pass(h);                                         // resolve the activation
+  pass(h); // resolve the activation
   const b = h.state.battle!;
   assert.equal(b.columns[0]![0], ally, 'the ally took my column slot');
   assert.equal(b.columns[1]![0], rift, 'I took the ally\'s slot');
@@ -217,7 +217,7 @@ test('Scrap For Parts: moves ALL counters from the first target onto the second'
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Scrap For Parts') });
   pick(h, { unit: from });                                  // first target (at cast, count: 2)
   pick(h, { unit: to });                                    // second target
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.equal(ent(h, from)!.counters, 0, 'stripped bare');
   assert.equal(ent(h, to)!.counters, 3, 'all three moved over');
   assert.deepEqual(effStats(h, from), [1, 1]);
@@ -262,7 +262,7 @@ test('Soul Reaver: [one] + remove X counters → X damage to target unit', () =>
   pick(h, { unit: slime });                                 // then aim
   assert.equal(ent(h, sr)!.counters, 0, 'the counters are gone as it is activated');
   assert.deepEqual(effStats(h, sr), [2, 3], 'back to the printed 2/3');
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.equal(ent(h, slime)!.damage, 2, 'X = 2 damage dealt');
   finishBattle(h);
 });
@@ -287,7 +287,7 @@ test('Suppression Field: erases all of the target\'s mods (donated attrs vanish)
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suppression Field') });
   pick(h, { unit: host });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.equal(ent(h, host)!.mods.length, 0, 'mods gone');
   assert.ok(!ent(h, modId), 'the mod entity was ERASED');
   assert.ok(!h.state.players[D]!.bin.includes('Trashling'), 'erased, not binned');
@@ -309,7 +309,7 @@ test('Suppression Field: CR 712.1 — the target loses its printed attributes an
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suppression Field') });
   pick(h, { unit: sprite });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.equal(ownAttrs(h, sprite).size, 0, 'the attribute layer is off');
   assert.equal(ent(h, sprite)!.suppressed?.abilities, 'Suppression Field');
   const e = new E(h.state);
@@ -333,7 +333,7 @@ test('Suppression Field: a silenced unit stops firing its triggered abilities', 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suppression Field') });
   pick(h, { unit: sprite });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   const e = new E(h.state);
   e.destroy(ent(h, sprite)!, 'is deleted');
   e.settle();
@@ -377,7 +377,7 @@ test('Technological Superiority: duplicates each (net) counter on target unit', 
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Technological Superiority') });
   pick(h, { unit: tok });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.equal(ent(h, tok)!.counters, 4, '2 counters duplicated → 4');
   assert.deepEqual(effStats(h, tok), [5, 5]);
   finishBattle(h);
@@ -475,14 +475,14 @@ test('Unmake: deletes only units with BASE power 2 or less (counters don\'t coun
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Unmake') });
   pick(h, { unit: small });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, small), 'base power 2 → deleted despite 7/7 live stats');
   assert.ok(h.state.players[D]!.bin.includes('Trashling'), 'deleted → owner\'s bin');
   // CR 110.3a: a base-8 unit is not a legal target at all — it is never offered
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Unmake') });
   notOffered(h, { unit: big }, 'base power 8 > 2');
   pick(h, { unit: atk });                                   // the only one left
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.ok(ent(h, big), 'base power 8 > 2 → not deleted');
   finishBattle(h);
 });
@@ -501,12 +501,12 @@ test('Unstable Refactor: target becomes base 5/0 until regroup (counters still a
   h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Unstable Refactor') });
   pick(h, { unit: slime });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.ok(!ent(h, slime), 'a counterless 5/0 dies at the death check');
   assert.ok(h.state.players[D]!.bin.includes('Lurking Slimebeast'));
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Unstable Refactor') });
   pick(h, { unit: mine });
-  pass(h); pass(h);                                         // resolve
+  pass(h); // resolve
   assert.deepEqual(effStats(h, mine), [7, 2], 'base 5/0 + its 2 counters');
   finishBattle(h);
   assert.deepEqual(effStats(h, mine), [3, 3], 'the re-base ends at regroup');
@@ -574,7 +574,7 @@ test('Void Memory: the caster declares the half; each opponent then discards one
   assert.equal(h.state.decision!.kind, 'mode', 'the half is asked at CAST');
   assert.equal(h.state.decision!.seat, A, 'and it is the caster who is asked');
   pick(h, 'spell');
-  pass(h); pass(h);                                         // resolve → discard decision
+  pass(h); // resolve → discard decision
   assert.equal(h.state.decision!.seat, D, 'the DISCARDING player picks WHICH card');
   assert.deepEqual(h.state.decision!.options.map(o => o.label).sort(),
     ['Self-Assembly', 'Void Memory'],
@@ -597,7 +597,7 @@ test('Void Memory: the caster declares the half; each opponent then discards one
   h.state.players[D]!.hand = ['Trashling'];                 // a unit, and nothing else
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Void Memory') });
   pick(h, 'spell');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.decision, null, 'no spell to discard → no prompt');
   assert.deepEqual(h.state.players[D]!.hand, ['Trashling'], 'and the hand is untouched');
   assert.ok(h.log.some(l => l.includes('no spell in hand — revealed')), 'the miss is announced');
@@ -606,7 +606,7 @@ test('Void Memory: the caster declares the half; each opponent then discards one
   h.state.players[D]!.hand = [];
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Void Memory') });
   pick(h, 'unit');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.decision, null, 'nothing to discard → no prompt');
   assert.ok(h.log.some(l => l.includes('hand is empty — revealed')), 'the hand is revealed');
   finishBattle(h);

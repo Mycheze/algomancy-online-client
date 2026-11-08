@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-08', kind: 'fix', text: 'Priority now works as written: when you play a card or activate an ability, your opponent\'s pass resolves it, so you no longer get asked twice. Hold Ctrl to keep priority. Triggers still ask each player in turn.' },
   { date: '2026-11-08', kind: 'fix', text: 'Copy to my decks on a shared deck now opens your copy in the deck builder straight away, and it is in your deck list at once. It used to stay hidden until you reloaded the page.' },
   { date: '2026-11-08', kind: 'change', text: 'A deck opened from the Metagame list now has a Back button that takes you to the list again, right where you were, instead of only Home.' },
   { date: '2026-11-08', kind: 'change', text: 'The site owner no longer wears an "Owner" badge, on his profile or at the table. Judges keep their Judge L1–L3 badge.' },

@@ -176,7 +176,7 @@ test('BL-24 Tiderunner Initiate: the spot is asked in the CAST window, as format
   // CR 602.7's values are FormationSpot descriptors, and "may" keeps the decline
   assert.ok(h.state.decision!.options.some(o => o.label === 'stay out of formation'));
   pick(h, { kind: 'behind', unit: wh });
-  pass(h); pass(h);                                   // the play resolves
+  pass(h); // the play resolves
   const tr = unitsOf(h, A).find(u => u.card === 'Tiderunner Initiate')!;
   assert.deepEqual(h.state.battle!.columns[0], [wh, tr.id], 'in the line, behind the whale');
   finishBattle(h);
@@ -202,7 +202,7 @@ test('BL-24 Trench Stalker (from hand): the spot is asked at cast, and it resolv
     assert.equal(h.state.decision?.kind, 'targets', 'the discard cost is collected at cast');
     h.do({ type: 'decide', seat: A, choice: 0 });
   }
-  pass(h); pass(h);                                   // the play resolves
+  pass(h); // the play resolves
   const ts = unitsOf(h, A).find(u => u.card === 'Trench Stalker')!;
   assert.deepEqual(h.state.battle!.columns[0], [ts.id], 'it fronts the new left column');
   finishBattle(h);
@@ -225,7 +225,7 @@ test('BL-24 Trench Stalker (from bin): offered, asked, and it lands in the line'
   expectSlotAsk(h, A, 'Trench Stalker (bin)');
   pick(h, { kind: 'behind', unit: wh });
   for (let k = 0; k < 2 && h.state.decision; k++) h.do({ type: 'decide', seat: A, choice: 0 });
-  pass(h); pass(h);
+  pass(h);
   const ts = unitsOf(h, A).find(u => u.card === 'Trench Stalker')!;
   assert.deepEqual(h.state.battle!.columns[0], [wh, ts.id], 'played out of the bin, straight into the line');
   assert.ok(!h.state.players[A]!.bin.includes('Trench Stalker'), 'and it left the bin');

@@ -41,7 +41,7 @@ function tidesVirus(seed: number, before: (h: Harness, A: Seat) => void): { h: H
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   before(h, A);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tides of the Cosmos') });
-  pass(h); pass(h);                                   // Tides resolves
+  pass(h); // Tides resolves
   decide(h, l => l.startsWith('Molten Riftbreaker'));
   if (h.state.decision?.options.some(o => o.label === 'Done')) decide(h, l => l === 'Done');
   decide(h, l => /as a Virus/.test(l));

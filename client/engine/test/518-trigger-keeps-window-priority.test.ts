@@ -210,7 +210,7 @@ test('CR 703.3c a trigger queued by a resolution: the new window still opens wit
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Luminous Arc') });
   pick(h, { unit: geode });
   assert.equal(h.state.priority, A, 'D2.9 control: the defender acted, the attacker responds');
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!h.state.entities[geode], 'the Arc killed the Geode');
   assert.ok(stackedFrom(h, 'Geode'), 'and its death trigger is on the stack');
   windowIsInitiatives(h, 'Geode', 'post-resolution window');
@@ -237,7 +237,7 @@ test('Annex D2.9 the control: a cast in battle hands priority to the opponent of
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Luminous Arc') });
   pick(h, { unit: atk });
   assert.equal(h.state.priority, A, 'the defender cast — the attacker has priority');
-  assert.equal(h.state.passes, 0);
+  assert.equal(h.state.passes, 1, 'the cast was the caster\'s pass (CR 703.2b)');
 });
 
 /* ══ §6 — THE REPORT'S BOARD ═══════════════════════════════════════════ */
@@ -267,4 +267,37 @@ test('report 234 RCUY at 180: Tomzy has the initiative, attacks with Rousing Spi
   // [181] in the log is LordZZX passing; after the fix it is Tomzy's turn first
   pass(h);
   assert.equal(h.state.priority, L, 'then the defender may respond to the trigger');
+});
+
+/* ══ §7 — A TRIGGER FIRED BY A CAST: NO AUTOMATIC PASS, WINDOW ORDER ═════ */
+
+test('CR 703.3a a trigger a cast sets off goes in window order, and nobody is passed for', () => {
+  // The owner, 2026-11-08: "Autopassing should only happen when a direct
+  // clicking action they did put something of theirs onto the stack."
+  const fired: string[] = [];
+  triggerCards(['cardPlayed', 'spellPlayed']).forEach((name, i) => {
+    const h = new Harness(52200 + i);
+    for (const p of h.state.players) p.hand.length = 0;
+    toDeployment(h);
+    const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+    const atk = spawn(h, A, 'Lithoghul');
+    const ear = spawn(h, A, name);   // the caster's own listener: the auto-pass must not cover it
+    const wall = spawn(h, D, 'Lithoghul');
+    toNextBattle(h, A);
+    h.do({ type: 'declareAttack', seat: A, columns: [[atk], [ear]] });   // it must be in the region to hear
+    answerAll(h);
+    if (h.state.priority !== A || h.state.stack.length) return;
+    giveResources(h, A, 'fire', 2);
+    h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
+    pick(h, { unit: wall });
+    answerAll(h);
+    if (!stackedFrom(h, name) || h.state.decision) return;
+    fired.push(name);
+    windowIsInitiatives(h, name, 'window a cast added to');
+    const size = h.state.stack.length;
+    pass(h);
+    assert.equal(h.state.priority, D, `${name}: the other player is asked next`);
+    assert.equal(h.state.stack.length, size, `${name}: one pass does not resolve a trigger`);
+  });
+  assert.ok(fired.length > 0, 'a card that hears a cast put its trigger on the stack');
 });

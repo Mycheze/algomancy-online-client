@@ -235,7 +235,7 @@ test('CR D7.2: one click pays several counters, and X is what was taken', () => 
   pick(h, { doneCost: true });
   pick(h, { unit: victim });
   assert.equal(h.state.stack[0]!.parts[0]!.costPaid!.x, 3, 'X = the counters actually removed');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, victim), undefined, '3 damage killed the 8/3 — the spell is that big');
   finishBattle(h);
 });
@@ -312,7 +312,7 @@ test('CR D7.2: an activated ability\'s counter cost gets the same prompt and max
   assert.equal(ent(h, sr)!.counters, 0, 'all three, one click');
   assert.deepEqual(effStats(h, sr), [2, 3], 'back to the printed 2/3');
   pick(h, { unit: slime });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, slime), undefined, 'X = 3 damage killed the 8/3');
   finishBattle(h);
 });

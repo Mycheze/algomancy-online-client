@@ -35,7 +35,7 @@ test('CR 505.3f / designer: Temporal Rift cast before blocks ends the battle pha
   pass(h);                                                  // the initiative player passes the attack window
   assert.equal(h.state.priority, D, 'the non-initiative player holds priority in the attack window');
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Temporal Rift') });
-  pass(h); pass(h);                                         // both pass: the Rift resolves
+  pass(h); // both pass: the Rift resolves
   assert.equal(h.state.battle, null, 'the battle phase is over');
   assert.equal(h.state.phase, 'deploy', 'no round 2: straight on to deployment');
   assert.ok(ent(h, home) && !ent(h, home)!.absent, 'the unit that could have counterattacked is still at home');
@@ -58,7 +58,7 @@ test('CR 505.3f / designer: Temporal Rift cast after blocks ends round 1 only â€
   assert.equal(h.state.priority, D);
   const lifeD = h.state.players[D]!.life;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Temporal Rift') });
-  pass(h); pass(h);                                         // the Rift resolves before combat damage
+  pass(h); // the Rift resolves before combat damage
   assert.equal(h.state.players[D]!.life, lifeD, 'round 1 ended before any combat damage');
   assert.equal(h.state.battle?.round, 2, 'round 2 happens');
   assert.equal(h.state.battle!.attacker, D, 'the non-initiative player attacks in it');

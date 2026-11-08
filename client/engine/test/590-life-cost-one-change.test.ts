@@ -120,7 +120,7 @@ test('CR 702.6b / report 273: Torrential Reclamation loses its life as one chang
   pick(h, 2);                                                 // X = 2
   pick(h, { unit: w1 });
   pick(h, { unit: w2 });
-  pass(h); pass(h);
+  pass(h);
   for (let i = 0; i < 8 && h.state.decision; i++) {
     const d = h.state.decision!;
     const keep = d.options.findIndex(o => fodder.includes(o.value as EntityId));   // sacrifice the fodder, never the plant

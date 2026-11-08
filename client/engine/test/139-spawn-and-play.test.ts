@@ -184,7 +184,7 @@ test('Wake the Dead: the units it plays out of a bin are PLAYED — Bloomcaster 
   const tokens0 = unitsOf(h, A).filter(u => u.card === 'Unit Token').length;
 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Wake the Dead') });
-  pass(h); pass(h);
+  pass(h);
   pick(h, `${A}:0`);
   pick(h, `${D}:0`);
   drainTriggers(h);
@@ -222,7 +222,7 @@ test('Wake the Dead: being a PLAY is free — the raised units still cost nothin
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Wake the Dead') });
   const spent = expended(h, A);
   assert.equal(spent, 8, 'the spell itself cost 8');
-  pass(h); pass(h);
+  pass(h);
   pick(h, `${A}:0`);
   drainTriggers(h);
   assert.ok(unitByCard(h, 'Good Whale'), 'a b/6 unit is in play for a caster with no water');

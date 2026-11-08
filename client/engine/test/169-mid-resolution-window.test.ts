@@ -82,7 +82,7 @@ const onStack = (h: Harness, card: string): { id: number } | undefined =>
  * window, and returns with the opponent holding priority so the caller can
  * drive their response.
  */
-function windowIsOpen(h: Harness, card: string, player: Seat, source: string): void {
+function windowIsOpen(h: Harness, card: string, player: Seat, source: string, passes = 0): void {
   const opp = (1 - player) as Seat;
   assert.ok(onStack(h, card),
     `${source}: the played card (${card}) is ON THE STACK, not already resolved`);
@@ -91,7 +91,7 @@ function windowIsOpen(h: Harness, card: string, player: Seat, source: string): v
     `${source}: and no suspension survives it, so no rollback snapshot can rewind this window`);
   assert.notEqual(h.state.priority, null,
     `${source}: somebody holds priority — "you play it" and "it resolves" are two moments now`);
-  assert.equal(h.state.passes, 0, `${source}: a FRESH window, not the tail of an old one`);
+  assert.equal(h.state.passes, passes, `${source}: a FRESH window, not the tail of an old one`);
   for (const seat of [player, opp] as Seat[]) {
     assert.equal(decisionBlocks(h.state, seat), false,
       `${source}: seat ${seat} is not gated out of it — a window nobody may act in is not a window`);
@@ -159,7 +159,7 @@ test('CR 703.5 Hooba-Pon "you may play a unit from your hand into an open positi
   const played = onStack(h, 'Hooba-Pon')!;
   h.do({ type: 'playCard', seat: D, handIndex: h.state.players[D]!.hand.indexOf('Dematerialize') });
   pickValue(h, { stack: played.id });
-  pass(h); pass(h);                                      // Dematerialize resolves
+  pass(h); // Dematerialize resolves
   decide(h, () => true);                                 // its Glimpse 3
   assert.equal(onStack(h, 'Hooba-Pon'), undefined, 'CR 704.4: the negated play left the stack at once');
   assert.equal(h.state.battle!.columns[0]!.length, 1,
@@ -190,7 +190,7 @@ test('CR 703.5 Insidious Invitation "Starting with you, players may play a unit 
   h.state.players[D]!.hand = ['Hooba-Pon'];
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: 0 });
-  pass(h); pass(h);                                      // the Invitation resolves
+  pass(h); // the Invitation resolves
 
   decide(h, l => l === 'Echo of Despair');               // "starting with you"
   assert.ok(onStack(h, 'Echo of Despair'),
@@ -240,7 +240,7 @@ test('CR 701.4 Tides of the Cosmos "You may play them now, for free": a free pla
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tides of the Cosmos') });
-  pass(h); pass(h);                                      // Tides resolves → the picks
+  pass(h); // Tides resolves → the picks
   decide(h, l => l.startsWith('Burn the Blight'));   // the only pick inside the [8] budget
 
   windowIsOpen(h, 'Burn the Blight', D, 'Tides of the Cosmos');
@@ -250,7 +250,7 @@ test('CR 701.4 Tides of the Cosmos "You may play them now, for free": a free pla
   const free = onStack(h, 'Burn the Blight')!;
   h.do({ type: 'playCard', seat: A, handIndex: h.state.players[A]!.hand.indexOf('Dematerialize') });
   pickValue(h, { stack: free.id });
-  pass(h); pass(h);
+  pass(h);
   decide(h, () => true);                                 // Dematerialize's Glimpse 3
   assert.equal(onStack(h, 'Burn the Blight'), undefined, 'the free play was negated');
   assert.deepEqual(whereIs(h.state, 'Burn the Blight'), [`bin:${D}`],
@@ -301,7 +301,7 @@ test('Spell Excavation "play target spell from your bin": the bin play gets a wi
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
   decide(h, l => l.startsWith('Luminous Arc'));          // CR 110.1a: declared at cast
-  pass(h); pass(h);                                      // the Excavation resolves
+  pass(h); // the Excavation resolves
 
   // CR 405.9: what resolved is the PERMISSION. The Arc is still in the bin,
   // unpaid for, and D picks its own moment — any time before regroup.
@@ -313,7 +313,8 @@ test('Spell Excavation "play target spell from your bin": the bin play gets a wi
   h.do({ type: 'playFromBin', seat: D, binIndex: bi });
   decide(h, () => true);                                 // CR 110.1a: the Arc declares its target
 
-  windowIsOpen(h, 'Luminous Arc', D, 'Spell Excavation');
+  // a direct click from the bin, so playing it was D's pass (CR 703.2b)
+  windowIsOpen(h, 'Luminous Arc', D, 'Spell Excavation', 1);
   assert.ok(ent(h, atk), 'the excavated spell has NOT dealt its damage yet');
   assert.deepEqual(whereIs(h.state, 'Luminous Arc'), [`stack:${onStack(h, 'Luminous Arc')!.id}`],
     'and it is on the stack and nowhere else — out of the bin, on a real pile');
@@ -321,7 +322,7 @@ test('Spell Excavation "play target spell from your bin": the bin play gets a wi
   const arc = onStack(h, 'Luminous Arc')!;
   h.do({ type: 'playCard', seat: A, handIndex: h.state.players[A]!.hand.indexOf('Dematerialize') });
   pickValue(h, { stack: arc.id });
-  pass(h); pass(h);
+  pass(h);
   decide(h, () => true);                                 // Glimpse 3, to the Arc's controller
   assert.ok(ent(h, atk), 'the answered spell never dealt its 6');
   // ⚠ THE CR 704.2c HALF. Negation is a stack exit `E.dischargeItem` owns, and the
@@ -347,7 +348,7 @@ test('CR 703.5 the window and a rollback snapshot can never be open at the same 
   h.state.players[D]!.hand = ['Hooba-Pon'];
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: 0 });
-  pass(h); pass(h);
+  pass(h);
 
   // WHILE a snapshot is live, NOBODY may act — that is the pre-existing CR D2.1c
   // gate (`decisionBlocks`), and it is what makes the deferral safe rather
@@ -391,7 +392,7 @@ test('CR 703.5 the snapshot hazard, DRIVEN: the other seat acts inside the windo
   h.state.players[D]!.hand = ['Hooba-Pon'];
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: 0 });
-  pass(h); pass(h);
+  pass(h);
   decide(h, l => l === 'Echo of Despair');               // A plays a unit → stack
   decide(h, l => l === 'Hooba-Pon');                     // D plays a unit → stack
 
@@ -406,7 +407,7 @@ test('CR 703.5 the snapshot hazard, DRIVEN: the other seat acts inside the windo
     'their hand is live in the window — a screen full of refusals is not a window');
   h.do({ type: 'playCard', seat: A, handIndex: h.state.players[A]!.hand.indexOf('Luminous Arc') });
   pickValue(h, { unit: tok });                           // 6 damage to A's own attacking token
-  pass(h); pass(h);                                      // the Arc resolves
+  pass(h); // the Arc resolves
   assert.equal(ent(h, tok), undefined, 'the response really happened — the token is dead');
 
   // drain the rest: D's unit, then A's.
@@ -517,7 +518,7 @@ test('§6a CT-143: a mid-resolution play IS heard by the wide watchers — Bloom
   const tokensBefore = unitsOf(h, A).filter(u => u.card === 'Unit Token').length;
   give(h, A, 'Good Whale');                              // b/6, a plain unit
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Insidious Invitation') });
-  pass(h); pass(h);                                      // the Invitation resolves
+  pass(h); // the Invitation resolves
   decide(h, l => l === 'Good Whale');                    // the MID-RESOLUTION play
 
   const played = h.events.filter(e => e.type === 'cardPlayed').map(e => e.data?.['card']);

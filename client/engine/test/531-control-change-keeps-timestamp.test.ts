@@ -64,7 +64,7 @@ test('§1 report #231: Rebalance gives away the host of Transmogrifant; the earl
   pass(h);                                                      // priority → B
   assert.equal(h.state.priority, B);
   h.do({ type: 'playCard', seat: B, handIndex: give(h, B, 'Rebalance') });
-  pass(h); pass(h);                                             // Rebalance resolves
+  pass(h); // Rebalance resolves
   for (let guard = 0; h.state.decision && guard < 4; guard++) {
     const dec = h.state.decision;
     const want = dec.seat === A ? token : bones;

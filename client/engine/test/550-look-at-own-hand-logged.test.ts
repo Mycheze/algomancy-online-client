@@ -31,7 +31,7 @@ function thoughtExtractionAt(seed: number, aimAtSelf: boolean): { h: Harness; A:
   h.state.players[aimAtSelf ? A : D]!.hand = [...HAND];
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Thought Extraction') });
   pick(h, { player: aimAtSelf ? A : D });
-  pass(h); pass(h);
+  pass(h);
   if (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
   return { h, A, D };
 }

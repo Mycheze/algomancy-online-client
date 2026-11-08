@@ -64,7 +64,7 @@ test('CR 102.4 / CT-344: Collect Remains takes a card out of the opponent bin in
   giveResources(h, A, 'dark', 2);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Collect Remains') });
   pick(h, { bin: { seat: D, card: 'Just a Unit' } });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(handOwner(h, A, 'Just a Unit'), D,
     'a hand is not a shared zone: the card is D card in A hand (it used to become A card)');
   finishBattle(h);
@@ -79,7 +79,7 @@ test('CR 102.4 / CT-344: Tilling the Graves recalls a foreign-owned and an own c
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Tilling the Graves') });
   pick(h, { bin: { seat: A, card: 'Just a Unit' } });
   if (h.state.decision) pick(h, { bin: { seat: A, card: 'Shard Sprite' } });
-  pass(h); pass(h);
+  pass(h);
   for (let guard = 6; h.state.decision && guard > 0; guard--) pick(h, h.state.decision.options[0]!.value);
   assert.equal(handOwner(h, A, 'Just a Unit'), D, 'the foreign card is still D card');
   assert.equal(handOwner(h, A, 'Shard Sprite'), A, 'and the own card is still A card');
@@ -139,7 +139,7 @@ test('CR 102.4 / CT-344: a foreign-owned spell recalled off the stack (Cosmic Re
   h.do({ type: 'playCard', seat: A, handIndex: at });
   assert.equal(h.state.stack.at(-1)?.owner, D, 'the item carries its owner');
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Cosmic Reversal') });
-  pass(h); pass(h);                                            // Cosmic Reversal resolves
+  pass(h); // Cosmic Reversal resolves
   assert.equal(handOwner(h, A, 'Premonition'), D, 'back in the hand of its controller, still D card');
   finishBattle(h);
 });

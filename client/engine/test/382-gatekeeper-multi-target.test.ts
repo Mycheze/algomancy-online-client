@@ -39,7 +39,7 @@ test('CR 110.12: a two-target spell aims at the Gatekeeper first and then at any
   assert.ok(second.some(v => JSON.stringify(v) === JSON.stringify({ unit: atk })),
     'any other legal unit, ally included');
   pick(h, { unit: other });
-  pass(h); pass(h);                                           // Twin Flame resolves
+  pass(h); // Twin Flame resolves
   assert.equal(ent(h, gk)!.damage, 2, 'the Gatekeeper took 2');
   assert.equal(ent(h, other), undefined, 'and the 1/1 beside it died to the second 2');
   finishBattle(h);
@@ -62,7 +62,7 @@ test('CR 110.12: two Gatekeepers — each one must be targeted if able, so both 
   assert.deepEqual(values(h), [{ unit: gk1 }],
     'the other Gatekeeper is still owed a target, so it is the only unit offered');
   pick(h, { unit: gk1 });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, gk1)!.damage, 2);
   assert.equal(ent(h, gk2)!.damage, 2);
   finishBattle(h);

@@ -153,7 +153,7 @@ function castReversal(h: Harness, A: Seat, D: Seat, attackers: number[]): void {
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Cosmic Reversal') });
   settleDecisions(h);
-  pass(h); pass(h);
+  pass(h);
   settleDecisions(h);
 }
 
@@ -366,7 +366,7 @@ test('CR 706.3a: a trigger fired OUTSIDE the damage step reaches the stack and I
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Flame of History') });
   settleDecisions(h);            // Flame picks its target
-  pass(h); pass(h);              // Flame resolves; the Eminence trigger fires
+  pass(h); // Flame resolves; the Eminence trigger fires
   settleDecisions(h);            // its controller aims it
 
   const item = h.state.stack.find(it => EMINENCE.test(it.label));

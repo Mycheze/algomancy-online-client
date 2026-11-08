@@ -48,12 +48,11 @@ test('CR 704.4: a mass negate empties the stack of its victims AT ONCE — no ex
   h.do({ type: 'declareAttack', seat: A, columns: heralds.map(u => [u]) });
   assert.equal(h.state.stack.length, 4, 'four attack triggers');
   pass(h);                                                  // CR 605.1a: A acts first, and passes
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Godray') });
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Godray'), holdPriority: true });  // CR 703.2a: keeps priority to act again
   pick(h, { player: A });
   assert.equal(h.state.stack.length, 5, 'four triggers + one spell');
-  pass(h);                                                  // A declines
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Containment Protocol') });
-  pass(h); pass(h);                                         // the Protocol resolves
+  pass(h); // the Protocol resolves
 
   assert.equal(h.state.stack.length, 1, 'the four negated triggers are GONE, not greyed out');
   assert.ok(h.state.stack[0]!.label.includes('Godray'), 'only the un-negated remainder is left');
@@ -93,7 +92,7 @@ test("CR 704.4a: a negated kind:'unit' item reaches its owner's bin (it used to 
   // so the route the negator took to the stack is scenery, not the subject.
   withE(h, e => { e.cacheCard(D, 'Calming Force', 'deck', { playable: true }); });
   h.do({ type: 'playCached', seat: D, index: 0 });
-  pass(h); pass(h);                                         // Calming Force resolves
+  pass(h); // Calming Force resolves
 
   assert.equal(h.state.stack.length, 0, 'the negated unit left the stack');
   assert.ok(!unitsOf(h, A).some(u => u.card === 'Monke'), 'it never spawned');
@@ -119,7 +118,7 @@ test('CR 704.4a: a negated spell TOKEN is erased, never binned', () => {
   // CR 702.2b again: the hand route is gone, so the cache release is the vehicle.
   withE(h, e => { e.cacheCard(D, 'Calming Force', 'deck', { playable: true }); });
   h.do({ type: 'playCached', seat: D, index: 0 });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.stack.length, 0, 'the negated token left the stack');
   assert.equal(count(binOf(h, A), 'Fireball'), 0, 'a token never reaches a bin (CR 704.2b)');
   assert.equal(h.state.players[D]!.life, lifeD, 'and it dealt nothing');
@@ -163,7 +162,7 @@ test('CR 704.4a: Temporal Rift bins each negated card exactly once', () => {
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: whale });
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Temporal Rift') });
-  pass(h); pass(h);                                           // the Rift resolves
+  pass(h); // the Rift resolves
   assert.equal(h.state.stack.length, 0, 'the stack is wiped');
   assert.equal(count(binOf(h, A), 'Luminous Arc'), 1, 'the negated Arc is binned ONCE');
   // and the Rift itself is not in a bin at all: "Erase this spell" (CARD-TODO
@@ -190,7 +189,7 @@ test('CR 801.7d: Dream Lapse recalls the card to hand and does NOT also bin it',
   pick(h, { unit: whale });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Dream Lapse') });
   pick(h, { stack: h.state.stack[0]!.id });
-  pass(h); pass(h);                                           // Dream Lapse resolves
+  pass(h); // Dream Lapse resolves
   if (h.state.decision) pick(h, 0);                           // "then its controller discards"
   assert.ok(!h.state.stack.some(i => i.label.includes('Luminous Arc')),
     'the recalled item left the stack');
@@ -210,13 +209,12 @@ test('CR 801.7d: Cosmic Reversal puts every recalled spell in its owner’s hand
   giveResources(h, D, 'water', 2);                            // Cosmic Reversal bb/2
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
-  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc'), holdPriority: true });  // CR 703.2a: keeps priority to act again
   pick(h, { unit: whale });
-  pass(h);                                                    // D declines → back to A
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: whale });
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Cosmic Reversal') });
-  pass(h); pass(h);                                           // Cosmic Reversal resolves
+  pass(h); // Cosmic Reversal resolves
   assert.equal(h.state.stack.length, 0, 'both Arcs left the stack');
   assert.equal(count(handOf(h, A), 'Luminous Arc'), 2, 'both are back in A’s hand');
   assert.equal(count(binOf(h, A), 'Luminous Arc'), 0, 'and neither reached a bin');
@@ -238,14 +236,13 @@ test('CR 704.4: Flame Shield counts every nontoken spell it negates (the iterati
   giveResources(h, D, 'fire', 4);                             // Flame Shield rr/4
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
-  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc'), holdPriority: true });  // CR 703.2a: keeps priority to act again
   pick(h, { unit: whale });
-  pass(h);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: whale });
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Flame Shield') });
   assert.equal(h.state.stack.length, 3, 'two Arcs under the Shield');
-  pass(h); pass(h);                                           // Flame Shield resolves
+  pass(h); // Flame Shield resolves
 
   assert.equal(h.state.stack.length, 0, 'BOTH Arcs were negated off the stack');
   assert.equal(tokensOf(h, D).filter(t => t.card === 'Fireball').length, 2,
@@ -275,7 +272,7 @@ test('CR 704.4 ⚠: Finality erases the very cards it just negated', () => {
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
   pick(h, { unit: whale });
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Finality') });
-  pass(h); pass(h);                                           // Finality resolves
+  pass(h); // Finality resolves
   assert.equal(h.state.stack.length, 0, 'the negated Arc left the stack at once');
   assert.equal(count(binOf(h, A), 'Luminous Arc'), 0,
     '⚠ it was binned by the negation and then erased by the same resolution');

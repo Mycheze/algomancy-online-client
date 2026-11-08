@@ -55,7 +55,7 @@ test('a Fireball token cast under Emberflame Enlightener wears a Powerful chip o
     assert.ok(seen, `seat ${seat} sees the Fireball`);
     assert.deepEqual(labels(seen, v), ['Powerful'], `seat ${seat}: the view carries what the query needs`);
   }
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, victim)!.damage, 2, 'and it resolves as the chip says: 1 doubled');
 });
 
@@ -74,7 +74,7 @@ test('a spell shows its printed attribute, a virus riding it adds its attribute 
   const arc = h.state.stack.find(i => i.card === 'Arc Lightning')!;
   assert.deepEqual(labels(arc, h.state), ['Electric'], 'its printed attribute, which was on the scan alone');
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Chitin Shredder'), hostStack: arc.id });
-  pass(h); pass(h);                                         // the virus resolves onto the spell
+  pass(h); // the virus resolves onto the spell
   const ridden = h.state.stack.find(i => i.id === arc.id)!;
   assert.deepEqual(ridden.augments?.map(a => a.card), ['Chitin Shredder'], 'the fixture: a virus rides the spell');
   const chips = stackBadges(ridden, h.state);

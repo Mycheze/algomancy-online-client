@@ -128,7 +128,7 @@ test('CR 110.3a: target a clean enemy, counter it in the after-window, and the s
   pass(h);                                                  // A responds first, and declines
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Noxious Demise') });
   pick(h, { unit: prey });
-  pass(h); pass(h);                                         // the Demise resolves (above the trigger)
+  pass(h); // the Demise resolves (above the trigger)
   assert.equal(ent(h, prey)!.counters, -1, 'the counter landed first');
   assert.equal(h.state.stack.length, 1, 'and the trigger is still there, unresolved');
   pass(h); pass(h);                                         // the trigger resolves
@@ -293,7 +293,7 @@ test('CR 205.3: the half is named at CAST, and "gained" reads only the gained le
   pick(h, 'gained');
   assert.deepEqual(h.state.stack.map(i => i.parts.map(p => p.mode)), [['gained']],
     'the declared half is readable on the stack, for the whole response window');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, prey)!.damage, 5, 'X is the GAINED ledger alone — 5, not 12 and not 7');
   finishBattle(h);
 });
@@ -303,7 +303,7 @@ test('CR 205.3: the other half of the same board reads the lost ledger', () => {
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Retribution Thing') });
   pick(h, { unit: prey });
   pick(h, 'lost');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, prey)!.damage, 7, 'X is the LOST ledger alone — 7, not 12 and not 5');
   finishBattle(h);
 });
@@ -321,7 +321,7 @@ test('CR 205.3: the mode is FIXED at cast — a ledger that moves afterwards doe
   whiteBox(h, e => e.loseLife(D, 6, 'test'));               // lost:   7 → 13
   assert.deepEqual(h.state.stack.map(i => i.parts.map(p => p.mode)), [['gained']],
     'still "gained" — nobody was asked again');
-  pass(h); pass(h);
+  pass(h);
   assert.equal(ent(h, prey)!.damage, 7,
     'the declared LEDGER is fixed at cast; the AMOUNT in it is read at resolution (CR 107.8)');
   finishBattle(h);
@@ -469,7 +469,7 @@ test('CR 723.5a: a Rook-enabled augment lands on an ENEMY unit during battle', (
     'the augment is offered onto the ENEMY unit — "it can also go to an enemy"');
   h.do(act);
   assert.equal(h.state.stack.length, 1, 'it is a response, on the stack above nothing');
-  pass(h); pass(h);
+  pass(h);
   const host = ent(h, theirs)!;
   assert.equal(host.mods.length, 1, 'the mod attached to the enemy unit');
   assert.ok(new E(h.state).ownAttrs(host).has('Evasive'),

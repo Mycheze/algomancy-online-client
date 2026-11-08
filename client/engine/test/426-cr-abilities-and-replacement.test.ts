@@ -73,7 +73,7 @@ test('cr:effects.triggered.if-you-do — Eminence of the Barrens under an enemy 
   let guard = 10;
   while (h.state.decision && guard-- > 0) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
   const m0 = openMana(h, A);
-  pass(h); pass(h);                       // Flame resolves; the Eminence trigger fires
+  pass(h); // Flame resolves; the Eminence trigger fires
   const asked: string[] = [];
   guard = 20;
   while (guard-- > 0) {
@@ -162,7 +162,7 @@ test('cr:effects.triggered.when-stacked — a triggered ability is put on the st
     pass(h);
     h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Flame of History') });
     settleAll(h);
-    pass(h); pass(h);                    // Flame resolves; the Eminence trigger fires
+    pass(h); // Flame resolves; the Eminence trigger fires
     settleAll(h);
     const item = h.state.stack.find(it => /Eminence of the Barrens/.test(it.label));
     assert.ok(item, 'the trigger is on the stack straight after the spell that caused it resolved');

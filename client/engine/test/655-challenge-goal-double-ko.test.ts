@@ -70,9 +70,8 @@ test('§2 CR 104.1a / CT-409: Penance takes both players from 1 to 0 and the run
     const d = h.state.decision!;
     step({ type: 'decide', seat: d.seat, choice: d.options.findIndex(o => JSON.stringify(o.value) === JSON.stringify({ player: seat })) });
   }
-  step({ type: 'passPriority', seat: h.state.priority! });
   assert.equal(acc.met, false, 'not before it resolves');
-  step({ type: 'passPriority', seat: h.state.priority! });
+  step({ type: 'passPriority', seat: h.state.priority! });   // the caster's cast was their pass
   assert.equal(h.state.phase, 'gameover');
   assert.equal(acc.met, true);
   assert.deepEqual(progress(acc), { value: 1, target: 1, met: true });

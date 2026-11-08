@@ -50,44 +50,55 @@
   },
   {
     "key": "combat.attack-window.general.end",
-    "textHash": "793814075a6c0a9d",
+    "textHash": "b55270fce76d69ec",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U11-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:passPriority -> advanceBattleStep",
+        "loc": "client/engine/src/engine.ts:advanceBattleStep",
         "agrees": true,
-        "note": ""
+        "note": "From 'attackWindow' the step becomes 'blocks'."
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
-        "pattern": "cr:effects.priority.window.resolve — two passes resolve the top item",
+        "file": "425-cr-casting-and-stack.test.ts",
+        "pattern": "cr:effects.priority.window.resolve — two passes",
         "passed": true,
-        "asserts_claim": "yes: Luminous Arc cast in the attack window resolves on two passes, still attackWindow with priority to A; two more passes leave attackWindow"
-      }
-    ],
-    "probes": [
+        "asserts_claim": true
+      },
       {
-        "file": "client/engine/test/zz-probe-U11-2.test.ts",
-        "test": "probe U11-2: two passes on an empty stack end the attack window and the block step begins",
+        "file": "420-cr-battle-regroup-deploy.test.ts",
+        "pattern": "cr:turn.battle.steps",
         "passed": true,
-        "demonstrates": "yes: step is 'blocks' after two passes on the empty stack"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Rulebook 2023 p.13",
         "supports": "yes",
-        "note": ""
+        "note": "Both pass on the empty attack step: straight to the block/counterattack step."
       }
     ],
     "quote_spans": [
       {
         "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "If player A passes priority and player B passes priority, the phase ends and we move directly to the block/counterattack step."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "b.step = 'blocks';"
+      },
+      {
+        "file": "client/engine/test/420-cr-battle-regroup-deploy.test.ts",
+        "text": "assert.deepEqual(steps, ['declare', 'attackWindow', 'blocks', 'blockWindow', 'afterWindow']);"
+      },
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "text": "assert.notEqual(h.state.battle?.step, 'attackWindow', 'the empty-stack passes moved the game on');"
       }
     ],
     "basis_ok": true,

@@ -208,8 +208,7 @@ export const BATCH_L: Record<string, Scenario> = {
       { type: 'declareAttack', seat: YOU, columns: [[ids.you[0]!], [ids.you[1]!], [ids.you[2]!]] },
       { type: 'playCard', seat: YOU, handIndex: 0 },     // Luminous Arc…
       { type: 'decide', seat: YOU, choice: 5 },          // …at their Bubb (option 5)
-      { type: 'passPriority', seat: OPPONENT },
-      { type: 'passPriority', seat: YOU },               // the Arc resolves: Bubb dies
+      { type: 'passPriority', seat: OPPONENT },          // the Arc resolves: Bubb dies
       { type: 'passPriority', seat: YOU },               // the empty window closes…
       { type: 'passPriority', seat: OPPONENT },          // …into the block step
       { type: 'declareBlocks', seat: OPPONENT, blocks: { 0: [ids.opponent[0]!], 1: [ids.opponent[1]!] } },

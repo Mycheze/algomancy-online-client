@@ -130,7 +130,7 @@ test('CR 710.8 Earthbound Replicator: the copy is offered as a "target effect" a
   // `when`, at the moment of the play. It used to queue on every nonunit spell
   // and print a no-op line at resolution, which is the pair of passes that
   // used to be here.
-  pass(h); pass(h);                     // Dematerialize resolves
+  pass(h); // Dematerialize resolves
   assert.equal(copies(h).length, 0, 'CR 704.4: the negated copy left the stack at once');
   assert.ok(h.log.some(l => l.includes('Burgeon (copy) is negated')), 'and the negation is announced');
   assert.ok(!h.log.some(l => l.includes('Burgeon (copy) is negated → bin')),
@@ -240,7 +240,7 @@ test('CR 710.8a Maelstrom Charger: the copy inherits the cast-cost receipt (CR 1
   assert.ok(!ent(h, chg), 'the Charger is gone');
   // no second sacrifice is asked for, and none is possible: D has no unit left
   assert.ok(!h.state.decision, 'RAQ: "you DON\'T pay additional cost again" — nothing is asked'); 
-  pass(h); pass(h);                                           // the copy resolves
+  pass(h); // the copy resolves
   pass(h); pass(h);                                           // then the original
   const toks = tokensOf(h, D);
   const poisons = toks.filter(t => t.card === 'Poison');
@@ -301,7 +301,7 @@ test('CR 710.8c Maelstrom Charger: a resolved copy bins nothing, and "Erase me."
   pick(h, { player: A });                                     // "target player's life can't change"
   say(h, 'Sacrifice Maelstrom Charger');                      // CR 702.3g: in the cast window
   say(h, 'Keep the original targets');
-  pass(h); pass(h);                                           // the COPY resolves — "Erase me."
+  pass(h); // the COPY resolves — "Erase me."
   const erasedSuspends = () => (h.state.players[D]!.erased ?? []).filter(c => c === 'Suspend').length;
   assert.equal(erasedSuspends(), 0,
     'a copy is not a card, so its "Erase me." has nothing to erase');

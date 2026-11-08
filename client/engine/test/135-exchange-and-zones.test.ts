@@ -120,7 +120,7 @@ test('CR 801.13a: Necromorph’s exchange fires NO death trigger — but it desp
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Necromorph') });
   pick(h, { unit: victim });
   pick(h, { bin: { seat: D, card: 'Blightwalker' } });
-  pass(h); pass(h);                                         // resolve the spell
+  pass(h); // resolve the spell
   // …and then the queued despawn trigger, which is a stack item of its own in
   // a battle window: fireEvent only COMPOSES triggers, it never resolves one
   drainStack(h);
@@ -197,7 +197,7 @@ test('CR 410.2a: Hooba-Mon and Necromorph are ONE exchange — both go through E
     h2.do({ type: 'playCard', seat: A2, handIndex: give(h2, A2, 'Necromorph') });
     pick(h2, { unit: victim });
     pick(h2, { bin: { seat: D2, card: 'Blightwalker' } });
-    pass(h2); pass(h2);
+    pass(h2); 
     assert.equal(ent(h2, victim), undefined, 'Necromorph really exchanged the unit away');
     assert.equal(calls, 1,
       'Necromorph must exchange through E.exchangeInPlace. It used to call destroy() — two cards, '
@@ -357,7 +357,7 @@ test('CR 400.4: Waxen Witness names no seat, so a stolen unit follows CONTROL li
   h.do({ type: 'declareAttack', seat: A, columns: [[atk], [stolen]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Waxen Witness') });
   pick(h, { unit: stolen });
-  pass(h); pass(h);
+  pass(h);
 
   assert.equal(ent(h, stolen), undefined, 'the unit left play');
   assert.deepEqual(cacheOf(h, A), ['Good Whale'],

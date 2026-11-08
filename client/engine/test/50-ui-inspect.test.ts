@@ -1152,7 +1152,7 @@ test('CR 704.4: a negated trigger is GONE from the stack, not sitting on it grey
 
   pass(h);                                               // CR 605.1a: A acts first, and passes
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Containment Protocol') });
-  pass(h); pass(h);                                      // the Protocol resolves
+  pass(h); // the Protocol resolves
 
   assert.deepEqual(h.state.stack.filter(i => i.negated), [],
     'CR 704.4: nothing on the stack is ever flagged negated');

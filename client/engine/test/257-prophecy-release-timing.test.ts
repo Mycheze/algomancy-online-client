@@ -201,7 +201,7 @@ test('CR 203.5b: Divine Intervention can be released from cache in the battle it
 
   h.do({ type: 'playCached', seat: A, index: 0 });
   pick(h, { stack: h.state.stack[0]!.id });
-  pass(h); pass(h);
+  pass(h);
   assert.equal(h.state.decision!.seat, A, 'the caster is asked whether to change anything');
   pick(h, true);
   pick(h, { unit: blk });

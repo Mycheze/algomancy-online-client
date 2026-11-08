@@ -23,17 +23,17 @@ test('the stack: negate & fizzle, spell units, priority order', () => {
   assert.equal(h.state.priority, A, 'priority starts with initiative');
   pass(h);   // A passes
   const li = give(h, D, 'Leaping Lillik');
-  h.do({ type: 'playCard', seat: D, handIndex: li });
+  h.do({ type: 'playCard', seat: D, handIndex: li, holdPriority: true });   // D keeps priority for a second play
   pick(h, { unit: atk });   // delete target: the whale
   // A's Rune Channeler must NOT trigger on the opponent's spell ("when YOU play")
   assert.equal(h.state.stack.length, 1, 'only Lillik on the stack');
-  assert.equal(h.state.priority, A, 'priority passed to A after D acted');
+  assert.equal(h.state.priority, D, 'D asked to keep priority');
 
-  pass(h);   // A passes again
   const dv = give(h, D, 'Dreadwave Devourer');
   h.do({ type: 'playCard', seat: D, handIndex: dv });
   pick(h, { stack: h.state.stack[0]!.id });   // negate own Lillik (legal-shaped)
-  pass(h); pass(h);   // resolve Dreadwave: negates Lillik, spawns 6/4
+  assert.equal(h.state.priority, A, 'priority passed to A after D acted');
+  pass(h); // resolve Dreadwave: negates Lillik, spawns 6/4
   assert.ok(unitsOf(h, D).some(u => u.card === 'Dreadwave Devourer'), 'Dreadwave spawned as a unit');
   // CR 704.4: negation is REMOVAL — Lillik left the stack the instant Dreadwave
   // resolved, and no further priority round is spent popping a dead item
@@ -81,7 +81,7 @@ test('bounded triggers & battle-scoped ordinal counters', () => {
   h.do({ type: 'playCard', seat: A, handIndex: arc });
   pick(h, { unit: f1 });                         // kill own Ignis Sprite: second ally death
   assert.equal(h.state.decision, null, 'no second Rune Channeler trigger (bounded)');
-  pass(h); pass(h);                              // resolve arc → Ignis dies, two triggers fire
+  pass(h); // resolve arc → Ignis dies, two triggers fire
   assert.ok(!ent(h, f1), 'Ignis died');
   assert.equal(h.state.battleCounters[region]![`allyDeaths:${A}`], 2, 'second ally death counted');
   // two simultaneous triggers for A → A orders them (CR 706.5): Reclaimer resolves first
@@ -112,7 +112,7 @@ test('until-regroup temp mods & cleanup', () => {
   const j = give(h, D, 'Jelly');
   h.do({ type: 'playCard', seat: D, handIndex: j });
   pick(h, { unit: big });
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(effStats(h, big), [2, 1], 'Jelly shrank the attacker');
   assert.ok(unitsOf(h, D).some(u => u.card === 'Jelly'), 'Jelly spawned a body');
   ent(h, big)!.damage = 0;   // isolate the cleanup check
@@ -140,7 +140,7 @@ test('Fireball goes to the stack in battle, Burst casts them all at once', () =>
   pick(h, { player: A });        // second fireball target (Burst: both cast)
   assert.equal(h.state.stack.length, 2, 'Burst: both Fireballs went to the stack');
   assert.ok(!h.state.entities[t1.id] && !h.state.entities[t2.id], 'tokens left play at cast');
-  pass(h); pass(h);   // resolve second (face)
+  pass(h); // resolve second (face)
   assert.equal(h.state.players[A]!.life, 29, 'Fireball 1 at face');
   pass(h); pass(h);   // resolve first (unit)
   assert.equal(ent(h, atk)!.damage, 1, 'Fireball 1 into the unit');

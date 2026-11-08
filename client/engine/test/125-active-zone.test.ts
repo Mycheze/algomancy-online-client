@@ -119,7 +119,7 @@ function virusOnStack(seed: number, virus: string, kind: 'metal' | 'earth'):
 function negateWithHushMush(h: Harness, A: Seat, itemId: number): void {
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Hush Mush') });
   pick(h, { stack: itemId });
-  pass(h); pass(h);
+  pass(h);
   assert.ok(!h.state.stack.some(i => i.id === itemId), 'the negated item left the stack');
 }
 
@@ -159,7 +159,7 @@ test('CR 803.8k: a printed-Unstable virus whose HOST DIES fizzles to the erased 
   const { h, D, atk, item } = virusOnStack(7452, 'Aberrant Statweaver', 'metal');
   withEUnsettled(h, e => { e.destroy(ent(h, atk)!, 'dies'); e.settle(); });
   assert.equal(ent(h, atk), undefined, 'the host is gone before the virus resolves');
-  pass(h); pass(h);                                  // the virus item resolves → fizzles
+  pass(h); // the virus item resolves → fizzles
   assert.ok(!h.state.stack.some(i => i.id === item), 'the fizzled item left the stack');
   assert.ok(h.log.some(l => l.includes('fizzles') && l.includes('erased (Unstable)')),
     'the fizzle names its own destination rather than claiming "→ bin"');
@@ -175,12 +175,11 @@ test('CR 803.8k keeps CR 723.4b: a MODDED ordinary spell negated off the stack i
   giveResources(h, D, 'earth', 2);                   // Chitin Shredder ee/2
   giveResources(h, A, 'wood', 2);
   pass(h);
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Arc Lightning') });
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Arc Lightning'), holdPriority: true });
   pick(h, { player: A });
-  pass(h);                                           // A declines to answer
   const carrier = h.state.stack.find(i => i.card === 'Arc Lightning')!;
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Chitin Shredder'), hostStack: carrier.id });
-  pass(h); pass(h);                                  // the virus attaches
+  pass(h); // the virus attaches
   assert.deepEqual(h.state.stack.find(i => i.card === 'Arc Lightning')!.augments,
     [{ card: 'Chitin Shredder', by: D }]);
   negateWithHushMush(h, A, carrier.id);

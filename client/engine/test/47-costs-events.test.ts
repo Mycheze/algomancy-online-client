@@ -416,7 +416,7 @@ test('CR 705.3: a discard activation cost is CHOSEN and paid before the item rea
   assert.ok(h.state.players[A]!.bin.includes('T47 Chaff'),
     'paid immediately — the opponent never got priority in between');
   assert.equal(h.state.stack.length, 1, 'and only THEN does the ability reach the stack');
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(effStats(h, u), [3, 6]);
   finishBattle(h);
 });
@@ -506,7 +506,7 @@ test('CR 705.2: ActivatedAbility.timing gates activation by WINDOW, both ways', 
     /that ability is a deployment ability/);
   assert.ok(!h.legal(A).some(a => a.type === 'activateAbility' && a.entityId === deployOnly));
   h.do({ type: 'activateAbility', seat: A, entityId: battleOnly, abilityIndex: 0 });
-  pass(h); pass(h);
+  pass(h);
   assert.deepEqual(effStats(h, battleOnly), [3, 6]);
   finishBattle(h);
 });

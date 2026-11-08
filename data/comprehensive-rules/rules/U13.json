@@ -141,7 +141,7 @@
     "text": "The after combat step is a priority window. The initiative player receives priority first, then priority passes to the non-initiative player in the region. When all players pass priority in succession with the stack empty, the after combat step ends.",
     "examples": [
       {
-        "text": "After combat, the initiative player passes, the non-initiative player casts a spell, and both then pass. The spell resolves and the initiative player receives priority again. When both pass with the stack empty, the step ends.",
+        "text": "After combat, the initiative player passes, the non-initiative player casts a spell, and the initiative player passes. The spell resolves and the initiative player receives priority again. When both pass with the stack empty, the step ends.",
         "test": "424-cr-after-combat.test.ts::cr:combat.after.window — initiative first; a spell cast in the window resolves after both pass, priority returns to the initiative player; two passes on an empty stack end the step"
       }
     ],

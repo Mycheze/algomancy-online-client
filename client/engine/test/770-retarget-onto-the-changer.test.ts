@@ -71,7 +71,7 @@ function ontoTheChanger(seed: number, changer: string): void {
   assert.equal(opt.warning, undefined, 'no "will do nothing" warning: it can move the Drone onto itself');
   pick(h, { stack: drone });
   const self = h.state.stack.at(-1)!.id;
-  pass(h); pass(h);                                   // the changer resolves
+  pass(h); // the changer resolves
   let menu: unknown[] | null = null;
   for (let guard = 0; h.state.decision && guard < 6; guard++) {
     const dec = h.state.decision;

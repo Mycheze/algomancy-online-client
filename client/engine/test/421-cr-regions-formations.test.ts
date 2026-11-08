@@ -534,7 +534,7 @@ test('cr:combat.formations.play-into.needs-formation — after blocks every atta
   passTo(h, A);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Tiderunner Initiate') });
   assert.equal(h.state.decision, null, 'nothing is asked at cast');
-  pass(h); pass(h);
+  pass(h);
   const r = unitsOf(h, A).find(u => u.card === 'Tiderunner Initiate');
   assert.ok(r, 'it entered play');
   assert.ok(!h.state.battle!.columns.flat().includes(r!.id), 'outside any formation');
@@ -558,7 +558,7 @@ test('cr:combat.formations.placement.empty-formation — after blocks every atta
   passTo(h, A);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Tiderunner Initiate') });
   assert.equal(h.state.decision, null, 'no spot is asked for');
-  pass(h); pass(h);
+  pass(h);
   const r = unitsOf(h, A).find(u => u.card === 'Tiderunner Initiate');
   assert.ok(r, 'it entered play');
   assert.deepEqual(h.state.battle!.columns, [[]], 'and the attacking line is unchanged');
@@ -643,7 +643,7 @@ test('cr:combat.formations.placement.defending-emptied-block — every blocker d
   const at = d!.options.findIndex(o => (o.value as { kind: string; column?: number }).kind === 'hole');
   assert.ok(at >= 0, `the emptied blocking column is offered: ${d!.options.map(o => o.label).join(' | ')}`);
   h.do({ type: 'decide', seat: D, choice: at });
-  pass(h); pass(h);                                                      // the play resolves
+  pass(h); // the play resolves
   assert.equal(h.state.battle!.blocks[0]!.length, 1, 'it stands in the blocking column');
   passToStep(h, 'afterWindow');
   const r = unitsOf(h, D).find(u => u.card === 'Tiderunner Initiate');
@@ -674,7 +674,7 @@ test('cr:combat.formations.placement.defending-emptied-block — once every bloc
   passTo(h, D);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tiderunner Initiate') });
   assert.equal(h.state.decision, null, 'no spot is asked for');
-  pass(h); pass(h);
+  pass(h);
   const r = unitsOf(h, D).find(u => u.card === 'Tiderunner Initiate');
   assert.ok(r, 'it entered play');
   assert.deepEqual(h.state.battle!.blocks[0], [], 'outside any formation');
