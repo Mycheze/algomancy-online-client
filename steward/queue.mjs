@@ -183,5 +183,7 @@ for (const e of ready) push(e.id, `${e.id}  [${e.size}] ${e.title}`);
 const lastTidy = journal.get('tidy');
 if (!lastTidy || Date.now() - Date.parse(lastTidy.ts) > 20 * 3600e3) out.push('tidy  (ledger hygiene, once a night)');
 
-console.log(out.join('\n'));
+// nothing to do prints NOTHING: console.log of an empty join is a bare newline, which the
+// runner's empty check (`-s`) read as one item and woke Claude with an empty first line (2026-11-08)
+if (out.length) console.log(out.join('\n'));
 if (WHY && excluded.length) console.error('\nexcluded:\n  ' + excluded.join('\n  '));

@@ -472,8 +472,9 @@ work_one() {
   g diff --name-only -- client/ledgers/ > "$STATE/fetched.txt"
   # any branch a repair line will name must exist locally
   STEWARD_STATE="$STATE" node "$REPO/steward/queue.mjs" --why > "$STATE/queue.txt" 2>"$STATE/queue.excluded"
-  if [ ! -s "$STATE/queue.txt" ]; then log "queue empty — nothing to do"; journal idle idle; return 0; fi
-  local first; first=$(head -1 "$STATE/queue.txt")
+  # a line with something on it, not just a non-empty file: queue.mjs used to print a bare newline for "nothing"
+  if ! grep -q '[^[:space:]]' "$STATE/queue.txt"; then log "queue empty — nothing to do"; journal idle idle; return 0; fi
+  local first; first=$(grep -m1 '[^[:space:]]' "$STATE/queue.txt")
   log "queue: $(wc -l <"$STATE/queue.txt") items; first: $first"
 
   # the agent's leash: git over ssh refuses; ssh/scp/push denied in its settings. fetch/pull are

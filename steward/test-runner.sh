@@ -74,8 +74,22 @@ EOF
   chmod +x "$T/bin/claude-stub"
 }
 
+# Every scenario works the queue's FIRST item, and every dry verdict takes that item off the
+# queue, so the scenarios use up whatever master's ledgers offer. On 2026-11-08 that was 9 items:
+# the last five scenarios ran on an empty queue and "failed" (the stub wrote a verdict for item "").
+# When nothing but triage is left, forget this test's dry verdicts on LEDGER items (they sit below
+# fix-master, inbox and retro in the queue, so no scenario that checks the order is disturbed).
+refill() {
+  [ -n "${NO_REFILL:-}" ] && return
+  (cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs 2>/dev/null) | grep -v '^triage' | grep -q '[^[:space:]]' && return
+  [ -f "$T/state/journal.jsonl" ] || return
+  jq -c 'select((((.outcome // "") | startswith("dry-")) and ((.item // "") | test("^(BL-|CT-|report-|#)[0-9]|^tidy$"))) | not)' \
+    "$T/state/journal.jsonl" > "$T/state/journal.refill" && mv "$T/state/journal.refill" "$T/state/journal.jsonl"
+}
+
 tick() { # scenario [gate]
-  local t0; t0=$(wc -l < "$T/state/journal.jsonl" 2>/dev/null || echo 0)
+  refill
+  local t0; t0=$(wc -l 2>/dev/null < "$T/state/journal.jsonl" || echo 0)
   STUB_SCENARIO="$1" STUB_GATE="${2:-true}" STEWARD_ROOT="$T" STEWARD_CONF="$T/env" \
     bash "$T/repo/steward/run-once.sh" >>"$T/logs/test.out" 2>&1
   tail -n +"$((t0 + 1))" "$T/state/journal.jsonl" 2>/dev/null | grep -v '"outcome":"idle"' | tail -1
@@ -168,6 +182,15 @@ if run retro; then # the daily retro: the digest is written once, offered once, 
   [ "$(jq -r .item <<<"$r")" = "retro-$day" ] && [ "$(last_outcome "$r")" = dry-shipped ] && ok "…offered as an item and worked (retro-$day → dry-shipped)" || bad "retro → $r"
   (cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs 2>/dev/null) | grep -q '^retro ' && bad "a done retro was offered again" || ok "…and once done is not offered again"
   sed -i 's/^STEWARD_SUMMARY_HOUR=.*/STEWARD_SUMMARY_HOUR=24/' "$T/env"; fi
+if run empty; then # nothing to do = idle, and NO Claude run (2026-11-08: queue.mjs printed a bare newline for
+  # "nothing", the runner's `-s` check read it as one item, and Claude was woken on an empty first line)
+  (cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs 2>/dev/null) \
+    | awk '{print ($1=="report"||$1=="repair"||$1=="resume"||$1=="inbox"||$1=="retro") ? $2 : $1}' \
+    | while read -r it; do jq -cn --arg i "$it" '{ts:"2099-01-01T00:00:00Z",item:$i,outcome:"rejected",note:"steward-test-empty"}'; done >> "$T/state/journal.jsonl"
+  n0=$(ls "$T/logs"/run-*.jsonl 2>/dev/null | wc -l); r=$(NO_REFILL=1 tick skip); n1=$(ls "$T/logs"/run-*.jsonl 2>/dev/null | wc -l)
+  [ -z "$r" ] && [ "$n0" = "$n1" ] && tail -3 "$T/logs/test.out" | grep -q 'queue empty' \
+    && ok "an empty queue is idle: no Claude run" || bad "empty queue → ${r:-no row} ($((n1 - n0)) Claude run(s)); queue.txt: $(od -c "$T/state/queue.txt" | head -2 | tr '\n' ' ')"
+  jq -c 'select(.note != "steward-test-empty")' "$T/state/journal.jsonl" > "$T/state/journal.refill" && mv "$T/state/journal.refill" "$T/state/journal.jsonl"; fi
 if run pause; then touch "$T/state/paused"; r=$(tick skip); [ -z "$r" ] && ok "paused → nothing runs" || bad "ran while paused: $r"; rm -f "$T/state/paused"; fi
 
 # clean the dry refs this test left on origin
