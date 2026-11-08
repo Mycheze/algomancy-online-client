@@ -27,7 +27,7 @@ import { cardStatsHtml, cardStatsView, paintCardStats, type CardStatsView } from
 import type { CardStatsState } from '../cardstats.ts';
 import { button, segmented } from '../components/index.ts';
 import { deckPreviewHtml, deckPreviewView } from './decks.ts';
-import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
+import { frameChromeView, frameHtml, paintFrame, type FrameBack, type FrameChrome } from './frame.ts';
 
 type Sort = MetaState['sort'];
 
@@ -80,11 +80,16 @@ export function metaTabsHtml(view: MetaView['view']): string {
   });
 }
 
-/** a metagame view in the frame: Home on the left, the tabs in the centre */
+/** a metagame view in the frame: Home on the left, the tabs in the centre.
+ * One shared deck has Back there instead: to the published-deck list it was
+ * opened from (or a share link's), or to the profile that opened it. */
 function metaFrame(v: MetaView, page: string, mainHtml: string, o: { titleHtml?: string; title?: string; toolsHtml?: string } = {}): string {
+  const back: FrameBack = v.view !== 'deck' ? { dataBtn: 'meta-close', label: 'Home' }
+    : v.backTo === 'host' ? { dataBtn: 'meta-close', label: 'Back', icon: 'back', title: 'back to the profile' }
+      : { dataBtn: 'meta-list', label: 'Back', icon: 'back', title: 'back to the published decks' };
   return frameHtml({
     page, title: o.title ?? 'Metagame', titleHtml: o.titleHtml,
-    back: { dataBtn: 'meta-close', label: 'Home' },
+    back,
     centerHtml: metaTabsHtml(v.view), toolsHtml: o.toolsHtml,
     chrome: v.chrome, fill: true, mainHtml,
   });

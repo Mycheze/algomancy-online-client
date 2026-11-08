@@ -32,7 +32,7 @@ function deck(i: number, over: Partial<PublicDeck> = {}): PublicDeck {
 function view(over: Partial<MetaView> = {}): MetaView {
   return {
     view: 'list', rows: null, minGames: 5, one: null, loading: false, msg: '', sort: 'winrate', els: [], text: '',
-    focus: null, deckGroup: 'type', statsOpen: false, descOpen: false, exporting: null, ladder: null,
+    focus: null, deckGroup: 'type', statsOpen: false, descOpen: false, exporting: null, backTo: 'list', ladder: null,
     signedIn: false, mine: false, link: 'http://x/?deck=d1', exportText: '', stats: null, chrome: { signedIn: false, alerts: 0 }, ...over,
   };
 }
@@ -82,7 +82,7 @@ test('981 §3 one shared deck: not found, typical, yours, another\'s', () => {
   assert.match(html, /by Builder3 · after Zed’s Orig · unlisted — only people with the link see this/);
   assert.match(html, /<strong>bold<\/strong>|<b>bold<\/b>/);
   assert.match(html, /<input class="sharelink" readonly value="http:\/\/x\/\?deck=d1"/);
-  for (const b of ['meta-list', 'meta-close', 'copylink', 'meta-export', 'meta-group', 'meta-stats', 'meta-focus']) {
+  for (const b of ['meta-list', 'copylink', 'meta-export', 'meta-group', 'meta-stats', 'meta-focus']) {
     assert.ok(btns(html).has(b), `${b} is drawn`);
   }
   assert.doesNotMatch(html, /meta-take/, 'signed out: nothing to copy into');
@@ -101,6 +101,30 @@ test('981 §3 one shared deck: not found, typical, yours, another\'s', () => {
   assert.match(yours, /Yours — edit it on your decks page\./);
   // copies are drawn as a stack, with the depth on the tile
   assert.match(html, /<div class="dktile dkstack"\s+style="--d:1"/);
+});
+
+/** the frame's top-left button: its data-btn, caption and title */
+function frameBack(html: string): { btn: string; label: string; title: string } {
+  const tag = /<(?:button|a)\b[^>]*\bframeback\b[^>]*>[\s\S]*?<\/(?:button|a)>/.exec(html)?.[0] ?? '';
+  return {
+    btn: /data-btn="([^"]*)"/.exec(tag)?.[1] ?? '',
+    label: /<span class="ui-icon-button__label">([^<]*)<\/span>/.exec(tag)?.[1] ?? '',
+    title: /title="([^"]*)"/.exec(tag)?.[1] ?? '',
+  };
+}
+
+test('981 §3b a shared deck has Back to where it was opened from, not Home (inbox-1568909425371127962)', () => {
+  const d = deck(3);
+  // positive control: the list itself still has Home
+  assert.deepEqual(frameBack(metaHtml(view({ rows: [d] }))), { btn: 'meta-close', label: 'Home', title: '' });
+  // opened off the list, or cold off a share link: Back is the list
+  for (const html of [metaHtml(view({ view: 'deck', one: d })), metaHtml(view({ view: 'deck', msg: 'gone' }))]) {
+    assert.deepEqual(frameBack(html), { btn: 'meta-list', label: 'Back', title: 'back to the published decks' });
+    assert.doesNotMatch(html, /data-btn="meta-close"/, 'no Home on a shared deck');
+  }
+  // opened from a profile: Back closes the metagame, which puts the profile back
+  assert.deepEqual(frameBack(metaHtml(view({ view: 'deck', one: d, backTo: 'host' }))),
+    { btn: 'meta-close', label: 'Back', title: 'back to the profile' });
 });
 
 test('981 §4 the export panel, the stats and the pinned card', () => {

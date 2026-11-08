@@ -88,6 +88,17 @@ let descOpen = false;
  * A published deck anybody can read is a deck anybody should be able to take
  * away as a file; the builder's own page (ui/decks.ts) offers the same two. */
 let exporting: 'text' | 'file' | null = null;
+/** where a shared deck's Back button goes (inbox-1568909425371127962: the
+ * owner opened a deck off the list and found only Home, when what he wanted
+ * was the list again). 'list' — opened off the published-deck list, or cold
+ * off a share link: the list is the deck's parent. 'host' — opened from a
+ * profile's Published decks, which is still up underneath, so closing the
+ * metagame (meta-close) puts that profile back. */
+let backTo: 'list' | 'host' = 'list';
+/** how far down the published-deck list was when a deck was opened off it,
+ * so Back lands on the row you clicked rather than at the top */
+let listTop = 0;
+const LIST_SCROLL = '[data-scroll="meta-decks"]';
 
 export const screen = (): 'meta' | null => (view ? 'meta' : null);
 
@@ -205,6 +216,8 @@ export function openMeta(): void {
 }
 
 function openDeck(id: string): void {
+  backTo = acct.screen() ? 'host' : 'list';
+  listTop = view === 'list' ? (document.querySelector(LIST_SCROLL) as HTMLElement | null)?.scrollTop ?? 0 : 0;
   view = 'deck'; wantId = id; one = null; focus = null; descOpen = false; msg = ''; exporting = null;
   syncUrl();
   loadOne(id);
@@ -242,11 +255,13 @@ export interface MetaState {
   statsOpen: boolean;
   descOpen: boolean;
   exporting: 'text' | 'file' | null;
+  /** where the shared deck's Back button goes — see `backTo` */
+  backTo: 'list' | 'host';
   ladder: { cards: CardStanding[]; rankedAfter: number; duels: number } | null;
 }
 
 const state = (): MetaState => ({
-  view, rows, minGames, one, loading, msg, sort, els, text, focus, deckGroup, statsOpen, descOpen, exporting, ladder,
+  view, rows, minGames, one, loading, msg, sort, els, text, focus, deckGroup, statsOpen, descOpen, exporting, backTo, ladder,
 });
 
 /** Whichever export format is showing, as text. A shared deck has no
@@ -287,9 +302,15 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'meta-close':
       close();
       return true;
-    case 'meta-list':
+    case 'meta-list': {
+      // the deck page's Back (and the lit Published decks tab under it):
+      // the list again, scrolled to where it was when the deck was opened
+      const fromDeck = view === 'deck' && backTo === 'list';
       openMeta();
+      const box = fromDeck && rows ? document.querySelector(LIST_SCROLL) as HTMLElement | null : null;
+      if (box) box.scrollTop = listTop;
       return true;
+    }
     case 'meta-ladder':   // CR D8.2f
       openLadder();
       return true;
