@@ -319,6 +319,18 @@ const OPEN: LedgerEntry[] = [
     status: 'live',
     note: "Real, cause not pinned. RUCV fetched: a friend's constructed room, Gember seat 1 dealt with her saved deck 92e37b2f… (a blue list: Bloated Manablub, Good Whale, Bripp …); mycheze conceded 15 seconds in, turn 1, to start again. In a friend's constructed room the joiner's browser-held deck is registered the moment they join (server/rooms.ts takesJoinDeck), so the game deals on arrival and the joiner never sees which deck they brought. League and Competitive rooms already take a deck only from the room's own pick. Why the held deck was not the one she chose is not checked (another tab or device, or a pick that did not stick). CT-542.",
   },
+  {
+    id: 358, room: "CNDX", date: "2026-11-08",
+    report: "mycheze, seat 0 (ux): \"Cached cards that are playable in a turn should probably ALWAYS appear to the right of the hand (even when not playable due to timing restrictions or something), but with the same \\\"playable/not playable\\\" UI that cards normally have in the hand. It's too easy to miss that it appears in your hand ONLY for brief moments.\"",
+    status: 'live',
+    note: "Real, by reading. CNDX fetched and replayed (filed at [171], turn 5 battle; today's engine refuses a redundant pass at [83] after the 2026-11-08 priority changes, and --as-recorded shows every difference heals to the same final board). The cached cards beside the hand (ui/main.ts handCachedHtml) are only those with a legal action this instant, so a glimpsed card whose timing is shut disappears from there until its next window. He wants every cached card still usable this turn shown there, lit or dark like a hand card. CT-547.",
+  },
+  {
+    id: 359, room: "CNDX", date: "2026-11-08",
+    report: "mycheze, seat 0 (ux): \"When a unit is modded, the mod sorta cuts off the \\\"damage\\\" -X red badge so you can't read it unless you zoom in\"",
+    status: 'live',
+    note: "Real by the report; cause not seen (no browser on the box). Filed at [217], turn 6: Fireball 3 had just dealt 3 to mycheze's attacking Amphivore, grafted with Bloated Manablub. The red damage marker is drawn at the bottom-left of the card face, which on a modded unit is the seam where its first mod strip hangs (styles/board/08-playtest-ux-fixes.css, .card.modded). CT-548.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
