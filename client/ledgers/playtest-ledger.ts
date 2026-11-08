@@ -277,6 +277,48 @@ const OPEN: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "Took back invi's discard of Nothyr [264] (\"negate up to one target nonspell effect\", with Yagamino's Tenebrous Bulborb augment on the stack); Yagamino agreed. Replayed (--report, the board rebuilt): Nothyr was offered and paid correctly. Replayed again invi used Combustible Bogwalker's ability instead [264], recalling Dropslime [265] and discarding Nothyr for it [266]. The player changing their own play; no defect.",
   },
+  {
+    id: 351, room: "BHVW", date: "2026-11-08",
+    report: "mycheze, seat 0 (ux): \"Spell tokens that are riding along don't need to be up in the \\\"invaders\\\" zone. It should be down *below* your row of units, close to your own bin. That's unused space anyway\"",
+    status: 'live',
+    note: "A layout request, fair. Replayed (213/213, faithful): filed on the final position, turn 5, after mycheze's winning attack. Declaring an attack moves the riding spell tokens into the battle region with the attackers (apply.ts declareAttack), and the board draws them in that region's Invaders strip beside the attacking units; the owner wants them on the attacker's own side, below their units near their bin. Presentation only. CT-540.",
+  },
+  {
+    id: 352, room: "", date: "2026-11-08",
+    report: "mycheze, home (ux): \"The header text on the League and Challenge and Matchmaking is an unclickable row. It's weird and the whole card should be able to be clicked\"",
+    status: 'live',
+    note: "Real, by reading. Each side card is meant to open its page wherever it is clicked: a stretched transparent button (.homesideopen, pages/home.ts sideCardHtml) covers it. But styles/pages/54-home-art.css lifts every other child of the card to z-index 1 above that button, so the title strip and the body's glass catch the click and nothing happens; only the gaps between them open the page. CT-543.",
+  },
+  {
+    id: 353, room: "", date: "2026-11-08",
+    report: "mycheze, home (ux): \"On the League box, there needs to be a bit more spacing between the \\\"current standings\\\" and the bottom of the box. Right now, it immediatly ends at the bottom of the box and it's hard to read\"",
+    status: 'live',
+    note: "A spacing fix on the home page's League card: its body (pages/league.ts leagueGlanceHtml) ends on the standings list with no room under it. CT-544.",
+  },
+  {
+    id: 354, room: "", date: "2026-11-08",
+    report: "mycheze, home (ux): \"Saying \\\"Next: vs Yagamino\\\" in the League is a bit misleading. The order doesn't really matter. Rather, it should be something \\\"This week vs: Yagamino and Gember\\\" or \\\"This week vs: Yagamino, invi and Gember\\\"\"",
+    status: 'live',
+    note: "Real: the League card names only the first unplayed match (pages/league.ts leagueGlanceView, `matches.find(x => x.playable && !x.result)`, drawn as \"Next: vs …\"), though a week's matches have no order. It should list every opponent still to play this week. CT-545.",
+  },
+  {
+    id: 355, room: "", date: "2026-11-08",
+    report: "mycheze, home (ux): \"When you copy a deck that someone else made and play it, it says \\\"Deck name copy - by _____\\\" but instead of their name, it's a UUID string of nonsense.\"",
+    status: 'live',
+    note: "Real. The deck picker prints a collection deck as \"name — by author\" (pages/deckpicker.ts), and taking a copy of somebody's shared deck copies the source's free-text `author` verbatim (server/collection.ts duplicateDeck) instead of naming the player who published it. Which deck carried the id is not checked (the account store is not fetchable). CT-541.",
+  },
+  {
+    id: 356, room: "", date: "2026-11-08",
+    report: "mycheze, home (ux): \"Your understanding of what \\\"Casual and Competitive\\\" is about is wrong. Casual = simultaneous actions during simultaneous phases, Competitive = entirely turn based … Best of 1 or Best of 3 … should be a separate slider … add the rules set choice to Draft. And add a little hover tool tip …\"",
+    status: 'live',
+    note: "An owner design decision, filed as work: the home page's Constructed Format switch today means friend's room vs match (Competitive is Best of 1/3 with a sideboard, and only a match room plays in turn, server/match.ts `rules: { sequential: true }`). He separates the rules set (simultaneous vs in turn, on Draft AND Constructed, explained by a tooltip) from Best of 1/3 (Constructed, either rules set). Too big for a triage; his words are kept whole in BL-73 (CT-546 carries the report).",
+  },
+  {
+    id: 357, room: "RUCV", date: "2026-11-08",
+    report: "mycheze, seat 0 (gamebreaking): \"Gember thought she selected the right deck, but for some reason, it didn't actually follow her into the game.\"",
+    status: 'live',
+    note: "Real, cause not pinned. RUCV fetched: a friend's constructed room, Gember seat 1 dealt with her saved deck 92e37b2f… (a blue list: Bloated Manablub, Good Whale, Bripp …); mycheze conceded 15 seconds in, turn 1, to start again. In a friend's constructed room the joiner's browser-held deck is registered the moment they join (server/rooms.ts takesJoinDeck), so the game deals on arrival and the joiner never sees which deck they brought. League and Competitive rooms already take a deck only from the room's own pick. Why the held deck was not the one she chose is not checked (another tab or device, or a pick that did not stick). CT-542.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
