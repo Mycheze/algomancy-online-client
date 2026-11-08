@@ -513,62 +513,6 @@ const OPEN: Entry[] = [
       + 'labels written in pages/*.ts and util.ts).',
   },
   {
-    id: 'BL-11',
-    slug: 'ui-tutorial',
-    title: 'UI tutorial — teach the client to people who know Algomancy',
-    area: 'teaching',
-    size: 'M',
-    status: 'open',
-    track: 'feature',
-    said:
-      'The UI tutorial is meant for players that know algomancy but need to learn how to do '
-      + 'things in this client.',
-    means:
-      'An interactive first-run walkthrough of the CLIENT ONLY. Assumes you know the game. '
-      + 'Where your hand is, how to declare an attack and build a column, how to block, how '
-      + 'to graft/augment with the mouse, what the auto-pass chip does, that right-click '
-      + 'opens the inspector, where bins and erased cards live, how the clock works.',
-    doneWhen: [
-      'A new player can trigger the tutorial from the home screen and re-run it later',
-      'It covers every interaction that is not discoverable by looking: column building, sends, grafting, auto-pass/auto-yield, undo, the report button',
-      'It does not teach rules — that is BL-12',
-      'Skipping it is one click and it does not nag',
-      'It is a played scripted game, not an overlay on the live client',
-      'It walks the owner\'s whole checklist: planning, priority passing, yielding, modding, using the bin, multiple targets, complicated graft effects, attacks and counterattacks, and bringing spell tokens along',
-    ],
-    decided: [
-      'This and learn-to-play (BL-12) are distinct: this one is client-only.',
-      'A SCRIPTED QUICK GAME, not coach-marks. Owner, 2026-08-25, given both options: "Scripted quick game that shows how to do the actions and how cards work is fine. Make sure they understand planning, priority passing, yielding, modding, using the bin, multiple targets, complicated graft effects, attacks/counter attacks, bringing along spell tokens, etc." — the second sentence is a content checklist and it is now in `doneWhen` line by line.',
-    ],
-    asks: [],
-    deps: [],
-    touches: [
-      'client/ui/main.ts',
-      'client/ui/glossary.ts',
-      'client/ui/index.html',
-    ],
-    notes:
-      'FLAG, raised 2026-08-25 rather than resolved: the owner\'s checklist crosses the line '
-      + 'this entry drew between itself and BL-12. "Make sure they understand planning, '
-      + 'priority passing ... attacks/counter attacks" is understanding the GAME, which the '
-      + 'entry says explicitly is BL-12\'s job ("It does not teach rules — that is BL-12"). '
-      + 'The reading that fits both: teach every item on the list AS AN INTERACTION — where '
-      + 'you click to pass priority, how you set up a graft, how a spell token comes along — '
-      + 'and leave WHY you would to BL-12. If you cannot do one without the other for a '
-      + 'given item, build it once, here, and have BL-12 reuse it rather than repeat it.'
-      + '\n\n2026-11-07 (steward): BL-12\'s Learn to Play already IS a played scripted game reachable from the home '
-      + 'screen, with a tutorial bot, a skip on every lesson, and this client\'s interface guide (ui/tutorial.ts) '
-      + 'as its lesson 10 — but only as pages to read: in play it taught passing and nothing else of the '
-      + 'client. Built on that, staged: five compact optional nudges (ui/lessons.ts CLIENT_TIPS — undo, '
-      + 'blocking and send, targets, riding spell tokens, Pass through stack / Pass all / auto-yield / '
-      + 'auto-pass), each opening the first time its control is usable and lighting the real control; '
-      + 'guarded by 1180-lesson-client-tips.test.ts (in ten real tutorial games the first four open in '
-      + 'every game, the token tip in three). NOT done, and the owner\'s call (handoff BL-11): whether '
-      + 'this — plus a "client tips only" start for players who know the game — is the UI tutorial, or '
-      + 'a separate scripted game is still wanted. Also open: the 📝 report button in a solo game was '
-      + 'not checked, so no tip names it.',
-  },
-  {
     id: 'BL-17',
     slug: 'judge-badges',
     title: 'Judge badges — L1/L2/L3 trust levels for rules and bug reports',
@@ -1142,6 +1086,38 @@ const OPEN: Entry[] = [
       + 'a sideboard and the match clock (docs/22), so a Casual Best of 3 is a match with `sequential` off, and a '
       + 'Competitive Best of 1 is either a one-game match or a friend\'s room with `sequential` on. League rooms '
       + '(BL-55\'s neighbours) take their rules from the season and are out of scope.',
+  },
+  {
+    id: 'BL-74',
+    slug: 'deck-builder-zoom-hint',
+    title: 'Tell players on the deck building page that holding the mouse wheel down zooms a card',
+    area: 'client',
+    size: 'S',
+    status: 'open',
+    track: 'qol',
+    said:
+      'there needs to be a tooltip or reminder of some kind on the "deck building" page that you can hold down '
+      + 'middle mouse button (the scroll wheel) to zoom in on cards. A few people have "requested" a way to do that '
+      + 'since holding the scroll wheel isn\'t used anywhere else, so they didn\'t know. (owner, 2026-11-08, in his '
+      + 'answer to the BL-11 handoff)',
+    means:
+      'The zoom already exists (ui/presszoom.ts, owner 2026-10-21): on any `data-zoom` card a held middle button '
+      + 'zooms at once and follows the cursor, a held left button zooms after a moment, and a finger\'s hold zooms '
+      + 'too. Nothing on the deck building page says so, so players ask for a feature they already have. Add a '
+      + 'short, unobtrusive hint there (a tooltip or a one-line reminder) naming the held wheel (and the held click '
+      + 'and touch hold), without nagging.',
+    doneWhen: [
+      'The deck building page shows a hint that holding the mouse wheel (or holding a click, or a finger) on a card zooms it',
+      'The hint does not cover cards or nag: it can be read without getting in the way of building',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/tabletop.ts',
+      'client/ui/presszoom.ts',
+    ],
+    notes: 'Filed by the steward on the BL-11 resume run, 2026-11-08 — a new request carried in that answer.',
   },
 ];
 
