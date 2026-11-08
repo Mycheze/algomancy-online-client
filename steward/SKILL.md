@@ -79,6 +79,10 @@ spec, every player-visible change gets an update line in `client/ui/updates.ts`.
      runner fetched just before you started, so `origin/*` is current; leave
      fetch out. `rsync` is denied (it can reach the VPS): copy a tree with
      `cp -a` or `git worktree add`. WebFetch/`curl`/`wget`: rule 6.
+   - **`npm run check` is denied in every package**, not only the gate's (the
+     rule matches the words): in `client/ledgers` run `npm run typecheck` and
+     `npm test` instead, as their own commands (2026-11-08 triage: a chain with
+     it in was thrown away whole, twice).
 
 ## 1. Read the room (5 minutes, no more)
 
@@ -235,7 +239,11 @@ notes before editing. Then:
   a page or URL parameter → `server/test/771-link-preview`; a new
   `localStorage` key → `ui/test/267-legal-and-attribution` (the privacy page
   lists it); a `server/` import from `ui/` → `engine/test/282-dom-free-trio`;
-  a report row or ledger entry → `engine/test/70-playtest-ledger`.
+  a report row or ledger entry → `engine/test/70-playtest-ledger`; any test,
+  harness or CT `proof` that reads CSS → `ui/test/910-styles-read-through-helper`
+  — read it only with `readStyles()` from `client/ui/test/read-styles.ts`, never
+  a path under `styles/` (2026-11-08, triage #351-#357: CT-543's proof named a
+  stylesheet file, red gate, a whole repair run).
 - **Mutation check:** undo the fix (one line), confirm the guard goes red,
   restore it. A guard you have not seen fail is not a guard. Say in the verdict
   that you did this, and what went red.
