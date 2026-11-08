@@ -86,7 +86,12 @@ spec, every player-visible change gets an update line in `client/ui/updates.ts`.
 - `git log --oneline -15` — what landed since the last night. Another session may
   have fixed your item an hour ago.
 - If the item has an `answers/` file, that answer is an **owner decision**: it
-  settles the question it answers. Read the handoff it answers too.
+  settles the question it answers. Read the handoff it answers too. An answer
+  often carries a **new request** beside it ("That reminds me too, …"): file
+  it tonight — a BL in `client/ledgers/backlog.ts` with his words, the date and
+  the item it came in on — and say so in your summary. Never drop it because
+  it is not tonight's item (2026-11-08, BL-11's answer asked for a zoom hint on
+  the deck page).
 
 ## 2. Pick
 
@@ -224,6 +229,13 @@ notes before editing. Then:
   `npm --prefix client/ui run typecheck` and
   `client/engine/node_modules/.bin/tsc --noEmit -p client/server/tsconfig.json`
   and the engine's typecheck when you touched those.
+- **The censuses** — tests that scan the whole repo, so no targeted run finds
+  them. They turned most red gates of 2026-11-07/08 red (33 minutes each, plus
+  a repair run). Run the one your change feeds:
+  a page or URL parameter → `server/test/771-link-preview`; a new
+  `localStorage` key → `ui/test/267-legal-and-attribution` (the privacy page
+  lists it); a `server/` import from `ui/` → `engine/test/282-dom-free-trio`;
+  a report row or ledger entry → `engine/test/70-playtest-ledger`.
 - **Mutation check:** undo the fix (one line), confirm the guard goes red,
   restore it. A guard you have not seen fail is not a guard. Say in the verdict
   that you did this, and what went red.

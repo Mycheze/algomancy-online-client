@@ -66,8 +66,14 @@ export function classify(text, inLog = false) {
     const m = /^(pause|resume)[.!]*$/i.exec(t);
     return m ? { verb: m[1].toLowerCase() } : { verb: 'note' };
   }
-  // the bare word only: "Approve, but change the wording" is an ANSWER, not an approval
-  if (/^(approve|approved|lgtm|ship it)[\s.!👍✅]*$/iu.test(t)) return { verb: 'approve' };
+  // the bare word only: "Approve, but change the wording" is an ANSWER, not an approval.
+  // "accept" and a lone 👍/✅ are approvals too (2026-11-08: his "accept" on BL-17 was filed as an answer).
+  const APPROVE = /^(?:approve|approved|accept|accepted|lgtm|ship it|👍|✅)[\s.!👍✅]*$/iu;
+  if (APPROVE.test(t)) return { verb: 'approve' };
+  // the word alone on its first paragraph, then something else: approved, and the rest is a NEW request
+  // (2026-11-08, BL-11: "approve" then "That reminds me too, there needs to be a tooltip…")
+  const para = /^([^\n]*)\n\s*\n([\s\S]+)$/.exec(t);
+  if (para && APPROVE.test(para[1].trim())) return { verb: 'approve', more: para[2].trim() };
   let m = /^(reject|rejected)\b[\s:—–-]*([\s\S]*)$/i.exec(t);
   if (m) return { verb: 'reject', why: m[2].trim() };
   m = /^retry\b[\s:—–-]*([\s\S]*)$/i.exec(t);
@@ -277,11 +283,18 @@ async function readReplies(db, actions) {
     for (const m of await newOwnerMessages(it)) {
       const c = classify(m.content);
       const files = await saveAttachments(slug, m);
+      if (c.verb === 'approve' && !branchExists(slug) && c.more) {
+        c.verb = 'answer'; c.text = String(m.content || '').trim();   // nothing to approve: it is all an answer
+      }
       if (c.verb === 'approve') {
         if (!branchExists(slug)) { await say(it.thread, `There is no branch to approve for ${slug} — reply with your answer instead.`); continue; }
         actions.push(`approve ${slug}`);
         await react(it.thread, m.id);
         await say(it.thread, 'Approved. It runs through the full tests (about an hour), then goes live once nobody is in a game. I will post here when it is live.');
+        if (c.more) {
+          const t2 = await queueRequest(db, `inbox-${m.id}`, c.more, files, `added when approving \`${slug}\``);
+          await say(it.thread, `What you wrote under the approval is queued as its own request: <#${t2}>.`);
+        }
       } else if (c.verb === 'reject' || c.verb === 'retry') {
         actions.push(`${c.verb} ${slug} ${(c.why || '(no reason given)').replace(/\s+/g, ' ')}`);
         await react(it.thread, m.id);
@@ -314,17 +327,30 @@ async function readInbox(db) {
     const slug = `inbox-${m.id}`;
     const text = String(m.content || '').trim() || '(a screenshot only)';
     const files = await saveAttachments(slug, m);
-    const day = new Date(Number((BigInt(m.id) >> 22n) + 1420070400000n)).toISOString().slice(0, 10);
-    mkdirSync(join(STATE, 'inbox'), { recursive: true });
-    writeFileSync(join(STATE, 'inbox', `${slug}.md`), `# Inbox — from the owner, ${day} (Discord message ${m.id})\n\n${text}\n` + filesBlock(files));
-    const first = text.split('\n').find(l => l.trim()) || 'request';
-    const t = await api('POST', `/channels/${FORUM}/messages/${m.id}/threads`, { name: clip(first, 90), auto_archive_duration: 10080 });
-    db.items[slug] = { thread: t.id, hash: null, lastSeen: t.id, closed: false, inbox: true };
-    save(db);
-    jnote(slug, 'inbox', clip(text, 400));
+    await queueRequest(db, slug, text, files, null, m.id);
     await react(FORUM, m.id);
-    await say(t.id, `Got it — queued as \`${slug}\`. The worker takes it after the item it is on now. It will ask here if it needs anything, and say here when it is done.`);
   }
+}
+
+/** write state/inbox/<slug>.md and give it a thread: a top-level message gets a thread ON it
+ *  (onMessage); a request written under an approval in another thread gets a private one */
+async function queueRequest(db, slug, text, files, from, onMessage) {
+  const id = slug.replace(/^inbox-/, '');
+  const day = new Date(Number((BigInt(id) >> 22n) + 1420070400000n)).toISOString().slice(0, 10);
+  mkdirSync(join(STATE, 'inbox'), { recursive: true });
+  writeFileSync(join(STATE, 'inbox', `${slug}.md`),
+    `# Inbox — from the owner, ${day} (Discord message ${id}${from ? `, ${from}` : ''})\n\n${text}\n` + filesBlock(files));
+  const first = text.split('\n').find(l => l.trim()) || 'request';
+  const hello = `Got it — queued as \`${slug}\`. The worker takes it after the item it is on now. It will ask here if it needs anything, and say here when it is done.`;
+  let thread;
+  if (onMessage) {
+    thread = (await api('POST', `/channels/${FORUM}/messages/${onMessage}/threads`, { name: clip(first, 90), auto_archive_duration: 10080 })).id;
+    await say(thread, hello);
+  } else thread = await openThread(db, clip(first, 90), `> ${clip(text, 1500).replace(/\n/g, '\n> ')}\n\n${hello}`);
+  db.items[slug] = { thread, hash: null, lastSeen: thread, closed: false, inbox: true };
+  save(db);
+  jnote(slug, 'inbox', clip(text, 400));
+  return thread;
 }
 
 async function sync() {
@@ -370,6 +396,12 @@ function selftest() {
   eq(classify('approve'), { verb: 'approve' }, 'approve');
   eq(classify('  Approved! 👍 '), { verb: 'approve' }, 'approved with punctuation');
   eq(classify('Approve, but change the wording to X').verb, 'answer', 'a qualified approve is an answer');
+  eq(classify('accept'), { verb: 'approve' }, 'accept is approve');
+  eq(classify('👍'), { verb: 'approve' }, 'a lone thumbs-up is approve');
+  eq(classify('Accept the B reading').verb, 'answer', '"accept the B reading" is an answer');
+  eq(classify('approve\n\nThat reminds me, a tooltip for zoom.'), { verb: 'approve', more: 'That reminds me, a tooltip for zoom.' }, 'approve, then a new request');
+  eq(classify('approve\nbut make it blue').verb, 'answer', 'approve with a qualifier on the next line is an answer');
+  eq(classify('A: approve').verb, 'answer', 'an option letter is an answer');
   eq(classify('reject: the green is on purpose'), { verb: 'reject', why: 'the green is on purpose' }, 'reject with a reason');
   eq(classify('retry - do it in one batch'), { verb: 'retry', why: 'do it in one batch' }, 'retry');
   eq(classify('Rejection is wrong here, B is right').verb, 'answer', '"Rejection…" is not a reject');

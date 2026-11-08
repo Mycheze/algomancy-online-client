@@ -72,6 +72,26 @@ for (const l of readLines(join(STATE, 'journal.jsonl'))) {
   if (!l.trim()) continue;
   try { const r = JSON.parse(l); if (r.item) journal.set(slug(r.item), r); } catch { /* a torn line is not fatal */ }
 }
+// every journal row per item, in order (the loop breaker needs more than the last word)
+const rowsOf = new Map();
+for (const l of readLines(join(STATE, 'journal.jsonl'))) {
+  try { const r = JSON.parse(l); if (r.item) { const k = slug(r.item); rowsOf.set(k, [...(rowsOf.get(k) ?? []), r]); } } catch { /* torn */ }
+}
+// The loop breaker, for EVERY line including repairs (which skip the journal checks below): an item
+// worked SPIN_RUNS times in a day with nothing landing and no word from the owner in between is
+// spinning — leave it for a day; the digest shows it. (2026-11-05/06: CT-521's approved branch was
+// re-offered as a repair 79 times, each run finding the fix already live. BL-68 fixed that cause;
+// replayed over the journal, this rule would have stopped 72 of those runs and nothing else.)
+const SPIN_RUNS = 4, DAY = 864e5;
+const PROGRESS = /^(dry-)?(shipped|landed|approved-repaired|approved|answered)$/;
+function spinning(item) {
+  const day = (rowsOf.get(slug(item)) ?? []).filter(r => Date.now() - Date.parse(r.ts) < DAY);
+  let i = day.length; while (i > 0 && !PROGRESS.test(String(day[i - 1].outcome))) i--;
+  const runs = day.slice(i).filter(r => r.run);
+  return runs.length < SPIN_RUNS ? null
+    : `spinning: ${runs.length} runs since ${runs[0].ts} with nothing landed and no word from the owner (last: ${runs.at(-1).outcome}) — left for a day`;
+}
+
 // waiting on the owner, or on the runner's own repair/landing loop
 const WAITING = new Set(['staged', 'needs-human', 'stage', 'gate-red', 'approved', 'approved-repaired', 'approved-conflict', 'approved-gate-red', 'rejected']);
 // tried recently and came back empty: leave it a week ('rejected-retry' = the owner asked for another go)
@@ -86,6 +106,7 @@ const excluded = [];
 function blocked(item) {
   item = slug(item);
   if (hold.has(item)) return `held: ${hold.get(item)}`;
+  const spin = spinning(item); if (spin) return spin;
   if (answered.has(item)) return null; // an answer reopens it
   const j = journal.get(item);
   if (!j) return null;
@@ -139,6 +160,7 @@ for (const f of ls(join(STATE, 'redgate')).filter(f => f.endsWith('.json'))) {
   const r = JSON.parse(readFileSync(join(STATE, 'redgate', f), 'utf8'));
   if (masterRed) { excluded.push(`repair ${r.item}: master is red — repairs wait for fix-master`); continue; }
   if (r.masterRed) { excluded.push(`repair ${r.item}: red while master was; the runner re-gates it on a green master`); continue; }
+  const spin = spinning(r.item); if (spin) { excluded.push(`repair ${r.item}: ${spin}`); continue; }
   out.push(`repair ${r.branch}  (${r.item}; gate log ${r.log})`);
 }
 

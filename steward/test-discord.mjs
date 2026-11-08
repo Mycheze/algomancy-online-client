@@ -119,6 +119,7 @@ try {
   ok(/"outcome":"answered"/.test(readFileSync(join(STATE, 'journal.jsonl'), 'utf8')), 'the answer is journalled');
   ok((await run('sync')) === '', 'nothing is read twice');
 
+
   const before = threads.get(t2).msgs.length;
   appendFileSync(join(STATE, 'handoffs', 'CT-2.md'), '\nUpdated after your answer.\n');
   (await run('sync')); ok(threads.get(t2).msgs.length > before && /Updated/.test(threads.get(t2).msgs[before].content), 'a changed handoff is re-posted in its post');
@@ -158,6 +159,19 @@ try {
 
   owner(t2, 'reject: wrong approach, do it in one batch');
   ok((await run('sync')) === 'reject CT-2 wrong approach, do it in one batch', 'reject carries its reason');
+
+  // 2026-11-08: "accept" is an approval; a new request under the approval is queued, not lost
+  git('update-ref', 'refs/remotes/origin/steward/CT-4', 'HEAD');
+  writeFileSync(join(STATE, 'handoffs', 'CT-4.md'), '# CT-4 — another fix\n\n**Needs from you:** approve the branch\n');
+  (await run('sync')); const t4 = db().items['CT-4'].thread;
+  owner(t4, 'accept\n\nThat reminds me: a tooltip for the zoom.');
+  const acts4 = (await run('sync')).split('\n');
+  const req = Object.entries(db().items).find(([s, it]) => it.inbox && existsSync(join(STATE, 'inbox', `${s}.md`)) && /tooltip/.test(readFileSync(join(STATE, 'inbox', `${s}.md`), 'utf8')));
+  ok(JSON.stringify(acts4) === JSON.stringify(['approve CT-4']), `"accept" under a paragraph break approves (${acts4.join(' | ')})`);
+  ok(req && /a tooltip for the zoom/.test(readFileSync(join(STATE, 'inbox', `${req[0]}.md`), 'utf8')) && !existsSync(join(STATE, 'answers', 'CT-4.md')),
+    'what he wrote under it is queued as its own request, not an answer');
+  ok(req && threads.has(req[1].thread) && threads.get(t4).msgs.some(m => (m.content || '').includes(`<#${req[1].thread}>`)),
+    'the request has its own thread, and the approval thread links to it');
 
   (await run('summary')); const n = threads.get(lt).msgs.length; (await run('summary'));
   ok(/The night of/.test(threads.get(lt).msgs.at(-1).content) && threads.get(lt).msgs.length === n, 'the morning summary posts once a day');

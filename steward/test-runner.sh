@@ -182,13 +182,52 @@ if run retro; then # the daily retro: the digest is written once, offered once, 
   [ "$(jq -r .item <<<"$r")" = "retro-$day" ] && [ "$(last_outcome "$r")" = dry-shipped ] && ok "…offered as an item and worked (retro-$day → dry-shipped)" || bad "retro → $r"
   (cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs 2>/dev/null) | grep -q '^retro ' && bad "a done retro was offered again" || ok "…and once done is not offered again"
   sed -i 's/^STEWARD_SUMMARY_HOUR=.*/STEWARD_SUMMARY_HOUR=24/' "$T/env"; fi
+if run moved && [ -z "${STEWARD_TEST_REMOTE:-}" ]; then echo "  - moved-master not tested: it pushes to master, so only against a scratch STEWARD_TEST_REMOTE"
+elif run moved; then # master moves during the item's gate: ship_head must rebase, re-gate, and land on the NEW master
+  # (until 2026-11-08 it compared origin/master with itself, and seven ships were refused and staged)
+  [ -d "$T/mover" ] || { git clone -q "$STEWARD_TEST_REMOTE" "$T/mover"; git -C "$T/mover" config user.name t; git -C "$T/mover" config user.email t@t; }
+  rm -f "$T/moved"
+  cat > "$T/bin/move-master.sh" <<EOF
+#!/bin/sh
+# the gate stub: green, and the first time it gates the stub's own commit, someone else lands on master
+if [ ! -e "$T/moved" ] && [ "\$(git -C "$T/repo" log -1 --format=%s)" = "stub: ledger-only change" ]; then
+  touch "$T/moved"; git -C "$T/mover" fetch -q origin && git -C "$T/mover" checkout -q --detach origin/master \\
+    && echo "moved \$(date +%s)" > "$T/mover/steward-test-moved.txt" && git -C "$T/mover" add steward-test-moved.txt \\
+    && git -C "$T/mover" commit -qm "someone else landed during the gate" && git -C "$T/mover" push -q origin HEAD:refs/heads/master
+fi
+exit 0
+EOF
+  chmod +x "$T/bin/move-master.sh"
+  r=$(tick ship "$T/bin/move-master.sh"); it=$(jq -r .item <<<"$r")
+  newm=$(git -C "$T/mover" rev-parse HEAD); git -C "$T/repo" fetch -q origin "+refs/steward-dry/$(jq -r .item <<<"$r"):refs/steward-dry/t-moved" 2>/dev/null
+  [ -e "$T/moved" ] && [ "$(last_outcome "$r")" = dry-shipped ] && grep -q "$it: master moved" "$T/logs/test.out" \
+    && git -C "$T/repo" merge-base --is-ancestor "$newm" refs/steward-dry/t-moved \
+    && ok "master moved during the gate → rebased, re-gated, and on top of the new master → dry-shipped" \
+    || bad "moved → $r; moved=$([ -e "$T/moved" ] && echo yes || echo no); on top of the new master: $(git -C "$T/repo" merge-base --is-ancestor "$newm" refs/steward-dry/t-moved 2>/dev/null && echo yes || echo no)"
+  git -C "$T/repo" update-ref -d refs/steward-dry/t-moved 2>/dev/null; fi
+if run spin; then # the loop breaker: 4 runs in a day, nothing landed, no word from the owner → left for a day
+  refill; q=$(cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs 2>/dev/null | grep -v '^triage\|^tidy' | head -1)
+  it=$(awk '{print ($1=="report"||$1=="repair"||$1=="resume"||$1=="inbox"||$1=="retro") ? $2 : $1}' <<<"$q")
+  now=$(date -u +%s); rows() { for k in 4 3 2 1; do jq -cn --arg i "$1" --arg ts "$(date -u -d "@$((now - k * 600))" +%FT%TZ)" \
+    '{ts:$ts,item:$i,outcome:"already-fixed",run:"steward-test-spin"}'; done >> "$T/state/journal.jsonl"; }
+  rows "$it"
+  sq=$(cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs --why 2>&1)
+  ! grep -q "^$it " <<<"$sq" && grep -q "$it: spinning: 4 runs" <<<"$sq" && ok "an item worked 4 times in a day with nothing landed is left for a day ($it)" || bad "spin: $it still offered or no reason: $(grep "$it" <<<"$sq" | head -2)"
+  jq -cn --arg i "$it" '{ts:(now|todate),item:$i,outcome:"answered",by:"owner"}' >> "$T/state/journal.jsonl"
+  (cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs 2>/dev/null) | grep -q "^$it " && ok "…and a word from the owner lets it back in" || bad "spin: an owner answer did not let $it back in"
+  mkdir -p "$T/state/redgate"
+  jq -cn '{branch:"origin/steward/steward-test-spun",item:"steward-test-spun",log:"(test)",tries:0}' > "$T/state/redgate/steward-test-spun.json"; rows steward-test-spun
+  sq=$(cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs --why 2>&1)
+  ! grep -q '^repair .*steward-test-spun' <<<"$sq" && grep -q 'repair steward-test-spun: spinning' <<<"$sq" && ok "…and a repair line is held the same way" || bad "a spinning REPAIR was still queued: $(grep spun <<<"$sq" | head -1)"
+  rm -f "$T/state/redgate/steward-test-spun.json"
+  jq -c "select(.run != \"steward-test-spin\" and (.item != \"$it\" or .outcome != \"answered\"))" "$T/state/journal.jsonl" > "$T/state/journal.refill" && mv "$T/state/journal.refill" "$T/state/journal.jsonl"; fi
 if run empty; then # nothing to do = idle, and NO Claude run (2026-11-08: queue.mjs printed a bare newline for
   # "nothing", the runner's `-s` check read it as one item, and Claude was woken on an empty first line)
   (cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs 2>/dev/null) \
     | awk '{print ($1=="report"||$1=="repair"||$1=="resume"||$1=="inbox"||$1=="retro") ? $2 : $1}' \
     | while read -r it; do jq -cn --arg i "$it" '{ts:"2099-01-01T00:00:00Z",item:$i,outcome:"rejected",note:"steward-test-empty"}'; done >> "$T/state/journal.jsonl"
   n0=$(ls "$T/logs"/run-*.jsonl 2>/dev/null | wc -l); r=$(NO_REFILL=1 tick skip); n1=$(ls "$T/logs"/run-*.jsonl 2>/dev/null | wc -l)
-  [ -z "$r" ] && [ "$n0" = "$n1" ] && tail -3 "$T/logs/test.out" | grep -q 'queue empty' \
+  [ -z "$(jq -r '.run // empty' <<<"${r:-null}")" ] && [ "$n0" = "$n1" ] && grep -q 'queue empty' <(tail -5 "$T/logs/test.out") \
     && ok "an empty queue is idle: no Claude run" || bad "empty queue → ${r:-no row} ($((n1 - n0)) Claude run(s)); queue.txt: $(od -c "$T/state/queue.txt" | head -2 | tr '\n' ' ')"
   jq -c 'select(.note != "steward-test-empty")' "$T/state/journal.jsonl" > "$T/state/journal.refill" && mv "$T/state/journal.refill" "$T/state/journal.jsonl"; fi
 if run pause; then touch "$T/state/paused"; r=$(tick skip); [ -z "$r" ] && ok "paused → nothing runs" || bad "ran while paused: $r"; rm -f "$T/state/paused"; fi

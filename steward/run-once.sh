@@ -243,7 +243,7 @@ regate_master_red() {
     rm -f "$f"
     pol=$(policy origin/master HEAD)
     local final branch=""
-    if [ "$intent" = ship ] && [ "$(jq -r .verdict <<<"$pol")" = ship ] && ship_head "$item" origin/master >/dev/null; then
+    if [ "$intent" = ship ] && [ "$(jq -r .verdict <<<"$pol")" = ship ] && ship_head "$item" >/dev/null; then
       final=shipped
       [ "$STEWARD_MODE" = live ] && g push -q origin ":refs/heads/steward/$(slug "$item")" 2>/dev/null
       # it is on master: whatever its handoff asked of the owner is answered
@@ -353,23 +353,33 @@ try_deploy() {
   fi
 }
 
-# push HEAD to master (rebasing onto a moved master, re-gating if it moved); echo the policy json
-ship_head() { # item base
-  local item="$1" base="$2" pol
-  g fetch -q origin master
-  if [ "$(g rev-parse origin/master)" != "$(g rev-parse "$base")" ]; then
-    if ! g rebase -q origin/master >/dev/null 2>&1; then g rebase --abort; log "$item: master moved and the rebase conflicts"; return 2; fi
-    gate "$(slug "$item")-rebased" >/dev/null || return 3
-  fi
-  pol=$(policy origin/master HEAD)
-  if [ "$STEWARD_MODE" != live ]; then
-    g push -q -f origin "HEAD:refs/steward-dry/$(slug "$item")" || true
-    log "DRY: would push $(g rev-parse --short HEAD) to master (kept at refs/steward-dry/$(slug "$item"))"; echo "$pol"; return 0
-  fi
-  g push -q origin HEAD:refs/heads/master || { log "$item: push to master refused"; return 2; }
-  mg_record "$(g rev-parse HEAD)" 0 "(gated green as $item)"
-  want_deploy "$(jq .deploy.restartGame <<<"$pol")" "$(jq .deploy.restartBot <<<"$pol")" "$item"
-  echo "$pol"
+# push HEAD to master — rebasing onto a moved master and re-gating, up to three times; echo the policy json.
+# "Moved" = origin/master is not an ancestor of HEAD. (Until 2026-11-08 every caller passed the NAME
+# origin/master as the base and the fetch updated that ref first, so the check compared master with
+# itself, never fired, and a push after a 33-minute gate on a master that moved meanwhile was refused:
+# seven times in five days a fix cleared to ship was staged for the owner instead.)
+ship_head() { # item
+  local item="$1" pol try
+  for try in 1 2 3; do
+    g fetch -q origin master
+    if ! g merge-base --is-ancestor origin/master HEAD; then
+      log "$item: master moved to $(g rev-parse --short origin/master) — rebasing (try $try)"
+      if ! g rebase -q origin/master >/dev/null 2>&1; then g rebase --abort; log "$item: master moved and the rebase conflicts"; return 2; fi
+      gate "$(slug "$item")-rebased" >/dev/null || return 3
+    fi
+    pol=$(policy origin/master HEAD)
+    if [ "$STEWARD_MODE" != live ]; then
+      g push -q -f origin "HEAD:refs/steward-dry/$(slug "$item")" || true
+      log "DRY: would push $(g rev-parse --short HEAD) to master (kept at refs/steward-dry/$(slug "$item"))"; echo "$pol"; return 0
+    fi
+    if g push -q origin HEAD:refs/heads/master; then
+      mg_record "$(g rev-parse HEAD)" 0 "(gated green as $item)"
+      want_deploy "$(jq .deploy.restartGame <<<"$pol")" "$(jq .deploy.restartBot <<<"$pol")" "$item"
+      echo "$pol"; return 0
+    fi
+    log "$item: push to master refused (try $try)"
+  done
+  return 2
 }
 
 stage_head() { # item → pushes steward/<slug>
@@ -421,7 +431,7 @@ land_approved() {
       jq -cn --arg b "$ref" --arg i "$item" --arg l "$glog" '{branch:$b,item:$i,log:$l,tries:0}' > "$STATE/redgate/$item.json"
       journal "$item" approved-gate-red branch="$ref" gate="$glog"; continue
     fi
-    if ship_head "$item" origin/master >/dev/null; then
+    if ship_head "$item" >/dev/null; then
       if [ "$STEWARD_MODE" = live ]; then
         g push -q origin "$ref:refs/archive/steward/$item" ":refs/heads/steward-approved/$item" || true
       fi
@@ -545,7 +555,7 @@ EOF
           branch=$(stage_head "$item"); final=gate-red
           redgate "$branch" "$item" "$glog" "$([ "$(jq -r .verdict <<<"$pol")" = ship ] && [ "$outcome" = ship ] && echo ship || echo stage)" "$start_sha"
         elif [ "$(jq -r .verdict <<<"$pol")" = ship ]; then
-          if ship_head "$item" origin/master >/dev/null; then final=shipped; else branch=$(stage_head "$item"); final=staged; reasons="${reasons:+$reasons; }could not land on a moved master"; fi
+          if ship_head "$item" >/dev/null; then final=shipped; else branch=$(stage_head "$item"); final=staged; reasons="${reasons:+$reasons; }could not land on a moved master"; fi
         else
           branch=$(stage_head "$item"); final=staged
         fi
