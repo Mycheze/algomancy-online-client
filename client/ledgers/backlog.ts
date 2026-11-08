@@ -1013,7 +1013,10 @@ const OPEN: Entry[] = [
       + 'NOT verified in a browser: the home box has no Chrome. Left: (a) a real two-port run to prove doneWhen — if '
       + 'the run stops at once with "did not reach the server", the resolver mapping did not take; (b) the cardstats '
       + 'thumbnails\' ±2 edge jitter (image downscaling), still absorbed by --fuzz 3, not cured; (c) decks__first '
-      + 'no longer exists (BL-65 rebuilt the deck screens), so its art jitter needs re-measuring on decks__*.',
+      + 'no longer exists (BL-65 rebuilt the deck screens), so its art jitter needs re-measuring on decks__*. '
+      + '2026-11-08 (steward): all three leftovers need a running Chrome, and the home box still has none (no '
+      + 'chrome/chromium binary anywhere, no puppeteer or playwright cache); handed to the owner: a Chrome on the '
+      + 'home box, or these checks wait for a laptop session.',
   },
   {
     id: 'BL-66',
