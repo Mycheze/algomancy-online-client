@@ -775,7 +775,12 @@ const OPEN: Entry[] = [
     notes:
       'Sources: var/records/cc-sideboard-2026-11-03.md "Left / notes"; the Competitive register '
       + '(var/records/cc-round-2026-11-02-register.md, "Not done (W6)"). The builder\'s own sideboard '
-      + 'pile on the tabletop has the same untried-device gap, filed as CT-516.',
+      + 'pile on the tabletop has the same untried-device gap, filed as CT-516.\n\n'
+      + '2026-11-08 (steward): (4) and (5) DONE — the fourth doneWhen line. server/match.ts matchSummary carries '
+      + '`games: {winner, how}[]` and pages/match.ts matchResultHtml lists them under a Bo3\'s score ("Game 1: you won · '
+      + 'Game 2: Bo won (conceded)"), on the match room\'s end screen and the post-game screen alike; ui/match.ts keeps '
+      + 'pickId in localStorage (PICK_KEY). Guarded by 1175-match-games-and-pick.test.ts and 816 §1. Not looked at in a '
+      + 'browser (the home box has none). Left: (1), (2), (3), (6).',
   },
   {
     id: 'BL-57',

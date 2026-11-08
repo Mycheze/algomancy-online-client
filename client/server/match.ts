@@ -545,10 +545,13 @@ export function matchLobbyInfo(room: Room, seat: Seat): MatchLobbyInfo | undefin
 }
 
 /** the in-game chip and the post-game screen: public facts only */
-export function matchSummary(m: Match): { id: string; bestOf: 1 | 3; score: [number, number]; game: number; phase: Match['phase']; room: string; result?: Match['result']; voided?: Match['voided'] } {
+export function matchSummary(m: Match): { id: string; bestOf: 1 | 3; score: [number, number]; game: number; phase: Match['phase']; room: string; games: Pick<MatchGame, 'winner' | 'how'>[]; result?: Match['result']; voided?: Match['voided'] } {
   return {
     id: m.id, bestOf: m.bestOf, score: matchScore(m), game: m.games.length + (m.phase === 'over' || m.phase === 'void' ? 0 : 1),
     phase: m.phase, room: m.room,
+    // each game's winner, in order — public (the score already says it in
+    // sum); the match result lists them (BL-55)
+    games: m.games.map(g => ({ winner: g.winner, how: g.how })),
     ...(m.result ? { result: { ...m.result } } : {}), ...(m.voided ? { voided: { ...m.voided } } : {}),
   };
 }

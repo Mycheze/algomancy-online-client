@@ -27,6 +27,7 @@ test('§1 conceding a game in an undecided Bo3 goes on to the next game', () => 
   F.concede(room, 0);
   assert.equal(m.phase, 'between', 'the match goes on');
   assert.deepEqual(m.games.map(g => [g.winner, g.how]), [[1, 'conceded']]);
+  assert.deepEqual(M.matchSummary(m).games, [{ winner: 1, how: 'conceded' }], 'BL-55: the summary carries each game\'s winner, and nothing else of it');
   assert.ok(R.roomWaiting(F.current(m)), 'game 2 is waiting');
 });
 

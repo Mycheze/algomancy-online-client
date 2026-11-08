@@ -475,7 +475,22 @@ export function matchResultHtml(m: MatchSummary, seat: Seat, names: [string, str
   const how = r.how === 'conceded'
     ? (r.concededBy === seat ? 'You conceded.' : `${esc(names[r.concededBy ?? other(seat)] ?? 'Your opponent')} conceded.`)
     : r.how === 'time' ? (won ? `${esc(names[other(seat)] ?? 'Your opponent')} ran out of time.` : 'You ran out of time.') : '';
-  return `<div class="ccresult ${won ? 'won' : 'lost'}"><b>${won ? 'You win the match' : `${esc(names[r.winner] ?? 'Your opponent')} wins the match`} ${score}.</b> ${how}</div>`;
+  return `<div class="ccresult ${won ? 'won' : 'lost'}"><b>${won ? 'You win the match' : `${esc(names[r.winner] ?? 'Your opponent')} wins the match`} ${score}.</b> ${how}${gamesHtml(m, seat, names)}</div>`;
+}
+
+/** BL-55: each game's winner under a Bo3's result — "Game 1: you won ·
+ * Game 2: Bo won (conceded)". A Bo1's one game is the match line itself, and
+ * an older server sends no `games`: nothing. */
+function gamesHtml(m: MatchSummary, seat: Seat, names: [string, string]): string {
+  const games = m.games ?? [];
+  if (m.bestOf !== 3 || !games.length) return '';
+  const line = games.map((g, i) => {
+    const who = g.winner === null ? 'no result'
+      : g.winner === seat ? 'you won' : `${esc(names[g.winner] || 'your opponent')} won`;
+    const note = g.how === 'conceded' ? ' (conceded)' : g.how === 'time' ? ' (on time)' : '';
+    return `Game ${i + 1}: ${who}${g.winner === null ? '' : note}`;
+  }).join(' · ');
+  return `<div class="ccgames dim">${line}</div>`;
 }
 
 /** The whole waiting page of a match room. Pure. */

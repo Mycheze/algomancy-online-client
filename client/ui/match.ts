@@ -62,8 +62,13 @@ export interface MatchResult { winner: Seat; how: 'games' | 'conceded' | 'time';
 export interface MatchSummary {
   id: string; bestOf: 1 | 3; score: [number, number]; game: number;
   phase: MatchPhase; room: string;
+  /** each game played, in order: its winner (null: closed with no result)
+   * and how it ended — absent from an older server */
+  games?: MatchGameResult[];
   result?: MatchResult; voided?: { at: number; why: string };
 }
+
+export interface MatchGameResult { winner: Seat | null; how: 'played' | 'conceded' | 'time' | 'closed' }
 
 /** a row of `/api/matches/mine` */
 export interface MyMatch {
@@ -90,8 +95,22 @@ export const matchLink = (room: string, seat: Seat): string =>
 let bestOf: 1 | 3 = (() => {
   try { return new URLSearchParams(location.search).get('bo') === '1' ? 1 : 3; } catch { return 3; }
 })();
-/** the deck this browser brings to a match (home card, game-1 waiting room) */
-let pickId: string | null = null;
+/** the deck this browser brings to a match (home card, game-1 waiting room).
+ * Kept in localStorage (BL-55): opening a match room is a page load
+ * (`location.search`), so a pick held only in module state went back to the
+ * first legal deck after every one, and after every reload. pickOf()
+ * still falls back when the remembered deck is gone or no longer legal. */
+export const PICK_KEY = 'algoCcDeck';
+let pickId: string | null = (() => {
+  try { return typeof localStorage === 'undefined' ? null : localStorage.getItem(PICK_KEY); } catch { return null; }
+})();
+function setPick(id: string | null): void {
+  pickId = id;
+  try {
+    if (typeof localStorage === 'undefined') return;
+    if (id) localStorage.setItem(PICK_KEY, id); else localStorage.removeItem(PICK_KEY);
+  } catch { /* private window: this page only */ }
+}
 /** the configuration being worked out, keyed to the match and game it is for */
 let draft: { key: string; cfg: MatchConfig } | null = null;
 /** the moves this game's sideboarding can take back, last first (`cc-undo`):
@@ -204,7 +223,7 @@ export function pickOf(decks: CcDeck[]): CcDeck | null {
 /** wire the picker's <select> after a paint that holds it */
 export function wireDeckSelect(rerender: () => void): void {
   const sel = typeof document !== 'undefined' ? document.getElementById('cc-deck') as HTMLSelectElement | null : null;
-  sel?.addEventListener?.('change', () => { pickId = sel.value || null; rerender(); });
+  sel?.addEventListener?.('change', () => { setPick(sel.value || null); rerender(); });
 }
 
 /** New match: reserve a code, then open the room as its creator */

@@ -19,6 +19,7 @@
 .ccconcede { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
 .ccresult { font-size: var(--text-14); margin: var(--space-2) 0 var(--space-5); }
 .ccresult.won b { color: var(--glow); }
+.ccgames { margin-top: var(--space-2); }
 
 /* ── THE SIDEBOARDING TABLE (pages/match.ts sideboardTableHtml; owner
  * 2026-11-03: "like MTGO"; BL-65 2026-11-04: the builder's own table,
