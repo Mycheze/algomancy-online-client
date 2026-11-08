@@ -967,8 +967,14 @@ const OPEN: Entry[] = [
     doneWhen: [
       'Two full runs of the same build on two different ports compare with zero differences',
     ],
-    decided: [],
-    asks: [],
+    decided: [
+      'The home box does not get a Chrome for this: "No, the box shouldn\'t run chrome like that." (owner, '
+        + '2026-11-08, answering the steward\'s BL-64 handoff). What is left is for a session on the dev laptop.',
+    ],
+    asks: [
+      'a session with a browser (the dev laptop) to run the checks below; the steward cannot (no Chrome on the '
+        + 'home box, and it is not to get one, see decided). Clear this once someone is at the laptop.',
+    ],
     deps: [],
     touches: [
       'client/server/e2e/ui-shots.mjs',
@@ -984,7 +990,8 @@ const OPEN: Entry[] = [
       + 'NOT verified in a browser: the home box has no Chrome. Left: (a) a real two-port run to prove doneWhen — if '
       + 'the run stops at once with "did not reach the server", the resolver mapping did not take; (b) the cardstats '
       + 'thumbnails\' ±2 edge jitter (image downscaling), still absorbed by --fuzz 3, not cured; (c) decks__first '
-      + 'no longer exists (BL-65 rebuilt the deck screens), so its art jitter needs re-measuring on decks__*.',
+      + 'no longer exists (BL-65 rebuilt the deck screens), so its art jitter needs re-measuring on decks__*.'
+      + ' 2026-11-08 (steward): parked for the laptop on the owner\'s answer; `asks` keeps it off the night queue.',
   },
   {
     id: 'BL-66',
