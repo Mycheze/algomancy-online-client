@@ -2649,6 +2649,13 @@ export interface PendingTrigger {
   event: EngineEvent | null;
   /** CR 714.1: the source's last-known state, if it left play while this waited */
   lastKnown?: LastKnown;
+  /** CR 706.5, 706.3a / CT-535: queued (stack mode only) while a batch of
+   * triggers was being put on the stack — a batch member's cost discarded a
+   * card, its target set off "when I become targeted". It waits for the whole
+   * batch, then is ordered with the other late ones and put on top. Set by
+   * E.enqueueTrigger, cleared as the late ones become the next batch; absent
+   * in every other state. */
+  late?: true;
 }
 
 /**

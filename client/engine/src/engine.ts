@@ -3680,7 +3680,6 @@ export class E {
       queued = this.queueTrigger(ghost, name, idx, ability, 'ability', ev,
         `Trigger: ${name} — ${ability.label} (trashed).`, { card: name }) || queued;
     });
-    if (queued) this.s.triggerOrderedSeats = [];
   }
 
   /**
@@ -3722,7 +3721,6 @@ export class E {
       queued = this.queueTrigger(ghost, name, idx, ability, 'ability', ev,
         `Trigger: ${name} — ${ability.label} (played).`, { card: name }) || queued;
     });
-    if (queued) this.s.triggerOrderedSeats = [];
   }
 
   /** Discard a card from `seat`'s hand — it is trashed (CR 801.3). Returns the
@@ -14306,7 +14304,6 @@ export class E {
       }
     }
     queued = this.fireZoneTriggers(type, ev) || queued;
-    if (queued) this.s.triggerOrderedSeats = [];   // new batch: (re)ask ordering
   }
 
   /**
@@ -14361,7 +14358,7 @@ export class E {
     if (ability.when && !ability.when(this, host, ev)) return false;
     const parts = this.composeParts(host, abilityIndex, prefix, cardName, selfModId, copyNth);
     if (!parts) return false;
-    this.s.triggerQueue.push({
+    this.enqueueTrigger({   // CR 706.5 / CT-535: a late one waits for the batch
       sourceId: host.id, sourceCard: cardName, controller: host.controller,
       abilityIndex, label: `${cardName}: ${ability.label}`, parts,
       region: host.region,
@@ -14494,6 +14491,35 @@ export class E {
       && a.label === b.label && JSON.stringify(a.parts.map(sansBudgetOn)) === JSON.stringify(b.parts.map(sansBudgetOn));
   }
 
+  /**
+   * CR 706.5 / CT-535: the triggers `seat` orders now — its share of the batch
+   * being put on the stack, i.e. every queued trigger of its that is not `late`.
+   * The ordering question and its answer (apply.ts, 'orderTriggers') both read
+   * it, so they always agree on what was asked.
+   */
+  triggerBatchOf(seat: Seat): PendingTrigger[] {
+    return this.s.triggerQueue.filter(t => t.controller === seat && !t.late);
+  }
+
+  /**
+   * CR 706.3a, 706.5 / CT-535: THE one way a trigger joins the queue (every site
+   * that used to `triggerQueue.push` and reset the ordering — six of them).
+   * While a batch is being put on the stack — stack mode, a drain under way
+   * (its seats have ordered: `triggerOrderedSeats` is not empty) and batch
+   * members still waiting — the newcomer is `late`: it waits for the batch,
+   * and the batch keeps the order its players gave. Otherwise it starts or
+   * joins a fresh batch and the ordering is (re)asked, exactly as before.
+   * Only the late case writes anything new into the state, so every game
+   * without one replays byte for byte as it did (800-cc-drift-guard).
+   */
+  enqueueTrigger(t: PendingTrigger): void {
+    const q = this.s.triggerQueue;
+    const stacking = this.s.phase === 'battle' || this.s.phase === 'deploy';
+    const late = stacking && this.s.triggerOrderedSeats.length > 0 && q.some(x => !x.late);
+    q.push(late ? { ...t, late: true } : t);
+    if (!late && !q.some(x => x.late)) this.s.triggerOrderedSeats = [];   // new batch: (re)ask ordering
+  }
+
   /** Drain the trigger queue. In battle AND in deployment (CR 706.3c), triggers
    * become stack items (owner orders their own; NIT's enter last so they
    * resolve first — CR 706.5). Everywhere else they resolve immediately in the order
@@ -14509,10 +14535,31 @@ export class E {
     // exactly as it did before the per-seat deployment drain.
     const mineOnly = (t: import('./types.ts').PendingTrigger) =>
       only === undefined || t.controller === only;
+    const scopeSeats: Seat[] = only === undefined ? [this.initiative, this.nit] : [only];
     while (this.s.triggerQueue.some(mineOnly)) {
+      /**
+       * 0. CR 706.5, 706.3a / CT-535 (report #339, YYAE): ONE BATCH AT A TIME.
+       * The triggers in the queue as the drain starts are put on the stack "at
+       * the same time" and ordered once. Putting one on can set off more — its
+       * cost discards a card (Splort carrying Darkblast's "[Discard a card]"
+       * discarded Dropslime), its target is "when I become targeted" — and
+       * those trigger on an action that is complete only once the batch is on:
+       * they go "on top of anything already on the stack", ordered among
+       * themselves. They used to reset the batch's ordering and join it, so
+       * invi was asked to order Blightwalker (already ordered) with Dropslime,
+       * and Blightwalker could go above it. So enqueueTrigger marks them `late`,
+       * only the rest are put on, and when none of the rest are left the late
+       * ones are the next batch. Stack mode only: immediate mode never marks.
+       */
+      const scoped = this.s.triggerQueue.filter(mineOnly);
+      if (scoped.every(t => t.late)) {
+        // the batch is on: the late ones are the next batch, asked afresh
+        for (const t of scoped) delete t.late;
+        this.s.triggerOrderedSeats = this.s.triggerOrderedSeats.filter(x => !scopeSeats.includes(x));
+      }
       // 1. per-seat ordering decisions (the chosen order = resolution order)
-      for (const seat of (only === undefined ? [this.initiative, this.nit] : [only])) {
-        const mine = this.s.triggerQueue.filter(t => t.controller === seat);
+      for (const seat of scopeSeats) {
+        const mine = this.triggerBatchOf(seat);
         if (mine.length >= 2 && !this.s.triggerOrderedSeats.includes(seat)
           && !mine.every(t => this.sameTrigger(t, mine[0]!))) {
           this.suspend(
@@ -14573,8 +14620,10 @@ export class E {
        * the deployment stack itself, at the first safe point, top down.
        */
       const stackMode = battleMode || this.s.phase === 'deploy';
-      const itQ = this.s.triggerQueue.filter(t => t.controller === this.initiative && mineOnly(t));
-      const nitQ = this.s.triggerQueue.filter(t => t.controller === this.nit && mineOnly(t));
+      // CR 706.5 / CT-535: in stack mode, only the batch being put on (step 0)
+      const inBatch = (t: PendingTrigger) => mineOnly(t) && !t.late;
+      const itQ = this.s.triggerQueue.filter(t => t.controller === this.initiative && inBatch(t));
+      const nitQ = this.s.triggerQueue.filter(t => t.controller === this.nit && inBatch(t));
       const next = stackMode
         ? (itQ.length ? itQ[itQ.length - 1]! : nitQ[nitQ.length - 1]!)
         : (nitQ.length ? nitQ[0]! : itQ[0]!);
@@ -15617,14 +15666,12 @@ export class E {
     const ev = this.ev('triggered',
       `Trigger: ${sourceCard} — {Resonant}: ${n} damage to ${this.pname(victimSeat)}.`,
       { unit: srcId, region, resonant: { player: victimSeat, n } });
-    this.s.triggerQueue.push({
+    this.enqueueTrigger({   // a fresh batch, or late (CR 706.5 / CT-535)
       sourceId: srcId, sourceCard, controller, abilityIndex: 0,
       label: `${sourceCard}: {Resonant}`,
       parts: [{ effectKey: RESONANT_KEY, targets: [] }],
       region, event: ev,
     });
-    // a fresh batch: (re)ask the ordering, exactly as fireEvent does
-    this.s.triggerOrderedSeats = [];
   }
 
   /** Powerful column: its whole combat output is doubled at the source, before

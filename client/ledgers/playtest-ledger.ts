@@ -204,8 +204,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 339, room: "YYAE", date: "2026-11-07",
     report: "invi, seat 1: \"when putting a trigger on the stack triggers another trigger, the new trigger should always be on top of the others (i think, I'm not a 100 %)\"",
-    status: 'live',
-    note: "Real on the CR's reading. Replayed (257/257): [222] invi ordered Splort's and Blightwalker's trash triggers; putting Splort's on cost a discard, Dropslime [225], whose trigger fired with Blightwalker still waiting, and [226] asked invi to order Blightwalker and Dropslime together, so Blightwalker went on top. CR 706.5 orders the triggers put on at the same time; CR 706.3a puts a trigger on once the action that made it trigger is complete, on top of what is already there, so Dropslime belongs above Blightwalker. CT-535.",
+    status: 'fixed',
+    guards: [
+      "1181-late-trigger-goes-on-top.test.ts::cost goes on top of the whole batch, unasked",
+    ],
+    note: "Real on the CR's reading. Replayed (257/257): [222] invi ordered Splort's and Blightwalker's trash triggers; putting Splort's on cost a discard, Dropslime [225], whose trigger fired with Blightwalker still waiting, and [226] asked invi to order Blightwalker and Dropslime together, so Blightwalker went on top. CR 706.5 orders the triggers put on at the same time; CR 706.3a puts a trigger on once the action that made it trigger is complete, on top of what is already there, so Dropslime belongs above Blightwalker. CT-535. Fixed 2026-11-08: a trigger set off while a batch goes on the stack waits for the whole batch and goes on top, ordered only with the other late ones; the batch keeps the order its player gave.",
   },
   {
     id: 340, room: "PUQF", date: "2026-11-07",

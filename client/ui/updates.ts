@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-08', kind: 'fix', text: 'A triggered ability set off while other triggers go on the stack, say by a card discarded to pay for one of them, now goes on top of them all. It used to be mixed in with them, and you were asked to order them again.' },
   { date: '2026-11-08', kind: 'new', text: 'Learn to Play now shows short tips the first time you can undo, block, pick a target, pass faster or bring spell tokens along, with the button lit up. Already know the game? "Client tips only" skips the rules lessons.' },
   { date: '2026-11-08', kind: 'fix', text: 'When a card you play sets off a triggered ability, you now get the first chance to respond to that trigger, before your opponent.' },
   { date: '2026-11-08', kind: 'fix', text: 'On the stack, a card whose player only may do something now says so: Bripp reads "Look at Rashi\'s hand. Gember may recycle a card from it; if so, Rashi draws a card".' },

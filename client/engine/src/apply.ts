@@ -2768,23 +2768,19 @@ export function compulsoryBlocks(e: E, seat: Seat): Record<number, EntityId[]> {
  */
 function queueAlluringTriggers(e: E, seat: Seat, ev: EngineEvent): void {
   const b = e.s.battle!;
-  let queued = false;
   b.columns.forEach((_col, ci) => {
     const live = alluringColumn(e, ci);
     if (!live) return;
     const srcId = live.find(id => e.ownAttrs(e.entity(id)!).has('Alluring')) ?? live[0]!;
     const src = e.entity(srcId)!;
-    e.s.triggerQueue.push({
+    e.enqueueTrigger({   // a fresh batch, or late (CR 706.5 / CT-535)
       sourceId: srcId, sourceCard: src.card, controller: seat, abilityIndex: 0,
       label: `${src.card}: {Alluring}`,
       parts: [{ effectKey: ALLURING_KEY, targets: [] }],
       region: b.region, event: ev,
     });
     e.ev('triggered', `Trigger: ${src.card} — {Alluring}.`, { unit: srcId, region: b.region });
-    queued = true;
   });
-  // a fresh batch: (re)ask the ordering, exactly as fireEvent does
-  if (queued) e.s.triggerOrderedSeats = [];
 }
 
 const ALLURING_EFFECT: EffectDef = {
@@ -3198,7 +3194,7 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
   }
 
   if (sus.type === 'orderTriggers') {
-    const mine = e.s.triggerQueue.filter(t => t.controller === sus.seat);
+    const mine = e.triggerBatchOf(sus.seat);   // CR 706.5 / CT-535: what was asked
     /**
      * CT-45 (see 143-replay-divergence) — THE ANSWER THAT CAN NEVER BE ACCEPTED.
      *
@@ -3241,7 +3237,8 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
       && choice.every(i => Number.isInteger(i) && i >= 0 && i < mine.length), 'bad ordering');
     const reordered = choice.map(i => mine[i]!);
     let k = 0;
-    e.s.triggerQueue = e.s.triggerQueue.map(t => (t.controller === sus.seat ? reordered[k++]! : t));
+    const asked = new Set(mine);
+    e.s.triggerQueue = e.s.triggerQueue.map(t => (asked.has(t) ? reordered[k++]! : t));
     e.s.triggerOrderedSeats.push(sus.seat);
     e.processTriggerQueue();
     e.settle();

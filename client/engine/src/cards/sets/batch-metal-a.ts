@@ -256,7 +256,7 @@ function aoEvents(): EventType[] {
  * `ab.when(g, self, ev)`, and no `when` in the pool dispatches an event —
  * none of the 72 of them calls `g.fireEvent`, `g.ev`, `g.destroy`,
  * `g.spawnUnit` or `g.dealDamage` (CR 109.3a wants conditions pure: they read state
- * at event time and answer a boolean). `g.s.triggerQueue.push` only queues.
+ * at event time and answer a boolean). `g.enqueueTrigger` only queues.
  * So there is no nesting today and the guard is dead code.
  *
  * It is kept anyway, because "no `when` in the pool fires an event" is a fact
@@ -456,14 +456,13 @@ card('Ancient One', {
               // modifications such as grafted … abilities" — each graft with
               // its own use on me (E.graftsJoining)
               const parts = prefix === 'ability' && ab.graftCause ? g.withGrafts(base, self, n) : [base];
-              g.s.triggerQueue.push({
+              g.enqueueTrigger({   // CR 706.5 / CT-535: a fresh batch, or late
                 sourceId: self.id, sourceCard: cardName, controller: self.controller,
                 abilityIndex: idx,
                 label: `${self.card} (as ${cardName}): ${ab.label}`,
                 parts,
                 event: { type: ev.type, msg: ev.msg, ...(ev.data ? { data: ev.data } : {}) },
               });
-              g.s.triggerOrderedSeats = [];
             });
           }
         }
