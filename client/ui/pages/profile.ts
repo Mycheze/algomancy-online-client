@@ -33,13 +33,24 @@ const ELEMENTS: readonly string[] = ALL_ELEMENTS;
 
 // ── the chips other screens borrow ────────────────────────────────────
 
+/** a badge as the table sees it: the mark, without the date (server/accounts.ts seatBadge) */
+export type SeatBadge = { owner?: true; judge?: 1 | 2 | 3 };
+
 /** the badge as a chip: "Owner", "Judge L2" — nothing for an unmarked account */
-export function badgeChipsHtml(badge: Me['badge']): string {
+export function badgeChipsHtml(badge: SeatBadge | null | undefined): string {
   if (!badge) return '';
   const chips: string[] = [];
   if (badge.owner) chips.push('<span class="badgechip owner" title="the site\'s owner">Owner</span>');
   if (badge.judge) chips.push(`<span class="badgechip judge" title="judge level ${badge.judge} — a trusted voice on rules and reports">Judge L${badge.judge}</span>`);
   return chips.join(' ');
+}
+
+/** BL-17 — "visible on their profile and in game": the same chips beside a
+ * player's name on the board (ui/main.ts regionParts), led by a space; empty
+ * for a guest or an unmarked account, so their name reads as it always did */
+export function seatBadgeHtml(badge: SeatBadge | null | undefined): string {
+  const chips = badgeChipsHtml(badge);
+  return chips ? ` <span class="seatbadge">${chips}</span>` : '';
 }
 
 const PLACE: Record<LeagueTrophy['place'], { icon: string; word: string }> = {

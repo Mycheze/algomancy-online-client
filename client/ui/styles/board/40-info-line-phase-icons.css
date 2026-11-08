@@ -28,6 +28,9 @@
 .linfo .lhand { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-width: 0; }
 .linfo .lname { cursor: help; }
 .linfo .lname .pname { white-space: nowrap; }
+/* BL-17: a judge's or the owner's badge beside their name — the profile's
+   chip, sized up from its .55em-of-a-heading so it reads on a name line */
+.pname .seatbadge .badgechip { font-size: .68em; vertical-align: middle; }
 /* the initiative star keeps its width when it is somewhere else */
 .linfo .linit.off { visibility: hidden; }
 /* the identity pieces a notch smaller than the classic header's: the life

@@ -108,7 +108,7 @@ import { emit, since as eventsSince, BOOT_ID } from './hooks.ts';
 import { CODE_ALPHABET } from './link.ts';
 import { deckForPlay, savedDeckNow } from './collection.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
-import { accountById, accountByName, accountForToken, gameHistory, issueSignupClaim, loadAccounts, privateView, setAdmin, setBadge } from './accounts.ts';
+import { accountById, accountByName, accountForToken, gameHistory, issueSignupClaim, loadAccounts, privateView, seatBadge, setAdmin, setBadge, type SeatBadge } from './accounts.ts';
 // #190: the trio picker's history, draft rows only — a pure function so a test can hold it
 import { trioHistoryRows } from './accounts.ts';
 import { ratedMode, type RatedMode } from './rating.ts';
@@ -1462,6 +1462,7 @@ function pushWatchers(room: Room): void {
         log: room.events.filter(e => e.msg).map(e => e.msg),
         names: room.names, peers: peersOf(room),
         watchers: room.watchers.size,
+        ...seatBadges(room),
         ...(room.frozen ? { frozen: room.frozen } : {}),
         ...(clockSnapshot(room) ? { clock: clockSnapshot(room) } : {}),
       };
@@ -1571,6 +1572,18 @@ function scriptedOpponent(room: Room, into: import('../engine/src/types.ts').Eng
  * actions, presence, clock. Each caller spreads its own extras on top — the
  * per-site drift (log replace vs incremental events, reveal, trio) is
  * deliberate, so it stays at the sites. */
+/**
+ * BL-17 — "An account can hold a badge level and it is visible on their
+ * profile and in game." Each seat's badge as the table sees it (accounts.ts
+ * `seatBadge`: the mark, never the date), read off the seat's ACCOUNT on every
+ * push, so a badge granted or revoked mid-game shows on the next one. Absent
+ * when neither seat is badged, so an ordinary game's payload is unchanged.
+ */
+function seatBadges(room: Room): { badges?: [SeatBadge | null, SeatBadge | null] } {
+  const b: [SeatBadge | null, SeatBadge | null] = [seatBadge(accountById(room.users[0])), seatBadge(accountById(room.users[1]))];
+  return b[0] || b[1] ? { badges: b } : {};
+}
+
 function baseView(room: Room, seat: Seat) {
   // BL-26: null for a room with the clock off, and then the field is OMITTED
   // rather than sent as null — a client must draw no clocks at all, and the
@@ -1612,6 +1625,7 @@ function baseView(room: Room, seat: Seat) {
     // that makes that manageable at a friendly table is that both players can
     // see there is an audience.
     ...(room.watchers.size ? { watchers: room.watchers.size } : {}),
+    ...seatBadges(room),
     ...(clock ? { clock } : {}),
     // BL-46: present only in a room that takes agreed fixes — the menu entry
     // is drawn from it — with the open proposal, if any (a reconnect sees it)

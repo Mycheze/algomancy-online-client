@@ -433,7 +433,7 @@ function badges(c: CrComment): string {
   // CT-276: the review process's own replies carry a mark no account can earn
   const sys = c.by.system ? '<span class="crchipx crsys" title="written by the rules review process, not by a player">system</span> ' : '';
   return sys + acct.badgeChipsHtml({
-    ...(c.by.owner ? { owner: true as const } : {}), ...(c.by.judge ? { judge: c.by.judge } : {}), since: '',
+    ...(c.by.owner ? { owner: true as const } : {}), ...(c.by.judge ? { judge: c.by.judge } : {}),
   });
 }
 

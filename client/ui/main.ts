@@ -188,6 +188,7 @@ import * as admin from './pages/admin.ts';
 import { caretIn, type CaretSnap } from './pages/caret.ts';
 import { CLOCK_DEFAULT_MS, chosenClockMs, setMatchClockChoice } from './pages/clockpick.ts';
 import { connectingHtml } from './pages/connecting.ts';
+import { seatBadgeHtml, type SeatBadge } from './pages/profile.ts';
 import { importDeck } from './pages/deckpicker.ts';
 import { closeHomeSheet, openHomeSheet, paintHome, saveHomeName, setHomeFormat, setHomeMode } from './pages/home.ts';
 import { paintWaiting } from './pages/waiting.ts';
@@ -275,6 +276,9 @@ interface NetMsg {
   frozen?: string;
   /** BL-29: how many people are watching this room (absent when nobody is) */
   watchers?: number;
+  /** BL-17: each seat's judge/owner badge, on every game push (absent when
+   * neither player has one — server/main.ts seatBadges) */
+  badges?: [SeatBadge | null, SeatBadge | null];
   /**
    * CR D2.1 — THIS CONNECTION ACTS FOR BOTH SEATS.
    *
@@ -434,6 +438,8 @@ class NetBackend implements Backend {
   both = false;
   /** BL-29: how many people are watching this room (0 when nobody is) */
   watchers = 0;
+  /** BL-17: each seat's badge, drawn beside the player's name */
+  badges: [SeatBadge | null, SeatBadge | null] = [null, null];
   constructor(room: string, seat: Seat | null, mode?: string, els?: string[], clock?: string,
     spectating = false) {
     this.spectating = spectating;
@@ -821,6 +827,8 @@ class NetBackend implements Backend {
     // "the field is absent ⇒ nobody", because the server omits it rather than
     // sending a zero (see baseView).
     if (m.t === 'update' || m.t === 'joined' || m.t === 'watching') this.watchers = m.watchers ?? 0;
+    // BL-17: the same "absent ⇒ nobody" reading, for the same reason
+    if (m.t === 'update' || m.t === 'joined' || m.t === 'watching') this.badges = m.badges ?? [null, null];
     // CT-160: a fact about the ROOM, not about the update it rode on — so it
     // is set here rather than in applyUpdate, which both 'joined' and 'update'
     // reach by different routes. Only ever set: a room does not un-freeze
@@ -4351,7 +4359,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
 
   return {
     acting, focus,
-    pnameFixed: `<span class="pname">${esc(pl.name)}<span class="linit${s.initiative === p ? '' : ' off'}"${
+    pnameFixed: `<span class="pname">${esc(pl.name)}${seatBadgeHtml(NET?.badges[p] ?? null)}<span class="linit${s.initiative === p ? '' : ' off'}"${
       s.initiative === p ? ' title="has the initiative"' : ''}> ⭐</span></span>`,
     life: `<span class="life${pickable(`player:${p}`) ? ' candidate' : ''}" data-act="player" data-p="${p}"
         data-animzone="life:${p}"

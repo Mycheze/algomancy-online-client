@@ -291,8 +291,9 @@ export interface Account {
    * for: the owner, 2026-09-05, triaging the first live game's reports, asked
    * to know "what kind of account left the report". Shown on the profile.
    * The admin dashboard lists a badged account's unjudged reports first
-   * (ui/pages/admin.ts reportOrder, 2026-11-07). The review queue and the
-   * in-game badge are still BL-17.
+   * (ui/pages/admin.ts reportOrder, 2026-11-07), and every game push carries
+   * each seat's mark for the board to draw beside the name (`seatBadge`,
+   * server/main.ts seatBadges, 2026-11-08). The review queue is still BL-17.
    */
   badge?: AccountBadge;
 
@@ -1274,6 +1275,15 @@ export function setBadge(account: Account, want: { owner?: unknown; judge?: unkn
   else delete account.badge;
   persist();
   return account.badge ?? null;
+}
+
+/** BL-17: a badge as the other player (or a spectator) sees it at the table —
+ * the mark, without the date it was set. Null for no account or no mark. */
+export type SeatBadge = { owner?: true; judge?: 1 | 2 | 3 };
+export function seatBadge(account: Account | undefined): SeatBadge | null {
+  const b = account?.badge;
+  if (!b || !(b.owner || b.judge)) return null;
+  return { ...(b.owner ? { owner: true as const } : {}), ...(b.judge ? { judge: b.judge } : {}) };
 }
 
 /**

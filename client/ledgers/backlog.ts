@@ -606,7 +606,13 @@ const OPEN: Entry[] = [
       + 'badge stamped on the report when it was filed (`IssueRow.by`), so granting a badge later does not '
       + 'reorder old reports. NOT done: rules QUESTIONS (they need the review queue first — the web judge box '
       + 'logs a session id, not an account: bot/app.py log_response user_id=req.session_id), and the steward\'s own queue still takes `report #N` lines by ledger id '
-      + '(steward/queue.mjs §4; a steward/ change, so the owner\'s to approve).',
+      + '(steward/queue.mjs §4; a steward/ change, so the owner\'s to approve).\n\n'
+      + '2026-11-08 (steward), THE IN-GAME BADGE — the first doneWhen line is now whole: every game push (both seats '
+      + 'and spectators) carries `badges`, each seat\'s {owner?, judge?} read off its account on every push '
+      + '(server/main.ts seatBadges; absent when neither seat is badged), and the board draws the profile\'s chip '
+      + 'beside the name (ui/pages/profile.ts seatBadgeHtml). Guards: server/test/1173, ui/test/1174. Not shown: the '
+      + 'waiting rooms before the deal (they carry no `badges`), and a hotseat/Learn to Play board (no accounts). '
+      + 'Still open: the review queue over judge QUESTIONS and the lines that depend on it.',
   },
   {
     id: 'BL-51',
