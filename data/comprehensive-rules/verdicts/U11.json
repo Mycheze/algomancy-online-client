@@ -943,7 +943,7 @@
       },
       {
         "file": "client/engine/src/apply.ts",
-        "text": "for (const id of [...columns.flat(), ...spellTokens]) e.entity(id)!.region = b.region;"
+        "text": "for (const id of [...columns.flat(), ...spellTokens]) e.moveToRegion(e.entity(id)!, b.region);"
       }
     ],
     "basis_ok": true,

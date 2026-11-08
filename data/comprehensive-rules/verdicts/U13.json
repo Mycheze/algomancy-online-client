@@ -1198,7 +1198,7 @@
       },
       {
         "file": "client/engine/src/engine.ts",
-        "text": "if (u) { u.absent = false; u.region = this.homeRegion(this.initiative); }"
+        "text": "if (u) { u.absent = false; this.moveToRegion(u, this.homeRegion(this.initiative)); }"
       }
     ],
     "basis_ok": true,

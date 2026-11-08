@@ -1295,7 +1295,11 @@
     "quote_spans": [
       {
         "file": "client/engine/src/engine.ts",
-        "text": "if (!this.s.regions[u.region]!.presentSeats.includes(to)) {"
+        "text": "if (!this.s.regions[u.region]!.presentSeats.includes(to)) this.moveToRegion(u, this.homeRegion(to));"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "for (const id of u.mods) { const m = this.entity(id); if (m) m.region = region; }"
       },
       {
         "file": "client/docs/digital-rules.md",

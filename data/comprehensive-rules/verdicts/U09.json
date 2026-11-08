@@ -2311,7 +2311,7 @@
       },
       {
         "file": "client/engine/src/engine.ts",
-        "text": "if (e.kind === 'unit') { e.region = this.homeRegion(e.controller); e.absent = false; }"
+        "text": "if (e.kind === 'unit') { this.moveToRegion(e, this.homeRegion(e.controller)); e.absent = false; }"
       },
       {
         "file": "client/engine/test/02-combat.test.ts",
