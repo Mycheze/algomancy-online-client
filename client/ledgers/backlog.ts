@@ -547,6 +547,7 @@ const OPEN: Entry[] = [
       'L3 = word of law / creators. L2 = highly knowledgeable community, long-time players. L1 = above genpop, not yet fully trusted.',
       'NO LIVE ESCALATION. Judges review and flag instead. Owner, 2026-08-25, asked whether a human answer can flow back into the in-game box: "Not live, but judges should be able to review questions and flag problematic ones." — so the in-game box stays bot-answered, and what badges buy is an after-the-fact review queue over the questions that were asked, with a flag on the bad ones. Do not build in-game escalation.',
       'AN L3 JUDGE MAY NOT EDIT THE RULINGS CORPUS. Owner, 2026-08-25: "No, but their feedback needs to be prioritized during updates and engine fixes." — the comprehensive rules (until 2026-10, the ruling register) and the rulings corpus stay the owner\'s hand. The obligation this creates is on the OTHER side: a judge\'s flag has to land somewhere durable and visibly prioritized, so that the next rules update or engine fix actually sees it. A flag that only exists as a chat message does not satisfy this.',
+      'THE JUDGE REVIEW PAGE IS ACCEPTED. Owner, 2026-11-08, on Discord, asked "OK for judges (and you) to get a new \'Judge review\' page, opened from their profile, that lists every answer the rules bot gave and lets them flag a wrong one with a note?": "accept". The page as staged (steward/BL-17) went to master unchanged.',
     ],
     asks: [],
     deps: ['BL-16'],
@@ -593,7 +594,7 @@ const OPEN: Entry[] = [
       + 'the queue outlives the bot\'s log window and lists every flagged answer with the bot down. Flagged answers lead, the '
       + 'highest badge on them first (owner, L3, L2, L1), then the newest flag; an L3\'s or the owner\'s flag is marked "word of '
       + 'law" — the third doneWhen line, for answers. The page is ui/pages/judgereview.ts (?judging=1, "Judge review" in a badged '
-      + 'profile\'s Staff row). Guards: server/test/1175, ui/test/1176, bot/test/test_review_questions.py. NOT done: rules '
+      + 'profile\'s Staff row). Guards: server/test/1181, ui/test/1182, bot/test/test_review_questions.py. NOT done: rules '
       + 'QUESTIONS from badged accounts surfaced ahead (the bot log hashes who asked, and the in-game proxy sends no account — '
       + 'the second doneWhen line\'s other half); `npm run reports` and the admin dashboard do not list flagged answers yet (the '
       + 'review page is where the owner sees them, as an owner-badged account); not looked at in a browser (the home box has none).',
