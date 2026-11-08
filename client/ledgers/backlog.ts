@@ -501,7 +501,16 @@ const OPEN: Entry[] = [
       + 'capped at 100dvh - 180px (19-postgame.css); narrower, they stack exactly as before. A full table plus '
       + 'four buttons was ~870px, so at 1024x768 the buttons went under the fold. Guarded by '
       + '1176-postgame-fits-window.test.ts. Reasoned, not looked at (the home box has no browser): worth an '
-      + 'eye at 1024x768 and 1440x900.',
+      + 'eye at 1024x768 and 1440x900.\n\n'
+      + '2026-11-08 (steward): button labels outside the game start with a capital, as the owner-approved home, '
+      + 'profile and decks pages already did (docs/23-ui-inventory/05 §18.11): the share bar\'s Copy (every room) and '
+      + 'its "Copied ✓", the draft lobby\'s Start over / Fill the rest in any order / Finish choosing first, the '
+      + 'post-game\'s View the final board, the card browser\'s Show N more / Find similar / Rulings / Copy link / '
+      + 'Save search / Forget, the metagame\'s Clear / Card list / Whole deck (JSON) / Copy / Close, card stats\' '
+      + 'Clear, the league\'s Use <zone> / Set, the "kicked" notice\'s Home. Left lower-case on purpose: links inside a '
+      + 'sentence (cblink, ui-button--link), element chips, and the game table (main.ts board toggles, lesson, '
+      + 'sandbox). Guarded by 1177-button-labels-start-with-a-capital.test.ts (every page story rendered + the '
+      + 'labels written in pages/*.ts and util.ts).',
   },
   {
     id: 'BL-11',

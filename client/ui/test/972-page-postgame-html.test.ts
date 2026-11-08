@@ -105,7 +105,7 @@ test('972 §5 the ways out: home, the queue (live), and a look at the final boar
   const html = postGameHtml(view());
   assert.deepEqual(buttons(html).slice(-2), ['pg-home', 'pg-queue']);
   assert.doesNotMatch(html, /data-btn="pg-queue"[^>]*disabled/, 'Join matchmaking queue was a disabled placeholder once; it is live');
-  assert.match(html, /<button class="pgpeek" data-btn="pg-close">view the final board<\/button>/);
+  assert.match(html, /<button class="pgpeek" data-btn="pg-close">View the final board<\/button>/);
 });
 
 test('972 §6 names are escaped', () => {

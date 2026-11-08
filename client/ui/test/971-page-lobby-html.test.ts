@@ -44,7 +44,7 @@ test('971 §1 pick-one: the named element is on, and ready waits for it', () => 
   assert.match(none, /How should the trio be chosen\?/);
   assert.equal(btns(none).filter(b => b === 'lobby-method').length, 3, 'every method, each with its blurb');
   assert.match(none, /class="lobbymethod on"/);
-  assert.match(none, /data-btn="lobby-lock" type="button" disabled>finish choosing first</);
+  assert.match(none, /data-btn="lobby-lock" type="button" disabled>Finish choosing first</);
   const named = lobbyHtml(view({ pick: 'fire', ready: true }));
   assert.match(named, /class="elchip fire on" data-btn="lobby-pick" data-el="fire"/);
   assert.match(named, /You named <b>fire<\/b>\./);
@@ -59,7 +59,7 @@ test('971 §2 rank: numbered in order, the rest offered, the two helpers', () =>
   assert.ok(btns(html).includes('lobby-rank'), 'the unranked elements');
   assert.doesNotMatch(html, /data-btn="lobby-rank-clear"[^>]*disabled/, 'start over is live with a ranking');
   assert.match(html, /2\/\d+ ranked/);
-  assert.match(lobbyHtml(view({ lobby: { ...view().lobby, method: 'rank' } })), /data-btn="lobby-rank-clear" type="button" disabled>start over/);
+  assert.match(lobbyHtml(view({ lobby: { ...view().lobby, method: 'rank' } })), /data-btn="lobby-rank-clear" type="button" disabled>Start over/);
 });
 
 test('971 §3 locked in: the choice is frozen, and Change my mind is the way back', () => {

@@ -778,7 +778,7 @@ function availabilityCardHtml(v: LeagueView): string {
     <p class="hint">Only other league players see it, so they can message you to arrange a game.</p>
     <div class="lgtzrow"><label>Time zone <input id="lg-tz" list="lg-tzlist" value="${esc(d.tz)}" spellcheck="false"></label>
       <datalist id="lg-tzlist">${zones.map(z => `<option value="${esc(z)}">`).join('')}</datalist>
-      <button data-btn="lg-tz-here" title="use this device's time zone">use ${esc(v.browserTz)}</button></div>
+      <button data-btn="lg-tz-here" title="use this device's time zone">Use ${esc(v.browserTz)}</button></div>
     <div class="lgpresets">${PRESETS.map(p => {
       const on = presetHours(p).every(i => d.grid[i] === '1');
       return `<button class="${on ? 'on' : ''}" data-btn="lg-grid-preset" data-preset="${p.id}">${esc(p.label)}</button>`;
@@ -962,7 +962,7 @@ function allMatchesHtml(s: SeasonView, v: LeagueView): string {
         org: { html: `<select id="lg-ov-${esc(m.id)}">
           <option value="">set…</option><option value="a">${esc(m.a.name)} won</option><option value="b">${esc(m.b.name)} won</option>
           <option value="unplayed">not played</option><option value="double-loss">double loss</option><option value="clear">reopen</option>
-        </select><button data-btn="lg-override" data-match="${esc(m.id)}">set</button>` },
+        </select><button data-btn="lg-override" data-match="${esc(m.id)}">Set</button>` },
       } })) })}`).join('')}
   ` });
 }

@@ -19,7 +19,7 @@ export const elIcon = (el: string, alt = ''): string =>
 export const shareBar = (lead: string, room: string, link: string): string =>
   `<div class="sharebar">${lead} <b>${esc(room)}</b> or this link:
     <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
-    <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>`;
+    <button data-btn="copylink" data-link="${esc(link)}">Copy</button></div>`;
 
 /* ── copying to the clipboard ──────────────────────────────────────────
  *
@@ -46,7 +46,7 @@ export function copyText(
   text: string,
   selectEl: HTMLInputElement | HTMLTextAreaElement | null,
   btn?: HTMLElement | null,
-  label = 'copied \u2713',
+  label = 'Copied \u2713',
 ): void {
   void navigator.clipboard?.writeText(text).catch(() => {});
   if (selectEl) {

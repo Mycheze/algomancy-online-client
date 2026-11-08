@@ -973,7 +973,7 @@ class NetBackend implements Backend {
       $app.classList.remove('board');   // back to normal flow for the notice
       $app.innerHTML = `<div class="joinscreen"><h2>Algomancy</h2>
         <p>${esc(m.msg ?? 'another connection took over this seat')}</p>
-        <button data-btn="gohome">home</button></div>`;
+        <button data-btn="gohome">Home</button></div>`;
       return;
     }
     if (m.t === 'error' && this.rejoining) {

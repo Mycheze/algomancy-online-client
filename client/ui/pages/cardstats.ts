@@ -229,7 +229,7 @@ function tableHtml(v: CardStatsView): string {
       ${seg('Kind', 'meta-cs-kind', v.kind, [['all', 'all'], ['unit', 'units'], ['spell', 'spells']])}
       <div class="dkfilters">
         ${ELEMENTS.map(el => `<button class="elchip ${el}${v.els.includes(el) ? ' on' : ''}" data-btn="meta-cs-el" data-v="${el}">${elIcon(el)}${el}</button>`).join('')}
-        ${v.els.length || v.text || v.kind !== 'all' || v.minGames > 1 ? '<button data-btn="meta-cs-clear">clear</button>' : ''}
+        ${v.els.length || v.text || v.kind !== 'all' || v.minGames > 1 ? '<button data-btn="meta-cs-clear">Clear</button>' : ''}
       </div>
       <span class="framespacer"></span>
       ${minGamesHtml(v)}

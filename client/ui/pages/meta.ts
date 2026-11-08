@@ -217,7 +217,7 @@ function listHtml(v: MetaView): string {
       <div class="dkfilters metaels">
         ${ALL_ELEMENTS.map(el =>
           `<button class="elchip ${el}${v.els.includes(el) ? ' on' : ''}" data-btn="meta-el" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
-        ${v.els.length || v.text ? '<button data-btn="meta-clear">clear</button>' : ''}
+        ${v.els.length || v.text ? '<button data-btn="meta-clear">Clear</button>' : ''}
       </div>
       <span class="framespacer"></span>
       ${segmented({
@@ -306,11 +306,11 @@ function exportHtml(v: MetaView): string {
   return `<div class="dkexport">
     <div class="dktoolbar">
       <span class="zonelabel">export</span>
-      <button class="dkkind${file ? '' : ' on'}" data-btn="meta-export" data-format="text">card list</button>
-      <button class="dkkind${file ? ' on' : ''}" data-btn="meta-export" data-format="file">whole deck (JSON)</button>
+      <button class="dkkind${file ? '' : ' on'}" data-btn="meta-export" data-format="text">Card list</button>
+      <button class="dkkind${file ? ' on' : ''}" data-btn="meta-export" data-format="file">Whole deck (JSON)</button>
       <span class="dkfilterspacer"></span>
-      <button data-btn="meta-copy-export">copy</button>
-      <button data-btn="meta-export-close">close</button>
+      <button data-btn="meta-copy-export">Copy</button>
+      <button data-btn="meta-export-close">Close</button>
     </div>
     <div class="hint">${file
       ? 'Description, cover and attribution included — paste it into the import box on your decks page.'
@@ -345,7 +345,7 @@ function deckHtml(v: MetaView): string {
         </div>
         <div class="sharebar">Send somebody this link:
           <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
-          <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>
+          <button data-btn="copylink" data-link="${esc(link)}">Copy</button></div>
         ${v.exporting ? exportHtml(v) : '<button class="dkadd" data-btn="meta-export">Export this deck</button>'}
       </div>`;
   // two columns that each scroll: what the deck IS on the left (the preview),

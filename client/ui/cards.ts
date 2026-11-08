@@ -356,7 +356,7 @@ export function handleButton(btn: HTMLElement): boolean {
 
     // the pinned card's own link, to paste anywhere (it unfurls as the card)
     case 'cards-copylink':
-      copyText(cardLink(card), null, btn, 'link copied \u2713');
+      copyText(cardLink(card), null, btn, 'Link copied \u2713');
       return true;
 
     case 'cards-rulings':

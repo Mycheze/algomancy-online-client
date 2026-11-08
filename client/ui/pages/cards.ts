@@ -174,7 +174,7 @@ function resultsHtml(v: CardsView): string {
     ${total === 0 ? '<p class="cbnone hint">Nothing matches. Loosen a filter, or check the syntax under \u201c?\u201d.</p>' : ''}
     ${body}
     ${rest > 0
-    ? `<button class="cbmore" data-btn="cards-more">show ${Math.min(rest, CHUNK)} more (${rest} left)</button>`
+    ? `<button class="cbmore" data-btn="cards-more">Show ${Math.min(rest, CHUNK)} more (${rest} left)</button>`
     : ''}
   </div>`;
 }
@@ -201,9 +201,9 @@ function detailHtml(v: CardsView): string {
       : '')
       // how it has done in the games played here — the card stats tab, opened on it
       + `<div class="cbfact"><button class="cblink" data-btn="meta-stats-open" data-card="${esc(r.name)}">card stats</button></div>`,
-    actions: `<button data-btn="cards-similar" data-card="${esc(r.name)}">find similar</button>
-      <button data-btn="cards-rulings" data-card="${esc(r.name)}">rulings</button>
-      <button data-btn="cards-copylink" data-card="${esc(r.name)}" title="a link to this card, to paste in Discord or anywhere">copy link</button>
+    actions: `<button data-btn="cards-similar" data-card="${esc(r.name)}">Find similar</button>
+      <button data-btn="cards-rulings" data-card="${esc(r.name)}">Rulings</button>
+      <button data-btn="cards-copylink" data-card="${esc(r.name)}" title="a link to this card, to paste in Discord or anywhere">Copy link</button>
       ${/* deckbuilding mode's "add to <deck>" was here (BL-65) */ ''}`,
   });
 }
@@ -242,8 +242,8 @@ function barHtml(v: CardsView): string {
       ${countHtml(v)}
       <span class="cbspacer"></span>
       ${saved.map(s => `<button class="cblink" data-btn="cards-try" data-q="${esc(s.q)}">${esc(s.name)}</button>`).join('')}
-      ${q ? '<button class="cbsmall" data-btn="cards-save" title="keep this search">save search</button>' : ''}
-      ${saved.length ? '<button class="cbsmall" data-btn="cards-forget" title="drop the saved searches">forget</button>' : ''}
+      ${q ? '<button class="cbsmall" data-btn="cards-save" title="keep this search">Save search</button>' : ''}
+      ${saved.length ? '<button class="cbsmall" data-btn="cards-forget" title="drop the saved searches">Forget</button>' : ''}
       <label class="cbsort">sort
         <select id="cb-sort">${SORTS.map(s =>
     `<option value="${s}"${res.query.sort === s ? ' selected' : ''}>${s}</option>`).join('')}</select>

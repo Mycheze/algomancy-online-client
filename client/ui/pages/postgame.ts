@@ -279,7 +279,7 @@ export function postGameHtml(v: PostGameView): string {
       ${button({ label: 'Return to home', dataBtn: 'pg-home' })}
       ${button({ label: 'Join matchmaking queue', dataBtn: 'pg-queue' })}
     </div>
-    <button class="pgpeek" data-btn="pg-close">view the final board</button>
+    <button class="pgpeek" data-btn="pg-close">View the final board</button>
     </div></div>
   </div></div>`;
 }

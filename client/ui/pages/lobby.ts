@@ -123,8 +123,8 @@ function rankHtml(ranking: readonly string[], iAmLocked: boolean): string {
     `<button class="elchip ${el}" data-btn="lobby-rank" data-el="${el}" ${iAmLocked ? 'disabled' : ''}>
       ${icon(el)}${el}</button>`).join('')}</div>` : ''}
   <div class="lobbyrankbtns">
-    ${button({ label: 'start over', dataBtn: 'lobby-rank-clear', disabled: iAmLocked || !ranking.length })}
-    ${button({ label: 'fill the rest in any order', dataBtn: 'lobby-rank-fill', disabled: iAmLocked || !rest.length })}
+    ${button({ label: 'Start over', dataBtn: 'lobby-rank-clear', disabled: iAmLocked || !ranking.length })}
+    ${button({ label: 'Fill the rest in any order', dataBtn: 'lobby-rank-fill', disabled: iAmLocked || !rest.length })}
   </div>
   <p class="hint">${ranking.length}/${ELEMENTS.length} ranked. Shared top picks are more likely, never certain.</p>`;
 }
@@ -195,7 +195,7 @@ export function lobbyHtml(v: LobbyView): string {
       </div>
       <div class="lobbygo">${iAmLocked
         ? button({ label: 'Change my mind', dataBtn: 'lobby-unlock' })
-        : button({ label: v.ready ? "I'm ready" : 'finish choosing first', variant: 'primary', dataBtn: 'lobby-lock', disabled: !v.ready })}</div>
+        : button({ label: v.ready ? "I'm ready" : 'Finish choosing first', variant: 'primary', dataBtn: 'lobby-lock', disabled: !v.ready })}</div>
     </div>`, 'roomsec--foot'),
     footHtml: '<p class="homefoot">Nothing is dealt until you have both locked in.</p>',
   });
