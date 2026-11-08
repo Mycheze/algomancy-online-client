@@ -86,8 +86,12 @@ const PACE = ['pace.ts'] as const;
  * server is the drift the search trio was let in to avoid. It is TYPES ONLY,
  * so it can carry nothing into the server at runtime: §5 proves that, rather
  * than the name.
+ *
+ * judgetypes.ts (BL-17, 2026-11-08) is the same thing for the judges' review
+ * page: GET /api/judge-review (server/api-judge-review.ts) and
+ * ui/pages/judgereview.ts share its shapes, and §5 holds it to the same terms.
  */
-const WIRE = ['crtypes.ts'] as const;
+const WIRE = ['crtypes.ts', 'judgetypes.ts'] as const;
 
 const readUi = (f: string): string => readFileSync(new URL(f, UI), 'utf8');
 

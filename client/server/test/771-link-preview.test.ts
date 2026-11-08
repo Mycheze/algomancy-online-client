@@ -83,6 +83,7 @@ const NOT_A_PAGE: Record<string, string> = {
 const HOME_CARD: Record<string, string> = {
   admin: 'the operator dashboard — nobody shares it',
   demo: 'the scripted mid-battle rig, for development',
+  judging: 'the judges\' review of the rules bot — staff only, nobody shares it',
 };
 
 test('§2 ⭐ every page the client opens off the URL has its own preview, or is declared', () => {
