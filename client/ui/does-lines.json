@@ -408,7 +408,7 @@
  "graft:Volatile Toxicity": "Create a Poison {X} and a Fireball {X}",
  "graft:Wandering Blightshell": "Draw a card",
  "graft:Warbloom Herald": "Your units gain +1/+0 until regroup",
- "graft:Waxen Witness": "Cache {0}. It gains Prophecy - One Battle Passes",
+ "graft:Waxen Witness": "Cache {0}. It gains Prophecy - One Regroup Passes",
  "graft:Wither and Bloom": "{mode:wither=Put a -1/-1 counter on each enemy|bloom=Put a +1/+1 counter on each of your units}",
  "graft:Witness of the Crossing": "",
  "spell:Abduct": "Gain control of {0} unless {0.controller} pays {X}",
@@ -564,7 +564,7 @@
  "spell:Void Memory": "{opponent} discards a {mode:unit=unit|spell=spell} if able, otherwise reveals their hand",
  "spell:Volatile Toxicity": "Create a Poison {X} and a Fireball {X}",
  "spell:Wake the Dead": "Play up to two units with total cost 8 or less from bins, free",
- "spell:Waxen Witness": "Cache {0}. It gains Prophecy - One Battle Passes",
+ "spell:Waxen Witness": "Cache {0}. It gains Prophecy - One Regroup Passes",
  "spell:Wildfire": "Deal {X} damage to {0}",
  "spell:Wither and Bloom": "{mode:wither=Put a -1/-1 counter on each enemy|bloom=Put a +1/+1 counter on each of your units}",
  "spell:Woodland Warding": "Negate all enemy effects targeting your effects, players or units"

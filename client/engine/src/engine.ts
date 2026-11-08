@@ -417,7 +417,7 @@ interface ProphecyRule {
 /** How far a counting prophecy has come: `done` of `need` `unit`s. */
 /** `unit` is the NOUN the meter counts in, and it is a closed set so the UI
  * can pluralise it without a table: "4/13 units", "1/2 turns". The 'unit' noun was added for Vengeance's "13 Units Die". */
-export interface ProphecyProgress { done: number; need: number; unit: 'turn' | 'battle' | 'unit' }
+export interface ProphecyProgress { done: number; need: number; unit: 'turn' | 'battle' | 'regroup' | 'unit' }
 
 /** One unit's share of a combat sub-step's damage, tagged with the striking
  * column's damage-replacement attrs (Poisonous → counters, Resonant → rider)
@@ -537,6 +537,20 @@ const PROPHECY_RULES: ProphecyRule[] = [
     }),
   },
   {
+    id: 'regroupsPass',
+    // Waxen Witness, the designer's 2026-11-08 printing: "It gains 'Prophecy —
+    // One Regroup Passes'" (it read "One Battle Passes" before). Counts
+    // forward like its neighbours (CR 803.7e): a unit cached during a battle
+    // comes back in that turn's deployment, never in the counterattack. A
+    // cache entry stamped before the row existed has no `regroups`, and
+    // counts from zero — earlier, never later, like `deaths`.
+    re: /^(\d+) regroups? (?:pass|passes)$/,
+    met: (g, _seat, p, m) => g.regroupsCompleted() - (p.regroups ?? 0) >= Number(m[1]),
+    progress: (g, _seat, p, m) => ({
+      done: Math.min(g.regroupsCompleted() - (p.regroups ?? 0), Number(m[1])), need: Number(m[1]), unit: 'regroup',
+    }),
+  },
+  {
     id: 'lifeAtMost',
     re: /^your life is (\d+) or less$/,
     met: (g, seat, _p, m) => g.player(seat).life <= Number(m[1]),
@@ -590,6 +604,11 @@ const PROPHECY_RULES: ProphecyRule[] = [
     met: (g, seat) => g.s.hasteDone === null && (g.s.hasteManaSpent?.[seat] ?? 0) >= 1,
   },
 ];
+
+/** Does this normalised condition count regroups? (stamps `regroups`) */
+function countsRegroups(norm: string): boolean {
+  return /^\d+ regroups? (?:pass|passes)$/.test(norm);
+}
 
 /** CR 710.7: can this card's text — its body or its [Augment] box — project a face
  *  (`CardDef.projects`)? A printed fact, so read once per card. See `E.anyProjector`. */
@@ -4039,7 +4058,20 @@ export class E {
       // stamping a global one here would start the meter at somebody else's
       // number and the card would count deaths its controller never saw.
       deaths: this.s.deathsSeen?.[seat] ?? 0,
+      // only where it is read, so no other cache entry changes shape
+      ...(countsRegroups(norm) ? { regroups: this.regroupsCompleted() } : {}),
     };
+  }
+
+  /** CR 803.7e: regroups completed so far this game — the forward anchor for
+   * "One Regroup Passes". Not a counter in the state: every turn runs planning
+   * → battle → regroup → deployment (CR 500.1), and regroup is synchronous
+   * (no player acts in it, CR 506.1a; startRegroup flips straight to 'deploy'),
+   * so the turns before this one each completed one, and this turn's has
+   * completed once its deployment has begun. Deriving it keeps every saved
+   * game's state byte-identical. */
+  regroupsCompleted(): number {
+    return Math.max(0, this.s.turn - 1) + (this.s.phase === 'deploy' ? 1 : 0);
   }
 
   /**

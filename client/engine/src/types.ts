@@ -101,6 +101,13 @@ export interface CachedProphecy {
   turn: number;
   /** CR 803.7e: battles completed before this was prophesied ("One Battle Passes") */
   battles: number;
+  /** CR 803.7e: regroups completed before this was prophesied ("One Regroup
+   * Passes", Waxen Witness since the designer's 2026-11-08 printing). Stamped
+   * ONLY on a prophecy whose condition counts regroups, so every other cache
+   * entry — and every saved game — keeps its exact shape. The count itself is
+   * not state: one regroup closes every turn's battle phase, so it is derived
+   * from the turn and phase (E.regroupsCompleted). */
+  regroups?: number;
   /** CR 803.7e, 803.7m: deaths THIS SEAT had witnessed before it prophesied ("13 Units
    * Die", Vengeance) — snapshotted from `deathsSeen[seat]`, so it is the
    * controller's count and nobody else's. Optional and additive: a state

@@ -168,7 +168,8 @@ A fulfilled prophecy also lets you **graft or augment the card for free** (Caleb
 | condition | cards | evaluation |
 |---|---|---|
 | `One Turn Passes` / `Two Turns Pass` / `Three Turns Pass` / `X Turns Pass` | The Foretold, Angel of Anguish, Big Glimpse Card, Flzzz, Blurf, Divine Foresight, Living Vault, Prophecy Bug | turns elapsed since prophesying ≥ N |
-| `One Battle Passes` | Grob, Waxen Witness | battles **completed** since prophesying ≥ 1. In 1v1 both the initiative battle and the counterattack each tick it (Caleb, 2024-09-24) |
+| `One Battle Passes` | Grob | battles **completed** since prophesying ≥ 1. In 1v1 both the initiative battle and the counterattack each tick it (Caleb, 2024-09-24) |
+| `One Regroup Passes` | Waxen Witness (its 2026-11-08 printing; it read `One Battle Passes` before) | regroups **completed** since prophesying ≥ 1 — one per turn, so a unit cached in battle is free in that turn's deployment, and one cached in deployment waits a turn |
 | `Your life is 5 or less` | Divine Intervention | live check, then latched |
 | `Your units have four unique costs.` | Air Plant | count distinct printed mana costs among your units in play ≥ 4 |
 | `End [Haste] with used mana` | ~~Tithe Enforcer~~ — **no printed card since 2026-09-21** | at the end of the haste step, you spent ≥ 1 mana **during that haste step** — i.e. you must haste something *else* to fulfil it (Bena, 2026-08-19). Caleb removed the banner from Tithe Enforcer; the `hasteWithUsedMana` rule is kept and is driven by a synthetic card in `36-cache-prophecy` |

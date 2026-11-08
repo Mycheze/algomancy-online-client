@@ -391,11 +391,12 @@ export const BATCH_E: Record<string, Scenario> = {
    *
    * THE TWO RULES:
    *   · Waxen Witness: "[Switch1] Cache target unit. It gains 'Prophecy — One
-   *     Battle Passes'." — a GRANTED prophecy, not a printed banner, so it
-   *     goes through `normalizeProphecy` and the `battlesPass` rule row.
-   *   · CR 803.7f's battle counter: in 1v1 BOTH the initiative battle and the
-   *     counterattack tick it, so "one battle" is genuinely one round and the
-   *     prophecy comes true IN THE SAME TURN it was granted.
+   *     Regroup Passes'." — a GRANTED prophecy, not a printed banner, so it
+   *     goes through `normalizeProphecy` and the `regroupsPass` rule row.
+   *     (It read "One Battle Passes" until the designer's 2026-11-08 printing.)
+   *   · CR 803.7e's forward count: cached during the battle, the card waits for
+   *     that turn's regroup, so the prophecy comes true IN THE SAME TURN it was
+   *     granted, as deployment opens — never in the counterattack.
    *
    * AND THE JOIN, which is the part no printed text answers: THE CACHE HOLDS A
    * CARD, NOT A UNIT. The Hammer of Justice on the board is a 10/3 wearing
@@ -415,7 +416,7 @@ export const BATCH_E: Record<string, Scenario> = {
   'waxen-witness-battle-prophecy': {
     id: 'waxen-witness-battle-prophecy',
     card: 'Waxen Witness',
-    why: 'a GRANTED prophecy (not a printed banner) fulfilled by the prophecy battle tick '
+    why: 'a GRANTED prophecy (not a printed banner) fulfilled by the regroup '
       + 'inside one turn, then released with playCached — two actions with 2 and 10 '
       + 'repetitions in the entire recorded history of the project. The join nothing '
       + 'prints an answer to: the cache holds a CARD, so a 13/6 goes in and a 10/3 '
@@ -428,9 +429,9 @@ export const BATCH_E: Record<string, Scenario> = {
       + '   Pass so it resolves.\n'
       + '3. Click through the rest of the combat into deployment.\n'
       + 'EXPECTED, on resolution: the Hammer leaves play for YOUR CACHE, carrying\n'
-      + '"Prophecy — One Battle Passes". A 3/3 Waxen Witness body spawns behind it.\n'
-      + 'EXPECTED, once the battle round ends: the log says the prophecy is fulfilled —\n'
-      + 'ONE battle round is enough, in the same turn.\n'
+      + '"Prophecy — One Regroup Passes". A 3/3 Waxen Witness body spawns behind it.\n'
+      + 'EXPECTED, once the battle is over and regroup has passed: the log says the\n'
+      + 'prophecy is fulfilled, in the same turn.\n'
       + 'EXPECTED, in deployment: you may play the Hammer out of the cache FOR FREE, and\n'
       + 'no mana is spent when you do.\n'
       + 'EXPECTED, once it is back: IT IS A 10/3. The three +1/+1 counters are gone — the\n'

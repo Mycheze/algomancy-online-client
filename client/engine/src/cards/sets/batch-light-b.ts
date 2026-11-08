@@ -714,19 +714,25 @@ card('Visage of Ruin', {
   }],
 });
 
-// "[Switch1] Cache target unit. It gains 'Prophecy — One Battle Passes'." —
+// "[Switch1] Cache target unit. It gains 'Prophecy — One Regroup Passes'." —
 // lll/4 3/3 {Battle} Spirit Horror Spell Unit. The spell effect resolves
 // first, then the 3/3 body spawns (spellUnit), so a battle-speed removal that
 // leaves a blocker behind. The victim's owner keeps the card and gets it back
-// for free one battle later — in 1v1 both the initiative battle and the
-// counterattack tick "One Battle Passes" (CR 803.7), so it is genuinely one round.
+// for free in the next deployment.
+//
+// Reworded by the designer's 2026-11-08 printing (the owner's message with
+// the new scan): it read 'Prophecy — One Battle Passes', which in 1v1 ticks
+// on each battle ROUND (CR 803.7f), so a unit cached in the initiative battle
+// was free again in the counterattack of the same turn. "One Regroup Passes"
+// says what was meant — "you can play it again in the following deployment"
+// — and the engine counts regroups for it ('regroupsPass' in engine.ts).
 // [Switch1] makes the clause the bounded graft rider too.
 const waxenCache: EffectDef = {
-  targets: { what: 'unit', prompt: "Waxen Witness: cache target unit with 'Prophecy — One Battle Passes'" },
+  targets: { what: 'unit', prompt: "Waxen Witness: cache target unit with 'Prophecy — One Regroup Passes'" },
   run: (g, ctx) => {
     const t = ctx.targets[0];
     if (!isEnt(t)) return;
-    g.cacheUnit(t, { prophecy: 'Prophecy — One Battle Passes' });
+    g.cacheUnit(t, { prophecy: 'Prophecy — One Regroup Passes' });
   },
 };
 card('Waxen Witness', {

@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-08', kind: 'change', text: "Waxen Witness has its new printing: the unit it caches gains 'Prophecy — One Regroup Passes', so its owner gets it back in the next deployment, no longer in the same turn's counterattack." },
   { date: '2026-11-08', kind: 'fix', text: 'A triggered ability set off while other triggers go on the stack, say by a card discarded to pay for one of them, now goes on top of them all. It used to be mixed in with them, and you were asked to order them again.' },
   { date: '2026-11-08', kind: 'new', text: 'Learn to Play now shows short tips the first time you can undo, block, pick a target, pass faster or bring spell tokens along, with the button lit up. Already know the game? "Client tips only" skips the rules lessons.' },
   { date: '2026-11-08', kind: 'fix', text: 'When a card you play sets off a triggered ability, you now get the first chance to respond to that trigger, before your opponent.' },

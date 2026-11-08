@@ -1901,8 +1901,9 @@ import type { Action as EAction, GameState as EState } from '../../engine/src/ty
     eq(r.life(1), 30, 'Wispweaver: 0/1 attackers dealt nothing, which is the same fact from the other side');
   }
 
-  // ── ④ Waxen Witness: a GRANTED prophecy fulfilled by CR 803.7f's battle tick
-  //    inside one turn, MEETING "the cache holds a card, not the unit".
+  // ── ④ Waxen Witness: a GRANTED prophecy ("One Regroup Passes" since the
+  //    designer's 2026-11-08 printing) fulfilled by the regroup inside one
+  //    turn, MEETING "the cache holds a card, not the unit".
   {
     const r = new ERig('waxen-witness-battle-prophecy');
     eq(r.stats('Hammer of Justice', 0), '13/6',
@@ -1915,11 +1916,11 @@ import type { Action as EAction, GameState as EState } from '../../engine/src/ty
     r.passTo('deploy');
     eq(r.cache(0).map((c: any) => c.card), ['Hammer of Justice'],
       'Waxen Witness: THE CLAUSE — the unit left play for the cache');
-    eq(r.cache(0)[0].prophecy?.condition, 'One Battle Passes',
+    eq(r.cache(0)[0].prophecy?.condition, 'One Regroup Passes',
       'Waxen Witness: carrying the prophecy it grants');
     eq(r.cache(0)[0].prophecy?.fulfilled, true,
-      'Waxen Witness: and ONE battle round was enough — CR 803.7f ticks on the initiative battle and '
-      + 'the counterattack alike, so it comes true in the turn it was granted');
+      'Waxen Witness: and the turn\'s own regroup was enough — cached in battle, it comes true '
+      + 'in the deployment of the turn it was granted');
     eq(r.units(0), ['Waxen Witness'],
       'Waxen Witness: the spell resolved first and the 3/3 body spawned behind it (spellUnit)');
     const before = r.openMana();

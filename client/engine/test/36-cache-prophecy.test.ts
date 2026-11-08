@@ -378,6 +378,43 @@ test('CR 803.7: "One Battle Passes" — both battles of a turn tick it, counted 
   assert.equal(h.state.battlesCompleted, before! + 2, 'and the second ticked it again');
 });
 
+// Waxen Witness's 2026-11-08 printing grants 'Prophecy — One Regroup Passes'.
+// Counted forward (CR 803.7e): a card cached DURING deployment has already
+// missed this turn's regroup, so it waits a whole turn — through both of the
+// next turn's battle rounds — for the next one.
+test('CR 803.7e: "One Regroup Passes" counts regroups forward — cached in deployment, free in the next', () => {
+  const h = sterile(3614);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const u = spawn(h, P, 'Test Grunt');
+  whiteBox(h, e => { e.cacheUnit(e.entity(u)!, { prophecy: 'Prophecy — One Regroup Passes' }); });
+  const pr = cacheOf(h, P)[0]!.prophecy!;
+  assert.equal(pr.norm, '1 regroup passes');
+  assert.equal(pr.regroups, h.state.turn, "anchored past this turn's regroup, which is behind us");
+  assert.equal(h.q.cachePermission(P, 0), null);
+  assert.deepEqual(new E(h.state).prophecyProgress(P, pr), { done: 0, need: 1, unit: 'regroup' });
+  endDeployment(h);
+  h.do({ type: 'donePlanning', seat: 0 });
+  h.do({ type: 'donePlanning', seat: 1 });
+  skipHasteStep(h);
+  assert.equal(h.state.phase, 'battle');
+  for (let r = 0; r < 2 && h.state.phase === 'battle'; r++) {
+    assert.equal(h.q.cachePermission(P, 0), null, 'no regroup has passed during the battle phase');
+    h.do({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
+  }
+  assert.equal(h.state.phase, 'deploy');
+  assert.equal(h.q.cachePermission(P, 0), 'prophecy', "next turn's regroup has passed");
+});
+
+test('CR 803.7: only a regroup-counting prophecy carries the regroup stamp (no other cache entry changes shape)', () => {
+  const h = sterile(3615);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const u = spawn(h, P, 'Test Grunt');
+  whiteBox(h, e => { e.cacheUnit(e.entity(u)!, { prophecy: 'Prophecy — One Battle Passes' }); });
+  assert.ok(!('regroups' in cacheOf(h, P)[0]!.prophecy!));
+});
+
 test('CR 803.7: "Your life is 5 or less" is a live check while the prophecy stands', () => {
   const h = sterile(3613);
   toDeployment(h);

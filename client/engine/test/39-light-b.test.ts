@@ -825,7 +825,7 @@ test('Visage of Ruin: when it attacks, each player loses half their life, rounde
 
 // ── Waxen Witness ────────────────────────────────────────────────────────
 
-test("Waxen Witness: caches target unit with 'One Battle Passes', then arrives as a 3/3", () => {
+test("Waxen Witness: caches target unit with 'One Regroup Passes', then arrives as a 3/3", () => {
   const h = new Harness(3925);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -839,11 +839,53 @@ test("Waxen Witness: caches target unit with 'One Battle Passes', then arrives a
   pass(h);
   assert.ok(!ent(h, whale), 'the target left play');
   assert.equal(cacheOf(h, D)[0]!.card, 'Good Whale', "into its controller's cache (CR 400.4), D here");
-  assert.equal(cacheOf(h, D)[0]!.prophecy!.norm, '1 battle passes');
+  assert.equal(cacheOf(h, D)[0]!.prophecy!.norm, '1 regroup passes');
   const body = unitsOf(h, A).find(u => u.card === 'Waxen Witness');
   assert.ok(body, 'the spell unit then spawns its body');
   assert.deepEqual(effStats(h, body!.id), [3, 3]);
   finishBattle(h);
+});
+
+// The designer's 2026-11-08 printing changed the grant from 'One Battle
+// Passes' to 'One Regroup Passes' — "you can play it again in the following
+// deployment". Under the old words the first battle round's end was enough
+// (CR 803.7f), so a unit cached in the initiative battle was free again in the
+// same turn's counterattack. Under the new ones it waits for regroup.
+test("Waxen Witness: the cached unit is NOT free in the counterattack — it comes back in the next deployment", () => {
+  const h = new Harness(3927);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const whale = spawn(h, D, 'Good Whale');
+  const counter = spawn(h, D, 'Unit Token');                // so there IS a counterattack
+  giveResources(h, A, 'light', 4);
+  toNextBattle(h, A);
+  const turn = h.state.turn;
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Waxen Witness') });
+  pick(h, { unit: whale });
+  pass(h);
+  assert.equal(cacheOf(h, D)[0]!.card, 'Good Whale');
+  assert.equal(h.q.cachePermission(D, 0), null, 'not yet');
+  // walk the initiative battle to its end, and stop before the counterattack
+  let guard = 50;
+  while (h.state.phase === 'battle' && h.state.battleRound === 1 && guard-- > 0) {
+    const b = h.state.battle!;
+    if (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
+    else if (b.step === 'blocks') h.do({ type: 'declareBlocks', seat: b.defender, blocks: {}, send: [counter] });
+    else pass(h);
+  }
+  assert.equal(h.state.battleRound, 2, 'premise: the counterattack battle is still to come');
+  assert.equal(h.q.cachePermission(D, 0), null,
+    'a whole battle round has passed, and that is no longer enough: no regroup has');
+  assert.ok(!cacheOf(h, D)[0]!.prophecy!.fulfilled);
+  finishBattle(h);
+  assert.equal(h.state.phase, 'deploy');
+  assert.equal(h.state.turn, turn, 'the same turn — its regroup has just passed');
+  assert.equal(h.q.cachePermission(D, 0), 'prophecy', 'free again in the following deployment');
+  assert.ok(cacheOf(h, D)[0]!.prophecy!.fulfilled, 'and latched (CR 803.7g) as deployment opened');
+  assert.ok(h.events.some(e => e.type === 'prophecyFulfilled' && e.data?.['card'] === 'Good Whale'),
+    'announced');
 });
 
 // CT-391: the test above cannot tell owner from controller (D is both). Here
