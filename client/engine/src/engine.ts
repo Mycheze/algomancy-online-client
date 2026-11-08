@@ -11675,6 +11675,7 @@ export class E {
       this.need(u && this.itemCostSacrifices(item, atom!).some(o => o.id === u.id), 'bad cost choice');
       (receipt.sacrificed ??= []).push(u!.card);
       this.ev('info', `${this.pname(item.controller)} sacrifices ${u!.card} — the cost of ${item.label}.`);
+      this.stampCostLastKnown(item, u!);   // CR 714.2: the source paying for its own ability
       this.destroy(u!, 'is sacrificed');
     }
     atom!.n--;
@@ -12009,7 +12010,10 @@ export class E {
     }
     if (cost.sacrificeSelf) {
       const u = item.sourceId !== undefined ? this.entity(item.sourceId) : undefined;
-      if (u && u.kind === 'unit') this.destroy(u, 'is sacrificed');   // cost, not respondable
+      if (u && u.kind === 'unit') {
+        this.stampCostLastKnown(item, u);   // CR 714.2: what its column shared goes with it
+        this.destroy(u, 'is sacrificed');   // cost, not respondable
+      }
     }
     if (cost.eraseSelf) {
       // Skybreaker's printed "Erase me:". Being a COST it is paid here, on the
@@ -12018,7 +12022,10 @@ export class E {
       // not a death and no card reaches a bin, so no 'died' and (CR 801.2c) no
       // trash. CR 801.6a: it IS a despawn, and fires one.
       const u = item.sourceId !== undefined ? this.entity(item.sourceId) : undefined;
-      if (u && u.kind === 'unit') this.eraseFromPlay(u, `— the cost of ${item.label}.`);
+      if (u && u.kind === 'unit') {
+        this.stampCostLastKnown(item, u);   // CR 714.2
+        this.eraseFromPlay(u, `— the cost of ${item.label}.`);
+      }
     }
   }
 
@@ -13192,14 +13199,37 @@ export class E {
    */
   private stampLastKnown(u: Entity): void {
     if (u.kind !== 'unit') return;
-    const [power, defense] = this.effStats(u);
-    const lk: LastKnown = {
-      id: u.id, card: u.card, face: this.nameOf(u), controller: u.controller, region: u.region,
-      attrs: [...this.effAttrs(u)], power, defense, formationSeat: this.formationSeatOf(u.id),
-    };
+    const lk = this.lastKnownSnapshot(u);
     for (const it of this.s.stack) if (it.sourceId === u.id && !it.lastKnown) it.lastKnown = lk;
     for (const t of this.s.triggerQueue) if (t.sourceId === u.id && !t.lastKnown) t.lastKnown = lk;
     if (this.partItem?.sourceId === u.id && !this.partItem.lastKnown) this.partItem.lastKnown = lk;
+    // CR 714.2 / CT-538: an item still being declared (its cost is being paid
+    // in the cast window) is on no stack yet, but it is this unit's ability all
+    // the same
+    for (const it of this.liveItems) if (it.sourceId === u.id && !it.lastKnown) it.lastKnown = lk;
+  }
+
+  /** CR 714.1: the unit `u` as it is now — its face, its column's attributes and
+   * its stats — for an effect that will outlive it. */
+  private lastKnownSnapshot(u: Entity): LastKnown {
+    const [power, defense] = this.effStats(u);
+    return {
+      id: u.id, card: u.card, face: this.nameOf(u), controller: u.controller, region: u.region,
+      attrs: [...this.effAttrs(u)], power, defense, formationSeat: this.formationSeatOf(u.id),
+    };
+  }
+
+  /**
+   * CR 714.2 / CT-538 (report #344): a COST that removes the ability's own source
+   * — "Sacrifice me:", "Erase me:", a "sacrifice a unit" atom paid with the
+   * source itself — is paid in the cast window, before the item is on the
+   * stack, so stampLastKnown's sweep of the stack finds nothing to write to.
+   * Throwing Boulder sacrificed from a column with a Deadly unit then threw a
+   * plain 3. The snapshot goes on the item itself, here, while the unit still
+   * stands in its column.
+   */
+  private stampCostLastKnown(item: StackItem, u: Entity): void {
+    if (u.kind === 'unit' && item.sourceId === u.id && !item.lastKnown) item.lastKnown = this.lastKnownSnapshot(u);
   }
 
   /**

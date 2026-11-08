@@ -243,7 +243,10 @@ const OPEN: LedgerEntry[] = [
   {
     id: 344, room: "ZFHC", date: "2026-11-07",
     report: "invi, seat 0: \"throwing a deadly throwing bloulder should be a deadly 3 dmg! (it should remember the last state of the card before it left the battlefield)\"",
-    status: 'live',
+    status: 'fixed',
+    guards: [
+      "1184-cost-sacrifice-last-known.test.ts::Throwing Boulder sacrificed from a column with a Deadly unit throws a Deadly 3",
+    ],
     note: "Real. Replayed (406/406): turn 10, Yagamino attacked with one column, Carapace Devourer ({Deadly}) and Throwing Boulder, so the Boulder shared Deadly (CR 802.1e). It was sacrificed for its ability [258] aimed at invi's Pestilent Titan (3/4) [259], and the ability dealt a plain 3 [261]: the Titan lived, and the players took it off the board by hand (#346). CR 714.2: an effect whose source has left play has the attributes it had when it left, its column's included; 802.1e's own example is Bellowing Boulder pinging with Deadly. The sacrifice is a cost, paid before the ability is on the stack, so the last-known snapshot finds no item to write to. Reproduced on a fresh board: the same column's Boulder deals 3 non-Deadly to a Good Whale. CT-538.",
   },
   {

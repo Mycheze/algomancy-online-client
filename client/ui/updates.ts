@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-09', kind: 'fix', text: "A unit sacrificed to pay for its own ability now keeps what its column gave it. Throwing Boulder thrown from beside a Deadly unit deals Deadly damage, as the card's last state says." },
   { date: '2026-11-08', kind: 'fix', text: "A modded unit's mods now go into battle with it. Mods trashed when an attacker is recalled or dies there count as trashed in that battle, so Dropslime counts them." },
   { date: '2026-11-08', kind: 'change', text: 'A card in a bin that something on the stack is aiming at now says what: hover its crosshair, or open the bin, where it reads "by Blightwalker" under the card. Two copies aimed at by two effects no longer look alike.' },
   { date: '2026-11-08', kind: 'change', text: "Waxen Witness has its new printing: the unit it caches gains 'Prophecy — One Regroup Passes', so its owner gets it back in the next deployment, no longer in the same turn's counterattack." },
