@@ -13,6 +13,8 @@
  * §5 the queue outlives the bot: with the bot unreachable, every flagged
  *    answer is still listed, from its copy, and the page says why the rest are missing
  * §6 the fold ignores a row its writer could not have made
+ * §7 the order: the highest badge on an answer beats a newer flag from a lower one;
+ *    the owner's beats an L3's; among equals the newest flag leads, then the rest by date
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -28,7 +30,7 @@ const JOURNAL = join(dir, 'judge-flags.jsonl');
 process.env['ALGO_JUDGE_FLAGS_FILE'] = JOURNAL;
 
 const { register, registerGuest, setAdmin, setBadge, useAccountsFile, accountForToken } = await import('../accounts.ts');
-const { judgeReviewRoutes, foldFlags, readFlags, JUDGE_REVIEW_LIMITS } = await import('../api-judge-review.ts');
+const { judgeReviewRoutes, foldFlags, readFlags, reviewDoc, JUDGE_REVIEW_LIMITS } = await import('../api-judge-review.ts');
 type BotAnswer = import('../api-judge-review.ts').BotAnswer;
 type JudgeFlagRow = import('../api-judge-review.ts').JudgeFlagRow;
 
@@ -207,4 +209,17 @@ test('§6 the fold ignores a row its writer could not have made', () => {
   const before = readFlags().length;
   writeFileSync(JOURNAL, '{"v":1,"op":"flag"\n' + readFileSync(JOURNAL, 'utf8') + '{"v":1,"op":"fl');   // torn lines
   assert.equal(readFlags().length, before, 'a torn line is skipped, never fatal');
+});
+
+test('§7 the order: badge first, then the newest flag, then the unflagged by date', () => {
+  const me = accountForToken(OWNER.token)!;
+  const ans = (n: number): BotAnswer => ({ id: rid(n), ts: `2026-11-0${n}T00:00:00Z`, kind: 'ask', surface: 'web', question: `q${n}`, answer: `a${n}` });
+  const rows: JudgeFlagRow[] = [
+    { v: 1, op: 'flag', id: rid(1), at: '2026-11-07T01:00:00Z', by: { id: 'h', name: 'high', judge: 3 }, note: 'old L3' },
+    { v: 1, op: 'flag', id: rid(2), at: '2026-11-07T09:00:00Z', by: { id: 'l', name: 'low', judge: 1 }, note: 'new L1' },
+    { v: 1, op: 'flag', id: rid(3), at: '2026-11-07T00:30:00Z', by: { id: 'o', name: 'boss', owner: true }, note: 'oldest, owner' },
+    { v: 1, op: 'flag', id: rid(4), at: '2026-11-07T10:00:00Z', by: { id: 'l', name: 'low', judge: 1 }, note: 'newest L1' },
+  ];
+  const d = reviewDoc(me, [6, 5, 4, 3, 2, 1].map(ans), foldFlags(rows));
+  assert.deepEqual(d.questions.map(q => q.question), ['q3', 'q1', 'q4', 'q2', 'q6', 'q5']);
 });

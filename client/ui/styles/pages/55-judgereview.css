@@ -1,0 +1,24 @@
+/* the judges' review of the rules bot's answers (ui/pages/judgereview.ts, BL-17, 2026-11-08):
+   one list in the frame, a row per answer, hairlines between; a flagged row is marked down
+   its left edge, an L3's or the owner's flag in the warning colour */
+.jrlist { flex: 1 1 auto; }
+.jrrow { padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--color-border); }
+.jrrow:last-child { border-bottom: none; }
+.jrrow--flagged { box-shadow: inset 3px 0 0 var(--color-danger); }
+.jrmeta { margin: 0 0 var(--space-2); color: var(--color-text-muted); font-size: var(--text-12); }
+.jrq { margin: 0 0 var(--space-3); font-weight: 600; white-space: pre-wrap; }
+.jra { white-space: pre-wrap; font-size: var(--text-13); line-height: 1.45; max-height: 18em; overflow-y: auto;
+  padding: var(--space-3) var(--space-4); background: var(--color-surface-sunken); border-radius: var(--radius-sm); }
+.jrthread { margin: 0 0 var(--space-3); font-size: var(--text-12); color: var(--color-text-muted); }
+.jrthread summary { cursor: pointer; }
+.jrturn { margin: var(--space-2) 0 0; white-space: pre-wrap; }
+.jrflags { list-style: none; margin: var(--space-4) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.jrflag { padding: var(--space-3) var(--space-4); background: var(--color-danger-bg); border-radius: var(--radius-sm); }
+.jrflag--law { background: var(--color-warning-bg); }
+.jrflagby { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); font-size: var(--text-12); }
+.jrnote { margin: var(--space-2) 0 0; white-space: pre-wrap; }
+.jrwhen { color: var(--color-text-muted); }
+.jrresolved { margin: var(--space-3) 0 0; font-size: var(--text-12); color: var(--color-text-muted); }
+.jrform { margin-top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+.jracts { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-4); }
+.jrform .jracts { margin-top: 0; }

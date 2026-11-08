@@ -99,3 +99,5 @@
 @import "pages/53-profile.css";
 /* the home's art and display type (ui/homeart.ts, 2026-11-07): last, over 06-home and the glances it restyles */
 @import "pages/54-home-art.css";
+/* the judges' review of the rules bot's answers (ui/pages/judgereview.ts, BL-17, 2026-11-08) */
+@import "pages/55-judgereview.css";

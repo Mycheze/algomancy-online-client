@@ -198,6 +198,7 @@ export function scratchStateEnv(): Record<string, string> {
     ALGO_VERDICTS_FILE: join(d, 'verdicts.jsonl'),
     ALGO_REPORT_MARKS_FILE: join(d, 'report-marks.jsonl'),
     ALGO_CR_COMMENTS_FILE: join(d, 'cr-comments.jsonl'),
+    ALGO_JUDGE_FLAGS_FILE: join(d, 'judge-flags.jsonl'),
     ALGO_OG_CACHE_DIR: join(d, 'og-cache'),
   };
 }

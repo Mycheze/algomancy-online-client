@@ -71,6 +71,7 @@ export function fixtureEnv(varDir: string, now: string): Record<string, string> 
     ALGO_VERDICTS_FILE: join(varDir, 'verdicts.jsonl'),
     ALGO_LEAGUE_FILE: join(varDir, 'league.json'),
     ALGO_CR_COMMENTS_FILE: join(varDir, 'cr-comments.jsonl'),
+    ALGO_JUDGE_FLAGS_FILE: join(varDir, 'judge-flags.jsonl'),
     ALGO_CHALLENGES_DIR: join(varDir, 'challenges'),
     // docs/22: the Competitive match store. Missing until 2026-11-03, when
     // nothing in the fixture made a match; without it a match would be

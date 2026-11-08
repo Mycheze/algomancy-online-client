@@ -583,7 +583,20 @@ const OPEN: Entry[] = [
       + '(server/main.ts seatBadges; absent when neither seat is badged), and the board draws the profile\'s chip '
       + 'beside the name (ui/pages/profile.ts seatBadgeHtml). Guards: server/test/1173, ui/test/1174. Not shown: the '
       + 'waiting rooms before the deal (they carry no `badges`), and a hotseat/Learn to Play board (no accounts). '
-      + 'Still open: the review queue over judge QUESTIONS and the lines that depend on it.',
+      + 'Still open: the review queue over judge QUESTIONS and the lines that depend on it.\n\n'
+      + '2026-11-08 (steward), THE REVIEW QUEUE — the fifth and sixth doneWhen lines: the rules bot serves its last answers '
+      + '(bot/store.py recent_answers: Discord, its site and the in-game box; no user id; failed calls left out; the players\' '
+      + 'rating joined) to the game server only (bot/app.py GET /api/review/questions, x-algo-bot against ALGO_BOT_TOKEN, 404 '
+      + 'otherwise). The game server\'s GET /api/judge-review (server/api-judge-review.ts) shows them to a judge/owner badge or an '
+      + 'admin (404 to anybody else); POST /api/judge-review/flag: flag with a note (a badge), unflag (your own), resolve (owner or '
+      + 'admin; a new flag reopens). Durable in var/judge-flags.jsonl, each flag keeping a copy of the question and answer, so '
+      + 'the queue outlives the bot\'s log window and lists every flagged answer with the bot down. Flagged answers lead, the '
+      + 'highest badge on them first (owner, L3, L2, L1), then the newest flag; an L3\'s or the owner\'s flag is marked "word of '
+      + 'law" — the third doneWhen line, for answers. The page is ui/pages/judgereview.ts (?judging=1, "Judge review" in a badged '
+      + 'profile\'s Staff row). Guards: server/test/1175, ui/test/1176, bot/test/test_review_questions.py. NOT done: rules '
+      + 'QUESTIONS from badged accounts surfaced ahead (the bot log hashes who asked, and the in-game proxy sends no account — '
+      + 'the second doneWhen line\'s other half); `npm run reports` and the admin dashboard do not list flagged answers yet (the '
+      + 'review page is where the owner sees them, as an owner-badged account); not looked at in a browser (the home box has none).',
   },
   {
     id: 'BL-51',

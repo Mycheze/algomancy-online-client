@@ -185,6 +185,7 @@ import { artUrl, ICON_BASE } from './assets.ts';
 // Imported LAST on purpose: they import only modules imported above, so every
 // one of those has already been evaluated and the boot order is unchanged.
 import * as admin from './pages/admin.ts';
+import * as jr from './pages/judgereview.ts';
 import { caretIn, type CaretSnap } from './pages/caret.ts';
 import { CLOCK_DEFAULT_MS, chosenClockMs, setMatchClockChoice } from './pages/clockpick.ts';
 import { connectingHtml } from './pages/connecting.ts';
@@ -9350,6 +9351,8 @@ function renderHome(): void {
   if (chal.screen()) { chal.renderScreen(); return; }
   // BL-16: …and the admin dashboard, which owns the page outright when open
   if (admin.screen()) { admin.renderScreen(); return; }
+  // BL-17: …and the judges' review of the rules bot's answers
+  if (jr.screen()) { jr.renderScreen(); return; }
   // BL-01: …and the matchmaking queue
   if (mm.screen()) { paintQueue($app, () => { if (!inGame) renderHome(); }); return; }   // pages/queue.ts
   // none does: the home screen itself (pages/home.ts)
@@ -11043,6 +11046,7 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   if (btn.dataset['btn'] === 'nav-challenge') { acct.leaveScreen(); chal.openChallenge(); return; }
   if (btn.dataset['btn'] === 'nav-admin') { acct.leaveScreen(); admin.openAdmin(); return; }
   if (btn.dataset['btn'] === 'nav-crreview') { acct.leaveScreen(); crr.openReview(); return; }
+  if (btn.dataset['btn'] === 'nav-judging') { acct.leaveScreen(); jr.openJudgeReview(); return; }
   // Storybook opens in a new window; this page stays where it is
   if (btn.dataset['btn'] === 'nav-storybook') { void openStorybook(); return; }
   // the rules review page owns everything prefixed cr-
@@ -11065,6 +11069,8 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   if (sc.handleButton(btn)) { if (NET) render(); else renderHome(); return; }
   // and the admin dashboard everything prefixed admin-
   if (admin.handleButton(btn)) return;
+  // BL-17: and the judges' review everything prefixed jr-
+  if (jr.handleButton(btn)) return;
   // docs/22: and a Competitive match everything prefixed cc- (home card,
   // waiting room, between screen)
   if (mt.handleMatchButton(btn, matchActions())) return;
@@ -12262,6 +12268,9 @@ chal.initChallenge({ app: $app, rerender: () => { if (!inGame) renderHome(); } }
 // route it calls 404s to a non-admin, so this costs a signed-out browser one
 // refused fetch and nothing else.
 admin.initAdmin({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
+// BL-17: the judges' review of the rules bot's answers, at ?judging=1 or from a
+// judge's or the owner's profile; its routes 404 to anybody else
+jr.initJudgeReview({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 // the rules review page, at ?crreview=1 or from a judge's or admin's profile
 crr.initCrReview({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 // BL-01 — the matchmaking queue. Its page (pages/queue.ts) borrows the home

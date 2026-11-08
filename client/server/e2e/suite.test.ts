@@ -224,6 +224,8 @@ function runScript(file: string): Promise<{ code: number; out: string }> {
         // …and the rules review page's comment journal, which a test server
         // would otherwise append to under the real one's feet
         ALGO_CR_COMMENTS_FILE: join(scratch, 'cr-comments.jsonl'),
+        // …and the judges' flags on the rules bot's answers (BL-17)
+        ALGO_JUDGE_FLAGS_FILE: join(scratch, 'judge-flags.jsonl'),
         // …and the weekly challenges, whose sweep freezes a closed week into
         // var/challenges/weeks.json on its own clock
         ALGO_CHALLENGES_DIR: join(scratch, 'challenges'),
