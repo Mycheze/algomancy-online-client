@@ -216,6 +216,28 @@ const OPEN: TodoEntry[] = [
     reportId: 341,
     status: 'open',
   },
+  {
+    id: 538, area: "engine", severity: "major",
+    cards: ["Throwing Boulder", "Carapace Devourer", "Skybreaker", "Sprouter", "Prismatic Observer"],
+    title: "a unit sacrificed or erased as its own ability's cost forgets what its column shared with it: Throwing Boulder beside a Deadly unit throws a plain 3",
+    detail: "Reports #344-#346 (invi, ZFHC, 2026-11-07): \"throwing a deadly throwing bloulder should be a deadly 3 dmg! (it should remember the last state of the card before it left the battlefield)\". CR 714.2: an effect whose source has left play has the attributes its source had when it left, including those its column shared with it (802.1e: a unit has its column's attributes for everything it does, its abilities' damage included). The engine takes that snapshot in stampLastKnown (engine.ts ~line 13125), which writes it onto every stack item, waiting trigger and resolving part whose source is the unit. But a self-sacrifice or self-erase COST is paid in payActivationCost (engine.ts ~line 11946, `if (u && u.kind === 'unit') this.destroy(u, 'is sacrificed');   // cost, not respondable`, and the eraseSelf branch under it), called from the activation's collection (~11660) before the item is on the stack, so the snapshot finds nothing to write to and the item reaches the stack with no lastKnown. Resolution then reads the card's printed attributes (~13575, `item.lastKnown?.attrs ?? … this.card(item.card).attrs`). The class: every `cost: { sacrificeSelf: true }` or `eraseSelf: true` ability — Throwing Boulder (batch-earth-c.ts ~492), Skybreaker (~180), Sprouter (batch-wood-c.ts ~275), Prismatic Observer (batch-light-a.ts ~481) — and any other cost that removes the source before the item exists. Power/defense read through lastKnown (CR 714.3) have the same gap.",
+    evidence: "Reports #344-#346; ZFHC fetched and replayed 2026-11-08 (steward triage repair), 406/406, no divergence: turn 10, Yagamino attacks with one column, Carapace Devourer and Throwing Boulder; [258] sacrifices the Boulder for its ability, [259] aims it at invi's Pestilent Titan (3/4); [261] \"Throwing Boulder deals 3 to Pestilent Titan\", which lives; the players rewound it (#345), replayed the same four actions, and then edited the Titan into the bin (#346). Reproduced on a fresh board (Harness seed 3920, a /tmp probe, not committed): Throwing Boulder and Carapace Devourer in one attacking column, the ability aimed at a Good Whale: the stack item has no lastKnown and the Whale takes 3 and lives. 390-raq-stack's Bellowing Boulder tests pass because that Boulder dies with its trigger already on the stack.",
+    fix: "In payActivationCost, before the sacrifice or the erase, write the source's last-known state onto `item` (the snapshot stampLastKnown builds; factor out its LastKnown construction). Reproducer: the probe above as a test — Throwing Boulder sacrificed from a column with a Deadly unit kills a Good Whale; and the control, the Boulder alone, does not. Then the same for Skybreaker's erase (a shared attribute on its negate is moot, but the snapshot is what a later reader would take).",
+    proof: () => still('engine/src/engine.ts', "if (u && u.kind === 'unit') this.destroy(u, 'is sacrificed');   // cost, not respondable"),
+    reportId: 344,
+    status: 'open',
+  },
+  {
+    id: 539, area: "client", severity: "minor",
+    cards: ["Big Glimpse Card"],
+    title: "Big Glimpse Card's split is seven one-card questions: a pick cannot be moved back, and the piles are never laid out side by side",
+    detail: "Report #349 (invi, PBNT, 2026-11-07, feature): \"big glimpse card: make a view where you can reorder the cards between two piles until happy\". The opponent splits the seven with a loop of payOrDecline questions (batch-hybrids-ld-a.ts ~line 293, `split:${k}`), one card into pile 1 each, then \"Done splitting\": a card once picked stays in pile 1, and the client shows the split as a list of the cards left, not as two piles.",
+    evidence: "Report #349; PBNT replayed 2026-11-08 (steward triage repair), 252/252, --report @90: invi picked Hammer of Justice, Malformed Monstrosity and Frosted Denial into pile 1 [86]-[88], then \"Done splitting\" [89]; Yagamino was then asked which pile to cache.",
+    fix: "A two-pile split view: all seven shown, each card tapped (or dragged) between pile 1 and pile 2 as often as the player likes, and one Confirm that answers the engine with the final pile 1 — either as one multi-pick question (the engine's choice kinds may already have one: check before adding) or by the client sending the existing one-card answers in a burst on Confirm. Replays must still read old logs: keep the `split:k` answers if the engine side changes.",
+    proof: () => still('engine/src/cards/sets/batch-hybrids-ld-a.ts', "{ label: 'Done splitting', value: false },"),
+    reportId: 349,
+    status: 'open',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

@@ -225,6 +225,58 @@ const OPEN: LedgerEntry[] = [
     status: 'live',
     note: "Real. Replayed (298/298): Yagamino's Bloated Manablub was grafted (Molten Upheaval, Void Memory) at home in region 0 [226]-[227], attacked into invi's region 1 [250] and was recalled by Auric Ascendant [258]; both mods were trashed, but the battle tally counted them under region 0 (battleCounters [{trashed:2},{trashed:5}] at [294]), so each Dropslime [295], [297] dealt 5, not 7. The mods kept the region they were applied in: declaring an attack moves the attackers' region and not their mods'. CT-536.",
   },
+  {
+    id: 343, room: "ZFHC", date: "2026-11-07",
+    report: "Yagamino, seat 1, agreed fix: back to before Yagamino's Dropslime (turn 4 battle, counterattack). \"cwesyf\"",
+    status: 'agreed-fix',
+    note: "Took back Yagamino's discard of Dropslime and the choice that followed [91]-[92]; invi agreed. Replayed (406/406, no divergence; --report): the discard trashed Dropslime from hand and fired both Cthyrian Rector's \"recall the trashed card\" and Dropslime's own trash trigger, and Yagamino's first choice [92] was the order of those two. Replayed again Yagamino discarded Dropslime the same way [91] and ordered them the other way round, Cthyrian Rector first [92], then aimed at Bellowing Boulder [93]. The player changing their own choice; no defect.",
+  },
+  {
+    id: 344, room: "ZFHC", date: "2026-11-07",
+    report: "invi, seat 0: \"throwing a deadly throwing bloulder should be a deadly 3 dmg! (it should remember the last state of the card before it left the battlefield)\"",
+    status: 'live',
+    note: "Real. Replayed (406/406): turn 10, Yagamino attacked with one column, Carapace Devourer ({Deadly}) and Throwing Boulder, so the Boulder shared Deadly (CR 802.1e). It was sacrificed for its ability [258] aimed at invi's Pestilent Titan (3/4) [259], and the ability dealt a plain 3 [261]: the Titan lived, and the players took it off the board by hand (#346). CR 714.2: an effect whose source has left play has the attributes it had when it left, its column's included; 802.1e's own example is Bellowing Boulder pinging with Deadly. The sacrifice is a cost, paid before the ability is on the stack, so the last-known snapshot finds no item to write to. Reproduced on a fresh board: the same column's Boulder deals 3 non-Deadly to a Good Whale. CT-538.",
+  },
+  {
+    id: 345, room: "ZFHC", date: "2026-11-07",
+    report: "invi, seat 0, agreed fix: back to before Yagamino's Throwing Boulder's ability (turn 10 battle). \"asd\"",
+    status: 'agreed-fix',
+    note: "The players' first repair for #344 (CT-538), whose entry carries the defect. Took back the Throwing Boulder sacrifice, its target Pestilent Titan and both passes [258]-[261]; Yagamino agreed. Replayed (--report): the redo repeats every cut choice (4/4), and the 3 damage again came without the Deadly the Boulder shared with Carapace Devourer, which is why the players then edited the Titan off the board (#346). The take-back itself was legal and changed nothing; no defect of its own.",
+  },
+  {
+    id: 346, room: "ZFHC", date: "2026-11-07",
+    report: "invi, seat 0, agreed fix: take invi's Pestilent Titan off the board, to their bin. \"asd\"",
+    status: 'agreed-fix',
+    note: "The players' hand repair for #344 (CT-538), whose entry carries the defect. At [262] (turn 10 battle) both agreed to bin invi's Pestilent Titan (unit 88), the target the sacrificed, Deadly-sharing Throwing Boulder should have killed with its 3 damage (CR 714.2). Replayed faithfully with the edit. The edit put the board where the rules had it; no defect of its own.",
+  },
+  {
+    id: 347, room: "ZFHC", date: "2026-11-07",
+    report: "invi, seat 0 (feature): \"a way to see erased cards\"",
+    status: 'fixed',
+    guards: ['58-playtest-round9.test.ts::CR 407.1a: erased cards are kept in a public pile',
+      '50-ui-inspect.test.ts::erased',
+      '70-playtest-round15.test.ts::board menu offers BOTH erased piles'],
+    note: "Already there: the same ask as #31 (2026-08-21). Right-clicking the bare table opens \"🚫 My erased cards (n)\" and \"🚫 <opponent>'s erased cards (n)\" (ui/inspect.ts boardMenuEntries), each a dialog of that pile. The owner put them only on the table's menu, not on a card's (2026-08-25: \"Those are for ONLY when right clicking the field\"), and the tutorial's menu tip names them. invi had erased cards to look for at [365] (Sparkwraith and its mod, erased at Skybreaker's cost). Finding the entry is the gap, not the view.",
+  },
+  {
+    id: 348, room: "ZFHC", date: "2026-11-07",
+    report: "invi, seat 0, dispute: \"why did one of us win?!?!?!?\" (game over, turn 14)",
+    status: 'by-design',
+    guards: ['656-deck-out.test.ts::CR 104.5 / CT-385: in constructed the card step from an empty deck and pile ends the game'],
+    note: "By design: invi ran out of cards. Replayed (406/406): at the turn 14 card step invi's deck was empty, the two recycled cards were shuffled in and drawn with the one left (\"invi draws 3\"), and the fourth draw found nothing: \"invi has to draw from an empty deck and loses — Yagamino wins!\", with invi at 17 and Yagamino at 19. CR 104.5a: in constructed the player who ran out of cards loses, whatever the life totals; its example is exactly the card step. The bin is never shuffled in (CR 104.5), and invi had 13 cards there.",
+  },
+  {
+    id: 349, room: "PBNT", date: "2026-11-07",
+    report: "invi, seat 0 (feature): \"big glimpse card: make a view where you can reorder the cards between two piles until happy\"",
+    status: 'live',
+    note: "A fair request, not a defect. Replayed (252/252, --report @90): invi, splitting Yagamino's seven, picked one card at a time into pile 1 [86]-[88] and then \"Done splitting\" [89]. The split is a run of one-card questions (batch-hybrids-ld-a.ts, `split:k`): a pick cannot be taken back, and the two piles are never shown side by side until the caster chooses. CT-539.",
+  },
+  {
+    id: 350, room: "TGMK", date: "2026-11-08",
+    report: "invi, seat 1, agreed fix: back to before invi's Nothyr (turn 8 battle). \"asdf\"",
+    status: 'agreed-fix',
+    note: "Took back invi's discard of Nothyr [264] (\"negate up to one target nonspell effect\", with Yagamino's Tenebrous Bulborb augment on the stack); Yagamino agreed. Replayed (--report, the board rebuilt): Nothyr was offered and paid correctly. Replayed again invi used Combustible Bogwalker's ability instead [264], recalling Dropslime [265] and discarding Nothyr for it [266]. The player changing their own play; no defect.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
