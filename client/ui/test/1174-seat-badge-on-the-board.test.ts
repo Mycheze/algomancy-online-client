@@ -35,9 +35,17 @@ test('1174 §1: a judge\'s badge is drawn beside their name on the board, and no
   const html = ui.update(s, legal, { badges: [null, { judge: 2 }] });
   assert.match(nameplate(html, 'Bostock'), /<span class="seatbadge"><span class="badgechip judge"[^>]*>Judge L2<\/span><\/span>/);
   assert.doesNotMatch(nameplate(html, 'Annfield'), /badgechip/);
-  const owner = ui.update(s, legal, { badges: [{ owner: true }, null] });
-  assert.match(nameplate(owner, 'Annfield'), /badgechip owner[^>]*>Owner</);
+  const owner = ui.update(s, legal, { badges: [{ owner: true, judge: 1 }, null] });
+  assert.match(nameplate(owner, 'Annfield'), /badgechip judge[^>]*>Judge L1</);
   assert.doesNotMatch(nameplate(owner, 'Bostock'), /badgechip/);
+});
+
+test('1174 §4: the owner\'s mark is never drawn — not at the table, not on a profile (owner, 2026-11-08: "it seems pretensious")', () => {
+  const html = ui.update(s, legal, { badges: [{ owner: true }, null] });
+  assert.doesNotMatch(nameplate(html, 'Annfield'), /badgechip|Owner/);
+  assert.equal(badgeChipsHtml({ owner: true }), '');
+  assert.equal(seatBadgeHtml({ owner: true }), '');
+  assert.equal(badgeChipsHtml({ owner: true, judge: 2 }), badgeChipsHtml({ judge: 2 }));
 });
 
 test('1174 §2: a push without badges clears them', () => {

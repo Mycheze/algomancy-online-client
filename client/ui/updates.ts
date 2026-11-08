@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-08', kind: 'change', text: 'The site owner no longer wears an "Owner" badge, on his profile or at the table. Judges keep their Judge L1–L3 badge.' },
   { date: '2026-11-08', kind: 'change', text: 'Buttons outside the game now all start with a capital letter, like the rest: Copy in the room-code bar, Start over in the draft lobby, View the final board after a game, and the card browser\'s and metagame\'s tools.' },
   { date: '2026-11-08', kind: 'change', text: 'The end-of-game screen fits on one screen: on a computer or tablet the stats sit on the left and Rematch, Return to home and the rest on the right, so the buttons are never pushed out of sight.' },
   { date: '2026-11-08', kind: 'new', text: 'Competitive: a best-of-three\'s result now lists who won each game, not just the score. And the deck you pick for Competitive is remembered, so it is still chosen after a reload or when you come back.' },

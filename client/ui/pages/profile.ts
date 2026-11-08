@@ -36,11 +36,17 @@ const ELEMENTS: readonly string[] = ALL_ELEMENTS;
 /** a badge as the table sees it: the mark, without the date (server/accounts.ts seatBadge) */
 export type SeatBadge = { owner?: true; judge?: 1 | 2 | 3 };
 
-/** the badge as a chip: "Owner", "Judge L2" — nothing for an unmarked account */
+/** the badge as a chip: "Judge L2" — nothing for an unmarked account.
+ *
+ * The OWNER mark is never drawn (owner, 2026-11-08, #steward: "I don't want
+ * the "Owner" badge to show on my account. it seems pretensious"). The mark
+ * itself stays — it still opens Rules review and Judge review and still puts
+ * his reports first on the admin dashboard (pages/admin.ts, which only an
+ * admin sees, keeps its own "owner" chip) — it is just not shown on his
+ * profile, beside his name at the table, or on his rules-review comments. */
 export function badgeChipsHtml(badge: SeatBadge | null | undefined): string {
   if (!badge) return '';
   const chips: string[] = [];
-  if (badge.owner) chips.push('<span class="badgechip owner" title="the site\'s owner">Owner</span>');
   if (badge.judge) chips.push(`<span class="badgechip judge" title="judge level ${badge.judge} — a trusted voice on rules and reports">Judge L${badge.judge}</span>`);
   return chips.join(' ');
 }
