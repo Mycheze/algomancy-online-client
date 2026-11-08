@@ -2,15 +2,17 @@
   "permissions": {
     "defaultMode": "acceptEdits",
     "allow": ["Bash", "Read", "Edit", "Write", "Glob", "Grep", "Agent", "TodoWrite", "Skill", "NotebookEdit",
-              "Edit(.claude/skills/steward/**)", "Write(.claude/skills/steward/**)"],
+              "Monitor", "TaskStop", "TaskOutput", "ToolSearch"],
     "deny": [
-      "Bash(git push:*)", "Bash(git fetch:*)", "Bash(git pull:*)", "Bash(git remote:*)",
-      "Bash(git -C * push:*)", "Bash(git -C * fetch:*)",
+      "Bash(git push:*)", "Bash(git -C * push:*)", "Bash(git remote:*)",
       "Bash(ssh:*)", "Bash(scp:*)", "Bash(rsync:*)", "Bash(sftp:*)",
       "Bash(sudo:*)", "Bash(systemctl:*)", "Bash(kill:*)", "Bash(pkill:*)",
       "Bash(npm --prefix client run check:*)", "Bash(npm run check:*)",
       "Bash(crontab:*)", "Bash(curl:*)", "Bash(wget:*)",
-      "Read(~/.ssh/**)", "Read(~/.config/algomancy-steward/**)", "Read(~/.claude/**)"
+      "Read(~/.ssh/**)", "Read(~/.config/algomancy-steward/**)",
+      "Read(~/.claude.json)", "Read(~/.claude/.credentials.json)", "Read(~/.claude/*.json)",
+      "Read(~/.claude/backups/**)", "Read(~/.claude/session-env/**)", "Read(~/.claude/sessions/**)",
+      "Read(~/.claude/shell-snapshots/**)", "Read(~/.claude/plugins/**)"
     ]
   }
 }

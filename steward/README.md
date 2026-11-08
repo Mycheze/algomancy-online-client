@@ -20,7 +20,7 @@ review is a few minutes of `steward/review.sh`.
 
 | file | what |
 |---|---|
-| `../.claude/skills/steward/SKILL.md` | **the process** the agent follows: pick → prove it is real → how deep → rules due diligence → plan → fix → test and break → verdict |
+| `SKILL.md` | **the process** the agent follows: pick → prove it is real → how deep → rules due diligence → plan → fix → test and break → verdict |
 | `run-once.sh` | the runner. The model proposes; this disposes. |
 | `queue.mjs` | what may be picked, in order — `node steward/queue.mjs --why` |
 | `policy.mjs` | may a diff ship unseen? `node steward/policy.mjs <base> <head>` |
@@ -29,7 +29,7 @@ review is a few minutes of `steward/review.sh`.
 | `vps-fetch.sh` | the agent's one read-only window onto the live server (game files) |
 | `fetch-file.mjs` | downloads an image/PDF the owner sent — `discord.mjs` fetches every link in his messages on arrival; the agent runs it by hand for anything else (curl/wget stay denied) |
 | `retro.mjs` | the daily digest of the last day's runs, read off their own transcripts (denials, errors, loops, half-done) — the input to the `retro` item |
-| `claude-settings.json` | the agent's permissions: no push, fetch, ssh, sudo, full gate; it may edit its own skill (`.claude/` is otherwise write-protected by Claude Code, which blocked the first retro, 2026-11-06) |
+| `claude-settings.json` | the agent's permissions: no push, ssh, rsync, curl, sudo, kill, full gate; Monitor/TaskStop for waiting on long commands (this Claude Code has no Grep tool: Bash grep). `git fetch` is not denied there (a denial threw away the whole command chain) — the runner's `GIT_SSH_COMMAND` guard fails it with a message. The runner adds `--add-dir` for `state/` and `logs/`. The skill lives in `steward/` because Claude Code write-protects `.claude/` whatever the settings allow (`.claude/skills/steward/SKILL.md` is a symlink; 2026-11-08) |
 | `thermal.sh` | the governor that keeps the box silent (see Install §4) |
 | `systemd/` | the user units, and the one root unit (the CPU cap) |
 
@@ -48,7 +48,7 @@ clipped glow, an export that dropped the sideboard) ships. In code
   of them;
 - touches `steward/`, `.claude/`, `deploy/`, `CLAUDE.md`, a `package.json` or
   lockfile, `.gitignore`, `requirements.txt` — except the steward skill's own
-  text (`.claude/skills/steward/`), which ships up to 150 changed lines, so the
+  text (`steward/SKILL.md`), which ships up to 150 changed lines, so the
   daily retro can improve the instructions by itself (owner, 2026-11-06);
 - deletes a test, removes lines from an append-only file (`sets/index.ts`, the
   CR `ledger.json`), loses non-rules rows from the bot corpus (lost rulings), or

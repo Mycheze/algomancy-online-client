@@ -476,10 +476,12 @@ work_one() {
   local first; first=$(head -1 "$STATE/queue.txt")
   log "queue: $(wc -l <"$STATE/queue.txt") items; first: $first"
 
-  # the agent's leash: git over ssh refuses; ssh/scp/push denied in its settings
+  # the agent's leash: git over ssh refuses; ssh/scp/push denied in its settings. fetch/pull are
+  # NOT denied there (2026-11-08): a denied `git fetch` threw away the whole `;` chain it sat in
+  # (45 commands lost in five days); here it fails alone, with a line saying why, and the rest runs.
   cat > "$BIN/git-ssh-guard" <<'EOF'
 #!/bin/sh
-echo "steward: git network access is the runner's job, not yours (fetch/push refused)" >&2; exit 1
+echo "steward: no git network access inside a run (the runner fetched just before you started: origin/* is current; push is the runner's job)" >&2; exit 1
 EOF
   chmod +x "$BIN/git-ssh-guard"
   cp "$REPO/steward/claude-settings.json" "$BIN/claude-settings.json"
@@ -491,12 +493,12 @@ EOF
   local left; left=$(window_left); local cap=$((STEWARD_RUN_HOURS * 3600))
   [ "$left" -lt "$cap" ] && cap=$((left + 1800))
   local prompt
-  prompt="You are the Algomancy steward, running unattended on the home box. Read .claude/skills/steward/SKILL.md in full and follow it exactly, for ONE item. Your state directory is $STATE (exported as STEWARD_STATE); tonight's queue is $STATE/queue.txt. Today is $(date -u +%F) UTC. You have about $((cap / 60)) minutes. Before you stop, make sure $STATE/outcome.json exists and your work is committed."
+  prompt="You are the Algomancy steward, running unattended on the home box. Read steward/SKILL.md in full and follow it exactly, for ONE item. Your state directory is $STATE (exported as STEWARD_STATE); tonight's queue is $STATE/queue.txt. Today is $(date -u +%F) UTC. You have about $((cap / 60)) minutes. Before you stop, make sure $STATE/outcome.json exists and your work is committed."
   log "claude: up to $((cap / 60)) min, model $STEWARD_MODEL"
   local rlog="$LOGS/run-$TS.jsonl" rc
   ( cd "$REPO" && GIT_SSH_COMMAND="$BIN/git-ssh-guard" STEWARD_STATE="$STATE" \
       timeout "$cap" "$STEWARD_CLAUDE_BIN" -p "$prompt" --model "$STEWARD_MODEL" \
-        --settings "$BIN/claude-settings.json" --permission-mode acceptEdits \
+        --settings "$BIN/claude-settings.json" --permission-mode acceptEdits --add-dir "$STATE" "$LOGS" \
         --output-format stream-json --verbose ) >"$rlog" 2>"$LOGS/run-$TS.err"; rc=$?
   log "claude exited $rc"
 
