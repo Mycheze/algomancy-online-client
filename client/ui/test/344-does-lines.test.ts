@@ -28,6 +28,8 @@ import { AMOUNT, DOES, SLOT_RE, amountOf, doesLine, listText, noteTable, renderT
 import { Harness } from '../../engine/src/harness.ts';
 import { E } from '../../engine/src/engine.ts';
 import { spawn } from '../../engine/test/util.ts';
+import { readFileSync } from 'node:fs';
+import { ORACLE_JSON } from '../../engine/scripts/paths.mjs';
 
 /** every clause the engine can put on the stack, keyed as a part's effectKey */
 function poolClauses(): Map<string, EffectDef> {
@@ -181,6 +183,62 @@ test('§2c a "you may pay" clause says "if you pay N" — the payment is not yet
   }
   assert.ok(optional >= 15, `only ${optional} optional payments found — the label or source match has drifted`);
   assert.deepEqual(bad, []);
+});
+
+/**
+ * §2d — A CHOICE NOT YET MADE IS A "MAY" (owner, 2026-11-08): "The 'what this
+ * card will do' text for cards on the stack with a MAY effect (such as Bripp)
+ * are phrased like it *will* happen for sure, rather than 'Gember may XYZ, if
+ * so, ABC'." Bripp's line read "Look at Gember's hand and recycle a card from
+ * it. Gember draws a card", though the recycle (and so the draw) is asked when
+ * it resolves. §2c caught only the "you may pay" half of this class.
+ *
+ * Two derivations, both off the card rather than the line:
+ *  - the ENGINE: a run that offers a Decline (or Divine Intervention's "Leave
+ *    them") is asking a "may" at resolution;
+ *  - the PRINTED spell: "you may" in its own text (reminder text struck), the
+ *    permissions too ("you may play them now", "you may choose new targets").
+ * Either way the line says "may" — "{you} may …", the controller by name,
+ * since both players read it — or "if you pay"/"unless … pays" (§2c's
+ * register). NOT a "you may … target" clause (`targets.may`, CT-309): picking
+ * the target IS the yes, so on the stack it will happen (Mindspore Fiend).
+ */
+const MAY_NOT_THIS_CLAUSE: Record<string, string> = {
+  // the "you may" is its bin ability's (ability#0), not the spell's
+  'spell:Inexorable Miasma': 'the spell only gives poisonous',
+};
+test('§2d a clause that asks a "may" when it resolves says "may" — it is not yet chosen', () => {
+  const oracle = JSON.parse(readFileSync(ORACLE_JSON, 'utf8')) as Record<string, { text?: string }[]>;
+  const printedText = (name: string): string => {
+    const rows = oracle[name] ?? [];
+    return rows.map(r => r.text ?? '').join(' ').replace(/\{i\}\([^)]*\)/g, '');
+  };
+  const bad: string[] = [];
+  let asks = 0;
+  for (const [key, def] of POOL) {
+    if (def.targets?.may || key in MAY_NOT_THIS_CLAUSE) continue;
+    const src = String(def.run ?? '');
+    const declines = /label:\s*['"`](?:Decline|decline|Leave them)\b/.test(src);
+    const printed = key.startsWith('spell:') && /\byou may (?!pay\b)/i.test(printedText(key.slice(6)));
+    if (!declines && !printed) continue;
+    asks++;
+    const tpl = DOES[key] ?? '';
+    if (!/\bmay\b|\bif you pay\b|\bunless\b.*\bpays\b/.test(tpl)) {
+      bad.push(`${key}: the choice is made when it resolves — say "{you} may …": "${tpl}"`);
+    }
+    if (/(?:^|\. )You may\b/.test(tpl)) bad.push(`${key}: "You may" reads wrong to the other player — "{you} may": "${tpl}"`);
+  }
+  assert.ok(asks >= 35, `only ${asks} resolution-time choices found — the source or text match has drifted`);
+  assert.deepEqual(bad, []);
+});
+
+test('§2d Bripp, as the owner saw it: the recycle and the draw are a "may"', () => {
+  assert.equal(renderTemplate(DOES['spell:Bripp']!, {
+    target: i => (i === 0 ? 'Rashi' : null), count: 1, controllerOf: () => 'Rashi',
+    me: 'Bripp', you: 'Gember', opponent: 'Rashi', amount: undefined, mode: undefined, text: s => s,
+  }),
+    "Look at Rashi's hand. Gember may recycle a card from it; if so, Rashi draws a card");
+  assert.equal(DOES['graft:Bripp'], DOES['spell:Bripp']);
 });
 
 /** ordinary names, the length a real table has */

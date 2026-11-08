@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-08', kind: 'fix', text: 'On the stack, a card whose player only may do something now says so: Bripp reads "Look at Rashi\'s hand. Gember may recycle a card from it; if so, Rashi draws a card".' },
   { date: '2026-11-08', kind: 'fix', text: 'Priority now works as written: when you play a card or activate an ability, your opponent\'s pass resolves it, so you no longer get asked twice. Hold Ctrl to keep priority. Triggers still ask each player in turn.' },
   { date: '2026-11-08', kind: 'fix', text: 'A deck\'s description, on a shared deck from the Metagame and on your Decks page, could be cut off after three lines with no way to read the rest. Now "more" is there to open it whenever any of it is hidden.' },
   { date: '2026-11-08', kind: 'fix', text: 'Copy to my decks on a shared deck now opens your copy in the deck builder straight away, and it is in your deck list at once. It used to stay hidden until you reloaded the page.' },
