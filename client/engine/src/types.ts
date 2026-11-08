@@ -2409,6 +2409,11 @@ export interface GameState {
    * is why it is state and not a field of the call. Cleared once the action
    * has nothing pending. Optional/additive: absent in every older save. */
   holdPriority?: Seat;
+  /** CR 703.2b: the seat whose action in progress just had its pass made for
+   * it, so a trigger that action sets off can hand priority back to it. Same
+   * lifetime as `holdPriority`: cleared once the action has nothing pending.
+   * Optional/additive: absent in every older save and at every action's end. */
+  autoPassed?: Seat;
   planningDone: boolean[];
   /** haste step (Manual p.18): non-null while it runs; true = done playing
    * haste cards. Skipped entirely when nobody has a legal haste play. */

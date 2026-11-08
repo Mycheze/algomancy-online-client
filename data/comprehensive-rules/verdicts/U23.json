@@ -900,28 +900,93 @@
   },
   {
     "key": "annexd.auto-pass.no-retain",
-    "textHash": "7f1446f2ba855621",
+    "textHash": "c44451344b3d24bc",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:pushItem",
+        "loc": "client/engine/src/engine.ts:E.pushItem",
         "agrees": true,
-        "note": "Unheld non-trigger item: priority to the other seat, passes = 1. Trigger: passes = 0, priority to initiative. Held: priority stays with the actor."
+        "note": "Non-trigger item, no ask: priority to the other seat, passes = 1, autoPassed set. With the ask: actor keeps it. Trigger: autoPassed taken back if there is one, else priority unchanged; passes reset to 0 first."
       },
       {
-        "loc": "client/ui/main.ts:holdPriorityButton",
+        "loc": "client/engine/src/engine.ts:E.finishResolutionTail",
         "agrees": true,
-        "note": "The toggle is on the priority bar beside Pass, and reads on while Ctrl is down."
+        "note": "A resolution restarts the window with the initiative player, passes 0."
       },
       {
         "loc": "client/engine/src/apply.ts:dispatch",
         "agrees": true,
-        "note": "A pass carrying the ask is refused."
+        "note": "The ask is refused on anything outside HOLD_PRIORITY_ACTIONS (a pass included) and outside battle."
+      },
+      {
+        "loc": "client/ui/main.ts:holdPriorityButton",
+        "agrees": true,
+        "note": "Rendered immediately after the Pass button in the priority bar; on while Ctrl is down."
       }
     ],
     "tests_run": [
+      {
+        "file": "568-hold-priority.test.ts",
+        "pattern": "CR 703.2a / CT-253: without the ask",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "568-hold-priority.test.ts",
+        "pattern": "CR 703.2a / CT-253: a cast that asks",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "568-hold-priority.test.ts",
+        "pattern": "CR 703.2a / CT-253: the holder stacks",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "568-hold-priority.test.ts",
+        "pattern": "CR 703.2a / CT-253: a holder who passes",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "568-hold-priority.test.ts",
+        "pattern": "CR 703.2b: an unheld action",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "518-trigger-keeps-window-priority.test.ts",
+        "pattern": "CR 703.2b Origon",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "518-trigger-keeps-window-priority.test.ts",
+        "pattern": "CR 703.3a a trigger a cast sets off",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "518-trigger-keeps-window-priority.test.ts",
+        "pattern": "CR 703.3a a trigger from a resolution",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "518-trigger-keeps-window-priority.test.ts",
+        "pattern": "CR 605.1a every on-attack",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "518-trigger-keeps-window-priority.test.ts",
+        "pattern": "Annex D2.9 the control",
+        "passed": true,
+        "asserts_claim": true
+      },
       {
         "file": "569-hold-priority-toggle.test.ts",
         "pattern": "CR 703.2a / CT-253: with the toggle off",
@@ -948,49 +1013,7 @@
       },
       {
         "file": "272-full-control.test.ts",
-        "pattern": "BL-18 §4",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "568-hold-priority.test.ts",
-        "pattern": "CR 703.2a / CT-253: without the ask",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "568-hold-priority.test.ts",
-        "pattern": "CR 703.2a / CT-253: a cast that asks",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "568-hold-priority.test.ts",
-        "pattern": "CR 703.2a / CT-253: the holder stacks",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "568-hold-priority.test.ts",
-        "pattern": "CR 703.2a / CT-253: the ask is refused",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "425-cr-casting-and-stack.test.ts",
-        "pattern": "cr:effects.priority.window.resolve — two passes",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "518-trigger-keeps-window-priority.test.ts",
-        "pattern": "report 234",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "518-trigger-keeps-window-priority.test.ts",
-        "pattern": "Annex D2.9",
+        "pattern": "BL-18 §1|BL-18 §4 you can respond",
         "passed": true,
         "asserts_claim": true
       }
@@ -998,68 +1021,94 @@
     "probes": [
       {
         "file": "client/engine/test/zz-probe-U23-1.test.ts",
-        "test": "zz-probe-U23-1a — a caster who did not keep priority has no action, and the opponent passing resolves the spell",
+        "test": "P1 unheld cast: the caster has no legal action, even with a castable spell in hand, and the opponent's pass resolves it",
         "passed": true,
-        "demonstrates": "yes: the caster has no legal action while the opponent holds priority, and the opponent's pass resolves the spell."
+        "demonstrates": "yes: last sentence, and the opponent's pass resolves the spell"
       },
       {
         "file": "client/engine/test/zz-probe-U23-1.test.ts",
-        "test": "zz-probe-U23-1b — when the opponent acts first the caster receives priority and may respond",
+        "test": "P2 the opponent acts first: priority returns to the caster, with their spell still on the stack and a response legal",
         "passed": true,
-        "demonstrates": "yes: after the opponent responds, priority returns to the caster and a cast is legal."
+        "demonstrates": "yes: the 'unless the opponent acts first' branch"
       },
       {
-        "file": "client/engine/test/zz-probe-U23-2.test.ts",
-        "test": "zz-probe-U23-2 — a trigger on the stack carries no pass: it takes two passes, and the first resolves nothing",
+        "file": "client/engine/test/zz-probe-U23-1.test.ts",
+        "test": "P3 the spell sets off a trigger: the caster has priority with the spell underneath and a response is legal",
         "passed": true,
-        "demonstrates": "yes: passes is 0 with the trigger on the stack, one pass leaves it there, the second resolves it."
+        "demonstrates": "yes: the 'or the spell sets off a triggered ability' branch"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U23-1.test.ts",
+        "test": "P4 an activation sets off a trigger: INT who activated has priority first, no pass counted",
+        "passed": true,
+        "demonstrates": "yes: activation half of the trigger sentence, initiative player"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U23-1.test.ts",
+        "test": "P4 an activation sets off a trigger: NIT who activated has priority first, no pass counted",
+        "passed": true,
+        "demonstrates": "yes: activation half, non-initiative player; the trigger is the other seat's"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U23-1.test.ts",
+        "test": "P5 deployment: a play has no priority at all",
+        "passed": true,
+        "demonstrates": "context: there is no priority in deployment, so the trigger sentence has no case there"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U23-1.test.ts",
+        "test": "P6 battle, an activation in a region only its controller is in: what does priority do",
+        "passed": true,
+        "demonstrates": "context: the home-region activation is not legal in battle, so pushItem's solo-region early return did not produce an exception to 'in battle' on this path"
       }
     ],
     "source_checks": [
       {
-        "ref": "owner: \"Autopassing should only happen when a direct clicking action they did put something of theirs onto the stack.\"",
+        "ref": "owner 2026-11-08: What matters for deciding the priority order",
         "supports": "yes",
-        "note": "Supports no pass for a trigger."
+        "note": "Controller for play triggers, INT for attack/block/enters triggers. 'Who'd have it for the cause' carries the activation case. Enters triggers follow a resolution, so they fall under the window-order clause."
       },
       {
-        "ref": "owner: \"The caster always gets first response (which is usually auto passed), then responder is the final one who says if something resolves.\"",
+        "ref": "owner 2026-11-08: Autopassing should only happen when a direct clicking action",
         "supports": "yes",
-        "note": "Supports the action counting as the pass and the opponent's pass resolving it."
+        "note": "No automatic pass for a trigger."
       },
       {
-        "ref": "owner: \"Auto-pass, hold to keep\"",
+        "ref": "owner 2026-11-08: The caster always gets first response",
         "supports": "yes",
-        "note": "Supports passing unless asked. The two ways to ask (Ctrl, the toggle) are client detail shown by 569 and ui/main.ts."
+        "note": "The action is the caster's (usually automatic) pass; the responder's pass resolves."
+      },
+      {
+        "ref": "owner 2026-10-22: Auto-pass, hold to keep",
+        "supports": "yes",
+        "note": "The default and the ask to keep; Ctrl and the toggle as the means are shown by 569 and the rendered bar."
+      },
+      {
+        "ref": "examples (5 tests)",
+        "supports": "yes",
+        "note": "All pass. The first example's 'priority passes to the opponent' is asserted by 568 'without the ask', its bound 569 test asserts only that no ask is sent. 'Beside Pass': 569 asserts the bar has the button, main.ts shows it directly after Pass."
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/engine.ts",
-        "text": "this.s.priority = other(item.controller);"
+        "text": "if (this.s.autoPassed !== undefined) this.s.priority = this.s.autoPassed;"
       },
       {
         "file": "client/engine/src/engine.ts",
-        "text": "if (this.s.holdPriority === item.controller) {"
+        "text": "this.s.autoPassed = item.controller;"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (this.s.holdPriority === undefined) this.s.priority = this.initiative;"
+        "file": "client/engine/test/518-trigger-keeps-window-priority.test.ts",
+        "text": "assert.equal(h.state.passes, 0, 'no automatic pass with a trigger covering the spell');"
+      },
+      {
+        "file": "client/engine/test/518-trigger-keeps-window-priority.test.ts",
+        "text": "assert.equal(h.state.priority, A, 'the initiative player, even though the trigger is the other player\\'s');"
       },
       {
         "file": "client/engine/test/568-hold-priority.test.ts",
-        "text": "assert.equal(h.state.priority, A, 'no ask: the opponent responds first, as before');"
-      },
-      {
-        "file": "client/engine/test/568-hold-priority.test.ts",
-        "text": "assert.equal(h.state.priority, D, 'and the caster still has priority');"
-      },
-      {
-        "file": "client/ui/test/569-hold-priority-toggle.test.ts",
-        "text": "assert.equal(a.holdPriority, true, 'Ctrl held: the play asks to keep priority');"
-      },
-      {
-        "file": "client/ui/test/569-hold-priority-toggle.test.ts",
-        "text": "assert.ok(ui.has({ btn: 'holdprio' }), 'the toggle is on the priority bar');"
+        "text": "assert.equal(h.state.stack.length, 1, 'the responder\\'s pass resolved the top item');"
       },
       {
         "file": "client/ui/test/569-hold-priority-toggle.test.ts",
@@ -1067,7 +1116,7 @@
       },
       {
         "file": "client/ui/test/272-full-control.test.ts",
-        "text": "'you responded to your own spell and both are on the stack — which is the doneWhen line');"
+        "text": "assert.equal(h.state.priority, D, 'and the caster who asked still holds the window');"
       }
     ],
     "basis_ok": true,

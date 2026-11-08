@@ -446,6 +446,7 @@ export function apply(
   // CR 703.2a / CT-253: the ask to keep priority lasts one action — through
   // its own suspensions, and no further (nor past the end of the battle)
   if (e.s.holdPriority !== undefined && (e.s.decision === null || e.s.phase !== 'battle')) delete e.s.holdPriority;
+  if (e.s.autoPassed !== undefined && (e.s.decision === null || e.s.phase !== 'battle')) delete e.s.autoPassed;
   if (guard !== null && e.s.phase !== 'gameover' && pendingFingerprint(e.s) !== guard) {
     // The draft is discarded by throwing: the caller keeps `state`, so the
     // clobbered decision never existed. This is the ONLY thing standing

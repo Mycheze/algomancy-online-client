@@ -24,6 +24,10 @@
  * game now plays differently; that is a rules change for every saved game and
  * needs its own round.
  *
+ * Re-blessed WHOLE a second time on 2026-11-08: a trigger set off by a play or
+ * activation now gives that player priority first (D2.9), on a judge's answer the
+ * owner adopted. Only that order moved.
+ *
  * Re-blessed WHOLE on 2026-11-08 for a deliberate rules change the owner ordered
  * knowing old games would play differently: an unheld play or activation now
  * counts as its actor's pass (CR 703.2b, D2.9), and the reference runs lost the

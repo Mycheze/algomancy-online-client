@@ -10286,16 +10286,23 @@ export class E {
      * "Autopassing should only happen when a direct clicking action they did
      * put something of theirs onto the stack." It goes in window order, the
      * initiative player first (CR 703.3a) — whether it arrived as a window
-     * opened (CR 604.3c), after a resolution (CR 703.3c), or inside a player's
-     * action. ⚠ Report #234 (RCUY@180): flipping priority on EVERY push handed
+     * opened (CR 604.3c) or after a resolution (CR 703.3c), where priority is
+     * already there. Inside a player's action it goes to whoever caused it: the
+     * owner, 2026-11-08, on Nyar's answer: "What matters for deciding the
+     * priority order for the triggered effects is who'd have it for the
+     * 'cause'. Often, it'll be INT (for attacks and/or blocks triggers or enters
+     * triggers) or controller for play triggers." So a cast whose own automatic
+     * pass was just made takes priority back: NIT plays a spell, Origon
+     * triggers, and NIT may negate the Origon trigger first.
+     * ⚠ Report #234 (RCUY@180): flipping priority on EVERY push handed
      * Rousing Spirit's attack window to the defender. Keyed on the item's kind,
      * not on a flag, because a target-suspended trigger is pushed later from
      * doDecide and must behave exactly as if it had not suspended.
      */
     if (this.s.priority === null) return;
     if (item.kind === 'triggered') {
-      // a player keeping priority (CR 703.2a) keeps it through their own action
-      if (this.s.holdPriority === undefined) this.s.priority = this.initiative;
+      // the action's own automatic pass no longer stands with a trigger on top
+      if (this.s.autoPassed !== undefined) this.s.priority = this.s.autoPassed;
       return;
     }
     /**
@@ -10309,6 +10316,7 @@ export class E {
     } else {
       this.s.priority = other(item.controller);
       this.s.passes = 1;
+      this.s.autoPassed = item.controller;
     }
   }
 

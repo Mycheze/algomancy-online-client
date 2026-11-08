@@ -301,3 +301,53 @@ test('CR 703.3a a trigger a cast sets off goes in window order, and nobody is pa
   });
   assert.ok(fired.length > 0, 'a card that hears a cast put its trigger on the stack');
 });
+
+/* ══ §8 — A PLAY TRIGGER GOES TO WHOEVER CAUSED IT ═══════════════════════ */
+
+for (const caster of ['INT', 'NIT'] as const) {
+  test(`CR 703.2b Origon: ${caster} plays a spell, Origon triggers, and ${caster} gets priority first`, () => {
+    // Nyar, 2026-11-08: "NIT plays spell -> Origon triggers -> NIT gets
+    // priority first ... -> NIT can negate the Origon trigger -> priority passes"
+    const h = new Harness(caster === 'INT' ? 52300 : 52301);
+    for (const p of h.state.players) p.hand.length = 0;
+    toDeployment(h);
+    const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+    const atk = spawn(h, A, 'Lithoghul');
+    const wall = spawn(h, D, 'Lithoghul');
+    spawn(h, D, 'Origon');
+    toNextBattle(h, A);
+    h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+    giveResources(h, A, 'fire', 2);
+    giveResources(h, D, 'fire', 2);
+    if (caster === 'NIT') pass(h);
+    const seat = caster === 'INT' ? A : D;
+    h.do({ type: 'playCard', seat, handIndex: give(h, seat, 'Luminous Arc') });
+    pick(h, { unit: caster === 'INT' ? wall : atk });
+    answerAll(h);
+    assert.ok(stackedFrom(h, 'Origon'), 'fixture: Origon is on top of the spell');
+    assert.equal(h.state.priority, seat, 'the caster is asked first');
+    assert.equal(h.state.passes, 0, 'no automatic pass with a trigger covering the spell');
+    assert.equal(h.state.autoPassed, undefined, 'and nothing is left in the state');
+    pass(h);
+    assert.equal(h.state.priority, (1 - seat) as Seat, 'then the other player');
+  });
+}
+
+test('CR 703.3a a trigger from a resolution still opens with the initiative player', () => {
+  // the control for §8: the "cause" here is a resolution, not a player's action
+  const h = new Harness(52302);
+  for (const p of h.state.players) p.hand.length = 0;
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Lithoghul');
+  const spore = spawn(h, D, 'Spore of Regenesis');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  giveResources(h, A, 'fire', 2);
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
+  pick(h, { unit: spore });
+  pass(h);
+  answerAll(h);
+  assert.ok(stackedFrom(h, 'Spore of Regenesis'), 'fixture: the death trigger is on the stack');
+  assert.equal(h.state.priority, A, 'the initiative player, even though the trigger is the other player\'s');
+});

@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:8569cc3b4c4114b2",
+ "generated_from": "sha256:af625fc074afb5d7",
  "rules": [
   {
    "num": "100.1",
@@ -38877,7 +38877,7 @@
    "sectionTitle": "Priority and Auto-Pass",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D2",
-   "text": "This client treats a player's action as their pass unless they ask to keep priority: in battle, once their action is on the stack, priority goes to the opponent, and the opponent's pass resolves it. A player asks to keep it by acting while holding the Control key (rule D2.7) or with the Hold priority toggle beside Pass turned on; then they keep priority and may act again (rule 703.2a). A pass never asks. A triggered ability is nobody's action, so no pass is made for it. A player who did not keep priority cannot respond to their own spell unless the opponent acts first.",
+   "text": "This client treats a player's action as their pass unless they ask to keep priority: in battle, once their action is on the stack, priority goes to the opponent, and the opponent's pass resolves it. A player asks to keep it by acting while holding the Control key (rule D2.7) or with the Hold priority toggle beside Pass turned on; then they keep priority and may act again (rule 703.2a). A pass never asks. A triggered ability is nobody's action, so no pass is made for it: one set off by a play or an activation leaves the player who made it with priority first, and at any other time the window's order applies. A player who did not keep priority cannot respond to their own spell unless the opponent acts first or the spell sets off a triggered ability.",
    "see": [
     "703",
     "D2.7"

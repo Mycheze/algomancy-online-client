@@ -236,6 +236,7 @@ test('Divine Intervention: "target effect" reaches a TRIGGER on the stack, not j
   const trigItem = h.state.stack.find(i => i.kind === 'triggered')!;
   assert.ok(spellItem && trigItem, 'a spell AND a trigger are both waiting on the stack');
 
+  pass(h);   // D's play set off the trigger, so D is asked first (CR 703.2b)
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Divine Intervention') });
   // THE ASSERTION THAT CLOSES #6: under a 'stackSpell' spec only the Noxious
   // Demise item is a candidate and this menu does not contain the trigger.
