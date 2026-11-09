@@ -137,6 +137,7 @@ export interface TodoEntry {
 }
 import '../engine/src/cards/registry.ts';
 import { CLOSED } from './card-todo-closed.ts';
+import { still } from './card-todo-helpers.ts';
 
 // ── proofs for the comprehensive-rules findings (CT-226 on) ─────────────
 // Each finding was re-checked against HEAD before it was filed. A proof
@@ -183,6 +184,19 @@ const OPEN: TodoEntry[] = [
   //    landing in 3b7c7be6, and 505..507 were never used
   // ── the report triage of 2026-11-06 ────────────────────────────────────
   // ── the report triage of 2026-11-07 ────────────────────────────────────
+  // ── the report triage of 2026-11-09 (evening) ─────────────────────────
+  {
+    id: 553, area: "engine", severity: "major",
+    cards: ["Suspend", "Aurozoa", "Glararr", "Life Leech", "Flesh Tithe"],
+    title: "a player whose life total can't change (Suspend) may still pay life costs, and pays nothing",
+    detail: "Report #366 (Karanda, AZWN, 2026-11-09, bug, medium): \"I am allowed to pay life even though my life total cannot change\". CR 708.10: when a player's life total can't change, a loss of life for that player does not happen at all; E.loseLife returns early on E.lifeLocked. CR 111.6: \"A cost that cannot be paid in full cannot be paid at all ... the play or activation is not offered.\" But the one gate for every life cost, E.canPayLife (engine/src/engine.ts, `return n <= 0 || this.player(seat).life > n;`), never asks lifeLocked. So under Suspend the ability is offered, its 'payment' (engine.ts payCosts, `cost.life` → loseLife) is swallowed by the lock with an info line, and the effect goes on the stack FOR FREE — the reverse of a cost. THE CLASS: every life cost goes through canPayLife — activated `cost: { life }` (apply.ts castable/abilityCostPayable, Aurozoa, Glararr, Life Leech and the other 'pay N life:' activations), cast costs `castCost: { kind: 'payLife' }` (engine.ts payableNow, Flesh Tithe's X), E.lifeToPlay, and the one-point-at-a-time `payLife1` choice. One gate fixes all of them.",
+    evidence: "Report #366, AZWN fetched and replayed 2026-11-09 (steward triage): 311/311, no divergence, faithful. Filed at [286], turn 8 battle, after Karanda's Suspend (targeting Karanda) resolved and swallowed Yagamino's Siphon Life X=8. Probe on the replayed board before [290] (Karanda 8 life, locked): legalActions(seat 0) offers activateAbility entity 56 via mod 101 (Aurozoa on Leaping Lillik, 'pay 1 life: recall me'); applying it logs \"Karanda pays 1 life\" then \"Karanda's life total can't change during this battle — the 1 life (... (cost)) is not lost\", life stays 8, and the recall goes on the stack. Karanda did not take it in the game (they activated it on turn 9, unlocked, and paid 8 → 7). No designer or RAQ ruling on paying life under a lock; CR 708.10 + 111.6 settle it, and it matches the analogous card game rule that a life payment greater than 0 cannot be made while the total can't change.",
+    fix: "E.canPayLife: `n <= 0 || (!this.lifeLocked(seat) && this.player(seat).life > n)`; a CR 111.6b/708.10 sentence that a locked player cannot pay life (through the cr scripts), moving any verdict span that quotes the old line (409). Guard: under Suspend, Aurozoa's 'pay 1 life' is not in legalActions and apply refuses it; Flesh Tithe (payLife X) is not castable; unlocked again after the battle, both are. Break the gate to see them red.",
+    proof: () => still('engine/src/engine.ts', 'return n <= 0 || this.player(seat).life > n;'),
+    verify: "Cast Suspend on yourself in a battle with Aurozoa on a unit: the 'pay 1 life: recall me' is not offered until the battle ends.",
+    reportId: 366,
+    status: 'open',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
