@@ -510,7 +510,16 @@ const OPEN: Entry[] = [
       + 'Clear, the league\'s Use <zone> / Set, the "kicked" notice\'s Home. Left lower-case on purpose: links inside a '
       + 'sentence (cblink, ui-button--link), element chips, and the game table (main.ts board toggles, lesson, '
       + 'sandbox). Guarded by 1177-button-labels-start-with-a-capital.test.ts (every page story rendered + the '
-      + 'labels written in pages/*.ts and util.ts).',
+      + 'labels written in pages/*.ts and util.ts).\n\n'
+      + '2026-11-09 (steward): a refusal outside the game is drawn as an error, not in a note\'s gold '
+      + '(docs/23-ui-inventory/05 §18: "Errors and successes share .deckmsg gold"). The 2026-11-03 round had '
+      + 'put every message line on statusMessage() in the `note` tone, "under today\'s look"; on seven sites '
+      + 'that line only ever holds a failure (uiError, the sign-in screen\'s authMsg, the room friends panel\'s '
+      + 'invite failure): home\'s Play card, the Constructed and Single Card Duel rooms, the match room and its '
+      + 'sideboard bar, sign-in, Invite a friend. They are tone `error` (red, role="alert") with class '
+      + '`.pageerr` (margins only; `.deckmsg` would have re-coloured them gold). Left in the note gold: the deck '
+      + 'picker\'s line (it carries "loaded X" as well as refusals) and the match\'s deck-legality line (a state, '
+      + 'beside counts already in red). Guarded by 1200-refusals-drawn-as-errors.test.ts.',
   },
   {
     id: 'BL-17',

@@ -200,8 +200,8 @@ test('960 §3 Draft: Mode, clock, elements, the custom rules rows, Create room',
   assert.match(buttonOf(homeHtml(view({ draft: { ...view().draft, customError: 'too few' } })), 'newgame'), /title="too few" disabled data-mode="draft">Create room</);
   // the last refusal, above the buttons, escaped
   const refused = homeHtml(view({ error: 'the server <refused>' }));
-  assert.match(refused, /<p class="ui-status ui-status--note deckmsg" role="status">the server &lt;refused&gt;<\/p>/);
-  assert.ok(refused.indexOf('deckmsg') < refused.indexOf('class="homeactions"'));
+  assert.match(refused, /<p class="ui-status ui-status--error pageerr" role="alert">the server &lt;refused&gt;<\/p>/);
+  assert.ok(refused.indexOf('pageerr') <refused.indexOf('class="homeactions"'));
 });
 
 test('960 §4 Constructed: Casual and Competitive', () => {

@@ -115,6 +115,7 @@ test('961 §5 names and errors are escaped', () => {
   const html = constructedWaitingHtml(cview({ myName: '<A>', oppName: '<B>', error: 'refused <x>' }));
   assert.match(html, /&lt;A&gt; \(you\)/);
   assert.match(html, /&lt;B&gt; — /);
-  assert.match(html, /<p class="ui-status ui-status--note deckmsg" role="status">refused &lt;x&gt;<\/p>/);
+  assert.match(html, /<p class="ui-status ui-status--error pageerr" role="alert">refused &lt;x&gt;<\/p>/);
+  assert.match(singleWaitingHtml(sview({ error: 'gone <y>' })), /<p class="ui-status ui-status--error pageerr" role="alert">gone &lt;y&gt;<\/p>/);
   assert.match(constructedWaitingHtml(cview({ myName: undefined, oppName: undefined })), /You \(you\)[^]*Opponent — /);
 });

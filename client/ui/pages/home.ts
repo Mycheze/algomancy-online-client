@@ -493,7 +493,7 @@ function playHtml(v: HomeView): string {
       ${v.nameBox === null
         ? ''
         : `<label class="homename">Your name <input id="h-name" maxlength="24" value="${esc(v.nameBox)}" placeholder="(optional)"></label>`}
-      ${v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''}
+      ${v.error ? statusMessage({ tag: 'p', tone: 'error', className: 'pageerr', text: v.error }) : ''}
       <div class="homeactions">${join}${go}</div>
     </div>
   </section>`;

@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-09', kind: 'change', text: "When something goes wrong outside a game (a room that refused you, a lost connection, a wrong password, an invite that did not go), the message is now red. It used to be the same gold as good news." },
   { date: '2026-11-09', kind: 'new', text: "The deck builder now reminds you, beside the card count, that you can zoom any card: hold the mouse wheel (or hold a click) on it, or hold it with a finger on a tablet." },
   { date: '2026-11-09', kind: 'fix', text: "While your life total can't change (Suspend), you can no longer pay life, so a 'Pay 1 life' ability like Aurozoa's waits until that battle is over. Before, the payment was skipped and you got the effect for free." },
   { date: '2026-11-09', kind: 'fix', text: "When you have seen your opponent's hand, its reminder no longer covers your own units while you choose your attackers. It stays over their side of the table, where it sits in deployment." },

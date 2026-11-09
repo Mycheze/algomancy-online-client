@@ -17,7 +17,7 @@
 import { esc } from '../util.ts';
 import { ICON_BASE } from '../assets.ts';
 import type { Me } from '../account.ts';
-import { settingRow } from '../components/index.ts';
+import { settingRow, statusMessage } from '../components/index.ts';
 import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
 
 // ── the identity bar (the home screen's slot) ─────────────────────────
@@ -118,7 +118,7 @@ export function signinHtml(v: SigninView): string {
     ${settingRow({ label: 'Password', controlHtml: `<input id="a-pass" type="password" maxlength="200"
       autocomplete="${isRegister ? 'new-password' : 'current-password'}" aria-label="Password">` })}
     </div>
-    ${authMsg ? `<p class="deckmsg">${esc(authMsg)}</p>` : ''}
+    ${authMsg ? statusMessage({ tag: 'p', tone: 'error', className: 'pageerr', text: authMsg }) : ''}
     <div class="homebtns">
       <button class="primary" data-btn="acct-submit" ${v.busy ? 'disabled' : ''}>
         ${v.busy ? 'working…' : isRegister ? 'Create account' : 'Log in'}</button>

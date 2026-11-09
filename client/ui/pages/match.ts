@@ -434,7 +434,7 @@ function sideboardTableHtml(v: MatchRoomView): string {
         <div class="ccsbverdict"><span class="ccsbcounts">Main <b class="${short ? 'bad' : ''}">${cfg.main.length}</b>
           · Side <b class="${over ? 'bad' : ''}">${cfg.side.length}/${SIDEBOARD_MAX}</b></span>
           ${verdict}</div>
-        ${v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''}
+        ${v.error ? statusMessage({ tag: 'p', tone: 'error', className: 'pageerr', text: v.error }) : ''}
       </div>
       ${readyHtml(v, !why, live ? resetHtml(w, cfg) : '')}
     </footer>`;
@@ -510,7 +510,7 @@ export function matchRoomHtml(v: MatchRoomView): string {
   // root's LAST class (report.ts pageOf)
   return roomFrameHtml({
     page: 'ccpage', kind: `${matchKind(w)} — Best of ${w.bestOf}`, room: v.room, chrome: v.chrome,
-    cardHtml: card + roomSection(v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''),
+    cardHtml: card + roomSection(v.error ? statusMessage({ tag: 'p', tone: 'error', className: 'pageerr', text: v.error }) : ''),
     footHtml: reg ? '<p class="homefoot">Game 1 deals when both decks are in. Initiative is random.</p>' : '',
   });
 }

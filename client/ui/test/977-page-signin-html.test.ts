@@ -45,9 +45,9 @@ test('977 §2 every data-btn, and a sign-in in flight disables the submit', () =
 
 test('977 §3 the message line and the username are escaped', () => {
   const html = signinHtml(view({ msg: 'no such <user>', username: 'a"b' }));
-  assert.match(html, /<p class="deckmsg">no such &lt;user&gt;<\/p>/);
+  assert.match(html, /<p class="ui-status ui-status--error pageerr" role="alert">no such &lt;user&gt;<\/p>/, 'a refusal is drawn as an error');
   assert.match(html, /value="a&quot;b"/);
-  assert.doesNotMatch(signinHtml(view()), /deckmsg/, 'no message, no line');
+  assert.doesNotMatch(signinHtml(view()), /pageerr/, 'no message, no line');
 });
 
 test('977 §4 the identity bar: resolving, signed out, signed in', () => {

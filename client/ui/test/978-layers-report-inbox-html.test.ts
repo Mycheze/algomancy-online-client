@@ -102,7 +102,7 @@ test('978 §5 the friends panel: loading, nobody, the rows', () => {
   assert.match(rows, /<button data-inbox="invite" data-id="b">Ask again<\/button>/, 'offline: not the primary');
   assert.match(rows, /data-id="c" disabled>Invited ✓/);
   assert.match(rows, /<span class="fdot on busy"><\/span>/);
-  assert.match(rows, /<p class="deckmsg">not &lt;allowed&gt;<\/p>/);
+  assert.match(rows, /<p class="ui-status ui-status--error pageerr" role="alert">not &lt;allowed&gt;<\/p>/);
 });
 
 test('978 §6 server text is escaped; a card\'s trusted sentence is not', () => {

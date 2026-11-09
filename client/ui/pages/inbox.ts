@@ -18,6 +18,7 @@
  * button` size them, so the button component would add nothing but a class.
  * Its CSS is styles/shared/13-report-and-inbox.css. */
 import { esc, elIcon } from '../util.ts';
+import { statusMessage } from '../components/index.ts';
 
 // ── the view ─────────────────────────────────────────────────────────
 
@@ -105,7 +106,7 @@ export function roomFriendsBodyHtml(v: RoomFriendsView): string {
   if (!v.loaded) return '<p class="hint">…</p>';
   if (!v.friends.length) return '<p class="hint">Add friends on your profile and they show up here.</p>';
   return v.friends.map(friendRowHtml).join('')
-    + (v.msg ? `<p class="deckmsg">${esc(v.msg)}</p>` : '');
+    + (v.msg ? statusMessage({ tag: 'p', tone: 'error', className: 'pageerr', text: v.msg }) : '');
 }
 
 /** the whole panel, as the waiting room's slot */

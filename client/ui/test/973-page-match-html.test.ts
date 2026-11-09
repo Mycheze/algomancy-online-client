@@ -170,4 +170,6 @@ test('973 §6 names, rooms and cards are escaped', () => {
   const html = matchRoomHtml(room({ w, shown: w.mine!.current, room: '<R>', error: '<e>' }));
   assert.doesNotMatch(html, /<B>|<R>|<e>|<x>/);
   assert.match(html, /&lt;e&gt;/);
+  // a refusal is drawn as an error (red, read out), not in the gold of a note (BL-10, 2026-11-09)
+  assert.match(html, /<p class="ui-status ui-status--error pageerr" role="alert">&lt;e&gt;<\/p>/);
 });

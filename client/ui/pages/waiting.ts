@@ -128,7 +128,7 @@ export function constructedWaitingHtml(v: ConstructedWaitingView): string {
             ? '<b class="lockedin">deck is in</b>' : `<span class="dim">${esc(oppLine)}</span>`}</span></span>
       </div>
     </div>`, 'roomsec--foot')
-      + roomSection(v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''),
+      + roomSection(v.error ? statusMessage({ tag: 'p', tone: 'error', className: 'pageerr', text: v.error }) : ''),
   });
 }
 
@@ -206,7 +206,7 @@ export function singleWaitingHtml(v: SingleWaitingView): string {
             ? '<b class="lockedin">card is in</b>' : `<span class="dim">${esc(oppLine)}</span>`}</span></span>
       </div>
     </div>`, 'roomsec--foot')
-      + roomSection(v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''),
+      + roomSection(v.error ? statusMessage({ tag: 'p', tone: 'error', className: 'pageerr', text: v.error }) : ''),
     footHtml: '<p class="homefoot">Deals when both cards are in.</p>',
   });
 }
