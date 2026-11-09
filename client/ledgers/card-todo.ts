@@ -137,7 +137,7 @@ export interface TodoEntry {
 }
 import '../engine/src/cards/registry.ts';
 import { CLOSED } from './card-todo-closed.ts';
-import { body, still } from './card-todo-helpers.ts';
+import { still } from './card-todo-helpers.ts';
 
 // ── proofs for the comprehensive-rules findings (CT-226 on) ─────────────
 // Each finding was re-checked against HEAD before it was filed. A proof
