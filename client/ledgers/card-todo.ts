@@ -216,17 +216,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 544, area: "client", severity: "minor",
-    title: "the home page's League card ends right on its standings list, with no room under it",
-    detail: "Report #353 (mycheze, home, 2026-11-08, ux): \"On the League box, there needs to be a bit more spacing between the \\\"current standings\\\" and the bottom of the box. Right now, it immediatly ends at the bottom of the box and it's hard to read\". The League card's body is ui/pages/league.ts leagueGlanceHtml (`.lgglance`: name, phase, track, status, next match, `.lgglleaders`, `.lgglnext`), set on the card's glass by styles/pages/54-home-art.css (`.homeside .homesidebody`, `.homeside .lgglance`).",
-    evidence: "Report #353 (page: home, no room). The markup and CSS read 2026-11-08 (steward triage); the spacing itself is not seen (no browser on the box).",
-    fix: "Give the League card's body room below its last line (the standings, or the next-date line under them): padding at the foot of `.homeside .homesidebody` / `.lgglance`, or a gap above the card's bottom edge; check the Challenge and Matchmaking cards share the fix or do not need it.",
-    proof: null,
-    verify: "On the home page during a league week, the League card's standings list has clear space between its last row and the card's bottom edge.",
-    reportId: 353,
-    status: 'open',
-  },
-  {
     id: 545, area: "client", severity: "minor",
     title: "the home page's League card says \"Next: vs\" one opponent, though a week's matches have no order",
     detail: "Report #354 (mycheze, home, 2026-11-08, ux, medium): \"Saying \\\"Next: vs Yagamino\\\" in the League is a bit misleading. The order doesn't really matter. Rather, it should be something \\\"This week vs: Yagamino and Gember\\\" or \\\"This week vs: Yagamino, invi and Gember\\\"\". ui/pages/league.ts leagueGlanceView takes only the first unplayed match (`s.me?.matches.find(x => x.playable && !x.result)`) and leagueGlanceHtml draws it as `Next: vs <b>…</b>` with its agreed time.",

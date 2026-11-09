@@ -15013,4 +15013,20 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-09 (steward). styles/pages/54-home-art.css keeps the lift (`.homeside > :not(.homeart):not(.homesideopen)`, z-index 1, so the words still draw over the painting) and adds `pointer-events: none` to it, so a click on the title strip or the body's glass falls through to the stretched `.homesideopen` button under them; `:is(button, a, input, select, textarea, label, summary)` inside those children get `pointer-events: auto` back (Matchmaking's Join on an open game; 06-home.css already lifts body buttons and links to z-index 1). A side effect wanted by the report: hovering the words now hovers the card's button, so the card's hover border and art zoom show over the whole card, not only the gaps. The class: this is the only stretched-button card in the client (grep 'stretched', `inset: 0` buttons); the Draft | Constructed tiles are buttons themselves. Why nothing caught it: 960 §5 pins that the card's button is drawn, never what lies on top of it, and the art layer that lifted the words came later (owner 2026-11-07). Mutations: dropping the `pointer-events: none` turned the first 1185 test red; turning the controls' `auto` to `none` turned the second red. Not seen in a browser (none on the box).",
     status: 'done',
   },
+  {
+    id: 544, area: "client", severity: "minor",
+    title: "the home page's League card ends right on its standings list, with no room under it",
+    detail: "Report #353 (mycheze, home, 2026-11-08, ux): \"On the League box, there needs to be a bit more spacing between the \\\"current standings\\\" and the bottom of the box. Right now, it immediatly ends at the bottom of the box and it's hard to read\". The League card's body is ui/pages/league.ts leagueGlanceHtml (`.lgglance`: name, phase, track, status, next match, `.lgglleaders`, `.lgglnext`), set on the card's glass by styles/pages/54-home-art.css (`.homeside .homesidebody`, `.homeside .lgglance`).",
+    evidence: "Report #353 (page: home, no room). The markup and CSS read 2026-11-08 (steward triage); the spacing itself is not seen (no browser on the box).",
+    fix: "Give the League card's body room below its last line (the standings, or the next-date line under them): padding at the foot of `.homeside .homesidebody` / `.lgglance`, or a gap above the card's bottom edge; check the Challenge and Matchmaking cards share the fix or do not need it.",
+    proof: null,
+    verify: "On the home page during a league week, the League card's standings list has clear space between its last row and the card's bottom edge.",
+    reportId: 353,
+    guards: [
+      "1186-home-league-card-room.test.ts::the home page's League card is never squeezed below its words, so the standings are not clipped",
+      "1186-home-league-card-room.test.ts::the League card's glass keeps room under its last line",
+    ],
+    closed: "FIXED 2026-11-09 (steward). Root cause: the three side cards share the column's height by flex share alone (06-home.css `.homeside { flex: 1 1 0; min-height: 0; overflow: hidden }`), and the glass (`.homesidebody`) is `min-height: 0; overflow: hidden`, so on a window where the League card's share is shorter than its words the glass shrank and clipped: the standings ran into its bottom edge and the line under them (the next date) was cut off. Its bottom padding was also 6px. Now styles/pages/54-home-art.css gives `.homeside--league, .homeside--challenge` `min-height: min-content` (their glances are a fixed handful of lines; a too-short window scrolls the main region instead, which 06-home allows) and the glass 12px of bottom padding (all three cards). Matchmaking is left to its share: its open-games list has no fixed length. Why nothing caught it: no test looked at the side cards' sizing; 960 pins only their markup. Mutations: dropping the min-content rule turned 1186's first test red; the old padding turned its second red. Not seen in a browser (none on the box).",
+    status: 'done',
+  },
 ];

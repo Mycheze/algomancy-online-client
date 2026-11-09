@@ -310,8 +310,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 353, room: "", date: "2026-11-08",
     report: "mycheze, home (ux): \"On the League box, there needs to be a bit more spacing between the \\\"current standings\\\" and the bottom of the box. Right now, it immediatly ends at the bottom of the box and it's hard to read\"",
-    status: 'live',
-    note: "A spacing fix on the home page's League card: its body (pages/league.ts leagueGlanceHtml) ends on the standings list with no room under it. CT-544.",
+    status: 'fixed',
+    guards: [
+      "1186-home-league-card-room.test.ts::the home page's League card is never squeezed below its words, so the standings are not clipped",
+    ],
+    note: "A spacing fix on the home page's League card: its body (pages/league.ts leagueGlanceHtml) ends on the standings list with no room under it. CT-544. Fixed 2026-11-09: the card shared the column's height by flex share and its glass shrank under its words and clipped them; the League and Challenge cards are now never smaller than their words, and the glass keeps 12px under its last line.",
   },
   {
     id: 354, room: "", date: "2026-11-08",

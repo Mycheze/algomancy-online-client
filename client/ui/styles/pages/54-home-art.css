@@ -65,7 +65,13 @@
 .homesidetitle > span { font-size: var(--text-16); }
 .homesidetitle > svg:last-child:not(:first-child) { color: var(--color-text); }
 /* the glass: what the card says, over the painting's lower half */
-.homeside .homesidebody { align-self: flex-start; max-width: 100%; margin-bottom: var(--space-4); padding: var(--space-3) var(--space-5);
+/* the glass keeps room under its last line (report #353: the League's
+   standings ran into its bottom edge), and the League and Challenge cards,
+   whose words are a fixed handful of lines, never shrink below them: a
+   card's share of the column used to squeeze its glass, which clipped the
+   last line and its padding. A short window scrolls instead. */
+.homeside--league, .homeside--challenge { min-height: min-content; }
+.homeside .homesidebody { align-self: flex-start; max-width: 100%; margin-bottom: var(--space-4); padding: var(--space-3) var(--space-5) var(--space-5);
   border: 1px solid rgb(var(--art-light-rgb) / .08); border-radius: var(--radius-md);
   background: rgb(var(--art-shade-rgb) / .74); backdrop-filter: blur(8px); color: var(--color-text); }
 .homeside .homesideempty { color: var(--color-text-muted); }
