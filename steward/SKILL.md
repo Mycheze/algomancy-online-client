@@ -66,7 +66,9 @@ spec, every player-visible change gets an update line in `client/ui/updates.ts`.
 8. **Long commands, and the tools you do and do not have** (2026-11-04/07:
    eight Monitor calls denied, `sleep 240; grep …` blocked, 45 commands thrown
    away whole because one `git fetch` sat in the chain). As of 2026-11-08:
-   - **Have:** Monitor, TaskStop, `run_in_background`, and Read/Write/Edit
+   - **Have:** Monitor, TaskStop (deferred tools: load them first with
+     ToolSearch `select:Monitor,TaskStop`; Monitor needs a `description` —
+     two runs of 2026-11-08/09 lost a call to each), `run_in_background`, and Read/Write/Edit
      (and plain Bash writes) in `$STEWARD_STATE` and the runner's logs folder
      as well as the repo. There is no Grep tool here: search with Bash
      `grep`/`rg`.
@@ -228,6 +230,11 @@ notes before editing. Then:
 
 ## 7. Test — and verify by breaking
 
+- **Run each test file from its own package**, and read its `# tests` count.
+  `node --test` given a path that does not exist runs nothing for it and still
+  exits 0 (2026-11-08, report #344: `cd server && node --test … test/800-cc-drift-guard.test.ts`
+  — 800 lives in `engine/test` — "800 unchanged", red gate, a repair run).
+  Find a file first: `ls client/*/test/800-* client/ledgers/800-*`.
 - The reproducer is green now. Run every test file you touched or that covers
   the code you changed (`node --test <file>` from its package), plus
   `npm --prefix client/ui run typecheck` and
@@ -236,6 +243,11 @@ notes before editing. Then:
 - **The censuses** — tests that scan the whole repo, so no targeted run finds
   them. They turned most red gates of 2026-11-07/08 red (33 minutes each, plus
   a repair run). Run the one your change feeds:
+  **any edit in `engine/src/`** → `engine/test/409-comprehensive-rules` (CR
+  verdicts quote engine lines as spans; a line you rewrote makes them stale —
+  move each span to the line that now does it, then `npm --prefix client run
+  cr:check`; 2026-11-08, report #342, worked example `a4602db5`) and
+  `engine/test/800-cc-drift-guard` (~1 min; when it moves, §8a; report #344);
   a page or URL parameter → `server/test/771-link-preview`; a new
   `localStorage` key → `ui/test/267-legal-and-attribution` (the privacy page
   lists it); a `server/` import from `ui/` → `engine/test/282-dom-free-trio`;
