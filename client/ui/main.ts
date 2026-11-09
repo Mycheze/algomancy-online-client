@@ -504,8 +504,9 @@ class NetBackend implements Backend {
    * mode + trio only matter when this join creates the room; the selected
    * deck rides along on every join and the server uses it where it matters
    * (constructed room creation / a waiting seat). `pick` marks the waiting
-   * room's own "Play this deck": a constructed LEAGUE room takes a deck only
-   * from that (server/rooms.ts takesJoinDeck), since its deck is chosen per game. */
+   * room's own "Play this deck": apart from the join that creates a friend's
+   * room, a constructed room takes a deck only from that (server/rooms.ts
+   * takesJoinDeck, CT-542) — the joiner sees their deck before it deals. */
   sendJoin(pick = false): void {
     const name = (localStorage.getItem('algoName') ?? '').trim();
     const deck = savedDeck();

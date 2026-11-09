@@ -67,10 +67,12 @@ test('§1-§3 a saved deck is played as it is now, not as the browser last copie
     await editDeck(w, bo.token, bo.deckId, bo.swap.main);
     const code = await w.mint();
     const a = await w.client(), b = await w.client();
-    // exactly what ui/main.ts sendJoin sends: the browser's copy + the id
+    // exactly what ui/main.ts sendJoin sends: the browser's copy + the id —
+    // the creating join, then the joiner's "Play this deck" in the waiting
+    // room (CT-542: a friend's arrival alone registers nothing)
     await a.ask({ t: 'join', room: code, seat: 0, mode: 'constructed', deck: ann.main, deckId: ann.deckId, token: ann.token, name: 'x' },
       m => m.t === 'joined');
-    await b.ask({ t: 'join', room: code, mode: 'constructed', deck: bo.main, deckId: bo.deckId, token: bo.token },
+    await b.ask({ t: 'join', room: code, mode: 'constructed', deck: bo.main, deckId: bo.deckId, token: bo.token, pick: true },
       m => m.t === 'joined' && !!m['view']);
     const [d0, d1] = await dealtDecks(w, code);
     assert.deepEqual(sorted(d0), sorted(ann.swap.main), '⭐ the creator plays the deck as edited');

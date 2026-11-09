@@ -127,7 +127,12 @@ try {
   console.log('\n[second deck starts the game]');
   const c1 = new Client(PORT);
   await c1.open();
+  // CT-542: arriving with the browser's deck registers nothing — the friend
+  // lands in the waiting room and presses its "Play this deck" (`pick`)
   c1.send({ t: 'join', room: ROOM, seat: 1, name: 'Guest', deck: deckB });
+  const arrived = await c1.next(m => m.t === 'joined');
+  ok(!arrived.view && arrived.waiting?.have?.[1] === false, 'a friend arriving with a deck is not dealt in');
+  c1.send({ t: 'join', room: ROOM, seat: 1, name: 'Guest', deck: deckB, pick: true });
   const j1 = await c1.next(m => m.t === 'joined' && !!m.view);
   const s0 = await c0.next(m => m.t === 'joined' && !!m.view);
   ok(j1.view.mode === 'constructed' && s0.view.mode === 'constructed', 'both seats got the real game');

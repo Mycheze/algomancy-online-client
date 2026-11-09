@@ -615,7 +615,9 @@ try {
   a.send(JSON.stringify({ t: 'join', room: ROOM, seat: 0, mode: 'constructed', token, deck: fire, deckId: burn.id }));
   await new Promise(res => setTimeout(res, 400));
   // seat 1 is NOT logged in and claims seat 0's deck id — the classic spoof
-  b.send(JSON.stringify({ t: 'join', room: ROOM, seat: 1, name: 'Guest', deck: fire, deckId: burn.id }));
+  // (with `pick`: the waiting room's Play this deck, the only join of a
+  // friend's that registers one — CT-542)
+  b.send(JSON.stringify({ t: 'join', room: ROOM, seat: 1, name: 'Guest', deck: fire, deckId: burn.id, pick: true }));
   await new Promise(res => setTimeout(res, 700));
 
   ok(seen.some(m => m.t === 'joined' && m.view), 'both decks are in and the game dealt');

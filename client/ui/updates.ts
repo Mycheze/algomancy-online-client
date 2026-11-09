@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-09', kind: 'change', text: "Joining a friend's Constructed room no longer starts the game the moment you arrive. You see the deck you are bringing, can change it, and the game starts when you press Play this deck." },
   { date: '2026-11-09', kind: 'fix', text: "During a battle, the units in play no longer shrink to a thin row beside a half-empty fight. They now take the room there is, as large as the cards in the fight, and the fight keeps the rest." },
   { date: '2026-11-09', kind: 'fix', text: "Declaring blocks on a crowded board no longer freezes the game for a moment, for you or for anyone else playing." },
   { date: '2026-11-09', kind: 'change', text: "Splitting Big Glimpse Card's seven now opens a window with both piles side by side. Tap a card to move it to the other pile, as often as you like, then confirm once." },
