@@ -268,3 +268,57 @@ test('§9 a band holding a modded unit stands at least that unit\'s height at th
     assert.ok(battleMeasure(3, 1, 1, base.o).height(p.cw) + CHROME.h <= f.h + 1, `${name}: the fight still stands`);
   }
 });
+
+test('§10 with nobody building, every band holding units stands them as large as the fight\'s cards', () => {
+  // the owner, #steward 2026-11-09 (a game with Gember, she was declaring, nothing
+  // placed yet): "the units in play got suuuper small for some reason. There
+  // seems to be plenty of space on the board for them to be their full size …
+  // when there's space, take it up!" Both In Plays stood at BAND.want while the
+  // fight's empty block kept the height for a column of 100px cards.
+  const g = globalThis as { getComputedStyle?: unknown };
+  const had = g.getComputedStyle;
+  g.getComputedStyle = () => ({ getPropertyValue: () => '', columnGap: '8px', rowGap: '6px' });
+  try {
+    const rect = (w: number, h: number) => ({ width: w, height: h, x: 0, y: 0, top: 0, left: 0, right: w, bottom: h });
+    const unit = { dataset: {} };
+    const none = { length: 0 };
+    const run = (units: { top: number; bot: number }, playable = { top: 0, bot: 0 }) => {
+      const vars = new Map<string, string>();
+      const style = { setProperty: (k: string, v: string) => { vars.set(k, v); }, getPropertyValue: () => '' };
+      // nothing placed yet: the fight draws no columns
+      const fight = { querySelector: () => null, querySelectorAll: () => none };
+      const idle = { dataset: { region: '1' }, classList: { contains: () => false }, querySelectorAll: () => none };
+      const lb = {
+        style, dataset: {} as Record<string, string>, getBoundingClientRect: () => rect(1070, 512),
+        querySelectorAll: (sel: string) => {
+          const side = sel.includes('.lplay.theirs') ? 'top' : sel.includes('.lplay.mine') ? 'bot' : null;
+          if (!side) return [];
+          return Array(sel.endsWith('.card.playable') ? playable[side] : units[side]).fill(unit);
+        },
+        querySelector: (sel: string) => (sel === '.lfight.focus' ? fight : sel === '.lfight:not(.focus)' ? idle : null),
+      };
+      const root = { querySelector: (sel: string) => (sel === '.lboard[data-fight]' ? lb : null), querySelectorAll: () => [] } as unknown as ParentNode;
+      fitBoard(root, 78);
+      return { t: parseInt(vars.get('--lbandt')!, 10), b: parseInt(vars.get('--lbandb')!, 10) };
+    };
+    const base = { ...input(BOARDS['1344x768']!, 0, 1, 1, { pad: 0 }), chrome: { w: 0, h: 0 } };
+    const cap = Math.round(78 * GROW);
+    const empty = plan(base);
+    const full = plan({ ...base, source: { top: 3, bot: 4, cap, pad: 12 } });
+    // the premise: a fight planned alone keeps its units under the field's size
+    assert.ok(Math.floor((empty.bandBot - 12) / RATIO) < cap, `before: the units stood at ${Math.floor((empty.bandBot - 12) / RATIO)}px`);
+    // Gember's three units on top, my four below
+    const got = run({ top: 3, bot: 4 });
+    assert.deepEqual(got, { t: full.bandTop, b: full.bandBot }, 'the board is planned for the units standing in its bands');
+    for (const [name, h] of [['their', got.t], ['my', got.b]] as const) {
+      const u = Math.floor((h - 12) / RATIO);
+      assert.ok(u >= Math.min(full.cw, cap) - 1, `${name} units stand at ${u}px beside the fight's ${full.cw}px`);
+    }
+    // a band with no units gives way as it always did
+    const one = run({ top: 0, bot: 4 });
+    assert.ok(one.t < one.b, `an empty band still gives way (${one.t} < ${one.b})`);
+    // while you build, the band you build from comes first (§8): the other one gives way
+    const building = run({ top: 3, bot: 4 }, { top: 0, bot: 4 });
+    assert.ok(building.t < building.b, `building: their band gives way (${building.t} < ${building.b})`);
+  } finally { g.getComputedStyle = had; }
+});

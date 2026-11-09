@@ -435,8 +435,15 @@ function shapeBoard(root: ParentNode, baseCw: number): void {
     tall: bandsTall(lb),
     idle: { send: idleEl.classList.contains('sendhere'), pad: chrome(idleEl, 'h'), gap: 6, floor: CARD_FLOOR },
     // the units you can put in the declaration being built (ui/battle.ts
-    // formationCandidates → `playable` on a standing unit)
-    source: sourceOf(lb, baseCw),
+    // formationCandidates → `playable` on a standing unit) — and when nobody
+    // is building from a band, every unit standing in either band (owner,
+    // #steward 2026-11-09: "the units in play got suuuper small … when there's
+    // space, take it up!"). The bands used to stand at BAND.want whenever the
+    // fight could use the height, so with nothing placed yet the fight's
+    // empty block took ~380px while both In Plays held their units at ~55px:
+    // now the units stand as large as the fight's cards (up to the field's
+    // own cap), and the fight still gets whatever is left
+    source: sourceOf(lb, baseCw, '.card.playable') ?? sourceOf(lb, baseCw, '.card'),
   });
   if (!plan) return;
   const key = JSON.stringify(plan);
@@ -460,10 +467,11 @@ function bandsTall(lb: HTMLElement): { top: number; bot: number; pad: number } |
   return { top, bot, pad: play ? chrome(play, 'v') : 12 };
 }
 
-/** the In Play bands holding units the viewer can put in the formation being
- * built, for planBattleBoard's `source` */
-function sourceOf(lb: HTMLElement, baseCw: number): NonNullable<Parameters<typeof planBattleBoard>[0]['source']> | undefined {
-  const cards = (side: string): Element[] => cardsIn(lb, `.lplay.${side} .regionmain .card.playable`);
+/** the In Play bands holding units matching `sel` — the ones the viewer can
+ * put in the formation being built (`.card.playable`), or simply every unit
+ * (`.card`) — for planBattleBoard's `source` */
+function sourceOf(lb: HTMLElement, baseCw: number, sel: '.card.playable' | '.card'): NonNullable<Parameters<typeof planBattleBoard>[0]['source']> | undefined {
+  const cards = (side: string): Element[] => cardsIn(lb, `.lplay.${side} .regionmain ${sel}`);
   const theirs = cards('theirs'), mine = cards('mine');
   const top = theirs.length, bot = mine.length;
   if (!top && !bot) return undefined;

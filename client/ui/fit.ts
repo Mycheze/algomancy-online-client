@@ -333,7 +333,12 @@ export interface BattleBoardIn {
    * units the viewer can put in the declaration, `.card.playable`): how many
    * stand in each, the largest a field card grows (`cap`), and the band's
    * padding. While you build, they are the cards you are moving into the
-   * fight, so their band keeps them at the fight's own size (up to `cap`). */
+   * fight, so their band keeps them at the fight's own size (up to `cap`).
+   * When nobody is building from a band, ui/layout.ts passes EVERY unit
+   * standing in each band here instead (owner, #steward 2026-11-09: units in
+   * play "suuuper small" beside an empty fight — "when there's space, take
+   * it up!"): no In Play stands at a thin row of tiny units while the fight
+   * holds height it only uses for bigger cards. */
   source?: { top: number; bot: number; cap: number; pad: number;
     /** how much taller than a card the tallest of each band's units stands
      * (its mods hang under it), in card heights */
