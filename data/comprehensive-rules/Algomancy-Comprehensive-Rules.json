@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:7a0d7e407f1c55ce",
+ "generated_from": "sha256:acfa5c79f3b646a4",
  "rules": [
   {
    "num": "100.1",
@@ -36267,7 +36267,7 @@
    "sectionTitle": "Constructed",
    "chapterTitle": "9. Multiplayer and Formats",
    "parent": "901",
-   "text": "Competitive Constructed is constructed played as a match: either one game, or best of three, which the first player to win two games wins. The rules below add to the rest of rule 901 for it.",
+   "text": "Constructed may be played as a match: either one game, or best of three, which the first player to win two games wins. A match is played with either rules set, Casual or Competitive (rule D1.5); the length and the rules set are chosen apart. The rules below add to the rest of rule 901 for a match, and for the Competitive rules set.",
    "see": [
     "D8.6"
    ],
@@ -36278,7 +36278,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": true,
-   "verdict": "untested"
+   "verdict": "stale"
   },
   {
    "num": "901.9a",
@@ -36288,7 +36288,7 @@
    "sectionTitle": "Constructed",
    "chapterTitle": "9. Multiplayer and Formats",
    "parent": "901.9",
-   "text": "In Competitive Constructed the resource step, the haste step and deployment are taken in the printed order: the initiative player takes each of them first while the non-initiative player waits and watches, and then the non-initiative player takes it (rules 501.4 and rule 507.3). The client's simultaneous hidden steps (rule D1.5) do not apply. The draw phase is still taken by both players at once, and the resource step begins only when both players have put their cards back (rules 901.5 and rule 501.4a).",
+   "text": "Under the Competitive rules set, in a constructed game or a draft game, the resource step, the haste step and deployment are taken in the printed order: the initiative player takes each of them first while the non-initiative player waits and watches, and then the non-initiative player takes it (rules 501.4 and rule 507.3). The client's simultaneous hidden steps (rule D1.5) do not apply. The draw phase of constructed and the draft step of a draft are still taken by both players at once, and the resource step begins only when both players have put their cards back, or both have drafted (rules 901.5 and rule 501.4a).",
    "see": [
     "501.4",
     "507.3",
@@ -36298,7 +36298,8 @@
     "Both players put their two cards back at the same time, and either may go first.",
     "A player who has put their cards back is offered nothing until the other player has too.",
     "The non-initiative player can neither recycle a card nor activate a resource until the initiative player presses Done.",
-    "In deployment the non-initiative player cannot play a unit until the initiative player is done deploying."
+    "In deployment the non-initiative player cannot play a unit until the initiative player is done deploying.",
+    "In a Competitive draft, an initiative player who has drafted is offered nothing until the other player has drafted too, and then takes the resource step first."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -36306,7 +36307,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "901.9b",
@@ -36316,7 +36317,7 @@
    "sectionTitle": "Constructed",
    "chapterTitle": "9. Multiplayer and Formats",
    "parent": "901.9",
-   "text": "In Competitive Constructed each deck may have a sideboard of up to 7 cards. The limit of 2 copies of a card (rule 901.3) counts the deck and its sideboard together.",
+   "text": "In a match each deck may have a sideboard of up to 7 cards. The limit of 2 copies of a card (rule 901.3) counts the deck and its sideboard together.",
    "see": [
     "901.3"
    ],
@@ -36330,7 +36331,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "901.9c",
@@ -37999,7 +38000,7 @@
    "sectionTitle": "General and Precedence",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D1",
-   "text": "A hidden simultaneous segment is a part of the turn in which both players act at once and neither sees what the other does until both are done. The resource step, the haste step and deployment are hidden simultaneous segments, except in Competitive Constructed, where no step is hidden (rule 901.9a).",
+   "text": "A hidden simultaneous segment is a part of the turn in which both players act at once and neither sees what the other does until both are done. The resource step, the haste step and deployment are hidden simultaneous segments, except under the Competitive rules set, where no step is hidden (rule 901.9a).",
    "see": [
     "501",
     "504",
@@ -38015,7 +38016,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "D1.4a",
@@ -38085,7 +38086,7 @@
    "sectionTitle": "General and Precedence",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D1",
-   "text": "Where the printed rules have the initiative player take the resource step and the haste step first, and the initiative team deploy first (rules 501.4 and rule 507.3), this client runs those steps for both players at once, each hidden from the other (rule D1.4). The non-initiative player neither waits for the initiative player nor sees what they did before acting. This is a house rule of the client. In Competitive Constructed the house rule does not apply, and the printed order holds (rule 901.9a).",
+   "text": "Where the printed rules have the initiative player take the resource step and the haste step first, and the initiative team deploy first (rules 501.4 and rule 507.3), this client runs those steps for both players at once, each hidden from the other (rule D1.4). The non-initiative player neither waits for the initiative player nor sees what they did before acting. This is a house rule of the client, and the rules set it belongs to is called Casual. A draft or a constructed game may instead be played with the Competitive rules set, in which the house rule does not apply and the printed order holds (rule 901.9a).",
    "see": [
     "501",
     "507",
@@ -38101,7 +38102,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "D1.6",
@@ -39656,7 +39657,7 @@
    "sectionTitle": "Undo",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D4",
-   "text": "In Competitive Constructed (rule 901.9), the player taking the resource step, the haste step or deployment may undo their own actions in that step, one at a time, until they finish the step. An undo cannot go back past the start of the step, past an action of the other player, or past an action that drew, searched, shuffled or reordered a deck, looked at a hand, or revealed a hidden card.",
+   "text": "Under the Competitive rules set (rule 901.9a), the player taking the resource step, the haste step or deployment may undo their own actions in that step, one at a time, until they finish the step. An undo cannot go back past the start of the step, past an action of the other player, or past an action that drew, searched, shuffled or reordered a deck, looked at a hand, or revealed a hidden card.",
    "see": [
     "D4.1",
     "D4.3"
@@ -39671,7 +39672,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "D5.1",
@@ -40650,7 +40651,7 @@
    "sectionTitle": "Reveal Timing of Simultaneous Steps",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D6.6",
-   "text": "In constructed, the view each player is sent carries the elements of both players' decks (in Competitive Constructed, only the player's own: rule D8.6i). The client reads only the player's own, to order that player's resource menu (D6.14b).",
+   "text": "In constructed, the view each player is sent carries the elements of both players' decks (in a game of a match, only the player's own: rule D8.6i). The client reads only the player's own, to order that player's resource menu (D6.14b).",
    "see": [
     "D8.6i"
    ],
@@ -40666,7 +40667,7 @@
    ],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "D6.7",
@@ -42592,7 +42593,7 @@
    "sectionTitle": "Tutorial and Single-Card Modes",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D8",
-   "text": "Competitive Constructed (rule 901.9) is played with a match clock and a sideboarding window between games, as below.",
+   "text": "A constructed match (rule 901.9), Casual or Competitive, is played with a match clock and a sideboarding window between games, as below.",
    "see": [
     "901"
    ],
@@ -42603,7 +42604,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": true,
-   "verdict": "untested"
+   "verdict": "stale"
   },
   {
    "num": "D8.6a",

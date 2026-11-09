@@ -147,8 +147,9 @@ export function createGame(
   /** CR D8.1, mode 'constructed' only: a Learn to Play deal (lessondeal.ts) —
    * per-seat hands, draws, stacked decks and Shard income. */
   lessonDeal?: LessonDeal,
-  /** Competitive Constructed (doc 22 §3.1), mode 'constructed' only: the
-   * printed initiative-first step order, and games 2-3's chosen initiative.
+  /** Competitive (doc 22 §3.1): the printed initiative-first step order
+   * (constructed or draft), and a match's games 2-3 chosen initiative
+   * (constructed only).
    * Absent (or empty) is every other game, dealt by exactly the path every
    * game before CC took: the same RNG draws, the same state, byte for byte
    * (800 holds it there). */
@@ -160,8 +161,12 @@ export function createGame(
   if (rules?.sequential !== undefined && rules.sequential !== true) throw new Error('rules.sequential is true or absent');
   if (rules?.initiative !== undefined && rules.initiative !== 0 && rules.initiative !== 1) throw new Error('rules.initiative is a seat');
   const ruled = rules?.sequential === true || rules?.initiative !== undefined;
-  if (ruled && mode !== 'constructed') throw new Error('Competitive Constructed rules need constructed mode');
-  if (ruled && lessonDeal) throw new Error('a lesson deal takes no Competitive Constructed rules');
+  // report #356 (owner, 2026-11-08): Competitive is the rules SET, on Draft as
+  // on Constructed — so the in-turn steps take a draft game too. A chosen
+  // initiative is a match's games 2-3, and a match is constructed.
+  if (rules?.sequential && mode !== 'constructed' && mode !== 'draft') throw new Error('the Competitive rules need constructed or draft mode');
+  if (rules?.initiative !== undefined && mode !== 'constructed') throw new Error('a chosen initiative needs constructed mode');
+  if (ruled && lessonDeal) throw new Error('a lesson deal takes no Competitive rules');
   const lesson = lessonDeal ? sanitizeLessonDeal(lessonDeal) : undefined;
   const elementCount = draftDeal?.elements ?? 3;
   const trio = sanitizeTrio(draftElements ?? defaultElements(elementCount), elementCount);

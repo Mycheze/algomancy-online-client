@@ -53,7 +53,8 @@ export type GameMode = 'shared' | 'draft' | 'constructed';
 export interface GameRules {
   /** CC: the printed initiative-first order for the resource, haste and
    * deploy steps (CR 501.4, 507.3) instead of the client's simultaneous house
-   * rule (Annex D1.5). Constructed only. Stamped on the state as `sequential`. */
+   * rule (Annex D1.5). Constructed or draft — Competitive is the rules set on
+   * both (owner, report #356). Stamped on the state as `sequential`. */
   sequential?: true;
   /** CC games 2-3: the seat the previous game's loser chose to take the
    * initiative. The initiative roll is still DRAWN (and ignored), so the RNG

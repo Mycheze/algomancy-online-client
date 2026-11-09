@@ -126,5 +126,11 @@ test('§4 a restore re-deals with the saved rules, and refuses rules it cannot r
   const again = await import(`../rooms.ts?r822b=${Math.random()}`) as typeof R;
   again.restoreRooms();
   assert.equal(again.getRoom(g2.code), undefined, 'refused rather than re-dealt under the house rules');
-  assert.throws(() => R.restoreRules({ sequential: true }, 'draft'), /cannot read/, 'CC rules belong to constructed only');
+  // report #356: the Competitive rules take a draft too; a chosen initiative is a match's, so constructed only
+  assert.deepEqual(R.restoreRules({ sequential: true }, 'draft'), { sequential: true }, 'a Competitive draft');
+  assert.throws(() => R.restoreRules({ sequential: true, initiative: 0 }, 'draft'), /cannot read/, 'no chosen initiative in a draft');
+  assert.throws(() => R.restoreRules({ initiative: 0 }, 'draft'), /cannot read/, 'nor a Casual draft carrying rules');
+  assert.throws(() => R.restoreRules({ sequential: true }, 'shared'), /cannot read/, 'nor a shared game');
+  assert.deepEqual(R.restoreRules({ initiative: 1 }, 'constructed'), { initiative: 1 }, 'a Casual match\'s game 2');
+  assert.equal(R.restoreRules({}, 'constructed'), undefined, 'an empty rule set is a house-rules game');
 });

@@ -109,11 +109,11 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner call · adopted 2026-10-25 · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 671-placement-warning-badge.test.ts · Example tests: 671-placement-warning-badge.test.ts::CR 802.12 / CT-410: on the board, a Feeble unit clicked into a block column wears the (!) before Confirm, and loses it when moved out, 671-placement-warning-badge.test.ts::CR 606.2e / CT-410: an unmet Alluring duty marks the lured unit, wherever it is · Demonstrated by test: 671-placement-warning-badge.test.ts::CR D1.3 / 606.2e / CT-410: the badge shows exactly when the engine refuses the plan — under an Alluring duty · Key: annexd.general.one-opinion.block-warning</sub>
 
-<a id="rD1.4"></a>**D1.4.** A hidden simultaneous segment is a part of the turn in which both players act at once and neither sees what the other does until both are done. The resource step, the haste step and deployment are hidden simultaneous segments, except in Competitive Constructed, where no step is hidden (rule 901.9a). See rules 501, 504, 507, D6.
+<a id="rD1.4"></a>**D1.4.** A hidden simultaneous segment is a part of the turn in which both players act at once and neither sees what the other does until both are done. The resource step, the haste step and deployment are hidden simultaneous segments, except under the Competitive rules set, where no step is hidden (rule 901.9a). See rules 501, 504, 507, D6.
 
 > *Example: In Competitive Constructed none of the three steps is a hidden simultaneous segment.*
 
-<sub>Basis: Owner call · adopted 2026-11-02; Owner ruling, adopted 2026-08-18, 2026-10-04 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Tests: 434-cr-digital-1.test.ts, 804-cc-no-hidden-step.test.ts · Example test: 804-cc-no-hidden-step.test.ts::CC: hiddenSegment is null in every step, and planningStep names the step · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment — the resource step, the haste step and deployment are hidden simultaneous segments; battle is not · Key: annexd.general.hidden-segment</sub>
+<sub>Basis: Owner call · adopted 2026-11-02, 2026-11-08; Owner ruling, adopted 2026-08-18, 2026-10-04 (quoted from the retired ruling register) · Verified: not verified (the text changed after verification); 2 gate test files · Tests: 434-cr-digital-1.test.ts, 804-cc-no-hidden-step.test.ts · Example test: 804-cc-no-hidden-step.test.ts::CC: hiddenSegment is null in every step, and planningStep names the step · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment — the resource step, the haste step and deployment are hidden simultaneous segments; battle is not · Key: annexd.general.hidden-segment</sub>
 
 <a id="rD1.4a"></a>**D1.4a** The hiding is done by the server's view of the game, the same way hands are hidden. The rules engine itself hides nothing.
 
@@ -127,13 +127,13 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner ruling, adopted 2026-10-04 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment.battle-open — in battle nothing is held: a cast is on the opponent view and in their events at once · Key: annexd.general.hidden-segment.battle-open</sub>
 
-<a id="rD1.5"></a>**D1.5.** Where the printed rules have the initiative player take the resource step and the haste step first, and the initiative team deploy first (rules 501.4 and rule 507.3), this client runs those steps for both players at once, each hidden from the other (rule D1.4). The non-initiative player neither waits for the initiative player nor sees what they did before acting. This is a house rule of the client. In Competitive Constructed the house rule does not apply, and the printed order holds (rule 901.9a). See rules 501, 507, D1.4.
+<a id="rD1.5"></a>**D1.5.** Where the printed rules have the initiative player take the resource step and the haste step first, and the initiative team deploy first (rules 501.4 and rule 507.3), this client runs those steps for both players at once, each hidden from the other (rule D1.4). The non-initiative player neither waits for the initiative player nor sees what they did before acting. This is a house rule of the client, and the rules set it belongs to is called Casual. A draft or a constructed game may instead be played with the Competitive rules set, in which the house rule does not apply and the printed order holds (rule 901.9a). See rules 501, 507, D1.4.
 
 > *Example: The non-initiative player is offered plays at once in deployment, and can finish deploying while the initiative player is still acting.*
 
 > *Example: In Competitive Constructed the non-initiative player is offered nothing in the resource step until the initiative player is done.*
 
-<sub>Basis: Owner call · adopted 2026-10-22, 2026-11-02; Owner ruling, adopted 2026-10-11 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Tests: 21-fixes.test.ts, 802-cc-resource-step.test.ts · Example tests: 21-fixes.test.ts::both seats deploy at once: NIT may act and finish before IT, 802-cc-resource-step.test.ts::CC resource step: the initiative player first, then the non-initiative player · Key: annexd.general.initiative-order</sub>
+<sub>Basis: Owner call · adopted 2026-10-22, 2026-11-02, 2026-11-08; Owner ruling, adopted 2026-10-11 (quoted from the retired ruling register) · Verified: not verified (the text changed after verification); 2 gate test files · Tests: 21-fixes.test.ts, 802-cc-resource-step.test.ts · Example tests: 21-fixes.test.ts::both seats deploy at once: NIT may act and finish before IT, 802-cc-resource-step.test.ts::CC resource step: the initiative player first, then the non-initiative player · Key: annexd.general.initiative-order</sub>
 
 <a id="rD1.6"></a>**D1.6.** In a draft, a player who has made their pick may begin the resource step, activating and recycling, while the other player is still drafting. The printed turn ends each step for every player together (rule 501.4a); this client does not hold the faster player back, because the resource step is hidden and the other player cannot see the head start. See rules 501.4a, D1.4.
 
@@ -552,13 +552,13 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner call · adopted 2026-10-16 · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 1 gate test file · Tests: 488-a-fixed-game-counts.test.ts · Demonstrated by tests: 488-a-fixed-game-counts.test.ts::§2 a fixed game counts: the profile, the rating gate, the card-stats gate, 488-a-fixed-game-counts.test.ts::§3 the match history and the admin games list show the tag, 488-a-fixed-game-counts.test.ts::§4 the league result carries the tag, and a fixed room reports it · Key: annexd.undo.agreed-fix.counts</sub>
 
-<a id="rD4.6"></a>**D4.6.** In Competitive Constructed (rule 901.9), the player taking the resource step, the haste step or deployment may undo their own actions in that step, one at a time, until they finish the step. An undo cannot go back past the start of the step, past an action of the other player, or past an action that drew, searched, shuffled or reordered a deck, looked at a hand, or revealed a hidden card. See rules D4.1, D4.3.
+<a id="rD4.6"></a>**D4.6.** Under the Competitive rules set (rule 901.9a), the player taking the resource step, the haste step or deployment may undo their own actions in that step, one at a time, until they finish the step. An undo cannot go back past the start of the step, past an action of the other player, or past an action that drew, searched, shuffled or reordered a deck, looked at a hand, or revealed a hidden card. See rules D4.1, D4.3.
 
 > *Example: The initiative player activates a resource, recycles a card and exchanges a Prismite: all three can be undone until they press Done, and none of them after.*
 
 > *Example: In deployment a player plays a unit, then a unit that draws a card when it spawns: neither can be undone, but a unit played after the draw can.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 1 gate test file · Owner call · adopted 2026-11-02 · Engine: sequentialStep, ccUndoMark, ccUndoFloor · Tests: 805-cc-undo-until-done.test.ts · Example tests: 805-cc-undo-until-done.test.ts::CC undo: the resource step is undoable back to its start, and only by the seat taking it, 805-cc-undo-until-done.test.ts::CC undo: a draw stands, and everything before it with it · Key: annexd.undo.competitive</sub>
+<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 1 gate test file · Owner call · adopted 2026-11-02 · Engine: sequentialStep, ccUndoMark, ccUndoFloor · Tests: 805-cc-undo-until-done.test.ts · Example tests: 805-cc-undo-until-done.test.ts::CC undo: the resource step is undoable back to its start, and only by the seat taking it, 805-cc-undo-until-done.test.ts::CC undo: a draw stands, and everything before it with it · Key: annexd.undo.competitive</sub>
 
 <a id="rD5"></a>
 ### D5. Recap and Playback
@@ -810,13 +810,13 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner ruling, adopted 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 260-cost-ramp-and-bin-targets.test.ts · Example test: 260-cost-ramp-and-bin-targets.test.ts::CR D6.6d the opponent sees the target too, which is the half the report is really about · Key: annexd.reveal.public-zones.bin</sub>
 
-<a id="rD6.6e"></a>**D6.6e** In constructed, the view each player is sent carries the elements of both players' decks (in Competitive Constructed, only the player's own: rule D8.6i). The client reads only the player's own, to order that player's resource menu (D6.14b). See rule D8.6i.
+<a id="rD6.6e"></a>**D6.6e** In constructed, the view each player is sent carries the elements of both players' decks (in a game of a match, only the player's own: rule D8.6i). The client reads only the player's own, to order that player's resource menu (D6.14b). See rule D8.6i.
 
 > *Example: A fire deck plays a water deck in constructed. Each player is sent that one deck is fire and the other water.*
 
 > *Example: In a Competitive Constructed game, neither player is sent the other's deck elements.*
 
-<sub>Basis: Owner call · adopted 2026-10-25; Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 3 gate test files · Tests: 435-cr-digital-2.test.ts, 667-draft-any-element-resource.test.ts, 820-cc-no-leak-over-the-wire.test.ts · Example tests: 435-cr-digital-2.test.ts::cr:annexd.reveal.public-zones.deck-elements — in constructed, the deck elements of both players are in the view each player is sent, 820-cc-no-leak-over-the-wire.test.ts::§1-§5 no message names the opponent sideboard, deck id or deck elements · Key: annexd.reveal.public-zones.deck-elements</sub>
+<sub>Basis: Owner call · adopted 2026-10-25; Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: not verified (the text changed after verification); 3 gate test files · Tests: 435-cr-digital-2.test.ts, 667-draft-any-element-resource.test.ts, 820-cc-no-leak-over-the-wire.test.ts · Example tests: 435-cr-digital-2.test.ts::cr:annexd.reveal.public-zones.deck-elements — in constructed, the deck elements of both players are in the view each player is sent, 820-cc-no-leak-over-the-wire.test.ts::§1-§5 no message names the opponent sideboard, deck id or deck elements · Key: annexd.reveal.public-zones.deck-elements</sub>
 
 <sub>Discrepancies: D-U24-2 (discrepancies.md)</sub>
 
@@ -1392,9 +1392,9 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner call · adopted 2026-11-02 · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 1 gate test file · Tests: 825-cc-match-concession-weight.test.ts · Example tests: 825-cc-match-concession-weight.test.ts::§1 ⭐ a match decided in or right after game 1 weighs as game 1 does (CR D8.5), 825-cc-match-concession-weight.test.ts::§2 ⭐ two or more games weigh normal, whatever the deciding concede, 825-cc-match-concession-weight.test.ts::§3 a match conceded before game 1 was dealt is a walkover by the conceder, 825-cc-match-concession-weight.test.ts::§4 the stamp is on the match loser, whoever conceded game 1 · Key: annexd.modes.concession.match</sub>
 
-<a id="rD8.6"></a>**D8.6.** Competitive Constructed (rule 901.9) is played with a match clock and a sideboarding window between games, as below. See rule 901. *(Untested: no executed test demonstrates it.)*
+<a id="rD8.6"></a>**D8.6.** A constructed match (rule 901.9), Casual or Competitive, is played with a match clock and a sideboarding window between games, as below. See rule 901. *(Untested: no executed test demonstrates it.)*
 
-<sub>Basis: Owner call · adopted 2026-11-02 · Verified: untested in round 4; verifier ran no tests; no gate test · Key: annexd.modes.competitive</sub>
+<sub>Basis: Owner call · adopted 2026-11-02, 2026-11-08 · Verified: not verified (the text changed after verification); no gate test · Key: annexd.modes.competitive</sub>
 
 <a id="rD8.6a"></a>**D8.6a** By default each player has 45 minutes for the whole match, not for each game. The player who creates the match may choose another bank or no clock; a league match always keeps the default. A player whose time runs out loses the match. See rule D3.
 

@@ -350,6 +350,10 @@ class NetBackend implements Backend {
   /** game 1: the saved deck this seat registers (re-sent on a reconnect, where
    * the server ignores it: only the creating join and a `pick` join register) */
   ccDeck: string | null = new URLSearchParams(location.search).get('ccdeck');
+  /** report #356: the creating link's rules set — `casual` on a Casual match's
+   * (with `bo` + `ccdeck`), `competitive` on a Competitive draft's. The server
+   * reads it only on the join that creates the room. */
+  private linkRules: string | null = new URLSearchParams(location.search).get('rules');
   /** CR D4.6: the server says this seat can undo now (a CC step, before Done) */
   ccUndo = false;
   /** the match this room is a game of, as the last push described it */
@@ -516,6 +520,7 @@ class NetBackend implements Backend {
       // which is what makes the game count toward your stats
       ...(acct.token() ? { token: acct.token() } : {}),
       mode: this.mode, els: this.els,
+      ...(this.linkRules === 'competitive' && this.mode === 'draft' ? { rules: 'competitive' } : {}),
       // BL-26: rides the join exactly as `mode` and `els` do, and is ignored
       // for a room that already exists (server/rooms.ts joinableRoom)
       ...(this.clock !== undefined ? { clock: this.clock } : {}),
@@ -540,7 +545,7 @@ class NetBackend implements Backend {
       // presets — and only when this seat chose one; the creating join adds
       // the Best of. Games 2-3 bring nothing.
       ...(this.cc
-        ? { ...(this.ccBestOf ? { cc: { bestOf: this.ccBestOf } } : {}), ...(this.ccDeck ? { deckId: this.ccDeck } : {}) }
+        ? { ...(this.ccBestOf ? { cc: { bestOf: this.ccBestOf, ...(this.linkRules === 'casual' ? { casual: true } : {}) } } : {}), ...(this.ccDeck ? { deckId: this.ccDeck } : {}) }
         : this.single
         ? (this.singleArmed && sc.chosen() ? { single: sc.chosen() } : {})
         : deck ? { deck: deck.cards, ...(deck.id ? { deckId: deck.id } : {}) } : {}),
@@ -10370,7 +10375,9 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
       const j = await r.json() as { code?: string; error?: string };
       if (!r.ok || !j.code) { uiError = j.error ?? 'the server refused these rules'; renderHome(); return; }
       uiError = '';
-      location.search = `?ws=1&room=${encodeURIComponent(j.code)}&seat=0&mode=${mode}${single ? '&single=1' : ''}${els}${clock}`;
+      // report #356: a Competitive draft says so on the creating link
+      const rules = mode === 'draft' && btn.dataset['rules'] === 'competitive' ? '&rules=competitive' : '';
+      location.search = `?ws=1&room=${encodeURIComponent(j.code)}&seat=0&mode=${mode}${single ? '&single=1' : ''}${els}${clock}${rules}`;
     }).catch(() => { uiError = 'could not reach the server'; renderHome(); });
     return true;
   }

@@ -1027,7 +1027,7 @@
     "key": "annexd.reveal.public-zones.deck-elements",
     "parent": "annexd.reveal.public-zones",
     "order": 5,
-    "text": "In constructed, the view each player is sent carries the elements of both players' decks (in Competitive Constructed, only the player's own: rule annexd.modes.competitive.no-peeking). The client reads only the player's own, to order that player's resource menu (D6.14b).",
+    "text": "In constructed, the view each player is sent carries the elements of both players' decks (in a game of a match, only the player's own: rule annexd.modes.competitive.no-peeking). The client reads only the player's own, to order that player's resource menu (D6.14b).",
     "examples": [
       {
         "text": "A fire deck plays a water deck in constructed. Each player is sent that one deck is fire and the other water.",
@@ -4399,7 +4399,7 @@
     "key": "annexd.modes.competitive",
     "parent": "D8",
     "order": 6,
-    "text": "Competitive Constructed (rule formats.constructed.competitive) is played with a match clock and a sideboarding window between games, as below.",
+    "text": "A constructed match (rule formats.constructed.competitive), Casual or Competitive, is played with a match clock and a sideboarding window between games, as below.",
     "examples": [],
     "see": [
       "901"
@@ -4413,6 +4413,11 @@
           "quote": "The clock becomes a true chess clock in CC with 45 minutes per player, per match, plus 120 seconds for sideboarding (or until they both hit submit and ready)",
           "adopted": "2026-11-02",
           "from": "chat 2026-11-02"
+        },
+        {
+          "quote": "Constructed should have Best of 1 vs Best of 3 for both competitive and casual (since it doesn't matter what rules set is being used, it just adds sideboarding).",
+          "adopted": "2026-11-08",
+          "from": "report #356, 2026-11-08 (home page)"
         }
       ],
       "engine": [],

@@ -10578,11 +10578,11 @@ order.
 
 <a id="r901.8c"></a>**901.8c** [Removed: duplicate of Annex D8.2 (CT-389)] Replaced by D8.2c.
 
-<a id="r901.9"></a>**901.9.** Competitive Constructed is constructed played as a match: either one game, or best of three, which the first player to win two games wins. The rules below add to the rest of rule 901 for it. See rule D8.6. *(Untested: no executed test demonstrates it.)*
+<a id="r901.9"></a>**901.9.** Constructed may be played as a match: either one game, or best of three, which the first player to win two games wins. A match is played with either rules set, Casual or Competitive (rule D1.5); the length and the rules set are chosen apart. The rules below add to the rest of rule 901 for a match, and for the Competitive rules set. See rule D8.6. *(Untested: no executed test demonstrates it.)*
 
-<sub>Basis: Owner call · adopted 2026-11-02 · Verified: untested in round 4; verifier ran no tests; no gate test · Key: formats.constructed.competitive</sub>
+<sub>Basis: Owner call · adopted 2026-11-02, 2026-11-08 · Verified: not verified (the text changed after verification); no gate test · Key: formats.constructed.competitive</sub>
 
-<a id="r901.9a"></a>**901.9a** In Competitive Constructed the resource step, the haste step and deployment are taken in the printed order: the initiative player takes each of them first while the non-initiative player waits and watches, and then the non-initiative player takes it (rules 501.4 and rule 507.3). The client's simultaneous hidden steps (rule D1.5) do not apply. The draw phase is still taken by both players at once, and the resource step begins only when both players have put their cards back (rules 901.5 and rule 501.4a). See rules 501.4, 507.3, D1.5.
+<a id="r901.9a"></a>**901.9a** Under the Competitive rules set, in a constructed game or a draft game, the resource step, the haste step and deployment are taken in the printed order: the initiative player takes each of them first while the non-initiative player waits and watches, and then the non-initiative player takes it (rules 501.4 and rule 507.3). The client's simultaneous hidden steps (rule D1.5) do not apply. The draw phase of constructed and the draft step of a draft are still taken by both players at once, and the resource step begins only when both players have put their cards back, or both have drafted (rules 901.5 and rule 501.4a). See rules 501.4, 507.3, D1.5.
 
 > *Example: Both players put their two cards back at the same time, and either may go first.*
 
@@ -10592,15 +10592,17 @@ order.
 
 > *Example: In deployment the non-initiative player cannot play a unit until the initiative player is done deploying.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 6 tests, all passed; 3 gate test files · Printed: Manual p.27; Rulebook 2023 p.5; Rulebook 2023 p.5; Manual p.38 · Owner call · adopted 2026-11-02 · Engine: E.planning, E.hasting, E.deploying, legalActions, createGame · Tests: 802-cc-resource-step.test.ts, 803-cc-haste-and-deploy.test.ts, 804-cc-no-hidden-step.test.ts · Example tests: 802-cc-resource-step.test.ts::CC draw phase: both players bottom at once, the non-initiative player may go first, 802-cc-resource-step.test.ts::CC resource step: it opens only when both players have bottomed, 802-cc-resource-step.test.ts::CC resource step: the initiative player first, then the non-initiative player, 803-cc-haste-and-deploy.test.ts::CC deployment: only the initiative player deploys, then the other, and the log says so · Demonstrated by test: 803-cc-haste-and-deploy.test.ts::CC haste step: the initiative player first, then the non-initiative player · Key: formats.constructed.competitive.order</sub>
+> *Example: In a Competitive draft, an initiative player who has drafted is offered nothing until the other player has drafted too, and then takes the resource step first.*
 
-<a id="r901.9b"></a>**901.9b** In Competitive Constructed each deck may have a sideboard of up to 7 cards. The limit of 2 copies of a card (rule 901.3) counts the deck and its sideboard together. See rule 901.3.
+<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 4 gate test files · Printed: Manual p.27; Rulebook 2023 p.5; Rulebook 2023 p.5; Manual p.38 · Owner call · adopted 2026-11-02, 2026-11-08 · Engine: E.planning, E.hasting, E.deploying, legalActions, createGame · Tests: 802-cc-resource-step.test.ts, 803-cc-haste-and-deploy.test.ts, 804-cc-no-hidden-step.test.ts · Example tests: 802-cc-resource-step.test.ts::CC draw phase: both players bottom at once, the non-initiative player may go first, 802-cc-resource-step.test.ts::CC resource step: it opens only when both players have bottomed, 802-cc-resource-step.test.ts::CC resource step: the initiative player first, then the non-initiative player, 803-cc-haste-and-deploy.test.ts::CC deployment: only the initiative player deploys, then the other, and the log says so, 1193-competitive-draft.test.ts::Competitive draft: the initiative player who drafts first waits for the other before the resource step · Demonstrated by test: 803-cc-haste-and-deploy.test.ts::CC haste step: the initiative player first, then the non-initiative player · Key: formats.constructed.competitive.order</sub>
+
+<a id="r901.9b"></a>**901.9b** In a match each deck may have a sideboard of up to 7 cards. The limit of 2 copies of a card (rule 901.3) counts the deck and its sideboard together. See rule 901.3.
 
 > *Example: A deck registered with a sideboard of 7 cards is accepted; one with a sideboard of 8 cards is refused.*
 
 > *Example: A deck with one copy of a card and a sideboard with two more copies of it is refused: that is three copies across the two.*
 
-<sub>Basis: Owner call · adopted 2026-11-02 · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Tests: 808-match-deck-registration.test.ts · Example tests: 808-match-deck-registration.test.ts::§2 the sideboard holds at most seven cards, 808-match-deck-registration.test.ts::§3 the copy cap counts the main deck and the sideboard together · Key: formats.constructed.competitive.sideboard</sub>
+<sub>Basis: Owner call · adopted 2026-11-02, 2026-11-08 · Verified: not verified (the text changed after verification); 1 gate test file · Tests: 808-match-deck-registration.test.ts · Example tests: 808-match-deck-registration.test.ts::§2 the sideboard holds at most seven cards, 808-match-deck-registration.test.ts::§3 the copy cap counts the main deck and the sideboard together · Key: formats.constructed.competitive.sideboard</sub>
 
 <a id="r901.9c"></a>**901.9c** Between the games of a match a player may exchange any cards between their deck and their sideboard, in any numbers, as long as the deck keeps at least 30 cards (rule 901.2) and the sideboard at most 7. No exchange is made before the first game. See rule 901.2.
 
@@ -10914,13 +10916,13 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 | verdict | rules |
 |---|---|
-| confirmed | 1848 |
+| confirmed | 1842 |
 | partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
-| untested | 3 |
+| untested | 1 |
 | not verified | 3 |
-| text changed | 8 |
+| text changed | 16 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
 

@@ -91,6 +91,12 @@ export interface Match {
   voided?: { at: number; why: string };
   league?: RoomLeague;
   rated?: true;
+  /** report #356 (owner, 2026-11-08): Best of is apart from the rules set, so
+   *  a match may be CASUAL — its games played with both players' resource,
+   *  haste and deploy steps at once (the house rule, Annex D1.5), the match's
+   *  sideboarding, clock and initiative choice unchanged. Absent on every
+   *  Competitive match and on every file written before it. */
+  casual?: true;
 }
 
 const matches = new Map<string, Match>();

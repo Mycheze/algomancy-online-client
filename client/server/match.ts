@@ -112,6 +112,10 @@ const no = (why: string): MatchOutcome => ({ ok: false, why });
 
 /* ── GAME 1 ────────────────────────────────────────────────────────────── */
 
+/** report #356: a match's games take the Competitive rules (each step in turn)
+ * unless the match is Casual, whose games take the house rule (both at once) */
+export const matchRules = (m: { casual?: boolean }): { sequential?: true } => (m.casual ? {} : { sequential: true });
+
 /**
  * What a seat registers for a match (docs/22 §5.1): a SAVED deck, re-read from
  * the account and checked with checkMatchDeck (collection.ts matchDeckForPlay);
@@ -135,10 +139,11 @@ export const reserveMatchId = (): string => newMatchId();
 
 /**
  * Make the match around its freshly created room 1 (main.ts, the creating
- * join). The room already carries `rules: {sequential}` and `match: {id, 1}`.
+ * join). The room already carries its rules (`matchRules`) and `match: {id, 1}`.
  */
-export function startMatch(room: Room, id: string, bestOf: 1 | 3, now = Date.now()): Match {
+export function startMatch(room: Room, id: string, bestOf: 1 | 3, now = Date.now(), casual = false): Match {
   const m: Match = {
+    ...(casual ? { casual: true as const } : {}),
     id, bestOf, users: [null, null], names: [...room.names] as [string, string], createdAt: now,
     registered: [null, null], current: [null, null], games: [],
     banks: [...room.clockMs] as [number, number],
@@ -223,7 +228,7 @@ function nextGame(m: Match, from: Room, winner: Seat, now: number): Room {
   const code = hooks.code();
   const next = createRoom(code, (Math.random() * 1e9) >>> 0, [...m.names] as [string, string], 'constructed',
     undefined, undefined, undefined, m.clockStart, undefined, false, {
-      rules: { sequential: true }, match: { id: m.id, game: m.games.length + 1 },
+      rules: matchRules(m), match: { id: m.id, game: m.games.length + 1 },
       clockMs: [...m.banks] as [number, number], users: [...m.users] as [string | null, string | null],
       ...(m.league ? { league: m.league } : {}), ...(m.rated ? { rated: true } : {}),
     });
@@ -303,7 +308,7 @@ function deal(m: Match, room: Room): void {
   if (b.initiative === null || !c0 || !c1) return;
   // part of the deal: the chosen seat holds the initiative (the roll is still
   // drawn — engine createGame — so the shuffle is the seed's)
-  room.rules = { sequential: true, initiative: b.initiative };
+  room.rules = { ...matchRules(m), initiative: b.initiative };
   setRoomDeck(room, 0, c0.main, m.registered[0]?.deckId ?? null);
   setRoomDeck(room, 1, c1.main, m.registered[1]?.deckId ?? null);
   m.phase = 'game';
@@ -500,6 +505,8 @@ export function reconcileMatches(now = Date.now()): void {
  */
 export interface MatchLobbyInfo {
   id: string; bestOf: 1 | 3;
+  /** report #356: a Casual match (its games take both players' steps at once) */
+  casual?: true;
   /** the game about to be dealt, 1-based */
   game: number;
   score: [number, number]; names: [string, string];
@@ -527,7 +534,7 @@ export function matchLobbyInfo(room: Room, seat: Seat): MatchLobbyInfo | undefin
   const cur = m.current[seat];
   const b = m.between?.code === room.code ? m.between : undefined;
   return {
-    id: m.id, bestOf: m.bestOf, game: room.match.game,
+    id: m.id, bestOf: m.bestOf, ...(m.casual ? { casual: true as const } : {}), game: room.match.game,
     score: matchScore(m), names: [...m.names] as [string, string],
     banks: [...m.banks] as [number, number], clockStart: m.clockStart,
     phase: m.phase,

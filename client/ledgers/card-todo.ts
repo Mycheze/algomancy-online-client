@@ -195,16 +195,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 546, area: "client", severity: "major",
-    title: "Casual vs Competitive is offered as friend's room vs match, not as the rules set (simultaneous or in turn) apart from Best of 1/3",
-    detail: "Report #356 (mycheze, home, 2026-11-08, ux, medium) — the owner's design decision, kept whole in BL-73's `said`: \"Casual = simultaneous actions during simultaneous phases / Competitive = entirely turn based, INT while NIT watches, then swap / Best of 1 or Best of 3 doesn't really matter for that, that should be a separate slider. So both draft AND constructed should have the competitive vs casual slider … add a little hover tool tip …\". Today the Format switch exists only on Constructed (ui/pages/home.ts constructedRowsHtml): Casual creates a friend's room, Competitive a match (Best of 1/3, sideboard, sign-in, and the in-turn rule stamped by server/match.ts as `rules: { sequential: true }`), with a subtext line instead of a tooltip.",
-    evidence: "Report #356 (page: home, no room). Code read 2026-11-08 (steward triage): the in-turn rule reaches a game only through a match (server/match.ts ~226, ~306), and the engine's GameRules.sequential is documented \"Constructed only\" (engine/src/types.ts ~56).",
-    fix: "BL-73 is the plan (it carries the questions to settle in code: sequential in draft, a Casual Best of 3, a Competitive single game). This entry closes when BL-73's doneWhen lines are met.",
-    proof: () => still('ui/pages/home.ts', "'A sideboard of up to 7, swapped between games. Players take each step in turn.'"),
-    reportId: 356,
-    status: 'open',
-  },
-  {
     id: 549, area: "client", severity: "minor",
     title: "Big Glimpse Card's caster chooses a pile from two text buttons, not from the two piles shown as cards",
     detail: "Report #360 (mycheze, MNCM, 2026-11-09, ux, medium): \"The new \\\"splitting\\\" UI for Big Glimpse Card is much better now! It's very easy to use and understand. But it should be basically the same for the chooser. Instead of giving them two buttons with a list of options, it should present them with two modal piles of cards to choose from with buttons below to \\\"Put Pile 1 into your hand\\\" or \\\"Put Pile 2 into your hand\\\" (and below, in smaller text \\\"Recycle the rest\\\"). Choices and actions should be visual as much as possible!\" The splitter's half is CT-539 (ui/pickset.ts splitHtml, group 'split', driven by the `pickSet` hint on each `split:k` question). The caster's half is the engine's `ctx.choose('pile', …)` in engine/src/cards/sets/batch-hybrids-ld-a.ts (Big Glimpse Card): a payOrDecline with two options whose labels are the pile contents as text (`Pile 1: A, B, …`) and no `card` on either option and no display hint, so the ordinary decision bar draws two long text buttons.",

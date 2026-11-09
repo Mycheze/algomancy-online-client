@@ -779,8 +779,10 @@ export interface Room {
   league?: RoomLeague;
   /**
    * COMPETITIVE CONSTRUCTED (docs/22 §2.3) — PART OF THE DEAL, like `custom`.
-   * `{sequential: true}` on every game of a CC match; games 2–3 add the
-   * `initiative` the previous game's loser chose. Every deal site in this file
+   * `{sequential: true}` on every game of a Competitive match, and on a
+   * Competitive draft room (report #356: Competitive is the rules SET, on
+   * draft too); games 2–3 of a match add the `initiative` the previous game's
+   * loser chose — alone, in a Casual match. Every deal site in this file
    * passes it (fresh / rebuild), and test 822 scans for one that forgets.
    * Absent on every other room. A saved value this build cannot read THROWS on
    * restore (restoreRules), never deals a standard game.
@@ -2628,15 +2630,20 @@ export function codeTaken(code: string): boolean {
  * banks the match carried out of the previous game (`clockMs`). Constructed
  * only; a CC room with no creator deck waits on the placeholder deck. */
 export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], scenario?: string, clockStart: number | null = CLOCK_START_MS, customIn?: RoomCustom, single = false,
-  cc?: { rules: GameRules; match: RoomMatch; clockMs?: [number, number]; users?: [string | null, string | null]; league?: RoomLeague; rated?: boolean }): Room {
+  /** a match's game (docs/22), or — no `match` — a Competitive draft room's rules (report #356) */
+  cc?: { rules?: GameRules; match?: RoomMatch; clockMs?: [number, number]; users?: [string | null, string | null]; league?: RoomLeague; rated?: boolean }): Room {
   // BL-43: custom rules belong to a live draft, and never to a scenario deal
   const custom = mode === 'draft' && !scenario ? customIn : undefined;
   const trio = sanitizeTrio(els, roomElementCount({ custom }));
-  if (cc && (mode !== 'constructed' || scenario || single)) throw new IllegalAction('a Competitive Constructed room is a plain constructed room');
-  if (mode === 'constructed' && !creatorDeck && !cc) throw new IllegalAction('a constructed room needs a deck');
+  if (cc?.match && (mode !== 'constructed' || scenario || single)) throw new IllegalAction('a match room is a plain constructed room');
+  if (cc && !cc.match && (mode !== 'draft' || scenario || cc.rules?.sequential !== true || cc.rules.initiative !== undefined)) {
+    throw new IllegalAction('only a match or a Competitive draft room carries rules');
+  }
+  if (mode === 'constructed' && !creatorDeck && !cc?.match) throw new IllegalAction('a constructed room needs a deck');
   const decks: [CardName[] | null, CardName[] | null] = [null, null];
-  const rules = cc?.rules;
-  const placeholder = creatorDeck ?? (cc ? leaguePlaceholderDeck() : undefined);
+  // an empty rule set is no rules: the room deals, saves and replays as a house-rules game
+  const rules = cc?.rules && (cc.rules.sequential || cc.rules.initiative !== undefined) ? { ...cc.rules } : undefined;
+  const placeholder = creatorDeck ?? (cc?.match ? leaguePlaceholderDeck() : undefined);
   const { state, events } = mode === 'constructed'
     ? fresh(seed, names, mode, trio, [placeholder!, placeholder!], scenario, custom?.deal, rules)
     : fresh(seed, names, mode, trio, undefined, scenario, custom?.deal, rules);
@@ -2653,7 +2660,8 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     // and, for a game after the first, the match's two accounts (stamped
     // before either client connects, as createRematch does), its league tag
     // and whether it is rated
-    ...(cc ? { rules: { ...cc.rules }, match: { ...cc.match } } : {}),
+    ...(rules ? { rules } : {}),
+    ...(cc?.match ? { match: { ...cc.match } } : {}),
     ...(cc?.league ? { league: { ...cc.league } } : {}),
     ...(cc?.rated ? { rated: true } : {}),
     lobby: mode === 'draft' && !els ? freshLobby() : null,
@@ -2854,8 +2862,9 @@ export function seatVerdict(room: Room, requested: number | undefined, me: strin
  * hand their opponent a three-second game by editing a link.
  */
 export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], clockStart: number | null = CLOCK_START_MS, single = false,
-  /** docs/22 §5.1: a CC match's game 1, created by its creator's join (server/match.ts) */
-  cc?: { rules: GameRules; match: RoomMatch }): Room | null {
+  /** docs/22 §5.1: a match's game 1, created by its creator's join (server/match.ts);
+   * or, no `match`, a Competitive draft room's rules (report #356) */
+  cc?: { rules?: GameRules; match?: RoomMatch }): Room | null {
   const existing = rooms.get(code);
   if (existing) return existing;
   pruneReservations();
@@ -2869,7 +2878,8 @@ export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Elem
   // not consulted. Only a live draft carries rules; any other mode plays standard.
   const custom = mode === 'draft' ? reservation.custom : undefined;
   return createRoom(code, (Math.random() * 1e9) >>> 0, undefined, mode, custom ? reservation.els : els, creatorDeck,
-    undefined, clockStart, custom, single, mode === 'constructed' && !single ? cc : undefined);
+    undefined, clockStart, custom, single,
+    mode === 'constructed' && !single && cc?.match ? cc : mode === 'draft' && !cc?.match ? cc : undefined);
 }
 
 /** Apply an action to the room's authoritative state and record it. Throws
@@ -4382,7 +4392,9 @@ export function createRematch(old: Room, code: string): Room {
     ? createRoom(code, seed, [...old.names], old.mode, old.els, old.decks[0]!, undefined, old.clockStart, undefined, !!old.single)
     // BL-43: and a custom draft keeps its rules — the same resolved deal, not a re-resolution
     : createRoom(code, seed, [...old.names], old.mode, old.mode === 'draft' ? undefined : old.els,
-      undefined, undefined, old.clockStart, old.custom);
+      undefined, undefined, old.clockStart, old.custom, false,
+      // report #356: a Competitive draft's rematch is Competitive too
+      old.mode === 'draft' && old.rules?.sequential ? { rules: { sequential: true } } : undefined);
   if (old.mode === 'constructed' && old.decks[0] && old.decks[1]) {
     room.decks = [[...old.decks[0]!], [...old.decks[1]!]];
     room.deckIds = [...old.deckIds];
