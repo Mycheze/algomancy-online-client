@@ -975,7 +975,7 @@
       },
       {
         "text": "In a Competitive draft, an initiative player who has drafted is offered nothing until the other player has drafted too, and then takes the resource step first.",
-        "test": "1193-competitive-draft.test.ts::Competitive draft: the initiative player who drafts first waits for the other before the resource step"
+        "test": "1195-competitive-draft.test.ts::Competitive draft: the initiative player who drafts first waits for the other before the resource step"
       }
     ],
     "see": [

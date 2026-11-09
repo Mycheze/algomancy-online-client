@@ -343,7 +343,7 @@ const OPEN: LedgerEntry[] = [
     status: 'fixed',
     guards: [
       "960-page-home-html.test.ts::960 §4 Constructed: Casual and Competitive",
-      "1194-rules-set-apart-from-best-of.test.ts::1194 §1-§3 the rules set apart from Best of: a Casual match, and a Competitive draft",
+      "1196-rules-set-apart-from-best-of.test.ts::1196 §1-§3 the rules set apart from Best of: a Casual match, and a Competitive draft",
     ],
     note: "Fixed 2026-11-09 (steward, staged): Draft and Constructed each choose the rules set (Casual = both at once, Competitive = in turn) with a tooltip; Constructed chooses Best of 1 or 3 apart from it (a Casual Best of 3 is a match played simultaneously; a Competitive draft plays in turn). CT-546. Triage: An owner design decision, filed as work: the home page's Constructed Format switch today means friend's room vs match (Competitive is Best of 1/3 with a sideboard, and only a match room plays in turn, server/match.ts `rules: { sequential: true }`). He separates the rules set (simultaneous vs in turn, on Draft AND Constructed, explained by a tooltip) from Best of 1/3 (Constructed, either rules set). Too big for a triage; his words are kept whole in BL-73 (CT-546 carries the report).",
   },

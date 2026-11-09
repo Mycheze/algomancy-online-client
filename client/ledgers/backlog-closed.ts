@@ -19,8 +19,8 @@ export const CLOSED: Entry[] = [
       commit: '301ccca0',
       guards: [
         '960-page-home-html.test.ts::960 §4 Constructed: Casual and Competitive',
-        '1194-rules-set-apart-from-best-of.test.ts::1194 §1-§3 the rules set apart from Best of: a Casual match, and a Competitive draft',
-        '1193-competitive-draft.test.ts::Competitive draft: the draft step is both players at once, and the resource step waits for both',
+        '1196-rules-set-apart-from-best-of.test.ts::1196 §1-§3 the rules set apart from Best of: a Casual match, and a Competitive draft',
+        '1195-competitive-draft.test.ts::Competitive draft: the draft step is both players at once, and the resource step waits for both',
       ],
     },
     track: 'feature',

@@ -1,4 +1,4 @@
-/* 1194 — REPORT #356 (owner, 2026-11-08): Casual and Competitive are the
+/* 1196 — REPORT #356 (owner, 2026-11-08): Casual and Competitive are the
  * RULES SET, and Best of is its own choice.
  *
  *   "Casual = simultaneous actions during simultaneous phases / Competitive =
@@ -23,8 +23,8 @@ import { ccWire, joinNext, type Msg } from './cc-wire.ts';
 
 const sleep = (ms: number): Promise<void> => new Promise(r => setTimeout(r, ms));
 
-test('1194 §1-§3 the rules set apart from Best of: a Casual match, and a Competitive draft', async () => {
-  const w = await ccWire('t1194');
+test('1196 §1-§3 the rules set apart from Best of: a Casual match, and a Competitive draft', async () => {
+  const w = await ccWire('t1196');
   const [ann, bo] = w.people as [typeof w.people[0], typeof w.people[0]];
   /** a Best of 3 created with `cc`, both registered; game 1 as each seat sees it */
   const match = async (cc: Record<string, unknown>) => {
