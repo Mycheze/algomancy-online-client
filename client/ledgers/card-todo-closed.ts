@@ -3463,7 +3463,7 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       '155-hand-affordances.test.ts::a playable cached card is drawn at the right of the hand AND left in the cache row',
       '155-hand-affordances.test.ts::clicking the copy beside the hand plays the cached card',
-      '155-hand-affordances.test.ts::a cached card that is NOT playable now stays in the cache row and out of the hand',
+      '155-hand-affordances.test.ts::a cached card with no permission this turn stays out of the hand strip',
     ],
     status: 'done',
   },
@@ -15074,6 +15074,21 @@ export const CLOSED: TodoEntry[] = [
       '341-pickset-modal.test.ts::Big Glimpse Card: all seven in pile 1 sends seven answers and no Done',
     ],
     closed: "FIXED 2026-11-09 (steward). The split question carries a display-only pick-set hint (Decision.pickSet, group 'split', no mana budget), and ui/pickset.ts draws it as two piles: all the revealed cards start in pile 2, a tap moves a card to the other pile as often as the player likes, and Confirm the piles answers the engine's own one-card questions in a row, each found BY VALUE in its rebuilt question (the revealed index), then Done splitting. The engine's questions and answers are unchanged, so the action log and every saved game replay as before (PBNT included). The answer chain, which stopped after a second answer (Wake the Dead and Tides ask for two at most), now runs to the set's max. A dialog reopened part-way through (a reload mid-chain) shows the cards already in pile 1 there, fixed (Decision.earlier). Why nothing caught it: it was a feature request; the dialog existed only for the two choose-two cards. Mutations: the chain stopping after its second answer turned the pile-1-by-value and all-seven tests red; the engine hint removed turned all six Big Glimpse dialog tests red. No browser on the box: the layout is read, not seen.",
+    status: 'done',
+  },
+  {
+    id: 547, area: "client", severity: "minor",
+    title: "a cached card you may still use this turn shows beside your hand only at the instants it can be played, so it is easy to miss",
+    detail: "Report #358 (mycheze, CNDX, 2026-11-08, ux, medium): \"Cached cards that are playable in a turn should probably ALWAYS appear to the right of the hand (even when not playable due to timing restrictions or something), but with the same \\\"playable/not playable\\\" UI that cards normally have in the hand. It's too easy to miss that it appears in your hand ONLY for brief moments.\" The hand-side strip (ui/main.ts handCachedHtml ~line 3698, CT-50 / report #103) draws only `playableCachedIndexes(legalFor(p))` — the entries with a legal offer THIS instant (ui/inspect.ts ~294) — so a glimpsed card whose timing is shut (a battle spell in deployment, a unit during battle) or that has no target yet vanishes from beside the hand and comes back at the next window. The engine already has the predicate the owner means: `cachePermission(seat, i)` is 'glimpse' or 'prophecy' while the entry may be used at all (the cache chip, `cacheChip`, reads it), and ui/inspect.ts cacheBlockReason already names why a live entry cannot be played right now ('timing', 'mana', 'no-target').",
+    evidence: "Report #358; CNDX fetched and replayed 2026-11-08 (steward triage): 224 actions; today's engine refuses a redundant pass at [83] (the 2026-11-08 priority changes; --as-recorded: every difference heals and the final board is identical), and the report was filed at [171], turn 5 battle, attack window. In the game mycheze glimpsed Celestial Purge on turn 4 and played it at once; the note reads as the general rule, not one card. Verified by reading: the strip's filter above is the only gate, and it is the legal-action list.",
+    fix: "Draw every cached entry with a live permission (`cachePermission(p, i)` non-null) in the hand-side strip, ringed as playable only when it is in playableCachedIndexes, and otherwise dark like an unplayable hand card, with cacheBlockReason as its title (\"…only during battle\"). Keep the one `data-act=\"cache\"` click and the no-`anim`-key rule from the strip's comment. A ui test: a glimpsed battle spell in deployment is in the strip, not ringed; in battle it is ringed; a spent entry is not in the strip.",
+    proof: () => still('ui/main.ts', "const idx = playableCachedIndexes(legalFor(p)).filter(i => cache[i]);"),
+    reportId: 358,
+    guards: [
+      "155-hand-affordances.test.ts::a cached card you may play this turn but not this step stays beside the hand, dark",
+      "155-hand-affordances.test.ts::a cached card with no permission this turn stays out of the hand strip",
+    ],
+    closed: "FIXED 2026-11-09 (steward). ui/main.ts handCachedHtml draws every cache entry the seat holds a permission for (`cachePermission` non-null: a live glimpse or a fulfilled prophecy), or that an offer is sourced from right now: ringed (`playable cached`, the one `data-act=\"cache\"` click) when it is in playableCachedIndexes, dark (`cached`, no ring) otherwise; a dark card's click opens the cache dialog (`data-btn=\"cacheopen\"`), which already says in words why it cannot be played this step. A target pick on a dark card still goes through handleCacheClick. The label reads 'cached · not this step' when nothing in the strip is playable now. Only the seat that may play from that cache gets the strip. A counting prophecy and an expired glimpse stay in the cache row only. CR D6.14a says so, with the owner's words as its source. Why nothing caught it: the strip did what #103 asked; test 155's §5 pinned the old filter on purpose. Mutations: the filter back to playable-only turned the dark-strip test red; dropping the permission check turned the no-permission test red. The suggested cacheBlockReason title was not added (cardHtml carries no title); the dialog says it. No browser on the box: the layout is read, not seen.",
     status: 'done',
   },
 ];

@@ -1024,11 +1024,13 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 155-hand-affordances.test.ts · Example test: 155-hand-affordances.test.ts::CR D6.14: a {Battle} spell in deployment is NOT drawn like a castable deployment card · Key: annexd.display.hand</sub>
 
-<a id="rD6.14a"></a>**D6.14a** A cached card that can be played right now is also shown at the right of the hand. It stays in the cache as well; clicking either copy plays the same card.
+<a id="rD6.14a"></a>**D6.14a** A cached card its player may play this turn is also shown at the right of the hand, marked like a hand card by whether it can be played right now. It stays in the cache as well; clicking either copy plays the same card. A cached card that may not be played this turn is shown only in the cache.
 
 > *Example: A card glimpsed this turn is drawn beside the hand and in the cache row.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 155-hand-affordances.test.ts · Example test: 155-hand-affordances.test.ts::CR D6.14: a playable cached card is drawn at the right of the hand AND left in the cache row · Key: annexd.display.hand.cached</sub>
+> *Example: A {Battle} card glimpsed during deployment is shown beside the hand without the playable mark until a battle window opens.*
+
+<sub>Basis: Owner call · adopted 2026-11-08; Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: not verified (the text changed after verification); 1 gate test file · Tests: 155-hand-affordances.test.ts · Example tests: 155-hand-affordances.test.ts::CR D6.14: a playable cached card is drawn at the right of the hand AND left in the cache row, 155-hand-affordances.test.ts::CR D6.14: a cached card you may play this turn but not this step stays beside the hand, dark (report #358) · Key: annexd.display.hand.cached</sub>
 
 <a id="rD6.14b"></a>**D6.14b** The menu for recycling a card for a resource lists first the elements of the player's own deck in constructed, or the draft's elements in a live draft, then Prismite. Every other element, and the Shard, are behind an expander. The menu changes nothing about what is legal: a resource of any of the seven elements may still be made. See rules 105.9a, 106.6a.
 

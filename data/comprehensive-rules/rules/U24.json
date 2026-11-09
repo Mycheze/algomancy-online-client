@@ -2209,11 +2209,15 @@
     "key": "annexd.display.hand.cached",
     "parent": "annexd.display.hand",
     "order": 1,
-    "text": "A cached card that can be played right now is also shown at the right of the hand. It stays in the cache as well; clicking either copy plays the same card.",
+    "text": "A cached card its player may play this turn is also shown at the right of the hand, marked like a hand card by whether it can be played right now. It stays in the cache as well; clicking either copy plays the same card. A cached card that may not be played this turn is shown only in the cache.",
     "examples": [
       {
         "text": "A card glimpsed this turn is drawn beside the hand and in the cache row.",
         "test": "155-hand-affordances.test.ts::CR D6.14: a playable cached card is drawn at the right of the hand AND left in the cache row"
+      },
+      {
+        "text": "A {Battle} card glimpsed during deployment is shown beside the hand without the playable mark until a battle window opens.",
+        "test": "155-hand-affordances.test.ts::CR D6.14: a cached card you may play this turn but not this step stays beside the hand, dark (report #358)"
       }
     ],
     "see": [],
@@ -2231,6 +2235,11 @@
           "quote": "⚠ **Explicitly ADDITIVE:** *\"They should also be in the cache area as they are",
           "adopted": "2026-08-25",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Cached cards that are playable in a turn should probably ALWAYS appear to the right of the hand (even when not playable due to timing restrictions or something)",
+          "adopted": "2026-11-08",
+          "from": "report #358, room CNDX"
         }
       ],
       "engine": [],

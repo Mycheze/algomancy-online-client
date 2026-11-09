@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:af625fc074afb5d7",
+ "generated_from": "sha256:7a0d7e407f1c55ce",
  "rules": [
   {
    "num": "100.1",
@@ -41341,10 +41341,11 @@
    "sectionTitle": "Reveal Timing of Simultaneous Steps",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D6.14",
-   "text": "A cached card that can be played right now is also shown at the right of the hand. It stays in the cache as well; clicking either copy plays the same card.",
+   "text": "A cached card its player may play this turn is also shown at the right of the hand, marked like a hand card by whether it can be played right now. It stays in the cache as well; clicking either copy plays the same card. A cached card that may not be played this turn is shown only in the cache.",
    "see": [],
    "examples": [
-    "A card glimpsed this turn is drawn beside the hand and in the cache row."
+    "A card glimpsed this turn is drawn beside the hand and in the cache row.",
+    "A {Battle} card glimpsed during deployment is shown beside the hand without the playable mark until a battle window opens."
    ],
    "basis": "owner",
    "scope": "digital",
@@ -41352,7 +41353,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "D6.14b",

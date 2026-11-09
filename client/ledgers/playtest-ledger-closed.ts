@@ -1964,7 +1964,7 @@ export const CLOSED: LedgerEntry[] = [
     guards: [
       '155-hand-affordances.test.ts::a playable cached card is drawn at the right of the hand AND left in the cache row',
       '155-hand-affordances.test.ts::clicking the copy beside the hand plays the cached card',
-      '155-hand-affordances.test.ts::a cached card that is NOT playable now stays in the cache row and out of the hand',
+      '155-hand-affordances.test.ts::a cached card with no permission this turn stays out of the hand strip',
     ],
     note:
       'FIXED SAME DAY (CT-63; now CR D6.14), and additively exactly as asked — regionCacheHtml and the '

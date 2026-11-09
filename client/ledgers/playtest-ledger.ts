@@ -352,7 +352,10 @@ const OPEN: LedgerEntry[] = [
   {
     id: 358, room: "CNDX", date: "2026-11-08",
     report: "mycheze, seat 0 (ux): \"Cached cards that are playable in a turn should probably ALWAYS appear to the right of the hand (even when not playable due to timing restrictions or something), but with the same \\\"playable/not playable\\\" UI that cards normally have in the hand. It's too easy to miss that it appears in your hand ONLY for brief moments.\"",
-    status: 'live',
+    status: 'fixed',
+    guards: [
+      '155-hand-affordances.test.ts::a cached card you may play this turn but not this step stays beside the hand, dark',
+    ],
     note: "Real, by reading. CNDX fetched and replayed (filed at [171], turn 5 battle; today's engine refuses a redundant pass at [83] after the 2026-11-08 priority changes, and --as-recorded shows every difference heals to the same final board). The cached cards beside the hand (ui/main.ts handCachedHtml) are only those with a legal action this instant, so a glimpsed card whose timing is shut disappears from there until its next window. He wants every cached card still usable this turn shown there, lit or dark like a hand card. CT-547.",
   },
   {

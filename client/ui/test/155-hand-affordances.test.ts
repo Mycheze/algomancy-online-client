@@ -40,7 +40,8 @@
  *     the click will ask.
  * §4  CT-50. A playable cached card is drawn at the RIGHT of the hand AND left
  *     in the cache row, and clicking EITHER copy plays it.
- * §5  An unplayable cached entry is in the cache row and nowhere near the hand.
+ * §5  A cached entry permitted this turn but not playable this step stays
+ *     beside the hand, dark (report #358); one with no permission is not there.
  *
  * HOW THE CLIENT IS DRIVEN. test/ui-driver.ts in hotseat mode — a fake DOM, no
  * socket, main.ts's own Harness, clicks through main.ts's own handlers.
@@ -121,7 +122,7 @@ registerSynthetic({
 
 /** §4/§5: the cached cards. One deployment-timed (playable from a live glimpse
  * during deployment) and one {Battle}-timed (permitted, live, and wrong step —
- * so it is in the cache row and must NOT reach the hand). */
+ * so it is in the cache row and beside the hand, dark — report #358). */
 const CACHED_NOW = 'B6 Cached Now';
 registerSynthetic({
   name: CACHED_NOW, cost: '', mana: 0, power: 0, toughness: 0,
@@ -325,27 +326,52 @@ test('CR D6.14: clicking the copy beside the hand plays the cached card, exactly
     'and the cache row still plays it too — this is additive, not a move');
 });
 
-/* ═══ §5 THE NEGATIVE CONTROL ═════════════════════════════════════════ */
+/* ═══ §5 PERMITTED BUT NOT NOW — DARK, NOT GONE (report #358) ═══════════ */
 
-test('CR D6.14: a cached card that is NOT playable now stays in the cache row and out of the hand', () => {
+test('CR D6.14: a cached card you may play this turn but not this step stays beside the hand, dark (report #358)', () => {
+  // Owner, #358: "Cached cards that are playable in a turn should probably
+  // ALWAYS appear to the right of the hand (even when not playable due to
+  // timing restrictions or something), but with the same 'playable/not
+  // playable' UI that cards normally have in the hand." Before, this entry
+  // left the hand strip whenever its timing was shut.
   const h = deployment();
   give(h, SEAT, PLAIN);
   glimpse(h, SEAT, CACHED_LATER);              // {Battle} timing, live stamp, wrong step
 
   const legal = legalActions(h.state, SEAT);
   assert.deepEqual(playableCachedIndexes(legal), [],
-    'permitted and live, but not playable in THIS step — the whole point of the filter');
+    'permitted and live, but not playable in THIS step');
 
   const html = ui.show(structuredClone(h.state));
   const hand = zone(html, `hand:${SEAT}`);
-  assert.doesNotMatch(hand, /class="handcached"/,
-    'nothing playable, so no cached group beside the hand at all');
-  assert.doesNotMatch(hand, /data-act="cache"/, 'and no cached card in the hand zone');
+  assert.match(hand, /class="handcached"/, 'the cached group is still beside the hand');
+  assert.match(hand, new RegExp(CACHED_LATER), 'and the entry is in it');
+  assert.match(hand, /⚡ turn/, 'wearing its expiry chip');
+  assert.match(hand, /cached · not this step/, 'the label does not claim it can be played now');
+  const at = hand.indexOf(`data-prev="${CACHED_LATER}"`);
+  const tag = hand.slice(hand.lastIndexOf('<div', at), hand.indexOf('>', at) + 1);
+  assert.doesNotMatch(classOf(tag), /\bplayable\b/,
+    'dark, the way a hand card that cannot be played now is: no ring');
+  assert.match(classOf(tag), /\bcached\b/, 'and still marked as a cached card');
+  assert.doesNotMatch(tag, /data-act="cache"/, 'it does not take the play click');
+  assert.match(tag, /data-btn="cacheopen"/, 'a click opens the cache, which says why not');
 
-  // …but it has NOT been hidden: the zone it lives in still shows it.
-  assert.match(html, /data-animzone="cache:0"/, 'the cache row is on screen');
-  assert.match(zone(html, 'cache:0'), new RegExp(CACHED_LATER),
-    'and the entry is still in it — the second surface is a shortcut, not the zone');
+  // the cache row still holds it — the second surface is a shortcut, not the zone
+  assert.match(zone(html, 'cache:0'), new RegExp(CACHED_LATER));
+});
+
+test('CR D6.14: a cached card with no permission this turn stays out of the hand strip', () => {
+  // the negative control: a glimpse whose turn is over (CR 403.3) is cached
+  // and nothing more — it must not be drawn as if it could still be played.
+  const h = deployment();
+  give(h, SEAT, PLAIN);
+  const pl = h.state.players[SEAT]!;
+  pl.cache = [{ card: CACHED_NOW, uid: 9100, playableUntilTurn: h.state.turn - 1 }];
+
+  const html = ui.show(structuredClone(h.state));
+  const hand = zone(html, `hand:${SEAT}`);
+  assert.doesNotMatch(hand, /class="handcached"/, 'no cached group beside the hand');
+  assert.doesNotMatch(hand, new RegExp(CACHED_NOW), 'and no cached card in the hand zone');
 });
 
 /* ═══ §6 THE STATE THE TICKET IS REALLY ABOUT ═════════════════════════ */

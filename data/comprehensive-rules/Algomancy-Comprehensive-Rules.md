@@ -10914,13 +10914,13 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 | verdict | rules |
 |---|---|
-| confirmed | 1849 |
+| confirmed | 1848 |
 | partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 3 |
 | not verified | 3 |
-| text changed | 7 |
+| text changed | 8 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
 

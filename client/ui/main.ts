@@ -3682,9 +3682,21 @@ function handZoneHtml(p: Seat): string {
  * to just forget about."* — and explicitly ADDITIVE: *"They should also be in
  * the cache area as they are now, this is just an easier way to see and play
  * them."* So `regionCacheHtml` is untouched and this is a second surface onto
- * the same entries; only the ones that are playable this instant, because
- * "harder to forget" is the whole point and a dead entry is not something to
- * remember.
+ * the same entries.
+ *
+ * WHICH entries. It was "only the ones playable this instant" (#103), and
+ * that made the reminder blink: a glimpsed {Battle} card stood beside the hand
+ * only in the few windows its timing opened, which is exactly when it is
+ * easiest to miss. Owner, report #358 (CT-547): *"Cached cards that are
+ * playable in a turn should probably ALWAYS appear to the right of the hand
+ * (even when not playable due to timing restrictions or something), but with
+ * the same 'playable/not playable' UI that cards normally have in the hand."*
+ * So the strip is every entry this seat holds a PERMISSION for
+ * (`cachePermission`: a live glimpse, or a fulfilled prophecy — CR 403.3), lit
+ * when an offer is sourced from it right now and dark otherwise, the way a
+ * hand card is. A prophecy still counting, or a glimpse whose turn is over,
+ * has no permission and stays in the cache row only. Only the seat that may
+ * play from this cache sees the strip (one seat per screen online).
  *
  * The forgetting is a REAL loss: a glimpse stamp carries `playableUntilTurn`
  * and expires silently at end of turn, so the one chip these wear is the
@@ -3692,27 +3704,33 @@ function handZoneHtml(p: Seat): string {
  *
  * ⚠ NO `anim` key. The cache row already draws these entries under `c<uid>`,
  * and a second element wearing the same motion key would give ui/anim.ts two
- * landing spots for one flight. The click, on the other hand, is deliberately
- * the SAME `data-act="cache"` the cache row uses — one handler, so the two
- * surfaces can never come to play different cards.
+ * landing spots for one flight. The click on a LIT card is deliberately the
+ * SAME `data-act="cache"` the cache row uses — one handler, so the two
+ * surfaces can never come to play different cards. A DARK card opens the cache
+ * dialog instead, which says in words why it cannot be played this step.
  */
 function handCachedHtml(p: Seat): string {
   const cache = cacheOf(p);
   if (!cache.length) return '';
-  const idx = playableCachedIndexes(legalFor(p)).filter(i => cache[i]);
+  if (!bothSeats() && NET!.seat !== p) return '';   // I can look at their cache, not play from it
+  const e = q();
+  const live = new Set(playableCachedIndexes(legalFor(p)).filter(i => cache[i]));
+  const idx = cache.map((_, i) => i).filter(i => live.has(i) || e.cachePermission(p, i) !== null);
   if (!idx.length) return '';
   const cards = idx.map(i => {
     const cc = cache[i]!;
+    const lit = live.has(i);
+    const candidate = cc.uid !== undefined && pickable(`cache:${p}:${cc.uid}`);
     // ONE chip — the same one the cache row and the dialog wear (cacheChip)
     const badge: Badge = cacheChip(p, i);
     return cardHtml(cc.card, {
-      playable: true, cached: true, badges: [badge],
-      candidate: cc.uid !== undefined && pickable(`cache:${p}:${cc.uid}`),
-      data: `data-act="cache" data-p="${p}" data-i="${i}"`,
+      playable: lit, cached: true, badges: [badge], candidate,
+      // a target pick goes through handleCacheClick too, lit or not
+      data: lit || candidate ? `data-act="cache" data-p="${p}" data-i="${i}"` : `data-btn="cacheopen" data-p="${p}" data-i="${i}"`,
     });
   }).join('');
   return `<div class="handcached" title="in your cache, not your hand — also shown in the cache row">
-    <div class="handcachedlabel">cached · playable now</div>
+    <div class="handcachedlabel">${live.size ? 'cached · playable now' : 'cached · not this step'}</div>
     <div class="handcachedcards">${cards}</div>
   </div>`;
 }
