@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-09', kind: 'fix', text: 'On a tablet or phone, the instructions now say "Tap" where they said "Click": putting two cards on the bottom of your deck, playing from your cache, placing a unit on the line, blocking, and ranking elements in the draft lobby.' },
   { date: '2026-11-09', kind: 'fix', text: 'Opening a room link while the server restarts no longer looks like the room is gone. The "reconnecting" line is no longer red with a button home: the page says it will join by itself as soon as the server answers.' },
   { date: '2026-11-09', kind: 'fix', text: 'Opening a replay, a lesson, a challenge or a rules question no longer says "Connecting to the server…" while it loads. It says what it is loading, like "Loading the replay…".' },
   { date: '2026-11-09', kind: 'fix', text: "Challenging a player from the queue page now reads \"Joining Rashi's game…\" while you wait for them to accept, instead of \"Joining Rashi game…\"." },

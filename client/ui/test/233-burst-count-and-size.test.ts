@@ -140,7 +140,9 @@ interface Row { name: string; n: number; sizes: string; mixed: boolean; burst: b
 function tallyRows(html: string): Row[] {
   const out: Row[] = [];
   const re = /<tr class="tallyrow([^"]*)"><th class="tallyname">([^<]*)<\/th><td class="tallyn">×(\d+)<\/td><td class="tallyx">([^<]*)<\/td><\/tr>/g;
-  const why = [...html.matchAll(/<div class="tipfoot tokwhy">([^<]*)<\/div>/g)].map(m => m[1]!);
+  // the verb is a mouse/finger pair (util.ts clickOrTap): read the mouse's words
+  const why = [...html.matchAll(/<div class="tipfoot tokwhy">([\s\S]*?)<\/div>/g)]
+    .map(m => m[1]!.replace(/<span class="touchonly">[^<]*<\/span>/g, '').replace(/<[^>]+>/g, ''));
   for (const m of html.matchAll(re)) {
     const name = m[2]!;
     out.push({

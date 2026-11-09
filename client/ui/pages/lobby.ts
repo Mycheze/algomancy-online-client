@@ -14,7 +14,7 @@
 import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
 import { button, statusMessage } from '../components/index.ts';
 import { lobbyLocals, type CustomRulesInfo, type TrioLobby, type TrioReveal } from '../lobby.ts';
-import { elIcon as icon, esc, shareBar } from '../util.ts';
+import { clickOrTap, elIcon as icon, esc, shareBar } from '../util.ts';
 import { frameChromeView, frameHtml, type FrameChrome } from './frame.ts';
 
 /* ── the room frame (2026-11-04) ─────────────────────────────────────────
@@ -122,7 +122,7 @@ function rankHtml(ranking: readonly string[], iAmLocked: boolean): string {
     ${ranking.map((el, i) => `<button class="elchip ${el} on ranked" data-btn="lobby-unrank" data-el="${el}"
       ${iAmLocked ? 'disabled' : ''} title="click to take it back out">
       <span class="ranknum">${i + 1}</span>${icon(el)}${el}</button>`).join('')}
-    ${ranking.length ? '' : '<span class="hint">click them in order, most wanted first</span>'}
+    ${ranking.length ? '' : `<span class="hint">${clickOrTap()} them in order, most wanted first</span>`}
   </div>
   ${rest.length ? `<div class="elrow lobbyels">${rest.map(el =>
     `<button class="elchip ${el}" data-btn="lobby-rank" data-el="${el}" ${iAmLocked ? 'disabled' : ''}>

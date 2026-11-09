@@ -552,7 +552,16 @@ const OPEN: Entry[] = [
       + 'is still drawn as one) reaches ConnectingView.retrying: the countdown is a role="status" line with "This page '
       + 'joins the room by itself as soon as the server answers.", and the toolbar\'s Home is the only way out, as while '
       + 'connecting. Story "Connecting: the server dropped, trying again". Guarded by 1203-reconnect-is-not-final.test.ts. '
-      + 'Left: §18.19\'s other half, no connecting spinner.',
+      + 'Left: §18.19\'s other half, no connecting spinner.\n\n'
+      + '2026-11-09 (steward): an instruction a player reads says "Tap" on a finger-first device (docs/23-ui-inventory/05 '
+      + '§18.14: "Click 2 cards to put on the bottom…" not in .remind). The class was ten lines: the draw step\'s panel and '
+      + 'its empty row, the cache\'s "click one", the stack viewer\'s mod host, the battle\'s "Click a spot on the line", the '
+      + 'blockers\' prompt, the burst token tip (tips open on a tap), the draft lobby\'s ranking hint, the card browser\'s '
+      + 'element note, the deck description help. Each writes its verb with util.ts clickOrTap() (.mouseonly/.touchonly). '
+      + 'Guarded by the census 1204-click-says-tap-on-touch.test.ts over main.ts and pages/*.ts (title= text is hover-only '
+      + 'and passes). Left: the engine\'s own Discharge cost prompt ("click a unit to take counters off it", owner-asked, '
+      + 'quoted in the CR) and the help layer\'s prose (tutorial.ts, lessons.ts): written for a mouse, it '
+      + 'names a touch gesture only for right-click; a pass of its own.',
   },
   {
     id: 'BL-17',

@@ -13,6 +13,15 @@ export const esc = (s: unknown): string =>
 export const elIcon = (el: string, alt = ''): string =>
   `<img class="elicon" src="${ICON_BASE}${el}.webp" alt="${alt}" onerror="this.style.display='none'">`;
 
+/** The verb of an instruction a player reads: "Click" under a mouse, "Tap"
+ * on a finger-first device (`html.touch`), through the `.mouseonly` /
+ * `.touchonly` pair (styles/shared/37-touch.css). A sentence that told a
+ * tablet to "Click 2 cards" was docs/23-ui-inventory/05 §18.14; test 1204 is
+ * the census that keeps a bare "click" out of the text a player reads. */
+const TAP = { click: 'tap', Click: 'Tap', clicking: 'tapping' } as const;
+export const clickOrTap = (word: keyof typeof TAP = 'click'): string =>
+  `<span class="mouseonly">${word}</span><span class="touchonly">${TAP[word]}</span>`;
+
 /** The "send your opponent this link" strip. One copy of the furniture for
  * the draft lobby, the constructed waiting room and the mid-game banner —
  * only the lead-in sentence differs between them. */

@@ -17,7 +17,7 @@ import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
 import type { Release } from '../cardindex.ts';
 import { allRows, facetValues, RELEASE_LABEL } from '../cardindex.ts';
 import { FLAGS, KEYS, SORTS, VIEWS, chipState } from '../cardsearch.ts';
-import { esc, elIcon } from '../util.ts';
+import { clickOrTap, esc, elIcon } from '../util.ts';
 
 /** The data-btn names (and the rail's scroll key) a filter surface uses. */
 export interface FilterBtns {
@@ -107,7 +107,7 @@ export function facets(building: boolean): Facet[] {
 }
 
 export const SECTIONS: { id: string; title: string; note?: string }[] = [
-  { id: 'element', title: 'Element', note: 'click once to include, twice to exclude' },
+  { id: 'element', title: 'Element', note: `${clickOrTap()} once to include, twice to exclude` },
   { id: 'cost', title: 'Cost' },
   { id: 'kind', title: 'Kind and timing' },
   { id: 'attr', title: 'Attributes' },

@@ -177,7 +177,7 @@ import { gameLessons } from './lessons.ts';
 // lines here on purpose — the import, and the installSandbox() call at the
 // very bottom of this file.
 import { installSandbox } from './sandbox.ts';
-import { chosenDeck, copyText, elIcon as elIconOf, esc, shareBar } from './util.ts';
+import { chosenDeck, clickOrTap, copyText, elIcon as elIconOf, esc, shareBar } from './util.ts';
 import { resGoKey, tapGoHtml, tapGoKeyOf, tapGoLabel, tapGoLive, tokenGoKey, zoomGoHtml, type TapGo } from './tapgo.ts';
 
 import { artUrl, ICON_BASE } from './assets.ts';
@@ -3948,9 +3948,9 @@ function tokenTipHtml(tokens: readonly Entity[]): string {
     // only what a click does that is NOT the default (owner 2026-11-03:
     // superfluous popup text goes — the non-burst token's line restating the default went)
     const why = t.burst && t.n > 1
-      ? `Burst: clicking a ${t.name} casts all ${t.n} at once, as one chain${t.sizes.length > 1 ? ', of different sizes' : ''}.`
+      ? `Burst: ${clickOrTap('clicking')} a ${esc(t.name)} casts all ${t.n} at once, as one chain${t.sizes.length > 1 ? ', of different sizes' : ''}.`
       : '';
-    return why ? `<div class="tipfoot tokwhy">${esc(why)}</div>` : '';
+    return why ? `<div class="tipfoot tokwhy">${why}</div>` : '';
   }).join('')}`;
 }
 
@@ -5132,7 +5132,7 @@ function cacheDialogHtml(): string {
     <div class="hint">Both players see the cache. A cached card can be used only once its
       prophecy is fulfilled (free) or while a glimpse allows it (this turn, for its mana).
       Affinity is ignored either way.</div>
-    ${anyPlayable && mine ? '<div class="binmodbanner">Glowing cards can be used right now — click one.</div>' : ''}
+    ${anyPlayable && mine ? `<div class="binmodbanner">Glowing cards can be used right now — ${clickOrTap()} one.</div>` : ''}
     <div class="zone binzone bindialog cachezone">${items || '<span class="binempty">nothing live</span>'}</div>
     ${spentItems}
     <button data-btn="cacheclose">Close</button>
@@ -5586,7 +5586,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     afterWindow: 'after combat',
   };
   const fsHint = fsOffer
-    ? '<div class="fshint">↓ <b>Click a spot on the line</b> to place it — the buttons in the bar '
+    ? `<div class="fshint">↓ <b>${clickOrTap('Click')} a spot on the line</b> to place it — the buttons in the bar `
       + 'answer the same question.</div>'
     : '';
   return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} attacks ${esc(D)} — ${stepLabel[b.step] ?? b.step}</h3>${fsHint}
@@ -6805,7 +6805,7 @@ function phaseBarHtml(err: string): string {
             ? placeWarnLineHtml()
           : nothingToBlock
             ? `no attackers left to block${b.round === 1 ? ' — you may still send counterattackers' : ''}`
-            : `assign blockers (click unit, then slot)${b.round === 1 ? ' and optionally send counterattackers' : ''}`}
+            : `assign blockers (${clickOrTap()} unit, then slot)${b.round === 1 ? ' and optionally send counterattackers' : ''}`}
         ${rest.length ? `<button data-btn="sendrest" title="adjust before confirming">${txtIcon('battle', '[battle]')} Counterattack with the rest</button>` : ''}
         <button class="primary" data-btn="confirmblocks" ${duty ? 'disabled' : ''}>${mainBtnLabel(b.defender, 'enter')}</button>
         ${built ? '<button data-btn="clearform" title="empty the blocks/send being built">✕ Clear <span class="kh">(esc)</span></button>' : ''}${err}</div>`;
@@ -7148,7 +7148,7 @@ function previewStackHtml(id: number, opts: { noFace?: boolean } = {}): string {
         // CR 723.4: the other place the player looks at a stack item. The glow is
         // on the strip; the viewer says what it means in words.
         ? `<div class="abmodhost">${txtIcon('augment', '+')} a legal host for the mod you are
-            placing — click this card on the stack to apply it</div>`
+            placing — ${clickOrTap()} this card on the stack to apply it</div>`
         : ''}
     </div>`;
 }
@@ -7993,13 +7993,13 @@ function bottomPanelHtml(): string {
     cardHtml(hand[i]!, { playable: true, data: `data-act="bottomcard" data-i="${i}"` })).join('');
   return `<div class="draftpanel bottompanel">
     <div class="drafthead"><span class="who">${esc(s.players[seat]!.name)} — draw phase</span>
-      You drew 4. Click ${need === 1 ? 'the card' : `${need} cards`} to put on the bottom of your deck, then confirm.
+      You drew 4. ${clickOrTap('Click')} ${need === 1 ? 'the card' : `${need} cards`} to put on the bottom of your deck, then confirm.
       <button class="primary" data-btn="bottomcommit" data-p="${seat}" ${ok ? '' : 'disabled'}>
         Put ${picked.length}/${need} on the bottom <span class="kh">(enter)</span></button></div>
     <div class="zonelabel">Keeping (${keep.length})</div>
     <div class="zone draftkeep">${row(keep)}</div>
     <div class="zonelabel">To the bottom of your deck, in this order (${picked.length}/${need})</div>
-    <div class="zone draftleave">${row(picked) || '<span class="binempty">click cards above</span>'}</div>
+    <div class="zone draftleave">${row(picked) || `<span class="binempty">${clickOrTap()} cards above</span>`}</div>
   </div>`;
 }
 

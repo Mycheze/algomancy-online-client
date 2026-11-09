@@ -23,7 +23,7 @@ import { cardLinker, clipDescription } from '../cardlinks.ts';
 import { analyzeDeck, deckElements } from '../deckstats.ts';
 import { mdToHtml } from '../markdown.ts';
 import { noImgDrag } from '../piletable.ts';
-import { esc } from '../util.ts';
+import { clickOrTap, esc } from '../util.ts';
 import { authorName } from '../deckformat.ts';
 import { button, chip, emptyState, field, iconButton, segmented, sheet, statusMessage, table } from '../components/index.ts';
 import type { TablePill } from '../tabletop.ts';
@@ -565,7 +565,7 @@ const SYNTAX_HTML = `<div class="dksyntax">
     </table>
     <h3>Card names link themselves</h3>
     <p>Write a card’s name as it is printed — <code>Ignis Sprite</code> — and it becomes a link
-      that shows the card when a reader hovers it, and pins it when they click. You do not mark it
+      that shows the card when a reader hovers it, and pins it when they ${clickOrTap()}. You do not mark it
       up; the client finds it.</p>
     <p>Two things that follow from that, and surprise people:</p>
     <ul>
