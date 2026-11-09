@@ -544,8 +544,15 @@ const OPEN: Entry[] = [
       + 'waits for the server; the five boot branches that open their game in the page say "Setting up your lesson…", '
       + '"Setting up the challenge…", "Loading the run…" (a watched challenge run), "Loading the replay…" and "Setting up '
       + 'the board…" (a rules question), through ConnectingView.waiting (main.ts connectingLine). Guarded by '
-      + '1202-connecting-says-what-it-loads.test.ts (§2 a census of main.ts\'s boot chain). Left: §18.19, the '
-      + 'reconnect state offering "Back to the home screen" as if final.',
+      + '1202-connecting-says-what-it-loads.test.ts (§2 a census of main.ts\'s boot chain). \n\n'
+      + '2026-11-09 (steward): the reconnect state is not drawn as final (docs/23-ui-inventory/05 §18.19). A room link '
+      + 'opened while the server is down or restarting put NetBackend\'s "disconnected from the server — reconnecting in '
+      + 'Ns…" in uiError, and pages/connecting.ts drew every uiError as a refusal: red .joinerr and a "← Back to the home '
+      + 'screen" button. NetBackend.retrying (set in ws.onclose, cleared at the top of onMsg, so a refusal after the retry '
+      + 'is still drawn as one) reaches ConnectingView.retrying: the countdown is a role="status" line with "This page '
+      + 'joins the room by itself as soon as the server answers.", and the toolbar\'s Home is the only way out, as while '
+      + 'connecting. Story "Connecting: the server dropped, trying again". Guarded by 1203-reconnect-is-not-final.test.ts. '
+      + 'Left: §18.19\'s other half, no connecting spinner.',
   },
   {
     id: 'BL-17',

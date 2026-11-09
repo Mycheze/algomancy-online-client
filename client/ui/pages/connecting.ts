@@ -22,6 +22,13 @@ export interface ConnectingView {
    * connect to, so it says what it is loading instead (docs/23-ui-inventory/05
    * §18.15). Default: "Connecting to the server…" */
   waiting?: string;
+  /** the server dropped and the page is already trying again by itself: `error`
+   * holds the countdown ("disconnected from the server — reconnecting in 2s…"),
+   * which is still on its way, not a refusal. It is drawn as the waiting line
+   * is, with no "Back to the home screen" that reads as if it were over — the
+   * toolbar's Home is the way out, as while connecting (docs/23-ui-inventory/05
+   * §18.19). */
+  retrying?: boolean;
   /** the toolbar's account and bell (pages/frame.ts); signed out when absent */
   chrome?: FrameChrome;
 }
@@ -32,11 +39,18 @@ export const CONNECTING = 'Connecting to the server…';
 /** Pure. A refused join needs a way out — without the button it is a dead
  * end you can only leave by editing the URL. (The toolbar's Home is one too.) */
 export function connectingHtml(v: ConnectingView): string {
-  const uiError = v.error;
-  return roomFrameHtml({
+  const frame = (body: string): string => roomFrameHtml({
     page: 'joinscreen', kind: 'Algomancy', room: null, backLabel: 'Home',
     chrome: v.chrome ?? { signedIn: false, alerts: 0 },
-    cardHtml: roomSection(`<p${uiError ? ' class="joinerr"' : ''}>${esc(uiError || v.waiting || CONNECTING)}</p>
-    ${uiError ? backLink({ dataBtn: 'gohome', label: 'Back to the home screen', arrow: true }) : ''}`),
+    cardHtml: roomSection(body),
   });
+  if (v.error && v.retrying) {
+    return frame(`<p role="status">${esc(v.error)} ${RETRYING}</p>`);
+  }
+  const uiError = v.error;
+  return frame(`<p${uiError ? ' class="joinerr"' : ''}>${esc(uiError || v.waiting || CONNECTING)}</p>
+    ${uiError ? backLink({ dataBtn: 'gohome', label: 'Back to the home screen', arrow: true }) : ''}`);
 }
+
+/** what the retrying line adds: it is not over */
+export const RETRYING = 'This page joins the room by itself as soon as the server answers.';

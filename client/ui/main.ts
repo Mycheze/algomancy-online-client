@@ -333,6 +333,11 @@ class NetBackend implements Backend {
    * device slept: rooms.ts joinRefusal) is not an error on a live board — the
    * board is gone, and the refused screen, with its way home, is the screen. */
   rejoining = false;
+  /** the socket closed and the page is trying again by itself; cleared by the
+   * server's first word on the new socket (onMsg). Before 'joined' this is the
+   * connecting screen's "still on its way" state, not a refusal: it must not
+   * read as final (docs/23-ui-inventory/05 §18.19, pages/connecting.ts). */
+  retrying = false;
   /** constructed lobby: non-null while the room waits for both decks */
   waiting: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; league?: true; drawn?: { mine: string; theirs: string }; match?: mt.MatchLobbyInfo } | null = null;
   /**
@@ -484,6 +489,7 @@ class NetBackend implements Backend {
       const wait = this.reconnectDelay;
       this.reconnectDelay = Math.min(wait * 2, 15_000);
       uiError = `disconnected from the server — reconnecting in ${Math.round(wait / 1000)}s…`;
+      this.retrying = true;
       // unconditionally: a connection that failed BEFORE 'joined' routes to
       // renderConnecting, which is where the error and the way home live —
       // without this the user is stuck on "Connecting…" forever
@@ -740,6 +746,7 @@ class NetBackend implements Backend {
     this.ws.send(JSON.stringify({ t: 'amend', ...msg }));
   }
   private onMsg(m: NetMsg): void {
+    this.retrying = false;   // the server answered: whatever uiError says next is its word
     // the rejoin was answered: only an 'error' BEFORE this is its refusal (below)
     if (m.t === 'joined' || m.t === 'watching') this.rejoining = false;
     // the post-game screen: the whole payload on game over, then just the
@@ -9361,7 +9368,7 @@ function renderConnecting(): void {
   // a refused join (a room code that names no game) lands here, so this screen
   // needs a way out — without the button it is a dead end you can only leave by
   // editing the URL
-  $app.innerHTML = connectingHtml({ error: uiError, waiting: connectingLine, chrome: frameChromeView() });   // pages/connecting.ts, in the app frame
+  $app.innerHTML = connectingHtml({ error: uiError, waiting: connectingLine, retrying: !!NET?.retrying, chrome: frameChromeView() });   // pages/connecting.ts, in the app frame
 }
 
 /** THE ROUTER for every page that is not a game: whichever page owns #app
