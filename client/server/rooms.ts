@@ -320,6 +320,20 @@ export function legalOnce(state: GameState, seat: Seat): Action[] {
   return lists[seat] ??= legalActions(state, seat);
 }
 
+/** One action of the open hidden step, held until an undo needs to know what
+ * it showed each seat. Everything `seenBy` reads, as it stood when it landed. */
+interface SeenPending {
+  i: number; before: GameState; action: Action; after: GameState;
+  events: readonly EngineEvent[]; frozen: GameState | null; names: readonly string[];
+}
+
+/** CR D4.3: the same measurement, the same inputs; only the moment moves. */
+export function settleSeen(room: Room): void {
+  for (const p of room.seenPending.splice(0)) {
+    room.segSeen[p.i] = seenBy(p.before, p.action, p.after, p.events, { frozen: p.frozen, holding: true, names: p.names });
+  }
+}
+
 /** What to do with an arriving action. */
 export type ArrivalVerdict =
   /** apply it now, the way the server always has */
@@ -1015,6 +1029,9 @@ export interface Room {
    * `segRefs` began measuring the undo instead of predicting it.)
    */
   segSeen: Seen[];
+  /** the open step's actions whose `segSeen` entry is still to be measured;
+   * `settleSeen` fills them in when an undo asks. DERIVED, like `segSeen`. */
+  seenPending: SeenPending[];
   /**
    * CR D4.6 — CC UNDO UNTIL DONE: engine/src/ccundo.ts's mark for every
    * applied action, parallel to `actions` like `segSeen`. DERIVED: pushed by
@@ -2651,7 +2668,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     // Setting it here as well would be dead code the moment resetSegment runs,
     // and dead code is exactly what a red-check cannot see through.
     versions: [],
-    segKey: null, segSnapshot: null, heldEvents: [[], []], heldFrames: [[], []], closing: null, segStartIndex: -1, segSeen: [],
+    segKey: null, segSnapshot: null, heldEvents: [[], []], heldFrames: [[], []], closing: null, segStartIndex: -1, segSeen: [], seenPending: [],
     segIdFloor: [], segRefs: [], segPosRefs: [], sigs: [], cardLog: [], cardOpen: null, deferred: [[], []], ccMarks: [],
     // BL-26: both banks START at the room's own setting — the ONE site that is
     // allowed to read the constant, and it reads it through the argument
@@ -2916,14 +2933,21 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   room.sigs.push(digest(signature(r.state)));
   // CR D4.3e, D4.3f: what this showed each seat of the hidden cards — measured only for
   // an action that stays inside the open hidden step (the only place an undo
-  // walks), as rebuild() re-measures it after a restart or an undo
-  room.segSeen.push(holding && segmentKey(r.state) === room.segKey
-    ? seenBy(before, action, r.state, r.events, { frozen: room.segSnapshot, holding: true, names: room.names })
-    : NOTHING_SEEN);
+  // walks), as rebuild() re-measures it after a restart or an undo. Held in
+  // `seenPending` below until an undo asks (settleSeen)
+  room.segSeen.push(NOTHING_SEEN);
   // CR D4.6: the CC take-back's marks, as rebuild() derives them
   const cc = ccMeasure(before, action, r.state, r.events, room.names);
   room.ccMarks.push(cc.mark);
   if (cc.seen) room.segSeen[room.segSeen.length - 1] = cc.seen;
+  // …and the measurement itself waits for the only thing that reads it, an
+  // undo: four more replays of the move, on every move of a hidden step
+  else if (holding && segmentKey(r.state) === room.segKey) {
+    room.seenPending.push({
+      i: room.segSeen.length - 1, before, action, after: r.state, events: r.events,
+      frozen: room.segSnapshot, names: [...room.names],
+    });
+  }
   room.events.push(...r.events);
   if (isFix && room.segSnapshot && room.segKey !== null && segmentKey(r.state) === room.segKey) {
     room.segSnapshot = amendFrozen(room.segSnapshot, action, before);
@@ -2975,6 +2999,7 @@ export function openSegment(room: Room): void {
  * bookkeeping goes with it, and the new game's first segment opens now. */
 function resetSegment(room: Room): void {
   room.segSeen = [];
+  room.seenPending = [];
   room.ccMarks = [];
   room.segIdFloor = [];
   room.segRefs = [];
@@ -3239,6 +3264,7 @@ function asLost(l: LostAction[], kind: 'lost' | 'changed'): LostAction[] {
  * other movement shows up as `changed` and is rolled back.
  */
 export function undoActionAt(room: Room, index: number): LostAction[] {
+  settleSeen(room);
   settleClock(room);   // bill up to the undo; the rebuild changes who runs
   room.proposal = null;   // BL-46: the board a proposed fix was about is moving
   const restore = [...room.actions];
@@ -3381,6 +3407,7 @@ export function segmentFloor(room: Room): number {
 export function ccFloor(room: Room, seat: Seat): number {
   const len = room.actions.length;
   if (!room.state.sequential || room.frozen || decidedWinner(room) !== null) return len;
+  settleSeen(room);
   let floor = ccUndoFloor(room.ccMarks, seat, room.state);
   if (floor >= len) return len;
   floor = Math.max(floor, lastSeen(room.segSeen, 0, floor) + 1, lastSeen(room.segSeen, 1, floor) + 1, amendFloor(room));
@@ -3393,6 +3420,7 @@ export const ccUndoOpen = (room: Room, seat: Seat): boolean =>
   !!room.state.sequential && ccFloor(room, seat) < room.actions.length;
 
 export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
+  settleSeen(room);
   // CT-160: an undo is a WRITE to the log — it splices an action out and
   // rebuilds. `applyToRoom` would not stop it (undoActionAt replays through
   // rebuild(), not through it), and editing a log that has already stopped
@@ -4315,6 +4343,7 @@ function assignRebuild(room: Room, rb: Rebuilt): void {
   room.closing = null;
   room.segStartIndex = rb.segStartIndex;
   room.segSeen = rb.segSeen;
+  room.seenPending = [];
   room.ccMarks = rb.ccMarks;
   room.segIdFloor = rb.segIdFloor;
   room.segRefs = rb.segRefs;
@@ -4908,7 +4937,7 @@ export function restoreRooms(now = Date.now()): void {
         // CR D8.5: the concession stamp survives the restart with the result
         ...(concession ? { concession } : {}),
         state, actions, events,
-        sockets: [null, null], watchers: new Set(), segKey, segSnapshot, heldEvents, heldFrames, closing: null, segStartIndex, segSeen,
+        sockets: [null, null], watchers: new Set(), segKey, segSnapshot, heldEvents, heldFrames, closing: null, segStartIndex, segSeen, seenPending: [],
         segIdFloor, segRefs, segPosRefs, ccMarks, deferred: [[], []],
         // BL-38: the file's own record, kept verbatim, and an empty slot for
         // every action it has none for. The rebuild above computed its own

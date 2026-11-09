@@ -178,6 +178,7 @@ test("CR D4.3c: the opponent's glimpse of the SHARED deck does not lock your und
   const top = glimpse(R, room, O);         // their peek at the deck you share
   tick(R, room, { type: 'decide', seat: O, choice: 0 });
 
+  R.settleSeen(room);   // measured when an undo asks; this test asks by hand
   const seen = room.segSeen.slice(room.segStartIndex);
   assert.ok(seen.some(s => typeof s[O] === 'string'), 'the room recorded that THEY saw hidden cards');
   assert.ok(!seen.some(s => typeof s[P] === 'string'), 'and that you saw none — you were shown nothing');
