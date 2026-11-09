@@ -24,6 +24,14 @@
  * game now plays differently; that is a rules change for every saved game and
  * needs its own round.
  *
+ * Re-blessed ONE entry on 2026-11-09 (report #344, CT-538, CR 714.2): a unit
+ * sacrificed as its own ability's cost now leaves its last-known snapshot on
+ * that ability. `ref:2026-11-29-owngoal` sacrifices Sprouter at its step 86.
+ * Measured before the re-bless, recording every step on both engines: steps
+ * 87–89 differ ONLY by `stack[0].lastKnown` (Sprouter, no attributes); with it
+ * stripped, every state, event and legal list is identical. A full rewrite of
+ * the golden moved that entry and no other.
+ *
  * Re-blessed SIX fuzz entries on 2026-11-08 (report #342, CR 720.6): a unit's
  * mods now move with it between regions (the attack, a counterattacker's
  * arrival), where they used to keep the region they were applied in.
