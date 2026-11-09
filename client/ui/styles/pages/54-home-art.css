@@ -48,7 +48,12 @@
 /* ── the three cards: each on its painting, the words on glass ── */
 .homeside { justify-content: space-between; gap: var(--space-3); background: var(--color-surface-sunken);
   border-color: color-mix(in srgb, var(--color-border) 80%, transparent); box-shadow: var(--shadow-1); }
-.homeside > :not(.homeart):not(.homesideopen) { position: relative; z-index: 1; }
+/* the words draw over the painting, but a click on them falls through to the
+   stretched .homesideopen beneath: the whole card opens its page, title and
+   text included (report #352: only the gaps between them used to). A real
+   control inside (Matchmaking's Join) takes its own clicks back. */
+.homeside > :not(.homeart):not(.homesideopen) { position: relative; z-index: 1; pointer-events: none; }
+.homeside > :not(.homeart):not(.homesideopen) :is(button, a, input, select, textarea, label, summary) { pointer-events: auto; }
 .homesideart img { filter: saturate(1.2) brightness(1.05); transition: transform var(--dur-slow) var(--ease-out); }
 /* only the title's strip is shaded, so the painting reads */
 .homesideart::after { content: ''; position: absolute; inset: 0;

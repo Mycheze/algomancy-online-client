@@ -138,7 +138,6 @@ export interface TodoEntry {
 import '../engine/src/cards/registry.ts';
 import { CLOSED } from './card-todo-closed.ts';
 import { still } from './card-todo-helpers.ts';
-import { readStyles } from '../ui/test/read-styles.ts';
 
 // ── proofs for the comprehensive-rules findings (CT-226 on) ─────────────
 // Each finding was re-checked against HEAD before it was filed. A proof
@@ -214,16 +213,6 @@ const OPEN: TodoEntry[] = [
     fix: "Owner call before code (it is a flow): either (a) a friend's constructed room takes the joiner's deck only from the waiting room's own \"Play this deck\" (takesJoinDeck true only on `pick`, as league rooms), so both seats see their deck before the game is dealt; or (b) keep the instant deal but show the deck being brought on the join step (the room link's landing and the home Join sheet) with a way to change it. Either way, a server test that a non-pick join of a friend's waiting constructed room does or does not register, and a ui test of what the joiner is shown.",
     proof: () => still('server/rooms.ts', "return !room.league || pick;"),
     reportId: 357,
-    status: 'open',
-  },
-  {
-    id: 543, area: "client", severity: "minor",
-    title: "the home page's League, Challenge and Matchmaking cards do nothing when their title (or their text) is clicked",
-    detail: "Report #352 (mycheze, home, 2026-11-08, ux): \"The header text on the League and Challenge and Matchmaking is an unclickable row. It's weird and the whole card should be able to be clicked\". Each side card is meant to open its page wherever it is clicked: a stretched transparent button, `.homesideopen` (ui/pages/home.ts sideCardHtml; styles/pages/06-home.css ~line 153, `position: absolute; inset: 0`), covers it. But styles/pages/54-home-art.css line 51, `.homeside > :not(.homeart):not(.homesideopen) { position: relative; z-index: 1; }`, lifts the title, the body's glass and everything else above that button, so a click on them lands on a heading or a div and nothing happens; only the gaps between them open the page.",
-    evidence: "Report #352 (page: home, no room). Code read 2026-11-08 (steward triage): the z-index lift above is the only rule stacking the card's children, and the title and body carry no click handler of their own. Not seen in a browser (none on the box).",
-    fix: "Let the click through to the stretched button everywhere except real controls: `pointer-events: none` on the lifted children with `pointer-events: auto` back on buttons and links inside them (Matchmaking's Join), keeping the lift so the words still draw over the painting. A ui test over the CSS (read through ui/test/read-styles.ts) that the title and body do not take pointer events while a Join button inside does.",
-    proof: () => readStyles().replace(/\s+/g, ' ').includes(".homeside > :not(.homeart):not(.homesideopen) { position: relative; z-index: 1; }"),
-    reportId: 352,
     status: 'open',
   },
   {

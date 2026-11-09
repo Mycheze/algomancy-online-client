@@ -301,8 +301,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 352, room: "", date: "2026-11-08",
     report: "mycheze, home (ux): \"The header text on the League and Challenge and Matchmaking is an unclickable row. It's weird and the whole card should be able to be clicked\"",
-    status: 'live',
-    note: "Real, by reading. Each side card is meant to open its page wherever it is clicked: a stretched transparent button (.homesideopen, pages/home.ts sideCardHtml) covers it. But styles/pages/54-home-art.css lifts every other child of the card to z-index 1 above that button, so the title strip and the body's glass catch the click and nothing happens; only the gaps between them open the page. CT-543.",
+    status: 'fixed',
+    guards: [
+      "1185-home-side-card-click-through.test.ts::the lifted title and body of a home side card let a click through to the card's own button",
+    ],
+    note: "Real, by reading. Each side card is meant to open its page wherever it is clicked: a stretched transparent button (.homesideopen, pages/home.ts sideCardHtml) covers it. But styles/pages/54-home-art.css lifts every other child of the card to z-index 1 above that button, so the title strip and the body's glass catch the click and nothing happens; only the gaps between them open the page. CT-543. Fixed 2026-11-09: the lifted words take no pointer events, so a click anywhere on the card falls through to its button; buttons and links inside (Matchmaking's Join) take their own clicks back.",
   },
   {
     id: 353, room: "", date: "2026-11-08",
