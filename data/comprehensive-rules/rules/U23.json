@@ -683,7 +683,7 @@
     "key": "annexd.general.hidden-segment",
     "parent": "D1",
     "order": 4,
-    "text": "A hidden simultaneous segment is a part of the turn in which both players act at once and neither sees what the other does until both are done. The resource step, the haste step and deployment are hidden simultaneous segments, except in Competitive Constructed, where no step is hidden (rule formats.constructed.competitive.order).",
+    "text": "A hidden simultaneous segment is a part of the turn in which both players act at once and neither sees what the other does until both are done. The resource step, the haste step and deployment are hidden simultaneous segments, except under the Competitive rules set, where no step is hidden (rule formats.constructed.competitive.order).",
     "examples": [
       {
         "text": null,
@@ -724,6 +724,11 @@
           "quote": "CC needs to have the actual, rules complete priority system where there are no true simultanous zones.",
           "adopted": "2026-11-02",
           "from": "chat 2026-11-02"
+        },
+        {
+          "quote": "Competitive = entirely turn based, INT while NIT watches, then swap",
+          "adopted": "2026-11-08",
+          "from": "report #356, 2026-11-08 (home page)"
         }
       ],
       "engine": [],
@@ -742,7 +747,7 @@
     "key": "annexd.general.initiative-order",
     "parent": "D1",
     "order": 5,
-    "text": "Where the printed rules have the initiative player take the resource step and the haste step first, and the initiative team deploy first (rules turn.planning.order and turn.deploy.order), this client runs those steps for both players at once, each hidden from the other (rule annexd.general.hidden-segment). The non-initiative player neither waits for the initiative player nor sees what they did before acting. This is a house rule of the client. In Competitive Constructed the house rule does not apply, and the printed order holds (rule formats.constructed.competitive.order).",
+    "text": "Where the printed rules have the initiative player take the resource step and the haste step first, and the initiative team deploy first (rules turn.planning.order and turn.deploy.order), this client runs those steps for both players at once, each hidden from the other (rule annexd.general.hidden-segment). The non-initiative player neither waits for the initiative player nor sees what they did before acting. This is a house rule of the client, and the rules set it belongs to is called Casual. A draft or a constructed game may instead be played with the Competitive rules set, in which the house rule does not apply and the printed order holds (rule formats.constructed.competitive.order).",
     "examples": [
       {
         "text": "The non-initiative player is offered plays at once in deployment, and can finish deploying while the initiative player is still acting.",
@@ -782,6 +787,21 @@
           "quote": "The INT player always does their planning/haste/deployment first, while NIT watches, then they switch.",
           "adopted": "2026-11-02",
           "from": "chat 2026-11-02"
+        },
+        {
+          "quote": "Casual = simultaneous actions during simultaneous phases",
+          "adopted": "2026-11-08",
+          "from": "report #356, 2026-11-08 (home page)"
+        },
+        {
+          "quote": "Competitive = entirely turn based, INT while NIT watches, then swap",
+          "adopted": "2026-11-08",
+          "from": "report #356, 2026-11-08 (home page)"
+        },
+        {
+          "quote": "So both draft AND constructed should have the competitive vs casual slider since that's more about the *rules* set.",
+          "adopted": "2026-11-08",
+          "from": "report #356, 2026-11-08 (home page)"
         }
       ],
       "engine": [],
@@ -4555,7 +4575,7 @@
     "key": "annexd.undo.competitive",
     "parent": "D4",
     "order": 6,
-    "text": "In Competitive Constructed (rule formats.constructed.competitive), the player taking the resource step, the haste step or deployment may undo their own actions in that step, one at a time, until they finish the step. An undo cannot go back past the start of the step, past an action of the other player, or past an action that drew, searched, shuffled or reordered a deck, looked at a hand, or revealed a hidden card.",
+    "text": "Under the Competitive rules set (rule formats.constructed.competitive.order), the player taking the resource step, the haste step or deployment may undo their own actions in that step, one at a time, until they finish the step. An undo cannot go back past the start of the step, past an action of the other player, or past an action that drew, searched, shuffled or reordered a deck, looked at a hand, or revealed a hidden card.",
     "examples": [
       {
         "text": "The initiative player activates a resource, recycles a card and exchanges a Prismite: all three can be undone until they press Done, and none of them after.",

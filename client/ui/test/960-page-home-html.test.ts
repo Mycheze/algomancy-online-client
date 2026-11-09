@@ -85,8 +85,13 @@ const signedIn = (over: Partial<HomeView> = {}): HomeView => view({
   competitive: { signedIn: true, decks: CC, bestOf: 3, pick: CC[0]! },
   ...over,
 });
-const cons = (v: HomeView, format: HomeView['format'] = 'casual'): HomeView =>
-  ({ ...v, mode: 'constructed', format, clock: { mode: format === 'competitive' ? 'competitive' : 'constructed', auto: true, now: 45 * 60_000, byModeMin: 45 } });
+/** a Constructed view; Best of follows the rules set's default (ui/match.ts
+ * bestOfFor: Casual one game, Competitive three) unless `bestOf` is given */
+const cons = (v: HomeView, format: HomeView['format'] = 'casual', bestOf: 1 | 3 = format === 'casual' ? 1 : v.competitive.bestOf): HomeView => {
+  const match = format === 'competitive' || bestOf === 3;
+  return { ...v, mode: 'constructed', format, competitive: { ...v.competitive, bestOf },
+    clock: { mode: match ? 'competitive' : 'constructed', auto: true, now: 45 * 60_000, byModeMin: 45 } };
+};
 
 const btns = (html: string): string[] => [...html.matchAll(/data-btn="([^"]+)"/g)].map(m => m[1]!);
 /** the region of the shell: top bar, main, bottom bar */
@@ -146,7 +151,15 @@ test('960 §3 Draft: Mode, clock, elements, the custom rules rows, Create room',
   const main = region(html, 'main');
   // the rows, in order, each under its label
   const labels = [...main.matchAll(/<div class="ui-setting-row__label">([^<]+)<\/div>/g)].map(m => m[1]);
-  assert.deepEqual(labels, ['Mode', 'Clock', 'Elements', 'Cards', 'Banned', 'Game values']);
+  assert.deepEqual(labels, ['Mode', 'Rules', 'Clock', 'Elements', 'Cards', 'Banned', 'Game values']);
+  // report #356: the rules set, on Draft too — Casual first and on, each option's tooltip says what it means
+  assert.match(main, /data-btn="home-format" type="button" data-value="casual" aria-pressed="true" title="Casual: both players take the resource step, the haste step and deployment at the same time[^"]*" data-format="casual">Casual</);
+  assert.match(main, /data-btn="home-format" type="button" data-value="competitive" aria-pressed="false" title="Competitive: the printed turn order\. The initiative player takes [^"]*" data-format="competitive">Competitive</);
+  assert.doesNotMatch(main, /data-rules=/, 'a Casual draft is the room it always was');
+  const ccDraft = region(homeHtml(view({ format: 'competitive' })), 'main');
+  assert.match(buttonOf(ccDraft, 'newgame'), /data-mode="draft" data-rules="competitive">Create room</, 'a Competitive draft says so on its Create button');
+  assert.match(buttonOf(homeHtml(view({ format: 'competitive', draft: { ...view().draft, fixedOpen: true, els: ['fire', 'wood', 'water'] } })), 'newgame'),
+    /data-mode="draft" data-els="1" data-rules="competitive">/, '…and with the elements picked now');
   assert.match(main, /data-btn="cr-beginner"[^>]*aria-pressed="true"[^>]*data-on="0">Standard</, 'first visit: Standard');
   assert.doesNotMatch(main, /homemodehint/, 'no Beginner line while Standard');
   assert.match(main, /data-btn="cr-simple"/);
@@ -207,6 +220,26 @@ test('960 §4 Constructed: Casual and Competitive', () => {
   const mine = homeHtml(cons(signedIn({ hasDeck: true })));
   assert.match(mine, /data-btn="deck-openpage"[^>]*>My decks →/);
   assert.doesNotMatch(mine, /data-sheet="import"/);
+  // report #356: Rules and Best of are two choices, both shown, with no subtext line for the rules
+  const consLabels = (h: string): string[] => [...region(h, 'main').matchAll(/<div class="ui-setting-row__label">([^<]+)<\/div>/g)].map(m => m[1]!);
+  assert.deepEqual(consLabels(out), ['Rules', 'Best of', 'Clock', 'Deck']);
+  assert.match(out, /data-btn="cc-bo" type="button" data-value="1" aria-pressed="true" data-bo="1">1 game</, 'Casual: one game first');
+  assert.match(out, /data-btn="home-format"[^>]*title="Casual: [^"]*" data-format="casual">Casual</);
+  assert.doesNotMatch(out, /Players take each step in turn/);
+  // Casual, Best of 3: a match — the sideboard line, the match clock, the CC picker, and a Create match that says Casual
+  const casualBo3 = homeHtml(cons(signedIn(), 'casual', 3));
+  assert.deepEqual(consLabels(casualBo3), ['Rules', 'Best of', 'Clock', 'Deck']);
+  assert.match(casualBo3, /data-btn="home-format"[^>]*aria-pressed="true"[^>]*data-format="casual"/);
+  assert.match(casualBo3, /data-bo="3">3 games</);
+  assert.match(casualBo3, /A sideboard of up to 7, swapped between games\./);
+  assert.match(casualBo3, /data-clockfor="competitive"/, 'the match clock');
+  assert.match(buttonOf(casualBo3, 'cc-new'), /data-rules="casual">Create match</);
+  assert.doesNotMatch(casualBo3, /data-btn="newgame"/);
+  assert.match(homeHtml(cons(view(), 'casual', 3)), /Matches of three games need an account/);
+  // Competitive, Best of 1: still a match, one game, played in turn
+  const ccBo1 = homeHtml(cons(signedIn(), 'competitive', 1));
+  assert.match(buttonOf(ccBo1, 'cc-new'), /data-rules="competitive">Create match</);
+  assert.doesNotMatch(ccBo1, /A sideboard of up to 7/, 'one game: no sideboarding line');
   // competitive: Best of (3 first), the match clock, the CC picker, Create match
   const cc = homeHtml(cons(signedIn(), 'competitive'));
   assert.match(cc, /data-btn="cc-bo" type="button" data-value="3" aria-pressed="true" data-bo="3">3 games</);
@@ -221,12 +254,13 @@ test('960 §4 Constructed: Casual and Competitive', () => {
   assert.match(buttonOf(cc, 'cc-new'), />Create match</);
   assert.doesNotMatch(cc, /data-btn="newgame"/);
   assert.match(buttonOf(homeHtml(cons(signedIn({ competitive: { signedIn: true, decks: [CC[1]!], bestOf: 1, pick: null } }), 'competitive')), 'cc-new'),
-    /type="button" disabled>Pick a deck first</);
+    /type="button" disabled data-rules="competitive">Pick a deck first</);
   // competitive signed out: it says so, with the sign-in, instead of disappearing
   const ccOut = homeHtml(cons(view(), 'competitive'));
   assert.match(ccOut, /Competitive matches need an account/);
   assert.match(region(ccOut, 'main'), /data-btn="acct-open-auth"/);
-  assert.doesNotMatch(ccOut, /cc-new|cc-bo|newgame/);
+  assert.doesNotMatch(ccOut, /cc-new|newgame/);
+  assert.match(ccOut, /data-btn="cc-bo"/, 'report #356: the two choices stay, so switching to Casual · 1 game is one click away');
   assert.match(ccOut, /data-sheet="join"/, 'joining still works');
 });
 

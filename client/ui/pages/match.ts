@@ -79,6 +79,9 @@ export function ccDeckSelectHtml(decks: CcDeck[] | null, pick: CcDeck | null): s
     </select>`;
 }
 
+/** report #356: a match is Casual or Competitive by its rules set */
+const matchKind = (w: { casual?: true }): string => (w.casual ? 'Casual' : 'Competitive');
+
 export interface CompetitiveCardView {
   signedIn: boolean;
   /** the collection with each deck's Competitive verdict (ui/decks.ts), or null while it loads */
@@ -447,8 +450,8 @@ function sideboardTableHtml(v: MatchRoomView): string {
   // `ccpage` stays the root's LAST class (ui/report.ts pageOf reads it); `ccsbtable` marks this screen
   return frameHtml({
     page: 'ccsbtable ccpage',
-    title: `Competitive — Best of ${w.bestOf} — room ${v.room}`,
-    titleHtml: `Competitive<span class="ccsbbo"> — Best of ${w.bestOf}</span><small>room <span class="roomcode">${esc(v.room)}</span></small>`,
+    title: `${matchKind(w)} — Best of ${w.bestOf} — room ${v.room}`,
+    titleHtml: `${matchKind(w)}<span class="ccsbbo"> — Best of ${w.bestOf}</span><small>room <span class="roomcode">${esc(v.room)}</span></small>`,
     back: { dataBtn: 'gohome', label: 'Leave' },
     centerHtml: tableMatchHtml(v),
     toolsHtml: tableToolsHtml(v, live),
@@ -506,7 +509,7 @@ export function matchRoomHtml(v: MatchRoomView): string {
   // the room in the frame (pages/lobby.ts roomFrameHtml); `ccpage` stays the
   // root's LAST class (report.ts pageOf)
   return roomFrameHtml({
-    page: 'ccpage', kind: `Competitive — Best of ${w.bestOf}`, room: v.room, chrome: v.chrome,
+    page: 'ccpage', kind: `${matchKind(w)} — Best of ${w.bestOf}`, room: v.room, chrome: v.chrome,
     cardHtml: card + roomSection(v.error ? statusMessage({ tag: 'p', className: 'deckmsg', text: v.error }) : ''),
     footHtml: reg ? '<p class="homefoot">Game 1 deals when both decks are in. Initiative is random.</p>' : '',
   });

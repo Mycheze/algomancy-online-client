@@ -505,12 +505,20 @@ export function savedRules(raw: unknown, mode: GameMode): GameRules | undefined 
   if (raw === undefined || raw === null) return undefined;
   const r = raw as { sequential?: unknown; initiative?: unknown };
   const keys = typeof raw === 'object' ? Object.keys(raw as object) : ['?'];
-  if (mode !== 'constructed' || r.sequential !== true
+  // report #356: the Competitive rules (`sequential`) take a draft game too,
+  // and a Casual match's games 2-3 carry a chosen initiative alone
+  if ((mode !== 'constructed' && mode !== 'draft')
+    || (r.sequential !== undefined && r.sequential !== true)
     || keys.some(k => k !== 'sequential' && k !== 'initiative')
-    || (r.initiative !== undefined && r.initiative !== 0 && r.initiative !== 1)) {
+    || (r.initiative !== undefined && (mode !== 'constructed' || (r.initiative !== 0 && r.initiative !== 1)))
+    || (mode === 'draft' && r.sequential !== true)) {
     throw new Error('saved with game rules this build cannot read — refusing to replay its log under the house rules');
   }
-  return { sequential: true, ...(r.initiative === 0 || r.initiative === 1 ? { initiative: r.initiative } : {}) };
+  if (r.sequential !== true && r.initiative === undefined) return undefined;
+  return {
+    ...(r.sequential === true ? { sequential: true as const } : {}),
+    ...(r.initiative === 0 || r.initiative === 1 ? { initiative: r.initiative } : {}),
+  };
 }
 
 /**

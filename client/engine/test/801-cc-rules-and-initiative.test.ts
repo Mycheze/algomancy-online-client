@@ -33,10 +33,12 @@ test('CC rules: no rules and empty rules deal byte-identical games in every mode
   }
 });
 
-test('CC rules: sequential is stamped on a constructed state, and only constructed may ask', () => {
+test('CC rules: sequential is stamped on a constructed or draft state; only constructed may choose the initiative', () => {
   assert.equal(deal(5, { sequential: true }).state.sequential, true);
+  // report #356: Competitive is the rules set on Draft too
+  assert.equal(createGame(5, undefined, 'draft', undefined, undefined, undefined, undefined, { sequential: true }).state.sequential, true);
+  assert.throws(() => createGame(5, undefined, 'shared', undefined, undefined, undefined, undefined, { sequential: true }), /constructed or draft mode/);
   for (const mode of ['shared', 'draft'] as GameMode[]) {
-    assert.throws(() => createGame(5, undefined, mode, undefined, undefined, undefined, undefined, { sequential: true }), /constructed mode/);
     assert.throws(() => createGame(5, undefined, mode, undefined, undefined, undefined, undefined, { initiative: 1 }), /constructed mode/);
   }
   assert.throws(() => deal(5, { initiative: 2 as Seat }), /seat/);

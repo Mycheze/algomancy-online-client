@@ -916,7 +916,7 @@
     "key": "formats.constructed.competitive",
     "parent": "901",
     "order": 9,
-    "text": "Competitive Constructed is constructed played as a match: either one game, or best of three, which the first player to win two games wins. The rules below add to the rest of rule 901 for it.",
+    "text": "Constructed may be played as a match: either one game, or best of three, which the first player to win two games wins. A match is played with either rules set, Casual or Competitive (rule annexd.general.initiative-order); the length and the rules set are chosen apart. The rules below add to the rest of rule 901 for a match, and for the Competitive rules set.",
     "examples": [],
     "see": [
       "annexd.modes.competitive"
@@ -930,6 +930,11 @@
           "quote": "Matches can actually be Best of 3 (not just Bo1 like we have now), so that needs to be made an option",
           "adopted": "2026-11-02",
           "from": "chat 2026-11-02"
+        },
+        {
+          "quote": "Constructed should have Best of 1 vs Best of 3 for both competitive and casual (since it doesn't matter what rules set is being used, it just adds sideboarding).",
+          "adopted": "2026-11-08",
+          "from": "report #356, 2026-11-08 (home page)"
         }
       ],
       "engine": [],
@@ -946,7 +951,7 @@
     "key": "formats.constructed.competitive.order",
     "parent": "formats.constructed.competitive",
     "order": 1,
-    "text": "In Competitive Constructed the resource step, the haste step and deployment are taken in the printed order: the initiative player takes each of them first while the non-initiative player waits and watches, and then the non-initiative player takes it (rules turn.planning.order and turn.deploy.order). The client's simultaneous hidden steps (rule annexd.general.initiative-order) do not apply. The draw phase is still taken by both players at once, and the resource step begins only when both players have put their cards back (rules formats.constructed.draw-phase and turn.planning.order.sync).",
+    "text": "Under the Competitive rules set, in a constructed game or a draft game, the resource step, the haste step and deployment are taken in the printed order: the initiative player takes each of them first while the non-initiative player waits and watches, and then the non-initiative player takes it (rules turn.planning.order and turn.deploy.order). The client's simultaneous hidden steps (rule annexd.general.initiative-order) do not apply. The draw phase of constructed and the draft step of a draft are still taken by both players at once, and the resource step begins only when both players have put their cards back, or both have drafted (rules formats.constructed.draw-phase and turn.planning.order.sync).",
     "examples": [
       {
         "text": "Both players put their two cards back at the same time, and either may go first.",
@@ -967,6 +972,10 @@
       {
         "text": "In deployment the non-initiative player cannot play a unit until the initiative player is done deploying.",
         "test": "803-cc-haste-and-deploy.test.ts::CC deployment: only the initiative player deploys, then the other, and the log says so"
+      },
+      {
+        "text": "In a Competitive draft, an initiative player who has drafted is offered nothing until the other player has drafted too, and then takes the resource step first.",
+        "test": "1193-competitive-draft.test.ts::Competitive draft: the initiative player who drafts first waits for the other before the resource step"
       }
     ],
     "see": [
@@ -1005,6 +1014,16 @@
           "quote": "The INT player always does their planning/haste/deployment first, while NIT watches, then they switch.",
           "adopted": "2026-11-02",
           "from": "chat 2026-11-02"
+        },
+        {
+          "quote": "Competitive = entirely turn based, INT while NIT watches, then swap",
+          "adopted": "2026-11-08",
+          "from": "report #356, 2026-11-08 (home page)"
+        },
+        {
+          "quote": "So both draft AND constructed should have the competitive vs casual slider since that's more about the *rules* set.",
+          "adopted": "2026-11-08",
+          "from": "report #356, 2026-11-08 (home page)"
         }
       ],
       "engine": [
@@ -1031,7 +1050,7 @@
     "key": "formats.constructed.competitive.sideboard",
     "parent": "formats.constructed.competitive",
     "order": 2,
-    "text": "In Competitive Constructed each deck may have a sideboard of up to 7 cards. The limit of 2 copies of a card (rule formats.constructed.copies) counts the deck and its sideboard together.",
+    "text": "In a match each deck may have a sideboard of up to 7 cards. The limit of 2 copies of a card (rule formats.constructed.copies) counts the deck and its sideboard together.",
     "examples": [
       {
         "text": "A deck registered with a sideboard of 7 cards is accepted; one with a sideboard of 8 cards is refused.",
@@ -1059,6 +1078,11 @@
           "quote": "Each deck can have 7 cards (and the whole list can still only have max of 2 copies of a single card)",
           "adopted": "2026-11-02",
           "from": "chat 2026-11-02"
+        },
+        {
+          "quote": "Constructed should have Best of 1 vs Best of 3 for both competitive and casual (since it doesn't matter what rules set is being used, it just adds sideboarding).",
+          "adopted": "2026-11-08",
+          "from": "report #356, 2026-11-08 (home page)"
         }
       ],
       "engine": [],

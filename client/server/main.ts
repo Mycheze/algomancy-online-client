@@ -61,7 +61,7 @@ import {
 import {
   concedeMatch, matchGameDecided, matchLobbyInfo, matchOfRoom, matchOp, matchSeatJoined, matchStillOpen,
   matchSummary, matchesFor, playsIn, reconcileMatches, registerSeat, registrationFor, reserveMatchId,
-  setMatchHooks, startMatch, sweepMatches, type MatchLobbyInfo,
+  setMatchHooks, startMatch, matchRules, sweepMatches, type MatchLobbyInfo,
 } from './match.ts';
 import { loadMatches } from './match-store.ts';
 import { fileDispute } from './dispute.ts';
@@ -1600,6 +1600,15 @@ function seatBadges(room: Room): { badges?: [SeatBadge | null, SeatBadge | null]
   return b[0] || b[1] ? { badges: b } : {};
 }
 
+/** docs/22 §3.3, for every game of a MATCH: the opponent's deck elements are
+ * not sent, because between games a sideboard can change them. viewFor drops
+ * them on a Competitive (`sequential`) state; a Casual match (report #356) has
+ * no such stamp, so the match link decides here. */
+function matchView<V extends { deckElements?: unknown[][] }>(room: Room, v: V, seat: Seat): V {
+  if (!room.match || !v.deckElements) return v;
+  return { ...v, deckElements: v.deckElements.map((els, s) => (s === seat ? els : [])) };
+}
+
 function baseView(room: Room, seat: Seat) {
   // BL-26: null for a room with the clock off, and then the field is OMITTED
   // rather than sent as null — a client must draw no clocks at all, and the
@@ -1608,7 +1617,7 @@ function baseView(room: Room, seat: Seat) {
   // at creation, so a room that has never sent a clock never will.)
   const clock = clockSnapshot(room);
   return {
-    view: viewFor(room.state, seat, room.segSnapshot, hiddenActionsFrom(room, seat)),
+    view: matchView(room, viewFor(room.state, seat, room.segSnapshot, hiddenActionsFrom(room, seat)), seat),
     // CR D8.4: the runner screen's payload, on every push. `undefined` for every
     // ordinary room — which is what keeps the tester out of normal play: a
     // client only ever draws the verdict bar when the SERVER says this room is
@@ -2480,6 +2489,9 @@ wss.on('connection', ws => {
        *  only when this join CREATES the room; sanitizeClock takes it from
        *  there. Absent from every older client, which gets the default. */
       clock?: unknown;
+      /** report #356: a draft's creating join may say `'competitive'` (each
+       *  step in turn); read only when this join CREATES the room */
+      rules?: unknown;
       /** BL-18: this seat's "nothing may act for me" switch, off the browser
        *  that owns it. Never persisted; re-asserted on every join. */
       on?: unknown;
@@ -2775,6 +2787,8 @@ wss.on('connection', ws => {
       const ccCreate = !existing && mode === 'constructed' && !single && !!msg.cc && typeof msg.cc === 'object';
       let ccReg: import('./match-store.ts').Registered | null = null;
       let ccId: string | null = null;
+      // report #356: Best of is apart from the rules set — a match may be Casual
+      const ccCasual = ccCreate && (msg.cc as { casual?: unknown }).casual === true;
       if (ccCreate) {
         const who = accountForToken(msg.token);
         if (!who) return send(ws, { t: 'error', msg: 'a Competitive match needs an account — sign in (or play as a guest) first' });
@@ -2802,14 +2816,16 @@ wss.on('connection', ws => {
         // the whole match. Only ever a CREATING join: a league match room
         // exists before anybody joins it, so it keeps its fixed default.
         ccId ? (msg.clock !== undefined ? sanitizeClock(msg.clock) : MATCH_CLOCK_MS.constructed) : sanitizeClock(msg.clock), single,
-        ccId ? { rules: { sequential: true }, match: { id: ccId, game: 1 } } : undefined);
+        ccId ? { rules: matchRules({ casual: ccCasual }), match: { id: ccId, game: 1 } }
+          // report #356: a draft's creating link may ask for the Competitive rules
+          : mode === 'draft' && !existing && msg.rules === 'competitive' ? { rules: { sequential: true } } : undefined);
       // only reachable if the reservation expired between the check above and
       // here; treated exactly like a typo
       if (!room) return send(ws, { t: 'error', msg: `No game with code ${code}. Start a new game to create one.` });
       if (ccId && room.match?.id === ccId && !matchOfRoom(room)) {
         const bestOf = (msg.cc as { bestOf?: unknown }).bestOf === 1 ? 1 : 3;
-        startMatch(room, ccId, bestOf);
-        console.log(`[match] ${ccId}: new Best of ${bestOf} in ${room.code}`);
+        startMatch(room, ccId, bestOf, Date.now(), ccCasual);
+        console.log(`[match] ${ccId}: new ${ccCasual ? 'Casual' : 'Competitive'} Best of ${bestOf} in ${room.code}`);
       }
       // ⚠ the other half of the watcher/seat fence — see the ⚠ on `watch`.
       // A socket that was watching (this room or any other) stops the moment

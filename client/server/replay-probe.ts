@@ -243,15 +243,20 @@ export interface ProbeInput {
 /** a file's CC rules as this file can read them without today's modules (it
  * runs inside historical checkouts): `{sequential: true, initiative?: 0|1}`,
  * or a reason it cannot be read */
-function probeRules(raw: unknown): { rules?: { sequential: true; initiative?: 0 | 1 } } | { error: string } {
+function probeRules(raw: unknown): { rules?: { sequential?: true; initiative?: 0 | 1 } } | { error: string } {
   if (raw === undefined || raw === null) return {};
   const r = rec(raw);
   const keys = Object.keys(r);
-  if (r['sequential'] !== true || keys.some(k => k !== 'sequential' && k !== 'initiative')
+  // report #356: a Casual match's games 2-3 carry a chosen initiative alone
+  if ((r['sequential'] !== undefined && r['sequential'] !== true) || keys.some(k => k !== 'sequential' && k !== 'initiative')
     || (r['initiative'] !== undefined && r['initiative'] !== 0 && r['initiative'] !== 1)) {
     return { error: 'this room was saved with game rules this probe cannot read' };
   }
-  return { rules: { sequential: true, ...(r['initiative'] === 0 || r['initiative'] === 1 ? { initiative: r['initiative'] } : {}) } };
+  if (r['sequential'] !== true && r['initiative'] === undefined) return {};
+  return { rules: {
+    ...(r['sequential'] === true ? { sequential: true as const } : {}),
+    ...(r['initiative'] === 0 || r['initiative'] === 1 ? { initiative: r['initiative'] } : {}),
+  } };
 }
 
 /**
@@ -335,7 +340,7 @@ export async function probe(raw: ProbeInput): Promise<ProbeResult> {
   // board says whether it was honoured
   if (cc.rules) {
     const st = rec(state);
-    if (st['sequential'] !== true || (cc.rules.initiative !== undefined && st['initiative'] !== cc.rules.initiative)) {
+    if ((cc.rules.sequential === true && st['sequential'] !== true) || (cc.rules.initiative !== undefined && st['initiative'] !== cc.rules.initiative)) {
       return {
         ok: false,
         error: 'this room was dealt with Competitive Constructed rules, and this engine did not deal them (an engine '

@@ -195,16 +195,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 546, area: "client", severity: "major",
-    title: "Casual vs Competitive is offered as friend's room vs match, not as the rules set (simultaneous or in turn) apart from Best of 1/3",
-    detail: "Report #356 (mycheze, home, 2026-11-08, ux, medium) — the owner's design decision, kept whole in BL-73's `said`: \"Casual = simultaneous actions during simultaneous phases / Competitive = entirely turn based, INT while NIT watches, then swap / Best of 1 or Best of 3 doesn't really matter for that, that should be a separate slider. So both draft AND constructed should have the competitive vs casual slider … add a little hover tool tip …\". Today the Format switch exists only on Constructed (ui/pages/home.ts constructedRowsHtml): Casual creates a friend's room, Competitive a match (Best of 1/3, sideboard, sign-in, and the in-turn rule stamped by server/match.ts as `rules: { sequential: true }`), with a subtext line instead of a tooltip.",
-    evidence: "Report #356 (page: home, no room). Code read 2026-11-08 (steward triage): the in-turn rule reaches a game only through a match (server/match.ts ~226, ~306), and the engine's GameRules.sequential is documented \"Constructed only\" (engine/src/types.ts ~56).",
-    fix: "BL-73 is the plan (it carries the questions to settle in code: sequential in draft, a Casual Best of 3, a Competitive single game). This entry closes when BL-73's doneWhen lines are met.",
-    proof: () => still('ui/pages/home.ts', "'A sideboard of up to 7, swapped between games. Players take each step in turn.'"),
-    reportId: 356,
-    status: 'open',
-  },
-  {
     id: 547, area: "client", severity: "minor",
     title: "a cached card you may still use this turn shows beside your hand only at the instants it can be played, so it is easy to miss",
     detail: "Report #358 (mycheze, CNDX, 2026-11-08, ux, medium): \"Cached cards that are playable in a turn should probably ALWAYS appear to the right of the hand (even when not playable due to timing restrictions or something), but with the same \\\"playable/not playable\\\" UI that cards normally have in the hand. It's too easy to miss that it appears in your hand ONLY for brief moments.\" The hand-side strip (ui/main.ts handCachedHtml ~line 3698, CT-50 / report #103) draws only `playableCachedIndexes(legalFor(p))` — the entries with a legal offer THIS instant (ui/inspect.ts ~294) — so a glimpsed card whose timing is shut (a battle spell in deployment, a unit during battle) or that has no target yet vanishes from beside the hand and comes back at the next window. The engine already has the predicate the owner means: `cachePermission(seat, i)` is 'glimpse' or 'prophecy' while the entry may be used at all (the cache chip, `cacheChip`, reads it), and ui/inspect.ts cacheBlockReason already names why a live entry cannot be played right now ('timing', 'mana', 'no-target').",

@@ -17002,12 +17002,14 @@ export class E {
    * finished the draft step), and the initiative player first, then the other
    * (CR 501.4). The constructed draw-4/bottom-2 itself stays simultaneous
    * (CR 501.4: the draw and draft steps happen for both players at once), which
-   * is why this is not the gate on `bottomCards`. THE predicate: the reducer
+   * is why this is not the gate on `bottomCards`. A Competitive DRAFT game
+   * (report #356) likewise opens the resource step only once both seats have
+   * drafted and the packs have passed (`draftDone` back to null).  THE predicate: the reducer
    * and `legalActions` both read it. */
   planning(seat: Seat): boolean {
     const s = this.s;
     return s.phase === 'planning' && !s.planningDone[seat]
-      && (!s.sequential || (s.bottomDone == null && (seat === s.initiative || !!s.planningDone[s.initiative])));
+      && (!s.sequential || (s.bottomDone == null && s.draftDone == null && (seat === s.initiative || !!s.planningDone[s.initiative])));
   }
 
   /** `seat` may act in the haste step right now. The house rule: any seat not

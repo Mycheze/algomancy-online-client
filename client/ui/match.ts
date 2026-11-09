@@ -44,6 +44,8 @@ export type MatchPhase = 'game' | 'between' | 'paused' | 'over' | 'void';
  * opponent's deck is never in it: `ready` is all it says about them. */
 export interface MatchLobbyInfo {
   id: string; bestOf: 1 | 3; game: number;
+  /** report #356: a Casual match — its games take both players' steps at once */
+  casual?: true;
   score: [number, number]; names: [string, string];
   banks: [number, number]; clockStart: number | null;
   phase: MatchPhase;
@@ -90,11 +92,18 @@ export const matchLink = (room: string, seat: Seat): string =>
 
 // ── module state ─────────────────────────────────────────────────────
 
-/** the home card's Best-of choice — Bo3 by default (§6.1); a post-game "New
+/** the home card's Best-of choice, null until one is made; a post-game "New
  * match" link brings the last one back as `?bo=1` */
-let bestOf: 1 | 3 = (() => {
-  try { return new URLSearchParams(location.search).get('bo') === '1' ? 1 : 3; } catch { return 3; }
+let bestOf: 1 | 3 | null = (() => {
+  try {
+    const q = new URLSearchParams(location.search).get('bo');
+    return q === '1' ? 1 : q === '3' ? 3 : null;
+  } catch { return null; }
 })();
+/** report #356: the Best of to show and to create — the choice made, or the
+ * rules set's default: Casual one game (a friend's room, as it always was),
+ * Competitive three (§6.1) */
+export const bestOfFor = (casual: boolean): 1 | 3 => bestOf ?? (casual ? 1 : 3);
 /** the deck this browser brings to a match (home card, game-1 waiting room).
  * Kept in localStorage (BL-55): opening a match room is a page load
  * (`location.search`), so a pick held only in module state went back to the
@@ -227,7 +236,7 @@ export function wireDeckSelect(rerender: () => void): void {
 }
 
 /** New match: reserve a code, then open the room as its creator */
-function newMatch(decks: CcDeck[] | null, fail: (msg: string) => void): void {
+function newMatch(decks: CcDeck[] | null, fail: (msg: string) => void, casual: boolean): void {
   const pick = decks ? pickOf(decks) : null;
   if (!pick) return;
   fetch('/api/new').then(async r => {
@@ -238,7 +247,8 @@ function newMatch(decks: CcDeck[] | null, fail: (msg: string) => void): void {
     // match default. Never on a link for the other seat (matchLink).
     const ms = chosenMatchClockMs();
     const clock = ms === null ? '' : `&clock=${ms}`;
-    location.search = `?ws=1&room=${encodeURIComponent(j.code)}&seat=0&mode=constructed&bo=${bestOf}&ccdeck=${encodeURIComponent(pick.id)}${clock}`;
+    // report #356: a Casual match says so on the creating link, as the Best of does
+    location.search = `?ws=1&room=${encodeURIComponent(j.code)}&seat=0&mode=constructed&bo=${bestOfFor(casual)}${casual ? '&rules=casual' : ''}&ccdeck=${encodeURIComponent(pick.id)}${clock}`;
   }).catch(() => fail('could not reach the server'));
 }
 
@@ -284,7 +294,7 @@ export function myMatchLine(m: MyMatch, now = Date.now()): { text: string; butto
 
 /** this module's state, as pages/match.ts's views read it */
 export function matchState(): { bestOf: 1 | 3; concedeAsk: boolean; mine: readonly MyMatch[] | null } {
-  return { bestOf, concedeAsk, mine };
+  return { bestOf: bestOf ?? 3, concedeAsk, mine };
 }
 
 // ── clicks ───────────────────────────────────────────────────────────
@@ -310,7 +320,7 @@ export function handleMatchButton(btn: HTMLElement, a: MatchActions): boolean {
   const w = a.lobby();
   switch (b) {
     case 'cc-bo': bestOf = btn.dataset['bo'] === '1' ? 1 : 3; a.rerender(); return true;
-    case 'cc-new': newMatch(a.decks(), a.fail); return true;
+    case 'cc-new': newMatch(a.decks(), a.fail, btn.dataset['rules'] === 'casual'); return true;
     case 'cc-open': {
       const seat: Seat = btn.dataset['seat'] === '1' ? 1 : 0;
       location.search = matchLink(btn.dataset['room'] ?? '', seat);

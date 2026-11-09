@@ -278,6 +278,9 @@ export function homeView(st: HomeState): HomeView {
   const yourMatches = yourMatchesHtml(yourMatchesView());
   const leagueMatches = lg.joinRowsHtml();
   const join = inbox.inviteCount() + mt.myMatchCount() + lg.joinCount();
+  // report #356: Best of's default follows the rules set until it is chosen
+  // (Casual one game, Competitive three, docs/22 §6.1)
+  const ccView = { ...competitiveCardView(signedIn, signedIn ? dk.competitiveDecks() : null), bestOf: mt.bestOfFor(homeFormat() === 'casual') };
   return {
     account: identityBarView(user, acct.resolvingUser()),
     nameBox: user || acct.resolvingUser() ? null : name,
@@ -290,11 +293,11 @@ export function homeView(st: HomeState): HomeView {
       fixedError: fixedVerdict.error, customError: customVerdict.error, custom: !!customVerdict.rules,
       rules: rulesView,
     },
-    clock: clockPickView(mode === 'constructed' && homeFormat() === 'competitive' ? 'competitive' : mode),
+    clock: clockPickView(mode === 'constructed' && homeIsMatch({ format: homeFormat(), competitive: ccView }) ? 'competitive' : mode),
     error: st.error,
     deckPicker: deckPickerView(),
     hasDeck: !!deck,
-    competitive: competitiveCardView(signedIn, signedIn ? dk.competitiveDecks() : null),
+    competitive: ccView,
     singleCard: sc.chosen(),
     leagueLive, challengeLive,
     badges: { alerts: inbox.inboxUnread(), join, updates: updatesUnseen() },
@@ -361,11 +364,34 @@ function elementPickHtml(d: HomeView['draft']): string {
 const create = (label: string, p: { dataBtn: string; attrs?: Record<string, string | number | boolean | undefined>; disabled?: boolean; title?: string }): string =>
   button({ label, variant: 'action', className: 'homecreate', dataBtn: p.dataBtn, attrs: p.attrs, disabled: p.disabled, title: p.title });
 
+/**
+ * Report #356 (owner, 2026-11-08): Casual and Competitive are the RULES SET —
+ * "Casual = simultaneous actions during simultaneous phases, Competitive =
+ * entirely turn based, INT while NIT watches, then swap" — on Draft and on
+ * Constructed alike, with the difference in a hover tooltip, not a subtext line.
+ */
+export const RULES_TIPS = {
+  casual: 'Casual: both players take the resource step, the haste step and deployment at the same time, and see what the other did once both are done.',
+  competitive: 'Competitive: the printed turn order. The initiative player takes the resource step, the haste step and deployment first while the other player watches, then the other player takes them.',
+} as const;
+
+function rulesRow(v: HomeView): string {
+  return row('Rules', segmented({
+    ariaLabel: 'Rules', size: 'sm',
+    options: (['casual', 'competitive'] as const).map(f => ({
+      label: f === 'casual' ? 'Casual' : 'Competitive', value: f, on: v.format === f,
+      dataBtn: 'home-format', attrs: { 'data-format': f }, title: RULES_TIPS[f],
+    })),
+  }));
+}
+
 function draftRowsHtml(v: HomeView): { rows: string; go: string } {
   const d = v.draft, k = d.k, r = d.rules;
   const picked = d.els.length === k;
   // Mode first: Beginner sets the elements, the cards and the values below it
+  const rules = v.format === 'competitive' ? { 'data-rules': 'competitive' } : {};
   const rows = row('Mode', `<div class="homemode">${modeHtml(r)}${r.beginner ? `<span class="homemodehint">${esc(BEGINNER_HINT)}</span>` : ''}</div>`)
+    + rulesRow(v)
     + row('Clock', clockPickHtml(v.clock, { look: 'segmented' }))
     + row('Elements', segmented({
       ariaLabel: 'Elements', size: 'sm',
@@ -386,44 +412,45 @@ function draftRowsHtml(v: HomeView): { rows: string; go: string } {
   const custom = d.custom ? 'Create custom room' : 'Create room';
   const go = d.fixedOpen
     ? create(picked ? `${custom} · ${d.els.map(cap).join(' + ')}` : `Pick ${k} elements (${d.els.length}/${k})`, {
-      dataBtn: 'newgame', attrs: { 'data-mode': 'draft', 'data-els': '1' },
+      dataBtn: 'newgame', attrs: { 'data-mode': 'draft', 'data-els': '1', ...rules },
       disabled: !picked || !!d.fixedError, title: picked && d.fixedError ? d.fixedError : undefined,
     })
-    : create(custom, { dataBtn: 'newgame', attrs: { 'data-mode': 'draft' }, disabled: !!d.customError, title: d.customError });
+    : create(custom, { dataBtn: 'newgame', attrs: { 'data-mode': 'draft', ...rules }, disabled: !!d.customError, title: d.customError });
   return { rows, go };
 }
 
+/** report #356: a Constructed game is a MATCH (accounts, a sideboard, the
+ * match clock) unless it is a Casual single game — Best of is apart from the
+ * rules set, so a Competitive single game is a Best of 1 match, as it was */
+export const homeIsMatch = (v: Pick<HomeView, 'format' | 'competitive'>): boolean =>
+  v.format === 'competitive' || v.competitive.bestOf === 3;
+
 function constructedRowsHtml(v: HomeView): { rows: string; go: string } {
-  const format = row('Format', segmented({
-    ariaLabel: 'Format', size: 'sm',
-    options: [
-      { label: 'Casual', value: 'casual', on: v.format === 'casual', dataBtn: 'home-format', attrs: { 'data-format': 'casual' } },
-      { label: 'Competitive', value: 'competitive', on: v.format === 'competitive', dataBtn: 'home-format', attrs: { 'data-format': 'competitive' } },
-    ],
-  }), v.format === 'competitive' ? 'A sideboard of up to 7, swapped between games. Players take each step in turn.' : '');
-  if (v.format === 'competitive') {
-    const c = v.competitive;
+  const c = v.competitive;
+  const choices = rulesRow(v)
+    + row('Best of', segmented({
+      ariaLabel: 'Best of', size: 'sm',
+      options: ([1, 3] as const).map(n => ({
+        label: `${n} game${n === 1 ? '' : 's'}`, value: String(n), on: c.bestOf === n, dataBtn: 'cc-bo', attrs: { 'data-bo': n },
+      })),
+    }), c.bestOf === 3 ? 'A sideboard of up to 7, swapped between games.' : '');
+  if (homeIsMatch(v)) {
     if (!c.signedIn) {
       // it says so instead of disappearing: a match hangs off two accounts
       return {
-        rows: format + `<div class="homeneedacct"><p>Competitive matches need an account, so the result can be kept.</p>
+        rows: choices + `<div class="homeneedacct"><p>${v.format === 'competitive' ? 'Competitive matches' : 'Matches of three games'} need an account, so the result can be kept.</p>
           ${button({ label: 'Sign in', variant: 'action', dataBtn: 'acct-open-auth' })}</div>`,
         go: '',
       };
     }
-    const rows = format
-      + row('Best of', segmented({
-        ariaLabel: 'Best of', size: 'sm',
-        options: ([1, 3] as const).map(n => ({
-          label: `${n} game${n === 1 ? '' : 's'}`, value: String(n), on: c.bestOf === n, dataBtn: 'cc-bo', attrs: { 'data-bo': n },
-        })),
-      }))
+    const rows = choices
       // docs/22 §6.1: the match clock — Default is the owner's 45 minutes each
       // for the whole match; the creator may override it (owner, 2026-11-03)
       + row('Clock', clockPickHtml(v.clock, { look: 'segmented' }))
       + row('Deck', ccDeckSelectHtml(c.decks, c.pick));
-    return { rows, go: create(c.pick ? 'Create match' : 'Pick a deck first', { dataBtn: 'cc-new', disabled: !c.pick }) };
+    return { rows, go: create(c.pick ? 'Create match' : 'Pick a deck first', { dataBtn: 'cc-new', attrs: { 'data-rules': v.format }, disabled: !c.pick }) };
   }
+  const format = choices;
   const importBtn = v.deckPicker.signedIn ? '' : button({ label: 'Import a deck…', variant: 'link', className: 'homeimport', ...opens('import') });
   const rows = format
     + row('Clock', clockPickHtml(v.clock, { look: 'segmented' }))
