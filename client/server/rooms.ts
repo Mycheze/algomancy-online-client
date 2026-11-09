@@ -21,7 +21,7 @@ import { AMEND_DESTS, AMEND_SOURCES, AMEND_UNIT_DESTS } from '../engine/src/type
 import { amendProblem, amendText } from '../engine/src/amend.ts';
 import { singleCardsOf } from './cardladder.ts';
 import { DECK_LIST } from '../engine/src/cards/registry.ts';
-import { amendFrozen, apply, checkDeck, checkSingleCard, checkSingleDeck, makesUnits, decisionBlocks, forcedAction, hiddenSegment, legalActions, planningStep, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import { amendFrozen, apply, checkDeck, checkSingleCard, checkSingleDeck, makesUnits, decisionBlocks, forcedAction, hiddenSegment, legalActions as engineLegalActions, planningStep, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
 // CR D8.4 — the scenario tester. `dealScenario` IS `createGame` when no scenario
 // id is passed, byte for byte, so every ordinary room is unaffected; when one
 // is passed it applies the scenario's deterministic board mutation. It is
@@ -304,7 +304,7 @@ export function legalInRoom(room: Room, seat: Seat): Action[] {
   // time, or a stamped result the replay never reached. The state still offers
   // a full hand of moves; the game is over anyway.
   if (decidedOutsideState(room)) return [];
-  return legalForSeat(room.state, seat, room.segKey, legalOnce);
+  return legalForSeat(room.state, seat, room.segKey, legalActions);
 }
 
 /* ONE BOARD, ONE LIST PER SEAT. One move used to build each seat's whole list
@@ -314,10 +314,10 @@ export function legalInRoom(room: Room, seat: Seat): Action[] {
  * never edited, so the object itself is the key. The list is shared: read it,
  * never change it. */
 const legalLists = new WeakMap<GameState, [Action[]?, Action[]?]>();
-export function legalOnce(state: GameState, seat: Seat): Action[] {
+export function legalActions(state: GameState, seat: Seat): Action[] {
   let lists = legalLists.get(state);
   if (!lists) legalLists.set(state, lists = []);
-  return lists[seat] ??= legalActions(state, seat);
+  return lists[seat] ??= engineLegalActions(state, seat);
 }
 
 /** One action of the open hidden step, held until an undo needs to know what
@@ -1589,7 +1589,7 @@ export function clockRunning(room: Room): [boolean, boolean] {
   // never billed for the wait and still is not.
   // …and a seat watching a playback (`watchHold`) is not billed either: the
   // board it is shown has nothing on it to decide
-  return [0, 1].map(s => legalOnce(room.state, s as 0 | 1).length > 0
+  return [0, 1].map(s => legalActions(room.state, s as 0 | 1).length > 0
     && room.passAllWait[s]?.at !== room.state.actionCount
     && room.watchHold[s] === null) as [boolean, boolean];
 }

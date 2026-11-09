@@ -39,12 +39,12 @@ test('1191 §1 the clock and the update read one list for one board', async () =
     const mod = await roomsAt(dir);
     const room = mod.createRoom('ONCA', 1191, ['A', 'B'], 'draft', ['fire', 'water', 'earth']);
     play(mod, room, 2);
-    const first = mod.legalOnce(room.state, 0);
-    assert.equal(mod.legalOnce(room.state, 0), first, 'a second ask builds nothing');
+    const first = mod.legalActions(room.state, 0);
+    assert.equal(mod.legalActions(room.state, 0), first, 'a second ask builds nothing');
     assert.equal(mod.legalInRoom(room, 0), first, 'and the update is sent that same list');
     assert.deepEqual(first, legalActions(room.state, 0), 'which is the engine answer');
     play(mod, room, 1);
-    assert.notEqual(mod.legalOnce(room.state, 0), first, 'a new board asks again');
+    assert.notEqual(mod.legalActions(room.state, 0), first, 'a new board asks again');
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
