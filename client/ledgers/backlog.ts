@@ -538,7 +538,14 @@ const OPEN: Entry[] = [
       + 'game…" (docs/23-ui-inventory/05 §18.13, missing possessive; pages/queue.ts searchingHtml). With no name it '
       + 'stays "Joining their game…". Swept the ui and server templates for another name used before a noun without '
       + '\'s: none. Left: §18.13\'s "Rank all seven" (server/trio.ts) — the game has seven elements and the method '
-      + 'ranks all of them, so it is not wrong today. Guarded by 970-page-queue-html.test.ts §2.',
+      + 'ranks all of them, so it is not wrong today. Guarded by 970-page-queue-html.test.ts §2.\n\n'
+      + '2026-11-09 (steward): the connecting screen says what it is waiting for (docs/23-ui-inventory/05 §18.15: '
+      + '"Connecting to the server…" shown while loading a replay file or booting a local lesson). Only a room link '
+      + 'waits for the server; the five boot branches that open their game in the page say "Setting up your lesson…", '
+      + '"Setting up the challenge…", "Loading the run…" (a watched challenge run), "Loading the replay…" and "Setting up '
+      + 'the board…" (a rules question), through ConnectingView.waiting (main.ts connectingLine). Guarded by '
+      + '1202-connecting-says-what-it-loads.test.ts (§2 a census of main.ts\'s boot chain). Left: §18.19, the '
+      + 'reconnect state offering "Back to the home screen" as if final.',
   },
   {
     id: 'BL-17',

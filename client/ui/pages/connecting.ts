@@ -16,9 +16,18 @@ import { roomFrameHtml, roomSection } from './lobby.ts';
 export interface ConnectingView {
   /** the refusal to show, or '' while still connecting */
   error: string;
+  /** the line shown while it is still on its way — what the page is actually
+   * waiting for. A room link waits for the server; a replay, a lesson, a
+   * challenge or a rules question is opened in this page and has no server to
+   * connect to, so it says what it is loading instead (docs/23-ui-inventory/05
+   * §18.15). Default: "Connecting to the server…" */
+  waiting?: string;
   /** the toolbar's account and bell (pages/frame.ts); signed out when absent */
   chrome?: FrameChrome;
 }
+
+/** what a room link waits for */
+export const CONNECTING = 'Connecting to the server…';
 
 /** Pure. A refused join needs a way out — without the button it is a dead
  * end you can only leave by editing the URL. (The toolbar's Home is one too.) */
@@ -27,7 +36,7 @@ export function connectingHtml(v: ConnectingView): string {
   return roomFrameHtml({
     page: 'joinscreen', kind: 'Algomancy', room: null, backLabel: 'Home',
     chrome: v.chrome ?? { signedIn: false, alerts: 0 },
-    cardHtml: roomSection(`<p${uiError ? ' class="joinerr"' : ''}>${uiError ? esc(uiError) : 'Connecting to the server…'}</p>
+    cardHtml: roomSection(`<p${uiError ? ' class="joinerr"' : ''}>${esc(uiError || v.waiting || CONNECTING)}</p>
     ${uiError ? backLink({ dataBtn: 'gohome', label: 'Back to the home screen', arrow: true }) : ''}`),
   });
 }

@@ -188,7 +188,7 @@ import * as admin from './pages/admin.ts';
 import * as jr from './pages/judgereview.ts';
 import { caretIn, type CaretSnap } from './pages/caret.ts';
 import { CLOCK_DEFAULT_MS, chosenClockMs, setMatchClockChoice } from './pages/clockpick.ts';
-import { connectingHtml } from './pages/connecting.ts';
+import { CONNECTING, connectingHtml } from './pages/connecting.ts';
 import { seatBadgeHtml, type SeatBadge } from './pages/profile.ts';
 import { importDeck } from './pages/deckpicker.ts';
 import { closeHomeSheet, openHomeSheet, paintHome, saveHomeName, setHomeFormat, setHomeMode } from './pages/home.ts';
@@ -1168,6 +1168,10 @@ let liveSession = true;
 const NO_GAME: Backend = { state: createGame(0).state, log: [], do() { /* nothing to play */ } };
 let h: Backend = NO_GAME;
 let uiError = '';
+/** the connecting screen's line while this page's game is on its way: a room
+ * link waits for the server, a page that opens its game in the browser (a
+ * replay, a lesson, a challenge, a rules question) says what it is loading */
+let connectingLine = CONNECTING;
 
 /** the zones a mod (augment/graft) can be applied from — the cache included (CR 507.2) */
 type ModZone = 'hand' | 'bin' | 'cache';
@@ -9357,7 +9361,7 @@ function renderConnecting(): void {
   // a refused join (a room code that names no game) lands here, so this screen
   // needs a way out — without the button it is a dead end you can only leave by
   // editing the URL
-  $app.innerHTML = connectingHtml({ error: uiError, chrome: frameChromeView() });   // pages/connecting.ts, in the app frame
+  $app.innerHTML = connectingHtml({ error: uiError, waiting: connectingLine, chrome: frameChromeView() });   // pages/connecting.ts, in the app frame
 }
 
 /** THE ROUTER for every page that is not a game: whichever page owns #app
@@ -12498,6 +12502,7 @@ if (params.has('room') && params.get('room')!.trim()) {
   openSocket = () => solo.server.socket() as unknown as WebSocket;
   NET = new NetBackend('LEARN', 0);
   h = NET;
+  connectingLine = 'Setting up your lesson…';   // in this page: no server to connect to
   renderConnecting();
 } else if (params.get('challenge') === 'play') {
   // docs/21 — a weekly challenge run: the Learn to Play room with the
@@ -12509,12 +12514,14 @@ if (params.has('room') && params.get('room')!.trim()) {
     openSocket = () => run.server.socket() as unknown as WebSocket;
     NET = new NetBackend('CHALLENGE', 0);
     h = NET;
+    connectingLine = 'Setting up the challenge…';
     renderConnecting();
   }
 } else if (params.get('challenge') === 'watch') {
   // docs/21 — watch a closed week's run: the BL-38 replay viewer, dealt the
   // challenge's game. The run names its challenge; the calendar has its deal.
   const runId = params.get('run') ?? '';
+  connectingLine = 'Loading the run…';
   renderConnecting();
   void (async () => {
     try {
@@ -12569,6 +12576,7 @@ if (params.has('room') && params.get('room')!.trim()) {
     ok?: boolean; file?: unknown; mySeat?: Seat | null; asAdmin?: boolean;
   };
   const code = params.get('replay')!.toUpperCase().trim();
+  connectingLine = 'Loading the replay…';
   renderConnecting();
   void (async () => {
     let r: ReplayPayload | null = null;
@@ -12635,6 +12643,7 @@ if (params.has('room') && params.get('room')!.trim()) {
     openSocket = () => rs.socket() as unknown as WebSocket;
     NET = new NetBackend(QUESTION_ROOM, 0, undefined, undefined, undefined, true);
     h = NET;
+    connectingLine = 'Setting up the board…';
     renderConnecting();
     openReplay(rs, {
       code: 'Rules question', verdict: 'staged', forked: false, partedAt: null, refusedAt: null,

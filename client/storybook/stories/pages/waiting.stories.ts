@@ -54,6 +54,7 @@ export const SingleCardDraw = {
 
 /* the two small screens on the way into a room */
 export const Connecting = { render: () => page(connectingHtml({ error: '' })) };
+export const LoadingReplay = { name: 'Connecting: loading a replay', render: () => page(connectingHtml({ error: '', waiting: 'Loading the replay…' })) };
 export const RefusedJoin = { name: 'Connecting: a refused join', render: () => page(connectingHtml({ error: 'There is no game with the code QXZZ.' })) };
 
 /* the deck picker on its own, in each of its states */
