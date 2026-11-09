@@ -75,6 +75,7 @@
 .pgbtns button { padding: var(--space-4); font-size: var(--text-14); }
 /* they asked first: the button is the answer to a question, so it looks like one */
 .pgwants { border-color: var(--glow); color: var(--glow); animation: livepulse 1.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .pgwants { animation: none; } }   /* the glow colour still says it */
 .pgpeek { align-self: center; background: none; border: none; color: var(--dim); font-size: var(--text-12); }
 .pgpeek:hover { border: none; color: var(--text); text-decoration: underline; }
 

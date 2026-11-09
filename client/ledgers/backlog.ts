@@ -519,7 +519,15 @@ const OPEN: Entry[] = [
       + 'sideboard bar, sign-in, Invite a friend. They are tone `error` (red, role="alert") with class '
       + '`.pageerr` (margins only; `.deckmsg` would have re-coloured them gold). Left in the note gold: the deck '
       + 'picker\'s line (it carries "loaded X" as well as refusals) and the match\'s deck-legality line (a state, '
-      + 'beside counts already in red). Guarded by 1200-refusals-drawn-as-errors.test.ts.',
+      + 'beside counts already in red). Guarded by 1200-refusals-drawn-as-errors.test.ts.\n\n'
+      + '2026-11-09 (steward): nothing pulses forever under prefers-reduced-motion (docs/23-ui-inventory/05 '
+      + '§18.27: ".pgwants pulses forever with no reduced-motion override"). The class was seven rules, not one: '
+      + '.pgwants (19-postgame), .lanchor.on and .lhl (32-learn), .livedot (16), .card.activatable (03), '
+      + '.card.modhost and .stackcard.modhost (12). Each now has a reduce block beside it with animation: none; '
+      + 'the glow, outline and colour stay, so the meaning does. Left as it was: the queue spinner, which the '
+      + 'reduce block slows (a spinner that stops reads as frozen). Guarded by the census '
+      + '1201-endless-motion-honours-reduce.test.ts: every `infinite` animation in the stylesheet must have its '
+      + 'selector named in a reduced-motion block.',
   },
   {
     id: 'BL-17',

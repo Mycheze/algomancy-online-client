@@ -110,6 +110,7 @@
 .livedot { color: var(--glow); font-size: 10px; letter-spacing: .1em;
   animation: livepulse 1.6s ease-in-out infinite; }
 @keyframes livepulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .livedot { animation: none; } }
 .pendingcol { display: flex; flex-direction: column; gap: 4px; align-items: center;
   border: 1px dashed #4a5f7a; border-radius: 6px; padding: 4px; background: rgba(60,90,130,.08); }
 /* CR D6.13/#137 — a half of the battle table holding an UNCOMMITTED build. The

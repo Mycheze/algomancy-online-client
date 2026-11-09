@@ -203,6 +203,8 @@
 .card.activatable { cursor: pointer; border-radius: 6px;
   box-shadow: 0 0 2px 1px rgb(var(--glow-rgb) / .6);
   animation: actpulse 1.8s ease-in-out infinite; }
+/* reduced motion: the steady glow alone says "you can activate me" */
+@media (prefers-reduced-motion: reduce) { .card.activatable { animation: none; } }
 /* the shrink-and-ellipsise this used to carry alone is now on every `.badge`
    (BL-23) — the ability chip was just the first one long enough to need it */
 .card .badge.act { border-color: var(--glow); color: var(--glow); background: rgba(10,20,10,.92); }

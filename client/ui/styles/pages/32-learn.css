@@ -141,6 +141,8 @@ body.lessonreading .arrowlayer { z-index: 85; }
 .lhl { outline: 3px solid var(--color-accent) !important; outline-offset: 3px; border-radius: var(--radius-md);
   animation: lhlpulse 1.2s ease-in-out infinite; position: relative; z-index: 77; }
 @keyframes lhlpulse { 50% { outline-color: color-mix(in srgb, var(--color-accent) 35%, transparent); } }
+/* reduced motion: the ring and the anchor's glow hold still at full strength */
+@media (prefers-reduced-motion: reduce) { .lanchor.on, .lhl { animation: none; } }
 .lessonscrim.compact { background: transparent; pointer-events: none; align-items: center; }
 .lessonbox.compact { pointer-events: auto; width: min(92vw, 460px); border-width: 2px; }
 .lregions { display: flex; gap: var(--space-5); justify-content: center; flex-wrap: wrap; }

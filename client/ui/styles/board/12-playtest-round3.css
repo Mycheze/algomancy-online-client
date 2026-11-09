@@ -128,6 +128,8 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
    the same green pulse; the strip's own card is a .stackcard, not a .card. */
 .stackcard.modhost { outline: 3px solid var(--glow); cursor: pointer;
   box-shadow: 0 0 8px rgb(var(--glow-rgb) / .5); animation: modpulse 1.1s ease-in-out infinite; }
+/* reduced motion: the green outline alone marks a host */
+@media (prefers-reduced-motion: reduce) { .card.modhost, .stackcard.modhost { animation: none; } }
 .stackcard .stackmodhost {
   position: absolute; bottom: -9px; left: 50%; transform: translateX(-50%);
   background: var(--glow); color: #0f1a0f; z-index: 3;
