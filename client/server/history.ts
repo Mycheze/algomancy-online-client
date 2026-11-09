@@ -19,7 +19,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  gameHistory, rebuildProfiles, saveAccounts, stashHistory, type RecordedGame, type RecordedMatchTag,
+  gameHistory, rebuildProfiles, stashHistory, type RecordedGame, type RecordedMatchTag,
 } from './accounts.ts';
 import { getMatch, sanitizeMatchLink } from './match-store.ts';
 import { MIN_GAME_ACTIONS, summarizeGame, type GameRecord, type GameSummary } from './stats.ts';
@@ -274,8 +274,7 @@ function landLiveRecord(raw: SavedRoom, code: string, playedAt: string, summary?
   const row = importGame(raw, code, playedAt, summary ? { summary } : {});
   // BL-28: no name sweep here. It ran after EVERY finished game and bound a
   // signed-out seat to whichever account owned the name typed into it.
-  rebuildProfiles();
-  saveAccounts();
+  rebuildProfiles();   // which saves
   return row;
 }
 
@@ -412,8 +411,7 @@ export function syncGamesDir(dir: string, opts: ImportOptions = {}): SyncReport 
   }
   if (report.added || report.updated) {
     // BL-28: and none here either (every boot) — see importGame's `users`
-    rebuildProfiles();
-    saveAccounts();
+    rebuildProfiles();   // which saves
   }
   return report;
 }
