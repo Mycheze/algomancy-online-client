@@ -137,7 +137,7 @@ export interface TodoEntry {
 }
 import '../engine/src/cards/registry.ts';
 import { CLOSED } from './card-todo-closed.ts';
-import { still } from './card-todo-helpers.ts';
+import { body, still } from './card-todo-helpers.ts';
 
 // ── proofs for the comprehensive-rules findings (CT-226 on) ─────────────
 // Each finding was re-checked against HEAD before it was filed. A proof
@@ -223,6 +223,16 @@ const OPEN: TodoEntry[] = [
     proof: null,
     verify: "Damage a unit that carries an augment or graft (e.g. Fireball an attacking modded unit); its red −N marker is fully readable on the table without zooming, in the Invaders strip and at home.",
     reportId: 359,
+    status: 'open',
+  },
+  {
+    id: 549, area: "client", severity: "minor",
+    title: "Big Glimpse Card's caster chooses a pile from two text buttons, not from the two piles shown as cards",
+    detail: "Report #360 (mycheze, MNCM, 2026-11-09, ux, medium): \"The new \\\"splitting\\\" UI for Big Glimpse Card is much better now! It's very easy to use and understand. But it should be basically the same for the chooser. Instead of giving them two buttons with a list of options, it should present them with two modal piles of cards to choose from with buttons below to \\\"Put Pile 1 into your hand\\\" or \\\"Put Pile 2 into your hand\\\" (and below, in smaller text \\\"Recycle the rest\\\"). Choices and actions should be visual as much as possible!\" The splitter's half is CT-539 (ui/pickset.ts splitHtml, group 'split', driven by the `pickSet` hint on each `split:k` question). The caster's half is the engine's `ctx.choose('pile', …)` in engine/src/cards/sets/batch-hybrids-ld-a.ts (Big Glimpse Card): a payOrDecline with two options whose labels are the pile contents as text (`Pile 1: A, B, …`) and no `card` on either option and no display hint, so the ordinary decision bar draws two long text buttons.",
+    evidence: "Report #360; MNCM fetched and replayed 2026-11-09 (steward triage): 57/57 actions, no divergence, played on 9e7ad015 (the CT-539 split window already live). A test-mode game, mycheze both seats: Big Glimpse Card cast in battle [10], seat 1 split with the new window [13]-[16], and the report was filed at [17], the caster's pile question (answered 'Pile 2'). Verified by reading: the pile question carries nothing the client could draw as cards.",
+    fix: "Give the pile question a display-only hint carrying both piles' card names (like CT-539's `pickSet`, so the action log and every saved game are unchanged: the answer is still 'a' or 'b'), and draw it in the client as the split window's two panes of scans, read-only, with one button under each pile. The card says \"Cache one pile\", so the buttons should name what happens (e.g. \"Cache pile 1\" with \"recycle the rest\" in smaller text beneath); the owner wrote \"Put Pile N into your hand\" because cached cards sit beside the hand — keep the printed verb unless he says otherwise. An empty pile shows \"empty\" and its button still works. A ui test: the pile question draws both piles as cards, each button sends its pile's option; the fallback decision bar still answers when the hint is absent.",
+    proof: () => !/pickSet|piles\s*:/.test(body('engine/src/cards/sets/batch-hybrids-ld-a.ts', "ctx.choose('pile'", 'const keep')),
+    reportId: 360,
     status: 'open',
   },
 ];

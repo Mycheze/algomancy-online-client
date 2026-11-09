@@ -361,6 +361,12 @@ const OPEN: LedgerEntry[] = [
     status: 'live',
     note: "Real by the report; cause not seen (no browser on the box). Filed at [217], turn 6: Fireball 3 had just dealt 3 to mycheze's attacking Amphivore, grafted with Bloated Manablub. The red damage marker is drawn at the bottom-left of the card face, which on a modded unit is the seam where its first mod strip hangs (styles/board/08-playtest-ux-fixes.css, .card.modded). CT-548.",
   },
+  {
+    id: 360, room: "MNCM", date: "2026-11-09",
+    report: "mycheze, seat 0 (ux): \"The new \\\"splitting\\\" UI for Big Glimpse Card is much better now! It's very easy to use and understand. But it should be basically the same for the chooser. Instead of giving them two buttons with a list of options, it should present them with two modal piles of cards to choose from with buttons below to \\\"Put Pile 1 into your hand\\\" or \\\"Put Pile 2 into your hand\\\" (and below, in smaller text \\\"Recycle the rest\\\"). Choices and actions should be visual as much as possible!\"",
+    status: 'live',
+    note: "A fair request, not a defect. MNCM fetched and replayed (57/57, no divergence; a test-mode game, mycheze both seats, played after the two-pile split window went live): seat 1 split the seven in the new window [13]-[16], and the report was filed at [17], the caster's pile question. That question is two text buttons listing each pile's names; it carries nothing the client could draw as cards. CT-549: show the caster the two piles as cards with a button under each.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
