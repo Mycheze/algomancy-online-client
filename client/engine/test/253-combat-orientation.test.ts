@@ -397,7 +397,32 @@ test('the invaders are drawn once, by the battle panel or the region panel and n
 // stood on its controller's side of the vs line, for both seats — #137 inside
 // #138. The regions board has no such column: the pile stands at the right of
 // the fight for both seats, which is the owner's 2026-09-27 placement, and
-// ui/test/318 §5 pins it.)
+// ui/test/318 §5 pins it. Report #351 brought the side back, below.)
+
+test('report #351: the riding token stands at the end of the strip nearest the attacker, on both screens', () => {
+  /* mycheze, BHVW, 2026-11-08: "Spell tokens that are riding along don't need
+   * to be up in the 'invaders' zone. It should be down *below* your row of
+   * units, close to your own bin." On the attacker's screen their half is
+   * below the vs line, so the pile goes to the strip's foot; on the
+   * defender's the attacker's half is above it, so the pile stays at the head
+   * — the end of the table the token's controller is on, either way. */
+  const { h, A, D, atk, tok } = ridingToken(25323);
+  const strip = (board: string): string => {
+    const f = fightBlock(board);
+    return f.slice(f.indexOf('<div class="linvside"'));
+  };
+  const mine = ui.join(h.state, A, legalActions(h.state, A));
+  clearBuilding();
+  assert.ok(entsIn(strip(mine)).includes(tok), 'the premise: the token is in the strip on the attacker\'s screen');
+  assert.match(placement(mine).get(atk) ?? '', /\bbot\b/, 'the premise: on their own screen the attacker\'s units are below the line');
+  assert.match(mine, /<div class="linvside" data-end="foot">/,
+    'the attacker sees the riding token at the foot of the strip, under their own units — report #351');
+  const theirs = ui.join(h.state, D, legalActions(h.state, D));
+  clearBuilding();
+  assert.ok(entsIn(strip(theirs)).includes(tok), 'the premise: the token is in the strip on the defender\'s screen');
+  assert.match(theirs, /<div class="linvside" data-end="head">/,
+    'the defender sees it at the head of the strip, on the attacker\'s side of the line');
+});
 
 test('while an attack is only being declared the region panel still draws the invaders', () => {
   /* THE OTHER DIRECTION OF THE HAND-OFF, and the one the fix creates rather

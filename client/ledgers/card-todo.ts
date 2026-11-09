@@ -197,17 +197,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 540, area: "client", severity: "minor",
-    title: "spell tokens that ride along with an attack stand in the battle's Invaders row, not below their own units by their bin",
-    detail: "Report #351 (mycheze, BHVW, 2026-11-08, ux): \"Spell tokens that are riding along don't need to be up in the \\\"invaders\\\" zone. It should be down *below* your row of units, close to your own bin. That's unused space anyway\". While the attack is being built the riding tokens stand in the battle panel's \"riding along\" column (ui/main.ts ~line 5320, `ridecol`); once it is declared the engine moves every attacker AND the riding tokens into the battle region (apply.ts declareAttack, `for (const id of [...columns.flat(), ...spellTokens]) …region = b.region`), so the board draws them with the attackers in that region's Invaders strip (ui/layout.ts ~307 / ~553, the invader strip and pile).",
-    evidence: "Report #351; BHVW fetched and replayed 2026-11-08 (steward triage), 213/213, faithful; the report was filed on the final position (turn 5, mycheze's attack won the game). The layout path is read, not seen: no browser on the box.",
-    fix: "Draw an attacking seat's riding spell tokens in the battle region on that seat's own side, under its row of units near its bin (the owner's spot), not in the Invaders strip with the attacking units. Presentation only: the engine's region for them stays as it is (CR: they travel with the attack). Check both the battle panel and the board's region view, and the opponent's view of my tokens (mirrored to their far side).",
-    proof: null,
-    verify: "Attack with a unit and bring a spell token along; after declaring, the token should sit below your own units near your bin, not up in the Invaders row with the attacker.",
-    reportId: 351,
-    status: 'open',
-  },
-  {
     id: 541, area: "client", severity: "minor",
     title: "a deck copied from someone else's shared list says \"— by\" a long id instead of the builder's name",
     detail: "Report #355 (mycheze, home, 2026-11-08, ux): \"When you copy a deck that someone else made and play it, it says \\\"Deck name copy - by _____\\\" but instead of their name, it's a UUID string of nonsense.\" The deck picker prints a collection deck as `name — by author` whenever `author` is not 'you' (ui/pages/deckpicker.ts ~line 81). A taken copy gets its `author` verbatim from the source deck (server/collection.ts duplicateDeck ~line 609, `author: from.author`), never the publisher's username (which the public view has as `owner.username`, server/publicdecks.ts ~line 196). So the copy says whatever the source's free-text author was: 'you' on a deck its owner built (the copy then names nobody, which is also wrong), the algomancer.cc builder on an import (server/decks.ts ~163, `data.user?.username`), or a pasted deck file's `author` (ui/deckformat.ts ~345).",

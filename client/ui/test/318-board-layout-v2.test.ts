@@ -176,10 +176,14 @@ test('§5 invaders: the Invaders row, or the fight\'s strip while their region i
     const html = paint(f);
     const there = new E(f.state).homeRegion(1);
     assert.equal(f.state.battle?.region, there, `${f.label}: the premise — the fight is where the invader stands`);
-    assert.match(fightBlock(html, there), /<div class="linvside">\s*<div class="invaders">/,
+    assert.match(fightBlock(html, there), /<div class="linvside" data-end="(foot|head)">\s*<div class="invaders">/,
       `${f.label}: the invader stands down the right of the fight`);
     assert.doesNotMatch(html, inRow, `${f.label}: …and not in the row as well`);
   }
+  // report #351: at the attacker's end of the strip — its foot on the
+  // attacker's own screen (engine/test/253 drives both screens)
+  assert.ok(CSS.includes('.lfight.focus .linvside[data-end="foot"] { justify-content: flex-end; }'),
+    'the strip\'s foot end stands its pile at the bottom');
   for (const f of [FIX[1]!, FIX[3]!, FIX[4]!]) {
     const html = paint(f);
     // the corner is a fit zone of its own (owner, 2026-09-23: the tokens had

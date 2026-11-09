@@ -292,8 +292,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 351, room: "BHVW", date: "2026-11-08",
     report: "mycheze, seat 0 (ux): \"Spell tokens that are riding along don't need to be up in the \\\"invaders\\\" zone. It should be down *below* your row of units, close to your own bin. That's unused space anyway\"",
-    status: 'live',
-    note: "A layout request, fair. Replayed (213/213, faithful): filed on the final position, turn 5, after mycheze's winning attack. Declaring an attack moves the riding spell tokens into the battle region with the attackers (apply.ts declareAttack), and the board draws them in that region's Invaders strip beside the attacking units; the owner wants them on the attacker's own side, below their units near their bin. Presentation only. CT-540.",
+    status: 'fixed',
+    guards: [
+      "253-combat-orientation.test.ts::the riding token stands at the end of the strip nearest the attacker, on both screens",
+    ],
+    note: "A layout request, fair. Replayed (213/213, faithful): filed on the final position, turn 5, after mycheze's winning attack. Declaring an attack moves the riding spell tokens into the battle region with the attackers (apply.ts declareAttack), and the board draws them in that region's Invaders strip beside the attacking units; the owner wants them on the attacker's own side, below their units near their bin. Presentation only. CT-540. Fixed 2026-11-09: in a fight the riding tokens (and every other invader, all the attacker's) stand at the attacker's end of the strip at the right of the battle: the foot on the attacker's own screen, under their units and nearest their bin; the head on the defender's, as before.",
   },
   {
     id: 352, room: "", date: "2026-11-08",

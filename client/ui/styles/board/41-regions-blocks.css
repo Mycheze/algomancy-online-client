@@ -137,6 +137,11 @@
   display: flex; flex-direction: column; align-items: flex-end; overflow: visible; z-index: 1; }
 .lfight.focus .linvside .invaders { min-width: 0; max-width: none; width: 100%; margin: 0; padding: var(--gap) 4px 0 0;
   box-sizing: border-box; display: flex; justify-content: flex-end; overflow: visible; }
+/* report #351: the pile stands at the ATTACKER's end of the strip (main.ts
+   lboardHtml invEnd) — the foot on the attacker's own screen, under their
+   units and nearest their bin; the head on the defender's, as before */
+.lfight.focus .linvside[data-end="foot"] { justify-content: flex-end; }
+.lfight.focus .linvside[data-end="foot"] .invaders { padding: 0 4px var(--gap) 0; }
 
 /* ── CHECKPOINT 4: invaders as a PILE (owner, 2026-10-29) — small cards, each
       --pilestep past the one under it (ui/fit.ts pileStepFrac); hovering the

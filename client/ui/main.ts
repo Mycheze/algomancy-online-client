@@ -4538,10 +4538,22 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
   // declares, the counterattack send box (it is fought HERE next round);
   // else the counterattackers heading here (they arrive next round, into
   // THIS block); else idle
+  //
+  // Report #351 (2026-11-08: the riding spell tokens "don't need to be up in
+  // the 'invaders' zone. It should be down *below* your row of units, close to
+  // your own bin"): every invader in a fight is the attacker's, so the pile
+  // stands at the ATTACKER's end of the strip — the foot when the attacker's
+  // half is below the vs line (the attacker's own screen: under their units,
+  // the end nearest their info line and bin), the head when it is above (the
+  // defender's screen, where it always stood). `data-end` says which; the
+  // stylesheet places it. While a counterattack is being built its tray
+  // holds the foot (CT-192), so the pile keeps the head then.
+  const invEnd = (): 'foot' | 'head' =>
+    b && attackerBelow(b) && !(b.step === 'declare' && myCounterPool()) ? 'foot' : 'head';
   const fight = (side: 'theirs' | 'mine', _p: Seat, r: RegionParts, region: number): string => {
     const here = fightingIn(region);
     const send = here ? '' : counterSendHtml();
-    const side_ = here && r.invaderPile ? `<div class="linvside">${r.invaderPile.replace('class="zone invaderzone invpile', 'class="zone invaderzone invpile fanleft')}</div>` : '';
+    const side_ = here && r.invaderPile ? `<div class="linvside" data-end="${invEnd()}">${r.invaderPile.replace('class="zone invaderzone invpile', 'class="zone invaderzone invpile fanleft')}</div>` : '';
     const inner = here ? battle + side_ : send || r.sentStrip;
     const cls = here ? ' focus' : send ? ' sendhere' : inner ? ' incoming' : ' idle';
     // round 7: the counterattackers heading here wrap down the narrow idle
@@ -5303,6 +5315,13 @@ function askJudge(question: string): void {
   });
 }
 
+/** which way up the battle table stands: the attacker's half BELOW the vs
+ * line when the viewer is the attacker, above it otherwise (and always above
+ * with both seats). See battleHtml's `flip`. */
+function attackerBelow(b: NonNullable<GameState['battle']>): boolean {
+  return NET ? NET.seat === b.attacker : false;
+}
+
 function battleHtml(opts: { sendApart?: boolean } = {}): string {
   const b = h.state.battle;
   if (!b) return '';
@@ -5319,8 +5338,9 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
    * disagree about which half is whose is the whole of the report ("the
    * columns switch around, which is very weird to see"), and a SECOND `flip`
    * next to the watching view would only have made them agree until the next
-   * edit. There is one, and `battleColHtml` is the one place that spends it. */
-  const flip = NET ? NET.seat === b.attacker : false;
+   * edit. There is one (`attackerBelow`), and `battleColHtml` is the one place
+   * in this panel that spends it; the board's invader strip asks it too. */
+  const flip = attackerBelow(b);
 
   if (b.step === 'declare') {
     // the seat that is NOT declaring watches it happen (playtest 2026-08-20:
