@@ -212,6 +212,9 @@ let peeking: HTMLElement | null = null;
 export type ZoomDecorator = (source: HTMLElement, copy: HTMLElement) => { extraH?: number; panel?: string } | void;
 let decorate: ZoomDecorator | null = null;
 export function setZoomDecorator(fn: ZoomDecorator | null): void { decorate = fn; }
+/** the decorator registered — for a test that hands it a rendered card
+ * (test/ui-driver.ts lays nothing out, so `show` itself never gets that far) */
+export function zoomDecorator(): ZoomDecorator | null { return decorate; }
 
 function ensureLayer(): HTMLElement {
   if (layer && layer.isConnected) return layer;

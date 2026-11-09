@@ -5050,10 +5050,14 @@ function regionCacheHtml(p: Seat): string {
   const playNow = mine ? new Set(playableCachedIndexes(legal)) : new Set<number>();
   const thumbs = shown.map(i => {
     const chip = cacheChip(p, i);
+    // CT-551/report #364: the chip sits BESIDE the card, so the hover zoom
+    // (which copies the card alone) lost it. `data-cslot` names the entry, and
+    // decorateZoom re-hangs the same cacheChip on the copy as a die.
+    const slot = `data-cslot="${p}:${i}"`;
     return `<div class="cthumb" title="${esc(`${cache[i]!.card}: ${chip.title}`)}">${cardHtml(cache[i]!.card, {
       anim: cacheView === p ? undefined : keys[i],
       playable: playNow.has(i), cached: playNow.has(i),
-      data: playNow.has(i) ? `data-btn="cacheplay" data-p="${p}" data-i="${i}"` : '',
+      data: playNow.has(i) ? `data-btn="cacheplay" data-p="${p}" data-i="${i}" ${slot}` : slot,
     })}<span class="cchip ${chip.cls ?? ''}">${esc(chip.t)}</span></div>`;
   }).join('');
   const label = liveIdx.length
@@ -10006,6 +10010,12 @@ function decorateZoom(src: HTMLElement, copy: HTMLElement): { extraH?: number } 
       const why = handWhy(p, i);
       if (why) copy.insertAdjacentHTML('beforeend', `<div class="zoomhang handwhy">${esc(why)}</div>`);
     }
+  } else if (src.dataset['cslot'] !== undefined) {
+    // CT-551/report #364: a cache thumb on the table wears its chip beside the
+    // card (regionCacheHtml), not in it — the zoom puts the same chip on the
+    // copy, so the ⏳ count, waiting, ✓ free or ⚡ turn survives the hover
+    const [p, i] = src.dataset['cslot'].split(':').map(Number) as [Seat, number];
+    if (cacheOf(p)[i]) badges = [cacheChip(p, i)];
   } else if (src.dataset['prevstack'] !== undefined) {
     const id = Number(src.dataset['prevstack']);
     const sit = stackItemById(id);

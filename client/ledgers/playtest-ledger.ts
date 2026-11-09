@@ -407,8 +407,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 364, room: "TUDN", date: "2026-11-09",
     report: "mycheze, seat 0 (ux): \"When you hover over a prophecied card you should still be able to see the \\\"countdown\\\" stuff as \\\"chips\\\" on the card. You can still see when you're NOT hovering over it, but now you can't really tell when zoomed in\"",
-    status: 'live',
-    note: "Real by reading. Filed at [53], turn 2 deployment, with Debeli's Flzzz counting 'Two Turns Pass' in their cache. A cache thumb on the table wears its count as a chip beside the card, not on it, and the hover zoom copies only the card, so the zoomed copy has no count; the hand-side strip and the cache dialog put the chip on the card and keep it. CT-551.",
+    status: 'fixed',
+    guards: [
+      "1199-cache-thumb-zoom-keeps-chip.test.ts::report 364 - zooming the opponent's prophesied card in their cache keeps its countdown",
+    ],
+    note: "Real by reading. Filed at [53], turn 2 deployment, with Debeli's Flzzz counting 'Two Turns Pass' in their cache. A cache thumb on the table wears its count as a chip beside the card, not on it, and the hover zoom copies only the card, so the zoomed copy has no count; the hand-side strip and the cache dialog put the chip on the card and keep it. CT-551. Fixed 2026-11-09 (steward): the zoom of a table cache thumb now wears the same chip as a die (⏳ n/m, waiting, ✓ free, ⚡ turn).",
   },
   {
     id: 365, room: "TUDN", date: "2026-11-09",
