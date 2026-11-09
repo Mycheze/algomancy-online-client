@@ -20,6 +20,11 @@
  * §2 in a battle it leaves the info block and floats over the In Play block
  *    of the region that is NOT the focus — whichever side that is
  * §3 the stylesheet places the float by grid area, above the ring
+ * §4 CT-552 / report #365 — while the attacker picks attackers, the float is
+ *    NOT over their own In Play: that is where they pick from (mycheze, TUDN:
+ *    "The revealed hand zone covers your units when declaring an attack. I
+ *    can't see my units here!"). It stands over the other In Play instead,
+ *    where it stands outside a battle.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -38,7 +43,7 @@ const ME: Seat = 0, THEM: Seat = 1;
 
 /** deployment with my look at their hand recorded, and then a battle —
  * `attacker` says whose region it is fought in (the defender's) */
-function game(seed: number, attacker: Seat): { deploy: GameState; battle: GameState; fought: number } {
+function game(seed: number, attacker: Seat): { deploy: GameState; declare: GameState; battle: GameState; fought: number } {
   const h = new Harness(seed);
   toDeployment(h);
   const a = spawn(h, attacker, 'Good Whale');
@@ -48,9 +53,10 @@ function game(seed: number, attacker: Seat): { deploy: GameState; battle: GameSt
   e.settle();
   const deploy = structuredClone(h.state);
   toNextBattle(h, attacker);
+  const declare = structuredClone(h.state);
   h.do({ type: 'declareAttack', seat: attacker, columns: [[a]] });
   assert.equal(h.state.phase, 'battle', 'fixture: a battle is on');
-  return { deploy, battle: structuredClone(h.state), fought: h.state.battle!.region };
+  return { deploy, declare, battle: structuredClone(h.state), fought: h.state.battle!.region };
 }
 
 function paint(s: GameState): string {
@@ -114,3 +120,21 @@ test('CT-191 the stylesheet places the float by grid area, at the In Play\'s out
   assert.ok(CSS.indexOf('.lboard > .lseen {') > CSS.indexOf('.lboard > :not(.lback) {'),
     'the float rule comes after the blanket position: relative, so it wins');
 });
+
+for (const [attacker, label] of [[ME, 'I am choosing my attackers'], [THEM, 'they are choosing theirs']] as const) {
+  test(`CT-552 report 365 - while attackers are chosen the seen strip is not over the attacker's own units: ${label}`, () => {
+    const { declare } = game(35204 + attacker, attacker);
+    assert.equal(declare.phase, 'battle', 'fixture: a battle is on');
+    assert.equal(declare.battle!.step, 'declare', 'fixture: attackers are being chosen');
+    assert.equal(declare.battle!.attacker, attacker, 'fixture: the attacker');
+    const html = paint(declare);
+    const f = floats(html);
+    assert.equal(f.length, 1, 'exactly one floating strip');
+    // my In Play is the bottom one (`mine`); I pick my attackers from it
+    assert.equal(f[0]!.side, 'theirs',
+      attacker === ME
+        ? 'it floats over THEIR In Play while I pick attackers from mine (report 365)'
+        : 'they attack, the fight is in my region, so it floats over theirs as before');
+    assert.match(f[0]!.body, /data-btn="seenhideall"/, 'its controls are still there to click');
+  });
+}

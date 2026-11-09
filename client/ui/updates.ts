@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-09', kind: 'fix', text: "When you have seen your opponent's hand, its reminder no longer covers your own units while you choose your attackers. It stays over their side of the table, where it sits in deployment." },
   { date: '2026-11-09', kind: 'fix', text: "Hovering a prophesied card in a player's cache now keeps its countdown on the enlarged card (the turns so far, waiting, or free to play), just as it shows on the table." },
   { date: '2026-11-09', kind: 'change', text: "Every page now names itself in its top bar, and says Algomancy in its bottom bar, in the same lettering as the home page." },
   { date: '2026-11-09', kind: 'change', text: "Big Glimpse Card's caster now chooses a pile from a window showing both piles as cards, with a Cache button under each, instead of two long text buttons." },

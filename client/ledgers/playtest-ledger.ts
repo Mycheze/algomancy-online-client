@@ -416,8 +416,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 365, room: "TUDN", date: "2026-11-09",
     report: "mycheze, seat 0 (ux): \"The \\\"revealed hand zone\\\" covers your units when declaring an attack. I can't see my units here!\"",
-    status: 'live',
-    note: "Real, reproduced on the ui driver. Filed at [66], turn 3, mycheze declaring an attack, with Debeli's hand seen since Eldritch Dreamtender on turn 2. The 'their hand, seen' strip floats over the In Play of the region not being fought in, and when you attack that is your own, where you are picking attackers. Likely made worse the same day by in-play units standing full size in a battle. CT-552.",
+    status: 'fixed',
+    guards: [
+      "352-seen-strip-floats-in-battle.test.ts::CT-552 report 365 - while attackers are chosen the seen strip is not over the attacker's own units",
+    ],
+    note: "Real, reproduced on the ui driver. Filed at [66], turn 3, mycheze declaring an attack, with Debeli's hand seen since Eldritch Dreamtender on turn 2. The 'their hand, seen' strip floats over the In Play of the region not being fought in, and when you attack that is your own, where you are picking attackers. Likely made worse the same day by in-play units standing full size in a battle. CT-552. Fixed 2026-11-09 (steward): while you choose your attackers the strip stays over the opponent's In Play, where it stood in deployment.",
   },
 ];
 

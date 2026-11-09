@@ -4521,9 +4521,21 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
   // the stylesheet off that In Play's grid area, so there is
   // nothing to measure. Outside a battle your region is the focus, so it
   // floats over theirs.
+  //
+  // CT-552 / report #365 (mycheze, TUDN: "The revealed hand zone covers your
+  // units when declaring an attack. I can't see my units here!"): when you
+  // attack, the fight is in THEIR region, so "not the focus" is your own In
+  // Play — and while you choose your attackers that is exactly where you
+  // pick them from. So while the bottom seat is the attacker in the declare
+  // step (not a counterattack, whose units wait in the fight's tray), the
+  // strip stays over their In Play, where it stood a moment before in
+  // deployment. The defender's blocks need no exception: they pick from
+  // their own region, which is the focus then.
+  const pickingFromMine = !!b && s.phase === 'battle' && b.step === 'declare' && b.attacker === botSeat
+    && !counterPool(s, botSeat);
   const seenFloat = (r: RegionParts): string => {
     if (!r.seenStrip) return '';
-    const over = focus === tRegion ? 'mine' : 'theirs';
+    const over = focus === tRegion && !pickingFromMine ? 'mine' : 'theirs';
     return `<div class="lseen ${over}" data-region="${over === 'mine' ? yRegion : tRegion}">${r.seenStrip}</div>`;
   };
   // the In Play block: the field zone, with the region's own spell tokens in
