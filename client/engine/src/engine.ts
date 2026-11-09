@@ -892,6 +892,9 @@ export class E {
    * because `inStatics` is up. Outside it nothing is kept.
    */
   private projectors: Map<number, { holder: Entity; anchor: Entity }[]> | null = null;
+  /** `anyProjector`'s answer, kept for the same span as `projectors`: one
+   *  `staticsFor` reads every radiator's faces, and the board cannot change under it. */
+  private projectorPossible: boolean | null = null;
   /**
    * CR 708.4a: reentrancy guard for the counter REDIRECT. Unlike the amount
    * modifiers above, a redirect really does re-enter — Counter Thief's
@@ -2053,7 +2056,7 @@ export class E {
     // project at all (Ancient One is the only one printed), so ask that first,
     // allocation-free, over the same holders `anchored()` admits. A board with no
     // possible projector gets the answer the walk would have given: none.
-    if (!this.anyProjector()) return [];
+    if (!(this.projectors ? this.projectorPossible ??= this.anyProjector() : this.anyProjector())) return [];
     const out: { card: CardName; carrier?: EntityId; box?: true }[] = [];
     this.inFaces = true;
     try {
@@ -2322,7 +2325,7 @@ export class E {
           }
         }
       }
-    } finally { this.inStatics = false; this.projectors = null; }
+    } finally { this.inStatics = false; this.projectors = null; this.projectorPossible = null; }
     return out;
   }
 
