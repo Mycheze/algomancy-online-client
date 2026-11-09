@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1873 rules and 99 sections.
+- New: 1874 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -221,6 +221,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 111.6 `concepts.costs.unpayable`
   - 111.6a `concepts.costs.unpayable.all-or-nothing`
   - 111.6b `concepts.costs.unpayable.life`
+  - 111.6c `concepts.costs.unpayable.life.locked`
   - 111.7 `concepts.costs.activation`
   - 111.7a `concepts.costs.activation.sacrifice-me`
   - 111.7b `concepts.costs.activation.gate-first`

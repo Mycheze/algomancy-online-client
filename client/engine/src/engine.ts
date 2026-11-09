@@ -10697,9 +10697,16 @@ export class E {
    * an unpayable cost makes the cast illegal, and nothing in the pool reads
    * like a suicide button. Paying your LAST life is therefore refused too
    * (`life > n`, not `>=`).
+   *
+   * CR 111.6c / 708.10 (report 366, CT-553): nor while the payer's life total
+   * CAN'T CHANGE (Suspend). The lock makes loseLife() swallow the payment, so
+   * offering the cost handed out the effect for free — and CR 111.6 says a cost
+   * that cannot be paid in full is not offered at all. This is the one gate
+   * every life cost asks (activated `cost.life`, `castCost` payLife and its
+   * point-at-a-time X, the cost layer's lifeToPlay), so they all close here.
    */
   canPayLife(seat: Seat, n: number): boolean {
-    return n <= 0 || this.player(seat).life > n;
+    return n <= 0 || (!this.lifeLocked(seat) && this.player(seat).life > n);
   }
 
   /**

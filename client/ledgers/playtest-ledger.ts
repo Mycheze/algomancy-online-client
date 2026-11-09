@@ -422,12 +422,6 @@ const OPEN: LedgerEntry[] = [
     ],
     note: "Real, reproduced on the ui driver. Filed at [66], turn 3, mycheze declaring an attack, with Debeli's hand seen since Eldritch Dreamtender on turn 2. The 'their hand, seen' strip floats over the In Play of the region not being fought in, and when you attack that is your own, where you are picking attackers. Likely made worse the same day by in-play units standing full size in a battle. CT-552. Fixed 2026-11-09 (steward): while you choose your attackers the strip stays over the opponent's In Play, where it stood in deployment.",
   },
-  {
-    id: 366, room: "AZWN", date: "2026-11-09",
-    report: "Karanda, seat 0 (bug): \"I am allowed to pay life even though my life total cannot change\"",
-    status: 'live',
-    note: "Real, reproduced. AZWN fetched and replayed (311/311, no divergence). Filed at [286], turn 8 battle, after Karanda's Suspend on themself had locked their life (it swallowed Siphon Life's 8). At [290] the game offers Aurozoa's 'pay 1 life: recall me' on Leaping Lillik, and taking it costs nothing: the lock swallows the payment and the recall still happens. Life costs never ask whether the total is locked, though a cost that cannot be paid cannot be offered. Every life cost shares the one check. CT-553.",
-  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

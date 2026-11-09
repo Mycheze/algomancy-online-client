@@ -229,6 +229,7 @@
     {"num":"111.6","key":"concepts.costs.unpayable","since":"First generation (draft)"},
     {"num":"111.6a","key":"concepts.costs.unpayable.all-or-nothing","since":"First generation (draft)"},
     {"num":"111.6b","key":"concepts.costs.unpayable.life","since":"First generation (draft)"},
+    {"num":"111.6c","key":"concepts.costs.unpayable.life.locked","since":"First generation (draft)"},
     {"num":"111.7","key":"concepts.costs.activation","since":"First generation (draft)"},
     {"num":"111.7a","key":"concepts.costs.activation.sacrifice-me","since":"First generation (draft)"},
     {"num":"111.7b","key":"concepts.costs.activation.gate-first","since":"First generation (draft)"},

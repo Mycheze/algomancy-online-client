@@ -475,6 +475,50 @@
     "sourceHashes": {}
   },
   {
+    "key": "concepts.costs.unpayable.life.locked",
+    "parent": "concepts.costs.unpayable",
+    "order": 3,
+    "text": "A player whose life total can't change cannot pay life. A payment of life is a loss of life, which does not happen at all while the total can't change (708.10), so the cost cannot be paid, and the card or ability that asks for it cannot be played or activated (111.6). A cost of 0 life is still paid.",
+    "examples": [
+      {
+        "text": "A player who cast Suspend on themself cannot activate Aurozoa's \"Pay 1 life: Recall me\" for the rest of that battle, however much life they have. Once the battle is over, they can again.",
+        "test": "40-light-c.test.ts::Suspend: a player whose life can't change cannot pay life — Aurozoa's recall is neither offered nor accepted"
+      },
+      {
+        "text": "While Suspend locks a player's life total, they cannot pay even the first point of a variable \"Pay X life\" cost, and the other player pays life costs as usual.",
+        "test": "40-light-c.test.ts::Suspend: every kind of life cost asks the lock — a fixed cast cost, a variable X, Arbiter's play tax"
+      }
+    ],
+    "see": [
+      "concepts.life.cant-change",
+      "effects.replacement.locked-life"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Suspend",
+          "quote": "Target player's life total can't change during this battle."
+        },
+        {
+          "ref": "card: Aurozoa",
+          "quote": "Pay 1 life: Recall me."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "Report #366 (AZWN, 2026-11-09): under Suspend the engine offered Aurozoa's life cost and the lock swallowed the payment, so the recall came for free. No designer or RAQ ruling speaks to paying life under the lock; this follows from 111.6 and 708.10.",
+    "sourceHashes": {}
+  },
+  {
     "key": "concepts.costs.activation",
     "parent": "111",
     "order": 7,

@@ -1885,7 +1885,7 @@
     "quote_spans": [
       {
         "file": "client/engine/src/engine.ts",
-        "text": "return n <= 0 || this.player(seat).life > n;"
+        "text": "return n <= 0 || (!this.lifeLocked(seat) && this.player(seat).life > n);"
       },
       {
         "file": "client/engine/src/engine.ts",

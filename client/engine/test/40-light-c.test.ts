@@ -991,6 +991,70 @@ test('Suspend: the lock is this battle only, and lapses with the battle that mad
   assert.equal(h.q.lifeLocked(D), false, 'and not afterwards');
 });
 
+test("Suspend: a player whose life can't change cannot pay life — Aurozoa's recall is neither offered nor accepted", () => {
+  // Report 366 (AZWN), CT-553. CR 708.10: the lock swallows any loss, so a
+  // life PAYMENT would be swallowed too and the effect would come for free.
+  // CR 111.6: a cost that cannot be paid in full is not offered; CR 111.6c says
+  // so for a life cost under the lock. Karanda cast Suspend on themself and
+  // was still offered "pay 1 life: recall me".
+  const h = new Harness(4027);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const zoa = spawn(h, A, 'Aurozoa');
+  giveResources(h, A, 'light', 2);                            // ll / 2
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[zoa]] }); // in the battle, where it may activate
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suspend') });
+  pick(h, { player: A });                                     // Suspend on MYSELF
+  pass(h);
+  assert.equal(h.q.lifeLocked(A), true, 'my own life total is locked');
+  const life = h.state.players[A]!.life;
+  assert.ok(life > 1, 'with life to spare — only the lock stands in the way');
+  const recall = (a: { type: string; entityId?: number }) => a.type === 'activateAbility' && a.entityId === zoa;
+  assert.ok(!h.legal(A).some(recall), "the 'pay 1 life' ability is not offered under the lock");
+  assert.throws(
+    () => h.do({ type: 'activateAbility', seat: A, entityId: zoa, abilityIndex: 0, via: 'augment' }),
+    /cannot pay the activation cost/, 'and is refused if asked for anyway');
+  assert.equal(h.state.players[A]!.life, life, 'nothing paid');
+  assert.ok(ent(h, zoa), 'and nothing recalled for free');
+  finishBattle(h);
+  assert.equal(h.q.lifeLocked(A), false);
+  whiteBox(h, e => assert.equal(e.canPayLife(A, 1), true, 'the battle is over and the lock with it: 1 life is payable again'));
+});
+
+test("Suspend: every kind of life cost asks the lock — a fixed cast cost, a variable X, Arbiter's play tax", () => {
+  // CT-553's class: activated `cost.life` (above), `castCost: payLife` with a
+  // fixed N and with X (Flesh Tithe's floor of 1), and the cost layer's
+  // lifeToPlay (Arbiter of Armistice's "[Pay 2 life]") all ask canPayLife.
+  const h = new Harness(4028);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  giveResources(h, A, 'light', 2);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suspend') });
+  pick(h, { player: D });
+  pass(h);
+  const region = h.state.battle!.region;
+  whiteBox(h, e => {
+    assert.equal(e.lifeLocked(D), true);
+    assert.equal(e.canPayLife(D, 1), false, 'the locked player cannot pay 1 life');
+    assert.equal(e.canPayLife(D, 0), true, 'a cost of 0 life is still nothing to pay');
+    assert.equal(e.canPayCastCost(D, { kind: 'payLife', n: 2 }, region), false, 'a fixed [Pay 2 life] cast cost');
+    assert.equal(e.canPayCastCost(D, { kind: 'payLife', n: 'X' }, region), false, '[Pay X life]: not even the first point');
+    // the cost layer's life tax: Arbiter of Armistice in this battle's region
+    e.spawnUnit(A, 'Arbiter of Armistice', region);
+    const tax = e.lifeToPlay(D, 'Suspend', { region, purpose: 'play' });
+    assert.equal(tax, 2, 'Arbiter asks 2 life of every card played in this battle');
+    assert.equal(e.canPayLife(D, tax), false, '— which the locked player cannot pay, so cannot play a card here');
+    assert.equal(e.canPayLife(A, 1), true, 'the OTHER player pays as usual');
+    assert.equal(e.canPayCastCost(A, { kind: 'payLife', n: 'X' }, region), true);
+  });
+  finishBattle(h);
+  whiteBox(h, e => assert.equal(e.canPayLife(D, 1), true, 'the lock lapses with the battle, and so does the bar'));
+});
+
 // ── Tithe Enforcer ───────────────────────────────────────────────────────
 
 // ERRATA 2026-09-21 — CALEB REMOVED PROPHECY FROM THIS CARD. It printed

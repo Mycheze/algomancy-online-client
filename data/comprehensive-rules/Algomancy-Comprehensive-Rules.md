@@ -1583,6 +1583,14 @@ order.
 
 <sub>Discrepancies: D-U04-1 (discrepancies.md)</sub>
 
+<a id="r111.6c"></a>**111.6c** A player whose life total can't change cannot pay life. A payment of life is a loss of life, which does not happen at all while the total can't change (708.10), so the cost cannot be paid, and the card or ability that asks for it cannot be played or activated (111.6). A cost of 0 life is still paid. See rules 112.4, 708.10.
+
+> *Example: A player who cast Suspend on themself cannot activate Aurozoa's "Pay 1 life: Recall me" for the rest of that battle, however much life they have. Once the battle is over, they can again.*
+
+> *Example: While Suspend locks a player's life total, they cannot pay even the first point of a variable "Pay X life" cost, and the other player pays life costs as usual.*
+
+<sub>Basis: Printed · Verified: not verified; 1 gate test file · Printed: card: Suspend; card: Aurozoa · Tests: 40-light-c.test.ts · Example tests: 40-light-c.test.ts::Suspend: a player whose life can't change cannot pay life — Aurozoa's recall is neither offered nor accepted, 40-light-c.test.ts::Suspend: every kind of life cost asks the lock — a fixed cast cost, a variable X, Arbiter's play tax · Key: concepts.costs.unpayable.life.locked</sub>
+
 <a id="r111.7"></a>**111.7.** An activated ability's whole cost is paid when the ability is activated, before it is put on the stack. A fixed cost is paid after the ability's targets are chosen. A variable cost (one whose amount is X) is paid first, and what is paid sets X, before any target is chosen. No player may respond between the payment and the ability going on the stack, and negating the ability does not refund it. See rule 705.
 
 > *Example: Infernal Cultivator's "Sacrifice X units:" kills the units as the ability is activated, so a negation cannot give them back.*
@@ -10902,11 +10910,11 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1868 numbered rules.
+1869 numbered rules.
 
 | basis | rules |
 |---|---|
-| Printed | 454 |
+| Printed | 455 |
 | Designer | 202 |
 | Owner call | 675 |
 | Engine only | 46 |
@@ -10921,7 +10929,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 1 |
-| not verified | 3 |
+| not verified | 4 |
 | text changed | 16 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
@@ -11536,7 +11544,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1873 rules and 99 sections.
+- New: 1874 rules and 99 sections.
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)
 - Removed: 901.8 `formats.constructed.single-card`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)
 - Removed: 901.8a `formats.constructed.single-card.copies`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)

@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:78e3676191dce14a",
+ "generated_from": "sha256:94ecae6ca3ef5166",
  "rules": [
   {
    "num": "100.1",
@@ -4939,6 +4939,31 @@
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
+  },
+  {
+   "num": "111.6c",
+   "key": "concepts.costs.unpayable.life.locked",
+   "title": null,
+   "section": "111",
+   "sectionTitle": "Costs",
+   "chapterTitle": "1. Game Concepts",
+   "parent": "111.6",
+   "text": "A player whose life total can't change cannot pay life. A payment of life is a loss of life, which does not happen at all while the total can't change (708.10), so the cost cannot be paid, and the card or ability that asks for it cannot be played or activated (111.6). A cost of 0 life is still paid.",
+   "see": [
+    "112.4",
+    "708.10"
+   ],
+   "examples": [
+    "A player who cast Suspend on themself cannot activate Aurozoa's \"Pay 1 life: Recall me\" for the rest of that battle, however much life they have. Once the battle is over, they can again.",
+    "While Suspend locks a player's life total, they cannot pay even the first point of a variable \"Pay X life\" cost, and the other player pays life costs as usual."
+   ],
+   "basis": "printed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": null
   },
   {
    "num": "111.7",

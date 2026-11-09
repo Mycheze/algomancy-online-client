@@ -5246,4 +5246,11 @@ export const CLOSED: LedgerEntry[] = [
     guards: ['1171-grafted-another-from-bin.test.ts::CT-534: Splort with Blightwalker grafted offers the discarded Dropslime to recall'],
     note: "Fixed 2026-11-07: a grafted Blightwalker now reads \"another\" as other than its host, so Dropslime is offered; its own trash trigger still excludes itself. Real. Rebuilt at [170]: invi discarded Dropslime [166], and Splort's trigger, carrying a grafted Blightwalker (\"recall another target unit from your bin\"), offered only Cthyrian Rector though Dropslime was in the bin too. On a graft \"another\" means other than the host (CR 720.6c), and Splort is in play; the engine excluded the trashed card instead, as it would for Blightwalker's own \"when I am trashed\". CT-534.",
   },
+  {
+    id: 366, room: "AZWN", date: "2026-11-09",
+    report: "Karanda, seat 0 (bug): \"I am allowed to pay life even though my life total cannot change\"",
+    status: 'fixed',
+    guards: ["40-light-c.test.ts::Suspend: a player whose life can't change cannot pay life — Aurozoa's recall is neither offered nor accepted"],
+    note: "Real, reproduced. AZWN fetched and replayed (311/311, no divergence). Filed at [286], turn 8 battle, after Karanda's Suspend on themself had locked their life (it swallowed Siphon Life's 8). At [290] the game offers Aurozoa's 'pay 1 life: recall me' on Leaping Lillik, and taking it costs nothing: the lock swallows the payment and the recall still happens. Life costs never ask whether the total is locked, though a cost that cannot be paid cannot be offered. Every life cost shares the one check. CT-553. Fixed 2026-11-09 (steward): while your life total can't change, a life cost is not offered and is refused if asked for, so Aurozoa's recall waits until the battle (and Suspend's lock) is over.",
+  },
 ];
