@@ -327,8 +327,9 @@ export interface LeagueGlanceView {
   players: number;
   /** the top of the table once a week has been played (at most three) */
   leaders: { name: string; points: number }[];
-  /** the viewer's next match to play: who, and the agreed time ('' when none) */
-  match: { opponent: string; when: string } | null;
+  /** every match the viewer still has to play this week, in no order (a week's
+   * matches have none — report #354): who, and the agreed time ('' when none) */
+  matches: { opponent: string; when: string }[];
 }
 
 const GLANCE_STATUS: Record<Exclude<LeagueGlanceView['status'], ''>, string> = {
@@ -353,12 +354,14 @@ export function leagueGlanceView(st: LeagueState | null, tz: string): LeagueGlan
     })),
     players: s.entrants.filter(e => !e.withdrawn).length,
     leaders: s.phase >= 1 ? s.standings.filter(r => r.w + r.l > 0).slice(0, 3).map(r => ({ name: r.name, points: r.points })) : [],
-    match: (() => {
-      const m = s.me?.matches.find(x => x.playable && !x.result);
-      return m ? { opponent: m.opponent.name, when: m.time?.agreed ? when(m.time.at, tz) : '' } : null;
-    })(),
+    matches: (s.me?.matches ?? []).filter(x => x.playable && !x.result)
+      .map(m => ({ opponent: m.opponent.name, when: m.time?.agreed ? when(m.time.at, tz) : '' })),
   };
 }
+
+/** "A", "A and B", "A, B and C" */
+const andList = (xs: string[]): string =>
+  xs.length < 2 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`;
 
 /** The League card's body: '' when there is no season (the card says so itself). Pure, no buttons. */
 export function leagueGlanceHtml(v: LeagueGlanceView | null): string {
@@ -369,7 +372,8 @@ export function leagueGlanceHtml(v: LeagueGlanceView | null): string {
     <div class="lgglphase">${esc(v.phase)}</div>
     ${v.track.length > 1 ? `<ol class="lggltrack">${v.track.map(t => `<li class="${t.state}">${esc(t.label)}</li>`).join('')}</ol>` : ''}
     ${v.status || people ? `<div class="lgglrow">${v.status ? `<span class="lgglstate ${v.status}">${GLANCE_STATUS[v.status]}</span>` : ''}${people}</div>` : ''}
-    ${v.match ? `<div class="lgglmatch">Next: vs <b>${esc(v.match.opponent)}</b>${v.match.when ? ` · ${esc(v.match.when)}` : ''}</div>` : ''}
+    ${v.matches.length ? `<div class="lgglmatch">This week vs: ${andList(v.matches.map(m =>
+      `<b>${esc(m.opponent)}</b>${m.when ? ` (${esc(m.when)})` : ''}`))}</div>` : ''}
     ${v.leaders.length ? `<ol class="lgglleaders">${v.leaders.map(r => `<li><span>${esc(r.name)}</span><b>${r.points}</b></li>`).join('')}</ol>` : ''}
     ${v.next ? `<div class="lgglnext">${esc(v.next)}</div>` : ''}
   </div>`;

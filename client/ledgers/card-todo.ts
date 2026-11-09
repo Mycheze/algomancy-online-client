@@ -216,16 +216,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 545, area: "client", severity: "minor",
-    title: "the home page's League card says \"Next: vs\" one opponent, though a week's matches have no order",
-    detail: "Report #354 (mycheze, home, 2026-11-08, ux, medium): \"Saying \\\"Next: vs Yagamino\\\" in the League is a bit misleading. The order doesn't really matter. Rather, it should be something \\\"This week vs: Yagamino and Gember\\\" or \\\"This week vs: Yagamino, invi and Gember\\\"\". ui/pages/league.ts leagueGlanceView takes only the first unplayed match (`s.me?.matches.find(x => x.playable && !x.result)`) and leagueGlanceHtml draws it as `Next: vs <b>…</b>` with its agreed time.",
-    evidence: "Report #354 (page: home, no room). Code read 2026-11-08 (steward triage).",
-    fix: "The glance's `match` becomes the list of every playable unplayed opponent this week, drawn as \"This week vs: A, B and C\" (the owner's wording; \"A and B\" for two, \"A\" for one). An agreed time can stay beside the name it belongs to. A page test over leagueGlanceHtml with one, two and three opponents.",
-    proof: () => still('ui/pages/league.ts', '<div class="lgglmatch">Next: vs <b>'),
-    reportId: 354,
-    status: 'open',
-  },
-  {
     id: 546, area: "client", severity: "major",
     title: "Casual vs Competitive is offered as friend's room vs match, not as the rules set (simultaneous or in turn) apart from Best of 1/3",
     detail: "Report #356 (mycheze, home, 2026-11-08, ux, medium) — the owner's design decision, kept whole in BL-73's `said`: \"Casual = simultaneous actions during simultaneous phases / Competitive = entirely turn based, INT while NIT watches, then swap / Best of 1 or Best of 3 doesn't really matter for that, that should be a separate slider. So both draft AND constructed should have the competitive vs casual slider … add a little hover tool tip …\". Today the Format switch exists only on Constructed (ui/pages/home.ts constructedRowsHtml): Casual creates a friend's room, Competitive a match (Best of 1/3, sideboard, sign-in, and the in-turn rule stamped by server/match.ts as `rules: { sequential: true }`), with a subtext line instead of a tooltip.",

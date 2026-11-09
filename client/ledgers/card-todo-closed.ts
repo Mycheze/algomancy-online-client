@@ -15029,4 +15029,18 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-09 (steward). Root cause: the three side cards share the column's height by flex share alone (06-home.css `.homeside { flex: 1 1 0; min-height: 0; overflow: hidden }`), and the glass (`.homesidebody`) is `min-height: 0; overflow: hidden`, so on a window where the League card's share is shorter than its words the glass shrank and clipped: the standings ran into its bottom edge and the line under them (the next date) was cut off. Its bottom padding was also 6px. Now styles/pages/54-home-art.css gives `.homeside--league, .homeside--challenge` `min-height: min-content` (their glances are a fixed handful of lines; a too-short window scrolls the main region instead, which 06-home allows) and the glass 12px of bottom padding (all three cards). Matchmaking is left to its share: its open-games list has no fixed length. Why nothing caught it: no test looked at the side cards' sizing; 960 pins only their markup. Mutations: dropping the min-content rule turned 1186's first test red; the old padding turned its second red. Not seen in a browser (none on the box).",
     status: 'done',
   },
+  {
+    id: 545, area: "client", severity: "minor",
+    title: "the home page's League card says \"Next: vs\" one opponent, though a week's matches have no order",
+    detail: "Report #354 (mycheze, home, 2026-11-08, ux, medium): \"Saying \\\"Next: vs Yagamino\\\" in the League is a bit misleading. The order doesn't really matter. Rather, it should be something \\\"This week vs: Yagamino and Gember\\\" or \\\"This week vs: Yagamino, invi and Gember\\\"\". ui/pages/league.ts leagueGlanceView takes only the first unplayed match (`s.me?.matches.find(x => x.playable && !x.result)`) and leagueGlanceHtml draws it as `Next: vs <b>…</b>` with its agreed time.",
+    evidence: "Report #354 (page: home, no room). Code read 2026-11-08 (steward triage).",
+    fix: "The glance's `match` becomes the list of every playable unplayed opponent this week, drawn as \"This week vs: A, B and C\" (the owner's wording; \"A and B\" for two, \"A\" for one). An agreed time can stay beside the name it belongs to. A page test over leagueGlanceHtml with one, two and three opponents.",
+    proof: () => still('ui/pages/league.ts', '<div class="lgglmatch">Next: vs <b>'),
+    reportId: 354,
+    guards: [
+      "1024-league-home-glance.test.ts::the card names every opponent still to play this week, not one \"next\"",
+    ],
+    closed: "FIXED 2026-11-09 (steward). ui/pages/league.ts leagueGlanceView's `match` (the first `playable && !result` match, drawn as `Next: vs <b>…</b>`) is now `matches`, every match the viewer still has to play this week (league-store sets `playable` only for the current week's unplayed matches), and leagueGlanceHtml draws them in the owner's wording: \"This week vs: <b>A</b>, <b>B</b> and <b>C</b>\", an agreed time in brackets beside the name it belongs to. The class: this was the only one-opponent summary; the League page and the Join sheet's rows (leagueJoinRows) already list every playable match. Why nothing caught it: 1024 §5 pinned the old one-name line, written to the code rather than to the season's shape. Mutation: keeping only the first opponent (`.slice(0, 1)`) turned 1024 §6 red. Not seen in a browser (none on the box).",
+    status: 'done',
+  },
 ];

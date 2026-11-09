@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-09', kind: 'change', text: "The home page's League card no longer says \"Next: vs\" one opponent. It lists everyone you still have to play this week, in no order, like \"This week vs: Yagamino, invi and Gember\"." },
   { date: '2026-11-09', kind: 'fix', text: "On the home page, the League card's standings no longer run into the bottom of the box or get cut off on a short window. There is room under the last line now, and the Challenge card gets the same." },
   { date: '2026-11-09', kind: 'fix', text: "On the home page, the League, Challenge and Matchmaking cards now open wherever you click them, title and text included. Join on an open game still joins it." },
   { date: '2026-11-09', kind: 'change', text: "Spell tokens riding along with your attack now sit at the bottom right of the battle, under your own units and near your bin, instead of up by your opponent's side. Your opponent sees them on your side of the battle too." },

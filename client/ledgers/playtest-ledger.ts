@@ -319,8 +319,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 354, room: "", date: "2026-11-08",
     report: "mycheze, home (ux): \"Saying \\\"Next: vs Yagamino\\\" in the League is a bit misleading. The order doesn't really matter. Rather, it should be something \\\"This week vs: Yagamino and Gember\\\" or \\\"This week vs: Yagamino, invi and Gember\\\"\"",
-    status: 'live',
-    note: "Real: the League card names only the first unplayed match (pages/league.ts leagueGlanceView, `matches.find(x => x.playable && !x.result)`, drawn as \"Next: vs …\"), though a week's matches have no order. It should list every opponent still to play this week. CT-545.",
+    status: 'fixed',
+    guards: [
+      "1024-league-home-glance.test.ts::the card names every opponent still to play this week, not one \"next\"",
+    ],
+    note: "Real: the League card names only the first unplayed match (pages/league.ts leagueGlanceView, `matches.find(x => x.playable && !x.result)`, drawn as \"Next: vs …\"), though a week's matches have no order. It should list every opponent still to play this week. CT-545. Fixed 2026-11-09: the card now reads \"This week vs: A, B and C\" over every match still to play this week, an agreed time beside its name.",
   },
   {
     id: 355, room: "", date: "2026-11-08",

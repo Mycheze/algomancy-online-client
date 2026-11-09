@@ -117,19 +117,37 @@ test('1024 §5 the track, the players, the leaders, your next match', () => {
     'phase 5 (after the final) is not a step');
   assert.equal(v.players, 3, 'a withdrawn player is not counted');
   assert.deepEqual(v.leaders, [{ name: 'Cy', points: 9 }, { name: 'Ann', points: 6 }, { name: 'Bo', points: 3 }]);
-  assert.equal(v.match?.opponent, 'Cy');
-  assert.notEqual(v.match?.when, '', 'an agreed time is shown');
+  assert.deepEqual(v.matches.map(m => m.opponent), ['Cy']);
+  assert.notEqual(v.matches[0]?.when, '', 'an agreed time is shown');
   const html = leagueGlanceHtml(v);
   assert.match(html, /<ol class="lggltrack"><li class="past">Sign-ups<\/li><li class="past">W1<\/li><li class="now">W2<\/li>/);
   assert.match(html, /<span class="lgglstate in">✓ you're in<\/span><span class="lgglplayers">3 players<\/span>/);
-  assert.match(html, /<div class="lgglmatch">Next: vs <b>Cy<\/b> · /);
+  assert.match(html, /<div class="lgglmatch">This week vs: <b>Cy<\/b> \(/);
   assert.match(html, /<ol class="lgglleaders"><li><span>Cy<\/span><b>9<\/b><\/li>/);
 
   // sign-up week: no leaders yet, even with rows; a champion makes every step past
   const signup = leagueGlanceView(state(season({ phase: 0, standings: [R('a', 'Ann', 1, 0, 3, 1)] })), TZ)!;
   assert.deepEqual(signup.leaders, []);
-  assert.equal(signup.match, null);
+  assert.deepEqual(signup.matches, []);
   assert.doesNotMatch(leagueGlanceHtml(signup), /lgglleaders|lgglmatch|lgglplayers/);
   const done = leagueGlanceView(state(season({ phase: 5, champion: P('c', 'Cy') })), TZ)!;
   assert.ok(done.track.every(t => t.state === 'past'));
+});
+
+test('1024 §6 (report #354) the card names every opponent still to play this week, not one "next"', () => {
+  const glance = (ms: MyMatch[]) => leagueGlanceHtml(leagueGlanceView(state(season({}, ME(ms))), TZ));
+  const line = (html: string) => html.match(/<div class="lgglmatch">(.*?)<\/div>/)?.[1] ?? '';
+  assert.equal(line(glance([match('m1', { opponent: P('y', 'Yagamino') })])), 'This week vs: <b>Yagamino</b>');
+  assert.equal(line(glance([match('m1', { opponent: P('y', 'Yagamino') }), match('m2', { opponent: P('g', 'Gember') })])),
+    'This week vs: <b>Yagamino</b> and <b>Gember</b>');
+  assert.match(line(glance([
+    match('m1', { opponent: P('y', 'Yagamino') }),
+    match('m2', { opponent: P('i', 'invi'), time: { at: Date.UTC(2026, 10, 12, 18), mine: true, agreed: true } }),
+    match('m3', { opponent: P('g', 'Gember') }),
+    match('m4', { opponent: P('d', 'Done'), result: { outcome: 'a', how: 'game', at: '' }, won: true }),
+    match('m5', { opponent: P('l', 'Later'), playable: false }),
+  ])), /^This week vs: <b>Yagamino<\/b>, <b>invi<\/b> \([^()]*12[^()]*\) and <b>Gember<\/b>$/,
+  'a played match and one not playable this week are left out; an agreed time stays by its name');
+  assert.doesNotMatch(glance([match('m1'), match('m2')]), /Next:/);
+  assert.doesNotMatch(glance([match('m1', { playable: false })]), /lgglmatch/, 'nothing left to play → no line');
 });
