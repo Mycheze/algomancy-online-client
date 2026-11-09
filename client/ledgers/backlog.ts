@@ -1060,38 +1060,6 @@ const OPEN: Entry[] = [
       'client/ui/main.ts',
     ],
   },
-  {
-    id: 'BL-74',
-    slug: 'deck-builder-zoom-hint',
-    title: 'Tell players on the deck building page that holding the mouse wheel down zooms a card',
-    area: 'client',
-    size: 'S',
-    status: 'open',
-    track: 'qol',
-    said:
-      'there needs to be a tooltip or reminder of some kind on the "deck building" page that you can hold down '
-      + 'middle mouse button (the scroll wheel) to zoom in on cards. A few people have "requested" a way to do that '
-      + 'since holding the scroll wheel isn\'t used anywhere else, so they didn\'t know. (owner, 2026-11-08, in his '
-      + 'answer to the BL-11 handoff)',
-    means:
-      'The zoom already exists (ui/presszoom.ts, owner 2026-10-21): on any `data-zoom` card a held middle button '
-      + 'zooms at once and follows the cursor, a held left button zooms after a moment, and a finger\'s hold zooms '
-      + 'too. Nothing on the deck building page says so, so players ask for a feature they already have. Add a '
-      + 'short, unobtrusive hint there (a tooltip or a one-line reminder) naming the held wheel (and the held click '
-      + 'and touch hold), without nagging.',
-    doneWhen: [
-      'The deck building page shows a hint that holding the mouse wheel (or holding a click, or a finger) on a card zooms it',
-      'The hint does not cover cards or nag: it can be read without getting in the way of building',
-    ],
-    decided: [],
-    asks: [],
-    deps: [],
-    touches: [
-      'client/ui/tabletop.ts',
-      'client/ui/presszoom.ts',
-    ],
-    notes: 'Filed by the steward on the BL-11 resume run, 2026-11-08 — a new request carried in that answer.',
-  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
