@@ -12,7 +12,7 @@
  * here shows what the other seat submitted.
  */
 import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
-import { button } from '../components/index.ts';
+import { button, statusMessage } from '../components/index.ts';
 import { lobbyLocals, type CustomRulesInfo, type TrioLobby, type TrioReveal } from '../lobby.ts';
 import { elIcon as icon, esc, shareBar } from '../util.ts';
 import { frameChromeView, frameHtml, type FrameChrome } from './frame.ts';
@@ -77,6 +77,11 @@ export interface LobbyArgs {
   friends?: string;
   /** the toolbar's account and bell (pages/frame.ts); signed out when absent */
   chrome?: FrameChrome;
+  /** main.ts `uiError`: a refusal or "disconnected — reconnecting…", drawn red
+   * under the seats as in the other waiting rooms; '' or absent for none.
+   * (2026-11-09: this lobby took no error, so it said nothing while the
+   * error cue played — inventory 05 §18.16.) */
+  error?: string;
 }
 
 export interface LobbyView extends LobbyArgs {
@@ -196,7 +201,8 @@ export function lobbyHtml(v: LobbyView): string {
       <div class="lobbygo">${iAmLocked
         ? button({ label: 'Change my mind', dataBtn: 'lobby-unlock' })
         : button({ label: v.ready ? "I'm ready" : 'Finish choosing first', variant: 'primary', dataBtn: 'lobby-lock', disabled: !v.ready })}</div>
-    </div>`, 'roomsec--foot'),
+    </div>`, 'roomsec--foot')
+      + roomSection(v.error ? statusMessage({ tag: 'p', tone: 'error', className: 'pageerr', text: v.error }) : ''),
     footHtml: '<p class="homefoot">Nothing is dealt until you have both locked in.</p>',
   });
 }

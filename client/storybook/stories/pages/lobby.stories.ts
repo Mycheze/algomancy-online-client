@@ -44,6 +44,10 @@ export const LeagueMatch = {
   name: 'A league match',
   render: () => page(lobbyHtml(view({ peers: [true, false], lobby: { method: 'random', methods: [], locked: [false, false], mine: {} }, ready: true }))),
 };
+export const Reconnecting = {
+  name: 'The connection dropped',
+  render: () => page(lobbyHtml(view({ pick: 'fire', ready: true, error: 'disconnected from the server — reconnecting in 2s…' }))),
+};
 export const TrioReveal = {
   name: 'The trio reveal',
   render: () => overlay(`<div class="overlay trioover">${revealHtml({

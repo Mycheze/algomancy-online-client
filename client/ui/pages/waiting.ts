@@ -222,7 +222,7 @@ export function paintWaiting(app: HTMLElement, net: WaitingNet, error: string, r
     const link = `${location.origin}/?ws=1&room=${encodeURIComponent(net.room)}&seat=${other(net.seat)}&mode=draft`;
     paintFrame(app, lobbyHtml(lobbyView({
       lobby: w.trio, seat: net.seat as 0 | 1, names: net.names,
-      peers: net.peers, room: net.room, link,
+      peers: net.peers, room: net.room, link, error,
       friends: roomFriendsHtml(!net.peers[other(net.seat)]),
       ...(w.custom ?? net.custom ? { custom: (w.custom ?? net.custom)! } : {}),
     })));

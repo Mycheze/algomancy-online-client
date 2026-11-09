@@ -527,7 +527,13 @@ const OPEN: Entry[] = [
       + 'the glow, outline and colour stay, so the meaning does. Left as it was: the queue spinner, which the '
       + 'reduce block slows (a spinner that stops reads as frozen). Guarded by the census '
       + '1201-endless-motion-honours-reduce.test.ts: every `infinite` animation in the stylesheet must have its '
-      + 'selector named in a reduced-motion block.',
+      + 'selector named in a reduced-motion block.\n\n'
+      + '2026-11-09 (steward): the draft lobby draws its failure line (docs/23-ui-inventory/05 §18.16: "Draft lobby '
+      + 'shows no error or disconnect line"). pages/lobby.ts took no error and pages/waiting.ts\'s trio branch handed '
+      + 'it none, so "disconnected from the server — reconnecting…" and a server refusal (main.ts `uiError = m.msg`, '
+      + 'with the error cue) left the lobby silent. LobbyArgs.error is drawn red under the seats, the same '
+      + 'statusMessage error line as the Constructed and Single Card Duel rooms; story "The connection dropped". '
+      + 'Guarded by 1200-refusals-drawn-as-errors.test.ts §3.',
   },
   {
     id: 'BL-17',

@@ -22,6 +22,13 @@
  *      tone's red is what shows; `.deckmsg` (still the gold of a note) is not
  *      on any error line
  *
+ *   §3 the draft lobby (2026-11-09, inventory 05 §18.16): it was the one
+ *      waiting room that drew no failure line at all. The page took no error,
+ *      so "disconnected from the server — reconnecting…" and a refused lock-in
+ *      played the error sound over a lobby that said nothing. It now draws the
+ *      same red line as the other two waiting rooms, and the dispatcher hands
+ *      it the error.
+ *
  * The rendered markup is pinned beside each page's own tests (960, 961, 973,
  * 977, 978). No browser runs here.
  */
@@ -30,6 +37,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { readStyles } from './read-styles.ts';
 import { statusMessage } from '../components/index.ts';
+import { lobbyHtml, type LobbyView } from '../pages/lobby.ts';
 
 const page = (f: string): string => readFileSync(new URL(`../pages/${f}`, import.meta.url), 'utf8');
 const ERR = (text: string): RegExp =>
@@ -41,6 +49,7 @@ const SITES: readonly [file: string, text: string, count: number][] = [
   ['match.ts', 'v.error', 2],        // the room, the sideboard bar
   ['signin.ts', 'authMsg', 1],
   ['inbox.ts', 'v.msg', 1],          // the rooms' "Invite a friend" panel
+  ['lobby.ts', 'v.error', 1],        // the draft lobby (§3)
 ];
 
 test('§0 positive control: the error tone is red and read out; the note tone is not', () => {
@@ -56,7 +65,7 @@ test('§1 every failure line on those screens uses the error tone', () => {
     assert.doesNotMatch(src, new RegExp(`className: 'deckmsg', text: ${text.replace(/\./g, '\\.')}\\b`),
       `${file}: ${text} is never drawn in the note's gold`);
   }
-  for (const file of ['home.ts', 'waiting.ts', 'match.ts', 'signin.ts', 'inbox.ts', 'deckpicker.ts']) {
+  for (const file of ['home.ts', 'lobby.ts', 'waiting.ts', 'match.ts', 'signin.ts', 'inbox.ts', 'deckpicker.ts']) {
     assert.doesNotMatch(page(file), /<p class="deckmsg">/, `${file}: no hand-written gold message line`);
   }
 });
@@ -72,4 +81,24 @@ test('§2 the CSS lets the error red show', () => {
   // the two places that pull the line tight still do, under its new name
   assert.match(css, /\.homeplayfoot \.pageerr\s*\{\s*margin:\s*0;?\s*\}/);
   assert.match(css, /\.ccsbbar \.pageerr\s*\{\s*margin:\s*0;?\s*\}/);
+});
+
+test('§3 the draft lobby draws the failure line, and the dispatcher hands it the error', () => {
+  const view = (error?: string): LobbyView => ({
+    lobby: { method: 'pick-one', methods: [{ id: 'pick-one', label: 'One each', blurb: 'b' }], locked: [false, false], mine: {} },
+    seat: 0, names: ['Ann', 'Bo'], peers: [true, true], room: 'QXZZ', link: 'http://x/?room=QXZZ&seat=1',
+    pick: null, ranking: [], ready: false, chrome: { signedIn: true, alerts: 0 },
+    ...(error === undefined ? {} : { error }),
+  });
+  const msg = 'disconnected from the server — reconnecting in 2s…';
+  const html = lobbyHtml(view(msg));
+  assert.ok(html.includes(statusMessage({ tag: 'p', tone: 'error', className: 'pageerr', text: msg })), 'the red, read-out line');
+  assert.ok(html.indexOf('role="alert"') > html.indexOf('class="lobbyfoot"'), 'under the seats, as in the other rooms');
+  for (const quiet of [lobbyHtml(view('')), lobbyHtml(view())]) {
+    assert.doesNotMatch(quiet, /role="alert"|pageerr/, 'no error, no line and no empty section');
+  }
+  // pages/waiting.ts paintWaiting's trio branch passes the error it was handed
+  const trio = page('waiting.ts').match(/if \(w\.trio\) \{[^]*?return;\s*\}/)?.[0] ?? '';
+  assert.match(trio, /lobbyView\(\{/, 'positive control: found the trio branch');
+  assert.match(trio, /\berror\b/, 'the trio branch hands the lobby the error');
 });
