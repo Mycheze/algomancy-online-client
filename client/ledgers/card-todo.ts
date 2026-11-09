@@ -225,6 +225,28 @@ const OPEN: TodoEntry[] = [
     reportId: 361,
     status: 'open',
   },
+  {
+    id: 551, area: "client", severity: "minor",
+    title: "hovering a cached card on the table zooms the scan without its prophecy count (⏳ 1/2, waiting, ✓ free)",
+    detail: "Report #364 (mycheze, TUDN, 2026-11-09, ux, medium): \"When you hover over a prophecied card you should still be able to see the \\\"countdown\\\" stuff as \\\"chips\\\" on the card. You can still see when you're NOT hovering over it, but now you can't really tell when zoomed in\". The cache thumbs in a player's info block (ui/main.ts regionCacheHtml) draw their cacheChip as a `<span class=\"cchip\">` SIBLING of the `.card`, inside `.cthumb`, not as one of the card's own badges. The hover zoom (ui/zoom.ts show → inertCopy) copies the `.card` only, and decorateZoom (ui/main.ts) re-hangs a card's chips as dice only from its own `.badges` strip or from a unit's / hand card's / stack item's badge list: it has no cache branch. So the zoomed copy of a cache thumb carries no chip, and the text panel beside it (zoomPanelHtml) is the printed box only, with no condition or count. The hand-side cached strip (handCachedHtml) and the cache dialog (cacheCardHtml) pass the chip as `badges`, inside the card, so their zooms keep it: only the table thumb loses it.",
+    evidence: "Report #364, TUDN fetched and replayed 2026-11-09 (steward triage): 147/147, no divergence. Filed at [53], turn 2 deployment, mycheze's Done; Debeli's Flzzz had been prophesied with 'Two Turns Pass' on turn 1 and sat in Debeli's cache, counting. Verified by reading the three surfaces above; not seen in a browser (none on the box).",
+    fix: "Make the zoom of a cache thumb carry the same chip: either give the thumb's card the chip as a badge (cardHtml `badges: [chip]`, keeping the visible `.cchip` placement by CSS) so decorateZoom's existing `.badges` path turns it into a die, or teach decorateZoom a cache branch (the thumb carries `data-p`/`data-i` or the cache uid; read cacheChip). Consider adding the condition and count line (cacheCardHtml's `📜 condition — N turns to go`) to the zoom's text panel too. A ui test: hover-zoom a counting prophecy's table thumb (zoom decorator on the thumb's card) and find the ⏳ chip in the copy; break it to see it red.",
+    proof: () => still('ui/main.ts', '})}<span class="cchip ') && !/cchip|cacheChip|cache/.test(body('ui/main.ts', 'function decorateZoom(', 'setZoomDecorator((src')),
+    verify: "In a game with a prophesied card in either cache, hover its thumb in the info block: the zoomed card still shows its ⏳ count (or waiting / ✓ free).",
+    reportId: 364,
+    status: 'open',
+  },
+  {
+    id: 552, area: "client", severity: "major",
+    title: "while you choose attackers, the 'their hand, seen' strip floats over your own units",
+    detail: "Report #365 (mycheze, TUDN, 2026-11-09, ux, medium): \"The \\\"revealed hand zone\\\" covers your units when declaring an attack. I can't see my units here!\" The strip is CT-191's float (ui/main.ts lboardHtml seenFloat): it floats over the In Play block of the region that is NOT the focus (`const over = focus === tRegion ? 'mine' : 'theirs'`), at its outer corner (styles/board/41-regions-blocks.css `.lboard > .lseen.mine { grid-area: yplay; bottom: 4px; left: 8px }`, opaque, z-index 4). When you attack, the fight is in their region, so the strip floats over YOUR In Play — which in the declare step is exactly where you pick your attackers from. The rule \"the region not fought in is free\" holds only once the formations have left; the declare step (and, for the defender, the blocks step over their own units) is the exception. Likely aggravated today by db7931c9 (\"in a battle, every In Play stands its units as large as the fight's cards\", deployed 2026-11-09 10:15, the report came at 13:20): the In Play band is now full of full-size units, so a corner float lands on cards.",
+    evidence: "Report #365, TUDN fetched and replayed 2026-11-09 (steward triage): 147/147, no divergence. Filed at [66], turn 3, mycheze declaring an attack; Debeli's hand had been revealed to mycheze by Eldritch Dreamtender on turn 2, so the strip was up. Reproduced on the ui driver (352's fixture, seed 35201, me attacking, stopped in the declare step before declareAttack): `<div class=\"lseen mine\" data-region=\"0\">` — the float is over my own In Play while I choose attackers. The aggravation by db7931c9 is a hypothesis (no browser on the box).",
+    fix: "Decide where the strip goes from what the step needs, not only from the focus: while a seat is choosing from its own In Play (the attacker in declare, the defender choosing blockers), float it over the OTHER In Play (theirs, top right), or fold it to a small chip (\"Their hand, seen · N\") that opens on hover/click while units are being picked. Keep CT-191's guarantees (never clipped inside the info block, its hide-all / cross-off controls still clickable). Extend 352 with the declare step for each side: the float is never over the In Play the viewer is picking from.",
+    proof: () => still('ui/main.ts', "const over = focus === tRegion ? 'mine' : 'theirs';"),
+    verify: "Get your opponent's hand revealed (e.g. Eldritch Dreamtender), then attack on a later turn: while you choose attackers, none of your units is covered by the 'Their hand, seen' strip.",
+    reportId: 365,
+    status: 'open',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

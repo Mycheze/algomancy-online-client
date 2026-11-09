@@ -379,6 +379,30 @@ const OPEN: LedgerEntry[] = [
     status: 'live',
     note: "A fair styling request, real by reading. The home page sets its headings and its footer's \"Algomancy\" in the brand lettering (styles/pages/54-home-art.css, `--font-brand`); every other page is drawn in the shared app frame (pages/frame.ts), whose title bar's page name and footer button use the plain body font. One change to the frame reaches every page. CT-550.",
   },
+  {
+    id: 362, room: "TUDN", date: "2026-11-09",
+    report: "Debeli, seat 1, agreed fix: back to the start of the step before (turn 1, the haste step). \"asd\"",
+    status: 'agreed-fix',
+    note: "Took back Debeli's and mycheze's haste Dones, both attack passes and mycheze's Construct Overseer [10]-[14]; mycheze agreed. Replayed (--branch; 147 of 147 actions, no divergence): Debeli pressed Done with haste again and the two went straight on to the further take-back filed as #363. Trying the button, with a placeholder reason; no defect.",
+  },
+  {
+    id: 363, room: "TUDN", date: "2026-11-09",
+    report: "Debeli, seat 1, agreed fix: back to the start of the step before (turn 1, planning). \"asd\"",
+    status: 'agreed-fix',
+    note: "Continues #362: took back all of turn 1's planning [0]-[10] (bottom cards, resources, prismite exchanges, both Dones); mycheze agreed. Replayed, both players planned again in a different order, mycheze spawned Construct Overseer again, and the game went on to 147 actions. A test of rewinding through a hidden step; no defect.",
+  },
+  {
+    id: 364, room: "TUDN", date: "2026-11-09",
+    report: "mycheze, seat 0 (ux): \"When you hover over a prophecied card you should still be able to see the \\\"countdown\\\" stuff as \\\"chips\\\" on the card. You can still see when you're NOT hovering over it, but now you can't really tell when zoomed in\"",
+    status: 'live',
+    note: "Real by reading. Filed at [53], turn 2 deployment, with Debeli's Flzzz counting 'Two Turns Pass' in their cache. A cache thumb on the table wears its count as a chip beside the card, not on it, and the hover zoom copies only the card, so the zoomed copy has no count; the hand-side strip and the cache dialog put the chip on the card and keep it. CT-551.",
+  },
+  {
+    id: 365, room: "TUDN", date: "2026-11-09",
+    report: "mycheze, seat 0 (ux): \"The \\\"revealed hand zone\\\" covers your units when declaring an attack. I can't see my units here!\"",
+    status: 'live',
+    note: "Real, reproduced on the ui driver. Filed at [66], turn 3, mycheze declaring an attack, with Debeli's hand seen since Eldritch Dreamtender on turn 2. The 'their hand, seen' strip floats over the In Play of the region not being fought in, and when you attack that is your own, where you are picking attackers. Likely made worse the same day by in-play units standing full size in a battle. CT-552.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
