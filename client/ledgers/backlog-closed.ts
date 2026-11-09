@@ -8,6 +8,62 @@
 import type { Entry } from './backlog.ts';
 
 export const CLOSED: Entry[] = [
+  {
+    id: 'BL-73',
+    slug: 'rules-set-apart-from-best-of',
+    title: 'Casual vs Competitive is the rules set (simultaneous or in turn), Best of is its own choice, and Draft gets the rules set too',
+    area: 'client',
+    size: 'M',
+    status: 'done',
+    evidence: {
+      commit: '301ccca0',
+      guards: [
+        '960-page-home-html.test.ts::960 §4 Constructed: Casual and Competitive',
+        '1194-rules-set-apart-from-best-of.test.ts::1194 §1-§3 the rules set apart from Best of: a Casual match, and a Competitive draft',
+        '1193-competitive-draft.test.ts::Competitive draft: the draft step is both players at once, and the resource step waits for both',
+      ],
+    },
+    track: 'feature',
+    said:
+      'Your understanding of what "Casual and Competitive" is about is wrong. \nCasual = simultaneous actions during '
+      + 'simultaneous phases\nCompetitive = entirely turn based, INT while NIT watches, then swap\n\nBest of 1 or Best of 3 '
+      + 'doesn\'t really matter for that, that should be a separate slider. So both draft AND constructed should have the '
+      + 'competitive vs casual slider since that\'s more about the *rules* set.\n\nConstructed should have Best of 1 vs '
+      + 'Best of 3 for both competitive and casual (since it doesn\'t matter what rules set is being used, it just adds '
+      + 'sideboarding).\n\nPlease fix that on the Competitive tab (both things) and add the rules set choice to Draft. And '
+      + 'add a little hover tool tip describing what the difference is between competitive and casual, rather than a '
+      + 'subtext line. (report #356, 2026-11-08)',
+    means:
+      'Today the home page\'s Constructed "Format" switch is two different products: Casual is a friend\'s room '
+      + '(simultaneous phases, one game, no sideboard) and Competitive is a match (pages/home.ts constructedRowsHtml: '
+      + 'Best of 1/3, sideboard, accounts, and the in-turn rules — server/match.ts stamps `rules: { sequential: true }` '
+      + 'on every match room). The owner splits them into two independent choices: the RULES SET (Casual = simultaneous, '
+      + 'Competitive = in turn, initiative player first while the other watches, then swap) on BOTH Draft and '
+      + 'Constructed; and, on Constructed only, BEST OF 1 or 3 for either rules set (Best of 3 just adds sideboarding). '
+      + 'The difference between the rules sets is a hover tooltip on the switch, replacing the subtext line.',
+    doneWhen: [
+      'Draft and Constructed each offer Casual | Competitive as the rules set, with a tooltip saying what each means and no subtext line',
+      'Constructed offers Best of 1 | Best of 3 for both rules sets; a Casual Best of 3 plays its games simultaneously with sideboarding between them',
+      'A Competitive (in-turn) room can be a single game, and a Competitive draft plays its games in turn',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/pages/home.ts',
+      'client/server/match.ts',
+      'client/server/rooms.ts',
+      'client/engine/src/types.ts',
+      'client/docs/22-competitive-constructed.md',
+    ],
+    notes:
+      'Filed by the steward\'s triage of report #356 (2026-11-08). Things to settle in code before building: the in-turn '
+      + 'rule is stamped as `sequential` and documented "Constructed only" (engine/src/types.ts GameRules, Annex D1.5), so '
+      + 'draft needs that restriction lifted and a draft room needs a way to carry it; a match today implies accounts, '
+      + 'a sideboard and the match clock (docs/22), so a Casual Best of 3 is a match with `sequential` off, and a '
+      + 'Competitive Best of 1 is either a one-game match or a friend\'s room with `sequential` on. League rooms '
+      + '(BL-55\'s neighbours) take their rules from the season and are out of scope.',
+  },
   // ─────────────────────────────────────────────────────────────────────────
   // FEATURES — the "ideas left to do" list
   // ─────────────────────────────────────────────────────────────────────────
