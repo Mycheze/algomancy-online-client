@@ -63,7 +63,9 @@ test('league constructed room §2 ⭐ only the waiting room’s own pick registe
     '⭐ the deck last selected on the home page does not lock in when Play lands you in the room');
   assert.equal(R.takesJoinDeck(room, true), true, '“Play this deck” does');
   const friendly = R.createRoom('FRN1', 1, ['A', 'B'], 'constructed', undefined, D1.cards);
-  assert.equal(R.takesJoinDeck(friendly, false), true, 'a friend’s constructed room takes the deck you came with, as before');
+  assert.equal(R.takesJoinDeck(friendly, false, true), true, 'a friend’s constructed room takes its creator’s deck');
+  assert.equal(R.takesJoinDeck(friendly, false), false, 'but not a friend’s arrival (CT-542): they pick in the room');
+  assert.equal(R.takesJoinDeck(room, false, true), false, 'a league room is never created by a join, and takes no unpicked deck');
 });
 
 test('league constructed room §3 ⭐ two picks deal the game, from the decks picked', async () => {

@@ -350,8 +350,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 357, room: "RUCV", date: "2026-11-08",
     report: "mycheze, seat 0 (gamebreaking): \"Gember thought she selected the right deck, but for some reason, it didn't actually follow her into the game.\"",
-    status: 'live',
-    note: "Real, cause not pinned. RUCV fetched: a friend's constructed room, Gember seat 1 dealt with her saved deck 92e37b2f… (a blue list: Bloated Manablub, Good Whale, Bripp …); mycheze conceded 15 seconds in, turn 1, to start again. In a friend's constructed room the joiner's browser-held deck is registered the moment they join (server/rooms.ts takesJoinDeck), so the game deals on arrival and the joiner never sees which deck they brought. League and Competitive rooms already take a deck only from the room's own pick. Why the held deck was not the one she chose is not checked (another tab or device, or a pick that did not stick). CT-542.",
+    status: 'fixed',
+    guards: [
+      "1197-friend-room-joiner-picks-deck.test.ts::a friend arriving in a constructed room is not dealt in until they pick a deck there",
+    ],
+    note: "Real, cause not pinned. RUCV fetched: a friend's constructed room, Gember seat 1 dealt with her saved deck 92e37b2f… (a blue list: Bloated Manablub, Good Whale, Bripp …); mycheze conceded 15 seconds in, turn 1, to start again. In a friend's constructed room the joiner's browser-held deck is registered the moment they join (server/rooms.ts takesJoinDeck), so the game deals on arrival and the joiner never sees which deck they brought. League and Competitive rooms already take a deck only from the room's own pick. Why the held deck was not the one she chose is not checked (another tab or device, or a pick that did not stick). CT-542. Fixed 2026-11-09: a friend joining a constructed room lands in its waiting room and picks their deck there; the game deals when they press Play this deck.",
   },
   {
     id: 358, room: "CNDX", date: "2026-11-08",

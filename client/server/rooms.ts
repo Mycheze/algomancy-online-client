@@ -2097,21 +2097,29 @@ function decksFor(room: Pick<Room, 'decks'> & { league?: RoomLeague | null; matc
 
 /**
  * Does a deck riding on a JOIN register for this seat? The client sends its
- * selected deck with every join (ui/main.ts sendJoin), which in a friend's
- * constructed room is the point: you came with a deck. In a constructed
- * LEAGUE room the deck is chosen for each game, in the room (owner,
- * 2026-11-01: "change your deck every single game (or not)"), so only the
- * waiting room's own "Play this deck" — a join marked `pick` — counts.
- * Otherwise whatever deck was last selected on the home page would be locked
- * in the moment the League page's Play button landed you in the room.
+ * selected deck with every join (ui/main.ts sendJoin), but that is only the
+ * deck this BROWSER last selected — so it counts in two cases alone:
+ *
+ *   · `creates`: the join that makes a friend's constructed room. Its creator
+ *     pressed Create on the home screen with the deck shown beside the button.
+ *   · `pick`: the waiting room's own "Play this deck", where the picker shows
+ *     the deck and lets you change it.
+ *
+ * Every other join lands in the waiting room with nothing registered. CT-542,
+ * report #357 (2026-11-08): a friend's room used to take the joiner's held
+ * deck on arrival, so the game was dealt the instant they came in, with a deck
+ * they never saw and could not change ("Gember thought she selected the right
+ * deck, but … it didn't actually follow her into the game"). A constructed
+ * LEAGUE room is never created by a join and always worked this way (owner,
+ * 2026-11-01: "change your deck every single game (or not)").
  */
-export function takesJoinDeck(room: Pick<Room, 'league' | 'match'>, pick: boolean): boolean {
+export function takesJoinDeck(room: Pick<Room, 'league' | 'match'>, pick: boolean, creates = false): boolean {
   // docs/22 §2.4: a CC room never takes a join's deck. Game 1 registers
   // through server/match.ts (main + sideboard, checkMatchDeck); games 2–3 are
   // dealt from the match's locked configurations, never from whatever deck
   // the joining browser happens to have selected.
   if (room.match) return false;
-  return !room.league || pick;
+  return pick || (creates && !room.league);
 }
 
 /**

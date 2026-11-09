@@ -2901,8 +2901,12 @@ wss.on('connection', ws => {
       // CR D8.2e: thirty copies of one card is nobody's saved deck
       const claimed = typeof msg.deckId === 'string' && !room.single ? msg.deckId : null;
       const owned = deckForPlay(account?.id ?? null, claimed);
-      // a constructed league room takes only the waiting room's own pick (rooms.ts takesJoinDeck)
-      let gameJustStarted = roomWaiting(room) && deckCards && takesJoinDeck(room, msg.pick === true)
+      // only the creating join and the waiting room's own pick register a deck
+      // (rooms.ts takesJoinDeck, CT-542): a friend arriving lands in the room.
+      // A single card duel's card IS a pick: the client sends one only from
+      // the room's own Play button (ui/main.ts sendJoin, `singleArmed`).
+      const isPick = msg.pick === true || (!!room.single && msg.single !== undefined);
+      let gameJustStarted = roomWaiting(room) && deckCards && takesJoinDeck(room, isPick, !existing)
         ? setRoomDeck(room, seat, deckCards, owned ? owned.id : null) : false;
       // docs/22 §5.1: a CC match's game 1 takes a REGISTRATION (main + side),
       // never the bare deck above (takesJoinDeck is false in every match room);
