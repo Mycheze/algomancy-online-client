@@ -298,6 +298,12 @@ card('Big Glimpse Card', {
             ...left.map(([n, i]) => ({ label: n, value: i as unknown, card: n })),
             { label: 'Done splitting', value: false },
           ],
+          // CT-539 / report #349: the client's two-pile split view (display
+          // only). The splitter moves cards between the piles as often as they
+          // like, then the client answers these same one-card questions in a
+          // row, each found by its value (the revealed index, stable across
+          // the loop) — so the action log, and every saved game, is unchanged.
+          pickSet: { picked: k, max: revealed.length, group: 'split' },
         });
         if (v === false) break;
         pile1.push(v as number);

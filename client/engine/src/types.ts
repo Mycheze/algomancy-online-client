@@ -1591,15 +1591,19 @@ export interface Decision {
  * row. Nothing may read this to RESOLVE an answer; `options` is the question.
  */
 export interface PickSetHint {
-  /** the mana still to spend on THIS pick (the card's cap less the picks made) */
-  budget: number;
+  /** the mana still to spend on THIS pick (the card's cap less the picks made).
+   * Absent when the set has no mana cap — Big Glimpse Card's split (CT-539),
+   * where only `max` limits it. */
+  budget?: number;
   /** how many of the set are already chosen */
   picked: number;
   /** the most the set may hold */
   max: number;
   /** how the client lays the options out: 'bins' splits them by the bin they
-   * sit in (option value `"<seat>:<binIndex>"`), 'reveal' is one row */
-  group: 'bins' | 'reveal';
+   * sit in (option value `"<seat>:<binIndex>"`), 'reveal' is one row, 'split'
+   * is two piles — the chosen cards are pile 1, every other card pile 2
+   * (Big Glimpse Card, CT-539: the player moves cards between them freely) */
+  group: 'bins' | 'reveal' | 'split';
 }
 
 /** Why the engine is paused, and how to resume. All serializable data. */

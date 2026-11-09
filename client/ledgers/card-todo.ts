@@ -185,17 +185,6 @@ const OPEN: TodoEntry[] = [
   // ── the report triage of 2026-11-06 ────────────────────────────────────
   // ── the report triage of 2026-11-07 ────────────────────────────────────
   {
-    id: 539, area: "client", severity: "minor",
-    cards: ["Big Glimpse Card"],
-    title: "Big Glimpse Card's split is seven one-card questions: a pick cannot be moved back, and the piles are never laid out side by side",
-    detail: "Report #349 (invi, PBNT, 2026-11-07, feature): \"big glimpse card: make a view where you can reorder the cards between two piles until happy\". The opponent splits the seven with a loop of payOrDecline questions (batch-hybrids-ld-a.ts ~line 293, `split:${k}`), one card into pile 1 each, then \"Done splitting\": a card once picked stays in pile 1, and the client shows the split as a list of the cards left, not as two piles.",
-    evidence: "Report #349; PBNT replayed 2026-11-08 (steward triage repair), 252/252, --report @90: invi picked Hammer of Justice, Malformed Monstrosity and Frosted Denial into pile 1 [86]-[88], then \"Done splitting\" [89]; Yagamino was then asked which pile to cache.",
-    fix: "A two-pile split view: all seven shown, each card tapped (or dragged) between pile 1 and pile 2 as often as the player likes, and one Confirm that answers the engine with the final pile 1 — either as one multi-pick question (the engine's choice kinds may already have one: check before adding) or by the client sending the existing one-card answers in a burst on Confirm. Replays must still read old logs: keep the `split:k` answers if the engine side changes.",
-    proof: () => still('engine/src/cards/sets/batch-hybrids-ld-a.ts', "{ label: 'Done splitting', value: false },"),
-    reportId: 349,
-    status: 'open',
-  },
-  {
     id: 542, area: "client", severity: "major",
     title: "joining a friend's constructed room locks in the deck this browser last selected the moment you arrive, with no chance to check or change it",
     detail: "Report #357 (mycheze, RUCV, 2026-11-08, gamebreaking): \"Gember thought she selected the right deck, but for some reason, it didn't actually follow her into the game.\" Every join carries the browser's chosen deck (ui/main.ts sendJoin, the `algoDeck` copy in ui/util.ts chosenDeck), and in a friend's constructed room the server registers it at once (server/rooms.ts takesJoinDeck: `return !room.league || pick;`, used at server/main.ts ~line 2876): the joiner who completes the pair deals the game on arrival, so the waiting room's \"Play this deck\" is never shown to them and nothing on the way in says which deck they are bringing. League rooms (owner, 2026-11-01) and Competitive matches (CT-518) already take a deck only from the room's own pick.",

@@ -1,5 +1,6 @@
 /*
- * THE PICK-SET DIALOG — Wake the Dead and Tides of the Cosmos.
+ * THE PICK-SET DIALOG — Wake the Dead, Tides of the Cosmos, and Big Glimpse
+ * Card's split.
  *
  * The owner, 2026-09-28: *"UI for Wake the Dead kinda sucks. We should not be
  * using a 'search' for that. It should show a modal, with oppo's binned units
@@ -28,6 +29,16 @@
  * What is decided here is the budget arithmetic for GREYING only — the engine
  * is still the judge of what is offered, and a card the dialog wrongly thought
  * fits lands in that fallback rather than in a wrong play.
+ *
+ * BIG GLIMPSE CARD (CT-539, report #349 — invi: *"make a view where you can
+ * reorder the cards between two piles until happy"*). The engine asks the
+ * splitter for pile 1 one card at a time, then "Done splitting", and a pick
+ * could not be taken back. Group 'split' draws the seven as two piles: a tap
+ * moves a card from one to the other, as often as the player likes, and
+ * Confirm answers the engine's questions in a row — every pile-1 card, each
+ * found by value in its own question, then "Done splitting". No mana cap
+ * (`budget` absent); the order cards were ticked in does not matter (the
+ * piles keep the revealed order).
  */
 import type { Decision, Seat } from '../engine/src/types.ts';
 import { getCard } from '../engine/src/cards/dsl.ts';
@@ -42,15 +53,20 @@ export interface PickSetView {
   seat: Seat;
   /** the card asking ("Wake the Dead") */
   title: string;
-  group: 'bins' | 'reveal';
-  /** mana left for this question, before anything is ticked in the dialog */
-  budget: number;
+  group: 'bins' | 'reveal' | 'split';
+  /** mana left for this question, before anything is ticked in the dialog;
+   * null when the set has no mana cap (the split) */
+  budget: number | null;
   /** already chosen on an earlier question */
   picked: number;
   max: number;
   cards: PickCard[];
   /** the option that plays nothing more ("Done") */
   done: number;
+  /** the cards an earlier question of this same set already took (CR 102.3b:
+   * `Decision.earlier`), drawn in pile 1 and fixed there — only the split
+   * draws them, for a dialog reopened part-way through its answers */
+  locked: string[];
 }
 
 const esc = (t: string): string => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -83,8 +99,11 @@ export function pickSetView(dec: Decision | null | undefined): PickSetView | nul
   return {
     key: `${dec.id}|${dec.prompt}|${dec.options.map(o => `${JSON.stringify(o.value)}${o.card ?? ''}`).join(',')}`,
     seat: dec.seat, title: dec.prompt.split(':')[0]!.trim(), group: ps.group,
-    budget: ps.budget, picked: ps.picked, max: ps.max, cards,
+    budget: ps.budget ?? null, picked: ps.picked, max: ps.max, cards,
     done: dec.options.indexOf(done[0]!),
+    locked: ps.group === 'split'
+      ? (dec.earlier ?? []).flatMap(e => e.seat === dec.seat && e.open && e.option?.card ? [e.option.card] : [])
+      : [],
   };
 }
 
@@ -107,9 +126,13 @@ interface Chain {
   from: string;
   /** the actionCount it was sent against — a new state is what "arrived" means */
   at: number;
-  /** the value to find in the follow-up, or null for "Done" */
-  want: unknown;
-  name: string;
+  /** the values still to send, one per follow-up question, in order; once
+   * they are all sent, a follow-up still asking is answered "Done" */
+  want: { value: unknown; name: string }[];
+  /** how many of the set will have been chosen once the answer in flight
+   * lands — when that reaches `max` the engine asks no more */
+  count: number;
+  max: number;
 }
 let chain: Chain | null = null;
 
@@ -121,16 +144,17 @@ function selFor(v: PickSetView): Sel {
 
 const costAt = (v: PickSetView, i: number): number => v.cards.find(c => c.i === i)?.cost ?? 0;
 
-/** mana left once the ticked cards are paid for */
-function left(v: PickSetView, chosen: number[]): number {
-  return v.budget - chosen.reduce((n, i) => n + costAt(v, i), 0);
+/** mana left once the ticked cards are paid for (null: no mana cap) */
+function left(v: PickSetView, chosen: number[]): number | null {
+  return v.budget === null ? null : v.budget - chosen.reduce((n, i) => n + costAt(v, i), 0);
 }
 
 /** can this card be clicked right now? A ticked card always can (to untick) */
 function canTick(v: PickSetView, chosen: number[], i: number): boolean {
   if (chosen.includes(i)) return true;
   if (v.picked + chosen.length >= v.max) return false;
-  return costAt(v, i) <= left(v, chosen);
+  const l = left(v, chosen);
+  return l === null || costAt(v, i) <= l;
 }
 
 /** is the dialog up over this question? Not while the second answer is on
@@ -159,15 +183,15 @@ export function pickSetButton(dec: Decision | null | undefined, btn: string, i: 
   }
   if (btn !== 'psconfirm') return null;
   if (!s.chosen.length) { chain = null; return v.done; }
-  const [first, second] = s.chosen as [number, number | undefined];
+  const [first, ...rest] = s.chosen as [number, ...number[]];
   const opts = dec!.options;
-  // one card chosen on a question that could still ask for another: the
-  // follow-up (if the engine asks one) is answered "Done"
+  // the rest go to the follow-ups, by value; a question that could still ask
+  // for another once they are all in is answered "Done"
   chain = v.picked + 1 < v.max
     ? {
       from: v.key, at: actionCount,
-      want: second === undefined ? null : opts[second]!.value,
-      name: second === undefined ? '' : opts[second]!.card ?? '',
+      want: rest.map(i => ({ value: opts[i]!.value, name: opts[i]!.card ?? '' })),
+      count: v.picked + 1, max: v.max,
     }
     : null;
   return first;
@@ -196,13 +220,18 @@ export function pickSetFollowUp(dec: Decision | null | undefined, actionCount: n
   // the question moved on without a follow-up (nothing else fits), or this
   // is a new set altogether: nothing to send
   if (!v || v.picked === 0) return null;
-  if (c.want === null) return v.done;
-  const want = JSON.stringify(c.want);
+  const [next, ...rest] = c.want;
+  if (!next) return v.done;
+  const want = JSON.stringify(next.value);
   const hit = v.cards.find(k => JSON.stringify(dec!.options[k.i]!.value) === want);
-  if (hit) return hit.i;
+  if (hit) {
+    // more of the set to send, or a "Done" still owed: wait for the next one
+    if (c.count + 1 < c.max) chain = { ...c, from: v.key, at: actionCount, want: rest, count: c.count + 1 };
+    return hit.i;
+  }
   const s = selFor(v);
   s.hidden = false;
-  s.note = `${esc(c.name || 'That card')} can't be chosen now. Pick again.`;
+  s.note = `${esc(next.name || 'That card')} can't be chosen now. Pick again.`;
   return 'reopen';
 }
 
@@ -229,16 +258,51 @@ export function pickSetHtml(dec: Decision | null | undefined, card: CardFn, icon
   const pane = (label: string, cards: PickCard[]): string => `<div class="pspane">
       <div class="zonelabel">${label}</div>
       <div class="zone">${cards.map(scan).join('') || '<span class="binempty">none</span>'}</div></div>`;
+  const n = s.chosen.length;
   const panes = v.group === 'bins'
     ? pane('Their bin', v.cards.filter(c => c.seat !== v.seat)) + pane('Your bin', v.cards.filter(c => c.seat === v.seat))
     : pane('Revealed', v.cards);
-  const n = s.chosen.length;
-  return `<div class="overlay psover"><div class="overlaybox psbox">
+  // one scrim for every layout (269's overlay census counts where it is written)
+  const body = v.group === 'split' ? splitHtml(v, s, card) : `
     <div class="psbar"><span class="pstitle">${esc(v.title)}</span>
       <span class="pscount">${left(v, s.chosen)} mana left · ${v.picked + n} of ${v.max} chosen</span>
       <button data-btn="pshide" title="your picks are kept (Esc)">▁ look at the board</button></div>
     ${s.note ? `<div class="psnote">${s.note}</div>` : ''}
     <div class="pspanes">${panes}</div>
-    <div class="psfoot"><button class="primary" data-btn="psconfirm">${n ? `Play ${n}` : 'Play none'}</button></div>
+    <div class="psfoot"><button class="primary" data-btn="psconfirm">${n ? `Play ${n}` : 'Play none'}</button></div>`;
+  return `<div class="overlay psover"><div class="overlaybox psbox">${body}
   </div></div>`;
+}
+
+/**
+ * CT-539 — Big Glimpse Card's split as two piles. Every card is a button that
+ * moves it to the other pile (ticked = pile 1), as often as the player likes;
+ * nothing is sent until Confirm. A card an earlier answer already put in pile
+ * 1 (`locked`) is drawn there and cannot move — that answer is in the log.
+ */
+/** the box's contents; pickSetHtml wraps them in the one scrim */
+function splitHtml(v: PickSetView, s: Sel, card: CardFn): string {
+  const scan = (c: PickCard): string => {
+    // no ring: which pile a card sits in already says it is chosen
+    const face = card(c.name, {
+      playable: true,
+      data: `data-btn="pspick" data-i="${c.i}"`,
+    });
+    return `<div class="pscard">${face}</div>`;
+  };
+  const fixed = (name: string): string =>
+    `<div class="pscard locked" title="already in pile 1">${card(name, {})}</div>`;
+  const one = [...v.locked.map(fixed), ...v.cards.filter(c => s.chosen.includes(c.i)).map(scan)];
+  const two = v.cards.filter(c => !s.chosen.includes(c.i)).map(scan);
+  const pane = (label: string, faces: string[]): string => `<div class="pspane">
+      <div class="zonelabel">${label}</div>
+      <div class="zone">${faces.join('') || '<span class="binempty">empty</span>'}</div></div>`;
+  return `
+    <div class="psbar"><span class="pstitle">${esc(v.title)}: split the cards into two piles</span>
+      <span class="pscount">${one.length} in pile 1 · ${two.length} in pile 2</span>
+      <button data-btn="pshide" title="your piles are kept (Esc)">▁ look at the board</button></div>
+    ${s.note ? `<div class="psnote">${s.note}</div>` : ''}
+    <div class="pshint">Tap a card to move it to the other pile. Your opponent caches one pile and recycles the other.</div>
+    <div class="pspanes">${pane('Pile 1', one)}${pane('Pile 2', two)}</div>
+    <div class="psfoot"><button class="primary" data-btn="psconfirm">Confirm the piles</button></div>`;
 }

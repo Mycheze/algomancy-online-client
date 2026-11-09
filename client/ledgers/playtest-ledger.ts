@@ -280,8 +280,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 349, room: "PBNT", date: "2026-11-07",
     report: "invi, seat 0 (feature): \"big glimpse card: make a view where you can reorder the cards between two piles until happy\"",
-    status: 'live',
-    note: "A fair request, not a defect. Replayed (252/252, --report @90): invi, splitting Yagamino's seven, picked one card at a time into pile 1 [86]-[88] and then \"Done splitting\" [89]. The split is a run of one-card questions (batch-hybrids-ld-a.ts, `split:k`): a pick cannot be taken back, and the two piles are never shown side by side until the caster chooses. CT-539.",
+    status: 'fixed',
+    guards: [
+      "341-pickset-modal.test.ts::Big Glimpse Card: Confirm answers every pile-1 card by value, then Done splitting",
+    ],
+    note: "A fair request, not a defect. Replayed (252/252, --report @90): invi, splitting Yagamino's seven, picked one card at a time into pile 1 [86]-[88] and then \"Done splitting\" [89]. The split is a run of one-card questions (batch-hybrids-ld-a.ts, `split:k`): a pick cannot be taken back, and the two piles are never shown side by side until the caster chooses. CT-539, fixed 2026-11-09: the splitter now gets a two-pile window, moves cards between the piles freely and confirms once; the client answers the same one-card questions, so the log is unchanged.",
   },
   {
     id: 350, room: "TGMK", date: "2026-11-08",

@@ -123,7 +123,8 @@ html.touch .remind, html.touch .remindrow:not(:has(b)) { display: none; }
 .pickbox .draftpanel .zone { gap: var(--space-4); }
 .pickbox .draftpanel .card { width: clamp(64px, 9.5vw, 118px); }
 /* THE PICK-SET DIALOG (ui/pickset.ts, owner 2026-09-28): Wake the Dead's two
-   bins side by side, Tides of the Cosmos's eight cards in one row. A chosen
+   bins side by side, Tides of the Cosmos's eight cards in one row, Big
+   Glimpse Card's two piles. A chosen
    card wears a thick ring; one that no longer fits is dimmed and inert. */
 .overlay.psover { z-index: 58; }
 .overlaybox.psbox { width: min(1180px, 96vw); max-height: 94vh; max-height: 94dvh; overflow-y: auto;
@@ -140,5 +141,10 @@ html.touch .remind, html.touch .remindrow:not(:has(b)) { display: none; }
 .psbox .pscard.off { opacity: .35; filter: grayscale(.6); }
 .psbox .pscard.off .card { cursor: default; }
 .psbox .psfoot { display: flex; justify-content: flex-end; }
+/* Big Glimpse Card's split (CT-539): the two piles side by side; a card
+   already put in pile 1 by an earlier answer is fixed there */
+.psbox .pshint { color: var(--color-text-muted); }
+.psbox .pscard.locked { opacity: .7; }
+.psbox .pscard.locked .card { cursor: default; }
 /* the full-control chip is a switch on a touch screen (ui/touch.ts) */
 html.touch [data-chip="fullcontrol"] { cursor: pointer; }

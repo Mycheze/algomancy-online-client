@@ -16,6 +16,8 @@
  * engine positions, and feeds each answer it puts on the wire back into the
  * engine — the sequence is checked by the engine accepting it.
  *
+ * §6 is Big Glimpse Card's two-pile split (CT-539).
+ *
  * Seeds 34100-34199.
  */
 import { test } from 'node:test';
@@ -27,7 +29,7 @@ import { client } from './ui-driver.ts';
 import { optionPingId } from '../inspect.ts';
 import type { Action, Decision, GameState, Seat } from '../../engine/src/types.ts';
 import {
-  give, giveResources, pass, spawn, toDeployment, toNextBattle,
+  give, giveResources, pass, pick, spawn, toDeployment, toNextBattle,
 } from '../../engine/test/util.ts';
 
 const ui = await client();
@@ -268,4 +270,135 @@ test('Tides of the Cosmos shows the eight revealed cards in one pane and pings n
   assert.equal(h.state.decision!.options[second.choice as number]!.card, 'Curio Drifter');
   h.do(second);
   assert.deepEqual(h.state.stack.map(i => i.card), ['Tidal Menace', 'Curio Drifter']);
+});
+
+/* ── §6 Big Glimpse Card's split: two piles, moved freely (CT-539) ────────── */
+/* Report #349, invi: "big glimpse card: make a view where you can reorder the
+ * cards between two piles until happy". The engine still asks for pile 1 one
+ * card at a time, then "Done splitting"; the dialog answers that run. */
+
+const SEVEN = ['Gublin', 'Shib', 'Chombot', 'Uglk', 'Bloppert', 'Zephyrzoa', 'Mindburn'];
+
+/** a Big Glimpse Card resolving, the opponent's first split question open */
+function glimpse(seed: number): { h: Harness; A: Seat; D: Seat } {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  toNextBattle(h, A);
+  giveResources(h, A, 'light', 1);
+  giveResources(h, A, 'water', 1);
+  giveResources(h, A, 'earth', 2);
+  h.state.sharedDeck.unshift(...SEVEN);
+  // every fixture asks the SAME question, which is what the dialog keys its
+  // picks on: a state with no such question first, as in play, forgets the
+  // last test's
+  show(h, D);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Big Glimpse Card') });
+  pick(h, { player: D });
+  pass(h);
+  assert.equal(h.state.decision?.pickSet?.group, 'split', 'fixture: the split question is open');
+  assert.equal(h.state.decision!.seat, D, 'fixture: the opponent splits');
+  return { h, A, D };
+}
+/** the caster's pile question, read as the two piles' card names */
+function pilesAsked(h: Harness): { a: string; b: string } {
+  const dec = h.state.decision!;
+  assert.equal(dec.options.length, 2, 'the caster is asked which pile to cache');
+  return { a: dec.options[0]!.label, b: dec.options[1]!.label };
+}
+/** feed every answer the client sends back into the engine, one state at a time */
+function runChain(h: Harness, D: Seat): number {
+  let n = 0;
+  for (let sent = decides(); sent.length; sent = decides()) {
+    assert.equal(sent.length, 1, 'one answer per state');
+    h.do(sent[0]!);
+    n++;
+    if (h.state.decision?.seat !== D) { push(h, D); assert.deepEqual(decides(), []); break; }
+    push(h, D);
+  }
+  return n;
+}
+
+test('Big Glimpse Card: the split opens as two piles, all seven in pile 2', () => {
+  const { h, D } = glimpse(34120);
+  const html = show(h, D);
+  assert.match(html, /class="overlay psover"/, 'the dialog is up for the splitter');
+  assert.deepEqual(panes(html), { 'Pile 1': [], 'Pile 2': SEVEN });
+  assert.equal(counter(html), '0 in pile 1 · 7 in pile 2');
+  assert.match(html, /data-btn="psconfirm">Confirm the piles</);
+  assert.doesNotMatch(html, /mana left/, 'the split has no mana count');
+  assert.ok(cardsIn(html).every(c => c.i !== null && !c.off), 'every card can be moved');
+});
+
+test('Big Glimpse Card: a tap moves a card to the other pile, and back, sending nothing', () => {
+  const { h, D } = glimpse(34121);
+  let html = show(h, D);
+  html = ui.click({ btn: 'pspick', i: card(html, 'Uglk').i! });
+  html = ui.click({ btn: 'pspick', i: card(html, 'Gublin').i! });
+  assert.deepEqual(panes(html)['Pile 1'], ['Gublin', 'Uglk'], 'pile 1 keeps the revealed order');
+  assert.equal(counter(html), '2 in pile 1 · 5 in pile 2');
+  html = ui.click({ btn: 'pspick', i: card(html, 'Uglk').i! });
+  assert.deepEqual(panes(html), {
+    'Pile 1': ['Gublin'], 'Pile 2': SEVEN.filter(n => n !== 'Gublin'),
+  }, 'Uglk went back to pile 2');
+  assert.deepEqual(decides(), [], 'moving cards decides nothing');
+});
+
+test('Big Glimpse Card: Confirm answers every pile-1 card by value, then Done splitting', () => {
+  const { h, D } = glimpse(34122);
+  const first = h.state.decision!;
+  let html = show(h, D);
+  // ticked out of order, and changed once, so the answers are not just 0, 1, 2
+  for (const n of ['Mindburn', 'Shib', 'Chombot', 'Bloppert']) html = ui.click({ btn: 'pspick', i: card(html, n).i! });
+  html = ui.click({ btn: 'pspick', i: card(html, 'Chombot').i! });
+  ui.click({ btn: 'psconfirm' });
+  const one = decides();
+  assert.deepEqual(one, [{ type: 'decide', seat: D, choice: idx(first, 6) }], 'Mindburn first, as ticked');
+  h.do(one[0]!);
+  // the next question's options are rebuilt without Mindburn: Shib is found by value
+  push(h, D);
+  const second = decides();
+  assert.equal(second.length, 1);
+  assert.equal(h.state.decision!.options[(second[0] as { choice: number }).choice]!.card, 'Shib');
+  h.do(second[0]!);
+  push(h, D);
+  const sent = 2 + runChain(h, D);
+  assert.equal(sent, 4, 'three cards and Done splitting');
+  const p = pilesAsked(h);
+  assert.equal(p.a, 'Pile 1: Shib, Bloppert, Mindburn');
+  assert.equal(p.b, 'Pile 2: Gublin, Chombot, Uglk, Zephyrzoa');
+});
+
+test('Big Glimpse Card: Confirm with pile 1 empty sends Done splitting at once', () => {
+  const { h, D } = glimpse(34123);
+  show(h, D);
+  ui.click({ btn: 'psconfirm' });
+  const one = decides();
+  assert.deepEqual(one, [{ type: 'decide', seat: D, choice: idx(h.state.decision!, false) }]);
+  h.do(one[0]!);
+  assert.equal(pilesAsked(h).a, 'Pile 1: (empty)');
+});
+
+test('Big Glimpse Card: all seven in pile 1 sends seven answers and no Done', () => {
+  const { h, D } = glimpse(34124);
+  let html = show(h, D);
+  for (const n of SEVEN) html = ui.click({ btn: 'pspick', i: card(html, n).i! });
+  assert.equal(counter(html), '7 in pile 1 · 0 in pile 2');
+  ui.click({ btn: 'psconfirm' });
+  assert.equal(runChain(h, D), 7);
+  assert.equal(pilesAsked(h).b, 'Pile 2: (empty)');
+});
+
+test('Big Glimpse Card: reopened part-way, the cards already in pile 1 are shown there, fixed', () => {
+  const { h, D } = glimpse(34125);
+  pick(h, 1);   // Shib into pile 1 before this client drew the dialog (a reload)
+  assert.equal(h.state.decision?.pickSet?.picked, 1);
+  const html = show(h, D);
+  assert.deepEqual(panes(html), { 'Pile 1': [], 'Pile 2': SEVEN.filter(n => n !== 'Shib') },
+    'the six still to split can be moved');
+  assert.match(html.split('Pile 2')[0]!, /class="pscard locked"[^>]*>\s*<div class="[^"]*" data-prev="Shib"/,
+    'Shib is drawn in pile 1, not as a button');
+  assert.equal(counter(html), '1 in pile 1 · 6 in pile 2');
 });
