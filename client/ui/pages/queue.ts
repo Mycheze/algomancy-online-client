@@ -193,7 +193,7 @@ function searchingHtml(s: Searching & { waited: number }): string {
     <div class="qsearching">
       <div class="qspin" aria-hidden="true"></div>
       <div class="qsearchtext">
-        <b>Joining ${esc(s.vsName ?? 'their')} game…</b>
+        <b>Joining ${s.vsName ? `${esc(s.vsName)}'s` : 'their'} game…</b>
         <span class="hint">${esc(MODE_LABEL[s.mode].toLowerCase())} · <span data-qwait>${waitLabel(waited)}</span></span>
         <span class="hint">waiting for them to accept</span>
       </div>

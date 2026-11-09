@@ -533,7 +533,12 @@ const OPEN: Entry[] = [
       + 'it none, so "disconnected from the server — reconnecting…" and a server refusal (main.ts `uiError = m.msg`, '
       + 'with the error cue) left the lobby silent. LobbyArgs.error is drawn red under the seats, the same '
       + 'statusMessage error line as the Constructed and Single Card Duel rooms; story "The connection dropped". '
-      + 'Guarded by 1200-refusals-drawn-as-errors.test.ts §3.',
+      + 'Guarded by 1200-refusals-drawn-as-errors.test.ts §3.\n\n'
+      + '2026-11-09 (steward): the queue page\'s direct challenge says "Joining Rashi\'s game…", not "Joining Rashi '
+      + 'game…" (docs/23-ui-inventory/05 §18.13, missing possessive; pages/queue.ts searchingHtml). With no name it '
+      + 'stays "Joining their game…". Swept the ui and server templates for another name used before a noun without '
+      + '\'s: none. Left: §18.13\'s "Rank all seven" (server/trio.ts) — the game has seven elements and the method '
+      + 'ranks all of them, so it is not wrong today. Guarded by 970-page-queue-html.test.ts §2.',
   },
   {
     id: 'BL-17',

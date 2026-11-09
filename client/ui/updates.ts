@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-09', kind: 'fix', text: "Challenging a player from the queue page now reads \"Joining Rashi's game…\" while you wait for them to accept, instead of \"Joining Rashi game…\"." },
   { date: '2026-11-09', kind: 'fix', text: "The live draft room now tells you when the connection drops or the server turns down a choice, in red under the players, like the other waiting rooms. Before, it only played the error sound." },
   { date: '2026-11-09', kind: 'fix', text: "If your device is set to reduce motion, nothing pulses forever any more: the rematch answer after a game, the lesson highlights, a unit you can activate or mod onto, and the live dot now glow steadily instead." },
   { date: '2026-11-09', kind: 'change', text: "When something goes wrong outside a game (a room that refused you, a lost connection, a wrong password, an invite that did not go), the message is now red. It used to be the same gold as good news." },

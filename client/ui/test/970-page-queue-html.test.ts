@@ -61,7 +61,9 @@ test('970 §2 searching: the band and the wait, and a direct challenge shows no 
   assert.match(queueHtml(view({ searching: { ...s, band: null } })), /anyone · <span data-qwait>[\s\S]*wide open now/);
 
   const vs = queueHtml(view({ searching: { ...s, vs: 'g1', vsName: 'Rashi' } }));
-  assert.match(vs, /Joining Rashi game…/);
+  assert.match(vs, /Joining Rashi's game…/, 'the name takes a possessive (docs/23-ui-inventory/05 §18.13)');
+  assert.match(queueHtml(view({ searching: { ...s, vs: 'g1', vsName: null } })), /Joining their game…/,
+    'no name: the pronoun, which is already possessive');
   assert.doesNotMatch(vs, /±150/, 'a direct challenge ignores the band, so it must not show one');
   assert.match(vs, />Stop<\/button>/);
 });
