@@ -318,6 +318,10 @@ card('Big Glimpse Card', {
           { label: `Pile 1: ${a.join(', ') || '(empty)'}`, value: 'a' },
           { label: `Pile 2: ${b.join(', ') || '(empty)'}`, value: 'b' },
         ],
+        // CT-549 / report #360: the client draws the two piles as cards with
+        // a button under each, like the split window (display only — the
+        // answer is still 'a' or 'b', so the log and saved games are unchanged)
+        piles: [a, b],
       });
       const keep = which === 'a' ? a : b;
       const recycled = which === 'a' ? b : a;

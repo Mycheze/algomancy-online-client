@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-09', kind: 'change', text: "Big Glimpse Card's caster now chooses a pile from a window showing both piles as cards, with a Cache button under each, instead of two long text buttons." },
   { date: '2026-11-09', kind: 'change', text: "Joining a friend's Constructed room no longer starts the game the moment you arrive. You see the deck you are bringing, can change it, and the game starts when you press Play this deck." },
   { date: '2026-11-09', kind: 'new', text: "Casual or Competitive is now the rules: play each step at the same time, or in turn while the other player watches. Draft gets the choice too, and Constructed picks Best of 1 or 3 apart from it. Hover either for what it means." },
   { date: '2026-11-09', kind: 'fix', text: "The red damage number on a unit is now drawn on top of its mods and of the cards piled next to it, with a dark edge, so you can read it on a modded unit without zooming in." },

@@ -156,6 +156,8 @@ class PartChoice {
     numeric?: NumericEntry;
     /** one pick of a set ("choose up to two…"): display only, passed through */
     pickSet?: Decision['pickSet'];
+    /** a pile choice's cards, one list per option: display only, passed through */
+    piles?: Decision['piles'];
     /** CR 102.3b: is what this question picks among open information? A
      * function decides per pick (a question mixing units and hand cards). */
     info?: 'open' | 'hidden' | ((value: unknown) => 'open' | 'hidden');
@@ -13476,6 +13478,8 @@ export class E {
               ...(sig.dec.numeric !== undefined ? { numeric: sig.dec.numeric } : {}),
               // the picker hint (Wake the Dead, Tides): display only
               ...(sig.dec.pickSet !== undefined ? { pickSet: sig.dec.pickSet } : {}),
+              // the pile chooser's piles as cards (Big Glimpse Card): display only
+              ...(sig.dec.piles !== undefined ? { piles: sig.dec.piles } : {}),
               // CR 102.3b: the choices this effect has already had made
               ...(sig.earlier.length ? { earlier: sig.earlier } : {}),
             },

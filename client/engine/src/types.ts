@@ -1580,6 +1580,12 @@ export interface Decision {
    * the Cosmos): this question is one pick of a small SET the card asks for
    * one at a time. See `PickSetHint`. Absent on every other decision. */
   pickSet?: PickSetHint;
+  /** "Choose a pile" (Big Glimpse Card's caster, CT-549 / report #360): the
+   * cards in each pile, `piles[i]` being what option `i` takes. DISPLAY ONLY —
+   * the client draws the piles as cards with a button under each, and the
+   * answer is still option `i`'s index, so the log is unchanged. Present only
+   * when it has exactly one entry per option. Absent on every other decision. */
+  piles?: CardName[][];
 }
 
 /**

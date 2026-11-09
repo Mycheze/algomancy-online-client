@@ -146,5 +146,12 @@ html.touch .remind, html.touch .remindrow:not(:has(b)) { display: none; }
 .psbox .pshint { color: var(--color-text-muted); }
 .psbox .pscard.locked { opacity: .7; }
 .psbox .pscard.locked .card { cursor: default; }
+/* …and its caster's choice (CT-549, report #360): each pile as cards, with
+   its own button under it, centred */
+.psbox .pspane.pspile { display: flex; flex-direction: column; gap: var(--space-4); }
+.psbox .pspane.pspile .zone { flex: 1 1 auto; }
+.psbox .pspane.pspile .psfoot { flex-direction: column; align-items: center; justify-content: flex-start; gap: 2px; }
+.psbox .pspane.pspile .pssub { color: var(--color-text-muted); }
+.psbox .psbar.pspilebar .pstitle { margin-right: auto; }
 /* the full-control chip is a switch on a touch screen (ui/touch.ts) */
 html.touch [data-chip="fullcontrol"] { cursor: pointer; }

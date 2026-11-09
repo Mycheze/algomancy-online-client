@@ -160,16 +160,21 @@ function canTick(v: PickSetView, chosen: number[], i: number): boolean {
 /** is the dialog up over this question? Not while the second answer is on
  * its way to it — that frame belongs to the chain, not to the player. */
 export function pickSetUp(dec: Decision | null | undefined): boolean {
+  const pv = pilesView(dec);
+  if (pv) return pilesHidden !== pv.key;
   const v = pickSetView(dec);
   if (!v) return false;
   if (chain && chain.from !== v.key) return false;
   return !selFor(v).hidden;
 }
 
-/** the dialog's buttons: 'pspick' (data-i), 'pshide', 'psshow', 'psconfirm'.
+/** the dialog's buttons — the pile choice's too ('pspile', data-i the option).
+ * 'pspick' (data-i), 'pshide', 'psshow', 'psconfirm'.
  * Returns the option index to send now, or null. `actionCount` is the state
  * the send is made against — the follow-up is whatever state comes after it. */
 export function pickSetButton(dec: Decision | null | undefined, btn: string, i: number, actionCount: number): number | null {
+  const pv = pilesView(dec);
+  if (pv) return pilesButton(pv, btn, i);
   const v = pickSetView(dec);
   if (!v) return null;
   const s = selFor(v);
@@ -242,8 +247,16 @@ type CardFn = (name: string, opts: {
 
 /** the dialog. `iconize` turns "[6]" into the mana orb the rest of the board uses. */
 export function pickSetHtml(dec: Decision | null | undefined, card: CardFn, iconize: (s: string) => string): string {
-  const v = pickSetView(dec);
-  if (!v) return '';
+  const pv = pilesView(dec);
+  const v = pv ? null : pickSetView(dec);
+  if (!pv && !v) return '';
+  // one scrim for every layout (269's overlay census counts where it is written)
+  return `<div class="overlay psover"><div class="overlaybox psbox">${pv ? pilesHtml(pv, card) : pickSetBody(v!, card, iconize)}
+  </div></div>`;
+}
+
+/** the pick-set layouts' box contents (bins, reveal, split) */
+function pickSetBody(v: PickSetView, card: CardFn, iconize: (s: string) => string): string {
   const s = selFor(v);
   const scan = (c: PickCard): string => {
     const on = s.chosen.includes(c.i);
@@ -262,16 +275,13 @@ export function pickSetHtml(dec: Decision | null | undefined, card: CardFn, icon
   const panes = v.group === 'bins'
     ? pane('Their bin', v.cards.filter(c => c.seat !== v.seat)) + pane('Your bin', v.cards.filter(c => c.seat === v.seat))
     : pane('Revealed', v.cards);
-  // one scrim for every layout (269's overlay census counts where it is written)
-  const body = v.group === 'split' ? splitHtml(v, s, card) : `
+  return v.group === 'split' ? splitHtml(v, s, card) : `
     <div class="psbar"><span class="pstitle">${esc(v.title)}</span>
       <span class="pscount">${left(v, s.chosen)} mana left · ${v.picked + n} of ${v.max} chosen</span>
       <button data-btn="pshide" title="your picks are kept (Esc)">▁ look at the board</button></div>
     ${s.note ? `<div class="psnote">${s.note}</div>` : ''}
     <div class="pspanes">${panes}</div>
     <div class="psfoot"><button class="primary" data-btn="psconfirm">${n ? `Play ${n}` : 'Play none'}</button></div>`;
-  return `<div class="overlay psover"><div class="overlaybox psbox">${body}
-  </div></div>`;
 }
 
 /**
@@ -305,4 +315,67 @@ function splitHtml(v: PickSetView, s: Sel, card: CardFn): string {
     <div class="pshint">Tap a card to move it to the other pile. Your opponent caches one pile and recycles the other.</div>
     <div class="pspanes">${pane('Pile 1', one)}${pane('Pile 2', two)}</div>
     <div class="psfoot"><button class="primary" data-btn="psconfirm">Confirm the piles</button></div>`;
+}
+
+// ── the caster's pile choice (CT-549, report #360) ─────────────────────────
+
+/**
+ * mycheze, report #360: *"it should be basically the same for the chooser.
+ * Instead of giving them two buttons with a list of options, it should present
+ * them with two modal piles of cards to choose from with buttons below …
+ * Choices and actions should be visual as much as possible!"*
+ *
+ * The engine's question is unchanged — two options, 'a' and 'b' — and it says
+ * which cards each one takes in `Decision.piles` (display only). The dialog
+ * draws each pile as cards, read-only, with one button under it that sends
+ * that pile's option INDEX, exactly what the text button sent. A pile may be
+ * empty: it says so, and its button still works.
+ */
+export interface PilesView {
+  key: string;
+  seat: Seat;
+  title: string;
+  /** one per option, in option order */
+  piles: { option: number; cards: string[] }[];
+}
+
+/** the pile choice's reading of a decision, or null when it is not one */
+export function pilesView(dec: Decision | null | undefined): PilesView | null {
+  const p = dec?.piles;
+  if (!dec || !p || p.length < 2 || p.length !== dec.options.length) return null;
+  return {
+    key: `${dec.id}|${dec.prompt}|${JSON.stringify(p)}`,
+    seat: dec.seat,
+    title: dec.prompt.split(':')[0]!.trim(),
+    piles: p.map((cards, option) => ({ option, cards: [...cards] })),
+  };
+}
+
+/** the one pile question the player has put away to look at the board */
+let pilesHidden = '';
+
+function pilesButton(v: PilesView, btn: string, i: number): number | null {
+  if (btn === 'pshide') { pilesHidden = v.key; return null; }
+  if (btn === 'psshow') { pilesHidden = ''; return null; }
+  if (btn === 'pspile' && v.piles.some(p => p.option === i)) return i;
+  return null;
+}
+
+/** the box's contents; pickSetHtml wraps them in the one scrim */
+function pilesHtml(v: PilesView, card: CardFn): string {
+  const n = v.piles.length;
+  const pane = (p: { option: number; cards: string[] }, k: number): string => {
+    const others = n === 2 ? `pile ${2 - k}` : 'the rest';
+    return `<div class="pspane pspile">
+      <div class="zonelabel">Pile ${k + 1} · ${p.cards.length} card${p.cards.length === 1 ? '' : 's'}</div>
+      <div class="zone">${p.cards.map(c => `<div class="pscard">${card(c, {})}</div>`).join('')
+        || '<span class="binempty">empty</span>'}</div>
+      <div class="psfoot"><button class="primary" data-btn="pspile" data-i="${p.option}">Cache pile ${k + 1}</button>
+        <small class="pssub">and recycle ${others}</small></div></div>`;
+  };
+  return `
+    <div class="psbar pspilebar"><span class="pstitle">${esc(v.title)}: choose a pile to cache</span>
+      <button data-btn="pshide" title="the piles are kept (Esc)">▁ look at the board</button></div>
+    <div class="pshint">Your opponent split the cards. The pile you cache is yours to play this turn; the other is recycled.</div>
+    <div class="pspanes">${v.piles.map(pane).join('')}</div>`;
 }

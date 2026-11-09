@@ -402,3 +402,98 @@ test('Big Glimpse Card: reopened part-way, the cards already in pile 1 are shown
     'Shib is drawn in pile 1, not as a button');
   assert.equal(counter(html), '1 in pile 1 · 6 in pile 2');
 });
+
+/* ── §7 Big Glimpse Card: the caster chooses a pile from the piles as cards ──
+ *
+ * CT-549, report #360 (mycheze): *"it should be basically the same for the
+ * chooser. Instead of giving them two buttons with a list of options, it
+ * should present them with two modal piles of cards to choose from with
+ * buttons below."* The engine's question is unchanged ('a' or 'b'); it says
+ * which cards each pile holds in `Decision.piles`, display only. */
+
+/** split the seven as `one` | the rest, straight through the engine, and
+ * return the caster's pile question */
+function toPiles(seed: number, one: string[]): { h: Harness; A: Seat; D: Seat } {
+  const g = glimpse(seed);
+  const { h, D } = g;
+  for (const n of one) {
+    const dec = h.state.decision!;
+    h.do({ type: 'decide', seat: D, choice: dec.options.findIndex(o => o.card === n) });
+  }
+  if (h.state.decision?.seat === D) {
+    h.do({ type: 'decide', seat: D, choice: h.state.decision.options.findIndex(o => o.value === false) });
+  }
+  assert.equal(h.state.decision?.seat, g.A, 'fixture: the caster is asked which pile to cache');
+  return g;
+}
+/** each pile pane of the dialog: its label, its cards, its button's option */
+function pilePanes(html: string): { label: string; cards: string[]; i: number | null; button: string }[] {
+  return html.split('<div class="pspane pspile">').slice(1).map(chunk => ({
+    label: /<div class="zonelabel">([^<]*)<\/div>/.exec(chunk)![1]!,
+    cards: [...chunk.split('<div class="psfoot">')[0]!.matchAll(/<div class="pscard">\s*<div class="[^"]*" data-prev="([^"]*)"/g)]
+      .map(m => m[1]!),
+    i: Number(/data-btn="pspile" data-i="(\d+)"/.exec(chunk)?.[1] ?? NaN),
+    button: /data-btn="pspile" data-i="\d+">([^<]*)</.exec(chunk)?.[1] ?? '',
+  }));
+}
+
+test('Big Glimpse Card: the caster is shown both piles as cards, a button under each', () => {
+  const { h, A } = toPiles(34130, ['Shib', 'Mindburn']);
+  const dec = h.state.decision!;
+  assert.deepEqual(dec.piles, [['Shib', 'Mindburn'], SEVEN.filter(n => n !== 'Shib' && n !== 'Mindburn')],
+    'the engine names each pile\'s cards, in option order');
+  const html = show(h, A);
+  assert.match(html, /class="overlay psover"/, 'the dialog is up for the caster');
+  const p = pilePanes(html);
+  assert.deepEqual(p.map(x => x.cards), dec.piles, 'each pile drawn as its cards');
+  assert.deepEqual(p.map(x => x.label), ['Pile 1 · 2 cards', 'Pile 2 · 5 cards']);
+  assert.deepEqual(p.map(x => x.button), ['Cache pile 1', 'Cache pile 2']);
+  assert.match(html, /and recycle pile 2/);
+  assert.doesNotMatch(html, /data-btn="pspick"/, 'the caster cannot move cards between the piles');
+  assert.deepEqual(decides(), [], 'opening the dialog decides nothing');
+});
+
+test('Big Glimpse Card: the button under each pile sends that pile as its option, and the engine caches it', () => {
+  for (const [k, seed] of [[0, 34131], [1, 34132]] as const) {
+    const { h, A } = toPiles(seed, ['Uglk', 'Gublin', 'Zephyrzoa']);
+    const want = h.state.decision!.piles![k]!;
+    const html = show(h, A);
+    ui.click({ btn: 'pspile', i: pilePanes(html)[k]!.i! });
+    const sent = decides();
+    assert.deepEqual(sent, [{ type: 'decide', seat: A, choice: k }], `pile ${k + 1}'s button`);
+    h.do(sent[0]!);
+    assert.deepEqual([...(h.state.players[A]!.cache ?? []).map(c => c.card)].sort(), [...want].sort(),
+      `pile ${k + 1} is cached`);
+    push(h, A);
+  }
+});
+
+test('Big Glimpse Card: an empty pile says so, and its button still works', () => {
+  const { h, A } = toPiles(34133, []);
+  const html = show(h, A);
+  const p = pilePanes(html);
+  assert.deepEqual(p[0]!.cards, []);
+  assert.match(html.split('<div class="pspane pspile">')[1]!, /<span class="binempty">empty<\/span>/);
+  ui.click({ btn: 'pspile', i: p[0]!.i! });
+  assert.deepEqual(decides(), [{ type: 'decide', seat: A, choice: 0 }]);
+});
+
+test('Big Glimpse Card: the pile dialog hides to look at the board, and the bar brings it back', () => {
+  const { h, A } = toPiles(34134, ['Chombot']);
+  show(h, A);
+  let html = ui.click({ btn: 'pshide' });
+  assert.doesNotMatch(html, /class="overlay psover"/, 'hidden');
+  assert.match(html, /data-btn="psshow"/, 'the bar offers the way back');
+  html = ui.click({ btn: 'psshow' });
+  assert.equal(pilePanes(html).length, 2, 'back up');
+  assert.deepEqual(decides(), []);
+});
+
+test('Big Glimpse Card: without the piles hint the pile question is still answerable from the bar', () => {
+  const { h, A } = toPiles(34135, ['Bloppert']);
+  const view = viewFor(h.state, A);
+  delete (view.decision as { piles?: unknown }).piles;
+  const html = ui.join(view, A, legalActions(h.state, A));
+  assert.doesNotMatch(html, /class="overlay psover"/, 'no dialog without the hint');
+  assert.match(html, /Pile 1: Bloppert/, 'the text buttons are the fallback');
+});

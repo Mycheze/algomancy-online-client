@@ -6435,9 +6435,10 @@ function decisionBarHtml(dec: Decision, err: string): string {
     return `<div class="promptbar pending"><span class="who">${who}:</span>
         ${iconizeText(dec.prompt)}${hint} — ${scans ? `<div class="deccards">${scans}</div>` : cardRow('orderpick', i => place(i) > 0)} ${btns} ${tail}${err}</div>`;
   }
-  // "choose up to two" (Wake the Dead, Tides): the picker is a dialog
-  // (ui/pickset.ts), and this bar is the way back into it once it is hidden
-  if (ps.pickSetView(dec)) {
+  // "choose up to two" (Wake the Dead, Tides), and Big Glimpse Card's pile
+  // choice (CT-549): the picker is a dialog (ui/pickset.ts), and this bar is
+  // the way back into it once it is hidden
+  if (ps.pickSetView(dec) || ps.pilesView(dec)) {
     return `<div class="promptbar pending"><span class="who">${who}:</span> ${iconizeText(dec.prompt)}
       <button class="primary" data-btn="psshow">↑ Choose</button> ${castCancelBtnHtml()}${err}</div>`;
   }
@@ -7913,7 +7914,7 @@ function pickShowHtml(): string {
 /** this seat's own open "choose up to two" question, if that is what is open */
 function pickSetDec(): Decision | null {
   const d = h.state.decision;
-  return d && NET && (NET.both || d.seat === NET.seat) && ps.pickSetView(d) ? d : null;
+  return d && NET && (NET.both || d.seat === NET.seat) && (ps.pickSetView(d) || ps.pilesView(d)) ? d : null;
 }
 /** is the picker up? */
 function pickSetOpen(): boolean { return ps.pickSetUp(pickSetDec()); }
@@ -10576,7 +10577,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   },
   pickhide: () => { pickHidden = true; },
   pickshow: () => { pickHidden = false; },
-  pspick: psButton, pshide: psButton, psshow: psButton, psconfirm: psButton,
+  pspick: psButton, pshide: psButton, psshow: psButton, psconfirm: psButton, pspile: psButton,
   cachespent: btn => {
     const p = Number(btn.dataset['p']) as Seat;
     if (showSpentCache.has(p)) showSpentCache.delete(p); else showSpentCache.add(p);

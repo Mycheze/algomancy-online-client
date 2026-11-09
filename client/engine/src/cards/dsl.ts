@@ -289,6 +289,9 @@ export interface EffectCtx {
     /** "Choose up to two…": this pick is one of a set. Display only — see
      * `PickSetHint` in types.ts. Passed straight through onto the Decision. */
     pickSet?: PickSetHint;
+    /** "Choose a pile": each option's cards, in option order. Display only —
+     * see `Decision.piles` in types.ts. Passed straight through. */
+    piles?: CardName[][];
     /** CR 102.3b: `'open'` when what this question picks among is OPEN
      * information — units in play, cards in a bin, a revealed card, a public
      * cost ("Pay [2]") — so a later question in the same effect shows the
