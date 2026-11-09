@@ -147,6 +147,24 @@ test('CR D4.3a: a plain spawn after the glimpse is undoable back to the glimpse,
   assert.equal(room.actions.length, atGlimpse, 'and the glimpse, and the spawn before it, stand');
 });
 
+test('CR D4.3e: held until an undo asks, and then the same answer a restored room measures', async () => {
+  const { room, P } = deploying(R, 'R312G', 37406);
+  spawnSprite(R, room, P);
+  glimpse(R, room, P);
+  tick(R, room, { type: 'decide', seat: P, choice: 0 });
+  assert.ok(room.seenPending.length > 0, 'nothing has been measured yet');
+  assert.ok(!room.segSeen.some(s => typeof s[P] === 'string'), 'so no slot says anything yet');
+
+  R.settleSeen(room);
+  assert.equal(room.seenPending.length, 0);
+  assert.ok(room.segSeen.some(s => typeof s[P] === 'string'), 'the glimpse is on the record');
+
+  const R2 = await fresh();
+  R2.restoreRooms();
+  assert.equal(JSON.stringify(R2.getRoom('R312G')!.segSeen), JSON.stringify(room.segSeen),
+    'measuring later gives the very record a rebuild measures');
+});
+
 test('CR D4.3f: the lock survives a restart — a restored room measures it again', async () => {
   const { room, P } = deploying(R, 'R312D', 37404);
   glimpse(R, room, P);
