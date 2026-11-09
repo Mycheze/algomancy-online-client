@@ -9,7 +9,7 @@
  * provider: `data-tt-src="binder|<name>"` — the literal `binder` is what 536 and
  * 541 pin as the pool's source), and the band itself is the drop zone that means
  * "take it out" (`data-tt-zone="binder"`). Hold, or press the wheel, to read it
- * (`data-zoom`, ui/presszoom.ts).
+ * (`data-zoom`, ui/presszoom.ts) — and the line beside the count says so (BL-74).
  *
  * Each card says how many are in the deck; at the copy cap it is dimmed and
  * says 2/2 (a tap then refuses, with a note: §0 ruling 5), and a lavender S1
@@ -89,7 +89,17 @@ export function poolResultsHtml(v: PoolView): string {
     + (more > 0 ? button({ label: `Show more (${more})`, size: 'sm', dataBtn: 'tt-show', className: 'ttpoolmore' }) : '');
 }
 
-/** the chips, the count, More filters and Clear: `#tt-chips`'s inside, repainted with the results */
+/** HOW TO READ A CARD UP CLOSE (BL-74, owner 2026-11-08: *"there needs to be a
+ * tooltip or reminder of some kind on the "deck building" page that you can
+ * hold down middle mouse button (the scroll wheel) to zoom in on cards"* —
+ * players asked for a zoom they already had). One quiet line beside the count,
+ * never over a card: the mouse's words, or — on a finger-first device
+ * (`html.touch`, ui/touch.ts) — the finger's. The gestures are ui/presszoom.ts's. */
+export const ZOOM_HINT = '<span class="ttpoolhint">'
+  + '<span class="ttpoolhint--mouse">Hold the mouse wheel, or a click, on a card to zoom</span>'
+  + '<span class="ttpoolhint--touch">Hold a card to zoom</span></span>';
+
+/** the chips, the count, the zoom hint, More filters and Clear: `#tt-chips`'s inside, repainted with the results */
 export function poolChipsHtml(v: PoolView): string {
   const group = (g: PoolChip['group']): string => `<div class="ttchipgroup" role="group">${v.chips.filter(c => c.group === g).map(c => toggle({
     label: c.iconHtml ? undefined : c.label, labelHtml: c.iconHtml, on: c.on, size: 'sm', dataBtn: 'tt-chip',
@@ -97,7 +107,7 @@ export function poolChipsHtml(v: PoolView): string {
     attrs: { 'data-group': c.group, 'data-value': c.value, ...(c.iconHtml ? { 'aria-label': c.label, title: c.label } : {}) },
   })).join('')}</div>`;
   return `${group('el')}${group('mana')}${group('kind')}
-    <span class="ttpoolcount">${v.total} card${v.total === 1 ? '' : 's'}</span>
+    <span class="ttpoolcount">${v.total} card${v.total === 1 ? '' : 's'}</span>${ZOOM_HINT}
     ${button({ label: 'More filters', size: 'sm', dataBtn: 'tt-filters' })}
     ${v.active ? button({ label: 'Clear', size: 'sm', variant: 'ghost', dataBtn: 'tt-clear' }) : ''}`;
 }

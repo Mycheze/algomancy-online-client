@@ -58,6 +58,9 @@
 .ttelchip .elicon { width: 18px; height: 18px; margin: 0; }
 .ttelchip:not(.on) .elicon { opacity: .55; }
 .ttpoolcount { color: var(--color-text-muted); font-size: var(--text-12); margin-left: auto; white-space: nowrap; }
+/* the zoom hint beside the count (BL-74): the mouse's words, or a finger's */
+.ttpoolhint { color: var(--color-text-muted); font-size: var(--text-12); }
+html.touch .ttpoolhint--mouse, html:not(.touch) .ttpoolhint--touch { display: none; }
 .ttpoolto { flex: none; display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-12); }
 .ttpoolresults { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
   padding: var(--space-1) var(--space-5) var(--space-5); scrollbar-color: var(--color-border-strong) transparent; scrollbar-width: thin; }

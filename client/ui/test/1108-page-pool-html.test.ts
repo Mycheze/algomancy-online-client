@@ -8,11 +8,14 @@
  *   §4 the chips carry their group and value; Clear only when a filter is on;
  *      More filters; the Add to switch only with more than one target
  *   §5 120 at a time: Show more (tt-show) says how many are left
+ *   §6 the zoom hint (BL-74): beside the count, the held wheel (or click) for a
+ *      mouse and the held finger on touch — one shown at a time, never on a card
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import '../../engine/src/cards/registry.ts';
-import { poolHtml, type PoolView } from '../pages/pool.ts';
+import { poolChipsHtml, poolHtml, type PoolView } from '../pages/pool.ts';
+import { readStyles } from './read-styles.ts';
 
 const V: PoolView = {
   query: 'el:"fire"', active: true, total: 300, cap: 2, target: 'side', targets: ['deck', 'side', 'maybe'], scrollKey: 'tt-pool|el:"fire"',
@@ -74,4 +77,17 @@ test('§5 Show more', () => {
   assert.match(poolHtml(V), /data-btn="tt-show"[^>]*>Show more \(296\)</);
   assert.doesNotMatch(poolHtml({ ...V, total: 4 }), /tt-show/);
   assert.match(poolHtml({ ...V, tiles: [], total: 0 }), /No cards match\./);
+});
+
+test('§6 the zoom hint: hold the wheel, a click or a finger on a card (BL-74)', () => {
+  const html = poolHtml(V);
+  // it rides with the count, so a repaint while typing keeps it
+  assert.match(poolChipsHtml(V), /<span class="ttpoolcount">300 cards<\/span><span class="ttpoolhint">/);
+  assert.match(html, /<span class="ttpoolhint--mouse">Hold the mouse wheel, or a click, on a card to zoom<\/span>/);
+  assert.match(html, /<span class="ttpoolhint--touch">Hold a card to zoom<\/span>/);
+  assert.equal(html.match(/class="ttpoolhint"/g)?.length, 1, 'once, in the bar');
+  assert.doesNotMatch(tile(html, 'Ignis Sprite'), /ttpoolhint/, 'never on a card');
+  const css = readStyles();
+  assert.match(css, /\.ttpoolhint \{[^}]*color: var\(--color-text-muted\)/, 'quiet: muted, like the count');
+  assert.match(css, /html\.touch \.ttpoolhint--mouse, html:not\(\.touch\) \.ttpoolhint--touch \{ display: none; \}/, 'one wording at a time');
 });
