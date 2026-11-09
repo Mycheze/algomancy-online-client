@@ -367,6 +367,12 @@ const OPEN: LedgerEntry[] = [
     status: 'live',
     note: "A fair request, not a defect. MNCM fetched and replayed (57/57, no divergence; a test-mode game, mycheze both seats, played after the two-pile split window went live): seat 1 split the seven in the new window [13]-[16], and the report was filed at [17], the caster's pile question. That question is two text buttons listing each pile's names; it carries nothing the client could draw as cards. CT-549: show the caster the two piles as cards with a button under each.",
   },
+  {
+    id: 361, room: "", date: "2026-11-09",
+    report: "mycheze, acct (ux): \"We should use the same font from the homepage in the headers and footers of all pages.\"",
+    status: 'live',
+    note: "A fair styling request, real by reading. The home page sets its headings and its footer's \"Algomancy\" in the brand lettering (styles/pages/54-home-art.css, `--font-brand`); every other page is drawn in the shared app frame (pages/frame.ts), whose title bar's page name and footer button use the plain body font. One change to the frame reaches every page. CT-550.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

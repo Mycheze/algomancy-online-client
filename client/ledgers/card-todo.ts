@@ -235,6 +235,17 @@ const OPEN: TodoEntry[] = [
     reportId: 360,
     status: 'open',
   },
+  {
+    id: 550, area: "client", severity: "minor",
+    title: "the pages after the home draw their title bar and footer in the plain text font, not the home page's brand lettering",
+    detail: "Report #361 (mycheze, account page, 2026-11-09, ux, minor): \"We should use the same font from the homepage in the headers and footers of all pages.\" The home page sets its headings and its footer's \"Algomancy\" in the brand face, `var(--font-brand)` (styles/pages/54-home-art.css ~line 28, the rule headed \"the brand face\": `.homeplayhead h1, .homesidetitle > span, .lgglname, .chgltitle, .homewordmark`, uppercase, letter-spacing .04em; the footer's wordmark is a `<span class=\"homewordmark\">` inside its info button, ui/pages/home.ts bottomHtml). Every other page is drawn in the app frame (ui/pages/frame.ts frameHtml): its title bar's page name is `<h1 class=\"frametitle\">` (styles/pages/49-frame.css, size and weight only, no font-family, so it inherits the body font) and its footer is `CLIENT_INFO`, an info button whose label is plain text with no wordmark span.",
+    evidence: "Report #361 (page: acct, no room). Code read 2026-11-09 (steward triage): `--font-brand` is used only by the home's rules above in all of ui/styles (grep `font-brand`); the frame's title and footer carry no font of their own. The frame is shared by every page after the home (decks, cards, metagame, challenge, league, queue, match, profile, sign-in …), so one change in frame.ts and 49-frame.css reaches them all. Not seen in a browser (none on the box).",
+    fix: "In the frame, set the title bar's page name in the brand face as the home's headings are (`.frametitle`: `font-family: var(--font-brand)`, weight 400, uppercase with the home's letter-spacing; check that long titles still ellipsize and that the `<small>` subtitle keeps the body font), and give the footer's button the home's label markup (`<span class=\"homewordmark\">Algomancy</span> Online <span class=\"homewordsub\">(Unofficial Client)</span>`, the wordmark rule widened from `.homeinfo` to the frame's `.frameinfo` too, or one shared class). A ui test over frameHtml's markup (the footer's wordmark span) and over the CSS read through ui/test/read-styles.ts (the frame title takes the brand face).",
+    proof: () => !/homewordmark|wordmark/.test(body('ui/pages/frame.ts', 'export const CLIENT_INFO', '/* ── painting')),
+    verify: "Open any page from the home (Decks, Cards, your profile): the page name in the top bar and the \"Algomancy\" in the bottom bar are in the same lettering as the home page's headings and footer.",
+    reportId: 361,
+    status: 'open',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
