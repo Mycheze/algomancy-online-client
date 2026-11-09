@@ -45,7 +45,7 @@ import {
   allRooms, expireOnTime,
   joinRefusal, joinableRoom, legalInRoom, openSegment, renameSeat, sanitizeClock,
   reserveRoomCode, resolveLobby, roomElementCount, roomLobby, type RoomCustom,
-  restoreRooms, roomWaiting, segmentKey, setFullControl, setLobbyMethod, setLobbySubmission,
+  FORGET_AFTER_MS, restoreRooms, roomWaiting, segmentKey, setFullControl, setLobbyMethod, setLobbySubmission,
   setRoomDeck, singleCards, takesJoinDeck,
   setSeatUser, settleClock, takeDeferred, undoForSeat, unheldFor, unlockLobby,
   type Room, type SegKey,
@@ -3547,10 +3547,9 @@ function resolveOffer(offer: Offer, settled: boolean): void {
  * Nothing ever removed a room from the map: every game since boot stayed
  * resident and was walked by the sweep above once a second. A decided room
  * with nobody connected — no seat, no audience — is dropped an hour after
- * the sweep first sees it that way. The file is the record and stays; the
- * post-game screen and a rematch both happen well inside the hour, and a
- * reconnect after it finds the room by its file exactly as a restart would. */
-const FORGET_AFTER_MS = 3600_000;
+ * the sweep first sees it that way. The file is the record and stays, and the
+ * replay viewer reads it; the post-game screen and a rematch both happen well
+ * inside the hour. restoreRooms leaves out a game already past it. */
 const finishedSeen = new Map<string, number>();
 function sweepFinished(): void {
   const now = Date.now();

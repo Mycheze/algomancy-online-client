@@ -4537,6 +4537,8 @@ export function setSeatUser(room: Room, seat: 0 | 1, userId: string | null): voi
  * for ever. Measured from `lastActionOf`, never the mtime (see
  * Room.lastActionAt for why the mtime said nothing). */
 const RESTORE_WINDOW_MS = 7 * 24 * 3600_000;
+/** how long a finished game with nobody at it stays in memory (main.ts sweepFinished) */
+export const FORGET_AFTER_MS = 3600_000;
 
 /**
  * When a saved game's log last changed. `lastActionAt` when the file has it.
@@ -4812,7 +4814,11 @@ export function restoreRooms(now = Date.now()): void {
         continue;
       }
       const lastActionAt = lastActionOf(raw, mtimeMs);
-      if (now - lastActionAt > RESTORE_WINDOW_MS) {
+      // …and a finished game past the hour `sweepFinished` keeps one for would
+      // only be replayed here to be forgotten again: restart time is for the
+      // games being played
+      const stampedOver = raw.winner === 0 || raw.winner === 1;
+      if (now - lastActionAt > RESTORE_WINDOW_MS || (stampedOver && now - lastActionAt > FORGET_AFTER_MS)) {
         if (strayRun) staleFixRuns.push(strayRun);
         const { fixRun: _filed, ...kept } = raw;
         // a week without a move. An UNFINISHED one is closed in its file on
@@ -5012,6 +5018,6 @@ export function restoreRooms(now = Date.now()): void {
       console.error(`[rooms] could not restore ${code}:`, err instanceof Error ? err.message : err);
     }
   }
-  if (stale) console.log(`[rooms] ${stale} finished game${stale === 1 ? '' : 's'} older than 7 days left on disk, not restored`);
+  if (stale) console.log(`[rooms] ${stale} finished game${stale === 1 ? '' : 's'} left on disk, not restored`);
   if (closedCount) console.log(`[rooms] ${closedCount} closed game${closedCount === 1 ? '' : 's'} left on disk, not restored`);
 }
