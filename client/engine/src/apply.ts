@@ -3999,17 +3999,23 @@ function legalDeclareBlocksActions(e: E, seat: Seat): Action[] {
   // a Pure blocker, which is blind to Sneaky like every other attribute
   const atkUnits = b.columns.flat().filter(id => e.entity(id));
   const sneakyAlone = atkUnits.length === 1 && e.colAttrs(atkUnits).has('Sneaky');
+  // Every pair below asks about the same units, so each is read once: on a big
+  // board this enumeration was the longest single stall on the server
+  const pureBlocker = new Map(blockers.map(u => [u.id, e.pure([u.id])]));
+  const flying = new Map(blockers.map(u => [u.id, e.colAttrs([u.id]).has('Flying')]));
   b.columns.forEach((atkCol, ci) => {
     const live = atkCol.filter(id => e.entity(id));
     const rawAttrs = e.colAttrs(live);
+    const pureAttacker = e.pure(live);
+    const noAttrs = new Set<string>();
     // this exchange's attrs depend on WHO blocks, so they are resolved per
     // candidate column rather than once for the attacker
     const attrsWith = (ids: EntityId[]) =>
-      e.pure(live, ids) ? new Set<string>() : rawAttrs;
+      pureAttacker || ids.some(id => pureBlocker.get(id)) ? noAttrs : rawAttrs;
     for (const u of blockers) {
       const atkAttrs = attrsWith([u.id]);
       if (sneakyAlone && atkAttrs.has('Sneaky')) continue;
-      if (atkAttrs.has('Flying') && !e.colAttrs([u.id]).has('Flying')) continue;
+      if (atkAttrs.has('Flying') && !flying.get(u.id)) continue;
       if (atkAttrs.has('Evasive')) continue;   // needs 2; single-blocker option invalid
       out.push({ type: 'declareBlocks', seat, blocks: onCore({ [ci]: [u.id] }) });
     }
@@ -4017,7 +4023,7 @@ function legalDeclareBlocksActions(e: E, seat: Seat): Action[] {
       for (let j = i + 1; j < blockers.length; j++) {
         const pair = [blockers[i]!.id, blockers[j]!.id];
         const atkAttrs = attrsWith(pair);
-        if (atkAttrs.has('Flying') && !e.colAttrs(pair).has('Flying')) continue;
+        if (atkAttrs.has('Flying') && !pair.some(id => flying.get(id))) continue;   // the column's attrs are the union
         if (sneakyAlone && atkAttrs.has('Sneaky')) continue;
         out.push({ type: 'declareBlocks', seat, blocks: onCore({ [ci]: pair } ) });
       }
@@ -4038,7 +4044,7 @@ function legalDeclareBlocksActions(e: E, seat: Seat): Action[] {
       // CR 604.2e: a lured unit cannot counterattack — and sending anyone ELSE
       // away cannot change who is "able", so the core is reused verbatim
       if (u.allured) continue;
-      out.push({ type: 'declareBlocks', seat, blocks: compulsoryBlocks(e, seat), send: [u.id] });
+      out.push({ type: 'declareBlocks', seat, blocks: onCore({}), send: [u.id] });
       // playtest report #67, game GETD: the counterattack went out and
       // three Poison 1s stayed behind, because nothing — not the engine's
       // own enumeration, not the client — ever said they could come. One
@@ -4046,7 +4052,7 @@ function legalDeclareBlocksActions(e: E, seat: Seat): Action[] {
       // apply() validates it, exactly as it does for a formation.
       if (riders.length) {
         out.push({
-          type: 'declareBlocks', seat, blocks: compulsoryBlocks(e, seat),
+          type: 'declareBlocks', seat, blocks: onCore({}),
           send: [u.id], spellTokens: riders.slice(),
         });
       }
