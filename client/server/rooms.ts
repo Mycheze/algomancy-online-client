@@ -304,7 +304,20 @@ export function legalInRoom(room: Room, seat: Seat): Action[] {
   // time, or a stamped result the replay never reached. The state still offers
   // a full hand of moves; the game is over anyway.
   if (decidedOutsideState(room)) return [];
-  return legalForSeat(room.state, seat, room.segKey);
+  return legalForSeat(room.state, seat, room.segKey, legalOnce);
+}
+
+/* ONE BOARD, ONE LIST PER SEAT. One move used to build each seat's whole list
+ * up to three times — the clock before the move, the clock after it, and the
+ * update — and the clock only asks whether it is empty. `legalActions` is a
+ * pure function of the state, and a room's state is replaced by each action,
+ * never edited, so the object itself is the key. The list is shared: read it,
+ * never change it. */
+const legalLists = new WeakMap<GameState, [Action[]?, Action[]?]>();
+export function legalOnce(state: GameState, seat: Seat): Action[] {
+  let lists = legalLists.get(state);
+  if (!lists) legalLists.set(state, lists = []);
+  return lists[seat] ??= legalActions(state, seat);
 }
 
 /** What to do with an arriving action. */
@@ -1559,7 +1572,7 @@ export function clockRunning(room: Room): [boolean, boolean] {
   // never billed for the wait and still is not.
   // …and a seat watching a playback (`watchHold`) is not billed either: the
   // board it is shown has nothing on it to decide
-  return [0, 1].map(s => legalActions(room.state, s as 0 | 1).length > 0
+  return [0, 1].map(s => legalOnce(room.state, s as 0 | 1).length > 0
     && room.passAllWait[s]?.at !== room.state.actionCount
     && room.watchHold[s] === null) as [boolean, boolean];
 }

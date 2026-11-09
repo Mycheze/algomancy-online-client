@@ -550,12 +550,18 @@ export function redactLog(events: EngineEvent[], seat: Seat, names: string[]): s
  * leaking again. rooms.ts's glimpse-hold block (CR D6.2) has the history;
  * server/test/203-reveal-waits-for-the-barrier.test.ts is the guard. */
 
-export function legalForSeat(state: GameState, seat: Seat, _segKey?: string | null): Action[] {
+/** `ask` is how the list is built: rooms.ts passes its per-board memo. A
+ * browser runner edits its state in place in tests, so the default stays the
+ * engine's own function. */
+export function legalForSeat(
+  state: GameState, seat: Seat, _segKey?: string | null,
+  ask: (s: GameState, seat: Seat) => Action[] = legalActions,
+): Action[] {
   // everything the engine is now seat-aware about, and every case where the
   // block is simply correct (your own question; battle): ask it directly
-  if (!decisionBlocks(state, seat)) return legalActions(state, seat);
-  if (!state.decision || state.decision.seat === seat) return legalActions(state, seat);
-  if (hiddenSegment(state) === null) return legalActions(state, seat);
+  if (!decisionBlocks(state, seat)) return ask(state, seat);
+  if (!state.decision || state.decision.seat === seat) return ask(state, seat);
+  if (hiddenSegment(state) === null) return ask(state, seat);
   // what is left is case 3 alone: offer, and let the queue make it true
   return legalActions({ ...state, decision: null, suspension: null }, seat);
 }
