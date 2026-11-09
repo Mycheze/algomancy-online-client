@@ -205,17 +205,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 548, area: "client", severity: "minor",
-    title: "on a modded unit the red damage marker is partly hidden by its mods and hard to read without zooming in",
-    detail: "Report #359 (mycheze, CNDX, 2026-11-08, ux, minor): \"When a unit is modded, the mod sorta cuts off the \\\"damage\\\" -X red badge so you can't read it unless you zoom in\". The marker is `.dmg` (ui/main.ts cardHtml ~line 3351, `u.damage` from ~3580), drawn bottom-left of the face (styles/board/03-life-cards-battle-log.css ~140, `bottom: 2px; left: 2px`, no z-index). A modded table card is a two-row grid (styles/board/08-playtest-ux-fixes.css ~131, `.card.modded`: the face and every overlay in row 1, `.fieldmods` in row 2), so the marker sits on the seam where the first strip is tucked under the face; the strips (`.fieldmods .modstrip`, position: relative, later in the markup, with an inset shadow on ::before at z-index 1) come right after it.",
-    evidence: "Report #359; CNDX fetched and replayed 2026-11-08 (steward triage), filed at [217], turn 6 battle with Flame of History on the stack: Fireball 3 had just dealt 3 to mycheze's attacking Amphivore, which carries a grafted Bloated Manablub — a modded unit with −3 drawn in the battle's Invaders strip (52px cards, styles/board/09-region-overhaul.css ~89). Not seen (no browser on the box): exactly what covers the marker — the first strip, the next card of the attacking column's pile (styles/board/41-regions-blocks.css ~147, .invpile), or the marker's own 11px size on a 52px card — is a hypothesis.",
-    fix: "Look at a modded, damaged unit on the table (the ?demo board, an Invaders strip and a home row) and find what overlaps the marker; then keep the marker clear of the mods: lift it above them (a z-index over `.fieldmods`) and/or move it off the seam, and check it at the smallest card widths. A ui test over the CSS (through ui/test/read-styles.ts) pinning whatever rule the fix adds.",
-    proof: null,
-    verify: "Damage a unit that carries an augment or graft (e.g. Fireball an attacking modded unit); its red −N marker is fully readable on the table without zooming, in the Invaders strip and at home.",
-    reportId: 359,
-    status: 'open',
-  },
-  {
     id: 549, area: "client", severity: "minor",
     title: "Big Glimpse Card's caster chooses a pile from two text buttons, not from the two piles shown as cards",
     detail: "Report #360 (mycheze, MNCM, 2026-11-09, ux, medium): \"The new \\\"splitting\\\" UI for Big Glimpse Card is much better now! It's very easy to use and understand. But it should be basically the same for the chooser. Instead of giving them two buttons with a list of options, it should present them with two modal piles of cards to choose from with buttons below to \\\"Put Pile 1 into your hand\\\" or \\\"Put Pile 2 into your hand\\\" (and below, in smaller text \\\"Recycle the rest\\\"). Choices and actions should be visual as much as possible!\" The splitter's half is CT-539 (ui/pickset.ts splitHtml, group 'split', driven by the `pickSet` hint on each `split:k` question). The caster's half is the engine's `ctx.choose('pile', …)` in engine/src/cards/sets/batch-hybrids-ld-a.ts (Big Glimpse Card): a payOrDecline with two options whose labels are the pile contents as text (`Pile 1: A, B, …`) and no `card` on either option and no display hint, so the ordinary decision bar draws two long text buttons.",

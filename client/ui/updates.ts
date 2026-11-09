@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-09', kind: 'fix', text: "The red damage number on a unit is now drawn on top of its mods and of the cards piled next to it, with a dark edge, so you can read it on a modded unit without zooming in." },
   { date: '2026-11-09', kind: 'change', text: "A cached card you may still play this turn now stays beside your hand the whole turn, not only at the moments it can be played. It glows when you can play it now, like a hand card, and sits dark until then." },
   { date: '2026-11-09', kind: 'fix', text: "During a battle, the units in play no longer shrink to a thin row beside a half-empty fight. They now take the room there is, as large as the cards in the fight, and the fight keeps the rest." },
   { date: '2026-11-09', kind: 'fix', text: "Declaring blocks on a crowded board no longer freezes the game for a moment, for you or for anyone else playing." },

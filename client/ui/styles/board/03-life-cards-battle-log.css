@@ -137,8 +137,15 @@
    same on both boards. */
 .card .stats { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,.8); border-radius: 4px;
   padding: 0 4px; font-weight: 700; font-size: 12px; }
-.card .dmg { position: absolute; bottom: 2px; left: 2px; background: var(--danger); border-radius: 4px;
-  padding: 0 4px; font-weight: 700; font-size: 11px; }
+/* Report #359 (CT-548): on a modded unit the marker sits on the seam where
+   its mod strips hang (08-playtest-ux-fixes .card.modded), and "the mod sorta
+   cuts off the damage badge". The strips come after it in the markup and
+   their shadow layer is `z-index: 1`, so an unlifted marker loses every
+   overlap with them — and with the next card of a pile or a fanned row.
+   `z-index: 2` puts it above all of those (still under a pick verb's 3 and a
+   raised card's 6); the dark ring keeps its edge readable on any art. */
+.card .dmg { position: absolute; bottom: 2px; left: 2px; z-index: 2; background: var(--danger); border-radius: 4px;
+  padding: 0 4px; font-weight: 700; font-size: 11px; box-shadow: 0 0 0 1px rgba(0,0,0,.6); }
 /* BL-23: ONE line, at every card width — the same strip is drawn over a
    40px sent-strip thumb and a 116px cache entry. `nowrap` is the guarantee and
    ui/inspect.ts packBadgeLine decides what is worth putting on the line

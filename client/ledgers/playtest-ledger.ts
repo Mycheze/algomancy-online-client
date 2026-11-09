@@ -361,8 +361,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 359, room: "CNDX", date: "2026-11-08",
     report: "mycheze, seat 0 (ux): \"When a unit is modded, the mod sorta cuts off the \\\"damage\\\" -X red badge so you can't read it unless you zoom in\"",
-    status: 'live',
-    note: "Real by the report; cause not seen (no browser on the box). Filed at [217], turn 6: Fireball 3 had just dealt 3 to mycheze's attacking Amphivore, grafted with Bloated Manablub. The red damage marker is drawn at the bottom-left of the card face, which on a modded unit is the seam where its first mod strip hangs (styles/board/08-playtest-ux-fixes.css, .card.modded). CT-548.",
+    status: 'fixed',
+    guards: [
+      "1193-damage-marker-over-mods.test.ts::the damage marker is drawn above the mod strips of a modded unit",
+    ],
+    note: "Real by the report; cause not seen (no browser on the box). Filed at [217], turn 6: Fireball 3 had just dealt 3 to mycheze's attacking Amphivore, grafted with Bloated Manablub. The red damage marker is drawn at the bottom-left of the card face, which on a modded unit is the seam where its first mod strip hangs (styles/board/08-playtest-ux-fixes.css, .card.modded). CT-548, fixed 2026-11-09: the marker is lifted above the strips (and the next card of a pile) and ringed dark; which of them covered it was not seen.",
   },
   {
     id: 360, room: "MNCM", date: "2026-11-09",
