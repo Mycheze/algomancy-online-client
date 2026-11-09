@@ -13,6 +13,14 @@ import * as acct from '../account.ts';
 import * as dk from '../decks.ts';
 import { button, statusMessage } from '../components/index.ts';
 import { chooseDeck, chosenDeck, esc, type ChosenDeck } from '../util.ts';
+import { authorName } from '../deckformat.ts';
+
+/** " — by <name>" after a deck's name, or nothing: never for the player's own
+ * decks ('you'), and never an id (CT-541, report #355 — see authorName). */
+const byLabel = (author: string | undefined): string => {
+  const a = authorName(author);
+  return a && a !== 'you' ? ` — by ${esc(a)}` : '';
+};
 
 /** the bundled default decks — fetched once from the server */
 let defaultDeckList: ChosenDeck[] | null = null;
@@ -78,7 +86,7 @@ export function deckPickerHtml(v: DeckPickerView, o: { importHtml?: string } = {
   if (mine.length) {
     const opts = mine.map((d, i) =>
       `<option value="c${i}" ${cur && cur.id === d.id ? 'selected' : ''}>${esc(d.name)}${
-        d.author && d.author !== 'you' ? ` — by ${esc(d.author)}` : ''}</option>`).join('');
+        byLabel(d.author)}</option>`).join('');
     const strayOpt = cur && !mine.some(d => d.id === cur.id)
       ? `<option value="stray" selected>${esc(cur.name)} (not in your collection)</option>` : '';
     const info = cur
@@ -99,11 +107,11 @@ export function deckPickerHtml(v: DeckPickerView, o: { importHtml?: string } = {
   }
   const isDefault = !!cur && defaults.some(d => d.name === cur.name && d.url === cur.url);
   const opts = defaults.map((d, i) =>
-    `<option value="d${i}" ${cur && d.name === cur.name && d.url === cur.url ? 'selected' : ''}>${esc(d.name)} — by ${esc(d.author)}</option>`).join('');
+    `<option value="d${i}" ${cur && d.name === cur.name && d.url === cur.url ? 'selected' : ''}>${esc(d.name)}${byLabel(d.author)}</option>`).join('');
   const customOpt = cur && !isDefault
-    ? `<option value="custom" selected>${esc(cur.name)}${cur.author && cur.author !== 'you' ? ` — by ${esc(cur.author)}` : ''} (imported)</option>` : '';
+    ? `<option value="custom" selected>${esc(cur.name)}${byLabel(cur.author)} (imported)</option>` : '';
   const info = cur
-    ? `<div class="deckinfo">${cur.cards.length} cards · by ${esc(cur.author)}${cur.url
+    ? `<div class="deckinfo">${cur.cards.length} cards${authorName(cur.author) ? ` · by ${esc(authorName(cur.author))}` : ''}${cur.url
         ? ` · <a href="${esc(cur.url)}" target="_blank" rel="noopener">view on algomancer.cc</a>` : ''}</div>`
     : '<div class="deckinfo"></div>';
   return `<select id="h-deck" class="deckselect">
@@ -166,7 +174,7 @@ export function importDeck(body: { url?: string; text?: string }, rerender: () =
       rerender(); return;
     }
     chooseDeck(r.deck);
-    deckMsg = `loaded ${r.deck.name} (${r.deck.cards.length} cards) by ${r.deck.author}`;
+    deckMsg = `loaded ${r.deck.name} (${r.deck.cards.length} cards)${authorName(r.deck.author) ? ` by ${authorName(r.deck.author)}` : ''}`;
     // the link or list is used up: empty its box BEFORE the repaint, which
     // otherwise carries typed text across (HOME_TYPED) and would put it back
     for (const id of ['h-deckurl', 'h-decktext']) {

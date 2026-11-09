@@ -328,8 +328,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 355, room: "", date: "2026-11-08",
     report: "mycheze, home (ux): \"When you copy a deck that someone else made and play it, it says \\\"Deck name copy - by _____\\\" but instead of their name, it's a UUID string of nonsense.\"",
-    status: 'live',
-    note: "Real. The deck picker prints a collection deck as \"name — by author\" (pages/deckpicker.ts), and taking a copy of somebody's shared deck copies the source's free-text `author` verbatim (server/collection.ts duplicateDeck) instead of naming the player who published it. Which deck carried the id is not checked (the account store is not fetchable). CT-541.",
+    status: 'fixed',
+    guards: [
+      "1187-taken-copy-author.test.ts::a copy of a deck its owner built is by the owner, not \"you\"",
+    ],
+    note: "Real. The deck picker prints a collection deck as \"name — by author\" (pages/deckpicker.ts), and taking a copy of somebody's shared deck copies the source's free-text `author` verbatim (server/collection.ts duplicateDeck) instead of naming the player who published it. Which deck carried the id is not checked (the account store is not fetchable). CT-541. Fixed 2026-11-09: a taken copy is by its builder's name or the player who shared it, and no \"by …\" label prints an id any more.",
   },
   {
     id: 356, room: "", date: "2026-11-08",

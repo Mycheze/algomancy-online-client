@@ -24,6 +24,7 @@ import { analyzeDeck, deckElements } from '../deckstats.ts';
 import { mdToHtml } from '../markdown.ts';
 import { noImgDrag } from '../piletable.ts';
 import { esc } from '../util.ts';
+import { authorName } from '../deckformat.ts';
 import { button, chip, emptyState, field, iconButton, segmented, sheet, statusMessage, table } from '../components/index.ts';
 import type { TablePill } from '../tabletop.ts';
 import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
@@ -248,7 +249,8 @@ export function deckPreviewView(d: DeckSource, o: PreviewViewOpts = {}): DeckPre
   return {
     id: d.id, name: d.name, banner: cover ? cardArt(cover) : null,
     meta: [VIS_LABEL[visOf(d)], edited ? `edited ${edited}` : '', recordText(d.record)].filter(Boolean).join(' · '),
-    author: d.author && d.author !== 'you' ? `built by ${d.author}` : '',
+    // never an id (CT-541, report #355): see authorName
+    author: authorName(d.author) && d.author !== 'you' ? `built by ${authorName(d.author)}` : '',
     url: d.url ?? null,
     descHtml: src ? mdToHtml(text, { inline: cardLinker({ focusBtn, art: true }) }) : '',
     descClipped: clipped, descOpen: !!o.descOpen,

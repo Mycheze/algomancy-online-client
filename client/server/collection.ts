@@ -40,6 +40,7 @@ import { canonicalCardName, getCard } from '../engine/src/cards/dsl.ts';
 import type { CardName, Seat } from '../engine/src/types.ts';
 import { accountById, gameHistory, saveAccounts, type Account } from './accounts.ts';
 import { defaultDecks } from './decks.ts';
+import { authorName } from '../ui/deckformat.ts';
 
 /** One deck in somebody's collection. Everything here is EDITED by its owner;
  * everything derived from it (legality, curve, record) is computed on read. */
@@ -598,15 +599,31 @@ export function deleteDeck(account: Account, id: string): { ok: boolean; error?:
  *  - THE DESCRIPTION'S AUTHORSHIP. The text is copied because it is what makes
  *    the deck usable, but `copiedFrom` records where it came from, and that is
  *    what the shared view prints as attribution.
+ *
+ * And one thing it does NOT copy verbatim: THE AUTHOR, when the source is
+ * somebody else's (CT-541, report #355). `author` is 'you' on a deck its
+ * owner built — and 'you' on YOUR copy would name nobody — and it may be an
+ * id that came in from outside. A taken copy is by the source's named
+ * builder when it has one (an algomancer.cc user, a deck file's author, the
+ * publisher of the copy it was itself taken from), and otherwise by
+ * `publisher`, the account that shared it.
  */
-export function duplicateDeck(account: Account, id: string, src?: CollectionDeck): EditResult {
+function copyAuthor(from: CollectionDeck, publisher: string | undefined): string {
+  if (publisher === undefined) return from.author;
+  const named = authorName(from.author);
+  return named && named !== 'you' ? named : (authorName(publisher) || 'unknown builder');
+}
+
+export function duplicateDeck(
+  account: Account, id: string, src?: CollectionDeck, publisher?: string,
+): EditResult {
   const from = src ?? deckById(account, id);
   if (!from) return { ok: false, error: 'no such deck' };
   const r = createDeck(account, {
     name: `${from.name} copy`, cards: from.cards, maybe: from.maybe,
     // the sideboard is part of the list, so a copy has it
     sideboard: from.sideboard ?? [],
-    author: from.author, ...(from.url ? { url: from.url } : {}),
+    author: copyAuthor(from, src ? publisher : undefined), ...(from.url ? { url: from.url } : {}),
     ...(src ? { visibility: 'private' as DeckVisibility } : {}),
   });
   if (r.ok) {

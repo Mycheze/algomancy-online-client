@@ -134,7 +134,7 @@ test('§4 ⭐ the public view never carries piles, and `take` copies none', () =
   assert.ok(!('piles' in taken.deck), 'a taken copy has no piles');
   assert.deepEqual(taken.deck.cards, CARDS, 'but it has the cards');
   const route = readFileSync(new URL('../api-decks.ts', import.meta.url), 'utf8');
-  assert.match(route, /duplicateDeck\(account, id, src\)/, 'the take route still passes the source');
+  assert.match(route, /duplicateDeck\(account, id, src[,)]/, 'the take route still passes the source');
 });
 
 test('§4 ⭐ duplicating your OWN deck copies the piles', () => {

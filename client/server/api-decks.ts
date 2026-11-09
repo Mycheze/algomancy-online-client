@@ -102,7 +102,7 @@ export async function deckRoutes(
     if (!shared) return json(res, { ok: false, error: 'that deck is not shared' }), true;
     const src = sourceDeck(id);
     if (!src) return json(res, { ok: false, error: 'that deck is not shared' }), true;
-    const r = duplicateDeck(account, id, src);
+    const r = duplicateDeck(account, id, src, shared.owner.username);
     if (!r.ok) return json(res, r), true;
     answer({ id: r.deck.id, note: `copied from ${shared.owner.username}` });
     return true;

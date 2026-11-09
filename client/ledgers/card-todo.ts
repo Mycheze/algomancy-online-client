@@ -196,16 +196,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 541, area: "client", severity: "minor",
-    title: "a deck copied from someone else's shared list says \"— by\" a long id instead of the builder's name",
-    detail: "Report #355 (mycheze, home, 2026-11-08, ux): \"When you copy a deck that someone else made and play it, it says \\\"Deck name copy - by _____\\\" but instead of their name, it's a UUID string of nonsense.\" The deck picker prints a collection deck as `name — by author` whenever `author` is not 'you' (ui/pages/deckpicker.ts ~line 81). A taken copy gets its `author` verbatim from the source deck (server/collection.ts duplicateDeck ~line 609, `author: from.author`), never the publisher's username (which the public view has as `owner.username`, server/publicdecks.ts ~line 196). So the copy says whatever the source's free-text author was: 'you' on a deck its owner built (the copy then names nobody, which is also wrong), the algomancer.cc builder on an import (server/decks.ts ~163, `data.user?.username`), or a pasted deck file's `author` (ui/deckformat.ts ~345).",
-    evidence: "Report #355 (no room: a page). Code read 2026-11-08 (steward triage). Verified: the copy path keeps the source's `author` and nothing in it reads the owner's username. Hypothesis: the id the owner saw is the source deck's own `author` string, i.e. some earlier path stored an id there (an algomancer.cc user without a username, or a deck file); the account store is not fetchable from the box, so which deck it was is not checked.",
-    fix: "When /api/decks/take copies somebody else's deck, set the copy's author to the publisher's username (the `owner.username` publicdecks already shows), unless the source itself was by a named outside builder (an algomancer.cc author) — then keep that. Then make the picker and every \"by\" label refuse to print an id-shaped author (a one-time repair of stored copies, or a display fallback to the owner's name). A server test: take a copy of another account's deck, its author is that account's username.",
-    proof: () => still('server/collection.ts', "author: from.author, ...(from.url ? { url: from.url } : {}),"),
-    reportId: 355,
-    status: 'open',
-  },
-  {
     id: 542, area: "client", severity: "major",
     title: "joining a friend's constructed room locks in the deck this browser last selected the moment you arrive, with no chance to check or change it",
     detail: "Report #357 (mycheze, RUCV, 2026-11-08, gamebreaking): \"Gember thought she selected the right deck, but for some reason, it didn't actually follow her into the game.\" Every join carries the browser's chosen deck (ui/main.ts sendJoin, the `algoDeck` copy in ui/util.ts chosenDeck), and in a friend's constructed room the server registers it at once (server/rooms.ts takesJoinDeck: `return !room.league || pick;`, used at server/main.ts ~line 2876): the joiner who completes the pair deals the game on arrival, so the waiting room's \"Play this deck\" is never shown to them and nothing on the way in says which deck they are bringing. League rooms (owner, 2026-11-01) and Competitive matches (CT-518) already take a deck only from the room's own pick.",

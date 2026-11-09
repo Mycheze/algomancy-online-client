@@ -19,6 +19,7 @@ import * as mt from '../match.ts';
 import * as sc from '../singlecard.ts';
 import { settingRow, statusMessage } from '../components/index.ts';
 import { chosenDeck, esc, shareBar } from '../util.ts';
+import { authorName } from '../deckformat.ts';
 import { deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
 import { singleCardPickerHtml, singleCardPickerView } from './singlecard.ts';
 import { lobbyHtml, lobbyView, roomFrameHtml, roomSection } from './lobby.ts';
@@ -120,7 +121,7 @@ export function constructedWaitingHtml(v: ConstructedWaitingView): string {
       <div class="lobbyseats">
         <span class="lobbyseat"><i class="seatdot${v.mineIn ? ' ready' : ''}"></i>
           <span>${esc(v.myName ?? 'You')} (you) — ${v.mineIn
-            ? `<b class="lockedin">deck is in</b>${v.deck ? ` — ${esc(v.deck.name)} by ${esc(v.deck.author)}` : ''}`
+            ? `<b class="lockedin">deck is in</b>${v.deck ? ` — ${esc(v.deck.name)}${authorName(v.deck.author) ? ` by ${esc(authorName(v.deck.author))}` : ''}` : ''}`
             : '<span class="dim">pick a deck above</span>'}</span></span>
         <span class="lobbyseat"><i class="seatdot${v.oppIn ? ' ready' : v.oppHere ? '' : ' away'}"></i>
           <span>${esc(v.oppName ?? 'Opponent')} — ${v.oppIn

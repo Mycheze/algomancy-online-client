@@ -202,6 +202,29 @@ export function artFileFor(name: string): string {
   return rowFor(name)?.image || name.replace(/ /g, '-') + '.jpg';
 }
 
+/**
+ * A deck's `author` as a name a player may be shown, or '' when it is not one.
+ *
+ * CT-541 (report #355): a deck copied from somebody's shared list read
+ * "— by 3f2c…-…" in the deck picker. `author` is free text that arrives from
+ * outside (an algomancer.cc account, a pasted deck file), and a string that
+ * is an id — a UUID, a long hex or `user_…` token — is somebody's key, not
+ * their name. Every "by …" label goes through this, so whatever is already
+ * stored under that field never reaches the screen as an id. 'you' passes
+ * through: the callers decide what to say for the player's own decks.
+ *
+ * Shared with server/: it decides what a taken copy's author is
+ * (collection.ts duplicateDeck), so the two sides cannot disagree.
+ */
+export function authorName(author: string | null | undefined): string {
+  const a = (author ?? '').trim();
+  if (!a) return '';
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(a)) return '';
+  if (/^[0-9a-f]{24,}$/i.test(a)) return '';
+  if (/^user_[A-Za-z0-9]{16,}$/.test(a)) return '';
+  return a;
+}
+
 /** A deck as a deck file. */
 export function buildDeckFile(deck: DeckSource, opts: BuildOpts = {}): DeckFile {
   const origin = (opts.origin ?? '').replace(/\/+$/, '');
