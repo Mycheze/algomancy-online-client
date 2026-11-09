@@ -163,7 +163,10 @@ export function frameHtml(p: FrameProps): string {
 }
 
 /** the bottom bar's one button: what this client is (legal.ts's About page) */
-export const CLIENT_INFO = iconButton({ label: 'Algomancy Online (Unofficial Client)', icon: 'info', layout: 'inline', className: 'frameinfo',
+export const CLIENT_INFO = iconButton({ label: 'Algomancy Online (Unofficial Client)',
+  // the home's footer label (pages/home.ts bottomHtml): "Algomancy" in the brand face, report #361
+  labelHtml: '<span class="homewordmark">Algomancy</span> Online <span class="homewordsub">(Unofficial Client)</span>',
+  icon: 'info', layout: 'inline', className: 'frameinfo',
   attrs: { 'data-legal': 'about' }, title: 'about this client: the game, the notice, buying it, privacy' });
 
 /* ── painting ─────────────────────────────────────────────────────────── */

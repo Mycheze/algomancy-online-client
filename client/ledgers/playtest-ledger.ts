@@ -386,8 +386,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 361, room: "", date: "2026-11-09",
     report: "mycheze, acct (ux): \"We should use the same font from the homepage in the headers and footers of all pages.\"",
-    status: 'live',
-    note: "A fair styling request, real by reading. The home page sets its headings and its footer's \"Algomancy\" in the brand lettering (styles/pages/54-home-art.css, `--font-brand`); every other page is drawn in the shared app frame (pages/frame.ts), whose title bar's page name and footer button use the plain body font. One change to the frame reaches every page. CT-550.",
+    status: 'fixed',
+    guards: [
+      "1198-frame-brand-face.test.ts::the frame's title takes the brand face; what rides beside it does not",
+    ],
+    note: "A fair styling request, real by reading. The home page sets its headings and its footer's \"Algomancy\" in the brand lettering (styles/pages/54-home-art.css, `--font-brand`); every other page is drawn in the shared app frame (pages/frame.ts), whose title bar's page name and footer button use the plain body font. One change to the frame reaches every page. CT-550, fixed 2026-11-09: the page name in the title bar and the footer's \"Algomancy\" are now in the brand face on every framed page.",
   },
   {
     id: 362, room: "TUDN", date: "2026-11-09",

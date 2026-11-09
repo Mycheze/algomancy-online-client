@@ -10,7 +10,12 @@
 .frametop .ui-app-shell__zone--start { gap: var(--space-5); }
 .frametitle { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   color: var(--color-text); font-size: var(--text-22); font-weight: 700; letter-spacing: .02em; }
-.frametitle small { margin-left: var(--space-4); color: var(--color-text-muted); font-size: var(--text-13); font-weight: 400; letter-spacing: 0; }
+/* the page's name in the home's brand face, as the home sets its headings (54-home-art.css, report #361);
+   what rides beside the name — the subtitle, the deck's pill and summary, a tag — keeps the plain face */
+.frametitle { font-family: var(--font-brand); font-weight: 400; text-transform: uppercase; letter-spacing: .04em; }
+.frametitle small, .frametitle .ttpill, .frametitle .ttsummary, .frametitle .lgtag {
+  font-family: var(--font-ui); text-transform: none; letter-spacing: 0; }
+.frametitle small { margin-left: var(--space-4); color: var(--color-text-muted); font-size: var(--text-13); font-weight: 400; }
 
 /* the end zone: the page's own tools, a hairline, then the shared ones */
 .frametools { display: flex; align-items: center; gap: var(--space-2); }
@@ -21,6 +26,9 @@
 .framebottom.ui-app-shell__bar { min-height: 0; padding-top: var(--space-1); padding-bottom: var(--space-1); }
 .framebottom .frameinfo { min-height: 36px; padding-top: var(--space-1); padding-bottom: var(--space-1); font-size: var(--text-12); }
 .framebottom .frameinfo .ui-icon-button__icon > svg { width: 18px; height: 18px; }
+/* its label is the home's: the wordmark in the brand face (.homewordmark), the rest plain */
+.framebottom .frameinfo .homewordmark { color: var(--color-text); }
+.framebottom .frameinfo .homewordsub { color: var(--color-text-muted); }
 
 /* a page whose content is a wide grid (the card browser) takes a wider column
    than the home's; the bars' content moves out with it */

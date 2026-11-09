@@ -231,8 +231,12 @@ test('§2 the unofficial notice exists, and is in the footer itself rather than 
   assert.match(css, /#app:has\(> \.apppage\) \+ #legalfoot \{ display: none; \}/, 'the footer shows on the home screen again');
   const frame = frameHtml({ page: 'cbpage', title: 'Cards', back: { dataBtn: 'cards-close', label: 'Home' },
     chrome: { signedIn: false, alerts: 0 }, mainHtml: '' });
-  assert.match(frame, /<footer class="ui-app-shell__bottom">[\s\S]*data-legal="about"[\s\S]*Algomancy Online \(Unofficial Client\)/,
-    'a page in the frame hides the footer, so its bottom bar must say it is unofficial and open the notice');
+  // the button's label is the home's since report #361 (2026-11-09): "Algomancy" in the wordmark
+  // span, so the words are read as the player sees them, the tags taken out
+  const frameFoot = frame.slice(frame.indexOf('<footer class="ui-app-shell__bottom">'));
+  assert.match(frameFoot, /^<footer[\s\S]*data-legal="about"/, 'a page in the frame hides the footer, so its bottom bar must open the notice');
+  assert.match(frameFoot.replace(/<[^>]+>/g, ''), /Algomancy Online \(Unofficial Client\)/,
+    'a page in the frame hides the footer, so its bottom bar must say it is unofficial');
   assert.equal(/legalbar|barHtml/.test(src), false,
     'the top strip is back — the owner asked for it to go (2026-09-05); the footer is the notice');
 });
