@@ -5919,8 +5919,8 @@ function moddingBarHtml(err: string): string {
   const gift = modHostCache.tokens?.size
     ? `<div class="modgift">${txtIcon('augment', '+')} ${esc(spellAugmentNote(card))}</div>` : '';
   return `<div class="promptbar pending"><span class="who">${esc(h.state.players[m.seat]!.name)}:</span>
-    applying <b>${esc(card)}</b> from ${zoneLabel(m.from)}${free} as ${icon} <b>${m.mode}</b>
-    — pick a glowing host: a ${what}${nHosts ? ` (${nHosts} legal)` : ''}
+    ${barMsg(`applying <b>${esc(card)}</b> from ${zoneLabel(m.from)}${free} as ${icon} <b>${m.mode}</b>
+    — pick a glowing host: a ${what}${nHosts ? ` (${nHosts} legal)` : ''}`)}
     <button data-btn="modcancel">✕ cancel <span class="kh">(esc)</span></button>${gift}${err}</div>`;
 }
 
@@ -5997,6 +5997,16 @@ const CONFIRM_BARS = {
   // continue?". The same open question as `ally`, so the same two handlers.
   noop:   { cancel: 'allycancel',      back: 'Go back',        confirm: 'allyconfirm',    go: 'Continue' },
 } as const;
+/** A prompt bar's sentence, as ONE element. The bar is a wrapping flex row
+ * with a 12px gap, so every loose text run and every inline element in it —
+ * a `<b>`, a rules icon, the click/tap word (util.ts clickOrTap, whose hidden
+ * half is an item too) — was its own flex item, 12px from the next. The owner,
+ * 2026-11-10, on the block bar that read "assign blockers (   click   unit,
+ * then slot)": "totally messed up and nonsensical". Text that is one sentence
+ * goes through here; the buttons stay the bar's own items. */
+function barMsg(html: string): string {
+  return `<span class="barmsg">${html}</span>`;
+}
 /** the idle-Done question (deployment and the haste step) — one game sentence */
 const IDLE_DONE_ASK = 'you have not played anything yet, and you still can.';
 /** one armed-confirm bar; `attrs` rides on the confirm button (doneplanconfirm
@@ -6004,7 +6014,7 @@ const IDLE_DONE_ASK = 'you have not played anything yet, and you still can.';
 function confirmBarHtml(kind: keyof typeof CONFIRM_BARS, seat: Seat, question: string, err: string, attrs = '', cls = ''): string {
   const c = CONFIRM_BARS[kind];
   return `<div class="promptbar pending${cls}"><span class="who">${esc(h.state.players[seat]!.name)}:</span>
-        ${question}
+        ${barMsg(question)}
         <button data-btn="${c.cancel}">${c.back}</button>
         <button class="primary" data-btn="${c.confirm}"${attrs}>${c.go}</button>${err}</div>`;
 }
@@ -6233,7 +6243,7 @@ function boardPickHtml(dec: Decision, who: string, err: string): string | null {
       })
       : `<button data-btn="decide" data-i="${i}"${pingAttrs(o)}>${iconizeText(o.label)}</button>`;
   }).join('');
-  return `<div class="promptbar pending"><span class="who">${who}:</span> ${iconizeText(dec.prompt)} — which one?
+  return `<div class="promptbar pending"><span class="who">${who}:</span> ${barMsg(`${iconizeText(dec.prompt)} — which one?`)}
       <div class="deccards">${items}</div>
       <button data-btn="boardpickback">Back</button> ${castCancelBtnHtml()}${err}</div>`;
 }
@@ -6359,7 +6369,7 @@ function decisionBarHtml(dec: Decision, err: string): string {
     // CT-181: an imposed cost says what it is (ui/boardpick.ts imposedCost)
     const asked = imposedCost(dec, h.state)?.prompt ?? dec.prompt;
     return `<div class="promptbar pending"><span class="who">${who}:</span>
-        ${iconizeText(asked)}${boardHint}
+        ${barMsg(iconizeText(asked) + boardHint)}
         ${stepperHtml}
         ${numberEntryHtml()}
         ${cardRow('decide')} <span class="decpicks">${btns}</span>
@@ -6373,7 +6383,7 @@ function decisionBarHtml(dec: Decision, err: string): string {
   const asg = assignSplitStepper(dec, h.state, assignCount());
   if (asg.mode === 'assign') {
     return `<div class="promptbar pending"><span class="who">${who}:</span>
-        ${iconizeText(dec.prompt)}
+        ${barMsg(iconizeText(dec.prompt))}
         ${assignSplitHtml(dec)}
         <details><summary style="color:var(--dim);cursor:pointer">every split</summary>
           <span class="decpicks">${dec.options.map((_o, i) => optBtn(i)).join(' ')}</span></details>
@@ -6385,7 +6395,7 @@ function decisionBarHtml(dec: Decision, err: string): string {
   // has to answer it.
   if (dec.kind === 'number') {
     return `<div class="promptbar pending"><span class="who">${who}:</span>
-        ${iconizeText(dec.prompt)}
+        ${barMsg(iconizeText(dec.prompt))}
         ${numberEntryHtml()} ${castCancelBtnHtml()}${err}</div>`;
   }
   if (dec.kind === 'orderTriggers') {
@@ -6461,13 +6471,13 @@ function decisionBarHtml(dec: Decision, err: string): string {
     const hint = picks.length && !done
       ? ` <span class="pickhint">— ${n - picks.length} more to order</span>` : '';
     return `<div class="promptbar pending"><span class="who">${who}:</span>
-        ${iconizeText(dec.prompt)}${hint} — ${scans ? `<div class="deccards">${scans}</div>` : cardRow('orderpick', i => place(i) > 0)} ${btns} ${tail}${err}</div>`;
+        ${barMsg(`${iconizeText(dec.prompt)}${hint} —`)} ${scans ? `<div class="deccards">${scans}</div>` : cardRow('orderpick', i => place(i) > 0)} ${btns} ${tail}${err}</div>`;
   }
   // "choose up to two" (Wake the Dead, Tides), and Big Glimpse Card's pile
   // choice (CT-549): the picker is a dialog (ui/pickset.ts), and this bar is
   // the way back into it once it is hidden
   if (ps.pickSetView(dec) || ps.pilesView(dec)) {
-    return `<div class="promptbar pending"><span class="who">${who}:</span> ${iconizeText(dec.prompt)}
+    return `<div class="promptbar pending"><span class="who">${who}:</span> ${barMsg(iconizeText(dec.prompt))}
       <button class="primary" data-btn="psshow">↑ Choose</button> ${castCancelBtnHtml()}${err}</div>`;
   }
   // payOrDecline / electricPath: cards, then the affirmative
@@ -6484,7 +6494,7 @@ function decisionBarHtml(dec: Decision, err: string): string {
     .sort((a, b) => Number(isDefault(b)) - Number(isDefault(a)))
     .map(i => optBtn(i, isDefault(i) ? 'primary' : '')).join(' ');
   const declines = split.decline.map(i => optBtn(i, declineButtonClass(dec.options[i]!))).join(' ');
-  return `<div class="promptbar pending"><span class="who">${who}:</span> ${iconizeText(dec.prompt)}${boardHint}
+  return `<div class="promptbar pending"><span class="who">${who}:</span> ${barMsg(iconizeText(dec.prompt) + boardHint)}
       ${stepperHtml}
       ${cardRow('decide')} <span class="decpicks">${btns}</span>
       ${declines ? `<span class="decdecline">${declines}</span>` : ''} ${castCancelBtnHtml()}${err}</div>`;
@@ -6741,7 +6751,7 @@ function phaseBarHtml(err: string): string {
       const shapes = pool ? counterShapes(pool).map(sh =>
         `<button data-btn="countershape" data-shape="${sh.key}" title="${esc(sh.title)}">${esc(sh.label)}</button>`).join('') : '';
       const canAttack = ui.columns.some(c => c.length) && !unplaced.length;
-      return `<div class="promptbar"><span class="who">${esc(s.players[b.attacker]!.name)}:</span> ${what}
+      return `<div class="promptbar"><span class="who">${esc(s.players[b.attacker]!.name)}:</span> ${barMsg(what)}
         <button data-btn="attackall" title="one unit per column — adjust before confirming">${txtIcon('battle', '[battle]')} Attack with everything</button>${shapes}
         <button class="primary" data-btn="confirmattack" ${canAttack ? '' : 'disabled'}${unplaced.length ? ' title="place every sent unit first"' : ''}>Attack! <span class="kh">(enter)</span></button>
         ${pool ? '' : '<button data-btn="skipattack">Don\'t attack</button>'}
@@ -6801,12 +6811,12 @@ function phaseBarHtml(err: string): string {
       const rest = sendableRest(s, b.defender, [...ui.columns.flat(), ...ui.send]);
       return `<div class="promptbar${duty || ui.blockRefusal ? ' pending' : ''}"><span class="who">${esc(s.players[b.defender]!.name)}:</span>
         ${blockRefusalHtml()}${duty
-          ? `<b class="duty">${esc(duty)}</b> — that block is compulsory.`
+          ? barMsg(`<b class="duty">${esc(duty)}</b> — that block is compulsory.`)
           : placeWarnCache.size
             ? placeWarnLineHtml()
           : nothingToBlock
             ? `no attackers left to block${b.round === 1 ? ' — you may still send counterattackers' : ''}`
-            : `assign blockers (${clickOrTap()} unit, then slot)${b.round === 1 ? ' and optionally send counterattackers' : ''}`}
+            : barMsg(`choose your blockers — ${clickOrTap()} one of your units, then a front or back space${b.round === 1 ? '; you may also send units to counterattack' : ''}`)}
         ${rest.length ? `<button data-btn="sendrest" title="adjust before confirming">${txtIcon('battle', '[battle]')} Counterattack with the rest</button>` : ''}
         <button class="primary" data-btn="confirmblocks" ${duty ? 'disabled' : ''}>${mainBtnLabel(b.defender, 'enter')}</button>
         ${built ? '<button data-btn="clearform" title="empty the blocks/send being built">✕ Clear <span class="kh">(esc)</span></button>' : ''}${err}</div>`;

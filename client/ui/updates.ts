@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-10', kind: 'fix', text: 'The bar telling you what to do no longer breaks its sentence into gappy pieces. Blocking now reads "choose your blockers — click one of your units, then a front or back space".' },
   { date: '2026-11-10', kind: 'change', text: 'The phase bar above your hand now names the current phase, and the box slides along when the phase changes, so you can see where the turn is at a glance.' },
   { date: '2026-11-10', kind: 'fix', text: "The Discord bot and the in-game card lookup now find a renamed card by its old name as well as its new one, like the site's search does." },
   { date: '2026-11-10', kind: 'change', text: "Caleb's latest card changes are in: Shib is 5/4, Haunting Memories erases itself and Void Mandible is no longer a mod." },

@@ -145,7 +145,7 @@ test('CT-297 an emptied attack draws no block slot, says so, and still offers th
   for (const layout of ['regions'] as const) {
     let html = ui.join(h.state, D, legalActions(h.state, D));
     assert.match(bar(html), /no attackers left to block — you may still send counterattackers/, `${layout}: the bar says so`);
-    assert.doesNotMatch(bar(html), /assign blockers/, `${layout}: no block wording`);
+    assert.doesNotMatch(bar(html), /choose your blockers/, `${layout}: no block wording`);
     ui.click({ act: 'unit', id: String(d1) });
     html = ui.html();
     assert.doesNotMatch(html, /data-act="slot"/, `${layout}: no slot to block in, not even to the side`);
