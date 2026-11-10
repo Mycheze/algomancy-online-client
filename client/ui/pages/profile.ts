@@ -538,7 +538,7 @@ function gamesTab(me: Me): string {
     <div class="pfsurface pfscroll" data-scroll="acct-games">
       <table class="pftable pfgames"><thead><tr>
         <th>Result</th><th>Opponent</th><th>Format</th><th>Elements</th>
-        <th class="pfnum">Turns</th><th class="pfnum" title="your life – theirs, at the end">Life</th><th>Played</th><th></th>
+        <th class="pfnum">Turns</th><th class="pfnum" title="your life – theirs, at the end">Life</th><th>Played</th><th><span class="srname">Replay</span></th>
       </tr></thead><tbody>${gameRowsHtml(me.history)}</tbody></table>
     </div>
   </div>`;
@@ -603,7 +603,7 @@ function boardHtml(v: ProfileView): string {
         + button({ label: 'Try again', dataBtn: 'acct-ladder-mode', attrs: { 'data-mode': 'all' } });
     }
     if (!v.leaders) return '<p class="pfnone">Loading…</p>';
-    return `<table class="pftable pfboard"><thead><tr><th>Player</th><th class="pfnum">Games</th><th class="pfnum">Record</th><th class="pfnum" title="achievements earned">Badges</th><th></th></tr></thead>
+    return `<table class="pftable pfboard"><thead><tr><th>Player</th><th class="pfnum">Games</th><th class="pfnum">Record</th><th class="pfnum" title="achievements earned">Badges</th><th><span class="srname">Add friend</span></th></tr></thead>
       <tbody>${v.leaders.map(l => `<tr${l.id === me.id ? ' class="myrow"' : ''}><td>${who(l)}</td>
         <td class="pfnum">${l.games}</td><td class="pfnum">${l.wins}–${l.losses}</td><td class="pfnum">${l.earned}</td><td class="pfact">${addCell(l)}</td></tr>`).join('')}</tbody></table>`;
   }
@@ -623,7 +623,7 @@ function boardHtml(v: ProfileView): string {
       : `<p class="pfyou"><b>You: #${you.rank} of ${ladder.rated}, ${you.rating}.</b> ${
         ladder.publicAfter - you.ratedGames} more rated game${ladder.publicAfter - you.ratedGames === 1 ? '' : 's'} and you are on the board.</p>`;
   const rows = ladder.players.length
-    ? `<table class="pftable pfboard"><thead><tr><th class="pfnum">#</th><th>Player</th><th class="pfnum">Rating</th><th class="pfnum">Rated</th><th class="pfnum">Record</th><th></th></tr></thead>
+    ? `<table class="pftable pfboard"><thead><tr><th class="pfnum">#</th><th>Player</th><th class="pfnum">Rating</th><th class="pfnum">Rated</th><th class="pfnum">Record</th><th><span class="srname">Add friend</span></th></tr></thead>
       <tbody>${ladder.players.map((l, i) => `<tr${l.id === you?.id ? ' class="myrow"' : ''}>
         <td class="pfnum pfrank">${i + 1}</td><td>${who(l)}</td><td class="pfnum"><b class="pfrating">${l.rating}</b></td>
         <td class="pfnum">${l.ratedGames}</td><td class="pfnum">${l.wins}–${l.losses}</td><td class="pfact">${addCell(l)}</td></tr>`).join('')}</tbody></table>`

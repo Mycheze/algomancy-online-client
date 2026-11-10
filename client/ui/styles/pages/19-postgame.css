@@ -32,7 +32,7 @@
 }
 
 .pghead { text-align: center; }
-.pgtitle { font-size: 30px; font-weight: 700; letter-spacing: .02em; line-height: 1.1; }
+.pgtitle { margin: 0; font-size: 30px; font-weight: 700; letter-spacing: .02em; line-height: 1.1; }
 .pgbox.won .pgtitle { color: var(--glow); }
 .pgbox.lost .pgtitle { color: var(--text); }
 .pgsub { color: var(--dim); font-size: var(--text-12); margin-top: var(--space-3);
@@ -42,16 +42,16 @@
    the two players' figures sit next to each other and can be compared at a
    glance, which is the only reason to put them on one screen. */
 .pgtable { width: 100%; border-collapse: collapse; font-size: var(--text-13); }
-.pgtable th { padding: var(--space-2) var(--space-4) var(--space-4); font-size: var(--text-13); color: var(--text); font-weight: 700; }
-.pgtable th:first-child { text-align: right; }
-.pgtable th:last-child { text-align: left; }
+.pgtable thead th { padding: var(--space-2) var(--space-4) var(--space-4); font-size: var(--text-13); color: var(--text); font-weight: 700; }
+.pgtable thead th:first-child { text-align: right; }
+.pgtable thead th:last-child { text-align: left; }
 .pgtable th.pgwin { color: var(--glow); }
-.pgtable td { padding: var(--space-1) var(--space-4); border-top: 1px dotted var(--line); }
+.pgtable tbody :is(td, th) { padding: var(--space-1) var(--space-4); border-top: 1px dotted var(--line); }
 .pgnum { width: 34%; font-variant-numeric: tabular-nums; color: var(--dim); }
 .pgnum:first-child { text-align: right; }
 .pgnum:last-child { text-align: left; }
 .pgnum.lead { color: var(--text); font-weight: 700; }
-.pglabel { text-align: center; color: var(--dim); font-size: var(--text-11);
+.pglabel { text-align: center; color: var(--dim); font-weight: 400; font-size: var(--text-11);
   text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
 .pgel:first-child, .pgcard:first-child { text-align: right; }
 .pgel:last-child, .pgcard:last-child { text-align: left; }

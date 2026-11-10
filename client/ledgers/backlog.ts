@@ -594,7 +594,20 @@ const OPEN: Entry[] = [
       + 'them in place), a place in a list aria-current (the rules reader\'s and review\'s contents). An excluded facet '
       + 'chip is also named "Hiding <label>". Nothing moved on screen. Guarded by the census '
       + '1207-chosen-buttons-say-so.test.ts (stories rendered + ui/pages/components source). Left: §18.23\'s roles '
-      + '(role="radio"/radiogroup and arrow keys) — aria-pressed is what the segmented component already uses.',
+      + '(role="radio"/radiogroup and arrow keys) — aria-pressed is what the segmented component already uses.\n\n'
+      + '2026-11-10 (steward): a table\'s headers and the post-game\'s title say what they are (docs/23-ui-inventory/05 '
+      + '§18.26: "post-game title is a `<div>`, not a heading; stat table has an empty `<th>`; `<em>` with '
+      + '`font-style:normal` as a blurb"). The empty header was a class of nine columns: the post-game\'s middle column, '
+      + 'the profile\'s Replay column and both Add friend columns, card stats\' win-rate bar and colour-pair corner, the '
+      + 'board\'s resource window corner (ressum.ts), and through table()\'s `label: \'\'` the deck sheet\'s replay '
+      + 'links and a closed challenge\'s Try / Watch buttons. Each holds a name drawn nowhere: `.srname` (base.css, '
+      + 'not under :where so the board gets it), and table() columns take `spokenLabel`. The post-game title is an '
+      + '<h2> (margin 0), its stat labels are <th scope="row"> (19-postgame.css keeps the head\'s bold and padding on '
+      + 'thead, the rows\' dotted line on tbody th too), and the lobby\'s method blurb is span.lobbyblurb. Nothing '
+      + 'moved on screen. Guarded by the census 1208-table-headers-and-headings-say-what-they-are.test.ts (stories '
+      + 'rendered + ui/pages/components source, and every label-less table() column headless or spoken). Left: '
+      + '§18.26\'s seat dots (an empty <i>, silent, the words beside it carry the state) and <b class="lockedin">; '
+      + '§18.22 (dialog roles, focus trap) is the next accessibility pass.',
   },
   {
     id: 'BL-17',

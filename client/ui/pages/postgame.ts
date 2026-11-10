@@ -93,7 +93,7 @@ function statTableHtml(o: GameOver): string {
       const lead = r.better === 'high' && a !== b ? (a > b ? 'me' : 'opp') : '';
       return `<tr>
         <td class="pgnum ${lead === 'me' ? 'lead' : ''}">${a.toLocaleString()}</td>
-        <td class="pglabel">${esc(r.label)}</td>
+        <th scope="row" class="pglabel">${esc(r.label)}</th>
         <td class="pgnum ${lead === 'opp' ? 'lead' : ''}">${b.toLocaleString()}</td>
       </tr>`;
     }).join('');
@@ -109,15 +109,15 @@ function statTableHtml(o: GameOver): string {
 
   return `<table class="pgtable">
     <thead><tr>
-      <th class="${o.winner === me ? 'pgwin' : ''}">${esc(o.names[me] ?? 'You')}</th>
-      <th></th>
-      <th class="${o.winner === opp ? 'pgwin' : ''}">${esc(o.names[opp] ?? 'Opponent')}</th>
+      <th scope="col" class="${o.winner === me ? 'pgwin' : ''}">${esc(o.names[me] ?? 'You')}</th>
+      <th scope="col"><span class="srname">Stat</span></th>
+      <th scope="col" class="${o.winner === opp ? 'pgwin' : ''}">${esc(o.names[opp] ?? 'Opponent')}</th>
     </tr></thead>
     <tbody>
       ${rows}
-      <tr><td class="pgel">${el(o.seats[me])}</td><td class="pglabel">leaned on</td>
+      <tr><td class="pgel">${el(o.seats[me])}</td><th scope="row" class="pglabel">leaned on</th>
         <td class="pgel">${el(o.seats[opp])}</td></tr>
-      <tr><td class="pgcard">${topCard(o.seats[me])}</td><td class="pglabel">most played</td>
+      <tr><td class="pgcard">${topCard(o.seats[me])}</td><th scope="row" class="pglabel">most played</th>
         <td class="pgcard">${topCard(o.seats[opp])}</td></tr>
     </tbody>
   </table>`;
@@ -243,7 +243,7 @@ export function postGameHtml(v: PostGameView): string {
 
   return `<div class="overlay pgover"><div class="pgbox ${drew ? '' : won ? 'won' : 'lost'}">
     <div class="pghead">
-      <div class="pgtitle">${title}</div>
+      <h2 class="pgtitle">${title}</h2>
       <div class="pgsub">${sub}${v.elements !== null ? ` · ${v.elements}` : ''}</div>
     </div>
 

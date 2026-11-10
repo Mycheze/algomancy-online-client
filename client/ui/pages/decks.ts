@@ -420,7 +420,7 @@ function gamesBody(s: Extract<DecksSheet, { kind: 'games' }>): string {
     columns: [
       { key: 'result', label: 'Result' }, { key: 'opponent', label: 'Opponent' },
       { key: 'turns', label: 'Turns', align: 'right' }, { key: 'life', label: 'Life', align: 'right' },
-      { key: 'played', label: 'Played' }, { key: 'room', label: '' },
+      { key: 'played', label: 'Played' }, { key: 'room', label: '', spokenLabel: 'Replay' },
     ],
     rows: s.rows.map(g => ({
       className: `res-${g.result}`,

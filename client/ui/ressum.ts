@@ -58,7 +58,7 @@ export function resSumHtml(s: ResourceSummary): string {
   // board round 8 (owner, 2026-10-27): no "N mana open" head — the info line
   // the window opens beside already says it, and the activations with it
   if (!s.rows.length) return `<div class="rsfoot">No resources yet.</div>`;
-  return `<table class="rstab"><thead><tr><th></th><th>open</th><th>expended</th><th>dormant</th><th>affinity</th></tr></thead>
+  return `<table class="rstab"><thead><tr><th><span class="srname">resource</span></th><th>open</th><th>expended</th><th>dormant</th><th>affinity</th></tr></thead>
     <tbody>${s.rows.map(rowHtml).join('')}</tbody></table>${
     s.anyDormant ? '<div class="rsfoot">Dormant: no mana or affinity until activated in planning.</div>' : ''}`;
 }

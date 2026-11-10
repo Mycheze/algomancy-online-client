@@ -105,7 +105,7 @@ function methodPickerHtml(lobby: TrioLobby, iAmLocked: boolean): string {
   return `<div class="lobbymethods">
     ${lobby.methods.map(m => `<button class="lobbymethod ${m.id === lobby.method ? 'on' : ''}" aria-pressed="${m.id === lobby.method}"
       data-btn="lobby-method" data-method="${esc(m.id)}" ${iAmLocked ? 'disabled' : ''}>
-      <b>${esc(m.label)}</b><em>${esc(m.blurb)}</em></button>`).join('')}
+      <b>${esc(m.label)}</b><span class="lobbyblurb">${esc(m.blurb)}</span></button>`).join('')}
   </div>`;
 }
 

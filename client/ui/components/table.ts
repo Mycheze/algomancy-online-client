@@ -15,7 +15,8 @@
  * `headless` leaves the header row out: a list of rows whose meaning the
  * panel's title already gives (most of the league's tables). A column's
  * `title` is a tooltip on its header (the league's OMW, the challenge's
- * Turns), and its `headClassName` a class on the header cell alone. */
+ * Turns), and its `headClassName` a class on the header cell alone. A
+ * column whose header shows no words (`label: ''`) gives a `spokenLabel`. */
 import { type Attrs, type Common, attrsHtml, classes, esc, rootAttrs } from './_shared.ts';
 
 export type TableCell = string | number | null | undefined | { html: string };
@@ -30,6 +31,10 @@ export interface TableColumn {
   headClassName?: string;
   /** a tooltip on the header cell */
   title?: string;
+  /** the header's name for a screen reader alone, when `label` is '' (a
+   * column of buttons or links): drawn nowhere, so a header with no words on
+   * screen still says what the column is (BL-10, test 1208) */
+  spokenLabel?: string;
 }
 
 export interface TableRow {
@@ -58,7 +63,8 @@ const alignClass = (a: TableColumn['align']): string | undefined =>
 
 export function table(p: TableProps): string {
   const head = p.columns.map(c =>
-    `<th${attrsHtml({ class: classes(alignClass(c.align), c.className, c.headClassName) || undefined, scope: 'col', title: c.title })}>${esc(c.label)}</th>`).join('');
+    `<th${attrsHtml({ class: classes(alignClass(c.align), c.className, c.headClassName) || undefined, scope: 'col', title: c.title })}>${
+      c.label || !c.spokenLabel ? esc(c.label) : `<span class="srname">${esc(c.spokenLabel)}</span>`}</th>`).join('');
   const body = p.rows.length === 0 && p.emptyText !== undefined
     ? `<tr><td class="ui-table__empty" colspan="${p.columns.length}">${esc(p.emptyText)}</td></tr>`
     : p.rows.map(r => `<tr${attrsHtml({ class: r.className, ...r.attrs })}>${p.columns.map(c =>

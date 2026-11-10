@@ -333,7 +333,7 @@ function elementsHtml(v: CardStatsView): string {
       played (draft) or brought (constructed). Both draft players share one trio, so the trio itself
       always wins half its games; what differs is which part of it each player leaned on.</p>
     <div class="cstablewrap cselementswrap"><table class="cstable cselements">
-      <thead><tr><th>Element</th><th class="csnum">Win rate</th><th></th><th class="csnum">Picked</th><th class="csnum">Played</th></tr></thead>
+      <thead><tr><th>Element</th><th class="csnum">Win rate</th><th><span class="srname">Win rate against 50%</span></th><th class="csnum">Picked</th><th class="csnum">Played</th></tr></thead>
       <tbody>${sorted.map(e => `<tr>
         <td><span class="acctel ${e.el}">${elIcon(e.el)}${e.el}</span></td>
         ${wrCell(e.seat)}
@@ -345,7 +345,7 @@ function elementsHtml(v: CardStatsView): string {
     <h3>Colour pairs</h3>
     <p class="hint">Each cell is the win rate of players whose colours were that pair (the diagonal: one colour only), with the number of games under it.</p>
     <div class="cspairwrap"><table class="cspairs">
-      <thead><tr><th></th>${ELEMENTS.map(e => `<th title="${e}">${elIcon(e, e)}</th>`).join('')}</tr></thead>
+      <thead><tr><th><span class="srname">Colours</span></th>${ELEMENTS.map(e => `<th title="${e}">${elIcon(e, e)}</th>`).join('')}</tr></thead>
       <tbody>${ELEMENTS.map((a, i) => `<tr><th title="${a}">${elIcon(a, a)}</th>${ELEMENTS.map((b, j) => {
         if (j < i) return '<td class="csblank"></td>';
         const w = pair(a, b);

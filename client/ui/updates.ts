@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-10', kind: 'fix', text: 'With a screen reader, the end-of-game screen now announces who won as a heading, and reads each number with what it counts, like "life left". Table columns that showed no heading, such as the profile\'s replays, now have a spoken one.' },
   { date: '2026-11-10', kind: 'fix', text: 'With a screen reader, buttons that light up when chosen now say so: the draft room\'s methods and elements, Ranked or Open, the element filters, the clock, the table\'s option switches. Before, each was read out only as "button".' },
   { date: '2026-11-10', kind: 'fix', text: 'With a screen reader, the buttons drawn as a symbol now say what they do: the replay\'s play and step buttons, the table\'s undo, judge and report, every close ✕ and the bell. Before, they were read out as the symbol.' },
   { date: '2026-11-10', kind: 'fix', text: 'With a screen reader, every text box and menu now says what it is for: the room link, your deck, each search box, the username and password boxes, the report box. Before, many were read out only as "edit text".' },

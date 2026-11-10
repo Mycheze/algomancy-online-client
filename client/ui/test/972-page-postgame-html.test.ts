@@ -50,9 +50,9 @@ test('972 §0 positive control: there is no DOM here', () => {
 test('972 §1 a win, a loss, a draw', () => {
   const won = postGameHtml(view());
   assert.match(won, /<div class="pgbox won">/);
-  assert.match(won, /<div class="pgtitle">You win!<\/div>/);
+  assert.match(won, /<h2 class="pgtitle">You win!<\/h2>/);
   assert.match(won, /live draft · 7 turns · <!--SLOT:elements-->/);
-  assert.match(won, /<td class="pgnum lead">12<\/td>\s*<td class="pglabel">life left<\/td>/);
+  assert.match(won, /<td class="pgnum lead">12<\/td>\s*<th scope="row" class="pglabel">life left<\/th>/);
   assert.match(won, /<td class="pgnum lead">7<\/td>/, 'Bo played more units');
   assert.doesNotMatch(won, /spells played/, 'a 0–0 row is dropped');
   assert.match(won, /<span class="acctel fire">fire<\/span>/);
