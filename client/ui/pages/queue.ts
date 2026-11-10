@@ -29,11 +29,20 @@ export interface QueueStripView {
   counts: QueueCounts | null;
   /** BL-42: the games on offer right now, newest last */
   openGames: readonly OpenGame[];
+  /** the counts poll has gone unanswered (ui/queue.ts UNREACHABLE_AFTER) */
+  unreachable?: boolean;
 }
 
+/* ⚠ UNREACHABLE HIDES WHAT THE SERVER SAID LAST. Before 2026-11-10 a server
+ * that stopped answering left the strip on its last count, lit, with the open
+ * games' Join buttons, for as long as it stayed down (or on "checking…" for
+ * ever if it never answered). The number was a guess about now and the
+ * buttons could not work, so the view drops both and the line says so. */
 export function queueStripView(): QueueStripView {
   const s = queueSnapshot();
-  return { counts: s.counts, openGames: s.openGames };
+  return s.unreachable
+    ? { counts: null, openGames: [], unreachable: true }
+    : { counts: s.counts, openGames: s.openGames };
 }
 
 /**
@@ -49,7 +58,7 @@ export function queueStripHtml(v: QueueStripView): string {
   return `<div class="queuestrip">
     <div class="qstripmain">
       <span class="qstriptitle"><img class="txticon" src="${ICON_BASE}battle.webp" alt="⚔" onerror="this.outerHTML=this.alt"> Matchmaking</span>
-      <span class="qstripcount${counts && counts.total > 0 ? ' live' : ''}">${esc(countsSummary(counts))}</span>
+      <span class="qstripcount${counts && counts.total > 0 ? ' live' : ''}">${esc(countsSummary(counts, v.unreachable))}</span>
     </div>
     <button class="cta primary qstripgo" data-btn="queue-open">Find a game</button>
     ${openListHtml(v.openGames)}
@@ -69,7 +78,7 @@ export function queueGlanceHtml(v: QueueStripView): string {
     return `<li class="${n > 0 ? 'live' : ''}">${esc(MODE_LABEL[m])}${n > 0 ? ` <b>${n}</b>` : ''}</li>`;
   }).join('')}</ul>`;
   return `<div class="qglance">
-    <span class="qglcount${counts && counts.total > 0 ? ' live' : ''}">${esc(countsSummary(counts))}</span>
+    <span class="qglcount${counts && counts.total > 0 ? ' live' : ''}">${esc(countsSummary(counts, v.unreachable))}</span>
     ${v.openGames.length ? openListHtml(v.openGames) : modes}
   </div>`;
 }
@@ -102,6 +111,8 @@ function openListHtml(openGames: readonly OpenGame[]): string {
 
 export interface QueueView {
   counts: QueueCounts | null;
+  /** the counts poll has gone unanswered: `counts` is not drawn */
+  unreachable?: boolean;
   /** a refusal or a lost connection, or '' */
   error: string;
   pickMode: QueueMode;
@@ -124,7 +135,8 @@ export interface QueueView {
 export function queueView(): QueueView {
   const s = queueSnapshot();
   return {
-    counts: s.counts,
+    counts: s.unreachable ? null : s.counts,
+    unreachable: s.unreachable,
     error: s.error,
     pickMode: s.pickMode,
     pickRanked: s.pickRanked,
@@ -149,7 +161,7 @@ export function queueHtml(v: QueueView): string {
     back: { dataBtn: 'queue-home', label: 'Home' },
     chrome: v.chrome,
     mainHtml: `<section class="queuepanel" aria-label="Find a game">
-      <div class="qcounts">${esc(countsSummary(v.counts))}</div>
+      <div class="qcounts">${esc(countsSummary(v.counts, v.unreachable))}</div>
       ${v.error ? statusMessage({ tone: 'error', text: v.error }) : ''}
       ${body}
     </section>`,

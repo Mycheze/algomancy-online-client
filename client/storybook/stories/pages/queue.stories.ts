@@ -68,3 +68,7 @@ export const HomeGlanceEmpty = {
   name: 'Home card glance, nobody waiting',
   render: () => card(queueGlanceHtml({ counts: { total: 0, byMode: { constructed: 0, draft: 0 } }, openGames: [] })),
 };
+export const HomeGlanceUnreachable = {
+  name: 'Home card glance, the server not answering',
+  render: () => card(queueGlanceHtml({ counts: null, openGames: [], unreachable: true })),
+};

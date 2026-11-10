@@ -115,7 +115,10 @@ export function waitLabel(ms: number): string {
  * count is still exact when there is one — this is a wording rule, not a
  * rounding one.
  */
-export function countsSummary(counts: QueueCounts | null): string {
+export function countsSummary(counts: QueueCounts | null, unreachable = false): string {
+  // before `counts`: a number we had before the server went quiet is a guess
+  // about now, and the strip used to show it for as long as it stayed quiet
+  if (unreachable) return UNREACHABLE_LINE;
   if (!counts) return 'checking…';
   if (counts.total === 0) return 'nobody waiting — be the first';
   const parts = MODES
@@ -123,6 +126,9 @@ export function countsSummary(counts: QueueCounts | null): string {
     .map(m => `${MODE_LABEL[m]} ${counts.byMode[m]}`);
   return `${counts.total} waiting · ${parts.join(' · ')}`;
 }
+
+/** What the counter says once the poll has gone unanswered (pollMisses). */
+export const UNREACHABLE_LINE = 'could not reach the server — trying again…';
 
 /** Why this player cannot queue for this format yet, or null if they can. */
 export function queueBlocker(
@@ -159,6 +165,9 @@ let offer: MatchOffer | null = null;
 let error = '';
 let ws: WebSocket | null = null;
 let pollTimer = 0;
+/** counts polls in a row that got no answer (offline, a 502 while the
+ * server restarts); see UNREACHABLE_AFTER */
+let pollMisses = 0;
 let tickTimer = 0;
 /** when the current offer was received, so the countdown is local and smooth */
 let offerAt = 0;
@@ -182,6 +191,10 @@ export const screen = (): 'queue' | null => (open ? 'queue' : null);
 // ── the counts poll ───────────────────────────────────────────────────
 
 const POLL_MS = 5000;
+/** Two unanswered polls in a row (~10s) and the counter says it cannot reach
+ * the server, rather than one blip flipping the line for five seconds. */
+const UNREACHABLE_AFTER = 2;
+const unreachable = (): boolean => pollMisses >= UNREACHABLE_AFTER;
 
 /**
  * Keep the home screen's counter fresh.
@@ -197,13 +210,24 @@ export function startCountsPoll(): void {
     fetch('/api/queue')
       .then(r => r.json())
       .then((r: { ok?: boolean; counts?: QueueCounts; open?: OpenGame[] }) => {
-        if (!r.counts) return;
-        const before = JSON.stringify([counts, openGames]);
+        if (!r.counts) { missed(); return; }
+        const before = JSON.stringify([counts, openGames, unreachable()]);
         counts = r.counts;
         openGames = r.open ?? [];
-        if (JSON.stringify([counts, openGames]) !== before) deps?.rerender();
+        pollMisses = 0;
+        if (JSON.stringify([counts, openGames, unreachable()]) !== before) deps?.rerender();
       })
-      .catch(() => { /* offline: keep the last number rather than blanking it */ });
+      // offline, or a page that is not JSON (Caddy's 502 while the server
+      // restarts). The last number and the open games stay in memory, but
+      // once UNREACHABLE_AFTER polls have missed, the snapshot stops showing
+      // them: they were frozen at the moment the server went quiet, and their
+      // Join buttons could not work (S16, docs/23-ui-inventory/01 §4).
+      .catch(missed);
+  };
+  const missed = (): void => {
+    const was = unreachable();
+    pollMisses++;
+    if (unreachable() !== was) deps?.rerender();
   };
   tick();
   pollTimer = window.setInterval(tick, POLL_MS);
@@ -271,7 +295,7 @@ function onMsg(m: Record<string, unknown>): void {
     return;
   }
 
-  if (m['counts']) counts = m['counts'] as QueueCounts;
+  if (m['counts']) { counts = m['counts'] as QueueCounts; pollMisses = 0; }
   searching = (m['searching'] as Searching | null) ?? null;
   const next = (m['offer'] as MatchOffer | null) ?? null;
   if (next && !offer) {
@@ -435,6 +459,9 @@ function leave(): void {
 export interface QueueSnapshot {
   counts: QueueCounts | null;
   openGames: readonly OpenGame[];
+  /** the counts poll has gone unanswered UNREACHABLE_AFTER times in a row:
+   * `counts` and `openGames` are what the server said before it went quiet */
+  unreachable: boolean;
   searching: Searching | null;
   offer: MatchOffer | null;
   /** whole seconds left on the offer (see offerSecondsLeft), or 0 */
@@ -453,7 +480,7 @@ export function queueSnapshot(): QueueSnapshot {
   const signedIn = !!deps?.token();
   const deck = deps?.chosenDeck() ?? null;
   return {
-    counts, openGames, searching, offer,
+    counts, openGames, unreachable: unreachable(), searching, offer,
     offerLeft: offer ? offerSecondsLeft(offer) : 0,
     error, pickMode, pickRanked, signedIn,
     blocker: queueBlocker(pickMode, signedIn, !!deck),

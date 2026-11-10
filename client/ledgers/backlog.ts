@@ -645,7 +645,18 @@ const OPEN: Entry[] = [
       + 'brings constructed\'s hidden bottom-2 back said "Draw step" (CR 503.1, the draw of 2 alone), now "Draw phase" '
       + 'like the panel and CR 901.5 (main.ts pickShowHtml). Left on purpose: "Leave" in a waiting room beside "Return to '
       + 'home" after a game (leaving a room is not going home), and "Opponent" as a column head or name vs "Your opponent" '
-      + 'in a sentence. Guarded by 1212-same-thing-same-words.test.ts.',
+      + 'in a sentence. Guarded by 1212-same-thing-same-words.test.ts.\n\n'
+      + '2026-11-10 (steward): the matchmaking counter says when the server stops answering (docs/23-ui-inventory/01 §4 '
+      + 'S16: "No \\"can\'t reach the server\\" state for the matchmaking strip: it keeps the last number, or \\"checking…\\" for '
+      + 'ever when offline"). ui/queue.ts\'s 5s poll swallowed every failure, so a server that went down left the home\'s '
+      + 'Matchmaking card on a lit "2 waiting" with the open games\' Join buttons. Two misses in a row (a thrown fetch, or '
+      + 'a reply that is not JSON or has no counts, as Caddy\'s 502 during a restart) set QueueSnapshot.unreachable; '
+      + 'queueStripView and queueView then drop the stale counts and open games, and the strip, the home glance and the '
+      + 'queue page\'s line read "could not reach the server — trying again…" (UNREACHABLE_LINE). The first answer, or a '
+      + 'socket push with counts, clears it. One repaint per flip, none while it stays down. Story "Home card glance, '
+      + 'the server not answering". Guarded by 1213-queue-counter-says-unreachable.test.ts (§2 drives the real poll '
+      + 'through a fake fetch). Left: S16\'s other lines (a silent reload after a deploy, league and challenge fetch '
+      + 'failures drawing nothing, an empty room code ignored). Reasoned, not looked at (no browser).',
   },
   {
     id: 'BL-17',
