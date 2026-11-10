@@ -103,7 +103,7 @@ function methodPickerHtml(lobby: TrioLobby, iAmLocked: boolean): string {
   // under the row, describing whichever method was selected — which meant
   // finding out what the other two did required selecting them.
   return `<div class="lobbymethods">
-    ${lobby.methods.map(m => `<button class="lobbymethod ${m.id === lobby.method ? 'on' : ''}"
+    ${lobby.methods.map(m => `<button class="lobbymethod ${m.id === lobby.method ? 'on' : ''}" aria-pressed="${m.id === lobby.method}"
       data-btn="lobby-method" data-method="${esc(m.id)}" ${iAmLocked ? 'disabled' : ''}>
       <b>${esc(m.label)}</b><em>${esc(m.blurb)}</em></button>`).join('')}
   </div>`;
@@ -111,7 +111,7 @@ function methodPickerHtml(lobby: TrioLobby, iAmLocked: boolean): string {
 
 function pickOneHtml(pick: string | null, iAmLocked: boolean): string {
   return `<div class="elrow lobbyels">${ELEMENTS.map(el =>
-    `<button class="elchip ${el} ${pick === el ? 'on' : ''}" data-btn="lobby-pick" data-el="${el}"
+    `<button class="elchip ${el} ${pick === el ? 'on' : ''}" aria-pressed="${pick === el}" data-btn="lobby-pick" data-el="${el}"
       ${iAmLocked ? 'disabled' : ''}>${icon(el)}${el}</button>`).join('')}</div>
   <p class="hint">${pick ? `You named <b>${esc(pick)}</b>. ` : 'Name one. '}Hidden until you are both locked in.</p>`;
 }
@@ -119,7 +119,7 @@ function pickOneHtml(pick: string | null, iAmLocked: boolean): string {
 function rankHtml(ranking: readonly string[], iAmLocked: boolean): string {
   const rest = ELEMENTS.filter(e => !ranking.includes(e));
   return `<div class="ranklist">
-    ${ranking.map((el, i) => `<button class="elchip ${el} on ranked" data-btn="lobby-unrank" data-el="${el}"
+    ${ranking.map((el, i) => `<button class="elchip ${el} on ranked" aria-pressed="true" data-btn="lobby-unrank" data-el="${el}"
       ${iAmLocked ? 'disabled' : ''} title="click to take it back out">
       <span class="ranknum">${i + 1}</span>${icon(el)}${el}</button>`).join('')}
     ${ranking.length ? '' : `<span class="hint">${clickOrTap()} them in order, most wanted first</span>`}

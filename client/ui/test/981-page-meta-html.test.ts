@@ -165,7 +165,7 @@ test('981 §4 the export panel, the stats and the pinned card', () => {
   const d = deck(1);
   const ex = metaHtml(view({ view: 'deck', one: d, exporting: 'file', exportText: '{"a":"<b>"}' }));
   assert.match(ex, /<div class="dkexport">/);
-  assert.match(ex, /class="dkkind on" data-btn="meta-export" data-format="file"/);
+  assert.match(ex, /class="dkkind on" aria-pressed="true" data-btn="meta-export" data-format="file"/);
   assert.match(ex, /\{&quot;a&quot;:&quot;&lt;b&gt;&quot;\}<\/textarea>/);
   for (const b of ['meta-copy-export', 'meta-export-close']) assert.ok(btns(ex).has(b));
   assert.match(metaHtml(view({ view: 'deck', one: d, statsOpen: true })), /<div class="acctbody deckbody metastats">/);

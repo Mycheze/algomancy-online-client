@@ -168,7 +168,7 @@ function pickerHtml(v: QueueView): string {
       : 'This deck is locked in — a matchmade game deals straight away.' })}
     ${pickMode === 'constructed' ? settingRow({ label: 'Deck', controlHtml: `<div class="qdeck">${v.deckPicker}</div>` }) : ''}
     ${settingRow({ label: 'Who you play', controlHtml: `<div class="qranked">
-      ${[true, false].map(r => `<button class="qopt${r === pickRanked ? ' on' : ''}" data-btn="queue-ranked" data-ranked="${r}">
+      ${[true, false].map(r => `<button class="qopt${r === pickRanked ? ' on' : ''}" aria-pressed="${r === pickRanked}" data-btn="queue-ranked" data-ranked="${r}">
         <b>${r ? 'Ranked' : 'Whoever’s open'}</b>
         <span class="hint">${r
           ? `near your rating${rating === null ? '' : ` · ${rating}`} — the search widens the longer you wait`

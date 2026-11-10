@@ -221,14 +221,14 @@ function tableHtml(v: CardStatsView): string {
   const cs = colsFor(v.mode);
   const csg = v.data?.constructedSeatGames ?? 0;
   const head = cs.map(c =>
-    `<th class="csnum"><button class="cssort${v.sortKey === c.key ? ' on' : ''}" data-btn="meta-cs-sort" data-v="${c.key}" title="${esc(c.tip)}">${c.label}${
+    `<th class="csnum"><button class="cssort${v.sortKey === c.key ? ' on' : ''}" aria-pressed="${v.sortKey === c.key}" data-btn="meta-cs-sort" data-v="${c.key}" title="${esc(c.tip)}">${c.label}${
       v.sortKey === c.key ? (v.sortDir < 0 ? ' ▾' : ' ▴') : ''}</button></th>`).join('');
   return `
     <div class="framebar">
       <input id="meta-cs-q" class="dksearch" aria-label="Find a card" spellcheck="false" placeholder="find a card" value="${esc(v.text)}">
       ${seg('Kind', 'meta-cs-kind', v.kind, [['all', 'all'], ['unit', 'units'], ['spell', 'spells']])}
       <div class="dkfilters">
-        ${ELEMENTS.map(el => `<button class="elchip ${el}${v.els.includes(el) ? ' on' : ''}" data-btn="meta-cs-el" data-v="${el}">${elIcon(el)}${el}</button>`).join('')}
+        ${ELEMENTS.map(el => `<button class="elchip ${el}${v.els.includes(el) ? ' on' : ''}" aria-pressed="${v.els.includes(el)}" data-btn="meta-cs-el" data-v="${el}">${elIcon(el)}${el}</button>`).join('')}
         ${v.els.length || v.text || v.kind !== 'all' || v.minGames > 1 ? '<button data-btn="meta-cs-clear">Clear</button>' : ''}
       </div>
       <span class="framespacer"></span>

@@ -325,9 +325,9 @@ function reportsHtml(reports: ReportRow[], over: Overview | null, unmarkedOnly: 
       <td>${statusChip(r)}</td>
       <td class="adminacts">
         ${button({ label: '👍', variant: 'icon', className: r.mark === 'real' ? 'on' : undefined, dataBtn: 'admin-mark',
-    title: 'real, worth doing', attrs: { 'data-ts': r.ts, 'data-mark': 'real' } })}
+    title: 'real, worth doing', attrs: { 'data-ts': r.ts, 'data-mark': 'real', 'aria-pressed': String(r.mark === 'real') } })}
         ${button({ label: '👎', variant: 'icon', className: r.mark === 'not' ? 'on' : undefined, dataBtn: 'admin-mark',
-    title: 'not a bug / won\'t do', attrs: { 'data-ts': r.ts, 'data-mark': 'not' } })}
+    title: 'not a bug / won\'t do', attrs: { 'data-ts': r.ts, 'data-mark': 'not', 'aria-pressed': String(r.mark === 'not') } })}
         ${r.mark ? button({ label: '✕', variant: 'icon', dataBtn: 'admin-mark', title: `clear — set by ${r.markedBy ?? ''}`,
     attrs: { 'data-ts': r.ts, 'data-mark': '' } }) : ''}
       </td>

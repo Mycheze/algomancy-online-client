@@ -314,7 +314,7 @@ function pastHtml(d: ChallengeReply, v: ChallengePageView): string {
         count in columns wrapped word by word */ ''}<ul class="chpast">${d.past.map(c => `<li class="chpastrow${pastOpen === c.id ? ' on' : ''}">
       <div class="chpasttext"><b>${esc(c.title)}</b> <span class="dim">${esc(goalText(c.goal))}</span>
         <div class="dim chpastmeta">${esc(c.week)} · ${c.entrants} entrant${c.entrants === 1 ? '' : 's'}</div></div>
-      <div class="chrowbtns"><button class="${pastOpen === c.id ? 'on' : ''}" data-btn="ch-past" data-id="${esc(c.id)}">Leaderboard</button>
+      <div class="chrowbtns"><button class="${pastOpen === c.id ? 'on' : ''}" aria-expanded="${pastOpen === c.id}" data-btn="ch-past" data-id="${esc(c.id)}">Leaderboard</button>
         <button data-btn="ch-build" data-id="${esc(c.id)}">Build</button></div>
     </li>`).join('')}</ul>
   ` })}`;

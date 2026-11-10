@@ -30,7 +30,7 @@ test('987 §1 nothing saved: Start, the elements with the picked one on, every l
   assert.match(html, /class="ui-button ui-button--primary learngobtn" type="button" data-lmenu="start">Start the water game</);
   assert.doesNotMatch(html, /data-lmenu="continue"/);
   assert.equal([...html.matchAll(/class="learnel /g)].length, LEARN_ELEMENTS.length);
-  assert.match(html, /class="learnel el-water on" data-lmenu="el" data-el="water"/);
+  assert.match(html, /class="learnel el-water on" aria-pressed="true" data-lmenu="el" data-el="water"/);
   assert.equal([...html.matchAll(/data-lmenu="read"/g)].length, ALL_LESSONS.length);
 });
 

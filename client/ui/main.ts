@@ -6101,7 +6101,7 @@ function bigCardMenuHtml(dec: Decision, btn: string): string | null {
     <input id="dec-search" type="text" aria-label="Search the card pool" autocomplete="off" spellcheck="false"
       placeholder="search — name, t:unit, e:fire, m&lt;=3, o:&quot;draw a card&quot;"
       value="${esc(q)}">
-    <button data-btn="decsearchall" class="${all ? 'on' : ''}"
+    <button data-btn="decsearchall" class="${all ? 'on' : ''}" aria-pressed="${all}"
       title="the default is what is standing on the board; this offers the whole pool without typing">${
         all ? '☑' : '☐'} whole pool</button>
     <span class="hint">${esc(note)}${over > 0 ? ` · showing the first ${DEC_MENU_SHOW}` : ''}</span>
@@ -7027,7 +7027,7 @@ function logPanelHtml(): string {
   if (tail >= 0) logRows[tail] = logRows[tail]!.replace('<div class="', '<div class="logtail ');
   return `<div class="logpanel" id="log">
         <h3>Game log
-          <button class="logmode${verboseLog ? ' on' : ''}" data-btn="logmode"
+          <button class="logmode${verboseLog ? ' on' : ''}" aria-pressed="${verboseLog}" data-btn="logmode"
             title="${verboseLog
               ? 'showing every line the engine printed, with the plumbing dimmed'
               : 'the game talking to itself is folded away — nothing is deleted, and every line is one click from here'
@@ -7576,14 +7576,14 @@ function toolbarHtml(o: { canUndo: boolean; autoPref: boolean; bluffPref: boolea
       <div class="setgroup tbpop${settingsOpen ? ' open' : ''}">
         <button type="button" data-chip="fullcontrol" class="aptoggle fullctl${fullPref ? ' on' : ''}" aria-pressed="${fullPref}"
           title="Full control — hold Ctrl. While it is held nothing acts for you: no auto-pass, no standing pass, no auto-yield, no automatic haste ready — every window is yours, and it overrides the toggles below it. Let go to restore.">🔒 full control: ${fullPref ? 'on' : 'off'}</button>
-        ${NET ? `<button data-btn="autopasstoggle" class="aptoggle${autoPref && !fullPref ? ' on' : ''}"
+        ${NET ? `<button data-btn="autopasstoggle" class="aptoggle${autoPref && !fullPref ? ' on' : ''}" aria-pressed="${autoPref && !fullPref}"
           title="when ON: automatically pass whenever passing is your only legal action${fullPref ? ' — overridden right now by full control' : ''}">⏭ auto-pass: ${
             fullPref ? 'off (full control)' : autoPref ? 'on' : 'off'}</button>` : ''}
-        ${NET ? `<button data-btn="bluffhastetoggle" class="aptoggle${bluffPref ? ' on' : ''}"
+        ${NET ? `<button data-btn="bluffhastetoggle" class="aptoggle${bluffPref ? ' on' : ''}" aria-pressed="${bluffPref}"
           title="ON: you always sit in the haste step, so your timing tells your opponent nothing. OFF: with nothing playable you are readied through it at once.">🎭 bluff haste: ${bluffPref ? 'on' : 'off'}</button>` : ''}
-        <button data-btn="motiontoggle" class="aptoggle${motionOn() ? ' on' : ''}"
+        <button data-btn="motiontoggle" class="aptoggle${motionOn() ? ' on' : ''}" aria-pressed="${motionOn()}"
           title="card-movement animations and targeting arrows">✨ motion: ${motionOn() ? 'on' : 'off'}</button>
-        <button data-btn="soundtoggle" class="aptoggle${soundOn() ? ' on' : ''}"
+        <button data-btn="soundtoggle" class="aptoggle${soundOn() ? ' on' : ''}" aria-pressed="${soundOn()}"
           title="notification sounds: phase and sub-step changes, priority, decisions, and a nudge if you haven't reacted in 15s">${soundOn() ? '🔊' : '🔇'} sound: ${soundOn() ? 'on' : 'off'}</button>
       </div>
     </div>

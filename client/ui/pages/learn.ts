@@ -47,7 +47,7 @@ export function learnMenuView(progress: LearnProgress | null, el: LearnElement):
 export function learnMenuHtml(v: LearnMenuView): string {
   const { el, saved, savedTips } = v;
   const els = v.elements.map(e =>
-    `<button class="learnel el-${e} ${e === el ? 'on' : ''}" data-lmenu="el" data-el="${e}">${elIcon(e)}${e[0]!.toUpperCase()}${e.slice(1)}</button>`).join('');
+    `<button class="learnel el-${e} ${e === el ? 'on' : ''}" aria-pressed="${e === el}" data-lmenu="el" data-el="${e}">${elIcon(e)}${e[0]!.toUpperCase()}${e.slice(1)}</button>`).join('');
   const lessons = v.lessons.map((l, i) =>
     `<li><button class="learnread" data-lmenu="read" data-i="${i}">${esc(l.n)}. ${esc(l.title)}</button>${l.seen ? ' <span class="learnseen">✓</span>' : ''}</li>`).join('');
   const go = (label: string, lmenu: string, variant: 'primary' | 'secondary' = 'primary'): string =>

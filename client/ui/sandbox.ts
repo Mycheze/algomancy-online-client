@@ -201,7 +201,7 @@ function panelHtml(s: GameState, seat: Seat, room: string | null): string {
       <div class="sbxlabel">Summon — any of the ${spawnable().size} cards</div>
       <div class="sbxzones">
         ${(['hand', 'play', 'bin'] as const).map(z =>
-          `<button class="sbxzone${z === zone ? ' on' : ''}" data-sbx="zone" data-zone="${z}">${z === 'play' ? 'board' : z}</button>`).join('')}
+          `<button class="sbxzone${z === zone ? ' on' : ''}" aria-pressed="${z === zone}" data-sbx="zone" data-zone="${z}">${z === 'play' ? 'board' : z}</button>`).join('')}
       </div>
       <input id="sbx-q" class="sbxq" aria-label="Find a card" placeholder="name, or t:unit e:fire p&gt;5" spellcheck="false">
       <div class="sbxhits">${results || '<div class="sbxhint">nothing matches that</div>'}</div>

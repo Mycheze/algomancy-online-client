@@ -355,7 +355,7 @@ function accountHtml(a: IdentityBarView): string {
 /** the element chips and the die, for "Pick now" */
 function elementPickHtml(d: HomeView['draft']): string {
   return `<div class="elrow homeels">${ALL_ELEMENTS.map(el =>
-    `<button class="elchip ${el}${d.els.includes(el) ? ' on' : ''}" data-btn="eltoggle" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
+    `<button class="elchip ${el}${d.els.includes(el) ? ' on' : ''}" aria-pressed="${d.els.includes(el)}" data-btn="eltoggle" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
     ${button({ label: '🎲', variant: 'icon', title: `pick at random — any of the ${d.setCount}`, dataBtn: 'elrandom' })}
   </div>`;
 }

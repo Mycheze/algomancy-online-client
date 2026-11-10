@@ -77,7 +77,7 @@ test('982 §3 the format decides the columns', () => {
   assert.deepEqual(heads(view({ mode: 'draft' })), colsFor('draft').map(c => c.key));
   assert.ok(heads(view({ mode: 'constructed' })).includes('deckwr'));
   assert.ok(!heads(view({ mode: 'draft' })).includes('deck'));
-  assert.match(cardStatsHtml(view({ sortKey: 'gih', sortDir: 1 })), /class="cssort on" data-btn="meta-cs-sort" data-v="gih"[^>]*>GIH WR ▴/);
+  assert.match(cardStatsHtml(view({ sortKey: 'gih', sortDir: 1 })), /class="cssort on" aria-pressed="true" data-btn="meta-cs-sort" data-v="gih"[^>]*>GIH WR ▴/);
 });
 
 test('982 §4 a pinned card shows its own numbers', () => {

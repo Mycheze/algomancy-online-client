@@ -119,14 +119,16 @@ export const SECTIONS: { id: string; title: string; note?: string }[] = [
   { id: 'class', title: 'What kind of thing', note: 'tokens, resources and the box’s reference cards are not deck-legal' },
 ];
 
-/** One facet chip: include, exclude or clear, read off the query string. */
+/** One facet chip: include, exclude or clear, read off the query string.
+ * A screen reader hears the three apart: pressed (showing only it), not
+ * pressed, and an excluded chip named "Hiding <label>" (BL-10, 1207). */
 export function chipHtml(f: Facet, q: string, btns: FilterBtns = CARDS_BTNS): string {
   const state = chipState(q, f.key, f.value);
   const cls = ['cbchip', f.section === 'element' ? `elchip ${f.value}` : '', state === 'on' ? 'on' : state === 'off' ? 'off' : ''];
   const title = state === 'on' ? `showing only ${f.label} — click to exclude`
     : state === 'off' ? `hiding ${f.label} — click to clear`
       : `include ${f.label}`;
-  return `<button class="${cls.filter(Boolean).join(' ')}" title="${esc(title)}"
+  return `<button class="${cls.filter(Boolean).join(' ')}" aria-pressed="${state === 'on'}"${state === 'off' ? ` aria-label="Hiding ${esc(f.label)}"` : ''} title="${esc(title)}"
     data-btn="${esc(btns.chip)}" data-key="${esc(f.key)}" data-value="${esc(f.value)}"
     >${f.icon ?? ''}${esc(f.label)}${f.count === undefined ? '' : `<span class="cbn">${f.count}</span>`}</button>`;
 }

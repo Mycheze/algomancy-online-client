@@ -583,7 +583,7 @@ const SYNTAX_HTML = `<div class="dksyntax">
 export function deckInfoHtml(v: DeckInfoView): string {
   const covers = v.covers.length
     ? `<div class="dkcoverbar">${button({ label: 'Random', size: 'sm', dataBtn: 'deck-cover-random' })}</div>
-      <div class="dkcovergrid">${v.covers.map(c => `<button class="dkcovertile${c.name === v.cover ? ' on' : ''}" type="button" data-btn="deck-cover" data-card="${esc(c.name)}" title="${esc(c.name)}">`
+      <div class="dkcovergrid">${v.covers.map(c => `<button class="dkcovertile${c.name === v.cover ? ' on' : ''}" aria-pressed="${c.name === v.cover}" type="button" data-btn="deck-cover" data-card="${esc(c.name)}" title="${esc(c.name)}">`
         + `<img src="${esc(c.art)}" alt="${esc(c.name)}" loading="lazy" onerror="this.style.visibility='hidden'"></button>`).join('')}</div>`
     : '<p class="dksheetnote">Put some cards in it first.</p>';
   const desc = v.editing
@@ -593,7 +593,7 @@ export function deckInfoHtml(v: DeckInfoView): string {
     placeholder: 'What is the deck trying to do? What do you keep? What beats it?', attrs: { maxlength: '6000' } })}
         <div class="dkdescbtns">${button({ label: 'Save', variant: 'primary', size: 'sm', dataBtn: 'deck-desc-save' })}${
         button({ label: 'Cancel', size: 'sm', dataBtn: 'deck-desc-cancel' })}<span class="framespacer"></span>${
-        button({ label: v.syntax ? 'Hide syntax' : 'Syntax', variant: 'link', size: 'sm', dataBtn: 'deck-desc-syntax', className: v.syntax ? 'on' : undefined })}</div>
+        button({ label: v.syntax ? 'Hide syntax' : 'Syntax', variant: 'link', size: 'sm', dataBtn: 'deck-desc-syntax', className: v.syntax ? 'on' : undefined, attrs: { 'aria-expanded': String(v.syntax) } })}</div>
       </div>`
     : `${v.descHtml ? `<div class="deckdesc dkinfodesc"><div class="deckdescbody">${v.descHtml}</div></div>` : ''}
       ${button({ label: v.descHtml ? 'Edit' : 'Write one', size: 'sm', dataBtn: 'deck-desc-edit' })}`;

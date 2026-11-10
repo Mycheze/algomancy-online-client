@@ -184,7 +184,7 @@ test('960 §3 Draft: Mode, clock, elements, the custom rules rows, Create room',
   const now = pick(['fire', 'wood', 'water']);
   assert.equal((now.match(/data-btn="eltoggle"/g) ?? []).length, 7);
   assert.match(now, /data-btn="elrandom"/);
-  assert.match(now, /class="elchip fire on" data-btn="eltoggle" data-el="fire"/);
+  assert.match(now, /class="elchip fire on" aria-pressed="true" data-btn="eltoggle" data-el="fire"/);
   assert.match(buttonOf(now, 'newgame', 'data-els="1"'), /type="button" data-mode="draft" data-els="1">Create room · Fire \+ Wood \+ Water</);
   assert.equal((now.match(/data-btn="newgame"/g) ?? []).length, 1, 'one Create button');
   assert.match(buttonOf(pick(['fire']), 'newgame'), / disabled data-mode="draft" data-els="1">Pick 3 elements \(1\/3\)</);

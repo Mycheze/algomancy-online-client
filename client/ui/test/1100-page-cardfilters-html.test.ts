@@ -43,9 +43,9 @@ test('1100 §1 the names are a parameter: cards-* for the Cards page, tt-* for t
 
 test('1100 §2 a chip\'s state is the query\'s: included, excluded, absent', () => {
   const fire = facets(false).find(f => f.key === 'el' && f.value === 'fire')!;
-  assert.match(chipHtml(fire, 'el:fire'), /^<button class="cbchip elchip fire on" title="showing only fire — click to exclude"/);
-  assert.match(chipHtml(fire, '-el:fire'), /^<button class="cbchip elchip fire off" title="hiding fire — click to clear"/);
-  assert.match(chipHtml(fire, ''), /^<button class="cbchip elchip fire" title="include fire"/);
+  assert.match(chipHtml(fire, 'el:fire'), /^<button class="cbchip elchip fire on" aria-pressed="true" title="showing only fire — click to exclude"/);
+  assert.match(chipHtml(fire, '-el:fire'), /^<button class="cbchip elchip fire off" aria-pressed="false" aria-label="Hiding fire" title="hiding fire — click to clear"/);
+  assert.match(chipHtml(fire, ''), /^<button class="cbchip elchip fire" aria-pressed="false" title="include fire"/);
   assert.match(chipHtml(fire, '', POOL_BTNS), /data-btn="tt-chip" data-key="el" data-value="fire"/);
 });
 

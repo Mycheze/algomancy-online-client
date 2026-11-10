@@ -315,7 +315,7 @@ export function crNavListHtml(): string {
       <span class="rdhitnum">${esc(h.num)}</span> <b>${esc(h.label)}</b>${h.snippet ? `<span class="rdhitsnip">${h.snippet}</span>` : ''}</button></li>`).join('')}</ol>`;
   }
   const on = current(m).id;
-  const btn = (p: CrPlace): string => `<button class="rdtocsec${p.id === on ? ' on' : ''}" data-btn="crgo" data-to="${esc(p.id)}">${
+  const btn = (p: CrPlace): string => `<button class="rdtocsec${p.id === on ? ' on' : ''}" aria-current="${p.id === on}" data-btn="crgo" data-to="${esc(p.id)}">${
     p.num ? `<span class="rdnum">${esc(p.num)}</span>` : ''}${esc(p.title)}</button>`;
   const out: string[] = [];
   let chapter: string | null = null;

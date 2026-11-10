@@ -495,7 +495,7 @@ function threadHtml(th: Thread, opts: { goto?: boolean } = {}): string {
 function tabsHtml(): string {
   const n = threads().filter(isOpen).length;
   return TABS.map(([k, label]) =>
-    `<button class="crtab${tab === k ? ' on' : ''}" data-btn="cr-tab" data-tab="${k}">${label}${
+    `<button class="crtab${tab === k ? ' on' : ''}" aria-pressed="${tab === k}" data-btn="cr-tab" data-tab="${k}">${label}${
       k === 'comments' ? ` <span class="crn">${n} open</span>` : ''}</button>`).join('');
 }
 
@@ -541,7 +541,7 @@ function tocEntriesHtml(): string {
     return d ? `<div class="crtochead">${esc(d.title)}</div>${secs(d, 'chD')}` : '';
   }
   return doc.toc.filter(e => e.id !== 'chD').map(e =>
-    `<button class="crtocent${e.id === view ? ' on' : ''}" data-btn="cr-view" data-view="${esc(e.id)}">${esc(e.title)}${countHtml(byView.get(e.id))}</button>${
+    `<button class="crtocent${e.id === view ? ' on' : ''}" aria-current="${e.id === view}" data-btn="cr-view" data-view="${esc(e.id)}">${esc(e.title)}${countHtml(byView.get(e.id))}</button>${
       e.id === view ? secs(e, e.id) : ''}`).join('');
 }
 
@@ -593,7 +593,7 @@ function commentsTabHtml(): string {
   const shown = all.filter(keep).sort((a, b) => order(a) - order(b)
     || (a.root.anchor?.start ?? -1) - (b.root.anchor?.start ?? -1) || a.root.at.localeCompare(b.root.at));
   const filters = FILTERS.map(([k, label]) =>
-    `<button class="crtab${filter === k ? ' on' : ''}" data-btn="cr-filter" data-filter="${k}">${label}</button>`).join('');
+    `<button class="crtab${filter === k ? ' on' : ''}" aria-pressed="${filter === k}" data-btn="cr-filter" data-filter="${k}">${label}</button>`).join('');
   const rows: string[] = [];
   let orphanHead = false;
   for (const th of shown) {
@@ -692,8 +692,8 @@ function paint(): void {
       <span class="crwho" id="crwho">${whoHtml()}</span>
       <button data-btn="cr-showdone" title="resolved threads are folded to one line">${showResolved ? 'Fold resolved' : 'Show resolved'}</button>
       <button data-btn="cr-refresh" title="check for new comments" aria-label="Check for new comments">↻</button>
-      <button data-btn="cr-questions" class="${questionsOpen ? 'on' : ''}" title="staged boards for open rules questions, each with a link to share">❓ Questions</button>
-      <button data-btn="cr-dl" class="${dlOpen ? 'on' : ''}">⬇ Download</button>
+      <button data-btn="cr-questions" class="${questionsOpen ? 'on' : ''}" aria-expanded="${questionsOpen}" title="staged boards for open rules questions, each with a link to share">❓ Questions</button>
+      <button data-btn="cr-dl" class="${dlOpen ? 'on' : ''}" aria-expanded="${dlOpen}">⬇ Download</button>
     </div>
     <div id="crqslot">${questionsHtml()}</div>
     <div id="crdlslot">${downloadsHtml()}</div>
@@ -1055,6 +1055,7 @@ export function handleButton(btn: HTMLElement): boolean {
       const slot = document.getElementById('crdlslot');
       if (slot) slot.innerHTML = downloadsHtml();
       btn.classList.toggle('on', dlOpen);
+      btn.setAttribute('aria-expanded', String(dlOpen));
       return true;
     }
     case 'cr-dljsonl': void saveJournal(); return true;
@@ -1063,6 +1064,7 @@ export function handleButton(btn: HTMLElement): boolean {
       const slot = document.getElementById('crqslot');
       if (slot) slot.innerHTML = questionsHtml();
       btn.classList.toggle('on', questionsOpen);
+      btn.setAttribute('aria-expanded', String(questionsOpen));
       return true;
     }
     case 'cr-qcopy': void copyUrl(questionUrl(location.origin, id)); return true;

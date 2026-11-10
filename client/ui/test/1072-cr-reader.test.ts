@@ -69,15 +69,15 @@ test('1072 §3 moving: a section, a rule, a link, a discrepancy, Back', () => {
   setCrModel(M);
   crOpenAt(null);
   assert.ok(goTo('608'));
-  assert.match(crReaderHtml('/x'), /<button class="rdtocsec on" data-btn="crgo" data-to="s608">/);
+  assert.match(crReaderHtml('/x'), /<button class="rdtocsec on" aria-current="true" data-btn="crgo" data-to="s608">/);
   assert.ok(goTo('608.2b'), 'a rule number');
   assert.match(crReaderHtml('/x'), /data-btn="crback">← Back to 608</);
   assert.ok(goTo('r104'), 'a link\'s target, as the document spells it');
-  assert.match(crReaderHtml('/x'), /data-to="s104"[^>]*>|class="rdtocsec on" data-btn="crgo" data-to="s104"/);
+  assert.match(crReaderHtml('/x'), /data-to="s104"[^>]*>|class="rdtocsec on" aria-current="true" data-btn="crgo" data-to="s104"/);
   assert.match(crReaderHtml('/x'), /← Back to 608\.2b</, 'Back names the rule it returns to');
   const d = DOC.disc[0]!.id;
   assert.ok(goTo(d), 'a discrepancy');
-  assert.match(crReaderHtml('/x'), /class="rdtocsec on" data-btn="crgo" data-to="disc"/);
+  assert.match(crReaderHtml('/x'), /class="rdtocsec on" aria-current="true" data-btn="crgo" data-to="disc"/);
   assert.ok(handleCrButton({ dataset: { btn: 'crback' } }), 'Back through the button\'s own handler');
   // four moves were made, so four steps back: the handler's, then three more
   assert.ok(goBack() && goBack() && goBack());
@@ -85,7 +85,7 @@ test('1072 §3 moving: a section, a rule, a link, a discrepancy, Back', () => {
   assert.equal(goTo('999.9'), false, 'an unknown rule goes nowhere');
   crOpenAt('608.2b');
   assert.doesNotMatch(crReaderHtml('/x'), /data-btn="crback"/, 'a link opens with no Back');
-  assert.match(crReaderHtml('/x'), /class="rdtocsec on" data-btn="crgo" data-to="s608"/);
+  assert.match(crReaderHtml('/x'), /class="rdtocsec on" aria-current="true" data-btn="crgo" data-to="s608"/);
   assert.equal(handleCrButton({ dataset: { btn: 'helpclose' } }), false);
 });
 
@@ -94,7 +94,7 @@ test('1072 §4 the panes: contents, search, loading', () => {
   crOpenAt('front');
   setCrQuery('');
   const toc = crNavListHtml();
-  assert.match(toc, /<div class="rdtoc rdtocone"><button class="rdtocsec on" data-btn="crgo" data-to="front">Introduction<\/button><\/div>/);
+  assert.match(toc, /<div class="rdtoc rdtocone"><button class="rdtocsec on" aria-current="true" data-btn="crgo" data-to="front">Introduction<\/button><\/div>/);
   assert.match(toc, /<div class="rdtocchap">6\. Regions, Formations and Battle<\/div>/);
   setCrQuery('608.2b');
   assert.match(crNavListHtml(), /<ol class="rdhits">/);

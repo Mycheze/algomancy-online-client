@@ -750,7 +750,7 @@ function entryCardHtml(s: SeasonView, v: LeagueView): string {
         <div class="lgskips">${future.map(k => {
           const on = me.skips.includes(k);
           const armed = arming === `skip:${k}`;
-          return `<button class="${on ? 'on' : armed ? 'danger' : ''}" data-btn="lg-skip" data-week="${k}" data-skip="${on ? '0' : '1'}"
+          return `<button class="${on ? 'on' : armed ? 'danger' : ''}" aria-pressed="${on}" data-btn="lg-skip" data-week="${k}" data-skip="${on ? '0' : '1'}"
             title="${on ? 'you are sitting this week out — press to play it' : 'sit this week out'}">${
             armed ? `Press again to sit week ${k} out` : `Week ${k}: ${on ? 'sitting out' : 'playing'}`}</button>`;
         }).join('')}</div>` : ''}
@@ -785,7 +785,7 @@ function availabilityCardHtml(v: LeagueView): string {
       <button data-btn="lg-tz-here" title="use this device's time zone">Use ${esc(v.browserTz)}</button></div>
     <div class="lgpresets">${PRESETS.map(p => {
       const on = presetHours(p).every(i => d.grid[i] === '1');
-      return `<button class="${on ? 'on' : ''}" data-btn="lg-grid-preset" data-preset="${p.id}">${esc(p.label)}</button>`;
+      return `<button class="${on ? 'on' : ''}" data-btn="lg-grid-preset" aria-pressed="${on}" data-preset="${p.id}">${esc(p.label)}</button>`;
     }).join('')}</div>
     <p><span id="lg-hours" class="${hrs < min ? 'lgwarn' : ''}">${hrs} hours a week</span>${hrs < min ? ` — mark at least ${min} to join` : ''}.</p>
     ${d.contact.trim() ? '' : '<p class="lgwarn">Add your Discord name to join.</p>'}

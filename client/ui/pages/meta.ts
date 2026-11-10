@@ -221,7 +221,7 @@ function listHtml(v: MetaView): string {
         value="${esc(v.text)}">
       <div class="dkfilters metaels">
         ${ALL_ELEMENTS.map(el =>
-          `<button class="elchip ${el}${v.els.includes(el) ? ' on' : ''}" data-btn="meta-el" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
+          `<button class="elchip ${el}${v.els.includes(el) ? ' on' : ''}" aria-pressed="${v.els.includes(el)}" data-btn="meta-el" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
         ${v.els.length || v.text ? '<button data-btn="meta-clear">Clear</button>' : ''}
       </div>
       <span class="framespacer"></span>
@@ -291,10 +291,10 @@ function deckGrid(d: PublicDeck, deckGroup: DeckGrouping, statsOpen: boolean): s
   const sections = deckSections(a, deckGroup);
   return `<div class="dktoolbar">
       <span class="zonelabel">group by</span>
-      ${GROUPINGS.map(g => `<button class="dkkind${deckGroup === g.id ? ' on' : ''}"
+      ${GROUPINGS.map(g => `<button class="dkkind${deckGroup === g.id ? ' on' : ''}" aria-pressed="${deckGroup === g.id}"
         data-btn="meta-group" data-group="${g.id}" title="${esc(g.hint)}">${esc(g.label)}</button>`).join('')}
       <span class="dkfilterspacer"></span>
-      <button class="dkkind${statsOpen ? ' on' : ''}" data-btn="meta-stats"
+      <button class="dkkind${statsOpen ? ' on' : ''}" aria-expanded="${statsOpen}" data-btn="meta-stats"
         title="curve, elements, and the affinity this deck needs open">${
   statsOpen ? 'Hide stats' : 'Stats'}</button>
     </div>
@@ -311,8 +311,8 @@ function exportHtml(v: MetaView): string {
   return `<div class="dkexport">
     <div class="dktoolbar">
       <span class="zonelabel">export</span>
-      <button class="dkkind${file ? '' : ' on'}" data-btn="meta-export" data-format="text">Card list</button>
-      <button class="dkkind${file ? ' on' : ''}" data-btn="meta-export" data-format="file">Whole deck (JSON)</button>
+      <button class="dkkind${file ? '' : ' on'}" aria-pressed="${!file}" data-btn="meta-export" data-format="text">Card list</button>
+      <button class="dkkind${file ? ' on' : ''}" aria-pressed="${!!file}" data-btn="meta-export" data-format="file">Whole deck (JSON)</button>
       <span class="dkfilterspacer"></span>
       <button data-btn="meta-copy-export">Copy</button>
       <button data-btn="meta-export-close">Close</button>

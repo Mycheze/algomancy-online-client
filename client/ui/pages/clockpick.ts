@@ -170,9 +170,9 @@ export function clockPickHtml(v: ClockPickView, o: { look?: 'chips' | 'segmented
   }
   return `<div class="clockpick" data-clockpick="${mode}" title="the clock for games you start">
     <span class="clockpicklabel">⏱ Clock</span>
-    <button class="elchip${auto ? ' on' : ''}" data-btn="clockpick" data-ms="auto" data-clockfor="${mode}"
+    <button class="elchip${auto ? ' on' : ''}" aria-pressed="${auto}" data-btn="clockpick" data-ms="auto" data-clockfor="${mode}"
       title="${esc(defaultWhy)}">Default</button>
-    ${CLOCK_PRESETS.map(c => `<button class="elchip${!auto && c.ms === now ? ' on' : ''}"
+    ${CLOCK_PRESETS.map(c => `<button class="elchip${!auto && c.ms === now ? ' on' : ''}" aria-pressed="${!auto && c.ms === now}"
       data-btn="clockpick" data-ms="${c.ms}" data-clockfor="${mode}" title="${esc(c.why)}">${esc(c.label)}</button>`).join('')}
     <span class="clockpickhint">${hint}</span>
   </div>`;

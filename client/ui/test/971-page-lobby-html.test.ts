@@ -46,7 +46,7 @@ test('971 §1 pick-one: the named element is on, and ready waits for it', () => 
   assert.match(none, /class="lobbymethod on"/);
   assert.match(none, /data-btn="lobby-lock" type="button" disabled>Finish choosing first</);
   const named = lobbyHtml(view({ pick: 'fire', ready: true }));
-  assert.match(named, /class="elchip fire on" data-btn="lobby-pick" data-el="fire"/);
+  assert.match(named, /class="elchip fire on" aria-pressed="true" data-btn="lobby-pick" data-el="fire"/);
   assert.match(named, /You named <b>fire<\/b>\./);
   assert.match(named, /data-btn="lobby-lock" type="button">I'm ready</);
   for (const b of ['gohome', 'lobby-method', 'lobby-pick', 'lobby-lock']) assert.ok(btns(named).includes(b), b);

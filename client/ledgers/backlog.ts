@@ -580,7 +580,21 @@ const OPEN: Entry[] = [
       + 'the rules review\'s ↻, the bell (its count in the name), the admin report marks 👍 👎 ✕ (now ui-button '
       + 'variant icon, which has no CSS of its own). Each kept its title and got a short aria-label; nothing moved on '
       + 'screen. Guarded by the census 1206-glyph-buttons-have-names.test.ts (stories rendered + ui/pages/components '
-      + 'source). Left: §18.25\'s other half, .elchip unselected vs disabled opacity.',
+      + 'source). Left: §18.25\'s other half, .elchip unselected vs disabled opacity.\n\n'
+      + '2026-11-10 (steward): a button that shows it is chosen says so to a screen reader (docs/23-ui-inventory/05 '
+      + '§18.23: "Radio-like groups are plain buttons with `.on`, no `aria-pressed`/`role=\"radio\"`: lobby methods, queue '
+      + 'format, ranked/open, rank chips, replay moments"). The class was 40 buttons whose look changes with `.on`: the '
+      + 'draft lobby\'s methods and element chips, Ranked/Open, every element filter chip (home, metagame, card stats, the '
+      + 'card browser\'s facet chips), the clock presets, the learn page\'s elements, the metagame\'s grouping and export, '
+      + 'the card-stats sort, the deck cover tiles, the league\'s skip weeks and grid presets, the table\'s option switches '
+      + '(auto-pass, bluff haste, motion, sound, the log\'s detail, the deck search\'s scope), the replay\'s eye and '
+      + 'moments, the sandbox zones, the rules review\'s tabs and filters, the admin report marks. A choice or a switch '
+      + 'got aria-pressed, a button that opens a panel aria-expanded (search syntax, a past week\'s leaderboard, the deck\'s '
+      + 'stats, the replay question, the rules review\'s Questions and Download, kept in step where crreview.ts toggles '
+      + 'them in place), a place in a list aria-current (the rules reader\'s and review\'s contents). An excluded facet '
+      + 'chip is also named "Hiding <label>". Nothing moved on screen. Guarded by the census '
+      + '1207-chosen-buttons-say-so.test.ts (stories rendered + ui/pages/components source). Left: §18.23\'s roles '
+      + '(role="radio"/radiogroup and arrow keys) — aria-pressed is what the segmented component already uses.',
   },
   {
     id: 'BL-17',

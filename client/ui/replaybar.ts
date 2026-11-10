@@ -173,7 +173,7 @@ function paint(): void {
         + 'replay are different games">not the recorded game</span>' : ''}
       <button class="replaychip ${c.cls}" data-replay="detail"
         title="what this replay is worth">${esc(c.text)}</button>
-      <button class="replayeye${s.omniscient ? ' on' : ''}" data-replay="eye"
+      <button class="replayeye${s.omniscient ? ' on' : ''}" aria-pressed="${s.omniscient}" data-replay="eye"
         title="${s.omniscient ? 'show only what you could see' : 'show both hands'}"
         >${s.omniscient ? 'both hands' : 'your view'}</button>
       <button class="replayclose" data-replay="close" title="leave the replay" aria-label="Leave the replay">×</button>
@@ -209,7 +209,7 @@ function paint(): void {
 function questionHtml(q: QuestionPanel, at: number): string {
   const here = q.marks.find(k => k.at === at);
   const moments = q.marks.map((k, i) =>
-    `<button class="rqmoment${k.at === at ? ' on' : ''}" data-replay="moment" data-at="${k.at}"
+    `<button class="rqmoment${k.at === at ? ' on' : ''}" aria-pressed="${k.at === at}" data-replay="moment" data-at="${k.at}"
       title="${esc(k.note)}">${i + 1}. ${esc(k.label)}</button>`).join('');
   const more = qOpen ? `<div class="rqmore">
       <p class="rqasked">${esc(q.asked)}</p>
@@ -218,7 +218,7 @@ function questionHtml(q: QuestionPanel, at: number): string {
       <div class="rqcards">${q.cards.map(c => `<p><b>${esc(c.name)}</b>: ${c.html}</p>`).join('')}</div>
     </div>` : '';
   return `<div class="rqbox"><div class="rqtop"><b class="rqtitle" title="${esc(q.title)}">${esc(q.title)}</b>
-      <button class="rqopen${qOpen ? ' on' : ''}" data-replay="question">${qOpen ? 'Close the question' : 'The question, readings and cards'}</button>
+      <button class="rqopen${qOpen ? ' on' : ''}" aria-expanded="${qOpen}" data-replay="question">${qOpen ? 'Close the question' : 'The question, readings and cards'}</button>
       <input class="rqlink" data-replay-link readonly value="${esc(q.link)}" aria-label="link to this question">
       <button class="rqcopy" data-replay="copylink">Copy link</button></div>
     ${more}

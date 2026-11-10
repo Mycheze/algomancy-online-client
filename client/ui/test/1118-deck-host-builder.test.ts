@@ -83,7 +83,7 @@ test('§2 Deck info: name, cover, description, who can see it — a side sheet',
   assert.match(info, /data-btn="deck-settings-close"/);
   // a cover tap saves, and the sheet stays up
   html = ui.click({ btn: 'deck-cover', card: N[3]! });
-  assert.match(html, new RegExp(`class="dkcovertile on" type="button" data-btn="deck-cover" data-card="${N[3]}"`));
+  assert.match(html, new RegExp(`class="dkcovertile on" aria-pressed="true" type="button" data-btn="deck-cover" data-card="${N[3]}"`));
   ui.tick();
   assert.equal(POSTS.filter(p => p.url === '/api/decks/update').at(-1)?.body['cover'], N[3]);
   // the editor: its draft survives a repaint (the syntax note), and Save keeps it

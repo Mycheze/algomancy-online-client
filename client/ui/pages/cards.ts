@@ -229,7 +229,7 @@ function barHtml(v: CardsView): string {
         placeholder="search — try  el:wood kind:unit mana:2 -kw:virus"
         value="${esc(q)}">
       ${q ? '<button class="cbclear" data-btn="cards-clear" title="clear" aria-label="Clear the search">×</button>' : ''}
-      <button class="cbsyntax${v.helpOpen ? ' on' : ''}" data-btn="cards-help" title="search syntax" aria-label="Search syntax">?</button>
+      <button class="cbsyntax${v.helpOpen ? ' on' : ''}" aria-expanded="${v.helpOpen}" data-btn="cards-help" title="search syntax" aria-label="Search syntax">?</button>
     </div>
     ${res.query.errors.length
     ? `<div class="cberr">${res.query.errors.map(e => esc(e.message)).join(' · ')}</div>`

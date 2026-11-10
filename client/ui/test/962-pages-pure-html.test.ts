@@ -196,10 +196,10 @@ test('962 §4 the clock picker: Default, a preset, off', () => {
   const auto = clockPickHtml({ mode: 'draft', auto: true, now: 60 * 60_000, byModeMin: 60 });
   assert.match(auto, /data-clockpick="draft"/);
   assert.deepEqual([...auto.matchAll(/data-ms="([^"]+)"/g)].map(m => m[1]), ['auto', '0', '2700000', '3600000']);
-  assert.match(auto, /class="elchip on" data-btn="clockpick" data-ms="auto"/);
+  assert.match(auto, /class="elchip on" aria-pressed="true" data-btn="clockpick" data-ms="auto"/);
   assert.match(auto, /60m each/);
   const set = clockPickHtml({ mode: 'constructed', auto: false, now: 45 * 60_000, byModeMin: 45 });
-  assert.match(set, /class="elchip on"\s+data-btn="clockpick" data-ms="2700000" data-clockfor="constructed"/);
+  assert.match(set, /class="elchip on" aria-pressed="true"\s+data-btn="clockpick" data-ms="2700000" data-clockfor="constructed"/);
   assert.match(set, /running out of time loses the game/);
   assert.match(clockPickHtml({ mode: 'constructed', auto: false, now: 0, byModeMin: 45 }), /no clock — nobody can lose on time/);
 });
