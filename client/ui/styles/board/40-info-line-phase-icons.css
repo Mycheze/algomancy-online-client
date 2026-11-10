@@ -28,9 +28,14 @@
 .linfo .lhand { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-width: 0; }
 .linfo .lname { cursor: help; }
 .linfo .lname .pname { white-space: nowrap; }
-/* BL-17: a judge's or the owner's badge beside their name — the profile's
-   chip, sized up from its .55em-of-a-heading so it reads on a name line */
-.pname .seatbadge .badgechip { font-size: .68em; vertical-align: middle; }
+/* BL-17: a player's badges beside their name — ICONS, not the profile's worded
+   chips (owner, 2026-11-10: "I don't like how long they are"): ⚖ a judge,
+   its level a small digit; 🏆 a league champion, a count past one. Hover or
+   tap the group for the words (an info tip of its own, data-tip="badge"). */
+.pname .seatbadge { display: inline-flex; align-items: center; gap: 3px; vertical-align: middle; cursor: help; }
+.pname .seatbadge .sbicon { font-size: .82em; line-height: 1; white-space: nowrap; }
+.pname .seatbadge .sbicon.judge { color: var(--accent); }
+.pname .seatbadge .sblevel { font-size: .68em; font-weight: 700; vertical-align: sub; margin-left: 1px; }
 /* the initiative star keeps its width when it is somewhere else */
 .linfo .linit.off { visibility: hidden; }
 /* the identity pieces a notch smaller than the classic header's: the life

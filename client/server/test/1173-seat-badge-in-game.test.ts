@@ -11,6 +11,9 @@
  *      only, never the date it was set
  *   §2 a game where nobody is badged carries no `badges` field at all, so an
  *      ordinary payload is what it was
+ *   §3 a league champion's seasons won ride along, newest first, and a
+ *      finalist's or participant's honour does not (owner, 2026-11-10,
+ *      #steward: "champions should have their badges displayed!")
  *
  * Drives the real server over raw WebSockets with its own accounts file, like
  * the cc-wire tests.
@@ -30,12 +33,15 @@ const env = {
 };
 const A = await import('../accounts.ts');
 const restore = A.useAccountsFile(env.ALGO_ACCOUNTS_FILE);
-const people = ['Plain', 'Judge', 'Other', 'Guest'].map(n => {
+const people = ['Plain', 'Judge', 'Other', 'Guest', 'Champ', 'Second'].map(n => {
   const r = A.register(`${n}1173`, 'correct horse battery');
   if (!r.ok) throw new Error(r.error);
   return r;
 });
 A.setBadge(people[1]!.account, { judge: 2 });
+A.setLeagueHonour(people[4]!.account, { season: 's1', name: 'October 2026 pilot', place: 'champion', w: 5, l: 1 });
+A.setLeagueHonour(people[4]!.account, { season: 's2', name: 'November 2026', place: 'champion', w: 6, l: 0 });
+A.setLeagueHonour(people[5]!.account, { season: 's2', name: 'November 2026', place: 'finalist', w: 5, l: 1 });
 restore();
 
 const server = await spawnServer(env);
@@ -71,4 +77,11 @@ test('1173 §1: both seats and a spectator see the judge badge of the seat that 
 test('1173 §2: a game where nobody is badged carries no badges field', async () => {
   const { ja, jb } = await seat([people[0]!.token, people[2]!.token]);
   assert.ok(!('badges' in ja) && !('badges' in jb), `got ${JSON.stringify(ja['badges'])} / ${JSON.stringify(jb['badges'])}`);
+});
+
+test('1173 §3: a league champion\'s seasons won are on every seat\'s push, newest first; a finalist\'s honour is not', async () => {
+  const { ja, jb } = await seat([people[4]!.token, people[5]!.token]);
+  const want = [{ champion: ['November 2026', 'October 2026 pilot'] }, null];
+  assert.deepEqual(ja['badges'], want, 'the champion\'s own seat');
+  assert.deepEqual(jb['badges'], want, 'the opponent');
 });

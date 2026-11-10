@@ -33,8 +33,9 @@ const ELEMENTS: readonly string[] = ALL_ELEMENTS;
 
 // ── the chips other screens borrow ────────────────────────────────────
 
-/** a badge as the table sees it: the mark, without the date (server/accounts.ts seatBadge) */
-export type SeatBadge = { owner?: true; judge?: 1 | 2 | 3 };
+/** a badge as the table sees it: the mark, without the date, and the league
+ * seasons the player won, newest first (server/accounts.ts seatBadge) */
+export type SeatBadge = { owner?: true; judge?: 1 | 2 | 3; champion?: string[] };
 
 /** the badge as a chip: "Judge L2" — nothing for an unmarked account.
  *
@@ -51,12 +52,46 @@ export function badgeChipsHtml(badge: SeatBadge | null | undefined): string {
   return chips.join(' ');
 }
 
-/** BL-17 — "visible on their profile and in game": the same chips beside a
+/** BL-17 — "visible on their profile and in game": the marks beside a
  * player's name on the board (ui/main.ts regionParts), led by a space; empty
- * for a guest or an unmarked account, so their name reads as it always did */
-export function seatBadgeHtml(badge: SeatBadge | null | undefined): string {
-  const chips = badgeChipsHtml(badge);
-  return chips ? ` <span class="seatbadge">${chips}</span>` : '';
+ * for a guest or an unmarked account, so their name reads as it always did.
+ *
+ * ICONS, not the profile's worded chips (owner, 2026-11-10, #steward: "I
+ * don't like how long they are. Instead of printing the text, I'd rather
+ * display a little icon of some kind … When the badge is hovered over, *then*
+ * it can display the complete text and explain what the badge is from"):
+ * ⚖ with the judge's level as a small digit, 🏆 for a league champion (with
+ * the count when they won more than one season). The whole group is an info
+ * tip of its own (ui/infotip.ts, `data-tip="badge"`) — hover, or tap on touch,
+ * and seatBadgeTipHtml says it in words. Nested in the name, whose tip is the
+ * pile counts: the innermost `data-tip` wins, so each keeps its own. */
+export function seatBadgeHtml(badge: SeatBadge | null | undefined, seat = 0): string {
+  if (!badge) return '';
+  const icons: string[] = [];
+  if (badge.judge) icons.push(`<span class="sbicon judge">⚖<span class="sblevel">${badge.judge}</span></span>`);
+  const won = badge.champion?.length ?? 0;
+  if (won) icons.push(`<span class="sbicon champion">🏆${won > 1 ? `<span class="sblevel">${won}</span>` : ''}</span>`);
+  if (!icons.length) return '';
+  return ` <span class="seatbadge" data-tip="badge" data-btn="infotip" data-p="${seat}" aria-label="${esc(seatBadgeWords(badge))}">${icons.join('')}</span>`;
+}
+
+/** the badges in one line of plain words — the icons' accessible name */
+function seatBadgeWords(badge: SeatBadge): string {
+  const parts: string[] = [];
+  if (badge.judge) parts.push(`Judge level ${badge.judge}`);
+  if (badge.champion?.length) parts.push(`league champion: ${badge.champion.join(', ')}`);
+  return parts.join(' · ');
+}
+
+/** the info tip over the badge icons: each badge in full, and what it is
+ * from. Pure (ui/test/1174); '' when there is nothing to say. */
+export function seatBadgeTipHtml(badge: SeatBadge | null | undefined): string {
+  if (!badge) return '';
+  const rows: string[] = [];
+  if (badge.judge) rows.push(`<div class="tiphead">⚖ Judge L${badge.judge}</div><div class="tipline dim wrap">a judge, level ${badge.judge} of 3 — a trusted voice on rules and reports</div>`);
+  if (badge.champion?.length) rows.push(`<div class="tiphead">🏆 League champion</div>${
+    badge.champion.map(n => `<div class="tipline dim wrap">won the ${esc(n)} league</div>`).join('')}`);
+  return rows.join('');
 }
 
 const PLACE: Record<LeagueTrophy['place'], { icon: string; word: string }> = {

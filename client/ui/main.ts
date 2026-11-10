@@ -190,7 +190,7 @@ import * as jr from './pages/judgereview.ts';
 import { caretIn, type CaretSnap } from './pages/caret.ts';
 import { CLOCK_DEFAULT_MS, chosenClockMs, setMatchClockChoice } from './pages/clockpick.ts';
 import { CONNECTING, connectingHtml } from './pages/connecting.ts';
-import { seatBadgeHtml, type SeatBadge } from './pages/profile.ts';
+import { seatBadgeHtml, seatBadgeTipHtml, type SeatBadge } from './pages/profile.ts';
 import { importDeck } from './pages/deckpicker.ts';
 import { closeHomeSheet, openHomeSheet, paintHome, saveHomeName, setHomeFormat, setHomeMode } from './pages/home.ts';
 import { paintWaiting } from './pages/waiting.ts';
@@ -4397,7 +4397,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
 
   return {
     acting, focus,
-    pnameFixed: `<span class="pname">${esc(pl.name)}${seatBadgeHtml(NET?.badges[p] ?? null)}<span class="linit${s.initiative === p ? '' : ' off'}"${
+    pnameFixed: `<span class="pname">${esc(pl.name)}${seatBadgeHtml(NET?.badges[p] ?? null, p)}<span class="linit${s.initiative === p ? '' : ' off'}"${
       s.initiative === p ? ' title="has the initiative"' : ''}> ⭐</span></span>`,
     life: `<span class="life${pickable(`player:${p}`) ? ' candidate' : ''}" data-act="player" data-p="${p}"
         data-animzone="life:${p}"
@@ -9958,6 +9958,9 @@ function tipFor(el: HTMLElement): string | null {
   if (el.dataset['tip'] === 'phase') return `<div class="tipline">${esc(phaseCaption())}</div>`;
   // the token corner's summary, as this paint drew it (tokenTipHtml)
   if (el.dataset['tip'] === 'tokens') return el.querySelector('template.toktip')?.innerHTML.trim() || null;
+  // a player's badges, in words (owner 2026-11-10: icons at the table, the
+  // full text on hover — pages/profile.ts seatBadgeHtml)
+  if (el.dataset['tip'] === 'badge') return seatBadgeTipHtml(NET?.badges[Number(el.dataset['p'])] ?? null) || null;
   if (el.dataset['tip'] !== 'counts') return toolTipHtml(el.dataset['tip'] ?? '');
   const p = Number(el.dataset['p']) as Seat;
   const pl = s.players[p];

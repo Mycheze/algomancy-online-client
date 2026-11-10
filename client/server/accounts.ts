@@ -1278,12 +1278,23 @@ export function setBadge(account: Account, want: { owner?: unknown; judge?: unkn
 }
 
 /** BL-17: a badge as the other player (or a spectator) sees it at the table —
- * the mark, without the date it was set. Null for no account or no mark. */
-export type SeatBadge = { owner?: true; judge?: 1 | 2 | 3 };
+ * the mark, without the date it was set. Null for no account or no mark.
+ *
+ * `champion`: the names of the league seasons this account WON, newest
+ * first (owner, 2026-11-10, #steward: "champions should have their badges
+ * displayed! That's the whole point of the badges existing … I want the
+ * competitive people to just *slightly* care about getting a badge by winning
+ * a league, then showing it off to everyone"). Only the champion place — a
+ * finalist or participant honour stays on the profile. */
+export type SeatBadge = { owner?: true; judge?: 1 | 2 | 3; champion?: string[] };
 export function seatBadge(account: Account | undefined): SeatBadge | null {
   const b = account?.badge;
-  if (!b || !(b.owner || b.judge)) return null;
-  return { ...(b.owner ? { owner: true as const } : {}), ...(b.judge ? { judge: b.judge } : {}) };
+  const won = (account?.league?.seasons ?? []).filter(h => h.place === 'champion').map(h => h.name).reverse();
+  if (!(b?.owner || b?.judge || won.length)) return null;
+  return {
+    ...(b?.owner ? { owner: true as const } : {}), ...(b?.judge ? { judge: b.judge } : {}),
+    ...(won.length ? { champion: won } : {}),
+  };
 }
 
 /**
