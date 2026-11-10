@@ -11245,7 +11245,7 @@ export const CLOSED: TodoEntry[] = [
     verify: "Battle window, empty bin, 8 dark open: Tilling the Graves is offered.",
     guards: [
       "477-target-minimum-sweep.test.ts::every target spec that may stop short of its slots prints up to",
-      "478-required-targets-at-cast.test.ts::Tilling the Graves with two units in the bin is offered and asks for both with no stop",
+      "478-required-targets-at-cast.test.ts::Tilling the Graves with two units in the bin may stop at none, at one, or take both",
       "477-target-minimum-sweep.test.ts::a must-target trigger with only the controllers own units as targets picks one of them",
     ],
     closed: "FIXED 2026-10-16. Tilling the Graves min 2; Spell Excavation, Combustible Bogwalker, Big Glimpse Card lose min 0; Rippleback Skulker (a trigger with no may and no up to) min 1. A registry sweep fails on any spec that may stop short without printing up to / any number / a trigger may. Left optional by their \"you may ... target\" text (asked of the owner): Reclaimer of Secrets, Rousing Spirit, Flux Constructor, Powerforge Synergist, Aethercap Siphoner, Hooba-Mon, Blightwalker.",
