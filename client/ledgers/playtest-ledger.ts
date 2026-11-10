@@ -422,6 +422,18 @@ const OPEN: LedgerEntry[] = [
     ],
     note: "Real, reproduced on the ui driver. Filed at [66], turn 3, mycheze declaring an attack, with Debeli's hand seen since Eldritch Dreamtender on turn 2. The 'their hand, seen' strip floats over the In Play of the region not being fought in, and when you attack that is your own, where you are picking attackers. Likely made worse the same day by in-play units standing full size in a battle. CT-552. Fixed 2026-11-09 (steward): while you choose your attackers the strip stays over the opponent's In Play, where it stood in deployment.",
   },
+  {
+    id: 367, room: "ZKNW", date: "2026-11-10",
+    report: "Nyar, seat 0, agreed fix: back to before proud's pass (turn 4 battle). \"test\"",
+    status: 'agreed-fix',
+    note: "Took back proud's priority pass [110] with Rousing Spirit's trigger on the stack; proud agreed. ZKNW fetched and replayed (183 of 183 actions, no divergence; --branch triage: none of (a)-(d)): instead, proud used Soul Swallower's ability, sacrificing Ignis Sprite for its Fireball token [110]-[113], and the game went on to the further take-back filed as #368. Trying the button, with a placeholder reason; no defect.",
+  },
+  {
+    id: 368, room: "ZKNW", date: "2026-11-10",
+    report: "Nyar, seat 0, agreed fix: back to before proud's Fireball spell token (turn 4 battle). \"test\"",
+    status: 'agreed-fix',
+    note: "Continues #367: took back proud's Fireball 1 cast at Nyar before blocks [119]-[120]; proud agreed. Replayed, proud passed instead, Nyar declared blocks [121], and proud cast the Fireball after blocks at Crevice Lurker [122], which died in combat. The token was offered both before and after blocks; the player changing their own timing and target. No defect.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
