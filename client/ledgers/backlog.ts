@@ -571,7 +571,16 @@ const OPEN: Entry[] = [
       + 'box, the scenario notes, the exported-deck text. Each got an aria-label (nothing moves on screen). settingRow\'s '
       + 'label column is a <div> tied to nothing; its comment now says a bare control passed to it names itself. Guarded '
       + 'by the census 1205-form-controls-have-names.test.ts (every page and component story rendered, and every '
-      + 'control written in ui/*.ts, pages/*.ts, components/*.ts).',
+      + 'control written in ui/*.ts, pages/*.ts, components/*.ts).\n\n'
+      + '2026-11-10 (steward): every button drawn as a symbol has a spoken name (docs/23-ui-inventory/05 §18.25: '
+      + '"Transport buttons are glyphs with `title` only (replaybar.ts:183–188)"). A button is named by its content '
+      + 'before its title, so ⏮ was read as the glyph. The class was 33 buttons: the replay bar\'s × ⏮ ◀ ⏸/▶ ▶| ⏭, the '
+      + 'lesson frames\' ⏮ ▶ ⏭, the table toolbar\'s 📘 🧪 ☰ ↶ ⚖ ? 📝 ⋯, the seen-hand strip\'s ✕, the card panel\'s, '
+      + 'scenario\'s, notifications\' and challenge run\'s close, the card browser\'s × ? and ↑/↓, the sandbox\'s − / +, '
+      + 'the rules review\'s ↻, the bell (its count in the name), the admin report marks 👍 👎 ✕ (now ui-button '
+      + 'variant icon, which has no CSS of its own). Each kept its title and got a short aria-label; nothing moved on '
+      + 'screen. Guarded by the census 1206-glyph-buttons-have-names.test.ts (stories rendered + ui/pages/components '
+      + 'source). Left: §18.25\'s other half, .elchip unselected vs disabled opacity.',
   },
   {
     id: 'BL-17',

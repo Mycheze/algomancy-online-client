@@ -4319,7 +4319,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
           ? `<div class="seenhint">all ${sv.dismissed} crossed off — the aid stays up until you dismiss it</div>`
           : `<div class="seenhint">may be out of date${sv.dismissed ? ` · ${sv.dismissed} crossed off` : ''} — ✕ a card to forget it</div>
         <div class="seencards">${sv.cards.map(c => `<span class="seenslot">${cardHtml(c.name)
-          }<button class="seenx" data-btn="seendrop" data-i="${c.index}" title="forget ${esc(c.name)}">✕</button></span>`).join('')}</div>`}
+          }<button class="seenx" data-btn="seendrop" data-i="${c.index}" title="forget ${esc(c.name)}" aria-label="Forget ${esc(c.name)}">✕</button></span>`).join('')}</div>`}
       </div>`
     : '';
 
@@ -7555,24 +7555,24 @@ function toolbarHtml(o: { canUndo: boolean; autoPref: boolean; bluffPref: boolea
   return `<div class="side toolbar">
     ${room ? `<button class="tbstat" data-tip="room" data-btn="infotip" aria-label="${esc(room.label)}">${room.icon}<span class="liveslot" id="presenceslot"></span>${
       NET!.watchers && !replayActive() && !NET!.spectating ? `<span class="tbcount">${NET!.watchers}</span>` : ''}</button>` : ''}
-    ${NET && learn.currentSolo() ? '<button data-learn="menu" title="Learn to Play: the lessons">📘</button>' : ''}
+    ${NET && learn.currentSolo() ? '<button data-learn="menu" title="Learn to Play: the lessons" aria-label="Learn to Play">📘</button>' : ''}
     ${toolGameHtml()}
     ${ui.passMode ? `<button class="passallchip" data-btn="passallstop"
       title="${esc(PASS_MODE_CHIP[ui.passMode])}: ${esc(PASS_MODE_WHY[ui.passMode])} Click to stop.">⏩<span class="tbsub">stop</span></button>` : ''}
     ${NET && scn.isScenario() ? `<button data-btn="scn-pop" class="${scnPop ? 'on' : ''}" aria-expanded="${scnPop}"
-      title="the scenario: what it should do, and your verdict">🧪</button>` : ''}
-    ${boardMenuItems().length ? '<button data-btn="tablemenu" title="table: game log · erased piles · concede">☰</button>' : ''}
-    ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶</button>' : ''}
+      title="the scenario: what it should do, and your verdict" aria-label="The scenario">🧪</button>` : ''}
+    ${boardMenuItems().length ? '<button data-btn="tablemenu" title="table: game log · erased piles · concede" aria-label="Table menu">☰</button>' : ''}
+    ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)" aria-label="Undo">↶</button>' : ''}
     ${watchAgainHtml()}
-    <button data-btn="judgeopen" title="ask the rules judge bot">⚖</button>
-    <button data-btn="helpopen" title="rules: the rules reference and the interface guide">?</button>
-    ${NET ? '<button data-btn="reportopen" title="Report — this exact game moment is logged with what you write">📝</button>' : ''}
+    <button data-btn="judgeopen" title="ask the rules judge bot" aria-label="Ask the rules judge">⚖</button>
+    <button data-btn="helpopen" title="rules: the rules reference and the interface guide" aria-label="Rules and interface guide">?</button>
+    ${NET ? '<button data-btn="reportopen" title="Report — this exact game moment is logged with what you write" aria-label="Report">📝</button>' : ''}
     <div class="tbfill"></div>
     ${toolClocksHtml()}
     ${fullPref && !settingsOpen ? '<span class="fcnote" title="full control: Ctrl is held, nothing acts for you">🔒</span>' : ''}
     <div class="tbmore">
       <button data-btn="settingsmenu" class="setbtn${settingsOpen ? ' on' : ''}" aria-expanded="${settingsOpen}"
-        title="more: full control, auto-pass, bluff haste, motion, sound">⋯</button>
+        title="more: full control, auto-pass, bluff haste, motion, sound" aria-label="More settings">⋯</button>
       <div class="setgroup tbpop${settingsOpen ? ' open' : ''}">
         <button type="button" data-chip="fullcontrol" class="aptoggle fullctl${fullPref ? ' on' : ''}" aria-pressed="${fullPref}"
           title="Full control — hold Ctrl. While it is held nothing acts for you: no auto-pass, no standing pass, no auto-yield, no automatic haste ready — every window is yours, and it overrides the toggles below it. Let go to restore.">🔒 full control: ${fullPref ? 'on' : 'off'}</button>

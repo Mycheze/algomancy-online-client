@@ -138,7 +138,7 @@ test('§7 the toolbar: icons, the toggles behind "more"; the reminders can be hi
   for (const b of ['tablemenu', 'reportopen', 'undo', 'helpopen', 'judgeopen']) {
     const at = bar.indexOf(`data-btn="${b}"`);
     assert.ok(at >= 0 && !group.includes(`data-btn="${b}"`), `${b} stays on the strip`);
-    assert.match(bar.slice(at, bar.indexOf('</button>', at)), / title="[^"]{6,}">[^<]{1,2}$/, `${b} is an icon with its words in a title`);
+    assert.match(bar.slice(at, bar.indexOf('</button>', at)), / title="[^"]{6,}" aria-label="[A-Z][^"]+">[^<]{1,2}$/, `${b} is an icon with its words in a title, and a name a screen reader says`);
   }
   assert.match(bar, /data-btn="settingsmenu"[^>]*title="more: /, 'the button is called "more"');
   // the popover is hidden until open — at every width, on a mouse or a finger

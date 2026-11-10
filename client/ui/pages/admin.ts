@@ -324,11 +324,11 @@ function reportsHtml(reports: ReportRow[], over: Overview | null, unmarkedOnly: 
       <td class="notecell">${esc(r.note)}</td>
       <td>${statusChip(r)}</td>
       <td class="adminacts">
-        ${button({ label: '👍', className: r.mark === 'real' ? 'on' : undefined, dataBtn: 'admin-mark',
+        ${button({ label: '👍', variant: 'icon', className: r.mark === 'real' ? 'on' : undefined, dataBtn: 'admin-mark',
     title: 'real, worth doing', attrs: { 'data-ts': r.ts, 'data-mark': 'real' } })}
-        ${button({ label: '👎', className: r.mark === 'not' ? 'on' : undefined, dataBtn: 'admin-mark',
+        ${button({ label: '👎', variant: 'icon', className: r.mark === 'not' ? 'on' : undefined, dataBtn: 'admin-mark',
     title: 'not a bug / won\'t do', attrs: { 'data-ts': r.ts, 'data-mark': 'not' } })}
-        ${r.mark ? button({ label: '✕', dataBtn: 'admin-mark', title: `clear — set by ${r.markedBy ?? ''}`,
+        ${r.mark ? button({ label: '✕', variant: 'icon', dataBtn: 'admin-mark', title: `clear — set by ${r.markedBy ?? ''}`,
     attrs: { 'data-ts': r.ts, 'data-mark': '' } }) : ''}
       </td>
     </tr>`).join('');

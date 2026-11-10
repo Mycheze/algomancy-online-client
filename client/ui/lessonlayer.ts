@@ -137,9 +137,9 @@ export function figureHtml(f: Figure): string {
         ${f.frames.map((fr, i) => `<div class="lframe${i === 0 ? ' on' : ''}">${figureHtml(fr.figure)}<div class="lframecap">${
           f.play === 'step' ? `<b>${i + 1}.</b> ` : ''}${captionHtml(fr.caption)}</div></div>`).join('')}
         <div class="lframebtns">
-          <button data-lbtn="frame-prev" data-fr="${id}" title="step back">⏮</button>
-          <button data-lbtn="frame-play" data-fr="${id}" class="lplay" title="play / pause">${f.play === 'loop' ? '⏸' : '▶'}</button>
-          <button data-lbtn="frame-next" data-fr="${id}" title="step forward"${f.play === 'step' ? ' class="lprimary"' : ''}>⏭</button>
+          <button data-lbtn="frame-prev" data-fr="${id}" title="step back" aria-label="Step back">⏮</button>
+          <button data-lbtn="frame-play" data-fr="${id}" class="lplay" title="play / pause" aria-label="${f.play === 'loop' ? 'Pause' : 'Play'}">${f.play === 'loop' ? '⏸' : '▶'}</button>
+          <button data-lbtn="frame-next" data-fr="${id}" title="step forward" aria-label="Step forward"${f.play === 'step' ? ' class="lprimary"' : ''}>⏭</button>
           <span class="lframepos">1 / ${f.frames.length}</span>
         </div>
       </div>`;

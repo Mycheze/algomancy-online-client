@@ -119,7 +119,7 @@ export function roomFriendsHtml(v: RoomFriendsView): string {
 
 function inviteCardHtml(i: InviteCardView, pop: boolean): string {
   return `<div class="invitecard">
-    ${pop ? `<button class="invx" data-inbox="hide" data-id="${esc(i.id)}" title="keep it in the bell">✕</button>` : ''}
+    ${pop ? `<button class="invx" data-inbox="hide" data-id="${esc(i.id)}" title="keep it in the bell" aria-label="Dismiss (it stays in the bell)">✕</button>` : ''}
     <div><b>${esc(i.from)}</b> invites you to ${esc(i.label)}.</div>
     <div class="invbtns">
       <button class="primary" data-inbox="join" data-id="${esc(i.id)}">Join</button>
@@ -144,7 +144,7 @@ function noteHtml(n: NoteCardView, pop: boolean): string {
     ? `<button class="primary" data-inbox="league-play" data-season="${esc(n.season)}" data-match="${esc(n.match)}">Play</button>`
     : n.action ? `<button data-inbox="league" data-season="${esc(n.season)}">League page</button>` : '';
   return `<div class="invitecard leaguenote${n.read ? '' : ' unread'}">
-    ${pop ? `<button class="invx" data-inbox="hide" data-id="${esc(n.key)}" title="keep it in the bell">✕</button>` : ''}
+    ${pop ? `<button class="invx" data-inbox="hide" data-id="${esc(n.key)}" title="keep it in the bell" aria-label="Dismiss (it stays in the bell)">✕</button>` : ''}
     <div>${n.html}</div>
     ${btn ? `<div class="invbtns">${btn}</div>` : ''}
   </div>`;
@@ -207,7 +207,7 @@ export function inboxLayerHtml(v: InboxLayerView): string {
     ...v.pops.invites.map(i => inviteCardHtml(i, true)),
     ...v.pops.reminders.map(r => noteHtml(r, true)),
   ];
-  return `<button class="inboxbell${n ? ' lit' : ''}" data-inbox="bell" title="notifications">🔔${n ? `<span class="inboxcount">${n}</span>` : ''}</button>`
+  return `<button class="inboxbell${n ? ' lit' : ''}" data-inbox="bell" title="notifications" aria-label="Notifications${n ? `: ${n} new` : ''}">🔔${n ? `<span class="inboxcount">${n}</span>` : ''}</button>`
     + (v.list ? inboxListHtml(v.list) : '')
     + (pops.length ? `<div class="invitepops">${pops.join('')}</div>` : '');
 }

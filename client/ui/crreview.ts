@@ -691,7 +691,7 @@ function paint(): void {
       <span class="crgrow"></span>
       <span class="crwho" id="crwho">${whoHtml()}</span>
       <button data-btn="cr-showdone" title="resolved threads are folded to one line">${showResolved ? 'Fold resolved' : 'Show resolved'}</button>
-      <button data-btn="cr-refresh" title="check for new comments">↻</button>
+      <button data-btn="cr-refresh" title="check for new comments" aria-label="Check for new comments">↻</button>
       <button data-btn="cr-questions" class="${questionsOpen ? 'on' : ''}" title="staged boards for open rules questions, each with a link to share">❓ Questions</button>
       <button data-btn="cr-dl" class="${dlOpen ? 'on' : ''}">⬇ Download</button>
     </div>

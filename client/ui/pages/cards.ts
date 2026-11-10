@@ -228,8 +228,8 @@ function barHtml(v: CardsView): string {
       <input id="cb-q" class="cbq" aria-label="Search cards" spellcheck="false" autocomplete="off"
         placeholder="search — try  el:wood kind:unit mana:2 -kw:virus"
         value="${esc(q)}">
-      ${q ? '<button class="cbclear" data-btn="cards-clear" title="clear">×</button>' : ''}
-      <button class="cbsyntax${v.helpOpen ? ' on' : ''}" data-btn="cards-help" title="search syntax">?</button>
+      ${q ? '<button class="cbclear" data-btn="cards-clear" title="clear" aria-label="Clear the search">×</button>' : ''}
+      <button class="cbsyntax${v.helpOpen ? ' on' : ''}" data-btn="cards-help" title="search syntax" aria-label="Search syntax">?</button>
     </div>
     ${res.query.errors.length
     ? `<div class="cberr">${res.query.errors.map(e => esc(e.message)).join(' · ')}</div>`
@@ -248,7 +248,7 @@ function barHtml(v: CardsView): string {
         <select id="cb-sort">${SORTS.map(s =>
     `<option value="${s}"${res.query.sort === s ? ' selected' : ''}>${s}</option>`).join('')}</select>
       </label>
-      <button class="cbdir" data-btn="cards-dir" title="reverse the order">${res.query.dir === 'asc' ? '↑' : '↓'}</button>
+      <button class="cbdir" data-btn="cards-dir" title="reverse the order" aria-label="Reverse the order">${res.query.dir === 'asc' ? '↑' : '↓'}</button>
       ${segmented({
     ariaLabel: 'View', size: 'sm', className: 'cbviews',
     options: VIEWS.map(view => ({ label: view, value: view, on: res.query.view === view, dataBtn: 'cards-view', attrs: { 'data-view': view } })),

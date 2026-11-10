@@ -55,7 +55,7 @@ test('an ordinary room has no 🧪 and no panel', () => {
 
 test('a scenario\'s first paint opens the panel beside the toolbar, brief and verdicts in it', () => {
   const html = push('q-one');
-  assert.match(html, /<button data-btn="scn-pop" class="on" aria-expanded="true"\s+title="[^"]+">🧪<\/button>/, '🧪 is on the toolbar, lit');
+  assert.match(html, /<button data-btn="scn-pop" class="on" aria-expanded="true"\s+title="[^"]+" aria-label="The scenario">🧪<\/button>/, '🧪 is on the toolbar, lit');
   const p = pop(html);
   assert.ok(p, 'the popover is open on first load');
   assert.ok(html.indexOf('<div class="scnpop tbpop">') > html.indexOf('<div class="side toolbar">'), 'it is the toolbar\'s own popover');
@@ -63,7 +63,7 @@ test('a scenario\'s first paint opens the panel beside the toolbar, brief and ve
   for (const v of ['works', 'broken', 'slightly-off', 'bad-scenario']) {
     assert.match(p, new RegExp(`data-btn="scn-verdict" data-verdict="${v}"`), `the ${v} verdict`);
   }
-  assert.match(p, /<button class="scnx" data-btn="scn-popx" title="[^"]+">✕<\/button>/, 'and its own ✕');
+  assert.match(p, /<button class="scnx" data-btn="scn-popx" title="[^"]+" aria-label="Close the scenario">✕<\/button>/, 'and its own ✕');
   assert.doesNotMatch(p.slice(0, p.indexOf('</div>')), /class="overlay/, 'not a modal dialog');
 });
 

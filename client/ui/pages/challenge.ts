@@ -333,7 +333,7 @@ function keptHtml(v: ChallengePageView): string {
           : '<button class="primary" data-btn="ch-signin">Sign in to submit</button>'}
         ${arming === `forget:${r.at}`
           ? `<button class="danger" data-btn="ch-forget" data-at="${r.at}">Press again to drop this run</button>`
-          : `<button data-btn="ch-forget" data-at="${r.at}" title="drop this run">✕</button>`}</div>`;
+          : `<button data-btn="ch-forget" data-at="${r.at}" title="drop this run" aria-label="Drop this run">✕</button>`}</div>`;
     }).join('')}
   ` });
 }

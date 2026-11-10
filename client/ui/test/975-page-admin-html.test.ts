@@ -74,7 +74,7 @@ test('975 §3 every data-btn the handler routes on is drawn, with what it reads'
   const reports = adminHtml(view());
   for (const b of ['admin-refresh', 'admin-close', 'admin-tab', 'admin-unmarked', 'admin-mark']) assert.ok(btns(reports).includes(b), b);
   assert.match(reports, /data-btn="admin-mark"[^>]*data-ts="2026-11-01T10:00:00Z" data-mark="real"/);
-  assert.match(reports, /class="ui-button ui-button--secondary on" data-btn="admin-mark"/, 'the mark a report carries is on');
+  assert.match(reports, /class="ui-button ui-button--icon on" data-btn="admin-mark"/, 'the mark a report carries is on');
   assert.match(reports, /data-mark=""/, 'and a marked report can be cleared');
   const accounts = adminHtml(view({ current: 'accounts' }));
   for (const level of [0, 1, 2, 3]) assert.match(accounts, new RegExp(`data-btn="admin-judge"[^>]*data-level="${level}"`));

@@ -74,9 +74,9 @@ const LIST: InboxListView = {
 };
 
 test('978 §4 the bell: its count, the list, and the popups only while the list is shut', () => {
-  assert.match(inboxLayerHtml({ unread: 0, list: null, pops: { invites: [], reminders: [] } }), /^<button class="inboxbell" data-inbox="bell" title="notifications">🔔<\/button>$/);
+  assert.match(inboxLayerHtml({ unread: 0, list: null, pops: { invites: [], reminders: [] } }), /^<button class="inboxbell" data-inbox="bell" title="notifications" aria-label="Notifications">🔔<\/button>$/);
   const lit = inboxLayerHtml({ unread: 3, list: null, pops: { invites: LIST.invites, reminders: [NOTE] } });
-  assert.match(lit, /class="inboxbell lit"[^>]*>🔔<span class="inboxcount">3<\/span>/);
+  assert.match(lit, /class="inboxbell lit"[^>]*aria-label="Notifications: 3 new">🔔<span class="inboxcount">3<\/span>/);
   assert.match(lit, /<div class="invitepops">/);
   assert.deepEqual(attr(lit, 'data-inbox').filter(x => x === 'hide'), ['hide', 'hide'], 'each popup can be put away');
   const open = inboxLayerHtml({ unread: 3, list: LIST, pops: { invites: LIST.invites, reminders: [NOTE] } });

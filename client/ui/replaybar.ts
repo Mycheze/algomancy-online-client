@@ -176,16 +176,16 @@ function paint(): void {
       <button class="replayeye${s.omniscient ? ' on' : ''}" data-replay="eye"
         title="${s.omniscient ? 'show only what you could see' : 'show both hands'}"
         >${s.omniscient ? 'both hands' : 'your view'}</button>
-      <button class="replayclose" data-replay="close" title="leave the replay">×</button>
+      <button class="replayclose" data-replay="close" title="leave the replay" aria-label="Leave the replay">×</button>
     </div>
     ${detail ? `<p class="replaydetail">${detailText(m)}</p>` : ''}
     <div class="replaytransport">
-      <button data-replay="start" title="back to the beginning" ${at === 0 ? 'disabled' : ''}>⏮</button>
-      <button data-replay="back" title="back one action" ${at === 0 ? 'disabled' : ''}>◀</button>
-      <button data-replay="play" class="replayplay" title="${playing ? 'pause' : 'play'}"
+      <button data-replay="start" title="back to the beginning" aria-label="Back to the beginning" ${at === 0 ? 'disabled' : ''}>⏮</button>
+      <button data-replay="back" title="back one action" aria-label="Back one action" ${at === 0 ? 'disabled' : ''}>◀</button>
+      <button data-replay="play" class="replayplay" title="${playing ? 'pause' : 'play'}" aria-label="${playing ? 'Pause' : 'Play'}"
         ${at >= total ? 'disabled' : ''}>${playing ? '⏸' : '▶'}</button>
-      <button data-replay="fwd" title="forward one action" ${at >= total ? 'disabled' : ''}>▶|</button>
-      <button data-replay="end" title="to the end" ${at >= total ? 'disabled' : ''}>⏭</button>
+      <button data-replay="fwd" title="forward one action" aria-label="Forward one action" ${at >= total ? 'disabled' : ''}>▶|</button>
+      <button data-replay="end" title="to the end" aria-label="To the end" ${at >= total ? 'disabled' : ''}>⏭</button>
       <input type="range" class="replayscrub" data-replay="scrub"
         min="0" max="${total}" value="${at}" aria-label="action">
       <label class="replayspeed">

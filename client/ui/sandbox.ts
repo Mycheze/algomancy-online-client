@@ -181,9 +181,9 @@ function panelHtml(s: GameState, seat: Seat, room: string | null): string {
   const p = pool ?? boardPool(s, seat);
   const manaRows = kindsFor(s).map(k => `<div class="sbxmana">
       <span class="sbxkind">${esc(k)}</span>
-      <button data-sbx="mana-" data-kind="${esc(k)}">−</button>
+      <button data-sbx="mana-" data-kind="${esc(k)}" aria-label="One less ${esc(k)}">−</button>
       <span class="sbxn">${p[k] ?? 0}</span>
-      <button data-sbx="mana+" data-kind="${esc(k)}">+</button>
+      <button data-sbx="mana+" data-kind="${esc(k)}" aria-label="One more ${esc(k)}">+</button>
     </div>`).join('');
 
   // the second seat is a REAL seat: the owner asked for it to be openable in

@@ -175,7 +175,7 @@ export function cardPanelHtml(name: string, opts: PanelOpts): string {
   const boxSays = plain(lines.join(' '));
   const stated = GLOSSARY.filter(g => boxSays.includes(plain(g.text))).map(g => g.term);
   return `<section class="cbdetail">
-    <button class="cbclose" data-btn="${esc(opts.close)}" title="close">×</button>
+    <button class="cbclose" data-btn="${esc(opts.close)}" title="close" aria-label="Close">×</button>
     ${artHtml(r, 'cbdetailart')}
     <h2>${esc(r.name)}</h2>
     <div class="cbdetailcost">${costHtml(r)}</div>

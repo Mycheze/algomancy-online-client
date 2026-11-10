@@ -136,7 +136,7 @@ export function panelHtml(room: string, closable = false): string {
   return `<div class="scnpanel">
     <div class="scnhead">🧪 Scenario · <b>${esc(info.card)}</b>
       <span class="scnid" title="${esc(info.why)}">${esc(info.id)}</span>${
-      closable ? '<button class="scnx" data-btn="scn-popx" title="close — 🧪 on the toolbar opens it again">✕</button>' : ''}</div>
+      closable ? '<button class="scnx" data-btn="scn-popx" title="close — 🧪 on the toolbar opens it again" aria-label="Close the scenario">✕</button>' : ''}</div>
     <div class="scnexpect">${expect}</div>
     ${opponentLine(room)}
     <div class="scnbtns">${buttons}</div>
