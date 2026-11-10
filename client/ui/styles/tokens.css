@@ -71,6 +71,11 @@
      (color-mix with transparent rounds ±3 off the rgba it replaced.) Keep them in step with the two above. */
   --color-winrate-up-rgb: 79 179 201;
   --color-winrate-down-rgb: 224 123 57;
+  /* ── colour: data — the card stats' funnel bars, one per section of a card's detail (the third,
+     what happened to it, is var(--accent)). Categorical, not a scale: the draft bars' cyan is the
+     win-rate-up colour's value but not its meaning, so it is its own token. ── */
+  --color-data-draft: #4fb3c9;
+  --color-data-constructed: #9aa5b0;
 
   /* ── type ── */
   --font-ui: system-ui, sans-serif;

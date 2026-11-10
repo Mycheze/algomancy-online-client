@@ -1136,7 +1136,12 @@ const OPEN: Entry[] = [
       + 'with the tone flipped to \'note\'. Re-checked the rest at HEAD, all still open: the signed-in Alerts button passes '
       + 'no `on` (pages/frame.ts toolHtml), `.zonelabel` is still defined in board/03, rootAttrs still writes `disabled` '
       + 'after the pass-through attrs, meta.ts still shares one `text`, 34-cardstats.css still has the two hex fills, and '
-      + 'the three TODO(ds) splits are still in pages/home.ts, challenge.ts and league.ts.',
+      + 'the three TODO(ds) splits are still in pages/home.ts, challenge.ts and league.ts.\n\n'
+      + '2026-11-10 (steward, BL-63): the sixth doneWhen line (the card stats bar fills) is DONE: tokens.css gains '
+      + '--color-data-draft (#4fb3c9) and --color-data-constructed (#9aa5b0), the funnel bars\' categorical colours, '
+      + 'kept apart from --color-winrate-up although the draft one shares its value (a count is not a win rate). '
+      + '34-cardstats.css reads them; same pixels. 921\'s ratchet for pages/cardstats went 3 → 1 (the hover row\'s '
+      + 'white wash is left) and went red with #4fb3c9 put back.',
   },
   {
     id: 'BL-64',

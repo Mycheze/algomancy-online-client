@@ -50,7 +50,7 @@
 .csbarlabel { color: var(--dim); }
 .csbartrack { height: 8px; border-radius: var(--radius-sm); background: var(--panel2); overflow: hidden; }
 .csbarfill { display: block; height: 100%; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; background: var(--accent); min-width: 0; }
-.csbarfill.pick { background: #4fb3c9; } .csbarfill.deck { background: #9aa5b0; } .csbarfill.fate { background: var(--accent); }
+.csbarfill.pick { background: var(--color-data-draft); } .csbarfill.deck { background: var(--color-data-constructed); } .csbarfill.fate { background: var(--accent); }
 .csbarval { font-variant-numeric: tabular-nums; }
 .csbarval small { color: var(--dim); }
 .cshist { display: flex; align-items: flex-end; gap: var(--space-1); height: 70px; padding-top: var(--space-2); }

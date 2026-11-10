@@ -54,7 +54,7 @@ const ALLOW: Record<string, number> = {
   'pages/queue': 3,
   'pages/admin': 12,
   'pages/learn': 16,
-  'pages/cardstats': 3,
+  'pages/cardstats': 1, // 3 → 1 on 2026-11-10: the funnel bars' fills became --color-data-draft / -constructed (BL-63)
   'shared/touch': 2,
   'shared/drag': 3,
   // moved out of board/ (exempt) in the design-system round, 2026-11-03: the report pill's,
