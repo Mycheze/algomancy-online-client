@@ -246,7 +246,23 @@ notes before editing. Then:
   the code you changed (`node --test <file>` from its package), plus
   `npm --prefix client/ui run typecheck` and
   `client/engine/node_modules/.bin/tsc --noEmit -p client/server/tsconfig.json`
-  and the engine's typecheck when you touched those.
+  and the engine's typecheck when you touched those. **Any edit in
+  `client/ledgers/`** (a CT filed beside a fix counts) → `cd client/ledgers &&
+  npm run typecheck` (2026-11-09, report #364: an unused variable in a new
+  CT's proof, red at the gate in 21 s, never compiled by the run).
+- **Text you changed is read by tests you have not opened.** Many tests
+  regex the source, or name another test by its title. Before committing, grep
+  ALL FOUR test dirs for a plain fragment of every string you rewrote — the
+  old wording, an old `<h3>`, an old test title — with no regex punctuation in
+  the pattern (`\?` in the test does not match `?` in your grep):
+  `grep -rlF 'Leave the match' client/*/test client/ledgers`. Run every hit.
+  (2026-11-10, BL-10 dialogs: reworded overlay markup; `ui/test/292` and
+  `engine/test/232` — an engine-dir test reading UI — went red; the run had
+  grepped only ui/ and server/, with `h3` in the pattern.) A **renamed test
+  title** is a ledger guard gone dead: `grep -rnF '<old title>' client/ledgers`
+  and run `engine/test/70-playtest-ledger` and `154-guard-shape` (2026-11-10,
+  Iyngstra: report #203's guards named two titles the run renamed; repair run).
+  Keep `\'` out of single-quoted titles — a guard cannot name one.
 - **The censuses** — tests that scan the whole repo, so no targeted run finds
   them. They turned most red gates of 2026-11-07/08 red (33 minutes each, plus
   a repair run). Run the one your change feeds:
@@ -255,6 +271,9 @@ notes before editing. Then:
   move each span to the line that now does it, then `npm --prefix client run
   cr:check`; 2026-11-08, report #342, worked example `a4602db5`) and
   `engine/test/800-cc-drift-guard` (~1 min; when it moves, §8a; report #344);
+  a card's trigger, static or cost hook added, removed or reshaped →
+  `engine/test/71-card-ledger` (a hand-kept tally; update it AND its table
+  with the card and why — 2026-11-10, Iyngstra, 94 → 93 guards);
   a page or URL parameter → `server/test/771-link-preview`; a new
   `localStorage` key → `ui/test/267-legal-and-attribution` (the privacy page
   lists it); a `server/` import from `ui/` → `engine/test/282-dom-free-trio`;
