@@ -434,6 +434,12 @@ const OPEN: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "Continues #367: took back proud's Fireball 1 cast at Nyar before blocks [119]-[120]; proud agreed. Replayed, proud passed instead, Nyar declared blocks [121], and proud cast the Fireball after blocks at Crevice Lurker [122], which died in combat. The token was offered both before and after blocks; the player changing their own timing and target. No defect.",
   },
+  {
+    id: 369, room: "ZKNW", date: "2026-11-10",
+    report: "Nyar, seat 0, agreed fix: back to before proud's Fireball spell token (turn 7 battle). \"test\"",
+    status: 'agreed-fix',
+    note: "Third take-back in ZKNW (after #367, #368). ZKNW re-fetched and replayed: 386 of 386 actions, no divergence, FAITHFUL; --branch triage: the redo repeats the first 1 of 4, none of (a)-(d). With Nyar's Squish (Bubb fights Rousing Spirit) and Eminence of the Barrens on the stack, proud cast two Fireball 1 tokens, the first at Bubb and the second at Nyar [255]-[258]; proud agreed to take them back and re-cast both at Nyar [255]-[258], Nyar went to 13. The player changing their own target, with the placeholder reason again. No defect.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
