@@ -162,7 +162,17 @@
   width: 24px; height: 30px; }
 /* the lit step's name; every step has one, shut, for the slide to measure */
 .phicons .phword { flex: none; display: flex; align-items: center; width: 0; overflow: hidden; }
-.phicons .phword > span { flex: none; padding-right: 8px; font-size: 12px; font-weight: 700; line-height: 1; color: var(--text); white-space: nowrap; }
+.phicons .phword > span { flex: none; padding-right: calc(3px + var(--phink, 0px)); font-size: 12px; font-weight: 700; line-height: 1; color: var(--text); white-space: nowrap; }
+/* centred and tight (owner, 2026-11-10: "an equal number of empty pixels from
+   the left of the icon as there are from the right of the last letter"): the
+   word's right padding is the icon's left — the 3px its 18px image sits in
+   from the 24px cell's edge, plus the clear margin inside that icon's own
+   artwork before its ink starts (its left edge in the 125-unit viewBox, × 18/125) */
+.phicons .phi.draft { --phink: 1.6px; }
+.phicons .phi.plan { --phink: 2.7px; }
+.phicons .phi.battle1, .phicons .phi.battle2 { --phink: 2px; }
+.phicons .phi.regroup { --phink: .4px; }
+.phicons .phi.deploy { --phink: 2px; }
 .phicons .phi.cur .phword { width: auto; }
 .phicons .phi img { width: 18px; height: 18px; display: block; }
 .phicons .phi.cur { opacity: 1; background: rgba(217, 164, 65, .22); box-shadow: inset 0 0 0 1px var(--accent); }

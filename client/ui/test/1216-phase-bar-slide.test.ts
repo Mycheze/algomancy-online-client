@@ -74,3 +74,35 @@ test('§3 the name at rest is markup and CSS, one word per step, never a script'
   assert.match(CSS, /\.phicons \.phword \{[^}]*width: 0;[^}]*overflow: hidden;/);
   assert.match(CSS, /\.phicons \.phi\.cur \.phword \{ width: auto; \}/);
 });
+
+/* §4 (owner, 2026-11-10: "There should be an equal number of empty pixels from
+ * the left of the icon as there are from the right of the last letter. Keep
+ * things centered and tight"). The lit box was 3px + the artwork's own margin
+ * on the left, a flat 8px on the right. Each icon's clear left margin, from
+ * its file under data/icons/ (125-unit viewBox at 18px, so × 18/125): */
+const INK: Record<string, number> = {
+  draft: 1.6,    // draft.svg: the outlined card's rect at x=16, stroke 10 → ink from 11
+  plan: 2.7,     // planning.svg: the clipboard's body at x=19
+  haste: 0,      // haste.webp: the chevrons' alpha starts at column 0
+  battle1: 2, battle2: 2,  // battle.webp: alpha from column 14
+  regroup: .4,   // regroup.svg: the arrowhead at x=5, stroke 5 → ink from 2.5
+  deploy: 2,     // deploy.svg: the base bar at x=14
+};
+
+test('§4 the lit box is as empty right of the name as left of the icon', () => {
+  const CSS = readStyles();
+  const px = (re: RegExp): number => { const m = CSS.match(re); assert.ok(m, `no ${re}`); return parseFloat(m![1]!); };
+  const cell = px(/\.phicons \.phic \{[^}]*?\bwidth: ([\d.]+)px/);
+  const img = px(/\.phicons \.phi img \{ width: ([\d.]+)px/);
+  const pad = CSS.match(/\.phicons \.phword > span \{[^}]*padding-right: calc\(([\d.]+)px \+ var\(--phink, 0px\)\)/);
+  assert.ok(pad, 'the name\'s right padding is the icon\'s inset plus its artwork\'s margin');
+  assert.equal(parseFloat(pad![1]!), (cell - img) / 2, 'the fixed part is the image\'s inset in its cell');
+  const body = MAIN.slice(MAIN.indexOf('function phaseIconsHtml'), MAIN.indexOf('function battleStepIndex'));
+  const keys = [...body.matchAll(/key: '(\w+)'/g)].map(m => m[1]!);
+  assert.deepEqual(keys.slice().sort(), Object.keys(INK).sort(), 'every step is measured');
+  for (const k of keys) {
+    const m = CSS.match(new RegExp(`\\.phicons \\.phi\\.${k}\\b[^{]*\\{ --phink: ([\\d.]+)px; \\}`))
+      ?? CSS.match(new RegExp(`\\.phi\\.${k}\\b[^{]*\\{ --phink: ([\\d.]+)px; \\}`));
+    assert.equal(m ? parseFloat(m[1]!) : 0, INK[k], `${k}: the right margin matches the icon's clear left margin`);
+  }
+});

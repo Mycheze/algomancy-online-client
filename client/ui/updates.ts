@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-10', kind: 'fix', text: 'The lit box in the phase bar is now centred on its icon and name: the same space on both sides, with no extra gap after the word.' },
   { date: '2026-11-10', kind: 'change', text: 'Badges beside a player\'s name at the table are now small icons: ⚖ for a judge, 🏆 for a league champion. League champions wear theirs now too. Hover or tap the icon to see what it is.' },
   { date: '2026-11-10', kind: 'fix', text: 'The bar telling you what to do no longer breaks its sentence into gappy pieces. Blocking now reads "choose your blockers — click one of your units, then a front or back space".' },
   { date: '2026-11-10', kind: 'change', text: 'The phase bar above your hand now names the current phase, and the box slides along when the phase changes, so you can see where the turn is at a glance.' },
