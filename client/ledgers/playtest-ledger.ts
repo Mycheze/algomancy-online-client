@@ -471,12 +471,6 @@ const OPEN: LedgerEntry[] = [
     note: "Fifth take-back in FNZY (see #370). --branch triage: none of (a)-(d). proud had attacked in two columns, Rousing Spirit with Spirit of Vengeance behind it and Mischievous Reclaimer alone [386] ([[185,194],[189]]), then picked Spiteful Shadow for Rousing Spirit's trigger [387]; after the rewind proud attacked with all three in separate columns [386] ([[194],[185],[189]]) and picked Spiteful Shadow again [387]. The attacker changing their own formation. No defect.",
   },
   {
-    id: 375, room: "", date: "2026-11-10",
-    report: "mycheze (ux, minor, home page): \"when declaring attackers, the transition is no longer as smooth and the cards leap back for a single frame to your side of the battle field when you submit the attackers. They should just stay there and not redraw after hitting submit.\"",
-    status: 'live',
-    note: "Real, found in the code (no room; no browser on the box to watch the frame). Pressing Attack! sends the attack and clears the built plan in the same tick (ui/main.ts declareBuiltAttack), but over a socket nothing is applied until the server's update arrives, so the board repaints the old declare-step state with no plan and the chosen attackers stand back in In Play for one round trip. Blocks fixed this exact thing as [77] (the plan is held until the declaration lands); attacks never were. CT-554.",
-  },
-  {
     id: 376, room: "FMTA", date: "2026-11-10",
     report: "mycheze (ux, medium): \"Activating resources during the resource step doesn't need a whole button and zoom in effect on mobile/touch. Its very clear that during the resource step you're going to activate your resources. Its very clear can just do it.\"",
     status: 'live',

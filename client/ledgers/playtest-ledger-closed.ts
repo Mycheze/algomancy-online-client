@@ -5253,4 +5253,11 @@ export const CLOSED: LedgerEntry[] = [
     guards: ["40-light-c.test.ts::Suspend: a player whose life can't change cannot pay life — Aurozoa's recall is neither offered nor accepted"],
     note: "Real, reproduced. AZWN fetched and replayed (311/311, no divergence). Filed at [286], turn 8 battle, after Karanda's Suspend on themself had locked their life (it swallowed Siphon Life's 8). At [290] the game offers Aurozoa's 'pay 1 life: recall me' on Leaping Lillik, and taking it costs nothing: the lock swallows the payment and the recall still happens. Life costs never ask whether the total is locked, though a cost that cannot be paid cannot be offered. Every life cost shares the one check. CT-553. Fixed 2026-11-09 (steward): while your life total can't change, a life cost is not offered and is refused if asked for, so Aurozoa's recall waits until the battle (and Suspend's lock) is over.",
   },
+  {
+    id: 375, room: "", date: "2026-11-10",
+    report: "mycheze (ux, minor, home page): \"when declaring attackers, the transition is no longer as smooth and the cards leap back for a single frame to your side of the battle field when you submit the attackers. They should just stay there and not redraw after hitting submit.\"",
+    status: 'fixed',
+    guards: ['1220-attack-plan-held-until-it-lands.test.ts::CT-554: after Attack! and before the server answers, the attackers stay in the fight'],
+    note: "Real, found in the code (no room; no browser on the box to watch the frame). Pressing Attack! sends the attack and clears the built plan in the same tick (ui/main.ts declareBuiltAttack), but over a socket nothing is applied until the server's update arrives, so the board repaints the old declare-step state with no plan and the chosen attackers stand back in In Play for one round trip. Blocks fixed this exact thing as [77] (the plan is held until the declaration lands); attacks never were. CT-554. Fixed 2026-11-10 (steward): Attack! now keeps the formation drawn until the server says the attack landed, and a refused attack keeps it to amend.",
+  },
 ];

@@ -1401,6 +1401,17 @@ interface UiState {
    * `ensureBlockKeys` drops it then.
    */
   blockSent: boolean;
+  /**
+   * CT-554 / report #375: [77]'s hold, for the attack. An attack declaration
+   * is on the wire and the board is still drawing the formation that produced
+   * it. Dropping the plan the instant Attack! was pressed repainted the old
+   * declare-step state with no plan, so every chosen attacker leapt back into
+   * In Play for one round trip (and a refusal found the plan already gone).
+   * `dropLandedAttack` lets go of it once a state says that declare step is
+   * over. '' = nothing in flight; else the step's key (`declareKey`) — a
+   * round-2 declare step is another declaration, not this one still open.
+   */
+  attackSent: string;
 }
 /** the persisted trio, filtered against the engine's element list so a stale
  * or hand-edited localStorage entry can never smuggle in a non-element */
@@ -1427,7 +1438,7 @@ const freshUi = (): UiState => ({
   homeFixedTrio: false,
   confirmDeploy: null, confirmHaste: null, acted: [null, null], confirmAct: null, tapGo: null,
   bottomPick: [], bottomFor: '', blockLine: null, blockLeft: 0,
-  blockRefusal: null, blockSent: false,
+  blockRefusal: null, blockSent: false, attackSent: '',
 });
 
 // ── constructed decks (algomancer.cc format, docs: server/decks.ts) ────
@@ -8109,6 +8120,7 @@ function renderNow(): boolean {
   ensureDraftUi();
   ensureBottomUi();
   $app.classList.toggle('pickup', pickOpen());   // CT-369: the rail stands over the pick's dim
+  dropLandedAttack();   // CT-554: before the prefill and the block step read ui.columns
   ensureCounterPrefill();
   ensureBlockKeys();
   modHostCache = moddingHosts();   // #4: legal hosts for a mod-in-progress glow
@@ -10525,7 +10537,28 @@ function declareBuiltAttack(): void {
   if (!s.battle || s.battle.step !== 'declare') return;   // the window moved
   const cols = ui.columns.filter(c => c.length);
   act({ type: 'declareAttack', seat: s.battle!.attacker, columns: cols, spellTokens: ui.spellTokens.slice() });
-  if (!uiError) { ui.columns = []; ui.backOnly = []; ui.carrying = null; ui.spellTokens = []; ui.rideAnswered = false; }
+  // CT-554 / report #375: sending is not landing. act() only puts the intent
+  // on the wire, so the plan stays drawn until a state says the declare step
+  // is over (dropLandedAttack) — clearing it here showed the attackers back
+  // in In Play until the server answered, and lost the plan on a refusal.
+  if (!uiError) { ui.carrying = null; ui.attackSent = declareKey(); }
+}
+
+/** which declare step this is: '' outside one. A round-2 (counter)attack's
+ * declare step has another key than the round-1 one before it. */
+function declareKey(): string {
+  const s = h.state, b = s.battle;
+  return b?.step === 'declare' ? `${s.turn}:${b.round}:${b.attacker}:${b.region}` : '';
+}
+
+/** CT-554: the sent attack LANDED (its declare step is over, or the battle
+ * is) — only now drop the formation that produced it. Runs before the
+ * counterattack prefill and ensureBlockKeys, so neither ever starts from an
+ * attack plan that has already been declared. */
+function dropLandedAttack(): void {
+  if (!ui.attackSent || ui.attackSent === declareKey()) return;
+  ui.attackSent = '';
+  ui.columns = []; ui.backOnly = []; ui.spellTokens = []; ui.rideAnswered = false;
 }
 
 /** CT-298: put every sent spell token a counterattack owes into the ride list
