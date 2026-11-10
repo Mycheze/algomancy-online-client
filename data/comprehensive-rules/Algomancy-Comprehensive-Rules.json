@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:99a8d04e1ab003ca",
+ "generated_from": "sha256:287dd7222c28f28d",
  "rules": [
   {
    "num": "100.1",
@@ -199,7 +199,7 @@
     "704"
    ],
    "examples": [
-    "Recall: \"Each player recalls a unit and loses 2 life.\" A player with no unit to recall still loses 2 life.",
+    "Recall: \"Each player recalls one of their units and loses 2 life.\" A player with no unit to recall still loses 2 life.",
     "Amphivore carries two grafts, Flame Juggle and Ralph, and its ability runs three times. The first pass gives Amphivore to the opponent and makes three 1/1s; later passes cannot give it again, so their \"If you do\" makes nothing, but Flame Juggle still happens all three times."
    ],
    "basis": "mixed",
@@ -415,7 +415,7 @@
     "101.6"
    ],
    "examples": [
-    "Recall (\"Each player recalls a unit and loses 2 life\") cast in a battle makes both players present in that battle region lose 2 life."
+    "Recall (\"Each player recalls one of their units and loses 2 life\") cast in a battle makes both players present in that battle region lose 2 life."
    ],
    "basis": "printed",
    "scope": "game",
@@ -2338,7 +2338,7 @@
    "text": "X may be 0 unless the card says otherwise. Choosing X = 0 is legal even when it makes the effect do nothing.",
    "see": [],
    "examples": [
-    "No Hand Killer can be activated with an empty hand at X = 0, and its [once] is spent.",
+    "Lost Shade can be activated with an empty hand at X = 0, and its [once] is spent.",
     "Torrential Reclamation for X = 0 recalls nothing, and nobody sacrifices."
    ],
    "basis": "mixed",
@@ -3538,7 +3538,7 @@
    "text": "Activating a [once] ability with X = 0 is legal, and it spends the use.",
    "see": [],
    "examples": [
-    "No Hand Killer can be activated with an empty hand, and the activation spends its [once]."
+    "Lost Shade can be activated with an empty hand, and the activation spends its [once]."
    ],
    "basis": "owner",
    "scope": "game",
@@ -3852,7 +3852,7 @@
    "see": [],
    "examples": [
     "Twin Flame (\"up to two target units\") can be played with no targets.",
-    "Tilling the Graves (\"Recall two target units in your bin\") says no \"up to\": once cast, it asks for both units and offers no way to stop at one.",
+    "Tilling the Graves (\"Recall up to two target units in your bin\") may stop at none, at one, or take both.",
     "Penance (\"Any number of target players each lose 1 life. Draw a card.\") may be played with no target, and its caster still draws."
    ],
    "basis": "mixed",
@@ -3861,7 +3861,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "partial"
   },
   {
    "num": "110.1d",
@@ -4391,7 +4391,7 @@
     "Fight cannot be played unless its region holds an ally and another unit.",
     "Rebalance, which targets nothing, can be played with no unit of its controller's.",
     "Abduct (\"Gain control of target unit with cost [x] or less …\") against a lone cost-1 attacker can be played when its caster can pay an X of 1 or more. X = 0 is not offered, since at 0 there is no unit to take.",
-    "Tilling the Graves (\"Recall two target units in your bin\") cannot be played while its caster's bin holds fewer than two units.",
+    "Blight's End (\"Augment a Wraith onto X target units\") with X = 1 must name its one target: no stop is offered before it.",
     "Tidal Reversion (\"For each player, recall target unit that player controls\") played for free by Tides of the Cosmos takes one unit of each player, and Tides does not offer it while either player has no unit there."
    ],
    "basis": "mixed",
@@ -4400,7 +4400,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "partial"
   },
   {
    "num": "110.8",
@@ -20798,7 +20798,7 @@
     "107"
    ],
    "examples": [
-    "Blight's End (\"Augment a Wight onto X target units\") with one unit in the battle offers X of 0 or 1, and at X = 1 it must take that unit.",
+    "Blight's End (\"Augment a Wraith onto X target units\") with one unit in the battle offers X of 0 or 1, and at X = 1 it must take that unit.",
     "Blight's End cast for X = 2 with two units asks for both and never offers a stop after one.",
     "Torrential Reclamation (\"Recall X target nontoken allies\") with no ally in the fight can be cast only for X = 0."
    ],
@@ -29269,7 +29269,7 @@
     "101.5"
    ],
    "examples": [
-    "Recall (\"Each player recalls a unit and loses 2 life\"): a player with no unit to recall still loses 2 life.",
+    "Recall (\"Each player recalls one of their units and loses 2 life\"): a player with no unit to recall still loses 2 life.",
     "Shoreline Specter: if the recall is declined, the life drain that follows \"If you do\" does not happen."
    ],
    "basis": "mixed",
@@ -29783,7 +29783,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "partial"
   },
   {
    "num": "801.13a",
@@ -31054,7 +31054,7 @@
    ],
    "examples": [
     "A unit printed 7/5 that Aberrant Statweaver makes base 3/3 is an 11/7 while it is Inverted.",
-    "Its Dark Bubb (printed 4/6, Inverted) beside Aberrant Statweaver is a 5/9, not a 3/3."
+    "Oodvick (printed 5/6, Inverted) beside Aberrant Statweaver is a 7/9, not a 3/3."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -34657,7 +34657,7 @@
     "504.1"
    ],
    "examples": [
-    "Dispatch Courier says \"play a unit during the mana step as if it had [Haste]\": its controller may play a unit in the haste step."
+    "Cards with the haste icon \"can be played during the mana step\" (Rulebook 2023): that is the step Dispatch Courier now calls the haste step, in which its controller may play a unit."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -34667,7 +34667,7 @@
    ],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "partial"
   },
   {
    "num": "803.2b",

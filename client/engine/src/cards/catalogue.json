@@ -1789,7 +1789,7 @@
   "virus": true,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When I spawn or become modded, put a +1/+1 counter on each of your units. {/n}[Augment] When I despawn, remove all counters from your units.",
+  "text": "When I spawn or am modded, put a +1/+1 counter on each of your units. {/n}[Augment] When I despawn, remove all counters from your units.",
   "image": "Celestial-Fluxmorph.jpg",
   "class": "card",
   "supertype": "Unit",
@@ -1806,8 +1806,8 @@
   "hasArt": true,
   "scripted": true,
   "provisional": false,
-  "modPeek": 0.131,
-  "textTop": 0.748
+  "modPeek": 0.13,
+  "textTop": 0.751
  },
  "Celestial Purge": {
   "name": "Celestial Purge",
@@ -2869,7 +2869,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] Each turn, you may play a unit during the mana step as if it had [Haste].",
+  "text": "[Augment] Each turn, you may play a unit during the haste step as if it had [Haste].",
   "image": "Dispatch-Courier.jpg",
   "class": "card",
   "supertype": "Unit",
@@ -4737,7 +4737,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "At the end of turn, create a Fireball X, where X is one plus the number of spell tokens you control. {/n}[Augment] Your spell tokens stay through regroup.",
+  "text": "At the end of turn, create a Fireball X+1, where X is the number of spell tokens you control. {/n}[Augment] Your spell tokens stay through regroup.",
   "image": "Harbinger-of-Immolation.jpg",
   "class": "card",
   "supertype": "Unit",
@@ -4754,7 +4754,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": false,
-  "modPeek": 0.098,
+  "modPeek": 0.095,
   "textTop": 0.751
  },
  "Hearthwood Ancient": {
@@ -4811,7 +4811,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment][once] Whenever another player plays a spell, you may exchange control of me for that spell. If you do, you may choose new targets for that spell.",
+  "text": "[Augment][once] Whenever another player plays a spell, you may exchange control of me and that spell. If you do, you may choose new targets for that spell.",
   "image": "Hexbane-Shiitake.jpg",
   "class": "card",
   "supertype": "Unit",
@@ -8046,7 +8046,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Whenever a mod is applied to me, create {/n}an X/X unit, where X is the mod's cost.",
+  "text": "Whenever I am modded, create an X/X unit, where X is the mod's cost.",
   "image": "Perpetual-Construct.jpg",
   "class": "card",
   "supertype": "Unit",
@@ -8425,7 +8425,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Erase me: Create a non-prismite resource, then activate it. Do this only during the mana step. {i}(This does not use one of your activations for turn.)",
+  "text": "Erase me: Create a non-prismite resource, then activate it. Do this only during the resource step. {i}(This does not use one of your activations for turn.)",
   "image": "Prismite.jpg",
   "class": "resource",
   "supertype": "Resource",
@@ -8714,7 +8714,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Switch1] Each player recalls a unit and loses 2 life.",
+  "text": "[Switch1] Each player recalls one of their units and loses 2 life.",
   "image": "Recall.jpg",
   "class": "card",
   "supertype": "Spell",
@@ -8730,8 +8730,8 @@
   "hasArt": true,
   "scripted": true,
   "provisional": false,
-  "modPeek": 0.095,
-  "textTop": 0.848
+  "modPeek": 0.127,
+  "textTop": 0.816
  },
  "Reclaimer of Secrets": {
   "name": "Reclaimer of Secrets",
@@ -8966,7 +8966,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] Whenever I am I dealt damage, I deal that much damage to each opponent.",
+  "text": "[Augment] Whenever I am dealt damage, I deal that much damage to each opponent.",
   "image": "Restitution.jpg",
   "class": "card",
   "supertype": "Unit",
@@ -8983,8 +8983,8 @@
   "hasArt": true,
   "scripted": true,
   "provisional": false,
-  "modPeek": 0.129,
-  "textTop": 0.813
+  "modPeek": 0.127,
+  "textTop": 0.815
  },
  "Resurrect": {
   "name": "Resurrect",
@@ -11512,7 +11512,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "End this battle. Erase this spell. {i}(Negate all effects, this battle is over.)",
+  "text": "End this battle. Erase me. {i}(Negate all effects, this battle is over.)",
   "image": "Temporal-Rift.jpg",
   "class": "card",
   "supertype": "Spell",
@@ -11656,7 +11656,7 @@
   "virus": true,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] Whenever a unit token is created, put a -1/-1 counter on me. If you do, put +1/+1 counter on that token.",
+  "text": "[Augment] Whenever a unit token is created, put a -1/-1 counter on me. If you do, put a +1/+1 counter on that token.",
   "image": "The-World-Shepherd.jpg",
   "class": "card",
   "supertype": "Unit",
@@ -11673,8 +11673,8 @@
   "hasArt": true,
   "scripted": true,
   "provisional": false,
-  "modPeek": 0.162,
-  "textTop": 0.78
+  "modPeek": 0.158,
+  "textTop": 0.784
  },
  "Throw off a Cliff": {
   "name": "Throw off a Cliff",
@@ -12573,7 +12573,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Each player recalls two units. If four or more units were recalled this way, repeat this.",
+  "text": "Each player recalls two of their units. If four or more units were recalled this way, repeat this.",
   "image": "Upheaval.jpg",
   "class": "card",
   "supertype": "Spell",
@@ -12590,7 +12590,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": false,
-  "textTop": 0.819
+  "textTop": 0.78
  },
  "Vaporweave Eidolon": {
   "name": "Vaporweave Eidolon",
@@ -13634,7 +13634,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Augment a Wight onto X target units.",
+  "text": "Augment a Wraith onto X target units.",
   "image": "Blight's-End.jpg",
   "class": "card",
   "supertype": "Spell",
@@ -14420,7 +14420,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Whenever a player trashes a card, each opponent loses 1 life.{/n}[Augment] After combat, each player discards a card.",
+  "text": "Whenever a card is trashed, each opponent loses 1 life.{/n}[Augment] After combat, each player discards a card.",
   "image": "Cthyrian-Culler.jpg",
   "class": "card",
   "supertype": "Unit",
@@ -14436,7 +14436,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.095,
+  "modPeek": 0.094,
   "textTop": 0.787
  },
  "Cthyrian Rector": {
@@ -15443,8 +15443,8 @@
   "modPeek": 0.127,
   "textTop": 0.815
  },
- "Grim Bargain": {
-  "name": "Grim Bargain",
+ "Consuming Mass": {
+  "name": "Consuming Mass",
   "factions": [
    "dark"
   ],
@@ -15460,7 +15460,7 @@
   "burst": false,
   "augmentAttrs": [],
   "text": "For each [3] spent to play me, each player sacrifices a unit. Draw a card for each nontoken unit you sacrifice this way.",
-  "image": "Grim-Bargain.jpg",
+  "image": "Consuming-Mass.jpg",
   "class": "card",
   "supertype": "Spell",
   "subtypes": [
@@ -15641,7 +15641,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Target player's life total becomes equal to twice the number of cards in all bins.",
+  "text": "Set target player's life total equal to twice the number of cards in all bins. Erase me.",
   "image": "Haunting-Memories.jpg",
   "class": "card",
   "supertype": "Spell",
@@ -15811,7 +15811,7 @@
   "mana": 1,
   "power": 0,
   "toughness": 0,
-  "type": "{Battle} Nature Spell",
+  "type": "{Battle} Bedlam Spell",
   "kind": "spell",
   "timing": "battle",
   "attrs": [],
@@ -15823,7 +15823,7 @@
   "class": "card",
   "supertype": "Spell",
   "subtypes": [
-   "Nature"
+   "Bedlam"
   ],
   "augment": false,
   "complexity": "Simple",
@@ -15836,14 +15836,14 @@
   "provisional": true,
   "textTop": 0.784
  },
- "Its Dark Bubb": {
-  "name": "Its Dark Bubb",
+ "Oodvick": {
+  "name": "Oodvick",
   "factions": [
    "dark"
   ],
   "cost": "d",
   "mana": 4,
-  "power": 4,
+  "power": 5,
   "toughness": 6,
   "type": "[Augment] {Inverted} Slime Unit",
   "kind": "unit",
@@ -15857,7 +15857,7 @@
    "Inverted"
   ],
   "text": "{i}(Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2.)",
-  "image": "Its-Dark-Bubb.jpg",
+  "image": "Oodvick.jpg",
   "class": "card",
   "supertype": "Unit",
   "subtypes": [
@@ -16202,8 +16202,8 @@
   "modPeek": 0.177,
   "textTop": 0.813
  },
- "Gzxyclop": {
-  "name": "Gzxyclop",
+ "Bloatfiend": {
+  "name": "Bloatfiend",
   "factions": [
    "dark"
   ],
@@ -16211,7 +16211,7 @@
   "mana": 1,
   "power": 1,
   "toughness": 2,
-  "type": "{Virus} Blight Zombie Unit",
+  "type": "{Virus} Blight Anima Unit",
   "kind": "unit",
   "timing": "deploy",
   "attrs": [],
@@ -16219,12 +16219,12 @@
   "burst": false,
   "augmentAttrs": [],
   "text": "When I spawn, draw a card.{/n}[Augment] When I despawn, discard two cards.",
-  "image": "Gzxyclop.jpg",
+  "image": "Bloatfiend.jpg",
   "class": "card",
   "supertype": "Unit",
   "subtypes": [
    "Blight",
-   "Zombie"
+   "Anima"
   ],
   "augment": false,
   "complexity": "Simple",
@@ -16695,8 +16695,8 @@
   "provisional": true,
   "textTop": 0.781
  },
- "No Hand Killer": {
-  "name": "No Hand Killer",
+ "Lost Shade": {
+  "name": "Lost Shade",
   "factions": [
    "fire",
    "dark"
@@ -16713,7 +16713,7 @@
   "burst": false,
   "augmentAttrs": [],
   "text": "[Augment] [once] Discard X cards: Each opponent sacrifices X units.",
-  "image": "No-Hand-Killer.jpg",
+  "image": "Lost-Shade.jpg",
   "class": "card",
   "supertype": "Unit",
   "subtypes": [
@@ -16897,7 +16897,7 @@
   "virus": true,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] Discard a card or sacrifice a nontoken unit: I gain +2/+2 until regroup.",
+  "text": "[Augment] Discard a card or sacrifice another nontoken unit: I gain +2/+2 until regroup.",
   "image": "Pallid-Gorger.jpg",
   "class": "card",
   "supertype": "Unit",
@@ -16913,8 +16913,8 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.129,
-  "textTop": 0.813
+  "modPeek": 0.128,
+  "textTop": 0.815
  },
  "Penance": {
   "name": "Penance",
@@ -17615,7 +17615,7 @@
    "cost": "d",
    "mana": 2
   },
-  "text": "When I enter your bin, you may pay [2]. If you do, each opponent sacrifices a nontoken unit.",
+  "text": "When I am trashed, you may pay [2]. If you do, each opponent sacrifices a nontoken unit.",
   "image": "Sacrifice-Dude.jpg",
   "class": "card",
   "supertype": "Unit",
@@ -17631,7 +17631,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "textTop": 0.82
+  "textTop": 0.821
  },
  "Sarcophage": {
   "name": "Sarcophage",
@@ -17816,7 +17816,7 @@
   ],
   "cost": "lb",
   "mana": 6,
-  "power": 7,
+  "power": 5,
   "toughness": 4,
   "type": "{Blessed} Cosmic Jellyfish Unit",
   "kind": "unit",
@@ -18026,8 +18026,8 @@
   "modPeek": 0.129,
   "textTop": 0.813
  },
- "Spore of Regenesis": {
-  "name": "Spore of Regenesis",
+ "The Birthmother": {
+  "name": "The Birthmother",
   "factions": [
    "dark"
   ],
@@ -18043,7 +18043,7 @@
   "burst": false,
   "augmentAttrs": [],
   "text": "When I die, you may erase me to put all units with cost [1] from your bin into play.",
-  "image": "Spore-of-Regenesis.jpg",
+  "image": "The-Birthmother.jpg",
   "class": "card",
   "supertype": "Unit",
   "subtypes": [
@@ -18432,7 +18432,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Recall two target units in your bin, then discard a card.",
+  "text": "Recall up to two target units in your bin, then discard a card.",
   "image": "Tilling-the-Graves.jpg",
   "class": "card",
   "supertype": "Spell",
@@ -18630,8 +18630,8 @@
   "provisional": true,
   "textTop": 0.78
  },
- "Unrelenting Horror": {
-  "name": "Unrelenting Horror",
+ "Stakoloth": {
+  "name": "Stakoloth",
   "factions": [
    "dark"
   ],
@@ -18647,7 +18647,7 @@
   "burst": false,
   "augmentAttrs": [],
   "text": "When I spawn, discard a card.{/n}When you trash a card, [Switch1] I gain +2/+2 and {g}piercing until regroup.",
-  "image": "Unrelenting-Horror.jpg",
+  "image": "Stakoloth.jpg",
   "class": "card",
   "supertype": "Unit",
   "subtypes": [
@@ -18794,7 +18794,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] When a nontoken card is played during battle, sacrifice me. If you do, negate that effect. {i}(This is not optional.)",
+  "text": "When a nontoken card is played during battle, sacrifice me. If you do, negate that effect. {i}(This is not optional.)",
   "image": "Void-Mandible.jpg",
   "class": "card",
   "supertype": "Unit",
@@ -18811,8 +18811,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.161,
-  "textTop": 0.781
+  "textTop": 0.78
  },
  "Vroot": {
   "name": "Vroot",

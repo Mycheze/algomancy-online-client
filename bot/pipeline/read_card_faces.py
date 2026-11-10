@@ -61,7 +61,7 @@ missing symbol, no text check able to see it.
 ⚠ AND THE HAND SWEEP THAT FOLLOWED MISSED THREE MORE. The population was built
 by ENUMERATING the keyword attributes — Blessed, Piercing, Flying, Swift … —
 and looking at the type bar of every card carrying one. Gublin prints `Lethal`,
-Its Dark Bubb prints `Inverted`, Just a Unit prints `Pure`; none of the three
+Oodvick prints `Inverted`, Just a Unit prints `Pure`; none of the three
 was in the enumeration, so none was ever looked at. This reader found all three
 on its first run because it does not know what a keyword is — it looks for the
 glyph. That is the argument for the region, and it is a better one than the
@@ -280,7 +280,7 @@ BANNER_CONTROL = {
 AUG_CONTROL = {
     # prints the cross
     'Ephemeral Skywalker': True, 'Bumblecrab': True, 'Hammer of Justice': True,
-    'Blessed Thing': True, 'Gublin': True, 'Its Dark Bubb': True,
+    'Blessed Thing': True, 'Gublin': True, 'Oodvick': True,
     'Just a Unit': True, 'Ambling Mountaintop': True,
     # does not, and every one of them looks like it might
     'Air Plant': False, 'Greed Angel': False, 'Tithe Enforcer': False,

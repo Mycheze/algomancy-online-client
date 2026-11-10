@@ -79,7 +79,7 @@
  *    'unit'`, and Rampart Guardian is a printed {Tough} 0/4 while Child of
  *    Aether is a printed {Balanced} one — both legal targets on their own, no
  *    virus donation needed. A Burgeoned Rampart Guardian read 0/24 where
- *    "double its defense (8)" is 16. (Its Dark Bubb prints {Inverted} and is
+ *    "double its defense (8)" is 16. (Oodvick prints {Inverted} and is
  *    the layer-5 flavour of the same reading.) `doubleStats` above solves for
  *    the layer-3 delta that lands the EFFECTIVE stat on the promised number
  *    instead of assuming the layers above it are the identity.
@@ -544,7 +544,7 @@ card('Growing Plague', {
 card('Hexbane Shiitake', {
   augmentText: [{
     type: 'triggered', events: ['spellPlayed'], bounded: true,   // [once]
-    label: 'exchange control of me for that spell (you may)',
+    label: 'exchange control of me and that spell (you may)',
     when: (g, self, ev) => ev.data?.seat !== self.controller,
     effect: {
       run: (g, ctx) => {
@@ -570,7 +570,7 @@ card('Hexbane Shiitake', {
         // reachable by (card, controller) at all; it is unreachable by id,
         // because `pushSpellCopy` never goes through `commitItem` and no
         // 'spellPlayed' event ever names a copy. The printed pronoun demands
-        // it: "you may exchange control of me for THAT spell" — that spell is
+        // it: "you may exchange control of me and THAT spell" — that spell is
         // the one the play event named, and RAQ (_passer, quoted on
         // StackItem.copy) says a copy is not played: *"the 1st copy wasn't
         // 'played'"*. So the exchange is for the played spell, never for the

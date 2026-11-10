@@ -143,7 +143,7 @@ test('CT-132 §1 the four cards the ticket named are in the scan\'s subject set'
   // fell out of it, §1 above would go green for the wrong reason.
   const cards = new Set(HITS.map(h => h.card));
   for (const name of ['Brough', 'Blob of the Dark Order', 'Inexorable Miasma',
-    'Unrelenting Horror']) {
+    'Stakoloth']) {
     assert.ok(cards.has(name),
       `${name} is no longer reached by the scan — §1 would pass without checking it`);
   }

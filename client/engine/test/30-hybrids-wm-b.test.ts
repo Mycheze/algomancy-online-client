@@ -207,7 +207,7 @@ test('Temporal Rift: negates all stack effects and ends the battle', () => {
   // round 1 ended with no sent counterattackers → the cascade reaches deployment
   assert.equal(h.state.phase, 'deploy', 'round 2 was skipped straight into regroup/deploy');
   assert.ok(ent(h, atk), 'the attacker survived (combat never happened)');
-  // "Erase this spell" (CARD-TODO #15): the battle ending does not take the
+  // "Erase me" (CARD-TODO #15): the battle ending does not take the
   // Rift's disposal with it — its item is already off the stack, and
   // afterParts runs after the cascade. Detail in 89-self-erase.
   assert.ok(!h.state.players[D]!.bin.includes('Temporal Rift'), 'the Rift is not binned');

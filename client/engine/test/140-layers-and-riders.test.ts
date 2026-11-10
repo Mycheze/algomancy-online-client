@@ -164,7 +164,7 @@ test('Hexbane Shiitake exchanges control for the spell that was PLAYED, not for 
     },
     { swap: true });
   assert.equal(g.s.stack.find(i => i.id === 7201)!.controller, D,
-    '"exchange control of me for THAT spell" — that spell is the one they played');
+    '"exchange control of me and THAT spell" — that spell is the one they played');
   assert.equal(g.s.stack.find(i => i.id === 7202)!.controller, A,
     'a copy was never played, so it is not what the exchange is for');
 });

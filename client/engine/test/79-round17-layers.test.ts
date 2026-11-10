@@ -5,7 +5,7 @@
  *   · STAT LAYER 5, {Inverted} (CR 802.8a) — playtest #73: "Inverted isn't working
  *     on my Malformed Monstrosity. -7/-7 should become +7/+7, making it a
  *     17/16". effStats() literally ended on "// layer 5 (Inverted), 6
- *     (Unaware) go here"; three cards in the pool (Its Dark Bubb, Reality
+ *     (Unaware) go here"; three cards in the pool (Oodvick, Reality
  *     Bender, and every unit either one touches) were the attribute and
  *     nothing else.
  *
@@ -72,7 +72,7 @@ test('CR 802.10c: a unit\'s own damage ability reads the {Powerful} it was GRANT
 /* ── STAT LAYER 5: {Inverted} ──────────────────────────────────────────────
  *
  * CR 802.8a. "Invert the stat changes of inverted units. For example, -1/+2 would
- * become +1/-2." (Its Dark Bubb's own reminder text.)
+ * become +1/-2." (Oodvick's own reminder text.)
  *
  * The operation is on the NET CHANGE FROM BASE. Caleb Gannon derived it in
  * rules-questions and checked it against the per-contribution reading:
@@ -250,20 +250,20 @@ test('CR 802.1k layer 5: hitting 0 mid-calculation is not death — the equation
   assert.deepEqual(effStats(h, u), [2, 2], 'a 1/1 with a -1/-1 counter, inverted, is a 2/2');
 });
 
-test('CR 802.8a layer 5: Its Dark Bubb — the whole card is the attribute, and it works now', () => {
-  // "{Inverted} Slime Unit", d/4, 4/6, with reminder text and nothing else:
+test('CR 802.8a layer 5: Oodvick — the whole card is the attribute, and it works now', () => {
+  // "{Inverted} Slime Unit", d/4, 5/6, with reminder text and nothing else:
   // "(Invert the stat changes of inverted units. For example, -1/+2 would
-  // become +1/-2.)" card('Its Dark Bubb', {}) is the CORRECT definition — the
+  // become +1/-2.)" card('Oodvick', {}) is the CORRECT definition — the
   // card is the type line — which is exactly why nothing in the suite could
   // notice it was dead.
   const h = new Harness(7906);
   toDeployment(h);
   const p = h.state.deployPlayer!;
-  const bubb = spawn(h, p, 'Its Dark Bubb');
+  const bubb = spawn(h, p, 'Oodvick');
   assert.ok(ownAttrs(h, bubb).has('Inverted'), 'prints {Inverted}');
-  assert.deepEqual(effStats(h, bubb), [4, 6], 'no stat changes yet: printed 4/6');
+  assert.deepEqual(effStats(h, bubb), [5, 6], 'no stat changes yet: printed 5/6');
   ent(h, bubb)!.counters = -2;                        // a poison-counter play
-  assert.deepEqual(effStats(h, bubb), [6, 8],
+  assert.deepEqual(effStats(h, bubb), [7, 8],
     'the reminder text, literally: a -2/-2 becomes a +2/+2');
 });
 
@@ -549,17 +549,17 @@ test('CR 802.8d: the class is FIVE cards, computed from the pool and not typed f
   assert.deepEqual(grantors('Tough'), ['Rampart Guardian', 'The Omniphage'],
     '{Tough}: one printed/[Augment] virus, plus the Omniphage\'s per-attribute bin static');
   assert.deepEqual(grantors('Inverted'),
-    ['Beyond, Codex Incarnate', 'Its Dark Bubb', 'Reality Bender', 'The Omniphage'],
+    ['Beyond, Codex Incarnate', 'Oodvick', 'Reality Bender', 'The Omniphage'],
     '{Inverted}: two bodies, one [Augment] virus, one "your units are inverted" static');
 
-  // Its Dark Bubb CAN be donated: its scan prints the type-line [Augment] the
+  // Oodvick CAN be donated: its scan prints the type-line [Augment] the
   // transcription had lost (restored 2026-09-25 — this used to assert []). It
   // is no {Virus}, though, so it only ever lands on its controller's OWN units
   // — which is still why the report's shape, an {Inverted} arriving on an
   // opponent's unit, needed Reality Bender.
-  assert.deepEqual(getCard('Its Dark Bubb').augmentAttrs, ['Inverted'],
-    'Its Dark Bubb donates {Inverted} as an augment mod');
-  assert.equal(getCard('Its Dark Bubb').virus, false,
+  assert.deepEqual(getCard('Oodvick').augmentAttrs, ['Inverted'],
+    'Oodvick donates {Inverted} as an augment mod');
+  assert.equal(getCard('Oodvick').virus, false,
     '…but never to an opponent: it is not a {Virus}');
   // and the escapes, also derived: {Unaware} (layer 6) and the strippers.
   const unaware = allCardNames().filter(n => getCard(n).attrs.includes('Unaware')).sort();

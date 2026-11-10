@@ -1,18 +1,19 @@
 /**
  * CT-299 / CT-305 / CT-303 — a play with required targets needs ALL of them.
  *
- * The owner, 2026-10-16, on Tilling the Graves: it needs both targets,
- * "otherwise it'd say 'up to two'". And generally: "Unless a card says 'up to',
- * it must have targets in order to be cast." CR 110.7; the RAQ (_passer,
- * 2025-08-27): "In order to play a card, you must be able to select the valid
- * targets".
+ * The owner, 2026-10-16, on Tilling the Graves as it then printed: it needs
+ * both targets, "otherwise it'd say 'up to two'". And generally: "Unless a
+ * card says 'up to', it must have targets in order to be cast." CR 110.7; the
+ * RAQ (_passer, 2025-08-27): "In order to play a card, you must be able to
+ * select the valid targets".
  *
- * Tilling the Graves prints "Recall two target units in your bin, then discard
- * a card". It was `min: 0`, so it was offered with an empty bin, a bin holding
- * only a spell, and a bin holding one unit ("target 1 of up to 2" plus a
- * "No targets" button).
+ * Since the designer's 2026-11-10 printing Tilling the Graves DOES say "Recall
+ * up to two target units in your bin, then discard a card", so the owner's
+ * sentence now answers the other way: `min: 0`, playable with any bin, and a
+ * stop at any point (below). The rule for a card WITHOUT "up to" is still
+ * pinned by the X-target spells further down and by the sweep in 477.
  *
- * CT-303 — "Augment a Wight onto X target units" / "Recall X target nontoken
+ * CT-303 — "Augment a Wraith onto X target units" / "Recall X target nontoken
  * allies": X is chosen BEFORE the targets (CR 702.3c), so an X larger than the
  * legal targets is not offered at all, and the target menu never offers a stop
  * short of X. X = 0 with nothing to aim at is still a legal play.
@@ -55,17 +56,17 @@ for (const [label, bin] of [
   ['a bin holding one unit', ['Cinder Scuttler']],
   ['a bin holding one unit and a spell', ['Cinder Scuttler', 'Arc Lightning']],
 ] as const) {
-  test(`Tilling the Graves is not offered with ${label}`, () => {
+  test(`Tilling the Graves ("up to two") is offered with ${label}`, () => {
     const { h, D } = battle(47801, dark());
     h.state.players[D]!.bin = [...bin] as CardName[];
     give(h, D, 'Arc Lightning');   // something to discard, so only the targets decide
     give(h, D, 'Tilling the Graves');
-    assert.equal(playable(h, D, 'Tilling the Graves'), false,
-      `Tilling the Graves needs two units in the bin (CR 110.7), bin was ${JSON.stringify(bin)}`);
+    assert.equal(playable(h, D, 'Tilling the Graves'), true,
+      `"up to two" means none is required (CR 110.1c), bin was ${JSON.stringify(bin)}`);
   });
 }
 
-test('Tilling the Graves with two units in the bin is offered and asks for both with no stop', () => {
+test('Tilling the Graves with two units in the bin may stop at none, at one, or take both', () => {
   const { h, D } = battle(47802, dark());
   h.state.players[D]!.bin = ['Cinder Scuttler', 'Arc Lightning', 'Cinder Scuttler'] as CardName[];
   give(h, D, 'Arc Lightning');
@@ -75,9 +76,8 @@ test('Tilling the Graves with two units in the bin is offered and asks for both 
   for (const n of [1, 2]) {
     const dec = h.state.decision!;
     assert.equal(dec?.kind, 'targets', `target ${n} is asked for`);
-    assert.ok(!dec.options.some(o => isDone(o.value)),
-      `no "No targets" / "No more targets" before both are picked (target ${n}): `
-      + JSON.stringify(dec.options.map(o => o.label)));
+    assert.ok(dec.options.some(o => isDone(o.value)),
+      `"up to two": a stop is offered before pick ${n}: ` + JSON.stringify(dec.options.map(o => o.label)));
     const refs = dec.options.filter(o => !isDone(o.value));
     assert.equal(refs.length, 3 - n, 'only the units in the bin are targets, never the spell');
     h.do({ type: 'decide', seat: dec.seat, choice: dec.options.indexOf(refs[0]!) });
@@ -85,6 +85,21 @@ test('Tilling the Graves with two units in the bin is offered and asks for both 
   const top = h.state.stack.at(-1)!;
   assert.equal(top.card, 'Tilling the Graves', 'the spell is on the stack');
   assert.equal(top.parts[0]!.targets.length, 2, 'aimed at both units');
+});
+
+test('Tilling the Graves stopped at no targets still makes its controller discard', () => {
+  const { h, D } = battle(47804, dark());
+  h.state.players[D]!.bin = ['Cinder Scuttler'] as CardName[];
+  give(h, D, 'Arc Lightning');
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tilling the Graves') });
+  const dec = h.state.decision!;
+  h.do({ type: 'decide', seat: dec.seat, choice: dec.options.findIndex(o => isDone(o.value)) });
+  assert.equal(h.state.stack.at(-1)!.parts[0]!.targets.length, 0, 'no target was declared');
+  pass(h);
+  for (let guard = 4; h.state.stack.length && guard > 0; guard--) pass(h);
+  if (h.state.decision) pick(h, h.state.decision.options[0]!.value);
+  assert.ok(h.state.players[D]!.bin.includes('Arc Lightning'), 'the discard happened');
+  assert.ok(h.state.players[D]!.bin.includes('Cinder Scuttler'), 'and the unit stayed in the bin');
 });
 
 // ── CT-303: X target spells ───────────────────────────────────────────────

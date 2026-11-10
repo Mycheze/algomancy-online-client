@@ -562,7 +562,7 @@ export interface PrintedReminder { card: string; text: string }
  * ⚠ WHOLE SPAN WHERE IT CAN BE, SENTENCES WHERE IT CANNOT. 177 matches per
  * SENTENCE because it is comparing rules words; doing that here would silently
  * cut printed text off the end of two reminders — Spellbind's {Modular}
- * reminder ends "You still pay their costs." and Its Dark Bubb's {Inverted}
+ * reminder ends "You still pay their costs." and Oodvick's {Inverted}
  * one ends "For example, -1/+2 would become +1/-2.", and neither sentence
  * names its attribute. But Rime Wraith prints ONE span covering two
  * attributes ("Swift units deal combat damage first. Sluggish units deal

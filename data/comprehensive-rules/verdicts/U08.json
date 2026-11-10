@@ -1496,12 +1496,7 @@
     "verifier": "U08-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:playCard haste branch (mayPlayAtHaste + chargeHastePlay)",
-        "agrees": true,
-        "note": "each Courier's playAtHaste returns an allowance of 1; the allowance is charged per granted play"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-metal-a.ts:Dispatch Courier",
+        "loc": "client/engine/src/engine.ts:hastePlayAllowance / mayPlayAtHaste",
         "agrees": true,
         "note": ""
       }
@@ -1509,13 +1504,13 @@
     "tests_run": [
       {
         "file": "26-metal-a.test.ts",
-        "pattern": "Dispatch Courier: the \"Each turn\" allowance is one, and one Courier grants one",
+        "pattern": "Dispatch Courier: the \"Each turn\" allowance",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "419-cr-planning.test.ts",
-        "pattern": "cr:turn.haste.grants.each-turn — two Dispatch Couriers fund two haste-step plays",
+        "pattern": "cr:turn.haste.grants.each-turn",
         "passed": true,
         "asserts_claim": true
       }
@@ -1525,18 +1520,18 @@
       {
         "ref": "card: Dispatch Courier",
         "supports": "yes",
-        "note": "'Each turn' = one play per turn per Courier"
+        "note": ""
       },
       {
-        "ref": "owner (register) 2026-08-23",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": "fragment says two Couriers each print the grant; supports the per-grantor count"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "Each turn, you may play a unit during the mana step as if it had [Haste]."
+        "file": "client/engine/test/419-cr-planning.test.ts",
+        "text": "two Dispatch Couriers fund two haste-step plays, and a third is refused"
       }
     ],
     "basis_ok": true,

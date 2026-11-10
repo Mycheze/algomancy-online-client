@@ -11,7 +11,7 @@
  *
  * Each board holds the cards whose questions used to come out wrong, grouped
  * by the SHAPE of the question rather than by card, because the fix is about
- * shapes: a bare-id sacrifice (Torrential Reclamation, Grim Bargain), a cost
+ * shapes: a bare-id sacrifice (Torrential Reclamation, Consuming Mass), a cost
  * paid from hand OR board (Pallid Gorger, Mindburn), a recall and an
  * erase-a-mod cost (Auric Ascendant, Slag Spewer), a stack item then a new
  * target (Divine Intervention), and the cards that really are out of play
@@ -96,7 +96,7 @@ export const BATCH_G: Record<string, Scenario> = {
   },
 
   /**
-   * Costs. Pallid Gorger's "discard a card OR sacrifice a nontoken unit" is the
+   * Costs. Pallid Gorger's "discard a card OR sacrifice another nontoken unit" is the
    * hand and the board in one question; Soul Swallower's sacrifice carried a
    * card on every option, so the bar drew SCANS of units standing right there;
    * Auric Ascendant's recall was a spelling the board never read.
@@ -110,8 +110,8 @@ export const BATCH_G: Record<string, Scenario> = {
       COMMON
       + 'It is your DEPLOYMENT step. Each of these is an ability on a unit of yours — click the unit\n'
       + 'to use it:\n'
-      + '  · Good Whale (Pallid Gorger under it): "Discard a card or sacrifice a nontoken unit" —\n'
-      + '    your HAND cards and your nontoken units all glow; click either kind.\n'
+      + '  · Good Whale (Pallid Gorger under it): "Discard a card or sacrifice another nontoken unit" —\n'
+      + '    your HAND cards and your OTHER nontoken units all glow; click either kind.\n'
       + '  · Bubb (Soul Swallower under it): "Sacrifice another unit" — your other units glow; no\n'
       + '    pictures of them in the bar any more.\n'
       + '  · Auric Ascendant: "[one], Recall another ally" — click the ally to recall.\n'
@@ -179,7 +179,7 @@ export const BATCH_G: Record<string, Scenario> = {
   'board-pick-each-player': {
     id: 'board-pick-each-player',
     card: 'Mindburn',
-    why: 'Mindburn, Grim Bargain and Rebalance ask each player to pick one of their own — and '
+    why: 'Mindburn, Consuming Mass and Rebalance ask each player to pick one of their own — and '
       + 'those picks came out as names or as pictures of units already on the table.',
     expect:
       COMMON
@@ -187,11 +187,11 @@ export const BATCH_G: Record<string, Scenario> = {
       + 'TRY:\n'
       + '  · Mindburn (X = 2) — "sacrifice a nontoken unit, gain a rot or discard a card", twice: your nontoken\n'
       + '    units AND your hand cards glow. The X choice itself is plain buttons.\n'
-      + '  · Grim Bargain (pay [3] or [6] for it) — "sacrifice a unit": click one of yours.\n'
+      + '  · Consuming Mass (pay [3] or [6] for it) — "sacrifice a unit": click one of yours.\n'
       + '  · Rebalance — "give an opponent control of one of your units": click it.',
     initiative: YOU,
     you: {
-      hand: ['Mindburn', 'Grim Bargain', 'Rebalance', 'Twin Flame'],
+      hand: ['Mindburn', 'Consuming Mass', 'Rebalance', 'Twin Flame'],
       play: [{ card: 'Good Whale' }, { card: 'Bubb' }, { card: 'Chitin Shredder' }, { card: 'Wisp', token: true }],
       resources: { fire: 4, dark: 7, wood: 2 },
     },

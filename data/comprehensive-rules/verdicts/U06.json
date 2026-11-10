@@ -490,18 +490,17 @@
     "verifier": "U06-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:commitItem",
+        "loc": "client/engine/src/apply.ts:doAugment",
         "agrees": true,
-        "note": "a virus item fires neither spellPlayed nor cardPlayed"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/119-play-and-token-events.test.ts",
-        "pattern": "R37 holds: applying a VIRUS fires neither event",
+        "file": "119-play-and-token-events.test.ts",
+        "pattern": "CR 701.2a holds: applying a VIRUS",
         "passed": true,
-        "asserts_claim": true,
-        "passed_note": "yes: Gzxyclop applied as a Virus in battle; no cardPlayed/spellPlayed, no Void Mandible trigger, the Mandible survives"
+        "asserts_claim": true
       }
     ],
     "probes": [],
@@ -509,17 +508,13 @@
       {
         "ref": "RAQ 1537748882501668934#0",
         "supports": "yes",
-        "note": "_passer [Solved] 'Mods are NOT Played'; covered"
+        "note": "[Solved] write-up, status covered."
       }
     ],
     "quote_spans": [
       {
         "file": "client/ledgers/raq.ts",
-        "text": "source: \"_passer: \\\"Mods are not considered 'played', so they wouldn't trigger any \\\"whenever you PLAY <unit/spell>\\\". They are Applied.\\\"\","
-      },
-      {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "\"text\": \"[Augment] When a nontoken card is played during battle, sacrifice me. If you do, negate that effect. {i}(This is not optional.)\""
+        "text": "Mods are not considered 'played', so they wouldn't trigger any"
       }
     ],
     "basis_ok": true,

@@ -349,7 +349,7 @@ function hexbane(seed: number, opts: { endOfTurn?: boolean; answers?: Record<str
       + 'fix for #18 is a refund, not the removal of the reservation');
     const item: StackItem = {
       id: g.s.nextId++, kind: 'triggered', card: 'Hexbane Shiitake',
-      label: 'Hexbane Shiitake: exchange control of me for that spell (you may)',
+      label: 'Hexbane Shiitake: exchange control of me and that spell (you may)',
       controller: A, region: g.homeRegion(A), negated: false, parts,
       sourceId: carrier.id, event: ev,
     };

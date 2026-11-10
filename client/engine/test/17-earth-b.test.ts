@@ -718,7 +718,7 @@ test('printed {Unstable} census: the flag mirrors the type line over the whole p
 // `delete g.s.entities[id]` plus an 'info' line — so a nontoken mod card left
 // the game and NEITHER PLAYER COULD SEE WHERE IT WENT. `E.ev('erased', …)` is
 // the only thing that files the erased pile (CR 407.2), and every other erase in the pool
-// emits it (Finality, Necromantic Rebuke, Spore of Regenesis, and
+// emits it (Finality, Necromantic Rebuke, The Birthmother, and
 // disposeToBin's own token-mod line).
 //
 // The half that makes this worth a test rather than a one-liner: WHICH pile.

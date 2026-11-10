@@ -14,7 +14,7 @@
  *   §21  A [bracketed] clause is an additional cost or a MODE, chosen when the
  *        item goes on the stack (Retribution Thing's "[lost or gained]").
  *   §22  X = 0 is a legal activation — "you can legally activate it and
- *        discard no cards" (No Hand Killer).
+ *        discard no cards" (Lost Shade).
  *   §24  "Unique token" means a unique (name, X) pair — "you get two extras"
  *        (Automaton of Abundance).
  *   §26  Rook grants {Virus} ITSELF, not merely the battle-window timing —
@@ -331,16 +331,16 @@ test('CR 205.3: the mode is FIXED at cast — a ledger that moves afterwards doe
 // §22 — X = 0 IS A LEGAL ACTIVATION
 // ══════════════════════════════════════════════════════════════════════════
 //
-// RED-CHECK: put `xMin: 1` back on No Hand Killer's castCost. The empty-hand
+// RED-CHECK: put `xMin: 1` back on Lost Shade's castCost. The empty-hand
 // test then fails at "the ability is offered" (canPayCastCost wants 1 card
 // and legalActions stops offering it), which is exactly the behaviour the
 // ruling refuses.
 
-test('CR 109.9c: No Hand Killer is activatable with an EMPTY hand, and burns its [once] for nothing', () => {
+test('CR 109.9c: Lost Shade is activatable with an EMPTY hand, and burns its [once] for nothing', () => {
   const h = new Harness(13630);
   toDeployment(h);
   const P = h.state.deployPlayer!;
-  const nhk = spawn(h, P, 'No Hand Killer');
+  const nhk = spawn(h, P, 'Lost Shade');
   const foe = spawnToken(h, 1 - P as Seat, 2, 2);
   h.state.players[P]!.hand.length = 0;                      // no cards at all
   const act = JSON.stringify({ type: 'activateAbility', seat: P, entityId: nhk, abilityIndex: 0, via: 'augment' });
@@ -357,7 +357,7 @@ test('CR 109.9c: with cards in hand the same ability still offers a real X, and 
   const h = new Harness(13631);
   toDeployment(h);
   const P = h.state.deployPlayer!;
-  const nhk = spawn(h, P, 'No Hand Killer');
+  const nhk = spawn(h, P, 'Lost Shade');
   const foe = spawnToken(h, 1 - P as Seat, 2, 2);
   h.state.players[P]!.hand.length = 0;
   give(h, P, 'Unit Token');

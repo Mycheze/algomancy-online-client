@@ -384,12 +384,12 @@ test('Dragnol whose [2] is declined announces that nothing is drained', () => {
   assertSpoke(evs, 'Dragnol with the payment declined');
 });
 
-test('Spore of Regenesis whose erase cost is declined announces that nothing returns', () => {
+test('The Birthmother whose erase cost is declined announces that nothing returns', () => {
   const { g, A } = board(8564);
-  g.player(A).bin.push('Spore of Regenesis', 'Ignis Sprite');
-  const evs = resolve(abilityOf('Spore of Regenesis'), g,
-    { controller: A, sourceName: 'Spore of Regenesis' }, { erase: false });
-  assertSpoke(evs, 'Spore of Regenesis with the erase declined');
+  g.player(A).bin.push('The Birthmother', 'Ignis Sprite');
+  const evs = resolve(abilityOf('The Birthmother'), g,
+    { controller: A, sourceName: 'The Birthmother' }, { erase: false });
+  assertSpoke(evs, 'The Birthmother with the erase declined');
   assert.ok(g.player(A).bin.includes('Ignis Sprite'), 'and nothing came back out of the bin');
 });
 
@@ -583,7 +583,7 @@ test('every card fixed here is one the whole-pool drill also watches', () => {
     // (NO_OPPONENT's three moved to 158 with the rest of their family — CR D7.3)
     'Abduct', 'Divine Intervention', 'Organic Exchange', 'Siphon Life',
     'Tides of the Cosmos', 'Perpetual Construct', 'Afflicting Anima', 'Swarmling',
-    'Dragnol', 'Spore of Regenesis', 'Murkdrop Distiller',
+    'Dragnol', 'The Birthmother', 'Murkdrop Distiller',
     // (The Bonesculptor was here until its permission stopped being an ability,
     // CT-255 / CR 707.10 — it carries no EffectDef now, by construction.)
     // (Cosmic Conspirator was here until it became a replacement (CR 708.3) —

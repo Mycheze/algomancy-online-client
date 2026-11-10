@@ -639,12 +639,17 @@ card('Suspend', {
 // registration is the whole job.
 card('Tithe Enforcer', {});
 
-// "[Augment] When a nontoken card is played during battle, sacrifice me. If
-// you do, negate that effect. {i}(This is not optional.)" — ll/2 2/1 {Haste}
-// Alien Anima Unit. Text-box [Augment]: live when played normally (CR 305.4),
-// donated when applied — and then "me" is the HOST, which is the drawback of
-// hanging it on something. Mandatory, and it does NOT care whose card it is:
-// its own controller's spells trigger it too.
+// "When a nontoken card is played during battle, sacrifice me. If you do,
+// negate that effect. {i}(This is not optional.)" — ll/2 2/1 {Haste} Alien
+// Anima Unit. Mandatory, and it does NOT care whose card it is: its own
+// controller's spells trigger it too.
+//
+// THE 2026-11-10 PRINTING DROPS THE [Augment] MARKER. The ability used to be
+// text-box [Augment] (`augmentText`), donated when the card was applied as a
+// mod, with "me" then the HOST. It is now a plain ability of the unit
+// (`abilities`): live only while Void Mandible itself stands in play. No
+// printed mod symbol is left, so it is not a mod at all (CR 720.1): it cannot
+// be augmented from hand, even with Rook.
 //
 // The Origon pattern: at play time the card is not on the stack yet
 // (commitItem fires the event before pushItem), so the item is found at
@@ -705,7 +710,7 @@ card('Tithe Enforcer', {});
 // paid on the way to the stack; the owner accepted Caleb's reading on
 // 2026-10-21 (report #259, CT-264).
 card('Void Mandible', {
-  augmentText: [{
+  abilities: [{
     type: 'triggered', events: ['cardPlayed'],
     label: 'sacrifice me to negate a nontoken card played during battle',
     when: (g, _self, ev) => g.s.phase === 'battle' && ev.data?.['token'] !== true,

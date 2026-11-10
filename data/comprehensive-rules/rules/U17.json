@@ -1557,7 +1557,7 @@
       "printed": [
         {
           "ref": "card: Perpetual Construct",
-          "quote": "Whenever a mod is applied to me, create"
+          "quote": "Whenever I am modded, create"
         }
       ],
       "designer": [
@@ -2289,7 +2289,7 @@
         },
         {
           "ref": "card: Blight's End",
-          "quote": "Augment a Wight onto X target units."
+          "quote": "Augment a Wraith onto X target units."
         },
         {
           "ref": "card: Xzydris",

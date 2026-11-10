@@ -2665,8 +2665,8 @@ export class E {
    * order here (report #279, the designer's "balanced always applies last";
    * see effStats), and layers 5 and 6 apply once after it. An attribute is
    * either present or not. {Inverted} rides the same walk because it is
-   * granted by exactly the same channels ({Inverted} is printed on Its Dark
-   * Bubb, donated by Reality Bender's type-line [Augment], and grantable by a
+   * granted by exactly the same channels ({Inverted} is printed on
+   * Oodvick, donated by Reality Bender's type-line [Augment], and grantable by a
    * static — see batch-hybrids-ld-b's attr row) and its POSITION in this list
    * is unused: layer 5 applies once, after the whole of layer 4. {Unaware}
    * (layer 6) rides it for the same reason and on the same channels: printed
@@ -3587,7 +3587,7 @@ export class E {
    * the six "when I am trashed" cards (Afflicting Anima, Blightwalker,
    * Dropslime, Maw of Despair, Nothyr, Thoughtripper) and the eight watchers of
    * someone else's trash (Cerebrox, Cthyrian Culler, Cthyrian Rector, Muck
-   * Rummager, Murkdrop Distiller, Murkstalker, Splort, Unrelenting Horror) do
+   * Rummager, Murkdrop Distiller, Murkstalker, Splort, Stakoloth) do
    * not fire on it, any more than on a token. An {Unstable} card binned from an
    * INACTIVE zone (hand, deck, cache) does come here and is trashed (CR 803.8a).
    *

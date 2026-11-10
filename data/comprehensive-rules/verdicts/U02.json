@@ -1615,38 +1615,38 @@
   },
   {
     "key": "concepts.numbers.x-cost.zero",
-    "textHash": "7e59b4ac009e3b9b",
+    "textHash": "d1317448e45941f1",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts (X offer 0..affordable; xMin only where printed, Frosted Denial)",
+        "loc": "client/engine/src/cards/dsl.ts:xMin",
         "agrees": true,
-        "note": ""
+        "note": "xMin is set only where a card prints a floor (Frosted Denial)."
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/32-cast-costs.test.ts",
+        "file": "32-cast-costs.test.ts",
         "pattern": "X spells resolve from the stored X",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/46-hybrids-ld-c.test.ts",
-        "pattern": "CR 107.2b: an empty hand still activates No Hand Killer",
+        "file": "46-hybrids-ld-c.test.ts",
+        "pattern": "CR 107.2b: an empty hand still activates Lost Shade",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/182-correctness-sample.test.ts",
-        "pattern": "Torrential Reclamation: with X = 0 nothing is recalled",
+        "file": "182-correctness-sample.test.ts",
+        "pattern": "Torrential Reclamation: with X = 0",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/32-cast-costs.test.ts",
+        "file": "32-cast-costs.test.ts",
         "pattern": "Frosted Denial: xMin 1",
         "passed": true,
         "asserts_claim": true
@@ -1655,39 +1655,25 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "RQ 1222932669516615743",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": "calebgannon \"Yeah\" answers \"does the sacrificing also happen once for each returned unit?\" — supports the Torrential X = 0 example"
+        "note": "Both quotes."
+      },
+      {
+        "ref": "RQ 1222932669516615743",
+        "supports": "partial",
+        "note": "\"Yeah\" answers whether sacrifice happens per returned unit; supports the Torrential example only."
       },
       {
         "ref": "RQ 1223287683804037202",
-        "supports": "yes",
-        "note": "calebgannon, after \"That's why we allow X and the \\\"for each\\\" to be different\" — fewer recalls, fewer sacrifices"
-      },
-      {
-        "ref": "owner: \"You can legally activate it and discard no cards.\"",
-        "supports": "yes",
-        "note": "No Hand Killer at X = 0"
-      },
-      {
-        "ref": "owner: \"The ruling is a warning, not a prohibition. X = 0 stays legal\"",
-        "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "card: Frosted Denial",
-        "supports": "yes",
-        "note": "\"X can't be zero.\" is the \"unless the card says otherwise\" case"
+        "supports": "partial",
+        "note": "Supports the Torrential example only."
       }
     ],
     "quote_spans": [
       {
         "file": "client/ledgers/rules-questions.snapshot.jsonl",
         "text": "does the sacrificing also happen once for each returned unit?"
-      },
-      {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "X can't be zero."
       }
     ],
     "basis_ok": true,

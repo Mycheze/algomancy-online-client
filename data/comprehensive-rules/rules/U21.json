@@ -154,7 +154,7 @@
     "text": "Printed text that names the \"mana step\" means the haste step.",
     "examples": [
       {
-        "text": "Dispatch Courier says \"play a unit during the mana step as if it had [Haste]\": its controller may play a unit in the haste step.",
+        "text": "Cards with the haste icon \"can be played during the mana step\" (Rulebook 2023): that is the step Dispatch Courier now calls the haste step, in which its controller may play a unit.",
         "test": "26-metal-a.test.ts::Dispatch Courier: \"play a unit during the mana step as if it had [Haste]\""
       }
     ],
@@ -169,7 +169,7 @@
         },
         {
           "ref": "card: Dispatch Courier",
-          "quote": "Each turn, you may play a unit during the mana step as if it had [Haste]."
+          "quote": "Each turn, you may play a unit during the haste step as if it had [Haste]."
         }
       ],
       "designer": [],
@@ -194,7 +194,7 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The Rulebook 2023 and Dispatch Courier use \"mana step\"; the owner ruling of 2026-08-23 (“A card may be granted permission…”) quotes Caleb that the symbol is haste, played during the mana step, and identifies the mana step with the haste step. The Rulebook's \"main phase\" is deployment (see D-U21-11).",
+    "notes": "The Rulebook 2023 uses \"mana step\" (Dispatch Courier did until its 2026-11-10 printing); the owner ruling of 2026-08-23 (“A card may be granted permission…”) quotes Caleb that the symbol is haste, played during the mana step, and identifies the mana step with the haste step. The Rulebook's \"main phase\" is deployment (see D-U21-11).",
     "sourceHashes": {}
   },
   {
@@ -220,7 +220,7 @@
       "printed": [
         {
           "ref": "card: Dispatch Courier",
-          "quote": "Each turn, you may play a unit during the mana step as if it had [Haste]."
+          "quote": "Each turn, you may play a unit during the haste step as if it had [Haste]."
         }
       ],
       "designer": [],

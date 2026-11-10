@@ -256,11 +256,11 @@ test('CR 701.2a holds: applying a VIRUS fires neither event, and Void Mandible s
   const vm = spawn(h, A, 'Void Mandible');
   const raider = spawn(h, D, 'Unit Token');
   const host = spawn(h, A, 'Stasis Sentry');
-  giveResources(h, D, 'dark', 1);                             // Gzxyclop is d/[1] {Virus}
+  giveResources(h, D, 'dark', 1);                             // Bloatfiend is d/[1] {Virus}
   toNextBattle(h, D);
   h.do({ type: 'declareAttack', seat: D, columns: [[raider]] });
   const mark = { spell: seen(h, 'spellPlayed'), card: seen(h, 'cardPlayed'), tok: seen(h, 'tokenCreated') };
-  h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Gzxyclop'), hostId: host });
+  h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Bloatfiend'), hostId: host });
   assert.equal(h.state.stack[0]!.kind, 'virus', 'the premise: a virus item is on the stack');
   assert.equal(seen(h, 'cardPlayed') - mark.card, 0,
     'CR 701.2a: applying a mod is NOT playing a card, in the new event as well as the old');

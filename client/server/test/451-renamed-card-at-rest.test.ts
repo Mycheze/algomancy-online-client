@@ -27,9 +27,9 @@
  * board fingerprints). So §6's saved game is a game spelled the old way BY
  * HAND, which is exactly what a game recorded before a future rename would
  * look like. What Counter Theif cannot express:
- *   - the board fingerprint (§5 of the round this came from) — a fingerprint is
- *     a digest, and only a rename made after fingerprints began needs one
- *     spelled the old way; Counter Theif never was, so there is nothing to test
+ *   - the board fingerprint — a fingerprint is a digest, and only a rename made
+ *     after fingerprints began needs one spelled the old way; Counter Theif
+ *     never was, so §5 tests it with the six cards renamed on 2026-11-10
  *   - a delta that RE-SORTS under the new name — no card name sorts between
  *     "Counter Theif" and "Counter Thief". The last test registers a
  *     throwaway alias in this process (nothing else sees it) to reach that
@@ -49,7 +49,7 @@ import {
   checkDeck, checkSingleCard, checkSingleDeck, createGame, forcedAction,
 } from '../../engine/src/apply.ts';
 import { DECK_LIST } from '../../engine/src/cards/registry.ts';
-import { canonicalCardName, registerAlias } from '../../engine/src/cards/dsl.ts';
+import { allCardNames, canonicalCardName, registerAlias } from '../../engine/src/cards/dsl.ts';
 import { sanitizeDraftDeal } from '../../engine/src/draftdeal.ts';
 import type { Action, CardName, GameState, Seat } from '../../engine/src/types.ts';
 import { sanitizeCustomRules } from '../../ui/customrules.ts';
@@ -57,6 +57,7 @@ import { canonicalRef, zoneDelta } from '../zonedelta.ts';
 import { foldCardLadder, singleCardsOf } from '../cardladder.ts';
 import { ledgerForFile, type LedgerFile } from '../cardledger.ts';
 import { importDeckText } from '../decks.ts';
+import { digest, signature } from '../replay-probe.ts';
 import { cardSearchPayload } from '../api-cardsearch.ts';
 import type { Room } from '../rooms.ts';
 
@@ -75,6 +76,40 @@ test('premise: the alias resolves, and is not a deck card of its own', () => {
   assert.equal(canonicalCardName(OLD), NOW);
   assert.ok(DECK_LIST.includes(NOW));
   assert.ok(!DECK_LIST.includes(OLD));
+});
+
+// ── the six the designer renamed on 2026-11-10 ───────────────────────
+
+const RENAMED_2026_11_10: readonly (readonly [then: string, now: string])[] = [
+  ['Grim Bargain', 'Consuming Mass'],
+  ['Gzxyclop', 'Bloatfiend'],
+  ['Its Dark Bubb', 'Oodvick'],
+  ['No Hand Killer', 'Lost Shade'],
+  ['Spore of Regenesis', 'The Birthmother'],
+  ['Unrelenting Horror', 'Stakoloth'],
+];
+
+test('the 2026-11-10 renames: each old name is an alias, never a second card', () => {
+  for (const [then, now] of RENAMED_2026_11_10) {
+    assert.equal(canonicalCardName(then), now, `${then} resolves to ${now}`);
+    assert.ok(allCardNames().includes(now), `${now} is registered`);
+    assert.ok(!allCardNames().includes(then), `${then} is not registered as well`);
+  }
+});
+
+test('§5 a renamed card is fingerprinted under the name it was first recorded by', () => {
+  for (const [then, now] of RENAMED_2026_11_10) {
+    const board = (name: string): unknown => ({
+      turn: 1, phase: 'deploy', initiative: 0, players: [{ hand: [name, 'Bubb'], bin: [name], cache: [{ card: name }] }],
+      entities: { 1: { kind: 'unit', card: name, controller: 0, region: 0 } },
+      stack: [{ kind: 'spell', card: name, controller: 0 }],
+      decision: { kind: 'pay', seat: 0, prompt: `${name}: discard two cards`, options: [{ label: name }] },
+    });
+    const sig = signature(board(now));
+    assert.ok(sig.includes(then) && !sig.includes(now), `the projection spells ${now} as ${then}: ${sig.slice(0, 200)}`);
+    // the engine that recorded the file said the old name and had no table
+    assert.equal(digest(sig), digest(signature(board(then))), `${then}: a recorded game keeps its digest`);
+  }
 });
 
 // ── §1 deck checks ─────────────────────────────────────────────────────

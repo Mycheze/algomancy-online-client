@@ -139,7 +139,7 @@ export interface EffectCtx {
    * effect by its attributes should read them the same way. */
   grantedAttrs?: Attr[];
   /**
-   * The printed "Erase me." / "Erase this spell." clause on a SPELL —
+   * The printed "Erase me." clause on a SPELL —
    * Collect Remains, Suspend, Temporal Rift.
    *
    * "Me" is the stack item currently resolving, and by the time an effect runs
@@ -160,7 +160,7 @@ export interface EffectCtx {
    * or an activated ability has no card of its own (its `card` names a source
    * still standing in play), so asking there does nothing. A unit erasing
    * ITSELF in play is a different mechanism: see `AbilityCost.eraseSelf`
-   * (Skybreaker) and the card-side erase helpers (Spore of Regenesis).
+   * (Skybreaker) and the card-side erase helpers (The Birthmother).
    */
   eraseSelf: () => void;
   /**
@@ -1046,12 +1046,12 @@ export interface EffectDef {
    * a bad idea you are allowed to have.
    *
    * ⚠ The X = 0 ruling narrowed that. This used to say "use `xMin` where paying
-   * zero would burn something the payer cannot get back (No Hand Killer's
+   * zero would burn something the payer cannot get back (Lost Shade's
    * `[once]` budget)". The owner ruled the opposite, verbatim: *"You can
    * legally activate it and discard no cards."* Burning a budget for nothing
    * is a bad idea you are allowed to have, like every other one — so an
-   * unprinted floor is never inferred from the consequences of a zero, and No
-   * Hand Killer carries this warning instead.
+   * unprinted floor is never inferred from the consequences of a zero, and
+   * Lost Shade carries this warning instead.
    *
    * Declared per effect because "X = 0 does nothing" is a fact about the
    * EFFECT, not about the cost kind: Necromantic Rebuke's ransom is trivially
@@ -1770,15 +1770,16 @@ export interface PlayCtx {
 
 /**
  * CR 803.2b: a continuous PERMISSION to PLAY a card at a timing the printed line
- * refuses — "[Augment] Each turn, you may play a unit during the mana step as
- * if it had [Haste]" (Dispatch Courier).
+ * refuses — "[Augment] Each turn, you may play a unit during the haste step as
+ * if it had [Haste]" (Dispatch Courier; it said "mana step" until the 2026-11-10
+ * printing).
  *
  * The rules half is settled and is not this seam's to decide. Caleb's Discord,
  * rules-questions: "that symbol is haste, meaning you can play it during the
  * mana step" and "There is no priority during the mana step, but you can play
  * haste cards and resources as special actions"; asked what the mana step IS,
  * nyarlathotep8457: "Yes the Mana step is the resources step of the planning
- * phase." So the printed "mana step" is this engine's CR 803.2a haste step, and
+ * phase." So the older "mana step" is this engine's CR 803.2a haste step, and
  * Courier is asking for exactly one thing: a seat-level play-timing grant.
  *
  * Radiation is `ModPermission`'s, unchanged: the `anchored()` walk (a unit in play, or an
@@ -2164,7 +2165,7 @@ export interface CardBehavior {
   /** CR 504.7a: continuous PERMISSIONS to PLAY a card at a timing its printed line
    * refuses, same radiation rules again — but SUMMED rather than OR-folded,
    * because the printed text carries a per-turn count ("[Augment] Each turn,
-   * you may play a unit during the mana step as if it had [Haste]" — Dispatch
+   * you may play a unit during the haste step as if it had [Haste]" — Dispatch
    * Courier) */
   playPermissions?: PlayPermission[];
   /** CR 109.6: cost-shaped, NON-STACK, optional decisions offered to this card's
@@ -2567,12 +2568,12 @@ export function registerSynthetic(printed: Printed, behavior: CardBehavior): voi
 }
 
 /**
- * a second printed NAME for one registered card. The Wraith token is the
- * only case: the token was renamed FROM "Wight" TO "Wraith", and the printed
- * data is mid-transition in the other direction — six cards already read
- * "Wraith" while `Blight's End` still carries the OLD name ("Augment a Wight
- * onto X target units"). Both must resolve to ONE card, so the current name
- * `Wraith` is canonical and the retired `Wight` is its alias.
+ * a second printed NAME for one registered card. The Wraith token: it was
+ * renamed FROM "Wight" TO "Wraith", and every card now says "Wraith"
+ * (`Blight's End` was the last to change, in the 2026-11-10 printing), but
+ * older rulings and notes still say "Wight". Both must resolve to ONE card, so
+ * the current name `Wraith` is canonical and the retired `Wight` is its alias.
+ * A card the designer renames gets one too.
  *
  * Aliases resolve in getCard() only; they are deliberately NOT in
  * allCardNames(), so nothing downstream (DECK_LIST, the draft pool, the card

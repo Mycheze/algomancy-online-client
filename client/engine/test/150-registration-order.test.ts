@@ -71,6 +71,32 @@ import { allCardNames } from '../src/cards/dsl.ts';
 import { DECK_LIST } from '../src/cards/registry.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
+
+/**
+ * ── 2026-11-10: SIX CARDS WERE RENAMED, AND NOTHING MOVED. ───────────────
+ *
+ * The designer renamed six cards. Each rename was made IN PLACE — the same
+ * `card()` call in its batch, at the same registration position — and the
+ * seeded shuffles are positional: they permute indices and never read a name,
+ * so every deal is the same deal with the new name at the old slot.
+ *
+ * The hashes below are over names, so a rename moves them without moving any
+ * deal. Rather than re-pin them (which would throw away the proof that nothing
+ * else moved), they are taken over each card's FIRST-REGISTERED name: map the
+ * renamed cards back, and every pin is byte-for-byte the one it was before the
+ * rename. That is the claim "only the name changed", asserted on every run. A
+ * future rename adds a row here; a real reorder still fails exactly as before.
+ */
+const FIRST_REGISTERED_AS: Readonly<Record<string, string>> = {
+  'Consuming Mass': 'Grim Bargain',
+  Bloatfiend: 'Gzxyclop',
+  Oodvick: 'Its Dark Bubb',
+  'Lost Shade': 'No Hand Killer',
+  'The Birthmother': 'Spore of Regenesis',
+  Stakoloth: 'Unrelenting Horror',
+};
+const asFirstRegistered = (names: readonly string[]): string[] =>
+  names.map(n => FIRST_REGISTERED_AS[n] ?? n);
 const SETS = path.resolve(HERE, '..', 'src', 'cards', 'sets');
 
 /** the batch files, in the order sets/index.ts evaluates them */
@@ -136,14 +162,14 @@ test('the registration order of the whole pool is unchanged', () => {
   // AND this fails, which is what tells the two apart: a hash change with this
   // still green is a card added at the end (no deal changes); a hash change
   // with this red is a genuine reorder (every deal changes).
-  const first494 = createHash('sha256').update(names.slice(0, 494).join('\n')).digest('hex').slice(0, 16);
+  const first494 = createHash('sha256').update(asFirstRegistered(names.slice(0, 494)).join('\n')).digest('hex').slice(0, 16);
   assert.equal(first494, '96e1ffbb40fdc926',
     'THE FIRST 494 REGISTRATIONS HAVE MOVED. This hash predates the 2026-08-26 pool fix and is the one this file '
     + 'pinned when it could only see cards/registry.ts, so it is the direct evidence that '
     + 'widening the import appended a card rather than reordering the pool. It failing '
     + 'means a REAL reorder, not a synthetic arriving late.');
 
-  const fingerprint = createHash('sha256').update(names.join('\n')).digest('hex').slice(0, 16);
+  const fingerprint = createHash('sha256').update(asFirstRegistered(names).join('\n')).digest('hex').slice(0, 16);
   // Training Construct (CR D8.1b) appended at the end of cards/registry.ts — the first 494 did not
   // move and DECK_LIST (below) did not change, so no deal did either.
   assert.equal(fingerprint, '3dd322098254ed10',
@@ -175,13 +201,35 @@ test('the DEAL LIST — what createGame actually shuffles — is unchanged', () 
       + 'game and puts an unplayable card in hands');
   }
 
-  const fingerprint = createHash('sha256').update(DECK_LIST.join('\n')).digest('hex').slice(0, 16);
+  const fingerprint = createHash('sha256').update(asFirstRegistered(DECK_LIST).join('\n')).digest('hex').slice(0, 16);
   assert.equal(fingerprint, '8aa69af98fafda61',
     'THE DEAL LIST HAS CHANGED. Unlike the pool hash above this is not a proxy: every saved game '
     + 'in server/games/ now deals differently. Same rules as the pool hash — if a batch file is '
     + 'importing another batch file, fix that and it comes back; if a DECK card really was added '
     + 'or removed, update this hash in the same commit and say so, because every replay-based '
     + 'conclusion drawn before it is void.');
+});
+
+test('a renamed card kept its registration slot, and its old name is no longer registered', () => {
+  // the rename is only harmless because it was made in place — pin the slots
+  // (pool index, deal-list index); the hash pins above prove these are the old slots
+  const SLOTS: Readonly<Record<string, readonly [pool: number, deal: number]>> = {
+    'Consuming Mass': [371, 366],
+    Bloatfiend: [354, 349],
+    Oodvick: [390, 385],
+    'Lost Shade': [456, 451],
+    'The Birthmother': [363, 358],
+    Stakoloth: [400, 395],
+  };
+  for (const [now, [pool, deal]] of Object.entries(SLOTS)) {
+    assert.equal(allCardNames().indexOf(now), pool, `${now} left its pool slot`);
+    assert.equal(DECK_LIST.indexOf(now), deal, `${now} left its deal-list slot`);
+  }
+  for (const [now, then] of Object.entries(FIRST_REGISTERED_AS)) {
+    assert.ok(allCardNames().includes(now), `${now} is not registered`);
+    assert.ok(!allCardNames().includes(then),
+      `${then} is registered as well as ${now} — a second card, which moves every deal after it`);
+  }
 });
 
 test('every batch listed in index.ts exists, and every batch file is listed', () => {

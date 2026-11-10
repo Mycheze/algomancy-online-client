@@ -31,7 +31,7 @@
  *  - Reality Bender: was PARTIAL, waiting on effStats layer 5. The layer (CR 802.8a) shipped
  *    (playtest report #73, 2026-08-22) and the card needed no change at all —
  *    its printed attrs and augmentAttrs were already right, so the layer alone
- *    unparked it. It came off ledgers/card-ledger.ts with Its Dark Bubb.
+ *    unparked it. It came off ledgers/card-ledger.ts with Oodvick.
  *  - Malformed Monstrosity: the unit form is a true self-affecting static
  *    (-7/-7, live in effStats), and the augment-DONATED form is the SAME
  *    static — mod-carried statics anchor on the host (E.anchored), which
@@ -474,8 +474,7 @@ card('Oorblak', {
   },
 });
 
-// "Whenever a mod is applied to me, create {/n}an X/X unit, where X is the
-// mod's cost." — e/1 1/3 Structure Unit. Condition at event time: the mod
+// "Whenever I am modded, create an X/X unit, where X is the mod's cost." — e/1 1/3 Structure Unit. Condition at event time: the mod
 // landed on me. X = the mod card's total (corner) cost, read at RESOLUTION
 // from the live mod entity (CR 107.8); the cost is printed data, so it cannot have
 // changed — if the mod is somehow gone by resolution, nothing is created.
@@ -540,9 +539,8 @@ card('Plodding Pebble', {
 // case, whose old assertion had quietly encoded the missing layer.
 card('Reality Bender', {});
 
-// "[Augment] Whenever I am I dealt damage, I deal that much damage to each
-// opponent." — e/4 4/4 Occult Avatar Unit (printed typo "I am I" preserved
-// above). Text-box [Augment]. 'damage' event, self-scoped; the amount is the
+// "[Augment] Whenever I am dealt damage, I deal that much damage to each
+// opponent." — e/4 4/4 Occult Avatar Unit. Text-box [Augment]. 'damage' event, self-scoped; the amount is the
 // event's damage figure; "each opponent" = the event region's present seats
 // other than my controller (CR 601.4d), read at resolution.
 card('Restitution', {

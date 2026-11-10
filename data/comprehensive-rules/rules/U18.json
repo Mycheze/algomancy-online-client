@@ -1171,7 +1171,7 @@
     "text": "When an effect tells a player to recall a unit and they have none to recall, the recall does nothing, but the rest of the effect still happens unless it depends on the recall (\"If you do\").",
     "examples": [
       {
-        "text": "Recall (\"Each player recalls a unit and loses 2 life\"): a player with no unit to recall still loses 2 life.",
+        "text": "Recall (\"Each player recalls one of their units and loses 2 life\"): a player with no unit to recall still loses 2 life.",
         "test": "179-empty-collection-branches.test.ts::Recall — the life loss happens, the recall does not, and the card now says which"
       },
       {
@@ -2156,7 +2156,7 @@
         },
         {
           "ref": "card: Hexbane Shiitake",
-          "quote": "you may exchange control of me for that spell"
+          "quote": "you may exchange control of me and that spell"
         }
       ],
       "designer": [],

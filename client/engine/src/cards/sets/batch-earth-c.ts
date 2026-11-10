@@ -174,7 +174,7 @@ card('Seismomancy', {
 // one: a sacrifice is a death, so the card reached D's bin, fired every
 // "when a unit dies" trigger, and could be recurred or trashed out of the bin
 // afterwards. An erase does none of that — no bin, no death, no despawn, CR 801.2c
-// cannot reach it. (Spore of Regenesis is the same reading of the same clause
+// cannot reach it. (The Birthmother is the same reading of the same clause
 // one zone over: there "erase me" is the cost of a death trigger and is paid
 // out of the bin.)
 card('Skybreaker', {

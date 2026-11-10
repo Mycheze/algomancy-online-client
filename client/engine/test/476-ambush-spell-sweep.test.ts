@@ -49,7 +49,6 @@ const NOT_A_STACK_QUESTION: Record<string, string> = {
   'Spell Excavation': 'targets a spell CARD in your bin',
   'Void Memory': 'a discard of a spell CARD from hand',
   'Download': 'steals a TOKEN in play; "spells controlled this way" are the spell tokens it took',
-  'Temporal Rift': '"Erase this spell" is the card itself; its sweep is "all effects"',
 };
 
 const passUntil = (h: Harness, seat: Seat) => { let g = 12; while (h.state.priority !== seat && g-- > 0) pass(h); };

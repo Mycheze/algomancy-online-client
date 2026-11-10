@@ -200,7 +200,7 @@ function namedCounts(): Map<string, number> {
  * "tracked" by a batch comment and a todo, and neither of those can contradict
  * anything. Every other census in this file is a floor that may drift; a todo
  * is not a weak test, it is a test-shaped hole, so the only honest number is
- * none. The last one — Its Dark Bubb's {Inverted}, parked on a stat layer that
+ * none. The last one — Oodvick's {Inverted}, parked on a stat layer that
  * had shipped two engine waves earlier — was promoted to four real tests in
  * 43-dark-c on 2026-08-25.
  *
@@ -463,7 +463,7 @@ const BIN_INDEX_EVENTS = new Set(['trashed', 'died']);
  * honest, reachable or not.
  */
 const SELF_LOCATING_IN_BIN: Record<string, string> = {
-  'Spore of Regenesis':
+  'The Birthmother':
     "'died' + self:true — the dying card is ITSELF, and it asks whether its own name reached "
     + 'a bin. Any copy of that name answers it; it is not fetching a particular one.',
   'Lurking Dread':

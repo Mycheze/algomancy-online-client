@@ -459,7 +459,7 @@ test('§1 every PARKED_EXEMPT entry still names a heading this sweep flags', () 
  * `castCost` is the bracketed cost slot: whatever it names is chosen and paid
  * in the CAST WINDOW, before the item is respondable. A comment on a card that
  * declares one, saying that same cost is paid at RESOLUTION, is a flat
- * contradiction — and it is the exact shape that made Grox, No Hand Killer and
+ * contradiction — and it is the exact shape that made Grox, Lost Shade and
  * Sacrificial Burst look approximated for months after their costs were made real.
  *
  * ⚠ DELIBERATELY NOT WIDENED TO `cost:`. Auric Ascendant (batch-hybrids-wm-b)

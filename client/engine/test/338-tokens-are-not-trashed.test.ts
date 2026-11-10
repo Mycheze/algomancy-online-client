@@ -77,7 +77,7 @@ test('CR 801.2d: the derived population is the one the ruling names', () => {
   const watchers = trashListeners(false);
   const own = trashListeners(true);
   for (const n of ['Cerebrox', 'Cthyrian Culler', 'Cthyrian Rector', 'Muck Rummager',
-    'Murkdrop Distiller', 'Murkstalker', 'Splort', 'Unrelenting Horror']) {
+    'Murkdrop Distiller', 'Murkstalker', 'Splort', 'Stakoloth']) {
     assert.ok(watchers.includes(n), `${n} watches someone else trashing`);
   }
   for (const n of ['Afflicting Anima', 'Blightwalker', 'Dropslime', 'Maw of Despair', 'Nothyr', 'Thoughtripper']) {

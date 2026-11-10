@@ -42,17 +42,17 @@ test('CR 802.8c / CT-379: the designer example -- a printed 7/5 made base 3/3 by
   assert.deepEqual(effStats(h, u), [11, 7], 'the -4/-2 the rewrite made is inverted to +4/+2');
 });
 
-test('CR 802.8c / CT-379: Its Dark Bubb (printed 4/6, Inverted) beside Aberrant Statweaver is a 5/9, not a 3/3', () => {
-  // No test hook: Bubb prints {Inverted}, Statweaver prints the rewrite. Bubb is
-  // made base 3/3, a -1/-3 change from its printed 4/6, and inverts it.
+test('CR 802.8c / CT-379: Oodvick (printed 5/6, Inverted) beside Aberrant Statweaver is a 7/9, not a 3/3', () => {
+  // No test hook: Oodvick prints {Inverted}, Statweaver prints the rewrite. It is
+  // made base 3/3, a -2/-3 change from its printed 5/6, and inverts it.
   const h = new Harness(65902);
   toDeployment(h);
   const p = h.state.deployPlayer!;
-  const bubb = spawn(h, p, 'Its Dark Bubb');
-  assert.ok(ownAttrs(h, bubb).has('Inverted'), 'Bubb is Inverted');
-  assert.deepEqual(effStats(h, bubb), [4, 6], 'control: no change yet, so nothing to invert');
+  const bubb = spawn(h, p, 'Oodvick');
+  assert.ok(ownAttrs(h, bubb).has('Inverted'), 'Oodvick is Inverted');
+  assert.deepEqual(effStats(h, bubb), [5, 6], 'control: no change yet, so nothing to invert');
   spawn(h, p, 'Aberrant Statweaver');
-  assert.deepEqual(effStats(h, bubb), [5, 9], '"base stat changes are still stat changes"');
+  assert.deepEqual(effStats(h, bubb), [7, 9], '"base stat changes are still stat changes"');
 });
 
 test('CR 802.8c / CT-379: a one-shot base rewrite (an until-regroup baseSet) is inverted too, with counters in the same net change', () => {

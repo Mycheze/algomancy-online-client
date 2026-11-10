@@ -80,23 +80,26 @@ test('CR 714.2 / CT-538: Skybreaker erased as its own cost — its ability still
   finishBattle(h);
 });
 
-test('CR 714.2 / CT-538: Pallid Gorger sacrificing itself to its own either/or cost — its ability carries its last-known state', () => {
-  // the "discard a card or sacrifice a nontoken unit" atom is answered as a
-  // decision, a different payment path from "Sacrifice me:"
+test('CR 714.2 / CT-538: Combustible Bogwalker sacrificing itself to its own either/or cost — its ability carries its last-known state', () => {
+  // the "sacrifice a nontoken unit or discard a card" atom is answered as a
+  // decision, a different payment path from "Sacrifice me:". (Pallid Gorger
+  // carried this test until the 2026-11-10 printing gave it "another".)
   const h = new Harness(11843);
   toDeployment(h);
   const A = h.state.initiative;
-  const gorger = spawn(h, A, 'Pallid Gorger');
+  const bog = spawn(h, A, 'Combustible Bogwalker');
   spawn(h, A, 'Carapace Devourer');
+  h.state.players[A]!.bin.push('Curio Drifter');   // the ability's required target
   toNextBattle(h, A);
   const ids = Object.values(h.state.entities).filter(u => u.controller === A).map(u => u.id);
-  h.do({ type: 'declareAttack', seat: A, columns: [[gorger, ...ids.filter(i => i !== gorger)]] });
-  h.do({ type: 'activateAbility', seat: A, entityId: gorger, abilityIndex: 0, via: 'augment' });
-  pick(h, { unit: gorger });
-  assert.equal(ent(h, gorger), undefined, 'it paid with itself');
-  const item = h.state.stack.find(i => i.card === 'Pallid Gorger');
+  h.do({ type: 'declareAttack', seat: A, columns: [[bog, ...ids.filter(i => i !== bog)]] });
+  h.do({ type: 'activateAbility', seat: A, entityId: bog, abilityIndex: 0, via: 'augment' });
+  pick(h, { bin: { seat: A, card: 'Curio Drifter' } });
+  pick(h, { unit: bog });
+  assert.equal(ent(h, bog), undefined, 'it paid with itself');
+  const item = h.state.stack.find(i => i.card === 'Combustible Bogwalker');
   assert.ok(item, 'its ability is on the stack');
-  assert.equal(item!.lastKnown?.card, 'Pallid Gorger');
+  assert.equal(item!.lastKnown?.card, 'Combustible Bogwalker');
   assert.ok(item!.lastKnown!.attrs.includes('Deadly'), 'with what its column shared, as it left');
   pass(h); pass(h);
   finishBattle(h);

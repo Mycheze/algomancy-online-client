@@ -302,7 +302,7 @@ function battleBoard(): Board {
  * they list as present also has a unit there.** `furnish` spawns four bodies,
  * a token and a Wraith per side and nothing ever removes them. So an effect
  * shaped "one pick per present seat, collect the picks, then commit the list"
- * — Cull, Upheaval, Maw of Damnation, Death Greeter, Grim Bargain, Insatiable
+ * — Cull, Upheaval, Maw of Damnation, Death Greeter, Consuming Mass, Insatiable
  * Want, Recall, Seabed Shellcaster, Torrential Reclamation — never once saw
  * its collection come back EMPTY on either board, so the branch where it
  * commits nothing and says nothing was unreachable BY THE RIG, and this file

@@ -800,9 +800,9 @@ card('Wraith', {
   ],
 });
 
-// the token was renamed Wight -> Wraith. Six cards already say
-// "Wraith"; `Blight's End` still carries the retired name. One card, two
-// printed names.
+// the token was renamed Wight -> Wraith. Every card says "Wraith" now
+// (`Blight's End` was the last, in the 2026-11-10 printing), but older rulings
+// still say "Wight". One card, two names.
 registerAlias('Wight', 'Wraith');
 
 // 2026-08-24: the card is PRINTED "Counter Theif" — the misspelling is on the
@@ -814,6 +814,15 @@ registerAlias('Wight', 'Wraith');
 // downstream can ever see the two as two cards (the alias is for LOOKUP only —
 // state always stores the canonical name).
 registerAlias('Counter Theif', 'Counter Thief');
+
+// 2026-11-10: six cards took new names in the designer's current printing.
+// Saved decks, saved games, rulings and older reports still say the old ones.
+registerAlias('Grim Bargain', 'Consuming Mass');
+registerAlias('Gzxyclop', 'Bloatfiend');
+registerAlias('Its Dark Bubb', 'Oodvick');
+registerAlias('No Hand Killer', 'Lost Shade');
+registerAlias('Spore of Regenesis', 'The Birthmother');
+registerAlias('Unrelenting Horror', 'Stakoloth');
 
 // batch modules register themselves on import (side-effect card() calls);
 // each owns its own file so parallel card work never collides here

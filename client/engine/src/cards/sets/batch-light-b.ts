@@ -365,7 +365,8 @@ card('Grob', {
 });
 
 // "Each player with an even life total sacrifices a unit. Each player with an
-// odd life total draws a card." — l/1 {Battle} Nature Spell.
+// odd life total draws a card." — l/1 {Battle} Bedlam Spell (a Nature Spell
+// until the designer's 2026-11-10 printing).
 //
 // Parity is snapshotted for every player BEFORE anything happens, so the
 // sacrifices cannot flip anyone's branch mid-resolution. "Each player" is the

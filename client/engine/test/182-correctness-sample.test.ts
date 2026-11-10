@@ -145,7 +145,14 @@ const SAMPLE = [
 test('the sample is the one seed 212 draws — nobody curated it', () => {
   // The sample was drawn from the pool of real cards; Learn to Play's
   // lessonOnly card (CR D8.1b) arrived later and is not in the population it was drawn from
-  const pool = allCardNames().filter(n => !getCard(n).lessonOnly).sort();
+  // ⚠ THE DRAW SORTS BY NAME, so it is taken over the names the population had
+  // when it was drawn: six cards took new names on 2026-11-10, and under a new
+  // name a card sorts to a new place and re-rolls the whole sample.
+  const DRAWN_AS: Record<string, string> = {
+    'Consuming Mass': 'Grim Bargain', Bloatfiend: 'Gzxyclop', Oodvick: 'Its Dark Bubb',
+    'Lost Shade': 'No Hand Killer', 'The Birthmother': 'Spore of Regenesis', Stakoloth: 'Unrelenting Horror',
+  };
+  const pool = allCardNames().filter(n => !getCard(n).lessonOnly).map(n => DRAWN_AS[n] ?? n).sort();
   assert.equal(pool.length, 495,
     'the pool is 495 = 492 printed + 3 synthetics; a smaller number means a '
     + 'registerSynthetic card is missing and the draw is off a different population');
@@ -703,7 +710,7 @@ test('Torrential Reclamation: "each player sacrifices a unit" happens ONCE PER R
   // ⚠ THIS TEST USED TO BE A `wrong()` ROW AND IT SHOULD NEVER HAVE BEEN ONE.
   // It read "for each ally recalled this way" as modifying only the LIFE LOSS
   // it is attached to, on the evidence that every other scaled sacrifice in
-  // the pool puts the scaling inline (Structural Collapse, No Hand Killer).
+  // the pool puts the scaling inline (Structural Collapse, Lost Shade).
   // That was a reasonable reading and it was WRONG. The owner was asked
   // directly on 2026-08-28 and ruled that the "for each" distributes over
   // BOTH clauses — which is what the card file had said deliberately all
@@ -804,7 +811,7 @@ test('Scavenging Sentry: the cost is ANOTHER unit — never itself — and it pa
 
 // ════════════════════════════════════════════════════════════════════════
 // PALLID GORGER — d/2 {Virus} Alien Unit 1/1
-//   "[Augment] Discard a card or sacrifice a nontoken unit: I gain +2/+2
+//   "[Augment] Discard a card or sacrifice another nontoken unit: I gain +2/+2
 //    until regroup."
 // ════════════════════════════════════════════════════════════════════════
 

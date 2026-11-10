@@ -1192,8 +1192,8 @@
     "detail": [
      {
       "element": "wood",
-      "margin": 0.235,
-      "score": 0.966
+      "margin": 0.237,
+      "score": 0.968
      },
      {
       "element": "dark",
@@ -1205,11 +1205,11 @@
    },
    "timing": {
     "read": "battle",
-    "score": 0.993
+    "score": 0.994
    },
    "typeAugment": {
     "read": false,
-    "score": 0.27311012148857117
+    "score": 0.273274689912796
    }
   },
   "Blightmound": {
@@ -1303,6 +1303,28 @@
    "typeAugment": {
     "read": false,
     "score": 0.3694849908351898
+   }
+  },
+  "Bloatfiend": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.27,
+      "score": 0.999
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.289
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2739388942718506
    }
   },
   "Blob of the Dark Order": {
@@ -1905,19 +1927,19 @@
     "detail": [
      {
       "element": "metal",
-      "margin": 0.356,
-      "score": 0.99
+      "margin": 0.354,
+      "score": 0.989
      }
     ],
     "pips": "m"
    },
    "timing": {
     "read": "deploy",
-    "score": 0.333
+    "score": 0.332
    },
    "typeAugment": {
     "read": false,
-    "score": 0.33827999234199524
+    "score": 0.34381595253944397
    }
   },
   "Celestial Purge": {
@@ -2340,6 +2362,38 @@
     "score": 0.277699738740921
    }
   },
+  "Consuming Mass": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     },
+     {
+      "element": "dark",
+      "margin": 0.227,
+      "score": 0.956
+     },
+     {
+      "element": "dark",
+      "margin": 0.221,
+      "score": 0.948
+     }
+    ],
+    "pips": "ddd"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27592912316322327
+   }
+  },
   "Containment Protocol": {
    "alt": null,
    "disagrees": [],
@@ -2615,7 +2669,7 @@
     "detail": [
      {
       "element": "dark",
-      "margin": 0.268,
+      "margin": 0.269,
       "score": 0.998
      },
      {
@@ -2637,7 +2691,7 @@
    },
    "typeAugment": {
     "read": false,
-    "score": 0.29177984595298767
+    "score": 0.29161447286605835
    }
   },
   "Cthyrian Rector": {
@@ -3089,24 +3143,24 @@
     "detail": [
      {
       "element": "metal",
-      "margin": 0.354,
+      "margin": 0.352,
       "score": 0.988
      },
      {
       "element": "metal",
-      "margin": 0.231,
-      "score": 0.86
+      "margin": 0.232,
+      "score": 0.862
      }
     ],
     "pips": "mm"
    },
    "timing": {
     "read": "deploy",
-    "score": 0.352
+    "score": 0.353
    },
    "typeAugment": {
     "read": false,
-    "score": 0.2768549919128418
+    "score": 0.27767616510391235
    }
   },
   "Divine Foresight": {
@@ -4564,19 +4618,19 @@
     "detail": [
      {
       "element": "dark",
-      "margin": 0.268,
-      "score": 0.997
+      "margin": 0.267,
+      "score": 0.996
      }
     ],
     "pips": "d"
    },
    "timing": {
     "read": "deploy",
-    "score": 0.367
+    "score": 0.366
    },
    "typeAugment": {
     "read": false,
-    "score": 0.25491347908973694
+    "score": 0.25427791476249695
    }
   },
   "Glowhaven Elder": {
@@ -4785,38 +4839,6 @@
     "score": 0.2841208279132843
    }
   },
-  "Grim Bargain": {
-   "alt": null,
-   "disagrees": [],
-   "orb": {
-    "detail": [
-     {
-      "element": "dark",
-      "margin": 0.265,
-      "score": 0.994
-     },
-     {
-      "element": "dark",
-      "margin": 0.227,
-      "score": 0.956
-     },
-     {
-      "element": "dark",
-      "margin": 0.221,
-      "score": 0.948
-     }
-    ],
-    "pips": "ddd"
-   },
-   "timing": {
-    "read": "battle",
-    "score": 0.997
-   },
-   "typeAugment": {
-    "read": false,
-    "score": 0.2741062045097351
-   }
-  },
   "Grob": {
    "alt": null,
    "disagrees": [],
@@ -4942,28 +4964,6 @@
     "score": 0.991399884223938
    }
   },
-  "Gzxyclop": {
-   "alt": null,
-   "disagrees": [],
-   "orb": {
-    "detail": [
-     {
-      "element": "dark",
-      "margin": 0.269,
-      "score": 0.998
-     }
-    ],
-    "pips": "d"
-   },
-   "timing": {
-    "read": "deploy",
-    "score": 0.286
-   },
-   "typeAugment": {
-    "read": false,
-    "score": 0.2745206356048584
-   }
-  },
   "Haboob": {
    "alt": null,
    "disagrees": [],
@@ -5047,24 +5047,24 @@
     "detail": [
      {
       "element": "fire",
-      "margin": 0.273,
-      "score": 0.986
+      "margin": 0.267,
+      "score": 0.98
      },
      {
       "element": "fire",
-      "margin": 0.226,
-      "score": 0.931
+      "margin": 0.225,
+      "score": 0.93
      }
     ],
     "pips": "rr"
    },
    "timing": {
     "read": "deploy",
-    "score": 0.326
+    "score": 0.327
    },
    "typeAugment": {
     "read": false,
-    "score": 0.2596425414085388
+    "score": 0.260387659072876
    }
   },
   "Haunting Memories": {
@@ -5091,7 +5091,7 @@
    },
    "typeAugment": {
     "read": false,
-    "score": 0.3575004041194916
+    "score": 0.35538455843925476
    }
   },
   "Hearthwood Ancient": {
@@ -5128,8 +5128,8 @@
     "detail": [
      {
       "element": "wood",
-      "margin": 0.257,
-      "score": 0.987
+      "margin": 0.252,
+      "score": 0.981
      }
     ],
     "pips": "g"
@@ -5140,7 +5140,7 @@
    },
    "typeAugment": {
     "read": false,
-    "score": 0.24634820222854614
+    "score": 0.2464616745710373
    }
   },
   "Hooba-Bot": {
@@ -5592,7 +5592,7 @@
    },
    "typeAugment": {
     "read": false,
-    "score": 0.26378893852233887
+    "score": 0.275640070438385
    }
   },
   "Insidious Invitation": {
@@ -5782,28 +5782,6 @@
    "typeAugment": {
     "read": false,
     "score": 0.35870712995529175
-   }
-  },
-  "Its Dark Bubb": {
-   "alt": null,
-   "disagrees": [],
-   "orb": {
-    "detail": [
-     {
-      "element": "dark",
-      "margin": 0.269,
-      "score": 0.998
-     }
-    ],
-    "pips": "d"
-   },
-   "timing": {
-    "read": "deploy",
-    "score": 0.28
-   },
-   "typeAugment": {
-    "read": true,
-    "score": 0.9904794692993164
    }
   },
   "Iyngstra": {
@@ -6330,6 +6308,33 @@
    "typeAugment": {
     "read": false,
     "score": 0.3499011993408203
+   }
+  },
+  "Lost Shade": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.249,
+      "score": 0.962
+     },
+     {
+      "element": "dark",
+      "margin": 0.228,
+      "score": 0.957
+     }
+    ],
+    "pips": "dr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.348
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2763792872428894
    }
   },
   "Lumengrove Lurker": {
@@ -7370,33 +7375,6 @@
     "score": 0.37644675374031067
    }
   },
-  "No Hand Killer": {
-   "alt": null,
-   "disagrees": [],
-   "orb": {
-    "detail": [
-     {
-      "element": "fire",
-      "margin": 0.24,
-      "score": 0.961
-     },
-     {
-      "element": "dark",
-      "margin": 0.228,
-      "score": 0.957
-     }
-    ],
-    "pips": "dr"
-   },
-   "timing": {
-    "read": "deploy",
-    "score": 0.349
-   },
-   "typeAugment": {
-    "read": false,
-    "score": 0.27551475167274475
-   }
-  },
   "Nothyr": {
    "alt": null,
    "disagrees": [],
@@ -7596,6 +7574,28 @@
    "typeAugment": {
     "read": false,
     "score": 0.3378125727176666
+   }
+  },
+  "Oodvick": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.27,
+      "score": 0.999
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.307
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9902253150939941
    }
   },
   "Oorblak": {
@@ -7889,7 +7889,7 @@
    },
    "typeAugment": {
     "read": false,
-    "score": 0.2531120777130127
+    "score": 0.25237011909484863
    }
   },
   "Pathogenic Enclave": {
@@ -8002,19 +8002,19 @@
     "detail": [
      {
       "element": "earth",
-      "margin": 0.277,
-      "score": 0.989
+      "margin": 0.268,
+      "score": 0.981
      }
     ],
     "pips": "e"
    },
    "timing": {
     "read": "deploy",
-    "score": 0.373
+    "score": 0.374
    },
    "typeAugment": {
     "read": false,
-    "score": 0.287152498960495
+    "score": 0.28640982508659363
    }
   },
   "Pestilent Mycelion": {
@@ -8256,29 +8256,29 @@
     "detail": [
      {
       "element": "light",
-      "margin": 0.354,
-      "score": 0.981
+      "margin": 0.268,
+      "score": 0.9
      },
      {
       "element": "light",
-      "margin": 0.208,
-      "score": 0.839
+      "margin": 0.171,
+      "score": 0.809
      },
      {
       "element": "light",
-      "margin": 0.176,
-      "score": 0.801
+      "margin": 0.144,
+      "score": 0.776
      }
     ],
     "pips": "lll"
    },
    "timing": {
     "read": "deploy",
-    "score": 0.378
+    "score": 0.412
    },
    "typeAugment": {
     "read": false,
-    "score": 0.2997947335243225
+    "score": 0.30562323331832886
    }
   },
   "Premonition": {
@@ -8375,11 +8375,11 @@
    "orb": null,
    "timing": {
     "read": "deploy",
-    "score": 0.265
+    "score": 0.267
    },
    "typeAugment": {
     "read": false,
-    "score": 0.3502108156681061
+    "score": 0.34960389137268066
    }
   },
   "Proliferating Slime": {
@@ -8678,8 +8678,8 @@
     "detail": [
      {
       "element": "water",
-      "margin": 0.351,
-      "score": 0.986
+      "margin": 0.345,
+      "score": 0.981
      }
     ],
     "pips": "b"
@@ -8690,7 +8690,7 @@
    },
    "typeAugment": {
     "read": false,
-    "score": 0.30837926268577576
+    "score": 0.3064657747745514
    }
   },
   "Reclaim the Fallen": {
@@ -8874,8 +8874,8 @@
     "detail": [
      {
       "element": "earth",
-      "margin": 0.28,
-      "score": 0.992
+      "margin": 0.27,
+      "score": 0.982
      }
     ],
     "pips": "e"
@@ -8886,7 +8886,7 @@
    },
    "typeAugment": {
     "read": false,
-    "score": 0.31064534187316895
+    "score": 0.312987357378006
    }
   },
   "Resurrect": {
@@ -9343,19 +9343,19 @@
     "detail": [
      {
       "element": "dark",
-      "margin": 0.267,
-      "score": 0.997
+      "margin": 0.269,
+      "score": 0.998
      }
     ],
     "pips": "d"
    },
    "timing": {
     "read": "deploy",
-    "score": 0.321
+    "score": 0.319
    },
    "typeAugment": {
     "read": false,
-    "score": 0.2768597900867462
+    "score": 0.2710324227809906
    }
   },
   "Sacrificial Burst": {
@@ -9719,8 +9719,8 @@
      },
      {
       "element": "water",
-      "margin": 0.097,
-      "score": 0.713
+      "margin": 0.096,
+      "score": 0.714
      }
     ],
     "pips": "lb"
@@ -9730,8 +9730,8 @@
     "detail": [
      {
       "element": "light",
-      "margin": 0.239,
-      "score": 0.884
+      "margin": 0.24,
+      "score": 0.886
      },
      {
       "element": "water",
@@ -9743,11 +9743,11 @@
    },
    "timing": {
     "read": "deploy",
-    "score": 0.434
+    "score": 0.361
    },
    "typeAugment": {
     "read": false,
-    "score": 0.2412051260471344
+    "score": 0.24032457172870636
    }
   },
   "Shoreline Specter": {
@@ -10353,28 +10353,6 @@
     "score": 0.349232941865921
    }
   },
-  "Spore of Regenesis": {
-   "alt": null,
-   "disagrees": [],
-   "orb": {
-    "detail": [
-     {
-      "element": "dark",
-      "margin": 0.268,
-      "score": 0.997
-     }
-    ],
-    "pips": "d"
-   },
-   "timing": {
-    "read": "deploy",
-    "score": 0.345
-   },
-   "typeAugment": {
-    "read": false,
-    "score": 0.2772153615951538
-   }
-  },
   "Sporebloom Siren": {
    "alt": null,
    "disagrees": [],
@@ -10439,6 +10417,28 @@
    "typeAugment": {
     "read": false,
     "score": 0.2785728871822357
+   }
+  },
+  "Stakoloth": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.344
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2542933523654938
    }
   },
   "Stalwart Sentinel": {
@@ -11076,18 +11076,18 @@
     "detail": [
      {
       "element": "metal",
-      "margin": 0.342,
-      "score": 0.977
+      "margin": 0.341,
+      "score": 0.976
      },
      {
       "element": "metal",
       "margin": 0.23,
-      "score": 0.859
+      "score": 0.861
      },
      {
       "element": "water",
-      "margin": 0.224,
-      "score": 0.841
+      "margin": 0.223,
+      "score": 0.842
      }
     ],
     "pips": "bmm"
@@ -11098,7 +11098,7 @@
    },
    "typeAugment": {
     "read": false,
-    "score": 0.3554002642631531
+    "score": 0.34797924757003784
    }
   },
   "Tenebrous Bulborb": {
@@ -11121,6 +11121,28 @@
    "typeAugment": {
     "read": false,
     "score": 0.3767411708831787
+   }
+  },
+  "The Birthmother": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.267,
+      "score": 0.996
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.344
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2776343524456024
    }
   },
   "The Bonesculptor": {
@@ -11183,19 +11205,19 @@
     "detail": [
      {
       "element": "light",
-      "margin": 0.268,
-      "score": 0.896
+      "margin": 0.267,
+      "score": 0.901
      }
     ],
     "pips": "l"
    },
    "timing": {
     "read": "deploy",
-    "score": 0.348
+    "score": 0.374
    },
    "typeAugment": {
     "read": false,
-    "score": 0.3301626443862915
+    "score": 0.324825257062912
    }
   },
   "The Mighty Doot": {
@@ -11286,24 +11308,24 @@
     "detail": [
      {
       "element": "metal",
-      "margin": 0.344,
-      "score": 0.979
+      "margin": 0.342,
+      "score": 0.978
      },
      {
       "element": "wood",
       "margin": 0.162,
-      "score": 0.89
+      "score": 0.891
      }
     ],
     "pips": "gm"
    },
    "timing": {
     "read": "deploy",
-    "score": 0.347
+    "score": 0.348
    },
    "typeAugment": {
     "read": false,
-    "score": 0.2917477786540985
+    "score": 0.2864053547382355
    }
   },
   "Thought Extraction": {
@@ -11575,7 +11597,7 @@
    },
    "typeAugment": {
     "read": false,
-    "score": 0.2546423077583313
+    "score": 0.2544648349285126
    }
   },
   "Tithe Enforcer": {
@@ -11995,28 +12017,6 @@
     "score": 0.31343868374824524
    }
   },
-  "Unrelenting Horror": {
-   "alt": null,
-   "disagrees": [],
-   "orb": {
-    "detail": [
-     {
-      "element": "dark",
-      "margin": 0.267,
-      "score": 0.996
-     }
-    ],
-    "pips": "d"
-   },
-   "timing": {
-    "read": "deploy",
-    "score": 0.344
-   },
-   "typeAugment": {
-    "read": false,
-    "score": 0.25304505228996277
-   }
-  },
   "Unstable Apparition": {
    "alt": null,
    "disagrees": [],
@@ -12122,8 +12122,8 @@
     "detail": [
      {
       "element": "water",
-      "margin": 0.357,
-      "score": 0.992
+      "margin": 0.348,
+      "score": 0.984
      }
     ],
     "pips": "b"
@@ -12134,7 +12134,7 @@
    },
    "typeAugment": {
     "read": false,
-    "score": 0.2684309482574463
+    "score": 0.27432528138160706
    }
   },
   "Vaporweave Eidolon": {
@@ -12325,13 +12325,13 @@
     "detail": [
      {
       "element": "light",
-      "margin": 0.268,
-      "score": 0.899
+      "margin": 0.351,
+      "score": 0.978
      },
      {
       "element": "light",
-      "margin": 0.174,
-      "score": 0.807
+      "margin": 0.209,
+      "score": 0.839
      }
     ],
     "pips": "ll"
@@ -12342,7 +12342,7 @@
    },
    "typeAugment": {
     "read": false,
-    "score": 0.2672930061817169
+    "score": 0.26664233207702637
    }
   },
   "Void Memory": {

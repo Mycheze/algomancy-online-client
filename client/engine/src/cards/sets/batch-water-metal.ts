@@ -43,7 +43,7 @@ import { selfOf, isEnt, eventCardCost } from './helpers.ts';
  * is the X ACTUALLY PAID — Null Drone's reading, not pips-plus-X and not the
  * flat 0 the old body returned. The pool prints eleven X spells (Wildfire,
  * Gravitational Correction, Frosted Denial, Channel Through, Torrential
- * Reclamation, Abduct, Floral Singularity, Blight's End, Grim Bargain,
+ * Reclamation, Abduct, Floral Singularity, Blight's End, Consuming Mass,
  * Mindburn, Siphon Life); every one of them used to give Channeled Amalgam no
  * counters and Arcane Concentrator no unit.
  *

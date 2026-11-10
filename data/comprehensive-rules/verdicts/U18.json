@@ -455,46 +455,40 @@
   {
     "key": "keywords.actions.exchange",
     "textHash": "7c3fe656847f4dcb",
-    "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U18-r2",
+    "verdict": "partial",
+    "round": 4,
+    "verifier": "U18-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets (Organic Exchange, Hexbane Shiitake, Body Swap, Necromorph, Hooba-Mon)",
+        "loc": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts:Iyngstra",
         "agrees": true,
-        "note": "each implemented as its own card reads; Necromorph/Hooba-Mon share E.exchangeInPlace"
+        "note": "A fifth printed sense, implemented and tested."
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/24-wood-b.test.ts",
+        "file": "24-wood-b.test.ts",
         "pattern": "Organic Exchange: control swaps",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/23-wood-a.test.ts",
+        "file": "23-wood-a.test.ts",
         "pattern": "Hexbane Shiitake: exchanges the carrier",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/26-metal-a.test.ts",
+        "file": "26-metal-a.test.ts",
         "pattern": "Body Swap: exchanges the base stats",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/43-dark-c.test.ts",
-        "pattern": "Necromorph: exchanges a unit in play",
+        "file": "46-hybrids-ld-c.test.ts",
+        "pattern": "Iyngstra: after combat, you may exchange life totals",
         "passed": true,
-        "asserts_claim": "yes (unbound; covers the bin sense)"
-      },
-      {
-        "file": "client/engine/test/42-dark-b.test.ts",
-        "pattern": "Hooba-Mon: attacking may exchange",
-        "passed": true,
-        "asserts_claim": "yes (unbound; covers the bin sense)"
+        "asserts_claim": true
       }
     ],
     "probes": [],
@@ -502,41 +496,37 @@
       {
         "ref": "card: Necromorph",
         "supports": "yes",
-        "note": "verbatim"
+        "note": ""
       },
       {
         "ref": "card: Organic Exchange",
         "supports": "yes",
-        "note": "verbatim"
+        "note": ""
       },
       {
         "ref": "card: Body Swap",
         "supports": "yes",
-        "note": "verbatim"
+        "note": ""
       },
       {
         "ref": "card: Hexbane Shiitake",
         "supports": "yes",
-        "note": "verbatim"
+        "note": ""
+      },
+      {
+        "ref": "card: Iyngstra",
+        "supports": "no",
+        "note": "Not cited by the record; prints a fifth sense."
       }
     ],
     "quote_spans": [
       {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
-        "text": "Exchange the base stats of two target units until regroup."
-      },
-      {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
-        "text": "you may exchange control of me for that spell"
-      },
-      {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
-        "text": "Exchange target unit in play for target unit with cost less than or equal to it in its controller"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "After combat, you may exchange life totals with target player."
       }
     ],
     "basis_ok": true,
-    "problem": "Oracle search for \"exchang\" finds exactly five cards (Body Swap, Hexbane Shiitake, Organic Exchange, Hooba-Mon, Necromorph): the four senses are complete. Hooba-Mon is named but not cited.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": "The four named senses are right, but \"printed in four senses\" is not: Iyngstra now prints \"you may exchange life totals with target player\", a fifth."
   },
   {
     "key": "keywords.actions.exchange.unit-for-bin",
@@ -1641,27 +1631,27 @@
   },
   {
     "key": "keywords.actions.recall.nothing-to-recall",
-    "textHash": "d1a2e7e355c58596",
+    "textHash": "790393de9dca98cb",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U18-r1",
+    "round": 4,
+    "verifier": "U18-r4",
     "engine": [
       {
-        "loc": "Recall / Shoreline Specter card code",
+        "loc": "client/engine/src/cards/sets/batch-water-b.ts:Recall",
         "agrees": true,
-        "note": "life loss unconditional; If-you-do gated"
+        "note": ""
       }
     ],
     "tests_run": [
       {
         "file": "179-empty-collection-branches.test.ts",
-        "pattern": "Recall — the life loss happens, the recall does not, and the card now says which",
+        "pattern": "Recall — the life loss happens",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "182-correctness-sample.test.ts",
-        "pattern": "Shoreline Specter: DECLINE the recall and the 2-life drain does not happen",
+        "pattern": "Shoreline Specter: DECLINE the recall",
         "passed": true,
         "asserts_claim": true
       }
@@ -1674,20 +1664,15 @@
         "note": ""
       },
       {
-        "ref": "R30",
-        "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "R30",
+        "ref": "owner register@72de434",
         "supports": "yes",
         "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/179-empty-collection-branches.test.ts",
-        "text": "    'Recall: \"and loses 2 life\" is unconditional — a player with no unit to recall still pays it');"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "If you do, each opponent loses 2 life."
       }
     ],
     "basis_ok": true,

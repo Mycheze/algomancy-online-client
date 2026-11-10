@@ -769,7 +769,7 @@ function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKi
   // card's own text is the argument (owner, playtest report #92):
   //
   //   "Erase me: Create a non-prismite resource, THEN ACTIVATE IT. Do this
-  //    only during the mana step. (This does not use one of your activations
+  //    only during the resource step. (This does not use one of your activations
   //    for turn.)"
   //
   // So the second half of a prismite's line IS an activation of the new
@@ -1015,7 +1015,7 @@ function playAtTiming(
     const region = e.homeRegion(seat);
     // CR 803.2b: the printed timing is the default, and a PlayPermission granted by
     // a unit in this region can widen it ("Each turn, you may play a unit
-    // during the mana step as if it had [Haste]" — Dispatch Courier). Gate 3
+    // during the haste step as if it had [Haste]" — Dispatch Courier). Gate 3
     // of three; `E.mayPlayAtHaste` is the shared predicate all three call, and
     // it refuses a {Battle} card whatever the grant says (RAQ "[Solved]
     // Dispatch Courier vs Battle Timing").

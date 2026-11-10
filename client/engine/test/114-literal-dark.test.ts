@@ -36,14 +36,14 @@ test('Nothyr: "target nonspell effect" reaches a VIRUS on the stack (CR 700.1b)'
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'Good Whale');
   const host = spawn(h, D, 'Unit Token');
-  giveResources(h, A, 'dark', 1);      // Gzxyclop is d/[1] and {Virus}
+  giveResources(h, A, 'dark', 1);      // Bloatfiend is d/[1] and {Virus}
   giveResources(h, D, 'dark', 2);      // Nothyr's "2 [d] Discard Me" line
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
 
   // A applies a {Virus} to an enemy unit: in battle that goes on the STACK as
   // a `kind: 'virus'` item, which CR 700.1b names as one of the nonspell effects.
-  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Gzxyclop'), hostId: host });
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Bloatfiend'), hostId: host });
   const virusItem = h.state.stack[0]!;
   assert.equal(virusItem.kind, 'virus', 'the premise: a virus item is on the stack');
 
@@ -60,7 +60,7 @@ test('Nothyr: "target nonspell effect" reaches a VIRUS on the stack (CR 700.1b)'
 
   assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated virus left the stack at once');
   assert.equal(ent(h, host)!.mods.length, 0, 'the negated virus never attached');
-  assert.ok(h.state.players[A]!.bin.includes('Gzxyclop'), 'and its card went to the bin (CR 704.4a)');
+  assert.ok(h.state.players[A]!.bin.includes('Bloatfiend'), 'and its card went to the bin (CR 704.4a)');
   finishBattle(h);
 });
 

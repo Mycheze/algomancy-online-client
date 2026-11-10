@@ -30,7 +30,7 @@
    "from": "Common",
    "to": "Simple",
    "score": 0.988,
-   "warmth": -1.5
+   "warmth": -1.8
   },
   "Blightmound": {
    "from": "Common",
@@ -49,6 +49,12 @@
    "to": "Complex",
    "score": 0.833,
    "warmth": 94.3
+  },
+  "Bloatfiend": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.985,
+   "warmth": 0.0
   },
   "Blob of the Dark Order": {
    "from": "Common",
@@ -128,6 +134,12 @@
    "score": 0.806,
    "warmth": 97.9
   },
+  "Consuming Mass": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.822,
+   "warmth": 100.9
+  },
   "Cosmic Devourer": {
    "from": "Common",
    "to": "Complex",
@@ -144,7 +156,7 @@
    "from": "Common",
    "to": "Complex",
    "score": 0.847,
-   "warmth": 93.8
+   "warmth": 102.5
   },
   "Cthyrian Rector": {
    "from": "Common",
@@ -263,8 +275,8 @@
   "Glook": {
    "from": "Common",
    "to": "Complex",
-   "score": 0.835,
-   "warmth": 94.7
+   "score": 0.832,
+   "warmth": 104.0
   },
   "Glutton of Absolution": {
    "from": "Common",
@@ -284,12 +296,6 @@
    "score": 0.726,
    "warmth": 98.4
   },
-  "Grim Bargain": {
-   "from": "Common",
-   "to": "Complex",
-   "score": 0.824,
-   "warmth": 93.0
-  },
   "Grob": {
    "from": "Common",
    "to": "Simple",
@@ -307,12 +313,6 @@
    "to": "Complex",
    "score": 0.712,
    "warmth": 97.9
-  },
-  "Gzxyclop": {
-   "from": "Common",
-   "to": "Simple",
-   "score": 0.985,
-   "warmth": 0.0
   },
   "Hand Peeper": {
    "from": "Common",
@@ -341,14 +341,8 @@
   "Insatiable Want": {
    "from": "Common",
    "to": "Simple",
-   "score": 0.97,
+   "score": 0.971,
    "warmth": 0.0
-  },
-  "Its Dark Bubb": {
-   "from": "Common",
-   "to": "Complex",
-   "score": 0.832,
-   "warmth": 94.4
   },
   "Just a Unit": {
    "from": "Common",
@@ -404,6 +398,12 @@
    "score": 0.937,
    "warmth": 0.0
   },
+  "Lost Shade": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.807,
+   "warmth": 106.4
+  },
   "Lurking Dread": {
    "from": "Common",
    "to": "Complex",
@@ -452,12 +452,6 @@
    "score": 0.831,
    "warmth": 95.1
   },
-  "No Hand Killer": {
-   "from": "Common",
-   "to": "Complex",
-   "score": 0.809,
-   "warmth": 99.1
-  },
   "Nothyr": {
    "from": "Common",
    "to": "Complex",
@@ -470,6 +464,12 @@
    "score": 0.957,
    "warmth": 0.0
   },
+  "Oodvick": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.833,
+   "warmth": 103.7
+  },
   "Palewing": {
    "from": "Common",
    "to": "Complex",
@@ -479,8 +479,8 @@
   "Pallid Gorger": {
    "from": "Common",
    "to": "Complex",
-   "score": 0.828,
-   "warmth": 95.0
+   "score": 0.831,
+   "warmth": 101.8
   },
   "Penance": {
    "from": "Common",
@@ -509,8 +509,8 @@
   "Prediction Prophet": {
    "from": "Common",
    "to": "Simple",
-   "score": 0.962,
-   "warmth": 0.0
+   "score": 0.963,
+   "warmth": 0.3
   },
   "Primordial Coalescence": {
    "from": "Common",
@@ -581,8 +581,8 @@
   "Sacrifice Dude": {
    "from": "Common",
    "to": "Complex",
-   "score": 0.823,
-   "warmth": 92.9
+   "score": 0.846,
+   "warmth": 103.7
   },
   "Sarcophage": {
    "from": "Common",
@@ -644,11 +644,11 @@
    "score": 0.99,
    "warmth": 1.7
   },
-  "Spore of Regenesis": {
+  "Stakoloth": {
    "from": "Common",
-   "to": "Simple",
-   "score": 0.961,
-   "warmth": 0.8
+   "to": "Complex",
+   "score": 0.835,
+   "warmth": 102.2
   },
   "Stalwart Sentinel": {
    "from": "Common",
@@ -674,11 +674,17 @@
    "score": 0.692,
    "warmth": 93.1
   },
+  "The Birthmother": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.96,
+   "warmth": 0.0
+  },
   "The Foretold": {
    "from": "Common",
    "to": "Simple",
    "score": 0.955,
-   "warmth": 0.0
+   "warmth": 0.3
   },
   "The Omniphage": {
    "from": "Common",
@@ -701,8 +707,8 @@
   "Tilling the Graves": {
    "from": "Common",
    "to": "Complex",
-   "score": 0.831,
-   "warmth": 94.3
+   "score": 0.83,
+   "warmth": 103.4
   },
   "Tithe Enforcer": {
    "from": "Common",
@@ -733,12 +739,6 @@
    "to": "Simple",
    "score": 0.981,
    "warmth": 0.0
-  },
-  "Unrelenting Horror": {
-   "from": "Common",
-   "to": "Complex",
-   "score": 0.837,
-   "warmth": 92.9
   },
   "Vengeance": {
    "from": "Common",

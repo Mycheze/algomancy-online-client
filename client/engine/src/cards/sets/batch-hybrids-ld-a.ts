@@ -336,7 +336,7 @@ card('Big Glimpse Card', {
 });
 
 // "[4] Ambush [Battle]  (Damage dealt by a blessed source causes its
-// controller to gain that much life.)" — lb/6 7/4 {Blessed} Cosmic Jellyfish
+// controller to gain that much life.)" — lb/6 5/4 (7/4 until the designer's 2026-11-10 printing) {Blessed} Cosmic Jellyfish
 // Unit. No rules text of its own: {Blessed} comes from the printed attribute
 // (CR 802.22b, engine side — the gain lands on the same game-state check as the
 // damage) and the "[4] Ambush" line is printed.ambush, an engine play mode

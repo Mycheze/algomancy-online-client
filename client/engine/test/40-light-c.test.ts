@@ -27,7 +27,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
-import { getCard } from '../src/cards/dsl.ts';
+import { getCard, isAugment } from '../src/cards/dsl.ts';
 import { IllegalAction, legalActions } from '../src/apply.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, notOffered, offered, ownAttrs, pass, pick,
@@ -1151,6 +1151,34 @@ test('Void Mandible: a spell TOKEN does not trigger it ("nontoken")', () => {
   pick(h, { player: D });
   assert.ok(ent(h, vm), 'the Mandible is untouched by a token spell');
   pass(h);
+  finishBattle(h);
+});
+
+test('Void Mandible: it is no longer a mod — the [Augment] marker is gone (2026-11-10 printing)', () => {
+  // Until 2026-11-10 the ability was printed [Augment]: Rook's permission
+  // (CR 723.5) let it be augmented from hand mid-battle and the ability rode
+  // onto the host ("me" = the host). The new printing has no mod symbol at
+  // all, and CR 720.1 makes a mod only of a card that carries one, so there
+  // is nothing to apply and nothing can transfer.
+  assert.equal(isAugment('Void Mandible'), false, 'no [Augment] text, no type-line [Augment]');
+  assert.equal(getCard('Void Mandible').augmentText?.length ?? 0, 0, 'the ability is not in the augment box');
+  assert.equal(getCard('Void Mandible').abilities?.length, 1, 'it is a plain ability of the unit');
+  const h = new Harness(4024);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  spawn(h, A, 'Rook');                                        // "augment cards from hand … during battle"
+  const host = spawn(h, A, 'Unit Token');
+  const raider = spawn(h, D, 'Unit Token');
+  giveResources(h, A, 'light', 4);
+  toNextBattle(h, D);                                         // D attacks → A's home is the battle region
+  h.do({ type: 'declareAttack', seat: D, columns: [[raider]] });
+  if (h.state.priority !== A) pass(h);
+  const index = give(h, A, 'Void Mandible');
+  assert.ok(!legalActions(h.state, A).some(a => a.type === 'augment' && a.from === 'hand' && a.index === index),
+    'not offered as an augment, even with Rook in play');
+  assert.throws(() => h.do({ type: 'augment', seat: A, from: 'hand', index, hostId: host }),
+    /not an augment/, 'and refused if asked for directly');
+  assert.equal(ent(h, host)!.mods.length, 0, 'the host wears nothing');
   finishBattle(h);
 });
 

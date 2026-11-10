@@ -5,13 +5,13 @@
  * Covers: the CR 801.2 trash family (Blightwalker's pay-to-recall from the bin,
  * Cthyrian Rector's sacrifice-and-recall in play AND Virus-donated, Murkdrop
  * Distiller's trash → cache with CR 801.8a permission, Thoughtripper's
- * pay-[2]-each-opponent-discards, Unrelenting Horror's self-feeding spawn
+ * pay-[2]-each-opponent-discards, Stakoloth's self-feeding spawn
  * discard), bin manipulation (Collect Remains across BOTH bins, Finality's
  * stack sweep + bin erase, Grox's erase cost and its graft socket,
  * Necromorph's exchange), the counters-on-despawn draw (Entropic Entity),
  * the Wight/Wraith token (Primordial Coalescence) and CR 112.13 rot (Spellbind, which also
  * exercises {Modular}), the augment-box activation (Pallid Gorger), and the
- * printed-only / PARKED cards (Its Dark Bubb, Lurking Dread,
+ * printed-only / PARKED cards (Oodvick, Lurking Dread,
  * Xzydris), Rotling's CR 405.7 'leftBin' trigger, and CR 108.3's TRANSFORM (Scholar of the Void turning over into
  * Beyond, Codex Incarnate — playtest ledger #24).
  */
@@ -470,18 +470,18 @@ test('Grox: the bare [Switch] is a graft SOCKET — a grafted rider resolves wit
   finishBattle(h);
 });
 
-// ── Its Dark Bubb ────────────────────────────────────────────────────────
+// ── Oodvick ────────────────────────────────────────────────────────
 
-test('Its Dark Bubb: a printed {Inverted} 4/6 body', () => {
+test('Oodvick: a printed {Inverted} 5/6 body', () => {
   const h = new Harness(4310);
   toDeployment(h);
   const P = h.state.deployPlayer!;
-  const bubb = spawn(h, P, 'Its Dark Bubb');
-  assert.deepEqual(effStats(h, bubb), [4, 6]);
+  const bubb = spawn(h, P, 'Oodvick');
+  assert.deepEqual(effStats(h, bubb), [5, 6]);
   assert.ok(ownAttrs(h, bubb).has('Inverted'), 'the attribute is carried');
 });
 
-/* ── Its Dark Bubb: stat layer 5 ({Inverted}) actually inverting ───────────
+/* ── Oodvick: stat layer 5 ({Inverted}) actually inverting ───────────
  *
  * These four replace a `{ todo: true }` that parked the card on "inversion is
  * effStats stat layer 5, which the engine does not have". The engine has had
@@ -526,7 +526,7 @@ function grantAttr(h: Harness, id: EntityId, attr: 'Tough' | 'Balanced' | 'Inver
   h.state = e.s;
 }
 
-test('Its Dark Bubb: {Inverted} turns a real static BUFF into a debuff', () => {
+test('Oodvick: {Inverted} turns a real static BUFF into a debuff', () => {
   const h = new Harness(4312);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -539,56 +539,56 @@ test('Its Dark Bubb: {Inverted} turns a real static BUFF into a debuff', () => {
   assert.equal(h.state.players[P]!.life % 2, 0, 'even life → the +2/+0 branch');
   spawn(h, P, 'Life Power Dude');
   const control = spawn(h, P, 'Unit Token');
-  const bubb = spawn(h, P, 'Its Dark Bubb');
+  const bubb = spawn(h, P, 'Oodvick');
   assert.deepEqual(effStats(h, control), [3, 1], 'the static really is +2/+0 (a 1/1 token reads 3/1)');
-  assert.deepEqual(effStats(h, bubb), [2, 6],
-    'CR 802.8a: the same +2/+0 is inverted to -2/-0 off Bubb\'s printed 4/6');
+  assert.deepEqual(effStats(h, bubb), [3, 6],
+    'CR 802.8a: the same +2/+0 is inverted to -2/-0 off the printed 5/6');
 });
 
-test('Its Dark Bubb: {Inverted} turns a DEBUFF into a buff', () => {
+test('Oodvick: {Inverted} turns a DEBUFF into a buff', () => {
   const h = new Harness(4313);
   toDeployment(h);
   const P = h.state.deployPlayer!;
-  const bubb = spawn(h, P, 'Its Dark Bubb');
+  const bubb = spawn(h, P, 'Oodvick');
   // -1/-1 counters, the plainest debuff there is. Caleb, asked directly
   // whether {Inverted} reverses counters: "yes".
   whiteBox(h, e => e.addCounters(e.entity(bubb)!, -3));
   assert.equal(ent(h, bubb)!.counters, -3, 'three -1/-1 counters really are on it');
-  assert.deepEqual(effStats(h, bubb), [7, 9],
-    'CR 802.8a: a -3/-3 net change is inverted to +3/+3, so the printed 4/6 reads 7/9 — '
+  assert.deepEqual(effStats(h, bubb), [8, 9],
+    'CR 802.8a: a -3/-3 net change is inverted to +3/+3, so the printed 5/6 reads 8/9 — '
     + 'and note it is BIGGER, not merely un-shrunk');
 });
 
-test('Its Dark Bubb: the printed reminder text, verbatim — "-1/+2 would become +1/-2"', () => {
+test('Oodvick: the printed reminder text, verbatim — "-1/+2 would become +1/-2"', () => {
   const h = new Harness(4314);
   toDeployment(h);
   const P = h.state.deployPlayer!;
-  const bubb = spawn(h, P, 'Its Dark Bubb');
+  const bubb = spawn(h, P, 'Oodvick');
   // The card's own reminder text is the only ASYMMETRIC example in the rules,
-  // and it is the one that rules out "invert the final numbers": a 4/6 that
-  // took -1/+2 does not read -3/-8, it reads 5/4.
+  // and it is the one that rules out "invert the final numbers": a 5/6 that
+  // took -1/+2 does not read -4/-8, it reads 6/4.
   whiteBox(h, e => e.addTemp(e.entity(bubb)!, -1, 2));
-  assert.deepEqual(effStats(h, bubb), [5, 4],
-    'printed: "-1/+2 would become +1/-2" — off a 4/6 that is a 5/4');
+  assert.deepEqual(effStats(h, bubb), [6, 4],
+    'printed: "-1/+2 would become +1/-2" — off a 5/6 that is a 6/4');
 });
 
-test('Its Dark Bubb: MULTI-SOURCE — layer 5 negates the NET change, not each source on its own', () => {
+test('Oodvick: MULTI-SOURCE — layer 5 negates the NET change, not each source on its own', () => {
   // THE TEST THIS FILE IS FOR. Three sources, chosen so that the three
   // readings of "invert the stat changes" give three DIFFERENT answers — the
   // discrimination Caleb's own 1/4-tough-balanced example cannot make,
   // because with only layer-4 attributes in play (i) and (ii) coincide.
   //
-  //   printed base                                    4 / 6
-  //   + Life Power Dude's static  (+2/+0)             6 / 6
-  //   + one +1/+1 counter         (+1/+1)             7 / 7
-  //   + {Tough}                   (defense doubles)   7 / 14
+  //   printed base                                    5 / 6
+  //   + Life Power Dude's static  (+2/+0)             7 / 6
+  //   + one +1/+1 counter         (+1/+1)             8 / 7
+  //   + {Tough}                   (defense doubles)   8 / 14
   //
-  //   (i)   NET, negated once   — 2·4−7 / 2·6−14  →  [1, -2]   ← SHIPPED
+  //   (i)   NET, negated once   — 2·5−8 / 2·6−14  →  [2, -2]   ← SHIPPED
   //   (ii)  isolated deltas     — static +2/+0, counter +1/+1, and {Tough}
-  //         measured on its own against the base 4/6 is +0/+6; the sum is
-  //         +3/+7, negated → [1, -1].
-  //   (iii) operations run backwards — -2/-0 → 2/6, -1/-1 → 1/5, and
-  //         "{Tough} inverted = halve" → [1, 2.5].
+  //         measured on its own against the base 5/6 is +0/+6; the sum is
+  //         +3/+7, negated → [2, -1].
+  //   (iii) operations run backwards — -2/-0 → 3/6, -1/-1 → 2/5, and
+  //         "{Tough} inverted = halve" → [2, 2.5].
   //
   // (ii) is wrong because {Tough} doubled a defense that the counter had
   // already raised: its real contribution to THIS board is +7, not +6. (iii)
@@ -600,17 +600,17 @@ test('Its Dark Bubb: MULTI-SOURCE — layer 5 negates the NET change, not each s
   const P = h.state.deployPlayer!;
   assert.equal(h.state.players[P]!.life % 2, 0, 'even life → Life Power Dude projects +2/+0');
   spawn(h, P, 'Life Power Dude');
-  const bubb = spawn(h, P, 'Its Dark Bubb');
-  assert.deepEqual(effStats(h, bubb), [2, 6], 'one source so far: +2/+0 inverted');
+  const bubb = spawn(h, P, 'Oodvick');
+  assert.deepEqual(effStats(h, bubb), [3, 6], 'one source so far: +2/+0 inverted');
 
   whiteBox(h, e => e.addCounters(e.entity(bubb)!, 1));
-  assert.deepEqual(effStats(h, bubb), [1, 5], 'two sources: a +3/+1 net inverted');
+  assert.deepEqual(effStats(h, bubb), [2, 5], 'two sources: a +3/+1 net inverted');
 
   grantAttr(h, bubb, 'Tough');
-  assert.deepEqual(effStats(h, bubb), [1, -2],
+  assert.deepEqual(effStats(h, bubb), [2, -2],
     'three sources: {Tough} doubled a defense the counter had already raised, so the '
-    + 'net change is +3/+8 and layer 5 negates THAT — [1, -2]. Per-source inversion '
-    + 'would say [1, -1]; running each operation backwards would say [1, 2.5].');
+    + 'net change is +3/+8 and layer 5 negates THAT — [2, -2]. Per-source inversion '
+    + 'would say [2, -1]; running each operation backwards would say [2, 2.5].');
   // and the attribute is still only counted once, however it arrived
   assert.ok(ownAttrs(h, bubb).has('Inverted'), 'printed {Inverted}, not granted');
 });
@@ -1542,16 +1542,16 @@ test('Thoughtripper: CR 601.4d — trashed outside battle, no opponent is presen
   assert.ok(hand(h, O).includes('Rotling'));
 });
 
-// ── Unrelenting Horror ───────────────────────────────────────────────────
+// ── Stakoloth ───────────────────────────────────────────────────
 
-test('Unrelenting Horror: its own spawn discard is a trash, so it pumps itself', () => {
+test('Stakoloth: its own spawn discard is a trash, so it pumps itself', () => {
   const h = new Harness(4322);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   hand(h, P).length = 0;
   hand(h, P).push('Good Whale');
   let uh = 0;
-  whiteBox(h, e => { uh = e.spawnUnit(P, 'Unrelenting Horror', e.homeRegion(P)).id; });
+  whiteBox(h, e => { uh = e.spawnUnit(P, 'Stakoloth', e.homeRegion(P)).id; });
   assert.deepEqual(hand(h, P), [], 'the spawn trigger discarded the only card');
   assert.ok(trashedCards(h).includes('Good Whale'));
   assert.deepEqual(effStats(h, uh), [5, 5], '3/3 +2/+2 until regroup');

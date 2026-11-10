@@ -233,7 +233,7 @@ test('CR 504.5: at donePlanning → haste, the step does not depend on hand cont
 
 /* ═══ §4 — the measurement, derived so it cannot rot ══════════════════ */
 
-/** a card a CR 803.2b grant ("play a UNIT during the mana step as if it had
+/** a card a CR 803.2b grant ("play a UNIT during the haste step as if it had
  * [Haste]") could ever reach: a unit or spell unit whose printed timing is
  * neither {Battle} (RAQ: a battle card stays one) nor already [Haste]. */
 function grantEligible(name: string): boolean {

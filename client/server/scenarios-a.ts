@@ -357,73 +357,58 @@ export const BATCH_A: Record<string, Scenario> = {
   },
 
   /**
-   * WHY THIS CARD (#6: UNREACHED:BOARD · ruled×21 · [Augment] · pronoun · just
-   * fixed; CR 706.13).
+   * WHY THIS CARD (#6: UNREACHED:BOARD · ruled×21 · pronoun; CR 706.13).
    *
-   * Printed: "[Augment] When a nontoken card is played during battle, sacrifice
-   * me. If you do, negate that effect. (This is not optional.)"
+   * Printed (the 2026-11-10 printing): "When a nontoken card is played during
+   * battle, sacrifice me. If you do, negate that effect. (This is not
+   * optional.)"
    *
-   * THIS CARD WAS FIXED THIS ROUND (CR 706.13), and this scenario is the CONFIRMATION that
-   * the fix reads right in a real game rather than only in a fixture. The card
-   * used to find its victim by scanning the stack for (card name, controller)
-   * and taking the FIRST match — which is the OLDER item when two copies of the
-   * same card are up. `cardPlayed` now carries the stack item's id and the card
-   * negates by id. `178-played-item-and-erased-mods.test.ts` guards it; this
-   * puts the same board in front of the rules authority.
+   * ⚠ REBUILT 2026-11-10. The card used to print "[Augment] When …", and this
+   * scenario reached it the way 178 did: Rook's CR 723.5 permission let the
+   * Mandible be AUGMENTED onto a host mid-battle, after a first Luminous Arc
+   * was already standing, so the second, identical Arc was the only play it
+   * heard and the board answered CR 706.13 ("negate THAT effect" = the item the
+   * event names) as a mirror image. The new printing removed the [Augment]
+   * marker: Void Mandible is no longer a mod (CR 720.1), the augment is
+   * refused, and a {Haste} body cannot arrive mid-battle any other way without
+   * a second turn (which makes the deal seed-dependent). The two-identical-
+   * items mirror is now guarded only by `178-played-item-and-erased-mods`.
    *
-   * So the board is deliberately the ambiguous one: TWO Luminous Arcs, same
-   * card, same controller, both on the stack, aimed at two different enemy
-   * bodies. The right answer and the old wrong answer are exact mirror images —
-   * under CR 706.13 Bubb survives and Ambling Mountaintop dies; under the old scan it
-   * was the other way round. There is no reading of the finished board where
-   * the owner cannot tell which happened.
-   *
-   * ROOK IS ON THE BOARD FOR ONE REASON and it is not decoration. Void Mandible
-   * is NOT a {Virus}, and the engine refuses an augment from hand mid-battle
-   * for anything else ("modding is a deployment action (or a battle Virus)").
-   * Reaching its [Augment] host path otherwise would need the prologue to walk
-   * through deployment into a SECOND turn, which deals both players fresh cards
-   * and makes the board depend on the seed — the one property the tester's
-   * `&seed=` switch promises it does not have. Rook prints "[Augment] You may
-   * augment cards from hand and bin during battle as if they were [Virus]", its
-   * text box is live while it is a body in play, and the owner ruled it confers
-   * {Virus} outright (CR 723.5a). `178` uses the same trick for the same
-   * reason.
-   *
-   * "Sacrifice me" is the host again (Towering Colossus), so the price is
-   * visible too.
+   * What this board still puts in front of the rules authority — with the
+   * SAME finished board as before, so an owner who remembers the old run sees
+   * the same answer:
+   *  · the trigger is not optional and fires on its own controller's spell;
+   *  · "sacrifice me" is the Mandible itself (it is a body, never a host now);
+   *  · "that effect" is the card just played — the Arc at Bubb is negated;
+   *  · it is single-use: with the Mandible gone, the second Arc resolves.
    */
   'void-mandible-negates': {
     id: 'void-mandible-negates',
     card: 'Void Mandible',
-    why: 'This card was fixed THIS ROUND — it was negating the wrong stack '
-      + 'item, because it searched by card name and took the first match; '
-      + '`cardPlayed` now carries the item id. This is the confirmation in a real '
-      + 'game: two identical Luminous Arcs are on the stack, and the right answer '
-      + 'and the old wrong answer are exact mirror images of each other.',
+    why: 'Its printing changed on 2026-11-10: the [Augment] marker is gone, so the '
+      + 'ability belongs to the Mandible itself and can no longer be hung on another '
+      + 'unit. This confirms the plain body version end to end: it fires on your own '
+      + 'spell, pays with itself, negates the card just played, and is then gone.',
     expect:
-      'Rook is on your board only to let you augment during battle — that is its printed text.\n'
-      + '1. Hold Ctrl and play the first Luminous Arc at their AMBLING MOUNTAINTOP, so it stays on the stack.\n'
-      + '2. Let go of Ctrl and play Void Mandible onto YOUR OWN Towering Colossus. It attaches as soon as they pass.\n'
-      + '   (Applying a mod is not playing a card, so nothing triggers yet.)\n'
-      + '3. Now play the second Luminous Arc at their BUBB. Void Mandible fires at once — it is\n'
-      + '   not optional — and when it resolves it sacrifices your Towering Colossus.\n'
-      + '4. Pass until the stack is empty.\n'
-      + 'EXPECTED: BUBB SURVIVES and AMBLING MOUNTAINTOP DIES. "That effect" is the card you\n'
-      + 'just played — the second Arc — not the one that was already sitting on the stack.\n'
-      + 'If it comes out the other way round (Bubb dead, Ambling Mountaintop alive) then the\n'
-      + 'card is negating the wrong item and that fix did not hold.\n'
-      + 'EXPECTED: your Towering Colossus is gone — "sacrifice me" on an augment is the host.',
+      '1. Play a Luminous Arc at their BUBB. Void Mandible fires at once — it is not optional,\n'
+      + '   even on your own spell — and is sacrificed to pay for it.\n'
+      + '2. Pass until the stack is empty. The Arc at Bubb is negated.\n'
+      + '3. Play the second Luminous Arc at their AMBLING MOUNTAINTOP and pass until it resolves.\n'
+      + '   Nothing triggers: the Mandible is already gone.\n'
+      + 'EXPECTED: BUBB SURVIVES (no damage) and AMBLING MOUNTAINTOP DIES.\n'
+      + 'EXPECTED: your Void Mandible is in your bin — "sacrifice me" is the Mandible itself.\n'
+      + 'If Bubb dies, the negate missed the card that was just played.',
     initiative: YOU,
     you: {
-      hand: ['Luminous Arc', 'Void Mandible', 'Luminous Arc'],
-      // ids.you[0] = Rook (the battle-augment permission, live as a body),
-      // ids.you[1] = the host that pays for the trigger. BOTH attack: the
-      // permission and the listener are region-scoped (CR 601.1d), and the battle is
-      // fought in the opponent's region.
-      play: [{ card: 'Rook' }, { card: 'Towering Colossus' }],
-      // two Arcs at r/2 plus Void Mandible at ll/2. Over-provisioned.
-      resources: { fire: 8, light: 6 },
+      hand: ['Luminous Arc', 'Luminous Arc'],
+      // It attacks: the listener is region-scoped (CR 601.1d), and the battle is
+      // fought in the opponent's region. (The old board's Towering Colossus is
+      // gone with the augment: its "[Augment] Enemies gain +2/+2" would keep
+      // both enemies alive through a 6-damage Arc, which only worked before
+      // because the Colossus was the host that got sacrificed.)
+      play: [{ card: 'Void Mandible' }],
+      // two Arcs at r/2. Over-provisioned.
+      resources: { fire: 8 },
     },
     opponent: {
       hand: [],
@@ -434,12 +419,7 @@ export const BATCH_A: Record<string, Scenario> = {
     prologue: (ids, s) => [
       { type: 'donePlanning', seat: YOU },
       { type: 'donePlanning', seat: OPPONENT },
-      // ⚠ REQUIRED: Void Mandible is a {Haste} card and it is in hand, so
-      // the haste step opens and `declareAttack` is refused until it is closed.
-      // Only the seat that HOLDS one is asked — a `doneHaste` for seat 1 here
-      // is refused with "not the haste step".
-      { type: 'doneHaste', seat: YOU },
-      { type: 'declareAttack', seat: s.battle?.attacker ?? YOU, columns: [[ids.you[0]!], [ids.you[1]!]] },
+      { type: 'declareAttack', seat: s.battle?.attacker ?? YOU, columns: [[ids.you[0]!]] },
     ],
     phase: 'battle',
     priority: YOU,

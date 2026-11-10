@@ -766,7 +766,7 @@ card('Borrower of Forms', {
   },
 });
 
-// "When I spawn or become modded, put a +1/+1 counter on each of your units.
+// "When I spawn or am modded, put a +1/+1 counter on each of your units.
 // [Augment] When I despawn, remove all counters from your units." — m/2 1/1
 // Cosmic Spirit {Virus} Unit. The first sentence stays with the card (plain
 // ability); the [Augment] sentence transfers ("I" = the host). "Your units"
@@ -1015,13 +1015,13 @@ card('Discharge', {
   graftEffect: { bounded: true, effect: dischargeZap },
 });
 
-// "[Augment] Each turn, you may play a unit during the mana step as if it had
-// [Haste]." — mm/2 2/1 Robot Horse Unit. UNPARKED in round 17 (report #74, WEHH
+// "[Augment] Each turn, you may play a unit during the haste step as if it had
+// [Haste]." (printed "mana step" until the designer's 2026-11-10 printing) — mm/2 2/1 Robot Horse Unit. UNPARKED in round 17 (report #74, WEHH
 // 2026-08-22: "Dispatch Courier didn't give me the option to play a card with
 // haste"). It did not, because nothing anywhere asked: play-timing gating
 // lives in apply.ts and had no seam card code could reach.
 //
-// The rules half was already settled, and settles what "the mana step" means.
+// The rules half was already settled, and settled what the old "mana step" meant.
 // Caleb's Discord, rules-questions: "that symbol is haste, meaning you can
 // play it during the mana step", and "There is no priority during the mana
 // step, but you can play haste cards and resources as special actions"; asked

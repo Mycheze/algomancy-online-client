@@ -1,12 +1,13 @@
 /**
- * "ERASE ME" — the six cards that print a self-erase, and the two mechanisms
- * that honour it. CARD-TODO #15. Seeds 8900-8999.
+ * "ERASE ME" — the cards that print a self-erase (six at the time; Haunting
+ * Memories joined on 2026-11-10), and the two mechanisms that honour it.
+ * CARD-TODO #15. Seeds 8900-8999.
  *
  * WHAT WAS WRONG
  *
  * Four of the six printed the clause and did nothing about it: Collect Remains
  * ("Put target card in a bin into your hand. Erase me."), Temporal Rift ("End
- * this battle. Erase this spell."), Suspend ("… Erase me.") and Skybreaker
+ * this battle. Erase me.", printed "Erase this spell" until 2026-11-10), Suspend ("… Erase me.") and Skybreaker
  * ("[Augment] Erase me: Negate all spell effects."). Each had real, working
  * code for its OTHER half, which is exactly why nothing caught it — the shape
  * sweep in 71-card-ledger saw live code and the drill saw the card do
@@ -31,7 +32,7 @@
  *   charged by `E.payActivationCost` through `E.eraseFromPlay`. It used to be
  *   `sacrificeSelf`, which is a real divergence — a sacrifice is a DEATH, so
  *   the card reached a bin, fired death triggers and could be recurred.
- *   (Spore of Regenesis, which already worked, is the same reading of the same
+ *   (The Birthmother, which already worked, is the same reading of the same
  *   clause one zone over: erasing itself out of the bin as a cost.)
  *
  * HOW THESE TESTS ARE WRITTEN
@@ -350,6 +351,36 @@ test('a NEGATED self-erase spell is binned, not erased — the effect it was pri
   finishBattle(h);
 });
 
+test('Haunting Memories (2026-11-10 printing): "Erase me." on a resolving spell, and a negated one is binned', () => {
+  // resolved: it set the life total and left the game
+  const a = attackWindow(8909);
+  giveResources(a.h, a.A, 'light', 4); giveResources(a.h, a.A, 'dark', 4);   // ld/8
+  binOf(a.h, a.A).push('Good Whale', 'Good Whale');                            // 2 cards → life 4
+  a.h.do({ type: 'playCard', seat: a.A, handIndex: give(a.h, a.A, 'Haunting Memories') });
+  pick(a.h, { player: a.D });
+  pass(a.h);
+  assert.equal(a.h.state.players[a.D]!.life, 4, 'it did what it says first');
+  erasedNotBinned(a.h, a.A, 'Haunting Memories');
+  finishBattle(a.h);
+
+  // negated: CR 406.4b, "Erase me." is a sentence of the effect that never ran
+  const b = attackWindow(8910);
+  giveResources(b.h, b.A, 'light', 4); giveResources(b.h, b.A, 'dark', 4);
+  giveResources(b.h, b.D, 'water', 1); giveResources(b.h, b.D, 'metal', 1);   // Dematerialize bm/2
+  binOf(b.h, b.A).push('Good Whale', 'Good Whale');
+  const life = b.h.state.players[b.D]!.life;
+  b.h.do({ type: 'playCard', seat: b.A, handIndex: give(b.h, b.A, 'Haunting Memories') });
+  pick(b.h, { player: b.D });
+  const victim = onStack(b.h, 'Haunting Memories')!;
+  b.h.do({ type: 'playCard', seat: b.D, handIndex: give(b.h, b.D, 'Dematerialize') });
+  pick(b.h, { stack: victim.id });
+  drain(b.h);
+  assert.equal(b.h.state.players[b.D]!.life, life, 'the negated spell did nothing');
+  assert.equal(count(binOf(b.h, b.A), 'Haunting Memories'), 1, 'it went to the bin like any negated card');
+  assert.equal(count(erasedOf(b.h, b.A), 'Haunting Memories'), 0, 'and NOT to the erased pile');
+  finishBattle(b.h);
+});
+
 test('a FIZZLED self-erase spell is binned too — its target went, so its text never ran', () => {
   // The fizzle half of the same ruling (CR 704.6, 406.4b), and it is reachable with nothing but
   // legal actions: two Collect Remains aimed at the SAME bin card. The second
@@ -438,12 +469,13 @@ test('the erase survives a save/load: a spell mid-flight is serialised and still
 test('every card in the pool that prints a self-erase reaches the erased pile in a real game', () => {
   // 84-card-semantics asserts the CODE-level version of this (nobody prints
   // the clause without an erase anywhere in their run or their costs). This is
-  // the behavioural counterpart for the four that CARD-TODO #15 named, so a
+  // the behavioural counterpart for the ones that CARD-TODO #15 named and
+  // Haunting Memories (2026-11-10), so a
   // change that keeps the word "erase" in the source while breaking the wiring
   // — the seam renamed, the flag never read, dischargeItem's branch reordered
   // — fails here even though the source scan is satisfied.
   //
-  // The other two, Spore of Regenesis and Zephyrzoa, are covered where they
+  // The other two, The Birthmother and Zephyrzoa, are covered where they
   // live (43-* and 46-*): both erase from a zone rather than through the stack
   // and neither shares a line of this machinery.
   const seen: string[] = [];
@@ -466,12 +498,19 @@ test('every card in the pool that prints a self-erase reaches the erased pile in
       pass(h);
       return 'Temporal Rift';
     }],
+    [8923, (h: Harness, A: Seat, D: Seat) => {
+      giveResources(h, A, 'light', 4); giveResources(h, A, 'dark', 4);
+      binOf(h, A).push('Good Whale', 'Good Whale');     // non-lethal: 2 × 2 cards
+      h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Haunting Memories') });
+      pick(h, { player: D }); pass(h);
+      return 'Haunting Memories';
+    }],
   ] as [number, (h: Harness, A: Seat, D: Seat) => string][]) {
     const { h, A, D } = attackWindow(seed);
     const name = run(h, A, D);
     erasedNotBinned(h, A, name);
     seen.push(name);
   }
-  assert.deepEqual(seen.sort(), ['Collect Remains', 'Suspend', 'Temporal Rift'],
-    'all three spell-side self-erasers were driven');
+  assert.deepEqual(seen.sort(), ['Collect Remains', 'Haunting Memories', 'Suspend', 'Temporal Rift'],
+    'all four spell-side self-erasers were driven');
 });

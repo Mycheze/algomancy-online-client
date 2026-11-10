@@ -6,7 +6,7 @@
  * pumps and their [Switch1] budget (Deathcoil Construct, CR 722.5), a paid
  * spell-played drain (Dragnol), empty-hand bin plays (Gridxlan), a life total
  * rewritten from the bins (Haunting Memories), an after-combat life exchange (Iyngstra),
- * cost-funded glimpses (Lilbot), a variable discard CAST COST (No Hand Killer,
+ * cost-funded glimpses (Lilbot), a variable discard CAST COST (Lost Shade,
  * CR 705.3b — the discards used to happen at resolution),
  * a granted prophecy computed from a cost (Prophecy Bug, CR 803.7), damage-driven
  * rot (Rotwall), and the two shapes of a discard trigger (Swarmling).
@@ -538,6 +538,9 @@ test('Haunting Memories: a life total becomes twice the cards in ALL bins (up or
   pass(h); // resolve
   assert.equal(lifeOf(h, A), 10, 'set downwards from 30 to 2 × 5');
   assert.equal(lifeOf(h, D), 30, 'the untargeted player is untouched');
+  // "Erase me." (the 2026-11-10 printing): it never reaches the bin it counted
+  assert.ok(!h.state.players[D]!.bin.includes('Haunting Memories'), 'it does not go to the bin');
+  assert.equal(h.state.players[D]!.erased?.filter(c => c === 'Haunting Memories').length, 1, 'it erases itself');
 });
 
 test('Haunting Memories: empty bins set the target to 0 — which kills them', () => {
@@ -718,16 +721,16 @@ test('Lilbot: CR 705.4 — with nothing to discard and no other unit the activat
     'and the [once] budget is not burned on an unpayable activation');
 });
 
-// ── No Hand Killer ───────────────────────────────────────────────────────
+// ── Lost Shade ───────────────────────────────────────────────────────
 
 // The killer sits with the DEFENDER (its home IS the battle region) and the
 // victims attack into it — "each opponent" is region-scoped (CR 601.4d), so both
 // seats have to be present, which only an attack arranges.
-test('No Hand Killer: [once] discard X cards → each opponent sacrifices X units', () => {
+test('Lost Shade: [once] discard X cards → each opponent sacrifices X units', () => {
   const h = new Harness(4619);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
-  const nhk = spawn(h, D, 'No Hand Killer');
+  const nhk = spawn(h, D, 'Lost Shade');
   const v1 = spawn(h, A, 'LDC Grunt');
   const v2 = spawn(h, A, 'LDC Wall');
   const v3 = spawn(h, A, 'LDC Brute');
@@ -756,7 +759,7 @@ test('No Hand Killer: [once] discard X cards → each opponent sacrifices X unit
   drainStack(h);
 });
 
-test('CR 107.2b: an empty hand still activates No Hand Killer — X = 0, and the [once] is spent', () => {
+test('CR 107.2b: an empty hand still activates Lost Shade — X = 0, and the [once] is spent', () => {
   // REVERSED by the owner's answer of 2026-08-25 (now CR 109.9c): *"You can legally activate it and
   // discard no cards."* The cost used to carry the unprinted floor `xMin: 1`
   // so that X = 0 — which does nothing AND burns the [once] budget — could not
@@ -765,7 +768,7 @@ test('CR 107.2b: an empty hand still activates No Hand Killer — X = 0, and the
   const h = new Harness(4620);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
-  const nhk = spawn(h, D, 'No Hand Killer');
+  const nhk = spawn(h, D, 'Lost Shade');
   const v1 = spawn(h, A, 'LDC Grunt');
   attackWith(h, A, [[v1]]);
   h.state.players[D]!.hand.length = 0;                     // empty hand
@@ -781,11 +784,11 @@ test('CR 107.2b: an empty hand still activates No Hand Killer — X = 0, and the
   drainStack(h);
 });
 
-test('No Hand Killer: with a card in hand, X = 1 forces one sacrifice', () => {
+test('Lost Shade: with a card in hand, X = 1 forces one sacrifice', () => {
   const h = new Harness(4621);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
-  const nhk = spawn(h, D, 'No Hand Killer');
+  const nhk = spawn(h, D, 'Lost Shade');
   const v1 = spawn(h, A, 'LDC Grunt');
   attackWith(h, A, [[v1]]);
   h.state.players[D]!.hand.length = 0;

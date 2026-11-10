@@ -445,7 +445,7 @@ to remain. Each makes a LIVE card look parked or an approximation look present.
 - `batch-water-a.ts:20-35` — a block titled `PARKED (needs engine primitives…)` whose every entry says `NO LONGER parked`.
 - `batch-metal-c.ts:29-38` — Technological Superiority and Void Memory filed under "⚠ ENGINE APPROXIMATIONS" while both are **provably exact**. Move them out.
 - `batch-wood-a.ts:66` — Burgeon's "No pool combo hits this today" is **false** (see 2b).
-- `batch-hybrids-ld-c.ts:49-53` — "STILL AT RESOLUTION: No Hand Killer's Discard X" — it is a cast cost, and the card's own comment 600 lines below says so.
+- `batch-hybrids-ld-c.ts:49-53` — "STILL AT RESOLUTION: Lost Shade's Discard X" — it is a cast cost, and the card's own comment 600 lines below says so.
 - `batch-hybrids-wm-a.ts:777` — Hearthwood Ancient "paid at resolution", two lines above a `cost: { sacrificeOther: 1 }`.
 - `batch-metal-a.ts:24-33` — the Deformant half is stale (its receipt and both engine edits shipped); the Celestial Shifter half is live.
 - `batch-hybrids-ld-c.ts:466` — Counter Thief "the printed NAME is misspelled". Nothing is misspelled.

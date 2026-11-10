@@ -65,7 +65,7 @@ test('CC deployment: only the initiative player deploys, then the other, and the
     assert.ok(h.log.includes(`Deployment: ${names[int]} deploys first, then ${names[nit]}.`), 'the CC phase line');
     assert.ok(!h.log.some(l => /deploy at the same time/.test(l)), 'not the house-rule line');
     rich(h, nit);
-    const unit = give(h, nit, 'Gzxyclop');
+    const unit = give(h, nit, 'Bloatfiend');
     assert.deepEqual(h.legal(nit), [], 'the NIT watches the INT deploy');
     refused(h, { type: 'playCard', seat: nit, handIndex: unit }, /not your deployment/);
     refused(h, { type: 'doneDeploying', seat: nit }, /not your deployment/);

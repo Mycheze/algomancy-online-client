@@ -308,7 +308,7 @@
     "text": "An effect that cannot do everything it says does as much as it can. A part of an effect that cannot happen does not stop the other parts from happening. This does not make half of an action happen: a fight or an exchange that has lost one of its two units does not happen at all (704).",
     "examples": [
       {
-        "text": "Recall: \"Each player recalls a unit and loses 2 life.\" A player with no unit to recall still loses 2 life.",
+        "text": "Recall: \"Each player recalls one of their units and loses 2 life.\" A player with no unit to recall still loses 2 life.",
         "test": "179-empty-collection-branches.test.ts::Recall — the life loss happens, the recall does not"
       },
       {
@@ -671,7 +671,7 @@
     "text": "\"Each player\" means each player in the region where the effect happens.",
     "examples": [
       {
-        "text": "Recall (\"Each player recalls a unit and loses 2 life\") cast in a battle makes both players present in that battle region lose 2 life.",
+        "text": "Recall (\"Each player recalls one of their units and loses 2 life\") cast in a battle makes both players present in that battle region lose 2 life.",
         "test": "15-water-b.test.ts::Recall: each player recalls a unit and loses 2 life"
       }
     ],

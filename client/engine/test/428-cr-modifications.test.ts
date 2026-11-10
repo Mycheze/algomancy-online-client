@@ -452,7 +452,7 @@ test('cr:effects.mods.moving.not-applying — Rotbeast moving an augment onto Pe
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
   const rot = spawn(h, A, 'Rotbeast');
-  const pc = spawn(h, D, 'Perpetual Construct');                 // "Whenever a mod is applied to me, create an X/X"
+  const pc = spawn(h, D, 'Perpetual Construct');                 // "Whenever I am modded, create an X/X"
   giveResources(h, A, 'water', 4);
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Curio Drifter'), hostId: rot });
   assert.equal(ent(h, rot)!.mods.length, 1, 'setup: Rotbeast carries an augment');

@@ -377,7 +377,7 @@
     {"keyword":"Swift","rule":"802.4","card":"Rime Wraith","quote":"(Swift units deal combat damage first. Sluggish units deal combat damage last.)","source":"cards[] (printed.json text)"},
     {"keyword":"Sluggish","rule":"802.5","card":"Rime Wraith","quote":"(Swift units deal combat damage first. Sluggish units deal combat damage last.)","source":"cards[] (printed.json text)"},
     {"keyword":"Balanced","rule":"802.7","card":"Brough","quote":"balanced. {i}(The power and defense of balanced units are equal to the greater of the two.)","source":"cards[] (printed.json text)"},
-    {"keyword":"Inverted","rule":"802.8","card":"Its Dark Bubb","quote":"(Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2.)","source":"cards[] (printed.json text)"},
+    {"keyword":"Inverted","rule":"802.8","card":"Oodvick","quote":"(Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2.)","source":"cards[] (printed.json text)"},
     {"keyword":"Powerful","rule":"802.10","card":"Emberflame Enlightener","quote":"powerful. {i}(Powerful sources deal double damage)","source":"cards[] (printed.json text)"},
     {"keyword":"Piercing","rule":"802.16","card":"Pernicious Photosynthesis","quote":"piercing until regroup. {i}(Excess damage from piercing sources is dealt to the recipient's controller.)","source":"cards[] (printed.json text)"},
     {"keyword":"Piercing","rule":"802.16","card":"Protective Adaptations","quote":"piercing until regroup. {i}(Excess damage from piercing sources is dealt to the recipient's controller.)","source":"cards[] (printed.json text)"},

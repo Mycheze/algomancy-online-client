@@ -658,7 +658,7 @@ Pure's printed reminder ignores "all other attributes"; the rulings keep the sta
 
 What Inverted inverts from when a base rewrite is in play: The owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) (owner, 2026-08-22) inverts from the rewritten base; the owner's later general answer that any difference from printed stats is a stat change, and a _passer post in #rules-questions, invert from the printed stats instead.
 
-- card: Its Dark Bubb: "Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2."
+- card: Oodvick: "Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2."
 - owner ruling, adopted 2026-08-23: "(R66) — redefines what base *is*, so it is the thing inverted FROM and is never"
 - owner ruling, adopted 2026-08-23: "> "Inverted looks at Printed base stats, looks what unit is 'currently' and"
 - owner ruling, adopted 2026-08-25: "Literally any change to a unit's stats counts. If they're different from the"
@@ -2088,7 +2088,7 @@ If Temporal Rift ends round 1 before blocks, can the non-initiative player still
 - RAQ 1353986897902567424#0: "calebgannon (2025-03-30): "Yeah I'm still working on the ruling""
 - RAQ 1353986897902567424#1: "Should allow for 2nd Battle to happen if it was cast AFTER blocker/counter-attack"
 - Manual p.20: "The NIT can still declare attacks even if the IT decides not to attack."
-- card: Temporal Rift: "End this battle. Erase this spell."
+- card: Temporal Rift: "End this battle. Erase me."
 - owner ruling, adopted 2026-08-18: "effect (Temporal Rift) affects only that region's battle and stack — other regions resolve"
 
 **Resolution:** Settled by the designer (2026-10-24 audit): _passer asked whether Temporal Rift cast before blockers means no counterattack and cast after blockers means the counterattack is already sent and the second battle happens, and Caleb answered "that's what it currently is" (RQ 1353982561101025362, 2025-03-25). That is reading B before blocks and the second round after them, which the engine already does; rule 505.3f now states both halves, pinned by 633. Caleb said he might later allow the counterattack; revisit if he rules again. rule 610.4 needs no change.

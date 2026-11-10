@@ -353,7 +353,7 @@ test('cr:effects.general.interaction — a spell, a battle unit, a virus and an 
   assert.deepEqual(h.state.stack.map(i => i.kind), ['spell'], 'the spell is on the stack');
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Monke') });
   assert.deepEqual(h.state.stack.map(i => i.kind), ['spell', 'unit'], 'the battle unit went on above it');
-  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Gzxyclop'), hostId: atk });
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Bloatfiend'), hostId: atk });
   assert.equal(h.state.stack.at(-1)!.kind, 'virus', 'the virus went on above that');
   const ab = h.legal(D).find(a => a.type === 'activateAbility' && a.entityId === evoker);
   assert.ok(ab, 'the activated ability is offered');
@@ -378,7 +378,7 @@ test('cr:effects.playing.what-is-played — a unit and a spell played from hand 
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Monke') });
   assert.deepEqual(playedCards(h, m0), ['Godray', 'Monke'], 'a spell and a unit from hand are played');
   const m1 = h.events.length;
-  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Gzxyclop'), hostId: atk });
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Bloatfiend'), hostId: atk });
   assert.deepEqual(playedCards(h, m1), [], 'applying a virus is not playing a card');
   // drain, then a bin play
   while (h.state.stack.length) pass(h);
@@ -406,7 +406,7 @@ test('cr:effects.playing.applying — a graft from hand and a virus from the cac
   assert.ok(h.state.entities[host]!.mods.length >= 1, 'the graft is on the host');
   assert.deepEqual(playedCards(h, m0), [], 'no card was played');
   // a virus from the cache
-  h.q.deckOf(P).unshift('Gzxyclop');
+  h.q.deckOf(P).unshift('Bloatfiend');
   withE(h, e => { e.glimpse(P, 1); });
   const ci = h.state.players[P]!.cache!.length - 1;
   const opt = h.legal(P).find(a => a.type === 'augment' && a.from === 'cache' && a.index === ci);
@@ -415,7 +415,7 @@ test('cr:effects.playing.applying — a graft from hand and a virus from the cac
   h.do(opt!);
   answerAll(h);
   while (h.state.stack.length && h.state.priority !== null) pass(h);
-  assert.ok(Object.values(h.state.entities).some(x => x.mods.some(m => h.state.entities[m]?.card === 'Gzxyclop')),
+  assert.ok(Object.values(h.state.entities).some(x => x.mods.some(m => h.state.entities[m]?.card === 'Bloatfiend')),
     'the virus is applied');
   assert.deepEqual(playedCards(h, m1), [], 'applying from the cache is not a play either');
 });
@@ -944,11 +944,11 @@ test('cr:effects.resolution.fizzle.virus — a virus whose host died before it r
   const { h, A, D, atk } = attackWindow(71548);
   giveResources(h, D, 'dark', 3);
   pass(h);
-  h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Gzxyclop'), hostId: atk });
+  h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Bloatfiend'), hostId: atk });
   assert.equal(h.state.stack[0]!.kind, 'virus');
   withE(h, e => e.destroy(e.s.entities[atk]!, 'dies'));
   pass(h);
-  assert.ok(h.state.players[D]!.bin.includes('Gzxyclop'), 'in the bin');
+  assert.ok(h.state.players[D]!.bin.includes('Bloatfiend'), 'in the bin');
   spawn(h, A, FILLER);
   while (h.state.priority !== D && h.state.priority !== null) pass(h);
   assert.ok(!h.legal(D).some(a => a.type === 'augment'), 'no augment from the bin is offered');

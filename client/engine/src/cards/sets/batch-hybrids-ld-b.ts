@@ -107,7 +107,7 @@ import { isEnt, isUnitCard } from './helpers.ts';
  * and Haboob came off the card ledger with it.
  *
  * {Inverted} came off the same list one round earlier: stat layer 5 (CR 802.8a) shipped for playtest report #73, so a row granting {Inverted} now really inverts
- * the Omniphage's net stat change, and Reality Bender and Its Dark Bubb came
+ * the Omniphage's net stat change, and Reality Bender and Oodvick came
  * off the card ledger with it.
  *
  * Every name in this union is read by something now. If that stops being
@@ -587,7 +587,7 @@ card('Splort', {
 
 // ─────────────────────── WOOD / DARK (gd) ─────────────────────────────
 
-// "Augment a Wight onto X target units." — gd/X 0/0 {Battle} Blight Spell.
+// "Augment a Wraith onto X target units." — gd/X 0/0 {Battle} Blight Spell.
 //
 // CR 721.6: the retired "Wight" and the current "Wraith" are one token; augmentWraith() creates it directly
 // as an augment MOD on the host rather than spawning the body, and the mod is

@@ -92,16 +92,16 @@ function quietPlay(m: Marked, seat: Seat, skip: Set<string>): string {
 test('CC undo: a draw stands, and everything before it with it', () => {
   const m = marked(ccToDeploy(ccGame(0)), 0);
   for (const el of ['dark', 'fire', 'wood', 'water', 'earth', 'metal', 'light'] as const) giveResources(m.h, 0, el, 4);
-  const quiet = quietPlay(m, 0, new Set(['Gzxyclop']));
+  const quiet = quietPlay(m, 0, new Set(['Bloatfiend']));
   const start = m.marks.length;
   m.do({ type: 'playCard', seat: 0, handIndex: give(m.h, 0, quiet) });
   assert.equal(m.floor(0), start, 'a quiet play can be taken back');
   const deckBefore = m.h.state.decks![0]!.length;
-  m.do({ type: 'playCard', seat: 0, handIndex: give(m.h, 0, 'Gzxyclop') });   // "When I spawn, draw a card."
+  m.do({ type: 'playCard', seat: 0, handIndex: give(m.h, 0, 'Bloatfiend') });   // "When I spawn, draw a card."
   assert.equal(m.h.state.decks![0]!.length, deckBefore - 1, 'it drew');
   assert.equal(m.marks.at(-1)!.barrier, 'deck');
   assert.equal(m.floor(0), m.marks.length, 'the draw stands, and the quiet play before it too');
-  m.do({ type: 'playCard', seat: 0, handIndex: give(m.h, 0, quietPlay(m, 0, new Set(['Gzxyclop']))) });
+  m.do({ type: 'playCard', seat: 0, handIndex: give(m.h, 0, quietPlay(m, 0, new Set(['Bloatfiend']))) });
   assert.equal(m.floor(0), m.marks.length - 1, 'a play after the draw can be taken back, back to the draw');
 });
 

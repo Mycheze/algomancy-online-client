@@ -451,7 +451,7 @@ const RESOURCES: RulesSection = {
       title: 'Prismite',
       body: 'Each player begins the game with two dormant Prismites, which usually receive the two activations of the first turn. A Prismite has no '
         + 'element and gives no affinity, but it can be expended for mana like any resource. Its card reads: “Erase me: Create a non-prismite '
-        + 'resource, then activate it. Do this only during the mana step. (This does not use one of your activations for turn.)” — so an active '
+        + 'resource, then activate it. Do this only during the resource step. (This does not use one of your activations for turn.)” — so an active '
         + 'Prismite can be exchanged for a resource of any element.',
       alt: ['exchange', 'mana converter'],
       source: 'Prismite card; Algomancy Manual, The Planning Phase',

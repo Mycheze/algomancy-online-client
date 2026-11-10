@@ -134,7 +134,7 @@ card('Pull Under', {
   },
 });
 
-// "[Switch1] Each player recalls a unit and loses 2 life." — b/1, {Battle}
+// "[Switch1] Each player recalls one of their units and loses 2 life." — b/1, {Battle}
 // Maelstrom Spell. "Each player" = the region's present seats (CR 601.4d); each
 // player picks their own unit (auto when only one). The life loss is
 // unconditional per player — a player with no unit to recall still loses 2.
@@ -751,7 +751,7 @@ card('Tides of the Cosmos', {
   },
 });
 
-// "Each player recalls two units. If four or more units were recalled this
+// "Each player recalls two of their units. If four or more units were recalled this
 // way, repeat this." — b/4, {Battle} Bedlam Maelstrom Spell. Per iteration
 // each present player recalls two of their units (all of them when they have
 // two or fewer — no choice needed then); 4+ recalls repeat the whole thing.

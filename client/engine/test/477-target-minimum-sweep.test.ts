@@ -10,7 +10,8 @@
  * the valid targets".
  *
  * `min` below the slot count did two jobs at once — "up to" AND "skip the cast
- * gate" — and five cards had it with no "up to" printed: Tilling the Graves,
+ * gate" — and five cards had it with no "up to" printed: Tilling the Graves
+ * (which has printed "up to two" since 2026-11-10),
  * Spell Excavation, Eldritch Reclaimer, Big Glimpse Card and Combustible
  * Bogwalker's activated ability (cast/activated), plus Rippleback Skulker's
  * trigger. The X-count spells (Blight's End, Torrential Reclamation, Channel

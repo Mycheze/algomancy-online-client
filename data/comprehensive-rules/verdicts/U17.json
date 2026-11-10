@@ -2667,19 +2667,19 @@
     "key": "effects.mods.applied-triggers",
     "textHash": "a43afca2e7c8a8f5",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U17-r1",
+    "round": 4,
+    "verifier": "U17-r4",
     "engine": [
       {
-        "loc": "engine.ts:attachMod",
+        "loc": "client/engine/src/cards/sets/batch-earth-b.ts:Perpetual Construct",
         "agrees": true,
-        "note": "one modApplied per mod"
+        "note": ""
       }
     ],
     "tests_run": [
       {
         "file": "17-earth-b.test.ts",
-        "pattern": "Perpetual Construct: an applied mod creates an X/X, X = the mod's cost",
+        "pattern": "Perpetual Construct: an applied mod",
         "passed": true,
         "asserts_claim": true
       },
@@ -2700,14 +2700,10 @@
       {
         "ref": "RAQ 1353856176558706769#0",
         "supports": "yes",
-        "note": ""
+        "note": "[Solved], status covered."
       }
     ],
     "quote_spans": [
-      {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "Whenever a mod is applied to me, create"
-      },
       {
         "file": "client/ledgers/raq.ts",
         "text": "Perpetual Construct will trigger separetly for each of the Mods"

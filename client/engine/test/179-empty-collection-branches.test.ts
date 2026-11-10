@@ -263,7 +263,7 @@ test('Death Greeter — "each player sacrifices a unit with cost ≤ the spell\'
   assert.equal(snapshot(b.g), before, 'Death Greeter: "(if able)" was able of nobody, so nothing died');
 });
 
-// ── 3. Grim Bargain ─────────────────────────────────────────────────────
+// ── 3. Consuming Mass ─────────────────────────────────────────────────────
 // "Each player sacrifices a unit. Repeat this for every [3] spent. Draw a card
 // for each nontoken unit you sacrificed this way."
 //
@@ -271,14 +271,14 @@ test('Death Greeter — "each player sacrifices a unit with cost ≤ the spell\'
 // lands on X = 2, which makes `rounds` 0 and takes the ALREADY-guarded
 // "less than [3] spent" branch. Only a real X ≥ 3 gets to the empty plan.
 
-test('Grim Bargain — [3] spent but nobody here has a unit: it says so and draws nothing', () => {
+test('Consuming Mass — [3] spent but nobody here has a unit: it says so and draws nothing', () => {
   const b = barren(7903);
-  assertBarren(b, 'Grim Bargain');
+  assertBarren(b, 'Consuming Mass');
   const before = snapshot(b.g);
-  const evs = resolve(spellOf('Grim Bargain'), b, { sourceName: 'Grim Bargain', x: 3 });
-  assertClauseSpoke(evs, 'Grim Bargain', 'Each player sacrifices a unit … draw a card for each');
+  const evs = resolve(spellOf('Consuming Mass'), b, { sourceName: 'Consuming Mass', x: 3 });
+  assertClauseSpoke(evs, 'Consuming Mass', 'Each player sacrifices a unit … draw a card for each');
   assert.equal(snapshot(b.g), before,
-    'Grim Bargain: no unit was sacrificed, so no card is drawn — the draw is off the SACRIFICES, '
+    'Consuming Mass: no unit was sacrificed, so no card is drawn — the draw is off the SACRIFICES, '
     + 'not off the [3]');
 });
 
@@ -333,7 +333,7 @@ test('Perish — "half of their units, rounded up" is half of nothing: it says s
 });
 
 // ── 7. Upheaval ─────────────────────────────────────────────────────────
-// "Each player recalls two units. If four or more units were recalled this
+// "Each player recalls two of their units. If four or more units were recalled this
 // way, repeat this."
 
 test('Upheaval — "each player recalls two units" with none here says so and does not loop', () => {
@@ -341,7 +341,7 @@ test('Upheaval — "each player recalls two units" with none here says so and do
   assertBarren(b, 'Upheaval');
   const before = snapshot(b.g);
   const evs = resolve(spellOf('Upheaval'), b, { sourceName: 'Upheaval' });
-  assertClauseSpoke(evs, 'Upheaval', 'Each player recalls two units');
+  assertClauseSpoke(evs, 'Upheaval', 'Each player recalls two of their units');
   assert.equal(snapshot(b.g), before, 'Upheaval: nothing was recalled, so no hand grew');
   assert.ok(evs.length <= 2,
     `Upheaval: an empty iteration must STOP the repeat — it emitted ${evs.length} events`);
@@ -369,7 +369,7 @@ test('Seabed Shellcaster — ability and graft rider are the SAME EffectDef (one
 });
 
 // ── 9. Recall — HALF-SILENT ─────────────────────────────────────────────
-// "[Switch1] Each player recalls a unit and loses 2 life."
+// "[Switch1] Each player recalls one of their units and loses 2 life."
 //
 // ⚠ 65 CAN NEVER SEE THIS ONE. The life loss is unconditional, so the run
 // always emits; a checker that convicts only a WHOLLY silent run is blind to
@@ -383,7 +383,7 @@ test('Recall — the life loss happens, the recall does not, and the card now sa
   const lives = b.g.s.players.map(p => p.life);
   const hands = b.g.s.players.map(p => p.hand.length);
   const evs = resolve(spellOf('Recall'), b, { sourceName: 'Recall' });
-  assertClauseSpoke(evs, 'Recall', 'Each player recalls a unit and loses 2 life');
+  assertClauseSpoke(evs, 'Recall', 'Each player recalls one of their units and loses 2 life');
   // the OTHER half must still do exactly what it printed — this repair is an
   // announcement, and a repair that changed behaviour would be the wrong fix
   assert.deepEqual(b.g.s.players.map(p => p.life), lives.map(l => l - 2),
@@ -487,7 +487,7 @@ test('Shoreline Specter — its prompt promises "each opponent loses 2 life"; wi
  * exactly this kind; the three shared-object assertions above are what keep
  * the two numbers reconcilable. */
 const REPAIRED = [
-  'Cull', 'Death Greeter', 'Grim Bargain', 'Insatiable Want', 'Maw of Damnation',
+  'Cull', 'Death Greeter', 'Consuming Mass', 'Insatiable Want', 'Maw of Damnation',
   'Perish', 'Upheaval', 'Seabed Shellcaster',
   // half-silent — invisible to 65 by construction (CT-81b)
   'Recall', 'Torrential Reclamation', 'Dragnol', 'Shoreline Specter',

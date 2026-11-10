@@ -798,7 +798,7 @@ export interface CachedRef { seat: Seat; uid: number }
  * entries carry prophecies).
  *
  * `nth` is the 0-based occurrence among entries with that name, and exists so
- * a two-target spell can reach both copies of one card ("Recall two target
+ * a two-target spell can reach both copies of one card ("Recall up to two target
  * units in your bin"). CR 405.6b / CT-380: a ref names ONE copy and follows it.
  * This used to say a ref whose copy had left "simply slides to whichever copies
  * remain", because copies are interchangeable — and they are not: a copy can be
@@ -1287,7 +1287,7 @@ export interface StackItem {
     }[];
   };
   /**
-   * The printed "Erase me." / "Erase this spell." clause — Collect Remains,
+   * The printed "Erase me." clause — Collect Remains,
    * Suspend, Temporal Rift.
    *
    * A resolving spell is disposed of by `E.dischargeItem` AFTER its effect has

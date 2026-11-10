@@ -288,7 +288,7 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // CORRECT definition when there is no printed text to flag, which is the
   // mismatch that hid Harbinger in reverse. Stat layer 6 shipped (CR 802.9: an
   // Unaware card, and everything it fights or damages, reads at PRINTED stats)
-  // and all three came off, as Its Dark Bubb and Reality Bender came off when
+  // and all three came off, as Oodvick and Reality Bender came off when
   // layer 5 ({Inverted}, CR 802.8a) shipped. Both stat-layer placeholders in effStats() are now code.
 
   // ── APPROXIMATIONS SITTING BEHIND A {todo:true} ─────────────────────────

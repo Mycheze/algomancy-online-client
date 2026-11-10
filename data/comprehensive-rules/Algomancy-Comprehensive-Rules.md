@@ -221,11 +221,11 @@ order.
 
 <a id="r101.5"></a>**101.5.** An effect that cannot do everything it says does as much as it can. A part of an effect that cannot happen does not stop the other parts from happening. This does not make half of an action happen: a fight or an exchange that has lost one of its two units does not happen at all (704). See rule 704.
 
-> *Example: Recall: "Each player recalls a unit and loses 2 life." A player with no unit to recall still loses 2 life.*
+> *Example: Recall: "Each player recalls one of their units and loses 2 life." A player with no unit to recall still loses 2 life.*
 
 > *Example: Amphivore carries two grafts, Flame Juggle and Ralph, and its ability runs three times. The first pass gives Amphivore to the opponent and makes three 1/1s; later passes cannot give it again, so their "If you do" makes nothing, but Flame Juggle still happens all three times.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.43; Manual p.43 · Designer: RAQ 1353859961855148103#3 · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Example tests: 179-empty-collection-branches.test.ts::Recall — the life loss happens, the recall does not, 393-raq-mods.test.ts::RAQ Amphivore with Ralph grafted · Key: concepts.golden.as-much-as-possible</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Printed: Manual p.43; Manual p.43 · Designer: RAQ 1353859961855148103#3 · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Example tests: 179-empty-collection-branches.test.ts::Recall — the life loss happens, the recall does not, 393-raq-mods.test.ts::RAQ Amphivore with Ralph grafted · Key: concepts.golden.as-much-as-possible</sub>
 
 <sub>Discrepancies: D-U01-15 (discrepancies.md)</sub>
 
@@ -286,9 +286,9 @@ order.
 
 <a id="r102.3"></a>**102.3.** "Each player" means each player in the region where the effect happens. See rule 101.6.
 
-> *Example: Recall ("Each player recalls a unit and loses 2 life") cast in a battle makes both players present in that battle region lose 2 life.*
+> *Example: Recall ("Each player recalls one of their units and loses 2 life") cast in a battle makes both players present in that battle region lose 2 life.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.19 · Tests: 412-cr-general.test.ts · Example test: 15-water-b.test.ts::Recall: each player recalls a unit and loses 2 life · Key: concepts.players.each-player</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.19 · Tests: 412-cr-general.test.ts · Example test: 15-water-b.test.ts::Recall: each player recalls a unit and loses 2 life · Key: concepts.players.each-player</sub>
 
 <a id="r102.3a"></a>**102.3a** When an effect has each player make a choice, the initiative player chooses first and the non-initiative player chooses after them, unless the card's text says in what order the players choose. See rules 500.3, 101.1.
 
@@ -819,11 +819,11 @@ order.
 
 <a id="r107.2b"></a>**107.2b** X may be 0 unless the card says otherwise. Choosing X = 0 is legal even when it makes the effect do nothing.
 
-> *Example: No Hand Killer can be activated with an empty hand at X = 0, and its [once] is spent.*
+> *Example: Lost Shade can be activated with an empty hand at X = 0, and its [once] is spent.*
 
 > *Example: Torrential Reclamation for X = 0 recalls nothing, and nobody sacrifices.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 5 gate test files · Designer: RQ 1222932669516615743; RQ 1223287683804037202 · Owner ruling, adopted 2026-08-22, 2026-08-25 (quoted from the retired ruling register) · Tests: 32-cast-costs.test.ts, 46-hybrids-ld-c.test.ts, 42-dark-b.test.ts, 182-correctness-sample.test.ts, 632-torrential-sacrifice-per-recall.test.ts · Example tests: 46-hybrids-ld-c.test.ts::CR 107.2b: an empty hand still activates No Hand Killer — X = 0, and the [once] is spent, 182-correctness-sample.test.ts::Torrential Reclamation: with X = 0 nothing is recalled, so nobody sacrifices and no life is lost (CT-375) · Demonstrated by test: 32-cast-costs.test.ts::X spells resolve from the stored X — a 0-mana caster may still cast for X = 0 · Key: concepts.numbers.x-cost.zero</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 5 gate test files · Designer: RQ 1222932669516615743; RQ 1223287683804037202 · Owner ruling, adopted 2026-08-22, 2026-08-25 (quoted from the retired ruling register) · Tests: 32-cast-costs.test.ts, 46-hybrids-ld-c.test.ts, 42-dark-b.test.ts, 182-correctness-sample.test.ts, 632-torrential-sacrifice-per-recall.test.ts · Example tests: 46-hybrids-ld-c.test.ts::CR 107.2b: an empty hand still activates Lost Shade — X = 0, and the [once] is spent, 182-correctness-sample.test.ts::Torrential Reclamation: with X = 0 nothing is recalled, so nobody sacrifices and no life is lost (CT-375) · Demonstrated by test: 32-cast-costs.test.ts::X spells resolve from the stored X — a 0-mana caster may still cast for X = 0 · Key: concepts.numbers.x-cost.zero</sub>
 
 <a id="r107.2c"></a>**107.2c** An X spell (a card whose mana cost is X) that prints "X can't be zero" must be cast with X of at least 1. A player who cannot pay at least 1 cannot cast it.
 
@@ -1155,9 +1155,9 @@ order.
 
 <a id="r109.9c"></a>**109.9c** Activating a [once] ability with X = 0 is legal, and it spends the use.
 
-> *Example: No Hand Killer can be activated with an empty hand, and the activation spends its [once].*
+> *Example: Lost Shade can be activated with an empty hand, and the activation spends its [once].*
 
-<sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 136-triggers-and-modes.test.ts · Example test: 136-triggers-and-modes.test.ts::CR 109.9c: No Hand Killer is activatable with an EMPTY hand · Key: concepts.abilities.once.x-zero</sub>
+<sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Tests: 136-triggers-and-modes.test.ts · Example test: 136-triggers-and-modes.test.ts::CR 109.9c: Lost Shade is activatable with an EMPTY hand · Key: concepts.abilities.once.x-zero</sub>
 
 <a id="r109.9d"></a>**109.9d** A change of controller does not give back a spent use: the limit stays with the unit.
 
@@ -1242,11 +1242,11 @@ order.
 
 > *Example: Twin Flame ("up to two target units") can be played with no targets.*
 
-> *Example: Tilling the Graves ("Recall two target units in your bin") says no "up to": once cast, it asks for both units and offers no way to stop at one.*
+> *Example: Tilling the Graves ("Recall up to two target units in your bin") may stop at none, at one, or take both.*
 
 > *Example: Penance ("Any number of target players each lose 1 life. Draw a card.") may be played with no target, and its caster still draws.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 4 gate test files · Printed: card: Penance · Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Tests: 21-fixes.test.ts, 478-required-targets-at-cast.test.ts, 477-target-minimum-sweep.test.ts, 38-light-a.test.ts · Example tests: 21-fixes.test.ts::CR 110.1c: an "up to" spell may decline every target, 478-required-targets-at-cast.test.ts::Tilling the Graves with two units in the bin is offered and asks for both with no stop, 38-light-a.test.ts::Penance: with no targets declared (min 0) the draw still happens · Key: concepts.targets.what.up-to</sub>
+<sub>Basis: Mixed · Verified: partial in round 4; verifier ran 5 tests, all passed; 4 gate test files · Printed: card: Penance · Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Tests: 21-fixes.test.ts, 478-required-targets-at-cast.test.ts, 477-target-minimum-sweep.test.ts, 38-light-a.test.ts · Example tests: 21-fixes.test.ts::CR 110.1c: an "up to" spell may decline every target, 478-required-targets-at-cast.test.ts::Tilling the Graves with two units in the bin may stop at none, at one, or take both, 38-light-a.test.ts::Penance: with no targets declared (min 0) the draw still happens · Key: concepts.targets.what.up-to</sub>
 
 <a id="r110.1d"></a>**110.1d** The number of targets an effect has is the number chosen as it was put on the stack. A target that is later lost still counts.
 
@@ -1398,11 +1398,11 @@ order.
 
 > *Example: Abduct ("Gain control of target unit with cost [x] or less …") against a lone cost-1 attacker can be played when its caster can pay an X of 1 or more. X = 0 is not offered, since at 0 there is no unit to take.*
 
-> *Example: Tilling the Graves ("Recall two target units in your bin") cannot be played while its caster's bin holds fewer than two units.*
+> *Example: Blight's End ("Augment a Wraith onto X target units") with X = 1 must name its one target: no stop is offered before it.*
 
 > *Example: Tidal Reversion ("For each player, recall target unit that player controls") played for free by Tides of the Cosmos takes one unit of each player, and Tides does not offer it while either player has no unit there.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 7 tests, all passed; 7 gate test files · Designer: RAQ 1410252965276684418#1; RAQ 1454169054402314362#1 · Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 390-raq-stack.test.ts, 396-raq-timing.test.ts, 401-raq-fix-stack.test.ts, 452-abduct-x-gate.test.ts, 478-required-targets-at-cast.test.ts, 477-target-minimum-sweep.test.ts, 510-inline-play-targets.test.ts · Example tests: 390-raq-stack.test.ts::RAQ target requirements: Fight cannot be played, 396-raq-timing.test.ts::Rebalance is playable with no unit, 452-abduct-x-gate.test.ts::Abduct is castable against a cost-1 attacker, its X menu starts at 1, and control flips, 478-required-targets-at-cast.test.ts::Tilling the Graves is not offered with, 510-inline-play-targets.test.ts::CT-308: Tidal Reversion under Tides takes one unit of each player · Key: concepts.targets.required</sub>
+<sub>Basis: Mixed · Verified: partial in round 4; verifier ran 11 tests (2 probes it wrote), all passed; 7 gate test files · Designer: RAQ 1410252965276684418#1; RAQ 1454169054402314362#1 · Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 390-raq-stack.test.ts, 396-raq-timing.test.ts, 401-raq-fix-stack.test.ts, 452-abduct-x-gate.test.ts, 478-required-targets-at-cast.test.ts, 477-target-minimum-sweep.test.ts, 510-inline-play-targets.test.ts · Example tests: 390-raq-stack.test.ts::RAQ target requirements: Fight cannot be played, 396-raq-timing.test.ts::Rebalance is playable with no unit, 452-abduct-x-gate.test.ts::Abduct is castable against a cost-1 attacker, its X menu starts at 1, and control flips, 478-required-targets-at-cast.test.ts::Blight End with one unit in the battle offers X up to 1 only, and X = 1 needs its target, 510-inline-play-targets.test.ts::CT-308: Tidal Reversion under Tides takes one unit of each player · Key: concepts.targets.required</sub>
 
 <a id="r110.8"></a>**110.8.** A target that was legal when it was chosen but is not legal when the effect begins to resolve is lost, as if it had left play. See rule 704.
 
@@ -6129,13 +6129,13 @@ order.
 
 <a id="r702.6"></a>**702.6.** X is chosen when the card is played, before it is put on the stack. Only values the player can pay may be chosen, and responses see the X already fixed. When X counts targets ("X target units"), all X targets are required: only an X that many legal targets can fill may be chosen, and at X = 0 the card needs no target. See rule 107.
 
-> *Example: Blight's End ("Augment a Wight onto X target units") with one unit in the battle offers X of 0 or 1, and at X = 1 it must take that unit.*
+> *Example: Blight's End ("Augment a Wraith onto X target units") with one unit in the battle offers X of 0 or 1, and at X = 1 it must take that unit.*
 
 > *Example: Blight's End cast for X = 2 with two units asks for both and never offers a stop after one.*
 
 > *Example: Torrential Reclamation ("Recall X target nontoken allies") with no ally in the fight can be cast only for X = 0.*
 
-<sub>Basis: Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 6 tests, all passed; 2 gate test files · Tests: 478-required-targets-at-cast.test.ts, 477-target-minimum-sweep.test.ts · Example tests: 478-required-targets-at-cast.test.ts::Blight End with one unit in the battle offers X up to 1 only, and X = 1 needs its target, 478-required-targets-at-cast.test.ts::Blight End with two units asks for both at X = 2, never offering a stop at one, 478-required-targets-at-cast.test.ts::Torrential Reclamation with no ally in the fight is castable at X = 0 only · Key: effects.casting.x</sub>
+<sub>Basis: Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 2 gate test files · Tests: 478-required-targets-at-cast.test.ts, 477-target-minimum-sweep.test.ts · Example tests: 478-required-targets-at-cast.test.ts::Blight End with one unit in the battle offers X up to 1 only, and X = 1 needs its target, 478-required-targets-at-cast.test.ts::Blight End with two units asks for both at X = 2, never offering a stop at one, 478-required-targets-at-cast.test.ts::Torrential Reclamation with no ally in the fight is castable at X = 0 only · Key: effects.casting.x</sub>
 
 <a id="r702.6a"></a>**702.6a** If a card says X can't be zero, X must be at least 1. A player with less open mana than the smallest legal X cannot play the card.
 
@@ -7938,7 +7938,7 @@ order.
 
 > *Example: Reconfigure moves three mods onto Perpetual Construct: three triggers, a 1/1, a 3/3 and a 4/4.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Perpetual Construct · Designer: RAQ 1353856176558706769#0 · Tests: 17-earth-b.test.ts, 393-raq-mods.test.ts · Example tests: 17-earth-b.test.ts::Perpetual Construct: an applied mod creates an X/X, X = the mod's cost, 393-raq-mods.test.ts::RAQ Reconfigure onto Perpetual Construct · Key: effects.mods.applied-triggers</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Perpetual Construct · Designer: RAQ 1353856176558706769#0 · Tests: 17-earth-b.test.ts, 393-raq-mods.test.ts · Example tests: 17-earth-b.test.ts::Perpetual Construct: an applied mod creates an X/X, X = the mod's cost, 393-raq-mods.test.ts::RAQ Reconfigure onto Perpetual Construct · Key: effects.mods.applied-triggers</sub>
 
 <a id="r721"></a>
 ### 721. Augment
@@ -8638,11 +8638,11 @@ order.
 
 <a id="r801.7e"></a>**801.7e** When an effect tells a player to recall a unit and they have none to recall, the recall does nothing, but the rest of the effect still happens unless it depends on the recall ("If you do"). See rule 101.5.
 
-> *Example: Recall ("Each player recalls a unit and loses 2 life"): a player with no unit to recall still loses 2 life.*
+> *Example: Recall ("Each player recalls one of their units and loses 2 life"): a player with no unit to recall still loses 2 life.*
 
 > *Example: Shoreline Specter: if the recall is declined, the life drain that follows "If you do" does not happen.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Shoreline Specter · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 179-empty-collection-branches.test.ts, 182-correctness-sample.test.ts · Example tests: 179-empty-collection-branches.test.ts::Recall — the life loss happens, the recall does not, and the card now says which, 182-correctness-sample.test.ts::Shoreline Specter: DECLINE the recall and the 2-life drain does not happen · Key: keywords.actions.recall.nothing-to-recall</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Shoreline Specter · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 179-empty-collection-branches.test.ts, 182-correctness-sample.test.ts · Example tests: 179-empty-collection-branches.test.ts::Recall — the life loss happens, the recall does not, and the card now says which, 182-correctness-sample.test.ts::Shoreline Specter: DECLINE the recall and the 2-life drain does not happen · Key: keywords.actions.recall.nothing-to-recall</sub>
 
 <a id="r801.8"></a>**801.8.** To cache a card is to put it into a player's cache. A unit cached from play goes to its controller's cache unless the effect names another, and its mods go to the bin. See rules 403.1, 403.7, 410.5c.
 
@@ -8784,7 +8784,7 @@ order.
 
 > *Example: Hexbane Shiitake gives itself away and takes control of an enemy spell.*
 
-<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 5 tests, all passed; 3 gate test files · Printed: card: Necromorph; card: Organic Exchange; card: Body Swap; card: Hexbane Shiitake · Tests: 24-wood-b.test.ts, 23-wood-a.test.ts, 26-metal-a.test.ts · Example test: 23-wood-a.test.ts::Hexbane Shiitake: exchanges the carrier for an enemy spell and retargets it ([once]) · Demonstrated by tests: 24-wood-b.test.ts::Organic Exchange: control swaps and the attack slot passes to the exchanged unit, 26-metal-a.test.ts::Body Swap: exchanges the base stats of two target units until regroup · Key: keywords.actions.exchange</sub>
+<sub>Basis: Printed · Verified: partial in round 4; verifier ran 4 tests, all passed; 3 gate test files · Printed: card: Necromorph; card: Organic Exchange; card: Body Swap; card: Hexbane Shiitake · Tests: 24-wood-b.test.ts, 23-wood-a.test.ts, 26-metal-a.test.ts · Example test: 23-wood-a.test.ts::Hexbane Shiitake: exchanges the carrier for an enemy spell and retargets it ([once]) · Demonstrated by tests: 24-wood-b.test.ts::Organic Exchange: control swaps and the attack slot passes to the exchanged unit, 26-metal-a.test.ts::Body Swap: exchanges the base stats of two target units until regroup · Key: keywords.actions.exchange</sub>
 
 <a id="r801.13a"></a>**801.13a** When a unit in play is exchanged for a unit card in a bin, the unit leaving play despawns and goes to the bin, where it is trashed, but it does not die. See rules 410.2a, 410.4d, 704.6c.
 
@@ -9121,13 +9121,13 @@ order.
 
 <a id="r802.8"></a>**802.8. Inverted.** Inverted is an attribute. Its reminder text reads "Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2."
 
-<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: card: Its Dark Bubb; Manual p.25 · Our glossary (not a source): Inverted · Tests: 43-dark-c.test.ts · Demonstrated by test: 43-dark-c.test.ts::Its Dark Bubb: the printed reminder text, verbatim · Key: attr.inverted</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: card: Oodvick; Manual p.25 · Our glossary (not a source): Inverted · Tests: 43-dark-c.test.ts · Demonstrated by test: 43-dark-c.test.ts::Oodvick: the printed reminder text, verbatim · Key: attr.inverted</sub>
 
 <a id="r802.8a"></a>**802.8a** Inverted inverts the net change to a unit's stats from its printed stats. An Inverted unit's power is its printed power minus the net change to its power, and its defense is its printed defense minus the net change to its defense. It is worked out on the total change, not on each change separately. See rule 206.4.
 
 > *Example: Malformed Monstrosity (10/9) with its -7/-7, in a column with Reality Bender, is a 17/16.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.25; Manual p.25 · Designer: RQ 1167221076447744110 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 79-round17-layers.test.ts, 43-dark-c.test.ts · Example test: 79-round17-layers.test.ts::CR 802.8a layer 5: the owner's Malformed Monstrosity · Demonstrated by test: 43-dark-c.test.ts::Its Dark Bubb: MULTI-SOURCE — layer 5 negates the NET change, not each source on its own · Key: attr.inverted.net</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.25; Manual p.25 · Designer: RQ 1167221076447744110 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 79-round17-layers.test.ts, 43-dark-c.test.ts · Example test: 79-round17-layers.test.ts::CR 802.8a layer 5: the owner's Malformed Monstrosity · Demonstrated by test: 43-dark-c.test.ts::Oodvick: MULTI-SOURCE — layer 5 negates the NET change, not each source on its own · Key: attr.inverted.net</sub>
 
 <a id="r802.8b"></a>**802.8b** The changes Inverted inverts include those that Tough and Balanced make. Inverting Tough removes the defense Tough added; it does not halve the defense. See rules 802.6, 802.7.
 
@@ -9139,9 +9139,9 @@ order.
 
 > *Example: A unit printed 7/5 that Aberrant Statweaver makes base 3/3 is an 11/7 while it is Inverted.*
 
-> *Example: Its Dark Bubb (printed 4/6, Inverted) beside Aberrant Statweaver is a 5/9, not a 3/3.*
+> *Example: Oodvick (printed 5/6, Inverted) beside Aberrant Statweaver is a 7/9, not a 3/3.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Printed: card: Aberrant Statweaver · Designer: RQ 1167220853726007336; RQ 1167221076447744110; RQ 1443370771647828032; RQ 1167224155289174056 · Tests: 659-inverted-from-printed.test.ts, 79-round17-layers.test.ts · Example tests: 659-inverted-from-printed.test.ts::CR 802.8c / CT-379: the designer example -- a printed 7/5 made base 3/3 by Aberrant Statweaver is an 11/7 while Inverted, 659-inverted-from-printed.test.ts::CR 802.8c / CT-379: Its Dark Bubb (printed 4/6, Inverted) beside Aberrant Statweaver is a 5/9, not a 3/3 · Demonstrated by test: 659-inverted-from-printed.test.ts::CR 802.8c / CT-379: a one-shot base rewrite (an until-regroup baseSet) is inverted too, with counters in the same net change · Key: attr.inverted.base</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Printed: card: Aberrant Statweaver · Designer: RQ 1167220853726007336; RQ 1167221076447744110; RQ 1443370771647828032; RQ 1167224155289174056 · Tests: 659-inverted-from-printed.test.ts, 79-round17-layers.test.ts · Example tests: 659-inverted-from-printed.test.ts::CR 802.8c / CT-379: the designer example -- a printed 7/5 made base 3/3 by Aberrant Statweaver is an 11/7 while Inverted, 659-inverted-from-printed.test.ts::CR 802.8c / CT-379: Oodvick (printed 5/6, Inverted) beside Aberrant Statweaver is a 7/9, not a 3/3 · Demonstrated by test: 659-inverted-from-printed.test.ts::CR 802.8c / CT-379: a one-shot base rewrite (an until-regroup baseSet) is inverted too, with counters in the same net change · Key: attr.inverted.base</sub>
 
 <sub>Discrepancies: D-U19-3 (discrepancies.md)</sub>
 
@@ -10160,9 +10160,9 @@ order.
 
 <a id="r803.2a"></a>**803.2a** Printed text that names the "mana step" means the haste step. See rule 504.1.
 
-> *Example: Dispatch Courier says "play a unit during the mana step as if it had [Haste]": its controller may play a unit in the haste step.*
+> *Example: Cards with the haste icon "can be played during the mana step" (Rulebook 2023): that is the step Dispatch Courier now calls the haste step, in which its controller may play a unit.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.3; card: Dispatch Courier · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 26-metal-a.test.ts · Example test: 26-metal-a.test.ts::Dispatch Courier: "play a unit during the mana step as if it had [Haste]" · Key: keywords.abilities.haste.mana-step</sub>
+<sub>Basis: Mixed · Verified: partial in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.3; card: Dispatch Courier · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 26-metal-a.test.ts · Example test: 26-metal-a.test.ts::Dispatch Courier: "play a unit during the mana step as if it had [Haste]" · Key: keywords.abilities.haste.mana-step</sub>
 
 <sub>Discrepancies: D-U05-1 (discrepancies.md)</sub>
 
@@ -10170,7 +10170,7 @@ order.
 
 > *Example: With Dispatch Courier in play, its controller can play a unit without Haste in the haste step, once each turn.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 1 gate test file · Printed: card: Dispatch Courier · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 26-metal-a.test.ts · Example test: 26-metal-a.test.ts::Dispatch Courier: "play a unit during the mana step as if it had [Haste]" · Demonstrated by test: 26-metal-a.test.ts::Dispatch Courier: no Courier, no OFFER · Key: keywords.abilities.haste.grants</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests (2 probes it wrote), all passed; 1 gate test file · Printed: card: Dispatch Courier · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 26-metal-a.test.ts · Example test: 26-metal-a.test.ts::Dispatch Courier: "play a unit during the mana step as if it had [Haste]" · Demonstrated by test: 26-metal-a.test.ts::Dispatch Courier: no Courier, no OFFER · Key: keywords.abilities.haste.grants</sub>
 
 <sub>Discrepancies: D-U05-4 (discrepancies.md)</sub>
 
@@ -10924,8 +10924,8 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 | verdict | rules |
 |---|---|
-| confirmed | 1841 |
-| partial | 6 |
+| confirmed | 1837 |
+| partial | 10 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 1 |

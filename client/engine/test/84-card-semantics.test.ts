@@ -20,7 +20,7 @@
  * **"Erase me" was unimplemented on four of the six cards that print it.**
  * Collect Remains, Temporal Rift, Suspend and Skybreaker all printed a
  * self-erase and none of them erased anything. The two that already worked
- * were Spore of Regenesis (where erasing is a COST) and Zephyrzoa (in its
+ * were The Birthmother (where erasing is a COST) and Zephyrzoa (in its
  * [Augment] box), which is why the detection below reads augment and graft
  * text — and, since Skybreaker, activation COSTS — as well as the spell
  * effect: a narrower check would have accused a working card.
@@ -213,7 +213,7 @@ function observe(card: string): Observed {
       // "Discard a card:", "Gain 2 debt:" or "Erase me:" being paid. Seven
       // cards' costs are the promise (Soul Swallower, Scavenging Sentry,
       // Hearthwood Ancient, Pallid Gorger, Combustible Bogwalker, Lilbot,
-      // No Hand Killer) and every one of them read as undelivered without it.
+      // Lost Shade) and every one of them read as undelivered without it.
       for (const t of r.activateTypes) augTypes.add(t);
       for (const c of r.activateChanged) augChanged.add(c);
       // an `[Augment]` box that CREATES something is evidenced by the body
@@ -429,8 +429,8 @@ test('the "Erase me" class is exactly the four cards CARD-TODO #15 names', () =>
   assert.ok(printsSelfErase.length >= 6,
     `only ${printsSelfErase.length} cards read as printing a self-erase — the printed-text `
     + 'scan has lost its reach, so an empty `dead` above proves nothing');
-  assert.ok(implementsIt('Spore of Regenesis'),
-    'Spore of Regenesis erases as a COST and is the proof this detection works at all');
+  assert.ok(implementsIt('The Birthmother'),
+    'The Birthmother erases as a COST and is the proof this detection works at all');
   assert.ok(implementsIt('Zephyrzoa'),
     'Zephyrzoa erases in its [Augment] box — the reason the check reads augmentText');
 });

@@ -600,8 +600,8 @@ card('Gravitational Correction', {
   },
 });
 
-// "At the end of turn, create a Fireball X, where X is one plus the number of
-// spell tokens you control. [Augment] Your spell tokens stay through regroup."
+// "At the end of turn, create a Fireball X+1, where X is the number of spell
+// tokens you control. [Augment] Your spell tokens stay through regroup."
 // — rr/4 2/4 Infernal Elemental Unit. Text-box [Augment]: live on the card
 // played normally AND donated to a host (Hooba-Lin convention, below).
 //

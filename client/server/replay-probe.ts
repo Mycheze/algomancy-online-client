@@ -66,9 +66,46 @@ const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
 const num = (v: unknown): string => (typeof v === 'number' ? String(v) : '-');
 const str = (v: unknown): string => (typeof v === 'string' ? v : v === null ? 'null' : '-');
 
+/**
+ * ⚠ A RENAMED CARD IS FINGERPRINTED UNDER THE NAME IT WAS FIRST RECORDED BY.
+ *
+ * A file's `sigs` are DIGESTS, so the recorded side of a comparison can never
+ * be respelled the way a ref can (zonedelta.ts canonicalRef). A card renamed
+ * after fingerprints existed would make every recorded game it appeared in
+ * part from its replay at the deal, on a board where nothing a player could
+ * see had changed but a name. So the projection spells the NEW name as the OLD
+ * one, here, on both ends of every comparison: the recorded files were hashed
+ * under the old name, every file recorded since is hashed through this table,
+ * and an old engine checked out by `--as-recorded` already says the old name,
+ * which this leaves alone.
+ *
+ * Self-contained on purpose (this file runs inside past checkouts and may
+ * import nothing but apply.ts), and APPEND-ONLY: removing a row re-forks every
+ * game recorded since it was added. Only renames made AFTER fingerprints began
+ * (e096758, 2026-09-23) belong here: Counter Theif -> Counter Thief and Wight
+ * -> Wraith are older than every recorded fingerprint.
+ */
+const FIRST_RECORDED_AS: readonly (readonly [now: string, then: string])[] = [
+  ['Consuming Mass', 'Grim Bargain'],              // renamed by the designer, 2026-11-10
+  ['Bloatfiend', 'Gzxyclop'],                      // 2026-11-10
+  ['Oodvick', 'Its Dark Bubb'],                    // 2026-11-10
+  ['Lost Shade', 'No Hand Killer'],                // 2026-11-10
+  ['The Birthmother', 'Spore of Regenesis'],       // 2026-11-10
+  ['Stakoloth', 'Unrelenting Horror'],             // 2026-11-10
+];
+const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const FIRST_RECORDED_RE = FIRST_RECORDED_AS.map(([now, then]) =>
+  [new RegExp(`(?<![A-Za-z0-9])${escapeRe(now)}(?![A-Za-z0-9])`, 'g'), then] as const);
+/** any text the board shows (a card name, a label, a prompt), in first-recorded names */
+const named = (v: unknown): string => {
+  let t = str(v);
+  for (const [re, then] of FIRST_RECORDED_RE) t = t.replace(re, then);
+  return t;
+};
+
 /** Cards in a zone, in order — order matters in a deck-shaped zone and a hand
  * is small enough that its order is real information about the draw. */
-const cards = (v: unknown): string => arr(v).map(c => (typeof c === 'string' ? c : JSON.stringify(c))).join(',');
+const cards = (v: unknown): string => arr(v).map(c => named(typeof c === 'string' ? c : JSON.stringify(c))).join(',');
 
 /** One seat, as everything about it anybody can name. */
 function playerSig(p: unknown): string {
@@ -78,7 +115,7 @@ function playerSig(p: unknown): string {
     `hand=[${cards(q['hand'])}]`,
     `bin=[${cards(q['bin'])}]`,
     `res=[${arr(q['resources']).map(r => `${str(rec(r)['kind'])}:${str(rec(r)['state'])}`).join(',')}]`,
-    `cache=[${arr(q['cache']).map(c => str(rec(c)['card'])).join(',')}]`,
+    `cache=[${arr(q['cache']).map(c => named(rec(c)['card'])).join(',')}]`,
     `erased=[${cards(q['erased'])}]`,
     `rot=${num(q['rot'] ?? 0)}`,
     `debt=${num(q['debt'] ?? 0)}`,
@@ -97,7 +134,7 @@ function playerSig(p: unknown): string {
 function entitiesSig(v: unknown): string {
   return Object.values(rec(v)).map(e => {
     const q = rec(e);
-    return `${str(q['kind'])}:${str(q['card'])}@${num(q['controller'])}`
+    return `${str(q['kind'])}:${named(q['card'])}@${num(q['controller'])}`
       + `/r${num(q['region'])} dmg${num(q['damage'])} ctr${num(q['counters'])}`
       + ` tmp${num(q['tempPower'])}/${num(q['tempToughness'])}`
       + ` attrs[${arr(q['tempAttrs']).map(a => str(a)).sort().join(',')}]`;
@@ -108,7 +145,7 @@ function entitiesSig(v: unknown): string {
 function stackSig(v: unknown): string {
   return arr(v).map(i => {
     const q = rec(i);
-    return `${str(q['kind'])}:${str(q['card'] ?? q['label'])}@${num(q['controller'])}${q['negated'] ? '!neg' : ''}`;
+    return `${str(q['kind'])}:${named(q['card'] ?? q['label'])}@${num(q['controller'])}${q['negated'] ? '!neg' : ''}`;
   }).join(' > ');
 }
 
@@ -116,8 +153,8 @@ function stackSig(v: unknown): string {
 function decisionSig(v: unknown): string {
   if (!v) return 'none';
   const q = rec(v);
-  return `${str(q['kind'])}/seat${num(q['seat'])}/"${str(q['prompt'])}"`
-    + `/[${arr(q['options']).map(o => str(rec(o)['label'])).join('|')}]`;
+  return `${str(q['kind'])}/seat${num(q['seat'])}/"${named(q['prompt'])}"`
+    + `/[${arr(q['options']).map(o => named(rec(o)['label'])).join('|')}]`;
 }
 
 /**

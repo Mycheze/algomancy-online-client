@@ -1140,9 +1140,9 @@
             "cost": "m",
             "total_cost": "2",
             "type": "Cosmic Spirit {Virus} Unit",
-            "text": "When I spawn or become modded, put a +1/+1 counter on each of your units. {/n}[Augment] When I despawn, remove all counters from your units.",
+            "text": "When I spawn or am modded, put a +1/+1 counter on each of your units. {/n}[Augment] When I despawn, remove all counters from your units.",
             "image": "images_out/Stable/goob.png",
-            "revision_date_time": "2024-03-14 14:26:18.395024",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "metal"
@@ -1837,9 +1837,9 @@
             "cost": "mm",
             "total_cost": "2",
             "type": "Robot Horse Unit",
-            "text": "[Augment] Each turn, you may play a unit during the mana step as if it had  [Haste].",
+            "text": "[Augment] Each turn, you may play a unit during the haste step as if it had  [Haste].",
             "image": "images_out/Stable/ww8.png",
-            "revision_date_time": "2024-03-14 14:26:18.398016",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "metal"
@@ -3034,9 +3034,9 @@
             "toughness": "4",
             "cost": "rr",
             "type": "Infernal Elemental Unit",
-            "text": "At the end of turn, create a Fireball X, where X is one plus the number of spell tokens you control. {/n}[Augment] Your spell tokens stay through regroup.",
+            "text": "At the end of turn, create a Fireball X+1, where X is the number of spell tokens you control. {/n}[Augment] Your spell tokens stay through regroup.",
             "image": "images_out/Stable/rt2.png",
-            "revision_date_time": "2024-03-14 14:26:18.403003",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "fire"
@@ -3082,9 +3082,9 @@
             "cost": "g",
             "total_cost": "4",
             "type": "Arcane Fungus Unit",
-            "text": "[Augment][once] Whenever another player plays a spell, you may exchange control of me for that spell. If you do, you may choose new targets for that spell.",
+            "text": "[Augment][once] Whenever another player plays a spell, you may exchange control of me and that spell. If you do, you may choose new targets for that spell.",
             "image": "images_out/Stable/ss.png",
-            "revision_date_time": "2024-03-14 14:26:18.403003",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "wood"
@@ -5184,9 +5184,9 @@
             "cost": "e",
             "total_cost": "1",
             "type": "Structure Unit",
-            "text": "Whenever a mod is applied to me, create {/n}an X/X unit, where X is the mod's cost.",
+            "text": "Whenever I am modded, create an X/X unit, where X is the mod's cost.",
             "image": "images_out/Stable/ert.png",
-            "revision_date_time": "2024-03-14 14:26:18.412006",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "earth"
@@ -5434,9 +5434,9 @@
             "cost": "p",
             "total_cost": "0",
             "type": "Prismite Resource",
-            "text": "Erase me: Create a non-prismite resource, then activate it. Do this only during the mana step. {i}(This does not use one of your activations for turn.)",
+            "text": "Erase me: Create a non-prismite resource, then activate it. Do this only during the resource step. {i}(This does not use one of your activations for turn.)",
             "image": "images_out/Stable/prism12.png",
-            "revision_date_time": "2024-03-14 14:26:18.413003",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "colorless"
@@ -5618,9 +5618,9 @@
             "cost": "b",
             "total_cost": "1",
             "type": "{Battle} Maelstrom Spell",
-            "text": "[Switch1] Each player recalls a unit and loses 2 life.",
+            "text": "[Switch1] Each player recalls one of their units and loses 2 life.",
             "image": "images_out/Stable/rc.png",
-            "revision_date_time": "2024-03-14 14:26:18.413003",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "water"
@@ -5780,9 +5780,9 @@
             "cost": "e",
             "total_cost": "4",
             "type": "Occult Avatar Unit",
-            "text": "[Augment] Whenever I am I dealt damage, I deal that much damage to each opponent.",
+            "text": "[Augment] Whenever I am dealt damage, I deal that much damage to each opponent.",
             "image": "images_out/Stable/rtt.png",
-            "revision_date_time": "2024-03-14 14:26:18.414000",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "earth"
@@ -7453,9 +7453,9 @@
             "cost": "bmm",
             "total_cost": "4",
             "type": "{Battle} Temporal Arcane Spell",
-            "text": "End this battle. Erase this spell. {i}(Negate all effects, this battle is over.)",
+            "text": "End this battle. Erase me. {i}(Negate all effects, this battle is over.)",
             "image": "images_out/Stable/tst4.png",
-            "revision_date_time": "2024-03-14 14:26:18.420982",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "water",
@@ -7547,9 +7547,9 @@
             "cost": "gm",
             "total_cost": "1",
             "type": "Robot Fungus {Virus} Unit",
-            "text": "[Augment] Whenever a unit token is created, put a -1/-1 counter on me. If you do, put +1/+1 counter on that token.",
+            "text": "[Augment] Whenever a unit token is created, put a -1/-1 counter on me. If you do, put a +1/+1 counter on that token.",
             "image": "images_out/Stable/wshep2.png",
-            "revision_date_time": "2024-03-14 14:26:18.420982",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "wood",
@@ -8146,9 +8146,9 @@
             "cost": "b",
             "total_cost": "4",
             "type": "{Battle} Bedlam Maelstrom Spell",
-            "text": "Each player recalls two units. If four or more units were recalled this way, repeat this.",
+            "text": "Each player recalls two of their units. If four or more units were recalled this way, repeat this.",
             "image": "images_out/Stable/nup.png",
-            "revision_date_time": "2024-03-14 14:26:18.422984",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "water"
@@ -8833,9 +8833,9 @@
             "cost": "gd",
             "total_cost": "X",
             "type": "{Battle} Blight Spell",
-            "text": "Augment a Wight onto X target units.",
+            "text": "Augment a Wraith onto X target units.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772906386/blights-end_c59kfc.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "wood",
@@ -9373,9 +9373,9 @@
             "cost": "ddd",
             "total_cost": "4",
             "type": "Polyform Unit",
-            "text": "Whenever a player trashes a card, each opponent loses 1 life.{/n}[Augment] After combat, each player discards a card.",
+            "text": "Whenever a card is trashed, each opponent loses 1 life.{/n}[Augment] After combat, each player discards a card.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772906674/cthyrian-culler_q3ugb0.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "dark"
@@ -10069,9 +10069,9 @@
             "source": "algomancer.cc + image transcription (provisional, pre-release)"
         }
     ],
-    "Grim Bargain": [
+    "Consuming Mass": [
         {
-            "name": "Grim Bargain",
+            "name": "Consuming Mass",
             "power": "",
             "toughness": "",
             "cost": "ddd",
@@ -10079,7 +10079,7 @@
             "type": "{Battle} Blight Spell",
             "text": "For each [3] spent to play me, each player sacrifices a unit. Draw a card for each nontoken unit you sacrifice this way.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772906887/grim-bargain_tuvnww.png",
-            "revision_date_time": "2026-09-20 00:00:00.000000",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "dark"
@@ -10198,9 +10198,9 @@
             "cost": "ld",
             "total_cost": "8",
             "type": "{Battle} Cosmic Spell",
-            "text": "Target player's life total becomes equal to twice the number of cards in all bins.",
+            "text": "Set target player's life total equal to twice the number of cards in all bins. Erase me.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905565/haunting-memories_rtz7mm.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "light",
@@ -10320,10 +10320,10 @@
             "toughness": "",
             "cost": "l",
             "total_cost": "1",
-            "type": "{Battle} Nature Spell",
+            "type": "{Battle} Bedlam Spell",
             "text": "Each player with an even life total sacrifices a unit. Each player with an odd life total draws a card.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905578/insatiable-want_engffj.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "light"
@@ -10337,17 +10337,17 @@
             "source": "algomancer.cc + image transcription (provisional, pre-release)"
         }
     ],
-    "Its Dark Bubb": [
+    "Oodvick": [
         {
-            "name": "Its Dark Bubb",
-            "power": "4",
+            "name": "Oodvick",
+            "power": "5",
             "toughness": "6",
             "cost": "d",
             "total_cost": "4",
             "type": "[Augment] {Inverted} Slime Unit",
             "text": "{i}(Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2.)",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772907073/its-dark-bubb_gcgqc1.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "dark"
@@ -10580,17 +10580,17 @@
             "source": "algomancer.cc + image transcription (provisional, pre-release)"
         }
     ],
-    "Gzxyclop": [
+    "Bloatfiend": [
         {
-            "name": "Gzxyclop",
+            "name": "Bloatfiend",
             "power": "1",
             "toughness": "2",
             "cost": "d",
             "total_cost": "1",
-            "type": "{Virus} Blight Zombie Unit",
+            "type": "{Virus} Blight Anima Unit",
             "text": "When I spawn, draw a card.{/n}[Augment] When I despawn, discard two cards.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772906966/gzxyclop_n2nyle.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "dark"
@@ -10920,9 +10920,9 @@
             "source": "algomancer.cc + image transcription (provisional, pre-release)"
         }
     ],
-    "No Hand Killer": [
+    "Lost Shade": [
         {
-            "name": "No Hand Killer",
+            "name": "Lost Shade",
             "power": "6",
             "toughness": "8",
             "cost": "rd",
@@ -10930,7 +10930,7 @@
             "type": "Bedlam Alien Unit",
             "text": "[Augment] [once] Discard X cards: Each opponent sacrifices X units.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772907395/no-hand-killer_tkppdo.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "fire",
@@ -11050,9 +11050,9 @@
             "cost": "d",
             "total_cost": "2",
             "type": "{Virus} Alien Unit",
-            "text": "[Augment] Discard a card or sacrifice a nontoken unit: I gain +2/+2 until regroup.",
+            "text": "[Augment] Discard a card or sacrifice another nontoken unit: I gain +2/+2 until regroup.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772907473/pallid-gorger_x3y2gq.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "dark"
@@ -11535,9 +11535,9 @@
             "cost": "d",
             "total_cost": "1",
             "type": "Blight Unit",
-            "text": "2 [d] Discard me{/n}When I enter your bin, you may pay [2]. If you do, each opponent sacrifices a nontoken unit.",
+            "text": "2 [d] Discard me{/n}When I am trashed, you may pay [2]. If you do, each opponent sacrifices a nontoken unit.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772907734/sacrifice-dude_pxnhss.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "dark"
@@ -11674,14 +11674,14 @@
     "Shib": [
         {
             "name": "Shib",
-            "power": "7",
+            "power": "5",
             "toughness": "4",
             "cost": "lb",
             "total_cost": "6",
             "type": "{Blessed} Cosmic Jellyfish Unit",
             "text": "[4lb] Ambush [Battle]{/n}{i}(Damage dealt by a blessed source causes its controller to gain that much life.)",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905984/shib_lhflc0.png",
-            "revision_date_time": "2026-09-20 00:00:00.000000",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "light",
@@ -11817,9 +11817,9 @@
             "source": "algomancer.cc + image transcription (provisional, pre-release)"
         }
     ],
-    "Spore of Regenesis": [
+    "The Birthmother": [
         {
-            "name": "Spore of Regenesis",
+            "name": "The Birthmother",
             "power": "0",
             "toughness": "1",
             "cost": "d",
@@ -11827,7 +11827,7 @@
             "type": "Blight Unit",
             "text": "When I die, you may erase me to put all units with cost [1] from your bin into play.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772907842/spore-of-regenesis_lgjsm4.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "dark"
@@ -12092,9 +12092,9 @@
             "cost": "dd",
             "total_cost": "4",
             "type": "{Battle} Alien Spell",
-            "text": "Recall two target units in your bin, then discard a card.",
+            "text": "Recall up to two target units in your bin, then discard a card.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772907864/tilling-the-graves_kcrmhk.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "dark"
@@ -12230,9 +12230,9 @@
             "source": "algomancer.cc + image transcription (provisional, pre-release)"
         }
     ],
-    "Unrelenting Horror": [
+    "Stakoloth": [
         {
-            "name": "Unrelenting Horror",
+            "name": "Stakoloth",
             "power": "3",
             "toughness": "3",
             "cost": "d",
@@ -12240,7 +12240,7 @@
             "type": "Alien Unit",
             "text": "When I spawn, discard a card.{/n}When you trash a card, [Switch1] I gain +2/+2 and {g}piercing until regroup.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772907881/unrelenting-horror_ofpuif.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "dark"
@@ -12336,9 +12336,9 @@
             "cost": "ll",
             "total_cost": "2",
             "type": "{Haste} Alien Anima Unit",
-            "text": "[Augment] When a nontoken card is played during battle, sacrifice me. If you do, negate that effect. {i}(This is not optional.)",
+            "text": "When a nontoken card is played during battle, sacrifice me. If you do, negate that effect. {i}(This is not optional.)",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772906229/void-mandible_lga3hn.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "light"

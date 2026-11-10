@@ -1913,21 +1913,21 @@
   },
   {
     "key": "attr.inverted",
-    "textHash": "906c4b01ac2b21f0",
+    "textHash": "7083f604158bb97e",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effStats layer 5",
+        "loc": "client/engine/src/engine.ts:statLayerAttrs ('Inverted')",
         "agrees": true,
-        "note": "Its Dark Bubb -1/+2 reads 5/4"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/43-dark-c.test.ts",
-        "pattern": "Its Dark Bubb: the printed reminder text, verbatim",
+        "file": "43-dark-c.test.ts",
+        "pattern": "Oodvick: the printed reminder text",
         "passed": true,
         "asserts_claim": true
       }
@@ -1935,29 +1935,25 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "card: Its Dark Bubb",
+        "ref": "card: Oodvick",
         "supports": "yes",
-        "note": "reminder text verbatim in printed.json"
+        "note": ""
       },
       {
         "ref": "Manual p.25",
         "supports": "yes",
-        "note": "'the “Inverted” attribute, which reverses its stat changes'"
+        "note": ""
       },
       {
         "ref": "glossary: Inverted",
         "supports": "n/a",
-        "note": "ours, not authority; not relied on"
+        "note": "Not authority; not relied on."
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/cards/printed.json",
         "text": "Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2."
-      },
-      {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "attribute, which reverses its stat changes. It’s -7/-7"
       }
     ],
     "basis_ok": true,
@@ -2003,32 +1999,32 @@
   },
   {
     "key": "attr.inverted.base",
-    "textHash": "00448a0dede73c97",
+    "textHash": "3eeeb90b17781200",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effStats layer 5 (from printed)",
+        "loc": "client/engine/src/engine.ts:stat layers ('Inverted')",
         "agrees": true,
-        "note": "base rewrite inverted against printed stats"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/659-inverted-from-printed.test.ts",
+        "file": "659-inverted-from-printed.test.ts",
         "pattern": "CR 802.8c / CT-379: the designer example",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/659-inverted-from-printed.test.ts",
-        "pattern": "CR 802.8c / CT-379: Its Dark Bubb (printed 4/6, Inverted) beside Aberrant Statweaver is a 5/9",
+        "file": "659-inverted-from-printed.test.ts",
+        "pattern": "CR 802.8c / CT-379: Oodvick (printed 5/6",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/659-inverted-from-printed.test.ts",
+        "file": "659-inverted-from-printed.test.ts",
         "pattern": "CR 802.8c / CT-379: a one-shot base rewrite",
         "passed": true,
         "asserts_claim": true
@@ -2039,69 +2035,61 @@
       {
         "ref": "card: Aberrant Statweaver",
         "supports": "yes",
-        "note": "'[Augment] Your units are base 3/3.'"
+        "note": ""
       },
       {
         "ref": "RQ 1167220853726007336",
         "supports": "yes",
-        "note": "calebgannon, answering 'I assume inverted does NOT interact with stat \"setting\" like Reshape': 'It does because it applies in a later layer'"
+        "note": "calebgannon answers that inverted does interact with stat setting."
       },
       {
         "ref": "RQ 1167221076447744110",
         "supports": "yes",
-        "note": "calebgannon: printed vs current, take the difference"
+        "note": "The method."
       },
       {
         "ref": "RQ 1443370771647828032",
         "supports": "yes",
-        "note": "calebgannon, on Statweaver vs Bubb (Unaware): base stat changes are still stat changes"
+        "note": "Said of Unaware; states the general point."
       },
       {
         "ref": "RQ 1167224155289174056",
-        "supports": "yes",
-        "note": "calebgannon"
+        "supports": "partial",
+        "note": "Design intent only."
       }
     ],
     "quote_spans": [
       {
         "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "It does because it applies in a later layer"
-      },
-      {
-        "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "Basically you just look at the stats printed on the card, then look at its current stats. Take the difference"
-      },
-      {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "[Augment] Your units are base 3/3."
+        "text": "I assume inverted does NOT interact with stat"
       }
     ],
-    "basis_ok": false,
-    "problem": "Basis only: the record cites a printed card (Aberrant Statweaver) as well as the designer, so basis should be 'mixed', not 'designer'. The rule, the arithmetic (7/5 -> base 3/3 -> 11/7; Bubb 4/6 -> 5/9) and the tests all hold."
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "attr.inverted.net",
-    "textHash": "ff3fdd06e72d0022",
+    "textHash": "28cbd60cce845c54",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effStats layer 5",
+        "loc": "client/engine/src/engine.ts:stat layers ('Inverted')",
         "agrees": true,
-        "note": "net delta from printed, negated once"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/79-round17-layers.test.ts",
-        "pattern": "CR 802.8a layer 5: the owner's Malformed Monstrosity",
+        "file": "79-round17-layers.test.ts",
+        "pattern": "CR 802.8a layer 5: the owner",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/43-dark-c.test.ts",
-        "pattern": "Its Dark Bubb: MULTI-SOURCE",
+        "file": "43-dark-c.test.ts",
+        "pattern": "Oodvick: MULTI-SOURCE",
         "passed": true,
         "asserts_claim": true
       }
@@ -2109,25 +2097,25 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "Manual p.25 (two quotes)",
+        "ref": "Manual p.25",
         "supports": "yes",
-        "note": "-7/-7 becomes +7/+7, a 17/16"
+        "note": ""
       },
       {
         "ref": "RQ 1167221076447744110",
         "supports": "yes",
-        "note": "calebgannon"
+        "note": ""
       },
       {
-        "ref": "owner register (two)",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": "base − (current − base); 'a mathematical operation'"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
         "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "ability now becomes +7/+7 turning it into a 17/16."
+        "text": "ability now becomes +7/+7 turning it into a 17/16"
       }
     ],
     "basis_ok": true,

@@ -340,7 +340,7 @@ test('CR 703.3a a trigger from a resolution still opens with the initiative play
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'Lithoghul');
-  const spore = spawn(h, D, 'Spore of Regenesis');
+  const spore = spawn(h, D, 'The Birthmother');
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   giveResources(h, A, 'fire', 2);
@@ -348,6 +348,6 @@ test('CR 703.3a a trigger from a resolution still opens with the initiative play
   pick(h, { unit: spore });
   pass(h);
   answerAll(h);
-  assert.ok(stackedFrom(h, 'Spore of Regenesis'), 'fixture: the death trigger is on the stack');
+  assert.ok(stackedFrom(h, 'The Birthmother'), 'fixture: the death trigger is on the stack');
   assert.equal(h.state.priority, A, 'the initiative player, even though the trigger is the other player\'s');
 });

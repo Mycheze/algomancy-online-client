@@ -24,6 +24,15 @@
  * game now plays differently; that is a rules change for every saved game and
  * needs its own round.
  *
+ * Re-blessed ELEVEN fuzz entries on 2026-11-10 (the designer's new printings).
+ * Measured before the re-bless, by comparing every step with the previous
+ * engine: `shared:1`–`shared:6` and `constructed:201`, `204`, `205`, `206` are
+ * byte-identical once the six renamed cards are spelled the old way (Consuming
+ * Mass, Bloatfiend, Oodvick, Lost Shade, The Birthmother, Stakoloth).
+ * `constructed:203` moves at step 425 only because Haunting Memories now erases
+ * itself, and matches step for step with that one line patched back. Every
+ * reference run and the other seven fuzz entries are untouched.
+ *
  * Re-blessed ONE entry on 2026-11-09 (report #344, CT-538, CR 714.2): a unit
  * sacrificed as its own ability's cost now leaves its last-known snapshot on
  * that ability. `ref:2026-11-29-owngoal` sacrifices Sprouter at its step 86.

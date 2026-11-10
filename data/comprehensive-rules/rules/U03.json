@@ -1547,8 +1547,8 @@
     "text": "Activating a [once] ability with X = 0 is legal, and it spends the use.",
     "examples": [
       {
-        "text": "No Hand Killer can be activated with an empty hand, and the activation spends its [once].",
-        "test": "136-triggers-and-modes.test.ts::CR 109.9c: No Hand Killer is activatable with an EMPTY hand"
+        "text": "Lost Shade can be activated with an empty hand, and the activation spends its [once].",
+        "test": "136-triggers-and-modes.test.ts::CR 109.9c: Lost Shade is activatable with an EMPTY hand"
       }
     ],
     "see": [],
@@ -2084,8 +2084,8 @@
         "test": "21-fixes.test.ts::CR 110.1c: an \"up to\" spell may decline every target"
       },
       {
-        "text": "Tilling the Graves (\"Recall two target units in your bin\") says no \"up to\": once cast, it asks for both units and offers no way to stop at one.",
-        "test": "478-required-targets-at-cast.test.ts::Tilling the Graves with two units in the bin is offered and asks for both with no stop"
+        "text": "Tilling the Graves (\"Recall up to two target units in your bin\") may stop at none, at one, or take both.",
+        "test": "478-required-targets-at-cast.test.ts::Tilling the Graves with two units in the bin may stop at none, at one, or take both"
       },
       {
         "text": "Penance (\"Any number of target players each lose 1 life. Draw a card.\") may be played with no target, and its caster still draws.",
@@ -3126,8 +3126,8 @@
         "test": "452-abduct-x-gate.test.ts::Abduct is castable against a cost-1 attacker, its X menu starts at 1, and control flips"
       },
       {
-        "text": "Tilling the Graves (\"Recall two target units in your bin\") cannot be played while its caster's bin holds fewer than two units.",
-        "test": "478-required-targets-at-cast.test.ts::Tilling the Graves is not offered with"
+        "text": "Blight's End (\"Augment a Wraith onto X target units\") with X = 1 must name its one target: no stop is offered before it.",
+        "test": "478-required-targets-at-cast.test.ts::Blight End with one unit in the battle offers X up to 1 only, and X = 1 needs its target"
       },
       {
         "text": "Tidal Reversion (\"For each player, recall target unit that player controls\") played for free by Tides of the Cosmos takes one unit of each player, and Tides does not offer it while either player has no unit there.",
@@ -3181,7 +3181,7 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "CT-299/CT-305 (2026-10-16): the owner made every un-\"up to\" target required (\"Unless a card says \\\"up to\\\", it must have targets in order to be cast\"); Tilling the Graves needs both.",
+    "notes": "CT-299/CT-305 (2026-10-16): the owner made every un-\"up to\" target required (\"Unless a card says \\\"up to\\\", it must have targets in order to be cast\"); Tilling the Graves needed both until its 2026-11-10 printing said \"up to two\".",
     "sourceHashes": {
       "RAQ 1410252965276684418#1": "e360e6a86909cef31daa2244e8da43a0e668b372e706c45aba749e3728522bea",
       "RAQ 1454169054402314362#1": "e3eaa692bd1e8228402516f598571780911a7bff2101b2445bcf4ac14055a0a1"

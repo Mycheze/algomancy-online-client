@@ -974,13 +974,13 @@
   },
   {
     "key": "concepts.abilities.once.x-zero",
-    "textHash": "cf7bb184c66513d7",
+    "textHash": "9679f47044bdb4ac",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "apply.ts legalActions No Hand Killer activation",
+        "loc": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts:Lost Shade",
         "agrees": true,
         "note": ""
       }
@@ -988,7 +988,13 @@
     "tests_run": [
       {
         "file": "136-triggers-and-modes.test.ts",
-        "pattern": "R157 §22: No Hand Killer is activatable with an EMPTY hand",
+        "pattern": "CR 109.9c: Lost Shade is activatable",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "46-hybrids-ld-c.test.ts",
+        "pattern": "CR 107.2b: an empty hand still activates Lost Shade",
         "passed": true,
         "asserts_claim": true
       }
@@ -996,15 +1002,15 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R157 (§22)",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": ""
+        "note": "Legal activation; the spent [once] is shown by both tests."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> *\"You can legally activate it and discard no cards.\"*"
+        "file": "client/engine/test/136-triggers-and-modes.test.ts",
+        "text": "the [once] budget was spent on the pointless activation"
       }
     ],
     "basis_ok": true,
@@ -3970,92 +3976,132 @@
   },
   {
     "key": "concepts.targets.required",
-    "textHash": "80ffeb6a40d4cfbd",
-    "verdict": "confirmed",
+    "textHash": "bf2bfcc08f79cafb",
+    "verdict": "partial",
     "round": 4,
     "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:requiredSlotsFillable (CR 110.7 cast/activation gate)",
+        "loc": "client/engine/src/engine.ts:requiredSlotsFillable",
         "agrees": true,
-        "note": ""
+        "note": "Every required slot is searched with backtracking and a target already taken is filtered out, so sentence 1 holds."
+      },
+      {
+        "loc": "client/engine/src/cards/dsl.ts:TargetSpec.may",
+        "agrees": false,
+        "note": "Sentence 2 is broader than the engine: a triggered or graft 'you may ... target' carries `may` and offers No targets, with neither 'up to' nor 'any number' printed."
       },
       {
         "loc": "client/engine/src/cards/dsl.ts:targetMinimum",
-        "agrees": true,
-        "note": "min 0 only for up to / any number (Penance) specs"
+        "agrees": false,
+        "note": "min 'X' at X = 0 requires no target, though 'X target ...' prints neither 'up to' nor 'any number'."
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/390-raq-stack.test.ts",
+        "file": "390-raq-stack.test.ts",
         "pattern": "RAQ target requirements: Fight cannot be played",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/396-raq-timing.test.ts",
-        "pattern": "Rebalance is playable with no unit",
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Another set: Rebalance is playable with no unit",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/452-abduct-x-gate.test.ts",
+        "file": "452-abduct-x-gate.test.ts",
         "pattern": "Abduct is castable against a cost-1 attacker",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/478-required-targets-at-cast.test.ts",
-        "pattern": "Tilling the Graves is not offered with",
+        "file": "478-required-targets-at-cast.test.ts",
+        "pattern": "Blight End with one unit in the battle",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/510-inline-play-targets.test.ts",
-        "pattern": "CT-308: Tidal Reversion under Tides takes one unit of each player",
+        "file": "510-inline-play-targets.test.ts",
+        "pattern": "CT-308: Tidal Reversion under Tides",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/477-target-minimum-sweep.test.ts",
+        "file": "401-raq-fix-stack.test.ts",
+        "pattern": "CR 110.7 sweep: no spell that needs two distinct",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "477-target-minimum-sweep.test.ts",
         "pattern": "every target spec that may stop short",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": false
       },
       {
-        "file": "client/engine/test/401-raq-fix-stack.test.ts",
-        "pattern": "CR 110.7 sweep",
+        "file": "478-required-targets-at-cast.test.ts",
+        "pattern": "Torrential Reclamation with no ally",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": false
+      },
+      {
+        "file": "512-may-target-decline.test.ts",
+        "pattern": "CT-309 Shoreline Specter declined",
+        "passed": true,
+        "asserts_claim": false
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U03-1.test.ts",
+        "test": "probe: Fight with two enemy units and no ally is not playable (no ally to fill the ally slot)",
+        "passed": true,
+        "demonstrates": "yes: the Fight example's ally half, which the bound test does not reach"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U03-1.test.ts",
+        "test": "probe: Blight's End, printing \"X target units\" with no up to, reaches the stack at X = 0 aimed at nothing",
+        "passed": true,
+        "demonstrates": "yes: a card naming targets with no 'up to' is on the stack with none, against sentence 2 as written"
+      }
+    ],
     "source_checks": [
       {
         "ref": "RAQ 1410252965276684418#1",
         "supports": "yes",
-        "note": "_passer [Solved] write-up, status covered; quote verbatim"
+        "note": "Verbatim; _passer, [Solved] thread, claim status covered. Supports the first sentence for Fight and that two distinct units are needed."
       },
       {
         "ref": "RAQ 1454169054402314362#1",
         "supports": "yes",
-        "note": "calebgannon, Rebalance targets nothing; quote verbatim"
+        "note": "Verbatim; calebgannon on Rebalance. Supports sentence 3."
       },
       {
-        "ref": "owner register@72de434 (2026-10-09)",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": "fragment; consistent with the designer sources"
+        "note": "Fragment, but says every required target must be available. Supports sentence 1."
       },
       {
-        "ref": "owner CT-305 2026-10-16 'Unless a card says \"up to\"...'",
-        "supports": "yes",
-        "note": "'any number' is not in this quote but is the literal printed reading of Penance and is what 477 sweeps"
+        "ref": "owner 2026-10-16 CT-305",
+        "supports": "partial",
+        "note": "Supports the 'up to' half of sentence 2; it does not address trigger 'may', and the same owner's later call quoted in 512 makes those declinable."
       },
       {
-        "ref": "owner CT-299 2026-10-16 Tilling the Graves",
-        "supports": "yes",
-        "note": ""
+        "ref": "owner 2026-10-16 CT-299",
+        "supports": "partial",
+        "note": "About a specific spell; the card has since been reprinted with 'up to two', so its effect now runs the other way (478 header). The general point still stands."
+      },
+      {
+        "ref": "477-target-minimum-sweep.test.ts",
+        "supports": "partial",
+        "note": "Cited by the record, and it names an exception sentence 2 omits: a triggered ability or graft rider whose printed text says 'may'."
+      },
+      {
+        "ref": "478-required-targets-at-cast.test.ts",
+        "supports": "partial",
+        "note": "Cited by the record, and its header states X = 0 with nothing to aim at is a legal play."
       }
     ],
     "quote_spans": [
@@ -4068,12 +4114,28 @@
         "text": "it doesn't target anything so there are no requirements for you having a unit"
       },
       {
-        "file": "client/engine/test/510-inline-play-targets.test.ts",
-        "text": "'with one side empty it is not offered'"
+        "file": "client/engine/test/477-target-minimum-sweep.test.ts",
+        "text": "printed text that names a target says \"up to\" or \"any number\", or — for a"
+      },
+      {
+        "file": "client/engine/test/477-target-minimum-sweep.test.ts",
+        "text": "TRIGGERED ability or a graft rider — \"may\" (the player declines the whole"
+      },
+      {
+        "file": "client/engine/test/478-required-targets-at-cast.test.ts",
+        "text": "short of X. X = 0 with nothing to aim at is still a legal play."
+      },
+      {
+        "file": "client/engine/src/cards/dsl.ts",
+        "text": "required, so the spell may be cast at nothing."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] After combat, you may recall target ally. {/n}If you do, each opponent loses 2 life."
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "Sentence 2 (\"Every target a card names is required unless the card says \\\"up to\\\" or \\\"any number\\\"\") is too broad for exceptions its own cited tests name. (1) 477-target-minimum-sweep excuses a TRIGGERED ability or graft rider whose printed text says \"may\": Shoreline Specter (\"you may recall target ally\"), Hooba-Mon and the rest offer No targets and decline the whole ability, with neither phrase printed (512 runs it). (2) 478 states that X = 0 with nothing to aim at is a legal play: Blight's End and Torrential Reclamation print \"X target ...\" with neither phrase and reach the stack with no target (probe; Torrential test in 478). Sentence 1, sentence 3, all five examples and both designer quotes hold. Fix: add the trigger/graft \"may\" exception and say an X count requires X targets, so none at X = 0."
   },
   {
     "key": "concepts.targets.what",
@@ -4247,54 +4309,45 @@
   },
   {
     "key": "concepts.targets.what.up-to",
-    "textHash": "d792faa68dbf4cc1",
-    "verdict": "confirmed",
+    "textHash": "929139cff3f4be98",
+    "verdict": "partial",
     "round": 4,
     "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-fire-b.ts:twinFlame",
-        "agrees": true,
-        "note": "count 2, min 0"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-light-a.ts:Penance",
-        "agrees": true,
-        "note": "count 2, min 0; draw still runs"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:collectPartTargets",
-        "agrees": true,
-        "note": "done option offered only once part.targets.length >= min"
-      },
-      {
-        "loc": "client/engine/test/477-target-minimum-sweep.test.ts",
-        "agrees": true,
-        "note": "registry sweep: a spec allowing fewer than its slots must print up to / any number (or a trigger 'may')"
+        "loc": "client/engine/src/cards/sets/../dsl.ts:TargetSpec.may",
+        "agrees": false,
+        "note": "A third optional class exists for triggers."
       }
     ],
     "tests_run": [
       {
         "file": "21-fixes.test.ts",
-        "pattern": "CR 110.1c: an \"up to\" spell may decline",
+        "pattern": "CR 110.1c: an \"up to\" spell",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "478-required-targets-at-cast.test.ts",
-        "pattern": "Tilling the Graves with two units in the bin",
+        "pattern": "Tilling the Graves with two units",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "38-light-a.test.ts",
-        "pattern": "Penance: with no targets",
+        "pattern": "Penance: with no targets declared",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "477-target-minimum-sweep.test.ts",
         "pattern": "every target spec that may stop short",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "182-correctness-sample.test.ts",
+        "pattern": "Shoreline Specter: DECLINE the recall",
         "passed": true,
         "asserts_claim": true
       }
@@ -4304,51 +4357,35 @@
       {
         "ref": "card: Penance",
         "supports": "yes",
-        "note": "verbatim"
+        "note": ""
       },
       {
-        "ref": "owner register@72de434",
-        "supports": "yes",
-        "note": "up to N means you may declare none"
-      },
-      {
-        "ref": "owner CT-305 2026-10-16",
+        "ref": "owner 2026-08-24",
         "supports": "yes",
         "note": ""
       },
       {
-        "ref": "owner CT-299 2026-10-16",
-        "supports": "yes",
-        "note": ""
+        "ref": "owner 2026-10-16",
+        "supports": "partial",
+        "note": "About casting; does not reach triggered \"you may\"."
+      },
+      {
+        "ref": "card: Shoreline Specter",
+        "supports": "no",
+        "note": "Targets without \"up to\", and may be declined."
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/cards/printed.json",
-        "text": "\"text\": \"Any number of target players each lose 1 life. Draw a card.\","
+        "text": "Any number of target players each lose 1 life."
       },
       {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "\"text\": \"[Switch1] I deal 2 damage to each of up to two target units.\","
-      },
-      {
-        "file": "client/engine/src/cards/sets/batch-fire-b.ts",
-        "text": "count: 2, min: 0, symmetric: true },"
-      },
-      {
-        "file": "client/engine/src/cards/sets/batch-light-a.ts",
-        "text": "targets: { what: 'player', prompt: 'Penance: any number of target players each lose 1 life', count: 2, min: 0, symmetric: true },"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (part.targets.length >= min) {"
-      },
-      {
-        "file": "client/engine/src/cards/dsl.ts",
-        "text": "return spec.min === 'X' ? max : Math.min(spec.min ?? 1, max);"
+        "file": "client/engine/test/477-target-minimum-sweep.test.ts",
+        "text": "a \"you may … target\" may be declined at the target step"
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "Sentence 1 and every example hold. \"Only such words make a target optional: without them every target is required\" fails for triggered \"you may … target\" abilities, which can be declined at the target step; cited test 477 names that exception."
   }
 ]

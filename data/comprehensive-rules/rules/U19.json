@@ -2285,14 +2285,14 @@
     "examples": [
       {
         "text": null,
-        "test": "43-dark-c.test.ts::Its Dark Bubb: the printed reminder text, verbatim"
+        "test": "43-dark-c.test.ts::Oodvick: the printed reminder text, verbatim"
       }
     ],
     "see": [],
     "sources": {
       "printed": [
         {
-          "ref": "card: Its Dark Bubb",
+          "ref": "card: Oodvick",
           "quote": "Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2."
         },
         {
@@ -2331,7 +2331,7 @@
       },
       {
         "text": null,
-        "test": "43-dark-c.test.ts::Its Dark Bubb: MULTI-SOURCE — layer 5 negates the NET change, not each source on its own"
+        "test": "43-dark-c.test.ts::Oodvick: MULTI-SOURCE — layer 5 negates the NET change, not each source on its own"
       }
     ],
     "see": [
@@ -2434,8 +2434,8 @@
         "test": "659-inverted-from-printed.test.ts::CR 802.8c / CT-379: the designer example -- a printed 7/5 made base 3/3 by Aberrant Statweaver is an 11/7 while Inverted"
       },
       {
-        "text": "Its Dark Bubb (printed 4/6, Inverted) beside Aberrant Statweaver is a 5/9, not a 3/3.",
-        "test": "659-inverted-from-printed.test.ts::CR 802.8c / CT-379: Its Dark Bubb (printed 4/6, Inverted) beside Aberrant Statweaver is a 5/9, not a 3/3"
+        "text": "Oodvick (printed 5/6, Inverted) beside Aberrant Statweaver is a 7/9, not a 3/3.",
+        "test": "659-inverted-from-printed.test.ts::CR 802.8c / CT-379: Oodvick (printed 5/6, Inverted) beside Aberrant Statweaver is a 7/9, not a 3/3"
       },
       {
         "text": null,

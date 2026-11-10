@@ -195,6 +195,10 @@
   "score": 0.986,
   "top": 850
  },
+ "Bloatfiend": {
+  "score": 0.985,
+  "top": 813
+ },
  "Blob of the Dark Order": {
   "score": 0.961,
   "top": 846
@@ -284,8 +288,8 @@
   "top": 813
  },
  "Celestial Fluxmorph": {
-  "score": 0.681,
-  "top": 748
+  "score": 0.697,
+  "top": 751
  },
  "Celestial Purge": {
   "score": 0.8,
@@ -350,6 +354,10 @@
  "Construct Overseer": {
   "score": 0.967,
   "top": 846
+ },
+ "Consuming Mass": {
+  "score": 0.822,
+  "top": 780
  },
  "Containment Protocol": {
   "score": 0.939,
@@ -468,7 +476,7 @@
   "top": 815
  },
  "Dispatch Courier": {
-  "score": 0.647,
+  "score": 0.651,
   "top": 813
  },
  "Divine Foresight": {
@@ -696,7 +704,7 @@
   "top": 845
  },
  "Glook": {
-  "score": 0.835,
+  "score": 0.832,
   "top": 846
  },
  "Glowhaven Elder": {
@@ -731,10 +739,6 @@
   "score": 0.726,
   "top": 815
  },
- "Grim Bargain": {
-  "score": 0.824,
-  "top": 780
- },
  "Grob": {
   "score": 0.934,
   "top": 780
@@ -755,10 +759,6 @@
   "score": 0.712,
   "top": 813
  },
- "Gzxyclop": {
-  "score": 0.985,
-  "top": 813
- },
  "Haboob": {
   "score": 0.96,
   "top": 784
@@ -772,7 +772,7 @@
   "top": 846
  },
  "Harbinger of Immolation": {
-  "score": 0.799,
+  "score": 0.801,
   "top": 751
  },
  "Haunting Memories": {
@@ -784,7 +784,7 @@
   "top": 813
  },
  "Hexbane Shiitake": {
-  "score": 0.754,
+  "score": 0.756,
   "top": 753
  },
  "Hooba-Bot": {
@@ -848,7 +848,7 @@
   "top": 784
  },
  "Insatiable Want": {
-  "score": 0.97,
+  "score": 0.971,
   "top": 784
  },
  "Insidious Invitation": {
@@ -877,10 +877,6 @@
  },
  "Invigorate": {
   "score": 0.986,
-  "top": 813
- },
- "Its Dark Bubb": {
-  "score": 0.832,
   "top": 813
  },
  "Iyngstra": {
@@ -966,6 +962,10 @@
  "Lost Guardian": {
   "score": 0.699,
   "top": 815
+ },
+ "Lost Shade": {
+  "score": 0.807,
+  "top": 813
  },
  "Lumengrove Lurker": {
   "score": 0.727,
@@ -1131,10 +1131,6 @@
   "score": 0.803,
   "top": 785
  },
- "No Hand Killer": {
-  "score": 0.809,
-  "top": 813
- },
  "Nothyr": {
   "score": 0.831,
   "top": 813
@@ -1166,6 +1162,10 @@
  "Omniwield Evoker": {
   "score": 0.688,
   "top": 846
+ },
+ "Oodvick": {
+  "score": 0.833,
+  "top": 813
  },
  "Oorblak": {
   "score": 0.686,
@@ -1212,8 +1212,8 @@
   "top": 847
  },
  "Pallid Gorger": {
-  "score": 0.828,
-  "top": 813
+  "score": 0.831,
+  "top": 815
  },
  "Pathogenic Enclave": {
   "score": 0.764,
@@ -1268,7 +1268,7 @@
   "top": 780
  },
  "Prediction Prophet": {
-  "score": 0.962,
+  "score": 0.963,
   "top": 783
  },
  "Premonition": {
@@ -1340,8 +1340,8 @@
   "top": 813
  },
  "Recall": {
-  "score": 0.961,
-  "top": 848
+  "score": 0.964,
+  "top": 816
  },
  "Reclaim the Fallen": {
   "score": 0.722,
@@ -1372,8 +1372,8 @@
   "top": 780
  },
  "Restitution": {
-  "score": 0.957,
-  "top": 813
+  "score": 0.964,
+  "top": 815
  },
  "Resurrect": {
   "score": 0.992,
@@ -1444,8 +1444,8 @@
   "top": 813
  },
  "Sacrifice Dude": {
-  "score": 0.823,
-  "top": 820
+  "score": 0.846,
+  "top": 821
  },
  "Sacrificial Burst": {
   "score": 0.978,
@@ -1508,7 +1508,7 @@
   "top": 845
  },
  "Shib": {
-  "score": 0.71,
+  "score": 0.709,
   "top": 813
  },
  "Shoreline Specter": {
@@ -1607,10 +1607,6 @@
   "score": 0.99,
   "top": 813
  },
- "Spore of Regenesis": {
-  "score": 0.961,
-  "top": 814
- },
  "Sporebloom Siren": {
   "score": 0.736,
   "top": 748
@@ -1622,6 +1618,10 @@
  "Squish": {
   "score": 0.969,
   "top": 813
+ },
+ "Stakoloth": {
+  "score": 0.835,
+  "top": 784
  },
  "Stalwart Sentinel": {
   "score": 0.933,
@@ -1740,12 +1740,16 @@
   "top": 780
  },
  "Temporal Rift": {
-  "score": 0.714,
+  "score": 0.715,
   "top": 815
  },
  "Tenebrous Bulborb": {
   "score": 0.966,
   "top": 846
+ },
+ "The Birthmother": {
+  "score": 0.96,
+  "top": 814
  },
  "The Bonesculptor": {
   "score": 0.97,
@@ -1772,8 +1776,8 @@
   "top": 780
  },
  "The World Shepherd": {
-  "score": 0.678,
-  "top": 780
+  "score": 0.7,
+  "top": 784
  },
  "Thought Extraction": {
   "score": 0.833,
@@ -1816,7 +1820,7 @@
   "top": 749
  },
  "Tilling the Graves": {
-  "score": 0.831,
+  "score": 0.83,
   "top": 813
  },
  "Tithe Enforcer": {
@@ -1887,10 +1891,6 @@
   "score": 0.952,
   "top": 848
  },
- "Unrelenting Horror": {
-  "score": 0.837,
-  "top": 784
- },
  "Unstable Apparition": {
   "score": 1.0,
   "top": 815
@@ -1908,8 +1908,8 @@
   "top": 846
  },
  "Upheaval": {
-  "score": 0.808,
-  "top": 819
+  "score": 0.782,
+  "top": 780
  },
  "Vaporweave Eidolon": {
   "score": 0.794,
@@ -1937,7 +1937,7 @@
  },
  "Void Mandible": {
   "score": 0.708,
-  "top": 781
+  "top": 780
  },
  "Void Memory": {
   "score": 0.955,

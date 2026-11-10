@@ -1523,55 +1523,33 @@
   },
   {
     "key": "effects.casting.x",
-    "textHash": "3fa179e6a9528b57",
+    "textHash": "0db8a3400007e5d4",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.collectX",
+        "loc": "client/engine/src/engine.ts:collectX",
         "agrees": true,
-        "note": "X asked at cast before the push, menu = payable (manaXChoices) filtered by requiredSlotsFillable"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:E.requiredSlotsFillable",
-        "agrees": true,
-        "note": "min 'X' requires every counted slot; X = 0 fillable at nothing"
-      },
-      {
-        "loc": "client/engine/src/cards/dsl.ts:targetMinimum",
-        "agrees": true,
-        "note": "min 'X' -> all slots"
+        "note": ""
       }
     ],
     "tests_run": [
       {
         "file": "478-required-targets-at-cast.test.ts",
-        "pattern": "Blight End with one unit in the battle offers X up to 1 only",
+        "pattern": "Blight End with one unit",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "478-required-targets-at-cast.test.ts",
-        "pattern": "Blight End with two units asks for both at X = 2",
+        "pattern": "Blight End with two units",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "478-required-targets-at-cast.test.ts",
-        "pattern": "Torrential Reclamation with no ally in the fight is castable at X = 0 only",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "32-cast-costs.test.ts",
-        "pattern": "Wildfire: X is chosen at cast from affordable values, paid, and stored on the item",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "146-report-guards.test.ts",
-        "pattern": "#43 a cast X reaches the REAL stack wearing its number",
+        "pattern": "Torrential Reclamation with no ally",
         "passed": true,
         "asserts_claim": true
       },
@@ -1580,33 +1558,31 @@
         "pattern": "the X target spells require every X",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "32-cast-costs.test.ts",
+        "pattern": "Wildfire: X is chosen at cast",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "owner register@72de434 (2026-08-18)",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": "affordable values offered BEFORE the spell reaches the stack"
+        "note": "Fixed before the stack; stored X and responses demonstrated by the Wildfire test."
       },
       {
-        "ref": "owner CT-305 2026-10-16",
+        "ref": "owner 2026-10-16",
         "supports": "yes",
-        "note": "without 'up to' targets are required"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "const aimable = sized\n      ? payable.filter(x => this.requiredSlotsFillable(sized, item.region, item.controller, item.sourceId, [x]))\n      : payable;"
-      },
-      {
-        "file": "client/engine/src/cards/dsl.ts",
-        "text": "return spec.min === 'X' ? max : Math.min(spec.min ?? 1, max);"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "prompt: `${item.card}: choose X (paid now)`, options,"
+        "file": "client/engine/test/32-cast-costs.test.ts",
+        "text": "responses happen AFTER X is fixed"
       }
     ],
     "basis_ok": true,

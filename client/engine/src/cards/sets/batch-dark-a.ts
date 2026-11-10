@@ -16,12 +16,12 @@
  *
  * Cards in this batch:
  *   Afflicting Anima, Burn the Blight, Cosmic Devourer, Cull, Exhume, Glook,
- *   Gzxyclop, Leave None Pure, Maw of Despair, Möbius's Corruption, Nothyr,
+ *   Bloatfiend, Leave None Pure, Maw of Despair, Möbius's Corruption, Nothyr,
  *   Pestilent Titan, Reality Siphoner, Sacrifice Dude, Scuttling Abomination,
- *   Spore of Regenesis, Tilling the Graves, Wake the Dead.
+ *   The Birthmother, Tilling the Graves, Wake the Dead.
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
- *  - BIN PICKS (Exhume, Wake the Dead, Spore of Regenesis) stay
+ *  - BIN PICKS (Exhume, Wake the Dead, The Birthmother) stay
  *    RESOLUTION-time ctx.choose picks — and correctly so: none of the three
  *    prints "target". They say "put A unit", "up to two units in any bin" and
  *    "ALL units with cost [1]", which are selections made while the effect
@@ -70,7 +70,7 @@
  *    (E.fireOwnTrashTrigger), so nothing can ever ride along. graftCause is
  *    kept for fidelity; the donatable graftEffect (the interesting half) works
  *    normally.
- *  - Gzxyclop / Scuttling Abomination / Tilling the Graves DISCARD a chosen
+ *  - Bloatfiend / Scuttling Abomination / Tilling the Graves DISCARD a chosen
  *    card: the chooser is the effect's controller (the host's controller when
  *    the text arrives by augment).
  */
@@ -330,12 +330,12 @@ card('Glook', {
 });
 
 // "When I spawn, draw a card.{/n}[Augment] When I despawn, discard two
-// cards." — d/1 1/2 {Virus} Blight Zombie Unit. The first sentence stays with
-// the card; the [Augment] sentence transfers (the downside rides along to the
+// cards." — d/1 1/2 {Virus} Blight Anima Unit (Gzxyclop, a Zombie, until the
+// designer's 2026-11-10 printing). The first sentence stays with the card; the [Augment] sentence transfers (the downside rides along to the
 // host's controller). Despawn = ANY leave-play, 'died' + 'despawned' (the
 // Bloated Manablub reading). The two discards are chosen (⚠ header) and are
 // TRASHES (CR 801.3).
-card('Gzxyclop', {
+card('Bloatfiend', {
   abilities: [{
     type: 'triggered', events: ['spawned'], self: true,
     label: 'draw a card',
@@ -346,8 +346,8 @@ card('Gzxyclop', {
     label: 'discard two cards',
     effect: {
       run: (g, ctx) => {
-        const picked = planDiscards(g, ctx, 'gz', ctx.controller, 2, 'Gzxyclop: discard two cards');
-        if (!picked.length) { g.ev('info', 'Gzxyclop: your hand is already empty — nothing is discarded.'); return; }
+        const picked = planDiscards(g, ctx, 'gz', ctx.controller, 2, 'Bloatfiend: discard two cards');
+        if (!picked.length) { g.ev('info', 'Bloatfiend: your hand is already empty — nothing is discarded.'); return; }
         discardHand(g, ctx.controller, picked);
       },
     },
@@ -525,14 +525,18 @@ card('Reality Siphoner', {
   }],
 });
 
-// "When I enter your bin, you may pay [2]. If you do, each opponent
-// sacrifices a nontoken unit." — d/1 2/1 Blight Unit, with a printed
-// "2 [d] Discard me" cost line (deployment timing — the line carries no
-// marker, so the card's own timing applies).
-// "When I enter your bin" is the trashed trigger (CR 801.2): a UNIT can only reach a
-// bin from play, hand, deck or cache, every one of which trashes, so the two
-// readings coincide here. Plan-then-commit: the payment decision and
-// every opponent's pick are made before anything is paid or sacrificed.
+// "When I am trashed, you may pay [2]. If you do, each opponent sacrifices a
+// nontoken unit." — d/1 2/1 Blight Unit, with a printed "2 [d] Discard me"
+// cost line (deployment timing — the line carries no marker, so the card's
+// own timing applies).
+// The 2026-11-10 printing says "When I am trashed" where the earlier one said
+// "When I enter your bin". This ability always listened on the trash event, so
+// the new text is what it already did: CR 801.2 — it fires on entering a bin
+// from play, from hand (discarded, the "Discard me" mode included), from the
+// deck or from a cache, and not on reaching the bin from the stack (CR 801.2b),
+// as a token copy (CR 801.2d), or when erased (CR 801.2c). Plan-then-commit:
+// the payment decision and every opponent's pick are made before anything is
+// paid or sacrificed.
 card('Sacrifice Dude', {
   abilities: [{
     type: 'triggered', events: ['trashed'], self: true,
@@ -599,33 +603,34 @@ card('Scuttling Abomination', {
 // into play." — d/3 0/1 Blight Unit. Dying binned it (and trashed it, CR 801.2a)
 // one event earlier, so "erase me" is: take that copy back out of the bin and
 // destroy it — erasing never touches a bin again (CR 801.2c), so this is NOT a
-// second trash. A Spore that died MODDED was Unstable-erased instead and has
+// second trash. A Birthmother (Spore of Regenesis until the 2026-11-10
+// printing) that died MODDED was Unstable-erased instead and has
 // no bin copy to pay with: the cost cannot be paid and nothing happens.
 // "Cost [1]" is exactly 1. ⚠ header: the bin sweep is not targeting.
-card('Spore of Regenesis', {
+card('The Birthmother', {
   abilities: [{
     type: 'triggered', events: ['died'], self: true,
     label: 'erase me to put all your cost-[1] units from the bin into play',
     effect: {
       run: (g, ctx) => {
         const bin = g.player(ctx.controller).bin;
-        const mine = bin.lastIndexOf('Spore of Regenesis');
+        const mine = bin.lastIndexOf('The Birthmother');
         if (mine === -1) {
-          g.ev('info', 'Spore of Regenesis: it is not in the bin — the erase cost cannot be paid.');
+          g.ev('info', 'The Birthmother: it is not in the bin — the erase cost cannot be paid.');
           return;
         }
         const revivable = binMatches(g, ctx.controller, n => isUnitCard(n) && manaOf(n) === 1);
         if (!revivable.length) {
-          g.ev('info', 'Spore of Regenesis: no cost-[1] unit in the bin.');
+          g.ev('info', 'The Birthmother: no cost-[1] unit in the bin.');
           return;
         }
         const yes = ctx.choose('erase', {
           kind: 'payOrDecline', seat: ctx.controller,
-          prompt: `Spore of Regenesis: erase me to put ${revivable.length} cost-[1] unit(s) into play?`,
+          prompt: `The Birthmother: erase me to put ${revivable.length} cost-[1] unit(s) into play?`,
           options: [{ label: 'Erase me — revive them', value: true }, { label: 'Decline', value: false }],
         });
         if (yes !== true) {
-          g.ev('info', 'Spore of Regenesis: the erase is declined — nothing returns from the bin.');
+          g.ev('info', 'The Birthmother: the erase is declined — nothing returns from the bin.');
           return;
         }
         // highest index first so the earlier indices stay valid
@@ -637,32 +642,33 @@ card('Spore of Regenesis', {
           const took = g.takeFromBin(ctx.controller, i, 'revived');
           if (took !== undefined) raised.push(took);
         }
-        g.ev('erased', 'Spore of Regenesis is ERASED from the bin (its own cost).',
-          { card: 'Spore of Regenesis', seat: ctx.controller });
+        g.ev('erased', 'The Birthmother is ERASED from the bin (its own cost).',
+          { card: 'The Birthmother', seat: ctx.controller });
         for (const r of raised.reverse()) g.spawnUnit(ctx.controller, r.card, ctx.region, { owner: r.owner });
       },
     },
   }],
 });
 
-// "Recall two target units in your bin, then discard a card." — dd/4 {Battle}
-// Alien Spell. "Recall … in your bin" = back to your HAND (recall is the
-// leave-play/return-to-hand verb; from a bin there is nothing to leave).
-// CR 110.1a: "two TARGET units in your bin" is real targeting — two cast-time
-// targets, and BinRef.nth means two copies of one card are two separate
-// targets. BOTH are required (CR 110.7): with fewer than two units in your bin
-// the spell is not castable, even though "then discard a card" has no target;
-// the owner, 2026-10-16 (CT-299): it needs both
-// targets, "otherwise it'd say 'up to two'". The RAQ agrees in general
-// (_passer, 2025-08-27): "In order to play a card, you must be able to select
-// the valid targets". Once cast, one target leaving the bin is CR 704.6b partial
-// resolution — the other returns and the discard still happens.
+// "Recall up to two target units in your bin, then discard a card." — dd/4
+// {Battle} Alien Spell. "Recall … in your bin" = back to your HAND (recall is
+// the leave-play/return-to-hand verb; from a bin there is nothing to leave).
+// CR 110.1a: "up to two TARGET units in your bin" is real targeting — 0, 1 or
+// 2 cast-time targets, and BinRef.nth means two copies of one card are two
+// separate targets. count 2 / min 0 IS "up to two" (CR 110.1c).
+//
+// THE 2026-11-10 PRINTING ADDS "UP TO". Until then it read "Recall two target
+// units" and the owner ruled (2026-10-16, CT-299) that it needed both targets,
+// "otherwise it'd say 'up to two'". It says so now, so the spell is castable
+// with fewer than two units in your bin, and with none, and "then discard a
+// card" happens whatever was recalled. Once cast, a chosen target leaving the
+// bin is CR 704.6b partial resolution.
 card('Tilling the Graves', {
   spellEffect: {
     targets: {
-      what: 'binCard', count: 2, min: 2,
+      what: 'binCard', count: 2, min: 0,
       symmetric: true,
-      prompt: 'Tilling the Graves: recall two target units in your bin',
+      prompt: 'Tilling the Graves: recall up to two target units in your bin',
       restrict: (_g, t) => 'binCard' in t && isUnitCard(t.binCard.card),
     },
     run: (g, ctx) => {

@@ -45,6 +45,9 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-10', kind: 'change', text: "Caleb's latest card changes are in: Shib is 5/4, Haunting Memories erases itself and Void Mandible is no longer a mod." },
+  { date: '2026-11-10', kind: 'change', text: 'Six Light & Dark cards have new names: Consuming Mass, Bloatfiend, Oodvick (now 5/6), Lost Shade, The Birthmother and Stakoloth. Your saved decks still work.' },
+  { date: '2026-11-10', kind: 'change', text: 'About twenty more cards have their newest wording or art, including Tilling the Graves, Insatiable Want, Recall and Upheaval.' },
   { date: '2026-11-10', kind: 'change', text: 'League: only your paired matches count in the standings now. Games you start yourself in sign-up week are practice: no win, loss or points, and they no longer tip a tiebreak.' },
   { date: '2026-11-10', kind: 'fix', text: 'Between games of a Competitive match, resting the mouse on a card on the sideboarding table now shows it big, as on the board. Before, only pressing and holding did.' },
   { date: '2026-11-10', kind: 'change', text: 'On the Judge review page, questions a judge asked the judge in a game now come right after the flagged answers, marked with the judge\'s level, so they are not lost among everyone else\'s.' },

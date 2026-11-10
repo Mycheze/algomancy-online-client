@@ -137,7 +137,7 @@ export const BATCH_E: Record<string, Scenario> = {
    *  2. THE QUERY IS ASKED BEFORE STEP (3), not after. Step (3) tears down the
    *     until-regroup layer the protector's own state depends on.
    *  3. THE SURVIVOR THEN FEEDS THE HARBINGER'S OWN TRIGGER. "At the end of
-   *     turn, create a Fireball X, where X is one plus the number of spell
+   *     turn, create a Fireball X+1, where X is the number of spell
    *     tokens you control" is read live at resolution, AFTER regroup. A token
    *     that survived is counted; one that was erased is not. So the number
    *     printed on the second token IS the answer to the first question,
@@ -659,7 +659,7 @@ export const BATCH_E: Record<string, Scenario> = {
    *   · CR 504.2: only [Haste] cards may be played in the haste step
    *     (`playAtTiming`: "only haste cards during the haste step").
    *   · CR 803.2b: a `PlayPermission` widens that. Dispatch Courier — "[Augment] Each
-   *     turn, you may play a unit during the mana step as if it had [Haste]" —
+   *     turn, you may play a unit during the haste step as if it had [Haste]" —
    *     is playtest report #74 ("Dispatch Courier didn't give me the option to
    *     play a card with haste"; it did not, because nothing anywhere asked).
    *

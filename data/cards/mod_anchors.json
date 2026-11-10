@@ -279,6 +279,14 @@
   "cut": 907,
   "score": 0.9195
  },
+ "Bloatfiend": {
+  "icon": "augment",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 903,
+  "score": 0.9338
+ },
  "Blob of the Dark Order": {
   "icon": "augment",
   "x": 78,
@@ -410,10 +418,10 @@
  "Celestial Fluxmorph": {
   "icon": "augment",
   "x": 78,
-  "y": 872,
+  "y": 874,
   "size": 32,
-  "cut": 869,
-  "score": 0.9588
+  "cut": 870,
+  "score": 0.9121
  },
  "Celestial Shifter": {
   "icon": "augment",
@@ -572,8 +580,8 @@
   "x": 76,
   "y": 906,
   "size": 32,
-  "cut": 905,
-  "score": 0.8963
+  "cut": 906,
+  "score": 0.9345
  },
  "Cthyrian Rector": {
   "icon": "augment",
@@ -685,7 +693,7 @@
   "y": 872,
   "size": 32,
   "cut": 871,
-  "score": 0.9622
+  "score": 0.9621
  },
  "Dragnol": {
   "icon": "augment",
@@ -1079,14 +1087,6 @@
   "cut": 823,
   "score": 0.9571
  },
- "Gzxyclop": {
-  "icon": "augment",
-  "x": 76,
-  "y": 904,
-  "size": 34,
-  "cut": 903,
-  "score": 0.9341
- },
  "Hammer of Justice": {
   "icon": "augment",
   "x": 78,
@@ -1108,8 +1108,8 @@
   "x": 78,
   "y": 906,
   "size": 32,
-  "cut": 902,
-  "score": 0.9261
+  "cut": 905,
+  "score": 0.9258
  },
  "Hearthwood Ancient": {
   "icon": "augment",
@@ -1125,7 +1125,7 @@
   "y": 812,
   "size": 30,
   "cut": 810,
-  "score": 0.8842
+  "score": 0.8844
  },
  "Hooba-Bot": {
   "icon": "augment",
@@ -1246,14 +1246,6 @@
   "size": 32,
   "cut": 874,
   "score": 0.9132
- },
- "Its Dark Bubb": {
-  "icon": "augment",
-  "x": 78,
-  "y": 824,
-  "size": 28,
-  "cut": 823,
-  "score": 0.9577
  },
  "Iyngstra": {
   "icon": "augment",
@@ -1398,6 +1390,14 @@
   "size": 32,
   "cut": 872,
   "score": 0.8418
+ },
+ "Lost Shade": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9185
  },
  "Lumengrove Lurker": {
   "icon": "bounded_graft",
@@ -1607,14 +1607,6 @@
   "cut": 842,
   "score": 0.9194
  },
- "No Hand Killer": {
-  "icon": "augment",
-  "x": 78,
-  "y": 872,
-  "size": 32,
-  "cut": 871,
-  "score": 0.9161
- },
  "Noxious Deathcap": {
   "icon": "augment",
   "x": 78,
@@ -1654,6 +1646,14 @@
   "size": 32,
   "cut": 904,
   "score": 0.9083
+ },
+ "Oodvick": {
+  "icon": "augment",
+  "x": 78,
+  "y": 824,
+  "size": 28,
+  "cut": 823,
+  "score": 0.9585
  },
  "Oorblak": {
   "icon": "augment",
@@ -1721,11 +1721,11 @@
  },
  "Pallid Gorger": {
   "icon": "augment",
-  "x": 78,
+  "x": 76,
   "y": 872,
-  "size": 32,
-  "cut": 871,
-  "score": 0.964
+  "size": 34,
+  "cut": 872,
+  "score": 0.9093
  },
  "Pathogenic Enclave": {
   "icon": "augment",
@@ -1897,11 +1897,11 @@
  },
  "Recall": {
   "icon": "bounded_graft",
-  "x": 78,
-  "y": 906,
-  "size": 30,
-  "cut": 905,
-  "score": 0.8974
+  "x": 76,
+  "y": 874,
+  "size": 32,
+  "cut": 873,
+  "score": 0.8702
  },
  "Recyclable Sentinel": {
   "icon": "bounded_graft",
@@ -1930,10 +1930,10 @@
  "Restitution": {
   "icon": "augment",
   "x": 78,
-  "y": 872,
+  "y": 874,
   "size": 32,
-  "cut": 871,
-  "score": 0.9625
+  "cut": 873,
+  "score": 0.928
  },
  "Resurrect": {
   "icon": "bounded_graft",
@@ -2335,6 +2335,14 @@
   "cut": 871,
   "score": 0.9175
  },
+ "Stakoloth": {
+  "icon": "bounded_graft",
+  "x": 380,
+  "y": 874,
+  "size": 32,
+  "cut": 872,
+  "score": 0.97
+ },
  "Stalwart Sentinel": {
   "icon": "augment",
   "x": 78,
@@ -2473,11 +2481,11 @@
  },
  "The World Shepherd": {
   "icon": "augment",
-  "x": 78,
-  "y": 840,
+  "x": 76,
+  "y": 842,
   "size": 32,
-  "cut": 838,
-  "score": 0.9406
+  "cut": 842,
+  "score": 0.9251
  },
  "Throwing Boulder": {
   "icon": "augment",
@@ -2575,14 +2583,6 @@
   "cut": 904,
   "score": 0.9322
  },
- "Unrelenting Horror": {
-  "icon": "bounded_graft",
-  "x": 380,
-  "y": 874,
-  "size": 32,
-  "cut": 872,
-  "score": 0.9731
- },
  "Unstable Apparition": {
   "icon": "augment",
   "x": 78,
@@ -2654,14 +2654,6 @@
   "size": 32,
   "cut": 809,
   "score": 0.9011
- },
- "Void Mandible": {
-  "icon": "augment",
-  "x": 78,
-  "y": 840,
-  "size": 32,
-  "cut": 839,
-  "score": 0.9588
  },
  "Void Memory": {
   "icon": "bounded_graft",

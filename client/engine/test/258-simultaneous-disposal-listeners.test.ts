@@ -35,7 +35,7 @@
  * derivation found 13 abilities on 13 cards, NINE of which measurably went
  * silent the moment the listener died alongside what it was listening to:
  * Forager of the Fallen, Fungal Gardener, Cthyrian Culler (2 firings to 0),
- * Muck Rummager, Entropic Entity, Murkdrop Distiller, Unrelenting Horror,
+ * Muck Rummager, Entropic Entity, Murkdrop Distiller, Stakoloth,
  * Murkstalker and Splort.
  */
 import { test } from 'node:test';
@@ -175,7 +175,7 @@ function batchFirings(name: string, label: string, killWatcher: boolean): number
     e.addCounters(al, 1);
     e.addCounters(fo, 1);
   });
-  answerAll(h);   // a spawn may ask a question (Unrelenting Horror does)
+  answerAll(h);   // a spawn may ask a question (Stakoloth does)
   toNextBattle(h, A);
   const from = h.events.length;
   withE(h, e => {

@@ -1969,7 +1969,7 @@
     "text": "X is chosen when the card is played, before it is put on the stack. Only values the player can pay may be chosen, and responses see the X already fixed. When X counts targets (\"X target units\"), all X targets are required: only an X that many legal targets can fill may be chosen, and at X = 0 the card needs no target.",
     "examples": [
       {
-        "text": "Blight's End (\"Augment a Wight onto X target units\") with one unit in the battle offers X of 0 or 1, and at X = 1 it must take that unit.",
+        "text": "Blight's End (\"Augment a Wraith onto X target units\") with one unit in the battle offers X of 0 or 1, and at X = 1 it must take that unit.",
         "test": "478-required-targets-at-cast.test.ts::Blight End with one unit in the battle offers X up to 1 only, and X = 1 needs its target"
       },
       {

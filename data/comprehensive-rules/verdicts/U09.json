@@ -372,33 +372,33 @@
     "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:checkBlocks/doDeclareBlocks + counterattackersOwed",
+        "loc": "client/engine/src/apply.ts:declareAttack 'only units sent at block time may counterattack'",
         "agrees": true,
-        "note": "round 2 offers only the units sent at block time; no send ends the battle phase"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/21-fixes.test.ts",
-        "pattern": "round 2 after a real round-1 battle still restricts to the sent counterattackers",
+        "file": "21-fixes.test.ts",
+        "pattern": "round 2 after a real round-1 battle",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/02-combat.test.ts",
-        "pattern": "1v1 counterattack: NIT sends units at block time",
+        "file": "02-combat.test.ts",
+        "pattern": "1v1 counterattack: NIT sends",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/633-designer-answers-battle.test.ts",
-        "pattern": "CR 505.3f / designer: Temporal Rift cast before blocks ends the battle phase",
+        "file": "633-designer-answers-battle.test.ts",
+        "pattern": "CR 505.3f / designer: Temporal Rift cast before blocks",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/633-designer-answers-battle.test.ts",
-        "pattern": "CR 505.3f / designer: Temporal Rift cast after blocks ends round 1 only",
+        "file": "633-designer-answers-battle.test.ts",
+        "pattern": "CR 505.3f / designer: Temporal Rift cast after blocks",
         "passed": true,
         "asserts_claim": true
       }
@@ -408,44 +408,28 @@
       {
         "ref": "Manual p.21",
         "supports": "yes",
-        "note": "'Once battle has been completed in the attacking region, if there was a counter-attack, the players will move to IT's region' — round 2 only if units were sent"
+        "note": ""
       },
       {
         "ref": "card: Temporal Rift",
         "supports": "yes",
-        "note": "printed text 'End this battle. Erase this spell.'"
+        "note": ""
       },
       {
         "ref": "RQ 1353982561101025362",
         "supports": "yes",
-        "note": "calebgannon; replyTo _passer: 'Cast in NIT Region before blockers = No Counter-Attack for NIT / Cast in NIT Region after blockers = Counter-Attack is already sent and 2nd Battle happens'"
+        "note": "calebgannon confirming _passer's before/after blockers summary."
       },
       {
-        "ref": "owner (2026-08-18)",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": "round 2 is the units sent at block time, even if that set is empty; consistent with Manual p.20 phase 2 'The NIT puts their attacking units into formation'"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "was a counter-attack, the players"
-      },
-      {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "will move to IT’s region and"
-      },
-      {
         "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "that's what it currently is"
-      },
-      {
-        "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "Cast in NIT Region after blockers = Counter-Attack is already sent and 2nd Battle happens"
-      },
-      {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "End this battle. Erase this spell."
+        "text": "Counter-Attack is already sent and 2nd Battle happens"
       }
     ],
     "basis_ok": true,

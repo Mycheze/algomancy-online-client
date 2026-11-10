@@ -226,7 +226,7 @@ test('CR 608.9b: the other seat holds priority over a combat-damage trigger and 
  * dispatched off a detached stand-in and cannot be put on the board as a
  * blocker; they take the same queue and are covered by §1 and §2 through it.
  *
- * A card whose SETUP raises a decision (Unrelenting Horror: "When I spawn,
+ * A card whose SETUP raises a decision (Stakoloth: "When I spawn,
  * discard a card" — the `spawn` helper throws Suspended) is recorded as
  * unbuildable rather than skipped by name, and the ratio is asserted: an
  * exclusion list that grew silently would empty this guard out.

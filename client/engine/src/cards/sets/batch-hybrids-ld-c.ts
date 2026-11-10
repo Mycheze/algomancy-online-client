@@ -17,7 +17,7 @@
  *   Haunting Memories
  *   Iyngstra
  *   Lilbot
- *   No Hand Killer
+ *   Lost Shade
  *   Prophecy Bug
  *   Rotwall
  *   Swarmling
@@ -46,7 +46,7 @@
  *    printed either/or shape, `cost: { discardOrSacrifice: 1 }` — also real,
  *    also paid before the item reaches the stack, and it gates the activation
  *    (so the [once] budget is no longer burned on an unpayable one).
- * ✔ No Hand Killer's "Discard X cards" is a REAL CAST COST (CR 705.3b):
+ * ✔ Lost Shade's "Discard X cards" is a REAL CAST COST (CR 705.3b):
  *    `castCost: { kind: 'discardCard', n: 'X' }`, and collectCastCosts runs
  *    for ACTIVATED items too, so the discards are collected in the CAST
  *    WINDOW and `ctx.x` is what was paid — an opponent answers an X they can
@@ -137,17 +137,25 @@ const putIntoHand = (g: E, u: Entity, seat: Seat): void =>
 // free affinity-ignoring release (CR 803.7h) — is engine.
 card('Angel of Anguish', { prophesyFromBin: true });
 
-// "Target player's life total becomes equal to twice the number of cards in
-// all bins." — ld/8 {Battle} Cosmic Spell. "All bins" = BOTH players' bins,
-// unowned and not region-scoped. Setting the total is expressed as the
+// "Set target player's life total equal to twice the number of cards in all
+// bins. Erase me." — ld/8 {Battle} Cosmic Spell. "All bins" = BOTH players'
+// bins, unowned and not region-scoped. Setting the total is expressed as the
 // difference, so it runs through gainLife/loseLife and a total of 0 or less
 // really kills (loseLife's lethal check).
+//
+// "ERASE ME." is new in the designer's 2026-11-10 printing. Same seam as
+// Temporal Rift and Suspend: `ctx.eraseSelf()` raises StackItem.eraseSelf and
+// E.dischargeItem reads it after the effect, so the spell goes to the erased
+// pile instead of the bin. A negated spell never runs this, so it never erases
+// (CR 406.4b). It is also raised before the life change: the erase is its own
+// sentence, and the bins were counted with the spell still on the stack.
 card('Haunting Memories', {
   spellEffect: {
     // CR 110.3: only a player has a life total, and 'player' is the kind that says
     // so — 'any' offered the region's units, which this could do nothing to.
     targets: { what: 'player', prompt: "Haunting Memories: target player's life becomes 2× the cards in all bins" },
     run: (g, ctx) => {
+      ctx.eraseSelf();                                       // "Erase me."
       const t = ctx.targets[0];
       if (!t || !('player' in t)) return;
       const who = t.player;
@@ -702,7 +710,7 @@ card('Rotwall', {
     effect: {
       run: (g, ctx) => {
         // CR D7.3b/CT-70: `opponentsIn` yields nobody in a home region out of
-        // battle. No Hand Killer below already announces the same emptiness.
+        // battle. Lost Shade below already announces the same emptiness.
         const foes = opponentsIn(g, ctx.region, ctx.controller);
         if (!foes.length) {
           g.ev('info', 'Rotwall: no opponent is present here — nobody gains a rot.');
@@ -726,7 +734,7 @@ card('Rotwall', {
 // `{ kind: 'discardCard', n: 'X' }` is that shape, and collectCastCosts runs
 // for ACTIVATED items too (collectTargets calls it on the way to the stack),
 // so the discards happen in the cast window: the opponent decides how to
-// answer a No Hand Killer whose X they can already see, instead of one whose
+// answer a Lost Shade whose X they can already see, instead of one whose
 // size was still unfixed while priority passed. `ctx.x` is what was paid.
 //
 // NO `xMin`. CR 109.9c, owner 2026-08-25, verbatim: *"You can legally
@@ -745,8 +753,9 @@ card('Rotwall', {
 // Every discard is a TRASH (CR 801.3) and fires whatever trash triggers it should.
 // Then each opponent (region-scoped, CR 601.4d) sacrifices X of their own units,
 // choosing which; all of an opponent's picks are gathered before any of them
-// is destroyed, so a pick cannot be invalidated by an earlier one.
-card('No Hand Killer', {
+// is destroyed, so a pick cannot be invalidated by an earlier one. (No Hand
+// Killer until the designer's 2026-11-10 printing; same cost and text.)
+card('Lost Shade', {
   augmentText: [{
     type: 'activated', cost: {}, bounded: true,   // [once]
     label: 'discard X cards: each opponent sacrifices X units',
@@ -755,9 +764,9 @@ card('No Hand Killer', {
       xZeroWarning: 'X = 0 discards nothing and sacrifices nothing',   // CR D7.1a
       run: (g, ctx) => {
         const x = ctx.x ?? 0;   // however many cards were discarded at cast
-        if (x === 0) { g.ev('info', 'No Hand Killer: X = 0 — nothing is sacrificed.'); return; }
+        if (x === 0) { g.ev('info', 'Lost Shade: X = 0 — nothing is sacrificed.'); return; }
         const foes = opponentsIn(g, ctx.region, ctx.controller);
-        if (!foes.length) { g.ev('info', 'No Hand Killer: no opponent is present here — nobody sacrifices.'); return; }
+        if (!foes.length) { g.ev('info', 'Lost Shade: no opponent is present here — nobody sacrifices.'); return; }
         // CR 713.6 / CT-414: every opponent's picks first, then one death batch
         const all: EntityId[] = [];
         for (const seat of foes) {
@@ -765,11 +774,11 @@ card('No Hand Killer', {
           for (let k = 0; k < x; k++) {
             const pool = g.unitsOf(seat, ctx.region).filter(u => !picks.includes(u.id));
             const id = pickUnit(ctx, `sac:${seat}:${k}`, seat, pool,
-              `No Hand Killer: sacrifice a unit (${k + 1} of ${x})`);
+              `Lost Shade: sacrifice a unit (${k + 1} of ${x})`);
             if (id === null) break;
             picks.push(id);
           }
-          if (!picks.length) g.ev('info', `No Hand Killer: ${g.pname(seat)} has no unit here to sacrifice.`);
+          if (!picks.length) g.ev('info', `Lost Shade: ${g.pname(seat)} has no unit here to sacrifice.`);
           all.push(...picks);
         }
         sacrificeTogether(g, all);

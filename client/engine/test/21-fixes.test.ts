@@ -177,7 +177,7 @@ test('CR 106.8: spending a Prismite into your 3rd element copy DOES grant the sh
   //    report #92, and this time the card's own printed text is the argument:
   //
   //      "Erase me: Create a non-prismite resource, THEN ACTIVATE IT. Do this
-  //       only during the mana step. (This does not use one of your
+  //       only during the resource step. (This does not use one of your
   //       activations for turn.)"
   //
   // That ruling never quoted that line. It reasoned from the engine's `exchange`

@@ -10,7 +10,7 @@
  *   Cthyrian Culler
  *   Dropslime
  *   Fester
- *   Grim Bargain
+ *   Consuming Mass
  *   Hooba-Mon
  *   Legion of the Depths
  *   Muck Rummager
@@ -58,8 +58,8 @@
  *    keeps its counters and a column the blockers absorbed whole strips
  *    nobody. Damage is still DEALT per column; only the reading changed.
  *  - "EACH PLAYER/OPPONENT" is region-scoped (CR 601.4d). Out of battle a home
- *    region lists only its owner, so Cthyrian Culler's life loss and Grim
- *    Bargain's sacrifices reach nobody else during deployment — the standing
+ *    region lists only its owner, so Cthyrian Culler's life loss and
+ *    Consuming Mass's sacrifices reach nobody else during deployment — the standing
  *    CR 601.4d behaviour, flagged there, not worked around here.
  *  - MOVING A MOD (Rotbeast) HAS a primitive (CR 720.10) — `E.moveMod`, beside
  *    `attachMod` in engine.ts, shared with Reconfigure (batch-hybrids-wm-a).
@@ -305,10 +305,14 @@ card('Cerebrox', {
   }],
 });
 
-// "Whenever a player trashes a card, each opponent loses 1 life. [Augment]
-// After combat, each player discards a card." — ddd/4 2/5 Polyform Unit.
-// First line: a plain ability (stays with the card), any player's trash, mine
-// included. Second line: text-box [Augment] — live when played normally
+// "Whenever a card is trashed, each opponent loses 1 life. [Augment] After
+// combat, each player discards a card." — ddd/4 2/5 Polyform Unit.
+// First line: a plain ability (stays with the card) on EVERY trash event — any
+// card, into any player's bin, mine included. The 2026-11-10 printing says "a
+// card is trashed" where the earlier one said "a player trashes a card". The
+// two do not differ in this engine: CR 801.2e makes the player whose bin the
+// card enters the one who trashes it, and this ability never filtered on who
+// that was. Second line: text-box [Augment] — live when played normally
 // (Manual Q&A), donated on augment. Each player picks their own discard, and
 // all picks are gathered before any of them commits (plan-then-commit).
 card('Cthyrian Culler', {
@@ -429,19 +433,20 @@ card('Fester', {
 // and simply does nothing. Each round every present player (CR 601.4d) picks one of
 // their own units, in initiative order; every pick is gathered before anything
 // dies (plan-then-commit), with earlier picks excluded from later pools.
-// The draws count MY sacrifices only, and only nontoken ones.
-card('Grim Bargain', {
+// The draws count MY sacrifices only, and only nontoken ones. (Grim Bargain
+// until the designer's 2026-11-10 printing; same cost and text.)
+card('Consuming Mass', {
   spellEffect: {
     run: (g, ctx) => {
       const rounds = Math.floor((ctx.x ?? 0) / 3);
-      if (rounds <= 0) { g.ev('info', 'Grim Bargain: less than [3] spent — nothing is sacrificed.'); return; }
+      if (rounds <= 0) { g.ev('info', 'Consuming Mass: less than [3] spent — nothing is sacrificed.'); return; }
       const seats = presentSeats(g, ctx.region);
       const planned: EntityId[] = [];
       for (let r = 0; r < rounds; r++) {
         for (const s of seats) {
           const pool = g.unitsOf(s, ctx.region).filter(u => !planned.includes(u.id));
           const id = pickUnit(ctx, `gb:${r}:${s}`, s, pool,
-            `Grim Bargain: sacrifice a unit (${r + 1} of ${rounds})`);
+            `Consuming Mass: sacrifice a unit (${r + 1} of ${rounds})`);
           if (id !== null) planned.push(id);
         }
       }
@@ -451,7 +456,7 @@ card('Grim Bargain', {
       // it: the rig's X ladder lands on rounds = 0, which the guard above
       // already announces.
       if (!planned.length) {
-        g.ev('info', 'Grim Bargain: nobody here has a unit to sacrifice — nothing is drawn.');
+        g.ev('info', 'Consuming Mass: nobody here has a unit to sacrifice — nothing is drawn.');
         return;
       }
       let draws = 0;
@@ -461,7 +466,7 @@ card('Grim Bargain', {
       }
       sacrificeTogether(g, planned);   // CR 713.6 / CT-414: one batch
       if (draws > 0) {
-        g.ev('info', `Grim Bargain: ${g.pname(ctx.controller)} draws ${draws}.`);
+        g.ev('info', `Consuming Mass: ${g.pname(ctx.controller)} draws ${draws}.`);
         g.draw(ctx.controller, draws);
       }
     },

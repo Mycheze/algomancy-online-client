@@ -1986,8 +1986,8 @@
         "test": "32-cast-costs.test.ts::X spells resolve from the stored X — a 0-mana caster may still cast for X = 0"
       },
       {
-        "text": "No Hand Killer can be activated with an empty hand at X = 0, and its [once] is spent.",
-        "test": "46-hybrids-ld-c.test.ts::CR 107.2b: an empty hand still activates No Hand Killer — X = 0, and the [once] is spent"
+        "text": "Lost Shade can be activated with an empty hand at X = 0, and its [once] is spent.",
+        "test": "46-hybrids-ld-c.test.ts::CR 107.2b: an empty hand still activates Lost Shade — X = 0, and the [once] is spent"
       },
       {
         "text": "Torrential Reclamation for X = 0 recalls nothing, and nobody sacrifices.",

@@ -276,7 +276,7 @@ battle**". Use the existing `battleCounters` mechanism.
 
 **Cards (14):** Afflicting Anima, Blightwalker, Cerebrox, Cthyrian Culler, Cthyrian
 Rector, Dropslime, Maw of Despair, Muck Rummager, Murkdrop Distiller, Murkstalker, Nothyr,
-Splort, Thoughtripper, Unrelenting Horror.
+Splort, Thoughtripper, Stakoloth.
 
 ⚠ Note `Dropslime` ("1 Discard me") and `Nothyr` ("2 `[d]` Discard Me. `{Battle}`") print a
 **discard-me cost line**: pay the mana, discard the card from hand, which trashes it and so
@@ -344,9 +344,8 @@ That ruling was rewritten by the engine work in the same round, in the ruling re
 **Cards (7):** Afflicting Anima, Blight's End, Cosmic Devourer, Legion of the Depths,
 Plague Ritual, Primordial Coalescence, Xzydris.
 
-⚠ The printed data is mid-transition: six cards already print the current **"Wraith"**,
-while **`Blight's End` still carries the retired "Wight"** ("Augment a Wight onto X target
-units") — preserve that card's text verbatim. Both must resolve to the same token —
+(Until the 2026-11-10 printing `Blight's End` still said the retired "Wight"; every card now
+prints "Wraith".) Both must resolve to the same token —
 canonical `Wraith`, alias `Wight` — and a card-name lookup must never treat them as two
 things.
 
@@ -446,7 +445,7 @@ general replacement framework. Additionally still missing, each flagged on its
 own card: a "a card LEFT a bin" event (Rotling), transform machinery (Scholar of
 the Void), a "predict a number" player action (Prediction Prophet), a
 play-from-bin action and a play-into-formation mode (Trench Stalker, Writhing
-Host), a cost whose amount the payer chooses (Flesh Tithe, No Hand Killer,
+Host), a cost whose amount the payer chooses (Flesh Tithe, Lost Shade,
 Glook) and a bin-zone cost (Grox).
 
 ## Engine wave G (2026-08-19): the repair pass

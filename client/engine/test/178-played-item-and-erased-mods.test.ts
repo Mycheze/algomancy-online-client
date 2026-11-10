@@ -1,7 +1,8 @@
 /* CR 706.13 / CT-79 — VOID MANDIBLE NEGATES THE ITEM THE EVENT NAMES.
  *
- * "[Augment] When a nontoken card is played during battle, sacrifice me. If
- * you do, negate that effect." The pronoun is the one CR 706.13 and 701.5 settle, and three other
+ * "When a nontoken card is played during battle, sacrifice me. If you do,
+ * negate that effect." (printed "[Augment] When …" until the 2026-11-10 card
+ * face removed the marker) The pronoun is the one CR 706.13 and 701.5 settle, and three other
  * cards in the pool answer it by matching on the id the play event carries
  * (Earthbound Replicator; Origon and Hexbane Shiitake). This one
  * could not: `spellPlayed` carries `item`, `cardPlayed` did not, and Void
@@ -18,13 +19,14 @@
  * THE SHARED TRICK, and why it is not a cheat. Void Mandible is single-use by
  * construction — it sacrifices itself on the first play it sees — so a board
  * that has it in play can never reach a SECOND play with an older item still
- * standing. The Mandible therefore arrives MID-BATTLE, as a real augment
- * applied from hand, which CR 723.5's permission layer allows: Rook prints "[Augment]
- * You may augment cards from hand and bin during battle as if they were
- * [Virus]", and the owner ruled it confers {Virus} outright (CR 723.5a).
- * So the augment below is an ordinary legal action, the mod attaches through
- * `doAugment`'s battle branch, and "me" is then the HOST — which is why the
- * host is what gets sacrificed.
+ * standing. The Mandible therefore arrives MID-BATTLE, spawned straight onto
+ * the board by the test (`midBattleMandible`). Only the board is set up by
+ * hand; every PLAY these tests are about still goes through `Harness.do`.
+ *
+ * (Until 2026-11-10 it arrived as a real augment applied from hand under
+ * Rook's CR 723.5 permission, with "me" the HOST. The new printing removed the
+ * ability's [Augment] marker, so Void Mandible is no longer a mod at all
+ * (CR 720.1) and that route is closed: 40-light-c pins the refusal.)
  *
  * Seeds 17800-17809.
  */
@@ -43,16 +45,12 @@ import {
 const itemsOf = (h: Harness, card: string): { id: number; copy: boolean }[] =>
   h.state.stack.filter(i => i.card === card).map(i => ({ id: i.id, copy: i.copy === true }));
 
-/** apply Void Mandible out of `seat`'s hand onto `host`, through the real
- * `augment` action (Rook's CR 723.5 permission), and resolve the virus item. */
-function augmentMandible(h: Harness, seat: Seat, host: EntityId): void {
-  const idx = give(h, seat, 'Void Mandible');
-  h.do({ type: 'augment', seat, from: 'hand', index: idx, hostId: host });
-  assert.equal(h.state.stack[h.state.stack.length - 1]!.kind, 'virus',
-    'CR 701.2a: applying a mod is not playing a card — it is a virus item, and it fires no play event');
-  pass(h); // the virus resolves and the mod attaches
-  assert.ok(ent(h, host)!.mods.some(m => ent(h, m)?.card === 'Void Mandible'),
-    'the Mandible is now riding the host');
+/** put a Void Mandible into play for `seat` in its home region mid-battle
+ * (a white-box spawn: not a play, so it hears nothing on its way in). */
+function midBattleMandible(h: Harness, seat: Seat): EntityId {
+  const vm = spawn(h, seat, 'Void Mandible');
+  assert.ok(ent(h, vm), 'the Mandible stands in play');
+  return vm;
 }
 
 // ── (a) two identical plays: the NEWER is the one the event names ─────────
@@ -61,22 +59,20 @@ test('Void Mandible: with two same-card same-seat spells up, it negates THE ONE 
   const h = new Harness(17800);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
-  spawn(h, A, 'Rook');                                  // CR 723.5: A may augment from hand in battle
-  const host = spawn(h, A, 'Unit Token');               // the body that will wear the Mandible
   const atk = spawn(h, D, 'Unit Token');
   giveResources(h, D, 'wood', 8);
-  giveResources(h, A, 'light', 4);
   toNextBattle(h, D);                                   // D attacks → the battle is in A's home
   h.do({ type: 'declareAttack', seat: D, columns: [[atk]] });
 
-  // Burgeon #1 — no Mandible anywhere yet, so nothing triggers.
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Burgeon') });
+  // Burgeon #1 — no Mandible anywhere yet, so nothing triggers. Held, so it
+  // is still standing when the second one is played.
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Burgeon'), holdPriority: true });
   pick(h, { unit: atk });
   pick(h, 'power');
   assert.equal(h.state.stack.length, 1, 'just the first Burgeon');
   const first = h.state.stack[0]!.id;
 
-  augmentMandible(h, A, host);
+  const vm = midBattleMandible(h, A);
 
   // Burgeon #2 — the play the Mandible actually hears.
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Burgeon') });
@@ -87,7 +83,7 @@ test('Void Mandible: with two same-card same-seat spells up, it negates THE ONE 
   assert.ok(second > first, 'pushItem appends, so the newer item is LATER in the array');
 
   pass(h); pass(h);                                     // the trigger resolves first
-  assert.ok(!ent(h, host), 'the host was sacrificed — "me" is the host for a donated [Augment]');
+  assert.ok(!ent(h, vm), 'the Mandible sacrificed itself');
   const left = h.state.stack.filter(i => i.card === 'Burgeon').map(i => i.id);
   assert.deepEqual(left, [first],
     'CR 706.13: the SECOND Burgeon is negated — the one `cardPlayed` named. '
@@ -101,12 +97,10 @@ test('Void Mandible: a COPY on the stack is never negated — CR 706.13, a copy 
   const h = new Harness(17801);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
-  // CR 601.1d: Rook grants the permission in ITS region, and the battle is fought in
-  // the DEFENDER's home — so the grantor, the host and the Replicator are all
-  // on D's side here. Which seat wears the Mandible does not matter: it fires
-  // on any nontoken card played in the battle, its own controller's included.
-  spawn(h, D, 'Rook');
-  const host = spawn(h, D, 'Unit Token');
+  // The battle is fought in the DEFENDER's home, so the Mandible and the
+  // Replicator are both on D's side here. Which seat owns the Mandible does not
+  // matter: it fires on any nontoken card played in the battle, its own
+  // controller's included.
   const atk = spawn(h, A, 'Unit Token');
   const repl = spawn(h, D, 'Earthbound Replicator');    // copies a nonunit spell aimed at it
   giveResources(h, A, 'wood', 8);
@@ -135,8 +129,7 @@ test('Void Mandible: a COPY on the stack is never negated — CR 706.13, a copy 
   assert.deepEqual(itemsOf(h, 'Burgeon'), [{ id: copy, copy: true }],
     'only the copy is left, and it is the bottom of the stack');
 
-  if (h.state.priority !== D) pass(h);
-  augmentMandible(h, D, host);
+  const vm = midBattleMandible(h, D);
 
   // Burgeon #2 — a real play, with the copy sitting underneath it.
   if (h.state.priority !== A) pass(h);
@@ -146,7 +139,7 @@ test('Void Mandible: a COPY on the stack is never negated — CR 706.13, a copy 
   const second = h.state.stack.find(i => i.card === 'Burgeon' && !i.copy)!.id;
 
   pass(h); pass(h);                                     // the Mandible trigger resolves
-  assert.ok(!ent(h, host), 'the host was sacrificed');
+  assert.ok(!ent(h, vm), 'the Mandible sacrificed itself');
   assert.deepEqual(itemsOf(h, 'Burgeon'), [{ id: copy, copy: true }],
     'CR 706.13: the COPY survives and the played Burgeon is the one negated. '
     + `(the played item was ${second}.) A scan with no !i.copy guard eats the copy instead.`);
@@ -166,12 +159,9 @@ test('Void Mandible: a unit Wake the Dead plays (once an asPlay spawn) is negate
   const h = new Harness(17802);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
-  spawn(h, A, 'Rook');
-  const host = spawn(h, A, 'Unit Token');
   const atk = spawn(h, D, 'Unit Token');
   giveResources(h, D, 'dark', 8);
   giveResources(h, D, 'light', 4);
-  giveResources(h, A, 'light', 4);
   h.state.players[D]!.bin.push('Shard Sprite');                // what Wake the Dead will raise
   toNextBattle(h, D);
   h.do({ type: 'declareAttack', seat: D, columns: [[atk]] });
@@ -187,11 +177,9 @@ test('Void Mandible: a unit Wake the Dead plays (once an asPlay spawn) is negate
 
   // …and the Mandible arrives while Wake the Dead is still on the stack, so it
   // is not spent on Wake the Dead itself and is live for the raise inside it.
-  if (h.state.priority !== A) pass(h);
-  augmentMandible(h, A, host);
+  const vm = midBattleMandible(h, A);
 
-  if (h.state.priority !== D) pass(h);
-  pass(h); pass(h);                                     // Wake the Dead resolves → it PLAYS a unit
+  pass(h);                                              // Wake the Dead resolves → it PLAYS a unit
   while (h.state.decision) {
     const dec = h.state.decision;
     const i = dec.options.findIndex(o => o.label.includes('Shard Sprite'));
@@ -203,7 +191,7 @@ test('Void Mandible: a unit Wake the Dead plays (once an asPlay spawn) is negate
     'the raise IS a play (CR 301.9) — the Mandible heard it and its trigger is on the stack');
   pass(h); pass(h);                                     // the Mandible trigger resolves
 
-  assert.ok(!ent(h, host), 'the Mandible is sacrificed ("sacrifice me. If you do, …", CR 111.8)');
+  assert.ok(!ent(h, vm), 'the Mandible is sacrificed ("sacrifice me. If you do, …", CR 111.8)');
   assert.ok(!h.state.stack.some(i => i.id === raised.id), 'and the RAISED unit — the play it heard — is negated');
   const survivor = h.state.stack.find(i => i.id === bystander);
   assert.ok(survivor && !survivor.negated,

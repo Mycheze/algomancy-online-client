@@ -1140,32 +1140,45 @@
     "verifier": "U21-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:hastePlayAllowance / mayPlayAtHaste",
+        "loc": "client/engine/src/engine.ts:mayPlayAtHaste",
         "agrees": true,
-        "note": "seat-level play-timing grant, budgeted by hastePlaysUsed"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/26-metal-a.test.ts",
-        "pattern": "Dispatch Courier: \"play a unit",
+        "file": "26-metal-a.test.ts",
+        "pattern": "Dispatch Courier: \"play a unit during the mana step",
         "passed": true,
-        "asserts_claim": "yes: Courier in play, a deploy unit is offered and played in the haste step, budget charged to 1"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/26-metal-a.test.ts",
-        "pattern": "Dispatch Courier: the \"Each turn\" allowance",
+        "file": "26-metal-a.test.ts",
+        "pattern": "Dispatch Courier: no Courier",
         "passed": true,
-        "asserts_claim": "yes: the second play in the same haste step is refused (the 'once each turn' half)"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/26-metal-a.test.ts",
-        "pattern": "Dispatch Courier: no Courier, no OFFER",
+        "file": "26-metal-a.test.ts",
+        "pattern": "Dispatch Courier: a {Battle} unit stays",
         "passed": true,
-        "asserts_claim": "bare demonstration; passes"
+        "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U21-1.test.ts",
+        "test": "probe U21-1: a Courier-granted play changes only the timing",
+        "passed": true,
+        "demonstrates": "yes: printed cost charged, card timing unchanged, no Haste attribute"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U21-1.test.ts",
+        "test": "probe U21-1b: the grant does not waive affinity",
+        "passed": true,
+        "demonstrates": "yes: without affinity the unit is not offered"
+      }
+    ],
     "source_checks": [
       {
         "ref": "card: Dispatch Courier",
@@ -1173,15 +1186,15 @@
         "note": ""
       },
       {
-        "ref": "R97",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": "a grant of PLAY timing; not superseded"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/cards/printed.json",
-        "text": "[Augment] Each turn, you may play a unit during the mana step as if it had [Haste]."
+        "text": "Each turn, you may play a unit during the haste step as if it had [Haste]."
       }
     ],
     "basis_ok": true,
@@ -1189,23 +1202,23 @@
   },
   {
     "key": "keywords.abilities.haste.mana-step",
-    "textHash": "1e30e2d5b10e0061",
-    "verdict": "confirmed",
+    "textHash": "4be71ed136f83be0",
+    "verdict": "partial",
     "round": 4,
     "verifier": "U21-r4",
     "engine": [
       {
         "loc": "client/engine/src/engine.ts:mayPlayAtHaste",
         "agrees": true,
-        "note": "the Courier's 'mana step' grant is applied in the haste step"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/26-metal-a.test.ts",
-        "pattern": "Dispatch Courier: \"play a unit",
+        "file": "26-metal-a.test.ts",
+        "pattern": "Dispatch Courier: \"play a unit during the mana step",
         "passed": true,
-        "asserts_claim": "yes: the grant opens and allows a play in the haste step"
+        "asserts_claim": true
       }
     ],
     "probes": [],
@@ -1213,27 +1226,37 @@
       {
         "ref": "Rulebook 2023 p.3",
         "supports": "yes",
-        "note": "haste cards are played during the mana step"
+        "note": "Covers haste-timing text."
+      },
+      {
+        "ref": "Rulebook 2023 p.7",
+        "supports": "no",
+        "note": "Not cited: the mana step is also when resources are taken and played."
+      },
+      {
+        "ref": "Manual p.18",
+        "supports": "partial",
+        "note": "Not cited: splits this into a resource step and a haste step."
       },
       {
         "ref": "card: Dispatch Courier",
-        "supports": "yes",
-        "note": ""
+        "supports": "partial",
+        "note": "Now prints \"haste step\"; no card in the pool prints \"mana step\"."
       },
       {
-        "ref": "R97",
-        "supports": "yes",
-        "note": "Caleb quoted: the haste symbol means playable during the mana step"
+        "ref": "owner register@72de434",
+        "supports": "partial",
+        "note": "Outranked by the printed Rulebook p.7 where they differ."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "So **the printed \"mana step\" IS this engine's R18 haste step**, and Dispatch Courier"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "The mana step is when players have the ability to take and play resources"
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "Holds where the text is about haste-timing plays. As a general statement it fails: Rulebook 2023 p.7 says the mana step is also when players take and play resources, which the Manual (p.18) puts in a separate resource step."
   },
   {
     "key": "keywords.abilities.non-combat",

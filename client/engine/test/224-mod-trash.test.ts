@@ -221,7 +221,7 @@ test('CR 720.8: a mod trashed on a recall is trashed by the host controller, not
 test('CR 720.8: the per-seat trash ledger on a recall counts for the host controller', () => {
   // What actually moves at the table. "When you trash a card during battle,
   // Draw a card" (Muck Rummager) and "When you trash another card" (Murkstalker,
-  // Cthyrian Rector, Murkdrop Distiller, Unrelenting Horror) all read
+  // Cthyrian Rector, Murkdrop Distiller, Stakoloth) all read
   // `ev.data.seat`; the counter is the same fact in ledger form.
   assert.ok(trashTextCards().includes('Muck Rummager'),
     'Muck Rummager is the card this counter is for');

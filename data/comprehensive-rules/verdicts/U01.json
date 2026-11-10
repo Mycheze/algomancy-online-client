@@ -418,27 +418,27 @@
     "verifier": "U01-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.loseLife / E.checkLifeTotals",
+        "loc": "client/engine/src/engine.ts:phase='gameover' (life check, CR 104.1a)",
         "agrees": true,
-        "note": "p.life -= n with no floor; life <= 0 ends the game when checked"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/46-hybrids-ld-c.test.ts",
+        "file": "46-hybrids-ld-c.test.ts",
         "pattern": "Haunting Memories: empty bins set the target to 0",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/02-combat.test.ts",
+        "file": "02-combat.test.ts",
         "pattern": "win condition",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/654-simultaneous-loss.test.ts",
-        "pattern": "CR 104.1a / CT-409: the engine decides a double loss by total",
+        "file": "654-simultaneous-loss.test.ts",
+        "pattern": "CR 104.1a / CT-409: Recall takes 2",
         "passed": true,
         "asserts_claim": true
       }
@@ -458,17 +458,13 @@
       {
         "ref": "RQ 1426602231070851253",
         "supports": "yes",
-        "note": "below 0"
+        "note": "calebgannon; his \"yeah\" answers whether life totals can go below 0."
       }
     ],
     "quote_spans": [
       {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "opponents by bringing their life to 0."
-      },
-      {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "Target player's life total becomes equal to twice the number of cards in all bins."
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "So life totals can go below 0 to find a winner if both players take lethal damage at the same time?"
       }
     ],
     "basis_ok": true,
@@ -998,34 +994,41 @@
   },
   {
     "key": "concepts.golden.as-much-as-possible",
-    "textHash": "0c9c91aac6833611",
+    "textHash": "36f1a1889d77be87",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U01-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-water-b.ts:Recall",
+        "loc": "client/engine/src/engine.ts:markIllegalTargets",
         "agrees": true,
-        "note": "life loss unconditional, recall optional per player"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-water-a.ts:Amphivore",
-        "agrees": true,
-        "note": "triple graft composite; Ralph's 'If you do' fails on later passes, Flame Juggle runs each pass"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/179-empty-collection-branches.test.ts",
+        "file": "179-empty-collection-branches.test.ts",
         "pattern": "Recall — the life loss happens, the recall does not",
         "passed": true,
-        "asserts_claim": "yes: on a barren board each player loses 2 life and no hand grows"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/393-raq-mods.test.ts",
+        "file": "393-raq-mods.test.ts",
         "pattern": "RAQ Amphivore with Ralph grafted",
         "passed": true,
-        "asserts_claim": "yes: Amphivore with Flame Juggle + Ralph grafts; host goes to D, exactly three 1/1s, nine Fireballs (Flame Juggle three times)"
+        "asserts_claim": true
+      },
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ fizzles: Fight that loses one",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "425-cr-casting-and-stack.test.ts",
+        "pattern": "cr:effects.resolution.fizzle.pair",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
@@ -1033,27 +1036,27 @@
       {
         "ref": "Manual p.43",
         "supports": "yes",
-        "note": "'the spell will attempt to resolve as best as it can' and 'if one of the targets for a fight or an exchange is removed, the effect will not be able to happen (it takes two units...)'"
+        "note": ""
       },
       {
         "ref": "RAQ 1353859961855148103#3",
         "supports": "yes",
-        "note": "_passer, [Solved], status covered"
+        "note": "Status covered; Ralph claim."
       },
       {
-        "ref": "R30 (provisional, marked ⚠)",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": "Recall life loss unconditional; no superseding edge"
+        "note": "Recall clauses not linked."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/ledgers/raq.ts",
-        "text": "You just can't give Ralph, but that's okay - rest of graft still happens."
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "the effect will not be able to happen"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "recall still loses 2. (Do as much as you can; the two clauses are not linked"
+        "file": "client/ledgers/raq.ts",
+        "text": "You just can't give Ralph, but that's okay - rest of graft still happens."
       }
     ],
     "basis_ok": true,
@@ -1816,48 +1819,47 @@
   },
   {
     "key": "concepts.players.each-player",
-    "textHash": "6e6f570d92209cb3",
+    "textHash": "733e4b3a66e6af9c",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U01-r1",
+    "round": 4,
+    "verifier": "U01-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:seatsHere",
+        "loc": "client/engine/src/cards/sets/batch-water-b.ts:Recall",
         "agrees": true,
         "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/15-water-b.test.ts",
+        "file": "15-water-b.test.ts",
         "pattern": "Recall: each player recalls a unit and loses 2 life",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "412-cr-general.test.ts",
+        "pattern": "cr:concepts.players.each-player — Recall resolved",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U01/u01-verify-probes.test.ts",
-        "title": "concepts.players.each-player: Recall resolved in a region holding only its caster touches only the caster",
-        "passed": true,
-        "demonstrates": "yes"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.19",
         "supports": "yes",
-        "note": "literal: \"Each player in this region\""
+        "note": "Manual states the reading in those words."
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "rifices two units” means “Each player in this region"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "sacrifices two units in this region"
       }
     ],
     "basis_ok": true,
-    "problem": "The bound test has both seats present, so it shows nothing about exclusion. The probe adds the exclusion case."
+    "problem": ""
   },
   {
     "key": "concepts.players.each-player.choice-order",

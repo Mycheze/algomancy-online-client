@@ -757,7 +757,7 @@ test('Celestial Fluxmorph: counters on spawn and on being modded; all removed at
   const fm = spawn(h, A, 'Celestial Fluxmorph');            // spawn trigger: +1 to each of your units
   assert.deepEqual(effStats(h, t1), [2, 2]);
   assert.deepEqual(effStats(h, fm), [2, 2], 'itself included');
-  // "or become modded": Dispatch Courier serves as the mod (its CR 803.2b grant is
+  // "or am modded": Dispatch Courier serves as the mod (its CR 803.2b grant is
   // a play permission, so it adds no stats to the host)
   giveResources(h, A, 'metal', 2);
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Dispatch Courier'), hostId: fm });

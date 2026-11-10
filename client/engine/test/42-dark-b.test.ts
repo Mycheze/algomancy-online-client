@@ -9,7 +9,7 @@
  * Cthyrian Culler, Dropslime's discard-me mode, Muck Rummager, Palewing), the
  * Wight/Wraith token (CR 110.2c — Legion of the Depths, Plague Ritual), {Afflicting}
  * on -1/-1 counter kills (CR 802.23c — Umbral Decay) and the mod/board manipulation
- * cards (Grim Bargain, Hooba-Mon, Necromantic Rebuke, Rotbeast, Sarcophage).
+ * cards (Consuming Mass, Hooba-Mon, Necromantic Rebuke, Rotbeast, Sarcophage).
  * Writhing Host is LIVE: a bin-anchored haste grant (CR 504.7), paid for by
  * erasing the grantor out of the bin.
  */
@@ -453,23 +453,23 @@ test("Fester's rot really bites at the start of the next deployment (CR 112.13)"
   assert.equal(rotOf(h, P), 2, 'and the rot never decays');
 });
 
-// ── Grim Bargain ──────────────────────────────────────────────────────
+// ── Consuming Mass ──────────────────────────────────────────────────────
 
-test('Grim Bargain: one sacrifice round per [3] spent, and you draw for your nontoken losses', () => {
+test('Consuming Mass: one sacrifice round per [3] spent, and you draw for your nontoken losses', () => {
   const h = new Harness(4211);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'Unit Token');                   // a NONTOKEN card
   const theirs = spawn(h, D, 'Good Whale');
   giveResources(h, A, 'dark', 7);                          // ddd/X — X = 6 → two rounds
-  give(h, A, 'Grim Bargain');
+  give(h, A, 'Consuming Mass');
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   resolveAll(h);
   let tok = 0;
   withE(h, e => { tok = e.spawnUnit(A, 'Unit Token', h.state.battle!.region, { token: true }).id; });
   const hand = handSize(h, A);
-  h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Grim Bargain') });
+  h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Consuming Mass') });
   pickRef(h, 6);                                           // X chosen and paid at cast (CR 107.2a)
   resolveAll(h);
   assert.equal(ent(h, atk), undefined, "A's nontoken unit was sacrificed");
@@ -479,7 +479,7 @@ test('Grim Bargain: one sacrifice round per [3] spent, and you draw for your non
     'the spell left the hand and exactly one card was drawn — tokens draw nothing');
 });
 
-test('Grim Bargain: less than [3] spent sacrifices nothing at all', () => {
+test('Consuming Mass: less than [3] spent sacrifices nothing at all', () => {
   const h = new Harness(4212);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -490,9 +490,9 @@ test('Grim Bargain: less than [3] spent sacrifices nothing at all', () => {
   // still 2 below — affinity is a requirement you must MEET, not mana you
   // spend, so holding three dark and choosing X = 2 is exactly this case.
   giveResources(h, A, 'dark', 3);
-  give(h, A, 'Grim Bargain');
+  give(h, A, 'Consuming Mass');
   attackWith(h, A, [[atk]]);
-  h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Grim Bargain') });
+  h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Consuming Mass') });
   pickRef(h, 2);
   resolveAll(h);
   assert.ok(ent(h, theirs) && ent(h, atk), 'floor(2/3) = 0 rounds');
@@ -663,10 +663,10 @@ test('CR 410.2: the exchanged host\'s own [Augment] despawn text FIRES (not just
   const host = spawn(h, A, 'Rune Channeler');
   giveResources(h, A, 'dark', 6);
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Hooba-Mon'), hostId: host });
-  // Gzxyclop: "[Augment] When I despawn, discard two cards." On the host, "I"
+  // Bloatfiend: "[Augment] When I despawn, discard two cards." On the host, "I"
   // is the host — a real card that watches units leaving play, and the same
   // sentence a recall or a cache already honours through afterDespawn().
-  withE(h, e => { e.attachMod(e.entity(host)!, 'Gzxyclop', A, 'augment'); });
+  withE(h, e => { e.attachMod(e.entity(host)!, 'Bloatfiend', A, 'augment'); });
   give(h, A, 'Good Whale'); give(h, A, 'Good Whale');      // something to discard
   h.state.players[A]!.bin.push('Skittering Blight');   // a real card: a bin never holds a token (CR 713.5)
   toNextBattle(h, A);
@@ -1061,7 +1061,7 @@ test('Necromantic Rebuke: the ransom saves the effect', () => {
 // MECHANICS are correct and untouched. What was missing is that X = 0 is a
 // guaranteed no-op: the ransom "erase 0 cards" is met by doing nothing, so the
 // negate can never happen. It stays LEGAL (explicitly not made illegal, unlike
-// No Hand Killer's xMin: 1, which prevents burning a [once] budget) — the
+// Lost Shade's xMin: 1, which prevents burning a [once] budget) — the
 // player is simply told, at the one moment they can still change their mind.
 test('Necromantic Rebuke: stopping at X = 0 is offered WITH a warning, and stays legal (CR D7.1a)', () => {
   const h = new Harness(4221.5);
@@ -1640,7 +1640,7 @@ test("Writhing Host (CR 504.7, 405.7): the grantor leaves through the CR 405.7 c
 test('every dark-b card is registered with its printed data', () => {
   const names = [
     'Blightmound', 'Cerebrox', 'Cthyrian Culler', 'Dropslime', 'Fester',
-    'Grim Bargain', 'Hooba-Mon', 'Legion of the Depths', 'Muck Rummager',
+    'Consuming Mass', 'Hooba-Mon', 'Legion of the Depths', 'Muck Rummager',
     'Necromantic Rebuke', 'Palewing', 'Plague Ritual', 'Rotbeast', 'Sarcophage',
     'Skittering Blight', 'Thought Extraction', 'Umbral Decay', 'Writhing Host',
   ];
@@ -1649,7 +1649,7 @@ test('every dark-b card is registered with its printed data', () => {
     assert.equal(c.name, n);
     assert.ok(c.factions?.includes('dark'), `${n} is a dark card`);
   }
-  assert.equal(getCard('Grim Bargain').mana, 'X', 'the X cost comes from printed.json');
+  assert.equal(getCard('Consuming Mass').mana, 'X', 'the X cost comes from printed.json');
   assert.deepEqual(getCard('Dropslime').discardMe, { cost: '', mana: 1 },
     'and so does the discard-me cost line');
   assert.ok(getCard('Blightmound').attrs.includes('Poisonous'));

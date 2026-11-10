@@ -8,8 +8,9 @@
  * payability gate and in the option list, so a Bogwalker alone with an empty
  * hand was never offered its own ability. Lilbot prints "sacrifice ANOTHER
  * nontoken unit" and keeps the exclusion, now by its own `another` flag.
- * Pallid Gorger prints no "another" either, and follows its print the same
- * way (the owner's steer: printed text beats an engine default).
+ * Pallid Gorger prints "another" too since the 2026-11-10 printing (it printed
+ * none before, and for that while it could pay with itself), so it follows
+ * Lilbot now: printed text beats an engine default, in both directions.
  *
  * Seeds 56400-56499.
  */
@@ -56,13 +57,13 @@ test('CR 111.2 / CT-281: Lilbot prints another, so alone with an empty hand it i
   assert.equal(offers(h, A, id).length, 1, 'another nontoken unit pays');
 });
 
-test('CR 111.2 / CT-281: Pallid Gorger prints no another, so alone with an empty hand it may sacrifice itself', () => {
+test('CR 111.2 / CT-281: Pallid Gorger prints another since 2026-11-10, so alone with an empty hand it is not offered', () => {
   const { h, A, id } = setup(56402, 'Pallid Gorger');
-  assert.equal(offers(h, A, id).length, 1, 'the ability is offered: the Gorger can pay with itself');
+  assert.equal(offers(h, A, id).length, 0, 'no other nontoken unit and no card: nothing can pay');
+  spawn(h, A, 'Good Whale');
+  assert.equal(offers(h, A, id).length, 1, 'another nontoken unit pays');
   h.do({ type: 'activateAbility', seat: A, entityId: id, abilityIndex: 0, via: 'augment' });
-  const d = h.state.decision!;
-  const i = d.options.findIndex(o => String(o.label) === 'Sacrifice Pallid Gorger');
-  assert.ok(i >= 0, 'and it is the option');
-  h.do({ type: 'decide', seat: d.seat, choice: i });
-  assert.equal(ent(h, id), undefined, 'it sacrificed itself to pay');
+  const labels = h.state.decision!.options.map(o => String(o.label));
+  assert.ok(labels.includes('Sacrifice Good Whale'), `the other unit pays: ${labels}`);
+  assert.ok(!labels.includes('Sacrifice Pallid Gorger'), `and the Gorger is never one of the options: ${labels}`);
 });

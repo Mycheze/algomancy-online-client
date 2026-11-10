@@ -584,13 +584,13 @@ test('Burden of Life: as a Virus the shrink lands on the HOST (host-anchored sta
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   h.state.players[D]!.life = 2;
-  const victim = spawn(h, D, 'Shib');                        // 7/4
+  const victim = spawn(h, D, 'Shib');                        // 5/4
   whiteBox(h, e => e.attachMod(ent(h, victim)!, 'Burden of Life', A, 'augment'));
-  assert.deepEqual(effStats(h, victim), [5, 2], "7/4 minus the HOST controller's 2 life");
+  assert.deepEqual(effStats(h, victim), [3, 2], "5/4 minus the HOST controller's 2 life");
   // …and raising the host controller's life kills it outright
   h.state.players[D]!.life = 9;
   whiteBox(h, e => { e.checkDeaths(); });
-  assert.ok(!ent(h, victim), 'at 9 life the 7/4 is -2/-5 and dies');
+  assert.ok(!ent(h, victim), 'at 9 life the 5/4 is -4/-5 and dies');
 });
 
 // ── Chombot ──────────────────────────────────────────────────────────────
@@ -739,7 +739,7 @@ test('Dream Lapse: recalls a spell off the stack to its hand, then its controlle
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const atk = spawn(h, A, 'Unit Token');
-  const prey = spawn(h, D, 'Shib');                          // 7/4 in the battle region
+  const prey = spawn(h, D, 'Shib');                          // 5/4 in the battle region
   toNextBattle(h, A);
   clearZones(h);
   giveResources(h, D, 'fire', 2);                            // Luminous Arc: r / 2
@@ -786,7 +786,7 @@ test('Hyper Beam: 8 damage + a draw, and its printed [Gain 4 debt] is charged (C
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const atk = spawn(h, A, 'Unit Token');
-  const prey = spawn(h, D, 'Shib');                          // 7/4
+  const prey = spawn(h, D, 'Shib');                          // 5/4
   toNextBattle(h, A);
   giveResources(h, A, 'light', 1);
   giveResources(h, A, 'fire', 1);
@@ -796,7 +796,7 @@ test('Hyper Beam: 8 damage + a draw, and its printed [Gain 4 debt] is charged (C
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Hyper Beam') });
   pick(h, { unit: prey });
   pass(h); // resolve
-  assert.ok(!ent(h, prey), '8 damage killed the 7/4');
+  assert.ok(!ent(h, prey), '8 damage killed the 5/4');
   assert.equal(h.state.players[A]!.hand.length, hand + 1, 'drew a card (the Beam itself left hand)');
   assert.equal(new E(h.state).debt(A), 4, 'the printed [Gain 4 debt] cost was charged (CR 112.14c)');
   finishBattle(h);
@@ -996,7 +996,7 @@ test('Shib: {Blessed} combat damage gains its controller that much life (CR 802.
   const h = new Harness(4423);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
-  const shib = spawn(h, A, 'Shib');                          // 7/4 {Blessed}
+  const shib = spawn(h, A, 'Shib');                          // 5/4 {Blessed}
   toNextBattle(h, A);
   const lifeA = h.state.players[A]!.life, lifeD = h.state.players[D]!.life;
   assert.ok(new E(h.state).ownAttrs(ent(h, shib)!).has('Blessed'), 'printed attribute, no code');
@@ -1005,8 +1005,8 @@ test('Shib: {Blessed} combat damage gains its controller that much life (CR 802.
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
-  assert.equal(h.state.players[D]!.life, lifeD - 7, 'seven combat damage');
-  assert.equal(h.state.players[A]!.life, lifeA + 7, '…and seven life gained (CR 802.22a)');
+  assert.equal(h.state.players[D]!.life, lifeD - 5, 'five combat damage');
+  assert.equal(h.state.players[A]!.life, lifeA + 5, '…and five life gained (CR 802.22a)');
   finishBattle(h);
 });
 

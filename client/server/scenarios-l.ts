@@ -7,10 +7,10 @@
  *                                    Dreadwave Devourer ("target spell effect") cannot
  *   review-card-ambush-reversal      Cosmic Reversal recalls your spell and leaves the
  *                                    Ambush on the stack, which then resolves
- *   review-card-tilling-one-unit     Tilling the Graves is not castable with one unit in
- *                                    your bin — and is once a second unit dies
- *   review-card-tilling-two-units    two units (and a spell) in your bin: both units are
- *                                    required, no stop at one, the spell is not offered
+ *   review-card-tilling-one-unit     Tilling the Graves ("up to two") is castable with
+ *                                    only one unit in your bin
+ *   review-card-tilling-two-units    two units (and a spell) in your bin: either or both
+ *                                    may be taken, the spell is not offered
  *   review-card-blights-end-x        X is capped by the units in the fight, not the mana,
  *                                    and every one of the X targets is required
  *   review-card-tides-reveal         the opponent's Tides of the Cosmos shows YOU the
@@ -131,24 +131,23 @@ export const BATCH_L: Record<string, Scenario> = {
   },
 
   /**
-   * After combat, ONE unit in your bin: Tilling the Graves ("Recall two target
-   * units in your bin") is not castable. Luminous Arc on your own survivor
-   * puts a second unit there, and then it is.
+   * After combat, ONE unit in your bin: Tilling the Graves ("Recall up to two
+   * target units in your bin", the 2026-11-10 printing) is castable and takes
+   * the one unit there. Before that printing it needed both targets.
    */
   'review-card-tilling-one-unit': {
     id: 'review-card-tilling-one-unit',
     card: 'Tilling the Graves',
-    why: 'Tilling the Graves could be cast with fewer than two units in the bin, recalling one or '
-      + 'none. It says "two target units", not "up to two", so it needs both to be cast.',
+    why: 'Tilling the Graves used to need two units in the bin. Its new printing says "up to two", '
+      + 'so it can be cast with one or none, and the discard still happens.',
     expect:
       'After combat. One of your The Foretolds traded with their blocker, so your bin holds ONE unit.\n'
       + 'Your other The Foretold got through unblocked and is still in the battle. You have priority.\n'
-      + 'LOOK: Tilling the Graves ("Recall two target units in your bin") cannot be played — one unit\n'
-      + 'is not two. You have the mana for it.\n'
-      + 'TRY: play Luminous Arc at your own The Foretold and pass, so it dies and your bin holds two.\n'
-      + 'EXPECTED: now Tilling the Graves CAN be played. Play it: you must pick BOTH The Foretolds —\n'
-      + 'there is no "No more targets" after the first. Pass: both come back to your hand, then you\n'
-      + 'discard a card.',
+      + 'LOOK: Tilling the Graves ("Recall up to two target units in your bin") CAN be played with\n'
+      + 'just that one unit in your bin. You have the mana for it.\n'
+      + 'TRY: play it. Pick your The Foretold, or stop with "No targets".\n'
+      + 'EXPECTED: Pass: the one you picked comes back to your hand, then you discard a card.\n'
+      + 'The discard happens even if you picked nothing.',
     initiative: YOU,
     you: {
       hand: ['Tilling the Graves', 'Luminous Arc'],
@@ -183,15 +182,15 @@ export const BATCH_L: Record<string, Scenario> = {
   'review-card-tilling-two-units': {
     id: 'review-card-tilling-two-units',
     card: 'Tilling the Graves',
-    why: 'With "two target units" both targets are required: the menu used to offer "No more targets" '
-      + 'after one. A spell in the bin is there to show only units are offered.',
+    why: 'The printing now says "up to two target units", so stopping at one is legal. '
+      + 'A spell in the bin is there to show only units are offered.',
     expect:
       'After combat. Two of your The Foretolds traded with their blockers, and Luminous Arc killed\n'
       + 'their Bubb earlier, so your bin holds two units AND a spell. You have priority.\n'
-      + 'TRY: play Tilling the Graves ("Recall two target units in your bin, then discard a card").\n'
-      + 'LOOK: only the two The Foretolds are offered — never Luminous Arc — and after you pick the\n'
-      + 'first there is NO "No more targets" button: the second is required.\n'
-      + 'Then pass: both The Foretolds come back to your hand, and you discard a card.',
+      + 'TRY: play Tilling the Graves ("Recall up to two target units in your bin, then discard a card").\n'
+      + 'LOOK: only the two The Foretolds are offered — never Luminous Arc — and you may stop at\n'
+      + 'none or at one with the "No more targets" button.\n'
+      + 'Pick both, then pass: both The Foretolds come back to your hand, and you discard a card.',
     initiative: YOU,
     you: {
       hand: ['Luminous Arc', 'Tilling the Graves'],
@@ -233,7 +232,7 @@ export const BATCH_L: Record<string, Scenario> = {
     expect:
       'You attacked with two The Foretolds; their Bubb is in the battle too. Your Crumbling Ancient\n'
       + 'stayed home, out of the fight. That is THREE units in the battle. You have priority and 8 mana.\n'
-      + 'TRY: play Blight\'s End ("Augment a Wight onto X target units").\n'
+      + 'TRY: play Blight\'s End ("Augment a Wraith onto X target units").\n'
       + 'LOOK: the X choice goes 0, 1, 2, 3 and stops — not as high as your mana would pay. Crumbling\n'
       + 'Ancient does not count: it is not in this battle.\n'
       + 'TRY: pick X = 3. You must pick all three units: no "No more targets" before the third.\n'

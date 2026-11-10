@@ -850,7 +850,7 @@ export const CLOSED: TodoEntry[] = [
       + 'Erase me: Negate all spell effects."). Each has real, working code for its OTHER '
       + 'half, which is exactly why nothing caught it: the shape sweep in 71-card-ledger '
       + 'sees live code, and the drill sees the card do something. The two cards that DO '
-      + 'implement it are Spore of Regenesis (erasing as a cost) and Zephyrzoa (in its '
+      + 'implement it are The Birthmother (erasing as a cost) and Zephyrzoa (in its '
       + '[Augment] box). '
       + 'This is not cosmetic. The erased pile is the zone cards leave the game through '
       + '(CR 407.1), so a spell that should erase itself instead lands in the bin, stays '
@@ -865,7 +865,7 @@ export const CLOSED: TodoEntry[] = [
       'A resolving spell is binned by the engine after its effect runs, so a self-erase '
       + 'has to redirect that disposal rather than erase a card that is still on the '
       + 'stack. Skybreaker is the odd one out: there "Erase me" is an activation COST on '
-      + 'a unit, so it follows Spore of Regenesis\'s pattern (eraseUnit on self) rather '
+      + 'a unit, so it follows The Birthmother\'s pattern (eraseUnit on self) rather '
       + "than the spell-disposal one. Do Collect Remains first — it is the only one whose "
       + 'gap changes what a deck can do.',
     proof: () => {
@@ -5039,8 +5039,8 @@ export const CLOSED: TodoEntry[] = [
       + '`E.ev()` files the CR 407.2 PUBLIC ERASED PILE only for a `type: \'erased\'` event carrying a '
       + 'numeric `seat`, so the mod is **out of play and on no pile at all** — the one thing the erased pile '
       + 'exists to prevent, since the complaint that opened it was "there is currently no way to '
-      + 'view erased cards". Every other erase site emits `erased`: E.eraseFromPlay, Spore of '
-      + 'Regenesis\'s cost, both bin-erase sites in batch-metal-a / batch-dark-b.',
+      + 'view erased cards". Every other erase site emits `erased`: E.eraseFromPlay, The '
+      + 'Birthmother\'s cost, both bin-erase sites in batch-metal-a / batch-dark-b.',
     evidence:
       '⚠ FOUND INDEPENDENTLY BY TWO AGENTS in the same round, from opposite directions — the '
       + 'R196 agent while rewriting the cost, and the R199 agent while chasing why the card read '
@@ -5427,7 +5427,7 @@ export const CLOSED: TodoEntry[] = [
       + 'AMOUNT: with X=2 each player sacrifices TWO units, not one — batch-hybrids-fwe.ts wraps the'
       + 'seat loop in `for (let r = 0; r < recalled.length; r++)`. The trailing "for each ally'
       + 'recalled this way" should bind to the life loss it is attached to; no other card in the pool'
-      + 'writes a scaled sacrifice that way, and Structural Collapse and No Hand Killer both put the'
+      + 'writes a scaled sacrifice that way, and Structural Collapse and Lost Shade both put the'
       + 'scaling inline. (b) TIMING: at X=0 the whole spell returns early, so the second sentence'
       + 'never happens at all — it is not gated on the first in the printed text.',
     evidence:
@@ -6068,7 +6068,7 @@ export const CLOSED: TodoEntry[] = [
     area: 'coverage',
     severity: 'minor',
     reportId: 115,
-    cards: ['Rampart Guardian', 'Reality Bender', 'Its Dark Bubb', 'Beyond, Codex Incarnate', 'The Omniphage'],
+    cards: ['Rampart Guardian', 'Reality Bender', 'Oodvick', 'Beyond, Codex Incarnate', 'The Omniphage'],
     title:
       '{Tough} + {Inverted} is a two-card column wipe and nothing in the suite pins it',
     detail:
@@ -7544,7 +7544,7 @@ export const CLOSED: TodoEntry[] = [
       + 'attribute it does not carry on its type line. Brough (Balanced), Rotspore Herald '
       + '(Deadly), Emberflame Enlightener (Powerful), Envoy of Lightning (Electric), Auric '
       + 'Ascendant / Galerider Eel / Nimbus Eel (Flying), Pernicious Photosynthesis / Protective '
-      + 'Adaptations / Blob of the Dark Order / Unrelenting Horror (Piercing), Inexorable Miasma '
+      + 'Adaptations / Blob of the Dark Order / Stakoloth (Piercing), Inexorable Miasma '
       + '(Poisonous). Three of those print no reminder of their own, so the browser shows NOTHING '
       + 'about the attribute at all. Wider still: 358 cards name a glossary term in the text box '
       + 'but not the type line, the browser shows 328 and MISSES 141, and TEN glossary rows are '
@@ -7553,7 +7553,7 @@ export const CLOSED: TodoEntry[] = [
       + 'A NESTED 4-CARD SUB-CLASS IS WHAT THE OWNER PHRASING ACTUALLY NAMES: nine of the twelve '
       + 'tag the word with the {g} keyword marker (cardtext.ts:862, colour only, adds no row); '
       + 'FOUR do not tag it at all and render it as plain lowercase prose — Brough (balanced), '
-      + 'Blob of the Dark Order, Inexorable Miasma, Unrelenting Horror. That half is an oracle-data '
+      + 'Blob of the Dark Order, Inexorable Miasma, Stakoloth. That half is an oracle-data '
       + 'change, not a client one. '
       + '⚠ AND THE IRONY BELONGS IN THE FIX: Brough is the ONLY card in the pool printing a '
       + '{Balanced} reminder, so asShown (CR D6.11) took Brough own sentence as the game words for '
@@ -7689,13 +7689,13 @@ export const CLOSED: TodoEntry[] = [
   },
   {
     id: 132, area: 'card', severity: 'minor',
-    cards: ['Brough', 'Blob of the Dark Order', 'Inexorable Miasma', 'Unrelenting Horror'],
+    cards: ['Brough', 'Blob of the Dark Order', 'Inexorable Miasma', 'Stakoloth'],
     title: 'four cards name an attribute in their text box without the {g} keyword marker, so it renders as plain prose',
     detail:
       'cardtext.ts:861 turns {g}word into a coloured keyword span. Twelve cards name an attribute '
       + 'they do not carry on their type line; EIGHT tag it with {g} and four do not, so the same '
       + 'word is a keyword on one card and lowercase prose on another. Brough "Everything is '
-      + 'balanced", Blob of the Dark Order and Unrelenting Horror "piercing", Inexorable Miasma '
+      + 'balanced", Blob of the Dark Order and Stakoloth "piercing", Inexorable Miasma '
       + '"poisonous". {g} is colour only and adds no glossary row, so this is presentation '
       + 'consistency, NOT the missing-rules-text bug.',
     evidence:
@@ -11678,7 +11678,7 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       "564-discard-or-sacrifice-self.test.ts::CR 111.2 / CT-281: a Combustible Bogwalker alone with an empty hand is offered itself as the sacrifice",
       "564-discard-or-sacrifice-self.test.ts::CR 111.2 / CT-281: Lilbot prints another, so alone with an empty hand it is not offered",
-      "564-discard-or-sacrifice-self.test.ts::CR 111.2 / CT-281: Pallid Gorger prints no another, so alone with an empty hand it may sacrifice itself",
+      "564-discard-or-sacrifice-self.test.ts::CR 111.2 / CT-281: Pallid Gorger prints another since 2026-11-10, so alone with an empty hand it is not offered",
     ],
     closed: "FIXED 2026-10-22 (6b4ff93, d8162b2). The discardOrSacrifice cost may name its own source unless the card prints \"another\": Lilbot carries the flag; Combustible Bogwalker is offered itself. Pallid Gorger's deliberate self-exclusion was dropped, so it too may sacrifice itself, as printed: the printed text and the owner's permissive steer decide it, not the engine's guess that it would never want to.",
     status: 'done',
@@ -12619,7 +12619,7 @@ export const CLOSED: TodoEntry[] = [
       "624-owner-routes-verifier-gaps.test.ts::CR 102.4 / CT-344: Necromorph exchanges a unit for a foreign-owned card in that bin",
       "624-owner-routes-verifier-gaps.test.ts::CR 102.4 / CT-344: an agreed-fix move keeps a foreign card owner from hand to bin to cache to hand",
     ],
-    closed: "FIXED 2026-10-24 (a5e1cf1, 7d32341, b9f4844, 734d123). Route (1), an inline-played spell going to a bin, was already right: playInline carries StackItem.owner, and Tides of the Cosmos plays from the deck, a shared zone. Route (2) was real and wider than filed: 14 card sites did removeFromBin then toHand with no owner, so Collect Remains and Rippleback Skulker made the opponent's own card the caster's with no theft at all. New E.takeFromBin returns {card, owner} and every bin exit that keeps the card in the game goes through it. The same fix reached bin to play (Exhume, Resurrect, Rousing Spirit, Spore of Regenesis, Covenant of the Damned, Uglk, Hooba-Mon, Necromorph), bin to cache (prophesy), raw hand splices, Cosmic Reversal and Dream Lapse off the stack, and the agreed-fix moves. payModularMod still fires no leftBin: CT-366.",
+    closed: "FIXED 2026-10-24 (a5e1cf1, 7d32341, b9f4844, 734d123). Route (1), an inline-played spell going to a bin, was already right: playInline carries StackItem.owner, and Tides of the Cosmos plays from the deck, a shared zone. Route (2) was real and wider than filed: 14 card sites did removeFromBin then toHand with no owner, so Collect Remains and Rippleback Skulker made the opponent's own card the caster's with no theft at all. New E.takeFromBin returns {card, owner} and every bin exit that keeps the card in the game goes through it. The same fix reached bin to play (Exhume, Resurrect, Rousing Spirit, The Birthmother, Covenant of the Damned, Uglk, Hooba-Mon, Necromorph), bin to cache (prophesy), raw hand splices, Cosmic Reversal and Dream Lapse off the stack, and the agreed-fix moves. payModularMod still fires no leftBin: CT-366.",
     status: 'done',
   },
   {
@@ -13295,7 +13295,7 @@ export const CLOSED: TodoEntry[] = [
     verify: "grep \"p = 2 * base[0]! - p;\" in client/engine/src/engine.ts; or spawn a 7/5 token beside Aberrant Statweaver, give it Inverted, read its stats (3/3 today, 11/7 under the designer).",
     guards: [
       "659-inverted-from-printed.test.ts::CR 802.8c / CT-379: the designer example -- a printed 7/5 made base 3/3 by Aberrant Statweaver is an 11/7 while Inverted",
-      "659-inverted-from-printed.test.ts::CR 802.8c / CT-379: Its Dark Bubb (printed 4/6, Inverted) beside Aberrant Statweaver is a 5/9, not a 3/3",
+      "659-inverted-from-printed.test.ts::CR 802.8c / CT-379: Oodvick (printed 5/6, Inverted) beside Aberrant Statweaver is a 7/9, not a 3/3",
       "659-inverted-from-printed.test.ts::CR 802.8c / CT-379: a one-shot base rewrite (an until-regroup baseSet) is inverted too",
       "79-round17-layers.test.ts::CR 802.8c layer 5: a base REWRITE is the thing inverted FROM -- NO, since CT-379",
     ],
@@ -13979,9 +13979,9 @@ export const CLOSED: TodoEntry[] = [
   },
   {
     id: 414, area: "engine", severity: "minor",
-    cards: ["General Smof", "Ghord", "Spiteful Shadow", "Death Greeter", "Molten Tormentor", "Torrential Reclamation", "Malicious Hardware", "Maw of Damnation", "Cull", "Grim Bargain", "Mindburn", "No Hand Killer", "Sacrifice Dude", "Linked Extinction", "Perish", "Lurking Dread"],
+    cards: ["General Smof", "Ghord", "Spiteful Shadow", "Death Greeter", "Molten Tormentor", "Torrential Reclamation", "Malicious Hardware", "Maw of Damnation", "Cull", "Consuming Mass", "Mindburn", "Lost Shade", "Sacrifice Dude", "Linked Extinction", "Perish", "Lurking Dread"],
     title: "\"each player sacrifices\" effects destroy their picks one at a time outside a death batch; whether simultaneous sacrifices die together is unruled",
-    detail: "About fifteen cards make several units die at once by sacrifice, and each commits its picks with one destroy at a time, outside checkDeaths, so the victims are never one batch (CR 706.8c, 714.9). Plan then commit: General Smof, Ghord, Spiteful Shadow, Death Greeter, Molten Tormentor, Torrential Reclamation, Malicious Hardware, Maw of Damnation, Cull, Grim Bargain, Mindburn, No Hand Killer, Sacrifice Dude; interleaved with the picks: Linked Extinction, Perish; and the commit loop of Lurking Dread. No quote found says whether units sacrificed by one effect die together, so this needs a rules source before any change.",
+    detail: "About fifteen cards make several units die at once by sacrifice, and each commits its picks with one destroy at a time, outside checkDeaths, so the victims are never one batch (CR 706.8c, 714.9). Plan then commit: General Smof, Ghord, Spiteful Shadow, Death Greeter, Molten Tormentor, Torrential Reclamation, Malicious Hardware, Maw of Damnation, Cull, Consuming Mass, Mindburn, Lost Shade, Sacrifice Dude; interleaved with the picks: Linked Extinction, Perish; and the commit loop of Lurking Dread. No quote found says whether units sacrificed by one effect die together, so this needs a rules source before any change.",
     evidence: "Pass B 2026-10-25, zero-handoff/PB-combat.md (new defect 2): the combat agent, sweeping every destroy inside a loop while fixing CT-363.",
     fix: "Find a source first (designer, then RAQ, then the owner). If simultaneous sacrifices die together, the plan-then-commit sites call destroyBatch(picks, 'is sacrificed'), the two interleaved ones are reshaped to plan then commit, the CR gains the sentence, and stored games are replayed for drift.",
     proof: null,
@@ -14846,7 +14846,7 @@ export const CLOSED: TodoEntry[] = [
     id: 532, area: "engine", severity: "major",
     cards: ["Cerebrox", "The Everywhere"],
     title: "a unit muted by The Everywhere hears only part of a death batch the muter dies in: Cerebrox fired once for four trashed cards",
-    detail: "Report #332 (invi, CFSG, 2026-11-06): \"Cerebrox and the everywhere are in the same fight. combat damage happens, everywhere dies, cerebrox triggers (as it should), but ONLY once, even though 4 cards were trashed during dmg\". Cerebrox (unit, \"[Augment] Whenever another card is trashed, each other unit gains -1/-1 until regroup\") survived a combat whose damage killed Blurf, Prediction Prophet, Flourishing Flora (invi's) and The Everywhere (Yagamino's), which had named Cerebrox in the haste step (CR 712.6: a named unit in its region \"loses all abilities, for as long as The Everywhere is in that region\"). Two Unit Tokens died too; tokens are not trashed (CR 801.2d), so four cards. The engine disposes of the batch one death at a time: the three trashes before The Everywhere's left Cerebrox still muted and heard nothing; The Everywhere's own trash came after it had left play, so Cerebrox heard that one. The result depends on the order the batch is walked in, which is right under no reading. The two readings the sources leave open: Cerebrox, muted at the moment of the batch, hears none of the four; or, since the batch removes the muter with the rest (the spirit of CR 706.8c, \"units that die together hear each other\", which speaks only of listeners that die), it hears all four. CR 712.6 and 706.8c are silent on a SURVIVING listener whose muter dies in the batch; no RAQ thread names The Everywhere or Cerebrox. The class is every \"loses all abilities\" source (The Everywhere, Monke, Transmogrifant: the radiators engine.ts names around line 2847) dying in a batch alongside trashes a muted watcher listens for: the eight watchers of someone else's trash (Cerebrox, Cthyrian Culler, Cthyrian Rector, Muck Rummager, Murkdrop Distiller, Murkstalker, Splort, Unrelenting Horror; engine.ts noteTrashed's comment) and every \"whenever a unit dies\" listener.",
+    detail: "Report #332 (invi, CFSG, 2026-11-06): \"Cerebrox and the everywhere are in the same fight. combat damage happens, everywhere dies, cerebrox triggers (as it should), but ONLY once, even though 4 cards were trashed during dmg\". Cerebrox (unit, \"[Augment] Whenever another card is trashed, each other unit gains -1/-1 until regroup\") survived a combat whose damage killed Blurf, Prediction Prophet, Flourishing Flora (invi's) and The Everywhere (Yagamino's), which had named Cerebrox in the haste step (CR 712.6: a named unit in its region \"loses all abilities, for as long as The Everywhere is in that region\"). Two Unit Tokens died too; tokens are not trashed (CR 801.2d), so four cards. The engine disposes of the batch one death at a time: the three trashes before The Everywhere's left Cerebrox still muted and heard nothing; The Everywhere's own trash came after it had left play, so Cerebrox heard that one. The result depends on the order the batch is walked in, which is right under no reading. The two readings the sources leave open: Cerebrox, muted at the moment of the batch, hears none of the four; or, since the batch removes the muter with the rest (the spirit of CR 706.8c, \"units that die together hear each other\", which speaks only of listeners that die), it hears all four. CR 712.6 and 706.8c are silent on a SURVIVING listener whose muter dies in the batch; no RAQ thread names The Everywhere or Cerebrox. The class is every \"loses all abilities\" source (The Everywhere, Monke, Transmogrifant: the radiators engine.ts names around line 2847) dying in a batch alongside trashes a muted watcher listens for: the eight watchers of someone else's trash (Cerebrox, Cthyrian Culler, Cthyrian Rector, Muck Rummager, Murkdrop Distiller, Murkstalker, Splort, Stakoloth; engine.ts noteTrashed's comment) and every \"whenever a unit dies\" listener.",
     evidence: "Report #332; CFSG replayed on the triage branch (372/372, no divergence): combat damage at the turn's battle, then log lines \"invi trashes Blurf / Prediction Prophet / Flourishing Flora (from play)\" with no Cerebrox trigger, \"Yagamino trashes The Everywhere (from play)\" followed by \"Trigger: Cerebrox — each other unit gains -1/-1 until regroup\" once.",
     fix: "Settle the reading first (CR 712.6 / 706.8c, the RAQ; it may need the owner). Then evaluate a death batch's listeners against ONE state, whichever the reading picks: either the state before the batch (muted: none) or the state with every dying unit gone (unmuted: all), never the walk order. Pin it with a test that kills The Everywhere together with three other cards next to a named Cerebrox, and another with the walk order reversed.",
     // TRUE while the answer depends on the walk order: the same batch disposed
@@ -14977,7 +14977,7 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       "1184-cost-sacrifice-last-known.test.ts::Throwing Boulder sacrificed from a column with a Deadly unit throws a Deadly 3",
       "1184-cost-sacrifice-last-known.test.ts::Skybreaker erased as its own cost",
-      "1184-cost-sacrifice-last-known.test.ts::Pallid Gorger sacrificing itself to its own either/or cost",
+      "1184-cost-sacrifice-last-known.test.ts::Combustible Bogwalker sacrificing itself to its own either/or cost",
     ],
     closed: "FIXED 2026-11-09 (steward). CR 714.2 / 802.1e. A cost that removes the ability's own source is paid in the cast window, before the item is on the stack; the last-known snapshot is now written onto the item itself as the cost is paid (E.stampCostLastKnown, engine.ts, at the three such payments: payActivationCost's sacrificeSelf and eraseSelf, and payItemCost when a sacrifice atom is paid with the source), and stampLastKnown also writes it to every item this action is still declaring (`liveItems`), for any later cost that removes a unit mid-declaration. The class: every `sacrificeSelf` / `eraseSelf` ability (Throwing Boulder, Skybreaker, Sprouter, Prismatic Observer) and every `discardOrSacrifice` without `another` (Pallid Gorger and the two hybrids), donated forms included. ZFHC replayed with the fix on the engine it was recorded under (eb13d3fc^, since eb13d3fc's priority change drifts the file at [85]): 405/406, [261] 'Throwing Boulder is Deadly — Pestilent Titan dies', and the only refusal is the players' own hand edit [262], which now has no Titan to bin. Why nothing caught it: 390-raq-stack pinned Bellowing Boulder, whose trigger is on the stack before the unit dies; no test removed a source as its own cost. Mutations: with both stamps off all four 1184 tests go red; with only the cost-site stamp off, the Pallid Gorger test goes red (its payment is answered as a decision, outside liveItems).",
     status: 'done',

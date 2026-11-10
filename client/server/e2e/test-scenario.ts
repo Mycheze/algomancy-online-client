@@ -506,32 +506,29 @@ async function main(): Promise<void> {
       c.ws.close();
     }
 
-    // #6 Void Mandible — CR 706.13: it negates the item the event NAMES
-    console.log('\n   void-mandible-negates — the CR 706.13 confirmation, with two identical spells up');
+    // #6 Void Mandible — rebuilt 2026-11-10: the printing lost its [Augment]
+    // marker, so it is a body only (no Rook augment trick any more)
+    console.log('\n   void-mandible-negates — the body fires on its own spell, pays with itself, negates it');
     {
       const c = await openScenario('void-mandible-negates');
       eq(c.view.phase, 'battle', '   the prologue landed in the battle window');
       eq(c.view.priority, 0, '   and priority is yours');
-      eq(units(c, 0), ['Rook', 'Towering Colossus'], '   Rook and the host are both attacking');
-      await playHeld(c, 'Luminous Arc'); await decide(c, 'Ambling Mountaintop');
-      eq((c.view.stack as any[]).map(i => i.card), ['Luminous Arc'],
-        '   Arc #1 is on the stack, aimed at Ambling Mountaintop');
-      ok(c.legal.some(a => a.type === 'augment'),
-        "   Rook's printed permission makes the non-Virus Void Mandible augmentable mid-battle");
-      await augment(c, 'Void Mandible', 'Towering Colossus');
-      eq(modsOf(c, 'Towering Colossus'), ['Void Mandible'],
-        '   it attached, and applying a mod fired no play event (CR 701.2a) — nothing triggered');
-      eq((c.view.stack as any[]).map(i => i.card), ['Luminous Arc'],
-        '   Arc #1 is still standing underneath it');
+      eq(units(c, 0), ['Void Mandible'], '   the Mandible is attacking');
+      ok(!c.legal.some(a => a.type === 'augment'),
+        '   nothing to augment: Void Mandible is no longer a mod at all');
       await play(c, 'Luminous Arc'); await decide(c, 'Bubb');
-      eq(units(c, 0), ['Rook', 'Towering Colossus'],
-        '   CR 111.8: the trigger waits on the stack with the host still in play');
+      eq(units(c, 0), ['Void Mandible'],
+        '   CR 111.8: the trigger waits on the stack with the Mandible still in play');
       await pass(c);
-      eq(units(c, 0), ['Rook'],
-        '   THE CLAUSE (a): the host was sacrificed as the trigger resolved — not optional');
+      eq(units(c, 0), [],
+        '   THE CLAUSE (a): the Mandible sacrificed ITSELF as the trigger resolved — not optional');
+      await pass(c);
+      eq(units(c, 1), ['Ambling Mountaintop', 'Bubb'],
+        '   THE CLAUSE (b): "that effect" — the Arc at Bubb was negated');
+      await play(c, 'Luminous Arc'); await decide(c, 'Ambling Mountaintop');
       await pass(c);
       eq(units(c, 1), ['Bubb'],
-        '   THE CLAUSE (b) / CR 706.13: the NEWER Arc was the one negated — Bubb lives, Ambling Mountaintop died');
+        '   single-use: with the Mandible gone the second Arc resolves — Ambling Mountaintop died');
       eq(entOf(c, 'Bubb').damage ?? 0, 0, '   and Bubb took no damage at all');
       c.ws.close();
     }

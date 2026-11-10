@@ -53,7 +53,7 @@
  *    negated, which under CR 704.4, 704.4a is itself the removal — the item leaves the
  *    stack and its card is binned by negate() — then the battle round ends
  *    via the engine's endBattleRound.
- * ✔ TEMPORAL RIFT's "Erase this spell" is REAL as of CARD-TODO #15. This entry
+ * ✔ TEMPORAL RIFT's "Erase me" is REAL as of CARD-TODO #15. This entry
  *    used to say "resolution has no erase-own-card hook"; it has one now —
  *    `ctx.eraseSelf()` raises `StackItem.eraseSelf` and `E.dischargeItem`
  *    sends the card to the erased pile (CR 407.1) instead of the bin. The Rift's own
@@ -268,13 +268,12 @@ card('Dematerialize', {
   },
 });
 
-// "End this battle. Erase this spell. (Negate all effects, this battle is
-// over.)" — bmm/4 1/2 {Battle} Temporal Arcane Spell. ⚠ header: every
+// "End this battle. Erase me. (Negate all effects, this battle is over.)" — bmm/4 1/2 {Battle} Temporal Arcane Spell. ⚠ header: every
 // remaining stack item is negated — which under CR 704.4 is itself the removal,
 // card and all — then endBattleRound() runs — in round 1 with no sent
 // counterattackers that cascades straight through round 2 into regroup.
 //
-// "ERASE THIS SPELL" IS REAL (CARD-TODO #15); it used to be approximated as
+// "ERASE ME" (printed "Erase this spell" until 2026-11-10) IS REAL (CARD-TODO #15); it used to be approximated as
 // the Rift being binned normally. The ORDERING is the thing to get right, and
 // it works out because the Rift's own disposal is not on the stack and not
 // inside endBattleRound():
@@ -289,7 +288,7 @@ card('Dematerialize', {
 //
 // It is raised BEFORE the sweep rather than after, so that it is set even if
 // something downstream throws — and unconditionally, ahead of the no-battle
-// guard, because "Erase this spell" is its own printed sentence and does not
+// guard, because "Erase me" is its own printed sentence and does not
 // depend on there having been a battle to end. (A {Battle} spell outside a
 // battle is unreachable in practice; the guard is belt and braces.)
 card('Temporal Rift', {
@@ -526,7 +525,7 @@ card('Ominous Growth', {
 });
 
 // "[Augment] Whenever a unit token is created, put a -1/-1 counter on me. If
-// you do, put +1/+1 counter on that token." — gm/1 2/3 Robot Fungus {Virus}
+// you do, put a +1/+1 counter on that token." — gm/1 2/3 Robot Fungus {Virus}
 // Unit. Text-box [Augment]; "me" = the carrier (host perspective when
 // donated). ANY player's unit token in my region triggers it (no "your").
 //

@@ -7,9 +7,9 @@
  * Maw of Despair), rot (CR 112.13 — Cosmic Devourer, Pestilent Titan, Burn the
  * Blight), trash (CR 801.2 — Afflicting Anima, Maw of Despair, Nothyr, Sacrifice
  * Dude, and the "Discard me" play mode) and the Wraith token (in
- * Afflicting Anima, Cosmic Devourer); plus bin recursion (Exhume, Spore of
- * Regenesis, Tilling the Graves, Wake the Dead), the stat-change target gate
- * (Leave None Pure) and the ordinary battle triggers (Cull, Gzxyclop,
+ * Afflicting Anima, Cosmic Devourer); plus bin recursion (Exhume, The
+ * Birthmother, Tilling the Graves, Wake the Dead), the stat-change target gate
+ * (Leave None Pure) and the ordinary battle triggers (Cull, Bloatfiend,
  * Möbius's Corruption, Reality Siphoner, Scuttling Abomination).
  */
 import { test } from 'node:test';
@@ -170,14 +170,14 @@ test('Glook: [once] discard X cards → glimpse 1, X times (CR 801.9c)', () => {
     IllegalAction, '[once]: not twice in a turn (CR 109.9)');
 });
 
-// ── Gzxyclop ─────────────────────────────────────────────────────────────
+// ── Bloatfiend ─────────────────────────────────────────────────────────────
 
-test('Gzxyclop: draws on spawn; the [Augment] despawn half discards two', () => {
+test('Bloatfiend: draws on spawn; the [Augment] despawn half discards two', () => {
   const h = new Harness(4108);
   toDeployment(h);
   const A = h.state.deployPlayer!;
   const before = h.state.players[A]!.hand.length;
-  const gz = spawn(h, A, 'Gzxyclop');
+  const gz = spawn(h, A, 'Bloatfiend');
   assert.equal(h.state.players[A]!.hand.length, before + 1, 'spawn drew a card');
   const hand = h.state.players[A]!.hand.slice();
   whiteBox(h, e => { e.destroy(e.entity(gz)!, 'dies'); });
@@ -185,7 +185,7 @@ test('Gzxyclop: draws on spawn; the [Augment] despawn half discards two', () => 
   assert.equal(h.state.players[A]!.hand.length, hand.length - 2, 'two cards discarded on despawn');
   assert.ok(h.state.players[A]!.bin.includes(hand[0]!));
   assert.ok(h.state.players[A]!.bin.includes(hand[1]!));
-  assert.ok(h.state.players[A]!.bin.includes('Gzxyclop'), 'it died unmodded → bin');
+  assert.ok(h.state.players[A]!.bin.includes('Bloatfiend'), 'it died unmodded → bin');
 });
 
 // ── Leave None Pure ──────────────────────────────────────────────────────
@@ -389,13 +389,13 @@ test('Scuttling Abomination: attacking draws a card, then discards one', () => {
   finishBattle(h);
 });
 
-// ── Spore of Regenesis ───────────────────────────────────────────────────
+// ── The Birthmother ───────────────────────────────────────────────────
 
-test('Spore of Regenesis: dying, it erases itself to revive every cost-[1] unit in the bin', () => {
+test('The Birthmother: dying, it erases itself to revive every cost-[1] unit in the bin', () => {
   const h = new Harness(4118);
   toDeployment(h);
   const A = h.state.deployPlayer!;
-  const spore = spawn(h, A, 'Spore of Regenesis');
+  const spore = spawn(h, A, 'The Birthmother');
   h.state.players[A]!.bin.push('Curio Drifter', 'Unit Token', 'Good Whale');   // cost 1 / 0 / 6
   whiteBox(h, e => { e.destroy(e.entity(spore)!, 'dies'); });
   assert.equal(h.state.decision!.kind, 'payOrDecline');
@@ -403,19 +403,19 @@ test('Spore of Regenesis: dying, it erases itself to revive every cost-[1] unit 
   assert.equal(unitsOf(h, A).filter(u => u.card === 'Curio Drifter').length, 1, 'the cost-[1] unit is back');
   assert.equal(unitsOf(h, A).filter(u => u.card === 'Unit Token').length, 0, 'cost 0 is not cost [1]');
   assert.ok(h.state.players[A]!.bin.includes('Good Whale'), 'nor is cost 6');
-  assert.ok(!h.state.players[A]!.bin.includes('Spore of Regenesis'), 'it erased itself out of the bin');
-  assert.ok(h.log.some(l => l.includes('Spore of Regenesis is ERASED')));
+  assert.ok(!h.state.players[A]!.bin.includes('The Birthmother'), 'it erased itself out of the bin');
+  assert.ok(h.log.some(l => l.includes('The Birthmother is ERASED')));
 });
 
-test('Spore of Regenesis: declining leaves the bin alone', () => {
+test('The Birthmother: declining leaves the bin alone', () => {
   const h = new Harness(4119);
   toDeployment(h);
   const A = h.state.deployPlayer!;
-  const spore = spawn(h, A, 'Spore of Regenesis');
+  const spore = spawn(h, A, 'The Birthmother');
   h.state.players[A]!.bin.push('Curio Drifter');
   whiteBox(h, e => { e.destroy(e.entity(spore)!, 'dies'); });
   pick(h, false);
-  assert.deepEqual(h.state.players[A]!.bin.sort(), ['Curio Drifter', 'Spore of Regenesis']);
+  assert.deepEqual(h.state.players[A]!.bin.sort(), ['Curio Drifter', 'The Birthmother']);
   assert.equal(unitsOf(h, A).filter(u => u.card === 'Curio Drifter').length, 0);
 });
 
@@ -431,12 +431,12 @@ test('Tilling the Graves: two bin units back to hand, then a discard', () => {
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   const handBefore = h.state.players[A]!.hand.length;
-  // CR 110.1a: "two TARGET units in your bin" are declared as the spell is cast
+  // CR 110.1a: "up to two TARGET units in your bin" are declared as the spell is cast
   const bn = h.state.players[A]!.name;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Tilling the Graves') });
   assert.deepEqual(h.state.decision!.options.map(o => o.label),
-    [`Curio Drifter (${bn}'s bin)`, `Bumblecrab (${bn}'s bin)`],
-    'only UNITS in the bin are offered, and both are required (CR 110.7) — no "No targets"');
+    [`Curio Drifter (${bn}'s bin)`, `Bumblecrab (${bn}'s bin)`, 'No targets'],
+    'only UNITS in the bin are offered, and "up to two" (the 2026-11-10 printing) may stop');
   pick(h, { bin: { seat: A, card: 'Curio Drifter' } });
   pick(h, { bin: { seat: A, card: 'Bumblecrab' } });
   pass(h); // resolve

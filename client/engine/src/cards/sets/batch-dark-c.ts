@@ -11,7 +11,7 @@
  *   Entropic Entity
  *   Finality
  *   Grox
- *   Its Dark Bubb
+ *   Oodvick
  *   Lurking Dread
  *   Murkdrop Distiller
  *   Necromorph
@@ -21,7 +21,7 @@
  *   Scholar of the Void
  *   Spellbind
  *   Thoughtripper
- *   Unrelenting Horror
+ *   Stakoloth
  *   Xzydris
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
@@ -58,7 +58,7 @@
  *    normally (CR 406.4b: the effect does nothing, and the erase is a sentence of
  *    it) — unlike a Virus's {Unstable} (CR 723.4b), which is a stamp on the card and survives
  *    negation. Pinned by 89-self-erase.
- * ✔ Pallid Gorger's "Discard a card or sacrifice a nontoken unit:" is a real
+ * ✔ Pallid Gorger's "Discard a card or sacrifice another nontoken unit:" is a real
  *    ACTIVATION cost now (CR 111.6, 705.3, `discardOrSacrifice: 1`): it gates the
  *    activation and is paid in the cast window, before the item reaches the
  *    stack.
@@ -107,7 +107,7 @@
  *    registry.ts's Beyond comment says it outright: "LIVE (CR 112.13d)". The
  *    only entry on this list still describing a real gap is the structural
  *    one at the bottom.
- *  - Its Dark Bubb WORKS since {Inverted} shipped (CR 802.8a; playtest report #73, 2026-08-22). {Inverted}
+ *  - Oodvick WORKS since {Inverted} shipped (CR 802.8a; playtest report #73, 2026-08-22). {Inverted}
  *    is stat layer 5 and it now exists: layer 5 negates the NET stat change
  *    from base, i.e. `2*base - current`, applied after layer 4. Caleb worked
  *    the arithmetic out himself — "1/4 tough balanced is 8/8 … If we compare
@@ -389,7 +389,8 @@ card('Grox', {
 });
 
 // "(Invert the stat changes of inverted units. For example, -1/+2 would
-// become +1/-2.)" — d/4 4/6 {Inverted} Slime Unit. Reminder text only: the
+// become +1/-2.)" — d/4 5/6 {Inverted} Slime Unit (Its Dark Bubb, a 4/6,
+// until the designer's 2026-11-10 printing). Reminder text only: the
 // whole card is the attribute, carried by printed.attrs.
 //
 // ⚠ THE LINE THAT USED TO SIT HERE — "the inversion itself is stat layer 5,
@@ -397,7 +398,7 @@ card('Grox', {
 // is live in `E.effStats` (`2·base - cur`, applied after layer 4, deduped by
 // `statLayerAttrs`), so this card genuinely works with no behaviour of its
 // own. Nothing to add; only the note was wrong.
-card('Its Dark Bubb', {});
+card('Oodvick', {});
 
 // "After combat, you may sacrifice two non-token units to put me into play
 // from your bin or from cache." — d/8 8/8 Polyform Unit.
@@ -613,17 +614,17 @@ card('Necromorph', {
 // and the host's controller pays. CR 111.6, 705.3: the either/or line is a real ACTIVATION
 // cost (`discardOrSacrifice: 1`) — it gates the activation and is chosen and
 // paid in the cast window, before the item reaches the stack.
-// No "another" is printed, so the source may pay (CR 111.2 / CT-281, the owner's
-// steer: printed text beats an engine default, take the permissive reading).
-// The Gorger may sacrifice ITSELF — it then gains nothing, since it is gone —
-// and, donated, its host may sacrifice itself the same way. It used to be
-// left out of its own pool, so that it could not eat itself and fail to grow.
+// The 2026-11-10 printing says "ANOTHER nontoken unit", and that is the
+// `another` flag (CR 111.2): the source — the Gorger, or the host wearing it,
+// i.e. "I" — is not in the sacrifice pool, so it can no longer eat itself and
+// fail to grow. (The earlier printing said "a nontoken unit", which let the
+// source pay: CT-281.)
 // Discarding is a trash (CR 801.3), which is the point of pairing this with the
 // batch's trash-matters cards.
 card('Pallid Gorger', {
   augmentText: [{
-    type: 'activated', cost: { discardOrSacrifice: 1 },   // no "another" printed
-    label: 'discard a card or sacrifice a nontoken unit: I gain +2/+2 until regroup',
+    type: 'activated', cost: { discardOrSacrifice: 1, another: true },
+    label: 'discard a card or sacrifice another nontoken unit: I gain +2/+2 until regroup',
     effect: {
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
@@ -936,8 +937,8 @@ card('Thoughtripper', {
 
 // "When I spawn, discard a card. / When you trash a card, [Switch1] I gain
 // +2/+2 and piercing until regroup." — d/2 3/3 Alien Unit. The two clauses
-// chain: the spawn discard IS a trash (CR 801.3), so a freshly played Horror pumps
-// itself. "When you trash a card" has no "another", so any trash of the
+// chain: the spawn discard IS a trash (CR 801.3), so a freshly played Stakoloth
+// (Unrelenting Horror until the designer's 2026-11-10 printing) pumps itself. "When you trash a card" has no "another", so any trash of the
 // controller's counts — and the [Switch1] marker makes that clause both the
 // bounded graft cause and the bounded graftable effect (CR 722.5).
 const horrorPump: EffectDef = {
@@ -948,7 +949,7 @@ const horrorPump: EffectDef = {
     g.addTempAttr(self, 'Piercing');
   },
 };
-card('Unrelenting Horror', {
+card('Stakoloth', {
   abilities: [
     {
       type: 'triggered', events: ['spawned'], self: true,
@@ -956,10 +957,10 @@ card('Unrelenting Horror', {
       effect: {
         run: (g, ctx) => {
           const hand = g.player(ctx.controller).hand;
-          if (!hand.length) { g.ev('info', 'Unrelenting Horror: your hand is empty — nothing to discard.'); return; }
+          if (!hand.length) { g.ev('info', 'Stakoloth: your hand is empty — nothing to discard.'); return; }
           const i = hand.length === 1 ? 0 : ctx.choose('drop', {
             kind: 'payOrDecline', seat: ctx.controller,
-            prompt: 'Unrelenting Horror: discard a card',
+            prompt: 'Stakoloth: discard a card',
             options: hand.map((n, idx) => ({ label: n, value: idx, card: n })),
           }) as number;
           g.discardFromHand(ctx.controller, i);
