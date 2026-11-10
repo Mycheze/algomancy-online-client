@@ -218,7 +218,7 @@ function searchingHtml(s: Searching & { waited: number }): string {
 
 function offerHtml(o: MatchOffer & { left: number }): string {
   const left = o.left;
-  return `<div class="overlay qoverlay"><div class="overlaybox qofferbox">
+  return `<div class="overlay qoverlay"><div class="overlaybox qofferbox" role="dialog" aria-label="Match found">
     <h3>Match found</h3>
     <div class="qopponent">
       <b>${esc(o.opponent)}</b>

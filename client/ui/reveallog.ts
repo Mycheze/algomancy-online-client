@@ -143,7 +143,7 @@ function revealsHtml(items: readonly KeptReveal[], d: Pick<RevealsDeps, 'name' |
       <div class="revealhead">${esc(glimpseHeadline(r, d.name(r.seat), d.mySeat()))}<span class="revealturn">turn ${r.turn}</span></div>
       <div class="revealcards">${r.cards.map(n => d.card(n)).join('')}</div>
     </div>`).join('');
-  return `<div class="overlaybox revealbox" data-reveals="box">
+  return `<div class="overlaybox revealbox" data-reveals="box" role="dialog" aria-label="Past reveals">
       <div class="revealtop"><h3>Past reveals</h3>
         <button data-reveals="close" title="close" aria-label="close">✕</button></div>
       <div class="revealrows">${rows || '<p class="hint">Nothing revealed yet.</p>'}</div>

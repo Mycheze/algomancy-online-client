@@ -251,7 +251,7 @@ export function pickSetHtml(dec: Decision | null | undefined, card: CardFn, icon
   const v = pv ? null : pickSetView(dec);
   if (!pv && !v) return '';
   // one scrim for every layout (269's overlay census counts where it is written)
-  return `<div class="overlay psover"><div class="overlaybox psbox">${pv ? pilesHtml(pv, card) : pickSetBody(v!, card, iconize)}
+  return `<div class="overlay psover"><div class="overlaybox psbox" role="dialog" aria-label="${esc(pv ? pv.title : v!.title)}">${pv ? pilesHtml(pv, card) : pickSetBody(v!, card, iconize)}
   </div></div>`;
 }
 

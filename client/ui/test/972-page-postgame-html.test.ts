@@ -49,7 +49,7 @@ test('972 §0 positive control: there is no DOM here', () => {
 
 test('972 §1 a win, a loss, a draw', () => {
   const won = postGameHtml(view());
-  assert.match(won, /<div class="pgbox won">/);
+  assert.match(won, /<div class="pgbox won" role="dialog" aria-label="You win!">/);
   assert.match(won, /<h2 class="pgtitle">You win!<\/h2>/);
   assert.match(won, /live draft · 7 turns · <!--SLOT:elements-->/);
   assert.match(won, /<td class="pgnum lead">12<\/td>\s*<th scope="row" class="pglabel">life left<\/th>/);
@@ -58,8 +58,8 @@ test('972 §1 a win, a loss, a draw', () => {
   assert.match(won, /<span class="acctel fire">fire<\/span>/);
   assert.match(won, /Ignis Sprite ×3/);
   assert.match(won, /Recorded to your profile\./);
-  assert.match(postGameHtml(view({ winner: 1 })), /<div class="pgbox lost">[\s\S]*Bo wins/);
-  assert.match(postGameHtml(view({ winner: null })), /<div class="pgbox ">[\s\S]*Game over/);
+  assert.match(postGameHtml(view({ winner: 1 })), /<div class="pgbox lost" role="dialog" aria-label="Bo wins">[\s\S]*Bo wins/);
+  assert.match(postGameHtml(view({ winner: null })), /<div class="pgbox " role="dialog" aria-label="Game over">[\s\S]*Game over/);
   assert.doesNotMatch(postGameHtml(view({}, { elements: null })), / · <!--SLOT/, 'no elements: no separator');
 });
 

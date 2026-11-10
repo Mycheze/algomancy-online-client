@@ -241,7 +241,7 @@ export function postGameHtml(v: PostGameView): string {
   const sub = `${esc(v.modeLabel)} · ${o.turns} turn${o.turns === 1 ? '' : 's'}`
     + (o.matchMs ? ` · ${matchLength(o.matchMs)}` : '');
 
-  return `<div class="overlay pgover"><div class="pgbox ${drew ? '' : won ? 'won' : 'lost'}">
+  return `<div class="overlay pgover"><div class="pgbox ${drew ? '' : won ? 'won' : 'lost'}" role="dialog" aria-label="${title}">
     <div class="pghead">
       <h2 class="pgtitle">${title}</h2>
       <div class="pgsub">${sub}${v.elements !== null ? ` · ${v.elements}` : ''}</div>

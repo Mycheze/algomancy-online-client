@@ -607,7 +607,19 @@ const OPEN: Entry[] = [
       + 'moved on screen. Guarded by the census 1208-table-headers-and-headings-say-what-they-are.test.ts (stories '
       + 'rendered + ui/pages/components source, and every label-less table() column headless or spoken). Left: '
       + '§18.26\'s seat dots (an empty <i>, silent, the words beside it carry the state) and <b class="lockedin">; '
-      + '§18.22 (dialog roles, focus trap) is the next accessibility pass.',
+      + '§18.22 (dialog roles, focus trap) is the next accessibility pass.\n\n'
+      + '2026-11-10 (steward): every box over the page is a dialog with a name (docs/23-ui-inventory/05 §18.22: "No '
+      + '`role=\"dialog\"`, `aria-modal`, focus move or focus trap on any overlay here (concede, match found, pick, pick-set, '
+      + 'trio reveal, post-game)"). The class was thirteen boxes: every box on the board\'s .overlay scrim (a player\'s bin, '
+      + 'erased cards and cache, the inspector, the judge, the game log, the draft pick, the pick-a-set/piles window, the '
+      + 'trio reveal, the concede question, the post-game) plus the queue\'s Match found and the Past reveals layer. Each got '
+      + 'role="dialog" and an aria-label in its own title\'s words ("Ann\'s bin", "Concede the game?", "You win!"); concede\'s '
+      + 'three titles are one `title` now, drawn and spoken. The rules reader, report forms, lesson, challenge results, '
+      + 'comment sheets, ui-sheet and ui-dialog already had both. Guarded by the census 1209-overlays-are-named-dialogs.test.ts '
+      + '(the scrim classes read off the stylesheet: fixed, inset 0, takes the pointer; every scrim in ui/pages/components '
+      + 'source and every story must open onto a named dialog). Left: §18.22\'s other half — aria-modal, moving focus into '
+      + 'the box and keeping it there; the board repaints #app wholesale, so that is behaviour to build and walk with a '
+      + 'keyboard, not markup.',
   },
   {
     id: 'BL-17',

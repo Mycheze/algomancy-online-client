@@ -4829,7 +4829,7 @@ function binDialogHtml(): string {
     const verb = routes > 1 ? 'Use…' : canPlay ? '▶ Play' : canProph ? '📜 Prophesy' : `${txtIcon('augment', '+')} Use as mod`;
     return `<div class="binentry">${card}${by}<button class="binuse" data-btn="binuse" data-p="${p}" data-i="${i}">${verb}</button></div>`;
   }).join('');
-  return `<div class="overlay mainonly"><div class="overlaybox binbox">
+  return `<div class="overlay mainonly"><div class="overlaybox binbox" role="dialog" aria-label="${esc(pl.name)}'s bin">
     <h3>${esc(pl.name)}'s bin (${pl.bin.length})</h3>
     ${anyUsable ? `<div class="binmodbanner">${txtIcon('augment', '+')} Glowing cards can be applied to a ${
       // CR 723.4: not always a unit — a virus from the bin can go onto a spell on
@@ -4859,7 +4859,7 @@ function erasedDialogHtml(): string {
   // erased, and a token was never a card)
   const gone = erasedPileView(pl.erased);
   const empty = gone.cards.length === 0 ? '<span class="binempty">none</span>' : '';
-  return `<div class="overlay mainonly"><div class="overlaybox binbox">
+  return `<div class="overlay mainonly"><div class="overlaybox binbox" role="dialog" aria-label="${esc(pl.name)}'s erased cards">
     <h3>${esc(pl.name)}'s erased cards (${gone.cards.length})</h3>
     <div class="zone binzone bindialog">${gone.cards.map(n => cardHtml(n, {})).join('')}${empty}</div>
     <button data-btn="erasedclose">Close</button>
@@ -5127,7 +5127,7 @@ function cacheDialogHtml(): string {
           spent.map(i => cacheCardHtml(p, i, { clickable: mine })).join('')}</div>` : ''}
       </div>` : '';
   const anyPlayable = cache.some((_, i) => q().cachePermission(p, i) !== null);
-  return `<div class="overlay mainonly"><div class="overlaybox binbox cachebox">
+  return `<div class="overlay mainonly"><div class="overlaybox binbox cachebox" role="dialog" aria-label="${esc(pl.name)}'s cache">
     <h3>${esc(pl.name)}'s cache (${cache.length})</h3>
     <div class="hint">Both players see the cache. A cached card can be used only once its
       prophecy is fulfilled (free) or while a glimpse allows it (this turn, for its mana).
@@ -5279,7 +5279,7 @@ function inspectorHtml(): string {
     : inspect.rulings.length
       ? inspect.rulings.map(r => `<div class="rulingrow">${esc(r)}</div>`).join('')
       : `<div class="hint">no recorded rulings for this card${inspect.error ? ` (${esc(inspect.error)})` : ''}</div>`;
-  return `<div class="overlay mainonly"><div class="overlaybox inspectbox">
+  return `<div class="overlay mainonly"><div class="overlaybox inspectbox" role="dialog" aria-label="${esc(name)}">
     <h3>${esc(name)} <span class="hint">${iconizeText(type)}</span></h3>
     <div class="inspectscroll">
       <div class="inspecttop"><img src="${art(name)}" alt="" onerror="this.style.display='none'">
@@ -5322,7 +5322,7 @@ function judgeOverlayHtml(): string {
     <div class="judgeq">Q: ${esc(e.q)}</div>
     <div class="judgea">${mdToHtml(e.a, { inline: iconizeText })}${judgeSourcesHtml(e.sources)}${e.cards.length
       ? `<div class="hint">cards: ${e.cards.map(c => `<span data-prev="${esc(c.title)}">${esc(c.title)}</span>`).join(' · ')}</div>` : ''}</div>`).join('');
-  return `<div class="overlay mainonly"><div class="overlaybox judgebox">
+  return `<div class="overlay mainonly"><div class="overlaybox judgebox" role="dialog" aria-label="Judge: ask the rules bot">
     <h3>⚖ Judge — ask the rules bot</h3>
     <div class="judgescroll">${rows || '<div class="hint">Ask anything — answered from the rulebook and the designer’s Q&A.</div>'}
       ${judgeBusy ? '<div class="hint">thinking…</div>' : ''}</div>
@@ -7059,7 +7059,7 @@ let logOpen = false;
  * the report is actually asking for.
  */
 function logOverlayHtml(): string {
-  return `<div class="overlay mainonly"><div class="overlaybox logbox">
+  return `<div class="overlay mainonly"><div class="overlaybox logbox" role="dialog" aria-label="Game log">
     ${logPanelHtml()}
     <button data-btn="logclose">Close</button>
   </div></div>`;
@@ -7922,7 +7922,7 @@ function pickOpen(): boolean {
   return !pickHidden && !!(draftSeat() !== null ? ui.draftPack : true);
 }
 function pickModalHtml(): string {
-  return `<div class="overlay pickover"><div class="overlaybox pickbox">
+  return `<div class="overlay pickover"><div class="overlaybox pickbox" role="dialog" aria-label="Draft pick">
     <div class="pickbar"><button data-btn="pickhide" title="hide this and look at the table (Esc) — your picks are kept">▁ look at the board</button></div>
     ${draftPanelHtml()}${bottomPanelHtml()}</div></div>`;
 }
@@ -12148,23 +12148,24 @@ function concedeHtml(): string {
   const name = h.state.players[concedeAsk]!.name;
   // a test-mode game is nobody's record: leaving it is closing it, and the
   // words say so (owner, 2026-09-05); the action underneath is the same concede
+  const title = concedeMatchAsk ? 'Concede the match?' : h.state.sandbox ? 'Leave the match?' : 'Concede the game?';
   const body = concedeMatchAsk
     // docs/22 §5.5: a Competitive Best of 3's "Concede match" — its own button,
     // because it is a socket message and not the game's concede action
-    ? `<h3>Concede the match?</h3>
+    ? `<h3>${title}</h3>
       <p>${esc(name)} loses the match. This cannot be undone.</p>
       <button data-btn="concedematchyes">Concede match</button>
       <button data-btn="concedeno">Keep playing</button>`
     : h.state.sandbox
-    ? `<h3>Leave the match?</h3>
+    ? `<h3>${title}</h3>
       <p>This is a test game — nothing is recorded. Leaving closes it.</p>
       <button data-btn="concedeyes">Leave</button>
       <button data-btn="concedeno">Stay</button>`
-    : `<h3>Concede the game?</h3>
+    : `<h3>${title}</h3>
       <p>${esc(name)} loses this game. This cannot be undone.</p>
       <button data-btn="concedeyes">Concede</button>
       <button data-btn="concedeno">Keep playing</button>`;
-  return `<div class="overlay mainonly"><div class="overlaybox">${body}</div></div>`;
+  return `<div class="overlay mainonly"><div class="overlaybox" role="dialog" aria-label="${title}">${body}</div></div>`;
 }
 
 // right-click any card (board, hand, bin, preview, reveal) → inspector menu

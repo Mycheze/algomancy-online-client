@@ -211,7 +211,7 @@ export function lobbyHtml(v: LobbyView): string {
  * The working is shown because a trio nobody can audit is a trio somebody
  * suspects — and this one is decided by a draw neither player can see. Pure. */
 export function revealHtml(reveal: TrioReveal): string {
-  return `<div class="trioreveal">
+  return `<div class="trioreveal" role="dialog" aria-label="This draft's elements">
     <div class="triobanner">${reveal.els.map(el =>
       `<span class="elchip ${el} on">${icon(el)}${el}</span>`).join('')}</div>
     <div class="triohow">${esc(reveal.how)}</div>
