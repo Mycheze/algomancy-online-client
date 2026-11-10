@@ -137,6 +137,7 @@ export interface TodoEntry {
 }
 import '../engine/src/cards/registry.ts';
 import { CLOSED } from './card-todo-closed.ts';
+import { body } from './card-todo-helpers.ts';
 
 // ── proofs for the comprehensive-rules findings (CT-226 on) ─────────────
 // Each finding was re-checked against HEAD before it was filed. A proof
@@ -183,6 +184,17 @@ const OPEN: TodoEntry[] = [
   //    landing in 3b7c7be6, and 505..507 were never used
   // ── the report triage of 2026-11-06 ────────────────────────────────────
   // ── the report triage of 2026-11-07 ────────────────────────────────────
+  // ── the report triage of 2026-11-10 ────────────────────────────────────
+  {
+    id: 554, area: "client", severity: "minor",
+    title: "pressing Attack! drops the built attack at once, so the attackers jump back to In Play until the server answers",
+    detail: "Report #375 (mycheze, 2026-11-10, ux, minor): \"when declaring attackers, the transition is no longer as smooth and the cards leap back for a single frame to your side of the battle field when you submit the attackers. They should just stay there and not redraw after hitting submit.\" ui/main.ts declareBuiltAttack sends declareAttack through act() and then, in the same tick, clears the plan: `if (!uiError) { ui.columns = []; ui.backOnly = []; ui.carrying = null; ui.spellTokens = []; ui.rideAnswered = false; }`. Over a socket act() only SENDS (NET.do), so the board is repainted on the old state — battle.step still 'declare', no attackers in the battle — with an empty plan, and every chosen attacker is drawn back in its In Play row until the server's update arrives (one round trip: a frame on a LAN, longer on a slow link). The block side already fixed exactly this as [77]: declareBuiltBlocks sets `ui.blockSent` over a socket and ensureBlockKeys drops the plan only once a state shows the declaration LANDED. The attack side never got the same treatment. Second symptom of the same line, by the [77] reasoning: if the server refuses the attack, the plan is already gone and the player rebuilds it from scratch.",
+    evidence: "Report #375 (page home, no room). Read 2026-11-10 (steward triage): declareBuiltAttack (ui/main.ts, '/** [69] send the attack that has been built') against declareBuiltBlocks/ensureBlockKeys ([77]); act()'s own comment: \"send the intent and wait for the pushed update … Nothing is ever applied locally\". The one-frame jump itself is not seen (no browser on the box); that it got more noticeable since db7931c9 (in a battle In Play units stand as large as the fight's cards, so the jump is a bigger move) is a hypothesis.",
+    fix: "Mirror [77] for the attack: over a socket set a `ui.attackSent` flag instead of clearing, keep drawing the sent columns, and drop the plan (columns, backOnly, carrying, spellTokens, rideAnswered) only when a state arrives in which the declare step for that attacker is over (or the battle is); a refusal leaves the plan intact for the player to amend. Hotseat/no-NET keeps clearing at once. Guard in a ui test on the driver: build an attack, press Attack!, render BEFORE delivering the server's state — the attackers are still in the fight, not in In Play; then deliver a refusal — the plan survives. The no-attack path (declareAttack with columns: [] near ui/main.ts 'columns: [] });') clears nothing that was drawn and needs no change.",
+    proof: () => /if\s*\(!uiError\)\s*\{\s*ui\.columns\s*=\s*\[\]/.test(body('ui/main.ts', 'function declareBuiltAttack(', '\n}')),
+    reportId: 375,
+    status: "open",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
