@@ -896,6 +896,13 @@ test('the static/cost/flag sweep reports its population, and none of it is prova
   //                      is a cast-window stage (`namesAsPlayed`, no guard), the
   //                      modded half a 'modApplied' trigger guarded to its own host
   //
+  // And REMOVED (the number goes DOWN, deliberately):
+  //   Iyngstra           -1 guard  designer's reprint 2026-11-10 (owner, with the new
+  //                      scan) — "Whenever another ally spawns, you gain life…" (a
+  //                      'spawned' trigger guarded to another ally) became "After
+  //                      combat, you may exchange life totals with target player",
+  //                      an unguarded 'afterCombat' trigger
+  //
   // The augment-box work (round 34) moved 44 cards' statics / cost mods / replacement hooks
   // from the body channel into `augmentBox`, because that is where their text
   // is printed. NOT ONE CLAUSE was added, removed or converted, so these three
@@ -910,7 +917,7 @@ test('the static/cost/flag sweep reports its population, and none of it is prova
   // convert a card, update these three numbers AND add a line to the table
   // above saying which card and which ruling. That is ~30 seconds, and it is
   // the only thing that stops the next seven going missing in silence.
-  const TALLY = { statics: 50, costMods: 6, guards: 94 };
+  const TALLY = { statics: 50, costMods: 6, guards: 93 };
   assert.deepEqual({ statics, costMods, guards }, TALLY,
     `the sweep now scans ${statics}/${costMods}/${guards}, pinned at `
     + `${TALLY.statics}/${TALLY.costMods}/${TALLY.guards}. This is NOT a floor and it is not `

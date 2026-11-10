@@ -179,7 +179,7 @@ const lifeOn = (p: Seat): number => {
 /** the clock moves on to `t` and every repaint the client booked runs */
 const at = (t: number): void => { clock = t; ui.tick(); ui.tick(); };
 
-test('§2a the spawn trigger\'s life gain, its number and its sound, wait until the trigger beat resolves', () => {
+test('§2a the spawn trigger life gain, its number and its sound, wait until the trigger beat resolves', () => {
   const { h, seat, before, events } = lifeTrigger(44502);
   const was = before.players[seat]!.life, now = h.state.players[seat]!.life;
   assert.ok(now > was);

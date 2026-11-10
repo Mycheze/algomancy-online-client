@@ -4199,17 +4199,17 @@ export const CLOSED: LedgerEntry[] = [
     report: "Owner, at [70] (the play at [66]): \"The lifegain and sound effect from Iyngstra happen before the effect visually hits the stack, which just feels a bit weird.\"",
     status: 'fixed',
     guards: [
-      "445-life-waits-for-the-beat.test.ts::§1a the Iyngstra trigger beat carries the life it gained",
+      "445-life-waits-for-the-beat.test.ts::§1a the spawn trigger beat carries the life it gained",
       "445-life-waits-for-the-beat.test.ts::§1b the life is held while the beat waits or shows",
       "445-life-waits-for-the-beat.test.ts::§1b2 the identity row pulse reads the shown life",
       "445-life-waits-for-the-beat.test.ts::§1c a life change after the window closes",
       "445-life-waits-for-the-beat.test.ts::§1d a resync holds no life back",
-      "445-life-waits-for-the-beat.test.ts::§2a the Iyngstra life gain, its number and its sound",
+      "445-life-waits-for-the-beat.test.ts::§2a the spawn trigger life gain, its number and its sound",
       "445-life-waits-for-the-beat.test.ts::§2b a life change with no beat behind it",
       "445-life-waits-for-the-beat.test.ts::§2c with motion switched off there are no beats",
     ],
     note:
-      "Real. The trigger went on the stack and resolved inside one update; the stack beat replays it on the client, and since 2026-10-03 a beat held the UNIT it made off the board, but not the life: the number, its flash, its cue and the identity-row pulse all moved at the click. Life inside a beat's resolution window is now that beat's result (flash.ts lifeResults/heldLife): the pill, soundPass and beatCensus read the SHOWN life and it lands at the beat's end on the beat's own wake. A cost or combat damage (no beat) shows at once; a resync holds nothing; motion off holds nothing. Mutation-checked six ways. Measured over CDP on HPTR at [66]: ♥33 through both beats, ♥36 as Iyngstra's leaves the strip. Left: the window's closing events are a hand list (phase, turn, combat damage, afterCombat, negated, fizzled, another push).",
+      "Real. The trigger went on the stack and resolved inside one update; the stack beat replays it on the client, and since 2026-10-03 a beat held the UNIT it made off the board, but not the life: the number, its flash, its cue and the identity-row pulse all moved at the click. Life inside a beat's resolution window is now that beat's result (flash.ts lifeResults/heldLife): the pill, soundPass and beatCensus read the SHOWN life and it lands at the beat's end on the beat's own wake. A cost or combat damage (no beat) shows at once; a resync holds nothing; motion off holds nothing. Mutation-checked six ways. Measured over CDP on HPTR at [66]: ♥33 through both beats, ♥36 as Iyngstra's leaves the strip. Left: the window's closing events are a hand list (phase, turn, combat damage, afterCombat, negated, fizzled, another push). 2026-11-10: the designer reprinted Iyngstra (it now exchanges life totals after combat), so 445 keeps HPTR's moment whole with a test card carrying the old spawn-lifegain words.",
   },
   {
     id: 204, room: "HPTR", date: "2026-10-10",
