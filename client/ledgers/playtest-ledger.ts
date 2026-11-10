@@ -440,6 +440,36 @@ const OPEN: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "Third take-back in ZKNW (after #367, #368). ZKNW re-fetched and replayed: 386 of 386 actions, no divergence, FAITHFUL; --branch triage: the redo repeats the first 1 of 4, none of (a)-(d). With Nyar's Squish (Bubb fights Rousing Spirit) and Eminence of the Barrens on the stack, proud cast two Fireball 1 tokens, the first at Bubb and the second at Nyar [255]-[258]; proud agreed to take them back and re-cast both at Nyar [255]-[258], Nyar went to 13. The player changing their own target, with the placeholder reason again. No defect.",
   },
+  {
+    id: 370, room: "FNZY", date: "2026-11-10",
+    report: "Nyar, seat 0, agreed fix: back to before proud's attack (turn 5 battle, declare). \"test\"",
+    status: 'agreed-fix',
+    note: "First of five take-backs in FNZY (#370-#374), all proposed by Nyar, agreed by proud, reason the placeholder \"test\" — the same pair as ZKNW (#367-#369), trying the button. FNZY fetched and replayed: 400 of 400 actions, no divergence, FAITHFUL; --branch triage: none of (a)-(d). proud had attacked with Bloodwind Revenant and Ghord in two columns [149] ([[51],[31]]); after the rewind proud attacked with both in one column [149] ([[51,31]]), Nyar blocked [152] and lost 5 (→21). The attacker changing their own formation. No defect.",
+  },
+  {
+    id: 371, room: "FNZY", date: "2026-11-10",
+    report: "Nyar, seat 0, agreed fix: back to before proud's trigger order, Wisp: sacrifice me / Bloodwind Revenant (turn 6, after combat). \"test\"",
+    status: 'agreed-fix',
+    note: "Second take-back in FNZY (see #370). --branch triage: none of (a)-(d). After the turn-6 counterattack proud ordered two simultaneous triggers, Wisp's sacrifice-me first [223] (choice [1,0]); after the rewind proud ordered Bloodwind Revenant's may-sacrifice-to-draw first instead [223] (choice [0,1]), and both resolved [224]-[226]. The controller re-ordering their own triggers. No defect.",
+  },
+  {
+    id: 372, room: "FNZY", date: "2026-11-10",
+    report: "Nyar, seat 0, agreed fix: back to before Nyar's choice: Nectar Ridge Oracle as Crystal's target (turn 7 battle). \"test\"",
+    status: 'agreed-fix',
+    note: "Third take-back in FNZY (see #370). Nyar's Crystal 1 (from Metamorphic Luminary) targeted Nectar Ridge Oracle [285], proud passed and it resolved, +1/+1 counter [286]-[287]. After the rewind Nyar picked the same target again and proud passed again [285]-[286]; --branch triage: the redo repeats the first 2 of 3. Fifteen seconds later Nyar took it back further, to before the cast (#373), and re-cast it holding priority. No defect: Nyar wanted to respond to their own Crystal and had not held priority.",
+  },
+  {
+    id: 373, room: "FNZY", date: "2026-11-10",
+    report: "Nyar, seat 0, agreed fix: back to before Nyar's Crystal spell token (turn 7 battle). \"test\"",
+    status: 'agreed-fix',
+    note: "Continues #372. --branch triage: none of (a)-(d). After the rewind Nyar cast the Crystal 1 at Nectar Ridge Oracle holding priority [284]-[285], then activated the Graxxlid mod on the Oracle ([one]: negate target effect targeting me; its controller draws) at the Crystal [286]-[287] — the Crystal was negated and Nyar drew. Legal as printed: Graxxlid's target is any effect targeting its unit, and the Crystal's controller (Nyar) draws. The player re-sequencing their own turn with hold-priority. No defect.",
+  },
+  {
+    id: 374, room: "FNZY", date: "2026-11-10",
+    report: "Nyar, seat 0, agreed fix: back to before proud's attack and Rousing Spirit's choice of Spiteful Shadow (turn 9 battle, declare). \"test\"",
+    status: 'agreed-fix',
+    note: "Fifth take-back in FNZY (see #370). --branch triage: none of (a)-(d). proud had attacked in two columns, Rousing Spirit with Spirit of Vengeance behind it and Mischievous Reclaimer alone [386] ([[185,194],[189]]), then picked Spiteful Shadow for Rousing Spirit's trigger [387]; after the rewind proud attacked with all three in separate columns [386] ([[194],[185],[189]]) and picked Spiteful Shadow again [387]. The attacker changing their own formation. No defect.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
