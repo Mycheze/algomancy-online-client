@@ -28,6 +28,8 @@ export interface InviteCardView { id: string; from: string; label: string }
 export interface TimeAskCardView { season: string; seasonName: string; match: string; from: string; when: string }
 /** a friend request */
 export interface RequestCardView { id: string; username: string }
+/** a deck a friend sent (server/deckshare.ts DeckShareView): View opens it */
+export interface DeckShareCardView { id: string; from: string; deck: string; name: string }
 /** a league note: its sentence (trusted markup, leaguenotes.ts noteLine) and its one button */
 export interface NoteCardView {
   /** the popup's dismiss key (`L<id>`) */
@@ -59,6 +61,8 @@ export interface InboxListView {
   invites: InviteCardView[];
   times: TimeAskCardView[];
   requests: RequestCardView[];
+  /** decks friends sent (absent = none) */
+  decks?: DeckShareCardView[];
   notes: NoteCardView[];
 }
 
@@ -168,6 +172,17 @@ function requestHtml(r: RequestCardView): string {
     </div>`;
 }
 
+/** a deck a friend sent: View opens it on the shared deck page, and the line goes */
+function deckShareHtml(d: DeckShareCardView): string {
+  return `<div class="invitecard deckshare">
+      <div><b>${esc(d.from)}</b> sent you a deck: <b>${esc(d.name)}</b>.</div>
+      <div class="invbtns">
+        <button class="primary" data-inbox="deck-view" data-id="${esc(d.id)}" data-deck="${esc(d.deck)}">View</button>
+        <button data-inbox="deck-clear" data-id="${esc(d.id)}">Dismiss</button>
+      </div>
+    </div>`;
+}
+
 /** The pending invites as rows, for a sheet that lists them inside the page
  * (the home's Join sheet, docs/24): the same sentence and the same
  * `data-inbox="join"` / `"decline"` buttons as the popup, so the click goes
@@ -191,6 +206,7 @@ export function inboxListHtml(v: InboxListView): string {
     ...v.invites.map(i => inviteCardHtml(i, false)),
     ...v.times.map(timeAskHtml),
     ...v.requests.map(requestHtml),
+    ...(v.decks ?? []).map(deckShareHtml),
     ...(v.notes.length ? [`<div class="zonelabel">League</div>`, ...v.notes.map(n => noteHtml(n, false))] : []),
   ];
   return `<div class="inboxlist">

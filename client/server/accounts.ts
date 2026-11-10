@@ -19,6 +19,7 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { CardName, Element, GameMode, Seat } from '../engine/src/types.ts';
 import type { CollectionDeck } from './collection.ts';
+import type { DeckShare } from './deckshare.ts';
 import {
   ELEMENTS, favoriteElement, gameElements, gameSides, seatElements, zeroElements, type GameSummary, type SeatStats,
 } from './stats.ts';
@@ -319,6 +320,15 @@ export interface Account {
    * SSHing to the box, and the flag exists so that is not necessary.
    */
   admin?: true;
+
+  /**
+   * Decks friends have sent this account (deckshare.ts, owner 2026-11-10):
+   * the bell's "<friend> sent you <deck>" lines, until opened or dismissed.
+   * Ids only — the deck's name and visibility are read off the sender's
+   * collection every time. Top-level for the same reason `badge` is, and
+   * persisted, unlike a game invite: a deck outlives a restart.
+   */
+  deckShares?: DeckShare[];
 
   /**
    * The element the player CHOSE as their favourite (owner, 2026-09-05:

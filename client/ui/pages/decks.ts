@@ -117,11 +117,25 @@ export interface DeckGameRow { result: 'win' | 'loss' | 'unknown'; opponent: str
 
 export type DecksSheet =
   | { kind: 'import'; msg: string }
-  | { kind: 'share'; vis: Visibility; link: string }
+  | { kind: 'share'; vis: Visibility; link: string; send?: ShareSendView }
   | { kind: 'export'; format: 'text' | 'file'; body: string; downloadName: string }
   | { kind: 'delete'; name: string }
   | { kind: 'games'; record: DeckRecordLike; rows: DeckGameRow[] }
   | { kind: 'card'; name: string };
+
+/** a friend in the Share sheet's "Send to a friend" list (ui/inbox.ts shareFriends) */
+export interface ShareFriend { id: string; username: string; status: 'online' | 'playing' | 'offline' }
+
+/** the Share sheet's "Send to a friend" list (owner, 2026-11-10; server/deckshare.ts) */
+export interface ShareSendView {
+  /** the bell's poll has answered — until then the list is "…" */
+  loaded: boolean;
+  friends: { id: string; username: string; status: ShareFriend['status']; sent: boolean }[];
+  /** the deck is private: nothing can be sent, the friend could not open it */
+  locked: boolean;
+  /** a refusal from the last Send */
+  msg: string;
+}
 
 export interface DecksView {
   chrome: FrameChrome;
@@ -155,6 +169,8 @@ export interface DecksState {
   base: string;
   /** the export's body, built by decks.ts (deckformat.ts needs the origin) */
   exportBody: string;
+  /** the Share sheet's friends (absent = no list drawn): who they are, who the open deck was sent to */
+  share?: { loaded: boolean; friends: readonly ShareFriend[]; sentTo: readonly string[]; msg: string };
 }
 
 export type DecksStateSheet =
@@ -282,7 +298,15 @@ export function decksView(st: DecksState): DecksView {
   if (s?.kind === 'import') sheetV = { kind: 'import', msg: s.msg };
   else if (s?.kind === 'card') sheetV = { kind: 'card', name: s.name };
   else if (s && open) {
-    if (s.kind === 'share') sheetV = { kind: 'share', vis: visOf(open), link: `${st.base}?deck=${encodeURIComponent(open.id)}` };
+    if (s.kind === 'share') {
+      const vis = visOf(open);
+      const sh = st.share;
+      sheetV = { kind: 'share', vis, link: `${st.base}?deck=${encodeURIComponent(open.id)}`,
+        ...(sh ? { send: {
+          loaded: sh.loaded, locked: vis === 'private', msg: sh.msg,
+          friends: sh.friends.map(f => ({ id: f.id, username: f.username, status: f.status, sent: sh.sentTo.includes(f.id) })),
+        } } : {}) };
+    }
     else if (s.kind === 'export') {
       sheetV = { kind: 'export', format: s.format, body: st.exportBody,
         downloadName: `${open.name.replace(/[^\w. -]+/g, '').trim() || 'deck'}${s.format === 'file' ? '.json' : '.txt'}` };
@@ -393,6 +417,26 @@ export function shareBodyHtml(vis: Visibility, link: string): string {
     ${vis === 'private' ? '<p class="dksheetnote">Private: the link only opens for you.</p>' : ''}`;
 }
 
+/** "Send to a friend": each friend with a Send button; the friend's bell gets a line that opens the deck.
+ * Offline friends can be sent to as well — the line waits in their bell. The rows borrow the waiting
+ * room's friend-row look (styles/shared/13-report-and-inbox.css `.roomfriend`). */
+export function shareSendHtml(v: ShareSendView): string {
+  const rows = !v.loaded ? '<p class="hint">…</p>'
+    : !v.friends.length ? '<p class="dksheetnote">Add friends on your profile and they show up here.</p>'
+    : v.friends.map(f => `<div class="roomfriend dksendrow ${f.status}">
+      <span class="fdot${f.status === 'offline' ? '' : ' on'}${f.status === 'playing' ? ' busy' : ''}"></span>
+      <span class="rfname">${esc(f.username)}</span>
+      <span class="rfstatus">${f.status === 'playing' ? 'in a game' : f.status}</span>
+      ${f.sent
+    ? button({ label: 'Sent ✓', size: 'sm', dataBtn: 'deck-send', disabled: true, attrs: { 'data-id': f.id } })
+    : button({ label: 'Send', size: 'sm', variant: v.locked ? undefined : 'primary', dataBtn: 'deck-send', disabled: v.locked, attrs: { 'data-id': f.id } })}
+    </div>`).join('');
+  return `<h3 class="dksheeth">Send to a friend</h3>
+    <div class="dksendlist">${rows}</div>
+    ${v.locked && v.loaded && v.friends.length ? '<p class="dksheetnote">Private decks cannot be sent: choose Unlisted or Public first.</p>' : ''}
+    ${v.msg ? statusMessage({ tag: 'p', tone: 'error', className: 'pageerr', text: v.msg }) : ''}`;
+}
+
 function exportBody(s: Extract<DecksSheet, { kind: 'export' }>): string {
   const file = s.format === 'file';
   return `${segmented({
@@ -441,7 +485,8 @@ export function decksSheetHtml(s: DecksSheet | null): string {
     case 'import':
       return sheet({ ...side, id: 'dk-import', title: 'Import a deck', width: 'md', dismissBtn: 'deck-import-close', bodyHtml: importBody(s.msg) });
     case 'share':
-      return sheet({ ...side, id: 'dk-share', title: 'Share', width: 'sm', dismissBtn: 'deck-share-close', bodyHtml: shareBodyHtml(s.vis, s.link) });
+      return sheet({ ...side, id: 'dk-share', title: 'Share', width: 'sm', dismissBtn: 'deck-share-close',
+        bodyHtml: shareBodyHtml(s.vis, s.link) + (s.send ? shareSendHtml(s.send) : '') });
     case 'export':
       return sheet({ ...side, id: 'dk-export', title: 'Export', width: 'md', dismissBtn: 'deck-export-close', bodyHtml: exportBody(s),
         footerHtml: button({ label: 'Copy', variant: 'primary', dataBtn: 'deck-copy-list' })
