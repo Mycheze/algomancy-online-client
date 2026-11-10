@@ -5,7 +5,7 @@
  * stealing a unit into your hand plus a discard (Capture, CR 801.3), life-change
  * pumps and their [Switch1] budget (Deathcoil Construct, CR 722.5), a paid
  * spell-played drain (Dragnol), empty-hand bin plays (Gridxlan), a life total
- * rewritten from the bins (Haunting Memories), spawn lifegain (Iyngstra),
+ * rewritten from the bins (Haunting Memories), an after-combat life exchange (Iyngstra),
  * cost-funded glimpses (Lilbot), a variable discard CAST COST (No Hand Killer,
  * CR 705.3b — the discards used to happen at resolution),
  * a granted prophecy computed from a cost (Prophecy Bug, CR 803.7), damage-driven
@@ -560,23 +560,99 @@ test('Haunting Memories: empty bins set the target to 0 — which kills them', (
 
 // ── Iyngstra ─────────────────────────────────────────────────────────────
 
-test('Iyngstra: gain life equal to the defense of each OTHER ally that spawns', () => {
-  const h = new Harness(4616);
+// The designer's new printing (the owner, 2026-11-10): le/5, "[Augment] After
+// combat, you may exchange life totals with target player." It was le/3,
+// "[Augment] Whenever another ally spawns, you gain life equal to their
+// defense." The spawn half is gone; the after-combat exchange is new.
+
+/** Iyngstra attacks alone, unblocked; returns at the after-combat target pick */
+function iyngstraAfterCombat(seed: number, lives: [number, number]): { h: Harness; A: Seat; D: Seat; iy: EntityId } {
+  const h = new Harness(seed);
   toDeployment(h);
-  const P = h.state.deployPlayer!, O = (1 - P) as Seat;
-  const life0 = lifeOf(h, P);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const iy = spawn(h, A, 'Iyngstra');                      // 3/6
+  toNextBattle(h, A);
+  h.state.players[A]!.life = lives[0];
+  h.state.players[D]!.life = lives[1];
+  h.do({ type: 'declareAttack', seat: A, columns: [[iy]] });
+  pass(h); pass(h);                                        // → blocks
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);                                        // combat (D takes 3) + the after-combat trigger
+  return { h, A, D, iy };
+}
+
+test('Iyngstra: after combat, you may exchange life totals with target player', () => {
+  const { h, A, D } = iyngstraAfterCombat(4616, [8, 25]);
+  assert.equal(lifeOf(h, D), 22, 'combat first: D took 3');
+  const dec = h.state.decision!;
+  assert.equal(dec.kind, 'targets', 'the after-combat trigger asks for its player');
+  assert.equal(dec.seat, A);
+  const vals = dec.options.map(o => JSON.stringify(o.value));
+  assert.ok(vals.includes(JSON.stringify({ player: A })) && vals.includes(JSON.stringify({ player: D })),
+    '"target player": either player, yourself included (CR 110.3c)');
+  assert.ok(vals.includes(JSON.stringify({ doneTargets: true })), '"you may": the stop is offered before any pick');
+  const self = dec.options.find(o => JSON.stringify(o.value) === JSON.stringify({ player: A }))!;
+  assert.match(self.confirm ?? '', /yourself changes nothing/, 'picking yourself asks first');
+  assert.equal(dec.options.find(o => JSON.stringify(o.value) === JSON.stringify({ player: D }))!.confirm,
+    undefined, 'picking the opponent does not');
+  pick(h, { player: D });
+  resolveAfterCombat(h);
+  assert.equal(lifeOf(h, A), 22, "A takes D's total");
+  assert.equal(lifeOf(h, D), 8, "D takes A's");
+});
+
+test('Iyngstra: declining, or picking yourself, leaves both totals as they were', () => {
+  const a = iyngstraAfterCombat(4635, [8, 25]);
+  pick(a.h, { doneTargets: true });
+  resolveAfterCombat(a.h);
+  assert.deepEqual([lifeOf(a.h, a.A), lifeOf(a.h, a.D)], [8, 22], 'declined');
+  const b = iyngstraAfterCombat(4636, [8, 25]);
+  pick(b.h, { player: b.A });
+  resolveAfterCombat(b.h);
+  assert.deepEqual([lifeOf(b.h, b.A), lifeOf(b.h, b.D)], [8, 22], 'with yourself: nothing changes');
+});
+
+test('Iyngstra: the exchange is two life changes — a locked total stays, the other still moves', () => {
+  const { h, A, D } = iyngstraAfterCombat(4637, [8, 25]);
+  whiteBox(h, e => e.lockLife(D, h.state.battle!.region));   // Suspend on D
+  pick(h, { player: D });
+  resolveAfterCombat(h);
+  assert.equal(lifeOf(h, D), 22, "D's total can't change this battle");
+  assert.equal(lifeOf(h, A), 22, 'A still gains up to it (CR 101.5: as much as it can)');
+  assert.ok(h.events.some(ev => ev.type === 'lifeGained' && ev.data?.['seat'] === A && ev.data?.['n'] === 14),
+    "A's half is an ordinary life gain of 14");
+});
+
+test('Iyngstra: augmented onto a host, the host carries the exchange', () => {
+  const h = new Harness(4639);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  h.state.deployPlayer = A;
+  const host = spawn(h, A, 'LDC Grunt');
+  giveResources(h, A, 'light', 1);
+  giveResources(h, A, 'earth', 4);                         // le / 5
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Iyngstra'), hostId: host });
+  toNextBattle(h, A);
+  h.state.players[A]!.life = 5;
+  h.state.players[D]!.life = 20;
+  h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);                                        // D takes 1
+  assert.equal(h.state.decision?.kind, 'targets', "the host's after-combat trigger asks");
+  pick(h, { player: D });
+  resolveAfterCombat(h);
+  assert.deepEqual([lifeOf(h, A), lifeOf(h, D)], [19, 5]);
+});
+
+test('Iyngstra: no longer gains life when another ally spawns', () => {
+  const h = new Harness(4638);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
   spawn(h, P, 'Iyngstra');
-  assert.equal(lifeOf(h, P), life0, '"another" — it does not gain for itself');
+  const life0 = lifeOf(h, P);
   spawn(h, P, 'LDC Wall');                                 // 0/5
-  assert.equal(lifeOf(h, P), life0 + 5, 'defense 5, five life');
-  spawn(h, O, 'LDC Wall');
-  assert.equal(lifeOf(h, P), life0 + 5, "not for an opponent's spawn");
-  // live defense at resolution (CR 107.8): counters count
-  whiteBox(h, e => {
-    const u = e.spawnUnit(P, 'LDC Grunt', e.homeRegion(P), { counters: 3 });
-    assert.ok(u);
-  });
-  assert.equal(lifeOf(h, P), life0 + 5 + 4, 'a 1/1 spawned with three +1/+1 counters is a 4/4');
+  assert.equal(lifeOf(h, P), life0, 'the old spawn trigger is gone');
 });
 
 // ── Lilbot ───────────────────────────────────────────────────────────────

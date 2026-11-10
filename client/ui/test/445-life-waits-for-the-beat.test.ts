@@ -16,9 +16,15 @@
  * the cue until the beat ends, on the beat's own clock. A life change no beat
  * caused — a cost, combat damage — is shown at once, exactly as before.
  *
- * §1 is the pure half, on the real Iyngstra batch. §2 drives the real client
+ * §1 is the pure half, on a real trigger's batch. §2 drives the real client
  * (test/ui-driver.ts) with a test clock and a recording <audio>, and reads the
  * number on screen and the cues played.
+ *
+ * THE FIXTURE MOVED on 2026-11-10: the designer reprinted Iyngstra (it now
+ * exchanges life totals after combat; the spawn lifegain is gone). HPTR's
+ * moment is kept whole with a test card carrying the old words, "Whenever
+ * another ally spawns, you gain life equal to their defense" — no real card
+ * still gains life off an ally's spawn at deployment speed.
  *
  * Seeds 44500-44599.
  */
@@ -26,7 +32,8 @@ import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../../engine/src/harness.ts';
 import { legalActions } from '../../engine/src/apply.ts';
-import type { EngineEvent, GameState, Seat } from '../../engine/src/types.ts';
+import type { EngineEvent, EntityId, GameState, Seat } from '../../engine/src/types.ts';
+import { registerSynthetic } from '../../engine/src/cards/dsl.ts';
 import { viewFor } from '../../server/view.ts';
 import { give, giveResources, spawn, toDeployment, withE } from '../../engine/test/util.ts';
 import { beatCensus, flashItems, heldLife, lifeResults, queueFlashes, shownLife } from '../flash.ts';
@@ -54,12 +61,38 @@ const bornSince = (prev: GameState, next: GameState): Slot[] => {
   return census(next).slots.filter(s => !had.has(s.key));
 };
 
-/** HPTR's moment: Iyngstra in play, and another ally deployed beside it */
-function iyngstra(seed = 44501): { h: Harness; seat: Seat; before: GameState; events: EngineEvent[] } {
+/** Iyngstra's old text, as a test card (see the header) */
+const WATCHER = 'Spawn Lifegain Watcher';
+registerSynthetic({
+  name: WATCHER, cost: '', mana: 0, power: 3, toughness: 6, type: 'Test Unit', kind: 'unit',
+  timing: 'deploy', attrs: [], virus: false, burst: false, augmentAttrs: [],
+  text: 'Whenever another ally spawns, you gain life equal to their defense.', image: '',
+}, {
+  abilities: [{
+    type: 'triggered', events: ['spawned'],
+    label: 'gain life equal to the spawned ally’s defense',
+    when: (g, self, ev) => {
+      const uid = ev.data?.['unit'] as EntityId | undefined;
+      const u = uid !== undefined ? g.entity(uid) : undefined;
+      return !!u && u.id !== self.id && u.controller === self.controller;
+    },
+    effect: {
+      run: (g, ctx) => {
+        const uid = ctx.event?.data?.['unit'] as EntityId | undefined;
+        const u = uid !== undefined ? g.entity(uid) : undefined;
+        const def = u ? g.effStats(u)[1] : 0;
+        if (def > 0) g.gainLife(ctx.controller, def, WATCHER);
+      },
+    },
+  }],
+});
+
+/** HPTR's moment: the watcher in play, and another ally deployed beside it */
+function lifeTrigger(seed = 44501): { h: Harness; seat: Seat; before: GameState; events: EngineEvent[] } {
   const h = new Harness(seed);
   toDeployment(h);
   const seat = h.state.deployPlayer!;
-  spawn(h, seat, 'Iyngstra');
+  spawn(h, seat, WATCHER);
   giveResources(h, seat, 'earth', 6);
   const idx = give(h, seat, 'Rampart Guardian');
   const before = structuredClone(h.state);
@@ -69,11 +102,11 @@ function iyngstra(seed = 44501): { h: Harness; seat: Seat; before: GameState; ev
 
 /* ── §1 the pure half ───────────────────────────────────────────────────── */
 
-test('§1a the Iyngstra trigger beat carries the life it gained, and nothing else does', () => {
-  const { h, seat, before, events } = iyngstra();
+test('§1a the spawn trigger beat carries the life it gained, and nothing else does', () => {
+  const { h, seat, before, events } = lifeTrigger();
   const gained = h.state.players[seat]!.life - before.players[seat]!.life;
-  assert.ok(gained > 0, 'the fixture is the real thing: Iyngstra gained life');
-  const trig = flashItems(events).find(i => i.kind === 'triggered' && i.card === 'Iyngstra');
+  assert.ok(gained > 0, 'the fixture is the real thing: the trigger gained life');
+  const trig = flashItems(events).find(i => i.kind === 'triggered' && i.card === WATCHER);
   assert.ok(trig, 'and the trigger had a beat');
   assert.deepEqual(lifeResults(events, trig!), [{ seat, delta: gained }]);
 
@@ -84,7 +117,7 @@ test('§1a the Iyngstra trigger beat carries the life it gained, and nothing els
 });
 
 test('§1b the life is held while the beat waits or shows, and comes back the moment it ends', () => {
-  const { h, before, events } = iyngstra();
+  const { h, before, events } = lifeTrigger();
   const q = queueFlashes([], events, 0, new Map(), bornSince(before, h.state));
   const beat = q.find(f => f.life)!;
   const life = h.state.players.map(p => p.life);
@@ -97,7 +130,7 @@ test('§1b the life is held while the beat waits or shows, and comes back the mo
 test('§1b2 the identity row pulse reads the shown life, so it waits for the beat too', () => {
   // ui/motion.ts diffCensus pulses the player row when its slot's sig changes;
   // a sig read off the state would pulse at the click, before the beat
-  const { h, seat, before, events } = iyngstra();
+  const { h, seat, before, events } = lifeTrigger();
   const q = queueFlashes([], events, 0, new Map(), bornSince(before, h.state));
   const beat = q.find(f => f.life)!;
   const sigAt = (now: number): string | undefined =>
@@ -113,7 +146,7 @@ test('§1b2 the identity row pulse reads the shown life, so it waits for the bea
 test('§1c a life change after the window closes is not held by the beat before it', () => {
   // the same batch, and then something no resolution spans — a phase line —
   // and a life loss after it (rot at the start of a step, say)
-  const { h, seat, before, events } = iyngstra();
+  const { h, seat, before, events } = lifeTrigger();
   const trig = flashItems(events).find(i => i.kind === 'triggered')!;
   const tail: EngineEvent[] = [
     { type: 'phase', msg: 'Battle phase.' },
@@ -125,7 +158,7 @@ test('§1c a life change after the window closes is not held by the beat before 
 });
 
 test('§1d a resync holds no life back, whatever beats it carries', () => {
-  const { events } = iyngstra();
+  const { events } = lifeTrigger();
   const q = queueFlashes([], events, 0, new Map(), [], false);
   assert.ok(q.length > 0 && q.every(f => !f.life), 'a wholesale arrival: the number on screen was never the old one');
 });
@@ -146,8 +179,8 @@ const lifeOn = (p: Seat): number => {
 /** the clock moves on to `t` and every repaint the client booked runs */
 const at = (t: number): void => { clock = t; ui.tick(); ui.tick(); };
 
-test('§2a the Iyngstra life gain, its number and its sound, wait until the trigger beat resolves', () => {
-  const { h, seat, before, events } = iyngstra(44502);
+test('§2a the spawn trigger\'s life gain, its number and its sound, wait until the trigger beat resolves', () => {
+  const { h, seat, before, events } = lifeTrigger(44502);
   const was = before.players[seat]!.life, now = h.state.players[seat]!.life;
   assert.ok(now > was);
   const t0 = clock = realNow() + 10_000_000;
@@ -186,8 +219,8 @@ test('§2b a life change with no beat behind it (a cost) is shown and heard at o
   assert.equal(PLAYED.filter(c => c === 'lifedown').length, 1, 'and was heard with it');
 });
 
-test('§2c with motion switched off there are no beats, so the Iyngstra life gain is not delayed', () => {
-  const { h, seat, before, events } = iyngstra(44504);
+test('§2c with motion switched off there are no beats, so the trigger\'s life gain is not delayed', () => {
+  const { h, seat, before, events } = lifeTrigger(44504);
   localStorage.setItem('algoMotion', '0');
   try {
     clock = realNow() + 30_000_000;

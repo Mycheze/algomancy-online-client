@@ -25,14 +25,42 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { getCard } from '../src/cards/dsl.ts';
+import { getCard, registerSynthetic } from '../src/cards/dsl.ts';
 import {
   effStats, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle, unitsOf,
   withE as whiteBox,
 } from './util.ts';
-import type { Seat } from '../src/types.ts';
+import type { EntityId, Seat } from '../src/types.ts';
 
 // ── local rig ────────────────────────────────────────────────────────────
+
+/** the spawn watcher that reads the arriving body: "Whenever another ally
+ * spawns, you gain life equal to their defense." That was Iyngstra's text
+ * until the designer reprinted it (2026-11-10, now an after-combat life
+ * exchange), so the probe is kept here as a test card with the old words. */
+registerSynthetic({
+  name: 'Defense Watcher', cost: '', mana: 0, power: 3, toughness: 6, type: 'Test Unit', kind: 'unit',
+  timing: 'deploy', attrs: [], virus: false, burst: false, augmentAttrs: [],
+  text: 'Whenever another ally spawns, you gain life equal to their defense.', image: '',
+}, {
+  abilities: [{
+    type: 'triggered', events: ['spawned'],
+    label: 'gain life equal to the spawned ally’s defense',
+    when: (g, self, ev) => {
+      const uid = ev.data?.unit as EntityId | undefined;
+      const u = uid !== undefined ? g.entity(uid) : undefined;
+      return !!u && u.id !== self.id && u.controller === self.controller;
+    },
+    effect: {
+      run: (g, ctx) => {
+        const uid = ctx.event?.data?.unit as EntityId | undefined;
+        const u = uid !== undefined ? g.entity(uid) : undefined;
+        const def = u ? g.effStats(u)[1] : 0;
+        if (def > 0) g.gainLife(ctx.controller, def, 'Defense Watcher');
+      },
+    },
+  }],
+});
 
 /** answer every pending trigger-ORDER question with the identity order and
  * pass every priority window until the stack is empty. Any OTHER decision is
@@ -89,7 +117,7 @@ test('Powerforge Synergist: the two +1/+1 counters are on the body at the moment
   const h = new Harness(13902);
   toDeployment(h);
   const p = h.state.deployPlayer!;
-  spawn(h, p, 'Iyngstra');                              // "whenever another ally spawns, gain life equal to their defense"
+  spawn(h, p, 'Defense Watcher');                       // "whenever another ally spawns, gain life equal to their defense"
   const life0 = h.state.players[p]!.life;
   let pf = -1;
   // whiteBox, not the `spawn` helper: `spawn` runs its own E and drops the
@@ -106,7 +134,7 @@ test('Powerforge Synergist: the two +1/+1 counters are on the body at the moment
     'the spawn event announces the body that actually arrived');
   assert.deepEqual(effStats(h, pf), [2, 2], 'a printed 0/0 that is really a 2/2');
   assert.equal(h.state.players[p]!.life - life0, 2,
-    'Iyngstra read the 2/2 — not a 0/0, and not a body that died to the 0 defense');
+    'the watcher read the 2/2 — not a 0/0, and not a body that died to the 0 defense');
   assert.ok(h.state.entities[pf], 'and the 0/0 was never briefly a real 0/0 for the death check to find');
 });
 
@@ -115,23 +143,23 @@ test('Powerforge Synergist: the two +1/+1 counters are on the body at the moment
 test('Aethercap Siphoner: a spawn watcher sees the 1/1 the card prints, not the printed 4/4', () => {
   // THE DEFECT: "I spawn with three -1/-1 counters on me" was an on-spawn self
   // TRIGGER, and a trigger cannot run before the event that raised it (CR 707.5).
-  // So the card stood there as a 4/4 for the whole of its own spawn: Iyngstra
-  // ("gain life equal to their defense") gained 4 for a card that prints 1 —
-  // and the caster was stopped and asked to ORDER their own spawn against the
+  // So the card stood there as a 4/4 for the whole of its own spawn: a spawn
+  // watcher ("gain life equal to their defense" — Iyngstra's text then)
+  // gained 4 for a card that prints 1 — and the caster was stopped and asked to ORDER their own spawn against the
   // card's own arithmetic, a question with no answer.
   const h = new Harness(13903);
   toDeployment(h);
   const p = h.state.deployPlayer!;
-  spawn(h, p, 'Iyngstra');
+  spawn(h, p, 'Defense Watcher');
   const life0 = h.state.players[p]!.life;
   let sip = -1;
   whiteBox(h, e => { sip = e.spawnUnit(p, 'Aethercap Siphoner', e.homeRegion(p)).id; });
   assert.equal(h.state.decision, null,
-    'no trigger-order question: there is only ONE trigger here, and it is Iyngstra\'s');
+    'no trigger-order question: there is only ONE trigger here, and it is the watcher\'s');
   assert.equal(h.state.entities[sip]!.counters, -3, 'the three -1/-1 counters are on');
   assert.deepEqual(effStats(h, sip), [1, 1], 'a printed 4/4 that is really a 1/1');
   assert.equal(h.state.players[p]!.life - life0, 1,
-    'Iyngstra gained 1, the defense the card prints — it used to gain 4');
+    'the watcher gained 1, the defense the card prints — it used to gain 4');
 });
 
 test('Aethercap Siphoner: spawning with counters IS "you put counters on an ally" — the placement a Robot\'s X is too', () => {

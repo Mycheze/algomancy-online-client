@@ -1258,10 +1258,10 @@
  "Iyngstra": {
   "icon": "augment",
   "x": 78,
-  "y": 874,
-  "size": 30,
-  "cut": 873,
-  "score": 0.899
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9589
  },
  "Jollyglop": {
   "icon": "augment",

@@ -15882,7 +15882,7 @@
    "earth"
   ],
   "cost": "le",
-  "mana": 3,
+  "mana": 5,
   "power": 3,
   "toughness": 6,
   "type": "Holy Structure Unit",
@@ -15892,7 +15892,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] Whenever another ally spawns, you gain life equal to their defense.",
+  "text": "[Augment] After combat, you may exchange life totals with target player.",
   "image": "Iyngstra.jpg",
   "class": "card",
   "supertype": "Unit",
@@ -15909,8 +15909,8 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.127,
-  "textTop": 0.815
+  "modPeek": 0.129,
+  "textTop": 0.813
  },
  "Just a Unit": {
   "name": "Just a Unit",

@@ -198,7 +198,7 @@
  "augment:Infernal Wispweaver#0": "Create a Wisp",
  "augment:Instrument of Reassignment#0": "Create a Robot {X}",
  "augment:Invasive Species#0": "Recall all your other units",
- "augment:Iyngstra#0": "Gain {X} life",
+ "augment:Iyngstra#0": "Exchange life totals with {0}",
  "augment:Jollyglop#0": "Create {X} 1/1 units",
  "augment:Keeper of Tithes#0": "Create a {X}/{X} unit",
  "augment:Legion of the Depths#0": "Create two Wraiths and gain 2 rot",

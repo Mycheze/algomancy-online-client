@@ -411,8 +411,6 @@ export const AMOUNT: Readonly<Record<string, AmountFn>> = {
   },
   'augment:Flamebreath Initiate#0': (e, it, _p, me) =>
     live(me ? e.adjacentInFormation(me.id).filter(u => u.controller === it.controller).length + 1 : undefined),
-  'augment:Iyngstra#0': (e, it) => statOf(e, { unit: eventData(it)['unit'] as EntityId }, 1) === undefined
-    ? undefined : live(statOf(e, { unit: eventData(it)['unit'] as EntityId }, 1)),
   'augment:Roving Quillback#0': e => live(e.s.battle ? Object.keys(e.s.battle.blocks).length : undefined),
   'spell:Accumulated Nucleation': (e, it) => live(e.affinity(it.controller, 'earth')),
   'spell:All-Consuming Blaze': (e, it) => live(e.affinity(it.controller, 'fire')),

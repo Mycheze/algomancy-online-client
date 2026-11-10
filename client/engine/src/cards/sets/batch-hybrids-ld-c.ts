@@ -286,29 +286,55 @@ card('Dragnol', {
 
 // ─────────────────────── LIGHT / EARTH (le) ───────────────────────────
 
-// "[Augment] Whenever another ally spawns, you gain life equal to their
-// defense." — le/3 3/6 Holy Structure Unit. Text-box [Augment]. "Another
-// ally" = a different unit with my controller (tokens included — the text
-// does not exclude them); "their defense" is LIVE at resolution (CR 107.8), read
-// off effStats, so counters and statics count. A spawned unit that has
-// already left play by resolution gains nothing.
+// "[Augment] After combat, you may exchange life totals with target player."
+// — le/5 3/6 Holy Structure Unit. The designer's new printing (the owner,
+// 2026-11-10, with the new scan): it cost 3 and read "[Augment] Whenever
+// another ally spawns, you gain life equal to their defense."
+//
+// Text-box [Augment], the after-combat "you may … target" shape of Shoreline
+// Specter: live when played normally, donated to a host when it augments
+// ("you" = the host's controller). `may` (CT-309) offers the stop before the
+// pick, so declining is the whole "may".
+//
+// "Target player" is the 'player' kind (CR 110.3c): either player present, the
+// controller included. Pointing it at yourself is legal and changes nothing,
+// so that pick asks first (CT-307's display-only stop; the candidate stays).
+//
+// THE EXCHANGE. Both totals are read at resolution, BEFORE either moves, and
+// then each player goes to the other's old total through the ordinary
+// gain/lose primitives, as Haunting Memories sets a total. So the parts are
+// real life changes: "when you gain/lose life" watchers hear them, a
+// life-change multiplier scales them (Arbiter-style "double all life gain and
+// life loss"), and a player whose total can't change (Suspend) stays where
+// they are while the other still moves: CR 101.5, an effect does as much as
+// it can. The effect runs inside one life batch, so a total pushed to 0 is
+// judged once, when the whole exchange is done (CR 104.1a).
 card('Iyngstra', {
   augmentText: [{
-    type: 'triggered', events: ['spawned'],
-    label: 'gain life equal to the spawned ally’s defense',
-    when: (g, self, ev) => {
-      const uid = ev.data?.unit as EntityId | undefined;
-      const u = uid !== undefined ? g.entity(uid) : undefined;
-      return !!u && u.id !== self.id && u.controller === self.controller;
-    },
+    type: 'triggered', events: ['afterCombat'],
+    label: 'you may exchange life totals with target player',
     effect: {
+      targets: {
+        what: 'player', may: true,
+        prompt: 'Iyngstra: you may exchange life totals with target player',
+        pickConfirm: (_g, t, ctx) => ('player' in t && t.player === ctx.ally
+          ? 'Exchanging life totals with yourself changes nothing. Continue?' : undefined),
+      },
       run: (g, ctx) => {
-        const uid = ctx.event?.data?.unit as EntityId | undefined;
-        const u = uid !== undefined ? g.entity(uid) : undefined;
-        if (!u) { g.ev('info', 'Iyngstra: the spawned ally is gone — no life gained.'); return; }
-        const def = g.effStats(u)[1];
-        if (def > 0) g.gainLife(ctx.controller, def, `Iyngstra (${u.card}'s defense)`);
-        else g.ev('info', `Iyngstra: ${u.card} has no defense — no life gained.`);
+        const t = ctx.targets[0];
+        if (!t || !('player' in t)) { g.ev('info', 'Iyngstra: declined — life totals stay as they are.'); return; }
+        const me = ctx.controller, them = t.player;
+        if (them === me) { g.ev('info', `Iyngstra: ${g.pname(me)} exchanged life totals with themselves — nothing changes.`); return; }
+        const mine = g.player(me).life, theirs = g.player(them).life;
+        if (mine === theirs) {
+          g.ev('info', `Iyngstra: both life totals are ${mine} — the exchange changes nothing.`);
+          return;
+        }
+        g.ev('info', `Iyngstra: ${g.pname(me)} (${mine}) and ${g.pname(them)} (${theirs}) exchange life totals.`);
+        for (const [seat, from, to] of [[me, mine, theirs], [them, theirs, mine]] as const) {
+          if (to > from) g.gainLife(seat, to - from, 'Iyngstra: life totals exchanged');
+          else g.loseLife(seat, from - to, 'Iyngstra: life totals exchanged');
+        }
       },
     },
   }],
