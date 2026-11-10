@@ -109,7 +109,7 @@ def new_response_id():
 
 def log_response(response_id, kind, question, answer, hits, model,
                  *, user_id, channel_id, thread_id=None, history=None,
-                 reasoning=False, engine_version=None, llm=None, error=None):
+                 reasoning=False, engine_version=None, llm=None, error=None, asker=None):
     """Persist one AI answer with its full retrieval context for later training.
 
     `llm` is the dict core.answer_question(meta=...) filled. Its fields are
@@ -120,7 +120,11 @@ def log_response(response_id, kind, question, answer, hits, model,
     (then `requested_model` and `fallback` say so). Rows from before
     2026-10-11 simply lack the new keys.
 
-    `error` is set only by log_failure(); a successful row never has the key."""
+    `error` is set only by log_failure(); a successful row never has the key.
+
+    `asker` (BL-17, 2026-11-10) is the BADGE of the account that asked in a
+    game — {"owner": true} or {"judge": 1-3} — and only when the game server
+    vouched for it (app.py api_ask); absent for everybody else. Never who."""
     llm = llm or {}
     record = {
         "response_id": response_id,
@@ -166,6 +170,8 @@ def log_response(response_id, kind, question, answer, hits, model,
             record[key] = llm[key]
     if error is not None:
         record["error"] = error
+    if asker:
+        record["asker"] = asker
     _append(responses_log(), record)
 
 
@@ -302,12 +308,25 @@ def _latest_ratings():
     return ratings
 
 
+def _asker_badge(raw):
+    """A logged `asker`, as the review page may show it: the badge alone."""
+    if not isinstance(raw, dict):
+        return None
+    if raw.get("owner") is True:
+        return {"owner": True}
+    if raw.get("judge") in (1, 2, 3):
+        return {"judge": raw["judge"]}
+    return None
+
+
 def recent_answers(limit=200):
     """The last `limit` answers the bot gave, newest first, as the judges'
     review page shows them: what was asked, what it said, where (web — the site
     and the in-game judge box — or discord), the thread before a follow-up, and
     the players' own rating. A failed call (`error`) answered nothing and is
-    left out. No user id of any kind: a judge reviews the answer, not the asker."""
+    left out. No user id of any kind: a judge reviews the answer, not the asker
+    — only, when a judge or the owner asked in a game, their badge (`asker`), so
+    the page can list those questions first (BL-17)."""
     path = responses_log()
     if not path.exists():
         return []
@@ -335,6 +354,9 @@ def recent_answers(limit=200):
         }
         if turns:
             item["history"] = turns
+        asker = _asker_badge(row.get("asker"))
+        if asker:
+            item["asker"] = asker
         if row["response_id"] in ratings:
             item["rating"] = ratings[row["response_id"]]
         out.append(item)

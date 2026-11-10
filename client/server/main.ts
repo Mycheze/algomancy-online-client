@@ -25,7 +25,7 @@ import { join, dirname, extname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, type WebSocket } from 'ws';
 import { artVersions } from './art-versions.ts';
-import { cleanHistory } from './judge-history.ts';
+import { judgeAskRequest } from './judge-history.ts';
 import type { Action, CardName, Seat } from '../engine/src/types.ts';
 import type { Amendment } from './types.ts';
 // `legalActions` was imported here and never called — the seat-legality
@@ -1227,13 +1227,10 @@ async function handleRequest(req: import('node:http').IncomingMessage,
       // CR D8.1: a Learn to Play lesson rides along as context — capped here at the
       // bot's own limit, and only when there is one
       const lesson = typeof context === 'string' ? context.trim().slice(0, 4000) : '';
+      // CT-470 the thread, BL-17 the asker's badge — both in judge-history.ts
+      const ask = judgeAskRequest({ question, history, lesson }, asker.badge, BOT_TOKEN);
       const upstream = await fetch(`${BOT_URL}/api/ask`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        // CT-470: the judge box's own thread, so a follow-up is answered in it
-        // (judge-history.ts trims it to the bot's ceilings; a lesson question stands alone)
-        body: JSON.stringify({ question: String(question ?? '').slice(0, 2000),
-          history: lesson ? [] : cleanHistory(history), ...(lesson ? { context: lesson } : {}) }),
+        method: 'POST', headers: ask.headers, body: ask.body,
         signal: AbortSignal.timeout(60000),
       });
       const json = await upstream.text();

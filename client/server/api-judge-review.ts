@@ -150,20 +150,35 @@ function flagsFor(f: FoldedAnswer | undefined, me: Account): JudgeFlag[] {
     .sort((a, b) => markRank(a.by) - markRank(b.by) || b.at.localeCompare(a.at));
 }
 
+/** a bot row's `asker`, kept only in the shape the page shows: the badge alone */
+const askerOf = (a: unknown): JudgeQuestion['asker'] => {
+  if (!a || typeof a !== 'object') return undefined;
+  const x = a as { owner?: unknown; judge?: unknown };
+  if (x.owner === true) return { owner: true };
+  if (x.judge === 1 || x.judge === 2 || x.judge === 3) return { judge: x.judge };
+  return undefined;
+};
+
 /** The page: every answer the bot sent plus every flagged one it no longer
  * has, flagged first — by the highest badge on it, then its newest flag — then
- * the rest newest first. */
+ * the questions a judge or the owner asked in a game ("rules questions … from
+ * badged accounts are surfaced ahead of unbadged ones" — by the asker's badge,
+ * then newest; one dealt with drops back), then the rest newest first. */
 export function reviewDoc(me: Account, answers: readonly BotAnswer[], folded: Map<string, FoldedAnswer>, error?: string): JudgeReviewDoc {
   const byId = new Map<string, BotAnswer>();
   for (const a of answers) if (!byId.has(a.id)) byId.set(a.id, a);
   for (const [id, f] of folded) if (!byId.has(id) && f.flags.size && f.q) byId.set(id, { ...f.q, id });
   const questions: JudgeQuestion[] = [...byId.values()].map(a => {
     const f = folded.get(a.id);
-    const q: JudgeQuestion = { ...a, flags: flagsFor(f, me) };
+    const { asker: rawAsker, ...rest } = a;
+    const asker = askerOf(rawAsker);
+    const q: JudgeQuestion = { ...rest, ...(asker ? { asker } : {}), flags: flagsFor(f, me) };
     if (f?.resolved && !f.flags.size) q.resolved = { by: markOf(f.resolved.by), at: f.resolved.at };
     return q;
   });
-  const top = (q: JudgeQuestion): number => q.flags.length ? Math.min(...q.flags.map(f => markRank(f.by))) : 9;
+  // flags rank 0-3 (owner … L1), a badged asker 5-8, everything else 9
+  const top = (q: JudgeQuestion): number => q.flags.length ? Math.min(...q.flags.map(f => markRank(f.by)))
+    : q.asker && !q.resolved ? 5 + markRank(q.asker) : 9;
   const newest = (q: JudgeQuestion): string => q.flags.reduce((m, f) => f.at > m ? f.at : m, '');
   questions.sort((a, b) => top(a) - top(b) || newest(b).localeCompare(newest(a)) || String(b.ts ?? '').localeCompare(String(a.ts ?? '')));
   const you = { ...markOf(reportedBy(me)!), canResolve: canResolve(me) };

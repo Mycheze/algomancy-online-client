@@ -112,6 +112,11 @@ class Turn(BaseModel):
     content: str = Field(max_length=8000)
 
 
+class AskerBadge(BaseModel):
+    owner: Literal[True] | None = None
+    judge: Literal[1, 2, 3] | None = None
+
+
 class AskRequest(BaseModel):
     question: str = Field(max_length=2000)
     history: list[Turn] = Field(default_factory=list, max_length=8)
@@ -121,6 +126,11 @@ class AskRequest(BaseModel):
     # Where the answer is read (core.answer_question). This page and the game
     # server's /api/judge proxy are both "web", so neither needs to send it.
     surface: Literal["web", "discord"] = "web"
+    # BL-17: the badge of the account that asked in a game — the game server's
+    # /api/judge proxy sends it (client/server/judge-history.ts), and it counts
+    # only with the x-algo-bot header (api_ask drops it otherwise), so nobody
+    # calling this page's /api/ask can claim one. Never a name or an id.
+    asker: AskerBadge | None = None
 
 
 class FeedbackRequest(BaseModel):
@@ -211,10 +221,14 @@ def index():
 
 
 @app.post("/api/ask")
-async def api_ask(req: AskRequest):
+async def api_ask(req: AskRequest, x_algo_bot: str | None = Header(default=None)):
     question = (req.question or "").strip()
     if not question:
         raise HTTPException(status_code=400, detail="Empty question.")
+    # BL-17: a badge is believed only from the game server (see AskRequest.asker)
+    asker = None
+    if req.asker is not None and _bot_allowed(x_algo_bot):
+        asker = {"owner": True} if req.asker.owner else {"judge": req.asker.judge} if req.asker.judge else None
     history = [{"role": t.role, "content": t.content} for t in req.history]
     meta = {}
     try:
@@ -236,7 +250,8 @@ async def api_ask(req: AskRequest):
     store.log_response(
         rid, "lesson" if req.context else "followup" if history else "ask", question, answer, hits,
         core.LLM_MODEL, user_id=req.session_id or "web", channel_id="web",
-        history=history, reasoning=reasoning, engine_version=core.ENGINE_VERSION, llm=meta)
+        history=history, reasoning=reasoning, engine_version=core.ENGINE_VERSION, llm=meta,
+        asker=asker)
 
     return {
         # Markdown with citation superscripts, icon tokens ([Switch1], [Augment], …)

@@ -10,6 +10,8 @@
  * §5 the bot down says so; loading and an action's error say so
  * §6 the way in: the profile's Staff row offers it to a judge or the owner
  *    only, and main.ts routes its button, its clicks and its screen
+ * §7 a question a judge or the owner asked in a game says so, with the badge
+ *    and never a name; the note under the title says those come next
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -122,4 +124,17 @@ test('1182 §6 the way in: a judge\'s or the owner\'s profile, and main.ts route
   assert.match(main, /if \(jr\.handleButton\(btn\)\) return;/);
   assert.match(main, /if \(jr\.screen\(\)\) \{ jr\.renderScreen\(\); return; \}/);
   assert.match(main, /jr\.initJudgeReview\(\{ app: \$app/);
+});
+
+test('1182 §7 a question a judge or the owner asked says so, by badge alone', () => {
+  const asked: JudgeQuestion[] = [
+    { ...Q[1]!, id: id('d'), asker: { judge: 3 } },
+    { ...Q[1]!, id: id('e'), asker: { owner: true } },
+    Q[2]!,
+  ];
+  const html = judgeReviewHtml(view({ review: { ...DOC(JUDGE), questions: asked } }));
+  assert.match(rowOf(html, id('d')), /jrmeta[^]*asked by a Judge L3/);
+  assert.match(rowOf(html, id('e')), /jrmeta[^]*asked by the owner/);
+  assert.doesNotMatch(rowOf(html, id('c')), /asked by/);
+  assert.match(html, /flagged answers go to the top[^<]*and the questions judges asked in a game come next/);
 });

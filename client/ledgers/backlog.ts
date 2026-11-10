@@ -743,7 +743,15 @@ const OPEN: Entry[] = [
       + 'profile\'s Staff row). Guards: server/test/1181, ui/test/1182, bot/test/test_review_questions.py. NOT done: rules '
       + 'QUESTIONS from badged accounts surfaced ahead (the bot log hashes who asked, and the in-game proxy sends no account — '
       + 'the second doneWhen line\'s other half); `npm run reports` and the admin dashboard do not list flagged answers yet (the '
-      + 'review page is where the owner sees them, as an owner-badged account); not looked at in a browser (the home box has none).',
+      + 'review page is where the owner sees them, as an owner-badged account); not looked at in a browser (the home box has none).\n\n'
+      + '2026-11-10 (steward), RULES QUESTIONS FROM BADGED ACCOUNTS — the second doneWhen line\'s other half, for the in-game judge box: '
+      + 'the /api/judge proxy tells the bot the asker\'s BADGE ({owner} or {judge: 1-3}, never a name or an id) with the x-algo-bot token '
+      + '(server/judge-history.ts judgeAskRequest); bot/app.py api_ask keeps `asker` only with the token (a stranger posting to /api/ask '
+      + 'cannot claim one), bot/store.py logs it and recent_answers passes the badge alone. The review page lists those questions right '
+      + 'after the flagged answers — the asker\'s badge (owner, L3, L2, L1), then newest; one dealt with drops back into date order — '
+      + 'with an "asked by a Judge Ln" chip (server/api-judge-review.ts reviewDoc). Guards: server/test/764, server/test/1181 §8, '
+      + 'ui/test/1182 §7, bot/test/test_review_questions.py §5. NOT done: a question a badged player asks on DISCORD (the bot knows the '
+      + 'Discord id; mapping it to a linked account\'s badge needs a lookup on the game server) or on the bot\'s own site (no accounts there).',
   },
   {
     id: 'BL-51',

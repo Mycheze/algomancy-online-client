@@ -28,6 +28,9 @@ export interface JudgeQuestion {
   answer: string;
   /** a follow-up's earlier turns, oldest first */
   history?: { role: string; content: string }[];
+  /** asked in a game by a judge or the owner: their badge, never who (BL-17 —
+   * listed right after the flagged answers) */
+  asker?: { owner?: true; judge?: 1 | 2 | 3 };
   /** the last 👍/👎 a player gave it (good | weird | bad) */
   rating?: string;
   /** the flags standing on it now, highest badge first */
@@ -39,7 +42,8 @@ export interface JudgeQuestion {
 export interface JudgeReviewDoc {
   ok: true;
   you: JudgeMark & { canResolve: boolean };
-  /** flagged first (highest flagger's badge, then the newest flag), then newest first */
+  /** flagged first (highest flagger's badge, then the newest flag), then the
+   * unflagged a judge or the owner asked (their badge, then newest), then newest first */
   questions: JudgeQuestion[];
   /** set when the rules bot's log could not be read: only the flagged ones are listed */
   error?: string;

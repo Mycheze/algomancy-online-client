@@ -21,3 +21,39 @@ export function cleanHistory(raw: unknown): Turn[] {
   }
   return out.slice(-MAX_TURNS);
 }
+
+/* BL-17 — WHO ASKED, WHEN IT WAS A JUDGE. "Rules questions … from badged
+ * accounts are surfaced ahead of unbadged ones": the judges' review page
+ * (api-judge-review.ts) lists a question a judge or the owner asked in a game
+ * right after the flagged answers. Only this proxy knows the account, so it
+ * tells the bot the asker's BADGE — never a name or an id; the bot's log keeps
+ * no asker — and only over the shared ALGO_BOT_TOKEN: the bot drops `asker`
+ * from any request without it, so a caller of its public /api/ask cannot claim
+ * a badge. Unbadged, or no token: the request is exactly what it was. */
+
+export interface AskerBadge { owner?: true; judge?: 1 | 2 | 3 }
+
+/** the badge worth telling the bot, or null */
+export function askerBadge(badge: { owner?: boolean; judge?: number } | null | undefined): AskerBadge | null {
+  if (!badge) return null;
+  if (badge.owner) return { owner: true };
+  if (badge.judge === 1 || badge.judge === 2 || badge.judge === 3) return { judge: badge.judge };
+  return null;
+}
+
+/** the headers and body the /api/judge proxy sends the bot's /api/ask */
+export function judgeAskRequest(
+  ask: { question: unknown; history: unknown; lesson: string },
+  badge: { owner?: boolean; judge?: number } | null | undefined,
+  botToken: string,
+): { headers: Record<string, string>; body: string } {
+  const asker = botToken ? askerBadge(badge) : null;
+  return {
+    headers: { 'content-type': 'application/json', ...(asker ? { 'x-algo-bot': botToken } : {}) },
+    // CT-470: the judge box's own thread, so a follow-up is answered in it
+    // (trimmed to the bot's ceilings; a lesson question stands alone)
+    body: JSON.stringify({ question: String(ask.question ?? '').slice(0, 2000),
+      history: ask.lesson ? [] : cleanHistory(ask.history), ...(ask.lesson ? { context: ask.lesson } : {}),
+      ...(asker ? { asker } : {}) }),
+  };
+}

@@ -1,7 +1,8 @@
 /* BL-17 — THE JUDGES' REVIEW: every answer the rules bot gave (Discord, its
  * web page, the in-game judge box), newest first, and a flag a judge puts on a
  * wrong one. Flagged answers go to the top, the highest badge's first, and stay
- * until the owner marks them dealt with. The server half, and who may do what,
+ * until the owner marks them dealt with; then the questions a judge or the owner
+ * asked in a game, marked with their badge (the server orders them). The server half, and who may do what,
  * is client/server/api-judge-review.ts; the wire types are ui/judgetypes.ts.
  *
  * The owner's decisions it keeps (backlog.ts BL-17 `decided`): judges review
@@ -137,7 +138,9 @@ function flagHtml(f: JudgeFlag, qid: string): string {
 
 function questionHtml(q: JudgeQuestion, v: JudgeReviewView, you: JudgeReviewDoc['you']): string {
   const meta = [when(q.ts), esc(SURFACE[q.surface] ?? q.surface), q.kind === 'followup' ? 'a follow-up' : '',
-    q.rating ? esc(RATING[q.rating] ?? q.rating) : ''].filter(Boolean).join(' · ');
+    q.rating ? esc(RATING[q.rating] ?? q.rating) : '',
+    q.asker ? chip({ label: q.asker.owner ? 'asked by the owner' : `asked by a Judge L${q.asker.judge}`, shape: 'pill', tone: q.asker.owner ? 'accent' : 'info' }) : '',
+  ].filter(Boolean).join(' · ');
   const thread = q.history?.length
     ? `<details class="jrthread"><summary>The conversation before it (${q.history.length})</summary>${
       q.history.map(t => `<p class="jrturn"><b>${t.role === 'assistant' ? 'Bot' : 'Player'}:</b> ${esc(t.content)}</p>`).join('')}</details>`
@@ -191,7 +194,7 @@ export function judgeReviewHtml(v: JudgeReviewView): string {
     }),
     toolsHtml: button({ label: 'Refresh', size: 'sm', dataBtn: 'jr-refresh' }),
     mainHtml: `<p class="framenote">The rules bot's answers, on Discord, on its site and in games, newest first. Flag one that is wrong and say why:
-    flagged answers go to the top of the owner's list for the next rules update. Nothing you write here reaches a game or changes the rules.</p>
+    flagged answers go to the top of the owner's list for the next rules update, and the questions judges asked in a game come next. Nothing you write here reaches a game or changes the rules.</p>
     ${v.actionMsg ? statusMessage({ tone: 'error', text: v.actionMsg }) : ''}
     ${d?.error ? statusMessage({ tone: 'warn', text: d.error }) : ''}
     ${list}`,

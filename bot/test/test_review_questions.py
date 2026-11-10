@@ -9,6 +9,9 @@ store.recent_answers() and app.py's GET /api/review/questions.
   §3 the tail reader: rows far bigger than one read block, and `limit`
   §4 the route: 404 without ALGO_BOT_TOKEN, 404 on the wrong token, the rows
      with the right one
+  §5 who asked: /api/ask keeps a judge's or the owner's badge (`asker`) only
+     when the game server vouches with the token, and recent_answers carries
+     the badge alone — never a junk key, and no row without one gains it
 
 Run: `.venv/bin/python bot/test/test_review_questions.py`. No network, no key.
 """
@@ -109,5 +112,42 @@ with TestClient(webapp.app) as client:
               "§4 the right token: the last answers")
     finally:
         os.environ.pop("ALGO_BOT_TOKEN", None)
+
+# §5
+reset()
+
+
+async def _fake_answer(question, history, *, context=None, meta=None, surface="web"):
+    return f"answer to {question}", [], False
+
+webapp.core.answer_question = _fake_answer
+os.environ["ALGO_BOT_TOKEN"] = "s3cret"
+try:
+    with TestClient(webapp.app) as client:
+        def ask(q, asker=None, token=None):
+            body = {"question": q, **({"asker": asker} if asker is not None else {})}
+            r = client.post("/api/ask", json=body, headers={"x-algo-bot": token} if token else {})
+            check(r.status_code == 200, f"§5 asked: {q}")
+            return r.json()["response_id"]
+        plain = ask("a player's question")
+        claimed = ask("a stranger claims a badge", {"judge": 3})
+        wrong = ask("the wrong token claims one", {"owner": True}, token="nope")
+        judge = ask("a judge asks in a game", {"judge": 2}, token="s3cret")
+        owner = ask("the owner asks in a game", {"owner": True}, token="s3cret")
+        check(client.post("/api/ask", json={"question": "q", "asker": {"judge": 7}},
+                          headers={"x-algo-bot": "s3cret"}).status_code == 422,
+              "§5 a badge that does not exist is refused")
+finally:
+    os.environ.pop("ALGO_BOT_TOKEN", None)
+by_id = {r["id"]: r for r in store.recent_answers(10)}
+check(by_id[judge].get("asker") == {"judge": 2}, "§5 the game server's judge: the badge is kept")
+check(by_id[owner].get("asker") == {"owner": True}, "§5 the game server's owner: the badge is kept")
+check(all("asker" not in by_id[r] for r in (plain, claimed, wrong)),
+      "§5 no token, or the wrong one: no badge, whatever the request claimed")
+store._append(responses_log(), {"response_id": "f" * 32, "ts": "2026-11-10T00:00:00Z", "kind": "ask",
+                                "question": "q", "answer": "a", "channel_id": "web",
+                                "asker": {"judge": 2, "name": "someone", "id": "acc-1"}})
+row = store.recent_answers(1)[0]
+check(row["asker"] == {"judge": 2}, "§5 a logged asker is passed on as the badge alone")
 
 print(f"\nALL {PASS} CHECKS PASSED")

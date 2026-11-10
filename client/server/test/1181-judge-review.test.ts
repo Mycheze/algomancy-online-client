@@ -15,6 +15,9 @@
  * §6 the fold ignores a row its writer could not have made
  * §7 the order: the highest badge on an answer beats a newer flag from a lower one;
  *    the owner's beats an L3's; among equals the newest flag leads, then the rest by date
+ * §8 a question a judge or the owner asked in a game comes right after the flagged
+ *    ones — the asker's badge, then newest — and drops back once dealt with; the
+ *    badge is all of the asker the page gets
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -222,4 +225,26 @@ test('§7 the order: badge first, then the newest flag, then the unflagged by da
   ];
   const d = reviewDoc(me, [6, 5, 4, 3, 2, 1].map(ans), foldFlags(rows));
   assert.deepEqual(d.questions.map(q => q.question), ['q3', 'q1', 'q4', 'q2', 'q6', 'q5']);
+});
+
+test('§8 the questions judges asked: after the flagged ones, the asker\'s badge first, back in date order once dealt with', () => {
+  const me = accountForToken(L1.token)!;
+  const ans = (n: number, asker?: unknown): BotAnswer => ({ id: rid(n), ts: `2026-11-0${n}T00:00:00Z`, kind: 'ask', surface: 'web',
+    question: `q${n}`, answer: `a${n}`, ...(asker ? { asker } : {}) } as BotAnswer);
+  const answers = [ans(8), ans(7, { judge: 1 }), ans(6), ans(5, { judge: 3 }), ans(4, { owner: true }), ans(3, { judge: 3 }), ans(2), ans(1, { judge: 2, name: 'leak', id: 'acc' })];
+  const rows: JudgeFlagRow[] = [
+    { v: 1, op: 'flag', id: rid(2), at: '2026-11-09T00:00:00Z', by: { id: 'l', name: 'low', judge: 1 }, note: 'wrong' },
+  ];
+  let d = reviewDoc(me, answers, foldFlags(rows));
+  assert.deepEqual(d.questions.map(q => q.question), ['q2', 'q4', 'q5', 'q3', 'q1', 'q7', 'q8', 'q6'],
+    'flagged, then the owner\'s, L3 newest first, L2, L1, then the rest by date');
+  assert.deepEqual(d.questions.find(q => q.id === rid(1))!.asker, { judge: 2 }, 'the badge alone, whatever else the row carried');
+  assert.ok(!JSON.stringify(d).includes('leak') && !JSON.stringify(d).includes('"acc"'));
+  assert.equal(d.questions.find(q => q.id === rid(8))!.asker, undefined);
+
+  // the owner's question flagged and dealt with: it drops back into date order
+  rows.push({ v: 1, op: 'flag', id: rid(4), at: '2026-11-09T01:00:00Z', by: { id: 'l', name: 'low', judge: 1 }, note: 'hm' },
+    { v: 1, op: 'resolve', id: rid(4), at: '2026-11-09T02:00:00Z', by: { id: 'o', name: 'boss', owner: true } });
+  d = reviewDoc(me, answers, foldFlags(rows));
+  assert.deepEqual(d.questions.map(q => q.question), ['q2', 'q5', 'q3', 'q1', 'q7', 'q8', 'q6', 'q4']);
 });
