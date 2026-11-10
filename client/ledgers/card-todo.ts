@@ -195,6 +195,16 @@ const OPEN: TodoEntry[] = [
     reportId: 375,
     status: "open",
   },
+  {
+    id: 555, area: "client", severity: "minor",
+    title: "on a touch screen, tapping a resource in the resource step only shows it with an Activate button; there it should just activate",
+    detail: "Report #376 (mycheze, owner, 2026-11-10, ux, medium, room FMTA): \"Activating resources during the resource step doesn't need a whole button and zoom in effect on mobile/touch. Its very clear that during the resource step you're going to activate your resources. Its very clear can just do it.\" This narrows the owner's own CT-408 answer (2026-10-25, \"Casting a spell token, Activating a resource\" become tap-to-read, then a button acts): in the resource step a finger's tap on a dormant resource should activate it at once, as a mouse click does. ui/main.ts, the `kind === 'res'` click handler's openRes: `if (plan.kind === 'auto' && tapToGo(t, resGoKey(p, i), plan.action, e)) return;` arms the held Activate button (ui/tapgo.ts) in every phase alike. The resource step is the planning phase before the haste step (the phase bar's Planning box: `s.phase === 'planning'` and not drafting and not `s.hasteDone`).",
+    evidence: "Report #376, room FMTA, action 21 (a sandbox game, turn 3-4: the owner recycled Dropslime / Manufacture / Unfinished Creation for dormant resources and activated each). Replayed 2026-11-10 (steward triage): 49 actions, no divergence. The tap path read in ui/main.ts openRes and tapToGo; CT-408's closing note describes the held button.",
+    fix: "In openRes, skip tapToGo for an activateResource action while the resource step is on (planning phase, not drafting, haste not done) — the tap sends the activation as the mouse click does. Everywhere else (haste step, deployment, battle) keep CT-408's read-then-button. Out of scope unless the owner says so: the spell-token cast (stays read-then-button) and a Prismite's single auto-fired exchange (plan.action of type exchangePrismite — it chooses an element, so keep the button). Guards in ui/test/676-touch-token-resource-tap-reads: a finger tap on a dormant resource in the resource step sends activateResource at once and arms no button; the existing \"a finger tap on a dormant resource sends nothing\" test moves to a phase outside the resource step (haste or deployment) and still holds. Update CT-408's 676 guard titles in card-todo-closed.ts if a title changes. Player-visible: an updates.ts line.",
+    proof: () => /plan\.kind === 'auto' && tapToGo\(t, resGoKey\(p, i\), plan\.action, e\)\) return;/.test(body('ui/main.ts', "if (kind === 'res') {", 'const isShard')),
+    reportId: 376,
+    status: "open",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

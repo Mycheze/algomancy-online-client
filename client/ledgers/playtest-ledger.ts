@@ -476,6 +476,12 @@ const OPEN: LedgerEntry[] = [
     status: 'live',
     note: "Real, found in the code (no room; no browser on the box to watch the frame). Pressing Attack! sends the attack and clears the built plan in the same tick (ui/main.ts declareBuiltAttack), but over a socket nothing is applied until the server's update arrives, so the board repaints the old declare-step state with no plan and the chosen attackers stand back in In Play for one round trip. Blocks fixed this exact thing as [77] (the plan is held until the declaration lands); attacks never were. CT-554.",
   },
+  {
+    id: 376, room: "FMTA", date: "2026-11-10",
+    report: "mycheze (ux, medium): \"Activating resources during the resource step doesn't need a whole button and zoom in effect on mobile/touch. Its very clear that during the resource step you're going to activate your resources. Its very clear can just do it.\"",
+    status: 'live',
+    note: "Real, a change the owner asks for to his own earlier call. Since CT-408 (owner 2026-10-25: a finger's tap on a resource reads it, then an Activate button acts) a tap on a dormant resource opens the zoom and arms a held Activate button in every phase alike (ui/main.ts openRes → tapToGo). He now wants the resource step exempt: there a tap should activate at once. FMTA replayed clean (49 actions; at [21] he was recycling and activating resources in the resource step of a sandbox game). Not a duplicate: CT-408 is closed and its choice is what this narrows. CT-555.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
