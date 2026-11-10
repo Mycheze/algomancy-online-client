@@ -54,7 +54,7 @@ export function noteLine(n: LeagueNote, time: (unix: number) => string): { html:
       return { html: `${d['won'] ? 'You beat' : 'You lost to'} <b>${name(d['opponent'])}</b>${d['final'] ? ' in the final' : ''}.`
         + (d['record'] ? ` Your record: ${esc(d['record'])}.` : ''), action: null };
     case 'challenge':
-      return { html: `<b>${name(d['from'])}</b> started a sign-up week game with you.`, action: 'league' };
+      return { html: `<b>${name(d['from'])}</b> started a sign-up week practice game with you.`, action: 'league' };
     case 'waiting':
       return { html: `<b>${name(d['from'])}</b> is waiting for you in your ${season} match.`, action: 'play' };
     case 'season':

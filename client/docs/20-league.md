@@ -505,8 +505,11 @@ brake: a fresh store spends nine.
   weeks 2–3 18 and 25 Oct, the final 1–7 Nov, closed 8 Nov. `weeks: 3`.
 - **Sign-up week (phase 0) games.** No pairings; the League page lists every
   other entrant by shared hours for the rest of the week, and "Start a league
-  game" makes a `week: 0` match. They count in the table, at most `perWeek`
-  each and one per opponent; either player can call one off; the unplayed
+  game" makes a `week: 0` match, at most `perWeek` each and one per
+  opponent. **Since 2026-11-10 they do not count in the table** — the owner:
+  "League matches played outside of the league paired matches shouldn't count
+  to your overall record" (`league.ts` `counts`); they are practice, and send
+  no result message; either player can call one off; the unplayed
   ones are DELETED at week 1 (they were optional, so neither "unplayed" nor a
   meeting for the repeat penalty).
 - **The match room** (milestone 2) is built: `POST /api/league/play` →

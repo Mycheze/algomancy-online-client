@@ -244,7 +244,7 @@ export function postText(s: SeasonView, origin: string): string {
       `🏅 **${s.name}** — sign-ups are open!`,
       ...(constructed(s) ? ['Casual constructed: bring any deck, and change it every game if you like.'] : []),
       ...(competitive(s) ? [COMPETITIVE_LINE] : []),
-      `Weeks run Sunday to Saturday. This is sign-up week: no pairings yet. Join, and the League page shows who is free when you are — up to ${s.perWeek} games against them count.`,
+      `Weeks run Sunday to Saturday. This is sign-up week: no pairings yet. Join, and the League page shows who is free when you are — up to ${s.perWeek} practice games against them, which do not count in the standings.`,
       `Week 1 pairings go up ${stamp(at(1))}, then each Sunday for ${s.weeks} weeks, then a final between the top two.`,
       ``,
       `Signed up (${ins.length}): ${ins.map(e => who(e)).join(', ') || 'nobody yet'}`,
@@ -491,7 +491,7 @@ function nextText(s: SeasonView, tz: string): string {
 function howHtml(s: SeasonView): string {
   return `<ul class="lgbhow">
     <li>Each week (Sunday to Saturday) you get ${s.perWeek} opponents, matched on the hours you are both free.</li>
-    <li>Sign-up week has no pairings: the League page shows who is free when you are, and up to ${s.perWeek} games against them count.</li>
+    <li>Sign-up week has no pairings: the League page shows who is free when you are, for up to ${s.perWeek} practice games. Only your paired matches count in the standings.</li>
     <li>${matchLine(s)}</li>
     <li>Suggest a time on the League page (your opponent sees it in their own time zone), then both press Play.</li>
     <li>A win is 3 points. A match nobody plays counts for neither player.</li>
@@ -534,7 +534,7 @@ function mineHtml(s: SeasonView, tz: string): string {
     const free = me?.suggestions.filter(x => x.days > 0).length ?? 0;
     return `<h3>Sign-up week</h3>${rows}
       <p>${free ? `${free} player${free === 1 ? ' is' : 's are'} free when you are.` : 'Nobody shares your hours yet.'}
-        Up to ${me?.week0Cap ?? 3} games this week count.</p>
+        Up to ${me?.week0Cap ?? 3} practice games this week; they do not count in the standings.</p>
       <p><button data-btn="lg-open">Find an opponent</button></p>`;
   }
   if (!me || !now.length) return `<h3>Your matches</h3><p class="dim">${
@@ -912,8 +912,8 @@ function suggestionsHtml(s: SeasonView, v: LeagueView): string {
   const me = s.me!;
   const used = me.matches.filter(m => m.week === 0).length;
   return panel({ title: 'Free when you are', wide: true, bodyHtml: `
-    <p>Sign-up week has no pairings. Play anybody here instead: up to ${me.week0Cap} games count in the standings
-      (you have ${used}), one per opponent. Message them on Discord, then start the game and both press Play.</p>
+    <p>Sign-up week has no pairings. Play anybody here instead, for practice: up to ${me.week0Cap} games
+      (you have ${used}), one per opponent. They do not count in the standings — only your paired matches do. Message them on Discord, then start the game and both press Play.</p>
     ${me.suggestions.length ? table({ className: 'lgsuggest', headless: true, columns: SUGGEST_COLUMNS, rows: me.suggestions.map(x => ({ cells: {
       who: { html: `<b>${esc(x.name)}</b>${x.contact ? `<br><span class="dim">Discord: </span>${esc(x.contact)}` : ''}` },
       free: { html: x.days ? `<span class="dim">free together:</span> ${x.windows.map(w => windowText(w, v.tz)).map(esc).join(' · ')}`

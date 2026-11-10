@@ -418,13 +418,22 @@ export const OMW_FLOOR = 1 / 3;
 const decided = (m: LeagueMatch): boolean => !!m.result && m.result.outcome !== 'unplayed';
 
 /**
+ * Is this match in the table? Only the PAIRED weeks' matches (1..weeks). The
+ * final is not — the table is what PICKS the finalists — and neither is a
+ * sign-up week game (week 0), which two players chose for themselves (owner,
+ * 2026-11-10: "League matches played outside of the league paired matches
+ * shouldn't count to your overall record … want things to be perfectly
+ * fair"). Its result stays on the match; it is practice.
+ */
+export const counts = (m: LeagueMatch): boolean => !m.final && m.week >= 1;
+
+/**
  * The table: 3 points a win; ties broken by OMW% (BL-04's settled tiebreak),
  * then head to head inside the tied group, then fewer unplayed, then id (so
- * the order is total and stable). The final is not in it — the table is what
- * PICKS the finalists.
+ * the order is total and stable). Only the matches that `counts`.
  */
 export function standings(ids: readonly string[], matches: readonly LeagueMatch[]): StandingRow[] {
-  const games = matches.filter(m => !m.final);
+  const games = matches.filter(counts);
   const rec = new Map(ids.map(id => [id, { w: 0, l: 0, unplayed: 0, opps: [] as string[] }]));
   for (const m of games) {
     const a = rec.get(m.a), b = rec.get(m.b);

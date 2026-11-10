@@ -3,14 +3,21 @@
  * The owner, 2026-10-04, launching the October league: sign-up week has no
  * pairings, but "it will give you recommendations of who's got time matching
  * yours so that you can play with them and it sorta gets added to the week".
- * Settled: such a game counts like any match, at most `perWeek` each and one
- * per opponent; one never played vanishes at week 1; it is not rated (the
- * weekly pairings are). A Discord NAME is typed, never verified.
+ * Settled: at most `perWeek` each and one per opponent; one never played
+ * vanishes at week 1; it is not rated (the weekly pairings are). A Discord
+ * NAME is typed, never verified.
+ *
+ * It no longer COUNTS (owner, 2026-11-10, #steward): "League matches played
+ * outside of the league paired matches shouldn't count to your overall
+ * record. Some players are getting competitive and want things to be
+ * perfectly fair." Until then a sign-up week game went into the table like
+ * any match. It is practice now: no win, loss or points, no record in its
+ * result message (none is sent), nothing towards OMW or head to head.
  *
  *   §1  ⭐ the recommendations: everybody else in, best overlap first, with a
  *       Discord name only an entrant sees
  *   §2  ⭐ a sign-up week game: the cap, one per pair, only in sign-up week,
- *       call-off, and it counts in the table once played
+ *       call-off, and once played it is NOT in the table
  *   §3  week 1 drops the unplayed ones and pairs as if they never existed
  *   §4  which match a player may open, and when
  *   §5  ⭐ the league room: both seats bound, the trio method fixed to random
@@ -93,7 +100,7 @@ test('league week 0 §1 the recommendations put the best overlap first', () => {
   assert.ok(seasonView(s, undefined, { admin: true, now }).entrants.every(e => typeof e.contact === 'string'));
 });
 
-test('league week 0 §2 a sign-up week game: the cap, one per pair, call-off, and it counts', () => {
+test('league week 0 §2 a sign-up week game: the cap, one per pair, call-off, and it is not in the record', () => {
   const s = season('w0b');
   const [a, b, c, d] = ['Ann0', 'Bob0', 'Cat0', 'Dan0'].map(n => player(n, 'Europe/London', everyDay(18, 23)));
   const late = player('Eve0', 'Europe/London', everyDay(18, 23));
@@ -119,12 +126,40 @@ test('league week 0 §2 a sign-up week game: the cap, one per pair, call-off, an
   assert.ok(cancelChallenge(s, c!, ac.id, OPEN + HOUR).ok);
   assert.ok(challenge(s, a!, d!.id, OPEN + HOUR).ok, 'the freed slot can be used again');
 
-  // played, it counts in the table — and a decided one cannot be called off
+  // played, it is recorded on the match — and a decided one cannot be called
+  // off — but it is not in anybody's record (owner, 2026-11-10)
   const abId = ab.ok ? ab.match : '';
   assert.ok(recordPlayed(abId, b!.id, 'ROOM', OPEN + 2 * HOUR));
+  assert.equal(s.matches.find(m => m.id === abId)!.result?.outcome, 'b', 'the match still knows who won');
   assert.equal(cancelChallenge(s, a!, abId, OPEN + 3 * HOUR).ok, false);
-  const row1 = table(s).find(r => r.id === b!.id)!;
-  assert.deepEqual([row1.w, row1.l, row1.points], [1, 0, 3], '⭐ a sign-up week game counts like any match');
+  const rowB = table(s).find(r => r.id === b!.id)!, rowA = table(s).find(r => r.id === a!.id)!;
+  assert.deepEqual([rowB.w, rowB.l, rowB.points, rowA.w, rowA.l, rowA.points], [0, 0, 0, 0, 0, 0],
+    '⭐ a sign-up week game is not in the standings: no win, no loss, no points');
+  assert.equal(outboxRows().filter(r => r.season === s.id && r.kind === 'result' && r.data['match'] === abId).length, 0,
+    'and no result message tells either player a "new record"');
+});
+
+test('league week 0 §2b a sign-up week win is not one of the season wins', () => {
+  const s = season('w0e');
+  const [a, b, c, d] = ['Ann5', 'Bob5', 'Cat5', 'Dan5'].map(n => player(n, 'Europe/London', everyDay(18, 23)));
+  for (const x of [a, b, c, d]) joinSeason(s, x!, OPEN + 1);
+  const ab = challenge(s, a!, b!.id, OPEN + HOUR);
+  assert.ok(ab.ok);
+  recordPlayed(ab.match, a!.id, 'R0', OPEN + 2 * HOUR);
+  advance(s, WEEK1);
+  // week 1: a and b each win one paired match, against the same two players
+  const w1 = s.matches.filter(m => m.week === 1);
+  for (const m of w1) {
+    const winner = [a!.id, b!.id].includes(m.a) ? m.a : [a!.id, b!.id].includes(m.b) ? m.b : m.a;
+    recordPlayed(m.id, winner, `R-${m.id}`, WEEK1 + HOUR);
+  }
+  const rows = table(s);
+  const ra = rows.find(r => r.id === a!.id)!, rb = rows.find(r => r.id === b!.id)!;
+  const paired = (id: string): number => w1.filter(m => m.result && (m.result.outcome === 'a' ? m.a : m.b) === id).length;
+  assert.deepEqual([ra.w, rb.w], [paired(a!.id), paired(b!.id)], '⭐ wins are the paired wins only');
+  assert.equal(ra.l + ra.w + rb.l + rb.w,
+    w1.filter(m => [m.a, m.b].includes(a!.id)).length + w1.filter(m => [m.a, m.b].includes(b!.id)).length,
+    'every counted result is a week-1 match');
 });
 
 test('league week 0 §3 week 1 drops the unplayed and pairs as if they never were', () => {

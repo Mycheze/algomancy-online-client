@@ -166,7 +166,7 @@ def render(row, base=None):
 
     if kind == "challenge":
         f = d.get("from") or {}
-        text = (f"🏅 {_who(people, f.get('id'))} started a sign-up week game with you in **{season}**. "
+        text = (f"🏅 {_who(people, f.get('id'))} started a sign-up week practice game with you in **{season}** (it does not count in the standings). "
                 f"Agree a time, then both press Play on the League page — before {_ts(d['deadline'], 'F')}.")
         return {"content": text, "view": view}
 

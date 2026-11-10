@@ -428,10 +428,11 @@ export function repairWeek(s: Season, now: number, opts: { putBack?: string } = 
 //
 // Sign-up week has no pairings. Instead the page RECOMMENDS the players whose
 // hours overlap yours, and either of you can start a league game against the
-// other. It counts in the table like any match, capped like a normal week:
-// at most `perWeek` week-0 matches each, one per opponent, and they are not
-// rated — two players chose each other, which is what the rating keeps off
-// the ladder. One that was never played simply vanishes when week 1 is paired
+// other — capped like a normal week: at most `perWeek` week-0 matches each,
+// one per opponent. They are not rated — two players chose each other, which
+// is what the rating keeps off the ladder — and, since 2026-11-10, not in the
+// table either (league.ts `counts`: the owner wants only the paired matches
+// in anybody's record). They are practice. One that was never played simply vanishes when week 1 is paired
 // (it was optional, so it is not "unplayed", and it does not count as a
 // meeting for week 1's repeat penalty).
 
@@ -973,6 +974,9 @@ export function leagueMatchDeadline(matchId: string): number | null {
 function resultMessages(s: Season, m: LeagueMatch, now: number): void {
   const out = m.result?.outcome;
   if (out !== 'a' && out !== 'b') return;
+  // a sign-up week game moves nobody's record (league.ts counts), so there is
+  // no "your record is now" to send
+  if (m.week === 0) return;
   const rows = table(s);
   const winner = out === 'a' ? m.a : m.b, loser = out === 'a' ? m.b : m.a;
   for (const id of [m.a, m.b]) {
