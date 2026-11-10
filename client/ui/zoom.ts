@@ -178,13 +178,45 @@ const CARDISH = '.card, .rescard, .stackcard';
  * Duck-typed on `closest`/`querySelector` so test/322 can hand it a stub. */
 export function zoomTarget(el: Element | null): HTMLElement | null {
   const c = el?.closest?.(CARDISH) as HTMLElement | null;
-  if (!c || !c.querySelector('img')) return null;
+  if (!c) return tableTarget(el);
+  if (!c.querySelector('img')) return null;
   // inside the zoom layer itself, or a hidden face-down back: nothing to read
   if (c.closest('#cardzoom')) return null;
   // an info block's resources get the resource window instead (ui/ressum.ts):
   // how many and how much mana, not the art (owner, 2026-09-26)
   if (c.closest('.linfo .lres')) return null;
   return c;
+}
+
+/**
+ * THE SIDEBOARDING TABLE HOVERS TOO (BL-65's table between Competitive games,
+ * BL-55's first leftover). Its copies are the tabletop's `.ttcard` tiles, not
+ * board `.card`s, so the hover zoom passed them by and only the press zoom
+ * (press and hold, or the wheel) read a card there — "the big zoom, as on the
+ * board" is what the backlog asked. On THAT screen (`.ccsbtable`) a mouse
+ * resting on a tile zooms its scan alone, the press zoom's copy at the hover
+ * zoom's width. The tabletop deck builder is left to the press zoom its owner
+ * asked for (2026-10-21), and no tile zooms while a card is in the air.
+ */
+const TABLE_TILE = '.ccsbtable [data-zoom]';
+function tableTarget(el: Element | null): HTMLElement | null {
+  const c = el?.closest?.(TABLE_TILE) as HTMLElement | null;
+  if (!c || !c.querySelector('img') || c.closest('#cardzoom, #draglayer')) return null;
+  if (typeof document !== 'undefined' && document.documentElement?.classList?.contains('dragging')) return null;
+  return c;
+}
+
+/** a tile's copy: its scan alone (a tile's badges and outline are not the
+ * card), grown out of the scan's own box */
+function scanCopy(c: HTMLElement): { copy: HTMLElement; r: Rect } {
+  const img = c.querySelector('img')!;
+  const face = inertCopy(img);
+  face.removeAttribute('class');
+  face.removeAttribute('loading');
+  const copy = document.createElement('div');
+  copy.className = 'zoomcopy presszoom';
+  copy.appendChild(face);
+  return { copy, r: img.getBoundingClientRect() };
 }
 
 let layer: HTMLElement | null = null;
@@ -262,6 +294,14 @@ export function zoomAt(el: Element | null, animate = true): void {
 function show(card: HTMLElement | null, animate: boolean, at?: { x: number; y: number }): void {
   if (!card) { drop(); return; }
   if (card === source && layer?.firstChild) return;
+  if (!at && !card.matches?.(CARDISH)) {
+    // a sideboarding-table tile (tableTarget): the scan, no decorator
+    const { copy, r } = scanCopy(card);
+    const box = zoomBox(r, { w: innerWidth, h: innerHeight });
+    if (!box) { drop(); return; }
+    put(card, copy, r, box, animate);
+    return;
+  }
   const r = faceRect(card);
   const copy = inertCopy(card);
   copy.classList.add('zoomcopy');
@@ -482,14 +522,7 @@ export function zoomPress(el: Element | null, at?: { x: number; y: number }, ani
   const c = pressTarget(el);
   if (!c) return false;
   if (c === pressing && layer?.firstChild) return true;
-  const img = c.querySelector('img')!;
-  const r = img.getBoundingClientRect();
-  const face = inertCopy(img);
-  face.removeAttribute('class');
-  face.removeAttribute('loading');
-  const copy = document.createElement('div');
-  copy.className = 'zoomcopy presszoom';
-  copy.appendChild(face);
+  const { copy, r } = scanCopy(c);
   const view = { w: innerWidth, h: innerHeight };
   const box = at ? peekBox(r, view, at) : zoomBox(r, view, PEEK_W);
   peeking = null;

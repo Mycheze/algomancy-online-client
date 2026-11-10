@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-10', kind: 'fix', text: 'Between games of a Competitive match, resting the mouse on a card on the sideboarding table now shows it big, as on the board. Before, only pressing and holding did.' },
   { date: '2026-11-10', kind: 'change', text: 'On the Judge review page, questions a judge asked the judge in a game now come right after the flagged answers, marked with the judge\'s level, so they are not lost among everyone else\'s.' },
   { date: '2026-11-10', kind: 'change', text: "Iyngstra takes the designer's new printing: it now costs 5, and after combat you may exchange life totals with a player of your choice. It no longer gains you life when another ally spawns." },
   { date: '2026-11-10', kind: 'change', text: "Aurozoa takes the designer's new printing: its 'Pay 1 life: Recall me' is now a battle-speed ability, usable only during a battle, whether on Aurozoa itself or on a unit it is augmented onto." },

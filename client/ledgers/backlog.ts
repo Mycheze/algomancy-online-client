@@ -924,7 +924,12 @@ const OPEN: Entry[] = [
       + 'sideboarding table in the app frame, whose root carries `apppage` (1129 §1 pins it), and the floating report pill '
       + 'and bell are hidden under any `#app > .apppage` (shared/13-report-and-inbox.css, 1020); the 215px clearance is '
       + 'gone from 47-competitive-match.css. Re-checked at HEAD: (2) is still open (pages/match.ts deckPilesHtml still '
-      + 'calls seedPiles(main, \'cost\')). Left: (1), (2), (6).',
+      + 'calls seedPiles(main, \'cost\')). Left: (1), (2), (6).\n\n'
+      + '2026-11-10 (steward): (1) DONE — the first doneWhen line. zoom.ts zoomTarget falls back to tableTarget: a '
+      + '`.ccsbtable [data-zoom]` tile with a scan is a hover target, shown as its scan alone (the press zoom\'s copy) at '
+      + 'the hover zoom\'s width; never while `html.dragging`, and drag.ts begin() lets it go. The tabletop deck builder '
+      + 'keeps only its press zoom (owner, 2026-10-21). Guarded by 1215-sideboard-table-hover-zoom.test.ts. Not looked at '
+      + 'in a browser (the home box has none). Left: (2), (6).',
   },
   {
     id: 'BL-57',

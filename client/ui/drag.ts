@@ -33,7 +33,7 @@
  * same holds for every painter a drag can meet (the tabletop, its binder) —
  * the queue poll repaints the page under it too.
  */
-import { inertCopy, zoomPressEnd } from './zoom.ts';
+import { inertCopy, zoomOff, zoomPressEnd } from './zoom.ts';
 import { swallowNextClick } from './touch.ts';
 
 export interface DragPlan {
@@ -149,8 +149,10 @@ function setZone(l: Live, zone: Element | null): void {
 }
 
 function begin(p: Press, x: number, y: number): boolean {
-  // a card held up to read (ui/presszoom.ts) goes the moment its press is a drag
+  // a card held up to read (ui/presszoom.ts) goes the moment its press is a
+  // drag, and so does a hover zoom (the sideboarding table's, zoom.ts tableTarget)
   zoomPressEnd();
+  zoomOff();
   if (!p.src.isConnected) {
     const again = p.prov.refind
       ? p.prov.refind(p.src)
