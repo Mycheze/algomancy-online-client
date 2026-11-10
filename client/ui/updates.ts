@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-10', kind: 'change', text: 'A few labels now match the rest of the game: the draft lobby says an opponent is "not here yet" like the other rooms, the end-of-game button to matchmaking reads "Find a game", and constructed\'s draw-4-put-2-back bar says "Draw phase".' },
   { date: '2026-11-10', kind: 'fix', text: 'When a match is found and the countdown runs out, the box now says time ran out, or that your opponent did not answer, instead of sitting on a dead "Accept 0".' },
   { date: '2026-11-10', kind: 'fix', text: 'In the draft lobby, once you lock in, the elements you can no longer pick now turn grey with a dashed edge, so they no longer look the same as the ones you simply did not choose. Your own pick keeps its colour.' },
   { date: '2026-11-10', kind: 'fix', text: 'With a screen reader, a box that opens over the table now says it is a dialog and which one: your bin or cache, the card inspector, the judge, the game log, the draft pick, Match found, the concede question, the end-of-game screen.' },

@@ -144,7 +144,7 @@ function bodyLabel(method: string): string {
 /** one seat's line in the footer: a dot, a name, a state */
 function seatLine(name: string, you: boolean, here: boolean, locked: boolean): string {
   const dot = !here ? 'away' : locked ? 'ready' : '';
-  const state = !here ? 'has not arrived yet' : locked ? '<b class="lockedin">ready</b>' : 'still choosing…';
+  const state = !here ? 'not here yet' : locked ? '<b class="lockedin">ready</b>' : 'still choosing…';
   return `<span class="lobbyseat"><i class="seatdot ${dot}"></i>
     <span>${esc(name)}${you ? ' (you)' : ''} — ${!here || locked ? state : `<span class="dim">${state}</span>`}</span></span>`;
 }
@@ -196,7 +196,7 @@ export function lobbyHtml(v: LobbyView): string {
       + roomSection(`<div class="lobbyfoot">
       <div class="lobbyseats">
         ${seatLine(names[seat] ?? 'You', true, true, iAmLocked)}
-        ${seatLine(names[opp] ?? 'Your opponent', false, theyAreHere, theyAreLocked)}
+        ${seatLine(names[opp] ?? 'Opponent', false, theyAreHere, theyAreLocked)}
       </div>
       <div class="lobbygo">${iAmLocked
         ? button({ label: 'Change my mind', dataBtn: 'lobby-unlock' })

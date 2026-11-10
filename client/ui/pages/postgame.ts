@@ -277,7 +277,7 @@ export function postGameHtml(v: PostGameView): string {
       ${o.match ? matchButtonsHtml(o) : rematchHtml(o)}
       ${disputeHtml(o)}
       ${button({ label: 'Return to home', dataBtn: 'pg-home' })}
-      ${button({ label: 'Join matchmaking queue', dataBtn: 'pg-queue' })}
+      ${button({ label: 'Find a game', dataBtn: 'pg-queue' })}
     </div>
     <button class="pgpeek" data-btn="pg-close">View the final board</button>
     </div></div>

@@ -637,7 +637,15 @@ const OPEN: Entry[] = [
       + 'answer". Guarded by 1211-match-offer-runs-out.test.ts (§2 drives the module through a fake socket). Left: '
       + '§18.20\'s other two (no live region for the queue, no rating delta on the post-game), and the table\'s fix-proposal '
       + 'bar (amend.ts barHtml), which also keeps its Agree at "0s"; checked the other countdowns (match.ts clock, the '
-      + 'game clocks): they are clocks, not offers. Reasoned, not looked at (no browser).',
+      + 'game clocks): they are clocks, not offers. Reasoned, not looked at (no browser).\n\n'
+      + '2026-11-10 (steward): the same thing is said in the same words (docs/23-ui-inventory/05 §18.12: "Same idea, '
+      + 'different words"). Three pairs: the draft lobby\'s absent seat said "has not arrived yet" and named a nameless '
+      + 'opponent "Your opponent", the other rooms say "not here yet" and "Opponent" (pages/lobby.ts seatLine); the '
+      + 'post-game\'s "Join matchmaking queue" is "Find a game", the home strip\'s button to the same screen; the bar that '
+      + 'brings constructed\'s hidden bottom-2 back said "Draw step" (CR 503.1, the draw of 2 alone), now "Draw phase" '
+      + 'like the panel and CR 901.5 (main.ts pickShowHtml). Left on purpose: "Leave" in a waiting room beside "Return to '
+      + 'home" after a game (leaving a room is not going home), and "Opponent" as a column head or name vs "Your opponent" '
+      + 'in a sentence. Guarded by 1212-same-thing-same-words.test.ts.',
   },
   {
     id: 'BL-17',

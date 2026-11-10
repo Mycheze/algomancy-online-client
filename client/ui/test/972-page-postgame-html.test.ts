@@ -9,7 +9,7 @@
  * §2 the rematch button's four states, and Dispute
  * §3 a Competitive match: Continue in place of Rematch, and the result once it is over
  * §4 the keep-it offers: the guest's, the signed-out seat's form, and the outcome's note slot
- * §5 the three ways out are always there, and Join matchmaking queue is live
+ * §5 the three ways out are always there, and Find a game is live
  * §6 names are escaped
  */
 import { test } from 'node:test';
@@ -104,7 +104,7 @@ test('972 §4 keep it: the guest form, the signed-out form, the outcome note', (
 test('972 §5 the ways out: home, the queue (live), and a look at the final board', () => {
   const html = postGameHtml(view());
   assert.deepEqual(buttons(html).slice(-2), ['pg-home', 'pg-queue']);
-  assert.doesNotMatch(html, /data-btn="pg-queue"[^>]*disabled/, 'Join matchmaking queue was a disabled placeholder once; it is live');
+  assert.doesNotMatch(html, /data-btn="pg-queue"[^>]*disabled/, 'Find a game (once "Join matchmaking queue") was a disabled placeholder once; it is live');
   assert.match(html, /<button class="pgpeek" data-btn="pg-close">View the final board<\/button>/);
 });
 

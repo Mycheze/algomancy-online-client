@@ -74,12 +74,12 @@ test('971 §4 the opponent away: share the code (and invite a friend); a league 
   const away = lobbyHtml(view({ peers: [true, false] }));
   assert.match(away, /Send your opponent the room code <b>QXZZ<\/b>/);
   assert.match(away, /<!--SLOT:friends-->/);
-  assert.match(away, /<i class="seatdot away"><\/i>\s*<span>Bo — has not arrived yet/);
+  assert.match(away, /<i class="seatdot away"><\/i>\s*<span>Bo — not here yet/);
   assert.doesNotMatch(lobbyHtml(view()), /sharebar/, 'both here: nothing to share');
   const league = lobbyHtml(view({ peers: [true, false], lobby: { ...view().lobby, method: 'random' } }));
   assert.match(league, /League match<small>room/);
   assert.doesNotMatch(league, /own League page|tell them on Discord|lobbywait/, 'the owner removed the League-page sentence');
-  assert.match(league, /has not arrived yet/, 'the seat row says they are not here');
+  assert.match(league, /not here yet/, 'the seat row says they are not here');
   assert.doesNotMatch(league, /sharebar|SLOT:friends/);
   const custom = lobbyHtml(view({ custom: { summary: ['Packs of 5'], excluded: 1 } }));
   assert.match(custom, /Custom live draft<small>room/);

@@ -7930,7 +7930,7 @@ function pickModalHtml(): string {
 function pickShowHtml(): string {
   if (!pickHidden || pickSeat() === null) return '';
   const draft = draftSeat() !== null;
-  return `<div class="promptbar pending"><span class="who">${draft ? 'Draft step' : 'Draw step'}</span>
+  return `<div class="promptbar pending"><span class="who">${draft ? 'Draft step' : 'Draw phase'}</span>
     ${draft ? 'your pick is waiting' : 'two cards to put on the bottom'}
     <button class="primary" data-btn="pickshow">↑ back to ${draft ? 'the draft' : 'your draw'}</button></div>`;
 }
@@ -12669,7 +12669,7 @@ if (params.has('room') && params.get('room')!.trim()) {
   render();
 } else {
   // BL-01: `?queue=1` lands straight on the queue screen. That is where the
-  // post-game screen's "Join matchmaking queue" button goes — the same
+  // post-game screen's "Find a game" button goes — the same
   // navigate-by-query-string move every other transition here makes.
   /* BL-42 — the queue deep links.
    *

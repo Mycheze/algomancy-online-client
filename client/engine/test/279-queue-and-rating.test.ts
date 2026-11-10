@@ -189,9 +189,12 @@ test('BL-01 §4 the home screen shows the queue, and the post-game button is ali
     'nothing routes queue- clicks, so every button on that screen is inert');
 
   // ⭐ the button that was disabled from the day the post-game screen was
-  // built ("not built yet — for when there are more than two of us")
-  assert.doesNotMatch(POSTGAME, /disabled[^>]*>\s*Join matchmaking queue|label: 'Join matchmaking queue'[^)]*disabled/,
-    'the post-game "Join matchmaking queue" button is still disabled — it was a placeholder for '
+  // built ("not built yet — for when there are more than two of us"). It was
+  // "Join matchmaking queue" until 2026-11-10 (BL-10), now "Find a game" like
+  // the home strip's button to the same screen.
+  assert.match(POSTGAME, /label: 'Find a game', dataBtn: 'pg-queue'/, 'the post-game button to the queue');
+  assert.doesNotMatch(POSTGAME, /disabled[^>]*>\s*Find a game|label: 'Find a game'[^)]*disabled/,
+    'the post-game "Find a game" button is still disabled — it was a placeholder for '
     + 'exactly this feature and is the natural place to want another game from');
   assert.match(POSTGAME, /(data-btn="|dataBtn: ')pg-queue/, 'and it needs a handler to be worth enabling');
   assert.match(POSTGAME, /case 'pg-queue':/, 'which has to be routed');
