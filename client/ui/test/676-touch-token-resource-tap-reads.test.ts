@@ -14,6 +14,8 @@
  *  - a finger's tap on a resource whose click would act at once (activate, or
  *    the one exchange) reads it, and that action's button appears on it;
  *  - a unit's only ability STAYS a one-tap action;
+ *  - except (CT-555, owner, report #376): in the resource step a tap on a
+ *    dormant resource activates it at once — that is what the step is for;
  *  - a mouse is unchanged everywhere.
  *
  * Driven through the real client (test/ui-driver.ts), as 384 and 646 are: the
@@ -117,8 +119,23 @@ test('CR 502.2b / CT-408: the control, a mouse click on a dormant resource still
   assert.deepEqual(ui.actions(), legal, 'one click, activated: the desktop is unchanged');
 });
 
-test('CR 502.2b / CT-408: a finger tap on a dormant resource sends nothing; its Activate button activates it', () => {
+test('CR 502.2b / CT-555: in the resource step a finger tap on a dormant resource activates it at once, with no button', () => {
+  const { state, i, legal } = withADormantResource(67610);
+  assert.equal(state.phase, 'planning', 'the fixture is the resource step');
+  assert.ok(!state.hasteDone && !state.draftDone, 'not the haste step, not a draft');
+  ui.join(state, me, legal);
+  ui.sent();
+  const html = ui.tap({ act: 'res', p: me, i });
+  assert.deepEqual(ui.actions(), legal, 'one tap, activated: activating is what the resource step is for (report #376)');
+  assert.doesNotMatch(html, /class="menu"/, 'no menu');
+  assert.ok(!ui.has({ btn: 'tapgo' }), 'and no Activate button was armed');
+});
+
+test('CR 502.2b / CT-408: outside the resource step a finger tap on a dormant resource sends nothing; its Activate button activates it', () => {
   const { state, i, legal } = withADormantResource(67606);
+  // the haste step: the engine offers no activation here, so the list is the
+  // fixture's own — what CT-408's read-then-button guards if anything ever does
+  state.hasteDone = [false, false];
   ui.join(state, me, legal);
   ui.sent();
   const html = ui.tap({ act: 'res', p: me, i });
@@ -145,6 +162,7 @@ test('CR 502.2b / CT-408: a resource with more than one route still opens its me
 
 test('CR 502.2b / CT-408: a tap on a stale button sends nothing once the action is gone', () => {
   const { state, i, legal } = withADormantResource(67608);
+  state.hasteDone = [false, false];   // outside the resource step, where the tap arms a button
   ui.join(state, me, legal);
   ui.sent();
   ui.tap({ act: 'res', p: me, i });

@@ -13414,7 +13414,7 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       "676-touch-token-resource-tap-reads.test.ts::CR 701.1b / CT-408: a finger tap on my castable spell token sends nothing, and a Cast button appears on it",
       "676-touch-token-resource-tap-reads.test.ts::CR 701.1b / CT-408: the finger route, a tap on the Cast button casts the token",
-      "676-touch-token-resource-tap-reads.test.ts::CR 502.2b / CT-408: a finger tap on a dormant resource sends nothing; its Activate button activates it",
+      "676-touch-token-resource-tap-reads.test.ts::CR 502.2b / CT-408: outside the resource step a finger tap on a dormant resource sends nothing; its Activate button activates it",
       "676-touch-token-resource-tap-reads.test.ts::CR 502.2b / CT-408: a tap on a stale button sends nothing once the action is gone",
       "676-touch-token-resource-tap-reads.test.ts::CT-408: a unit with one unconfirmed ability still fires it on a single finger tap",
     ],
@@ -15225,6 +15225,21 @@ export const CLOSED: TodoEntry[] = [
       "1220-attack-plan-held-until-it-lands.test.ts::CT-554: a refused attack leaves the formation standing, to amend and send again",
     ],
     closed: "FIXED 2026-11-10 (steward). Took the fix as written, [77]'s shape: declareBuiltAttack no longer empties the plan when it sends; it clears only what is in the hand (carrying) and records which declare step it sent from (ui.attackSent = declareKey(): turn, round, attacker, region — so a round-2 counterattack's declare step is never mistaken for the round-1 one still open). dropLandedAttack, run in renderNow before the counterattack prefill and ensureBlockKeys, drops columns, backOnly, spellTokens and rideAnswered once a state shows that declare step is over. A refusal leaves the plan standing. A third 1220 test pins the landing (the attacker comes home after the battle). Mutation: restoring the old clear turned the first two red; never dropping turned the third red. Not watched in a browser (none on the box).",
+    status: 'done',
+  },
+  {
+    id: 555, area: "client", severity: "minor",
+    title: "on a touch screen, tapping a resource in the resource step only shows it with an Activate button; there it should just activate",
+    detail: "Report #376 (mycheze, owner, 2026-11-10, ux, medium, room FMTA): \"Activating resources during the resource step doesn't need a whole button and zoom in effect on mobile/touch. Its very clear that during the resource step you're going to activate your resources. Its very clear can just do it.\" This narrows the owner's own CT-408 answer (2026-10-25, \"Casting a spell token, Activating a resource\" become tap-to-read, then a button acts): in the resource step a finger's tap on a dormant resource should activate it at once, as a mouse click does. ui/main.ts, the `kind === 'res'` click handler's openRes: `if (plan.kind === 'auto' && tapToGo(t, resGoKey(p, i), plan.action, e)) return;` arms the held Activate button (ui/tapgo.ts) in every phase alike. The resource step is the planning phase before the haste step (the phase bar's Planning box: `s.phase === 'planning'` and not drafting and not `s.hasteDone`).",
+    evidence: "Report #376, room FMTA, action 21 (a sandbox game, turn 3-4: the owner recycled Dropslime / Manufacture / Unfinished Creation for dormant resources and activated each). Replayed 2026-11-10 (steward triage): 49 actions, no divergence. The tap path read in ui/main.ts openRes and tapToGo; CT-408's closing note describes the held button.",
+    fix: "In openRes, skip tapToGo for an activateResource action while the resource step is on (planning phase, not drafting, haste not done) — the tap sends the activation as the mouse click does. Everywhere else (haste step, deployment, battle) keep CT-408's read-then-button. Out of scope unless the owner says so: the spell-token cast (stays read-then-button) and a Prismite's single auto-fired exchange (plan.action of type exchangePrismite — it chooses an element, so keep the button). Guards in ui/test/676-touch-token-resource-tap-reads: a finger tap on a dormant resource in the resource step sends activateResource at once and arms no button; the existing \"a finger tap on a dormant resource sends nothing\" test moves to a phase outside the resource step (haste or deployment) and still holds. Update CT-408's 676 guard titles in card-todo-closed.ts if a title changes. Player-visible: an updates.ts line.",
+    proof: null,
+    verify: "On a phone, in the resource step, tap a dormant resource: it activates at once, with no zoom and no Activate button. In the haste step or later, a tap on a spell token still reads it first.",
+    reportId: 376,
+    guards: [
+      "676-touch-token-resource-tap-reads.test.ts::CR 502.2b / CT-555: in the resource step a finger tap on a dormant resource activates it at once, with no button",
+    ],
+    closed: "FIXED 2026-11-10 (steward). Took the fix as written: ui/tapgo.ts tapActsAtOnce (activateResource, planning phase, no draft running, haste step not begun) and ui/main.ts openRes skips tapToGo when it holds, so the tap falls through to act() as a mouse click does. The engine offers activateResource only in the resource step (engine/src/apply.ts, behind e.planning), so in practice every resource activation is now one tap; the phase test keeps CT-408's button for anything that ever offers it elsewhere. The Prismite exchange and the spell-token cast keep their buttons. 676's old tap-reads test now runs in the haste step (renamed; CT-408's guard follows). Mutation: dropping the tapActsAtOnce check turned the new test red (nothing sent, a button armed). Not watched on a real touch screen (none on the box).",
     status: 'done',
   },
 ];

@@ -470,12 +470,6 @@ const OPEN: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "Fifth take-back in FNZY (see #370). --branch triage: none of (a)-(d). proud had attacked in two columns, Rousing Spirit with Spirit of Vengeance behind it and Mischievous Reclaimer alone [386] ([[185,194],[189]]), then picked Spiteful Shadow for Rousing Spirit's trigger [387]; after the rewind proud attacked with all three in separate columns [386] ([[194],[185],[189]]) and picked Spiteful Shadow again [387]. The attacker changing their own formation. No defect.",
   },
-  {
-    id: 376, room: "FMTA", date: "2026-11-10",
-    report: "mycheze (ux, medium): \"Activating resources during the resource step doesn't need a whole button and zoom in effect on mobile/touch. Its very clear that during the resource step you're going to activate your resources. Its very clear can just do it.\"",
-    status: 'live',
-    note: "Real, a change the owner asks for to his own earlier call. Since CT-408 (owner 2026-10-25: a finger's tap on a resource reads it, then an Activate button acts) a tap on a dormant resource opens the zoom and arms a held Activate button in every phase alike (ui/main.ts openRes → tapToGo). He now wants the resource step exempt: there a tap should activate at once. FMTA replayed clean (49 actions; at [21] he was recycling and activating resources in the resource step of a sandbox game). Not a duplicate: CT-408 is closed and its choice is what this narrows. CT-555.",
-  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

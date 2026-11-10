@@ -179,7 +179,7 @@ import { gameLessons } from './lessons.ts';
 // very bottom of this file.
 import { installSandbox } from './sandbox.ts';
 import { chosenDeck, clickOrTap, copyText, elIcon as elIconOf, esc, shareBar } from './util.ts';
-import { resGoKey, tapGoHtml, tapGoKeyOf, tapGoLabel, tapGoLive, tokenGoKey, zoomGoHtml, type TapGo } from './tapgo.ts';
+import { resGoKey, tapActsAtOnce, tapGoHtml, tapGoKeyOf, tapGoLabel, tapGoLive, tokenGoKey, zoomGoHtml, type TapGo } from './tapgo.ts';
 
 import { artUrl, ICON_BASE } from './assets.ts';
 // the non-game pages (docs/23 § Target structure: pageView() + pure pageHtml()).
@@ -11243,8 +11243,9 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     const openRes = (expanded: boolean): void => {
       const plan = prismiteClickPlan(s, p, opts, expanded);
       if (plan.kind === 'none') return;
-      // CT-408 (owner): on touch the tap reads, and a button on it activates
-      if (plan.kind === 'auto' && tapToGo(t, resGoKey(p, i), plan.action, e)) return;
+      // CT-408 (owner): on touch the tap reads, and a button on it activates —
+      // except activating in the resource step, which a tap just does (CT-555)
+      if (plan.kind === 'auto' && !tapActsAtOnce(s, plan.action) && tapToGo(t, resGoKey(p, i), plan.action, e)) return;
       if (plan.kind === 'auto') { act(plan.action); return; }
       // CR 106.8d: a Shard has no element, so no icon (only the seven do)
       const isShard = (a: Action): boolean => a.type === 'exchangePrismite' && a.element === 'shard';

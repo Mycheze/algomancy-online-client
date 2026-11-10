@@ -31,6 +31,19 @@ export interface TapGo {
 export const tokenGoKey = (id: number): string => `token:${id}`;
 export const resGoKey = (p: number, i: number): string => `res:${p}:${i}`;
 
+/** CT-555 (owner, report #376): the one tap that still acts at once on a
+ * finger — activating a dormant resource in the resource step (the planning
+ * phase before the haste step, past any draft). There activating is plainly
+ * what the tap is for, so it needs no zoom and no button. Everywhere else
+ * CT-408's read-then-button stands, and an exchange (it picks an element)
+ * keeps its button even here. */
+export function tapActsAtOnce(
+  s: { phase: string; draftDone?: readonly boolean[] | null; hasteDone?: readonly boolean[] | null },
+  a: Action,
+): boolean {
+  return a.type === 'activateResource' && s.phase === 'planning' && !s.draftDone && !s.hasteDone;
+}
+
 /** the button's words: what the tap would have done */
 export function tapGoLabel(a: Action): string {
   switch (a.type) {
