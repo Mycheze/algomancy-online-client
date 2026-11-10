@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-10', kind: 'fix', text: 'In the draft lobby, once you lock in, the elements you can no longer pick now turn grey with a dashed edge, so they no longer look the same as the ones you simply did not choose. Your own pick keeps its colour.' },
   { date: '2026-11-10', kind: 'fix', text: 'With a screen reader, a box that opens over the table now says it is a dialog and which one: your bin or cache, the card inspector, the judge, the game log, the draft pick, Match found, the concede question, the end-of-game screen.' },
   { date: '2026-11-10', kind: 'fix', text: 'With a screen reader, the end-of-game screen now announces who won as a heading, and reads each number with what it counts, like "life left". Table columns that showed no heading, such as the profile\'s replays, now have a spoken one.' },
   { date: '2026-11-10', kind: 'fix', text: 'With a screen reader, buttons that light up when chosen now say so: the draft room\'s methods and elements, Ranked or Open, the element filters, the clock, the table\'s option switches. Before, each was read out only as "button".' },

@@ -619,7 +619,14 @@ const OPEN: Entry[] = [
       + '(the scrim classes read off the stylesheet: fixed, inset 0, takes the pointer; every scrim in ui/pages/components '
       + 'source and every story must open onto a named dialog). Left: §18.22\'s other half — aria-modal, moving focus into '
       + 'the box and keeping it there; the board repaints #app wholesale, so that is behaviour to build and walk with a '
-      + 'keyboard, not markup.',
+      + 'keyboard, not markup.\n\n'
+      + '2026-11-10 (steward): a disabled element chip no longer looks like an unchosen one (docs/23-ui-inventory/05 '
+      + '§18.25\'s other half: "`.elchip` unselected (opacity .55) and disabled (opacity .4) are near-identical"). The one '
+      + 'place a chip is disabled is the draft lobby once you lock in (pick one and rank); the frozen elements dimmed from '
+      + '.55 to .4 and nothing else. `.elchip:disabled:not(.on)` (shared/10-element-chips.css) is now .35, grayscale and a '
+      + 'dashed border, so the cue does not rest on a shade or on colour; a chosen chip that is locked keeps its look. '
+      + 'Swept the other dimmed-when-unchosen buttons (.favel, .ttelchip, .cbchip, .lobbymethod): none is ever disabled '
+      + 'while dimmed. Guarded by 1210-disabled-chip-is-not-unchosen.test.ts. Reasoned, not looked at (no browser).',
   },
   {
     id: 'BL-17',

@@ -19,6 +19,15 @@
    a warm-black face for Light, pale ink on a slate face for Dark. */
 .elchip.light.on { border-color: var(--light); background: #2e2a20; color: var(--light); }
 .elchip.dark.on { border-color: var(--dark); background: #262c35; color: #cfd6e0; }
+/* A chip that cannot be clicked does not look like one that is merely not
+   chosen (BL-10, docs/23-ui-inventory/05 §18.25). An unchosen chip is already
+   dimmed to .55, and button:disabled's .4 was the whole difference, so in the
+   draft lobby, once you lock in, the elements you can no longer pick looked
+   the same as before. Now they also lose their colour and their border goes
+   dashed: a cue that works without colour too. A chosen chip that is locked
+   (.on) keeps its full look, because it shows what you picked.
+   ui/test/1210-disabled-chip-is-not-unchosen.test.ts. */
+.elchip:disabled:not(.on) { opacity: .35; filter: grayscale(1); border-style: dashed; }
 
 
 /* ACCESSIBLE COLOURS (Settings → Colours; ui/prefs.ts, tokens.css's theme block).
