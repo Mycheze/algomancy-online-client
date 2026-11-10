@@ -2,7 +2,8 @@
  *
  * Every signed-in page polls GET /api/inbox (ui/inbox.ts). The answer is
  * everything the bell counts — invites to a game, friend requests, league
- * messages and a suggested match time waiting on an answer — plus
+ * messages, a suggested match time waiting on an answer and decks friends
+ * sent (deckshare.ts) — plus
  * the friends list with who is around, which the room's friends panel is
  * drawn from. `?room=CODE` adds, per friend, whether this player has
  * already invited them to that room. State and the rules about it are in
@@ -12,6 +13,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { addrOf, json, rateLimited, readBody, str, tokenOf } from './api-util.ts';
 import { accountById, accountForToken, favoriteOf } from './accounts.ts';
 import { acceptInvite, declineInvite, invitesFor, sendInvite, sentFrom, touch, type RoomLookup } from './inbox.ts';
+import { clearDeckShare, deckSharesFor, sendDeck } from './deckshare.ts';
 import { markNotesRead, notesFor, timesAskedOf } from './league-store.ts';
 import type { Element } from '../engine/src/types.ts';
 
@@ -65,6 +67,8 @@ export async function inboxRoutes(
       // also delivers), and any suggested time waiting on their answer
       league: notesFor(me.id, Date.now()),
       times: timesAskedOf(me.id, Date.now()),
+      // decks friends sent (deckshare.ts): the bell's View lines
+      decks: deckSharesFor(me),
     }), true;
   }
 
@@ -73,6 +77,22 @@ export async function inboxRoutes(
     const b = await readBody(req);
     const upTo = Number(b['upTo']);
     if (Number.isFinite(upTo)) markNotesRead(me.id, upTo, Date.now());
+    return json(res, { ok: true }), true;
+  }
+
+  // the Share sheet's Send: one of my decks into a friend's bell
+  if (path === '/api/inbox/deck' && req.method === 'POST') {
+    if (rateLimited(addrOf(req), 'deckshare', 60, 60_000)) {
+      return json(res, { ok: false, error: 'too many sends — wait a minute' }, 429), true;
+    }
+    const b = await readBody(req);
+    return json(res, sendDeck(me, str(b['to'], 64), str(b['deck'], 64))), true;
+  }
+
+  // a sent deck's line was opened (View) or dismissed: it goes
+  if (path === '/api/inbox/deck/clear' && req.method === 'POST') {
+    const b = await readBody(req);
+    clearDeckShare(me, str(b['id'], 64));
     return json(res, { ok: true }), true;
   }
 

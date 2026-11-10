@@ -46,6 +46,7 @@ import {
 } from './pages/decks.ts';
 import { chooseDeck, chosenDeck, copyText } from './util.ts';
 import * as tt from './tabletop.ts';
+import { onShareFriends, shareFriends } from './inbox.ts';
 import type { DeckPile } from './deckarrange.ts';
 import { MATCH_COPY_CAP, SIDEBOARD_MAX, checkMatchDeck, type MatchConfig } from '../engine/src/matchdeck.ts';
 
@@ -120,6 +121,9 @@ let syntaxOpen = false;
  * (`captureDraft`). null means "no editor open".
  */
 let descDraft: string | null = null;
+/** the Share sheet's Send: deck id → the friends it was sent to from this page, and the last refusal */
+const sentTo = new Map<string, Set<string>>();
+let sendMsg = '';
 /** the builder's note for an import, until the next edit (TableHost.note) */
 let hostNote: string | null = null;
 
@@ -137,6 +141,8 @@ export function initDecks(opts: { app: HTMLElement; rerender: () => void }): voi
   $app = opts.app;
   rerenderHost = opts.rerender;
   ensureListeners();
+  // the Share sheet lists the bell's friends: a poll that changes them repaints an open one
+  onShareFriends(() => { if (open && pageSheet?.kind === 'share') paint(); });
 }
 
 const current = (): DeckView | null => decks?.find(d => d.id === openId) ?? null;
@@ -403,6 +409,7 @@ function snapshot(): Parameters<typeof decksView>[0] {
     history: acct.currentUser()?.history ?? [],
     base: base(),
     exportBody: d && pageSheet?.kind === 'export' ? exportBody(d) : '',
+    share: { ...shareFriends(), sentTo: [...(d ? sentTo.get(d.id) ?? [] : [])], msg: sendMsg },
   };
 }
 
@@ -733,8 +740,28 @@ export function handleButton(btn: HTMLElement): boolean {
     // ── the preview's sheets ──
     case 'deck-share':
       if (current()) pageSheet = { kind: 'share' };
+      sendMsg = '';
       paint();
       return true;
+    // Send to a friend: a line in their bell that opens this deck (server/deckshare.ts)
+    case 'deck-send': {
+      const d = current();
+      const to = btn.dataset['id'] ?? '';
+      if (!d || !to) return true;
+      // the visibility may have changed a moment ago: the server must have it first
+      flushSave();
+      const sent = sentTo.get(d.id) ?? new Set<string>();
+      sentTo.set(d.id, sent);
+      sent.add(to);
+      sendMsg = '';
+      paint();
+      void fetch('/api/inbox/deck', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ to, deck: d.id }) })
+        .then(r => r.json() as Promise<{ ok?: boolean; error?: string }>)
+        .then(r => { if (!r.ok) { sent.delete(to); sendMsg = r.error ?? 'that did not go'; } })
+        .catch(() => { sent.delete(to); sendMsg = 'could not reach the server'; })
+        .finally(() => { if (open && pageSheet?.kind === 'share') paint(); });
+      return true;
+    }
     case 'deck-share-close':
       pageSheet = null; paint(); return true;
     case 'deck-games':

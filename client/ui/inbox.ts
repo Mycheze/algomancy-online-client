@@ -38,13 +38,15 @@ import { noteLine, type LeagueNote } from './leaguenotes.ts';
 import { matchLink, myMatchLine, type MyMatch } from './match.ts';
 import {
   inboxLayerHtml, inviteRowsHtml as inviteRowsPageHtml, roomFriendsBodyHtml, roomFriendsHtml as roomFriendsPanelHtml,
-  type FriendStatus, type InviteCardView, type InboxListView, type NoteCardView, type RoomFriendsView, type RoomFriendView as RoomFriend,
+  type DeckShareCardView, type FriendStatus, type InviteCardView, type InboxListView, type NoteCardView, type RoomFriendsView, type RoomFriendView as RoomFriend,
 } from './pages/inbox.ts';
 
 // ── types off the wire (server/api-inbox.ts) ─────────────────────────
 
 export interface InviteView { id: string; from: string; room: string; seat: number; mode: string; label: string; at: number }
 export interface RequestView { id: string; username: string }
+/** a deck a friend sent (server/deckshare.ts DeckShareView) */
+export interface DeckShareView extends DeckShareCardView { at: number }
 /** a friend in the waiting room's panel — the shape ui/pages/inbox.ts draws */
 export type { FriendStatus, RoomFriend };
 /** a league match time the other player suggested, waiting on this one */
@@ -79,6 +81,8 @@ let requests: RequestView[] = [];
 let friends: RoomFriend[] = [];
 let notes: LeagueNote[] = [];
 let times: TimeAsk[] = [];
+/** decks friends sent, until opened or dismissed (server/deckshare.ts) */
+let decks: DeckShareView[] = [];
 /** docs/22 §5.6: this account's open Competitive matches (/api/matches/mine) */
 let matches: MyMatch[] = [];
 /** has a poll answered yet — the panel says "loading" until one has */
@@ -115,6 +119,8 @@ function loadSeen(): void {
  * same match is a new thing to hear about). */
 const noteKey = (n: LeagueNote): string => `L${n.id}`;
 const timeKey = (t: TimeAsk): string => `T${t.match}@${t.at}`;
+/** a sent deck — re-sending it is a new line, so a new id, so a new chime */
+const deckKey = (d: DeckShareView): string => `D${d.id}`;
 /** a match whose sideboarding window is running — once per game */
 const matchKey = (m: MyMatch): string => `M${m.id}@${m.game}`;
 /** the open matches worth a line: not the one whose room this page is */
@@ -128,7 +134,7 @@ const resumeKey = (m: MyMatch): string => `MR${m.id}@${m.pausedAt}`;
 
 function saveSeen(): void {
   // only the ones still waiting are worth keeping; the rest have gone
-  const live = new Set([...invites.map(i => i.id), ...notes.map(noteKey), ...times.map(timeKey), ...matches.map(matchKey),
+  const live = new Set([...invites.map(i => i.id), ...notes.map(noteKey), ...times.map(timeKey), ...decks.map(deckKey), ...matches.map(matchKey),
     ...matches.map(resumeKey)]);
   try {
     sessionStorage.setItem(SEEN_KEY, JSON.stringify({
@@ -138,7 +144,7 @@ function saveSeen(): void {
 }
 
 /** what the bell counts: everything waiting on an answer, and league news not yet read */
-const unread = (): number => invites.length + requests.length + times.length + notes.filter(n => !n.read).length
+const unread = (): number => invites.length + requests.length + times.length + decks.length + notes.filter(n => !n.read).length
   + dueMatches().length + resumeAsks().length;
 
 /** a league time, in the player's zone */
@@ -202,6 +208,7 @@ function listView(): InboxListView {
     times: times.map(t => ({ season: t.season, seasonName: t.seasonName, match: t.match, from: t.from,
       when: timeText(t.at / 1000) })),
     requests,
+    decks: decks.map(d => ({ id: d.id, from: d.from, deck: d.deck, name: d.name })),
     notes: notes.map(noteCard),
   };
 }
@@ -214,6 +221,19 @@ export function inboxUnread(): number { return deps?.token() ? unread() : 0; }
 
 /** the friend invites waiting on an answer — part of the home's Join badge */
 export function inviteCount(): number { return deps?.token() ? invites.length : 0; }
+
+/** The friends list the last poll brought, and whether one has answered yet —
+ * what the Decks page's Share sheet lists under "Send to a friend". Empty
+ * signed out. */
+export function shareFriends(): { loaded: boolean; friends: readonly RoomFriend[] } {
+  return deps?.token() ? { loaded, friends } : { loaded: false, friends: [] };
+}
+
+/* ONE LISTENER SLOT, like onInboxChange: the Decks page, whose Share sheet
+ * lists the friends. Called when a poll changes the friends list (or is the
+ * first to answer), so a sheet opened before the first poll fills in. */
+let friendsChanged: (() => void) | null = null;
+export function onShareFriends(cb: () => void): void { friendsChanged = cb; }
 
 /** the pending invites, as ui/pages/inbox.ts inviteRowsHtml draws them */
 export function inviteRowsView(): InviteCardView[] {
@@ -287,9 +307,9 @@ function poll(): void {
   fetch(`/api/inbox${room ? `?room=${encodeURIComponent(room)}` : ''}`, { headers: deps.authHeaders() })
     .then(r => r.json())
     .then((r: { ok?: boolean; invites?: InviteView[]; requests?: RequestView[]; friends?: RoomFriend[];
-      league?: LeagueNote[]; times?: TimeAsk[] }) => {
+      league?: LeagueNote[]; times?: TimeAsk[]; decks?: DeckShareView[] }) => {
       if (!r.ok) return;
-      take(r.invites ?? [], r.requests ?? [], r.friends ?? [], r.league ?? [], r.times ?? []);
+      take(r.invites ?? [], r.requests ?? [], r.friends ?? [], r.league ?? [], r.times ?? [], r.decks ?? []);
     })
     .catch(() => { /* offline: keep what we had */ })
     .finally(() => { inFlight = false; schedule(); });
@@ -319,18 +339,21 @@ function pollMatches(): void {
 
 /** fold a poll's answer in, and say so only if something changed */
 function take(nextInvites: InviteView[], nextRequests: RequestView[], nextFriends: RoomFriend[],
-  nextNotes: LeagueNote[], nextTimes: TimeAsk[]): void {
-  const before = JSON.stringify([invites, requests, friends, notes, times, loaded]);
+  nextNotes: LeagueNote[], nextTimes: TimeAsk[], nextDecks: DeckShareView[] = []): void {
+  const before = JSON.stringify([invites, requests, friends, notes, times, decks, loaded]);
+  const friendsBefore = loaded ? JSON.stringify(friends) : '';
   const leagueBefore = JSON.stringify([notes.map(n => n.id), times]);
   invites = nextInvites;
   requests = nextRequests;
   friends = nextFriends;
   notes = nextNotes;
   times = nextTimes;
+  decks = nextDecks;
   // the things worth a chime: an invite, a time to answer, a match about to start
   const fresh: [string, string][] = [
     ...invites.map(i => [i.id, `${i.from} invited you`] as [string, string]),
     ...times.map(t => [timeKey(t), `${t.from} suggests a time`] as [string, string]),
+    ...decks.map(d => [deckKey(d), `${d.from} sent you a deck`] as [string, string]),
     ...reminders().map(r => [noteKey(r), 'Your league match is soon'] as [string, string]),
   ].filter(([k]) => !announced.has(k));
   // the first answer only fills the set: what was already waiting when the
@@ -347,7 +370,8 @@ function take(nextInvites: InviteView[], nextRequests: RequestView[], nextFriend
   if (loaded && JSON.stringify([notes.map(n => n.id), times]) !== leagueBefore) deps?.leagueChanged();
   loaded = true;
   saveSeen();
-  if (JSON.stringify([invites, requests, friends, notes, times, loaded]) === before) return;
+  if (JSON.stringify(friends) !== friendsBefore) friendsChanged?.();
+  if (JSON.stringify([invites, requests, friends, notes, times, decks, loaded]) === before) return;
   paint();
   paintPanel();
 }
@@ -449,6 +473,24 @@ function onClick(what: string, el: HTMLElement): void {
       }).catch(() => { panelMsg = 'could not reach the server'; }).finally(pollSoon);
       return;
     }
+    // a deck a friend sent: View opens it where the share link would, and
+    // the line goes — answered on the server before we leave, as a Join is
+    case 'deck-view': {
+      const deck = el.dataset['deck'] ?? '';
+      decks = decks.filter(d => d.id !== id);
+      panelOpen = false;
+      paint();
+      const go = (): void => { location.search = `?deck=${encodeURIComponent(deck)}`; };
+      const fallback = window.setTimeout(go, 1500);
+      void post('/api/inbox/deck/clear', { id }).catch(() => undefined)
+        .finally(() => { clearTimeout(fallback); go(); });
+      return;
+    }
+    case 'deck-clear':
+      decks = decks.filter(d => d.id !== id);
+      paint();
+      void post('/api/inbox/deck/clear', { id }).finally(pollSoon);
+      return;
     case 'friend-accept':
     case 'friend-decline':
       requests = requests.filter(r => r.id !== id);
