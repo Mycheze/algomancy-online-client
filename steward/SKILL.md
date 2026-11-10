@@ -109,7 +109,8 @@ later one, the reasons go in `skipped`, not the summary):
   `already-fixed`);
 - a journal rejection says not to do it this way and you have no other way;
 - it needs a decision nobody has made, AND you cannot even prepare it (rare —
-  usually you *can* prepare it; that is outcome `needs-human`).
+  usually you *can* prepare it; that is outcome `needs-human`);
+- it is an open-ended BL whose brief has run dry (§3).
 
 Queue line kinds: `fix-master` (master's own gate is red — §12), `repair
 <branch>` (a staged branch whose gate went red — fix it on that branch, see §9),
@@ -140,6 +141,12 @@ it) and which are **hypothesis**. Your verdict carries both lists.
 - **A BL**: read `said` (the owner's words; the tiebreaker) before `means`.
   Check whether what it asks for already exists and is merely unreachable — it
   has happened more than once (BL-19, BL-25).
+- **A BL with no finish line** (BL-10, polish: its own text says it never
+  closes): one run is one named improvement from its brief and the lists that
+  brief points at, and the entry stays open. Once those lists are used up, do
+  not go looking elsewhere for something to call polish: outcome `skip`, which
+  rests it for a week (2026-11-10: 16 BL-10 runs in a row, the last ones
+  reaching into other pages' lists after its own ran out).
 - **Reproduce it in a test that fails.** Before any fix. If you cannot
   reproduce it, that is a finding: outcome `not-a-bug` or `needs-human`, with
   exactly what you tried.

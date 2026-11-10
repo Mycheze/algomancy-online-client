@@ -389,6 +389,16 @@ stage_head() { # item → pushes steward/<slug>
   echo "$b"
 }
 
+# A shipped item has no staged branch any more. Only the re-gate path used to delete one, so every
+# item staged or red first and shipped by a later run left its branch behind: 13 of them by
+# 2026-11-10, each reading as unlanded work (CLAUDE.md, "Master is the only branch").
+retire_branch() { # item
+  local b="steward/$(slug "$1")"
+  [ "$STEWARD_MODE" = live ] || return 0
+  g rev-parse -q --verify "refs/remotes/origin/$b" >/dev/null || return 0
+  g push -q origin "+refs/remotes/origin/$b:refs/archive/$b" ":refs/heads/$b" || log "could not retire $b"
+}
+
 # ── 1a. approved branches: the owner signed off; land them ────────────────
 # Has this item's approved work already reached master some other way? The item's
 # last journal row, not counting the landing loop's own rows, says: a repair run
@@ -483,7 +493,12 @@ work_one() {
   # any branch a repair line will name must exist locally
   STEWARD_STATE="$STATE" node "$REPO/steward/queue.mjs" --why > "$STATE/queue.txt" 2>"$STATE/queue.excluded"
   # a line with something on it, not just a non-empty file: queue.mjs used to print a bare newline for "nothing"
-  if ! grep -q '[^[:space:]]' "$STATE/queue.txt"; then log "queue empty — nothing to do"; journal idle idle; return 0; fi
+  # one row per idle stretch: a row every five minutes would fill the last-40 the agent reads
+  if ! grep -q '[^[:space:]]' "$STATE/queue.txt"; then
+    log "queue empty — nothing to do"
+    [ "$(tail -n 1 "$STATE/journal.jsonl" 2>/dev/null | jq -r .outcome 2>/dev/null)" = idle ] || journal idle idle
+    return 0
+  fi
   local first; first=$(grep -m1 '[^[:space:]]' "$STATE/queue.txt")
   log "queue: $(wc -l <"$STATE/queue.txt") items; first: $first"
 
@@ -608,7 +623,7 @@ EOF
       fi
       mv -f "$STATE/handoffs/$(slug "$item").md" "$STATE/handoffs/done/" 2>/dev/null; branch="" ;;
     needs-human) ensure_handoff "$item" "a decision (the summary below says which)" ;;
-    shipped|already-fixed|not-a-bug) mv -f "$STATE/handoffs/$(slug "$item").md" "$STATE/handoffs/done/" 2>/dev/null ;;
+    shipped|already-fixed|not-a-bug) mv -f "$STATE/handoffs/$(slug "$item").md" "$STATE/handoffs/done/" 2>/dev/null; retire_branch "$item" ;;
   esac
   [ "$STEWARD_MODE" != live ] && final="dry-$final"
   journal "$(slug "$item")" "$final" title="$title" summary="$summary" branch="$branch" gate="$glog" policy="$reasons" \
@@ -634,6 +649,8 @@ main() {
   exec 9>"$STATE/lock"; flock -n 9 || { log "another tick is running"; exit 0; }
   [ -d "$REPO/.git" ] || { log "no clone at $REPO"; exit 1; }
   g fetch -q --prune origin '+refs/heads/*:refs/remotes/origin/*' || { log "git fetch failed"; exit 0; }
+  # transcripts and gate logs run to ~70 MB a day; the retro reads one day of them, the journal keeps the verdicts
+  find "$LOGS" -maxdepth 1 -type f \( -name 'run-*' -o -name 'gate-*' \) -mtime +30 -delete 2>/dev/null
   trust
   discord_sync
 

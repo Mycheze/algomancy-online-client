@@ -211,10 +211,16 @@ Done on 2026-11-03; kept here so it can be redone.
 
 - **`steward/*` and `steward-approved/*` are the only branches besides master
   that may exist.** They are pending review, not unlanded rounds. A landed or
-  rejected one is archived at `refs/archive/steward/<item>` and deleted — and so
+  rejected one is archived at `refs/archive/steward/<item>` and deleted, as is
+  one a later run shipped (2026-11-10) — and so
   is an approved one whose item already shipped another way (a repair run that
   re-applied it): the runner journals `landed-elsewhere` instead of rebasing it
   onto its own landed patch and queueing the same repair every tick (BL-68).
+- **Shipping an item does not take it off the queue; closing it does.** One that
+  shipped and is still open goes behind everything else, and after three ships
+  in a day it is left until tomorrow. Without that, BL-10 (polish, open-ended on
+  purpose) took 16 runs in a row on 2026-11-09/10. The first thing to raise if
+  the owner wants more polish is `SHIP_LIMIT` in `queue.mjs`.
 - **An approval is of the change, not of a commit.** When an approved branch
   conflicts with master, the repair run's green result replaces the approved
   tip (journal `approved-repaired`) and lands on the next tick — it is not

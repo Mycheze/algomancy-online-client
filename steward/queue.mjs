@@ -26,11 +26,14 @@
  *                        (steward/retro.mjs) — what made the last day's runs slow, stuck or
  *                        half-done; the agent fixes the cause in its own harness (skill §15).
  *                        Once per digest; after the owner's own asks, before the worker's debt.
+ *   3c. tidy             once a day, ahead of the long queues: at the bottom it never ran once
+ *                        in its first week (2026-11-03..10), because something always sat above it
  *   4. report #N         playtest-ledger entries still live / partial ('agreed-fix'
  *                        is a CLOSED status: a player's take-back, no defect)
  *   5. CT-N              open card-todo entries, high severity first
  *   6. BL-N              the backlog's ready list (open, no asks, deps done), XL never
- *   7. tidy              once per night
+ *   7. already shipped   anything from 4-6 that shipped in the last day and is STILL open goes
+ *                        last, and is left for a day after SHIP_LIMIT ships (see `shippedToday`)
  *
  * Excluded: anything in steward/hold.txt (the owner's "leave this alone"), and
  * anything with a journal row that is still waiting on the owner (staged,
@@ -92,6 +95,17 @@ function spinning(item) {
     : `spinning: ${runs.length} runs since ${runs[0].ts} with nothing landed and no word from the owner (last: ${runs.at(-1).outcome}) — left for a day`;
 }
 
+// Shipping did not finish it. An item that shipped and is still open on its ledger is either
+// open-ended by design or was left half closed, and either way nothing else would ever stop the
+// queue offering it again: `shipped` counts as progress above, so the loop breaker cannot see it.
+// (2026-11-08..10: BL-10, the polish entry whose own text says it never closes, sat first in the
+// backlog and took 16 runs in a row. Every other BL waited behind it.) So it goes behind everything
+// else, and SHIP_LIMIT ships in a day is its share. A multi-part item still gets finished: it just
+// takes turns.
+const SHIP_LIMIT = 3;
+const shippedToday = item => (rowsOf.get(slug(item)) ?? [])
+  .filter(r => Date.now() - Date.parse(r.ts) < DAY && /^(shipped|landed)$/.test(String(r.outcome))).length;
+
 // waiting on the owner, or on the runner's own repair/landing loop
 const WAITING = new Set(['staged', 'needs-human', 'stage', 'gate-red', 'approved', 'approved-repaired', 'approved-conflict', 'approved-gate-red', 'rejected']);
 // tried recently and came back empty: leave it a week ('rejected-retry' = the owner asked for another go)
@@ -118,10 +132,13 @@ function blocked(item) {
 }
 
 const out = [];
+const shippedStillOpen = [];  // the queue's last lines
 const push = (item, line) => {
   const why = blocked(item);
+  const n = why ? 0 : shippedToday(item);
   if (why) excluded.push(`${item}: ${why}`);
-  else out.push(line);
+  else if (n >= SHIP_LIMIT) excluded.push(`${item}: shipped ${n} times in a day and still open — left for a day`);
+  else (n ? shippedStillOpen : out).push(line);
 };
 
 // 0. master's own gate (the runner runs it on the eve and whenever master moves)
@@ -179,6 +196,11 @@ for (const f of ls(join(STATE, 'retro')).filter(f => /^\d{4}-\d{2}-\d{2}\.md$/.t
   push(`retro-${day}`, `retro retro-${day}  (the digest: ${join(STATE, 'retro', f)})`);
 }
 
+// 3c. tidy, once a day (the journal says when it last ran). Cheap and ledger-only; it is what
+// closes a BL whose work has shipped, which the rule above would otherwise keep offering.
+const lastTidy = journal.get('tidy');
+if (!lastTidy || Date.now() - Date.parse(lastTidy.ts) > 20 * 3600e3) out.push('tidy  (ledger hygiene, once a day)');
+
 // 4. reports agreed but not fixed
 for (const e of LEDGER) {
   if (['live', 'partial'].includes(e.status)) push(`#${e.id}`, `report #${e.id}  [${e.status}] ${String(e.report).slice(0, 100)}`);
@@ -201,9 +223,8 @@ const ready = BACKLOG.filter(e => e.status === 'open' && !(e.asks && e.asks.leng
   .sort((a, b) => SIZE[a.size] - SIZE[b.size] || String(a.id).localeCompare(String(b.id), undefined, { numeric: true }));
 for (const e of ready) push(e.id, `${e.id}  [${e.size}] ${e.title}`);
 
-// 7. tidy, once a night (the journal says when it last ran)
-const lastTidy = journal.get('tidy');
-if (!lastTidy || Date.now() - Date.parse(lastTidy.ts) > 20 * 3600e3) out.push('tidy  (ledger hygiene, once a night)');
+// 7. what already had its turn today
+out.push(...shippedStillOpen);
 
 // nothing to do prints NOTHING: console.log of an empty join is a bare newline, which the
 // runner's empty check (`-s`) read as one item and woke Claude with an empty first line (2026-11-08)
