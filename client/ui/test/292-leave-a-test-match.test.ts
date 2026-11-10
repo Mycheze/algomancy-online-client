@@ -26,7 +26,9 @@ test('the confirmation says Leave / Stay in a sandbox, and the action underneath
   const fn = MAIN.slice(MAIN.indexOf('function concedeHtml(): string {'));
   const body = fn.slice(0, fn.indexOf('\n}'));
   assert.match(body, /h\.state\.sandbox/);
-  assert.match(body, /<h3>Leave the match\?<\/h3>/);
+  // the title is one string, drawn as the heading and spoken as the dialog's name
+  assert.match(body, /h\.state\.sandbox \? 'Leave the match\?'/);
+  assert.equal((body.match(/<h3>\$\{title\}<\/h3>/g) ?? []).length, 3, 'every branch draws its title as the heading');
   assert.match(body, /nothing is recorded/);
   assert.equal((body.match(/data-btn="concedeyes"/g) ?? []).length, 2, 'both branches confirm through the one concede button');
 });

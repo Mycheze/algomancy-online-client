@@ -108,7 +108,7 @@ function subtree(html: string, from: number): string {
 /** the whole log MODAL — the dialog box, not just the panel: the Close button
  * is part of what the modal has to offer and belongs in the sweep. */
 function modalOf(html: string): string {
-  const at = html.indexOf('<div class="overlaybox logbox">');
+  const at = html.indexOf('<div class="overlaybox logbox"'); // its attributes follow (role, aria-label)
   assert.ok(at >= 0, 'the log modal is not open');
   return subtree(html, at);
 }
