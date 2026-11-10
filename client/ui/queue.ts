@@ -315,8 +315,12 @@ export function tickInPlace(root: ParentNode): boolean {
   const wait = root.querySelectorAll<HTMLElement>('[data-qwait]');
   const left = root.querySelectorAll<HTMLElement>('[data-qleft]');
   if (offer) {
+    const secs = offerSecondsLeft(offer);
+    // at 0 the box changes shape (pages/queue.ts offerHtml: no Accept, no
+    // count) — repaint once into it, then leave the expired box alone
+    if (secs <= 0) return !!root.querySelector('[data-qexpired]');
     if (!left.length) return false;
-    const n = String(offerSecondsLeft(offer));
+    const n = String(secs);
     for (const el of left) if (el.textContent !== n) el.textContent = n;
     return true;
   }

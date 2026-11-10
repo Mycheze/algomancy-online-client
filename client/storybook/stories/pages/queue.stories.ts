@@ -35,6 +35,8 @@ export const Challenge = { name: 'Joining one open game', render: () => page(que
 export const LostConnection = { name: 'An error', render: () => page(queueHtml(view({ error: 'lost the connection — try searching again' }))) };
 export const Offer = { name: 'Match found', render: () => overlay(page(queueHtml(view({ offer: OFFER }))), 600) };
 export const Accepted = { name: 'Match found, accepted', render: () => overlay(page(queueHtml(view({ offer: { ...OFFER, accepted: true, left: 4 } }))), 600) };
+export const OfferRanOut = { name: 'Match found, time ran out', render: () => overlay(page(queueHtml(view({ offer: { ...OFFER, left: 0 } }))), 600) };
+export const AcceptedRanOut = { name: 'Match found, accepted, they did not answer', render: () => overlay(page(queueHtml(view({ offer: { ...OFFER, accepted: true, left: 0 } }))), 600) };
 export const HomeStrip = {
   name: 'The home strip, with open games',
   render: () => `<div style="max-width:1136px">${queueStripHtml({

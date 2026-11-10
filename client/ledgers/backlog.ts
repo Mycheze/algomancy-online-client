@@ -626,7 +626,18 @@ const OPEN: Entry[] = [
       + '.55 to .4 and nothing else. `.elchip:disabled:not(.on)` (shared/10-element-chips.css) is now .35, grayscale and a '
       + 'dashed border, so the cue does not rest on a shade or on colour; a chosen chip that is locked keeps its look. '
       + 'Swept the other dimmed-when-unchosen buttons (.favel, .ttelchip, .cbchip, .lobbymethod): none is ever disabled '
-      + 'while dimmed. Guarded by 1210-disabled-chip-is-not-unchosen.test.ts. Reasoned, not looked at (no browser).',
+      + 'while dimmed. Guarded by 1210-disabled-chip-is-not-unchosen.test.ts. Reasoned, not looked at (no browser).\n\n'
+      + '2026-11-10 (steward): a match offer at 0 says it is over (docs/23-ui-inventory/05 §18.20: "Match-found countdown '
+      + 'at 0 has no expired state"). The box sat on a live "Accept 0", or "Waiting for Rashi… 0", until the server\'s 1s '
+      + 'sweep pushed the lapse, and for ever on a dropped socket; the local count starts at the message\'s arrival, so its 0 '
+      + 'is after the server\'s. pages/queue.ts offerHtml at left 0 draws no Accept and no count: a role="status" line '
+      + '(data-qexpired), "Time ran out, so the game was not started." with Close, or, accepted, "Rashi did not answer in '
+      + 'time. You go back to the front of the queue." with Cancel. queue.ts tickInPlace repaints once into it and then '
+      + 'leaves it (no per-second rebuild, test 902). Stories "Match found, time ran out" and "…accepted, they did not '
+      + 'answer". Guarded by 1211-match-offer-runs-out.test.ts (§2 drives the module through a fake socket). Left: '
+      + '§18.20\'s other two (no live region for the queue, no rating delta on the post-game), and the table\'s fix-proposal '
+      + 'bar (amend.ts barHtml), which also keeps its Agree at "0s"; checked the other countdowns (match.ts clock, the '
+      + 'game clocks): they are clocks, not offers. Reasoned, not looked at (no browser).',
   },
   {
     id: 'BL-17',

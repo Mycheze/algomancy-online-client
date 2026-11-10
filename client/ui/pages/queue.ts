@@ -216,19 +216,35 @@ function searchingHtml(s: Searching & { waited: number }): string {
     ${button({ label: 'Stop searching', dataBtn: 'queue-cancel' })}`;
 }
 
+/* ⚠ AT 0 THE OFFER IS OVER, so the box says so (docs/23-ui-inventory/05
+ * §18.20: "Match-found countdown at 0 has no expired state"). It used to sit
+ * on a live "Accept 0", or "Waiting for Rashi… 0", until the server's sweep
+ * said so — up to a second and the round trip, and for ever on a dropped
+ * connection. The local count starts when the message ARRIVED, so it reaches 0
+ * after the server's own clock has: an Accept pressed then is too late. The
+ * expired box carries `data-qexpired` and no `data-qleft`, which is how
+ * queue.ts tickInPlace knows it is already drawn (and repaints once, not every
+ * second). */
 function offerHtml(o: MatchOffer & { left: number }): string {
   const left = o.left;
+  const over = left <= 0;
+  const body = over
+    ? (o.accepted
+      ? `<p class="qwaiting qexpired" role="status" data-qexpired>${esc(o.opponent)} did not answer in time. You go back to the front of the queue.</p>`
+      : '<p class="qwaiting qexpired" role="status" data-qexpired>Time ran out, so the game was not started.</p>')
+    : o.accepted
+      ? `<div class="qwaiting">Waiting for ${esc(o.opponent)}… <b data-qleft>${left}</b></div>`
+      : `<button class="cta primary qaccept" data-btn="queue-accept">Accept <span class="qcount" data-qleft>${left}</span></button>`;
+  const leave = over ? (o.accepted ? 'Cancel' : 'Close') : o.accepted ? 'Cancel' : 'Decline';
   return `<div class="overlay qoverlay"><div class="overlaybox qofferbox" role="dialog" aria-label="Match found">
     <h3>Match found</h3>
     <div class="qopponent">
       <b>${esc(o.opponent)}</b>
       <span class="hint">${esc(String(o.opponentRating))} · ${esc(MODE_LABEL[o.mode])}</span>
     </div>
-    ${o.accepted
-      ? `<div class="qwaiting">Waiting for ${esc(o.opponent)}… <b data-qleft>${left}</b></div>`
-      : `<button class="cta primary qaccept" data-btn="queue-accept">Accept <span class="qcount" data-qleft>${left}</span></button>`}
-    <button class="qdecline" data-btn="queue-decline">${o.accepted ? 'Cancel' : 'Decline'}</button>
-    ${o.accepted ? '<p class="hint">If they do not answer in time you go back to the front of the queue.</p>' : ''}
+    ${body}
+    <button class="qdecline" data-btn="queue-decline">${leave}</button>
+    ${o.accepted && !over ? '<p class="hint">If they do not answer in time you go back to the front of the queue.</p>' : ''}
   </div></div>`;
 }
 

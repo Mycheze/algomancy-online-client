@@ -45,6 +45,7 @@
 .qaccept { padding: var(--space-5) var(--space-5); font-size: var(--text-16); font-weight: 700; }
 .qcount { color: var(--dim); font-weight: 400; margin-left: var(--space-3); }
 .qwaiting { padding: var(--space-4); color: var(--dim); }
+.qexpired { margin: 0; }   /* a <p>, where the live line is a <div> or the Accept button */
 .qdecline { font-size: var(--text-12); padding: var(--space-2) var(--space-4); align-self: center; }
 .qofferbox .hint { font-size: var(--text-11); }
 
