@@ -67,7 +67,12 @@ def card_choices(current: str) -> list[app_commands.Choice[str]]:
     out = (starts + holds)[:AUTOCOMPLETE_LIMIT]
     # Choice.name is capped at 100 characters by Discord; no Algomancy card is
     # close, but a truncation here is invisible and a rejection is not.
-    return [app_commands.Choice(name=n[:100], value=n[:100]) for n in out]
+    choices = [app_commands.Choice(name=n[:100], value=n[:100]) for n in out]
+    # A renamed card is offered under its former name too, saying what it is now.
+    for old, now in sorted(cards.former_names.items()):
+        if q in _norm(old) and now not in out and len(choices) < AUTOCOMPLETE_LIMIT:
+            choices.append(app_commands.Choice(name=f"{now} (was {old})"[:100], value=now[:100]))
+    return choices
 
 
 async def card_autocomplete(interaction: discord.Interaction, current: str):

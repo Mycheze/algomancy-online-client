@@ -27,7 +27,7 @@ from pathlib import Path
 from retriever import stem_tokens
 
 # Locations live in paths.py. mods.py imports CARDS_DIR from here, so keep the name.
-from paths import CARDS_DIR, ORACLE_JSON
+from paths import CARDS_DIR, CARD_REGISTRY_TS, ORACLE_JSON
 from oracle import load_oracle
 
 # Element -> embed sidebar color (Discord int). Defaults to neutral gray.
@@ -347,6 +347,24 @@ class SearchHit:
                 + ("…" if end < len(text) else ""))
 
 
+_ALIAS_RE = re.compile(r"^registerAlias\('((?:[^'\\]|\\.)*)',\s*'((?:[^'\\]|\\.)*)'\);", re.M)
+
+
+def load_aliases(path=CARD_REGISTRY_TS):
+    """{former name: current name}, read from the engine's registerAlias lines.
+
+    The client and the bot must agree on what a card used to be called, so
+    there is one list and it is the engine's. A checkout without the client
+    simply has no former names; every current name still resolves.
+    """
+    try:
+        text = Path(path).read_text(encoding="utf-8")
+    except OSError:
+        return {}
+    return {re.sub(r"\\(.)", r"\1", old): re.sub(r"\\(.)", r"\1", now)
+            for old, now in _ALIAS_RE.findall(text)}
+
+
 class CardIndex:
     def __init__(self, oracle_path=ORACLE_JSON, cards_dir=CARDS_DIR):
         self.cards_dir = Path(cards_dir)
@@ -359,6 +377,12 @@ class CardIndex:
         self.cards = {name: faces[0] for name, faces in data.items() if faces}
         self.names = list(self.cards)
         self._norm_to_name = {_norm(n): n for n in self.names}
+        # A renamed card answers to its former name too. A name that is a card
+        # of its own today is never taken over by an alias.
+        self.former_names = {old: now for old, now in load_aliases().items()
+                             if now in self.cards and _norm(old) not in self._norm_to_name}
+        self._former = {_norm(old): now for old, now in self.former_names.items()}
+        self._norm_to_name.update(self._former)
         # Built on the first search() — a bot that never searches shouldn't pay
         # for the index, and a test that only does name lookups stays instant.
         self._sindex = None
@@ -379,7 +403,9 @@ class CardIndex:
             return self.cards[name], name, []
 
         # 2. substring matches on the normalized name
-        subs = [n for n in self.names if qn in _norm(n)]
+        # (a former name only when no current name holds the words)
+        subs = [n for n in self.names if qn in _norm(n)] or list(dict.fromkeys(
+            now for old, now in self._former.items() if qn in old))
         if len(subs) == 1:
             return self.cards[subs[0]], subs[0], []
 
@@ -482,6 +508,7 @@ class CardIndex:
         q = (query or "").strip()
         if not q:
             return []
+        q = self._former.get(_norm(q), q)   # a former name is that card's name
         index = self._search_index()
         ql = q.lower()
 

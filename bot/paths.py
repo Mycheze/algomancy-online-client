@@ -109,6 +109,10 @@ CR_DISCREPANCIES_DIR = CR_DIR / "discrepancies"
 #: augmentAttrs, virus, burst — i.e. what the online client actually plays.
 #: tools.py's `card` shows it beside the oracle text. Never hand-edit.
 PRINTED_JSON = REPO_ROOT / "client" / "engine" / "src" / "cards" / "printed.json"
+#: where `registerAlias(old, now)` is declared: a card's former names. cards.py
+#: reads those lines so the bot finds a renamed card by either name, from the
+#: same list the client uses. Read only.
+CARD_REGISTRY_TS = REPO_ROOT / "client" / "engine" / "src" / "cards" / "registry.ts"
 
 # ── the RAG corpus and the rulings it is built from ─────────────────────────
 CORPUS_DIR = DATA / "corpus"
