@@ -107,6 +107,8 @@ test('§3 report 296: Change password posts the old and new password, and shows 
   await settle(); await settle();
   assert.deepEqual(POSTS, [{ url: '/api/auth/password', body: { oldPassword: 'not it', newPassword: 'second password' } }]);
   assert.match(box(ui.html()), /that is not your current password/, 'the server error is shown in the box');
+  // drawn as an error, not in a note's gold (BL-63)
+  assert.match(box(ui.html()), /<div class="ui-status ui-status--error" role="alert">that is not your current password<\/div>/, 'the failure is drawn as an error');
 
   answer = { ok: true };
   ui.type('acct-pw-old', 'first password');
@@ -116,7 +118,7 @@ test('§3 report 296: Change password posts the old and new password, and shows 
   await settle(); await settle();
   assert.deepEqual(POSTS[1], { url: '/api/auth/password', body: { oldPassword: 'first password', newPassword: 'second password' } });
   const b = box(ui.html());
-  assert.match(b, /Password changed\./);
+  assert.match(b, /<div class="ui-status ui-status--ok" role="status">Password changed\.<\/div>/, 'a change that took is drawn as done, not as an error');
   assert.doesNotMatch(b, /not your current password/, 'the old error is gone');
 });
 

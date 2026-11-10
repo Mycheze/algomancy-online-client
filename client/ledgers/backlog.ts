@@ -911,7 +911,12 @@ const OPEN: Entry[] = [
       + '`games: {winner, how}[]` and pages/match.ts matchResultHtml lists them under a Bo3\'s score ("Game 1: you won · '
       + 'Game 2: Bo won (conceded)"), on the match room\'s end screen and the post-game screen alike; ui/match.ts keeps '
       + 'pickId in localStorage (PICK_KEY). Guarded by 1175-match-games-and-pick.test.ts and 816 §1. Not looked at in a '
-      + 'browser (the home box has none). Left: (1), (2), (3), (6).',
+      + 'browser (the home box has none). Left: (1), (2), (3), (6).\n\n'
+      + '2026-11-10 (steward tidy): (3) DONE — the third doneWhen line. BL-65 W4 (ee6b2e71, 2026-11-04) redrew the '
+      + 'sideboarding table in the app frame, whose root carries `apppage` (1129 §1 pins it), and the floating report pill '
+      + 'and bell are hidden under any `#app > .apppage` (shared/13-report-and-inbox.css, 1020); the 215px clearance is '
+      + 'gone from 47-competitive-match.css. Re-checked at HEAD: (2) is still open (pages/match.ts deckPilesHtml still '
+      + 'calls seedPiles(main, \'cost\')). Left: (1), (2), (6).',
   },
   {
     id: 'BL-57',
@@ -1105,7 +1110,14 @@ const OPEN: Entry[] = [
       + 'legal.ts\'s injected stylesheet, the queue\'s 16px buttons, the favourite/unlink missing catches, '
       + 'the ladder failure in gold, crreview.ts\'s stale comment, 962 matching words in strings, the '
       + 'component gaps (panel titleHtml and sub-heading, table headless and column titles, tabs '
-      + 'className), the native checkboxes drawn light.',
+      + 'className), the native checkboxes drawn light.\n\n'
+      + '2026-11-10 (steward tidy): the fourth doneWhen line (the profile\'s password-change failure drawn as an error) '
+      + 'is DONE: the profile redesign of 2026-11-07 (66e79da3) draws it with statusMessage tone \'error\' '
+      + '(pages/profile.ts, the Account section), a success with tone \'ok\'. 732 §3 now pins both classes, and went red '
+      + 'with the tone flipped to \'note\'. Re-checked the rest at HEAD, all still open: the signed-in Alerts button passes '
+      + 'no `on` (pages/frame.ts toolHtml), `.zonelabel` is still defined in board/03, rootAttrs still writes `disabled` '
+      + 'after the pass-through attrs, meta.ts still shares one `text`, 34-cardstats.css still has the two hex fills, and '
+      + 'the three TODO(ds) splits are still in pages/home.ts, challenge.ts and league.ts.',
   },
   {
     id: 'BL-64',
