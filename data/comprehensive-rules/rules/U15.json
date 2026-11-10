@@ -403,8 +403,8 @@
         "test": "27-metal-b.test.ts::Living Forge: donated on a host, the [three] ability activates via the mod"
       },
       {
-        "text": "Aurozoa's \"[Augment] Pay 1 life: Recall me\" recalls the host when Aurozoa is a mod.",
-        "test": "46-hybrids-ld-c.test.ts::Aurozoa: \"[Augment] Pay 1 life: Recall me\" — on itself and donated to a host"
+        "text": "Aurozoa's \"[Augment][Battle] Pay 1 life: Recall me\" recalls the host when Aurozoa is a mod.",
+        "test": "46-hybrids-ld-c.test.ts::Aurozoa: \"[Augment][Battle] Pay 1 life: Recall me\" — in battle, on itself and donated to a host"
       }
     ],
     "see": [

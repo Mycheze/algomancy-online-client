@@ -8735,9 +8735,9 @@
             "cost": "lb",
             "total_cost": "3",
             "type": "{Virus} Cosmic Jellyfish Unit",
-            "text": "[Augment] Pay 1 life: Recall me.",
+            "text": "[Augment][Battle] Pay 1 life: Recall me.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772906282/aurozoa_ek9qqp.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-11-10 00:00:00.000000",
             "details": "",
             "factions": [
                 "light",

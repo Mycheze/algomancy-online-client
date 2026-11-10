@@ -1,7 +1,7 @@
 {
  "_generated_by": "bot/pipeline/classify_complexity.py — never hand-edit",
  "_what": "the oracle file's `complexity` placeholders, read off the type-bar icon on each scan: silver = Simple, gold = Complex. `from` is the upstream value the entry replaces; the extractor refuses the entry if upstream no longer says that.",
- "generated": "2026-11-08",
+ "generated": "2026-11-10",
  "calibration": {
   "agree": 373,
   "known": 373,

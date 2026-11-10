@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-10', kind: 'change', text: "Aurozoa takes the designer's new printing: its 'Pay 1 life: Recall me' is now a battle-speed ability, usable only during a battle, whether on Aurozoa itself or on a unit it is augmented onto." },
   { date: '2026-11-10', kind: 'fix', text: 'If the server stops answering, the Matchmaking card on the home page now says it could not reach the server and is trying again, instead of showing an old count and Join buttons that could not work.' },
   { date: '2026-11-10', kind: 'change', text: 'A few labels now match the rest of the game: the draft lobby says an opponent is "not here yet" like the other rooms, the end-of-game button to matchmaking reads "Find a game", and constructed\'s draw-4-put-2-back bar says "Draw phase".' },
   { date: '2026-11-10', kind: 'fix', text: 'When a match is found and the countdown runs out, the box now says time ran out, or that your opponent did not answer, instead of sitting on a dead "Accept 0".' },

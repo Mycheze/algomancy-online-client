@@ -165,8 +165,12 @@ card('Haunting Memories', {
 
 // ─────────────────────── LIGHT / WATER (lb) ───────────────────────────
 
-// "[Augment] Pay 1 life: Recall me." — lb/3 4/1 {Virus} Cosmic Jellyfish
-// Unit. An ACTIVATED ability in the [Augment] text box: live when the card is
+// "[Augment][Battle] Pay 1 life: Recall me." — lb/3 4/1 {Virus} Cosmic
+// Jellyfish Unit. The designer's new printing (the owner, 2026-11-10) added the
+// [Battle] glyph to the ability: it was "[Augment] Pay 1 life: Recall me.",
+// usable in deployment too. Now it is a battle-speed activation only (CR 705.2,
+// `timing: 'battle'`, as Grox and Cadaverous Cultivator) — on Aurozoa itself
+// and on a host it is augmented onto alike. An ACTIVATED ability in the [Augment] text box: live when the card is
 // played normally (via: 'augment') and donated to a host when it augments
 // (via: { mod }), where "me" anchors on the HOST (the ctx.sourceId is always
 // the unit the text is attached to). CR 111.6b: the 1 life is a real ACTIVATION cost
@@ -174,8 +178,8 @@ card('Haunting Memories', {
 // accepted) and is paid before the ability reaches the stack.
 card('Aurozoa', {
   augmentText: [{
-    type: 'activated', cost: { life: 1 },
-    label: 'pay 1 life: recall me',
+    type: 'activated', cost: { life: 1 }, timing: 'battle',
+    label: '[Battle] pay 1 life: recall me',
     effect: {
       run: (g, ctx) => {
         const self = selfOf(g, ctx);

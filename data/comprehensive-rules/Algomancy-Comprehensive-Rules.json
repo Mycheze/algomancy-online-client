@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:94ecae6ca3ef5166",
+ "generated_from": "sha256:99a8d04e1ab003ca",
  "rules": [
   {
    "num": "100.1",
@@ -22347,7 +22347,7 @@
    ],
    "examples": [
     "Living Forge augmented onto another unit lets that unit's controller activate \"[three]: create a Robot 2\" through the mod.",
-    "Aurozoa's \"[Augment] Pay 1 life: Recall me\" recalls the host when Aurozoa is a mod."
+    "Aurozoa's \"[Augment][Battle] Pay 1 life: Recall me\" recalls the host when Aurozoa is a mod."
    ],
    "basis": "owner",
    "scope": "game",
@@ -22355,7 +22355,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "705.6",

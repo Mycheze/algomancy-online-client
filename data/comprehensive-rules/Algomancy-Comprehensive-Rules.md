@@ -6578,9 +6578,9 @@ order.
 
 > *Example: Living Forge augmented onto another unit lets that unit's controller activate "[three]: create a Robot 2" through the mod.*
 
-> *Example: Aurozoa's "[Augment] Pay 1 life: Recall me" recalls the host when Aurozoa is a mod.*
+> *Example: Aurozoa's "[Augment][Battle] Pay 1 life: Recall me" recalls the host when Aurozoa is a mod.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-22, 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Tests: 27-metal-b.test.ts, 46-hybrids-ld-c.test.ts · Example tests: 27-metal-b.test.ts::Living Forge: donated on a host, the [three] ability activates via the mod, 46-hybrids-ld-c.test.ts::Aurozoa: "[Augment] Pay 1 life: Recall me" — on itself and donated to a host · Key: effects.activated.from-mod</sub>
+<sub>Basis: Owner ruling, adopted 2026-08-22, 2026-08-25 (quoted from the retired ruling register) · Verified: not verified (the text changed after verification); 2 gate test files · Tests: 27-metal-b.test.ts, 46-hybrids-ld-c.test.ts · Example tests: 27-metal-b.test.ts::Living Forge: donated on a host, the [three] ability activates via the mod, 46-hybrids-ld-c.test.ts::Aurozoa: "[Augment][Battle] Pay 1 life: Recall me" — in battle, on itself and donated to a host · Key: effects.activated.from-mod</sub>
 
 <a id="r705.6"></a>**705.6.** Some actions are not activated abilities, and rules and effects that apply to activating abilities do not apply to them: applying a mod (an augment or a graft), playing a card as an Ambush, casting a spell token, using a resource, and taking an option a card offers as a spell is played (rule 109.6). See rules 109.6, 701.2, 111.10f.
 
@@ -10924,13 +10924,13 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 | verdict | rules |
 |---|---|
-| confirmed | 1842 |
+| confirmed | 1841 |
 | partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 1 |
 | not verified | 4 |
-| text changed | 16 |
+| text changed | 17 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
 

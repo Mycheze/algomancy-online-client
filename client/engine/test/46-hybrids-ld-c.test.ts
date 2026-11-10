@@ -131,32 +131,69 @@ test('Angel of Anguish: can be prophesied FROM THE BIN, then released free two t
 
 // ── Aurozoa ──────────────────────────────────────────────────────────────
 
-test('Aurozoa: "[Augment] Pay 1 life: Recall me" — on itself and donated to a host', () => {
+// The designer's printing of 2026-11-10 is "[Augment][Battle] Pay 1 life:
+// Recall me." — the [Battle] glyph makes it a battle-speed activation (CR 705.2),
+// on Aurozoa itself and on a host alike. It used to be activatable in deployment.
+
+test('Aurozoa: "[Augment][Battle] Pay 1 life: Recall me" — in battle, on itself and donated to a host', () => {
   const h = new Harness(4601);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   const own = spawn(h, P, 'Aurozoa');
+  toNextBattle(h, P);
+  h.do({ type: 'declareAttack', seat: P, columns: [[own]] });
+  drainStack(h);
   const life = lifeOf(h, P);
+  assert.equal(h.state.priority, P, 'the attacker holds priority in the attack window');
   h.do({ type: 'activateAbility', seat: P, entityId: own, abilityIndex: 0, via: 'augment' });
-  assert.equal(lifeOf(h, P), life - 1, '1 life paid at resolution');
+  assert.equal(lifeOf(h, P), life - 1, '1 life paid as the cost (CR 111.6)');
+  drainStack(h);
   assert.ok(!ent(h, own), 'Aurozoa left play');
   assert.ok(h.state.players[P]!.hand.includes('Aurozoa'), 'recalled to hand');
 
   // donated: "me" anchors on the HOST, so the host is what gets recalled
+  const h2 = new Harness(4633);
+  toDeployment(h2);
+  const Q = h2.state.deployPlayer!;
+  const host = spawn(h2, Q, 'LDC Grunt');
+  giveResources(h2, Q, 'light', 1);
+  giveResources(h2, Q, 'water', 2);                        // lb / 3
+  h2.do({ type: 'augment', seat: Q, from: 'hand', index: give(h2, Q, 'Aurozoa'), hostId: host });
+  const mod = ent(h2, host)!.mods[0]!;
+  toNextBattle(h2, Q);
+  h2.do({ type: 'declareAttack', seat: Q, columns: [[host]] });
+  drainStack(h2);
+  const life2 = lifeOf(h2, Q);
+  h2.do({ type: 'activateAbility', seat: Q, entityId: host, abilityIndex: 0, via: { mod } });
+  assert.equal(lifeOf(h2, Q), life2 - 1);
+  drainStack(h2);
+  assert.ok(!ent(h2, host), 'the HOST was recalled');
+  assert.ok(h2.state.players[Q]!.hand.includes('LDC Grunt'));
+  assert.ok(h2.state.players[Q]!.bin.includes('Aurozoa'), 'the mod stayed behind → bin (CR 410.4)');
+});
+
+test('Aurozoa: the [Battle] glyph — in deployment the recall is neither offered nor accepted, on itself or on a host', () => {
+  const h = new Harness(4634);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const own = spawn(h, P, 'Aurozoa');
   const host = spawn(h, P, 'LDC Grunt');
   giveResources(h, P, 'light', 1);
-  giveResources(h, P, 'water', 2);                         // lb / 3
-  h.do({
-    type: 'augment', seat: P, from: 'hand',
-    index: h.state.players[P]!.hand.indexOf('Aurozoa'), hostId: host,
-  });
+  giveResources(h, P, 'water', 2);
+  h.do({ type: 'augment', seat: P, from: 'hand', index: give(h, P, 'Aurozoa'), hostId: host });
   const mod = ent(h, host)!.mods[0]!;
-  const life2 = lifeOf(h, P);
-  h.do({ type: 'activateAbility', seat: P, entityId: host, abilityIndex: 0, via: { mod } });
-  assert.equal(lifeOf(h, P), life2 - 1);
-  assert.ok(!ent(h, host), 'the HOST was recalled');
-  assert.ok(h.state.players[P]!.hand.includes('LDC Grunt'));
-  assert.ok(h.state.players[P]!.bin.includes('Aurozoa'), 'the mod stayed behind → bin (CR 410.4)');
+  const life = lifeOf(h, P);
+  assert.equal(h.state.phase, 'deploy');
+  assert.ok(!h.legal(P).some(a => a.type === 'activateAbility' && (a.entityId === own || a.entityId === host)),
+    'not offered in deployment');
+  assert.throws(
+    () => h.do({ type: 'activateAbility', seat: P, entityId: own, abilityIndex: 0, via: 'augment' }),
+    /only be activated during battle/);
+  assert.throws(
+    () => h.do({ type: 'activateAbility', seat: P, entityId: host, abilityIndex: 0, via: { mod } }),
+    /only be activated during battle/);
+  assert.equal(lifeOf(h, P), life, 'nothing paid');
+  assert.ok(ent(h, own) && ent(h, host), 'and nothing recalled');
 });
 
 test('Aurozoa: CR 111.6b — at 1 life the cost is unpayable and the activation is ILLEGAL', () => {
@@ -164,13 +201,16 @@ test('Aurozoa: CR 111.6b — at 1 life the cost is unpayable and the activation 
   toDeployment(h);
   const P = h.state.deployPlayer!;
   const own = spawn(h, P, 'Aurozoa');
+  toNextBattle(h, P);
+  h.do({ type: 'declareAttack', seat: P, columns: [[own]] });
+  drainStack(h);
   h.state.players[P]!.life = 1;
   assert.throws(
     () => h.do({ type: 'activateAbility', seat: P, entityId: own, abilityIndex: 0, via: 'augment' }),
     /cannot pay the activation cost/);
   assert.equal(lifeOf(h, P), 1, 'nothing paid');
   assert.ok(ent(h, own), 'and nothing recalled');
-  assert.equal(h.state.phase, 'deploy', 'the game is very much not over');
+  assert.equal(h.state.phase, 'battle', 'the game is very much not over');
   assert.ok(!h.legal(P).some(a => a.type === 'activateAbility' && a.entityId === own),
     'not offered either');
 });

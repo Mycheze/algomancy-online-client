@@ -6598,7 +6598,7 @@
   "virus": true,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] Pay 1 life: Recall me.",
+  "text": "[Augment][Battle] Pay 1 life: Recall me.",
   "image": "Aurozoa.jpg"
  },
  "Banishment": {

@@ -891,8 +891,8 @@
     "detail": [
      {
       "element": "light",
-      "margin": 0.301,
-      "score": 0.942
+      "margin": 0.239,
+      "score": 0.884
      },
      {
       "element": "water",
@@ -904,11 +904,11 @@
    },
    "timing": {
     "read": "deploy",
-    "score": 0.352
+    "score": 0.353
    },
    "typeAugment": {
     "read": false,
-    "score": 0.3311295509338379
+    "score": 0.33001500368118286
    }
   },
   "Automaton of Abundance": {
@@ -12863,6 +12863,6 @@
   "agree": 322,
   "of": 322
  },
- "generated": "2026-11-08",
+ "generated": "2026-11-10",
  "generator": "bot/pipeline/read_card_faces.py"
 }
