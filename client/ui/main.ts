@@ -91,6 +91,7 @@ import {
   repaintArrows, setBaseArrows, setHoverArrows, setMotionOn,
 } from './anim.ts';
 import type { ArrowSpec } from './anim.ts';
+import { syncPhaseSlide } from './phaseslide.ts';
 import { armsIdle, audibleLife, diffSfx, lifeChanges, sfxSnap } from './sfx.ts';
 import type { SfxSnap } from './sfx.ts';
 import {
@@ -7669,28 +7670,29 @@ function toolTipHtml(kind: string): string | null {
  * battle's steps (attack · blocks · damage · after) as pips under its icon,
  * and the turn number as a small numeral. The caption (`phaseCaption`) says
  * it all in words — hover, or tap on touch (ui/infotip.ts) — so nothing here
- * is hover-only. */
+ * is hover-only. The lit step also shows its name, and every step carries one
+ * so ui/phaseslide.ts can measure both ends of the slide between two steps. */
 function phaseIconsHtml(): string {
   const s = h.state;
   const planning = s.phase === 'planning';
   const drafting = planning && !!s.draftDone;
-  const steps: { key: string; icon: string; label: string; cur: boolean; round?: 1 | 2 }[] = [
-    ...(s.mode === 'draft' ? [{ key: 'draft', icon: 'draft.svg', label: 'Draft', cur: drafting }] : []),
-    { key: 'plan', icon: 'planning.svg', label: 'Planning', cur: planning && !drafting && !s.hasteDone },
-    { key: 'haste', icon: 'haste.webp', label: 'Haste', cur: planning && !!s.hasteDone },
-    { key: 'battle1', icon: 'battle.webp', label: 'Battle, round 1', cur: s.phase === 'battle' && s.battleRound !== 2, round: 1 },
-    { key: 'battle2', icon: 'battle.webp', label: 'Battle, round 2', cur: s.phase === 'battle' && s.battleRound === 2, round: 2 },
-    { key: 'regroup', icon: 'regroup.svg', label: 'Regroup', cur: s.phase === 'regroup' },
-    { key: 'deploy', icon: 'deploy.svg', label: 'Deploy', cur: s.phase === 'deploy' },
+  const steps: { key: string; icon: string; label: string; word: string; cur: boolean; round?: 1 | 2 }[] = [
+    ...(s.mode === 'draft' ? [{ key: 'draft', icon: 'draft.svg', label: 'Draft', word: 'Draft', cur: drafting }] : []),
+    { key: 'plan', icon: 'planning.svg', label: 'Planning', word: 'Planning', cur: planning && !drafting && !s.hasteDone },
+    { key: 'haste', icon: 'haste.webp', label: 'Haste', word: 'Haste', cur: planning && !!s.hasteDone },
+    { key: 'battle1', icon: 'battle.webp', label: 'Battle, round 1', word: 'Battle', cur: s.phase === 'battle' && s.battleRound !== 2, round: 1 },
+    { key: 'battle2', icon: 'battle.webp', label: 'Battle, round 2', word: 'Battle', cur: s.phase === 'battle' && s.battleRound === 2, round: 2 },
+    { key: 'regroup', icon: 'regroup.svg', label: 'Regroup', word: 'Regroup', cur: s.phase === 'regroup' },
+    { key: 'deploy', icon: 'deploy.svg', label: 'Deploy', word: 'Deploy', cur: s.phase === 'deploy' },
   ];
   const step = battleStepIndex();
   const pips = (round: 1 | 2, cur: boolean): string => `<span class="phpips">${[0, 1, 2, 3].map(i =>
     `<i class="${cur && i === step ? 'on' : cur && i < step ? 'done' : ''}"></i>`).join('')}</span>`;
   const caption = phaseCaption();
   return `<div class="phicons${gameIsOver() ? ' over' : ''}" data-tip="phase" data-btn="infotip" aria-label="${esc(caption)}">
-      <span class="phturn">${s.turn}</span>${steps.map(st =>
-        `<span class="phi ${st.key}${st.cur ? ' cur' : ''}"><img src="${ICON_BASE}${st.icon}" alt="${st.label}">${
-          st.round ? `<b class="phr">${st.round}</b>${pips(st.round, st.cur)}` : ''}</span>`).join('')}
+      <span class="phturn">${s.turn}</span><span class="phcells"><i class="phbox"></i>${steps.map(st =>
+        `<span class="phi ${st.key}${st.cur ? ' cur' : ''}"><span class="phic"><img src="${ICON_BASE}${st.icon}" alt="${st.label}">${
+          st.round ? `<b class="phr">${st.round}</b>${pips(st.round, st.cur)}` : ''}</span><span class="phword" aria-hidden="true"><span>${st.word}</span></span></span>`).join('')}</span>
     </div>`;
 }
 /** the battle's step as one of four pips: attack (declaring and its window),
@@ -8473,12 +8475,13 @@ function render(): void {
   // source and every target would be rebuilt out from under the pointer
   if (dragActive()) { dragPaintPending = true; return; }
   dragPaintPending = false;
-  if (painting) { renderNow(); return; }
+  if (painting) { renderNow(); syncPhaseSlide(motionOn()); return; }
   painting = true;
   try {
     const frame = captureFrame();
     const before = lastCensus;
     const painted = renderNow();
+    syncPhaseSlide(motionOn());   // before the browser can draw the rebuilt bar
     lessonTick();   // CR D8.1: a Learn to Play lesson opens at its moment (a no-op elsewhere)
     if (!painted) { lastCensus = null; clearArrows(); sfxReset(); flashReset(); return; }
     holdDeferred(deferredKeys(flashQueue, Date.now()));
