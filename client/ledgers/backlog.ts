@@ -561,7 +561,17 @@ const OPEN: Entry[] = [
       + 'Guarded by the census 1204-click-says-tap-on-touch.test.ts over main.ts and pages/*.ts (title= text is hover-only '
       + 'and passes). Left: the engine\'s own Discharge cost prompt ("click a unit to take counters off it", owner-asked, '
       + 'quoted in the CR) and the help layer\'s prose (tutorial.ts, lessons.ts): written for a mouse, it '
-      + 'names a touch gesture only for right-click; a pass of its own.',
+      + 'names a touch gesture only for right-click; a pass of its own.\n\n'
+      + '2026-11-10 (steward): every text box, menu and writing area has a name a screen reader can say '
+      + '(docs/23-ui-inventory/05 §18.24: "Unlabelled inputs: share link, deck <select>, #h-deckurl, #sc-q, post-game '
+      + 'claim inputs (placeholder-only)"). The class was 51 controls: the room link (util.ts shareBar) and the metagame\'s '
+      + 'deck link, the deck menu (deckpicker, match), every search box (cards, metagame, card stats, rules x2, deck '
+      + 'builder, sandbox, single-card duel), the post-game and profile username/password boxes, the friend box, the '
+      + 'report/dispute/take-back boxes and the take-back form\'s menus, the league\'s forms, the judge boxes, the comment '
+      + 'box, the scenario notes, the exported-deck text. Each got an aria-label (nothing moves on screen). settingRow\'s '
+      + 'label column is a <div> tied to nothing; its comment now says a bare control passed to it names itself. Guarded '
+      + 'by the census 1205-form-controls-have-names.test.ts (every page and component story rendered, and every '
+      + 'control written in ui/*.ts, pages/*.ts, components/*.ts).',
   },
   {
     id: 'BL-17',

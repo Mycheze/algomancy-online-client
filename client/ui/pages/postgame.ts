@@ -140,8 +140,8 @@ function guestClaimHtml(guest: boolean): string {
   return `<form class="pgclaim" data-form="pg-claim">
     <div class="pgclaimhead">Keep this game?</div>
     <div class="hint">You played as a guest. Sign up to keep this game and your rating.</div>
-    <input name="username" placeholder="a name" autocomplete="username" maxlength="40">
-    <input name="password" type="password" placeholder="a password" autocomplete="new-password">
+    <input name="username" aria-label="Username" placeholder="a name" autocomplete="username" maxlength="40">
+    <input name="password" type="password" aria-label="Password" placeholder="a password" autocomplete="new-password">
     ${button({ label: 'Keep it', variant: 'primary', dataBtn: 'pg-claim' })}
     <div class="hint pgclaimerr"></div>
   </form>`;
@@ -165,8 +165,8 @@ function signupClaimHtml(signup: PostGameView['signup']): string {
     <div class="pgclaimhead">Keep this game?</div>
     <div class="hint">You played signed out. Make an account now and this game is the first one on your profile.</div>
     <p class="pwwarn"><b>DO NOT FORGET YOUR PASSWORD. THERE IS NO PASSWORD RESET.</b></p>
-    <input id="pg-su-user" name="username" placeholder="a name" autocomplete="username" maxlength="20">
-    <input id="pg-su-pass" name="password" type="password" placeholder="a password" autocomplete="new-password">
+    <input id="pg-su-user" name="username" aria-label="Username" placeholder="a name" autocomplete="username" maxlength="20">
+    <input id="pg-su-pass" name="password" type="password" aria-label="Password" placeholder="a password" autocomplete="new-password">
     ${button({ label: 'Sign up and keep it', variant: 'primary', dataBtn: 'pg-signup' })}
     <div class="hint pgclaimerr" id="pg-su-err"></div>
   </form>`;

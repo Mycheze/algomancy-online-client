@@ -225,7 +225,7 @@ function tableHtml(v: CardStatsView): string {
       v.sortKey === c.key ? (v.sortDir < 0 ? ' ▾' : ' ▴') : ''}</button></th>`).join('');
   return `
     <div class="framebar">
-      <input id="meta-cs-q" class="dksearch" spellcheck="false" placeholder="find a card" value="${esc(v.text)}">
+      <input id="meta-cs-q" class="dksearch" aria-label="Find a card" spellcheck="false" placeholder="find a card" value="${esc(v.text)}">
       ${seg('Kind', 'meta-cs-kind', v.kind, [['all', 'all'], ['unit', 'units'], ['spell', 'spells']])}
       <div class="dkfilters">
         ${ELEMENTS.map(el => `<button class="elchip ${el}${v.els.includes(el) ? ' on' : ''}" data-btn="meta-cs-el" data-v="${el}">${elIcon(el)}${el}</button>`).join('')}

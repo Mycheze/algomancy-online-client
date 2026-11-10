@@ -348,7 +348,7 @@ export function crReaderHtml(fullEditionUrl: string): string {
   }
   return `<div class="rrsplit rdsplit">
     <aside class="rrnav">
-      <input id="rules-q" class="rulesq" type="search" spellcheck="false" autocomplete="off"
+      <input id="rules-q" class="rulesq" type="search" aria-label="Search the rules" spellcheck="false" autocomplete="off"
         placeholder="search, or a rule number" value="${esc(query)}">
       <div class="rrnavlist" id="cr-nav" data-scroll="cr-nav">${crNavListHtml()}</div>
     </aside>

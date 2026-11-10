@@ -74,7 +74,7 @@ export function ccDeckSelectHtml(decks: CcDeck[] | null, pick: CcDeck | null): s
   const opts = decks.map(d => d.error
     ? `<option value="${esc(d.id)}" disabled>${esc(d.name)} — ${esc(d.error)}</option>`
     : `<option value="${esc(d.id)}" ${pick?.id === d.id ? 'selected' : ''}>${esc(d.name)}</option>`).join('');
-  return `<select id="cc-deck" class="deckselect">
+  return `<select id="cc-deck" class="deckselect" aria-label="Your deck for the match">
       ${pick ? '' : '<option value="" selected disabled>no deck is Competitive legal yet</option>'}${opts}
     </select>`;
 }

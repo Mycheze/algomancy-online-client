@@ -5327,7 +5327,7 @@ function judgeOverlayHtml(): string {
     <div class="judgescroll">${rows || '<div class="hint">Ask anything — answered from the rulebook and the designer’s Q&A.</div>'}
       ${judgeBusy ? '<div class="hint">thinking…</div>' : ''}</div>
     <div class="judgerow">
-      <input id="judge-q" placeholder="e.g. can a Feeble unit be sent to counterattack?" ${judgeBusy ? 'disabled' : ''}>
+      <input id="judge-q" aria-label="Ask the judge a rules question" placeholder="e.g. can a Feeble unit be sent to counterattack?" ${judgeBusy ? 'disabled' : ''}>
       <button class="primary" data-btn="judgeask" ${judgeBusy ? 'disabled' : ''}>Ask</button>
     </div>
     <button data-btn="judgeclose">Close</button>
@@ -6098,7 +6098,7 @@ function bigCardMenuHtml(dec: Decision, btn: string): string | null {
     playable: true, data: `data-btn="${btn}" data-i="${i}"${pingAttrs(dec.options[i]!)}`,
   })).join('');
   return `<div class="decsearch">
-    <input id="dec-search" type="text" autocomplete="off" spellcheck="false"
+    <input id="dec-search" type="text" aria-label="Search the card pool" autocomplete="off" spellcheck="false"
       placeholder="search — name, t:unit, e:fire, m&lt;=3, o:&quot;draw a card&quot;"
       value="${esc(q)}">
     <button data-btn="decsearchall" class="${all ? 'on' : ''}"

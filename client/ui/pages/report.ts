@@ -94,7 +94,7 @@ function disputeDialogHtml(v: ReportDialogView): string {
   return `<div class="reportscrim" id="reportscrim"><div class="overlaybox reportbox" role="dialog" aria-label="Dispute game">
     <h3>Dispute game</h3>
     <div class="hint">Filed with the final board. The result stands until someone reviews it. ${filedAs(v.user)}</div>
-    <textarea id="report-note" rows="4" placeholder="What went wrong?" ${v.busy ? 'disabled' : ''}></textarea>
+    <textarea id="report-note" rows="4" aria-label="What went wrong?" placeholder="What went wrong?" ${v.busy ? 'disabled' : ''}></textarea>
     <div class="judgerow">
       <button data-report="close">Cancel <span class="kh">(esc)</span></button>
       <span class="reporthint">Ctrl+Enter sends</span>
@@ -121,7 +121,7 @@ export function reportDialogHtml(v: ReportDialogView): string {
       <div class="reportlabel">How bad is it?</div>
       ${choicesHtml('severity', REPORT_SEVERITY_LABELS, v.severity, v.busy)}
     </div>` : ''}
-    <textarea id="report-note" rows="4" placeholder="${esc(v.kind ? REPORT_PROMPT[v.kind] : 'Pick a type above, then say what happened')}" ${v.busy ? 'disabled' : ''}></textarea>
+    <textarea id="report-note" rows="4" aria-label="What happened" placeholder="${esc(v.kind ? REPORT_PROMPT[v.kind] : 'Pick a type above, then say what happened')}" ${v.busy ? 'disabled' : ''}></textarea>
     <div class="judgerow">
       <button data-report="close">Cancel <span class="kh">(esc)</span></button>
       <span class="reporthint">${v.kind ? 'Ctrl+Enter sends' : ''}</span>

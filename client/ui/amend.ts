@@ -153,7 +153,7 @@ function seatSelect(field: string, picked: Seat): string {
   const v = ctx?.view();
   const me = v?.seat ?? 0;
   const them = (me === 0 ? 1 : 0) as Seat;
-  return `<select data-amendfield="${field}">${option(String(me), `${nameOf(me)} (you)`, String(picked))}${option(String(them), nameOf(them), String(picked))}</select>`;
+  return `<select data-amendfield="${field}" aria-label="${field === 'drawTarget' ? 'Who draws' : 'Whose life total'}">${option(String(me), `${nameOf(me)} (you)`, String(picked))}${option(String(them), nameOf(them), String(picked))}</select>`;
 }
 
 function fieldsHtml(): string {
@@ -161,12 +161,12 @@ function fieldsHtml(): string {
   if (kind === 'life') {
     const cur = v?.state.players[lifeTarget]?.life;
     return `<div class="amendrow">${seatSelect('lifeTarget', lifeTarget)}
-      <span>to</span><input type="number" min="1" max="999" data-amendfield="lifeValue" value="${esc(lifeValue)}" placeholder="${cur ?? ''}">
+      <span>to</span><input type="number" min="1" max="999" data-amendfield="lifeValue" aria-label="New life total" value="${esc(lifeValue)}" placeholder="${cur ?? ''}">
       <span class="hint">now ${cur ?? '?'}</span></div>`;
   }
   if (kind === 'drawCards') {
     return `<div class="amendrow">${seatSelect('drawTarget', drawTarget)}
-      <span>draws</span><input type="number" min="1" max="10" data-amendfield="drawN" value="${esc(drawN)}"><span>card(s)</span></div>`;
+      <span>draws</span><input type="number" min="1" max="10" data-amendfield="drawN" aria-label="How many cards" value="${esc(drawN)}"><span>card(s)</span></div>`;
   }
   if (kind === 'move') {
     const cards = myCards();
@@ -174,16 +174,16 @@ function fieldsHtml(): string {
     if (!cards.some(([k]) => k === moveCard)) moveCard = cards[0]![0];
     const from = moveCard.split(':')[0];
     if (moveTo === from) moveTo = (DESTS.find(([d]) => d !== from)![0]);
-    return `<div class="amendrow"><select data-amendfield="moveCard">${cards.map(([k, l]) => option(k, l, moveCard)).join('')}</select>
-      <span>to</span><select data-amendfield="moveTo">${DESTS.filter(([d]) => d !== from).map(([d, l]) => option(d, l, moveTo)).join('')}</select></div>
+    return `<div class="amendrow"><select data-amendfield="moveCard" aria-label="Card to move">${cards.map(([k, l]) => option(k, l, moveCard)).join('')}</select>
+      <span>to</span><select data-amendfield="moveTo" aria-label="Where it goes">${DESTS.filter(([d]) => d !== from).map(([d, l]) => option(d, l, moveTo)).join('')}</select></div>
       <div class="hint">Your opponent sees which card it is.</div>`;
   }
   if (kind === 'unit') {
     const list = units();
     if (!list.length) return '<div class="hint">There are no units on the board.</div>';
     if (!list.some(([k]) => k === unitId)) unitId = list[0]![0];
-    return `<div class="amendrow"><select data-amendfield="unitId">${list.map(([k, l]) => option(k, l, unitId)).join('')}</select>
-      <span>to</span><select data-amendfield="unitTo">${UNIT_DESTS.map(([d, l]) => option(d, l, unitTo)).join('')}</select></div>
+    return `<div class="amendrow"><select data-amendfield="unitId" aria-label="Unit to move">${list.map(([k, l]) => option(k, l, unitId)).join('')}</select>
+      <span>to</span><select data-amendfield="unitTo" aria-label="Where the unit goes">${UNIT_DESTS.map(([d, l]) => option(d, l, unitTo)).join('')}</select></div>
       <div class="hint">Nothing triggers: it does not die and is not recalled. A token is simply gone.</div>`;
   }
   // rewind — CT-323: each option names what it takes back, and NOTHING is
@@ -251,7 +251,7 @@ function dialogHtml(): string {
     </div>
     <div class="reportfield">
       <div class="reportlabel">What went wrong?</div>
-      <textarea id="amend-reason" rows="3" placeholder="e.g. my draw did not happen at the start of the turn" ${busy ? 'disabled' : ''}></textarea>
+      <textarea id="amend-reason" rows="3" aria-label="What went wrong?" placeholder="e.g. my draw did not happen at the start of the turn" ${busy ? 'disabled' : ''}></textarea>
     </div>
     <div class="judgerow">
       <button data-amend="close">Cancel <span class="kh">(esc)</span></button>

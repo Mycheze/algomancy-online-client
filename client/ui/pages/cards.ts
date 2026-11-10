@@ -164,7 +164,7 @@ function resultsHtml(v: CardsView): string {
   const page = rows.slice(0, v.shown);
   const rest = total - page.length;
   const body = query.view === 'text'
-    ? `<textarea class="cbtext" readonly rows="${Math.min(30, Math.max(4, page.length))}"
+    ? `<textarea class="cbtext" readonly aria-label="Card names" rows="${Math.min(30, Math.max(4, page.length))}"
         onclick="this.select()">${esc(page.map(r => r.name).join('\n'))}</textarea>`
     : query.view === 'list'
       ? `<div class="cblist">${page.map((r, i) => rowHtml(v, r, i)).join('')}</div>`
@@ -225,7 +225,7 @@ function barHtml(v: CardsView): string {
   return `<div class="cbhead">
     <div class="cbbar">
       <span class="cbqicon" aria-hidden="true">${icon('search')}</span>
-      <input id="cb-q" class="cbq" spellcheck="false" autocomplete="off"
+      <input id="cb-q" class="cbq" aria-label="Search cards" spellcheck="false" autocomplete="off"
         placeholder="search — try  el:wood kind:unit mana:2 -kw:virus"
         value="${esc(q)}">
       ${q ? '<button class="cbclear" data-btn="cards-clear" title="clear">×</button>' : ''}

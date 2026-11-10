@@ -83,7 +83,7 @@ test('981 §3 one shared deck: not found, typical, yours, another\'s', () => {
   assert.match(html, /<h1 class="frametitle">Deck 3<small>by Builder3/, 'the deck\'s name is the page\'s title, its builder beside it');
   assert.match(html, /by Builder3 · after Zed’s Orig · unlisted — only people with the link see this/);
   assert.match(html, /<strong>bold<\/strong>|<b>bold<\/b>/);
-  assert.match(html, /<input class="sharelink" readonly value="http:\/\/x\/\?deck=d1"/);
+  assert.match(html, /<input class="sharelink" readonly aria-label="Deck link" value="http:\/\/x\/\?deck=d1"/);
   for (const b of ['meta-list', 'copylink', 'meta-export', 'meta-group', 'meta-stats', 'meta-focus']) {
     assert.ok(btns(html).has(b), `${b} is drawn`);
   }

@@ -145,8 +145,8 @@ export function panelHtml(room: string, closable = false): string {
       ${info.clauses.length
         ? `<select id="scn-clause" title="which printed clause was off">${clauseOpts}</select>`
         : '<div class="hint">this card prints no rules text to pick a clause from</div>'}
-      <textarea id="scn-note" rows="2" placeholder="what happened? (optional)"></textarea>
-      <textarea id="scn-ruling" rows="2" placeholder="what SHOULD it do? (optional)"></textarea>
+      <textarea id="scn-note" rows="2" aria-label="What happened" placeholder="what happened? (optional)"></textarea>
+      <textarea id="scn-ruling" rows="2" aria-label="What it should do" placeholder="what SHOULD it do? (optional)"></textarea>
     </details>
     <div class="scnstamp">stamped with engine <code>${esc(info.engine.slice(0, 10))}</code>
       · room ${esc(room)} · action ${info.actionIndex}</div>

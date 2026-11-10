@@ -564,7 +564,7 @@ function friendRow(f: FriendView, kind: 'friend' | 'incoming' | 'outgoing'): str
 function friendsColumn(v: ProfileView): string {
   const me = v.me;
   const add = `<div class="pfadd">
-      <input id="a-friend" maxlength="20" placeholder="Their username" spellcheck="false" autocomplete="off">
+      <input id="a-friend" maxlength="20" aria-label="Their username" placeholder="Their username" spellcheck="false" autocomplete="off">
       ${button({ label: 'Add', dataBtn: 'acct-friend-add' })}
     </div>
     ${v.friendMsg ? statusMessage({ tone: 'note', text: v.friendMsg }) : ''}`;
@@ -692,8 +692,8 @@ function accountSection(v: ProfileView): string {
   const rows: string[] = [];
   if (v.guest) {
     rows.push(settingRow({ label: 'Name', controlHtml: `<div class="pfform">
-        <input id="acct-claim-name" maxlength="20" placeholder="Pick a username" autocomplete="username" spellcheck="false">
-        <input id="acct-claim-pass" type="password" maxlength="200" placeholder="And a password" autocomplete="new-password">
+        <input id="acct-claim-name" maxlength="20" aria-label="Username" placeholder="Pick a username" autocomplete="username" spellcheck="false">
+        <input id="acct-claim-pass" type="password" maxlength="200" aria-label="Password" placeholder="And a password" autocomplete="new-password">
         ${button({ label: 'Keep this account', variant: 'primary', size: 'sm', dataBtn: 'acct-claim' })}
         ${v.claimMsg ? statusMessage({ tone: 'error', text: v.claimMsg }) : ''}
       </div>`, hintHtml: 'You are playing as a guest. Name the account to keep your games and sign in elsewhere.' }));
@@ -702,9 +702,9 @@ function accountSection(v: ProfileView): string {
     const pw = v.pwMsg;
     rows.push(settingRow({ label: 'Password', controlHtml: `<div class="pfform pwform">
         <input type="text" autocomplete="username" value="${esc(v.me.username)}" hidden>
-        <input id="acct-pw-old" type="password" maxlength="200" placeholder="Current password" autocomplete="current-password">
-        <input id="acct-pw-new" type="password" maxlength="200" placeholder="New password" autocomplete="new-password">
-        <input id="acct-pw-again" type="password" maxlength="200" placeholder="New password again" autocomplete="new-password">
+        <input id="acct-pw-old" type="password" maxlength="200" aria-label="Current password" placeholder="Current password" autocomplete="current-password">
+        <input id="acct-pw-new" type="password" maxlength="200" aria-label="New password" placeholder="New password" autocomplete="new-password">
+        <input id="acct-pw-again" type="password" maxlength="200" aria-label="New password again" placeholder="New password again" autocomplete="new-password">
         ${button({ label: 'Change password', size: 'sm', dataBtn: 'acct-password' })}
         ${pw ? statusMessage({ tone: pw.ok ? 'ok' : 'error', text: pw.text }) : ''}
       </div>` }));

@@ -88,7 +88,7 @@ test('973 §1b the CC deck picker alone: the home Play card draws it in its Deck
   // new home layout, docs/24, 2026-11-03: Competitive is a format on the Play card, which draws this piece
   const decks = [{ id: 'dOK', name: 'Legal', error: null }, { id: 'dBAD', name: 'Big <side>', error: 'too many' }];
   const html = ccDeckSelectHtml(decks, decks[0]!);
-  assert.match(html, /^<select id="cc-deck" class="deckselect">/);
+  assert.match(html, /^<select id="cc-deck" class="deckselect" aria-label="Your deck for the match">/);
   assert.match(html, /<option value="dOK" selected>Legal<\/option>/);
   assert.match(html, /<option value="dBAD" disabled>Big &lt;side&gt; — too many<\/option>/);
   assert.match(ccDeckSelectHtml([decks[1]!], null), /no deck is Competitive legal yet/);

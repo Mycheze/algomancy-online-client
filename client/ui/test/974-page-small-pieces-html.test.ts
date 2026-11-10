@@ -82,7 +82,7 @@ test('974 §3 the typing fragments in their patch targets', () => {
 test('974 §4 the single card picker', () => {
   const none = singleCardPickerHtml(pview());
   assert.match(none, /no card picked yet/);
-  assert.match(none, /<input id="sc-q" placeholder="find a card…"/);
+  assert.match(none, /<input id="sc-q" aria-label="Find a card" placeholder="find a card…"/);
   assert.match(none, /class="ui-button ui-button--icon" data-btn="sc-random" type="button" title="any card at random — any of the 528" aria-label="[^"]+">🎲</);
   assert.match(none, /<div id="sc-sugg" class="crsugg"><!--SLOT:sugg--><\/div>/);
   const picked = singleCardPickerHtml(pview({ card: 'Ignis Sprite', art: '<!--SLOT:art-->' }));

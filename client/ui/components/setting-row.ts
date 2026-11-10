@@ -9,7 +9,12 @@
  * below a tablet the row stacks.
  *
  * `controlHtml` and `hintHtml` are trusted markup (usually a segmented
- * control, a picker, a sentence with a link in it). */
+ * control, a picker, a sentence with a link in it).
+ *
+ * ⚠ The label column is a <div>, not a <label>: it names nothing. A text box
+ * or a <select> passed as the control carries its own aria-label (the same
+ * words as `label`), or a screen reader calls it "edit text" and no more
+ * (ui/test/1205). */
 import { type Common, esc, rootAttrs } from './_shared.ts';
 
 export interface SettingRowProps extends Common {

@@ -27,7 +27,7 @@ export const clickOrTap = (word: keyof typeof TAP = 'click'): string =>
  * only the lead-in sentence differs between them. */
 export const shareBar = (lead: string, room: string, link: string): string =>
   `<div class="sharebar">${lead} <b>${esc(room)}</b> or this link:
-    <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
+    <input class="sharelink" readonly aria-label="Room link" value="${esc(link)}" onclick="this.select()">
     <button data-btn="copylink" data-link="${esc(link)}">Copy</button></div>`;
 
 /* ── copying to the clipboard ──────────────────────────────────────────

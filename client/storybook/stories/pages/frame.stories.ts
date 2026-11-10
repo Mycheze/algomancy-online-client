@@ -6,7 +6,7 @@ import { CHROME, page } from './_page.ts';
 
 const TABS = segmented({ ariaLabel: 'Tabs', options: [
   { label: 'First tab', value: 'a', on: true }, { label: 'Second', value: 'b', on: false }, { label: 'Third', value: 'c', on: false }] });
-const LIST = `<div class="framebar"><input class="dksearch" placeholder="find something"><span class="framespacer"></span>${
+const LIST = `<div class="framebar"><input class="dksearch" aria-label="Find something" placeholder="find something"><span class="framespacer"></span>${
   segmented({ size: 'sm', ariaLabel: 'Sort', options: [{ label: 'newest', value: 'n', on: true }, { label: 'name', value: 'm', on: false }] })}</div>
   <div class="framelist" data-scroll="story">${Array.from({ length: 40 }, (_, i) => `<div style="padding:12px 16px;border-top:1px solid var(--color-border)">Row ${i + 1}</div>`).join('')}</div>
   <p class="framenote">A line under the list.</p>`;

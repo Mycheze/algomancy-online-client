@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-10', kind: 'fix', text: 'With a screen reader, every text box and menu now says what it is for: the room link, your deck, each search box, the username and password boxes, the report box. Before, many were read out only as "edit text".' },
   { date: '2026-11-09', kind: 'fix', text: 'On a tablet or phone, the instructions now say "Tap" where they said "Click": putting two cards on the bottom of your deck, playing from your cache, placing a unit on the line, blocking, and ranking elements in the draft lobby.' },
   { date: '2026-11-09', kind: 'fix', text: 'Opening a room link while the server restarts no longer looks like the room is gone. The "reconnecting" line is no longer red with a button home: the page says it will join by itself as soon as the server answers.' },
   { date: '2026-11-09', kind: 'fix', text: 'Opening a replay, a lesson, a challenge or a rules question no longer says "Connecting to the server…" while it loads. It says what it is loading, like "Loading the replay…".' },

@@ -29,7 +29,7 @@ export function singleCardPickerHtml(v: SingleCardPickerView): string {
            : `<span class="scwarn" title="a deck of this card can never put a unit on the table">makes no units — a draw if theirs doesn’t either</span>`}</span>`
       : '<span class="dim">no card picked yet</span>'}</div>
     <div class="joinrow">
-      <input id="sc-q" placeholder="find a card…" spellcheck="false" autocomplete="off" value="${esc(v.draft)}">
+      <input id="sc-q" aria-label="Find a card" placeholder="find a card…" spellcheck="false" autocomplete="off" value="${esc(v.draft)}">
       ${button({ label: '🎲', variant: 'icon', title: `any card at random — any of the ${v.deckCount}`, dataBtn: 'sc-random' })}
     </div>
     <div id="sc-sugg" class="crsugg">${v.suggestions}</div>

@@ -202,7 +202,7 @@ export function windowHtml(m: WindowModel): string {
     <div class="lscroll">${pageHtml(l.pages[page]!, m.ctx)}</div>
     ${compact ? '' : `<div class="ljudge">
       ${judge ? `<div class="ljlog">${judge}</div>` : ''}
-      <div class="ljask"><input id="ljudge-q" type="text" maxlength="400" autocomplete="off"
+      <div class="ljask"><input id="ljudge-q" type="text" aria-label="Ask the judge about this lesson" maxlength="400" autocomplete="off"
         placeholder="Still unsure? Ask the judge about this lesson…" value="${esc(m.judgeDraft)}">
         <button data-lbtn="ask" ${m.judgeBusy ? 'disabled' : ''}>${m.judgeBusy ? 'asking…' : '⚖ ask'}</button></div>
     </div>`}

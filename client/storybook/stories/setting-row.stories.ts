@@ -17,5 +17,5 @@ export const AForm = {
   render: () => `<div style="max-width:640px;display:flex;flex-direction:column;gap:16px">${
     settingRow({ label: 'Format', controlHtml: segmented({ size: 'sm', ariaLabel: 'Format', options: [{ label: 'Live Draft', value: 'd', on: true }, { label: 'Constructed', value: 'c', on: false }] }) })
   }${settingRow({ label: 'Clock', controlHtml: CLOCK, hintHtml: '60m each' })}${
-    settingRow({ label: 'Deck', controlHtml: '<select><option>Ember Rush</option></select>' })}</div>`,
+    settingRow({ label: 'Deck', controlHtml: '<select aria-label="Deck"><option>Ember Rush</option></select>' })}</div>`,
 };

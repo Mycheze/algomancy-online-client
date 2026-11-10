@@ -93,7 +93,7 @@ export function deckPickerHtml(v: DeckPickerView, o: { importHtml?: string } = {
       ? `<div class="deckinfo">${cur.cards.length} cards${cur.url
           ? ` · <a href="${esc(cur.url)}" target="_blank" rel="noopener">algomancer.cc</a>` : ''}</div>`
       : '<div class="deckinfo"></div>';
-    return `<select id="h-deck" class="deckselect">
+    return `<select id="h-deck" class="deckselect" aria-label="Your deck">
         ${cur ? '' : '<option value="" selected disabled>choose a deck…</option>'}${opts}${strayOpt}
       </select>
       ${info}${manage}
@@ -114,7 +114,7 @@ export function deckPickerHtml(v: DeckPickerView, o: { importHtml?: string } = {
     ? `<div class="deckinfo">${cur.cards.length} cards${authorName(cur.author) ? ` · by ${esc(authorName(cur.author))}` : ''}${cur.url
         ? ` · <a href="${esc(cur.url)}" target="_blank" rel="noopener">view on algomancer.cc</a>` : ''}</div>`
     : '<div class="deckinfo"></div>';
-  return `<select id="h-deck" class="deckselect">
+  return `<select id="h-deck" class="deckselect" aria-label="Your deck">
       ${cur ? '' : '<option value="" selected disabled>choose a deck…</option>'}${opts}${customOpt}
     </select>
     ${info}${manage}
@@ -128,11 +128,11 @@ export function deckPickerHtml(v: DeckPickerView, o: { importHtml?: string } = {
  * instead and draws this in its Import sheet. Pure. */
 export function deckImportHtml(): string {
   return `<div class="joinrow deckimport">
-      <input id="h-deckurl" placeholder="algomancer.cc deck link" spellcheck="false">
+      <input id="h-deckurl" aria-label="algomancer.cc deck link" placeholder="algomancer.cc deck link" spellcheck="false">
       ${button({ label: 'Load', dataBtn: 'deckimporturl' })}
     </div>
     <details class="deckpaste"><summary>…or paste a deck list</summary>
-      <textarea id="h-decktext" rows="6" spellcheck="false" placeholder="1 Ignis Sprite&#10;2 Overwhelm&#10;…"></textarea>
+      <textarea id="h-decktext" rows="6" aria-label="Deck list" spellcheck="false" placeholder="1 Ignis Sprite&#10;2 Overwhelm&#10;…"></textarea>
       ${button({ label: 'Use pasted list', dataBtn: 'deckimporttext' })}
     </details>`;
 }

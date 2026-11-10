@@ -778,7 +778,7 @@ export function rulesBoxHtml(tab: HelpTab, q: string): string {
   const placeholder = tab === 'rules' ? 'search the rules…' : 'search the guide…';
   const body = tab === 'book' ? bookHtml() : tab === 'cr' ? crHtml() : `<div class="rrsplit">
     <aside class="rrnav">
-      <input id="rules-q" class="rulesq" type="search" spellcheck="false" autocomplete="off"
+      <input id="rules-q" class="rulesq" type="search" aria-label="Search the rules" spellcheck="false" autocomplete="off"
         placeholder="${placeholder}" value="${esc(q)}">
       <div class="rrnavlist">${jumpHtml(tab, q)}</div>
     </aside>

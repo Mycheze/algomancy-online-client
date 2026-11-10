@@ -898,7 +898,7 @@ function timeFormHtml(s: SeasonView, m: MyMatch, v: LeagueView): string {
     ${chips.length ? `<div class="lgtimechips"><span class="dim">you're both free:</span>
       ${chips.map(at => `<button data-btn="lg-time" data-season="${esc(s.id)}" data-match="${esc(m.id)}" data-at="${at}">${esc(when(at, tz))}</button>`).join('')}</div>` : ''}
     <div class="lgtimepick"><span class="dim">or</span>
-      <input type="datetime-local" id="lgt-at" step="${STEP_MIN * 60}" value="${wallValue(start, tz)}"
+      <input type="datetime-local" id="lgt-at" aria-label="Suggest a time" step="${STEP_MIN * 60}" value="${wallValue(start, tz)}"
         min="${wallValue(earliest, tz)}" max="${wallValue(end - STEP_MIN * 60_000, tz)}">
       <span class="dim">${esc(tz)} time</span>
       <button class="primary" data-btn="lg-time-custom" data-season="${esc(s.id)}" data-match="${esc(m.id)}">Suggest</button>
@@ -963,7 +963,7 @@ function allMatchesHtml(s: SeasonView, v: LeagueView): string {
     ${weeks.map(k => `${panelSubheading({ text: weekName(s, k) })}
       ${table({ headless: true, columns: org ? ALL_MATCH_COLUMNS_ORG : ALL_MATCH_COLUMNS, rows: s.matches.filter(m => m.week === k).map(m => ({ cells: {
         pair: `${m.a.name} vs ${m.b.name}`, result: { html: `${resultText(m)}${disputesHtml(m)}` },
-        org: { html: `<select id="lg-ov-${esc(m.id)}">
+        org: { html: `<select id="lg-ov-${esc(m.id)}" aria-label="Set the result of ${esc(m.a.name)} vs ${esc(m.b.name)}">
           <option value="">set…</option><option value="a">${esc(m.a.name)} won</option><option value="b">${esc(m.b.name)} won</option>
           <option value="unplayed">not played</option><option value="double-loss">double loss</option><option value="clear">reopen</option>
         </select><button data-btn="lg-override" data-match="${esc(m.id)}">Set</button>` },
@@ -983,11 +983,11 @@ function stampHtml(v: LeagueView): string {
   const at = v.stampAt;
   const unix = Math.floor(at / 1000);
   return panel({ title: 'Discord time code', className: 'lgstamp', bodyHtml: `
-    <p class="lgtimepick"><input type="datetime-local" id="lg-stamp-at" step="60" value="${wallValue(at, tz)}">
+    <p class="lgtimepick"><input type="datetime-local" id="lg-stamp-at" aria-label="Date and time" step="60" value="${wallValue(at, tz)}">
       <span class="dim">${esc(tz)} time</span></p>
     ${table({ className: 'lgstamps', headless: true, columns: STAMP_COLUMNS, rows: STAMP_STYLES.map(st => ({ cells: {
       preview: stampPreview(at, st, tz, v.now),
-      code: { html: `<input id="lg-stamp-${st}" class="lgstampcode" readonly value="${esc(discordCode(unix, st))}">` },
+      code: { html: `<input id="lg-stamp-${st}" class="lgstampcode" readonly aria-label="Discord code" value="${esc(discordCode(unix, st))}">` },
       copy: { html: `<button data-btn="lg-stamp-copy" data-style="${st}">Copy</button>` },
     } })) })}
   ` });
@@ -1032,7 +1032,7 @@ function organizerHtml(s: SeasonView | null, v: LeagueView): string {
         ${s.hidden ? `<button class="${arming === 'delete' ? 'danger' : ''}" data-btn="lg-delete">${arming === 'delete' ? 'Press again to delete this test season' : 'Delete'}</button>` : ''}
       </p>
       ${repairHtml(s, v)}
-      <p><input id="lg-addname" placeholder="player name" spellcheck="false"> <button data-btn="lg-add">Add player</button>
+      <p><input id="lg-addname" aria-label="Player name" placeholder="player name" spellcheck="false"> <button data-btn="lg-add">Add player</button>
         <span class="dim">(skips the Discord-name, hours and late-entry checks)</span></p>
       ${preview ? previewHtml(preview, tz) : ''}
       ${postHtml(s, v)}
@@ -1085,7 +1085,7 @@ function repairHtml(s: SeasonView, v: LeagueView): string {
 function postHtml(s: SeasonView, v: LeagueView): string {
   const text = postText(s, v.origin);
   return `${panelSubheading({ text: 'Post for Discord' })}
-    <textarea id="lg-post" class="lgpost" readonly rows="${Math.min(18, text.split('\n').length + 1)}">${esc(text)}</textarea>
+    <textarea id="lg-post" class="lgpost" readonly aria-label="The post" rows="${Math.min(18, text.split('\n').length + 1)}">${esc(text)}</textarea>
     <p><button data-btn="lg-copy">Copy</button> <span class="dim">Times are Discord timestamps — each reader sees their own.</span></p>`;
 }
 

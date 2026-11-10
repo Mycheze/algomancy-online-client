@@ -405,7 +405,7 @@ function exportBody(s: Extract<DecksSheet, { kind: 'export' }>): string {
     <p class="dksheetnote">${file
     ? 'Description, cover, sideboard, maybeboard and attribution included. Any import box reads it.'
     : 'Cards only, one per line. algomancer.cc reads this.'}</p>
-    <textarea class="dkexporttext" rows="${file ? 16 : 12}" readonly onclick="this.select()">${esc(s.body)}</textarea>`;
+    <textarea class="dkexporttext" rows="${file ? 16 : 12}" readonly aria-label="The exported deck" onclick="this.select()">${esc(s.body)}</textarea>`;
 }
 
 function gamesBody(s: Extract<DecksSheet, { kind: 'games' }>): string {

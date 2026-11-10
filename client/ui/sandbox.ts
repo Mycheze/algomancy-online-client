@@ -203,7 +203,7 @@ function panelHtml(s: GameState, seat: Seat, room: string | null): string {
         ${(['hand', 'play', 'bin'] as const).map(z =>
           `<button class="sbxzone${z === zone ? ' on' : ''}" data-sbx="zone" data-zone="${z}">${z === 'play' ? 'board' : z}</button>`).join('')}
       </div>
-      <input id="sbx-q" class="sbxq" placeholder="name, or t:unit e:fire p&gt;5" spellcheck="false">
+      <input id="sbx-q" class="sbxq" aria-label="Find a card" placeholder="name, or t:unit e:fire p&gt;5" spellcheck="false">
       <div class="sbxhits">${results || '<div class="sbxhint">nothing matches that</div>'}</div>
       ${hits.total > MAX_RESULTS
         ? `<div class="sbxhint">${hits.total - MAX_RESULTS} more — keep typing</div>` : ''}
@@ -222,7 +222,7 @@ function panelHtml(s: GameState, seat: Seat, room: string | null): string {
     <div class="sbxsec">
       <div class="sbxlabel">Life — ${s.players[seat]!.life}</div>
       <div class="sbxrow">
-        <input id="sbx-life" class="sbxlife" inputmode="numeric" placeholder="${s.players[seat]!.life}">
+        <input id="sbx-life" class="sbxlife" aria-label="New life total" inputmode="numeric" placeholder="${s.players[seat]!.life}">
         <button class="sbxgo" data-sbx="life-set">Set</button>
         <button data-sbx="life-1000">1000</button>
       </div>

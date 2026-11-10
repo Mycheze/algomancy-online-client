@@ -217,7 +217,7 @@ function composerHtml(): string {
     : c.mode === 'add' ? '<div class="crnote">On the whole item.</div>' : '';
   const reading = c.mode === 'answer' ? '<div class="crnote">Your answer: the reading you choose, in your own words.</div>' : '';
   const inner = can.ok
-    ? `<textarea id="cr-draft" rows="5" maxlength="4000" placeholder="${c.mode === 'reply' ? 'Write a reply' : 'Write a comment'}" ${busy ? 'disabled' : ''}></textarea>
+    ? `<textarea id="cr-draft" rows="5" maxlength="4000" aria-label="${c.mode === 'reply' ? 'Your reply' : 'Your comment'}" placeholder="${c.mode === 'reply' ? 'Write a reply' : 'Write a comment'}" ${busy ? 'disabled' : ''}></textarea>
       <div class="crnote">Visible to everyone who opens this page, under your name.</div>
       <div class="crrow">
         <button data-crl="cancel">Cancel <span class="kh">(esc)</span></button>

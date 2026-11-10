@@ -121,7 +121,7 @@ function ladderHtml(v: MetaView): string {
     <div class="framebar">
       <span class="dim">${ladder ? `${ladder.duels} duel${ladder.duels === 1 ? '' : 's'} · ${ladder.cards.length} card${ladder.cards.length === 1 ? '' : 's'} rated` : ''}</span>
       <span class="framespacer"></span>
-      <input id="meta-q" class="dksearch metaq" spellcheck="false" placeholder="find a card" value="${esc(v.text)}">
+      <input id="meta-q" class="dksearch metaq" spellcheck="false" aria-label="Find a card" placeholder="find a card" value="${esc(v.text)}">
     </div>
     ${v.msg ? `<div class="acctmsg">${esc(v.msg)}</div>` : ''}
     <div class="framelist" data-scroll="meta-ladder">
@@ -217,7 +217,7 @@ function listHtml(v: MetaView): string {
   ];
   return metaFrame(v, 'metapage', `
     <div class="framebar">
-      <input id="meta-q" class="dksearch metaq" spellcheck="false" placeholder="name, builder, or a card in it"
+      <input id="meta-q" class="dksearch metaq" spellcheck="false" aria-label="Search decks" placeholder="name, builder, or a card in it"
         value="${esc(v.text)}">
       <div class="dkfilters metaels">
         ${ALL_ELEMENTS.map(el =>
@@ -320,7 +320,7 @@ function exportHtml(v: MetaView): string {
     <div class="hint">${file
       ? 'Description, cover and attribution included — paste it into the import box on your decks page.'
       : 'One line per card — paste it anywhere, including algomancer.cc.'}</div>
-    <textarea class="dkexporttext" rows="${file ? 16 : 10}" readonly
+    <textarea class="dkexporttext" rows="${file ? 16 : 10}" readonly aria-label="The exported deck"
       onclick="this.select()">${esc(v.exportText)}</textarea>
   </div>`;
 }
@@ -349,7 +349,7 @@ function deckHtml(v: MetaView): string {
           ${v.mine ? '<span class="hint">Yours — edit it on your decks page.</span>' : ''}
         </div>
         <div class="sharebar">Send somebody this link:
-          <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
+          <input class="sharelink" readonly aria-label="Deck link" value="${esc(link)}" onclick="this.select()">
           <button data-btn="copylink" data-link="${esc(link)}">Copy</button></div>
         ${v.exporting ? exportHtml(v) : '<button class="dkadd" data-btn="meta-export">Export this deck</button>'}
       </div>`;
