@@ -125,7 +125,7 @@ import type {
 } from '../engine/src/types.ts';
 import * as acct from './account.ts';
 import { disputeAnswered, installReport, isReportOpen, openDispute, openReport, reportJustSent } from './report.ts';
-import { inboxUnread, installInbox } from './inbox.ts';
+import { inboxListOpen, inboxUnread, installInbox } from './inbox.ts';
 import * as amend from './amend.ts';
 import { installTouch, peekEnd, tapRead, touchSeen } from './touch.ts';
 import { dragActive, installDrag, type DragPlan } from './drag.ts';
@@ -12408,7 +12408,7 @@ installReport(reportOpenChanged);
 // the bell, the invite popup and the waiting room's friends panel — a layer
 // beside #app on every page that is not a board (ui/inbox.ts)
 // the app frame's toolbar (pages/frame.ts): who is signed in, and the bell's count
-setChromeSource(() => ({ signedIn: !!acct.currentUser(), alerts: inboxUnread() }));
+setChromeSource(() => ({ signedIn: !!acct.currentUser(), alerts: inboxUnread(), alertsOpen: inboxListOpen() }));
 installInbox({
   token: acct.token,
   authHeaders: () => acct.authHeaders(),

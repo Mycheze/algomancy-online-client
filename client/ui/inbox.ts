@@ -219,6 +219,26 @@ function listView(): InboxListView {
  * (what a signed-out poll left behind is not this viewer's). */
 export function inboxUnread(): number { return deps?.token() ? unread() : 0; }
 
+/** Whether the notifications list is on screen — what draws the toolbar's
+ * Alerts button pressed (pages/frame.ts). False signed out, on a board and on
+ * a game page, where the layer draws nothing whatever `panelOpen` says. */
+export function inboxListOpen(): boolean {
+  return panelOpen && !!deps?.token() && !onBoard() && !deps.quiet();
+}
+
+/** The toolbar's Alerts button follows the list as it opens and closes: its
+ * pressed state patched in place (as the home patches its badge), since the
+ * page under the layer is not repainted for a click on the bell. The next
+ * repaint draws the same from frameChromeView. */
+function pressBells(): void {
+  if (typeof document === 'undefined' || typeof document.querySelectorAll !== 'function') return;
+  const open = inboxListOpen();
+  document.querySelectorAll('.ui-icon-button[data-inbox="bell"]').forEach(b => {
+    b.classList.toggle('on', open);
+    b.setAttribute('aria-pressed', open ? 'true' : 'false');
+  });
+}
+
 /** the friend invites waiting on an answer — part of the home's Join badge */
 export function inviteCount(): number { return deps?.token() ? invites.length : 0; }
 
@@ -260,6 +280,7 @@ function noteCounts(): void {
 
 function paint(): void {
   noteCounts();
+  pressBells();
   if (!layer) return;
   if (!deps?.token() || onBoard() || deps.quiet()) { if (layer.innerHTML) layer.innerHTML = ''; return; }
   layer.innerHTML = inboxLayerHtml({

@@ -1068,7 +1068,14 @@ const OPEN: Entry[] = [
       + '--color-data-draft (#4fb3c9) and --color-data-constructed (#9aa5b0), the funnel bars\' categorical colours, '
       + 'kept apart from --color-winrate-up although the draft one shares its value (a count is not a win rate). '
       + '34-cardstats.css reads them; same pixels. 921\'s ratchet for pages/cardstats went 3 → 1 (the hover row\'s '
-      + 'white wash is left) and went red with #4fb3c9 put back.',
+      + 'white wash is left) and went red with #4fb3c9 put back.\n\n'
+      + '2026-11-11 (steward, BL-63): the first doneWhen line (Alerts pressed while the inbox list is open) is DONE. '
+      + 'FrameChrome gains `alertsOpen` (inbox.ts inboxListOpen: the list is open AND drawn, so false signed out, on a '
+      + 'board and on a game page); pages/frame.ts toolHtml passes it as the signed-in Alerts\' `on`, the home\'s view '
+      + 'and main.ts\'s chrome source read it, so every repaint draws it; and inbox.ts paint() presses every '
+      + '`.ui-icon-button[data-inbox="bell"]` in place, since a click on the bell repaints only the layer, never the page '
+      + 'under it. Guarded by 1224-alerts-pressed-while-open.test.ts, which went red with each of the three removed. '
+      + 'Not looked at in a browser (the home box has none). Left: lines 2, 3, 5, 7, 8.',
   },
   {
     id: 'BL-64',

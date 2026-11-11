@@ -241,6 +241,8 @@ export interface HomeView {
   badges: {
     /** the bell's unread count (inbox.ts inboxUnread) — Alerts */
     alerts: number;
+    /** the notifications list is open (inbox.ts inboxListOpen): Alerts is drawn pressed */
+    alertsOpen?: boolean;
     /** invites + your matches + league matches to play — Join a room */
     join: number;
     /** update-log entries since it was last opened — Updates */
@@ -300,7 +302,7 @@ export function homeView(st: HomeState): HomeView {
     competitive: ccView,
     singleCard: sc.chosen(),
     leagueLive, challengeLive,
-    badges: { alerts: inbox.inboxUnread(), join, updates: updatesUnseen() },
+    badges: { alerts: inbox.inboxUnread(), alertsOpen: inbox.inboxListOpen(), join, updates: updatesUnseen() },
     slots: {
       league, challenge, queue, invites, yourMatches, leagueMatches,
       scpicker: singleCardPickerHtml(singleCardPickerView()),
@@ -621,7 +623,7 @@ export function homeHtml(v: HomeView): string {
       + iconButton({ label: 'Cards', icon: 'cards', dataBtn: 'cards-openpage', title: 'every card, with a search' })
       + iconButton({ label: 'Metagame', icon: 'stats', dataBtn: 'meta-openpage', title: 'published decks, card stats, the card duel ladder' }),
     centerHtml: accountHtml(v.account),
-    endHtml: toolsHtml({ signedIn: v.signedIn, alerts: v.badges.alerts }, TOOL_NAMES, {
+    endHtml: toolsHtml({ signedIn: v.signedIn, alerts: v.badges.alerts, alertsOpen: v.badges.alertsOpen === true }, TOOL_NAMES, {
       alertsSignedOutHtml: iconButton({ label: 'Alerts', icon: 'alerts', className: 'homealerts', ...opens('alerts-signin'), on: v.sheet === 'alerts-signin' }),
     }),
   });

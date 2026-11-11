@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-11', kind: 'fix', text: 'The Alerts button in the top bar now lights up while your notifications list is open, like every other button whose panel is open, and goes back when you close it.' },
   { date: '2026-11-11', kind: 'change', text: 'Between Competitive games, the sideboarding table now lays your deck out in the piles you arranged in the deck builder, instead of always by cost. A card you sideboard out and back goes back to its own pile.' },
   { date: '2026-11-11', kind: 'change', text: 'On the Judge review page, questions a judge asks the rules bot on Discord, with their account linked, now come up early and marked with their level too, like the ones asked in a game.' },
   { date: '2026-11-11', kind: 'change', text: 'With Accessible colours on (Profile → Settings), anything you can pick as a target now carries a small ◎ mark, so it no longer depends on telling gold from green.' },

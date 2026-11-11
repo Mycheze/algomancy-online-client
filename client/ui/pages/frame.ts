@@ -51,6 +51,9 @@ export interface FrameChrome {
   signedIn: boolean;
   /** the bell's unread count (inbox.ts inboxUnread) */
   alerts: number;
+  /** the notifications list is open (inbox.ts inboxListOpen): the Alerts
+   * button is drawn pressed, as every button whose panel is open is */
+  alertsOpen?: boolean;
 }
 
 /* Where the chrome comes from: main.ts hands it in at boot (setChromeSource),
@@ -97,7 +100,7 @@ function toolHtml(name: ToolName, c: FrameChrome, o: ToolsOptions): string {
       return iconButton({ label: 'Rules', icon: 'rules', attrs: { 'data-help': 'rules' }, title: 'how to play: the rules, the rulebook, the interface' });
     case 'alerts':
       return c.signedIn
-        ? iconButton({ label: 'Alerts', icon: 'alerts', badge: c.alerts, className: 'homealerts', attrs: { 'data-inbox': 'bell' },
+        ? iconButton({ label: 'Alerts', icon: 'alerts', badge: c.alerts, on: c.alertsOpen === true, className: 'homealerts', attrs: { 'data-inbox': 'bell' },
           title: 'friend invites, match alerts and league notices' })
         : o.alertsSignedOutHtml ?? '';
     case 'report':
