@@ -196,6 +196,26 @@ const OPEN: TodoEntry[] = [
     reportId: 379,
     status: "open",
   },
+  {
+    id: 557, area: "client", severity: "minor",
+    title: "the cached cards beside the hand are labelled \"cached · not this step\"; the owner finds it unneeded and annoying — drop the wording",
+    detail: "Report #382 (mycheze, owner, 2026-11-11, ux, minor, room MVGY): \"I don't like how the cached cards say \\\"NOT THIS STEP\\\". That's not really needed and is annoying\". ui/main.ts handCachedHtml (the cached group beside the hand, from his own #358 / CT-547 on 2026-11-08) heads the group with `<div class=\"handcachedlabel\">` reading 'cached · playable now' when any entry is live and 'cached · not this step' when none is (uppercased by the .handcachedlabel rule in ui/styles/board/03-life-cards-battle-log.css, which is why he quotes it in capitals). The cards themselves already show playability the way hand cards do — lit with the playable ring, or dark — and a dark one opens the cache dialog, which says why.",
+    evidence: "Report #382, room MVGY (constructed, mycheze v Gember, 2026-11-11), action 221. MVGY fetched and replayed 2026-11-11 (steward triage): 329 actions, FAITHFUL. The label read in ui/main.ts handCachedHtml; pinned by ui/test/155-hand-affordances ('the label does not claim it can be played now', asserting /cached · not this step/).",
+    fix: "The least change: the label reads plain 'cached' when no entry is live, and keeps 'cached · playable now' when one is (the other option, 'cached' in both states, goes in the summary). Rewrite 155's assertion to: the label never contains 'not this step', and still does not claim 'playable now' when nothing is live. Keep 155's test TITLE unchanged — report #358's guard names it. Grep all four test dirs for 'not this step' and 'handcachedlabel' first. Player-visible: an updates.ts line.",
+    proof: () => still('ui/main.ts', "'cached · not this step'"),
+    reportId: 382,
+    status: "open",
+  },
+  {
+    id: 558, area: "client", severity: "minor",
+    title: "hovering a player's life total shows nothing; the owner wants a short log of that player's life changes there (BL-75)",
+    detail: "Report #380 (mycheze, owner, 2026-11-11, feature, room MVGY): \"When you hover over a player's life total, it'd be nice to show a simple \\\"log\\\" of the life total changes\". The life total on the board (ui/main.ts regionParts, the `life` span with class=\"life\" and data-act=\"player\") carries no title and no tip; a seat's life changes are only lines among everything else in the game log. The client already receives every lifeLost/lifeGained event with its seat and amount (ui/flash.ts sums them per seat for the life beat).",
+    evidence: "Report #380, room MVGY (constructed, mycheze v Gember, 2026-11-11), action 148. MVGY fetched and replayed 2026-11-11 (steward triage): 329 actions, FAITHFUL. The markup read in ui/main.ts regionParts (`life:`).",
+    fix: "Nothing here — it is BL-75's, which carries the design (hover on desktop, a tap that does not break player targeting on touch, folded lines in the style of the hidden-turn summary, rebuilt from the game record so a reload, a spectator and a replay see the same list). This entry exists so the report is not lost, and closes when BL-75 is done.",
+    proof: () => still('ui/main.ts', '<span class="life${pickable(`player:${p}`) ? \' candidate\' : \'\'}" data-act="player" data-p="${p}"'),
+    reportId: 380,
+    status: "open",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

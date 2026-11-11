@@ -488,6 +488,24 @@ const OPEN: LedgerEntry[] = [
     status: 'live',
     note: "Real. They are raw emoji: the board draws the judge badge as ⚖ (U+2696 with no variation selector, so phones draw it as a colour emoji and its accent colour is ignored) with the level as a digit, a league champion as 🏆 (ui/pages/profile.ts seatBadgeHtml, from fa768cfa on 2026-11-10 — the owner's own \"a little icon\" request, which this answers), and the same nameplate draws the initiative mark as ⭐ (ui/main.ts pnameFixed). Each device's emoji font draws them differently. The client already has an SVG icon set that renders the same everywhere (ui/components/icon.ts, with a trophy but no scales or star). MVGY (mycheze v Gember, constructed, played after fa768cfa went live) fetched and replayed: 79 of 79 actions, FAITHFUL — a look, not a game fault. CT-556 filed: draw the three marks from the icon set.",
   },
+  {
+    id: 380, room: "MVGY", date: "2026-11-11",
+    report: "mycheze, seat 0 (feature): \"When you hover over a player's life total, it'd be nice to show a simple \\\"log\\\" of the life total changes\"",
+    status: 'live',
+    note: "A feature, not a fault: nothing like it exists. The life total (ui/main.ts, the `life` span with data-act=\"player\") has no title or tip, and no surface lists a seat's life changes on their own; they are only lines in the game log among everything else. The client already receives every `lifeLost`/`lifeGained` event with its seat and amount (ui/flash.ts sums them per seat for the life beat), so the data is there. MVGY fetched and replayed: 329 of 329 actions, FAITHFUL. BL-75 filed: a hover/tap list of this game's life changes beside the total; CT-558 carries the report until it is built.",
+  },
+  {
+    id: 381, room: "MVGY", date: "2026-11-11",
+    report: "mycheze, seat 0 (bug, minor): \"Should an alluring trigger actually fizzle if the allurer (the causer of the effect) is removed before it resolves?\"",
+    status: 'by-design',
+    note: "Yes — the designer said so. CR 802.15i: \"If, when the Alluring trigger would resolve, the unit with Alluring is no longer in an attacking column, or its column no longer has Alluring, the trigger does nothing.\" Its source is calebgannon in Algomancy Development › rules-questions, 2023-09-15, answering zho_'s \"if the allurer is still alive\" rewording of the reminder text: \"this would stop the trigger if you kill the allurer while the effect is on the stack\" / \"but not if you kill it after the effect resolves, before blocks\" (the second half is CR 802.15j). MVGY fetched and replayed (329 of 329, FAITHFUL); the board at [164] is turn 5's attack window. Gember attacked with Tempest Wrangler, its Alluring trigger targeted Bubb; with the trigger on the stack Gember's ambushed Mirage Walker recalled the Wrangler to hand and took its place in the formation, so when the trigger resolved the allurer was no longer attacking and the log says \"the {Alluring} attacker is no longer in the line — nothing is lured\" (engine/src/apply.ts ALLURING_EFFECT). Leaving the battle by recall is the same as by death for this check: the Wrangler is not in any attacking column. Guarded by 53-playtest-round7 (\"killing the allurer while the trigger is ON the stack fizzles it\").",
+  },
+  {
+    id: 382, room: "MVGY", date: "2026-11-11",
+    report: "mycheze, seat 0 (ux, minor): \"I don't like how the cached cards say \\\"NOT THIS STEP\\\". That's not really needed and is annoying\"",
+    status: 'live',
+    note: "Real, by reading. The cached cards shown beside the hand (ui/main.ts handCachedHtml, added for his #358 on 2026-11-08) sit under a label that reads \"cached · not this step\" whenever none of them can be played right now (\"cached · playable now\" otherwise). The cards already say it the way hand cards do — lit with a ring, or dark — so the words repeat what the board shows. MVGY fetched and replayed (329 of 329, FAITHFUL); [221] is a turn with cached cards dark beside his hand. CT-557 filed: drop the \"not this step\" wording.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
