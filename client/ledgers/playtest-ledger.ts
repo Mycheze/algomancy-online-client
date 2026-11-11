@@ -470,6 +470,18 @@ const OPEN: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "Fifth take-back in FNZY (see #370). --branch triage: none of (a)-(d). proud had attacked in two columns, Rousing Spirit with Spirit of Vengeance behind it and Mischievous Reclaimer alone [386] ([[185,194],[189]]), then picked Spiteful Shadow for Rousing Spirit's trigger [387]; after the rewind proud attacked with all three in separate columns [386] ([[194],[185],[189]]) and picked Spiteful Shadow again [387]. The attacker changing their own formation. No defect.",
   },
+  {
+    id: 377, room: "CTTM", date: "2026-11-11",
+    report: "Nyar, seat 0, agreed fix: back to before Nyar's choice for Palewing's discard trigger (turn 7 battle). \"test\"",
+    status: 'agreed-fix',
+    note: "First of two take-backs in CTTM (#377-#378), proposed by Nyar, agreed by proud, the placeholder reason \"test\" again — the same pair as ZKNW and FNZY (#367-#374). CTTM fetched after both reports and replayed: 347 of 347 actions, no divergence, FAITHFUL. Taken back: Nyar's Soul Tithe at Palewing's discard trigger [225], then proud's Omniwield Evoker mod ability paying X = 4 by removing all four +1/+1 counters from one Robot, which died [226]-[230], at Palewing [232]. On the redo Nyar played Soul Tithe again [225] and proud paid X = 4 as two counters from each of two Robots instead (both kept, at 2) [227]-[230], at Palewing again; --branch triage: the redo repeats the first 3 of 8. The rest checks: Nyar's Leave None Pure (delete target unit with no stat changes) at the Evoker [233] fizzled because proud answered with the Evoker's own put-a-counter-on-me first — correct as printed. The player re-spending their own cost. No defect.",
+  },
+  {
+    id: 378, room: "CTTM", date: "2026-11-11",
+    report: "Nyar, seat 0, agreed fix: back to before Nyar's pass (turn 8 battle, after combat). \"test\"",
+    status: 'agreed-fix',
+    note: "Second take-back in CTTM (see #377). --branch triage: none of (a)-(d). Taken back four passes [338]-[341] that resolved proud's Suppression Field on Omniwield Evoker (its mods erased, its Unstable Form trigger negated) and Bloatfiend's discard on Nyar's empty hand. On the redo Nyar used Enigmatic Warder's mod ([two]: change a target of target effect to me) on Suppression Field [338]-[339], so it hit the Warder instead and the Evoker kept its mods; the stack then resolved on passes [340]-[343]. Legal as printed. The player answering a spell they had let resolve. No defect.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
