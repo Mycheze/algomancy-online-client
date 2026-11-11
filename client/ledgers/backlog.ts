@@ -1136,7 +1136,15 @@ const OPEN: Entry[] = [
       + 'happen; outside one `!inGame` is true. The deck page\'s own guard was fixed on 2026-11-02 (908). Seen by reading, '
       + 'not in a browser. Not filed, an owner-taste question rather than a defect: a deck page or builder opened from a '
       + 'waiting room is still painted over by the room on the next server push (an opponent arriving); the 2026-11-03 '
-      + 'inventory (docs/23-ui-inventory/05 §4) noted it. Left: lines 2, 3, 8.',
+      + 'inventory (docs/23-ui-inventory/05 §4) noted it. Left: lines 2, 3, 8.\n\n'
+      + '2026-11-11 (steward, BL-63): the second doneWhen line (`.zonelabel` in base.css) is DONE. The rule moved from '
+      + 'board/03 to base.css beside .eyebrow, in tokens (same values: --dim is --color-text-muted, 11px, 8px), and stays '
+      + 'BARE (0,1,0), not :where — its ~20 in-context overrides on the board and pages were written against that, and the '
+      + 'board uses it most. Nothing between base.css and board/03 in index.css (the components, board/02) matches a '
+      + '.zonelabel, and every use is class="zonelabel" alone, so no pixel moves. Kept as .zonelabel, not renamed to '
+      + '.eyebrow: they differ by the top margin, and 36 call sites plus ~20 overrides would churn for nothing. 925 now '
+      + 'lists .zonelabel as a base selector and §2 fails on a bare .zonelabel in any other piece, board included; it went '
+      + 'red with the old rule put back in board/03. Left: lines 3, 8.',
   },
   {
     id: 'BL-64',

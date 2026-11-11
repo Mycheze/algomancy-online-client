@@ -95,7 +95,6 @@
   padding-left: 10px; border-left: 2px dashed #b48ce0; }
 .handcachedlabel { font-size: 9px; color: #b48ce0; text-transform: uppercase; letter-spacing: .06em; }
 .handcachedcards { display: flex; gap: 6px; align-items: flex-start; }
-.zonelabel { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; margin-top: 8px; }
 
 .card { position: relative; width: var(--cw); border-radius: 5px; cursor: default; flex-shrink: 0; }
 /* Report [142] — `aspect-ratio` IS WHAT KEEPS THE BOARD FROM SCROLLING

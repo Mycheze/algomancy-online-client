@@ -18,8 +18,12 @@
  *   §0  non-vacuity — every selector named below is really styled in base.css,
  *       and the detector flags a planted bare rule and passes a scoped one
  *   §1  no pages/ or shared/ piece has a bare base selector in any rule
+ *   §2  `.zonelabel` is declared bare in base.css and in NO other piece, the
+ *       board's included (BL-63, 2026-11-11: it lived in board/03 although
+ *       every page uses it)
  *
- * The board (board/) is out of the design system's scope and is not checked.
+ * The board (board/) is out of the design system's scope and is not checked
+ * by §1; §2 checks it for the one base label it shares with the pages.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -28,7 +32,7 @@ import { declarations } from '../scripts/css-scan.mjs';
 import { readStylePieces } from './read-styles.ts';
 
 /** what base.css owns, as a page would spell it bare */
-const BASE = ['body', 'h1', 'h2', 'h3', 'h4', 'a', '.hint', '.dim', '.eyebrow', 'input', 'select', 'textarea', ':focus-visible'];
+const BASE = ['body', 'h1', 'h2', 'h3', 'h4', 'a', '.hint', '.dim', '.eyebrow', '.zonelabel', 'input', 'select', 'textarea', ':focus-visible'];
 
 /** split a selector list on its top-level commas */
 function splitList(sel: string): string[] {
@@ -118,4 +122,28 @@ test('§1 no pages/ or shared/ piece re-declares a base selector bare', () => {
   const bad = scoped.flatMap(p => offences(p.text).map(o => `${p.piece}: ${o}`));
   assert.deepEqual(bad, [],
     'A page piece styles a base selector for EVERY page. Scope it to the page (`.mypage .hint`), or, if every page should change, edit styles/base.css.');
+});
+
+/* ════════════════════════════════════════════════════════════════════════
+ * 2. .zonelabel LIVES IN THE BASE LAYER — and nowhere else, the board too
+ * ════════════════════════════════════════════════════════════════════════ */
+
+/** the pieces that declare `.zonelabel` bare (as a whole selector, in any rule) */
+function bareZonelabel(text: string): boolean {
+  return declarations(text).decls.some((d: { selector: string }) =>
+    !d.selector.startsWith('@') && splitList(d.selector).some(one => bareBase(one) === '.zonelabel'));
+}
+
+test('§2 POSITIVE CONTROL: a bare .zonelabel is seen, one in context is not', () => {
+  assert.equal(bareZonelabel('.zonelabel { color: red; }'), true);
+  assert.equal(bareZonelabel('.a, .zonelabel { color: red; }'), true);
+  assert.equal(bareZonelabel('.lboard .zonelabel { margin-top: 2px; }'), false);
+  assert.equal(bareZonelabel('.zonelabel .txticon { width: 12px; }'), false);
+});
+
+test('§2 .zonelabel is declared bare in base.css, and in no other piece (board/ included)', () => {
+  assert.ok(base && bareZonelabel(base.text), 'base.css declares `.zonelabel { … }` bare (not :where — it was (0,1,0) in board/03 and its in-context overrides rely on that)');
+  const others = pieces.filter(p => p !== base && bareZonelabel(p.text)).map(p => p.piece);
+  assert.deepEqual(others, [],
+    'The small-caps label is the base layer\'s (BL-63). Restyle it in context (`.mypanel > .zonelabel`), or edit styles/base.css.');
 });
