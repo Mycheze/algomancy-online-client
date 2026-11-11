@@ -917,6 +917,8 @@ registerSynthetic({
   text: 'Create an X/X unit, where X is twice the turn number.',
   image: 'Generic-Unit.jpg', lessonOnly: true,
 }, {
+  // X is known before it resolves: the stack and the hand show it
+  xPreview: g => twiceTheTurn(g),
   spellEffect: {
     creates: ['Unit Token'],
     run: (g, ctx) => {
@@ -944,6 +946,7 @@ registerSynthetic({
   text: 'Create an X/X unit with a random attribute, where X is twice the turn number.',
   image: 'Generic-Unit.jpg', lessonOnly: true,
 }, {
+  xPreview: g => twiceTheTurn(g),
   spellEffect: {
     creates: ['Unit Token'],
     run: (g, ctx) => {

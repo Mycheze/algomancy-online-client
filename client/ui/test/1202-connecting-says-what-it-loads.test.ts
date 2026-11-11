@@ -36,7 +36,7 @@ test('1202 §2 only the room link\'s boot branch says "Connecting to the server�
   const end = main.indexOf("} else if (params.has('demo')) {", start);
   assert.ok(end > start, 'the boot chain moved: find the demo branch again');
   const branches = main.slice(start, end).split(/\n\} else if /);
-  assert.ok(branches.length >= 6, `expected the room, learn, challenge ×2, replay and question branches, got ${branches.length}`);
+  assert.ok(branches.length >= 7, `expected the room, learn, practice, challenge ×2, replay and question branches, got ${branches.length}`);
   const seen: string[] = [];
   for (const b of branches) {
     const head = b.slice(0, b.indexOf('{')).trim();
@@ -56,5 +56,5 @@ test('1202 §2 only the room link\'s boot branch says "Connecting to the server�
     }
     seen.push(head);
   }
-  assert.equal(seen.length, 5, `the in-page branches: ${seen.join(' | ')}`);
+  assert.equal(seen.length, 6, `the in-page branches: ${seen.join(' | ')}`);
 });

@@ -114,14 +114,15 @@ test('§2 printed.json agrees with upstream, i.e. the extractor changed nothing 
 /** CT-81(a): the pool is 495 — 492 printed + 3 synthetics — and ONLY when
  * apply.ts is in the import graph. Pinned so a sweep below cannot quietly run
  * against a smaller pool than it believes it has. */
-test('§3 the sweeps below run against the whole registered pool, all 496', () => {
-  assert.equal(allCardNames().length, 496,
-    'this file imports src/apply.ts, which registers the third synthetic. 494 means that '
+test('§3 the sweeps below run against the whole registered pool, all 498', () => {
+  assert.equal(allCardNames().length, 498,
+    'this file imports src/apply.ts, which registers the third synthetic. 497 means that '
     + 'import was dropped and the sweeps below are one card short; anything else means '
     + 'the pool moved and the counts want re-deriving.');
   assert.equal(Object.keys(PRINTED).length, 492, 'printed.json is the 492 transcribed cards');
-  assert.equal(allCardNames().filter(n => !(n in PRINTED)).length, 4,
-    'and exactly four registered cards are synthetic, with no upstream printed data');
+  assert.equal(allCardNames().filter(n => !(n in PRINTED)).length, 6,
+    'and exactly six registered cards are synthetic, with no upstream printed data '
+    + '(the last two are the practice opponents\' cards, BL-03)');
 });
 
 test('§3 signature one: no type line in the pool glues a marker to the next word', () => {
