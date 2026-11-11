@@ -57,6 +57,8 @@ import {
   appShell, button, chip, icon, iconButton, iconButtonBadge, installSheetEsc, segmented, settingRow, sheet, shellBar, statusMessage,
 } from '../components/index.ts';
 import { chosenDeck, elIcon as elIconOf, esc } from '../util.ts';
+// BL-03: the practice opponents — a constant table, the same for every view
+import { OPPONENTS } from '../opponents.ts';
 import { caretIn, restoreCaret } from './caret.ts';
 import { TOOL_NAMES, toolsHtml } from './frame.ts';
 import { clockPickHtml, clockPickView, type ClockPickView } from './clockpick.ts';
@@ -101,7 +103,7 @@ export const HOME_MODES = ['draft', 'constructed'] as const;
 export type HomeMode = typeof HOME_MODES[number];
 export const HOME_FORMATS = ['casual', 'competitive'] as const;
 export type HomeFormat = typeof HOME_FORMATS[number];
-export const HOME_SHEETS = ['join', 'info', 'updates', 'rules', 'import', 'single', 'alerts-signin'] as const;
+export const HOME_SHEETS = ['join', 'info', 'updates', 'rules', 'import', 'single', 'practice', 'alerts-signin'] as const;
 export type HomeSheet = typeof HOME_SHEETS[number];
 
 /** the Play card's tab and Constructed's format are REMEMBERED (legal.ts
@@ -455,7 +457,9 @@ function constructedRowsHtml(v: HomeView): { rows: string; go: string } {
   const rows = format
     + row('Clock', clockPickHtml(v.clock, { look: 'segmented' }))
     + row('Deck', deckPickerHtml(v.deckPicker, { importHtml: importBtn }))
-    + `<div class="homesilly">${button({ labelHtml: '…or something sillier: <b>Single Card Duel</b>', variant: 'link', className: 'homesillybtn', ...opens('single') })}</div>`;
+    + `<div class="homesilly">${button({ labelHtml: '…or something sillier: <b>Single Card Duel</b>', variant: 'link', className: 'homesillybtn', ...opens('single') })}
+      · ${button({ labelHtml: '<b>Practise against a bot</b>', variant: 'link', className: 'homesillybtn', ...opens('practice'),
+        title: 'your deck against a simple scripted opponent, in this browser — nothing is recorded' })}</div>`;
   return {
     rows,
     go: create(v.hasDeck ? 'Create room' : 'Pick a deck first', { dataBtn: 'newgame', attrs: { 'data-mode': 'constructed' }, disabled: !v.hasDeck }),
@@ -564,7 +568,7 @@ function joinBody(v: HomeView): string {
 /** each sheet's id on the page (the root's; its title is `<id>-title`) */
 const SHEET_IDS: Record<HomeSheet, string> = {
   join: 'home-join', info: 'home-info', updates: 'home-updates', rules: 'home-rules', import: 'home-import',
-  single: 'home-single', 'alerts-signin': 'home-alerts',
+  single: 'home-single', practice: 'home-practice', 'alerts-signin': 'home-alerts',
 };
 
 function sheetHtml(v: HomeView): string {
@@ -591,6 +595,16 @@ function sheetHtml(v: HomeView): string {
         footerHtml: create(v.singleCard ? `Create duel · ${v.singleCard}` : 'Pick a card first', {
           dataBtn: 'newgame', attrs: { 'data-mode': 'constructed', 'data-single': '1' }, disabled: !v.singleCard,
         }) });
+    case 'practice':
+      // BL-03: the opponents, each with its plan in a sentence; the deck is
+      // the one picked on the Constructed card
+      return sheet({ ...base, id: SHEET_IDS.practice, title: 'Practise against a bot', className: 'homesheet',
+        bodyHtml: `<p class="homesheetnote">Your deck against a simple opponent with a fixed plan, played in this browser.
+          Nothing is recorded: no stats, achievements or rating.</p>
+          <div class="practiceopps">${OPPONENTS.map(o => `<div class="practiceopp">
+            <div class="practiceopptext"><b>${esc(o.name)}</b><span>${esc(o.blurb)}</span></div>
+            ${create(v.hasDeck ? 'Play' : 'Pick a deck first', { dataBtn: 'practice-start', attrs: { 'data-opp': o.id }, disabled: !v.hasDeck })}
+          </div>`).join('')}</div>` });
     case 'info':
       return sheet({ ...base, id: SHEET_IDS.info, title: 'Algomancy Online (Unofficial Client)', width: 'lg',
         placement: 'anchor-bottom-left', className: 'homesheet homeinfosheet', bodyHtml: s.info });

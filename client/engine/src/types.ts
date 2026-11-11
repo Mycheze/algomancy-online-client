@@ -418,6 +418,11 @@ export interface Entity {
   /** unit token (erased on leaving play, survives regroup) */
   token?: boolean;
   tokenStats?: [number, number];
+  /** BL-03: the attributes a token was CREATED with ("an X/X unit with a
+   * random attribute" — the practice opponents' Wild Construct). The token's
+   * printed attributes, beside its printed stats in `tokenStats`: read by
+   * ownAttrs at the printed layer, so a stripper takes them like any other. */
+  tokenAttrs?: Attr[];
   /**
    * LAYER 2 of the Manual's six-layer stat model: "base stats, which can be
    * changed to be different from what's printed". Set until regroup by cards

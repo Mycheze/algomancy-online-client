@@ -534,6 +534,7 @@
  "spell:Siphon Life": "{0} {mode:gain=gains|lose=loses} {X} life",
  "spell:Soul Siphon": "Create a {X}/{X} unit",
  "spell:Soul Tithe": "Negate {0} and draw a card unless {0.controller} pays [one]",
+ "spell:Sparring Construct": "Create an X/X unit, X twice the turn number",
  "spell:Spawntender": "Create an 8/8 unit",
  "spell:Spectrogenesis": "Create three Wisps",
  "spell:Spell Excavation": "{you} may play {0} from their bin until regroup; it gains unstable",
@@ -565,6 +566,7 @@
  "spell:Volatile Toxicity": "Create a Poison {X} and a Fireball {X}",
  "spell:Wake the Dead": "Play up to two units with total cost 8 or less from bins, free",
  "spell:Waxen Witness": "Cache {0}. It gains Prophecy - One Regroup Passes",
+ "spell:Wild Construct": "Create an X/X unit with a random attribute, X twice the turn number",
  "spell:Wildfire": "Deal {X} damage to {0}",
  "spell:Wither and Bloom": "{mode:wither=Put a -1/-1 counter on each enemy|bloom=Put a +1/+1 counter on each of your units}",
  "spell:Woodland Warding": "Negate all enemy effects targeting your effects, players or units"

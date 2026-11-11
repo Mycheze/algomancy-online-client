@@ -161,6 +161,12 @@
 /* ── the home's sheets ── */
 .homesheet .ui-sheet__body { display: flex; flex-direction: column; gap: var(--space-5); }
 .homesheetnote { margin: 0; color: var(--color-text-muted); font-size: var(--text-12); line-height: 1.5; }
+/* BL-03: the Practise sheet's opponents, one row each: the name and plan, then Play */
+.practiceopps { display: flex; flex-direction: column; gap: var(--space-5); }
+.practiceopp { display: flex; align-items: center; gap: var(--space-6); padding-top: var(--space-5); border-top: 1px solid var(--color-border); }
+.practiceopptext { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-12); color: var(--color-text-muted); line-height: 1.5; }
+.practiceopptext b { color: var(--color-text); font-size: var(--text-14); }
+.practiceopp .homecreate { flex: 0 0 auto; }
 .homecodelabel { color: var(--color-text-muted); font-size: var(--text-12); font-weight: 600; }
 .homecode input { flex: 1; min-width: 0; font-size: var(--text-16); padding: var(--space-4); letter-spacing: .2em; font-weight: 700; text-align: center; }
 .homecode .ui-button { flex: 0 0 auto; padding: var(--space-4) var(--space-7); font-weight: 700; }

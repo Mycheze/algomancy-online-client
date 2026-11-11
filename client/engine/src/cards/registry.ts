@@ -7,7 +7,7 @@
  * when grafted under a host); if the marker sits on the card's own triggered/
  * activated ability, that ability is a graft cause (graftCause: true).
  */
-import type { Entity, Seat, StackItem } from '../types.ts';
+import type { Attr, Entity, Seat, StackItem } from '../types.ts';
 import {
   allCardNames, card, firstTarget, getCard, registerAlias, registerSynthetic, unitRestrict,
   type EffectCtx, type EffectDef,
@@ -896,6 +896,62 @@ registerSynthetic({
     run: (g, ctx) => {
       const x = ctx.x ?? 0;
       if (x > 0) g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [x, x] });
+    },
+  },
+});
+
+// BL-03 — THE PRACTICE OPPONENTS' CARDS (client/ui/opponents.ts). The owner,
+// 2026-08-25: "one opponent could, in each haste, make an x/x unit where x is
+// the turn number x2 … Another could be similar, but it makes a unit during
+// deployment which has a random attribute." Each opponent's whole deck is one
+// of these, so its plan IS the card: the engine plays it like any spell, and
+// the opponent's seat only chooses when (ui/opponents.ts). Registered after
+// Training Construct, so every earlier card keeps its place; `lessonOnly`, so
+// only a lesson deal can hold them. Free: the opponent has no resources.
+const twiceTheTurn = (g: { s: { turn: number } }): number => 2 * Math.max(1, g.s.turn);
+
+registerSynthetic({
+  name: 'Sparring Construct', cost: '', mana: 0, power: 0, toughness: 0,
+  type: 'Training Spell', kind: 'spell', timing: 'haste', attrs: [],
+  virus: false, burst: false, augmentAttrs: [],
+  text: 'Create an X/X unit, where X is twice the turn number.',
+  image: 'Generic-Unit.jpg', lessonOnly: true,
+}, {
+  spellEffect: {
+    creates: ['Unit Token'],
+    run: (g, ctx) => {
+      const x = twiceTheTurn(g);
+      g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [x, x] });
+    },
+  },
+});
+
+/** The attributes a Wild Construct's unit may have: the ones that mean
+ * something on a lone attacker that never blocks. Left out: the drawbacks
+ * (Sluggish, Vulnerable, Feeble), the ones that do nothing on an X/X with no
+ * stat changes (Balanced, Inverted, Unaware, Pure, Modular), Lethal (one hit
+ * would end the game, and these opponents are meant to be beatable), and the
+ * ones that ask their controller a question (Alluring, Electric, Resonant). */
+export const WILD_ATTRS: readonly Attr[] = [
+  'Flying', 'Deadly', 'Swift', 'Tough', 'Powerful', 'Evasive',
+  'Sneaky', 'Piercing', 'Poisonous', 'Thieving', 'Blessed', 'Afflicting',
+];
+
+registerSynthetic({
+  name: 'Wild Construct', cost: '', mana: 0, power: 0, toughness: 0,
+  type: 'Training Spell', kind: 'spell', timing: 'deploy', attrs: [],
+  virus: false, burst: false, augmentAttrs: [],
+  text: 'Create an X/X unit with a random attribute, where X is twice the turn number.',
+  image: 'Generic-Unit.jpg', lessonOnly: true,
+}, {
+  spellEffect: {
+    creates: ['Unit Token'],
+    run: (g, ctx) => {
+      const x = twiceTheTurn(g);
+      // the game's own seeded shuffle: the same game deals the same attribute
+      const attr = g.shuffle([...WILD_ATTRS])[0]!;
+      g.ev('info', `${ctx.sourceName}: its unit is {${attr}}.`);
+      g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [x, x], tokenAttrs: [attr] });
     },
   },
 });

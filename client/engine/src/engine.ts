@@ -3091,6 +3091,8 @@ export class E {
     // LAYER 0 (CR 710.1): the attrs of the card this entity currently IS. Only the
     // identity face carries `attrs`, so this is one name, not a union.
     if (keep(E.PRINTED)) for (const a of this.faceDef(e).attrs) set.add(a);
+    // BL-03: a token created WITH attributes has them as its printed ones
+    if (keep(E.PRINTED)) for (const a of e.tokenAttrs ?? []) set.add(a);
     (e.tempAttrs ?? []).forEach((a, i) => { if (keep(e.tempAttrsAt?.[i] ?? E.PRINTED)) set.add(a); });
     for (const { srcId, mod } of statics) {
       if (mod.attrs?.length && keep(this.stampOf(srcId))) for (const a of mod.attrs) set.add(a);
@@ -4889,7 +4891,7 @@ export class E {
    * into play under an OPPONENT's control") passes the opponent as `seat` and
    * its owner as `opts.owner`.
    */
-  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin' | 'deck' | 'play'; spot?: FormationSpot; spotRemembered?: boolean; spotSeat?: Seat; owner?: Seat; wearing?: SpawnFace; named?: CardName } = {}): Entity {
+  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; tokenAttrs?: import('./types.ts').Attr[]; counters?: number; from?: 'hand' | 'cache' | 'bin' | 'deck' | 'play'; spot?: FormationSpot; spotRemembered?: boolean; spotSeat?: Seat; owner?: Seat; wearing?: SpawnFace; named?: CardName } = {}): Entity {
     /**
      * CR 708.3: a UNIT TOKEN is a creation, and a creation is replaceable — before
      * anything exists. `token: true` is what makes this a creation; a plain
@@ -4931,6 +4933,7 @@ export class E {
     const u = this.newEntity({
       card: name, owner, controller: seat, kind: 'unit', region,
       ...(opts.token ? { token: true, tokenStats: opts.tokenStats } : {}),
+      ...(opts.token && opts.tokenAttrs?.length ? { tokenAttrs: [...opts.tokenAttrs] } : {}),
       // CR 702.3g, 709.2: the name chosen as this card was PLAYED ("As I am played,
       // name a card" — The Everywhere) is on the body as it enters, before the
       // 'spawned' event exists, so the silence keyed on it applies from the

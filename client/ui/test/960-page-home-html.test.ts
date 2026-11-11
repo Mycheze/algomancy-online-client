@@ -289,6 +289,10 @@ test('960 §6 the sheets: one at a time, from the view, each dismissable', () =>
     rules: [/Game values/, /data-btn="cr-step"/, /data-btn="cr-values"/, /data-btn="home-sheet-close"[^>]*>Done</],
     import: [/id="h-deckurl"/, /data-btn="deckimporturl"/, /id="h-decktext"/, /data-btn="deckimporttext"/],
     single: [/<!--SLOT:scpicker-->/, /data-btn="meta-ladder"/, /data-btn="newgame" type="button" disabled data-mode="constructed" data-single="1">Pick a card first/],
+    // BL-03: both opponents, each with its Play — waiting for a deck in this view (Play itself: below)
+    practice: [/Practise against a bot/, /Nothing is recorded/, /The Sparring Partner/, /The Wild Card/,
+      /data-btn="practice-start" type="button" disabled data-opp="sparring">Pick a deck first</,
+      /data-btn="practice-start" type="button" disabled data-opp="wild">Pick a deck first</],
     'alerts-signin': [/Sign in to get friend invites/, /data-btn="acct-open-auth"/],
   };
   assert.deepEqual(Object.keys(want).sort(), [...HOME_SHEETS].sort(), 'a sheet is not checked here');
@@ -303,6 +307,10 @@ test('960 §6 the sheets: one at a time, from the view, each dismissable', () =>
   }
   assert.match(homeHtml(view({ sheet: 'join', slots: { ...view().slots, invites: '', yourMatches: '', leagueMatches: '' } })),
     /Nothing waiting for you — ask for a code\./);
+  const practising = homeHtml(view({ sheet: 'practice', hasDeck: true }));
+  for (const opp of ['sparring', 'wild']) {
+    assert.match(practising, new RegExp(`data-btn="practice-start" type="button" data-opp="${opp}">Play<`), `${opp}: Play, with a deck`);
+  }
   assert.match(homeHtml(view({ sheet: 'single', singleCard: 'Ignis <Sprite>' })), /data-single="1">Create duel · Ignis &lt;Sprite&gt;</);
   assert.match(homeHtml(view({ sheet: 'info' })), /class="ui-icon-button ui-icon-button--inline on homeinfo"/, 'its button shows it is open');
 });

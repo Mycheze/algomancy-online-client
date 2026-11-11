@@ -84,6 +84,7 @@ const HOME_CARD: Record<string, string> = {
   admin: 'the operator dashboard — nobody shares it',
   demo: 'the scripted mid-battle rig, for development',
   judging: 'the judges\' review of the rules bot — staff only, nobody shares it',
+  practice: 'a practice game against a bot (BL-03) — it lives in this browser, so a shared link opens only the home',
 };
 
 test('§2 ⭐ every page the client opens off the URL has its own preview, or is declared', () => {

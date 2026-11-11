@@ -85,9 +85,10 @@ test('the index covers the catalogue and the registry, and confuses neither for 
   const rows = allRows();
   assert.equal(new Set(rows.map(r => r.name)).size, rows.length, 'a name appears twice');
   // three different questions, three different answers — see ui/cardindex.ts
-  assert.equal(rows.length, 540); // +2 on 2026-09-17: Light & Dark Resource
-  // CR D8.1b: +1, Training Construct — scripted, a marker, never playable
-  assert.equal(rows.filter(r => r.scripted).length, 496);
+  // +2 on 2026-09-17: Light & Dark Resource; +2 on 2026-11-11 (BL-03): the practice opponents' cards
+  assert.equal(rows.length, 542);
+  // CR D8.1b: +1, Training Construct — scripted, a marker, never playable; BL-03: +2 the same
+  assert.equal(rows.filter(r => r.scripted).length, 498);
   assert.equal(rows.filter(r => r.playable).length, 483);
   for (const r of rows) {
     if (r.playable) assert.ok(r.scripted, `${r.name}: playable but not scripted`);

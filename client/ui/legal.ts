@@ -177,6 +177,7 @@ export const BROWSER_KEYS: readonly StoredLine[] = [
   { covers: ['algoHomeMode', 'algoHomeFormat'], what: 'whether the home screen’s Play card was last on Draft or Constructed, and Casual or Competitive' },
   { covers: ['algoCustomRules'], what: 'the custom rules you last set up for a live draft, so the panel remembers them' },
   { covers: ['algoSingleCard'], what: 'the card you last picked for a Single Card Duel' },
+  { covers: ['algoPractice'], what: 'your practice game against a bot, so a reload carries on with it' },
   { covers: ['algoLearn'], what: 'your Learn to Play game and which lessons you have read, so you can pick up where you left off' },
   { covers: ['algoQueueMode', 'algoQueueRanked'], what: 'the format and the ranked/open choice you last used in the matchmaking queue, so it comes back the way you left it' },
   { covers: ['algoLeagueBanner'], what: 'whether you folded the league banner on the home page' },

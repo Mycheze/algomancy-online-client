@@ -165,6 +165,8 @@ import * as tt from './tabletop.ts';
 // client can set makes it appear over a real game.
 import * as scn from './scenario.ts';
 import * as learn from './learn.ts';
+// BL-03: a practice game against a scripted opponent (the Learn to Play room, your deck)
+import * as practice from './practice.ts';
 // docs/21 — the weekly challenge: its page, and the run (a SoloServer like learn's)
 import * as chal from './challenge.ts';
 import * as chrun from './challengerun.ts';
@@ -7620,6 +7622,8 @@ function roomStatus(): { icon: string; label: string } {
   if (replayActive()) return asQuestion() ? { icon: '❓', label: 'rules question' } : { icon: '▶', label: `replay ${room}` };
   if (NET!.spectating) return { icon: '👁', label: `spectating ${room}` };
   if (learn.currentSolo()) return { icon: '📘', label: 'Learn to Play' };
+  const pr = practice.currentPractice();
+  if (pr) return { icon: '🥊', label: `practice against ${pr.opponent.name}` };
   const run = chrun.currentRun();
   if (run) return { icon: '🧩', label: run.def.title };
   return { icon: 'ⓘ', label: `room ${room}` };
@@ -7666,7 +7670,7 @@ function toolTipHtml(kind: string): string | null {
       NET.spectating && !replayActive() ? line('you can see both hands', 'dim') : ''}${
       NET.watchers && !replayActive() && !NET.spectating ? line(`👁 ${NET.watchers} watching — they see both hands`) : ''}${
       liveSession && !NET.spectating ? line(on ? '● opponent connected' : '● opponent offline', on ? 'tipok' : 'tipwarn') : ''}${
-      learn.currentSolo() || chrun.currentRun() ? line(`room ${esc(NET.room)}`, 'dim') : ''}`;
+      learn.currentSolo() || chrun.currentRun() || practice.currentPractice() ? line(`room ${esc(NET.room)}`, 'dim') : ''}`;
   }
   if (kind === 'game') {
     const s = h.state;
@@ -10408,6 +10412,13 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
     renderHome();
     return true;
   }
+  // BL-03: the Practise sheet — deal a game against that opponent with the
+  // chosen deck, in this page (nothing is recorded)
+  if (b === 'practice-start') {
+    saveHomeName();
+    if (practice.begin(btn.dataset['opp'], savedDeck())) location.search = '?practice=play';
+    return true;
+  }
   if (b === 'newgame') {
     saveHomeName();
     const m = btn.dataset['mode'];
@@ -11110,9 +11121,12 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   // so it never names a room code that is not one — it sends the game itself
   // (report round 2026-10-23: it used to send the note alone)
   reportopen: () => {
-    const run = chrun.currentRun(), solo = learn.currentSolo();
+    const run = chrun.currentRun(), solo = learn.currentSolo(), pr = practice.currentPractice();
+    // BL-03: a practice game is the Learn to Play room with another deal, so
+    // it is sent as one — its deal and its whole log
     openReport(run ? { solo: chrun.reportAttachment(run) }
       : solo ? { solo: learn.reportAttachment(solo.server) }
+      : pr ? { solo: learn.reportAttachment(pr.server) }
       : { room: NET?.room, seat: NET?.seat ?? null });
     return 'no-repaint';
   },
@@ -12562,6 +12576,19 @@ if (params.has('room') && params.get('room')!.trim()) {
   h = NET;
   connectingLine = 'Setting up your lesson…';   // in this page: no server to connect to
   renderConnecting();
+} else if (params.get('practice') === 'play') {
+  // BL-03 — a practice game against a scripted opponent: the Learn to Play
+  // room with your deck and the opponent's. No saved game (a stale link): home.
+  const pr = practice.startPractice({ onBotStuck: why => noteBar(`the opponent got stuck: ${why}`, { log: true }) });
+  if (!pr) {
+    location.href = location.pathname;
+  } else {
+    openSocket = () => pr.server.socket() as unknown as WebSocket;
+    NET = new NetBackend('PRACTICE', 0);
+    h = NET;
+    connectingLine = 'Setting up the game…';
+    renderConnecting();
+  }
 } else if (params.get('challenge') === 'play') {
   // docs/21 — a weekly challenge run: the Learn to Play room with the
   // challenge's deal and the dummy. No saved run (a stale link): the page.

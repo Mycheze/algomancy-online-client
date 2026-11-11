@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-11', kind: 'new', text: 'Practise against a bot: on the Constructed card, pick a deck and press "Practise against a bot". Two simple opponents attack with a growing unit every turn. Nothing is recorded.' },
   { date: '2026-11-10', kind: 'change', text: 'On a phone or tablet, tapping a resource in the resource step now activates it straight away, with no zoom and no Activate button to press. Elsewhere a tap still shows the card first.' },
   { date: '2026-11-10', kind: 'fix', text: 'Pressing Attack! no longer makes your attackers jump back to your side for a moment: they stay in the fight while the attack is sent. If the attack is refused, the formation you built is still there to fix.' },
   { date: '2026-11-10', kind: 'fix', text: 'The lit box in the phase bar is now centred on its icon and name: the same space on both sides, with no extra gap after the word.' },
