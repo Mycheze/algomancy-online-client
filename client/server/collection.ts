@@ -688,15 +688,20 @@ export function savedDeckNow(userId: string | null, id: string | null):
 /**
  * `deckForPlay` for a Competitive Constructed registration (docs/22 §5.1): the
  * collection's own main deck and sideboard, re-checked with checkMatchDeck —
- * or null when the deck is not the caller's or not CC-legal.
+ * or null when the deck is not the caller's or not CC-legal. `piles` is the
+ * tabletop's arrangement of that main deck, clamped to it, when the deck has
+ * one: the sideboarding table between games lays the deck out as the player
+ * did (BL-55), never by cost alone.
  */
 export function matchDeckForPlay(userId: string | null, id: string | null):
-  { id: string; main: CardName[]; side: CardName[] } | null {
+  { id: string; main: CardName[]; side: CardName[]; piles?: DeckPile[] } | null {
   if (!userId || !id) return null;
   const account = accountById(userId);
   if (!account) return null;
   const deck = deckById(account, id);
   if (!deck) return null;
   const c = checkMatchDeck(deck.cards, deck.sideboard ?? []);
-  return c.ok ? { id: deck.id, main: c.main, side: c.side } : null;
+  if (!c.ok) return null;
+  const piles = sanitizePiles(deck.piles, c.main);
+  return { id: deck.id, main: c.main, side: c.side, ...(piles ? { piles } : {}) };
 }

@@ -30,6 +30,7 @@
  */
 import { checkSwap, type MatchConfig } from '../engine/src/matchdeck.ts';
 import type { Seat } from '../engine/src/types.ts';
+import type { DeckPile } from './deckarrange.ts';
 import { addDragProvider, type DragPlan, type DragProvider } from './drag.ts';
 import { installPressZoom } from './presszoom.ts';
 import { PEEK_MS } from './touch.ts';
@@ -52,7 +53,9 @@ export interface MatchLobbyInfo {
   chooser: Seat | null; initiative: Seat | null;
   until: number | null; locked: boolean;
   ready: [boolean, boolean];
-  mine: { registered: MatchConfig; current: MatchConfig } | null;
+  /** `piles`: the registered deck's tabletop arrangement, when it had one
+   * (BL-55) — the sideboarding table lays the deck out the same way */
+  mine: { registered: MatchConfig; current: MatchConfig; piles?: DeckPile[] } | null;
   /** voidAt: the server's lapse time — 7 days, or a league week's end if sooner */
   pause?: { offeredBy: Seat | null; pausedAt: number | null; resume: [boolean, boolean]; voidAt?: number | null };
   result?: MatchResult;

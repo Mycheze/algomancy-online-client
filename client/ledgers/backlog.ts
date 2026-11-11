@@ -854,7 +854,15 @@ const OPEN: Entry[] = [
       + '`.ccsbtable [data-zoom]` tile with a scan is a hover target, shown as its scan alone (the press zoom\'s copy) at '
       + 'the hover zoom\'s width; never while `html.dragging`, and drag.ts begin() lets it go. The tabletop deck builder '
       + 'keeps only its press zoom (owner, 2026-10-21). Guarded by 1215-sideboard-table-hover-zoom.test.ts. Not looked at '
-      + 'in a browser (the home box has none). Left: (2), (6).',
+      + 'in a browser (the home box has none). Left: (2), (6).\n\n'
+      + '2026-11-11 (steward): (2) DONE — the second doneWhen line. collection.ts matchDeckForPlay carries the saved '
+      + 'deck\'s `piles` (sanitizePiles, clamped to its main); match.ts registrationFor/registerSeat store them on '
+      + '`Registered.piles`, and matchLobbyInfo gives them to that seat only, in `mine.piles`. pages/match.ts matchPiles '
+      + 'reconciles the REGISTERED arrangement to the current main on every paint (the builder\'s reconcilePiles), so a '
+      + 'copy sideboarded out and back returns to its own pile; an emptied unnamed pile is not drawn; a deck never '
+      + 'arranged, one registered off the wire, and a match registered before today stay by cost. Guarded by '
+      + '1222-cc-registration-carries-piles.test.ts and 1223-cc-table-keeps-the-arrangement.test.ts. Not looked at in '
+      + 'a browser (the home box has none). Left: (6), the owner on a real iPad — the last doneWhen line.',
   },
   {
     id: 'BL-57',

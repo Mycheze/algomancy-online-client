@@ -33,7 +33,7 @@
  */
 import type { CardName, Seat } from '../engine/src/types.ts';
 import { checkMatchDeck, checkSwap, type MatchConfig } from '../engine/src/matchdeck.ts';
-import { matchDeckForPlay } from './collection.ts';
+import { matchDeckForPlay, type DeckPile } from './collection.ts';
 import {
   closeMatchRoom, createRoom, decidedWinner, getRoom, roomWaiting, setRoomDeck,
   setRoomHeld, setSeatUser, settleClock, touchRoom, type Room,
@@ -125,7 +125,7 @@ export function registrationFor(userId: string, deckId: unknown, deck: unknown, 
   if (typeof deckId === 'string' && deckId) {
     const d = matchDeckForPlay(userId, deckId);
     if (!d) return { error: 'that deck is not legal for Competitive Constructed — check its sideboard and copies in the deck builder' };
-    return { main: d.main, side: d.side, deckId: d.id };
+    return { main: d.main, side: d.side, deckId: d.id, ...(d.piles ? { piles: d.piles } : {}) };
   }
   const c = checkMatchDeck(deck, side ?? []);
   return c.ok
@@ -167,7 +167,10 @@ export function registerSeat(room: Room, seat: Seat, userId: string, name: strin
   if (room.match?.game !== 1 || m.phase !== 'game' || !roomWaiting(room)) {
     return { ok: false, why: 'decks are registered before game 1 only — between games you sideboard' };
   }
-  m.registered[seat] = { main: [...reg.main], side: [...reg.side], deckId: reg.deckId };
+  m.registered[seat] = {
+    main: [...reg.main], side: [...reg.side], deckId: reg.deckId,
+    ...(reg.piles ? { piles: reg.piles.map(p => ({ ...p, cards: [...p.cards] })) } : {}),
+  };
   m.current[seat] = copyConfig(reg);
   m.users[seat] = userId;
   m.names[seat] = name;
@@ -520,8 +523,9 @@ export interface MatchLobbyInfo {
   /** the window has locked and the deal waits on the chooser alone */
   locked: boolean;
   ready: [boolean, boolean];
-  /** this seat's own deck — null before it has registered one */
-  mine: { registered: MatchConfig; current: MatchConfig } | null;
+  /** this seat's own deck — null before it has registered one. `piles`: the
+   * registered deck's tabletop arrangement, when it had one (BL-55) */
+  mine: { registered: MatchConfig; current: MatchConfig; piles?: DeckPile[] } | null;
   /** voidAt: when a paused match lapses — 7 days, or its league week's end if sooner */
   pause?: { offeredBy: Seat | null; pausedAt: number | null; resume: [boolean, boolean]; voidAt: number | null };
   result?: Match['result'];
@@ -545,6 +549,7 @@ export function matchLobbyInfo(room: Room, seat: Seat): MatchLobbyInfo | undefin
     mine: reg && cur ? {
       registered: { main: [...reg.main], side: [...reg.side] },
       current: { main: [...cur.main], side: [...cur.side] },
+      ...(reg.piles ? { piles: reg.piles.map(p => ({ ...p, cards: [...p.cards] })) } : {}),
     } : null,
     ...(m.pause ? { pause: { offeredBy: m.pause.offeredBy, pausedAt: m.pause.pausedAt, resume: [...m.pause.resume] as [boolean, boolean], voidAt: matchVoidAt(m) } } : {}),
     ...(m.result ? { result: { ...m.result } } : {}),

@@ -19,7 +19,8 @@
  * the table we spent so much time building, then the sideboard above and you
  * slide cards in and out … you can't even see the card images"). Since BL-65
  * (2026-11-04) it is the builder's own table (pages/table.ts tableHtml), so it
- * is one thing to learn: the deck as piles by cost on the felt, the Sideboard
+ * is one thing to learn: the deck in its piles on the felt (as the player laid
+ * it out on the builder, else by cost — matchPiles, BL-55), the Sideboard
  * in the rail on the right, the counts and the verdict in the strip at its
  * foot — and no pool, only the registered cards. A card goes across by one tap
  * or by a drag (ui/match.ts moveCopy, both; no menu, the window is 120 s). The
@@ -32,7 +33,7 @@ import type { Seat } from '../../engine/src/types.ts';
 import * as acct from '../account.ts';
 import { iconButton, settingRow, statusMessage, toggle } from '../components/index.ts';
 import * as dk from '../decks.ts';
-import { seedPiles } from '../deckarrange.ts';
+import { reconcilePiles, seedPiles, type DeckPile } from '../deckarrange.ts';
 import { roomFriendsHtml } from '../inbox.ts';
 import {
   canUndo, clock, matchLink, matchState, myMatchLine, pickOf, sameBoards, scoreWords, shown, wireDeckSelect,
@@ -246,12 +247,30 @@ function scoreboardHtml(v: MatchRoomView): string {
   </div>`;
 }
 
-/** the deck as the builder's piles, by cost, every copy a card of its own; a
- * tap on a copy (or a drop on the sideboard) moves it out. Shown, not
+/**
+ * THE DECK'S PILES ON THE TABLE (BL-55): the deck as its owner laid it out on
+ * the tabletop builder when they registered it, else by cost, as a deck
+ * nobody arranged opens on the builder.
+ *
+ * Worked out afresh from the REGISTERED arrangement on every paint, never
+ * kept: reconcilePiles (the builder's own rule) takes a copy sideboarded out
+ * off the last pile holding it and puts a card brought in where the builder
+ * would (beside its name, else its Re-sort bucket, else "New"). So a copy
+ * that comes back — a tap, Undo, Back to the registered deck — is back in
+ * the pile it started in, and the registered deck is its arrangement exactly.
+ * A pile left empty is not drawn unless its owner named it, as on the builder.
+ */
+export function matchPiles(main: readonly string[], arranged: readonly DeckPile[] | undefined): DeckPile[] {
+  if (!arranged?.length) return seedPiles(main, 'cost');
+  return reconcilePiles(main, arranged).filter(p => p.cards.length > 0 || p.named);
+}
+
+/** the deck as the builder's piles (matchPiles), every copy a card of its
+ * own; a tap on a copy (or a drop on the sideboard) moves it out. Shown, not
  * editable, once the window locks */
-function deckPiles(main: readonly string[], live: boolean, t: TableSize): PileView[] {
+function deckPiles(main: readonly string[], arranged: readonly DeckPile[] | undefined, live: boolean, t: TableSize): PileView[] {
   const room = t.paneH - PANE_CHROME;
-  return seedPiles(main, 'cost').map(p => {
+  return matchPiles(main, arranged).map(p => {
     const cards: PileCard[] = p.cards.map((name, k) => ({ name, src: `main|${p.id}|${k}|${name}` }));
     return {
       zone: `main|${p.id}`, name: p.name, cards, S: stripOf(cards.length, room, t.ch), ch: t.ch,
@@ -439,7 +458,7 @@ function sideboardTableHtml(v: MatchRoomView): string {
       ${readyHtml(v, !why, live ? resetHtml(w, cfg) : '')}
     </footer>`;
   const table = tableHtml({
-    cw: t.cw, ch: t.ch, piles: deckPiles(cfg.main, live, t), newPiles: null,
+    cw: t.cw, ch: t.ch, piles: deckPiles(cfg.main, w.mine!.piles, live, t), newPiles: null,
     zoneAttrs: { 'data-cc-zone': 'main' },
     headHtml: `<div class="tthead"><span class="ttheadlabel">Main deck</span><b class="ttheadcount${short ? ' bad' : ''}">${cfg.main.length}</b></div>`,
     rail: { side: sidePile(cfg.side, live, t), sideAttrs: { 'data-cc-zone': 'side' } },

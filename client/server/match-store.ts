@@ -18,6 +18,7 @@ import { join } from 'node:path';
 import { randomBytes } from 'node:crypto';
 import type { CardName, Seat } from '../engine/src/types.ts';
 import type { MatchConfig } from '../engine/src/matchdeck.ts';
+import type { DeckPile } from './collection.ts';
 import type { RoomLeague } from './rooms.ts';
 import { matchesDir } from './statepaths.ts';
 
@@ -27,6 +28,10 @@ import { matchesDir } from './statepaths.ts';
  * nothing reads them any more.) */
 export interface Registered extends MatchConfig {
   deckId: string | null;
+  /** the saved deck's tabletop piles at registration (BL-55) — how its owner
+   * laid the main deck out; absent for a deck never arranged, one sent off
+   * the wire, and every match file written before 2026-11-11 */
+  piles?: DeckPile[];
 }
 
 export interface MatchGame {
