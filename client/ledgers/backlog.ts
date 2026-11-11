@@ -1237,43 +1237,6 @@ const OPEN: Entry[] = [
       'client/ui/main.ts',
     ],
   },
-  {
-    id: 'BL-75',
-    slug: 'life-total-change-log',
-    title: 'Hovering a life total shows that player\'s life changes this game',
-    area: 'client',
-    size: 'M',
-    status: 'open',
-    track: 'feature',
-    said:
-      'When you hover over a player\'s life total, it\'d be nice to show a simple "log" of the life total '
-      + 'changes (report #380, room MVGY, 2026-11-11)',
-    means:
-      'Filed by the steward from report #380 (triage of 2026-11-11). Today the life total on the board '
-      + '(ui/main.ts, the `life` span, data-act="player") has no tip, and life changes are only lines among '
-      + 'everything else in the game log. Hovering it (or tapping it on a touch screen, where there is no hover — '
-      + 'but a tap on it is also how a player is TARGETED, so a tap may only open the list when no pick is '
-      + 'live) shows a short list of that seat\'s life changes this game, newest first: the amount, the total '
-      + 'after, and what did it ("−3 → 17, Bloated Manablub"; "+2 → 19, …"), with the turn. The client already '
-      + 'receives every `lifeLost`/`lifeGained` event with seat and amount (ui/flash.ts sums them per seat for the '
-      + 'life beat). Fold the way the owner asked for the hidden-turn summary on 2026-09-05 (ui/reveal.ts): '
-      + 'a run of losses from one source is one line, never one line per point. Must work for a spectator, '
-      + 'after a reconnect, and in a replay, so it cannot rest on events seen live only — build it from what '
-      + 'the game record holds.',
-    doneWhen: [
-      'Hovering either player\'s life total shows a list of that player\'s life changes this game, each with the amount, the new total and its cause',
-      'On a touch screen the same list can be opened without breaking a tap that targets the player',
-      'The list is the same after a reload or reconnect, and for a spectator',
-    ],
-    decided: [],
-    asks: [],
-    deps: [],
-    touches: [
-      'client/ui/main.ts',
-      'client/ui/flash.ts',
-      'client/ui/reveal.ts',
-    ],
-  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
