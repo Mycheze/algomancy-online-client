@@ -460,8 +460,9 @@ export function pulseKeys(keys: readonly string[], kind: 'hurt' | 'buff' = 'hurt
  * tell BY HOW MUCH" — the total is already on screen, so the only thing a
  * flash alone adds is that you should go and read it.
  *
- * BOTH seats, unlike the sound (ui/sfx.ts audibleLife): watching the number
- * you are attacking move is the whole feedback loop of an attack. `seat` is a
+ * BOTH seats, every change (the sound picks one per render — ui/sfx.ts
+ * audibleLife): watching the number you are attacking move is the whole
+ * feedback loop of an attack. `seat` is a
  * plain number because this module imports nothing — it knows animation keys
  * and rectangles, and never a single engine type.
  *

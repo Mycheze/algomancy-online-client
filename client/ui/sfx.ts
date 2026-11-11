@@ -58,7 +58,8 @@ export interface SfxSnap {
    * Public information in Algomancy — both totals are printed in both
    * identity rows — so unlike everything else here this is NOT the viewer's
    * half of the state, and the FLASH it drives is shown for both players.
-   * Only the SOUND is yours (audibleLife, at the foot of this file). */
+   * The SOUND is one per render, your own change first (audibleLife, at the
+   * foot of this file). */
   life: number[];
 }
 
@@ -184,19 +185,23 @@ export function armsIdle(before: SfxSnap | null, after: SfxSnap): boolean {
  * looking somewhere else, so it has to mean exactly one thing, and two tones
  * in the same breath would leave you working out which was yours.
  *
- * `online` is network mode. There, "yours" is your seat and nobody else's,
- * full stop — the opponent's life falling is THEIR news. On a screen showing
- * BOTH seats the same human owns both, so silence would be wrong and both
- * would be noise; the honest answer is the change that matters most, and that
- * is the biggest — a 1-point trade behind a 12-point swing is not the thing to
- * announce. Ties go to `listener`, whom main.ts resolves to whoever the game
- * is waiting on: with both seats on screen that is the hand on the mouse, and
- * a symmetrical trade should sound like it hit you.
+ * `online` is network mode. There your own total comes first: when it moved,
+ * that is the sound, whatever the opponent's did beside it. When it did not,
+ * the opponent's change is heard — the owner asked for that on 2026-11-11
+ * (report #383); until then the opponent's life moved in silence online, on
+ * the reasoning that it was THEIR news. The cue says gain or loss, not whose.
+ * On a screen showing BOTH seats the same human owns both, so there is no
+ * "yours" to prefer; the honest answer is the change that matters most, and
+ * that is the biggest — a 1-point trade behind a 12-point swing is not the
+ * thing to announce. Ties go to `listener`, whom main.ts resolves to whoever
+ * the game is waiting on: with both seats on screen that is the hand on the
+ * mouse, and a symmetrical trade should sound like it hit you.
  */
 export function audibleLife(
   changes: readonly LifeChange[], listener: Seat, online: boolean,
 ): LifeChange | null {
-  if (online) return changes.find(c => c.seat === listener) ?? null;
+  const own = online ? changes.find(c => c.seat === listener) : undefined;
+  if (own) return own;
   let best: LifeChange | null = null;
   for (const c of changes) {
     if (!best

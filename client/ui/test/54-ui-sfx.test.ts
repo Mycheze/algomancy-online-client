@@ -302,13 +302,20 @@ test('a real game moves life, and the channel sees every move of it', () => {
   }
 });
 
-test('online, you hear YOUR life and nobody else\'s', () => {
+test('online, you hear your own life change first, and otherwise the opponent life change', () => {
+  // report #383 (owner, 2026-11-11): "The life gain/loss sound effect should
+  // also sound when your opponent loses/gains life". Until then the opponent's
+  // total moved in silence online. Still ONE sound per render: when both moved,
+  // it is yours — a trade should sound like it hit you.
   const trade = [{ seat: 0 as Seat, delta: -4 }, { seat: 1 as Seat, delta: -7 }];
   assert.deepEqual(audibleLife(trade, 0, true), { seat: 0, delta: -4 });
   assert.deepEqual(audibleLife(trade, 1, true), { seat: 1, delta: -7 });
-  // the opponent's total falling is THEIR news — you see it flash, you do not
-  // hear it, and this is the assertion that keeps the two apart
-  assert.equal(audibleLife([{ seat: 1, delta: -9 }], 0, true), null);
+  // ...even when the opponent's swing is the bigger one (hotseat would pick it)
+  const lopsided = [{ seat: 0 as Seat, delta: -1 }, { seat: 1 as Seat, delta: 12 }];
+  assert.deepEqual(audibleLife(lopsided, 0, true), { seat: 0, delta: -1 });
+  // the opponent's total alone, falling or rising, is heard
+  assert.deepEqual(audibleLife([{ seat: 1, delta: -9 }], 0, true), { seat: 1, delta: -9 });
+  assert.deepEqual(audibleLife([{ seat: 0, delta: 3 }], 1, true), { seat: 0, delta: 3 });
   assert.equal(audibleLife([], 0, true), null);
 });
 

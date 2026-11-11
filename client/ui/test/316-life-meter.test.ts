@@ -10,8 +10,9 @@
  *            heart beside it stayed small so the DIGITS are what grew.
  *   FLASH    every change, both seats (ui/anim.ts flashLife) — red down, green
  *            up, plus the amount rising off the pill.
- *   SOUND    every change to YOUR total (ui/sfx.ts lifeChanges + audibleLife,
- *            ui/audio.ts's 'life' channel).
+ *   SOUND    one per render: your own total's change, else the
+ *            opponent's (ui/sfx.ts lifeChanges + audibleLife, ui/audio.ts's
+ *            'life' channel; the opponent's since report #383, 2026-11-11).
  *
  * The DIFF logic is ui/test/54's — what changed, and which change is heard.
  * THIS file is about the seam between that logic and the screen, which is a
@@ -105,8 +106,8 @@ test('316 §1 the element ui/anim.ts flashes is the one with the number in it', 
 });
 
 test('316 §2 BOTH seats have one, because the flash is for both players', () => {
-  // the sound is yours alone (ui/test/54 §audibleLife); the flash is not, and
-  // it cannot be if only one seat has somewhere to put it
+  // the sound is one per render (ui/test/54 §audibleLife); the flash is every
+  // change, and it cannot be if only one seat has somewhere to put it
   const s = dealt(31601);
   const html = ui.join(viewFor(s, SEAT), SEAT, legalActions(s, SEAT));
   const found = html.match(/data-animzone="life:\d"/g) ?? [];

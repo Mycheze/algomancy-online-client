@@ -515,8 +515,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 383, room: "WSVC", date: "2026-11-11",
     report: "mycheze, seat 0 (ux, minor): \"The life gain/loss sound effect should also sound when your opponent loses/gains life\"",
-    status: 'live',
-    note: "Real, and deliberate until now. Online, the client sounds only your own life changes: ui/sfx.ts audibleLife returns the listener's change and nothing else in network mode (80c9c9ad, 2026-09-20: \"the opponent's life falling is THEIR news\"); only a screen showing both seats can sound either one. The flash already shows both seats' changes. The owner reverses that choice. WSVC fetched and replayed: 234 of 234 actions, FAITHFUL; the board at [125] is turn 4's after-combat step, on a branch later taken back (#384). CT-559 filed: sound the opponent's change too, still one sound per update.",
+    status: 'fixed',
+    guards: [
+      "54-ui-sfx.test.ts::online, you hear your own life change first, and otherwise the opponent life change",
+    ],
+    note: "Real, and deliberate until now. Online, the client sounds only your own life changes: ui/sfx.ts audibleLife returns the listener's change and nothing else in network mode (80c9c9ad, 2026-09-20: \"the opponent's life falling is THEIR news\"); only a screen showing both seats can sound either one. The flash already shows both seats' changes. The owner reverses that choice. WSVC fetched and replayed: 234 of 234 actions, FAITHFUL; the board at [125] is turn 4's after-combat step, on a branch later taken back (#384). CT-559 filed: sound the opponent's change too, still one sound per update. Fixed 2026-11-11 (CT-559): online, your own change is heard when it moved, else the opponent's.",
   },
   {
     id: 384, room: "WSVC", date: "2026-11-11",
