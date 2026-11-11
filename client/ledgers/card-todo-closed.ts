@@ -15313,7 +15313,7 @@ export const CLOSED: TodoEntry[] = [
     verify: "In a game, hover a player's life total on a computer, and tap it on a phone when nothing asks you to pick a player: a small window lists that player's life changes this game, newest first, each with its turn, the amount, the total after and what did it. Reload the page or watch as a spectator: the same list.",
     reportId: 380,
     guards: [
-      "1230-life-total-change-log.test.ts::§4 a tap on a life total opens the list of that player, built from the log the join carried",
+      "1231-life-total-change-log.test.ts::§4 a tap on a life total opens the list of that player, built from the log the join carried",
     ],
     closed: "FIXED 2026-11-11 (steward, with BL-75). The life total span carries data-tip=\"life\" (after data-p, so 295's anchor still reads it) and tipFor answers it with ui/lifelog.ts: lifeHistory reads the seat's changes off the LOG LINES — the four sentences that are the whole class (E.loseLife, E.gainLife, the sandbox's set, the agreed fix's set), with the turn from each turn header — up to the part the beats have told (heldLines), and folds a run of one cause with only pay lines between (reveal.ts foldLifeRuns' rule). Lines rather than events because a join, a reconnect, an undo's resync and a spectator all get the log as text with no types. A tap on the total that targets nobody (pickOnBoard false) and is not a mouse pins the same window; a live pick keeps the tap. Two seats with one name get no list rather than a wrong one. Mutation: data-tip removed turned 1230 §4 red; the fold broken turned §1, §2 and §4 red. Not watched in a browser.",
     status: 'done',

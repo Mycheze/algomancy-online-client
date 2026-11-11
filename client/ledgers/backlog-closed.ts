@@ -3595,7 +3595,7 @@ export const CLOSED: Entry[] = [
     decided: [],
     asks: [],
     deps: [],
-    evidence: { commit: '9e1f57df', guards: ['1230-life-total-change-log.test.ts'] },
+    evidence: { commit: '7dd5035e', guards: ['1231-life-total-change-log.test.ts'] },
     touches: [
       'client/ui/main.ts',
       'client/ui/flash.ts',
@@ -3603,7 +3603,7 @@ export const CLOSED: Entry[] = [
       'client/ui/lifelog.ts',
     ],
     notes:
-      'DONE 2026-11-11 (steward, 9e1f57df). Hovering a life total, or tapping it when no pick wants the tap, '
+      'DONE 2026-11-11 (steward, 7dd5035e). Hovering a life total, or tapping it when no pick wants the tap, '
       + 'opens the info window with that seat\'s changes this game, newest first: turn, amount, total after, cause. '
       + 'ui/lifelog.ts reads them off the log lines (loseLife, gainLife, the sandbox set, the agreed fix), so a reload, '
       + 'a reconnect and a spectator get the same list; a run of one cause with only pay lines between is one row. '

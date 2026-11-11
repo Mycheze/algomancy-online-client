@@ -496,7 +496,7 @@ const OPEN: LedgerEntry[] = [
     report: "mycheze, seat 0 (feature): \"When you hover over a player's life total, it'd be nice to show a simple \\\"log\\\" of the life total changes\"",
     status: 'fixed',
     guards: [
-      "1230-life-total-change-log.test.ts::§4 a tap on a life total opens the list of that player, built from the log the join carried",
+      "1231-life-total-change-log.test.ts::§4 a tap on a life total opens the list of that player, built from the log the join carried",
     ],
     note: "A feature, not a fault: nothing like it exists. The life total (ui/main.ts, the `life` span with data-act=\"player\") has no title or tip, and no surface lists a seat's life changes on their own; they are only lines in the game log among everything else. The client already receives every `lifeLost`/`lifeGained` event with its seat and amount (ui/flash.ts sums them per seat for the life beat), so the data is there. MVGY fetched and replayed: 329 of 329 actions, FAITHFUL. BL-75 filed: a hover/tap list of this game's life changes beside the total; CT-558 carries the report until it is built. Fixed 2026-11-11 (BL-75, CT-558): hovering a life total, or tapping it when no pick wants the tap, opens the info window with that player's life changes this game, newest first — turn, amount, total after, cause — read off the log lines, so a reload, a reconnect and a spectator see the same list.",
   },
