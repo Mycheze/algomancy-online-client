@@ -347,7 +347,11 @@ test('CR D6.14: a cached card you may play this turn but not this step stays bes
   assert.match(hand, /class="handcached"/, 'the cached group is still beside the hand');
   assert.match(hand, new RegExp(CACHED_LATER), 'and the entry is in it');
   assert.match(hand, /⚡ turn/, 'wearing its expiry chip');
-  assert.match(hand, /cached · not this step/, 'the label does not claim it can be played now');
+  // Owner, #382: "I don't like how the cached cards say \"NOT THIS STEP\".
+  // That's not really needed and is annoying" — the dark card already says it.
+  const label = /<div class="handcachedlabel">([^<]*)<\/div>/.exec(hand)?.[1];
+  assert.equal(label, 'cached', 'the label is just "cached": it does not claim it can be played now');
+  assert.doesNotMatch(hand, /not this step/i, 'and it does not say "not this step" either (report #382)');
   const at = hand.indexOf(`data-prev="${CACHED_LATER}"`);
   const tag = hand.slice(hand.lastIndexOf('<div', at), hand.indexOf('>', at) + 1);
   assert.doesNotMatch(classOf(tag), /\bplayable\b/,

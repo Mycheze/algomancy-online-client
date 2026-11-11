@@ -3760,7 +3760,7 @@ function handCachedHtml(p: Seat): string {
     });
   }).join('');
   return `<div class="handcached" title="in your cache, not your hand — also shown in the cache row">
-    <div class="handcachedlabel">${live.size ? 'cached · playable now' : 'cached · not this step'}</div>
+    <div class="handcachedlabel">${live.size ? 'cached · playable now' : 'cached'}</div>
     <div class="handcachedcards">${cards}</div>
   </div>`;
 }

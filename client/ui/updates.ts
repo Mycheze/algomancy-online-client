@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-11', kind: 'change', text: 'The cached cards beside your hand no longer say "not this step" when you cannot play them yet. The label just reads "cached", and the dark card tells you the rest.' },
   { date: '2026-11-11', kind: 'change', text: 'The marks beside player names at the table (the judge\'s scales, a league champion\'s trophy and the initiative star) are now drawn as proper icons instead of emoji, so they look the same on every device.' },
   { date: '2026-11-11', kind: 'change', text: 'Hovering a spell on the stack now shows its X as just "X = 1", without the extra "played for X".' },
   { date: '2026-11-11', kind: 'fix', text: 'With Accessible colours on, red writing (an error, a loss, a delete button) is a lighter red that is easier to read on the lighter panels. Red badges with white numbers on them keep their red.' },

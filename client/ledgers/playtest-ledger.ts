@@ -506,8 +506,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 382, room: "MVGY", date: "2026-11-11",
     report: "mycheze, seat 0 (ux, minor): \"I don't like how the cached cards say \\\"NOT THIS STEP\\\". That's not really needed and is annoying\"",
-    status: 'live',
-    note: "Real, by reading. The cached cards shown beside the hand (ui/main.ts handCachedHtml, added for his #358 on 2026-11-08) sit under a label that reads \"cached · not this step\" whenever none of them can be played right now (\"cached · playable now\" otherwise). The cards already say it the way hand cards do — lit with a ring, or dark — so the words repeat what the board shows. MVGY fetched and replayed (329 of 329, FAITHFUL); [221] is a turn with cached cards dark beside his hand. CT-557 filed: drop the \"not this step\" wording.",
+    status: 'fixed',
+    guards: [
+      "155-hand-affordances.test.ts::a cached card you may play this turn but not this step stays beside the hand, dark",
+    ],
+    note: "Real, by reading. The cached cards shown beside the hand (ui/main.ts handCachedHtml, added for his #358 on 2026-11-08) sit under a label that reads \"cached · not this step\" whenever none of them can be played right now (\"cached · playable now\" otherwise). The cards already say it the way hand cards do — lit with a ring, or dark — so the words repeat what the board shows. MVGY fetched and replayed (329 of 329, FAITHFUL); [221] is a turn with cached cards dark beside his hand. CT-557 filed: drop the \"not this step\" wording. Fixed 2026-11-11 (CT-557): the label over cached cards that cannot be played this step reads just \"cached\".",
   },
   {
     id: 383, room: "WSVC", date: "2026-11-11",
