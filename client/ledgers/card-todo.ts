@@ -186,6 +186,16 @@ const OPEN: TodoEntry[] = [
   // ── the report triage of 2026-11-07 ────────────────────────────────────
   // ── the report triage of 2026-11-10 ────────────────────────────────────
   // ── the report triage of 2026-11-11 ────────────────────────────────────
+  // ── found by the steward repairing report #380's branch, 2026-11-11 ─────
+  {
+    id: 561, area: "client", severity: "minor",
+    title: "on a phone, tapping an info-tip button while a Cast or Activate button is up leaves that button drawn but dead",
+    detail: "CT-408's finger route: a tap on your spell token (or a resource) draws a Cast/Activate button on it, held in ui.tapGo. The document click handler in ui/main.ts drops ui.tapGo on any click that is not that button and relies on the handler's repaint to take it off the board. Every BOARD_BTNS handler that answers 'no-repaint' skips that paint — the info-tip buttons (`infotip: btn => { tipToggle(btn, tipFor); return 'no-repaint'; }`: the phase icons, the clocks, the room and game chips, a name's pile counts), and also undo, helpjump and the judge send. After such a tap the Cast button is still on screen, but ui.tapGo is null, so tapping it does nothing (BOARD_BTNS.tapgo reads `const go = ui.tapGo` and acts only if go is set).",
+    evidence: "Steward, 2026-11-11, repairing steward/report-380 (whose life-total tap had the same shape and turned ui/test/676 red). A scratch driver test (676's withAToken fixture): tap the token, see { btn: 'tapgo' }; tap { btn: 'infotip', tip: 'phase' }; ui.has({ btn: 'tapgo' }) is still true. The report-380 fix keeps a `tapGoDropped` flag set by the click handler and repaints in the life-total path when it is set.",
+    fix: "In handleButton, where `BOARD_BTNS[b ?? '']?.(btn, e) === 'no-repaint'` returns, repaint when the click dropped a held button (the `tapGoDropped` flag the report-380 fix added beside the click handler, if that has landed; otherwise add it). Guard in ui/test/676: tap the token, tap an info-tip button, the Cast button is gone and nothing was cast. Not player-visible beyond the bug itself: an updates.ts fix line.",
+    proof: () => still('ui/main.ts', "if (BOARD_BTNS[b ?? '']?.(btn, e) === 'no-repaint') return;"),
+    status: "open",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

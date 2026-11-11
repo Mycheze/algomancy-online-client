@@ -10311,12 +10311,17 @@ function actBarClick(target: HTMLElement): boolean {
   return true;
 }
 
+/** this click put away a held CT-408 button — a handler that skips its
+ * repaint must repaint after all, or the button stays drawn */
+let tapGoDropped = false;
+
 document.addEventListener('click', e => {
   tipClick(e.target as Element);   // a pinned info tip drops on any other click
   if (actBarClick(e.target as HTMLElement)) return;
   const btn = (e.target as HTMLElement).closest('[data-btn]') as HTMLElement | null;
   // CT-408: a held cast or activation lasts until the next click that is not its button
-  if (ui.tapGo && btn?.dataset['btn'] !== 'tapgo') ui.tapGo = null;
+  tapGoDropped = !!ui.tapGo && btn?.dataset['btn'] !== 'tapgo';
+  if (tapGoDropped) ui.tapGo = null;
   if (btn) { handleButton(btn, e as MouseEvent); return; }
   // outside a game (home screen / kicked screen) a stray click must not
   // trigger the game render() — it would paint a board over the UI.
@@ -11281,8 +11286,14 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
   if (kind === 'player') {
     // a tap that targets nobody opens the life list a mouse gets by hovering
     // (report #380; no hover-only information) — a live pick keeps the tap.
-    // Nothing on the board changed, so no repaint (as the infotip button)
-    if (!pickOnBoard(`player:${Number(t.dataset['p'])}`) && !pointerCanHover()) { tipToggle(t, tipFor); return; }
+    // Except when this very click put away a finger's held Cast or Activate
+    // button (CT-408: the click handler drops ui.tapGo): only a paint takes
+    // that off the board, or it stays drawn and dead (676 caught it).
+    if (!pickOnBoard(`player:${Number(t.dataset['p'])}`) && !pointerCanHover()) {
+      tipToggle(t, tipFor);
+      if (tapGoDropped) render();
+      return;
+    }
   }
 
   if (kind === 'stackitem') {

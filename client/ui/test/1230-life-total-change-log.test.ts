@@ -105,7 +105,8 @@ test('§4 a tap on a life total opens the list of that player, built from the lo
   assert.doesNotMatch(theirs, /Flesh Tithe/, 'only that player\'s changes');
   assert.doesNotMatch(ui.tap({ tip: 'life', p: '1' }), /class="lifelog"/, 'a second tap drops it');
   // the hover and the tap ask the same function, and the tap gives way to a live pick
-  assert.match(MAIN, /if \(!pickOnBoard\(`player:\$\{Number\(t\.dataset\['p'\]\)\}`\) && !pointerCanHover\(\)\) \{ tipToggle\(t, tipFor\); return; \}/);
+  assert.match(MAIN, /if \(!pickOnBoard\(`player:\$\{Number\(t\.dataset\['p'\]\)\}`\) && !pointerCanHover\(\)\) \{\s*tipToggle\(t, tipFor\);\s*if \(tapGoDropped\) render\(\);\s*return;\s*\}/,
+    'a tap that also put away a held Cast button repaints, so the button leaves the board');
   assert.match(MAIN, /if \(el\.dataset\['tip'\] === 'life'\) \{[\s\S]{0,400}lifeHistory\(told,/, 'tipFor reads the told part of the log');
 });
 
