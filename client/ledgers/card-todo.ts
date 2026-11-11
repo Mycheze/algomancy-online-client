@@ -216,6 +216,26 @@ const OPEN: TodoEntry[] = [
     reportId: 380,
     status: "open",
   },
+  {
+    id: 559, area: "client", severity: "minor",
+    title: "online, the life gain/loss sound plays only for your own life; the owner wants it for the opponent's too",
+    detail: "Report #383 (mycheze, owner, 2026-11-11, ux, minor, room WSVC): \"The life gain/loss sound effect should also sound when your opponent loses/gains life\". ui/sfx.ts audibleLife picks the ONE life change a render sounds: in network mode it returns the listener's own change and nothing else (`if (online) return changes.find(c => c.seat === listener) ?? null;`), so the opponent's life falling or rising is silent; only the hotseat path (both seats on one screen) can sound either seat. That was a deliberate choice of 80c9c9ad (2026-09-20, the life-total overhaul): \"the opponent's life falling is THEIR news\". The owner now reverses it. The flash (ui/anim.ts flashLife) already shows both seats; only the sound is one-sided. main.ts calls it once per render (`const mine = audibleLife(moved, seat, !!NET)`).",
+    evidence: "Report #383, room WSVC (constructed, competitive, mycheze v Gember, 2026-11-11), action 125. WSVC fetched and replayed 2026-11-11 (steward triage): 234 actions, FAITHFUL; the board at 125 (a rewound-away branch) is turn 4's after-combat step, just after combat damage. The rule read in ui/sfx.ts audibleLife; pinned by ui/test/54-ui-sfx (\"online, you hear YOUR life and nobody else's\": `audibleLife([{ seat: 1, delta: -9 }], 0, true)` is null).",
+    fix: "Online, keep one sound per render (54's 'one sound per render, however many pills flashed') but fall back to the opponent's change when yours did not move: prefer the listener's own change, else the biggest other one — i.e. the hotseat rule with ties to the listener, or your own first. The sound is the same bell/fall pair (ui/audio.ts); it says gain or loss, not whose — say so in the summary as the open option (a quieter or different cue for the opponent). Rewrite 54's online test for the new rule, keeping its TITLE only if it still reads true — else grep client/ledgers for the old title (a guard may name it). Rewrite the audibleLife doc comment. Player-visible: an updates.ts line.",
+    proof: () => still('ui/sfx.ts', 'if (online) return changes.find(c => c.seat === listener) ?? null;'),
+    reportId: 383,
+    status: "open",
+  },
+  {
+    id: 560, area: "client", severity: "minor",
+    title: "the battle panels' \"nothing placed yet…\" and \"arrives next round\" reminders; the owner finds them superfluous — remove them",
+    detail: "Report #385 (mycheze, owner, 2026-11-11, ux, minor, room WSVC): \"let's remove the \\\"nothing placed yet\\\" and \\\"arrives next round\\\" reminder text. it's just superfluous at this point\". Two lines in ui/main.ts: (1) watchingHtml, the live view of the other seat building an attack or blocks, draws `<div style=\"color:var(--dim)\">nothing placed yet…</div>` when no column is placed; (2) the incoming-counterattackers strip (`sentStrip`, beside the bin) ends with `<div class=\"sentfoot\">arrives next round</div>` (styled by .sentfoot in ui/styles/board/09-region-overhaul.css). The strip's own title and its label ('incoming — <name>') already say it; the send slot's title ('send a unit here to counterattack — it arrives next round') is a hover tip, not the visible reminder, and can stay.",
+    evidence: "Report #385, room WSVC (constructed, competitive, mycheze v Gember, 2026-11-11), action 203: turn 6 battle, attack window, Gember attacking — the board where both show. WSVC fetched and replayed 2026-11-11 (steward triage): 234 actions, FAITHFUL. The two strings read in ui/main.ts (watchingHtml; the sentStrip in the region renderer). No test asserts either string (ui/test/385-invader-strip-unbuilt mentions 'nothing placed yet…' in a comment only, and asserts the plan, not the text); grep all four test dirs again before editing.",
+    fix: "Drop both lines. For watchingHtml, an empty fight must still take its height (report #200 / 385-invader-strip-unbuilt sizes the strip with no columns) — leave an empty element or nothing, and run 385 and 448-battle-space-plan. Remove the .sentfoot rule with its line if nothing else uses the class (ui/test/920 and 910 cover the stylesheet). Add a guard that neither string is drawn. Player-visible: an updates.ts line.",
+    proof: () => still('ui/main.ts', 'nothing placed yet…', '<div class="sentfoot">arrives next round</div>'),
+    reportId: 385,
+    status: "open",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

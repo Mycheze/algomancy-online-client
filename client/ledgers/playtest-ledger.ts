@@ -506,6 +506,24 @@ const OPEN: LedgerEntry[] = [
     status: 'live',
     note: "Real, by reading. The cached cards shown beside the hand (ui/main.ts handCachedHtml, added for his #358 on 2026-11-08) sit under a label that reads \"cached · not this step\" whenever none of them can be played right now (\"cached · playable now\" otherwise). The cards already say it the way hand cards do — lit with a ring, or dark — so the words repeat what the board shows. MVGY fetched and replayed (329 of 329, FAITHFUL); [221] is a turn with cached cards dark beside his hand. CT-557 filed: drop the \"not this step\" wording.",
   },
+  {
+    id: 383, room: "WSVC", date: "2026-11-11",
+    report: "mycheze, seat 0 (ux, minor): \"The life gain/loss sound effect should also sound when your opponent loses/gains life\"",
+    status: 'live',
+    note: "Real, and deliberate until now. Online, the client sounds only your own life changes: ui/sfx.ts audibleLife returns the listener's change and nothing else in network mode (80c9c9ad, 2026-09-20: \"the opponent's life falling is THEIR news\"); only a screen showing both seats can sound either one. The flash already shows both seats' changes. The owner reverses that choice. WSVC fetched and replayed: 234 of 234 actions, FAITHFUL; the board at [125] is turn 4's after-combat step, on a branch later taken back (#384). CT-559 filed: sound the opponent's change too, still one sound per update.",
+  },
+  {
+    id: 384, room: "WSVC", date: "2026-11-11",
+    report: "Gember, seat 1, agreed fix: back to before mycheze's pass (\"go back stack\"), then back to before Gember's pass, the start of the step (\"Gember wants to do something\")",
+    status: 'agreed-fix',
+    note: "Two take-backs in one run (turn 4 battle, block window), both agreed. WSVC fetched after the report and replayed: 234 of 234 actions, no divergence, FAITHFUL; --branch triage: fix 0 none of (a)-(d), fix 1 (c), the reason. Gember attacked with Curio Drifter, mycheze blocked nothing and sent three counterattackers [122]; Gember passed [123], mycheze passed [124], and combat damage dealt mycheze 2. Fix 0 took back mycheze's pass, fix 1 Gember's too. On the redo Gember ambushed Good Whale at the Drifter [123]-[124]; mycheze answered with Seismomancy, which killed the Drifter [125]-[126], so the Whale fizzled for want of a target — correct. A player taking back a pass to play something they meant to. No defect.",
+  },
+  {
+    id: 385, room: "WSVC", date: "2026-11-11",
+    report: "mycheze, seat 0 (ux, minor): \"let's remove the \\\"nothing placed yet\\\" and \\\"arrives next round\\\" reminder text. it's just superfluous at this point\"",
+    status: 'live',
+    note: "Real, by reading. Two dim reminder lines on the battle board, both in ui/main.ts: \"nothing placed yet…\" in the live view of the other seat building an attack or blocks with no column placed, and \"arrives next round\" under the strip of incoming counterattackers beside the bin (whose label already reads \"incoming — <name>\"). WSVC fetched and replayed (234 of 234, FAITHFUL); [203] is turn 6's attack window with Gember attacking, where both show. CT-560 filed: remove both lines.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
