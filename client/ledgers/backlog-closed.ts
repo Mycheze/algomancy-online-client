@@ -3595,7 +3595,7 @@ export const CLOSED: Entry[] = [
     decided: [],
     asks: [],
     deps: [],
-    evidence: { commit: '7dd5035e', guards: ['1231-life-total-change-log.test.ts'] },
+    evidence: { commit: '7dd5035e', guards: ['1230-life-total-change-log.test.ts'] },
     touches: [
       'client/ui/main.ts',
       'client/ui/flash.ts',

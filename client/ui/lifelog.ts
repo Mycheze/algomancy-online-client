@@ -113,7 +113,7 @@ function whyText(why: string): string {
 export const LIFE_ROWS = 12;
 
 /** the window's inner HTML for one seat. `name` is already escaped; `esc`
- *  escapes the causes. Pure — test/1231 reads it. */
+ *  escapes the causes. Pure — test/1230-life-total-change-log reads it. */
 export function lifeTipHtml(name: string, life: number, rows: readonly LifeRow[], esc: (s: string) => string): string {
   const head = `<div class="tiphead">${name} · ${life} life</div>`;
   if (!rows.length) return `${head}<div class="tipline dim">no change to their life yet</div>`;
