@@ -2093,6 +2093,20 @@ export function stackItemX(item: StackItem): StackXRow[] {
 /** the X's as one short tag for the card on the stack ('' when there is none).
  * Every card wears its own, not just the lead — the caption only ever
  * describes one item, and a stack four deep has four X's to answer for. */
+/** the note beside one "X = N" row in the stack viewer, or '' for none.
+ *
+ * A row says where its X came from only when that is news: the event that
+ * fired a trigger, or what a variable cost consumed. A spell's own X is the
+ * X it was played for, and saying so is redundant (owner 2026-11-11, on a
+ * Crystal on the stack: "Saying 'X = 1 - played for X' is redundant. Just
+ * 'X = 1' is fine") — the same rule as the hand's bare count, xRowsHtml in
+ * main.ts. */
+export function stackXHint(r: StackXRow): string {
+  if (r.kind === 'cast') return '';
+  if (r.kind === 'event') return r.from ?? 'from the event that fired this';
+  return `${r.source ?? 'additional cost'}${r.receipt ? `, ${r.receipt}` : ''}`;
+}
+
 export function stackXMark(item: StackItem): string {
   const xs = stackItemX(item);
   if (!xs.length) return '';

@@ -30,7 +30,7 @@ import {
   scrollHidesHoverTip, spellAugmentNote,
   stackAbilityRows, stackItemX, stackItemModes, stepNumberEntry,
   prismiteClickPlan, resourceMenuElements,
-  stackXMark, takeAutoPass, tokenLossNotice, tokensCreatedBy, transformFaces, unitClickOptions,
+  stackXHint, stackXMark, takeAutoPass, tokenLossNotice, tokensCreatedBy, transformFaces, unitClickOptions,
   waitingNote, watchCast,
 } from './inspect.ts';
 import type {
@@ -7115,11 +7115,10 @@ function previewStackHtml(id: number, opts: { noFace?: boolean } = {}): string {
   const shown = new Set(abRows.filter(r => r.x !== undefined).map(r => r.part));
   const xRows = stackItemX(it)
     .filter(r => r.part === undefined || !shown.has(r.part))
-    .map(r => `<div class="xnow">X = ${r.x} <span class="hint">— ${
-      r.kind === 'cast' ? 'played for X'
-        : r.kind === 'event' ? esc(r.from ?? 'from the event that fired this')
-          : `${esc(r.source ?? 'additional cost')}${r.receipt ? `, ${esc(r.receipt)}` : ''}`
-    }</span></div>`).join('');
+    .map(r => {
+      const hint = stackXHint(r);
+      return `<div class="xnow">X = ${r.x}${hint ? ` <span class="hint">— ${esc(hint)}</span>` : ''}</div>`;
+    }).join('');
   // #130: the X this item is going to READ when it resolves, for a card that
   // never committed one. Worded as a forecast ("right now"), because that is
   // what it is — the ledger can still move before it resolves — and in exactly
