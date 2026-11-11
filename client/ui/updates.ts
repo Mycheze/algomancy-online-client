@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-11', kind: 'fix', text: 'On a phone, tapping an info button (the phase icons, the clocks, a pile count) while a Cast or Activate button was up left that button on screen but dead. It now goes away; tap the card again to bring it back.' },
   { date: '2026-11-11', kind: 'new', text: 'Hover a player\'s life total (or tap it on a phone or tablet) to see every change to their life this game, newest first: the turn, how much, the new total and what caused it.' },
   { date: '2026-11-11', kind: 'change', text: 'The battle board no longer shows the "nothing placed yet" and "arrives next round" reminders. Counterattackers on their way still sit in their dashed box beside the bin.' },
   { date: '2026-11-11', kind: 'change', text: 'The life gain and loss sound now also plays when your opponent\'s life changes. If both totals move at once, you hear the one for your own life.' },

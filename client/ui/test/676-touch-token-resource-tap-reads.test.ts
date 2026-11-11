@@ -185,3 +185,17 @@ test('CT-408: a unit with one unconfirmed ability still fires it on a single fin
   assert.deepEqual(ui.actions(), [a], 'one tap, activated, as before');
   assert.ok(!ui.has({ btn: 'tapgo' }), 'and no button was drawn for it');
 });
+
+test('CT-561: a tap on an info-tip button takes the Cast button away too, and nothing is cast', () => {
+  // every info tip answers without a repaint (the phase icons, the clocks, the
+  // room and game chips, a name's pile counts); the click still drops the held
+  // button, so only a paint keeps it from staying drawn with nothing behind it
+  const { state, id, legal } = withAToken(67611);
+  ui.join(state, me, legal);
+  ui.sent();
+  ui.tap({ act: 'token', id });
+  assert.ok(ui.has({ btn: 'tapgo' }));
+  ui.tap({ btn: 'infotip', tip: 'phase' });
+  assert.ok(!ui.has({ btn: 'tapgo' }), 'the phase icons\' tip puts the Cast button away');
+  assert.deepEqual(ui.actions(), [], 'and nothing was cast along the way');
+});

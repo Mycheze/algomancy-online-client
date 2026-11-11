@@ -11222,7 +11222,10 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   if (handlePregameButton(b, btn)) return;
   // a board button: the table's handler mutates, the repaint is shared — and a
   // name the table does not know still repaints (a stray data-btn closes a menu)
-  if (BOARD_BTNS[b ?? '']?.(btn, e) === 'no-repaint') return;
+  // …except when this click put away a finger's held Cast or Activate button
+  // (CT-408): only a paint takes it off the board, or it stays drawn and dead
+  // (CT-561: an info tip, undo, a help jump or the judge send skipped it)
+  if (BOARD_BTNS[b ?? '']?.(btn, e) === 'no-repaint' && !tapGoDropped) return;
   render();
 }
 
