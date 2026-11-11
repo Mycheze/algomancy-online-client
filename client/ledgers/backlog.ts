@@ -1126,7 +1126,17 @@ const OPEN: Entry[] = [
       + 'the deck list) is DONE. meta.ts keeps `ladderText` beside the list\'s `text`; HOOKS.setText writes the one for '
       + 'the tab that is up, pages/meta.ts ladderHtml reads and draws `ladderText`, and the list\'s Clear clears only its '
       + 'own. Guarded by 1228-meta-filters-per-tab.test.ts (driven through the real client), which went red with setText '
-      + 'writing `text` for both and again with ladderHtml reading `text`. Left: lines 2, 3, 7, 8.',
+      + 'writing `text` for both and again with ladderHtml reading `text`. Left: lines 2, 3, 7, 8.\n\n'
+      + '2026-11-11 (steward tidy): the seventh doneWhen line (is the tabletop\'s `!inGame` rerender guard reachable, as '
+      + 'the waiting-room deck page\'s was) is CHECKED, and it is not reachable. tabletop.ts calls the host rerender in two '
+      + 'places only: closeTabletop() with no host (its one caller, handleButton\'s `tt-close`, returns early when there is '
+      + 'no host, so Back always runs the host\'s own close; the deck page\'s is a paint(), which draws in a room too), and '
+      + 'renderScreen()\'s "the ?table= deck never resolved" exit. renderScreen() is called only from main.ts renderHome(), '
+      + 'which never runs in a `?room=` (renderNow paints the room, renderWaiting, instead), so in a room that exit cannot '
+      + 'happen; outside one `!inGame` is true. The deck page\'s own guard was fixed on 2026-11-02 (908). Seen by reading, '
+      + 'not in a browser. Not filed, an owner-taste question rather than a defect: a deck page or builder opened from a '
+      + 'waiting room is still painted over by the room on the next server push (an opponent arriving); the 2026-11-03 '
+      + 'inventory (docs/23-ui-inventory/05 §4) noted it. Left: lines 2, 3, 8.',
   },
   {
     id: 'BL-64',

@@ -139,6 +139,6 @@ Also already settled: Phase 0's two UX calls. Only data-losing actions ask "pres
 - On a phone, the report button covers the league page's "Suggest a time".
 - The friends "Everyone here" list shows an empty table on a fetch error.
 - The league grid's help text still says "drag" on touch.
-- The tabletop's rerender has the same `!inGame` guard pattern as the waiting-room deck-page bug; not checked whether it is reachable.
+- The tabletop's rerender has the same `!inGame` guard pattern as the waiting-room deck-page bug. Checked 2026-11-11 (BL-63): not reachable, because in a room Back runs the deck page's own close and `renderScreen()` is only called from `renderHome()`.
 - ui-shots phone overflow walk: Card stats headers, the past-week "Watch" buttons and admin badge buttons sit past the right edge. Probably inside scrolling tables; look before ticketing.
 - Signed-out home at 1440: the "Challenge" nav button wraps onto its own row.
