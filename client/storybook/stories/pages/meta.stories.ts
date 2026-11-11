@@ -25,7 +25,7 @@ function deck(i: number, over: Partial<PublicDeck> = {}): PublicDeck {
 function view(over: Partial<MetaView> = {}): MetaView {
   return {
     view: 'list', rows: [0, 1, 2, 3].map(i => deck(i)), minGames: 5, one: null, loading: false, msg: '', sort: 'winrate',
-    els: [], text: '', focus: null, deckGroup: 'type', statsOpen: false, descOpen: false, exporting: null, backTo: 'list', ladder: null,
+    els: [], text: '', ladderText: '', focus: null, deckGroup: 'type', statsOpen: false, descOpen: false, exporting: null, backTo: 'list', ladder: null,
     signedIn: true, mine: false, link: 'https://algomancy.online/?deck=d0', exportText: '', stats: null, chrome: CHROME, ...over,
   };
 }

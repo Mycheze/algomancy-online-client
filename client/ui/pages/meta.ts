@@ -110,7 +110,7 @@ function ladderRowHtml(c: CardStanding, rank: number | null): string {
 
 function ladderHtml(v: MetaView): string {
   const { ladder } = v;
-  const q = v.text.trim().toLowerCase();
+  const q = v.ladderText.trim().toLowerCase();
   const all = (ladder?.cards ?? []).filter(c => !q || c.card.toLowerCase().includes(q));
   const bar = ladder?.rankedAfter ?? 5;
   // rank numbers belong to the whole ranked ladder, not to whatever the filter left
@@ -121,7 +121,7 @@ function ladderHtml(v: MetaView): string {
     <div class="framebar">
       <span class="dim">${ladder ? `${ladder.duels} duel${ladder.duels === 1 ? '' : 's'} · ${ladder.cards.length} card${ladder.cards.length === 1 ? '' : 's'} rated` : ''}</span>
       <span class="framespacer"></span>
-      <input id="meta-q" class="dksearch metaq" spellcheck="false" aria-label="Find a card" placeholder="find a card" value="${esc(v.text)}">
+      <input id="meta-q" class="dksearch metaq" spellcheck="false" aria-label="Find a card" placeholder="find a card" value="${esc(v.ladderText)}">
     </div>
     ${v.msg ? `<div class="acctmsg">${esc(v.msg)}</div>` : ''}
     <div class="framelist" data-scroll="meta-ladder">
@@ -376,7 +376,7 @@ export function metaHtml(v: MetaView): string {
 
 /** What paintMeta wires the page's boxes to. */
 export interface MetaHooks {
-  /** the deck list's and the ladder's filter box (one text, both tabs) */
+  /** the filter box of the tab that is up: the deck list's, or the ladder's (each keeps its own text) */
   setText: (text: string) => void;
   /** the card stats tab's filter box */
   setStatsText: (text: string) => void;

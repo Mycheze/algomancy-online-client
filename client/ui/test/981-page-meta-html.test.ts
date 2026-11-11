@@ -33,7 +33,7 @@ function deck(i: number, over: Partial<PublicDeck> = {}): PublicDeck {
 
 function view(over: Partial<MetaView> = {}): MetaView {
   return {
-    view: 'list', rows: null, minGames: 5, one: null, loading: false, msg: '', sort: 'winrate', els: [], text: '',
+    view: 'list', rows: null, minGames: 5, one: null, loading: false, msg: '', sort: 'winrate', els: [], text: '', ladderText: '',
     focus: null, deckGroup: 'type', statsOpen: false, descOpen: false, exporting: null, backTo: 'list', ladder: null,
     signedIn: false, mine: false, link: 'http://x/?deck=d1', exportText: '', stats: null, chrome: { signedIn: false, alerts: 0 }, ...over,
   };
@@ -70,7 +70,7 @@ test('981 §2 the card duel ladder', () => {
   assert.match(html, /<span class="dim">#1<\/span>/);
   assert.match(html, /<div class="metadivider">Not enough duels yet/, 'the cards under 5 duels sit under the divider');
   assert.match(metaHtml(view({ view: 'ladder', ladder: { cards: [], rankedAfter: 5, duels: 0 } })), /No duels yet\./);
-  assert.match(metaHtml(view({ view: 'ladder', ladder: { cards, rankedAfter: 5, duels: 9 }, text: 'zzz' })), /No rated card matches that\./);
+  assert.match(metaHtml(view({ view: 'ladder', ladder: { cards, rankedAfter: 5, duels: 9 }, ladderText: 'zzz' })), /No rated card matches that\./);
 });
 
 test('981 §3 one shared deck: not found, typical, yours, another\'s', () => {

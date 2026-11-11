@@ -1102,7 +1102,12 @@ const OPEN: Entry[] = [
       + 'and main.ts\'s chrome source read it, so every repaint draws it; and inbox.ts paint() presses every '
       + '`.ui-icon-button[data-inbox="bell"]` in place, since a click on the bell repaints only the layer, never the page '
       + 'under it. Guarded by 1224-alerts-pressed-while-open.test.ts, which went red with each of the three removed. '
-      + 'Not looked at in a browser (the home box has none). Left: lines 2, 3, 5, 7, 8.',
+      + 'Not looked at in a browser (the home box has none). Left: lines 2, 3, 5, 7, 8.\n\n'
+      + '2026-11-11 (steward, BL-63): the fifth doneWhen line (the Metagame filter carrying between the card ladder and '
+      + 'the deck list) is DONE. meta.ts keeps `ladderText` beside the list\'s `text`; HOOKS.setText writes the one for '
+      + 'the tab that is up, pages/meta.ts ladderHtml reads and draws `ladderText`, and the list\'s Clear clears only its '
+      + 'own. Guarded by 1228-meta-filters-per-tab.test.ts (driven through the real client), which went red with setText '
+      + 'writing `text` for both and again with ladderHtml reading `text`. Left: lines 2, 3, 7, 8.',
   },
   {
     id: 'BL-64',

@@ -74,7 +74,12 @@ let msg = '';
 let sort: Sort = 'winrate';
 /** element filter — chips, not a query language: this page is for browsing */
 const els = new Set<string>();
+/** the published-deck list's search (a deck's name, builder, or a card in it) */
 let text = '';
+/** the card ladder's "find a card" — its own: the two boxes share an id and a
+ * place on the bar, never a meaning, and a card typed on the ladder used to
+ * come back on the list as a deck search (BL-63) */
+let ladderText = '';
 let focus: string | null = null;
 /** how the shared deck's grid is split. Same vocabulary and same bucketing as
  * the builder (ui/decklayout.ts) — one deck must not look like two decks
@@ -256,7 +261,10 @@ export interface MetaState {
   msg: string;
   sort: Sort;
   els: ReadonlySet<string>;
+  /** the deck list's search */
   text: string;
+  /** the card ladder's search — see `ladderText` */
+  ladderText: string;
   focus: string | null;
   deckGroup: DeckGrouping;
   statsOpen: boolean;
@@ -268,7 +276,7 @@ export interface MetaState {
 }
 
 const state = (): MetaState => ({
-  view, rows, minGames, one, loading, msg, sort, els, text, focus, deckGroup, statsOpen, descOpen, exporting, backTo, ladder,
+  view, rows, minGames, one, loading, msg, sort, els, text, ladderText, focus, deckGroup, statsOpen, descOpen, exporting, backTo, ladder,
 });
 
 /** Whichever export format is showing, as text. A shared deck has no
@@ -281,7 +289,8 @@ function exportBody(d: PublicDeck): string {
 }
 
 const HOOKS = {
-  setText: (t: string): void => { text = t; },
+  // the box on the page belongs to whichever tab is up
+  setText: (t: string): void => { if (view === 'ladder') ladderText = t; else text = t; },
   setStatsText: cardstats.setText,
   repaint: (): void => paint(),
   statsRepaint: (): void => { syncUrl(); paint(); },
