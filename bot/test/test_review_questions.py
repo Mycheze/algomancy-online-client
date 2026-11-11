@@ -12,8 +12,13 @@ store.recent_answers() and app.py's GET /api/review/questions.
   §5 who asked: /api/ask keeps a judge's or the owner's badge (`asker`) only
      when the game server vouches with the token, and recent_answers carries
      the badge alone — never a junk key, and no row without one gains it
+  §6 who asked, on Discord: gameserver.asker_badge reads the badge of the
+     account a Discord id is linked to (owner first; none when unlinked,
+     unbadged, tokenless, down or slow — never an exception), asks once per
+     window; and the real /ask and the real thread follow-up, clicked, log it
 
-Run: `.venv/bin/python bot/test/test_review_questions.py`. No network, no key.
+Run: `.venv/bin/python bot/test/test_review_questions.py`. No network (§6's game
+server is a local stub), no key.
 """
 
 import sys as _sys
@@ -149,5 +154,149 @@ store._append(responses_log(), {"response_id": "f" * 32, "ts": "2026-11-10T00:00
                                 "asker": {"judge": 2, "name": "someone", "id": "acc-1"}})
 row = store.recent_answers(1)[0]
 check(row["asker"] == {"judge": 2}, "§5 a logged asker is passed on as the badge alone")
+
+# §6
+import asyncio  # noqa: E402
+from types import SimpleNamespace  # noqa: E402
+
+from aiohttp import web  # noqa: E402
+
+import gameserver  # noqa: E402
+
+LOOKUPS = []
+LINKED = {
+    "100": {"username": "Ben", "badge": {"owner": True, "judge": 1, "since": "2026-09-05T00:00:00Z"}},
+    "200": {"username": "Jo", "badge": {"judge": 3, "since": "2026-10-01T00:00:00Z"}},
+    "300": {"username": "Pat", "badge": None},
+}
+
+
+async def _profile(req):
+    LOOKUPS.append(dict(req.query))
+    if req.headers.get("X-Algo-Bot") != "s3cret":
+        return web.Response(status=404, text="not found")
+    d = req.query.get("discord")
+    if d == "666":
+        await asyncio.sleep(5)  # a game server that hangs
+    if d not in LINKED:
+        return web.json_response({"ok": True, "linked": False, "player": None})
+    return web.json_response({"ok": True, "linked": True, "online": False, "player": LINKED[d]})
+
+
+class _Followup:
+    async def send(self, *a, wait=False, **kw):
+        return SimpleNamespace(create_thread=self._no_thread)
+
+    async def _no_thread(self, **kw):
+        import discord
+        raise discord.HTTPException(SimpleNamespace(status=400, reason="DM"), "no threads here")
+
+
+class _Response:
+    async def defer(self, **kw):
+        return None
+
+
+def _ix(uid):
+    return SimpleNamespace(user=SimpleNamespace(id=uid), channel_id=4242,
+                           response=_Response(), followup=_Followup())
+
+
+async def _section6():
+    app = web.Application()
+    app.router.add_get("/api/bot/profile", _profile)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "127.0.0.1", 0)
+    await site.start()
+    port = runner.addresses[0][1]
+    gs = gameserver.GameServer(base=f"http://127.0.0.1:{port}", token="s3cret", timeout=10)
+    tokenless = gameserver.GameServer(base=gs.base, token="", timeout=3)
+    down = gameserver.GameServer(base="http://127.0.0.1:9", token="s3cret", timeout=1)
+    real_client, gameserver.client = gameserver.client, gs
+    gameserver._ASKER_CACHE.clear()
+    try:
+        b = gameserver.asker_badge
+        check(await b(100) == {"owner": True}, "§6 the owner's linked Discord id: the owner badge, owner first")
+        check(await b(200) == {"judge": 3}, "§6 a judge's linked Discord id: the judge badge alone")
+        check(await b(300) is None, "§6 a linked player with no badge: none")
+        check(await b(999) is None, "§6 an unlinked Discord id: none")
+        check(LOOKUPS[-1] == {"discord": "999"}, "§6 the lookup asks by the Discord id")
+        n = len(LOOKUPS)
+        check(await b(200) == {"judge": 3} and len(LOOKUPS) == n, "§6 a second question inside the window asks nothing")
+        check(await b(200, now=10 ** 9) == {"judge": 3} and len(LOOKUPS) == n + 1,
+              "§6 …and past the window it asks again")
+        t0 = asyncio.get_running_loop().time()
+        check(await b(666) is None, "§6 a game server that hangs: none")
+        check(asyncio.get_running_loop().time() - t0 < gameserver.ASKER_TIMEOUT + 1,
+              "§6 …within the lookup's own timeout, not the client's")
+        n = len(LOOKUPS)
+        check(await b(200, gs=tokenless, now=10 ** 10) is None and len(LOOKUPS) == n,
+              "§6 no ALGO_BOT_TOKEN: none, and nothing is asked")
+        check(await b(201, gs=down) is None, "§6 the game server down: none, and no exception")
+
+        # ⭐ the real /ask and the real thread follow-up, clicked
+        import core
+        import bot as botmod
+        from cogs import judge as judgecog
+
+        async def fake_answer(question, history, *, meta=None, surface="web", **kw):
+            return f"answer to {question}", [], False
+        judgecog.answer_question = fake_answer
+        botmod.answer_question = fake_answer
+        reset()
+        cog = judgecog.Judge(SimpleNamespace())
+        await cog.ask.callback(cog, _ix(200), "a judge asks on Discord")
+        await cog.ask.callback(cog, _ix(999), "a player asks on Discord")
+
+        import discord
+
+        class _Thread(discord.Thread):
+            def __init__(self, tid, parent):  # noqa: no discord.Thread.__init__: no state, no guild
+                self.id, self.parent_id = tid, parent
+
+            def typing(self):
+                class _T:
+                    async def __aenter__(s):
+                        return None
+
+                    async def __aexit__(s, *a):
+                        return False
+                return _T()
+
+            async def send(self, *a, **kw):
+                return None
+        thread = _Thread(777, 4242)
+        botmod.THREADS[777] = [{"role": "user", "content": "q"}, {"role": "assistant", "content": "a"}]
+
+        async def _reply(*a, **kw):
+            return None
+        msg = SimpleNamespace(author=SimpleNamespace(id=100, bot=False), channel=thread,
+                              content="the owner follows up", reply=_reply)
+        orig_cited = botmod.post_cited_cards
+
+        async def _no_cards(*a, **kw):
+            return None
+        botmod.post_cited_cards = _no_cards
+        try:
+            the_bot = await botmod.build_bot()
+            await the_bot.on_message(msg)
+        finally:
+            botmod.post_cited_cards = orig_cited
+        by_q = {r["question"]: r for r in store.recent_answers(10)}
+        check(by_q["a judge asks on Discord"].get("asker") == {"judge": 3},
+              "§6 ⭐ /ask by a judge's linked account: the review queue sees the judge's badge")
+        check("asker" not in by_q["a player asks on Discord"], "§6 /ask by an unlinked player: no badge")
+        check(by_q.get("the owner follows up", {}).get("asker") == {"owner": True},
+              "§6 ⭐ a follow-up in the thread by the owner: the owner badge")
+    finally:
+        gameserver.client = real_client
+        gameserver._ASKER_CACHE.clear()
+        await gs.close()
+        await tokenless.close()
+        await down.close()
+        await runner.cleanup()
+
+asyncio.run(_section6())
 
 print(f"\nALL {PASS} CHECKS PASSED")

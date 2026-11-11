@@ -756,8 +756,14 @@ const OPEN: Entry[] = [
       + 'cannot claim one), bot/store.py logs it and recent_answers passes the badge alone. The review page lists those questions right '
       + 'after the flagged answers — the asker\'s badge (owner, L3, L2, L1), then newest; one dealt with drops back into date order — '
       + 'with an "asked by a Judge Ln" chip (server/api-judge-review.ts reviewDoc). Guards: server/test/764, server/test/1181 §8, '
-      + 'ui/test/1182 §7, bot/test/test_review_questions.py §5. NOT done: a question a badged player asks on DISCORD (the bot knows the '
-      + 'Discord id; mapping it to a linked account\'s badge needs a lookup on the game server) or on the bot\'s own site (no accounts there).',
+      + 'ui/test/1182 §7, bot/test/test_review_questions.py §5.\n\n'
+      + '2026-11-11 (steward), RULES QUESTIONS ASKED ON DISCORD — the last open half: `/ask` and a follow-up in its thread look up '
+      + 'the asker\'s badge while the model thinks (bot/gameserver.py asker_badge: the token-gated /api/bot/profile?discord=, the '
+      + 'linked account\'s badge alone, owner first; none when unlinked, unbadged, tokenless, down or past a 2 s timeout — never an '
+      + 'exception, never a slower answer; one lookup per Discord id per 5 minutes) and log it as `asker`, so the review page lists them '
+      + 'with the in-game ones. Guard: bot/test/test_review_questions.py §6 (clicks the real /ask and the real thread follow-up against '
+      + 'a stub game server). The bot\'s own site has no accounts, so a question asked there carries no badge — every surface where a '
+      + 'player has an account now does. With that, every doneWhen line has its code and its guard, and the entry is closed.',
   },
   {
     id: 'BL-51',

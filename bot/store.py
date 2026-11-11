@@ -122,9 +122,11 @@ def log_response(response_id, kind, question, answer, hits, model,
 
     `error` is set only by log_failure(); a successful row never has the key.
 
-    `asker` (BL-17, 2026-11-10) is the BADGE of the account that asked in a
-    game — {"owner": true} or {"judge": 1-3} — and only when the game server
-    vouched for it (app.py api_ask); absent for everybody else. Never who."""
+    `asker` (BL-17) is the BADGE of the account that asked — {"owner": true}
+    or {"judge": 1-3} — only when the game server vouched for it: in a game
+    (app.py api_ask, 2026-11-10) or, on Discord, the account the asker's
+    Discord id is linked to (gameserver.asker_badge, 2026-11-11). Absent for
+    everybody else, and for the bot's own site. Never who."""
     llm = llm or {}
     record = {
         "response_id": response_id,
@@ -325,7 +327,8 @@ def recent_answers(limit=200):
     and the in-game judge box — or discord), the thread before a follow-up, and
     the players' own rating. A failed call (`error`) answered nothing and is
     left out. No user id of any kind: a judge reviews the answer, not the asker
-    — only, when a judge or the owner asked in a game, their badge (`asker`), so
+    — only, when a judge or the owner asked (in a game, or on Discord from a
+    linked account), their badge (`asker`), so
     the page can list those questions first (BL-17)."""
     path = responses_log()
     if not path.exists():

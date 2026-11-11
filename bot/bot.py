@@ -46,6 +46,7 @@ Setup
 `scope=bot` alone the tree syncs, returns 200, and no command appears anywhere.
 """
 
+import asyncio
 import hashlib
 import json
 import os
@@ -172,6 +173,8 @@ class AlgoBot(commands.Bot):
             history = THREADS[message.channel.id]
             async with message.channel.typing():
                 meta = {}
+                # BL-17: the asker's badge, looked up while the model thinks
+                asker = asyncio.ensure_future(gameserver.asker_badge(message.author.id))
                 try:
                     answer, hits, reasoning = await answer_question(message.content, history,
                                                                     meta=meta, surface="discord")
@@ -188,7 +191,7 @@ class AlgoBot(commands.Bot):
                                user_id=message.author.id, channel_id=message.channel.parent_id,
                                thread_id=message.channel.id, history=list(history),
                                reasoning=reasoning, engine_version=core.ENGINE_VERSION,
-                               llm=meta)
+                               llm=meta, asker=await asker)
             history.append({"role": "user", "content": message.content})
             history.append({"role": "assistant", "content": answer})
             await message.reply(embed=answer_embed(message.content, answer, hits, reasoning,

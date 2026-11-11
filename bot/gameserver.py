@@ -34,6 +34,7 @@ server's gate answers 404 to everything, which looks exactly like the feature
 not existing.
 """
 
+import asyncio
 import json
 import os
 import threading
@@ -218,6 +219,58 @@ class GameServer:
 # One instance, shared. The cogs reach for this rather than building their own,
 # so there is one session and one place the config is read.
 client = GameServer()
+
+
+# ── who asked, on Discord (BL-17) ────────────────────────────────────────────
+# The judges' review page lists questions a judge or the owner asked right after
+# the flagged answers. The in-game box has its asker's badge from the game
+# server's own session (server/judge-history.ts); on Discord the bot knows only
+# the Discord id, so it asks the game server which account that id is linked to
+# and keeps the BADGE alone — never the name or the account id.
+#: how long one Discord id's badge is trusted: a thread of follow-ups asks once
+ASKER_TTL = 300.0
+#: the lookup must never hold an answer up: loopback answers in milliseconds
+ASKER_TIMEOUT = 2.0
+_ASKER_CACHE = {}
+
+
+def badge_of(badge):
+    """An account's badge as the bot logs it: {"owner": True}, {"judge": 1-3},
+    or None. Owner first, exactly as store._asker_badge and the server's
+    askerBadge read it."""
+    if not isinstance(badge, dict):
+        return None
+    if badge.get("owner") is True:
+        return {"owner": True}
+    if badge.get("judge") in (1, 2, 3):
+        return {"judge": badge["judge"]}
+    return None
+
+
+async def asker_badge(discord_id, *, gs=None, now=None):
+    """The badge of the account `discord_id` is linked to, or None — for an
+    unlinked or unbadged player, and for ANY failure (no token, the game server
+    down or slow): a missing badge only means the question is not listed early,
+    so it must never cost the player their answer."""
+    gs = gs or client
+    if not gs.token or discord_id is None:
+        return None
+    key = str(discord_id)
+    t = time.monotonic() if now is None else now
+    hit = _ASKER_CACHE.get(key)
+    if hit and t - hit[0] < ASKER_TTL:
+        return hit[1]
+    try:
+        body = await asyncio.wait_for(gs.profile(discord_id=key), ASKER_TIMEOUT)
+    except (GameServerDown, asyncio.TimeoutError):
+        return None  # not cached: the next question asks again
+    except Exception as exc:  # noqa: BLE001 — a lookup must not fail an answer
+        print(f"[asker_badge] {type(exc).__name__}: {exc}")
+        return None
+    player = body.get("player") if isinstance(body, dict) and body.get("linked") else None
+    badge = badge_of(player.get("badge")) if isinstance(player, dict) else None
+    _ASKER_CACHE[key] = (t, badge)
+    return badge
 
 
 # ── the judge's engine calculator (/api/bot/simulate) ────────────────────────
