@@ -249,7 +249,7 @@ function tableHtml(v: CardStatsView): string {
 /** the "at least N games" stepper, on the card table and over the highlights */
 function minGamesHtml(v: CardStatsView): string {
   return `<span class="csstep"><span class="zonelabel">min games</span>
-    <button data-btn="meta-cs-min" data-v="-1" aria-label="fewer">−</button><b class="csmin">${v.minGames}</b><button data-btn="meta-cs-min" data-v="1" aria-label="more">+</button></span>`;
+    <button data-btn="meta-cs-min" data-v="-1" aria-label="Min games: one less">−</button><b class="csmin">${v.minGames}</b><button data-btn="meta-cs-min" data-v="1" aria-label="Min games: one more">+</button></span>`;
 }
 
 // ── 2. one card ───────────────────────────────────────────────────────

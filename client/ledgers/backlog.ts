@@ -656,7 +656,14 @@ const OPEN: Entry[] = [
       + 'socket push with counts, clears it. One repaint per flip, none while it stays down. Story "Home card glance, '
       + 'the server not answering". Guarded by 1213-queue-counter-says-unreachable.test.ts (§2 drives the real poll '
       + 'through a fake fetch). Left: S16\'s other lines (a silent reload after a deploy, league and challenge fetch '
-      + 'failures drawing nothing, an empty room code ignored). Reasoned, not looked at (no browser).',
+      + 'failures drawing nothing, an empty room code ignored). Reasoned, not looked at (no browser).\n\n'
+      + '2026-11-11 (steward): a − / + stepper says which number it moves (docs/23-ui-inventory/01 §4 S15: "`.crknob` −/+ '
+      + 'have `aria-label=\"fewer\"/\"more\"` without the knob\'s name"). 1206 passed them: it asks only that a symbol '
+      + 'button has a name. The class was two pairs: the Game values sheet\'s five knobs (pages/customrules.ts '
+      + 'gameValuesHtml, now "Pack size: one less" / "…: one more" off KNOB_LABEL) and card stats\' min games '
+      + '(pages/cardstats.ts minGamesHtml). The sandbox\'s mana pair already said "One less Fire". Nothing moved on screen. '
+      + 'Guarded by the census 1225-steppers-name-what-they-change.test.ts (every − / + button in ui/pages/components '
+      + 'source, and the sheet rendered). Left: S15\'s `.crknob.changed`, a changed value told by colour alone.',
   },
   {
     id: 'BL-51',

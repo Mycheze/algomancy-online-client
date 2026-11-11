@@ -95,9 +95,9 @@ export function gameValuesHtml(v: CustomRulesView): string {
     const [lo, hi] = DEAL_BOUNDS[k];
     const val = rules[k];
     return `<div class="crknob${val !== DEAL_DEFAULTS[k] ? ' changed' : ''}"><span>${KNOB_LABEL[k]}</span>
-      <button data-btn="cr-step" data-knob="${k}" data-d="-1" ${val <= lo ? 'disabled' : ''} aria-label="fewer">−</button>
+      <button data-btn="cr-step" data-knob="${k}" data-d="-1" ${val <= lo ? 'disabled' : ''} aria-label="${KNOB_LABEL[k]}: one less">−</button>
       <b>${val}</b>
-      <button data-btn="cr-step" data-knob="${k}" data-d="1" ${val >= hi ? 'disabled' : ''} aria-label="more">+</button></div>`;
+      <button data-btn="cr-step" data-knob="${k}" data-d="1" ${val >= hi ? 'disabled' : ''} aria-label="${KNOB_LABEL[k]}: one more">+</button></div>`;
   };
   return `<div class="crvalues">
     <div class="crknobs">${DEAL_KNOBS.map(stepper).join('')}</div>
