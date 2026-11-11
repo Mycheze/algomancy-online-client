@@ -203,7 +203,9 @@ const OPEN: Entry[] = [
       'They are opponents in a normal game, not puzzle scenarios — the board starts empty.',
       'Challenge results are EXCLUDED from stats, achievements and rating. Owner, 2026-08-25, asked whether they should count or be excluded like signed-out play: "Excluded as well" — so a challenge game must not reach the stats fold at all, rather than reaching it and being filtered later.',
     ],
-    asks: [],
+    asks: [
+      'LATER — the owner, 2026-11-11, rejecting the staged practice-opponents branch: "I don\'t actually want this in the client yet. mark in the triage as \"later\" or something." Off the night queue until he asks for it again.',
+    ],
     deps: [],
     touches: [
       'client/engine/src/apply.ts',

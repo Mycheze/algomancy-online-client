@@ -75,7 +75,9 @@ spec, every player-visible change gets an update line in `client/ui/updates.ts`.
    - **Waiting:** start the test or script with Bash `run_in_background` (or
      `> LOG 2>&1` behind `timeout <s>`), keep working, and wait with **Monitor**
      on `until grep -q '^exit ' LOG; do sleep 10; done` (repeat if it times
-     out; the scan readers take ~50 minutes in all). Foreground `sleep N` is
+     out; the scan readers take ~50 minutes in all) — that loop and nothing
+     else: no `tail -F … &` beside it, no `kill %1` after it (2026-11-10,
+     Iyngstra: denied whole). Foreground `sleep N` is
      blocked; stop a runaway with TaskStop, never `kill` (denied).
    - **Not here:** `git fetch`/`pull` fail with "no git network access" — the
      runner fetched just before you started, so `origin/*` is current; leave
@@ -274,9 +276,17 @@ notes before editing. Then:
   a card's trigger, static or cost hook added, removed or reshaped →
   `engine/test/71-card-ledger` (a hand-kept tally; update it AND its table
   with the card and why — 2026-11-10, Iyngstra, 94 → 93 guards);
-  a page or URL parameter → `server/test/771-link-preview`; a new
-  `localStorage` key → `ui/test/267-legal-and-attribution` (the privacy page
-  lists it); a `server/` import from `ui/` → `engine/test/282-dom-free-trio`;
+  a card added to or removed from the registry (a synthetic or practice card
+  counts) → ~17 tests pin the pool size as a bare number: `grep -rlw '<old
+  count>' client/*/test client/ledgers` and run every hit, plus
+  `ui/test/225-stack-readout` (every printed X) and `ui/test/243-ally-and-enemy-scope`
+  (2026-11-11, BL-03: two new cards, the run fixed the ones its own grep for
+  `496` with a regex found and missed 207 and 209 — red gate, a repair run);
+  a page or URL parameter → `server/test/771-link-preview`; anything newly
+  STORED about a player — a `localStorage` key OR a field in an interface in
+  `server/accounts.ts` → `ui/test/267-legal-and-attribution` (the privacy page
+  lists both; 2026-11-10, deck sharing added `deckShares` to an account, red
+  gate, a repair run); a `server/` import from `ui/` → `engine/test/282-dom-free-trio`;
   a report row or ledger entry → `engine/test/70-playtest-ledger`; any test,
   harness or CT `proof` that reads CSS → `ui/test/910-styles-read-through-helper`
   — read it only with `readStyles()` from `client/ui/test/read-styles.ts`, never
