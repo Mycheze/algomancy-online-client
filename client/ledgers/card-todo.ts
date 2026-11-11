@@ -186,16 +186,6 @@ const OPEN: TodoEntry[] = [
   // ── the report triage of 2026-11-07 ────────────────────────────────────
   // ── the report triage of 2026-11-10 ────────────────────────────────────
   // ── the report triage of 2026-11-11 ────────────────────────────────────
-  {
-    id: 558, area: "client", severity: "minor",
-    title: "hovering a player's life total shows nothing; the owner wants a short log of that player's life changes there (BL-75)",
-    detail: "Report #380 (mycheze, owner, 2026-11-11, feature, room MVGY): \"When you hover over a player's life total, it'd be nice to show a simple \\\"log\\\" of the life total changes\". The life total on the board (ui/main.ts regionParts, the `life` span with class=\"life\" and data-act=\"player\") carries no title and no tip; a seat's life changes are only lines among everything else in the game log. The client already receives every lifeLost/lifeGained event with its seat and amount (ui/flash.ts sums them per seat for the life beat).",
-    evidence: "Report #380, room MVGY (constructed, mycheze v Gember, 2026-11-11), action 148. MVGY fetched and replayed 2026-11-11 (steward triage): 329 actions, FAITHFUL. The markup read in ui/main.ts regionParts (`life:`).",
-    fix: "Nothing here — it is BL-75's, which carries the design (hover on desktop, a tap that does not break player targeting on touch, folded lines in the style of the hidden-turn summary, rebuilt from the game record so a reload, a spectator and a replay see the same list). This entry exists so the report is not lost, and closes when BL-75 is done.",
-    proof: () => still('ui/main.ts', '<span class="life${pickable(`player:${p}`) ? \' candidate\' : \'\'}" data-act="player" data-p="${p}"'),
-    reportId: 380,
-    status: "open",
-  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

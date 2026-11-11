@@ -82,6 +82,7 @@ import { rowFor } from './cardindex.ts';
 import type { CardRow } from './cardindex.ts';
 import { resourceRow, resourceSummary } from './resources.ts';
 import { resSumAfterPaint, resSumAt, resSumNotePointer, resSumOff, resSumRow } from './ressum.ts';
+import { lifeHistory, lifeTipHtml } from './lifelog.ts';
 import { countsTipHtml, tipAfterPaint, tipAt, tipClick, tipNotePointer, tipOff, tipTarget, tipToggle } from './infotip.ts';
 import type { ResourceView } from './resources.ts';
 import type { GlossEntry } from './glossary.ts';
@@ -4411,7 +4412,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
     acting, focus,
     pnameFixed: `<span class="pname">${esc(pl.name)}${seatBadgeHtml(NET?.badges[p] ?? null, p)}<span class="linit${s.initiative === p ? '' : ' off'}"${
       s.initiative === p ? ' title="has the initiative"' : ''}> ${icon('star')}</span></span>`,
-    life: `<span class="life${pickable(`player:${p}`) ? ' candidate' : ''}" data-act="player" data-p="${p}"
+    life: `<span class="life${pickable(`player:${p}`) ? ' candidate' : ''}" data-act="player" data-p="${p}" data-tip="life"
         data-animzone="life:${p}"
         ><span class="lifeheart">♥</span><span class="lifenum">${pl.life - (lifeHeldNow.get(p) ?? 0)}</span>${playerPickNote(p)}</span>`,
     counters,
@@ -9975,6 +9976,16 @@ function tipFor(el: HTMLElement): string | null {
   // a player's badges, in words (owner 2026-11-10: icons at the table, the
   // full text on hover — pages/profile.ts seatBadgeHtml)
   if (el.dataset['tip'] === 'badge') return seatBadgeTipHtml(NET?.badges[Number(el.dataset['p'])] ?? null) || null;
+  // report #380: the life total's own list of this game's life changes,
+  // read off the log as far as the beats have told it (ui/lifelog.ts)
+  if (el.dataset['tip'] === 'life') {
+    const p = Number(el.dataset['p']) as Seat;
+    const pl = s.players[p];
+    if (!pl) return null;
+    const told = h.log.slice(0, Math.max(0, h.log.length - heldLines(beatQueue, Date.now())));
+    return lifeTipHtml(esc(pl.name), pl.life - (lifeHeldNow.get(p) ?? 0),
+      lifeHistory(told, s.players.map(x => x.name))[p] ?? [], esc);
+  }
   if (el.dataset['tip'] !== 'counts') return toolTipHtml(el.dataset['tip'] ?? '');
   const p = Number(el.dataset['p']) as Seat;
   const pl = s.players[p];
@@ -11268,7 +11279,10 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
   }
 
   if (kind === 'player') {
-    pickOnBoard(`player:${Number(t.dataset['p'])}`);
+    // a tap that targets nobody opens the life list a mouse gets by hovering
+    // (report #380; no hover-only information) — a live pick keeps the tap.
+    // Nothing on the board changed, so no repaint (as the infotip button)
+    if (!pickOnBoard(`player:${Number(t.dataset['p'])}`) && !pointerCanHover()) { tipToggle(t, tipFor); return; }
   }
 
   if (kind === 'stackitem') {

@@ -15303,4 +15303,19 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-11-11 (steward). Took the fix as written. ui/main.ts watchingHtml draws nothing in place of the dim \"nothing placed yet…\" when no column is placed (layout.ts battlePlan already handled a fight with no .cols: report #200, test 385, still green); the in-transit strip (regionParts sentStrip) loses its <div class=\"sentfoot\">arrives next round</div>, and the .sentfoot rule left ui/styles/board/09-region-overhaul.css with it (nothing else used it). The strip's title tooltip and the send slot's hover tip, both of which say \"arrive next round\", stay — hover text, not the reminder. scenarios-j.ts's LOOK prompt no longer quotes the removed line. New ui/test/1230 renders both boards and asserts neither line; mutation: both lines put back turned both 1230 tests red. Not watched in a browser.",
     status: 'done',
   },
+  {
+    id: 558, area: "client", severity: "minor",
+    title: "hovering a player's life total shows nothing; the owner wants a short log of that player's life changes there (BL-75)",
+    detail: "Report #380 (mycheze, owner, 2026-11-11, feature, room MVGY): \"When you hover over a player's life total, it'd be nice to show a simple \\\"log\\\" of the life total changes\". The life total on the board (ui/main.ts regionParts, the `life` span with class=\"life\" and data-act=\"player\") carries no title and no tip; a seat's life changes are only lines among everything else in the game log. The client already receives every lifeLost/lifeGained event with its seat and amount (ui/flash.ts sums them per seat for the life beat).",
+    evidence: "Report #380, room MVGY (constructed, mycheze v Gember, 2026-11-11), action 148. MVGY fetched and replayed 2026-11-11 (steward triage): 329 actions, FAITHFUL. The markup read in ui/main.ts regionParts (`life:`).",
+    fix: "Nothing here — it is BL-75's, which carries the design (hover on desktop, a tap that does not break player targeting on touch, folded lines in the style of the hidden-turn summary, rebuilt from the game record so a reload, a spectator and a replay see the same list). This entry exists so the report is not lost, and closes when BL-75 is done.",
+    proof: null,
+    verify: "In a game, hover a player's life total on a computer, and tap it on a phone when nothing asks you to pick a player: a small window lists that player's life changes this game, newest first, each with its turn, the amount, the total after and what did it. Reload the page or watch as a spectator: the same list.",
+    reportId: 380,
+    guards: [
+      "1230-life-total-change-log.test.ts::§4 a tap on a life total opens the list of that player, built from the log the join carried",
+    ],
+    closed: "FIXED 2026-11-11 (steward, with BL-75). The life total span carries data-tip=\"life\" (after data-p, so 295's anchor still reads it) and tipFor answers it with ui/lifelog.ts: lifeHistory reads the seat's changes off the LOG LINES — the four sentences that are the whole class (E.loseLife, E.gainLife, the sandbox's set, the agreed fix's set), with the turn from each turn header — up to the part the beats have told (heldLines), and folds a run of one cause with only pay lines between (reveal.ts foldLifeRuns' rule). Lines rather than events because a join, a reconnect, an undo's resync and a spectator all get the log as text with no types. A tap on the total that targets nobody (pickOnBoard false) and is not a mouse pins the same window; a live pick keeps the tap. Two seats with one name get no list rather than a wrong one. Mutation: data-tip removed turned 1230 §4 red; the fold broken turned §1, §2 and §4 red. Not watched in a browser.",
+    status: 'done',
+  },
 ];

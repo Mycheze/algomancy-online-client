@@ -64,6 +64,12 @@
 #infotip .toktab td.tallyn { padding: 1px 10px 1px 0; }
 #infotip .toktab td.tallyx { text-align: left; font-weight: 400; font-size: 13px; color: var(--target); white-space: nowrap; }
 #infotip .tokwhy + .tokwhy { margin-top: 2px; }
+/* the life total's list (report #380, ui/lifelog.ts): turn · change · total ·
+   cause. The sign says gain or loss; the colour only repeats it */
+#infotip .lifelog td { padding: 1px 0 1px 8px; }
+#infotip .lifelog td.lifedown { color: var(--danger); }
+#infotip .lifelog td.lifeup { color: var(--glow); }
+#infotip .lifelog td.lifewhy { text-align: left; font-weight: 400; font-size: 13px; color: var(--text); white-space: normal; }
 #cardzoom > .zoomcopy { box-shadow: 0 14px 40px rgba(0, 0, 0, .75), 0 0 0 1px rgba(0, 0, 0, .5);
   border-radius: 10px; will-change: transform; }
 #cardzoom > .zoomcopy img { border-radius: 10px; }
