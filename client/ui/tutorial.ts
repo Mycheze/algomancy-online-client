@@ -98,7 +98,7 @@ export const TUTORIAL: readonly TutorialSection[] = [
       {
         label: 'The info lines',
         text: 'Your line runs along the bottom, above the prompt bar: your resources, the phase icons with the current one lit (hover or tap them '
-          + 'for the phase, step and turn), your bin and cache, then your name and life — ⭐ marks who holds the initiative. Your opponent’s line '
+          + 'for the phase, step and turn), your bin and cache, then your name and life — a star beside a name marks who holds the initiative. Your opponent’s line '
           + 'runs along the top. Hover or tap a name for hand, deck, recycle pile, bin and cache as numbers. When the client is passing for you, '
           + 'a ⏩ stop button appears on the toolbar.',
         btns: ['passallstop'],

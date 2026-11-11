@@ -463,7 +463,7 @@ ${lines}
     pages: [
       {
         title: 'The shape of a battle',
-        body: `Battle has two halves. First the **initiative** player (⭐ at the top) attacks into the other region (or declines to attack at all), and the defender blocks — and may also *send* units to counterattack. Then those sent units attack back in the second half. Each side attacks once a turn, and the initiative passes every turn.
+        body: `Battle has two halves. First the **initiative** player (the star beside their name) attacks into the other region (or declines to attack at all), and the defender blocks — and may also *send* units to counterattack. Then those sent units attack back in the second half. Each side attacks once a turn, and the initiative passes every turn.
 
 Units attack **players**, not other units.`,
         callout: 'Remember, since Algomancy works based on regions, if you do not enter your opponent\'s region and they also don\'t enter yours, neither of you can interact with each other\'s units or life total. **The battle phase is the heart of all interaction in a game.**',

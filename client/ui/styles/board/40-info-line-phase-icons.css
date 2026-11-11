@@ -29,14 +29,22 @@
 .linfo .lname { cursor: help; }
 .linfo .lname .pname { white-space: nowrap; }
 /* BL-17: a player's badges beside their name — ICONS, not the profile's worded
-   chips (owner, 2026-11-10: "I don't like how long they are"): ⚖ a judge,
-   its level a small digit; 🏆 a league champion, a count past one. Hover or
-   tap the group for the words (an info tip of its own, data-tip="badge"). */
+   chips (owner, 2026-11-10: "I don't like how long they are"): scales for a
+   judge, its level a small digit; a trophy for a league champion, a count
+   past one. Hover or tap the group for the words (an info tip of its own,
+   data-tip="badge"). The icons are the client's own SVGs (components/icon.ts),
+   not emoji, so they take these colours and look the same on every device
+   (report #379). */
 .pname .seatbadge { display: inline-flex; align-items: center; gap: 3px; vertical-align: middle; cursor: help; }
-.pname .seatbadge .sbicon { font-size: .82em; line-height: 1; white-space: nowrap; }
+.pname .seatbadge .sbicon { display: inline-flex; align-items: center; font-size: .9em; line-height: 1; white-space: nowrap; }
+.pname .seatbadge .sbicon .ui-icon { width: 1.1em; height: 1.1em; }
 .pname .seatbadge .sbicon.judge { color: var(--accent); }
-.pname .seatbadge .sblevel { font-size: .68em; font-weight: 700; vertical-align: sub; margin-left: 1px; }
-/* the initiative star keeps its width when it is somewhere else */
+.pname .seatbadge .sbicon.champion { color: var(--color-warning); }
+.pname .seatbadge .sblevel { font-size: .75em; font-weight: 700; align-self: flex-end; margin-left: 1px; }
+/* the initiative star: an SVG in the accent, sized to the name; it keeps its
+   width when it is somewhere else */
+.linfo .linit { color: var(--accent); }
+.linfo .linit .ui-icon { width: 1.05em; height: 1.05em; vertical-align: -.15em; }
 .linfo .linit.off { visibility: hidden; }
 /* the identity pieces a notch smaller than the classic header's: the life
    pill, the opponent's card backs — a count to read, not cards to handle */

@@ -43,6 +43,12 @@ const GLYPHS = {
   join: '<path d="M3 21h18"/><path d="M5.5 21V4.5a1.5 1.5 0 0 1 1.5-1.5h10a1.5 1.5 0 0 1 1.5 1.5V21"/><path d="M14.5 12.5h.01"/>',
   // a trophy
   league: '<path d="M7 3.5h10V9a5 5 0 0 1-10 0z"/><path d="M7 5.5H4.5v1.5A3.5 3.5 0 0 0 7.6 10.5"/><path d="M17 5.5h2.5v1.5a3.5 3.5 0 0 1-3.1 3.5"/><path d="M12 14v3.5"/><path d="M8 21h8"/><path d="M9.5 21v-1.5a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2V21"/>',
+  // a balance on its post: a judge's mark beside a name at the table (CT-556)
+  judge: '<path d="M12 3.5v17"/><path d="M8.5 20.5h7"/><path d="M5 7h14"/><path d="M12 3.5h.01"/>'
+    + '<path d="m5 7-3 7"/><path d="m5 7 3 7"/><path d="M2 14h6a3 3 0 0 1-6 0"/>'
+    + '<path d="m19 7-3 7"/><path d="m19 7 3 7"/><path d="M16 14h6a3 3 0 0 1-6 0"/>',
+  // a five-pointed star: who has the initiative, beside their name (CT-556)
+  star: '<path d="M12 3.2 14.5 9.4l6.6.4-5.1 4.3 1.6 6.5L12 17l-5.6 3.6 1.6-6.5-5.1-4.3 6.6-.4z"/>',
   // a target
   challenge: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="M12 12h.01"/>',
   // two crossed swords

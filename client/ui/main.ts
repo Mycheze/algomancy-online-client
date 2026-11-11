@@ -191,6 +191,7 @@ import { caretIn, type CaretSnap } from './pages/caret.ts';
 import { CLOCK_DEFAULT_MS, chosenClockMs, setMatchClockChoice } from './pages/clockpick.ts';
 import { CONNECTING, connectingHtml } from './pages/connecting.ts';
 import { seatBadgeHtml, seatBadgeTipHtml, type SeatBadge } from './pages/profile.ts';
+import { icon } from './components/icon.ts';
 import { importDeck } from './pages/deckpicker.ts';
 import { closeHomeSheet, joinCodeTarget, openHomeSheet, paintHome, saveHomeName, setHomeFormat, setHomeMode } from './pages/home.ts';
 import { paintWaiting } from './pages/waiting.ts';
@@ -4204,7 +4205,8 @@ interface RegionParts {
   acting: boolean;
   /** 'battlefocus' / 'battledim' during a battle, '' otherwise */
   focus: string;
-  /** the name with a slot for the initiative ⭐ that is there whether or not
+  /** the name with a slot for the initiative star (an SVG from the icon set,
+   * not the ⭐ emoji every device drew its own way — report #379) that is there whether or not
    * the star is: the regions board pins the life total beside the name, and
    * a star coming and going every turn moved it (owner, 2026-09-26: the
    * name and life "should be fixed") */
@@ -4409,7 +4411,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
   return {
     acting, focus,
     pnameFixed: `<span class="pname">${esc(pl.name)}${seatBadgeHtml(NET?.badges[p] ?? null, p)}<span class="linit${s.initiative === p ? '' : ' off'}"${
-      s.initiative === p ? ' title="has the initiative"' : ''}> ⭐</span></span>`,
+      s.initiative === p ? ' title="has the initiative"' : ''}> ${icon('star')}</span></span>`,
     life: `<span class="life${pickable(`player:${p}`) ? ' candidate' : ''}" data-act="player" data-p="${p}"
         data-animzone="life:${p}"
         ><span class="lifeheart">♥</span><span class="lifenum">${pl.life - (lifeHeldNow.get(p) ?? 0)}</span>${playerPickNote(p)}</span>`,

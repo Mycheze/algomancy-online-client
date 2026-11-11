@@ -21,7 +21,7 @@
 import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
 import { elIcon, esc } from '../util.ts';
 import { ICON_BASE } from '../assets.ts';
-import { button, segmented, settingRow, statusMessage } from '../components/index.ts';
+import { button, icon, segmented, settingRow, statusMessage } from '../components/index.ts';
 import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
 import type { AchievementState, FriendView, LeaderRow, LeagueTrophy, Me, MatchRow } from '../account.ts';
 import type { PublicDeck } from '../meta.ts';
@@ -60,17 +60,22 @@ export function badgeChipsHtml(badge: SeatBadge | null | undefined): string {
  * don't like how long they are. Instead of printing the text, I'd rather
  * display a little icon of some kind … When the badge is hovered over, *then*
  * it can display the complete text and explain what the badge is from"):
- * ⚖ with the judge's level as a small digit, 🏆 for a league champion (with
- * the count when they won more than one season). The whole group is an info
+ * scales with the judge's level as a small digit, a trophy for a league
+ * champion (with the count when they won more than one season). Both are
+ * drawn from the client's own SVG icon set (components/icon.ts), never emoji:
+ * an emoji is drawn by each device's own font, a colour picture that ignores
+ * the text colour and looks different on every phone (owner, report #379,
+ * 2026-11-11: "Better to find actual assets that look good and render the
+ * same on all devices"). The whole group is an info
  * tip of its own (ui/infotip.ts, `data-tip="badge"`) — hover, or tap on touch,
  * and seatBadgeTipHtml says it in words. Nested in the name, whose tip is the
  * pile counts: the innermost `data-tip` wins, so each keeps its own. */
 export function seatBadgeHtml(badge: SeatBadge | null | undefined, seat = 0): string {
   if (!badge) return '';
   const icons: string[] = [];
-  if (badge.judge) icons.push(`<span class="sbicon judge">⚖<span class="sblevel">${badge.judge}</span></span>`);
+  if (badge.judge) icons.push(`<span class="sbicon judge">${icon('judge')}<span class="sblevel">${badge.judge}</span></span>`);
   const won = badge.champion?.length ?? 0;
-  if (won) icons.push(`<span class="sbicon champion">🏆${won > 1 ? `<span class="sblevel">${won}</span>` : ''}</span>`);
+  if (won) icons.push(`<span class="sbicon champion">${icon('league')}${won > 1 ? `<span class="sblevel">${won}</span>` : ''}</span>`);
   if (!icons.length) return '';
   return ` <span class="seatbadge" data-tip="badge" data-btn="infotip" data-p="${seat}" aria-label="${esc(seatBadgeWords(badge))}">${icons.join('')}</span>`;
 }
@@ -88,8 +93,8 @@ function seatBadgeWords(badge: SeatBadge): string {
 export function seatBadgeTipHtml(badge: SeatBadge | null | undefined): string {
   if (!badge) return '';
   const rows: string[] = [];
-  if (badge.judge) rows.push(`<div class="tiphead">⚖ Judge L${badge.judge}</div><div class="tipline dim wrap">a judge, level ${badge.judge} of 3 — a trusted voice on rules and reports</div>`);
-  if (badge.champion?.length) rows.push(`<div class="tiphead">🏆 League champion</div>${
+  if (badge.judge) rows.push(`<div class="tiphead">${icon('judge')} Judge L${badge.judge}</div><div class="tipline dim wrap">a judge, level ${badge.judge} of 3 — a trusted voice on rules and reports</div>`);
+  if (badge.champion?.length) rows.push(`<div class="tiphead">${icon('league')} League champion</div>${
     badge.champion.map(n => `<div class="tipline dim wrap">won the ${esc(n)} league</div>`).join('')}`);
   return rows.join('');
 }

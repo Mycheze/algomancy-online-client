@@ -485,8 +485,11 @@ const OPEN: LedgerEntry[] = [
   {
     id: 379, room: "MVGY", date: "2026-11-11",
     report: "mycheze, seat 0 (ux, minor): \"I'm still unhappy with the look of the badges next to player names. Are they just raw emojis? Cause they render very ugly like that. Better to find actual assets that look good and render the same on all devices and look a lil nicer.\"",
-    status: 'live',
-    note: "Real. They are raw emoji: the board draws the judge badge as ⚖ (U+2696 with no variation selector, so phones draw it as a colour emoji and its accent colour is ignored) with the level as a digit, a league champion as 🏆 (ui/pages/profile.ts seatBadgeHtml, from fa768cfa on 2026-11-10 — the owner's own \"a little icon\" request, which this answers), and the same nameplate draws the initiative mark as ⭐ (ui/main.ts pnameFixed). Each device's emoji font draws them differently. The client already has an SVG icon set that renders the same everywhere (ui/components/icon.ts, with a trophy but no scales or star). MVGY (mycheze v Gember, constructed, played after fa768cfa went live) fetched and replayed: 79 of 79 actions, FAITHFUL — a look, not a game fault. CT-556 filed: draw the three marks from the icon set.",
+    status: 'fixed',
+    guards: [
+      "1174-seat-badge-on-the-board.test.ts::1174 §7: the badges, their tip and the initiative star are SVG icons from the icon set, never emoji",
+    ],
+    note: "Real. They are raw emoji: the board draws the judge badge as ⚖ (U+2696 with no variation selector, so phones draw it as a colour emoji and its accent colour is ignored) with the level as a digit, a league champion as 🏆 (ui/pages/profile.ts seatBadgeHtml, from fa768cfa on 2026-11-10 — the owner's own \"a little icon\" request, which this answers), and the same nameplate draws the initiative mark as ⭐ (ui/main.ts pnameFixed). Each device's emoji font draws them differently. The client already has an SVG icon set that renders the same everywhere (ui/components/icon.ts, with a trophy but no scales or star). MVGY (mycheze v Gember, constructed, played after fa768cfa went live) fetched and replayed: 79 of 79 actions, FAITHFUL — a look, not a game fault. CT-556 filed: draw the three marks from the icon set. Fixed 2026-11-11 (CT-556): the judge mark, the champion trophy and the initiative star are SVGs from the icon set, the same on every device.",
   },
   {
     id: 380, room: "MVGY", date: "2026-11-11",
