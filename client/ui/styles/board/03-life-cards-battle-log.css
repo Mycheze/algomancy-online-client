@@ -144,7 +144,7 @@
    overlap with them — and with the next card of a pile or a fanned row.
    `z-index: 2` puts it above all of those (still under a pick verb's 3 and a
    raised card's 6); the dark ring keeps its edge readable on any art. */
-.card .dmg { position: absolute; bottom: 2px; left: 2px; z-index: 2; background: var(--danger); border-radius: 4px;
+.card .dmg { position: absolute; bottom: 2px; left: 2px; z-index: 2; background: var(--color-danger-fill); border-radius: 4px;
   padding: 0 4px; font-weight: 700; font-size: 11px; box-shadow: 0 0 0 1px rgba(0,0,0,.6); }
 /* BL-23: ONE line, at every card width — the same strip is drawn over a
    40px sent-strip thumb and a 116px cache entry. `nowrap` is the guarantee and

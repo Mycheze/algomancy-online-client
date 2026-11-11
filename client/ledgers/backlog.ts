@@ -752,7 +752,14 @@ const OPEN: Entry[] = [
       + '#7fc0ff against the mode\'s cyan legal ring is 12.1 apart (43.8 against the standard green), so the mode made a '
       + 'picked card (formation, send list, a ticked pick-a-set card) and a pickable one look alike. In the mode a '
       + '`.card.selected` now wears a ✓ in the ◎ corner (board/03; a picked target keeps the ◎). Guarded by 1221 §5. '
-      + 'Still open: (a), (b), (c).',
+      + 'Still open: (a), (b), (c). '
+      + '2026-11-11 (steward): (b) DONE in the mode — red is two roles now: --color-danger (text, lines) and '
+      + '--color-danger-fill (a background under white ink: the bell\'s count, damage chips, the over-cap and '
+      + 'pool badges, the lost-target strip, the profile\'s loss bar — ten rules). The fill keeps #f06969 in both '
+      + 'modes (white 3.03:1); the mode lifts the text to #ff7b7b (4.77:1 on a raised panel, 16.8 from the other '
+      + 'table roles, 31.4 from a win to a deutan). Guarded by 1221 §3 and §6 (a census: no rule paints a background '
+      + 'with the text red). The standard palette is unchanged (still 3.95:1 there; not a palette round). '
+      + 'Still open: (a), (c).',
   },
   // ── the leftovers of the 2026-11-02/03 rounds (Competitive Constructed, the design
   //    system, the new home, board-r1), filed 2026-11-03. Owner, that night: "put all

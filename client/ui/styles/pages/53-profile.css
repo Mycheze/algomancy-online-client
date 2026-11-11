@@ -81,7 +81,7 @@
 .pfh2h li + li { border-top: 1px solid var(--color-border); }
 .pfh2h b { text-align: right; }
 .pfwlbar { display: flex; gap: 2px; height: 6px; border-radius: var(--radius-pill); overflow: hidden; }
-.pfwlbar .w { background: var(--color-success); } .pfwlbar .l { background: var(--color-danger); }
+.pfwlbar .w { background: var(--color-success); } .pfwlbar .l { background: var(--color-danger-fill); }
 
 .pfdecks { display: flex; flex-direction: column; }
 .pfdeck { display: flex; align-items: center; gap: var(--space-4); width: 100%; padding: var(--space-2) var(--space-2); margin: 0 calc(-1 * var(--space-2));

@@ -174,7 +174,7 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
   line-height: 12px; text-align: center; font-size: 9px; border-radius: 50%; cursor: pointer;
   background: rgba(20,24,30,.92); border: 1px solid var(--water); color: var(--water); opacity: .45; }
 .seenslot:hover .seenx { opacity: 1; }
-.seenx:hover { background: var(--danger); border-color: var(--danger); color: #fff; opacity: 1; }
+.seenx:hover { background: var(--color-danger-fill); border-color: var(--color-danger-fill); color: #fff; opacity: 1; }
 
 /* C3: the armed "Pass all" is visible and cancelable */
 /* CR D2.2: the caption names WHICH standing pass is running ("passing through the

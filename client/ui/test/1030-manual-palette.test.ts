@@ -95,9 +95,10 @@ test('§2 every text role clears AA (4.5:1) on every surface it sits on; the pri
     '--color-success', '--color-warning', '--color-info']) for (const bg of surfaces) need(fg, bg);
   // red text sits on the page and on panels; on a raised panel (a danger button's label) it is
   // 3.95 (it was 3.88). Any lighter and white on a red badge (the bell's count, a damage chip)
-  // goes under 3:1, the floor for its bold figures — the record's table has both
+  // goes under 3:1, the floor for its bold figures — the record's table has both. (Those fills
+  // read --color-danger-fill since BL-51, the same red here; the accessible mode lifts the text.)
   for (const bg of ['--color-bg', '--color-surface', '--color-surface-sunken']) need('--color-danger', bg);
-  need('--color-text-on-fill', '--color-danger', 3);
+  need('--color-text-on-fill', '--color-danger-fill', 3);
   need('--color-text-on-accent', '--color-accent');
   need('--color-text-on-accent', '--color-confirm');
   need('--color-text-on-accent', '--color-confirm-hover');

@@ -160,7 +160,7 @@
    still shows. Its arrow is gone (main.ts stackArrows); this says why. */
 .stackcard.lost { outline: 2px solid var(--danger); outline-offset: 1px; }
 .stackcard .stacklost { position: absolute; left: -1px; top: 42%; z-index: 4; max-width: calc(100% + 2px);
-  padding: 1px 4px; border-radius: 0 4px 4px 0; background: var(--danger); color: #fff;
+  padding: 1px 4px; border-radius: 0 4px 4px 0; background: var(--color-danger-fill); color: #fff;
   font-size: 8px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   box-shadow: 0 1px 4px rgba(0,0,0,.6); }
 #cardzoom > .stackcard.zoomcopy .stacklost { font-size: 4.2cqw; padding: .4cqw 2cqw; }

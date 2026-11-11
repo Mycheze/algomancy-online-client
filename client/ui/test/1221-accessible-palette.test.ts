@@ -28,6 +28,9 @@
  *   §5 a PICKED card (your formation, the send list, a ticked pick-a-set card)
  *      wears a ✓ in the mode: its blue ring is the mode's cyan legal ring to a
  *      deutan, though not with the standard green
+ *   §6 red TEXT is lifted in the mode (it was 3.95:1 on a raised panel), and
+ *      every red FILL under white ink reads --color-danger-fill, which keeps
+ *      the standard red so the white stays over 3:1 in both modes
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -164,8 +167,10 @@ test('1221 §3 accessible: every text colour the mode re-points clears AA on eve
     const c = contrast(tok(ACC, fg), tok(ACC, bg));
     if (c < 4.5) fails.push(`${fg} ${tok(ACC, fg)} on ${bg}: ${c.toFixed(2)}`);
   }
-  const c = contrast(tok(ACC, '--color-success'), tok(ACC, '--color-success-bg'));
-  if (c < 4.5) fails.push(`--color-success on --color-success-bg: ${c.toFixed(2)}`);
+  for (const s of ['success', 'danger']) {
+    const c = contrast(tok(ACC, `--color-${s}`), tok(ACC, `--color-${s}-bg`));
+    if (c < 4.5) fails.push(`--color-${s} on --color-${s}-bg: ${c.toFixed(2)}`);
+  }
   assert.deepEqual(fails, [], 'a re-pointed text colour under 4.5:1:\n  ' + fails.join('\n  '));
 });
 
@@ -216,4 +221,27 @@ test('1221 §5 accessible: a picked card wears a ✓, because its blue ring is t
   assert.equal(body('.card.selected::after'), '', 'no mark without the mode');
   // a picked target keeps the ◎: the ✓ stands aside rather than fight it for the one ::after
   assert.ok(/:not\(\.candidate\)/.test(sel) && body(`${A} .card.candidate::after`).includes('◎'));
+});
+
+test('1221 §6 accessible: red text is lifted to AA on a raised panel; a red fill under white ink keeps a red white reads on', () => {
+  // why: the standard red is 3.95:1 as text on a raised panel (a danger button's label), and it
+  // cannot be lifted while white sits on it as a fill (the bell's count, a damage chip)
+  const std = contrast(tok(STD, '--color-danger'), tok(STD, '--color-surface-raised'));
+  assert.ok(std < 4.5, `standard red text on a raised panel: ${std.toFixed(2)} — if this clears 4.5, the split may be unneeded`);
+  assert.ok(THEMED.has('--color-danger'), 'the mode re-points red text (§3 then holds it to AA on every surface)');
+  assert.ok(!THEMED.has('--color-danger-fill'), 'the fill keeps the standard red in the mode');
+  assert.equal(tok(STD, '--color-danger-fill'), tok(STD, '--color-danger'), 'with the standard colours, a fill and text are one red');
+  for (const [name, m] of [['standard', STD], ['accessible', ACC]] as const) {
+    const c = contrast(tok(m, '--color-text-on-fill'), tok(m, '--color-danger-fill'));
+    assert.ok(c >= 3, `${name}: white on the red fill ${c.toFixed(2)}`);
+  }
+  // white on the mode's lifted red would not read: that is why a fill must take the fill token
+  assert.ok(contrast(tok(ACC, '--color-text-on-fill'), tok(ACC, '--color-danger')) < 3);
+  // the census: no rule paints a background with the TEXT red (a color-mix tint is not a fill)
+  const fills = [...RULES.entries()]
+    .filter(([, bodies]) => bodies.some(b => /background(-color)?\s*:\s*var\(--(color-)?danger\)/.test(b)))
+    .map(([sel]) => sel);
+  assert.deepEqual(fills, [], 'a red background reads --color-danger / --danger; use --color-danger-fill');
+  const users = [...RULES.values()].flat().filter(b => /background(-color)?\s*:\s*var\(--color-danger-fill\)/.test(b)).length;
+  assert.ok(users >= 9, `only ${users} rules read the fill red — the census is reading nothing`);
 });

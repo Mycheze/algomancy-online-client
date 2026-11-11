@@ -27,7 +27,7 @@
   box-shadow: 0 4px 18px rgba(0,0,0,.45); font-size: var(--text-14); line-height: 1; }
 .inboxbell.lit { border-color: var(--accent); }
 .inboxcount { display: inline-block; min-width: 16px; margin-left: 5px; padding: 1px 4px; border-radius: var(--radius-pill);
-  background: var(--danger); color: var(--color-text-on-fill); font-size: var(--text-11); font-weight: 700; text-align: center; }
+  background: var(--color-danger-fill); color: var(--color-text-on-fill); font-size: var(--text-11); font-weight: 700; text-align: center; }
 .inboxlist, .invitepops { position: fixed; right: 18px; bottom: 62px; z-index: 56; width: min(92vw, 320px);
   display: flex; flex-direction: column; gap: var(--space-4); }
 .inboxlist { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: var(--space-5);

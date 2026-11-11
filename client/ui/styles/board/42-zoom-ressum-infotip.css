@@ -148,7 +148,7 @@
 #cardzoom .zoomdice .badge.ctr,
 #cardzoom .zoomdice .badge.dmg { display: inline-flex; align-items: center; justify-content: center;
   min-width: 12cqw; min-height: 12cqw; box-sizing: border-box; font-size: 5.6cqw; font-weight: 800; border-radius: 2.6cqw; }
-#cardzoom .zoomdice .badge.dmg { background-color: var(--danger); border-color: rgba(0, 0, 0, .5); color: #fff; }
+#cardzoom .zoomdice .badge.dmg { background-color: var(--color-danger-fill); border-color: rgba(0, 0, 0, .5); color: #fff; }
 
 /* "Modded cards don't show the attached mods!" — the strips the rail draws,
    hung under the card at the copy's own width */

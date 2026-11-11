@@ -46,9 +46,9 @@ input.ttpilename { flex: 1; width: 0; border-color: var(--accent); outline: none
 .ttpilecount { margin-left: auto; color: var(--dim); font-size: var(--text-12); font-variant-numeric: tabular-nums; }
 .ttpiledel { padding: 0 var(--space-2); font-size: var(--text-11); border: none; background: none; color: var(--dim); }
 .ttpiledel:hover { color: var(--danger); }
-.ttovercap { flex: none; color: var(--color-text-on-fill); background: var(--danger); border-radius: var(--radius-lg); padding: 0 var(--space-2);
+.ttovercap { flex: none; color: var(--color-text-on-fill); background: var(--color-danger-fill); border-radius: var(--radius-lg); padding: 0 var(--space-2);
   font-size: var(--text-11); font-weight: 700; line-height: 16px; }
-.ttcapn { position: absolute; top: 2px; right: 22%; z-index: 1; color: var(--color-text-on-fill); background: var(--danger);
+.ttcapn { position: absolute; top: 2px; right: 22%; z-index: 1; color: var(--color-text-on-fill); background: var(--color-danger-fill);
   border-radius: var(--radius-md); padding: 0 var(--space-2); font-size: var(--text-11); font-weight: 700; line-height: 14px; pointer-events: none; }
 .ttfan { position: relative; flex: none; width: var(--cw); transition: height .09s; }
 .ttcard { position: absolute; left: 0; width: var(--cw); height: var(--ch); z-index: var(--k);
