@@ -257,7 +257,7 @@ export const BATCH_J: Record<string, Scenario> = {
       LOOK
       + 'You attacked with six columns; they blocked one and sent FOUR units to counterattack you.\n'
       + 'Blocks are in; you have priority.\n'
-      + 'LOOK: the four counterattackers on their way ("arrives next round") wrap down the column squeezed\n'
+      + 'LOOK: the four counterattackers on their way wrap down the column squeezed\n'
       + 'to the left (your block, idle this round), all four visible; the fight stays big and centred.\n'
       + 'TRY: pass through round 1, and watch round 2 begin.',
     initiative: YOU,

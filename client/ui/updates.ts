@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-11', kind: 'change', text: 'The battle board no longer shows the "nothing placed yet" and "arrives next round" reminders. Counterattackers on their way still sit in their dashed box beside the bin.' },
   { date: '2026-11-11', kind: 'change', text: 'The life gain and loss sound now also plays when your opponent\'s life changes. If both totals move at once, you hear the one for your own life.' },
   { date: '2026-11-11', kind: 'change', text: 'The cached cards beside your hand no longer say "not this step" when you cannot play them yet. The label just reads "cached", and the dark card tells you the rest.' },
   { date: '2026-11-11', kind: 'change', text: 'The marks beside player names at the table (the judge\'s scales, a league champion\'s trophy and the initiative star) are now drawn as proper icons instead of emoji, so they look the same on every device.' },

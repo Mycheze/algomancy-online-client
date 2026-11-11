@@ -4283,8 +4283,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
         <div class="zonelabel">${txtIcon('battle', '[battle]')} incoming — ${esc(s.players[incoming[0]!.controller]!.name)}</div>
         <div class="zone sentzone">${incoming.map(en => en.kind === 'spellToken'
           ? cardHtml(en.card, { die: en.x })
-          : unitHtml(en, { inert: true })).join('')}</div>
-        <div class="sentfoot">arrives next round</div></div>`
+          : unitHtml(en, { inert: true })).join('')}</div></div>`
     : '';
 
   const fieldZone = `<div class="zone" data-animzone="field:${p}">${ownHere}</div>`;
@@ -5820,7 +5819,9 @@ function watchingHtml(who: string, doing: string, flip: boolean): string {
         // at a formation lands the same in both views
         ...(h.state.battle ? { sides: { atk: h.state.battle.attacker, blk: h.state.battle.defender } } : {}),
       })).join('')}</div>`
-    : '<div style="color:var(--dim)">nothing placed yet…</div>';
+    // report #385 (owner): no "nothing placed yet…" line — the empty fight
+    // and the ● live header already say it
+    : '';
   const sent = sending.length
     ? `<div class="collabel">sending to counterattack</div>
        <div class="cols"><div class="col sendcol">${pendingColHtml(sending, { across: true })}</div></div>` : '';

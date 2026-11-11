@@ -196,16 +196,6 @@ const OPEN: TodoEntry[] = [
     reportId: 380,
     status: "open",
   },
-  {
-    id: 560, area: "client", severity: "minor",
-    title: "the battle panels' \"nothing placed yet…\" and \"arrives next round\" reminders; the owner finds them superfluous — remove them",
-    detail: "Report #385 (mycheze, owner, 2026-11-11, ux, minor, room WSVC): \"let's remove the \\\"nothing placed yet\\\" and \\\"arrives next round\\\" reminder text. it's just superfluous at this point\". Two lines in ui/main.ts: (1) watchingHtml, the live view of the other seat building an attack or blocks, draws `<div style=\"color:var(--dim)\">nothing placed yet…</div>` when no column is placed; (2) the incoming-counterattackers strip (`sentStrip`, beside the bin) ends with `<div class=\"sentfoot\">arrives next round</div>` (styled by .sentfoot in ui/styles/board/09-region-overhaul.css). The strip's own title and its label ('incoming — <name>') already say it; the send slot's title ('send a unit here to counterattack — it arrives next round') is a hover tip, not the visible reminder, and can stay.",
-    evidence: "Report #385, room WSVC (constructed, competitive, mycheze v Gember, 2026-11-11), action 203: turn 6 battle, attack window, Gember attacking — the board where both show. WSVC fetched and replayed 2026-11-11 (steward triage): 234 actions, FAITHFUL. The two strings read in ui/main.ts (watchingHtml; the sentStrip in the region renderer). No test asserts either string (ui/test/385-invader-strip-unbuilt mentions 'nothing placed yet…' in a comment only, and asserts the plan, not the text); grep all four test dirs again before editing.",
-    fix: "Drop both lines. For watchingHtml, an empty fight must still take its height (report #200 / 385-invader-strip-unbuilt sizes the strip with no columns) — leave an empty element or nothing, and run 385 and 448-battle-space-plan. Remove the .sentfoot rule with its line if nothing else uses the class (ui/test/920 and 910 cover the stylesheet). Add a guard that neither string is drawn. Player-visible: an updates.ts line.",
-    proof: () => still('ui/main.ts', 'nothing placed yet…', '<div class="sentfoot">arrives next round</div>'),
-    reportId: 385,
-    status: "open",
-  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

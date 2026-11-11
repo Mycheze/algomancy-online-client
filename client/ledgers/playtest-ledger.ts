@@ -530,8 +530,12 @@ const OPEN: LedgerEntry[] = [
   {
     id: 385, room: "WSVC", date: "2026-11-11",
     report: "mycheze, seat 0 (ux, minor): \"let's remove the \\\"nothing placed yet\\\" and \\\"arrives next round\\\" reminder text. it's just superfluous at this point\"",
-    status: 'live',
-    note: "Real, by reading. Two dim reminder lines on the battle board, both in ui/main.ts: \"nothing placed yet…\" in the live view of the other seat building an attack or blocks with no column placed, and \"arrives next round\" under the strip of incoming counterattackers beside the bin (whose label already reads \"incoming — <name>\"). WSVC fetched and replayed (234 of 234, FAITHFUL); [203] is turn 6's attack window with Gember attacking, where both show. CT-560 filed: remove both lines.",
+    status: 'fixed',
+    guards: [
+      "1230-battle-reminders-gone.test.ts::report #385: watching the other seat choose an attack with nothing placed, no \"nothing placed yet\" line",
+      "1230-battle-reminders-gone.test.ts::report #385: the counterattackers in transit carry no \"arrives next round\" line",
+    ],
+    note: "Real, by reading. Two dim reminder lines on the battle board, both in ui/main.ts: \"nothing placed yet…\" in the live view of the other seat building an attack or blocks with no column placed, and \"arrives next round\" under the strip of incoming counterattackers beside the bin (whose label already reads \"incoming — <name>\"). WSVC fetched and replayed (234 of 234, FAITHFUL); [203] is turn 6's attack window with Gember attacking, where both show. CT-560 filed: remove both lines. Fixed 2026-11-11 (CT-560): both lines are gone from the board.",
   },
 ];
 

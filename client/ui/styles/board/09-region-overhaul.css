@@ -146,7 +146,6 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 .sentstrip .zonelabel { color: var(--danger); font-size: 10px; margin-top: 4px; }
 .sentstrip .sentzone { gap: 3px; }
 .sentstrip .card { width: 40px; cursor: default; }
-.sentfoot { color: var(--dim); font-size: 9px; margin-top: 3px; line-height: 1.2; }
 /* CT-383: on the classic board the strip is a grid of 40px cards, --sentcols
    wide (main.ts sentCols). It was a fixed 96px whose inside (82px) was a pixel
    short of two cards and a gap, so every sent unit took a row of its own:
