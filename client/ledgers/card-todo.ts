@@ -137,6 +137,7 @@ export interface TodoEntry {
 }
 import '../engine/src/cards/registry.ts';
 import { CLOSED } from './card-todo-closed.ts';
+import { still } from './card-todo-helpers.ts';
 
 // ── proofs for the comprehensive-rules findings (CT-226 on) ─────────────
 // Each finding was re-checked against HEAD before it was filed. A proof
@@ -184,6 +185,17 @@ const OPEN: TodoEntry[] = [
   // ── the report triage of 2026-11-06 ────────────────────────────────────
   // ── the report triage of 2026-11-07 ────────────────────────────────────
   // ── the report triage of 2026-11-10 ────────────────────────────────────
+  // ── the report triage of 2026-11-11 ────────────────────────────────────
+  {
+    id: 556, area: "client", severity: "minor",
+    title: "the marks beside a player's name at the table are raw emoji (⚖, 🏆, ⭐); draw them from the client's own SVG icon set",
+    detail: "Report #379 (mycheze, owner, 2026-11-11, ux, minor, room MVGY): \"I'm still unhappy with the look of the badges next to player names. Are they just raw emojis? Cause they render very ugly like that. Better to find actual assets that look good and render the same on all devices and look a lil nicer.\" Yes, they are: ui/pages/profile.ts seatBadgeHtml draws `<span class=\"sbicon judge\">⚖…` (U+2696, no variation selector, so iOS/Android draw it as a colour emoji and ignore the `.sbicon.judge { color: var(--accent) }` rule in ui/styles/board/40-info-line-phase-icons.css) and `🏆` for a league champion; seatBadgeTipHtml heads its tip rows with the same two. In the same nameplate, ui/main.ts regionParts (pnameFixed) draws the initiative mark as ` ⭐` (`.linit`). Each platform's emoji font draws these its own way. The client already has one icon set that renders the same everywhere: ui/components/icon.ts (inline SVG, 24×24, outline, stroke currentColor), which has a trophy (`league`) but no scales and no star. \"Still\" refers to his inbox request of 2026-11-10 (BL-17's closing note: \"I'd rather display a little icon\"), which fa768cfa answered with these emoji.",
+    evidence: "Report #379, room MVGY (constructed, mycheze v Gember, played 2026-11-11, after fa768cfa went live on 2026-11-10), action 66. MVGY fetched and replayed 2026-11-11 (steward triage): 79 actions, FAITHFUL. The markup read in ui/pages/profile.ts seatBadgeHtml/seatBadgeTipHtml and ui/main.ts pnameFixed; pinned as emoji by ui/test/1174-seat-badge-on-the-board (lines 42, 45, 68, 75, 78, 96, 98).",
+    fix: "Add a `judge` glyph (a balance/scales, in icon.ts's one style) and a `star` (initiative) to GLYPHS in ui/components/icon.ts — test 1002 and the story gallery loop ICON_NAMES, so both get them for free. seatBadgeHtml draws icon('judge') with the level digit and icon('league') with the champion count; seatBadgeTipHtml's tip heads use the same icons; pnameFixed's initiative mark becomes icon('star') (keep its title and the `.linit.off` hidden-not-removed layout). Size the icons to the name text (icon() is 1em by default) and keep the judge icon in --accent (now it takes, being currentColor). Rewrite 1174's emoji assertions to the SVG markup and add one that fails if any of ⚖ 🏆 ⭐ appears in the nameplate. Grep all four test dirs for '⭐' and 'linit' before changing the star (other board tests may read it). In scope to note, not to change unless the owner says so: the profile's worded chips and its 🏆/🥈/🏅 trophy chips (pages/profile.ts PLACE), which are not beside a name at the table. Player-visible: an updates.ts line.",
+    proof: () => still('ui/pages/profile.ts', '<span class="sbicon judge">⚖', '<span class="sbicon champion">🏆'),
+    reportId: 379,
+    status: "open",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

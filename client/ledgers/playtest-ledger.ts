@@ -482,6 +482,12 @@ const OPEN: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "Second take-back in CTTM (see #377). --branch triage: none of (a)-(d). Taken back four passes [338]-[341] that resolved proud's Suppression Field on Omniwield Evoker (its mods erased, its Unstable Form trigger negated) and Bloatfiend's discard on Nyar's empty hand. On the redo Nyar used Enigmatic Warder's mod ([two]: change a target of target effect to me) on Suppression Field [338]-[339], so it hit the Warder instead and the Evoker kept its mods; the stack then resolved on passes [340]-[343]. Legal as printed. The player answering a spell they had let resolve. No defect.",
   },
+  {
+    id: 379, room: "MVGY", date: "2026-11-11",
+    report: "mycheze, seat 0 (ux, minor): \"I'm still unhappy with the look of the badges next to player names. Are they just raw emojis? Cause they render very ugly like that. Better to find actual assets that look good and render the same on all devices and look a lil nicer.\"",
+    status: 'live',
+    note: "Real. They are raw emoji: the board draws the judge badge as ⚖ (U+2696 with no variation selector, so phones draw it as a colour emoji and its accent colour is ignored) with the level as a digit, a league champion as 🏆 (ui/pages/profile.ts seatBadgeHtml, from fa768cfa on 2026-11-10 — the owner's own \"a little icon\" request, which this answers), and the same nameplate draws the initiative mark as ⭐ (ui/main.ts pnameFixed). Each device's emoji font draws them differently. The client already has an SVG icon set that renders the same everywhere (ui/components/icon.ts, with a trophy but no scales or star). MVGY (mycheze v Gember, constructed, played after fa768cfa went live) fetched and replayed: 79 of 79 actions, FAITHFUL — a look, not a game fault. CT-556 filed: draw the three marks from the icon set.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
