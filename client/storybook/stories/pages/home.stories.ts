@@ -169,6 +169,10 @@ export const JoinSheetEmpty = {
   name: 'Sheet: Join a room, nothing waiting',
   render: () => page(homeHtml(view({ sheet: 'join' }))),
 };
+export const JoinSheetNoCode = {
+  name: 'Sheet: Join a room, Join pressed with no code',
+  render: () => page(homeHtml(view({ sheet: 'join', joinError: 'Type the room code first.' }))),
+};
 export const InfoSheet = { name: 'Sheet: the client info', render: () => page(homeHtml(view({ sheet: 'info' }))) };
 export const UpdatesSheet = { name: 'Sheet: updates', render: () => page(homeHtml(signedIn({ sheet: 'updates' }))) };
 export const CustomRulesSheet = { name: 'Sheet: game values', render: () => page(homeHtml(signedIn({ sheet: 'rules' }))) };

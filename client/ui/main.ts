@@ -192,7 +192,7 @@ import { CLOCK_DEFAULT_MS, chosenClockMs, setMatchClockChoice } from './pages/cl
 import { CONNECTING, connectingHtml } from './pages/connecting.ts';
 import { seatBadgeHtml, seatBadgeTipHtml, type SeatBadge } from './pages/profile.ts';
 import { importDeck } from './pages/deckpicker.ts';
-import { closeHomeSheet, openHomeSheet, paintHome, saveHomeName, setHomeFormat, setHomeMode } from './pages/home.ts';
+import { closeHomeSheet, joinCodeTarget, openHomeSheet, paintHome, saveHomeName, setHomeFormat, setHomeMode } from './pages/home.ts';
 import { paintWaiting } from './pages/waiting.ts';
 import { paintQueue } from './pages/queue.ts';
 import { frameChromeView, setChromeSource } from './pages/frame.ts';
@@ -10446,23 +10446,24 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
   }
   if (b === 'deckimporturl') {
     const inp = document.getElementById('h-deckurl') as HTMLInputElement | null;
-    const url = inp?.value.trim();
-    if (url) importDeck({ url }, NET ? render : renderHome);
+    // an empty box is said, not ignored (importDeck)
+    importDeck({ url: inp?.value ?? '' }, NET ? render : renderHome);
     return true;
   }
   if (b === 'deckimporttext') {
     const ta = document.getElementById('h-decktext') as HTMLTextAreaElement | null;
-    const text = ta?.value.trim();
-    if (text) importDeck({ text }, NET ? render : renderHome);
+    importDeck({ text: ta?.value ?? '' }, NET ? render : renderHome);
     return true;
   }
   if (b === 'deckjoin') { NET?.sendJoin(true); return true; }
   if (b === 'singlejoin') { if (NET) { NET.singleArmed = true; NET.sendJoin(); } return true; }
   if (b === 'joincode') {
     saveHomeName();
-    const code = (document.getElementById('h-code') as HTMLInputElement).value.trim().toUpperCase();
-    if (!code) return true;
-    location.search = `?ws=1&room=${encodeURIComponent(code)}`;
+    const box = document.getElementById('h-code') as HTMLInputElement | null;
+    const target = joinCodeTarget(box?.value ?? '');
+    // an empty box: the Join sheet says so, and the box takes the typing
+    if (!target) { renderHome(); (document.getElementById('h-code') as HTMLInputElement | null)?.focus?.(); return true; }
+    location.search = target;
     return true;
   }
   if (b === 'gohome') { goHome(); return true; }

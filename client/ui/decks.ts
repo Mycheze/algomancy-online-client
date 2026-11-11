@@ -50,6 +50,12 @@ import { onShareFriends, shareFriends } from './inbox.ts';
 import type { DeckPile } from './deckarrange.ts';
 import { MATCH_COPY_CAP, SIDEBOARD_MAX, checkMatchDeck, type MatchConfig } from '../engine/src/matchdeck.ts';
 
+/** what an import says when its box is empty — the Decks page's import sheet
+ * and the home screen's (pages/deckpicker.ts importDeck). BL-10,
+ * docs/23-ui-inventory/01 §4 S16: the press used to do nothing at all. */
+export const EMPTY_DECK_LINK = 'Paste an algomancer.cc deck link first.';
+export const EMPTY_DECK_LIST = 'Paste a deck list first.';
+
 // ── the shapes the server sends (server/collection.ts) ────────────────
 
 export interface DeckRecord {
@@ -677,7 +683,12 @@ export function handleButton(btn: HTMLElement): boolean {
       const url = (document.getElementById('dk-url') as HTMLInputElement | null)?.value?.trim() ?? '';
       const text = (document.getElementById('dk-text') as HTMLTextAreaElement | null)?.value?.trim() ?? '';
       const body = b === 'deck-import-url' ? { url } : { text };
-      if (!(b === 'deck-import-url' ? url : text)) return true;
+      // BL-10 (docs/23-ui-inventory/01 §4 S16): an empty box is said, not ignored
+      if (!(b === 'deck-import-url' ? url : text)) {
+        pageSheet = { kind: 'import', msg: b === 'deck-import-url' ? EMPTY_DECK_LINK : EMPTY_DECK_LIST };
+        paint();
+        return true;
+      }
       pageSheet = { kind: 'import', msg: 'Importing…' };
       paint();
       void post('/api/decks/import', body).then(r => {

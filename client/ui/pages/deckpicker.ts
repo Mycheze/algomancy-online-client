@@ -161,8 +161,14 @@ export function wireDeckPicker(rerender: () => void): void {
   });
 }
 
-/** import a deck through the server (link fetch or paste parse) */
+/** import a deck through the server (link fetch or paste parse). An empty
+ * box is answered here, with no request. */
 export function importDeck(body: { url?: string; text?: string }, rerender: () => void): void {
+  // BL-10 (docs/23-ui-inventory/01 §4 S16): Load / Use pasted list with the
+  // box empty did nothing at all; now the line under it says what is missing
+  const url = body.url?.trim() ?? '', text = body.text?.trim() ?? '';
+  if (!url && !text) { deckMsg = 'url' in body ? dk.EMPTY_DECK_LINK : dk.EMPTY_DECK_LIST; rerender(); return; }
+  body = url ? { url } : { text };
   deckMsg = 'importing…';
   rerender();
   fetch('/api/deck/import', {

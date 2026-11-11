@@ -190,6 +190,8 @@ let busy = false;
 /** profile screen tab */
 let tab: ProfileTab = 'overview';
 let friendMsg = '';
+/** Add with the friend box empty (BL-10, docs/23-ui-inventory/01 §4 S16: it did nothing) */
+export const EMPTY_FRIEND_LINE = 'Type their username first.';
 /** #296: the change-password box's last answer (the server's error, or done) */
 let pwMsg: { text: string; ok: boolean } | null = null;
 /** why choosing a favourite element did not take (shown under the picker) */
@@ -657,7 +659,8 @@ export function handleButton(btn: HTMLElement): boolean {
       // the board's Add carries the name; the box under "Add a friend" is typed
       const input = document.getElementById('a-friend') as HTMLInputElement | null;
       const username = (btn.dataset['name'] ?? input?.value ?? '').trim();
-      if (!username) return true;
+      // BL-10 (docs/23-ui-inventory/01 §4 S16): an empty box is said, not ignored
+      if (!username) { friendMsg = EMPTY_FRIEND_LINE; renderScreen(); return true; }
       void post<{ me?: Me; friends?: boolean }>('/api/friends/request', { username }).then(r => {
         friendMsg = r.ok
           ? (r.friends ? `you and ${username} are now friends` : `request sent to ${username}`)

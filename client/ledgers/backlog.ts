@@ -672,7 +672,18 @@ const OPEN: Entry[] = [
       + 'bar and a spoken "Your match:") and, same shape on the home League card, the track\'s now step (bold, '
       + 'aria-current). Left on purpose: `.qstripcount.live`, whose words already differ ("nobody waiting" vs "2 '
       + 'waiting"). Guarded by 1226-state-not-by-colour-alone.test.ts (§4: each state rule declares a property that is '
-      + 'not a colour). Reasoned, not looked at (no browser).',
+      + 'not a colour). Reasoned, not looked at (no browser).\n\n'
+      + '2026-11-11 (steward): a button pressed with its box empty says what is missing (docs/23-ui-inventory/01 §4 S16: '
+      + '"An empty room code is ignored with no message"). The class was five buttons that read a text box, found it '
+      + 'empty and returned without a word: the home Join sheet\'s Join (pages/home.ts joinCodeTarget, a red line under '
+      + 'the code row, "Type the room code first.", and the box takes the focus), the home Import sheet\'s Load and Use '
+      + 'pasted list (pages/deckpicker.ts importDeck answers an empty box itself, with no request), the Decks page\'s '
+      + 'import sheet, the same two (decks.ts EMPTY_DECK_LINK / EMPTY_DECK_LIST), and the profile\'s Add a friend '
+      + '(account.ts EMPTY_FRIEND_LINE). Each line goes in the message spot that button already had. Story "Sheet: Join '
+      + 'a room, Join pressed with no code". Guarded by 1227-empty-box-is-said.test.ts (§4 a census: no ui/ or pages/ '
+      + 'handler reads a box and returns silently on empty). Left on purpose: the two ask-the-judge boxes (table and '
+      + 'lesson), chat boxes whose Ask sends nothing when empty. Left: S16\'s silent reload after a deploy, and league '
+      + 'and challenge fetch failures drawing nothing. Reasoned, not looked at (no browser).',
   },
   {
     id: 'BL-51',

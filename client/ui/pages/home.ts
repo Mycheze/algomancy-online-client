@@ -140,11 +140,25 @@ let sheetByHover = false;
 let paintedSheet: HomeSheet | null = null;
 
 export const openSheet = (): HomeSheet | null => homeSheet;
+
+/** The Join sheet's line when Join was pressed with the box empty, or ''.
+ * BL-10, docs/23-ui-inventory/01 §4 S16: "An empty room code is ignored with
+ * no message" — the press did nothing at all. Cleared when a sheet opens. */
+let joinMsg = '';
+export const EMPTY_CODE_LINE = 'Type the room code first.';
+/** joincode: the search string that opens the typed room, or null when the box
+ * is empty — and then the Join sheet says so (EMPTY_CODE_LINE) */
+export function joinCodeTarget(typed: string): string | null {
+  const code = typed.trim().toUpperCase();
+  joinMsg = code ? '' : EMPTY_CODE_LINE;
+  return code ? `?ws=1&room=${encodeURIComponent(code)}` : null;
+}
 /** home-sheet data-sheet=<name>. Opening the update log marks it seen. */
 export function openHomeSheet(name: string | undefined, how: 'click' | 'hover' = 'click'): boolean {
   if (!(HOME_SHEETS as readonly string[]).includes(name ?? '')) return false;
   homeSheet = name as HomeSheet;
   sheetByHover = how === 'hover';
+  joinMsg = '';
   if (homeSheet === 'updates') markSeen();
   return true;
 }
@@ -228,6 +242,8 @@ export interface HomeView {
   clock: ClockPickView;
   /** the last refusal (main.ts `uiError`), or '' */
   error: string;
+  /** the Join sheet's "type a code" line (joinCodeTarget), or '' */
+  joinError?: string;
   deckPicker: DeckPickerView;
   /** a deck is chosen: Create room is live on Casual */
   hasDeck: boolean;
@@ -297,6 +313,7 @@ export function homeView(st: HomeState): HomeView {
     },
     clock: clockPickView(mode === 'constructed' && homeIsMatch({ format: homeFormat(), competitive: ccView }) ? 'competitive' : mode),
     error: st.error,
+    joinError: joinMsg,
     deckPicker: deckPickerView(),
     hasDeck: !!deck,
     competitive: ccView,
@@ -560,6 +577,7 @@ function joinBody(v: HomeView): string {
         spellcheck="false" style="text-transform:uppercase">
       ${button({ label: 'Join', variant: 'action', dataBtn: 'joincode' })}
     </div>
+    ${v.joinError ? statusMessage({ tag: 'p', tone: 'error', className: 'pageerr', text: v.joinError }) : ''}
     ${waiting || '<p class="homejoinnone">Nothing waiting for you — ask for a code.</p>'}`;
 }
 
