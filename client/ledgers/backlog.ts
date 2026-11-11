@@ -784,13 +784,19 @@ const OPEN: Entry[] = [
       'A guard test holds the mode\'s palette to those contrast numbers, as test 1030 holds the default one',
     ],
     decided: [
-      'Not built yet: the owner named it as a future item on 2026-11-03. Do not fold it into a palette round.',
+      'The owner named it as a future item on 2026-11-03. Do not fold it into a palette round.',
+      'The switch is Settings → Colours → Standard / Accessible on the profile (owner, 2026-11-07, ui/prefs.ts: '
+        + 'data-colors="accessible" on <html>, kept in localStorage algoColors). It is "for red-green colour blindness": '
+        + 'it re-points the colours that collide and keeps each element\'s family — it is not a separate high-contrast skin.',
     ],
     asks: [],
     deps: [],
     touches: [
       'client/ui/styles/tokens.css',
+      'client/ui/prefs.ts',
       'client/ui/test/1030-manual-palette.test.ts',
+      'client/ui/test/1160-accessible-colours.test.ts',
+      'client/ui/test/1221-accessible-palette.test.ts',
     ],
     notes:
       'Starting numbers, from the palette round (var/records/ds-round-2026-11-03-r2-theme.md): on the '
@@ -799,7 +805,21 @@ const OPEN: Entry[] = [
       + 'icon reads faint. Danger text on a raised panel is 3.95:1 and white on the red badges 3.03:1, '
       + 'the two pairs the default palette leaves under 4.5. The board\'s state colours are table roles '
       + 'in tokens.css (--glow legal green, --target targeting gold, --pending teal, --danger); green '
-      + 'vs gold and teal vs green are the pairs a deuteranope loses first.',
+      + 'vs gold and teal vs green are the pairs a deuteranope loses first. '
+      + 'PROGRESS. 2026-11-07 (profile round): doneWhen 1 — the switch, remembered per browser, on a guest\'s profile too; '
+      + 'fire, earth, wood, legal, targeting, in progress and success re-pointed, and the fire/earth/wood icons swapped '
+      + '(ui/test/1160). 2026-11-11 (steward): doneWhen 4 — ui/test/1221 recomputes the theme\'s numbers (Machado 2009 + '
+      + 'CIEDE2000: elements 15.8 apart in every vision, the four table roles 15.9 — the comment had said 24.1, it was 18.0 — '
+      + 'and AA for every text colour the theme re-points); "in progress" #b553d5 → #d080f8 (it was 2.9:1 as text on a '
+      + 'raised panel); and the targeting half of doneWhen 3: in the mode a target (.card / .life / .stackcard .candidate) '
+      + 'wears a ◎ mark (a mark, not a doubled ring: ui/test/326 holds the owner\'s 2026-09-27 "double green border" complaint), so legal and targeting differ by more than hue. '
+      + 'STILL OPEN, measured 2026-11-11 with the mode on: (a) element colours as SHAPES on the panels — earth 1.5:1 on a '
+      + 'raised panel (darker than the standard earth\'s 2.4), wood 2.2, dark 2.5, fire 3.5, water 3.5; 4.5 for a mid-tone '
+      + 'element is not possible while white ink stays over 3:1 on it (a raised panel needs luminance ≥ .35, white ink ≥ 3 '
+      + 'needs ≤ .30), so the shape needs an outline or the chip a label, not a colour; (b) danger text on a raised panel '
+      + '3.95:1 in both modes (lifting it puts white on the red badges under 3); (c) doneWhen 2, elements by shape or label '
+      + 'everywhere, not yet audited; (d) other board rings that are hue alone: .card.selected #7fc0ff vs .card.playable '
+      + '(cyan in the mode) are 6.9 apart to a tritan, both solid.',
   },
   // ── the leftovers of the 2026-11-02/03 rounds (Competitive Constructed, the design
   //    system, the new home, board-r1), filed 2026-11-03. Owner, that night: "put all

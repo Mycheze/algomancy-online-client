@@ -191,15 +191,19 @@
    keeps each element's family: fire an orange, earth a deep brown, wood a
    teal-green. Measured with Machado 2009 simulation, the closest element pair
    across normal, protan, deutan and tritan vision is 15.8, and the table's
-   four roles (legal, targeting, in progress, danger) 24.1; white ink stays
+   four roles (legal, targeting, in progress, danger) 15.9; white ink stays
    over 3.2:1 on every element. Water, metal, light and dark already clear it
    and do not move. Success (a win) turns cyan; danger (a loss) stays red,
-   33 apart to a deutan where the green and red were 4.3. */
+   33 apart to a deutan where the green and red were 4.3. In progress was
+   #b553d5 until BL-51 (2026-11-11): as text it was 2.9:1 on a raised panel;
+   this magenta clears 4.5 on every surface. A target also wears a ◎ mark
+   in this mode (board/03), so it is not told by hue alone.
+   ui/test/1221 recomputes every number in this comment. */
 :root[data-colors="accessible"] {
   --fire: #e76013; --earth: #7d4113; --wood: #1a7958;
   --glow: #67ddde; --glow-rgb: 103 221 222;
   --target: #eade4e; --target-rgb: 234 222 78;
-  --pending: #b553d5;
+  --pending: #d080f8;
   --color-success: #67ddde; --color-success-bg: #163b44;
 }
 

@@ -169,6 +169,12 @@
 /* the top of the stack sits proud of the rest: it is the thing about to happen */
 .stackcard.top { transform: translateY(-8px); box-shadow: 0 5px 14px rgba(0,0,0,.6); }
 .stackcard.candidate { outline: 2px solid var(--target); cursor: pointer; }
+/* BL-51: with accessible colours on, a target on the stack wears the board's
+   target mark too (03-life-cards-battle-log.css): the ◎ in its lower-right
+   corner, above the scan (z-index 1) and the target-missing chip (4) */
+:root[data-colors="accessible"] .stackcard.candidate::after { content: '◎'; position: absolute; right: 2px; bottom: 2px;
+  z-index: 5; pointer-events: none; padding: 0 3px; border-radius: 999px; background: var(--target); color: #1a1405;
+  font-size: 11px; font-weight: 700; line-height: 1.3; box-shadow: 0 0 0 1px rgba(0,0,0,.6); }
 .stackcard:hover { transform: translateY(-12px) scale(1.06); z-index: 60 !important;
   box-shadow: 0 8px 20px rgba(0,0,0,.7); }
 /* CR 704.4: a negated item is off the rules stack the instant the negation
