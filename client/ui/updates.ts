@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-11', kind: 'fix', text: 'With Accessible colours on, a card you have picked (a unit in your formation, a card ticked in a choose-cards window) now wears a small ✓. Its blue ring looked like the ring on cards you could still pick.' },
   { date: '2026-11-11', kind: 'fix', text: 'On the Metagame page, a card you searched for on the Card duel ladder no longer turns up as a search on Published decks, hiding decks without it, or the other way round. Each tab keeps its own search box.' },
   { date: '2026-11-11', kind: 'fix', text: 'Pressing Join with no room code, Load or Use pasted list with nothing pasted, or Add a friend with no name used to do nothing at all. Each now says what is missing, like "Type the room code first."' },
   { date: '2026-11-11', kind: 'fix', text: 'A few things were marked by colour alone. A number you changed in Game values now has a dot beside its name. On the League banner, past weeks have a ✓, this week is bold and your own pairing has a bar beside it.' },

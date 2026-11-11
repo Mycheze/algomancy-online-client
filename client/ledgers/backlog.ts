@@ -747,7 +747,12 @@ const OPEN: Entry[] = [
       + 'needs ≤ .30), so the shape needs an outline or the chip a label, not a colour; (b) danger text on a raised panel '
       + '3.95:1 in both modes (lifting it puts white on the red badges under 3); (c) doneWhen 2, elements by shape or label '
       + 'everywhere, not yet audited; (d) other board rings that are hue alone: .card.selected #7fc0ff vs .card.playable '
-      + '(cyan in the mode) are 6.9 apart to a tritan, both solid.',
+      + '(cyan in the mode) are 6.9 apart to a tritan, both solid. '
+      + '2026-11-11 (steward): (d) DONE for the picked ring — measured, it is worse to a deutan, the mode\'s audience: '
+      + '#7fc0ff against the mode\'s cyan legal ring is 12.1 apart (43.8 against the standard green), so the mode made a '
+      + 'picked card (formation, send list, a ticked pick-a-set card) and a pickable one look alike. In the mode a '
+      + '`.card.selected` now wears a ✓ in the ◎ corner (board/03; a picked target keeps the ◎). Guarded by 1221 §5. '
+      + 'Still open: (a), (b), (c).',
   },
   // ── the leftovers of the 2026-11-02/03 rounds (Competitive Constructed, the design
   //    system, the new home, board-r1), filed 2026-11-03. Owner, that night: "put all

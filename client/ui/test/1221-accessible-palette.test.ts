@@ -25,6 +25,9 @@
  *   §4 a target is told by a MARK as well as hue: a ◎ (not a doubled ring —
  *      the owner turned that look down, test 326), on a card, a player's life
  *      and a stack item, and only in the mode
+ *   §5 a PICKED card (your formation, the send list, a ticked pick-a-set card)
+ *      wears a ✓ in the mode: its blue ring is the mode's cyan legal ring to a
+ *      deutan, though not with the standard green
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -196,4 +199,21 @@ test('1221 §4 accessible: a target wears a ◎ mark, on a card, a life and a st
   // the legal ring is not marked, so the two differ by more than hue
   assert.equal(body(`${A} .card.playable::after`), '', 'the legal ring carries no mark');
   assert.match(body('.card.playable'), /outline:\s*2px solid var\(--glow\)/);
+});
+
+test('1221 §5 accessible: a picked card wears a ✓, because its blue ring is the mode\'s legal cyan to a deutan', () => {
+  // why: the mode moves the legal ring from green to cyan, onto the picked blue
+  const blue = /outline:\s*3px solid (#[0-9a-f]{6})/i.exec(body('.card.selected'))?.[1]?.toLowerCase();
+  assert.ok(blue, 'the picked ring is a solid #rrggbb outline');
+  const std = apart(blue!, tok(STD, '--glow'), 'deutan'), acc = apart(blue!, tok(ACC, '--glow'), 'deutan');
+  assert.ok(std >= 30, `picked / legal with the standard colours, to a deutan: ${std.toFixed(1)}`);
+  assert.ok(acc < 15, `picked / legal in the mode, to a deutan: ${acc.toFixed(1)} — if this clears 15, the mark may be unneeded`);
+  const sel = `${A} .card.selected:not(.candidate)::after`;
+  const mark = body(sel);
+  assert.match(mark, /content:\s*'✓'/, 'the ✓ mark in the accessible mode');
+  assert.match(mark, /position:\s*absolute/, 'the mark sits on the card, out of the layout');
+  assert.match(mark, /pointer-events:\s*none/, 'the mark never takes the click');
+  assert.equal(body('.card.selected::after'), '', 'no mark without the mode');
+  // a picked target keeps the ◎: the ✓ stands aside rather than fight it for the one ::after
+  assert.ok(/:not\(\.candidate\)/.test(sel) && body(`${A} .card.candidate::after`).includes('◎'));
 });
