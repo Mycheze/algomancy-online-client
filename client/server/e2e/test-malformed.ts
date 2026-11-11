@@ -27,6 +27,7 @@ import { createServer } from 'node:http';
 import { connect, type AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { CODE_ALPHABET } from '../link.ts';
 import { spawnServer } from './test-util.ts';
 
 const SCRATCH = mkdtempSync(join(tmpdir(), 'algo-malformed-'));
@@ -197,8 +198,17 @@ try {
   const files = (() => { try { return readdirSync(GAMES); } catch { return []; } })();
   ok(files.length === 10, `…and the ten that opened each wrote their file, as BL-06 wants (games dir has ${files.length})`);
 
+  // ⚠ The guesses must be codes the server can NEVER mint. They were
+  // 'ZZZA'…'ZZZU', eighteen of them real codes, sent right after the ten
+  // sandbox rooms above drew from the same alphabet: about one run in 1,550 a
+  // guess was a live room, the watch succeeded, only twenty misses counted, and
+  // the socket stayed open (got -1, the BL-17 gate of 2026-11-11). An 'I' is
+  // never in a minted code (link.ts drops I, L and O), so these miss every time.
+  const guesses = Array.from({ length: 21 }, (_, i) => 'ZZI' + String.fromCharCode(65 + i));
+  ok(guesses.every(g => [...g].some(ch => !CODE_ALPHABET.includes(ch))),
+    'sanity: no guessed code is one the server could hand out');
   const guesser = await openSocket();
-  for (let i = 0; i < 21; i++) guesser.ws.send(JSON.stringify({ t: 'watch', room: 'ZZZ' + String.fromCharCode(65 + i) }));
+  for (const room of guesses) guesser.ws.send(JSON.stringify({ t: 'watch', room }));
   const guessClose = await Promise.race([guesser.closed, sleep(3000).then(() => -1)]);
   ok(guessClose === 1008, `twenty-one unknown room codes on one socket and it is closed with 1008 (got ${guessClose})`);
   ok(alive() && await httpOk(), 'and the process is still there after the ceilings');
