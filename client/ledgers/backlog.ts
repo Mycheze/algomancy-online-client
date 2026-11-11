@@ -862,7 +862,12 @@ const OPEN: Entry[] = [
       'The owner has moved cards across on a real iPad',
     ],
     decided: [],
-    asks: [],
+    asks: [
+      'WAITING ON THE OWNER (steward, 2026-11-11): every doneWhen line but the last is done and guarded; the last is '
+      + '"The owner has moved cards across on a real iPad", which no night run can do. Has the sideboarding table worked '
+      + 'on your iPad between two Competitive games (tap or drag a copy across; your own piles; hover/hold zoom)? Yes closes '
+      + 'BL-55; anything wrong becomes a CT. Off the night queue until then.',
+    ],
     deps: [],
     touches: [
       'client/ui/pages/match.ts',
