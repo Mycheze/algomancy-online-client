@@ -25,7 +25,7 @@ export const overlay = (html: string, height = 760): string =>
 export const LEAGUE_GLANCE = `<div class="lgglance">
     <div class="lgglname">November Constructed</div>
     <div class="lgglphase">Competitive · Week 2 of 3</div>
-    <ol class="lggltrack"><li class="past">Sign-ups</li><li class="past">W1</li><li class="now">W2</li><li class="next">W3</li><li class="next">Final</li></ol>
+    <ol class="lggltrack"><li class="past">Sign-ups</li><li class="past">W1</li><li class="now" aria-current="step">W2</li><li class="next">W3</li><li class="next">Final</li></ol>
     <div class="lgglrow"><span class="lgglstate in">✓ you're in</span><span class="lgglplayers">14 players</span></div>
     <div class="lgglmatch">This week vs: <b>Cy</b> (Sun 9 Nov, 18:00) and <b>Quillon</b></div>
     <ol class="lgglleaders"><li><span>Rashi</span><b>9</b></li><li><span>Quillon</span><b>6</b></li><li><span>Cy</span><b>6</b></li></ol>

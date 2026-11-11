@@ -87,6 +87,7 @@
 .crknob { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-13); }
 .crknob span { flex: 1; color: var(--dim); }
 .crknob.changed span { color: var(--text); }
+.crknob .crchanged { font-style: normal; font-size: .7em; color: var(--accent); vertical-align: middle; }
 .crknob b { min-width: 2ch; text-align: center; }
 .crknob button { padding: 0 var(--space-3); line-height: 22px; }
 .crvaluesfoot { margin-top: var(--space-6); }

@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-11', kind: 'fix', text: 'A few things were marked by colour alone. A number you changed in Game values now has a dot beside its name. On the League banner, past weeks have a ✓, this week is bold and your own pairing has a bar beside it.' },
   { date: '2026-11-11', kind: 'fix', text: 'With a screen reader, the − and + buttons in Game values and on the card stats page now say which number they change, like "Pack size: one less". Before, all ten in Game values were read out as just "fewer" and "more".' },
   { date: '2026-11-11', kind: 'fix', text: 'The Alerts button in the top bar now lights up while your notifications list is open, like every other button whose panel is open, and goes back when you close it.' },
   { date: '2026-11-11', kind: 'change', text: 'Between Competitive games, the sideboarding table now lays your deck out in the piles you arranged in the deck builder, instead of always by cost. A card you sideboard out and back goes back to its own pile.' },

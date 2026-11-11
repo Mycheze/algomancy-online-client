@@ -61,7 +61,7 @@ test('974 §2 with rules: Beginner, a changed knob, a bound, a ban chip', () => 
   const rules = { ...STANDARD, packSize: 15, simpleOnly: true, bans: ['Ignis Sprite'] } as CustomRules;
   const html = customRulesHtml(rview({ active: rules, rules, beginner: true, values: ['Packs of 15'], summary: ['Packs of 15', 'Simple cards only'] }));
   assert.match(html, /class="ui-segmented__option on" data-btn="cr-beginner"[^>]*data-value="beginner"/);
-  assert.match(html, /<div class="crknob changed"><span>Pack size<\/span>/);
+  assert.match(html, /<div class="crknob changed"><span>Pack size <i class="crchanged" aria-hidden="true" title="Changed — the standard is 10">●<\/i>/);
   assert.match(html, /data-knob="packSize" data-d="1" disabled/, 'the + stops at the top');
   assert.match(html, /ui-toggle on crsimple" data-btn="cr-simple" type="button" aria-pressed="true"/);
   assert.match(html, /<span class="crchip">Ignis Sprite <button data-btn="cr-unban" data-name="Ignis Sprite"/);

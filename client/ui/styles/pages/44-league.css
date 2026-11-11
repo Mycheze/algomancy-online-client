@@ -69,7 +69,8 @@
 .lgbdates li { padding: var(--space-1) var(--space-4); border: 1px solid var(--line); border-radius: 12px; color: var(--text); }
 .lgbdates li span { color: var(--dim); }
 .lgbdates li.past { opacity: .5; }
-.lgbdates li.now { border-color: var(--accent); }
+.lgbdates li.now { border-color: var(--accent); font-weight: 600; }
+.lgbdates li .lgbover { margin-right: var(--space-1); }
 .lgbdates li.now span { color: var(--accent); }
 .lgbbody { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-5) var(--space-7); margin-top: var(--space-5); font-size: var(--text-13); }
 .lgbbody h3 { margin: 0 0 var(--space-3); color: var(--dim); font-size: var(--text-11); text-transform: uppercase; letter-spacing: .08em; }
@@ -88,7 +89,7 @@
 .lgbtable td:nth-child(n+3) { text-align: right; white-space: nowrap; color: var(--dim); }
 .lgbrows { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-1); }
 .lgbrows li { display: flex; justify-content: space-between; gap: var(--space-4); }
-.lgbrows li.mine { color: var(--accent); }
+.lgbrows li.mine { color: var(--accent); border-left: 3px solid var(--accent); padding-left: var(--space-3); }
 .lgbchamp { font-size: var(--text-16); }
 
 /* league (docs/20-league.md): Play / call off beside a match, the sign-up

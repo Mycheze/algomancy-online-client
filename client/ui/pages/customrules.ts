@@ -94,7 +94,10 @@ export function gameValuesHtml(v: CustomRulesView): string {
   const stepper = (k: DealKnob): string => {
     const [lo, hi] = DEAL_BOUNDS[k];
     const val = rules[k];
-    return `<div class="crknob${val !== DEAL_DEFAULTS[k] ? ' changed' : ''}"><span>${KNOB_LABEL[k]}</span>
+    // a changed number is told by a mark as well as the label's brighter colour (docs/23-ui-inventory/01 §4 S15)
+    const changed = val !== DEAL_DEFAULTS[k];
+    return `<div class="crknob${changed ? ' changed' : ''}"><span>${KNOB_LABEL[k]}${changed
+      ? ` <i class="crchanged" aria-hidden="true" title="Changed — the standard is ${DEAL_DEFAULTS[k]}">●</i><span class="srname">, changed from the standard ${DEAL_DEFAULTS[k]}</span>` : ''}</span>
       <button data-btn="cr-step" data-knob="${k}" data-d="-1" ${val <= lo ? 'disabled' : ''} aria-label="${KNOB_LABEL[k]}: one less">−</button>
       <b>${val}</b>
       <button data-btn="cr-step" data-knob="${k}" data-d="1" ${val >= hi ? 'disabled' : ''} aria-label="${KNOB_LABEL[k]}: one more">+</button></div>`;

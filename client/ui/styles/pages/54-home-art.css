@@ -84,7 +84,7 @@
   color: var(--color-text-muted); font-size: var(--text-11); font-weight: 600; text-align: center; white-space: nowrap; }
 .lggltrack li:first-child { border-radius: 2px 0 0 2px; }
 .lggltrack li.past { border-top-color: color-mix(in srgb, var(--color-accent) 55%, transparent); }
-.lggltrack li.now { border-top-color: var(--color-accent); color: var(--color-accent); }
+.lggltrack li.now { border-top-color: var(--color-accent); color: var(--color-accent); font-weight: 600; }
 .lgglrow { display: flex; gap: var(--space-5); align-items: baseline; font-size: var(--text-13); }
 .lgglplayers { color: var(--color-text-muted); }
 .lgglmatch { font-size: var(--text-13); }

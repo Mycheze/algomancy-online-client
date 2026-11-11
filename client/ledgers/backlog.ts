@@ -663,7 +663,16 @@ const OPEN: Entry[] = [
       + 'gameValuesHtml, now "Pack size: one less" / "…: one more" off KNOB_LABEL) and card stats\' min games '
       + '(pages/cardstats.ts minGamesHtml). The sandbox\'s mana pair already said "One less Fire". Nothing moved on screen. '
       + 'Guarded by the census 1225-steppers-name-what-they-change.test.ts (every − / + button in ui/pages/components '
-      + 'source, and the sheet rendered). Left: S15\'s `.crknob.changed`, a changed value told by colour alone.',
+      + 'source, and the sheet rendered). Left: S15\'s `.crknob.changed`, a changed value told by colour alone.\n\n'
+      + '2026-11-11 (steward): a state is told by more than its colour (docs/23-ui-inventory/01 §4 S15: "Colour is the only '
+      + 'state cue for `.qstripcount.live`, `.crknob.changed`, `.lgbdates .now/.past` and `.lgbrows li.mine`"). The class '
+      + 'was four: the Game values sheet\'s changed number (pages/customrules.ts gameValuesHtml: a ● beside its name, '
+      + 'title and spoken text "changed from the standard N"), the league banner\'s dates (pages/league.ts: ✓ and a '
+      + 'spoken "Over:" on the past ones, bold and aria-current="step" on now), the banner\'s own pairing (a 3px accent '
+      + 'bar and a spoken "Your match:") and, same shape on the home League card, the track\'s now step (bold, '
+      + 'aria-current). Left on purpose: `.qstripcount.live`, whose words already differ ("nobody waiting" vs "2 '
+      + 'waiting"). Guarded by 1226-state-not-by-colour-alone.test.ts (§4: each state rule declares a property that is '
+      + 'not a colour). Reasoned, not looked at (no browser).',
   },
   {
     id: 'BL-51',

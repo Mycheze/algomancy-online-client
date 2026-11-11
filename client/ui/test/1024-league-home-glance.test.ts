@@ -120,7 +120,7 @@ test('1024 §5 the track, the players, the leaders, your next match', () => {
   assert.deepEqual(v.matches.map(m => m.opponent), ['Cy']);
   assert.notEqual(v.matches[0]?.when, '', 'an agreed time is shown');
   const html = leagueGlanceHtml(v);
-  assert.match(html, /<ol class="lggltrack"><li class="past">Sign-ups<\/li><li class="past">W1<\/li><li class="now">W2<\/li>/);
+  assert.match(html, /<ol class="lggltrack"><li class="past">Sign-ups<\/li><li class="past">W1<\/li><li class="now" aria-current="step">W2<\/li>/);
   assert.match(html, /<span class="lgglstate in">✓ you're in<\/span><span class="lgglplayers">3 players<\/span>/);
   assert.match(html, /<div class="lgglmatch">This week vs: <b>Cy<\/b> \(/);
   assert.match(html, /<ol class="lgglleaders"><li><span>Cy<\/span><b>9<\/b><\/li>/);

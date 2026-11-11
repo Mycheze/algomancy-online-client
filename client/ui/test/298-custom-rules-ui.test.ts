@@ -56,7 +56,7 @@ test('BL-43 ui §2 the Beginner preset sends two elements, simple cards and pack
   const html = panelHtml(['fire', 'wood']);
   assert.match(html, /class="ui-segmented__option on" data-btn="cr-beginner"[^>]*data-on="1">Beginner</, 'Mode reads Beginner');
   assert.match(html, /ui-toggle on crsimple"/, 'Simple cards only shows as on');
-  assert.match(html, /<div class="crknob changed"><span>Pack size<\/span>[\s\S]*?<b>5<\/b>/);
+  assert.match(html, /<div class="crknob changed"><span>Pack size <i class="crchanged"[\s\S]*?<b>5<\/b>/);
   reset();
   assert.equal(createPayload(null), null, 'Back to standard sends nothing again');
 });

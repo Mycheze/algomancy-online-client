@@ -370,7 +370,7 @@ export function leagueGlanceHtml(v: LeagueGlanceView | null): string {
   return `<div class="lgglance">
     <div class="lgglname">${esc(v.name)}</div>
     <div class="lgglphase">${esc(v.phase)}</div>
-    ${v.track.length > 1 ? `<ol class="lggltrack">${v.track.map(t => `<li class="${t.state}">${esc(t.label)}</li>`).join('')}</ol>` : ''}
+    ${v.track.length > 1 ? `<ol class="lggltrack">${v.track.map(t => `<li class="${t.state}"${t.state === 'now' ? ' aria-current="step"' : ''}>${esc(t.label)}</li>`).join('')}</ol>` : ''}
     ${v.status || people ? `<div class="lgglrow">${v.status ? `<span class="lgglstate ${v.status}">${GLANCE_STATUS[v.status]}</span>` : ''}${people}</div>` : ''}
     ${v.matches.length ? `<div class="lgglmatch">This week vs: ${andList(v.matches.map(m =>
       `<b>${esc(m.opponent)}</b>${m.when ? ` (${esc(m.when)})` : ''}`))}</div>` : ''}
@@ -441,8 +441,10 @@ export function leagueBannerHtml(v: LeagueBannerView): string {
       <span class="lgbnext">${esc(nextText(s, tz))}</span>
       ${cta}
     </div>
-    ${bannerOpen ? `<ol class="lgbdates">${s.phases.map(p => `<li class="${
-      p.phase === s.phase ? 'now' : p.phase < s.phase ? 'past' : ''}"><span>${
+    ${bannerOpen ? `<ol class="lgbdates">${s.phases.map(p => `<li ${
+      // told by a mark and weight as well as colour (docs/23-ui-inventory/01 §4 S15): ✓ on what is over, bold on now
+      p.phase === s.phase ? 'class="now" aria-current="step"' : p.phase < s.phase ? 'class="past"' : 'class=""'}>${
+      p.phase < s.phase ? '<span class="lgbover" aria-hidden="true">✓</span><span class="srname">Over: </span>' : ''}<span>${
       esc(p.phase === 0 ? 'Sign-up week' : p.phase === s.weeks + 2 ? 'Ends' : p.label.replace(/ of \d+$/, ''))
     }</span> ${esc(p.phase === s.weeks + 2 ? lastDay(p.at, tz) : day(p.at, tz))}</li>`).join('')}</ol>
     <div class="lgbbody">
@@ -561,7 +563,7 @@ function tableHtml(s: SeasonView): string {
       ${s.standings.length > top.length ? `<p class="dim">+${s.standings.length - top.length} more on the League page</p>` : ''}
     </div>
     ${pairs.length ? `<div><h3>${s.phase > s.weeks ? 'The final' : `Week ${s.phase} pairings`}</h3>
-      <ul class="lgbrows">${pairs.slice(0, BANNER_ROWS).map(m => `<li class="${mine(m) ? 'mine' : ''}">${pairingText(m)}</li>`).join('')}</ul>
+      <ul class="lgbrows">${pairs.slice(0, BANNER_ROWS).map(m => `<li class="${mine(m) ? 'mine' : ''}">${mine(m) ? '<span class="srname">Your match: </span>' : ''}${pairingText(m)}</li>`).join('')}</ul>
       ${pairs.length > BANNER_ROWS ? `<p class="dim">+${pairs.length - BANNER_ROWS} more on the League page</p>` : ''}
     </div>` : ''}`;
 }
