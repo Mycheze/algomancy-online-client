@@ -21,8 +21,8 @@
 import * as acct from './account.ts';
 import {
   FORMATS, GRID_LEN, PRESETS, SHOW_DAYS, STAMP_STYLES, browserTz, defaultGrid, discordCode, fromWallValue,
-  hoursIn, LEAGUE_SECTIONS, leagueBannerHtml, leagueGlanceHtml, leagueGlanceView, leagueHtml, leagueJoinRowsHtml, leagueJoinView,
-  leagueNavHtml, leagueView, nextQuarter, presetHours, viewTz as tzOf, when as whenIn,
+  hoursIn, insertStamp, LEAGUE_SECTIONS, leagueBannerHtml, leagueGlanceHtml, leagueGlanceView, leagueHtml, leagueJoinRowsHtml, leagueJoinView,
+  leagueNavHtml, leagueView, monthStep, nextQuarter, presetHours, stampMessageHtml, stampParts, stampSet, viewTz as tzOf, when as whenIn,
   type Format, type LeagueSection, type LeagueState, type Preview, type StampStyle,
 } from './pages/league.ts';
 import { paintFrame } from './pages/frame.ts';
@@ -80,6 +80,12 @@ export const HINT_RETRY_MS = 15_000;
 let howOpen: boolean | null = null;
 /** the Discord time code's instant; null = not chosen yet (the next quarter hour) */
 let stampAt: number | null = null;
+/** the Discord message being written around the time code — kept for the
+ * visit, not stored — and where its caret was last (null = the end) */
+let stampMsg = '';
+let stampCaret: { start: number; end: number } | null = null;
+/** the month the time code's calendar shows ('YYYY-MM'), null = shut */
+let stampCal: string | null = null;
 /** the part of the season showing (the toolbar's tabs); Season each time the page opens */
 let section: LeagueSection = 'season';
 /** whether the home banner is unfolded — remembered, since a player who is
@@ -255,12 +261,16 @@ const when = (iso: string | number): string => whenIn(iso, viewTz());
 
 function paint(): void {
   if (!$app || !open) return;
+  const had = (globalThis.document?.activeElement as HTMLElement | null | undefined)?.id ?? '';
+  const keep = had.startsWith('lg-stamp-') ? had : '';
   // the app frame (pages/frame.ts): every region that scrolls keeps its place
   paintFrame($app, leagueHtml(leagueView({
-    data, hint, loading, msg, msgTone, draft, dirty, busy, arming, gridFocus, timeOpen, preview, stampAt, section,
+    data, hint, loading, msg, msgTone, draft, dirty, busy, arming, gridFocus, timeOpen, preview, stampAt, stampMsg, stampCal, section,
   })));
   wireGrid();
   wireStamp();
+  // a repaint replaces the time code's controls: the one that had the focus keeps it
+  if (keep) (document.getElementById(keep) as HTMLElement | null)?.focus?.();
 }
 
 // ── a Discord time code (pages/league.ts draws it) ────────────────────
@@ -268,11 +278,36 @@ function paint(): void {
 const stampMs = (): number => stampAt ?? nextQuarter(Date.now());
 
 function wireStamp(): void {
-  const el = document.getElementById('lg-stamp-at') as HTMLInputElement | null;
-  if (!el) return;
-  el.onchange = () => {
-    const at = fromWallValue(el.value, viewTz(), 1);
-    if (Number.isFinite(at)) { stampAt = at; paint(); }
+  const tz = viewTz();
+  const pick = (id: string, part: 'hour12' | 'minute'): void => {
+    const el = document.getElementById(id) as HTMLSelectElement | null;
+    if (!el) return;
+    el.onchange = () => {
+      const n = Number(el.value);
+      if (Number.isFinite(n)) { stampAt = stampSet(stampMs(), tz, { [part]: n }); paint(); }
+    };
+  };
+  pick('lg-stamp-hour', 'hour12');
+  pick('lg-stamp-min', 'minute');
+  const cal = document.getElementById('lg-stamp-calgrid');
+  if (cal) cal.onkeydown = (e: KeyboardEvent) => { if (e.key === 'Escape') { stampCal = null; paint(); } };
+  const box = document.getElementById('lg-stamp-msg') as HTMLTextAreaElement | null;
+  if (!box) return;
+  // where Insert goes: the caret, remembered as it moves (a button press takes the focus)
+  const mark = (): void => { stampCaret = { start: box.selectionStart ?? box.value.length, end: box.selectionEnd ?? box.value.length }; };
+  box.onselect = box.onkeyup = box.onclick = box.onblur = mark;
+  // typing must not repaint (it would steal the caret): the buttons and the reading are kept up by hand
+  box.oninput = () => {
+    stampMsg = box.value;
+    mark();
+    const copy = document.querySelector('[data-btn="lg-stamp-msgcopy"]') as HTMLButtonElement | null;
+    if (copy) copy.disabled = !stampMsg.trim();
+    const clear = document.querySelector('[data-btn="lg-stamp-msgclear"]') as HTMLButtonElement | null;
+    if (clear) clear.disabled = !stampMsg;
+    const read = document.getElementById('lg-stamp-read');
+    if (read) read.hidden = !stampMsg.trim();
+    const text = document.getElementById('lg-stamp-readtext');
+    if (text) text.innerHTML = stampMessageHtml(stampMsg, tz, Date.now());
   };
 }
 
@@ -554,6 +589,61 @@ export function handleButton(btn: HTMLElement): boolean {
       // pin the time: a default of "the next quarter hour" must not move under the copy
       stampAt = stampMs();
       copyText(code, document.getElementById(`lg-stamp-${st}`) as HTMLInputElement | null, () => { say(`Copied ${code}`, 'ok'); paint(); });
+      return true;
+    }
+    case 'lg-stamp-insert': {
+      const st = btn.dataset['style'] as StampStyle;
+      if (!STAMP_STYLES.includes(st)) return true;
+      stampAt = stampMs();
+      const box = document.getElementById('lg-stamp-msg') as HTMLTextAreaElement | null;
+      if (box) stampMsg = box.value;
+      const at = stampCaret ?? { start: stampMsg.length, end: stampMsg.length };
+      const put = insertStamp(stampMsg, at.start, at.end, discordCode(Math.floor(stampAt / 1000), st));
+      stampMsg = put.text;
+      stampCaret = { start: put.caret, end: put.caret };
+      say('', 'ok');
+      paint();
+      // back into the message, the caret just after the time, to go on typing
+      const again = document.getElementById('lg-stamp-msg') as HTMLTextAreaElement | null;
+      again?.focus?.();
+      again?.setSelectionRange?.(put.caret, put.caret);
+      return true;
+    }
+    case 'lg-stamp-msgcopy': {
+      const box = document.getElementById('lg-stamp-msg') as HTMLTextAreaElement | null;
+      if (box) stampMsg = box.value;
+      if (!stampMsg.trim()) return true;
+      copyText(stampMsg, box, () => { say('Copied your message — paste it into Discord.', 'ok'); paint(); });
+      return true;
+    }
+    case 'lg-stamp-msgclear':
+      stampMsg = '';
+      stampCaret = null;
+      say('', 'ok');
+      paint();
+      return true;
+    case 'lg-stamp-ampm': {
+      const pm = btn.dataset['v'] === 'pm';
+      if (stampParts(stampMs(), viewTz()).pm !== pm) stampAt = stampSet(stampMs(), viewTz(), { pm });
+      else stampAt = stampMs();
+      paint();
+      return true;
+    }
+    case 'lg-stamp-cal':
+      stampCal = stampCal ? null : stampParts(stampMs(), viewTz()).date.slice(0, 7);
+      paint();
+      return true;
+    case 'lg-stamp-month':
+      stampCal = monthStep(stampCal ?? stampParts(stampMs(), viewTz()).date.slice(0, 7), Number(btn.dataset['step']) || 0);
+      paint();
+      return true;
+    case 'lg-stamp-day': {
+      const day = btn.dataset['day'] ?? '';
+      if (/^\d{4}-\d{2}-\d{2}$/.test(day)) stampAt = stampSet(stampMs(), viewTz(), { date: day });
+      stampCal = null;
+      paint();
+      // back on the date button, so a keyboard carries on from where it was
+      (document.querySelector('[data-btn="lg-stamp-cal"]') as HTMLElement | null)?.focus?.();
       return true;
     }
     case 'lg-leave':

@@ -46,7 +46,7 @@ const view = (timeOpen: string | null): LeagueView => ({
     availability: { tz: 'UTC', grid: defaultGrid() }, contact: 'me', minHours: 6, organizer: false },
   loading: false, msg: '', msgTone: 'error', draft: { tz: 'UTC', grid: defaultGrid(), contact: 'me' }, dirty: false, busy: false,
   arming: null, gridFocus: null, timeOpen, preview: null, now: NOW, tz: 'UTC', browserTz: 'UTC', zones: ['UTC'],
-  origin: 'https://example.test', stampAt: NOW, chips: { champion: '', finalist: '' },
+  origin: 'https://example.test', stampAt: NOW, stampMsg: '', stampCal: null, chips: { champion: '', finalist: '' },
   section: 'season', chrome: { signedIn: true, alerts: 0 },
 });
 

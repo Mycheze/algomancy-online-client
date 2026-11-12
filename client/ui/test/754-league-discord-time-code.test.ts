@@ -5,8 +5,10 @@
  * on the League page … setting a time in your time zone, then copying the
  * actual code and additional 'format code' (the final :F or :D)".
  *
- *   §1  ⭐ a wall time typed in the viewer's zone becomes the right UNIX
- *       second (New York, the week after the US left daylight saving)
+ *   §1  ⭐ a wall time picked in the viewer's zone becomes the right UNIX
+ *       second (New York, the week after the US left daylight saving) —
+ *       since 2026-11-12 picked with a calendar, an hour, a minute and AM | PM
+ *       (1233 has the message it goes into)
  *   §2  ⭐ one row per Discord style t T d D f F R, each with its code and a
  *       preview in the viewer's zone; R reads as relative
  *   §3  ⭐ Copy puts that row's code on the clipboard — and where the
@@ -27,10 +29,11 @@ async function rig(opts: { signedIn?: boolean; clipboard?: 'ok' | 'refuse' } = {
   g['innerWidth'] = 1200;
   const copied: string[] = [];
   const selected: string[] = [];
-  const fields = new Map<string, { value: string; onchange?: () => void; select: () => void; setSelectionRange: () => void }>();
+  type Field = { value: string; onchange?: () => void; select: () => void; setSelectionRange: () => void };
+  const fields = new Map<string, Field>();
   const field = (id: string) => {
     if (!fields.has(id)) {
-      const f = { value: '', select: () => { selected.push(f.value); }, setSelectionRange() {} } as { value: string; onchange?: () => void; select: () => void; setSelectionRange: () => void };
+      const f = { value: '', select: () => { selected.push(f.value); }, setSelectionRange() {} } as Field;
       fields.set(id, f);
     }
     return fields.get(id)!;
@@ -52,19 +55,24 @@ async function rig(opts: { signedIn?: boolean; clipboard?: 'ok' | 'refuse' } = {
   await settle();
   // the time code is the page's Time code tab since the app frame (2026-11-04)
   lg.handleButton({ dataset: { btn: 'lg-section', v: 'stamp' } } as unknown as HTMLElement);
-  // the page drew the field: give it the value its HTML carries, as a browser would
-  const v = /id="lg-stamp-at"[^>]*value="([^"]*)"/.exec(app.innerHTML)?.[1];
-  if (v) field('lg-stamp-at').value = v;
   return { lg, app, copied, selected, field };
 }
 const settle = (): Promise<void> => new Promise(r => setTimeout(r, 15));
 const press = (lg: typeof import('../league.ts'), dataset: Record<string, string>): boolean =>
   lg.handleButton({ dataset } as unknown as HTMLElement);
-/** pick a time the way the player does: type it, then the field's change fires */
+/** pick a time the way the player does: a day off the calendar, then the
+ * hour and minute menus (each fires its change) and AM or PM */
 function setTime(r: Awaited<ReturnType<typeof rig>>, wall: string): void {
-  const f = r.field('lg-stamp-at');
-  f.value = wall;
-  f.onchange?.();
+  const m = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})$/.exec(wall)!;
+  const h = Number(m[2]);
+  press(r.lg, { btn: 'lg-stamp-cal' });
+  press(r.lg, { btn: 'lg-stamp-day', day: m[1]! });
+  press(r.lg, { btn: 'lg-stamp-ampm', v: h >= 12 ? 'pm' : 'am' });
+  for (const [id, n] of [['lg-stamp-hour', h % 12 || 12], ['lg-stamp-min', Number(m[3])]] as const) {
+    const f = r.field(id);
+    f.value = String(n);
+    f.onchange?.();
+  }
 }
 
 // Sun 8 Nov 2026, 19:30 in New York (EST, UTC−5) = Mon 9 Nov 00:30 UTC

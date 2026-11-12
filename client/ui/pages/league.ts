@@ -189,8 +189,8 @@ export function fromWallValue(v: string, tz: string, step = STEP_MIN): number {
 // Owner, 2026-11-01: "a Discord timestamp generator like hammertime.xyz …
 // setting a time in your time zone, then copying the actual code". Discord
 // shows `<t:UNIX:X>` in each READER's own zone, so a time typed here in yours
-// reads right to whoever you message. The field is the "suggest a time" one
-// (wallValue / fromWallValue, read in the league zone), to the minute.
+// reads right to whoever you message. The time is read in the league zone,
+// to the minute (the picker below, since 2026-11-12).
 
 export type StampStyle = 't' | 'T' | 'd' | 'D' | 'f' | 'F' | 'R';
 export const STAMP_STYLES: readonly StampStyle[] = ['t', 'T', 'd', 'D', 'f', 'F', 'R'];
@@ -219,6 +219,95 @@ export function stampPreview(ms: number, style: StampStyle, tz: string, now = Da
       catch { return `${Math.round(sec / size)} ${unit}s`; }
     }
   }
+}
+
+/* Owner, 2026-11-12 (#steward): "a place where you just type the whole
+ * message in an input box, then have a little timecode widget above that you
+ * can directly insert into your message (or still just copy individually),
+ * then copy the whole message"; the date field "doesn't have a little popup
+ * calendar/clock … typing it removes focus"; and "mild color coding (gold ish
+ * hue for AM times, darkish hue for PM)". So the time is chosen with a month
+ * calendar and an hour, a minute and an AM | PM switch — nothing to type, and
+ * nothing that repaints under a caret — and the clock is tinted by its half
+ * of the day, here and wherever the message shows a time. */
+
+/** the picker's reading of an instant, as wall time in `tz` */
+export interface StampParts { date: string; hour12: number; minute: number; pm: boolean }
+
+export function stampParts(ms: number, tz: string): StampParts {
+  const w = wallClock(ms, tz);
+  const p = (n: number): string => String(n).padStart(2, '0');
+  return { date: `${w.y}-${p(w.mo)}-${p(w.d)}`, hour12: w.h % 12 || 12, minute: w.mi, pm: w.h >= 12 };
+}
+
+/** the instant with one or more of the picker's parts changed, read in `tz` */
+export function stampSet(ms: number, tz: string, change: Partial<StampParts>): number {
+  const c = { ...stampParts(ms, tz), ...change };
+  const h24 = (c.hour12 % 12) + (c.pm ? 12 : 0);
+  return zonedEpoch(c.date, h24 * 60 + c.minute, tz);
+}
+
+/** 'YYYY-MM' moved by `step` months */
+export function monthStep(month: string, step: number): string {
+  const [y, m] = month.split('-').map(Number) as [number, number];
+  const d = new Date(Date.UTC(y, m - 1 + step, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
+const DOW_SHORT = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
+/** The month calendar under the date button: Sunday first, like the league's
+ * weeks. `chosen` and `today` are YYYY-MM-DD in the viewer's zone. */
+export function stampCalendarHtml(month: string, chosen: string, today: string): string {
+  const [y, m] = month.split('-').map(Number) as [number, number];
+  const first = new Date(Date.UTC(y, m - 1, 1));
+  const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const title = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(first);
+  const cells: string[] = [];
+  for (let i = 0; i < first.getUTCDay(); i++) cells.push('<span></span>');
+  for (let d = 1; d <= days; d++) {
+    const iso = `${month}-${String(d).padStart(2, '0')}`;
+    const cls = [iso === chosen ? 'on' : '', iso === today ? 'today' : '', iso < today ? 'past' : ''].filter(Boolean).join(' ');
+    const label = new Intl.DateTimeFormat(undefined, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
+      .format(Date.UTC(y, m - 1, d));
+    cells.push(`<button type="button" data-btn="lg-stamp-day" data-day="${iso}"${cls ? ` class="${cls}"` : ''}${
+      iso === chosen ? ' aria-pressed="true"' : ''} aria-label="${esc(label)}">${d}</button>`);
+  }
+  return `<div class="lgcal" id="lg-stamp-calgrid" role="group" aria-label="Pick a day">
+    <div class="lgcalhead">
+      <button type="button" data-btn="lg-stamp-month" data-step="-1" aria-label="Previous month">‹</button>
+      <b>${esc(title)}</b>
+      <button type="button" data-btn="lg-stamp-month" data-step="1" aria-label="Next month">›</button>
+    </div>
+    <div class="lgcaldays">${DOW_SHORT.map(d => `<span class="dim">${d}</span>`).join('')}${cells.join('')}</div>
+  </div>`;
+}
+
+/** Put `code` into `text` in place of the selection [start, end), with a
+ * space either side where it would otherwise touch a word. Returns the new
+ * text and where the caret goes (just after the code). */
+export function insertStamp(text: string, start: number, end: number, code: string): { text: string; caret: number } {
+  const a = Math.max(0, Math.min(start, text.length));
+  const b = Math.max(a, Math.min(end, text.length));
+  const before = text.slice(0, a), after = text.slice(b);
+  const lead = before && !/\s$/.test(before) ? ' ' : '';
+  const tail = after && !/^[\s.,!?;:)]/.test(after) ? ' ' : '';
+  const out = `${before}${lead}${code}${tail}`;
+  return { text: out + after, caret: out.length - tail.length };
+}
+
+/** the styles whose words carry a clock time, tinted AM or PM */
+const TIMED: ReadonlySet<string> = new Set(['t', 'T', 'f', 'F']);
+
+/** The message as Discord will show it to you: every `<t:…>` turned into its
+ * words in your zone (the AM ones gold, the PM ones dusk), the rest as typed. */
+export function stampMessageHtml(text: string, tz: string, now: number): string {
+  return esc(text).replace(/&lt;t:(-?\d+)(?::([tTdDfFR]))?&gt;/g, (_m, unix: string, st?: string) => {
+    const style = (st ?? 'f') as StampStyle;
+    const ms = Number(unix) * 1000;
+    const half = TIMED.has(style) ? (wallClock(ms, tz).h >= 12 ? ' pm' : ' am') : '';
+    return `<span class="lgstampchip${half}">${esc(stampPreview(ms, style, tz, now))}</span>`;
+  }).replace(/\n/g, '<br>');
 }
 
 export const nextQuarter = (now: number): number => Math.ceil(now / (STEP_MIN * 60_000)) * STEP_MIN * 60_000;
@@ -627,6 +716,10 @@ export interface LeagueView {
   origin: string;
   /** the Discord time code's instant */
   stampAt: number;
+  /** the message being written around it (kept for the visit) */
+  stampMsg: string;
+  /** the month the date picker's calendar shows ('YYYY-MM'), or null when it is shut */
+  stampCal: string | null;
   /** a closed season's two trophy chips (account.ts trophyChipHtml), '' before */
   chips: { champion: string; finalist: string };
   /** which part of the season is showing (the toolbar's tabs) */
@@ -987,14 +1080,46 @@ function stampHtml(v: LeagueView): string {
   const tz = v.tz;
   const at = v.stampAt;
   const unix = Math.floor(at / 1000);
+  const p = stampParts(at, tz);
+  const today = stampParts(v.now, tz).date;
+  const half = p.pm ? 'pm' : 'am';
+  const dateText = new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
+    .format(Date.parse(`${p.date}T12:00:00Z`));
+  const opt = (n: number, on: boolean, text: string): string => `<option value="${n}"${on ? ' selected' : ''}>${text}</option>`;
+  const hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(h => opt(h, h === p.hour12, String(h))).join('');
+  const minutes = Array.from({ length: 60 }, (_, m) => opt(m, m === p.minute, String(m).padStart(2, '0'))).join('');
   return panel({ title: 'Discord time code', className: 'lgstamp', bodyHtml: `
-    <p class="lgtimepick"><input type="datetime-local" id="lg-stamp-at" aria-label="Date and time" step="60" value="${wallValue(at, tz)}">
-      <span class="dim">${esc(tz)} time</span></p>
+    <p class="dim">Write your message, put the time in it with Insert, then copy the whole message into Discord.
+      Each reader sees the time in their own zone.</p>
+    <div class="lgstamppick">
+      <div class="lgstampdate">
+        <button type="button" data-btn="lg-stamp-cal" aria-expanded="${v.stampCal ? 'true' : 'false'}" aria-label="Date: ${esc(dateText)}">📅 ${esc(dateText)}</button>
+        ${v.stampCal ? stampCalendarHtml(v.stampCal, p.date, today) : ''}
+      </div>
+      <div class="lgstampclock ${half}" id="lg-stamp-clock">
+        <span class="lgstampsun" aria-hidden="true">${p.pm ? '☾' : '☀'}</span>
+        <select id="lg-stamp-hour" aria-label="Hour">${hours}</select><b>:</b><select id="lg-stamp-min" aria-label="Minute">${minutes}</select>
+        ${segmented({ ariaLabel: 'Morning or afternoon', size: 'sm', className: 'lgampm', options: [
+          { label: 'AM', value: 'am', on: !p.pm, dataBtn: 'lg-stamp-ampm', className: 'am', attrs: { 'data-v': 'am' } },
+          { label: 'PM', value: 'pm', on: p.pm, dataBtn: 'lg-stamp-ampm', className: 'pm', attrs: { 'data-v': 'pm' } },
+        ] })}
+      </div>
+      <span class="dim">${esc(tz)} time</span>
+    </div>
     ${table({ className: 'lgstamps', headless: true, columns: STAMP_COLUMNS, rows: STAMP_STYLES.map(st => ({ cells: {
-      preview: stampPreview(at, st, tz, v.now),
+      preview: { html: `<span class="lgstampchip${TIMED.has(st) ? ` ${half}` : ''}">${esc(stampPreview(at, st, tz, v.now))}</span>` },
       code: { html: `<input id="lg-stamp-${st}" class="lgstampcode" readonly aria-label="Discord code" value="${esc(discordCode(unix, st))}">` },
-      copy: { html: `<button data-btn="lg-stamp-copy" data-style="${st}">Copy</button>` },
+      copy: { html: `<button data-btn="lg-stamp-insert" data-style="${st}" class="primary">Insert</button> <button data-btn="lg-stamp-copy" data-style="${st}">Copy</button>` },
     } })) })}
+    ${panelSubheading({ text: 'Your message' })}
+    <textarea id="lg-stamp-msg" class="lgpost lgstampmsg" rows="5" aria-label="Your message"
+      placeholder="Type your message. Insert puts the time where your cursor is.">${esc(v.stampMsg)}</textarea>
+    <p class="lgstampmsgbtns"><button data-btn="lg-stamp-msgcopy" class="primary"${v.stampMsg.trim() ? '' : ' disabled'}>Copy message</button>
+      <button data-btn="lg-stamp-msgclear"${v.stampMsg ? '' : ' disabled'}>Clear</button></p>
+    <div class="lgstampread" id="lg-stamp-read" aria-live="polite"${v.stampMsg.trim() ? '' : ' hidden'}>
+      <span class="dim">How it reads to you:</span>
+      <div id="lg-stamp-readtext">${stampMessageHtml(v.stampMsg, tz, v.now)}</div>
+    </div>
   ` });
 }
 
@@ -1123,6 +1248,8 @@ export interface LeagueRaw {
   preview: Preview | null;
   /** the chosen Discord time code instant, or null for the next quarter hour */
   stampAt: number | null;
+  stampMsg: string;
+  stampCal: string | null;
   /** the part of the season showing */
   section: LeagueSection;
 }
@@ -1154,6 +1281,8 @@ export function leagueView(r: LeagueRaw): LeagueView {
     zones: r.data?.signedIn ? supportedZones() : [],
     origin: location.origin,
     stampAt: r.stampAt ?? nextQuarter(now),
+    stampMsg: r.stampMsg,
+    stampCal: r.stampCal,
     chips: s ? { champion: trophyChipHtml({ name: s.name, place: 'champion' }, false), finalist: trophyChipHtml({ name: s.name, place: 'finalist' }, false) }
       : { champion: '', finalist: '' },
     section: r.section,
