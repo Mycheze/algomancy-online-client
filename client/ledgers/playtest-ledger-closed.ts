@@ -5267,4 +5267,11 @@ export const CLOSED: LedgerEntry[] = [
     guards: ['676-touch-token-resource-tap-reads.test.ts::CR 502.2b / CT-555: in the resource step a finger tap on a dormant resource activates it at once, with no button'],
     note: "Real, a change the owner asks for to his own earlier call. Since CT-408 (owner 2026-10-25: a finger's tap on a resource reads it, then an Activate button acts) a tap on a dormant resource opens the zoom and arms a held Activate button in every phase alike (ui/main.ts openRes → tapToGo). He now wants the resource step exempt: there a tap should activate at once. FMTA replayed clean (49 actions; at [21] he was recycling and activating resources in the resource step of a sandbox game). Not a duplicate: CT-408 is closed and its choice is what this narrows. CT-555. Fixed 2026-11-10 (steward): in the resource step a tap on a dormant resource now activates it at once; the read-then-button stays for spell tokens and a Prismite exchange.",
   },
+  {
+    id: 387, room: "", date: "2026-11-12",
+    report: "mycheze, page acct (ux, minor): \"On the Profile Players page, there's a scroll wheel on the page itself, for some reason. There's ALSO one in the player list, which makes sense, but it's also possible to scroll beyond the footer, for some reason.\"",
+    status: 'fixed',
+    guards: ['1237-hidden-words-stay-inside-their-scroller.test.ts::§1 .srname is absolute and pinned to its containing block'],
+    note: "Real by reading, not seen (no browser on the box). The profile is a fill frame: only its regions should scroll. 5092dbcf (online dots, deployed 2026-11-12 09:33 UTC, four hours before the report) put a screen-reader-only span (.srname, position absolute with no inset) after the name in every friends and board row; no ancestor up to the root is positioned, so the spans of rows below the list's bottom escape its scroll and the shell's overflow and stretch the document past the footer. CT-562 filed. Fixed 2026-11-12 (steward): .srname is pinned to its containing block's corner (top: 0; left: 0), so a hidden span in a row scrolled out of sight can no longer stretch the page; only the list scrolls.",
+  },
 ];

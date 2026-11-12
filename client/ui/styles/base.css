@@ -107,8 +107,13 @@ button:disabled { opacity: .4; cursor: default; }
 /* words only a screen reader says: drawn nowhere, still in the page's text.
    A header cell over a column of buttons or bars needs a name, and nothing on
    screen should change to give it one (BL-10, test 1208). Not under :where —
-   the board's tables use it too. */
-.srname { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+   the board's tables use it too.
+   `top: 0; left: 0` pin it to its containing block's corner. Without them an
+   absolute box sits where its row is, and a row scrolled below a list's bottom
+   inside an unpositioned scroller (the profile's Players boards) is clipped by
+   no overflow on the way up: its 1px stretched the whole document past the
+   footer (report #387, test 1237). */
+.srname { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
   clip-path: inset(50%); white-space: nowrap; border: 0; }
 
 /* ── form controls ──
