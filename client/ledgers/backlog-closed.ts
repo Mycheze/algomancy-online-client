@@ -3609,4 +3609,110 @@ export const CLOSED: Entry[] = [
       + 'a reconnect and a spectator get the same list; a run of one cause with only pay lines between is one row. '
       + 'The window shows the newest 12 and counts the rest. Not watched in a browser.',
   },
+  {
+    id: 'BL-51',
+    slug: 'colour-blind-mode',
+    title: 'Colour-blind / high-visibility mode',
+    area: 'client',
+    size: 'L',
+    status: 'done',
+    evidence: {
+      commit: '76c52f8d',
+      guards: [
+        '1160-accessible-colours.test.ts::1160 §2 the icon swap and the colour tokens key on the attribute prefs.ts sets',
+        '1235-element-shapes-not-by-colour-alone.test.ts::1235 §4 a census of the sources',
+        '1221-accessible-palette.test.ts::1221 §3 accessible: every text colour the mode re-points clears AA on every surface',
+        '1221-accessible-palette.test.ts::1221 §4 accessible: a target wears a ◎ mark',
+        '1236-board-states-not-by-hue-alone.test.ts::1236 §1 every red or in-progress line on the board is one the audit wrote a cue for',
+      ],
+    },
+    track: 'feature',
+    said:
+      'We should certainly make a "colorblind friendly" version that ignores aesthetics and just '
+      + 'makes sure everything is very easy to see and accessible.',
+    means:
+      'A FUTURE switch (owner 2026-11-03, while the Manual\'s purple/orange palette went live): a '
+      + 'second look for the whole client, board and pages, chosen in the settings, that puts '
+      + 'legibility first and the rulebook\'s aesthetics second. Nothing the player needs to know '
+      + 'is told by colour alone, every text and every meaningful shape clears a high contrast bar '
+      + 'on whatever it sits on, and the state colours of the table (targeting, legal, pending, '
+      + 'danger, the seats) stay apart for the common colour-vision deficiencies.',
+    doneWhen: [
+      'A setting turns the mode on and off, signed in or not, and the choice is remembered',
+      'With it on, every element is told apart by its SHAPE or a label as well as its colour (the element shapes already exist), on cards, chips, the resource row and the favourite-element picker',
+      'With it on, every text and every element shape clears 4.5:1 against the surface it is drawn on; the board\'s state outlines (targeting, legal, pending, danger) are told apart by line style or a mark, not hue alone',
+      'A guard test holds the mode\'s palette to those contrast numbers, as test 1030 holds the default one',
+    ],
+    decided: [
+      'The owner named it as a future item on 2026-11-03. Do not fold it into a palette round.',
+      'The switch is Settings → Colours → Standard / Accessible on the profile (owner, 2026-11-07, ui/prefs.ts: '
+        + 'data-colors="accessible" on <html>, kept in localStorage algoColors). It is "for red-green colour blindness": '
+        + 'it re-points the colours that collide and keeps each element\'s family — it is not a separate high-contrast skin.',
+    ],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/styles/tokens.css',
+      'client/ui/prefs.ts',
+      'client/ui/test/1030-manual-palette.test.ts',
+      'client/ui/test/1160-accessible-colours.test.ts',
+      'client/ui/test/1221-accessible-palette.test.ts',
+      'client/ui/test/1235-element-shapes-not-by-colour-alone.test.ts',
+      'client/ui/test/1236-board-states-not-by-hue-alone.test.ts',
+    ],
+    notes:
+      'Starting numbers, from the palette round (var/records/ds-round-2026-11-03-r2-theme.md): on the '
+      + 'purple, the element colours as SHAPES are below 3:1 on a raised panel — Dark 2.5:1 (was 3.2 '
+      + 'on the old slate), Earth 2.4:1 (3.1), Wood 2.9:1 (3.6); the favourite-element picker\'s Dark '
+      + 'icon reads faint. Danger text on a raised panel is 3.95:1 and white on the red badges 3.03:1, '
+      + 'the two pairs the default palette leaves under 4.5. The board\'s state colours are table roles '
+      + 'in tokens.css (--glow legal green, --target targeting gold, --pending teal, --danger); green '
+      + 'vs gold and teal vs green are the pairs a deuteranope loses first. '
+      + 'PROGRESS. 2026-11-07 (profile round): doneWhen 1 — the switch, remembered per browser, on a guest\'s profile too; '
+      + 'fire, earth, wood, legal, targeting, in progress and success re-pointed, and the fire/earth/wood icons swapped '
+      + '(ui/test/1160). 2026-11-11 (steward): doneWhen 4 — ui/test/1221 recomputes the theme\'s numbers (Machado 2009 + '
+      + 'CIEDE2000: elements 15.8 apart in every vision, the four table roles 15.9 — the comment had said 24.1, it was 18.0 — '
+      + 'and AA for every text colour the theme re-points); "in progress" #b553d5 → #d080f8 (it was 2.9:1 as text on a '
+      + 'raised panel); and the targeting half of doneWhen 3: in the mode a target (.card / .life / .stackcard .candidate) '
+      + 'wears a ◎ mark (a mark, not a doubled ring: ui/test/326 holds the owner\'s 2026-09-27 "double green border" complaint), so legal and targeting differ by more than hue. '
+      + 'STILL OPEN, measured 2026-11-11 with the mode on: (a) element colours as SHAPES on the panels — earth 1.5:1 on a '
+      + 'raised panel (darker than the standard earth\'s 2.4), wood 2.2, dark 2.5, fire 3.5, water 3.5; 4.5 for a mid-tone '
+      + 'element is not possible while white ink stays over 3:1 on it (a raised panel needs luminance ≥ .35, white ink ≥ 3 '
+      + 'needs ≤ .30), so the shape needs an outline or the chip a label, not a colour; (b) danger text on a raised panel '
+      + '3.95:1 in both modes (lifting it puts white on the red badges under 3); (c) doneWhen 2, elements by shape or label '
+      + 'everywhere, not yet audited; (d) other board rings that are hue alone: .card.selected #7fc0ff vs .card.playable '
+      + '(cyan in the mode) are 6.9 apart to a tritan, both solid. '
+      + '2026-11-11 (steward): (d) DONE for the picked ring — measured, it is worse to a deutan, the mode\'s audience: '
+      + '#7fc0ff against the mode\'s cyan legal ring is 12.1 apart (43.8 against the standard green), so the mode made a '
+      + 'picked card (formation, send list, a ticked pick-a-set card) and a pickable one look alike. In the mode a '
+      + '`.card.selected` now wears a ✓ in the ◎ corner (board/03; a picked target keeps the ◎). Guarded by 1221 §5. '
+      + 'Still open: (a), (b), (c). '
+      + '2026-11-11 (steward): (b) DONE in the mode — red is two roles now: --color-danger (text, lines) and '
+      + '--color-danger-fill (a background under white ink: the bell\'s count, damage chips, the over-cap and '
+      + 'pool badges, the lost-target strip, the profile\'s loss bar — ten rules). The fill keeps #f06969 in both '
+      + 'modes (white 3.03:1); the mode lifts the text to #ff7b7b (4.77:1 on a raised panel, 16.8 from the other '
+      + 'table roles, 31.4 from a win to a deutan). Guarded by 1221 §3 and §6 (a census: no rule paints a background '
+      + 'with the text red). The standard palette is unchanged (still 3.95:1 there; not a palette round). '
+      + 'Still open: (a), (c). '
+      + '2026-11-12 (steward): (a) DONE in the mode — every shape filled with an element colour (.pfswatch, .elbarseg, '
+      + '.acctel, .res, .reschip, .resplate, .el-*) wears a 1px inset ring in --color-text (shared/10), which clears AA on '
+      + 'every surface, so earth (1.5:1) and wood (2.2:1) no longer vanish into a raised panel, and a share bar\'s segments '
+      + 'are split by a line. Guarded by 1221 §7, a census of every element-colour fill. Still open: (c). '
+      + '2026-11-12 (steward): (c) DONE — the audit of every element-coloured shape: the chips (.elchip, .acctel, the '
+      + 'filters, the learn menu), the resource row (a scan, the plate\'s word, the dormant chip\'s letter), the favourite '
+      + 'picker and the cost pips already carry the icon or the name. Four were colour alone: the profile\'s share bars and '
+      + 'their legend squares, the Games tab\'s element dots, the deck Stats sheet\'s Elements bar (in the fixed element '
+      + 'order while its legend ran biggest first) and the builder strip\'s element dots. Each now holds elIcon(), shown '
+      + 'only in the mode (shared/10), and the deck bar follows its legend\'s order. Guarded by ui/test/1235, with a source '
+      + 'census. NOT done, by choice: the builder strip\'s 8px mini-curve (aria-hidden, a summary; its element split sits '
+      + 'beside it, iconed now). STILL OPEN: the pending and danger half of doneWhen 3 — the targeting and picked rings '
+      + 'carry a mark, but the in-progress (teal) and danger outlines on the board have not been audited for line style. '
+      + '2026-11-12 (steward): DONE — the last line. In progress: no board state has been teal since the stack\'s four colours '
+      + '(2026-09-30); a resolving item wears a chip that reads "resolving…" and breathes (tokens.css\'s comment still claimed '
+      + 'a teal border; corrected). Danger: every red line a board piece draws has a word, a chip or a dash (target gone, '
+      + 'the ⊘ banner, the dashed "incoming" strip, "expired", "offline", the replay chip), or is told by place (the invader '
+      + 'strip), by a number (life down) or is an event (the hurt flash, 15+ from the buff flash in every vision in the mode). '
+      + 'ui/test/1236 is the census: a new red or in-progress line on the board fails until it has a cue. Every doneWhen line '
+      + 'holds: 1 (1160), 2 (1235), 3 (1221 §4/§5 and 1236), 4 (1221).',
+  },
 ];

@@ -28,7 +28,7 @@
  *       hand card's reason, the line closing ranks, a stuck bot — is a line in
  *       the action bar, waiting for the player's next action or the next prompt.
  *
- * (The fifth, a colour-blind mode, is BL-51 in ledgers/backlog.ts: not built.)
+ * (The fifth, a colour-blind mode, is BL-51: Settings → Colours → Accessible, done 2026-11-12.)
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
