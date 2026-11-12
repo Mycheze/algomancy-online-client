@@ -1044,6 +1044,13 @@ const OPEN: Entry[] = [
       'client/ui/cardtext.ts',
       'client/ui/does-lines.json',
     ],
+    notes:
+      '2026-11-12 (steward tidy): re-checked at HEAD, every sentence on the list is still in the code (ressum.ts rsfoot; '
+      + 'cardtext.ts the token state; main.ts the room tip\'s watchers and Single Card Duel lines, the stack head, the '
+      + 'burst line, the rot pill title, the cache title, the sent strip\'s title). Related owner call, not this list: '
+      + 'report #385 (2026-11-11, aa976c82) cut the VISIBLE "arrives next round" line under the in-transit counterattack '
+      + 'strip; that commit kept the strip\'s hover title "sent to counterattack — they arrive next round and cannot be '
+      + 'touched until then", which is the line listed here, so it still waits on his keep-or-cut.',
   },
   {
     id: 'BL-62',
