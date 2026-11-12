@@ -53,7 +53,10 @@ const settle = (): Promise<void> => new Promise(r => setImmediate(r));
 /** the `data-kind` / `data-severity` values the form offers right now */
 const offered = (html: string, attr: 'kind' | 'severity'): string[] =>
   [...html.matchAll(new RegExp(`data-report="${attr}" data-${attr}="([^"]+)"`, 'g'))].map(m => m[1]!);
-const sendDisabled = (html: string): boolean => /data-report="send" disabled/.test(html);
+/** Send's own tag carries `disabled` — read off the tag, in whatever order the
+ * button component writes its attributes */
+const sendDisabled = (html: string): boolean =>
+  /\sdisabled[\s>]/.test(/<button\b[^>]*\bdata-report="send"[^>]*>/.exec(html)?.[0] ?? '');
 const NOTE_ID = 'report-note';
 
 /** open the dialog fresh on a new board */

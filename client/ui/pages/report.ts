@@ -7,15 +7,16 @@
  * (pages/README.md), with one difference from a page: the state stays in
  * ui/report.ts, which main.ts imports early, so report.ts gathers the view
  * (its `view()`), these functions draw it, and report.ts puts the result on
- * its layer. The markup is byte for byte what report.ts drew before the split
- * (test 287 reads it: `data-report="send" disabled`, `data-report="kind"
- * data-kind=…`), so its buttons stay hand-written: `.reportchoices button`
- * sizes the choices, and the button component's attribute order would move
- * `disabled` away from `data-report`. The one component it uses is the error
- * line (ui-status, error tone), which `.reporterror` was already a copy of.
+ * its layer. The markup was byte for byte what report.ts drew before the split
+ * (test 287 reads `data-report="kind" data-kind=…` in that order). The kind
+ * and severity choices stay hand-written (`.reportchoices button` sizes them,
+ * and they are radios); Cancel and Send are the button component since
+ * 2026-11-12 (BL-63), the tests reading Send's `disabled` wherever the
+ * component writes it. The error line is ui-status, error tone, which
+ * `.reporterror` was already a copy of.
  * Its CSS is styles/shared/13-report-and-inbox.css. */
 import { esc } from '../util.ts';
-import { statusMessage } from '../components/index.ts';
+import { button, statusMessage } from '../components/index.ts';
 
 export type ReportKind = 'bug' | 'ux' | 'feature' | 'other';
 export type ReportSeverity = 'minor' | 'medium' | 'gamebreaking';
@@ -89,6 +90,13 @@ function choicesHtml(what: 'kind' | 'severity', options: readonly [string, strin
 const errorHtml = (error: string): string =>
   error ? statusMessage({ tone: 'error', text: error, className: 'reporterror' }) : '';
 
+/** the dialog's two actions. Cancel is the plain button, Send the filled
+ * confirm, held disabled while the form is incomplete or sending (report.ts
+ * also flips the live `disabled` property as the note is typed) */
+const cancelButton = button({ labelHtml: 'Cancel <span class="kh">(esc)</span>', attrs: { 'data-report': 'close' } });
+const sendButton = (v: ReportDialogView, label: string): string =>
+  button({ variant: 'primary', label: v.busy ? 'sending…' : label, disabled: v.busy || !v.complete, attrs: { 'data-report': 'send' } });
+
 /** BL-48: the dispute form — one box, required */
 function disputeDialogHtml(v: ReportDialogView): string {
   return `<div class="reportscrim" id="reportscrim"><div class="overlaybox reportbox" role="dialog" aria-label="Dispute game">
@@ -96,9 +104,9 @@ function disputeDialogHtml(v: ReportDialogView): string {
     <div class="hint">Filed with the final board. The result stands until someone reviews it. ${filedAs(v.user)}</div>
     <textarea id="report-note" rows="4" aria-label="What went wrong?" placeholder="What went wrong?" ${v.busy ? 'disabled' : ''}></textarea>
     <div class="judgerow">
-      <button data-report="close">Cancel <span class="kh">(esc)</span></button>
+      ${cancelButton}
       <span class="reporthint">Ctrl+Enter sends</span>
-      <button class="primary" data-report="send" ${v.busy || !v.complete ? 'disabled' : ''}>${v.busy ? 'sending…' : 'Send dispute'}</button>
+      ${sendButton(v, 'Send dispute')}
     </div>
     ${errorHtml(v.error)}
   </div></div>`;
@@ -123,9 +131,9 @@ export function reportDialogHtml(v: ReportDialogView): string {
     </div>` : ''}
     <textarea id="report-note" rows="4" aria-label="What happened" placeholder="${esc(v.kind ? REPORT_PROMPT[v.kind] : 'Pick a type above, then say what happened')}" ${v.busy ? 'disabled' : ''}></textarea>
     <div class="judgerow">
-      <button data-report="close">Cancel <span class="kh">(esc)</span></button>
+      ${cancelButton}
       <span class="reporthint">${v.kind ? 'Ctrl+Enter sends' : ''}</span>
-      <button class="primary" data-report="send" ${v.busy || !v.complete ? 'disabled' : ''}>${v.busy ? 'sending…' : 'Send report'}</button>
+      ${sendButton(v, 'Send report')}
     </div>
     ${errorHtml(v.error)}
   </div></div>`;

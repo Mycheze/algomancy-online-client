@@ -1148,7 +1148,16 @@ const OPEN: Entry[] = [
       + '.zonelabel, and every use is class="zonelabel" alone, so no pixel moves. Kept as .zonelabel, not renamed to '
       + '.eyebrow: they differ by the top margin, and 36 call sites plus ~20 overrides would churn for nothing. 925 now '
       + 'lists .zonelabel as a base selector and §2 fails on a bare .zonelabel in any other piece, board included; it went '
-      + 'red with the old rule put back in board/03. Left: lines 3, 8.',
+      + 'red with the old rule put back in board/03. Left: lines 3, 8.\n\n'
+      + '2026-11-12 (steward, BL-63): the third doneWhen line (the report dialog can use button()) is DONE, from the test '
+      + 'side rather than the component\'s: moving `disabled` after the pass-through attrs in button() would only have '
+      + 're-pinned the home page\'s six order-reading assertions (960 newgame: `disabled data-mode=…`). Instead 287\'s '
+      + 'sendDisabled and 521 §2 read `disabled` off the Send button\'s own tag in either order, and pages/report.ts draws '
+      + 'Cancel (secondary) and Send (primary, disabled while busy or incomplete) with button(); the kind/severity radios '
+      + 'stay hand-written (.reportchoices button). Same pixels: .ui-button and .ui-button--primary are base.css\'s '
+      + 'button / button.primary in tokens (5px 12px, radius 5px). 978 §2 now pins both buttons\' whole markup; with '
+      + 'Send\'s disabled forced false, 287 (3 tests), 521 §2 and 978 §2 went red. components/README.md no longer lists '
+      + 'the dialog as a leftover. Left: line 8.',
   },
   {
     id: 'BL-64',

@@ -87,7 +87,7 @@ test('§2 it opens the report form as a dispute: one required note, no kinds to 
   assert.match(html, /placeholder="What went wrong\?"/);
   assert.doesNotMatch(html, /data-report="kind"/, 'no kind buttons: a dispute is "the outcome was wrong"');
   assert.doesNotMatch(html, /data-report="severity"/);
-  assert.match(html, /data-report="send" disabled/, 'Send waits for a note');
+  assert.match(html, /<button\b[^>]*\sdisabled[^>]*\bdata-report="send"|<button\b[^>]*\bdata-report="send"[^>]*\sdisabled\b/, 'Send waits for a note');
   ui.type('report-note', '   ');
   ui.click({ report: 'send' });
   assert.equal(ui.sent().filter(m => m['t'] === 'dispute').length, 0, 'a blank note sends nothing');

@@ -114,8 +114,12 @@ and in `../pages/README.md`; the larger leftovers:
   sits beside the title, `pageHeader` puts it at the edge. An owner call.
 - The profile's cards are still `<section class="acctcard">` (`panel` can take
   their counts in `titleHtml` now), and its history/ladder tables `.accttable`.
-- The match room's buttons (834–839 pin their exact markup) and the report
-  dialog's (287 reads `data-report="send" disabled` in that order).
+- The match room's buttons (834–839 pin their exact markup). The report
+  dialog's Cancel and Send are `button()` since 2026-11-12 (BL-63); its kind and
+  severity choices stay hand-written radios, sized by `.reportchoices button`.
+- A test that asks whether a button is disabled reads the attribute off that
+  button's tag, not `data-x="…" disabled` in a fixed order: `button()` writes
+  `disabled` before the pass-through `attrs`.
 
 Known seams:
 - A page rule with an element selector outranks a component class: `.deckpage h1`

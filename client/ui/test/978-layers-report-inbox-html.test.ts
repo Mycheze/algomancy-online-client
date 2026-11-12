@@ -44,15 +44,18 @@ test('978 §2 the report form: kinds, severity for a bug or UX only, Send disabl
   const blank = reportLayerHtml({ dialog: dialog(), onBoard: false, toast: null });
   assert.deepEqual([...blank.matchAll(/data-report="kind" data-kind="(\w+)"/g)].map(m => m[1]), ['bug', 'ux', 'feature', 'other']);
   assert.doesNotMatch(blank, /data-report="severity"/);
-  assert.match(blank, /data-report="send" disabled>Send report/);
+  assert.ok(blank.includes('<button class="ui-button ui-button--primary" type="button" disabled data-report="send">Send report</button>'),
+    'Send is the button component\'s filled confirm, disabled until the form is complete');
+  assert.ok(blank.includes('<button class="ui-button ui-button--secondary" type="button" data-report="close">Cancel <span class="kh">(esc)</span></button>'),
+    'Cancel is the button component\'s plain button');
   assert.match(blank, /Filed with the page you are on\. Filed anonymously/);
   const bug = reportLayerHtml({ dialog: dialog({ kind: 'bug', severity: 'medium', complete: true, inGame: true, user: 'Ann' }), onBoard: false, toast: null });
   assert.deepEqual([...bug.matchAll(/data-report="severity" data-severity="(\w+)"/g)].map(m => m[1]), ['minor', 'medium', 'gamebreaking']);
   assert.match(bug, /aria-checked="true" class="on"\s+data-report="kind" data-kind="bug"/);
-  assert.match(bug, /data-report="send" >Send report/);
+  assert.ok(bug.includes('<button class="ui-button ui-button--primary" type="button" data-report="send">Send report</button>'), 'complete: Send is live');
   assert.match(bug, /this exact moment of the game[^<]*Filed as <b>Ann<\/b>/);
   assert.doesNotMatch(reportLayerHtml({ dialog: dialog({ kind: 'feature' }), onBoard: false, toast: null }), /data-report="severity"/);
-  assert.match(reportLayerHtml({ dialog: dialog({ busy: true, kind: 'other', complete: true }), onBoard: false, toast: null }), /data-report="send" disabled>sending…/);
+  assert.match(reportLayerHtml({ dialog: dialog({ busy: true, kind: 'other', complete: true }), onBoard: false, toast: null }), /type="button" disabled data-report="send">sending…</);
 });
 
 test('978 §3 the dispute form, and the error line', () => {
