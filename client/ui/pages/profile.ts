@@ -586,10 +586,20 @@ function gamesTab(me: Me): string {
 
 // ── Players ───────────────────────────────────────────────────────────
 
+/** A player's presence: the dot, then their name, then the state in words for a screen
+ * reader (BL-10, docs/23-ui-inventory/02 §8.6 item 38: "Online status is colour-only. The
+ * ladder rows' `.fdot` has no title at all"). The dot is the same on every row that has
+ * one — a lit disc online, a hollow ring offline (17-accounts.css), so it is not told by
+ * its colour alone — and names itself on hover; the spoken word sits after the name
+ * ("Rashi, online now"), where a listener expects it. */
+function presence(online: boolean, name: string): string {
+  return `<span class="fdot${online ? ' on' : ''}" aria-hidden="true" title="${online ? 'Online now' : 'Offline'}"></span>`
+    + `<span class="pfopp">${esc(name)}</span><span class="srname">, ${online ? 'online now' : 'offline'}</span>`;
+}
+
 function friendRow(f: FriendView, kind: 'friend' | 'incoming' | 'outgoing'): string {
   return `<li class="pffriend">
-    <span class="fdot ${f.online ? 'on' : ''}" title="${f.online ? 'online now' : 'offline'}"></span>
-    <span class="pfopp">${esc(f.username)}</span>
+    ${presence(f.online, f.username)}
     ${elChip(f.favoriteElement)}
     <span class="pfspacer"></span>
     ${kind === 'incoming'
@@ -635,7 +645,7 @@ function boardHtml(v: ProfileView): string {
   const known = new Set([me.id, ...me.friends.map(f => f.id), ...me.outgoing.map(f => f.id), ...me.incoming.map(f => f.id)]);
   const addCell = (l: LeaderRow): string => known.has(l.id) ? ''
     : button({ label: 'Add friend', size: 'sm', dataBtn: 'acct-friend-add', title: `send ${l.username} a friend request`, attrs: { 'data-name': l.username } });
-  const who = (l: LeaderRow): string => `<span class="fdot ${l.online ? 'on' : ''}"></span><span class="pfopp">${esc(l.username)}</span> ${elChip(l.favoriteElement)}`;
+  const who = (l: LeaderRow): string => `${presence(l.online, l.username)} ${elChip(l.favoriteElement)}`;
 
   if (v.board === 'all') {
     if (v.leadersFailed) {

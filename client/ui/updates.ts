@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-12', kind: 'fix', text: 'On your profile\'s Players tab, an offline player\'s dot is now a hollow ring, not just a grey one, and hovering a dot says online or offline. In Invite a friend, a friend in a game now has a gold dot, not a green one.' },
   { date: '2026-11-12', kind: 'fix', text: 'If the home page cannot reach the server for the League or Weekly challenge card, the card now says it could not load, instead of claiming no league or challenge is running. It asks again a little later.' },
   { date: '2026-11-12', kind: 'fix', text: 'On the League, Weekly challenge, Metagame and Card stats pages, a message now shows how things went: a failure in red, a done action like "Saved." in green, and screen readers read it out.' },
   { date: '2026-11-12', kind: 'fix', text: 'With Accessible colours on, every element colour drawn as a shape (a share bar, a swatch, an element chip, a resource pip) now has a thin light edge, so the darker ones like earth stand out from the panels.' },

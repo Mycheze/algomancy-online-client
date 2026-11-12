@@ -706,7 +706,16 @@ const OPEN: Entry[] = [
       + 'draw HINT_RETRY_MS (15s) on asks again; one repaint per flip. Story "League and challenge could not load". Guarded '
       + 'by 1232-home-cards-say-they-could-not-load.test.ts (§2/§3 drive both modules through a fake fetch). Left: S16\'s '
       + 'silent reload after a deploy and its frozen countdowns; the same cards before the first answer still read "No '
-      + 'league running" for that moment. Reasoned, not looked at (no browser).',
+      + 'league running" for that moment. Reasoned, not looked at (no browser).\n\n'
+      + '2026-11-12 (steward): a player\'s online dot is not told by its colour alone (docs/23-ui-inventory/02 §8.6 '
+      + 'item 38: "Online status is colour-only. The ladder rows\' `.fdot` has no title at all"). The class was the profile\'s '
+      + 'Players tab: the friends column (a hover title only) and every board row, Constructed, Live draft and Everyone '
+      + '(nothing). pages/profile.ts presence() draws the dot aria-hidden with a title ("Online now" / "Offline") and the '
+      + 'state spoken after the name; offline is a hollow ring, online a filled disc (17-accounts.css). Same dot, found on '
+      + 'the way: `.fdot.busy` sat in shared/13-report-and-inbox.css, which loads before `.fdot.on`, so a friend in a game '
+      + '(Invite a friend, Send to a friend) was drawn green like any online friend; it now follows `.fdot.on`. Left on '
+      + 'purpose: those two lists\' dots, which write the state beside them, and the admin\'s and the seats\' dots (words '
+      + 'or a title already). Guarded by 1233-presence-not-by-colour-alone.test.ts. Reasoned, not looked at (no browser).',
   },
   {
     id: 'BL-51',

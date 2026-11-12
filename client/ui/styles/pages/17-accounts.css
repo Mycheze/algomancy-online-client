@@ -149,8 +149,13 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .fstats { color: var(--dim); font-size: var(--text-11); }
 .fspacer { flex: 1; }
 .friendrow button { font-size: var(--text-11); padding: var(--space-1) var(--space-4); }
-.fdot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-border-strong); flex: none; }
-.fdot.on { background: var(--glow); box-shadow: 0 0 6px var(--glow); }
+/* a player's presence (BL-10, 2026-11-12): offline is a hollow ring, online a lit disc, in a game a gold
+ * one — a shape as well as a colour. .fdot.busy is here, after .fdot.on: in 13-report-and-inbox.css,
+ * which loads first, the green won and a friend in a game was drawn as merely online. */
+.fdot { width: 8px; height: 8px; border-radius: 50%; box-sizing: border-box; border: 2px solid var(--color-border-strong);
+  background: transparent; flex: none; }
+.fdot.on { border-width: 0; background: var(--glow); box-shadow: 0 0 6px var(--glow); }
+.fdot.busy { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
 
 
 /* ── the profile and the sign-in screen in the app frame (2026-11-04, docs/24) ──

@@ -54,7 +54,6 @@
 .rfname { font-weight: 700; }
 .rfstatus { flex: 1; color: var(--dim); font-size: var(--text-11); }
 .roomfriend button { font-size: var(--text-12); padding: 3px 10px; }
-.fdot.busy { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
 /* league news in the bell: unread ones carry the accent edge */
 .inboxlist > .zonelabel + .zonelabel, .inboxlist .zonelabel { margin: var(--space-2) 0 0; }
 .leaguenote.unread { border-left: 3px solid var(--accent); }
