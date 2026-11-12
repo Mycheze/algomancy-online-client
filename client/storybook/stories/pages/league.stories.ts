@@ -49,7 +49,7 @@ const state = (s: SeasonView | null, over: Partial<LeagueState> = {}): LeagueSta
 });
 
 const view = (data: LeagueState | null, over: Partial<LeagueView> = {}): LeagueView => ({
-  data, loading: false, msg: '', draft: { tz: 'Europe/London', grid: defaultGrid(), contact: 'me_plays' }, dirty: false, busy: false,
+  data, loading: false, msg: '', msgTone: 'error', draft: { tz: 'Europe/London', grid: defaultGrid(), contact: 'me_plays' }, dirty: false, busy: false,
   arming: null, gridFocus: null, timeOpen: null, preview: null, now: NOW, tz: 'Europe/London', browserTz: 'Europe/London',
   zones: ['Europe/London', 'America/New_York', 'UTC'], origin: 'https://algomancy.online', stampAt: NOW,
   chips: { champion: ' <span class="badgechip trophy champion">🏆 Champion</span>', finalist: ' <span class="badgechip trophy finalist">🥈 Finalist</span>' },
@@ -73,6 +73,7 @@ export const Organizer = { args: { view: view(state(season(), { organizer: true 
 export const NoSeason = { name: 'Empty: no season', args: { view: view(state(null)) } };
 export const Loading = { args: { view: view(null, { loading: true }) } };
 export const Failed = { name: 'Error', args: { view: view(null, { msg: 'could not reach the server' }) } };
+export const Saved = { name: 'A button\'s result', args: { view: view(state(season()), { msgTone: 'ok', msg: 'Saved.' }) } };
 export const Finished = {
   args: { view: view(state(season({ phase: 5, label: 'Finished', champion: P('me', 'Me'),
     matches: [...season().matches, { id: 'fin', week: 4, final: true, a: P('me', 'Me'), b: P('p1', 'Ann'), result: { outcome: 'a', how: 'game', at: '' }, room: null }] }))) },

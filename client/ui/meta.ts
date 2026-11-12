@@ -32,6 +32,7 @@ import { deckListText } from './deckstats.ts';
 import { copyText } from './util.ts';
 import * as cardstats from './cardstats.ts';
 import { metaView, paintMeta } from './pages/meta.ts';
+import type { StatusTone } from './components/status.ts';
 
 /** the card art for a name (the profile's deck rows use it too) */
 export { artFor } from './pages/meta.ts';
@@ -71,6 +72,9 @@ let one: PublicDeck | null = null;
 let wantId: string | null = null;
 let loading = false;
 let msg = '';
+/** how `msg` reads: a result (ok), a refusal (error), a step on its way (note) — set only through say() */
+let msgTone: StatusTone = 'error';
+const say = (text: string, tone: StatusTone): void => { msg = text; msgTone = tone; };
 let sort: Sort = 'winrate';
 /** element filter — chips, not a query language: this page is for browsing */
 const els = new Set<string>();
@@ -157,10 +161,10 @@ function loadList(): void {
     .then(r => {
       loading = false;
       if (r.ok && r.decks) { rows = r.decks; minGames = r.minGames ?? minGames; }
-      else msg = r.error ?? 'could not load the metagame list';
+      else say(r.error ?? 'could not load the metagame list', 'error');
       paint();
     })
-    .catch(() => { loading = false; msg = 'could not reach the server'; paint(); });
+    .catch(() => { loading = false; say('could not reach the server', 'error'); paint(); });
 }
 
 function loadOne(id: string): void {
@@ -170,10 +174,10 @@ function loadOne(id: string): void {
     .then(r => {
       loading = false;
       if (r.ok && r.deck) { one = r.deck; msg = ''; }
-      else { one = null; msg = 'That deck is not shared, or the link is wrong.'; }
+      else { one = null; say('That deck is not shared, or the link is wrong.', 'error'); }
       paint();
     })
-    .catch(() => { loading = false; msg = 'could not reach the server'; paint(); });
+    .catch(() => { loading = false; say('could not reach the server', 'error'); paint(); });
 }
 
 // ── CR D8.2f: the card ladder ─────────────────────────────────────────────
@@ -191,10 +195,10 @@ function loadLadder(): void {
     .then(r => {
       loading = false;
       if (r.ok && r.cards) ladder = { cards: r.cards, rankedAfter: r.rankedAfter ?? 5, duels: r.duels ?? 0 };
-      else msg = 'could not load the card ladder';
+      else say('could not load the card ladder', 'error');
       paint();
     })
-    .catch(() => { loading = false; msg = 'could not reach the server'; paint(); });
+    .catch(() => { loading = false; say('could not reach the server', 'error'); paint(); });
 }
 
 export function openLadder(): void {
@@ -259,6 +263,8 @@ export interface MetaState {
   one: PublicDeck | null;
   loading: boolean;
   msg: string;
+  /** a result (ok), a refusal in red (error), a step on its way (note) */
+  msgTone: StatusTone;
   sort: Sort;
   els: ReadonlySet<string>;
   /** the deck list's search */
@@ -276,7 +282,7 @@ export interface MetaState {
 }
 
 const state = (): MetaState => ({
-  view, rows, minGames, one, loading, msg, sort, els, text, ladderText, focus, deckGroup, statsOpen, descOpen, exporting, backTo, ladder,
+  view, rows, minGames, one, loading, msg, msgTone, sort, els, text, ladderText, focus, deckGroup, statsOpen, descOpen, exporting, backTo, ladder,
 });
 
 /** Whichever export format is showing, as text. A shared deck has no
@@ -393,7 +399,7 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'meta-take': {
       if (!one) return true;
       const id = one.id;
-      msg = 'copying…';
+      say('copying…', 'note');
       paint();
       void fetch('/api/decks/take', {
         method: 'POST', headers: authHeaders(), body: JSON.stringify({ id }),
@@ -408,12 +414,11 @@ export function handleButton(btn: HTMLElement): boolean {
           // take the page back on the next repaint) — Back from the builder
           // is the Decks page, and Back from that is Home
           if (r.ok && dk.openTaken(r)) { msg = ''; acct.leaveScreen(); leave(); return; }
-          msg = r.ok
-            ? `Copied into your collection${r.note ? ` — ${r.note}` : ''}. It starts private.`
-            : (r.error ?? 'could not copy that deck');
+          if (r.ok) say(`Copied into your collection${r.note ? ` — ${r.note}` : ''}. It starts private.`, 'ok');
+          else say(r.error ?? 'could not copy that deck', 'error');
           paint();
         })
-        .catch(() => { msg = 'could not reach the server'; paint(); });
+        .catch(() => { say('could not reach the server', 'error'); paint(); });
       return true;
     }
   }

@@ -44,7 +44,7 @@ const DATA: ChallengeReply = { now: NOW, current: CUR, past: [OLD],
   mine: { cur: { fastest: { score: sc(3), rank: 2 }, leanest: { score: sc(3), rank: 1 }, purest: { score: sc(3), rank: 3 }, overall: { score: sc(3), rank: 2 } } } };
 
 function view(over: Partial<ChallengePageView> = {}): ChallengePageView {
-  return { data: DATA, loading: false, msg: '', now: NOW, tab: 'fastest', pastOpen: null, arming: null,
+  return { data: DATA, loading: false, msg: '', msgTone: 'error', now: NOW, tab: 'fastest', pastOpen: null, arming: null,
     boards: { cur: board(false) }, building: null, builder: null, kept: [], canSubmit: true, chrome: { signedIn: true, alerts: 0 }, ...over };
 }
 const btns = (html: string): Set<string> => new Set([...html.matchAll(/data-btn="([^"]+)"/g)].map(m => m[1]!));

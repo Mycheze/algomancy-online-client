@@ -29,6 +29,7 @@ import {
 import { builderHtml, type BuilderView } from '../challengebuild.ts';
 import { panel, panelSubheading } from '../components/panel.ts';
 import { type TableColumn, table } from '../components/table.ts';
+import { statusMessage, type StatusTone } from '../components/status.ts';
 import { tabs } from '../components/tabs.ts';
 import { canSubmit, doneRuns, type DoneRun, type SubmitReply } from '../challengerun.ts';
 import { esc } from '../util.ts';
@@ -170,6 +171,8 @@ export interface ChallengePageView {
   loading: boolean;
   /** the last thing a button or fetch said ('' = nothing) */
   msg: string;
+  /** a result is drawn as one (ok), a refusal in red (error) */
+  msgTone: StatusTone;
   /** the server's clock */
   now: number;
   /** the leaderboard tab on show */
@@ -211,7 +214,7 @@ export function challengePageHtml(v: ChallengePageView): string {
       ${data ? pastHtml(data, v) : ''}`;
   return frameHtml({
     page: 'chpage', title: 'Weekly challenge', back: { dataBtn: 'ch-close', label: 'Home' }, chrome: v.chrome, fill: true,
-    mainHtml: `${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
+    mainHtml: `${msg ? statusMessage({ tone: v.msgTone, text: msg }) : ''}
     ${loading && !data ? '<p class="dim">Loading…</p>' : ''}
     <div class="chwork${shown ? '' : ' chnoboard'}">
       <div class="chleft" data-scroll="ch-left">${left}</div>
@@ -347,6 +350,7 @@ export interface ChallengeRaw {
   hint: ChallengeReply | null;
   loading: boolean;
   msg: string;
+  msgTone: StatusTone;
   /** server clock minus ours */
   skew: number;
   tab: BoardKind;
@@ -369,7 +373,7 @@ export function challengePageView(r: ChallengeRaw): ChallengePageView {
   const viewOf = (id: string | null): ChallengeView | null => known.find(c => c.id === id) ?? null;
   const b = r.building ? viewOf(r.building) : null;
   return {
-    data: r.data, loading: r.loading, msg: r.msg,
+    data: r.data, loading: r.loading, msg: r.msg, msgTone: r.msgTone,
     now: Date.now() + r.skew,
     tab: r.tab, pastOpen: r.pastOpen, arming: r.arming,
     boards: Object.fromEntries(r.boards),

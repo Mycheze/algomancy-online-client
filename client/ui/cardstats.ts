@@ -26,6 +26,7 @@
  */
 import * as acct from './account.ts';
 import { colsFor } from './pages/cardstats.ts';
+import type { StatusTone } from './components/status.ts';
 
 // ── the wire shape (server/cardstats.ts CardStatsResult) ──────────────
 
@@ -63,6 +64,9 @@ let repaint: () => void = () => {};
 let data: CsResult | null = null;
 let loading = false;
 let msg = '';
+/** how `msg` reads: a refusal (error) or a word on the filters (note) — set only through say() */
+let msgTone: StatusTone = 'error';
+const say = (text: string, tone: StatusTone): void => { msg = text; msgTone = tone; };
 let mode: Mode = 'all';
 let range: Range = 'all';
 let rated = false;
@@ -110,13 +114,15 @@ function load(): void {
       if (r.ok) data = r;
       else {
         data = null;
-        msg = r.error === 'not enough games'
-          ? `Only ${r.games ?? 0} game${r.games === 1 ? '' : 's'} match these filters. Card stats need at least ${r.floor ?? 5}, so nobody's hand from one game is on show — widen the filters.`
-          : r.error;
+        // too few games is not a failure: the filters are too narrow, and
+        // the line says how to widen them — drawn as a note, not in red
+        if (r.error === 'not enough games') {
+          say(`Only ${r.games ?? 0} game${r.games === 1 ? '' : 's'} match these filters. Card stats need at least ${r.floor ?? 5}, so nobody's hand from one game is on show — widen the filters.`, 'note');
+        } else say(r.error, 'error');
       }
       repaint();
     })
-    .catch(() => { loading = false; msg = 'could not reach the server'; repaint(); });
+    .catch(() => { loading = false; say('could not reach the server', 'error'); repaint(); });
 }
 
 /** The state the page is drawn from — pages/cardstats.ts cardStatsView()
@@ -125,6 +131,8 @@ export interface CardStatsState {
   data: CsResult | null;
   loading: boolean;
   msg: string;
+  /** a refusal in red (error), a word on the filters in the note gold */
+  msgTone: StatusTone;
   mode: Mode;
   range: Range;
   rated: boolean;
@@ -141,7 +149,7 @@ export interface CardStatsState {
 }
 
 export const state = (): CardStatsState => ({
-  data, loading, msg, mode, range, rated, bothSigned, mine, section, sortKey, sortDir, text, els, kind, minGames, focus,
+  data, loading, msg, msgTone, mode, range, rated, bothSigned, mine, section, sortKey, sortDir, text, els, kind, minGames, focus,
 });
 
 /** the filter box's text, set as it is typed (pages/cardstats.ts paintCardStats) */

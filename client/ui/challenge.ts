@@ -55,6 +55,7 @@ export {
   BOARD_LABEL, DEBT_RULE, type BoardReply, type BoardRow, type ChallengeReply, type ChallengeView, type MyBest,
 } from './pages/challenge.ts';
 import { paintFrame } from './pages/frame.ts';
+import type { StatusTone } from './components/status.ts';
 
 // ── module state ──────────────────────────────────────────────────────
 
@@ -68,6 +69,9 @@ let dataFor: string | null | undefined;
 let skew = 0;
 let loading = false;
 let msg = '';
+/** how `msg` reads: a result (ok), a refusal (error) — set only through say() */
+let msgTone: StatusTone = 'error';
+const say = (text: string, tone: StatusTone): void => { msg = text; msgTone = tone; };
 /** the home card's copy, and the token it was asked with */
 let hint: ChallengeReply | null = null;
 let hintFor: string | null | undefined;
@@ -124,7 +128,7 @@ function load(): void {
     .then(r => r.json() as Promise<ChallengeReply>)
     .then(r => {
       loading = false;
-      if (!r || typeof r.now !== 'number') { msg = 'could not load the challenges'; paint(); return; }
+      if (!r || typeof r.now !== 'number') { say('could not load the challenges', 'error'); paint(); return; }
       data = r; dataFor = tok;
       hint = r; hintFor = tok;
       skew = r.now - Date.now();
@@ -142,7 +146,7 @@ function load(): void {
       if (want) { const h = tabletopHostFor(want); if (h) { tt.openTabletop(h); return; } rerenderHost(); return; }
       paint();
     })
-    .catch(() => { loading = false; msg = 'could not reach the server'; paint(); });
+    .catch(() => { loading = false; say('could not reach the server', 'error'); paint(); });
 }
 
 /** The home card's data, asked the first time the home page draws. */
@@ -268,7 +272,7 @@ function paint(): void {
   if (tt.screen()) return;
   // the app frame (pages/frame.ts): both columns keep their scroll over a repaint
   paintFrame($app, challengePageHtml(challengePageView({
-    data, hint, loading, msg, skew, tab, pastOpen, arming, boards, sending, building, list, importing, undo, decks: importable,
+    data, hint, loading, msg, msgTone, skew, tab, pastOpen, arming, boards, sending, building, list, importing, undo, decks: importable,
   })));
 }
 

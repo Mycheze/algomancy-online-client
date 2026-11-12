@@ -22,6 +22,7 @@
 import { trophyChipHtml } from '../account.ts';
 import { panel, panelSubheading } from '../components/panel.ts';
 import { segmented } from '../components/segmented.ts';
+import { statusMessage, type StatusTone } from '../components/status.ts';
 import { frameChromeView, frameHtml, type FrameChrome } from './frame.ts';
 import { table } from '../components/table.ts';
 import { esc } from '../util.ts';
@@ -598,6 +599,8 @@ export interface LeagueView {
   loading: boolean;
   /** the last thing a button said ('' = nothing) */
   msg: string;
+  /** a result is drawn as one (ok), a refusal in red (error) */
+  msgTone: StatusTone;
   /** the availability being edited: the saved one, or a sensible default */
   draft: { tz: string; grid: string; contact: string };
   /** the draft differs from what is saved */
@@ -706,7 +709,7 @@ export function leagueHtml(v: LeagueView): string {
     page: 'lgpage', title: 'League', back: { dataBtn: 'lg-close', label: 'Home' }, chrome: v.chrome, fill: true,
     centerHtml: data ? segmented({ ariaLabel: 'League', className: 'lgsections',
       options: secs.map(k => ({ label: SECTION_LABEL[k], value: k, on: k === sec, dataBtn: 'lg-section', attrs: { 'data-v': k } })) }) : '',
-    mainHtml: `${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
+    mainHtml: `${msg ? statusMessage({ tone: v.msgTone, text: msg }) : ''}
     ${loading && !data ? '<p class="dim">Loading…</p>' : ''}
     <div class="lgwork${rail ? '' : ' lgnorail'}">${rail}
       <div class="lgsection" data-scroll="lg-${sec}-${esc(s?.id ?? 'none')}"><div class="acctbody lgsec-${sec}">${body}</div></div>
@@ -1110,6 +1113,7 @@ export interface LeagueRaw {
   hint: LeagueState | null;
   loading: boolean;
   msg: string;
+  msgTone: StatusTone;
   draft: { tz: string; grid: string; contact: string } | null;
   dirty: boolean;
   busy: boolean;
@@ -1141,7 +1145,7 @@ export function leagueView(r: LeagueRaw): LeagueView {
   const now = Date.now();
   const s = r.data?.season ?? null;
   return {
-    data: r.data, loading: r.loading, msg: r.msg,
+    data: r.data, loading: r.loading, msg: r.msg, msgTone: r.msgTone,
     draft: r.draft ?? { tz: browserTz(), grid: defaultGrid(), contact: '' },
     dirty: r.dirty, busy: r.busy, arming: r.arming, gridFocus: r.gridFocus, timeOpen: r.timeOpen, preview: r.preview,
     now,

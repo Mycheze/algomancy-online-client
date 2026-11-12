@@ -25,7 +25,7 @@ import { artUrl } from '../assets.ts';
 import type { CardStanding, MetaState, PublicDeck } from '../meta.ts';
 import { cardStatsHtml, cardStatsView, paintCardStats, type CardStatsView } from './cardstats.ts';
 import type { CardStatsState } from '../cardstats.ts';
-import { button, segmented } from '../components/index.ts';
+import { button, segmented, statusMessage } from '../components/index.ts';
 import { deckPreviewHtml, deckPreviewView } from './decks.ts';
 import { frameChromeView, frameHtml, paintFrame, type FrameBack, type FrameChrome } from './frame.ts';
 
@@ -123,7 +123,7 @@ function ladderHtml(v: MetaView): string {
       <span class="framespacer"></span>
       <input id="meta-q" class="dksearch metaq" spellcheck="false" aria-label="Find a card" placeholder="find a card" value="${esc(v.ladderText)}">
     </div>
-    ${v.msg ? `<div class="acctmsg">${esc(v.msg)}</div>` : ''}
+    ${v.msg ? statusMessage({ tone: v.msgTone, text: v.msg }) : ''}
     <div class="framelist" data-scroll="meta-ladder">
       ${v.loading && !ladder ? '<p class="hint metaempty">loading…</p>' : ''}
       ${ladder && !ladder.cards.length ? '<p class="hint metaempty">No duels yet. Somebody has to go first.</p>' : ''}
@@ -230,7 +230,7 @@ function listHtml(v: MetaView): string {
         options: SORTS.map(([s, label]) => ({ label, value: s, on: v.sort === s, dataBtn: 'meta-sort', attrs: { 'data-sort': s } })),
       })}
     </div>
-    ${v.msg ? `<div class="acctmsg">${esc(v.msg)}</div>` : ''}
+    ${v.msg ? statusMessage({ tone: v.msgTone, text: v.msg }) : ''}
     <div class="framelist" data-scroll="meta-decks">
       ${v.loading && !rows ? '<p class="hint metaempty">loading…</p>' : ''}
       ${rows && !all.length
@@ -356,7 +356,7 @@ function deckHtml(v: MetaView): string {
   // two columns that each scroll: what the deck IS on the left (the preview),
   // the cards on the right
   return metaFrame(v, 'metadeck', `
-    ${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
+    ${msg ? statusMessage({ tone: v.msgTone, text: msg }) : ''}
     <div class="metadeckwork">
       <aside class="metadeckinfo" data-scroll="meta-deck-info">
         ${deckPreviewHtml(preview, { readOnly: true, actionsHtml: actions })}

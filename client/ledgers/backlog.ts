@@ -685,7 +685,18 @@ const OPEN: Entry[] = [
       + 'a room, Join pressed with no code". Guarded by 1227-empty-box-is-said.test.ts (§4 a census: no ui/ or pages/ '
       + 'handler reads a box and returns silently on empty). Left on purpose: the two ask-the-judge boxes (table and '
       + 'lesson), chat boxes whose Ask sends nothing when empty. Left: S16\'s silent reload after a deploy, and league '
-      + 'and challenge fetch failures drawing nothing. Reasoned, not looked at (no browser).',
+      + 'and challenge fetch failures drawing nothing. Reasoned, not looked at (no browser).\n\n'
+      + '2026-11-12 (steward): the League, Weekly challenge, Metagame and Card stats pages say how it went '
+      + '(docs/23-ui-inventory/02 §8.1 item 2: "`.acctmsg` has no CSS … Action results and errors on two pages are bare '
+      + 'text", §8.5 item 28 "looks the same for success and failure", §8.6 item 37 no role="status"; 03 §0.3 for the '
+      + 'metagame and card stats). The class was six `<div class="acctmsg">` lines in pages/league.ts, challenge.ts, '
+      + 'meta.ts (x3) and cardstats.ts. Each controller sets its line only through say(text, tone) and the view carries '
+      + 'msgTone; the page draws statusMessage() in it: a refusal red with role="alert", a result ("Saved.", "Copied.", '
+      + '"You\'re in …", "Copied into your collection") green with role="status", the metagame\'s "copying…" and card '
+      + 'stats\' "Only N games match these filters" in the note gold. Story "A button\'s result" (League). Guarded by '
+      + '1231-page-messages-say-how-it-went.test.ts (§2 a census: no controller sets msg but through say()). Left: '
+      + '§8.5 item 28\'s other half, the league line never clears; and the home cards\' silent league and challenge '
+      + 'fetch failures (S16). Reasoned, not looked at (no browser).',
   },
   {
     id: 'BL-51',

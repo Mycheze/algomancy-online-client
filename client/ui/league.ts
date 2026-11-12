@@ -26,6 +26,7 @@ import {
   type Format, type LeagueSection, type LeagueState, type Preview, type StampStyle,
 } from './pages/league.ts';
 import { paintFrame } from './pages/frame.ts';
+import type { StatusTone } from './components/status.ts';
 
 export { discordCode, postText, stampPreview, STAMP_STYLES, type StampStyle } from './pages/league.ts';
 
@@ -43,6 +44,9 @@ let data: LeagueState | null = null;
 let dataFor: string | null | undefined;
 let loading = false;
 let msg = '';
+/** how `msg` reads: a result (ok), a refusal (error) — set only through say() */
+let msgTone: StatusTone = 'error';
+const say = (text: string, tone: StatusTone): void => { msg = text; msgTone = tone; };
 /** the availability being edited: starts from the saved one, or a sensible default */
 let draft: { tz: string; grid: string; contact: string } | null = null;
 let dirty = false;
@@ -171,7 +175,7 @@ function load(): void {
     .then(r => r.json() as Promise<{ ok: boolean } & LeagueState>)
     .then(r => {
       loading = false;
-      if (!r.ok) { msg = 'could not load the league'; paint(); return; }
+      if (!r.ok) { say('could not load the league', 'error'); paint(); return; }
       if (tok !== dataFor) { dirty = false; preview = null; arming = null; }
       data = r;
       dataFor = tok;
@@ -180,7 +184,7 @@ function load(): void {
       if (!dirty) draft = { ...(r.availability ?? { tz: browserTz(), grid: defaultGrid() }), contact: r.contact ?? '' };
       paint();
     })
-    .catch(() => { loading = false; msg = 'could not reach the server'; paint(); });
+    .catch(() => { loading = false; say('could not reach the server', 'error'); paint(); });
 }
 
 /** Something changed in the league that this page is showing — the bell
@@ -231,7 +235,7 @@ function paint(): void {
   if (!$app || !open) return;
   // the app frame (pages/frame.ts): every region that scrolls keeps its place
   paintFrame($app, leagueHtml(leagueView({
-    data, hint, loading, msg, draft, dirty, busy, arming, gridFocus, timeOpen, preview, stampAt, section,
+    data, hint, loading, msg, msgTone, draft, dirty, busy, arming, gridFocus, timeOpen, preview, stampAt, section,
   })));
   wireGrid();
   wireStamp();
@@ -386,7 +390,7 @@ const checked = (id: string): boolean => (document.getElementById(id) as HTMLInp
 
 async function act(path: string, body: Record<string, unknown>, done?: string): Promise<void> {
   const r = await post(path, body);
-  msg = r.ok ? (done ?? '') : (r.error ?? 'that did not work');
+  if (r.ok) say(done ?? '', 'ok'); else say(r.error ?? 'that did not work', 'error');
   arming = null;
   load();
 }
@@ -401,7 +405,7 @@ export function playMatch(season: string, match: string): void {
       // same match, so open it and say it there
       openLeague(season && season !== hint?.season?.id ? season : undefined);
     }
-    msg = why;
+    say(why, 'error');
     paint();
   };
   if (!season || !match) { fail('could not find that match: try its Play button here'); return; }
@@ -471,7 +475,7 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'lg-grid-save':
       if (!draft) return true;
       void post('/api/league/availability', { tz: draft.tz, grid: draft.grid, contact: draft.contact }).then(r => {
-        if (r.ok) { dirty = false; msg = 'Saved.'; } else msg = r.error ?? 'could not save';
+        if (r.ok) { dirty = false; say('Saved.', 'ok'); } else say(r.error ?? 'could not save', 'error');
         load();
       });
       return true;
@@ -494,7 +498,7 @@ export function handleButton(btn: HTMLElement): boolean {
       const season = btn.dataset['season'] ?? s?.id ?? '';
       const match = btn.dataset['match'] ?? '';
       const at = b === 'lg-time' ? Number(btn.dataset['at']) : fromWallValue(val('lgt-at'), viewTz());
-      if (!Number.isFinite(at)) { msg = 'pick a day and a time first'; paint(); return true; }
+      if (!Number.isFinite(at)) { say('pick a day and a time first', 'error'); paint(); return true; }
       timeOpen = null;
       void act('/api/league/time', { season, match, at }, `Suggested ${when(at)}. They'll see it in their own time zone.`);
       return true;
@@ -518,7 +522,7 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'lg-copy': {
       const el = document.getElementById('lg-post') as HTMLTextAreaElement | null;
       if (!el) return true;
-      copyText(el.value, el, () => { msg = 'Copied.'; paint(); });
+      copyText(el.value, el, () => { say('Copied.', 'ok'); paint(); });
       return true;
     }
     case 'lg-stamp-copy': {
@@ -527,7 +531,7 @@ export function handleButton(btn: HTMLElement): boolean {
       const code = discordCode(Math.floor(stampMs() / 1000), st);
       // pin the time: a default of "the next quarter hour" must not move under the copy
       stampAt = stampMs();
-      copyText(code, document.getElementById(`lg-stamp-${st}`) as HTMLInputElement | null, () => { msg = `Copied ${code}`; paint(); });
+      copyText(code, document.getElementById(`lg-stamp-${st}`) as HTMLInputElement | null, () => { say(`Copied ${code}`, 'ok'); paint(); });
       return true;
     }
     case 'lg-leave':
@@ -551,7 +555,7 @@ export function handleButton(btn: HTMLElement): boolean {
         auto: checked('lg-new-auto'), hidden: checked('lg-new-hidden'),
         format: formatOfVal(val('lg-new-format')),
       }).then(r => {
-        msg = r.ok ? 'Season created.' : (r.error ?? 'could not create it');
+        if (r.ok) say('Season created.', 'ok'); else say(r.error ?? 'could not create it', 'error');
         if (r.ok) want = String(r['id']);
         syncUrl();
         load();
@@ -565,7 +569,7 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'lg-preview':
       if (s) {
         void post('/api/league/admin/preview', { id: s.id }).then(r => {
-          if (r.ok) { preview = r as unknown as Preview; msg = ''; } else msg = r.error ?? 'no preview';
+          if (r.ok) { preview = r as unknown as Preview; msg = ''; } else say(r.error ?? 'no preview', 'error');
           paint();
         });
       }

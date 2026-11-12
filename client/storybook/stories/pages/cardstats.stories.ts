@@ -33,7 +33,7 @@ const DATA: CsResult = {
 
 function view(over: Partial<CardStatsView> = {}): CardStatsView {
   return {
-    data: DATA, loading: false, msg: '', mode: 'all', range: 'all', rated: false, bothSigned: false, mine: false,
+    data: DATA, loading: false, msg: '', msgTone: 'error', mode: 'all', range: 'all', rated: false, bothSigned: false, mine: false,
     section: 'cards', sortKey: 'games', sortDir: -1, text: '', els: [], kind: 'all', minGames: 1, focus: null,
     signedIn: true, tabs: metaTabsHtml('stats'), chrome: CHROME, ...over,
   };
@@ -56,5 +56,5 @@ export const Games = { args: view({ section: 'game' }) };
 export const Loading = { args: view({ data: null, loading: true }) };
 export const NotEnoughGames = {
   name: 'Not enough games',
-  args: view({ data: null, mode: 'draft', range: '7', msg: 'Only 2 games match these filters. Card stats need at least 5, so nobody\'s hand from one game is on show — widen the filters.' }),
+  args: view({ data: null, mode: 'draft', range: '7', msgTone: 'note', msg: 'Only 2 games match these filters. Card stats need at least 5, so nobody\'s hand from one game is on show — widen the filters.' }),
 };

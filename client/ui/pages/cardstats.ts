@@ -18,7 +18,7 @@ import { rowFor } from '../cardindex.ts';
 import { artUrl } from '../assets.ts';
 import { esc, elIcon } from '../util.ts';
 import type { CardStatsState, CsCard, Mode, Range, Wr } from '../cardstats.ts';
-import { segmented, toggle } from '../components/index.ts';
+import { segmented, statusMessage, toggle } from '../components/index.ts';
 import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
 
 const ELEMENTS = ['fire', 'water', 'earth', 'wood', 'metal', 'light', 'dark'];
@@ -439,7 +439,7 @@ export function cardStatsHtml(v: CardStatsView): string {
     back: { dataBtn: 'meta-close', label: 'Home' },
     centerHtml: v.tabs, chrome: v.chrome, fill: true,
     mainHtml: `${headerHtml(v)}
-    ${v.msg ? `<div class="acctmsg">${esc(v.msg)}</div>` : ''}
+    ${v.msg ? statusMessage({ tone: v.msgTone, text: v.msg }) : ''}
     ${v.loading && !v.data ? '<p class="hint">loading…</p>' : ''}
     ${body}`,
   });

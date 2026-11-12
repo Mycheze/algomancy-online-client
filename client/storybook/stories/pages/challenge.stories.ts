@@ -32,7 +32,7 @@ const DATA: ChallengeReply = { now: NOW, current: CUR, past: [OLD],
   mine: { cur: { fastest: { score: sc(5, 8, 2), rank: 2 }, leanest: { score: sc(5, 8, 2), rank: 3 }, purest: { score: sc(5, 8, 2), rank: 2 }, overall: { score: sc(5, 8, 2), rank: 2 } } } };
 
 const view = (over: Partial<ChallengePageView> = {}): ChallengePageView => ({
-  data: DATA, loading: false, msg: '', now: NOW, tab: 'fastest', pastOpen: null, arming: null,
+  data: DATA, loading: false, msg: '', msgTone: 'error', now: NOW, tab: 'fastest', pastOpen: null, arming: null,
   boards: { cur: board(false) }, building: null, builder: null, kept: [], canSubmit: true, chrome: CHROME, ...over,
 });
 

@@ -33,7 +33,7 @@ function deck(i: number, over: Partial<PublicDeck> = {}): PublicDeck {
 
 function view(over: Partial<MetaView> = {}): MetaView {
   return {
-    view: 'list', rows: null, minGames: 5, one: null, loading: false, msg: '', sort: 'winrate', els: [], text: '', ladderText: '',
+    view: 'list', rows: null, minGames: 5, one: null, loading: false, msg: '', msgTone: 'error', sort: 'winrate', els: [], text: '', ladderText: '',
     focus: null, deckGroup: 'type', statsOpen: false, descOpen: false, exporting: null, backTo: 'list', ladder: null,
     signedIn: false, mine: false, link: 'http://x/?deck=d1', exportText: '', stats: null, chrome: { signedIn: false, alerts: 0 }, ...over,
   };
@@ -56,7 +56,7 @@ test('981 §1 the published-deck list in each of its states', () => {
   }
   assert.doesNotMatch(html, /data-btn="meta-clear"/, 'no clear without a filter');
   assert.match(metaHtml(view({ rows: [deck(1)], els: ['fire'] })), /data-btn="meta-clear"/);
-  assert.match(metaHtml(view({ msg: 'could not reach the server' })), /<div class="acctmsg">could not reach the server<\/div>/);
+  assert.match(metaHtml(view({ msg: 'could not reach the server' })), /<div class="ui-status ui-status--error" role="alert">could not reach the server<\/div>/);
 });
 
 test('981 §2 the card duel ladder', () => {
@@ -194,7 +194,7 @@ test('981 §6 the tab row, and the card stats view', () => {
   assert.match(metaTabsHtml('deck'), /class="ui-segmented__option on" data-btn="meta-list"/);
   assert.equal([...metaTabsHtml('deck').matchAll(/ on"/g)].length, 1);
   const stats = {
-    data: null, loading: true, msg: '', mode: 'all', range: 'all', rated: false, bothSigned: false, mine: false,
+    data: null, loading: true, msg: '', msgTone: 'error', mode: 'all', range: 'all', rated: false, bothSigned: false, mine: false,
     section: 'cards', sortKey: 'games', sortDir: -1, text: '', els: [], kind: 'all', minGames: 1, focus: null,
     signedIn: false, tabs: '<!--SLOT:tabs-->', chrome: { signedIn: false, alerts: 0 },
   } as const;

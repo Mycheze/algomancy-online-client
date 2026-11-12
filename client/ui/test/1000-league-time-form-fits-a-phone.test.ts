@@ -44,7 +44,7 @@ const SEASON: SeasonView = {
 const view = (timeOpen: string | null): LeagueView => ({
   data: { season: SEASON, seasons: [{ id: SEASON.id, name: SEASON.name, phase: 2, weeks: 3, hidden: false }], signedIn: true,
     availability: { tz: 'UTC', grid: defaultGrid() }, contact: 'me', minHours: 6, organizer: false },
-  loading: false, msg: '', draft: { tz: 'UTC', grid: defaultGrid(), contact: 'me' }, dirty: false, busy: false,
+  loading: false, msg: '', msgTone: 'error', draft: { tz: 'UTC', grid: defaultGrid(), contact: 'me' }, dirty: false, busy: false,
   arming: null, gridFocus: null, timeOpen, preview: null, now: NOW, tz: 'UTC', browserTz: 'UTC', zones: ['UTC'],
   origin: 'https://example.test', stampAt: NOW, chips: { champion: '', finalist: '' },
   section: 'season', chrome: { signedIn: true, alerts: 0 },

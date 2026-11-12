@@ -39,7 +39,7 @@ const DATA: CsResult = {
 
 function view(over: Partial<CardStatsView> = {}): CardStatsView {
   return {
-    data: DATA, loading: false, msg: '', mode: 'all', range: 'all', rated: false, bothSigned: false, mine: false,
+    data: DATA, loading: false, msg: '', msgTone: 'error', mode: 'all', range: 'all', rated: false, bothSigned: false, mine: false,
     section: 'cards', sortKey: 'games', sortDir: -1, text: '', els: [], kind: 'all', minGames: 1, focus: null,
     signedIn: true, tabs: '<!--SLOT:tabs-->', chrome: { signedIn: true, alerts: 0 }, ...over,
   };
@@ -51,8 +51,8 @@ test('982 §1 loading, and a message before any data', () => {
   assert.match(loading, /<p class="hint">loading…<\/p>/);
   assert.match(loading, /<!--SLOT:tabs-->/);
   assert.doesNotMatch(loading, /cstable/);
-  const short = cardStatsHtml(view({ data: null, msg: 'Only 1 game matches these filters.' }));
-  assert.match(short, /<div class="acctmsg">Only 1 game matches these filters\.<\/div>/);
+  const short = cardStatsHtml(view({ data: null, msgTone: 'note', msg: 'Only 1 game matches these filters.' }));
+  assert.match(short, /<div class="ui-status ui-status--note" role="status">Only 1 game matches these filters\.<\/div>/);
   assert.doesNotMatch(short, /loading…/);
 });
 
