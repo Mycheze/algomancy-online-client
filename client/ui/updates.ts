@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-12', kind: 'fix', text: 'On a phone, dragging up or down no longer pulls the whole page around when there is nothing to scroll, and no longer reloads it by accident. Long pages still scroll as before.' },
   { date: '2026-11-12', kind: 'fix', text: 'On your profile\'s Players tab the page itself no longer scrolls, or lets you scroll past the footer: only the player list scrolls, as it should.' },
   { date: '2026-11-12', kind: 'fix', text: 'With Accessible colours on, element bars and dots on your profile, in deck stats and under the deck builder show each element\'s icon, so you can tell them apart without the colour. The deck\'s element bar now runs in its legend\'s order.' },
   { date: '2026-11-12', kind: 'fix', text: 'On your profile\'s Players tab, an offline player\'s dot is now a hollow ring, not just a grey one, and hovering a dot says online or offline. In Invite a friend, a friend in a game now has a gold dot, not a green one.' },

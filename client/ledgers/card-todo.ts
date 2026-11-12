@@ -187,17 +187,6 @@ const OPEN: TodoEntry[] = [
   // ── the report triage of 2026-11-11 ────────────────────────────────────
   // ── found by the steward repairing report #380's branch, 2026-11-11 ─────
   // ── the report triage of 2026-11-12 ────────────────────────────────────
-  {
-    id: 563, area: "client", severity: "minor",
-    title: "on a phone, the whole page can be dragged up and down (rubber-band bounce) though nothing scrolls",
-    detail: "Report #388 (mycheze, owner, 2026-11-12, ux, medium, page home): \"On mobile devices, despite the pages not being scrollable, the whole UI is still able to be dragged and moved vertically, for no reason, like a web page. Is it possible to block that from working? It's weird that it's able to happen and always happens on accident.\" Nothing in the stylesheet stops the root's overscroll: `overscroll-behavior` appears only on inner scrollers (24-tabletop .tttable/.ttrail, components/sheet.css, 26-deckstrip, 52-builder, 48-legal, 27-cards), never on html or body; html carries only text-size-adjust (styles/base.css). So a mobile browser bounces the document on any vertical drag (iOS Safari's rubber band; Android Chrome's glow and pull-to-refresh), even on a page that fits. The board's cards opt out with touch-action (shared/37-touch.css), the page around them does not. Below a tablet the shell lets go and the PAGE scrolls (components/app-shell.css media query), so a page that really is longer than the phone must keep scrolling: the fix is to stop the overscroll, not the scroll.",
-    evidence: "Report #388, page home, 2026-11-12 13:40 UTC, no room; owner on a phone. grep overscroll-behavior over ui/styles: only the inner scrollers listed above. Not reproduced: no phone or browser on the box.",
-    fix: "`html, body { overscroll-behavior: none; }` in styles/base.css (Safari 16+ honours it on the root; Chrome too, which also ends accidental pull-to-refresh — say so in the update line if it matters to anyone). Check the board on a phone keeps its own drags (touch-action rules in shared/37-touch.css) and that a long page (the rules, the deck builder) still scrolls. Guard: a ui test over the CSS read through ui/test/read-styles.ts pinning the root rule. Followup for a real iPhone: confirm the bounce is gone. Player-visible: an updates.ts line.",
-    proof: null,
-    verify: "On an iPhone (Safari) open the home page and drag down and up: the page must not move. On Android Chrome the same, and pull-to-refresh does not fire.",
-    reportId: 388,
-    status: "open",
-  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

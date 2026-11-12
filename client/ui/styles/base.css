@@ -50,6 +50,12 @@
 * { box-sizing: border-box; }
 /* no font boosting on a phone; no grey flash on a tap (moved from shared/touch) */
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+/* no rubber band on a phone (report #388): the document itself never bounces
+   or pulls to refresh on a drag past its end. It stops the OVERSCROLL, not the
+   scroll — a page taller than the phone still scrolls (below a tablet the app
+   shell lets go and the page scrolls, components/app-shell.css). Inner
+   scrollers already contain their own (overscroll-behavior: contain). */
+html, body { overscroll-behavior: none; }
 body { margin: 0; background: var(--color-bg); color: var(--color-text); font: var(--text-13)/1.4 var(--font-ui);
   -webkit-tap-highlight-color: transparent; }
 #app { display: grid; grid-template-columns: 1fr 290px; gap: var(--space-4); padding: var(--space-4); max-width: 1500px; margin: 0 auto; }

@@ -5274,4 +5274,11 @@ export const CLOSED: LedgerEntry[] = [
     guards: ['1237-hidden-words-stay-inside-their-scroller.test.ts::§1 .srname is absolute and pinned to its containing block'],
     note: "Real by reading, not seen (no browser on the box). The profile is a fill frame: only its regions should scroll. 5092dbcf (online dots, deployed 2026-11-12 09:33 UTC, four hours before the report) put a screen-reader-only span (.srname, position absolute with no inset) after the name in every friends and board row; no ancestor up to the root is positioned, so the spans of rows below the list's bottom escape its scroll and the shell's overflow and stretch the document past the footer. CT-562 filed. Fixed 2026-11-12 (steward): .srname is pinned to its containing block's corner (top: 0; left: 0), so a hidden span in a row scrolled out of sight can no longer stretch the page; only the list scrolls.",
   },
+  {
+    id: 388, room: "", date: "2026-11-12",
+    report: "mycheze, page home (ux, medium): \"On mobile devices, despite the pages not being scrollable, the whole UI is still able to be dragged and moved vertically, for no reason, like a web page. Is it possible to block that from working? It's weird that it's able to happen and always happens on accident.\"",
+    status: 'fixed',
+    guards: ['1238-page-does-not-bounce.test.ts::§1 html has overscroll-behavior: none outside any media query'],
+    note: "Real by reading, not reproduced (no phone on the box). No overscroll-behavior on html or body anywhere in the stylesheet, only on inner scrollers, so a phone's browser bounces the whole document on a vertical drag even when it fits. CT-563 filed: stop the root's overscroll without stopping a long page's scroll. Fixed 2026-11-12 (steward): html and body now carry overscroll-behavior: none, so a phone no longer drags or bounces the whole page, while a page longer than the screen still scrolls.",
+  },
 ];
