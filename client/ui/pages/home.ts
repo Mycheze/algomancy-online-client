@@ -254,6 +254,11 @@ export interface HomeView {
   /** the League / Challenge cards open their pages (a season or a week to show) */
   leagueLive: boolean;
   challengeLive: boolean;
+  /** the League / Challenge card's data could not be fetched and none is held
+   * (league.ts / challenge.ts hintUnreachable): the card says it could not load,
+   * not that nothing is running — BL-10, docs/23-ui-inventory/01 §4 S16 */
+  leagueMissed?: boolean;
+  challengeMissed?: boolean;
   badges: {
     /** the bell's unread count (inbox.ts inboxUnread) — Alerts */
     alerts: number;
@@ -291,6 +296,8 @@ export function homeView(st: HomeState): HomeView {
   const league = lg.homeGlanceHtml();
   const challengeLive = chal.hasChallenge();
   const challenge = chal.homeGlanceHtml();
+  const leagueMissed = lg.hintUnreachable();
+  const challengeMissed = chal.hintUnreachable();
   const queue = queueGlanceHtml(queueStripView());
   const invites = inbox.inviteRowsHtml();
   const yourMatches = yourMatchesHtml(yourMatchesView());
@@ -318,7 +325,7 @@ export function homeView(st: HomeState): HomeView {
     hasDeck: !!deck,
     competitive: ccView,
     singleCard: sc.chosen(),
-    leagueLive, challengeLive,
+    leagueLive, challengeLive, leagueMissed, challengeMissed,
     badges: { alerts: inbox.inboxUnread(), alertsOpen: inbox.inboxListOpen(), join, updates: updatesUnseen() },
     slots: {
       league, challenge, queue, invites, yourMatches, leagueMatches,
@@ -536,14 +543,22 @@ function sideCardHtml(p: { kind: string; title: string; iconName: 'league' | 'ch
   </section>`;
 }
 
+/** What the League / Challenge card says when its data never came: before
+ * these, it said "No league running right now" / "No challenge this week",
+ * a guess written as a fact (docs/23-ui-inventory/01 §4 S16). */
+export const LEAGUE_MISSED = 'Could not load the league just now.';
+export const CHALLENGE_MISSED = 'Could not load this week’s challenge just now.';
+
 function sideHtml(v: HomeView): string {
   const s = v.slots;
+  const leagueEmpty = v.leagueLive ? 'Seasons, standings and your matches.' : v.leagueMissed ? LEAGUE_MISSED : 'No league running right now.';
+  const challengeEmpty = v.challengeLive ? 'Past weeks and their boards.' : v.challengeMissed ? CHALLENGE_MISSED : 'No challenge this week.';
   return `<div class="homesides">
     ${sideCardHtml({ kind: 'league', title: 'League', iconName: 'league', dataBtn: 'nav-league', live: v.leagueLive,
-      bodyHtml: s.league, empty: v.leagueLive ? 'Seasons, standings and your matches.' : 'No league running right now.', open: 'Open the League page',
+      bodyHtml: s.league, empty: leagueEmpty, open: 'Open the League page',
       art: v.art.league })}
     ${sideCardHtml({ kind: 'challenge', title: 'Challenge', iconName: 'challenge', dataBtn: 'nav-challenge', live: v.challengeLive,
-      bodyHtml: s.challenge, empty: v.challengeLive ? 'Past weeks and their boards.' : 'No challenge this week.', open: 'Open the weekly challenge',
+      bodyHtml: s.challenge, empty: challengeEmpty, open: 'Open the weekly challenge',
       art: v.art.challenge })}
     ${sideCardHtml({ kind: 'queue', title: 'Matchmaking', iconName: 'matchmaking', dataBtn: 'queue-open', live: true,
       bodyHtml: s.queue, empty: 'Find an opponent.', open: 'Open matchmaking', art: v.art.queue })}

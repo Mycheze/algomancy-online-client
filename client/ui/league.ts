@@ -66,6 +66,13 @@ let hintFor: string | null | undefined;
 /** the server said this viewer organizes leagues — they need the way in even
  * before a season exists, to create one */
 let hintOrganizer = false;
+/** BL-10 (docs/23-ui-inventory/01 §4 S16, "the league and challenge fetch
+ * failures render nothing at all"): the home's ask went unanswered — it threw,
+ * or the reply was no league answer — and when. The card then says it could
+ * not load the league, not "No league running right now", which was a guess
+ * stated as a fact; the next home draw HINT_RETRY_MS on asks again. */
+let hintMissedAt: number | null = null;
+export const HINT_RETRY_MS = 15_000;
 /** the banner's "How it works" list, folded or not: null = the default, which
  * is open for somebody deciding whether to join and folded once they are in —
  * it is most of the banner's height (owner, 2026-10-04). Kept for the visit
@@ -104,17 +111,32 @@ export function initLeague(opts: { app: HTMLElement; rerender: () => void }): vo
  * the boot-time version). */
 function askHint(): void {
   const tok = acct.token();
-  if (hintFor === tok) return;
+  if (hintFor === tok && (hintMissedAt === null || Date.now() - hintMissedAt < HINT_RETRY_MS)) return;
   hintFor = tok;
+  const missed = (): void => {
+    const was = hintMissedAt !== null;
+    hintMissedAt = Date.now();
+    // one repaint per flip, none while it stays down
+    if (!was && !hint && !hintOrganizer && !open) rerenderHost();
+  };
   fetch('/api/league', { headers: acct.authHeaders(false) })
     .then(r => r.json() as Promise<{ ok: boolean } & LeagueState>)
     .then(r => {
-      const had = !!hint || hintOrganizer;
-      hint = r.ok && r.season ? r : null;
-      hintOrganizer = r.ok && r.organizer === true;
+      if (!r || !r.ok) { missed(); return; }
+      const had = !!hint || hintOrganizer || hintMissedAt !== null;
+      hintMissedAt = null;
+      hint = r.season ? r : null;
+      hintOrganizer = r.organizer === true;
       if ((hint || hintOrganizer || had) && !open) rerenderHost();
     })
-    .catch(() => { /* no league, no banner */ });
+    .catch(missed);
+}
+
+/** The home's League card could not get an answer and has nothing older to
+ * show: it says so (pages/home.ts) rather than that no league is running. */
+export function hintUnreachable(): boolean {
+  askHint();
+  return hintMissedAt !== null && !hint && !hintOrganizer;
 }
 
 /** The home header's way in: pages/league.ts leagueNavHtml, from the banner's answer. */

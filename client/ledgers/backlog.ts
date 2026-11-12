@@ -696,7 +696,17 @@ const OPEN: Entry[] = [
       + 'stats\' "Only N games match these filters" in the note gold. Story "A button\'s result" (League). Guarded by '
       + '1231-page-messages-say-how-it-went.test.ts (§2 a census: no controller sets msg but through say()). Left: '
       + '§8.5 item 28\'s other half, the league line never clears; and the home cards\' silent league and challenge '
-      + 'fetch failures (S16). Reasoned, not looked at (no browser).',
+      + 'fetch failures (S16). Reasoned, not looked at (no browser).\n\n'
+      + '2026-11-12 (steward): the home\'s League and Challenge cards say when they could not load (docs/23-ui-inventory/01 '
+      + '§4 S16: "The league and challenge fetch failures render nothing at all"). Worse than nothing: league.ts and '
+      + 'challenge.ts askHint swallowed the failure, so the card read "No league running right now." / "No challenge this '
+      + 'week.", a guess as a fact, and never asked again until a sign-in or out. A thrown fetch or a reply that is not an '
+      + 'answer now sets hintMissedAt; hintUnreachable() (true only with nothing older to show) reaches HomeView '
+      + 'leagueMissed / challengeMissed, and the card reads LEAGUE_MISSED / CHALLENGE_MISSED (pages/home.ts). The next home '
+      + 'draw HINT_RETRY_MS (15s) on asks again; one repaint per flip. Story "League and challenge could not load". Guarded '
+      + 'by 1232-home-cards-say-they-could-not-load.test.ts (§2/§3 drive both modules through a fake fetch). Left: S16\'s '
+      + 'silent reload after a deploy and its frozen countdowns; the same cards before the first answer still read "No '
+      + 'league running" for that moment. Reasoned, not looked at (no browser).',
   },
   {
     id: 'BL-51',

@@ -75,6 +75,12 @@ const say = (text: string, tone: StatusTone): void => { msg = text; msgTone = to
 /** the home card's copy, and the token it was asked with */
 let hint: ChallengeReply | null = null;
 let hintFor: string | null | undefined;
+/** BL-10 (docs/23-ui-inventory/01 §4 S16): the home's ask went unanswered —
+ * it threw, or the reply was no challenge answer — and when; the card says it
+ * could not load the challenge, and the next home draw HINT_RETRY_MS on asks
+ * again. Same shape as league.ts. */
+let hintMissedAt: number | null = null;
+export const HINT_RETRY_MS = 15_000;
 /** leaderboards, by challenge id */
 const boards = new Map<string, BoardReply | 'loading' | 'error'>();
 /** the board on show (one choice for every week's leaderboard) */
@@ -152,18 +158,32 @@ function load(): void {
 /** The home card's data, asked the first time the home page draws. */
 function askHint(): void {
   const tok = acct.token();
-  if (hintFor === tok) return;
+  if (hintFor === tok && (hintMissedAt === null || Date.now() - hintMissedAt < HINT_RETRY_MS)) return;
   hintFor = tok;
+  const missed = (): void => {
+    const was = hintMissedAt !== null;
+    hintMissedAt = Date.now();
+    // one repaint per flip, none while it stays down
+    if (!was && !hint && !open) rerenderHost();
+  };
   fetch('/api/challenge', { headers: acct.authHeaders(false) })
     .then(r => r.json() as Promise<ChallengeReply>)
     .then(r => {
-      if (!r || typeof r.now !== 'number') return;
-      const had = !!hint;
+      if (!r || typeof r.now !== 'number') { missed(); return; }
+      const had = !!hint || hintMissedAt !== null;
+      hintMissedAt = null;
       hint = r;
       skew = r.now - Date.now();
       if ((had || r.current || r.past.length) && !open) rerenderHost();
     })
-    .catch(() => { /* no server, no card */ });
+    .catch(missed);
+}
+
+/** The home's Challenge card could not get an answer and has nothing older to
+ * show: it says so (pages/home.ts) rather than "No challenge this week". */
+export function hintUnreachable(): boolean {
+  askHint();
+  return hintMissedAt !== null && !hint;
 }
 
 function loadBoard(id: string): void {

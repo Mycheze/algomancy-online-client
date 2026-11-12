@@ -156,6 +156,13 @@ export const NothingRunning = {
   name: 'No league, no challenge, nobody queueing',
   render: () => page(homeHtml(view({ leagueLive: false, challengeLive: false, slots: { ...view().slots, league: '', challenge: '' } }))),
 };
+export const SidesNotAnswering = {
+  name: 'League and challenge could not load',
+  render: () => page(homeHtml(view({
+    leagueLive: false, challengeLive: false, leagueMissed: true, challengeMissed: true,
+    slots: { ...view().slots, league: '', challenge: '' },
+  }))),
+};
 export const Refused = {
   name: 'A refused Create room',
   render: () => page(homeHtml(signedIn({ error: 'the server refused these rules: 2 elements, packs of 15 leaves too few cards' }))),
