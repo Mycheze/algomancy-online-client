@@ -230,7 +230,9 @@ notes before editing. Then:
   rulings inputs; if its line count drops, you have lost rulings — stop.
 - New test files take the next free number — `ls` all four test dirs
   (`client/engine/test`, `client/ui/test`, `client/server/test`,
-  `client/ledgers`) first; numbers collide with other sessions.
+  `client/ledgers`) first. A number that another branch takes while yours
+  waits is harmless (two `1230-` files sit on master; no test checks it):
+  **never renumber a test on a rebase or repair** (§9).
 - `client/engine/src/cards/sets/index.ts` is append-only.
 - Player-visible change → one entry at the **top** of `UPDATES` in
   `client/ui/updates.ts`, dated **tomorrow's date if it is after midnight UTC
@@ -282,7 +284,11 @@ notes before editing. Then:
   `ui/test/225-stack-readout` (every printed X) and `ui/test/243-ally-and-enemy-scope`
   (2026-11-11, BL-03: two new cards, the run fixed the ones its own grep for
   `496` with a regex found and missed 207 and 209 — red gate, a repair run);
-  a page or URL parameter → `server/test/771-link-preview`; anything newly
+  a page or URL parameter → `server/test/771-link-preview`;
+  a new click or tap handler on the board (anything in `ui/main.ts` that
+  answers a pointer) → `ui/test/676-touch-token-resource-tap-reads` (a finger's
+  held Cast button must go away on any other tap; 2026-11-11, report #380's
+  life-total tap left it drawn and dead — red gate, a repair run); anything newly
   STORED about a player — a `localStorage` key OR a field in an interface in
   `server/accounts.ts` → `ui/test/267-legal-and-attribution` (the privacy page
   lists both; 2026-11-10, deck sharing added `deckShares` to an account, red
@@ -429,6 +435,13 @@ developer would want; this part may be as technical as it needs to be.
 `git checkout <branch>` (the runner fetched it), read the gate log path in the
 queue line, fix the failure (your own earlier work — not by weakening a test),
 commit, and give the verdict for the *original* item again.
+
+**A `steward-approved/` branch** (he already said yes): the approval carries
+over to your repair only if it touches **no file the approved tip did not** —
+no rename, no new file, no new test. Resolve conflicts, fix, and stop there.
+(2026-11-11, report #380: the rebase renamed its `1230-` test to `1231-` over a
+harmless clash, the approval no longer carried, and it took a third run to
+rename it back.) A fix that needs a new file is a new approval: say so.
 
 You only see real failures here: a branch that was red only because master was
 is re-gated by the runner itself once master is green, and never queued.
