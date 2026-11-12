@@ -58,7 +58,7 @@ function view(data: LeagueState | null, over: Partial<LeagueView> = {}): LeagueV
   return {
     data, loading: false, msg: '', msgTone: 'error', draft: { tz: 'UTC', grid: defaultGrid(), contact: 'me' }, dirty: false, busy: false,
     arming: null, gridFocus: null, timeOpen: null, preview: null, now: NOW, tz: 'UTC', browserTz: 'UTC', zones: ['UTC'],
-    origin: 'https://example.test', stampAt: NOW, chips: { champion: '<!--SLOT:champion-->', finalist: '<!--SLOT:finalist-->' },
+    origin: 'https://example.test', stampAt: NOW, stampMsg: '', stampCal: null, chips: { champion: '<!--SLOT:champion-->', finalist: '<!--SLOT:finalist-->' },
     section: 'season', chrome: { signedIn: true, alerts: 0 },
     ...over,
   };

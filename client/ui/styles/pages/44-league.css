@@ -113,6 +113,36 @@
 .lgtimechips button, .lgtimepick button { font-size: var(--text-12); padding: var(--space-1) var(--space-4); }
 .lgtimepick select { background: var(--panel); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-3); }
 .lgstamps td { padding: var(--space-1) var(--space-3) var(--space-1) 0; }
+/* the time code's picker (pages/league.ts stampHtml, owner 2026-11-12): a date
+   button opening a month calendar, then hour : minute and AM | PM. The clock
+   and every clock time it makes are tinted by their half of the day — a gold
+   morning, a dusk-blue evening — so the wrong one shows at a glance. */
+.lgstamppick { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-4); margin: var(--space-3) 0 var(--space-4); }
+.lgstampdate { position: relative; }
+.lgcal { position: absolute; top: calc(100% + var(--space-2)); left: 0; z-index: var(--z-popover); width: 16.5em;
+  padding: var(--space-3); background: var(--panel2); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-2); }
+.lgcalhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2); }
+.lgcalhead button { padding: var(--space-1) var(--space-4); }
+.lgcaldays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-size: var(--text-12); }
+.lgcaldays button { padding: var(--space-2) 0; min-width: 0; font-size: var(--text-12); }
+.lgcaldays button.past { opacity: .55; }
+.lgcaldays button.today { border-color: var(--accent); }
+.lgcaldays button.on { background: var(--accent); color: var(--color-text-on-accent); border-color: var(--accent); }
+.lgstampclock { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-3); border-radius: var(--radius-md); border: 1px solid; }
+.lgstampclock select { background: var(--panel); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-3); font-size: var(--text-14); }
+.lgstampclock.am { background: var(--color-time-am-bg); border-color: var(--color-time-am-border); }
+.lgstampclock.pm { background: var(--color-time-pm-bg); border-color: var(--color-time-pm-border); }
+.lgstampsun { width: 1.2em; text-align: center; }
+.lgstampclock.am .lgstampsun { color: var(--color-time-am); }
+.lgstampclock.pm .lgstampsun { color: var(--color-time-pm); }
+.lgampm .am.on { color: var(--color-time-am); border-color: var(--color-time-am-border); background: var(--color-time-am-bg); }
+.lgampm .pm.on { color: var(--color-time-pm); border-color: var(--color-time-pm-border); background: var(--color-time-pm-bg); }
+.lgstampchip { padding: 0 var(--space-2); border-radius: var(--radius-sm); }
+.lgstampchip.am { background: var(--color-time-am-bg); color: var(--color-time-am); }
+.lgstampchip.pm { background: var(--color-time-pm-bg); color: var(--color-time-pm); }
+.lgstampmsg { margin-top: var(--space-2); font: inherit; font-size: var(--text-14); }
+.lgstampmsgbtns { display: flex; gap: var(--space-3); margin: var(--space-3) 0; }
+.lgstampread { padding: var(--space-3) var(--space-4); background: var(--panel2); border: 1px solid var(--line); border-radius: var(--radius-sm); line-height: 1.6; overflow-wrap: anywhere; }
 .lgstampcode { width: 15em; max-width: 42vw; font-family: monospace; font-size: var(--text-12); background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-3); }
 .lgsuggest td { vertical-align: top; }
 .lgpost { width: 100%; box-sizing: border-box; font: 12px/1.4 ui-monospace, monospace; resize: vertical;

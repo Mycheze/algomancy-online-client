@@ -80,6 +80,14 @@
      win-rate-up colour's value but not its meaning, so it is its own token. ── */
   --color-data-draft: #4fb3c9;
   --color-data-constructed: #9aa5b0;
+  /* ── colour: time of day — the League's Discord time code tints a clock time by its half of the day
+     (owner, 2026-11-12: "gold ish hue for AM times, darkish hue for PM"), so the wrong one shows ── */
+  --color-time-am: #f3d68f;
+  --color-time-am-bg: rgba(232, 182, 76, .18);
+  --color-time-am-border: rgba(232, 182, 76, .7);
+  --color-time-pm: #c3c9ff;
+  --color-time-pm-bg: rgba(34, 38, 84, .75);
+  --color-time-pm-border: #6b73bc;
 
   /* ── type ── */
   --font-ui: system-ui, sans-serif;

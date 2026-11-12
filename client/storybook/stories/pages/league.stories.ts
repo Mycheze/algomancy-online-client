@@ -51,7 +51,7 @@ const state = (s: SeasonView | null, over: Partial<LeagueState> = {}): LeagueSta
 const view = (data: LeagueState | null, over: Partial<LeagueView> = {}): LeagueView => ({
   data, loading: false, msg: '', msgTone: 'error', draft: { tz: 'Europe/London', grid: defaultGrid(), contact: 'me_plays' }, dirty: false, busy: false,
   arming: null, gridFocus: null, timeOpen: null, preview: null, now: NOW, tz: 'Europe/London', browserTz: 'Europe/London',
-  zones: ['Europe/London', 'America/New_York', 'UTC'], origin: 'https://algomancy.online', stampAt: NOW,
+  zones: ['Europe/London', 'America/New_York', 'UTC'], origin: 'https://algomancy.online', stampAt: NOW, stampMsg: '', stampCal: null,
   chips: { champion: ' <span class="badgechip trophy champion">🏆 Champion</span>', finalist: ' <span class="badgechip trophy finalist">🥈 Finalist</span>' },
   section: 'season', chrome: CHROME,
   ...over,
@@ -65,6 +65,11 @@ export default {
 
 export const Running = { name: 'Running week (entered)' };
 export const SuggestATime = { name: 'Suggest a time, open', args: { view: view(state(season()), { timeOpen: 'm1' }) } };
+export const TimeCode = {
+  name: 'Time code: a message with a time, the calendar open',
+  args: { view: view(state(season()), { section: 'stamp', stampAt: NOW + 26 * 3_600_000, stampCal: new Date(NOW).toISOString().slice(0, 7),
+    stampMsg: `Up for our week 2 game at <t:${Math.floor((NOW + 26 * 3_600_000) / 1000)}:f>? I am free until <t:${Math.floor((NOW + 30 * 3_600_000) / 1000)}:t>.` }) },
+};
 export const SignUpWeek = {
   args: { view: view(state(season({ phase: 0, label: 'Sign-up week', standings: [], me: { ...season().me!, entered: false, joinProblem: null } }))) },
 };
