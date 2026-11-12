@@ -31,6 +31,9 @@
  *   §6 red TEXT is lifted in the mode (it was 3.95:1 on a raised panel), and
  *      every red FILL under white ink reads --color-danger-fill, which keeps
  *      the standard red so the white stays over 3:1 in both modes
+ *   §7 every shape filled with an element colour (a swatch, a share bar, a chip, a
+ *      resource pip) has a light inset ring in the mode: earth and wood cannot
+ *      clear 3:1 on the panels as colours (BL-51 (a))
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -244,4 +247,26 @@ test('1221 §6 accessible: red text is lifted to AA on a raised panel; a red fil
   assert.deepEqual(fills, [], 'a red background reads --color-danger / --danger; use --color-danger-fill');
   const users = [...RULES.values()].flat().filter(b => /background(-color)?\s*:\s*var\(--color-danger-fill\)/.test(b)).length;
   assert.ok(users >= 9, `only ${users} rules read the fill red — the census is reading nothing`);
+});
+
+test('1221 §7 accessible: every shape filled with an element colour has a light edge that clears AA on every surface', () => {
+  // why: earth, wood and dark as fills are under 3:1 on a raised panel in the mode, and no
+  // colour can fix that while white ink stays readable on them — so the shape needs an edge
+  const weak = ELEMENTS.filter(e => SURFACES.some(s => contrast(tok(ACC, e), tok(ACC, s)) < 3));
+  assert.ok(weak.includes('--earth') && weak.includes('--wood'), `elements under 3:1 on some surface: ${weak.join(', ')} — if none, the ring may be unneeded`);
+  // the ring's colour clears AA on every surface
+  for (const s of SURFACES) {
+    const c = contrast(tok(ACC, '--color-text'), tok(ACC, s));
+    assert.ok(c >= 4.5, `the ring (--color-text) on ${s}: ${c.toFixed(2)}`);
+  }
+  // the census: every rule that fills a shape with an element's colour names a class the mode rings
+  const RING = /box-shadow:\s*inset 0 0 0 1px var\(--color-text\)/;
+  const fills = [...RULES.entries()]
+    .filter(([sel, bodies]) => !sel.startsWith(A) && bodies.some(b => /background(-color)?\s*:[^;]*var\(--(fire|water|earth|wood|metal|light|dark)\)/.test(b)))
+    .map(([sel]) => sel);
+  assert.ok(fills.length >= 30, `only ${fills.length} element fills found — the census is reading nothing`);
+  const bare = fills.filter(sel => !(sel.match(/\.[\w-]+/g) ?? []).some(c => RING.test(body(`${A} ${c}`))));
+  assert.deepEqual(bare, [], 'an element-coloured shape with no ring in the accessible mode');
+  // only in the mode: the standard look has no ring
+  for (const c of ['.pfswatch', '.elbarseg', '.acctel', '.reschip', '.el-earth']) assert.doesNotMatch(body(c), RING, `${c}: no ring without the mode`);
 });

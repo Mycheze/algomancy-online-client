@@ -759,7 +759,11 @@ const OPEN: Entry[] = [
       + 'modes (white 3.03:1); the mode lifts the text to #ff7b7b (4.77:1 on a raised panel, 16.8 from the other '
       + 'table roles, 31.4 from a win to a deutan). Guarded by 1221 §3 and §6 (a census: no rule paints a background '
       + 'with the text red). The standard palette is unchanged (still 3.95:1 there; not a palette round). '
-      + 'Still open: (a), (c).',
+      + 'Still open: (a), (c). '
+      + '2026-11-12 (steward): (a) DONE in the mode — every shape filled with an element colour (.pfswatch, .elbarseg, '
+      + '.acctel, .res, .reschip, .resplate, .el-*) wears a 1px inset ring in --color-text (shared/10), which clears AA on '
+      + 'every surface, so earth (1.5:1) and wood (2.2:1) no longer vanish into a raised panel, and a share bar\'s segments '
+      + 'are split by a line. Guarded by 1221 §7, a census of every element-colour fill. Still open: (c).',
   },
   // ── the leftovers of the 2026-11-02/03 rounds (Competitive Constructed, the design
   //    system, the new home, board-r1), filed 2026-11-03. Owner, that night: "put all

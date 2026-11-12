@@ -42,3 +42,27 @@
 :root[data-colors="accessible"] img[src$="/icons/fire.webp"] { content: url("/data/icons/accessible/fire.webp"); }
 :root[data-colors="accessible"] img[src$="/icons/earth.webp"] { content: url("/data/icons/accessible/earth.webp"); }
 :root[data-colors="accessible"] img[src$="/icons/wood.webp"] { content: url("/data/icons/accessible/wood.webp"); }
+
+/* ACCESSIBLE COLOURS: an element-coloured SHAPE has a light edge (BL-51 (a)).
+   Its colour alone cannot clear a contrast bar on the panels: the mode's earth
+   is 1.5:1 on a raised panel, and wood is 2.2:1. A mid-tone element cannot reach
+   4.5 while its white ink stays over 3 (a raised panel needs luminance ≥ .35,
+   white ink ≥ 3 needs ≤ .30). So every shape filled with an element's colour
+   (a share-bar segment, a swatch, a chip, a resource pip) gets a 1px inset ring
+   in the text colour, which clears 4.5 on every surface. That also splits a
+   share bar's segments with a line, so they do not depend on hue alone.
+   ui/test/1221 §7 is a census: a new rule that fills a shape with an element
+   colour needs its class here. */
+:root[data-colors="accessible"] .pfswatch,
+:root[data-colors="accessible"] .elbarseg,
+:root[data-colors="accessible"] .acctel,
+:root[data-colors="accessible"] .res,
+:root[data-colors="accessible"] .reschip,
+:root[data-colors="accessible"] .resplate,
+:root[data-colors="accessible"] .el-fire,
+:root[data-colors="accessible"] .el-water,
+:root[data-colors="accessible"] .el-earth,
+:root[data-colors="accessible"] .el-wood,
+:root[data-colors="accessible"] .el-metal,
+:root[data-colors="accessible"] .el-light,
+:root[data-colors="accessible"] .el-dark { box-shadow: inset 0 0 0 1px var(--color-text); }
