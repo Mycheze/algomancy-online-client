@@ -546,6 +546,18 @@ const OPEN: LedgerEntry[] = [
     status: 'by-design',
     note: "Timestamps: the augments went on after the naming. BXYQ (Karanda v StubTailDstroyer, constructed) fetched and replayed: 374 of 374 actions, FAITHFUL; the board at [316] is turn 8's attack window with Wildfire and a Voltwrath Behemoth trigger on the stack. In turn 7's haste step Karanda played The Everywhere naming Nimbus Eel; in that turn's deployment StubTailDstroyer then put Flamebreath Initiate, Conduit of Pain, Flame Juggle and Voltwrath Behemoth (\"[Augment] Whenever you play a spell, I deal 1 damage to any target\") on their Nimbus Eel. On turn 8 The Everywhere attacked into the Eel's region and the Behemoth's text dealt 1 each time StubTailDstroyer played a spell. Probed at [316]: the Eel's abilities are off (one stripper, The Everywhere's static, stamped from its arrival), its own printed text and Molten Upheaval (grafted before the naming) are stripped, and the four later mods' text is not. CR 113.3: a removal takes what the unit has when it applies, not what it gains afterwards. Source: RAQ thread 1355845893219287132 \"[Solved] Monke & Transmogrifant vs Suppression Field & Formless\", _passer's corrected write-up: \"if any unit in play later gains Attribute or Ability, then timestamps takes precedence and this new Attribute/Ability is NOT affected by Monke or Transmogrifant\" — the same continuous \"lose all abilities\" as The Everywhere's, through the same engine path (strippersOf/textStripped). Guarded by 393-raq-mods (\"RAQ Transmogrifant: an attribute a unit gains AFTER it is in play is not affected\") and 402-raq-fix-stripping §8 (a trigger on a mod attached after the strip still fires). No defect.",
   },
+  {
+    id: 387, room: "", date: "2026-11-12",
+    report: "mycheze, page acct (ux, minor): \"On the Profile Players page, there's a scroll wheel on the page itself, for some reason. There's ALSO one in the player list, which makes sense, but it's also possible to scroll beyond the footer, for some reason.\"",
+    status: 'live',
+    note: "Real by reading, not seen (no browser on the box). The profile is a fill frame: only its regions should scroll. 5092dbcf (online dots, deployed 2026-11-12 09:33 UTC, four hours before the report) put a screen-reader-only span (.srname, position absolute with no inset) after the name in every friends and board row; no ancestor up to the root is positioned, so the spans of rows below the list's bottom escape its scroll and the shell's overflow and stretch the document past the footer. CT-562 filed.",
+  },
+  {
+    id: 388, room: "", date: "2026-11-12",
+    report: "mycheze, page home (ux, medium): \"On mobile devices, despite the pages not being scrollable, the whole UI is still able to be dragged and moved vertically, for no reason, like a web page. Is it possible to block that from working? It's weird that it's able to happen and always happens on accident.\"",
+    status: 'live',
+    note: "Real by reading, not reproduced (no phone on the box). No overscroll-behavior on html or body anywhere in the stylesheet, only on inner scrollers, so a phone's browser bounces the whole document on a vertical drag even when it fits. CT-563 filed: stop the root's overscroll without stopping a long page's scroll.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
