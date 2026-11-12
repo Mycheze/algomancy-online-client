@@ -336,8 +336,10 @@ const plural = (n: number, one: string, many = `${one}s`): string => `${num(n)} 
 const section = (title: string, body: string, o: { cls?: string; aside?: string } = {}): string =>
   `<section class="pfsec${o.cls ? ` ${o.cls}` : ''}"><header class="pfsechead"><h3>${esc(title)}</h3>${o.aside ?? ''}</header>${body}</section>`;
 
-/** an element's swatch: the colour, as the board paints it (follows the accessible palette) */
-const swatch = (el: string): string => `<span class="pfswatch ${esc(el)}"></span>`;
+/** an element's swatch: the colour, as the board paints it (follows the accessible palette).
+ * It carries the element's icon, which only the accessible mode shows: there the
+ * swatch is told by its shape too, not by its colour alone (BL-51, shared/10). */
+const swatch = (el: string): string => `<span class="pfswatch ${esc(el)}">${elIcon(el)}</span>`;
 
 // ── Overview ──────────────────────────────────────────────────────────
 
@@ -380,7 +382,7 @@ function elementShareHtml(weights: Record<string, number>): string {
   if (!total) return '<p class="pfnone">Nothing yet.</p>';
   const order = ELEMENTS.filter(el => (weights[el] ?? 0) > 0).sort((a, b) => (weights[b] ?? 0) - (weights[a] ?? 0));
   const share = (el: string): number => Math.round(((weights[el] ?? 0) / total) * 100);
-  return `<div class="pfbar">${order.map(el => `<span class="pfswatch ${el}" style="flex:${weights[el]}" title="${el} ${share(el)}%"></span>`).join('')}</div>
+  return `<div class="pfbar">${order.map(el => `<span class="pfswatch ${el}" style="flex:${weights[el]}" title="${el} ${share(el)}%">${elIcon(el)}</span>`).join('')}</div>
     <ul class="pflegend">${order.map(el => `<li>${swatch(el)}<span>${el}</span><b>${share(el)}%</b></li>`).join('')}</ul>`;
 }
 

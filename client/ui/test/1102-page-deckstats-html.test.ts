@@ -54,7 +54,7 @@ test('1102 §2 the strip: one tt-stats button, the curve by element, the split, 
   for (const m of html.matchAll(/background:([^;"]+)/g)) assert.match(m[1]!, /^var\(--[a-z-]+\)$/, 'colours are tokens');
   for (const el of new Set(DECK.flatMap(n => facts(n).factions))) assert.match(html, new RegExp(`<span class="ttel ${el}">`));
   const fireCards = DECK.filter(n => facts(n).factions.includes(ELEMENTS[0]!)).length;
-  if (fireCards) assert.match(html, new RegExp(`<span class="ttel ${ELEMENTS[0]}"><span class="ttdot" style="background:var\\(--${ELEMENTS[0]}\\)"></span>${fireCards}</span>`));
+  if (fireCards) assert.match(html, new RegExp(`<span class="ttel ${ELEMENTS[0]}"><span class="ttdot" style="background:var\\(--${ELEMENTS[0]}\\)"><img class="elicon" src="[^"]*/${ELEMENTS[0]}\\.webp"[^>]*></span>${fireCards}</span>`));
   assert.match(html, new RegExp(`<span class="ttkinds">${a.units} units · ${a.spells} spells`));
   assert.match(html, new RegExp(`<span class="ttavg">avg ${a.avgMana.toFixed(1)}</span>`));
   assert.match(html, /ui-icon--chevron-right/);

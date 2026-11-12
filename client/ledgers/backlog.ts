@@ -755,6 +755,7 @@ const OPEN: Entry[] = [
       'client/ui/test/1030-manual-palette.test.ts',
       'client/ui/test/1160-accessible-colours.test.ts',
       'client/ui/test/1221-accessible-palette.test.ts',
+      'client/ui/test/1235-element-shapes-not-by-colour-alone.test.ts',
     ],
     notes:
       'Starting numbers, from the palette round (var/records/ds-round-2026-11-03-r2-theme.md): on the '
@@ -793,7 +794,16 @@ const OPEN: Entry[] = [
       + '2026-11-12 (steward): (a) DONE in the mode — every shape filled with an element colour (.pfswatch, .elbarseg, '
       + '.acctel, .res, .reschip, .resplate, .el-*) wears a 1px inset ring in --color-text (shared/10), which clears AA on '
       + 'every surface, so earth (1.5:1) and wood (2.2:1) no longer vanish into a raised panel, and a share bar\'s segments '
-      + 'are split by a line. Guarded by 1221 §7, a census of every element-colour fill. Still open: (c).',
+      + 'are split by a line. Guarded by 1221 §7, a census of every element-colour fill. Still open: (c). '
+      + '2026-11-12 (steward): (c) DONE — the audit of every element-coloured shape: the chips (.elchip, .acctel, the '
+      + 'filters, the learn menu), the resource row (a scan, the plate\'s word, the dormant chip\'s letter), the favourite '
+      + 'picker and the cost pips already carry the icon or the name. Four were colour alone: the profile\'s share bars and '
+      + 'their legend squares, the Games tab\'s element dots, the deck Stats sheet\'s Elements bar (in the fixed element '
+      + 'order while its legend ran biggest first) and the builder strip\'s element dots. Each now holds elIcon(), shown '
+      + 'only in the mode (shared/10), and the deck bar follows its legend\'s order. Guarded by ui/test/1235, with a source '
+      + 'census. NOT done, by choice: the builder strip\'s 8px mini-curve (aria-hidden, a summary; its element split sits '
+      + 'beside it, iconed now). STILL OPEN: the pending and danger half of doneWhen 3 — the targeting and picked rings '
+      + 'carry a mark, but the in-progress (teal) and danger outlines on the board have not been audited for line style.',
   },
   // ── the leftovers of the 2026-11-02/03 rounds (Competitive Constructed, the design
   //    system, the new home, board-r1), filed 2026-11-03. Owner, that night: "put all

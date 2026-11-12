@@ -122,11 +122,11 @@ export function deckStatsHtml(a: DeckAnalysis): string {
     </section>
     <section class="acctcard">
       <h3>Elements</h3>
-      ${elTotal ? `<div class="elbar">${ELEMENTS.map(el => {
-        const w = a.elements[el] ?? 0;
-        return w > 0 ? `<span class="elbarseg ${el}" style="flex:${w}"
-          title="${el}: ${Math.round((w / elTotal) * 100)}%"></span>` : '';
-      }).join('')}</div>
+      ${elTotal ? `<div class="elbar">${deckElements(a).map(({ el, cards: w }) =>
+        // the legend's order, biggest first, and the element's icon (shown in the
+        // accessible mode): a segment is matched to its name by more than colour
+        `<span class="elbarseg ${el}" style="flex:${w}"
+          title="${el}: ${Math.round((w / elTotal) * 100)}%">${elIcon(el)}</span>`).join('')}</div>
       <div class="ellegend">${deckElements(a).map(e =>
         `<span class="acctel ${e.el}">${e.el} ${Math.round(e.share * 100)}%</span>`).join('')}</div>`
       : '<div class="hint">Nothing in the deck yet.</div>'}
@@ -177,7 +177,7 @@ export function statsStripHtml(a: DeckAnalysis): string {
   const having: Record<string, number> = {};
   for (const c of a.copies) for (const el of c.facts?.factions ?? []) having[el] = (having[el] ?? 0) + c.n;
   const split = ELEMENTS.filter(el => having[el]).sort((x, y) => having[y]! - having[x]!)
-    .map(el => `<span class="ttel ${el}"><span class="ttdot" style="background:${elColour(el)}"></span>${having[el]}</span>`).join('');
+    .map(el => `<span class="ttel ${el}"><span class="ttdot" style="background:${elColour(el)}">${elIcon(el)}</span>${having[el]}</span>`).join('');
   const kinds = `${plural(a.units, 'unit', 'units')} · ${plural(a.spells, 'spell', 'spells')}`
     + (a.spellUnits ? ` · ${plural(a.spellUnits, 'spell unit', 'spell units')}` : '');
   const priced = a.total - a.xCards - a.unknown.length > 0;
