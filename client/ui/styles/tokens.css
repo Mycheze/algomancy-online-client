@@ -128,8 +128,11 @@
   --art-shade-rgb: 15 6 22; --art-light-rgb: 255 255 255;
   /* CR D6.12 "in progress": purple already means resolved, red means answered,
      green means next and gold means targeting — so pending gets the one hue
-     none of them use. A teal that is not --water (#3f8fd9) either, because a
-     resolving card wears it as a border and the seat hairlines are elemental. */
+     none of them use. A teal that is not --water (#3f8fd9) either. Since the
+     stack's four colours (2026-09-30) no board state is drawn in it: a
+     resolving item says "resolving…" on a chip that breathes (board/20), and
+     only the practice-scenario panel and the CR review chips still use it
+     (ui/test/1236). */
   --pending: #3fd2c0;
   /* the seven elements, in ALL_ELEMENTS order. Light & Dark are the yin-yang
      pair: Light is a warm cream (12.7:1 against --panel2, so it needs DARK ink
