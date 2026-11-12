@@ -71,7 +71,7 @@ matchmaking; the rest follow the same recipe:
 | `waiting.ts` | `constructedWaitingView/Html`, `singleWaitingView/Html`, `paintWaiting` | the waiting rooms, **in the app frame** (2026-11-04, via `lobby.ts` roomFrameHtml): constructed + constructed league, Single Card Duel; dispatches the draft trio lobby and the Competitive match room |
 | `deckpicker.ts` | `deckPickerView`, `deckPickerHtml`, `deckPicker`, `wireDeckPicker`, `importDeck` | the constructed deck picker (home, waiting room, queue) with its state |
 | `clockpick.ts` | `clockPickView`, `clockPickHtml`, `chosenClockMs`, `CLOCK_*` | BL-26's clock banks and picker. Engine test 279 locks `CLOCK_DEFAULT_BY_MODE` to the server's copy by reading this file |
-| `connecting.ts` | `connectingHtml` | "Connecting to the server…" and a refused join, **in the app frame** like the rooms it leads to (root keeps `joinscreen`: report.ts names it "join") |
+| `connecting.ts` | `connectingHtml`, `kickedHtml` | "Connecting to the server…" and a refused join, **in the app frame** like the rooms it leads to (root keeps `joinscreen`: report.ts names it "join"), and the **kicked** notice a tab is left with when another connection takes its seat (`kickedHtml`, still the old join-screen card) |
 | `caret.ts` | `caretIn`, `restoreCaret` | the caret carry, shared with the board's `snapshotViewport` (not a page; no `…Html`) |
 | `queue.ts` | `queueView`, `queueHtml`, `paintQueue`, `queueStripView`, `queueStripHtml`, `queueGlanceHtml` | the matchmaking queue, its home strip and the new home's Matchmaking card body (docs/24). `ui/queue.ts`: socket, counts poll, the 1s tick (`tickInPlace`), `queue-` clicks; snapshot `queueSnapshot()` |
 | `lobby.ts` | `lobbyView`, `lobbyHtml`, `revealHtml`, `roomFrameHtml`, `roomSection` | the draft trio lobby and the trio reveal (an overlay on the dealt board, not in the frame). `roomFrameHtml` is **every pre-deal room's frame** (2026-11-04): Leave (`gohome`) + the kind of room and its code as the title, the room as ONE card of `roomSection`s with hairlines, who is ready in a footer band (`roomsec--foot`), the deal line under it. `ui/lobby.ts`: the un-submitted pick/ranking, `lobby-` clicks; snapshot `lobbyLocals()` |
@@ -102,8 +102,8 @@ matchmaking; the rest follow the same recipe:
 **Still in `main.ts`, on purpose:** `handlePregameButton` — the home and waiting-room buttons (`eltoggle`, `elrandom`,
 `clockpick`, `newgame`, `joincode`, `deckimporturl/text`, `deckjoin`, `singlejoin`, `gohome`, `copylink`). They write
 main.ts state (`ui.homeEls`, `ui.homeFixedTrio`, `uiError`, `NET`) and open the room. `TODO(ds): view/html split:` move
-them here once `uiError` and the element pick have a home outside main.ts's `UiState`. Also the **kicked** notice,
-written inline in `NetBackend`'s message handler.
+them here once `uiError` and the element pick have a home outside main.ts's `UiState`. (The **kicked** notice, written
+inline in `NetBackend`'s message handler until 2026-11-12, is `connecting.ts` `kickedHtml` now: BL-63, test 1234.)
 
 ## Every non-game page and screen
 
@@ -127,7 +127,7 @@ import a pure renderer or read source are not listed. ui-shots states are `page_
 | Recent updates (the home's Updates sheet) | `updates.ts` updatesHtml/wireUpdates (`UPDATES` is the deploy list, edited every round; drawn by `pages/home.ts` in its Updates sheet) | 06-home (`.upd*`) | — (323 is DOM-free) | home__updates-open | **easy**: already `(list, seen) => string`, with a story (`stories/pages/updates.stories.ts`) |
 | Matchmaking queue page + home strip | `pages/queue.ts` queueView/Html, paintQueue, queueStripView/Html; socket, counts poll, the 1s in-place tick and clicks in `queue.ts` | 30-queue, 04-joinscreen | — | queue__picker, queue__constructed, queue__signed-out | **easy (done)** |
 | Connecting / refused join | `pages/connecting.ts` connectingHtml; `main.ts` renderConnecting | 04-joinscreen (`.joinscreen`, `.joinerr`) | 254 | — (a socket screen) | **easy** (done) |
-| Kicked ("another connection took over") | `main.ts` NetBackend message handler, `m.t === 'kicked'` | 04-joinscreen | 70, 355 | — | **easy** markup, but it sits inside the socket class; move with the board-side cleanup |
+| Kicked ("another connection took over") | `pages/connecting.ts` kickedHtml (the old join-screen card, not the frame); painted by `main.ts` NetBackend's `m.t === 'kicked'` branch, which stops reconnecting first | 04-joinscreen | 70, 355, 1234 | — | **easy (done**, 2026-11-12) |
 | Constructed / constructed-league waiting room | `pages/waiting.ts` constructedWaitingView/Html, paintWaiting | 18-draft-lobby (`.lobbypage`, `.lobbyseat`, `.seatdot`, `.lockedin`), 07-lobby, board/05 (`.sharelink`) | 254, 356 | waiting__constructed | **easy** (done) |
 | Single Card Duel waiting room | `pages/waiting.ts` singleWaitingView/Html | 18-draft-lobby, 33-single-card-duel (`.scdraw`) | — | — (needs a room with `single` armed) | **easy** (done) |
 | Draft trio lobby + trio reveal | `pages/lobby.ts` lobbyView/Html, revealHtml; `lobby.ts` lobbyLocals, handleLobbyButton | 18-draft-lobby, 07-lobby, 10-element-chips | 269 | — | **easy (done)** |

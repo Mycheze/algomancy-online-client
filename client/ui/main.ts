@@ -190,7 +190,7 @@ import * as admin from './pages/admin.ts';
 import * as jr from './pages/judgereview.ts';
 import { caretIn, type CaretSnap } from './pages/caret.ts';
 import { CLOCK_DEFAULT_MS, chosenClockMs, setMatchClockChoice } from './pages/clockpick.ts';
-import { CONNECTING, connectingHtml } from './pages/connecting.ts';
+import { CONNECTING, connectingHtml, kickedHtml } from './pages/connecting.ts';
 import { seatBadgeHtml, seatBadgeTipHtml, type SeatBadge } from './pages/profile.ts';
 import { icon } from './components/icon.ts';
 import { importDeck } from './pages/deckpicker.ts';
@@ -988,9 +988,7 @@ class NetBackend implements Backend {
     if (m.t === 'kicked') {
       this.stopReconnecting();
       $app.classList.remove('board');   // back to normal flow for the notice
-      $app.innerHTML = `<div class="joinscreen"><h2>Algomancy</h2>
-        <p>${esc(m.msg ?? 'another connection took over this seat')}</p>
-        <button data-btn="gohome">Home</button></div>`;
+      $app.innerHTML = kickedHtml(m.msg);   // pages/connecting.ts
       return;
     }
     if (m.t === 'error' && this.rejoining) {

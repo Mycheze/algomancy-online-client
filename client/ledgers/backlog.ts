@@ -1134,6 +1134,7 @@ const OPEN: Entry[] = [
       'client/ui/styles/pages/34-cardstats.css',
       'client/ui/tabletop.ts',
       'client/docs/23-design-system.md',
+      'client/ui/pages/connecting.ts',
     ],
     notes:
       'Sources: var/records/ds-round-2026-11-03-{ds-base,ds-w2b,ds-w2c,ds-w3a,ds-w3b,home-page}.md and '
@@ -1194,7 +1195,16 @@ const OPEN: Entry[] = [
       + 'stay hand-written (.reportchoices button). Same pixels: .ui-button and .ui-button--primary are base.css\'s '
       + 'button / button.primary in tokens (5px 12px, radius 5px). 978 §2 now pins both buttons\' whole markup; with '
       + 'Send\'s disabled forced false, 287 (3 tests), 521 §2 and 978 §2 went red. components/README.md no longer lists '
-      + 'the dialog as a leftover. Left: line 8.',
+      + 'the dialog as a leftover. Left: line 8.\n\n'
+      + '2026-11-12 (steward, BL-63): line 8, its third part (the "kicked" notice out of NetBackend) is DONE. The '
+      + 'template NetBackend wrote inline on `m.t === \'kicked\'` is pages/connecting.ts kickedHtml(msg) now (pure, '
+      + 'beside the other socket screen, moved byte for byte: still the old join-screen card, not the frame); the '
+      + 'branch keeps stopReconnecting() and paints it. A story (waiting.stories.ts Kicked) and 1234-kicked-notice-is-a-page '
+      + '(the old bytes, the branch holds no markup, a real `kicked` push) guard it; 1234 went red with the inline '
+      + 'template put back in main.ts (§2) and with the reason left unescaped (§1, §3). Left of line 8: '
+      + 'handlePregameButton into pages/home.ts, and the league / challenge paint() splits — both blocked, as their '
+      + 'TODO(ds) comments say, on module state (uiError and the element pick; the grid, time-code and tabletop state) '
+      + 'having a home outside the controller first.',
   },
   {
     id: 'BL-64',

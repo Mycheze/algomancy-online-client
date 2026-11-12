@@ -54,3 +54,18 @@ export function connectingHtml(v: ConnectingView): string {
 
 /** what the retrying line adds: it is not over */
 export const RETRYING = 'This page joins the room by itself as soon as the server answers.';
+
+/** what a kicked seat says when the server gives no reason */
+export const KICKED = 'another connection took over this seat';
+
+/** Pure. The notice a tab is left with when the server hands its seat to
+ * another connection (server/main.ts sends `kicked` with the reason, then
+ * closes the socket). The tab is done: the page is the notice and its way
+ * home, and main.ts's NetBackend stops reconnecting before it paints this.
+ * Moved out of NetBackend's message handler byte for byte (BL-63, 2026-11-12);
+ * it is still the old join-screen card, not the app frame. */
+export function kickedHtml(msg: string | undefined): string {
+  return `<div class="joinscreen"><h2>Algomancy</h2>
+        <p>${esc(msg ?? KICKED)}</p>
+        <button data-btn="gohome">Home</button></div>`;
+}

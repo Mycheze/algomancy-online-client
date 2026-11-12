@@ -1,7 +1,7 @@
 import {
   constructedWaitingHtml, singleWaitingHtml, type ConstructedWaitingView, type SingleWaitingView,
 } from '../../../ui/pages/waiting.ts';
-import { connectingHtml } from '../../../ui/pages/connecting.ts';
+import { connectingHtml, kickedHtml } from '../../../ui/pages/connecting.ts';
 import { deckPickerHtml, type DeckPickerView } from '../../../ui/pages/deckpicker.ts';
 import { singleCardPickerHtml } from '../../../ui/pages/singlecard.ts';
 import { DECKS, FRIENDS, LINK, page, CHROME } from './_page.ts';
@@ -57,6 +57,10 @@ export const Connecting = { render: () => page(connectingHtml({ error: '' })) };
 export const LoadingReplay = { name: 'Connecting: loading a replay', render: () => page(connectingHtml({ error: '', waiting: 'Loading the replay…' })) };
 export const Reconnecting = { name: 'Connecting: the server dropped, trying again', render: () => page(connectingHtml({ error: 'disconnected from the server — reconnecting in 2s…', retrying: true })) };
 export const RefusedJoin = { name: 'Connecting: a refused join', render: () => page(connectingHtml({ error: 'There is no game with the code QXZZ.' })) };
+export const Kicked = {
+  name: 'Kicked: another connection took the seat',
+  render: () => page(kickedHtml('another connection took over seat 0 — this tab is done (close it, or rejoin)')),
+};
 
 /* the deck picker on its own, in each of its states */
 const pickerBox = (v: DeckPickerView): string => `<div class="homecard deckpicker" style="max-width:360px">${deckPickerHtml(v)}</div>`;
