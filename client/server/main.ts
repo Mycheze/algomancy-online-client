@@ -50,7 +50,7 @@ import {
   setSeatUser, settleClock, takeDeferred, undoForSeat, unheldFor, unlockLobby,
   type Room, type SegKey,
   seatVerdict,
-  notePassAllCovered, passAllDue, passAllStale, sanitizePassAll, setPassAll, setReportHold, setWatchHold, watchHoldExpired,
+  notePassAllCovered, passAllDue, passAllStale, sanitizeAutoPass, sanitizePassAll, setAutoPass, setPassAll, setReportHold, setWatchHold, watchHoldExpired,
   closedNotice, codeTaken, sweepIdleRooms, sandboxCodesByAge, hiddenActionsFrom,
   answerFix, dropProposal, fixInfo, fixesRefusal, editTiming, proposalExpired, proposeFix, recordAmendment,
   rewindOptions, rewindRoom, type Proposal, fixRunContinues, noteFixRun, takeFixRun, takeStaleFixRuns, FIX_RUN_IDLE_MS,
@@ -2500,6 +2500,9 @@ wss.on('connection', ws => {
        *  and a `passall` arm's phase / stack ids / option keys (rooms.ts
        *  sanitizePassAll; `mode` above is its 'all' | 'stack') */
       at?: unknown; phase?: unknown; items?: unknown; opts?: unknown;
+      /** report #323: an `autopass` message — the toggle and the yields
+       *  (rooms.ts sanitizeAutoPass) */
+      pref?: unknown; yields?: unknown;
       /** CT-182: a join made while this seat's report dialog is open */
       hold?: unknown;
       /** BL-48: a dispute's "what went wrong" */
@@ -2853,6 +2856,9 @@ wss.on('connection', ws => {
       // drops its own arm when this join is answered, so the server's copy
       // would be an arm nobody is keeping
       setPassAll(room, seat, null);
+      // report #323: …and so are its auto-pass toggle and yields, which the
+      // client sends again on its first paint after the join (NET.autoPass)
+      setAutoPass(room, seat, null);
       // CT-182: …and the report dialog's hold, which the client re-asserts on
       // a join made while its dialog is open (a reconnect under the form)
       setReportHold(room, seat, msg.hold === true);
@@ -3221,6 +3227,22 @@ wss.on('connection', ws => {
     }
 
     /*
+     * Report #323 — the auto-pass toggle and the yields, from the browser
+     * that owns them. Shaped like `passall` directly above, and for the same
+     * reason: a window the client is going to answer by itself (its own
+     * `autoPassPlan`) is not the seat's time, so the server has to know which
+     * windows those are. Answered with the clock alone, to both seats.
+     */
+    if (msg.t === 'autopass') {
+      const conn = conns.get(ws);
+      if (!conn || roomWaiting(conn.room)) return;
+      if (!setAutoPass(conn.room, conn.seat, sanitizeAutoPass(msg as unknown as Record<string, unknown>))) return;
+      const clock = clockSnapshot(conn.room);   // settles: bills up to now, re-judges
+      if (clock) forEachSeat(s => sendToSeat(conn.room, s, { t: 'clock', clock }));
+      return;
+    }
+
+    /*
      * CT-182 — the 📝 Report dialog is open (or has closed) on this seat's
      * screen. Owner, 2026-09-30: a standing auto-pass HOLDS while it is open.
      * The arm is kept; `settlePassAll` stops stamping its window, so the
@@ -3382,6 +3404,7 @@ wss.on('connection', ws => {
     if (conn.room.sockets[conn.seat] === ws) {
       conn.room.sockets[conn.seat] = null;
       setPassAll(conn.room, conn.seat, null);   // and nothing passes for an empty chair
+      setAutoPass(conn.room, conn.seat, null);  // …by any route (report #323)
       setReportHold(conn.room, conn.seat, false);   // …or holds for one (CT-182)
       setWatchHold(conn.room, conn.seat, null);     // …or watches a playback in one
       // BL-46: nobody is left to answer (or to be answered) — and the clocks
@@ -3623,13 +3646,15 @@ function sweepPassAll(): void {
     const seat = passAllDue(room, now);
     if (seat === null) continue;
     const at = room.state.actionCount;
+    const why = room.passAll[seat] ? 'Pass all' : 'auto-pass';   // before the pass can release it
     try {
       landAction(room, seat, { type: 'passPriority', seat });
       notePassAllCovered(room, seat, at);
-      console.log(`[ws] ${room.code}: passed for seat ${seat} at ${at} (Pass all, no answer in time)`);
+      console.log(`[ws] ${room.code}: passed for seat ${seat} at ${at} (${why}, no answer in time)`);
     } catch (err) {
       // not retried every second: drop the arm, and the seat is billed again
       setPassAll(room, seat, null);
+      setAutoPass(room, seat, null);
       settleClock(room);
       console.error(`[ws] ${room.code}: the Pass-all backstop could not pass for seat ${seat}:`, err);
     }

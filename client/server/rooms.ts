@@ -68,7 +68,7 @@ import { sanitizeCustomRules, STANDARD_RULES, type CustomRules } from '../ui/cus
 // the standing pass: the client's own release list, asked of the server's state.
 // ui/passrelease.ts and not ui/battle.ts: its import chain is engine types
 // only, which is what BL-41 (engine/test/282) lets the server compile.
-import { inPassWindow, passAllRelease, type PassMode } from '../ui/passrelease.ts';
+import { autoPassPlan, inPassWindow, passAllRelease, type PassMode } from '../ui/passrelease.ts';
 
 /**
  * BL-43 — a live draft's custom rules, as the room keeps them.
@@ -1260,6 +1260,25 @@ export interface Room {
    */
   passAll: [PassAllArm | null, PassAllArm | null];
   /**
+   * Report #323 — THE OTHER TWO THINGS THAT PASS FOR A SEAT: the auto-pass
+   * toggle (C4: "pass whenever passing is my only legal action") and the
+   * auto-yield (#2: the top of the stack is a trigger of a unit I yield to).
+   * The browser decides both (ui/passrelease.ts `autoPassPlan`) and, until
+   * this field, never told the server — so in exactly the windows the owner's
+   * rule names ("the stack is just ticking down … and you have no actions you
+   * can legally take") the seat was billed for its own client's pace hold,
+   * stagger and round trip, two seconds and more a window.
+   *
+   * Shaped like `passAll` beside it and handled by the same machinery: a
+   * window `autoPassPlan` answers is stamped by `settlePassAll`, unbilled by
+   * `clockRunning`, and passed by the backstop if the client's pass is late.
+   * Unlike the arm it is a PREFERENCE, not a promise about one phase, so
+   * nothing in the game releases it; the client sends it again whenever it
+   * changes. One seat's soft state, never logged, NOT PERSISTED, dropped on
+   * every join (the client re-sends it on its first paint) and on disconnect.
+   */
+  autoPass: [AutoPassPref | null, AutoPassPref | null];
+  /**
    * The window a Pass-all seat is sitting in unbilled: the `actionCount` it
    * opened at and the wall time it was first seen. The backstop (main.ts
    * `sweepPassAll`) passes for the seat once `since` is PASS_ALL_BACKSTOP_MS
@@ -1580,8 +1599,9 @@ export function clockRunning(room: Room): [boolean, boolean] {
   // for its answer — the table is talking, not playing. Bounded: a proposal
   // lapses after FIX_PROPOSAL_MS (main.ts sweeps it).
   if (room.proposal) return [false, false];
-  // The standing pass: a seat whose Pass all / Pass through stack is answering
-  // THIS window is not billed for it. It has already said what it will do, so
+  // The standing pass: a seat whose Pass all / Pass through stack — or, since
+  // report #323, whose auto-pass toggle or yield — is answering THIS window
+  // is not billed for it. It has already said what it will do, so
   // the time its client spends pacing, staggering and sending that answer is
   // not time it is thinking. `passAllWait` is written by `settlePassAll`, which
   // settleClock runs just before this, and it is only ever set for a real pass
@@ -1636,6 +1656,33 @@ export function sanitizePassAll(raw: Record<string, unknown>): PassAllArm | null
   };
 }
 
+/** The auto-pass toggle and the yields as they ride the wire (report #323):
+ * the two inputs `autoPassPlan` takes besides the window itself. */
+export interface AutoPassPref {
+  /** the auto-pass toggle (C4) is on */
+  pref: boolean;
+  /** the units whose triggers this seat yields to (#2) */
+  yields: EntityId[];
+}
+
+/** An `autopass` message off the wire; null when it asks for nothing. Never
+ * throws: a junk field is a preference that answers nothing. */
+export function sanitizeAutoPass(raw: Record<string, unknown>): AutoPassPref | null {
+  const pref = raw['pref'] === true;
+  const yields = (Array.isArray(raw['yields']) ? raw['yields'] : [])
+    .filter((n): n is number => Number.isInteger(n)).slice(0, 256);
+  return pref || yields.length ? { pref, yields } : null;
+}
+
+/** One seat's auto-pass toggle and yields; true when anything changed. The
+ * window stamp restarts either way, as `setPassAll`'s does. */
+export function setAutoPass(room: Room, seat: Seat, p: AutoPassPref | null): boolean {
+  const was = room.autoPass[seat];
+  room.autoPass[seat] = p;
+  room.passAllWait[seat] = null;
+  return JSON.stringify(was) !== JSON.stringify(p);
+}
+
 /** One seat's standing pass. Refused (false) while that seat has full control
  * on, which drops every automatic answer; otherwise true when anything
  * changed. The window stamp restarts either way. */
@@ -1684,6 +1731,21 @@ function settlePassAll(room: Room, now: number): void {
       // BL-46: …nor while a proposed fix waits for its answer — a pass for the
       // seat would land an action, and an action ends the proposal
     }
+    // Report #323: …and a window the auto-pass toggle or a yield answers, on
+    // the same terms — the client's own `autoPassPlan`, asked with the inputs
+    // the client sent. Full control drops every automatic answer (BL-18), and
+    // the report dialog and a proposed fix hold them (CT-182, BL-46), exactly
+    // as they hold the arm above.
+    const auto = room.autoPass[seat];
+    if (!held && auto && !room.fullControl[seat] && !room.reportHold[seat] && !room.proposal
+      && room.clockStart !== null && matchRunning(room)) {
+      const legal = legalInRoom(room, seat);
+      const plan = autoPassPlan(s0, seat, legal, {
+        armed: false, armedStack: 0, armedSig: [],
+        prefOn: auto.pref, yieldIds: new Set(auto.yields),
+      });
+      held = plan.pass !== null && inPassWindow(s0, seat, legal);
+    }
     const w = room.passAllWait[seat];
     if (!held) room.passAllWait[seat] = null;
     else if (!w || w.at !== s0.actionCount) room.passAllWait[seat] = { at: s0.actionCount, since: now };
@@ -1703,7 +1765,7 @@ export function passAllDue(room: Room, now: number): Seat | null {
   };
   if (!late(0) && !late(1)) return null;
   settleClock(room);
-  for (const s of [0, 1] as const) if (room.passAll[s] && late(s)) return s;
+  for (const s of [0, 1] as const) if ((room.passAll[s] || room.autoPass[s]) && late(s)) return s;
   return null;
 }
 
@@ -2698,6 +2760,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     building: [null, null],
     fullControl: [false, false],   // BL-18: opt-in, and nobody has yet
     passAll: [null, null], passAllWait: [null, null], passAllCovered: [null, null],
+    autoPass: [null, null],       // report #323: nobody has said yet
     reportHold: [false, false],   // CT-182
     watchHold: [null, null],      // 2026-10-03: nobody is watching a playback yet
     // stamped again by resetSegment below, which is where every fresh log starts
@@ -5005,6 +5068,7 @@ export function restoreRooms(now = Date.now()): void {
         fullControl: [false, false],
         // …and neither is a standing pass, which no join ever carries back
         passAll: [null, null], passAllWait: [null, null], passAllCovered: [null, null],
+        autoPass: [null, null],       // …nor the auto-pass toggle or a yield
         reportHold: [false, false],   // CT-182: …nor a report dialog
         watchHold: [null, null],      // …nor a playback
         // 2026-10-04: from the file (or backfilled), never "now" — a restart is

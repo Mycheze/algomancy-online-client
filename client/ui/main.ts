@@ -395,6 +395,9 @@ class NetBackend implements Backend {
   private sentBuilding = '';
   /** the standing pass as the server last heard it ('' = none): see passAll() */
   private sentPassAll = '';
+  /** report #323: the last `autopass` sent ('' = nothing on, which is also
+   * what the server assumes after a join, so an all-off client sends nothing) */
+  private sentAutoPass = '';
   /**
    * CR D5.4/CT-28: authoritative updates waiting their turn on the clock, so the
    * table can never move faster than a human can read it. See ui/pace.ts for
@@ -735,6 +738,22 @@ class NetBackend implements Backend {
     this.sentPassAll = arm ? payload : '';
     this.ws.send(payload);
   }
+  /**
+   * Report #323 — tell the server this seat's auto-pass toggle and yields, so
+   * its clock stops in the windows they answer, as it does for Pass all. The
+   * owner, 2026-11-05: "if you're 'all passed' and the stack is just ticking
+   * down … (and you have no actions you can legally take), the clock must not
+   * tick down." The server asks the same `autoPassPlan` this client does
+   * (server/rooms.ts settlePassAll). A no-op when nothing changed; a join
+   * forgets it on both sides, so `joined` resets the memory.
+   */
+  autoPass(pref: boolean, yields: readonly EntityId[]): void {
+    const on = pref || yields.length > 0;
+    const payload = on ? JSON.stringify({ t: 'autopass', pref, yields: [...yields].sort((a, b) => a - b) }) : '';
+    if (payload === this.sentAutoPass || this.ws.readyState !== WebSocket.OPEN) return;
+    this.sentAutoPass = payload;
+    this.ws.send(payload || JSON.stringify({ t: 'autopass', pref: false, yields: [] }));
+  }
   /** post-game: ask for (or take back) a rematch */
   rematch(msg: Record<string, unknown>): void {
     this.ws.send(JSON.stringify({ t: 'rematch', ...msg }));
@@ -922,6 +941,7 @@ class NetBackend implements Backend {
       this.autoOutstanding = 0;   // CR D2.4: a (re)join answers nothing; start clean
       this.serverPlayback = false;   // a join is the live board, never frames
       this.sentPassAll = '';      // the server dropped the standing pass on this join, and resetUi drops ours
+      this.sentAutoPass = '';     // …and its copy of the toggle and yields, which the next paint re-sends
       resetUi();
       // report #224: the reveals this seat was shown, kept across a reconnect
       // or a refresh of the same game (ui/reveallog.ts)
@@ -9042,13 +9062,14 @@ function planAutoPass(): AutoPassPlan {
   // here rather than left on screen doing nothing.
   const full = fullControlOn();
   if (full && ui.passMode !== null) ui.passMode = null;
+  const prefOn = !full && localStorage.getItem('algoAutopass') === '1';
+  const yieldIds = full ? new Set<EntityId>() : new Set(yieldMap.keys());
   const plan = autoPassDecision(s, NET.seat, NET.legal, {
     armed: ui.passMode !== null, mode: ui.passMode ?? 'stack',
     armedStack: ui.autopassStack, armedSig: ui.autopassSig,
     armedItems: ui.autopassItems, armedOpts: ui.autopassOpts,
     armedPhase: ui.autopassPhase,
-    prefOn: !full && localStorage.getItem('algoAutopass') === '1',
-    yieldIds: full ? new Set<EntityId>() : new Set(yieldMap.keys()),
+    prefOn, yieldIds,
   });
   // CR D2.2: the snapshot is NOT re-taken here. The earlier version re-took it at every window
   // the chip declined, so "new" meant "new since the last window I passed" —
@@ -9059,6 +9080,10 @@ function planAutoPass(): AutoPassPlan {
   // …and whatever the arm now is, the server hears it: a release drops the
   // server's copy (and restarts the seat's clock) in the same breath
   syncPassAll();
+  // report #323: …and so do the toggle and the yields, the other two inputs
+  // of the same decision — the server stops the clock for the windows they
+  // answer too (NET.autoPass sends only a change)
+  NET.autoPass(prefOn, [...yieldIds]);
   // CT-182 (owner, 2026-09-30): nothing passes for you while the 📝 Report
   // dialog is open — you opened it to report THIS moment. The arm is not
   // dropped (its releases above still run): closing the dialog repaints, and

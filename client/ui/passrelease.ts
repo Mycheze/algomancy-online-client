@@ -388,3 +388,102 @@ export function passAllRelease(
   if (tokensAtRisk(s, seat, legal) > 0) return 'tokens';
   return null;
 }
+
+// ── #2, C4, [59] the other two things that pass for a seat ──────────────
+//
+// MOVED, NOT WRITTEN (2026-11-13, report #323): cut verbatim out of
+// ui/inspect.ts, which re-exports them. The server asks `autoPassPlan` for the
+// same reason it asks `passAllRelease` above — a window this client is going
+// to answer by itself is not the seat's time (rooms.ts settlePassAll).
+
+/**
+ * Should the client auto-pass this priority window because the thing about to
+ * resolve is a trigger the player has chosen to yield to?
+ *
+ * Playtest 2026-08-20 ("auto yield literally isn't doing anything"): the old
+ * test was `stack.every(item is a yielded trigger)`. Passing priority only
+ * ever resolves the TOP of the stack, so requiring the whole stack to be
+ * yielded meant that the moment anything else was on it — the opponent's
+ * spell, a second unit's trigger, the very common case in a real game — the
+ * chip did nothing at all. One of Bena's stacks that turn held four triggers
+ * from four different units.
+ *
+ * The right question is about the top item only. Everything under it gets its
+ * own window later, and this runs again for each.
+ */
+export function shouldAutoYield(
+  state: GameState, seat: Seat, yielded: ReadonlySet<number>,
+): boolean {
+  if (!yielded.size) return false;
+  // a priority window of my own, with nothing being asked of anybody
+  if (state.priority !== seat || state.decision) return false;
+  // CR 704.4 note: negation REMOVES the item from the stack the instant it
+  // resolves, so `negated` is no longer reachable on anything in
+  // GameState.stack (test/50 pins that against the live engine). The guard
+  // stays anyway, and is not dead weight: the flag is still on the type, and
+  // this client now MINTS negated stack items itself — ui/flash.ts stamps one
+  // on every snapshot it replays for a beat — so "never silently pass through
+  // a negated item" is a live sentence again, not a fossil.
+  const top = state.stack[state.stack.length - 1];
+  if (!top || top.negated) return false;
+  return top.kind === 'triggered' && top.sourceId !== undefined && yielded.has(top.sourceId);
+}
+
+export interface AutoPassPlan {
+  /** the armed pass chip must come off, whichever promise it was (CR D2.2) */
+  disarm: boolean;
+  /** why a pass is going out for this state — null means the window is mine.
+   * 'haste' is CR D2.5 and is NOT a priority pass: it is the haste step being
+   * readied through, and main.ts sends `doneHaste` for it rather than
+   * `passPriority`. It rides in this union because the two answers are one
+   * question — "is this window going to be answered without asking?" — and the
+   * prompt bar, the latch and the send all key off that one answer. */
+  pass: 'passall' | 'pref' | 'yield' | 'haste' | null;
+}
+
+/**
+ * Will this client pass this priority window by itself?
+ *
+ * [59] "I see a flash of the top of the screen that looks like it's giving me
+ * prio for like 1 frame AND I see a 'You do not have priority' note."
+ *
+ * Both halves of that report come from the same shape of mistake: the decision
+ * to pass used to be made AFTER the board had been painted, by three separate
+ * functions that each carried their own one-shot guard. So the prompt bar
+ * claimed priority for a whole server round trip before the corrective view
+ * arrived, and — with the auto-pass toggle on AND a yielded trigger on top —
+ * two of those three fired for the same state, the second one earning a
+ * "you do not have priority" refusal that stuck.
+ *
+ * This is the decision, alone, as a pure function: one answer per state, made
+ * BEFORE anything is drawn (so the bar can say "auto-passing" instead of
+ * lying) and consumed once (so exactly one pass goes out). The order is the
+ * one the old chain had — Pass-all, then the toggle, then the yield — and now
+ * it is an ordering rather than three independent chances to send.
+ *
+ * WHAT IS NOT HERE ANY MORE: the Pass-all branch. Report #68 ("I hit pass all,
+ * but then it stopped passing all") was this function's own C5 clause —
+ * "castableTokens(legal) > 0 → disarm", true in nearly every priority window
+ * of nearly every battle, so the chip performed exactly one pass and switched
+ * itself off. The whole release list moved to ui/battle.ts `passAllRelease`,
+ * which asks the sharper question, and `autoPassDecision` (same file) is the
+ * one caller: it asks THIS function with `armed: false` for the remaining two
+ * reasons and owns Pass-all itself. The branch stayed here for a round after
+ * that, reachable only from its own tests, and is now gone — `arm.armed` and
+ * `arm.armedStack`/`armedSig` are read by `passAllRelease` alone. There is
+ * exactly one answer to "why did pass-all stop", and it is a PassAllRelease.
+ */
+export function autoPassPlan(
+  s: GameState, seat: Seat, legal: readonly Action[], arm: AutoPassArm,
+): AutoPassPlan {
+  // C4: the toggle passes whenever passing is my ONLY legal action
+  if (arm.prefOn && !s.decision && s.phase !== 'gameover'
+    && legal.length > 0 && legal.every(a => a.type === 'passPriority')) {
+    return { disarm: false, pass: 'pref' };
+  }
+  // #2: the top of the stack is a trigger from a unit I yield to
+  if (shouldAutoYield(s, seat, arm.yieldIds) && legal.some(a => a.type === 'passPriority')) {
+    return { disarm: false, pass: 'yield' };
+  }
+  return { disarm: false, pass: null };
+}
