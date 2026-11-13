@@ -168,3 +168,69 @@ test('CR 713.3a: a unit with a decided death that a later part recalls is recall
   assert.ok(!h.state.players[D]!.bin.includes('Towering Colossus'), 'not the bin');
   assert.ok(!h.events.some(ev => /Deadly — Towering Colossus dies/.test(ev.msg)), 'and no Deadly death line');
 });
+
+/* ── The owner's own picture (2026-11-13): "Nothing in the game really happens during the
+ * resolution of something. Things are done after, simultaneously. … if a single graft effect
+ * gave a 4/4 unit -4/-4, then +7/+7 in the same effect, the game would only ever process the
+ * unit as being a 4/4 then directly a 7/7. There'd be no interim 0/0 at any point." */
+
+function pumpTable(seed: number, hand: number): { h: Harness; A: Seat; D: Seat; region: number; leader: EntityId } {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = other(A);
+  const leader = spawn(h, D, 'Pack Leader');
+  const region = ent(h, leader)!.region;
+  h.state.players[A]!.hand = [];
+  for (let i = 0; i < hand; i++) give(h, A, 'Good Whale');
+  assert.deepEqual(effStats(h, leader), [4, 4], 'setup: Pack Leader is a 4/4');
+  return { h, A, D, region, leader };
+}
+
+test('CR 713.3a / owner 2026-11-13: -4/-4 then +7/+7 in one graft — a 4/4 becomes a 7/7, never a dead 0/0', () => {
+  const { h, A, region, leader } = pumpTable(39101, 4);
+  withE(h, e => e.resolveItem({
+    id: h.state.nextId++, kind: 'triggered', label: 'a graft', controller: A, region, negated: false,
+    parts: [
+      { effectKey: 'graft:Overwhelm', targets: [{ unit: leader }] },
+      { effectKey: 'graft:Overbloom', targets: [{ unit: leader }] },
+    ],
+  }));
+  assert.ok(ent(h, leader), 'Pack Leader is still in play');
+  assert.deepEqual(effStats(h, leader), [7, 7], 'and it is a 7/7');
+  assert.ok(!h.events.some(ev => ev.type === 'died'), 'nothing died, not even for a moment');
+});
+
+test('CR 713.3a / owner 2026-11-13 CONTROL: the -4/-4 alone kills the 4/4 once the effect is done', () => {
+  const { h, A, D, region, leader } = pumpTable(39102, 4);
+  withE(h, e => e.resolveItem({
+    id: h.state.nextId++, kind: 'triggered', label: 'a graft', controller: A, region, negated: false,
+    parts: [{ effectKey: 'graft:Overwhelm', targets: [{ unit: leader }] }],
+  }));
+  assert.equal(ent(h, leader), undefined, 'it died');
+  assert.ok(h.state.players[D]!.bin.includes('Pack Leader'));
+});
+
+test('CR 713.3a / owner 2026-11-13: three units one graft kills die together, after every part has run', () => {
+  const h = new Harness(39103);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = other(A);
+  const units = [spawn(h, D, 'Pack Leader'), spawn(h, D, 'Pack Leader'), spawn(h, D, 'Pack Leader')];
+  const region = ent(h, units[0]!)!.region;
+  h.state.players[A]!.hand = [];
+  for (let i = 0; i < 4; i++) give(h, A, 'Good Whale');
+  const ev0 = h.events.length;
+  withE(h, e => e.resolveItem({
+    id: h.state.nextId++, kind: 'triggered', label: 'a graft', controller: A, region, negated: false,
+    parts: units.map(u => ({ effectKey: 'graft:Overwhelm', targets: [{ unit: u }] })),
+  }));
+  for (const u of units) assert.equal(ent(h, u), undefined, 'each of the three died');
+  const evs = h.events.slice(ev0);
+  const deaths = evs.map((ev, i) => ev.type === 'died' ? i : -1).filter(i => i >= 0);
+  assert.equal(deaths.length, 3, 'three deaths');
+  // each part announces its shrink as a statChanged; the old engine put a death after each one
+  const shrinks = evs.map((ev, i) => ev.type === 'statChanged' ? i : -1).filter(i => i >= 0);
+  assert.equal(shrinks.length, 3, 'three shrinks, one per part');
+  assert.ok(deaths[0]! > shrinks[2]!, 'no unit died before the last part had run');
+  assert.deepEqual(evs.slice(deaths[0]!).filter(ev => ev.type === 'statChanged').length, 0,
+    'and the three deaths come together, after every stat change');
+});
