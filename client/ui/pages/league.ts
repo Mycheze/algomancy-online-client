@@ -128,6 +128,13 @@ const COMPETITIVE_LINE = 'Competitive Constructed: every match is a best of thre
 const matchLine = (s: SeasonView): string => (competitive(s) ? COMPETITIVE_LINE : constructed(s)
   ? 'Casual constructed: bring any deck, and change it every game if you like.'
   : 'Every match is one live draft with random elements and a random first player.');
+/** what waits for both players before a league match is dealt: only a live draft draws
+ * elements; a constructed room has each player pick a deck, a Competitive match a
+ * registered one (BL-10, docs/23-ui-inventory/02 §8.4 item 21; test 1239) */
+const dealtLine = (s: SeasonView): string => (competitive(s)
+  ? 'Nothing is dealt until you are both there and each of you has registered a deck.'
+  : constructed(s) ? 'Nothing is dealt until you are both there and each of you has picked a deck.'
+  : 'Nothing is dealt until you are both there, and the elements are drawn at random.');
 /** the format in a few words, for the organizer */
 const formatWords = (f: Format | undefined): string =>
   (f === 'competitive' ? 'Competitive Constructed' : f === 'constructed' ? 'casual constructed' : 'live draft');
@@ -849,7 +856,7 @@ function myMatchesHtml(s: SeasonView, v: LeagueView): string {
           : timeHtml(s, m, v) + (timeOpen === m.id ? '' : freeLineHtml(m, v)) },
       } })) })}`).join('')}
     <p class="hint">Times are in ${esc(v.tz)}. Play opens your match room; your opponent joins from their own
-      League page. Nothing is dealt until you are both there, and the elements are drawn at random.</p>
+      League page. ${dealtLine(s)}</p>
   ` });
 }
 

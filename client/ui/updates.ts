@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-13', kind: 'fix', text: 'In a constructed league season, the note under Your matches no longer says the elements are drawn at random: it says each of you picks a deck (or, in Competitive, registers one) before anything is dealt.' },
   { date: '2026-11-12', kind: 'fix', text: 'On a phone, dragging up or down no longer pulls the whole page around when there is nothing to scroll, and no longer reloads it by accident. Long pages still scroll as before.' },
   { date: '2026-11-12', kind: 'fix', text: 'On your profile\'s Players tab the page itself no longer scrolls, or lets you scroll past the footer: only the player list scrolls, as it should.' },
   { date: '2026-11-12', kind: 'fix', text: 'With Accessible colours on, element bars and dots on your profile, in deck stats and under the deck builder show each element\'s icon, so you can tell them apart without the colour. The deck\'s element bar now runs in its legend\'s order.' },

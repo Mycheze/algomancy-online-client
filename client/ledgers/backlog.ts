@@ -715,7 +715,13 @@ const OPEN: Entry[] = [
       + 'the way: `.fdot.busy` sat in shared/13-report-and-inbox.css, which loads before `.fdot.on`, so a friend in a game '
       + '(Invite a friend, Send to a friend) was drawn green like any online friend; it now follows `.fdot.on`. Left on '
       + 'purpose: those two lists\' dots, which write the state beside them, and the admin\'s and the seats\' dots (words '
-      + 'or a title already). Guarded by 1233-presence-not-by-colour-alone.test.ts. Reasoned, not looked at (no browser).',
+      + 'or a title already). Guarded by 1233-presence-not-by-colour-alone.test.ts. Reasoned, not looked at (no browser).\n\n'
+      + '2026-11-13 (steward): "Your matches" says what waits at the table in the season\'s own format '
+      + '(docs/23-ui-inventory/02 §8.4 item 21: "The league footnote says \\"the elements are drawn at random\\" even for '
+      + 'constructed seasons"). pages/league.ts myMatchesHtml ended every season\'s note with it; now dealtLine(s): a live '
+      + 'draft keeps it, casual constructed says each of you picks a deck, Competitive that each registers one. Swept '
+      + 'ui/ and server/ for the same draft-only words reaching a constructed season: the rest (server/trio.ts, the lobby, '
+      + 'matchLine, the format menu) are drawn only for a draft. Guarded by 1239-league-matches-say-the-format.test.ts.',
   },
   // ── the leftovers of the 2026-11-02/03 rounds (Competitive Constructed, the design
   //    system, the new home, board-r1), filed 2026-11-03. Owner, that night: "put all
