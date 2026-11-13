@@ -74,7 +74,14 @@ let loading = false;
 let msg = '';
 /** how `msg` reads: a result (ok), a refusal (error), a step on its way (note) — set only through say() */
 let msgTone: StatusTone = 'error';
-const say = (text: string, tone: StatusTone): void => { msg = text; msgTone = tone; };
+const say = (text: string, tone: StatusTone): void => { msg = text; msgTone = tone; loadMissed = false; };
+/** BL-10 (docs/23-ui-inventory/02 §8.5 item 28, "the league `msg` never clears"):
+ * the line is a LOAD that failed, not something the player did — so the next
+ * load that works takes it away (a refusal or a result stays: say() resets this) */
+let loadMissed = false;
+const missed = (text: string): void => { say(text, 'error'); loadMissed = true; };
+/** a load worked: a load's own failure line is no longer true */
+const loaded = (): void => { if (loadMissed) { msg = ''; loadMissed = false; } };
 let sort: Sort = 'winrate';
 /** element filter — chips, not a query language: this page is for browsing */
 const els = new Set<string>();
@@ -160,11 +167,11 @@ function loadList(): void {
     .then(r => r.json() as Promise<{ ok: boolean; decks?: PublicDeck[]; minGames?: number; error?: string }>)
     .then(r => {
       loading = false;
-      if (r.ok && r.decks) { rows = r.decks; minGames = r.minGames ?? minGames; }
-      else say(r.error ?? 'could not load the metagame list', 'error');
+      if (r.ok && r.decks) { rows = r.decks; minGames = r.minGames ?? minGames; loaded(); }
+      else missed(r.error ?? 'could not load the metagame list');
       paint();
     })
-    .catch(() => { loading = false; say('could not reach the server', 'error'); paint(); });
+    .catch(() => { loading = false; missed('could not reach the server'); paint(); });
 }
 
 function loadOne(id: string): void {
@@ -177,7 +184,7 @@ function loadOne(id: string): void {
       else { one = null; say('That deck is not shared, or the link is wrong.', 'error'); }
       paint();
     })
-    .catch(() => { loading = false; say('could not reach the server', 'error'); paint(); });
+    .catch(() => { loading = false; missed('could not reach the server'); paint(); });
 }
 
 // ── CR D8.2f: the card ladder ─────────────────────────────────────────────
@@ -194,11 +201,11 @@ function loadLadder(): void {
     .then(r => r.json() as Promise<{ ok: boolean; cards?: CardStanding[]; rankedAfter?: number; duels?: number }>)
     .then(r => {
       loading = false;
-      if (r.ok && r.cards) ladder = { cards: r.cards, rankedAfter: r.rankedAfter ?? 5, duels: r.duels ?? 0 };
-      else say('could not load the card ladder', 'error');
+      if (r.ok && r.cards) { ladder = { cards: r.cards, rankedAfter: r.rankedAfter ?? 5, duels: r.duels ?? 0 }; loaded(); }
+      else missed('could not load the card ladder');
       paint();
     })
-    .catch(() => { loading = false; say('could not reach the server', 'error'); paint(); });
+    .catch(() => { loading = false; missed('could not reach the server'); paint(); });
 }
 
 export function openLadder(): void {

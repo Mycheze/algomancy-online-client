@@ -46,7 +46,14 @@ let loading = false;
 let msg = '';
 /** how `msg` reads: a result (ok), a refusal (error) — set only through say() */
 let msgTone: StatusTone = 'error';
-const say = (text: string, tone: StatusTone): void => { msg = text; msgTone = tone; };
+const say = (text: string, tone: StatusTone): void => { msg = text; msgTone = tone; loadMissed = false; };
+/** BL-10 (docs/23-ui-inventory/02 §8.5 item 28, "the league `msg` never clears"):
+ * the line is a LOAD that failed, not something the player did — so the next
+ * load that works takes it away (a refusal or a result stays: say() resets this) */
+let loadMissed = false;
+const missed = (text: string): void => { say(text, 'error'); loadMissed = true; };
+/** a load worked: a load's own failure line is no longer true */
+const loaded = (): void => { if (loadMissed) { msg = ''; loadMissed = false; } };
 /** the availability being edited: starts from the saved one, or a sensible default */
 let draft: { tz: string; grid: string; contact: string } | null = null;
 let dirty = false;
@@ -197,7 +204,8 @@ function load(): void {
     .then(r => r.json() as Promise<{ ok: boolean } & LeagueState>)
     .then(r => {
       loading = false;
-      if (!r.ok) { say('could not load the league', 'error'); paint(); return; }
+      if (!r.ok) { missed('could not load the league'); paint(); return; }
+      loaded();
       if (tok !== dataFor) { dirty = false; preview = null; arming = null; }
       data = r;
       dataFor = tok;
@@ -206,7 +214,7 @@ function load(): void {
       if (!dirty) draft = { ...(r.availability ?? { tz: browserTz(), grid: defaultGrid() }), contact: r.contact ?? '' };
       paint();
     })
-    .catch(() => { loading = false; say('could not reach the server', 'error'); paint(); });
+    .catch(() => { loading = false; missed('could not reach the server'); paint(); });
 }
 
 /** Something changed in the league that this page is showing — the bell
@@ -467,7 +475,8 @@ export function handleButton(btn: HTMLElement): boolean {
       rerenderHost();
       return true;
     case 'lg-close': close(); return true;
-    case 'lg-season': want = btn.dataset['id'] ?? null; preview = null; syncUrl(); load(); return true;
+    // another season: a line about the one on screen is not about it
+    case 'lg-season': want = btn.dataset['id'] ?? null; preview = null; msg = ''; syncUrl(); load(); return true;
     // the toolbar's tabs: which part of the season shows (pages/league.ts LEAGUE_SECTIONS)
     case 'lg-section': {
       const v = btn.dataset['v'] as LeagueSection | undefined;

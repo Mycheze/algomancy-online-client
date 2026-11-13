@@ -721,7 +721,16 @@ const OPEN: Entry[] = [
       + 'constructed seasons"). pages/league.ts myMatchesHtml ended every season\'s note with it; now dealtLine(s): a live '
       + 'draft keeps it, casual constructed says each of you picks a deck, Competitive that each registers one. Swept '
       + 'ui/ and server/ for the same draft-only words reaching a constructed season: the rest (server/trio.ts, the lobby, '
-      + 'matchLine, the format menu) are drawn only for a draft. Guarded by 1239-league-matches-say-the-format.test.ts.',
+      + 'matchLine, the format menu) are drawn only for a draft. Guarded by 1239-league-matches-say-the-format.test.ts.\n\n'
+      + '2026-11-13 (steward): a page\'s "could not load" line goes when the page loads (docs/23-ui-inventory/02 §8.5 '
+      + 'item 28: "The league `msg` never clears"). The class was every load that writes its failure into the page\'s '
+      + 'one message line and never takes it back: league.ts load (the bell\'s refresh, a season switch, the reload after '
+      + 'every action), challenge.ts load, meta.ts loadList (a re-sort), loadLadder and loadOne\'s thrown fetch. Each says '
+      + 'a load\'s failure through missed() (an error, flagged loadMissed) and a load that works calls loaded(), which '
+      + 'clears only a flagged line; say() unflags, so a refusal or a result the player caused survives the reload behind '
+      + 'it. The League\'s season switch (lg-season) also clears the line, which was about the season on screen. '
+      + 'cardstats.ts already cleared at the top of its load. Guarded by 1240-load-failure-line-clears.test.ts. Left: '
+      + 'item 28\'s "Saved." that stays while the availability is edited again (the Save button already says Save then).',
   },
   // ── the leftovers of the 2026-11-02/03 rounds (Competitive Constructed, the design
   //    system, the new home, board-r1), filed 2026-11-03. Owner, that night: "put all

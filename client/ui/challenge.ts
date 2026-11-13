@@ -71,7 +71,14 @@ let loading = false;
 let msg = '';
 /** how `msg` reads: a result (ok), a refusal (error) — set only through say() */
 let msgTone: StatusTone = 'error';
-const say = (text: string, tone: StatusTone): void => { msg = text; msgTone = tone; };
+const say = (text: string, tone: StatusTone): void => { msg = text; msgTone = tone; loadMissed = false; };
+/** BL-10 (docs/23-ui-inventory/02 §8.5 item 28, "the league `msg` never clears"):
+ * the line is a LOAD that failed, not something the player did — so the next
+ * load that works takes it away (a refusal or a result stays: say() resets this) */
+let loadMissed = false;
+const missed = (text: string): void => { say(text, 'error'); loadMissed = true; };
+/** a load worked: a load's own failure line is no longer true */
+const loaded = (): void => { if (loadMissed) { msg = ''; loadMissed = false; } };
 /** the home card's copy, and the token it was asked with */
 let hint: ChallengeReply | null = null;
 let hintFor: string | null | undefined;
@@ -134,7 +141,8 @@ function load(): void {
     .then(r => r.json() as Promise<ChallengeReply>)
     .then(r => {
       loading = false;
-      if (!r || typeof r.now !== 'number') { say('could not load the challenges', 'error'); paint(); return; }
+      if (!r || typeof r.now !== 'number') { missed('could not load the challenges'); paint(); return; }
+      loaded();
       data = r; dataFor = tok;
       hint = r; hintFor = tok;
       skew = r.now - Date.now();
@@ -152,7 +160,7 @@ function load(): void {
       if (want) { const h = tabletopHostFor(want); if (h) { tt.openTabletop(h); return; } rerenderHost(); return; }
       paint();
     })
-    .catch(() => { loading = false; say('could not reach the server', 'error'); paint(); });
+    .catch(() => { loading = false; missed('could not reach the server'); paint(); });
 }
 
 /** The home card's data, asked the first time the home page draws. */

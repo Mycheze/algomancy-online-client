@@ -71,7 +71,8 @@ test('1231 §2 census: the line is drawn in the view\'s tone, and set only throu
   }
   for (const f of CONTROLLERS) {
     const src = ctl(f);
-    assert.match(src, /const say = \(text: string, tone: StatusTone\): void => \{ msg = text; msgTone = tone; \};/, `${f} has say()`);
+    // (1240: a page whose loads can fail also marks the line as not a load's miss)
+    assert.match(src, /const say = \(text: string, tone: StatusTone\): void => \{ msg = text; msgTone = tone;( loadMissed = false;)? \};/, `${f} has say()`);
     // every other assignment to msg clears it
     const sets = [...src.matchAll(/\bmsg = ([^;]+);/g)].map(m => m[1]!.trim()).filter(v => v !== "''" && v !== 'text');
     assert.deepEqual(sets, [], `${f}: msg is set to something only through say()`);
