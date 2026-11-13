@@ -7,11 +7,16 @@
  * row, every other BL waiting behind it, and `shipped` counts as progress to the loop breaker. Same
  * week: `tidy`, last in the queue, never ran once, and every item staged or red before a later run
  * shipped it left its `steward/<item>` branch behind (13 of them).
+ *
+ * The queue runs over a FIXTURE tree — a copy of `steward/queue.mjs` beside three small ledgers —
+ * not the live ledgers. Until 2026-11-13 it read the live ones and needed two open items in them:
+ * closing BL-63 left only BL-10, and the order test went red on a ledger change that broke nothing.
+ * The live run is kept as a smoke check (the real ledgers still load).
  */
-import { test } from 'node:test';
+import { after, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -27,12 +32,32 @@ function fn(name: string): string {
   return many[0];
 }
 
+/** a repo-shaped tree the queue can run in: its own copy of queue.mjs, and ledgers with two open
+ *  backlog items and nothing else (queue.mjs finds the ledgers beside itself, and asks git for HEAD) */
+function fixtureRepo(): string {
+  const root = mkdtempSync(join(tmpdir(), 'steward-1214-repo-'));
+  mkdirSync(join(root, 'steward'));
+  copyFileSync(join(STEWARD, 'queue.mjs'), join(root, 'steward', 'queue.mjs'));
+  const led = join(root, 'client', 'ledgers');
+  mkdirSync(led, { recursive: true });
+  writeFileSync(join(led, 'card-todo.ts'), 'export const CARD_TODO = [];\n');
+  writeFileSync(join(led, 'playtest-ledger.ts'), 'export const LEDGER = [];\n');
+  writeFileSync(join(led, 'backlog.ts'), `export const BACKLOG = [
+  { id: 'BL-901', status: 'open', size: 'S', title: 'the first open item' },
+  { id: 'BL-902', status: 'open', size: 'S', title: 'the second open item' },
+];\n`);
+  execFileSync('bash', ['-c', 'git init -q && git -c user.email=t@t -c user.name=t commit -q --allow-empty -m base'], { cwd: root });
+  return root;
+}
+const FIXTURE = fixtureRepo();
+after(() => rmSync(FIXTURE, { recursive: true, force: true }));
+
 /** the queue this journal produces: its lines, and what it says it left out */
-function queue(rows: Array<Record<string, string>>): { lines: string[]; excluded: string } {
+function queue(rows: Array<Record<string, string>>, repo = FIXTURE): { lines: string[]; excluded: string } {
   const dir = mkdtempSync(join(tmpdir(), 'steward-1214-'));
   try {
     writeFileSync(join(dir, 'journal.jsonl'), rows.map(r => JSON.stringify(r)).join('\n') + '\n');
-    const r = spawnSync(process.execPath, [join(STEWARD, 'queue.mjs'), '--why'], {
+    const r = spawnSync(process.execPath, [join(repo, 'steward', 'queue.mjs'), '--why'], {
       encoding: 'utf8', env: { ...process.env, STEWARD_STATE: dir },
     });
     assert.equal(r.status, 0, r.stderr);
@@ -50,10 +75,15 @@ const idOf = (l: string) => l.split(/\s+/)[0]!;
 
 test('1214 an item that shipped today and is still open goes behind everything else', () => {
   const base = queue([]).lines.filter(worked);
-  assert.ok(base.length >= 2, `the ledgers offer ${base.length} items; the order needs two`);
+  assert.deepEqual(base.map(idOf), ['BL-901', 'BL-902'], 'the fixture offers its two items, in order');
   const first = idOf(base[0]!);
   const after = queue([shipped(first, 1)]).lines;
   assert.equal(idOf(after.at(-1)!), first, `${first} should be last; queue: ${after.map(idOf).join(' ')}`);
+});
+
+test('1214 the queue still runs over the live ledgers', () => {
+  // queue() asserts the exit status: the real ledgers import and the queue prints
+  queue([], join(STEWARD, '..'));
 });
 
 test('1214 three ships in a day is an item\'s share; it comes back when they age out', () => {
