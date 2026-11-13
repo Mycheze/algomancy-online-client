@@ -7427,7 +7427,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; no gate test · Printed: card: Suppression Field · Owner ruling, adopted 2026-08-21 (quoted from the retired ruling register) · Key: effects.stripping.what.erase-mods</sub>
 
-<a id="r712.2"></a>**712.2.** A strip takes what the unit has when the strip applies. An attribute or ability the unit gains afterwards (a mod attached later, an attribute or ability granted later, a static ability that starts applying later) is not taken. See rules 113.3, 113.3a, 113.3b.
+<a id="r712.2"></a>**712.2.** A strip takes what the unit has when the strip applies. An attribute or ability the unit gains afterwards (a mod attached later, an attribute or ability granted later, a static ability that starts applying later) is not taken. See rules 113.3, 113.3a, 113.3b, 712.6b.
 
 > *Example: after Suppression Field resolves on Bubb, Protective Adaptations gives Bubb Piercing, and it has it.*
 
@@ -7496,6 +7496,16 @@ order.
 > *Example: A player names The Everywhere with The Everywhere. Every copy in the region loses its abilities, the namer too, and the silence stays on.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Printed: card: The Everywhere · Owner call · adopted 2026-10-22 · Tests: 586-everywhere-names-itself.test.ts · Example test: 586-everywhere-names-itself.test.ts::CT-329: The Everywhere that names The Everywhere strips itself and every copy beside it, and the strip keeps applying · Key: effects.stripping.named-card.itself</sub>
+
+<a id="r712.6b"></a>**712.6b** The card The Everywhere names also loses the abilities it gains after the naming: an augment or graft attached to it later, and an ability granted to it later, are lost for as long as it is in The Everywhere's region. This is an exception to rule 712.2: The Everywhere's strip is a condition on the named card, not a strip of what the card had when it applied. Every other strip still takes only what a unit has when it applies.
+
+> *Example: The Everywhere names Nimbus Eel. Later, Voltwrath Behemoth ("[Augment] Whenever you play a spell, I deal 1 damage to any target") is attached to a Nimbus Eel in that region. The Behemoth's ability does nothing on the Eel.*
+
+> *Example: The Everywhere names Nimbus Eel, then Flourishing Flora is attached to the Eel. Another ally spawns, and the Eel gets no counter.*
+
+> *Example: Aetherflux Golem ("[Augment] I gain +2/+2") attached to the named card after the naming gives it nothing until The Everywhere leaves the region.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (2 probes it wrote), all passed; 1 gate test file · Printed: card: The Everywhere · Owner call · adopted 2026-11-13 · Engine: E.strippersOf, E.stripReach · Tests: 1242-everywhere-takes-later-abilities.test.ts · Example tests: 1242-everywhere-takes-later-abilities.test.ts::CR 712.6b / report #386: Voltwrath Behemoth stacked on the named Nimbus Eel after the naming has its line struck, 1242-everywhere-takes-later-abilities.test.ts::CR 712.6b / report #386: an augment put on the card The Everywhere named, AFTER it named it, is silenced too, 1242-everywhere-takes-later-abilities.test.ts::CR 712.6b: the later text comes back when The Everywhere leaves the region · Key: effects.stripping.named-card.later-abilities</sub>
 
 <a id="r712.7"></a>**712.7.** Text a copy has from the mods of the unit it copied is part of the copy's own card text. An effect that makes the copy lose all attributes and abilities takes it, and "erase all of its mods" finds no mod to erase. See rule 710.2a.
 
@@ -10912,7 +10922,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1869 numbered rules.
+1870 numbered rules.
 
 | basis | rules |
 |---|---|
@@ -10920,13 +10930,13 @@ Generated from the records and the verdicts. Nothing here is a rule.
 | Designer | 202 |
 | Owner call | 675 |
 | Engine only | 45 |
-| Mixed | 492 |
+| Mixed | 493 |
 
 ### Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1837 |
+| confirmed | 1838 |
 | partial | 10 |
 | contradicted | 0 |
 | unsupported | 0 |
@@ -11545,7 +11555,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1874 rules and 99 sections.
+- New: 1875 rules and 99 sections.
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)
 - Removed: 901.8 `formats.constructed.single-card`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)
 - Removed: 901.8a `formats.constructed.single-card.copies`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)

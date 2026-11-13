@@ -45,6 +45,9 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-13', kind: 'fix', text: 'Nothing dies halfway through an effect any more. A graft and all its parts resolve as one effect, and a unit brought to 0 defense stays on the board until the whole effect is done, so a later part can still recall it.' },
+  { date: '2026-11-13', kind: 'fix', text: 'The card The Everywhere names now also loses abilities it picks up afterwards, such as an augment put on it later, for as long as The Everywhere is in its region.' },
+  { date: '2026-11-13', kind: 'fix', text: 'Your clock no longer ticks while auto-pass or a yield passes for you, the same as with Pass all. It only runs when the game is waiting on you to do something.' },
   { date: '2026-11-13', kind: 'fix', text: 'The Cards page and the deck builder\'s filters now say Power, Toughness, Best match, Discard me and Makes tokens, instead of search shorthand like pow, tou and tokenmaker. Searches typed by hand work as before.' },
   { date: '2026-11-13', kind: 'fix', text: 'The League, Weekly challenge and Metagame pages no longer keep saying "could not reach the server" once they have loaded fine again. Switching the League to another season also clears the last season\'s message.' },
   { date: '2026-11-13', kind: 'fix', text: 'In a constructed league season, the note under Your matches no longer says the elements are drawn at random: it says each of you picks a deck (or, in Competitive, registers one) before anything is dealt.' },

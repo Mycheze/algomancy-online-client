@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:c0de389cbd4d29de",
+ "generated_from": "sha256:675101dbe47677a4",
  "rules": [
   {
    "num": "100.1",
@@ -24880,7 +24880,8 @@
    "see": [
     "113.3",
     "113.3a",
-    "113.3b"
+    "113.3b",
+    "712.6b"
    ],
    "examples": [
     "after Suppression Field resolves on Bubb, Protective Adaptations gives Bubb Piercing, and it has it.",
@@ -25066,6 +25067,29 @@
    ],
    "examples": [
     "A player names The Everywhere with The Everywhere. Every copy in the region loses its abilities, the namer too, and the silence stays on."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "712.6b",
+   "key": "effects.stripping.named-card.later-abilities",
+   "title": null,
+   "section": "712",
+   "sectionTitle": "Stripping and Suppression",
+   "chapterTitle": "7. Spells, Abilities and Effects",
+   "parent": "712.6",
+   "text": "The card The Everywhere names also loses the abilities it gains after the naming: an augment or graft attached to it later, and an ability granted to it later, are lost for as long as it is in The Everywhere's region. This is an exception to rule 712.2: The Everywhere's strip is a condition on the named card, not a strip of what the card had when it applied. Every other strip still takes only what a unit has when it applies.",
+   "see": [],
+   "examples": [
+    "The Everywhere names Nimbus Eel. Later, Voltwrath Behemoth (\"[Augment] Whenever you play a spell, I deal 1 damage to any target\") is attached to a Nimbus Eel in that region. The Behemoth's ability does nothing on the Eel.",
+    "The Everywhere names Nimbus Eel, then Flourishing Flora is attached to the Eel. Another ally spawns, and the Eel gets no counter.",
+    "Aetherflux Golem (\"[Augment] I gain +2/+2\") attached to the named card after the naming gives it nothing until The Everywhere leaves the region."
    ],
    "basis": "mixed",
    "scope": "game",

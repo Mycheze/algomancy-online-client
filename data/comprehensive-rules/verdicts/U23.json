@@ -1873,12 +1873,12 @@
     "source_checks": [],
     "quote_spans": [
       {
-        "file": "client/ui/inspect.ts",
+        "file": "client/ui/passrelease.ts",
         "text": "if (arm.prefOn && !s.decision && s.phase !== 'gameover'",
         "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
       },
       {
-        "file": "client/ui/inspect.ts",
+        "file": "client/ui/passrelease.ts",
         "text": "&& legal.length > 0 && legal.every(a => a.type === 'passPriority')) {",
         "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
       }
