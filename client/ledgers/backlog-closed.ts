@@ -3715,4 +3715,149 @@ export const CLOSED: Entry[] = [
       + 'ui/test/1236 is the census: a new red or in-progress line on the board fails until it has a cue. Every doneWhen line '
       + 'holds: 1 (1160), 2 (1235), 3 (1221 §4/§5 and 1236), 4 (1221).',
   },
+  {
+    id: 'BL-63',
+    slug: 'design-system-small-leftovers',
+    title: 'Design-system round: the small page bugs and tidy-ups it found and left',
+    area: 'client',
+    size: 'M',
+    status: 'done',
+    evidence: {
+      commit: '11da51ab',
+      guards: [
+        '1224-alerts-pressed-while-open.test.ts::1224 §1 the toolbar draws Alerts pressed exactly while the list is open',
+        '925-base-selectors-not-redeclared.test.ts::§2 .zonelabel is declared bare in base.css, and in no other piece (board/ included)',
+        '978-layers-report-inbox-html.test.ts::978 §2 the report form: kinds, severity for a bug or UX only, Send disabled until complete',
+        '1228-meta-filters-per-tab.test.ts::1228 a card typed on the ladder does not filter the published-deck list, and back again',
+        '1234-kicked-notice-is-a-page.test.ts::1234 §1 kickedHtml is the old notice byte for byte, the reason escaped',
+        '1239-home-buttons-are-the-home-pages.test.ts::1239 §1 main.ts handles none of the home buttons and holds no element pick',
+        '1241-league-and-challenge-paint-are-the-pages.test.ts::1241 §2 ⭐ the moved wiring writes the state the controller saves and draws',
+      ],
+    },
+    track: 'qol',
+    said:
+      'put all the other things into the backlog of todos that we want to take care of (2026-11-03)',
+    means:
+      'The records\' "found, not fixed" lines that were still true in the code on 2026-11-03, each small. '
+      + 'Pick any one off; tick its doneWhen line. Phone-only overflows (profile History 534px and the '
+      + 'card-search syntax help 448px on a 390px screen, the past-week Watch buttons, card stats headers) '
+      + 'are parked under the owner\'s "not even worry about phones" (BL-57).',
+    doneWhen: [
+      'The home toolbar\'s Alerts button shows pressed while the inbox list is open (pages/home.ts passes no `on` when signed in; the list\'s state is inbox.ts\'s)',
+      '`.zonelabel`, the client\'s one global small-caps label, lives in base.css (or becomes `.eyebrow`), not in board/03-life-cards-battle-log.css',
+      'The button component writes `disabled` where a test reading attribute order expects it (rootAttrs puts it before the pass-through attrs; 287 reads `data-report="send" disabled`), so the report dialog can use button()',
+      'The profile\'s password-change failure is drawn as an error, not in `.deckmsg` gold',
+      'Metagame: a filter typed on the card ladder does not carry to the deck list and back (meta.ts shares one `text`)',
+      'Card stats: the bar fills in 34-cardstats.css (#4fb3c9, #9aa5b0) use data-viz tokens, as wrTint now does',
+      'Checked: whether the tabletop\'s rerender `!inGame` guard can reach the waiting-room deck-page bug it resembles (docs/23 "Found, not fixed")',
+      'The TODO(ds) splits are done: handlePregameButton out of main.ts into pages/home.ts, and league / challenge paint() split from their wiring; the "kicked" notice out of NetBackend',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/pages/home.ts',
+      'client/ui/inbox.ts',
+      'client/ui/styles/base.css',
+      'client/ui/components/_shared.ts',
+      'client/ui/pages/profile.ts',
+      'client/ui/meta.ts',
+      'client/ui/styles/pages/34-cardstats.css',
+      'client/ui/tabletop.ts',
+      'client/docs/23-design-system.md',
+      'client/ui/pages/connecting.ts',
+    ],
+    notes:
+      'Sources: var/records/ds-round-2026-11-03-{ds-base,ds-w2b,ds-w2c,ds-w3a,ds-w3b,home-page}.md and '
+      + 'docs/23 "Found, not fixed". Already fixed later that night and NOT filed: the report button over '
+      + 'the league\'s Suggest a time, the friends list\'s empty table on a fetch error, the league grid\'s '
+      + '"drag" on touch, the signed-out Challenge nav wrap, `.scdraw`/`.scwarn` in the wrong piece, '
+      + 'legal.ts\'s injected stylesheet, the queue\'s 16px buttons, the favourite/unlink missing catches, '
+      + 'the ladder failure in gold, crreview.ts\'s stale comment, 962 matching words in strings, the '
+      + 'component gaps (panel titleHtml and sub-heading, table headless and column titles, tabs '
+      + 'className), the native checkboxes drawn light.\n\n'
+      + '2026-11-10 (steward tidy): the fourth doneWhen line (the profile\'s password-change failure drawn as an error) '
+      + 'is DONE: the profile redesign of 2026-11-07 (66e79da3) draws it with statusMessage tone \'error\' '
+      + '(pages/profile.ts, the Account section), a success with tone \'ok\'. 732 §3 now pins both classes, and went red '
+      + 'with the tone flipped to \'note\'. Re-checked the rest at HEAD, all still open: the signed-in Alerts button passes '
+      + 'no `on` (pages/frame.ts toolHtml), `.zonelabel` is still defined in board/03, rootAttrs still writes `disabled` '
+      + 'after the pass-through attrs, meta.ts still shares one `text`, 34-cardstats.css still has the two hex fills, and '
+      + 'the three TODO(ds) splits are still in pages/home.ts, challenge.ts and league.ts.\n\n'
+      + '2026-11-10 (steward, BL-63): the sixth doneWhen line (the card stats bar fills) is DONE: tokens.css gains '
+      + '--color-data-draft (#4fb3c9) and --color-data-constructed (#9aa5b0), the funnel bars\' categorical colours, '
+      + 'kept apart from --color-winrate-up although the draft one shares its value (a count is not a win rate). '
+      + '34-cardstats.css reads them; same pixels. 921\'s ratchet for pages/cardstats went 3 → 1 (the hover row\'s '
+      + 'white wash is left) and went red with #4fb3c9 put back.\n\n'
+      + '2026-11-11 (steward, BL-63): the first doneWhen line (Alerts pressed while the inbox list is open) is DONE. '
+      + 'FrameChrome gains `alertsOpen` (inbox.ts inboxListOpen: the list is open AND drawn, so false signed out, on a '
+      + 'board and on a game page); pages/frame.ts toolHtml passes it as the signed-in Alerts\' `on`, the home\'s view '
+      + 'and main.ts\'s chrome source read it, so every repaint draws it; and inbox.ts paint() presses every '
+      + '`.ui-icon-button[data-inbox="bell"]` in place, since a click on the bell repaints only the layer, never the page '
+      + 'under it. Guarded by 1224-alerts-pressed-while-open.test.ts, which went red with each of the three removed. '
+      + 'Not looked at in a browser (the home box has none). Left: lines 2, 3, 5, 7, 8.\n\n'
+      + '2026-11-11 (steward, BL-63): the fifth doneWhen line (the Metagame filter carrying between the card ladder and '
+      + 'the deck list) is DONE. meta.ts keeps `ladderText` beside the list\'s `text`; HOOKS.setText writes the one for '
+      + 'the tab that is up, pages/meta.ts ladderHtml reads and draws `ladderText`, and the list\'s Clear clears only its '
+      + 'own. Guarded by 1228-meta-filters-per-tab.test.ts (driven through the real client), which went red with setText '
+      + 'writing `text` for both and again with ladderHtml reading `text`. Left: lines 2, 3, 7, 8.\n\n'
+      + '2026-11-11 (steward tidy): the seventh doneWhen line (is the tabletop\'s `!inGame` rerender guard reachable, as '
+      + 'the waiting-room deck page\'s was) is CHECKED, and it is not reachable. tabletop.ts calls the host rerender in two '
+      + 'places only: closeTabletop() with no host (its one caller, handleButton\'s `tt-close`, returns early when there is '
+      + 'no host, so Back always runs the host\'s own close; the deck page\'s is a paint(), which draws in a room too), and '
+      + 'renderScreen()\'s "the ?table= deck never resolved" exit. renderScreen() is called only from main.ts renderHome(), '
+      + 'which never runs in a `?room=` (renderNow paints the room, renderWaiting, instead), so in a room that exit cannot '
+      + 'happen; outside one `!inGame` is true. The deck page\'s own guard was fixed on 2026-11-02 (908). Seen by reading, '
+      + 'not in a browser. Not filed, an owner-taste question rather than a defect: a deck page or builder opened from a '
+      + 'waiting room is still painted over by the room on the next server push (an opponent arriving); the 2026-11-03 '
+      + 'inventory (docs/23-ui-inventory/05 §4) noted it. Left: lines 2, 3, 8.\n\n'
+      + '2026-11-11 (steward, BL-63): the second doneWhen line (`.zonelabel` in base.css) is DONE. The rule moved from '
+      + 'board/03 to base.css beside .eyebrow, in tokens (same values: --dim is --color-text-muted, 11px, 8px), and stays '
+      + 'BARE (0,1,0), not :where — its ~20 in-context overrides on the board and pages were written against that, and the '
+      + 'board uses it most. Nothing between base.css and board/03 in index.css (the components, board/02) matches a '
+      + '.zonelabel, and every use is class="zonelabel" alone, so no pixel moves. Kept as .zonelabel, not renamed to '
+      + '.eyebrow: they differ by the top margin, and 36 call sites plus ~20 overrides would churn for nothing. 925 now '
+      + 'lists .zonelabel as a base selector and §2 fails on a bare .zonelabel in any other piece, board included; it went '
+      + 'red with the old rule put back in board/03. Left: lines 3, 8.\n\n'
+      + '2026-11-12 (steward, BL-63): the third doneWhen line (the report dialog can use button()) is DONE, from the test '
+      + 'side rather than the component\'s: moving `disabled` after the pass-through attrs in button() would only have '
+      + 're-pinned the home page\'s six order-reading assertions (960 newgame: `disabled data-mode=…`). Instead 287\'s '
+      + 'sendDisabled and 521 §2 read `disabled` off the Send button\'s own tag in either order, and pages/report.ts draws '
+      + 'Cancel (secondary) and Send (primary, disabled while busy or incomplete) with button(); the kind/severity radios '
+      + 'stay hand-written (.reportchoices button). Same pixels: .ui-button and .ui-button--primary are base.css\'s '
+      + 'button / button.primary in tokens (5px 12px, radius 5px). 978 §2 now pins both buttons\' whole markup; with '
+      + 'Send\'s disabled forced false, 287 (3 tests), 521 §2 and 978 §2 went red. components/README.md no longer lists '
+      + 'the dialog as a leftover. Left: line 8.\n\n'
+      + '2026-11-12 (steward, BL-63): line 8, its third part (the "kicked" notice out of NetBackend) is DONE. The '
+      + 'template NetBackend wrote inline on `m.t === \'kicked\'` is pages/connecting.ts kickedHtml(msg) now (pure, '
+      + 'beside the other socket screen, moved byte for byte: still the old join-screen card, not the frame); the '
+      + 'branch keeps stopReconnecting() and paints it. A story (waiting.stories.ts Kicked) and 1234-kicked-notice-is-a-page '
+      + '(the old bytes, the branch holds no markup, a real `kicked` push) guard it; 1234 went red with the inline '
+      + 'template put back in main.ts (§2) and with the reason left unescaped (§1, §3). Left of line 8: '
+      + 'handlePregameButton into pages/home.ts, and the league / challenge paint() splits — both blocked, as their '
+      + 'TODO(ds) comments say, on module state (uiError and the element pick; the grid, time-code and tabletop state) '
+      + 'having a home outside the controller first.\n\n'
+      + '2026-11-13 (steward, BL-63): line 8, its first part (handlePregameButton out of main.ts into pages/home.ts) is DONE. '
+      + 'The element pick (`ui.homeEls`, `ui.homeFixedTrio`, with savedEls) left main.ts\'s UiState for pages/home.ts module '
+      + 'state beside homeMode and the sheets (homePick()); nothing but the home read it. pages/home.ts handleHomeButton '
+      + 'holds the home\'s buttons, bodies moved as they were (the cr- rows, home-*, eltoggle, elrandom, clockpick, '
+      + 'newgame, deckimport*, joincode); main.ts lends `uiError` and its repaints as HOME_HOST (HomeButtonHost). The '
+      + 'waiting rooms\' deckjoin, singlejoin, gohome, copylink stay in main.ts as handleRoomButton: they drive NET. One '
+      + 'unseen difference: resetUi() (a deal, a join) used to reset the pick; it cannot reach the home, which is only '
+      + 'drawn outside a room, and leaving a room reloads the page. main.ts keeps bare imports of customrulespanel, '
+      + 'clockpick and deckpicker where they were, so boot order is unchanged. Guarded by '
+      + '1239-home-buttons-are-the-home-pages.test.ts, which went red with the host\'s setError emptied (§3) and with a '
+      + 'chip\'s save removed (§2); 271, 298 §8, 962 §2 and 1227 §3 now read pages/home.ts. Not looked at in a browser. '
+      + 'Left of line 8: the league / challenge paint() splits, still blocked on their module state (the grid, '
+      + 'time-code and tabletop state) having a home outside the controller.\n\n'
+      + '2026-11-13 (steward, BL-63): line 8, its last part (the league / challenge paint() splits) is DONE, and with it '
+      + 'the entry. The state did not need a new home: pages/league.ts paintLeague(app, view, hooks) paints and wires the '
+      + 'availability grid, the time-zone and contact boxes and the time code\'s time, writing ui/league.ts\'s state only '
+      + 'through the LeagueHooks it lends (draft, editDraft, setGridFocus, setStampAt, repaint; the pages/meta.ts MetaHooks '
+      + 'shape); wireGrid\'s body moved as it was. The challenge page had no wiring, only the tabletop guard: '
+      + 'pages/challenge.ts paintChallengePage paints it, and ui/challenge.ts keeps whether to paint at all (not under the '
+      + 'tabletop). Guarded by 1241-league-and-challenge-paint-are-the-pages, which went red with each hook broken and with '
+      + 'the tabletop guard removed; 906 reads the wiring from pages/league.ts, 540 §8 accepts paintChallengePage. No '
+      + 'TODO(ds) is left. Every doneWhen line holds: 1 (1224), 2 (925), 3 (978 §2, 287), 4 (732 §3), 5 (1228), 6 (921), '
+      + '7 (checked 2026-11-11, by reading), 8 (1234, 1239 home, 1241).',
+  },
 ];
