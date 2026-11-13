@@ -208,6 +208,33 @@ only a judge can confirm.
 Never *recommend* a rules answer. State what the sources say, with quotes and
 where. Recommendations are for UX and process only.
 
+**What does NOT count as a source for "by design"** (2026-11-13: #390, #386
+and #323 were closed by-design on exactly these, and the owner had to overrule
+all three):
+
+- **A CR rule whose basis is "Engine only"** (its `<sub>Basis:` line, or a
+  `discrepancies.md` entry saying "the sources are silent"). That rule is a
+  description of the engine — the very thing the report says is wrong. Citing
+  it is "the engine does X because the engine does X".
+- **A quote answering a different question.** Read what the designer was
+  *replying to* (the export's `reference.messageId`), not just the line. Caleb's
+  "we check stats for death for units that are interacted with during effect
+  resolutions" answers whether a stat-swap kill counts for Reaping — it says
+  nothing about a graft's later parts. If the source is about a neighbouring
+  case, that is an *analogy*, and an analogy is a `needs-human`, not a verdict.
+- **A RAQ ruling about a differently-worded card.** "Your other units lose all
+  abilities" (Transmogrifant) is not "my named card loses all abilities" (The
+  Everywhere). Different words, different effect, until a source joins them.
+- **Your own re-simulation of what a player saw.** If the report says "this
+  happened to me" and your rebuild does not show it, you rebuilt the wrong
+  thing — what you have is `needs-human` "could not reproduce, here is what I
+  tried", never `by-design`.
+
+**A report from a judge or the owner that says the engine broke a rule is not
+closed by-design by you.** If the sources you have really do settle it against
+them, write the verdict as `needs-human` with the quotes, so the owner sees it
+before it is closed.
+
 A real question goes in the handoff (§8b) in two forms: one for the
 owner (short, with the readings and their evidence) and a **Discord-ready**
 version he can paste as-is — self-contained, plain words, the card text quoted,
@@ -464,6 +491,19 @@ verdicts — a journal: a later row for the same scenario+room supersedes an
 earlier one, and a retraction is a `works` row; `264-verdict-loop` wants a CT for
 every standing non-`works` verdict) and `report-marks.snapshot.jsonl`. Handle
 those the same way. Commit the snapshots and the ledgers together.
+
+**The owner's marks are rulings, not suggestions.** 👍 on the admin page means
+"real, worth doing": the owner is telling you it IS a bug. A 👍 on a row that
+is `by-design`, `wontfix` or `agreed-fix` reopens it — move the entry back to
+the open half as `live`, file the CT (the defect, his mark as the authority,
+what the old verdict got wrong), and quote the old verdict's reasoning in the
+CT so the next run does not repeat it. Never keep a 👍'd row closed because
+"the mark does not say what to change": working out what to change is the job.
+If you truly cannot see a defect, the CT says what you tried and the next work
+run on it ends `needs-human` with that — it does not reclose the row. (2026-11-13:
+#323 and #386 were 👍'd and re-kept by-design the same morning, the second time
+each had been closed against the owner.) 👎 ("not a bug / won't do") closes a
+row as `wontfix` citing the mark.
 
 **Only a triage run commits the snapshots.** On any other item the fetched rows
 are in your tree but not yours: leave them uncommitted (`70-playtest-ledger`
