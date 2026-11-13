@@ -8,15 +8,17 @@
  *     the decks the builder can import — into a plain view;
  *   · challengePageHtml(view) / challengeHomeCardHtml(view) /
  *     challengeNavHtml(view) draw it and touch nothing else;
+ *   · paintChallengePage(app, view) paints it in the app frame (2026-11-13,
+ *     BL-63). The page has no wiring of its own: every control on it is a
+ *     data-btn click, which ui/challenge.ts handleButton answers;
  *   · ui/challenge.ts keeps the state, the fetches, the clicks, the hand-off
- *     to a run and the tabletop host.
+ *     to a run and the tabletop host — and the decision whether to paint at
+ *     all: never while the tabletop is up over the page (tt.screen()), whose
+ *     state is that module's, as main.ts's router decides which page owns
+ *     the app element.
  *
  * ("challengePage…", not "challenge…": `ChallengeView` is already the
  * server's name for one week's challenge, server/api-challenge.ts.)
- *
- * TODO(ds): view/html split: paint() stays in ui/challenge.ts. It must not
- * paint while the tabletop is up over the page (tt.screen()), and every
- * fetch that lands repaints; the state those read is that module's.
  *
  * The builder card is ui/challengebuild.ts builderHtml (pure already), and
  * the run's meter and end panels are ui/challengerun.ts's: they are drawn on
@@ -33,7 +35,7 @@ import { statusMessage, type StatusTone } from '../components/status.ts';
 import { tabs } from '../components/tabs.ts';
 import { canSubmit, doneRuns, type DoneRun, type SubmitReply } from '../challengerun.ts';
 import { esc } from '../util.ts';
-import { frameChromeView, frameHtml, type FrameChrome } from './frame.ts';
+import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
 
 // ── the server's shapes (server/api-challenge.ts, server/challenge-store.ts) ──
 
@@ -383,4 +385,10 @@ export function challengePageView(r: ChallengeRaw): ChallengePageView {
     canSubmit: canSubmit(),
     chrome: frameChromeView(),
   };
+}
+
+/** Paint `v` into `app`, in the app frame: both columns keep their scroll
+ * over a repaint. */
+export function paintChallengePage(app: HTMLElement, v: ChallengePageView): void {
+  paintFrame(app, challengePageHtml(v));
 }

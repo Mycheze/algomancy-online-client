@@ -256,8 +256,9 @@ test('§8 the wiring: the reload, the paint guard, and the strip’s drop index'
   assert.match(code('main.ts'), /tt\.registerTableResolver\('challenge', chal\.tabletopHostFor\);/);
   const ch = code('challenge.ts');
   const paint = ch.slice(ch.indexOf('function paint('), ch.indexOf('function setList('));
-  // the paint is paintFrame since the app frame (2026-11-04); innerHTML before
-  const paints = Math.max(paint.indexOf('innerHTML'), paint.indexOf('paintFrame('));
+  // the paint is pages/challenge.ts paintChallengePage since 2026-11-13 (BL-63);
+  // paintFrame since the app frame (2026-11-04); innerHTML before
+  const paints = Math.max(paint.indexOf('innerHTML'), paint.indexOf('paintFrame('), paint.indexOf('paintChallengePage('));
   assert.ok(paint.indexOf('if (tt.screen()) return;') >= 0 && paints > 0 && paint.indexOf('if (tt.screen()) return;') < paints,
     'the page never paints over the table (a commit there repaints the table, not this)');
   assert.match(ch, /commit: next => \{[\s\S]*?setList\(next\.cards\)[\s\S]*?tt\.tabletopChanged\(\);/, 'the strip commits through setList (saved, Undo ended) and repaints the table');

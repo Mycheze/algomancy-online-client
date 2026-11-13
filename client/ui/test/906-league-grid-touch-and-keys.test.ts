@@ -15,17 +15,17 @@
  *
  * league.ts paints into the DOM, so this reads its source and the stylesheet:
  * the grid's markup from pages/league.ts (where it moved in the design-system
- * round, 2026-11-03), its wiring from league.ts.
+ * round, 2026-11-03), and its wiring from there too (paintLeague's wireGrid,
+ * moved out of ui/league.ts on 2026-11-13, BL-63).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { readStyles } from './read-styles.ts';
 
-const src = readFileSync(new URL('../league.ts', import.meta.url), 'utf8');
 const html = readFileSync(new URL('../pages/league.ts', import.meta.url), 'utf8');
 const css = readStyles().replace(/\/\*[\s\S]*?\*\//g, '');
-const grid = src.slice(src.indexOf('function wireGrid'), src.indexOf('\n}\n', src.indexOf('function wireGrid')));
+const grid = html.slice(html.indexOf('function wireGrid'), html.indexOf('\n}\n', html.indexOf('function wireGrid')));
 const rule = (sel: string): string => css.match(new RegExp(`(?:^|\\})\\s*${sel.replace(/[.]/g, '\\.')}\\s*\\{([^}]*)\\}`))?.[1] ?? '';
 
 test('positive control: the grid and its wiring are where this expects', () => {

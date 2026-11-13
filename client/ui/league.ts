@@ -8,11 +8,12 @@
  *
  * The markup is pages/league.ts's (the design-system round, 2026-11-03):
  * leagueView() gathers this file's state into a view, leagueHtml() draws it,
- * and so for the home banner and the header button. This file keeps the
- * state, the fetches, the clicks, and the one thing it owns outright: the
- * AVAILABILITY EDITOR's wiring — a week of hours painted by dragging (a mouse)
- * or tapped (a finger), in the player's own time zone, saved as 168
- * characters.
+ * and so for the home banner and the header button. Since 2026-11-13 the
+ * painting and its wiring are that module's too (paintLeague): the
+ * AVAILABILITY EDITOR — a week of hours painted by dragging (a mouse) or
+ * tapped (a finger), in the player's own time zone, saved as 168
+ * characters — and the time code's time box. They write this file's state
+ * through HOOKS. This file keeps the state, the fetches and the clicks.
  *
  * The organizer's controls are on the same page, shown when the server says
  * the viewer is an admin — the server refuses them to anybody else either way
@@ -20,12 +21,11 @@
  */
 import * as acct from './account.ts';
 import {
-  FORMATS, GRID_LEN, PRESETS, SHOW_DAYS, STAMP_STYLES, browserTz, defaultGrid, discordCode, fromWallValue,
-  hoursIn, LEAGUE_SECTIONS, leagueBannerHtml, leagueGlanceHtml, leagueGlanceView, leagueHtml, leagueJoinRowsHtml, leagueJoinView,
-  leagueNavHtml, leagueView, nextQuarter, presetHours, viewTz as tzOf, when as whenIn,
-  type Format, type LeagueSection, type LeagueState, type Preview, type StampStyle,
+  FORMATS, GRID_LEN, PRESETS, STAMP_STYLES, browserTz, defaultGrid, discordCode, fromWallValue,
+  LEAGUE_SECTIONS, leagueBannerHtml, leagueGlanceHtml, leagueGlanceView, leagueJoinRowsHtml, leagueJoinView,
+  leagueNavHtml, leagueView, nextQuarter, paintLeague, presetHours, viewTz as tzOf, when as whenIn,
+  type Format, type LeagueHooks, type LeagueSection, type LeagueState, type Preview, type StampStyle,
 } from './pages/league.ts';
-import { paintFrame } from './pages/frame.ts';
 import type { StatusTone } from './components/status.ts';
 
 export { discordCode, postText, stampPreview, STAMP_STYLES, type StampStyle } from './pages/league.ts';
@@ -261,28 +261,26 @@ const when = (iso: string | number): string => whenIn(iso, viewTz());
 
 // ── the page ──────────────────────────────────────────────────────────
 
+/** What pages/league.ts's wiring may do to this module's state. */
+const HOOKS: LeagueHooks = {
+  draft: () => draft,
+  editDraft: patch => { if (draft) { Object.assign(draft, patch); dirty = true; } },
+  setGridFocus: i => { gridFocus = i; },
+  setStampAt: ms => { stampAt = ms; },
+  repaint: () => paint(),
+};
+
 function paint(): void {
   if (!$app || !open) return;
-  // the app frame (pages/frame.ts): every region that scrolls keeps its place
-  paintFrame($app, leagueHtml(leagueView({
+  paintLeague($app, leagueView({
     data, hint, loading, msg, msgTone, draft, dirty, busy, arming, gridFocus, timeOpen, preview, stampAt, section,
-  })));
-  wireGrid();
-  wireStamp();
+  }), HOOKS);
 }
 
 // ── a Discord time code (pages/league.ts draws it) ────────────────────
 
 const stampMs = (): number => stampAt ?? nextQuarter(Date.now());
 
-function wireStamp(): void {
-  const el = document.getElementById('lg-stamp-at') as HTMLInputElement | null;
-  if (!el) return;
-  el.onchange = () => {
-    const at = fromWallValue(el.value, viewTz(), 1);
-    if (Number.isFinite(at)) { stampAt = at; paint(); }
-  };
-}
 
 /** Copy text: the clipboard where the browser allows it, else select the
  * field it is shown in and copy that (older iOS web apps) — the same two
@@ -297,120 +295,6 @@ function copyText(text: string, field: HTMLInputElement | HTMLTextAreaElement | 
   try {
     void navigator.clipboard.writeText(text).then(done, fallback);
   } catch { fallback(); }
-}
-// ── the availability grid ─────────────────────────────────────────────
-
-function wireGrid(): void {
-  const el = document.getElementById('lg-grid');
-  const tz = document.getElementById('lg-tz') as HTMLInputElement | null;
-  if (tz) {
-    tz.onchange = () => { if (draft && tz.value.trim()) { draft.tz = tz.value.trim(); dirty = true; paint(); } };
-  }
-  const contact = document.getElementById('lg-contact') as HTMLInputElement | null;
-  if (contact) {
-    // typing must not repaint (it would steal the caret): flag the Save button by hand
-    contact.oninput = () => {
-      if (!draft) return;
-      draft.contact = contact.value;
-      dirty = true;
-      const save = document.querySelector('[data-btn="lg-grid-save"]') as HTMLButtonElement | null;
-      if (save) { save.disabled = false; save.textContent = 'Save'; }
-    };
-  }
-  if (!el) return;
-  /* Owner, 2026-11-02 ("tap cells + arrow keys"), and test/906:
-   *  - a MOUSE (or pen) drag paints, as it always did;
-   *  - a FINGER scrolls the page (style.css: touch-action manipulation, and no
-   *    preventDefault for touch), and a TAP toggles one cell — the click that
-   *    follows a tap, which the browser does not send after a scroll;
-   *  - the KEYBOARD: one cell is tabbable (roving tabindex, `gridFocus`), the
-   *    arrows move it, Space or Enter toggles it.
-   * Before, `touch-action: none` meant a thumb landing on the grid (taller than
-   * a phone's screen) could not scroll past it and painted cells instead, and
-   * nothing in the grid could be reached by Tab at all. */
-  let painting: '0' | '1' | null = null;
-  let lastPointer = '';
-  /** the last cell a drag painted — a fast stroke skips cells between
-   * pointermove samples, so the gap is filled in (`line`) */
-  let from: HTMLElement | null = null;
-  const cellAt = (c: number, h: number): HTMLElement | null =>
-    el.querySelector(`.lgcell[data-c="${c}"][data-h="${h}"]`);
-  const put = (cell: HTMLElement, v: '0' | '1'): void => {
-    if (!draft || cell.dataset['i'] === undefined) return;
-    const i = Number(cell.dataset['i']);
-    if (draft.grid[i] === v) return;
-    draft.grid = draft.grid.slice(0, i) + v + draft.grid.slice(i + 1);
-    cell.classList.toggle('on', v === '1');
-    cell.setAttribute('aria-selected', String(v === '1'));
-    dirty = true;
-    const n = hoursIn(draft.grid);
-    const out = document.getElementById('lg-hours');
-    if (out) { out.textContent = `${n} hours a week`; out.classList.toggle('lgwarn', n < (data?.minHours ?? 6)); }
-    const save = document.querySelector('[data-btn="lg-grid-save"]') as HTMLButtonElement | null;
-    if (save) { save.disabled = false; save.textContent = 'Save'; }
-  };
-  const toggle = (cell: HTMLElement): void => {
-    if (draft) put(cell, draft.grid[Number(cell.dataset['i'])] === '1' ? '0' : '1');
-  };
-  /** every cell from `a` to `b` inclusive, stepping one cell at a time */
-  const line = (a: HTMLElement, b: HTMLElement): HTMLElement[] => {
-    const [c0, h0, c1, h1] = [a.dataset['c'], a.dataset['h'], b.dataset['c'], b.dataset['h']].map(Number) as [number, number, number, number];
-    const n = Math.max(Math.abs(c1 - c0), Math.abs(h1 - h0));
-    const out: HTMLElement[] = [];
-    for (let k = 1; k <= n; k++) {
-      const cell = cellAt(Math.round(c0 + (c1 - c0) * k / n), Math.round(h0 + (h1 - h0) * k / n));
-      if (cell) out.push(cell);
-    }
-    return out;
-  };
-  /** make `cell` the grid's one tabbable cell */
-  const rove = (cell: HTMLElement): void => {
-    for (const other of el.querySelectorAll<HTMLElement>('.lgcell[tabindex="0"]')) other.tabIndex = -1;
-    cell.tabIndex = 0;
-    gridFocus = Number(cell.dataset['i']);
-  };
-  el.onpointerdown = e => {
-    lastPointer = e.pointerType;
-    if (e.pointerType === 'touch') return;   // a finger scrolls; its tap is the click below
-    const cell = (e.target as HTMLElement).closest('.lgcell') as HTMLElement | null;
-    if (!cell || !draft) return;
-    e.preventDefault();
-    painting = draft.grid[Number(cell.dataset['i'])] === '1' ? '0' : '1';
-    el.setPointerCapture?.(e.pointerId);
-    from = cell;
-    put(cell, painting);
-    rove(cell);
-  };
-  // pointer capture sends every move here; find the cell under the pointer,
-  // and paint the whole way from the last one
-  el.onpointermove = e => {
-    if (!painting) return;
-    const cell = document.elementFromPoint(e.clientX, e.clientY)?.closest('.lgcell') as HTMLElement | null;
-    if (!cell || !el.contains(cell) || cell === from) return;
-    for (const c of from ? line(from, cell) : [cell]) put(c, painting);
-    from = cell;
-  };
-  el.onpointerup = el.onpointercancel = () => { painting = null; from = null; };
-  el.onclick = e => {
-    if (lastPointer !== 'touch') return;   // a mouse drag has painted already
-    const cell = (e.target as HTMLElement).closest('.lgcell') as HTMLElement | null;
-    if (cell) { toggle(cell); rove(cell); }
-  };
-  el.onkeydown = e => {
-    const cell = (e.target as HTMLElement).closest?.('.lgcell') as HTMLElement | null;
-    if (!cell) return;
-    const c = Number(cell.dataset['c']), h = Number(cell.dataset['h']);
-    const move: Record<string, [number, number]> = {
-      ArrowLeft: [c - 1, h], ArrowRight: [c + 1, h], ArrowUp: [c, h - 1], ArrowDown: [c, h + 1],
-      Home: [0, h], End: [SHOW_DAYS.length - 1, h],
-    };
-    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(cell); return; }
-    const to = move[e.key];
-    if (!to) return;
-    e.preventDefault();
-    const next = cellAt(to[0], to[1]);
-    if (next) { rove(next); next.focus(); }
-  };
 }
 
 // ── clicks ────────────────────────────────────────────────────────────

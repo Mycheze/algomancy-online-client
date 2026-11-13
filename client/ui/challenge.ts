@@ -30,7 +30,9 @@
  *
  * The markup is pages/challenge.ts's (the design-system round, 2026-11-03):
  * challengePageView() gathers this file's state, challengePageHtml() draws
- * it, and so for the home card and the header button.
+ * it, paintChallengePage() paints it (2026-11-13), and so for the home card
+ * and the header button. Whether to paint at all stays here: not while the
+ * tabletop is up over the page (tt.screen()).
  */
 import { BOARD_KINDS, goalText, type BoardKind } from '../engine/src/challenge.ts';
 import * as acct from './account.ts';
@@ -47,14 +49,13 @@ import {
 } from './challengerun.ts';
 import { chosenDeck } from './util.ts';
 import {
-  allViews, challengeGlanceHtml, challengeHomeCardHtml, challengeHomeView, challengeNavHtml, challengePageHtml, challengePageView,
+  allViews, challengeGlanceHtml, challengeHomeCardHtml, challengeHomeView, challengeNavHtml, challengePageView, paintChallengePage,
   type BoardReply, type ChallengeReply, type ChallengeView,
 } from './pages/challenge.ts';
 
 export {
   BOARD_LABEL, DEBT_RULE, type BoardReply, type BoardRow, type ChallengeReply, type ChallengeView, type MyBest,
 } from './pages/challenge.ts';
-import { paintFrame } from './pages/frame.ts';
 import type { StatusTone } from './components/status.ts';
 
 // ── module state ──────────────────────────────────────────────────────
@@ -298,10 +299,9 @@ function paint(): void {
   // the tabletop is up over this page: a commit there must not paint this
   // page over it (and it never paints under a drag that way either)
   if (tt.screen()) return;
-  // the app frame (pages/frame.ts): both columns keep their scroll over a repaint
-  paintFrame($app, challengePageHtml(challengePageView({
+  paintChallengePage($app, challengePageView({
     data, hint, loading, msg, msgTone, skew, tab, pastOpen, arming, boards, sending, building, list, importing, undo, decks: importable,
-  })));
+  }));
 }
 
 /** whichever is on screen: the table (this page's import sheet is drawn in
