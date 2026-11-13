@@ -82,12 +82,17 @@ export function facets(building: boolean): Facet[] {
   // deck-building pair get a section of their own while a deck is open; and
   // the bookkeeping flags (arted, playable, exclusive, scripted, rulings…)
   // are `is:` queries only.
-  for (const f of ['burst', 'unstable']) out.push({ section: 'attr', label: f, key: 'is', value: f });
+  // A chip says its flag's `label`, never the flag itself: `discardme` and
+  // `tokenmaker` are query syntax (BL-10, test 1241).
+  for (const name of ['burst', 'unstable']) {
+    const f = FLAGS.find(x => x.flag === name)!;
+    out.push({ section: 'attr', label: f.label ?? f.flag, key: 'is', value: f.flag });
+  }
   for (const f of FLAGS) {
-    if (f.mechanic) out.push({ section: 'mechanic', label: f.flag, key: 'is', value: f.flag });
+    if (f.mechanic) out.push({ section: 'mechanic', label: f.label ?? f.flag, key: 'is', value: f.flag });
   }
   if (building) {
-    for (const f of ['deck', 'maybe']) out.push({ section: 'building', label: f === 'deck' ? 'in the deck' : 'on the maybeboard', key: 'is', value: f });
+    for (const f of ['deck', 'maybe']) out.push({ section: 'building', label: f === 'deck' ? 'In the deck' : 'On the maybeboard', key: 'is', value: f });
   }
   for (const { value, count } of facetValues(r => r.subtypes, rows).slice(0, 40)) {
     out.push({ section: 'subtype', label: value, key: 'sub', value: value.toLowerCase(), count });
@@ -100,8 +105,9 @@ export function facets(building: boolean): Facet[] {
   for (const { value, count } of facetValues(r => [r.complexity], rows)) {
     out.push({ section: 'rarity', label: value, key: 'rarity', value: value.toLowerCase(), count });
   }
-  for (const c of ['card', 'token', 'resource', 'marker', 'help', 'exclusive']) {
-    out.push({ section: 'class', label: c, key: 'class', value: c });
+  for (const [c, label] of [['card', 'Card'], ['token', 'Token'], ['resource', 'Resource'], ['marker', 'Marker'],
+    ['help', 'Reference card'], ['exclusive', 'Exclusive']] as const) {
+    out.push({ section: 'class', label, key: 'class', value: c });
   }
   return out;
 }

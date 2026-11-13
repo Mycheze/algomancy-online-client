@@ -102,6 +102,15 @@ for (const d of KEYS) {
  * carries the whole page's state so a link restores it. */
 export const SORTS = ['name', 'mana', 'pow', 'tou', 'element', 'kind', 'set', 'rarity', 'relevance'] as const;
 export type SortKey = typeof SORTS[number];
+/** what the browser's sort menu SAYS for each key: the keys are query syntax
+ * (`sort:pow`), and the menu had been showing them raw — "pow", "tou",
+ * "relevance" (BL-10, docs/23-ui-inventory/03 §3.10). The words follow the
+ * rail's own section titles: `mana` is "Cost", `rarity` "Complexity", `set`
+ * "Printed deck". */
+export const SORT_LABEL: Record<SortKey, string> = {
+  name: 'Name', mana: 'Cost', pow: 'Power', tou: 'Toughness', element: 'Element',
+  kind: 'Kind', set: 'Printed deck', rarity: 'Complexity', relevance: 'Best match',
+};
 export const VIEWS = ['grid', 'list', 'text'] as const;
 export type ViewKey = typeof VIEWS[number];
 const DISPLAY_KEYS = new Set(['sort', 'order', 'dir', 'direction', 'view']);
@@ -117,6 +126,10 @@ export interface FlagDef {
    * mechanics. Like arted, playable, exclusive, etc." Those flags stay
    * searchable (`is:arted`) and off the rail. */
   mechanic?: true;
+  /** what the rail's chip says, for a flag drawn there (every mechanic, and
+   * burst and unstable under Attributes): the flag is query syntax
+   * (`is:tokenmaker`), not a word to show a player (BL-10, test 1241) */
+  label?: string;
 }
 
 /** A spell unit is a unit. A spell unit and a spell token are spells. The two
@@ -139,18 +152,18 @@ export const FLAGS: readonly FlagDef[] = [
   { flag: 'hybrid', help: 'two or more elements', test: r => r.factions.length > 1 },
   { flag: 'colorless', help: 'no element at all', test: r => r.factions.length === 0 },
   { flag: 'virus', help: 'printed {Virus}', test: r => r.virus },
-  { flag: 'burst', help: 'printed {Burst}', test: r => r.burst },
-  { flag: 'unstable', help: 'printed {Unstable}', test: r => r.unstable },
-  { flag: 'augment', help: 'an [Augment] card', test: r => r.keywords.includes('augment'), mechanic: true },
-  { flag: 'graft', help: 'graftable — it prints a [Switch]', test: r => r.keywords.includes('graft'), mechanic: true },
+  { flag: 'burst', label: 'Burst', help: 'printed {Burst}', test: r => r.burst },
+  { flag: 'unstable', label: 'Unstable', help: 'printed {Unstable}', test: r => r.unstable },
+  { flag: 'augment', label: 'Augment', help: 'an [Augment] card', test: r => r.keywords.includes('augment'), mechanic: true },
+  { flag: 'graft', label: 'Graft', help: 'graftable — it prints a [Switch]', test: r => r.keywords.includes('graft'), mechanic: true },
   // the two graft symbols, read off the printed text like TEXT_ALIASES:
   // [Switch1] is the once-per-turn one. A card printing both would be both.
   { flag: 'bounded', help: 'prints a bounded graft, [Switch1] (once per turn)', test: r => r.textLc.includes('[switch1]') },
   { flag: 'unbounded', help: 'prints an unbounded graft, [Switch]', test: r => r.textLc.includes('[switch]') },
-  { flag: 'ambush', help: 'has an Ambush play mode', test: r => r.ambush, mechanic: true },
-  { flag: 'prophecy', help: 'prints a Prophecy banner', test: r => r.prophecy, mechanic: true },
-  { flag: 'discardme', help: 'has a "Discard me" play mode', test: r => r.discardMe, mechanic: true },
-  { flag: 'debt', help: 'prints a [Gain N debt] cost', test: r => r.gainDebt, mechanic: true },
+  { flag: 'ambush', label: 'Ambush', help: 'has an Ambush play mode', test: r => r.ambush, mechanic: true },
+  { flag: 'prophecy', label: 'Prophecy', help: 'prints a Prophecy banner', test: r => r.prophecy, mechanic: true },
+  { flag: 'discardme', label: 'Discard me', help: 'has a "Discard me" play mode', test: r => r.discardMe, mechanic: true },
+  { flag: 'debt', label: 'Debt', help: 'prints a [Gain N debt] cost', test: r => r.gainDebt, mechanic: true },
   { flag: 'battle', help: 'playable during battle', test: r => r.timing === 'battle' },
   { flag: 'haste', help: 'printed {Haste}', test: r => r.timing === 'haste' },
   // a virus prints no timing and may be played whenever you have priority,
@@ -158,8 +171,8 @@ export const FLAGS: readonly FlagDef[] = [
   { flag: 'deploy', help: 'deployment timing only — not haste, not battle, not a virus', test: r => r.timing === 'deploy' && !r.virus },
   { flag: 'x', help: 'an X cost', test: r => r.isX },
   { flag: 'vanilla', help: 'no rules text at all', test: r => r.vanilla },
-  { flag: 'transform', help: 'transforms into another face', test: r => !!r.transforms, mechanic: true },
-  { flag: 'tokenmaker', help: 'creates a token', test: r => r.creates.length > 0, mechanic: true },
+  { flag: 'transform', label: 'Transforms', help: 'transforms into another face', test: r => !!r.transforms, mechanic: true },
+  { flag: 'tokenmaker', label: 'Makes tokens', help: 'creates a token', test: r => r.creates.length > 0, mechanic: true },
   { flag: 'provisional', help: 'transcribed from pre-release art', test: r => r.provisional },
   { flag: 'arted', help: 'has a card scan', test: r => r.hasArt },
   { flag: 'rulings', help: 'carries a recorded ruling', test: r => r.rulings > 0 },

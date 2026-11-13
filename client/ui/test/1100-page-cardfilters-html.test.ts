@@ -56,7 +56,7 @@ test('1100 §3 the rail: active counts on closed sections, chips and notes on op
   const open = filterRailHtml(v('', { railOpen: { element: true } }));
   assert.match(open, /<section class="cbsection open">[\s\S]*?<div class="cbnote"><span class="mouseonly">click<\/span><span class="touchonly">tap<\/span> once to include, twice to exclude<\/div>/);
   assert.doesNotMatch(filterRailHtml(v('', { railOpen: ALL_OPEN })), /data-section="building"/);
-  assert.match(filterRailHtml(v('', { facets: facets(true), railOpen: ALL_OPEN })), /data-section="building"[\s\S]*?in the deck/);
+  assert.match(filterRailHtml(v('', { facets: facets(true), railOpen: ALL_OPEN })), /data-section="building"[\s\S]*?In the deck/);
 });
 
 test('1100 §4 pages/cards.ts still exports facets', () => {

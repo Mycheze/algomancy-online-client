@@ -19,7 +19,7 @@ import { artHtml, cardPanelHtml, costHtml } from '../cardpanel.ts';
 import type { CardRow } from '../cardindex.ts';
 import { allRows, rowFor } from '../cardindex.ts';
 import { printsStats } from '../../engine/src/cards/dsl.ts';   // CR 206.2
-import { SORTS, VIEWS, type SearchResult } from '../cardsearch.ts';
+import { SORT_LABEL, SORTS, VIEWS, type SearchResult } from '../cardsearch.ts';
 import { suggest } from '../cardsynonyms.ts';
 import { esc } from '../util.ts';
 import { icon, segmented, sheet } from '../components/index.ts';
@@ -244,9 +244,9 @@ function barHtml(v: CardsView): string {
       ${saved.map(s => `<button class="cblink" data-btn="cards-try" data-q="${esc(s.q)}">${esc(s.name)}</button>`).join('')}
       ${q ? '<button class="cbsmall" data-btn="cards-save" title="keep this search">Save search</button>' : ''}
       ${saved.length ? '<button class="cbsmall" data-btn="cards-forget" title="drop the saved searches">Forget</button>' : ''}
-      <label class="cbsort">sort
+      <label class="cbsort">Sort
         <select id="cb-sort">${SORTS.map(s =>
-    `<option value="${s}"${res.query.sort === s ? ' selected' : ''}>${s}</option>`).join('')}</select>
+    `<option value="${s}"${res.query.sort === s ? ' selected' : ''}>${SORT_LABEL[s]}</option>`).join('')}</select>
       </label>
       <button class="cbdir" data-btn="cards-dir" title="reverse the order" aria-label="Reverse the order">${res.query.dir === 'asc' ? '↑' : '↓'}</button>
       ${segmented({

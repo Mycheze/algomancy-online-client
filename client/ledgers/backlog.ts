@@ -730,7 +730,17 @@ const OPEN: Entry[] = [
       + 'clears only a flagged line; say() unflags, so a refusal or a result the player caused survives the reload behind '
       + 'it. The League\'s season switch (lg-season) also clears the line, which was about the season on screen. '
       + 'cardstats.ts already cleared at the top of its load. Guarded by 1240-load-failure-line-clears.test.ts. Left: '
-      + 'item 28\'s "Saved." that stays while the availability is edited again (the Save button already says Save then).',
+      + 'item 28\'s "Saved." that stays while the availability is edited again (the Save button already says Save then).\n\n'
+      + '2026-11-13 (steward): the card browser\'s labels are words, not query syntax (docs/23-ui-inventory/03 §3.10: '
+      + '"Labels are raw identifiers: sort options (`pow`, `tou`, `rarity`, `relevance`), view names, mechanic chips '
+      + '(`discardme`, `tokenmaker`)"). The class was the sort menu (pages/cards.ts, nine keys drawn raw under a lower-case '
+      + '"sort") and every rail chip drawn from a key (pages/cardfilters.ts facets, shared by the Cards page and the '
+      + 'builder\'s pool): the eight Mechanics, Burst and Unstable, the "This deck" pair, the six "What kind of thing" '
+      + 'chips. The menu reads SORT_LABEL (cardsearch.ts: Cost, Power, Toughness, Printed deck, Complexity, Best match; '
+      + 'the rail\'s own section words), a rail flag its FlagDef.label ("Discard me", "Makes tokens", "Transforms"), '
+      + '"help" is "Reference card". Values and the help sheet\'s syntax are untouched. Left on purpose: element names and '
+      + 'mono/hybrid/colourless, lower-case like every element chip (1177\'s exemption), and the view names grid/list/text. '
+      + 'Guarded by 1241-card-browser-labels-are-words.test.ts. Reasoned, not looked at (no browser).',
   },
   // ── the leftovers of the 2026-11-02/03 rounds (Competitive Constructed, the design
   //    system, the new home, board-r1), filed 2026-11-03. Owner, that night: "put all
