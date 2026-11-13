@@ -300,7 +300,6 @@ card('Suppression Field', {
       for (const item of g.stackIn(ctx.region)) {   // CR 704.4: a copy; CT-234: this region's stack
         if (item.sourceId === t.id) g.negate(item.id);
       }
-      g.checkDeaths();                             // mod statics may have kept it alive
     },
   },
 });

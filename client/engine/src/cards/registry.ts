@@ -170,7 +170,6 @@ card('Jelly', {
       const t = firstTarget(g, ctx);   // CR D7.3a
       if (!t) return;
       if (isEnt(t)) g.addTemp(t, -2, -2);
-      g.checkDeaths();
     },
   },
 });

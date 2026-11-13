@@ -299,7 +299,6 @@ card('Cerebrox', {
           n++;
         }
         if (!n) g.ev('info', 'Cerebrox: there is no other unit here to shrink.');
-        g.checkDeaths();
       },
     },
   }],
@@ -787,7 +786,6 @@ card('Rotbeast', {
           if (!g.moveMod(mod, host)) continue;
           g.ev('info', `Rotbeast moves ${mod.card} from ${self.card} onto ${host.card}.`);
         }
-        g.checkDeaths();
       },
     },
   }],

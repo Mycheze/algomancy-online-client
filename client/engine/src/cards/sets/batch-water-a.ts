@@ -1368,7 +1368,6 @@ const overwhelmShrink: EffectDef = {
     const n = g.player(ctx.controller).hand.length;
     if (n <= 0) { g.ev('info', 'Overwhelm: your hand is empty — -0/-0, nothing changes.'); return; }
     g.addTemp(t, -n, -n);
-    g.checkDeaths();
   },
 };
 card('Overwhelm', {

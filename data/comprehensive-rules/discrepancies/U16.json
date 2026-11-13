@@ -283,7 +283,7 @@
     "id": "D-U16-16",
     "kind": "b-engine-only",
     "rule": "effects.state.when.mid-resolution",
-    "tier": 3,
+    "tier": 2,
     "summary": "The sources are silent on whether deaths are checked part-way through an effect's resolution. The owner ruling of 2026-10-06 (“No action ends with a dead…”) makes the end of every action a safe point and says a suspended action is not at one; it does not say whether the effect's own changes are checked as they happen. The engine checks after each counter placement and after each part of a composite effect, so units an 'each unit' effect kills (Pestilent Titan) die one at a time, not together.",
     "sides": [
       {
@@ -295,14 +295,14 @@
         "quote": "because `addCounters` runs `checkDeaths` and a lethal poison hit would otherwise"
       },
       {
-        "source": "file: client/engine/src/engine.ts",
-        "quote": "this.checkDeaths();   // sequential within the composite; triggers wait for settle()"
-      },
-      {
         "source": "card: Pestilent Titan",
         "quote": "When I attack or block, [Switch1] Put a -1/-1 counter on each unit. Each player gains a rot."
+      },
+      {
+        "source": "owner ruling, adopted 2026-11-13",
+        "quote": "A graft is one effect … Does that also hold inside a single effect? → Any effect: all die at end"
       }
     ],
-    "resolution": "The rule states the engine's behaviour with basis engine. Question for the owner only if the judge's CR has an 'each unit' effect finish before any death is checked, so that units it kills die together (effects.state.together)."
+    "resolution": "Settled by the owner, 2026-11-13 (report #390): \"Any effect: all die at end\". No death is checked while an effect is resolving, between the parts of a graft or inside one part, and the units an 'each unit' effect kills (Pestilent Titan) die together once it has resolved. effects.state.when.mid-resolution states it, and the engine now does it."
   }
 ]

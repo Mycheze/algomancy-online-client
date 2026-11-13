@@ -266,7 +266,7 @@ type ReplaceChooser<Ev> = (groups: Replacer<Ev>[], ev: Ev, at: {
  * the collapsed Unaware reading, the Pure reading), with the line that says
  * why (`say`, emitted as the batch is disposed). Handed to `checkDeaths`, which disposes it in the same batch as the
  * lethal-damage deaths. */
-interface Doomed { u: Entity; say: () => void }
+interface Doomed { u: Entity; msg: string; data?: Record<string, unknown> }
 /**
  * CR 723.4a: the stack-item kinds a Virus may be augmented onto.
  *
@@ -2191,7 +2191,7 @@ export class E {
       + (ref.mods?.length ? `, with its ${ref.mods.length} mod(s)' text` : '')
       + (ref.until === 'regroup' ? ' until regroup.' : '.'),
       { unit: target.id, copy: name, until: ref.until });
-    this.checkDeaths();   // a copied 0-defense body is lethal, as setBase is
+    this.checkDeaths();   // a copied 0-defense body is lethal, as setBase is (CR 713.3a: at an effect's end)
     return ref;
   }
 
@@ -2592,8 +2592,7 @@ export class E {
       if (!u) continue;
       const [p, t] = this.effStats(u);
       if (t > 0 && u.damage < t) continue;
-      out.push({ u, say: () => this.ev('info',
-        `Pure: ${u.card} is read at ${p}/${t}, without its stat attributes — it dies.`, { unit: id }) });
+      out.push({ u, msg: `Pure: ${u.card} is read at ${p}/${t}, without its stat attributes — it dies.`, data: { unit: id } });
     }
     return out;
   }
@@ -2654,8 +2653,7 @@ export class E {
       if (!u) continue;
       const [p, t] = this.printedStats(u);
       if (t > 0 && u.damage < t) continue;
-      out.push({ u, say: () => this.ev('info',
-        `Unaware: ${u.card} is read at its printed ${p}/${t} — it dies.`, { unit: id }) });
+      out.push({ u, msg: `Unaware: ${u.card} is read at its printed ${p}/${t} — it dies.`, data: { unit: id } });
     }
     return out;
   }
@@ -5205,7 +5203,7 @@ export class E {
       `${target.card} gets ${Math.abs(n)} ${kind} counter(s) (net ${target.counters}).`,
       { unit: target.id, n, total: target.counters, ...(actor !== undefined ? { by: actor } : {}) });
     this.fireEvent('countersChanged', ev);
-    this.checkDeaths();
+    this.checkDeaths();   // CR 713.3a: stands down inside a resolving effect — all die at its end
   }
 
   /**
@@ -5232,7 +5230,8 @@ export class E {
    * `countersRemoved`, so no "counters are put on" listener hears it. The event
    * carries the same `{ unit, n, total }` as `countersChanged` — `n` the signed
    * change, `total` the net after — plus `removed` (the count) and `by` when
-   * an actor is known. Runs `checkDeaths`: a unit living on its +1/+1s can die.
+   * an actor is known. Runs `checkDeaths`: a unit living on its +1/+1s can die
+   * (CR 713.3a: inside a resolving effect, only once the whole effect has resolved).
    */
   removeCounters(target: Entity, n: number, by?: Seat): number {
     const u = this.entity(target.id);
@@ -5281,7 +5280,7 @@ export class E {
     target.baseSetSeq = this.s.nextId++;
     this.ev('statChanged', `${target.card}'s base becomes ${p}/${t} until regroup.`,
       { unit: target.id, baseP: p, baseT: t });
-    this.checkDeaths();   // a base 0 defense is lethal, exactly as counters are
+    this.checkDeaths();   // a base 0 defense is lethal, exactly as counters are (CR 713.3a: at an effect's end)
   }
 
   /** grant an attribute until regroup (cleared with temp stats, CR 506.2 step 3) */
@@ -5312,7 +5311,7 @@ export class E {
     this.ev('statChanged', `${target.card} loses all ${lost} until regroup (${by}).`,
       { unit: target.id, suppressed: what });
     // an attribute the unit was relying on (Tough, a static's grant) can be
-    // what was keeping it alive
+    // what was keeping it alive (CR 713.3a: inside an effect, it dies at the end)
     this.checkDeaths();
   }
 
@@ -6308,6 +6307,17 @@ export class E {
    * will NOT pay a {Reaping} draw, so the damage site must still do it.
    */
   private killWatch: { before: Map<EntityId, Seat>; reaps: boolean } | null = null;
+  /**
+   * CR 713.3a (owner, 2026-11-13): how many items are resolving right now —
+   * nonzero means `checkDeaths` disposes nobody (resolution nests, hence a
+   * count). Transient: a suspension throws out through `resolveParts`'
+   * `finally`, and a resume enters it afresh.
+   */
+  private effectDepth = 0;
+  /** CR 713.3a: the decided deaths (`Doomed`) `checkDeaths` was handed during the
+   * part resolving now. Moved onto the item (`StackItem.doomed`) when the part
+   * finishes, dropped when it suspends — the replay decides them again. */
+  private deferredDoomed: Doomed[] = [];
   /** CR 708.4: a per-token replacement is already performing its substitute, so
    *  the substitute must not be offered for replacement again. */
   private substitutingToken = false;
@@ -7382,13 +7392,15 @@ export class E {
       if (!poisonous) u.damage += through;
       this.fireEvent('damage', ev);   // "when I am dealt damage" (Awoken Tomb)
       // the MARK: the one line the two forms do not share.
-      if (poisonous) this.addCounters(u, -through);   // permanent; runs checkDeaths
+      if (poisonous) this.addCounters(u, -through);   // permanent; runs checkDeaths (deferred inside an effect, CR 713.3a)
       // CR 802.3a: Deadly — any nonzero damage kills, regardless of toughness. A
       // poison hit the counters already killed is in here too, exactly as a
       // marked hit that reached its defense is: `killed` is a list of units
       // this batch killed, and the destroy loops below skip whatever is
       // already gone.
-      if (lethal || (poisonous && !this.entity(u.id))) killed.push(u);
+      // CR 713.3a: inside a resolving effect the counters kill nobody yet, so a
+      // poison hit made lethal by a counter modifier is read off its lethality
+      if (lethal || (poisonous && (!this.entity(u.id) || this.isLethal(u)))) killed.push(u);
       // CR 802.19a: the rider is the source's own trigger, not inline life loss
       if (resonant) {
         this.queueResonant(ctx.sourceId ?? -1, ctx.controller, u.controller, through, ctx.region, ctx.sourceName);
@@ -7400,7 +7412,7 @@ export class E {
     this.settleDamagePrevention();
     // CR 802.21b: {Reaping} is a KILL rider, not a damage rider — "when it kills a
     // unit, its controller draws a card" — so its real home is the kill diff
-    // at the resolving-part boundary (`killRiders`), which sees a kill however
+    // at the end of the resolving item (`itemDeaths`), which sees a kill however
     // it happened. This line survives for the ONE case that boundary cannot
     // cover: an effect-damage batch dealt OUTSIDE a resolving part (card code
     // and tests that call `dealEffectDamageAll` directly), and the one where
@@ -7421,7 +7433,7 @@ export class E {
     // batch — the Deadly kills, then the collapsed and Pure readings', then the
     // ordinary lethal ones — so they hear each other (CR 706.8c)
     const doomed: Doomed[] = srcAttrs.has('Deadly')
-      ? killed.filter(u => this.entity(u.id)).map(u => ({ u, say: () => this.ev('info', `${ctx.sourceName} is Deadly — ${u.card} dies.`) }))
+      ? killed.filter(u => this.entity(u.id)).map(u => ({ u, msg: `${ctx.sourceName} is Deadly — ${u.card} dies.` }))
       : [];
     // CR 802.9e: the deaths the collapsed reading implies, which the ordinary
     // state-based sweep reads effStats for and cannot see
@@ -7539,7 +7551,12 @@ export class E {
    */
   killRiders(before: Map<EntityId, Seat>, attrs: Set<string>, sourceName: string,
     controller: Seat, only?: Set<EntityId>): void {
-    const dead = this.killDiff(before, only);
+    this.payKillRiders(this.killDiff(before, only), attrs, sourceName, controller);
+  }
+
+  /** `killRiders`' payout, for a kill list already known (`itemDeaths`' nested case). */
+  private payKillRiders(dead: { id: EntityId; seat: Seat }[], attrs: Set<string>, sourceName: string,
+    controller: Seat): void {
     if (!dead.length) return;
     // CR 802.25a: a Pure source ignores its own other attributes, kill riders included
     if (attrs.has('Pure')) return;
@@ -7665,6 +7682,17 @@ export class E {
    * splices `b.columns` directly (Hooba-Nan, Shard Sprite, Tiderunner), and a
    * state-based action nobody can forget to run is the whole point. */
   checkDeaths(doomed: readonly Doomed[] = []): Entity[] {
+    // CR 713.3a (owner, 2026-11-13, report #390): NOTHING DIES WHILE AN EFFECT IS
+    // RESOLVING — "Any effect: all die at end". Inside `resolveParts` this
+    // check only remembers the decided deaths (Deadly, the collapsed and Pure
+    // readings) for the item; the lethal ones need no remembering, they are
+    // still lethal. `resolveParts` runs the one real check once the whole item
+    // has resolved. The empty-column half (CR 602.5c) is not a death and still runs.
+    if (this.effectDepth > 0) {
+      this.deferredDoomed.push(...doomed);
+      this.repairFormation();
+      return [];
+    }
     // CR 608.7b, 713.6 / CT-413: the units a sweep already decided die (Deadly,
     // the collapsed and the Pure readings) die in the SAME batch as the lethal
     // ones, first and in the order decided; a unit doomed twice is announced once.
@@ -7674,7 +7702,7 @@ export class E {
     const say = new Map<Entity, () => void>();
     for (const d of doomed) {
       if (this.entity(d.u.id) !== d.u || dead.includes(d.u)) continue;
-      say.set(d.u, d.say);
+      say.set(d.u, () => this.ev('info', d.msg, d.data));
       dead.push(d.u);
     }
     for (const u of Object.values(this.s.entities)) if (!dead.includes(u) && this.isLethal(u)) dead.push(u);
@@ -13274,6 +13302,70 @@ export class E {
   resolveParts(item: StackItem, from: number, answers: Record<string, unknown>, shownEvents = 0,
     chain?: ChainRest): void {
     this.liveItems.add(item);   // CR 405.6b / CT-380: a later part's bin targets follow their copies
+    // CR 713.3a, 802.21b: the item's ONE kill diff, opened as it begins to resolve
+    // and carried on the item across its parts and any suspension. A resume
+    // of part 0 is a resume from the item's start, so it opens it afresh.
+    // Only a kill-rider source carries one (nothing is written on any other
+    // item, so a suspended item's state is what it always was).
+    if (from === 0) { delete item.doomed; delete item.killDiff; }
+    if (!item.killDiff) {
+      const attrs = this.itemAttrs(item);
+      if (this.wantsKillDiff(attrs)) item.killDiff = { before: [...this.snapshotUnits()], attrs: [...attrs] };
+    }
+    // CR 713.3a (owner, 2026-11-13, report #390): the whole item is ONE effect —
+    // a graft composite included ("[Solved] Graft 101", point 8: "SINGLE effect
+    // on the stack") — and nothing dies while it resolves: not between its
+    // parts, not inside one. `checkDeaths` stands down while this is nonzero.
+    const outerDoomed = this.deferredDoomed;
+    this.effectDepth++;
+    try {
+      this.resolvePartsFrom(item, from, answers, shownEvents, chain);
+    } finally {
+      this.effectDepth--;
+      this.deferredDoomed = outerDoomed;
+    }
+    this.itemDeaths(item);
+  }
+
+  /**
+   * CR 713.3a: the one death check of an item that has finished resolving, and
+   * its kill riders off the one diff (CR 802.21b). Units a later part moved out
+   * of play (recalled, cached) are not in play to die; a unit an earlier part
+   * made lethal and nothing saved dies here, in one batch with the decided ones.
+   *
+   * NESTED (an item resolved inside another item's part, through settle()): no
+   * death yet — the enclosing effect is still resolving. Its decided deaths
+   * join the enclosing part's, and its kill riders are paid now on what WILL
+   * die (gone, lethal or decided), since the deaths themselves come later.
+   */
+  private itemDeaths(item: StackItem): void {
+    const decided: Doomed[] = (item.doomed ?? []).flatMap(d => {
+      const u = this.entity(d.unit);
+      return u ? [{ u, msg: d.msg, ...(d.data ? { data: d.data } : {}) }] : [];
+    });
+    delete item.doomed;
+    const kd = item.killDiff;
+    delete item.killDiff;
+    const source = item.card ?? item.label;
+    if (this.effectDepth > 0) {
+      this.deferredDoomed.push(...decided);
+      if (kd) {
+        const ids = new Set(decided.map(d => d.u.id));
+        const dead = kd.before.filter(([id]) => {
+          const u = this.entity(id);
+          return !u || ids.has(id) || this.isLethal(u);
+        }).map(([id, seat]) => ({ id, seat }));
+        this.payKillRiders(dead, new Set(kd.attrs), source, item.controller);
+      }
+      return;
+    }
+    this.checkDeaths(decided);
+    if (kd) this.killRiders(new Map(kd.before), new Set(kd.attrs), source, item.controller);
+  }
+
+  /** `resolveParts`' loop: parts [from..] of an item, inside its one effect. */
+  private resolvePartsFrom(item: StackItem, from: number, answers: Record<string, unknown>, shownEvents: number,
+    chain?: ChainRest): void {
     for (let pi = from; pi < item.parts.length; pi++) {
       const part = item.parts[pi]!;
       if (part.spent) continue;
@@ -13376,20 +13468,18 @@ export class E {
           throw new PartChoice(k, { ...dec, options: dec.options }, made.slice());
         },
       };
-      // CR 802.23c, 802.21b: snapshot the units in play, so the kills this part makes —
-      // by damage, by -1/-1 counters, by a stat swap, by anything — can be
-      // diffed out once it has finished and every KILL-scoped rider the source
-      // carries can be paid off that one diff. Discarded on a suspension
-      // rollback and retaken when the part replays.
-      const killAttrs = this.itemAttrs(item);
-      const beforeUnits = this.wantsKillDiff(killAttrs) ? this.snapshotUnits() : null;
-      // published on the engine for the duration of the part, so the
-      // damage site knows the diff will pay and stands down (see
-      // `dealEffectDamageAll`). Saved and restored because resolution nests.
+      // CR 802.23c, 802.21b: the item's kill diff (opened in `resolveParts`, closed
+      // after its one death check), published on the engine for the duration
+      // of the part, so the damage site knows the diff will pay and stands
+      // down (see `dealEffectDamageAll`). Saved and restored because
+      // resolution nests.
+      const kd = item.killDiff;
       const outerKillWatch = this.killWatch;
-      this.killWatch = beforeUnits
-        ? { before: beforeUnits, reaps: killAttrs.has('Reaping') }
+      this.killWatch = kd
+        ? { before: new Map(kd.before), reaps: kd.attrs.includes('Reaping') }
         : null;
+      // CR 713.3a: this part's decided deaths, kept for the item's one check
+      this.deferredDoomed = [];
       // CR D6.3b: the rollback state, carried ON the suspension and applied when
       // the answer comes back rather than here.
       const snap = structuredClone(this.s);
@@ -13506,11 +13596,14 @@ export class E {
       // refused [once] handed back. A suspension throws past this line, so a
       // part that is still being answered keeps its reservation.
       this.settleBudgetRefund(item, part);
-      this.checkDeaths();   // sequential within the composite; triggers wait for settle()
-      // CR 802.21b: one diff, every kill-scoped rider the source carries.
-      if (beforeUnits) {
-        this.killRiders(beforeUnits, killAttrs, item.card ?? item.label, item.controller);
+      // CR 713.3a: NO death check here — the parts of one item are one effect
+      // (owner, 2026-11-13, report #390). What this part decided rides on the
+      // item to `itemDeaths`; what it made lethal is simply still lethal.
+      if (this.deferredDoomed.length) {
+        (item.doomed ??= []).push(...this.deferredDoomed.map(d =>
+          ({ unit: d.u.id, msg: d.msg, ...(d.data ? { data: d.data } : {}) })));
       }
+      this.deferredDoomed = [];
     }
   }
 
@@ -16232,7 +16325,7 @@ export class E {
     for (const id of L.deadlyHit) {
       if (shielded.has(id)) continue;   // CR 802.3h: no damage dealt, nothing to kill through
       const u = this.entity(id);
-      if (u) out.push({ u, say: () => this.ev('info', `Deadly — ${u.card} dies.`) });
+      if (u) out.push({ u, msg: `Deadly — ${u.card} dies.` });
     }
     return out;
   }

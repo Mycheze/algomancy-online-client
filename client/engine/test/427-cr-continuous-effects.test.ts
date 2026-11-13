@@ -80,7 +80,7 @@ test('cr:effects.state.no-damage-needed.pure — a Pure 1/3 that is Tough and In
   assert.deepEqual(new E(h.state).effStats(ent(h, u)!), [1, 3], 'and reads its plain 1/3');
 });
 
-test('cr:effects.state.when.mid-resolution — the Pestilent Titan trigger kills a 1/1 before the next unit gets its counter', () => {
+test('cr:effects.state.when.mid-resolution — the Pestilent Titan trigger puts every counter on first, and its 1/1s die together after it resolves', () => {
   const h = new Harness(71631);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = other(A);
@@ -98,8 +98,14 @@ test('cr:effects.state.when.mid-resolution — the Pestilent Titan trigger kills
   assert.equal(ent(h, t1), undefined);
   assert.equal(ent(h, t2), undefined);
   assert.ok(counters.length >= 3, `three counters placed: ${evs.map(x => x.type).join(',')}`);
-  assert.ok(firstDeath >= 0 && firstDeath < counters[counters.length - 1]!,
-    `a death precedes the last counter: ${evs.map(x => x.type).join(',')}`);
+  // CR 713.3a (owner, 2026-11-13): "Any effect: all die at end" — no unit dies
+  // while the trigger is still putting counters on
+  assert.ok(firstDeath > counters[counters.length - 1]!,
+    `every counter is placed before the first death: ${evs.map(x => x.type).join(',')}`);
+  const deaths = evs.map((ev, i) => (ev.type === 'died' ? i : -1)).filter(i => i >= 0);
+  assert.ok(deaths.length >= 2, 'both 1/1s died');
+  assert.ok(!evs.slice(firstDeath, deaths[deaths.length - 1]).some(ev => ev.type === 'countersChanged'),
+    'in one batch, after the trigger resolved');
   finishBattle(h);
 });
 

@@ -35,7 +35,7 @@
  *
  * ── 2. "It loses reaping until regroup" is UNREACHABLE, so nothing is built ──
  *
- * A one-shot spell resolves once; `killRiders` fires once per resolving part.
+ * A one-shot spell resolves once; `killRiders` fires once per resolving item (CR 713.3a).
  * For a source that cannot kill twice, "loses reaping until regroup" can never
  * be observed. It would bite only if a UNIT could carry {Reaping} — and §4
  * proves nothing in the pool can give it one: the four printers are all spells

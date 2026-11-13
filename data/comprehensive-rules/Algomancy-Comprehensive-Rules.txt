@@ -4814,9 +4814,10 @@ CONTENTS
       Example: in Constructed, Dreadspawn Horror with 1 card in hand is a 4/2 after the draw phase and lives.
       [Basis: Owner ruling, adopted 2026-10-06 (quoted from the retired ruling register) | Verified: confirmed in round 3; verifier ran 4 tests, all passed; 1 gate test file | Tests: 380-no-action-ends-dead.test.ts | Example tests: 380-no-action-ends-dead.test.ts::CR 503.5b constructed: 3 cards in hand nets to 5, 380-no-action-ends-dead.test.ts::CR 503.5b constructed: drawing 4 does not kill before the 2 go back | Demonstrated by test: 380-no-action-ends-dead.test.ts::CR 713.3: a planning action that does not settle still ends with the dead unit gone | Key: effects.state.when]
 
-713.3a Deaths are also checked while an effect is still resolving, not only at safe points. Each time an effect puts counters on a unit, and after each part of an effect made of several parts, units that should be dead die at once, before the rest of the effect happens. See rules 713.3, 713.6.
-      Example: Pestilent Titan attacks and its trigger puts a -1/-1 counter on each unit. A 1/1 token dies as soon as it gets its counter, before the next unit gets one.
-      [Basis: Engine only | Verified: confirmed in round 3; verifier ran 1 test (a probe it wrote), passed; 1 gate test file | Owner ruling, adopted 2026-08-28 (quoted from the retired ruling register) | Engine: engine.ts:addCounters, engine.ts:checkDeaths | Tests: 427-cr-continuous-effects.test.ts | Example test: 427-cr-continuous-effects.test.ts::cr:effects.state.when.mid-resolution -- the Pestilent Titan trigger kills a 1/1 before the next unit gets its counter | Key: effects.state.when.mid-resolution]
+713.3a No death is checked while an effect is resolving. A unit that the effect makes lethal, by damage, counters, a stat change or anything else, stays in play for the rest of that effect, and the effect can still act on it. An effect made of several parts, such as an ability with grafts, is one effect. Once the whole effect has resolved, every unit that should be dead dies, all together. See rules 713.3, 713.6.
+      Example: Pestilent Titan attacks and its trigger puts a -1/-1 counter on each unit. Every unit gets its counter first; the 1/1s then die together, once the trigger has resolved.
+      Example: A trigger with Overwhelm and Recall grafted on makes an opposing 4/2 a 1/-1, and then each player recalls a unit. The 1/-1 is still in play, so its controller may recall it, and it never dies.
+      [Basis: Mixed | Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 2 gate test files | Designer: RAQ 1355115946032889914#7 | Owner call | adopted 2026-11-13 | Engine: engine.ts:checkDeaths, engine.ts:resolveParts, engine.ts:itemDeaths | Tests: 427-cr-continuous-effects.test.ts, 1242-graft-resolves-as-one-effect.test.ts | Example tests: 427-cr-continuous-effects.test.ts::cr:effects.state.when.mid-resolution -- the Pestilent Titan trigger puts every counter on first, and its 1/1s die together after it resolves, 1242-graft-resolves-as-one-effect.test.ts::CR 713.3a / #390: with a choice to make, the recall question still offers the lethal unit, and the answer recalls it | Key: effects.state.when.mid-resolution]
 
 713.4. A unit can die in a state check from a change no damage caused: a new base, a stat change, a mod it loses, or a combination of attributes (Tough and Inverted) that leaves its defense at 0 or less. See rules 709.4d, 802.
       Example: Rampart Guardian makes a unit Tough, then Reality Bender makes it Inverted, and it dies with no damage on it.
@@ -6959,8 +6960,8 @@ Basis
 | Printed | 455 |
 | Designer | 202 |
 | Owner call | 675 |
-| Engine only | 46 |
-| Mixed | 491 |
+| Engine only | 45 |
+| Mixed | 492 |
 
 Verification
 
@@ -6982,7 +6983,6 @@ Engine-only rules (awaiting the owner's sign-off)
 - 112.14d There is no limit to how much debt a player may have. A cost of gaining debt can always be paid, however much debt the player already has.
 - 406.4b A self-erasing spell that is negated or fails to resolve goes to the bin. Its "Erase me" never happened.
 - 603.1c Two side-blocking units may stand in the same side-block column, one in its front slot and one in its back slot.
-- 713.3a Deaths are also checked while an effect is still resolving, not only at safe points. Each time an effect puts counters on a unit, and after each part of an effect made of several parts, units that should be dead die at once, before the rest of the effect happens.
 - 723.4e Triggered and activated abilities, Viruses, units being cast and Ambushes on the stack are not legal hosts for a Virus.
 - D2.3 A player may turn on auto-pass. With it on, the client passes priority for the player only in a window where passing is the only thing they could do. Auto-pass never passes through an open decision.
 - D3.1 A game may be played with a chess clock, in which each player has a bank of time. The home screen offers three settings: no clock, 45 minutes and 60 minutes.

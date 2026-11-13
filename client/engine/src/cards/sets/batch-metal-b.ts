@@ -41,8 +41,8 @@
  *    resolution as a temp delta (later stat changes shift both sides).
  *    Its printed {Reaping} is NO LONGER hand-rolled here. The Reaping ruling (CR 802.21b) moved the
  *    attribute out of `dealEffectDamageAll` (where a stat swap, dealing no
- *    damage, could never reach it) onto the engine's kill diff at the
- *    resolving-part boundary — the same diff {Afflicting} has long ridden
+ *    damage, could never reach it) onto the engine's kill diff, closed once
+ *    the resolving item has resolved — the same diff {Afflicting} has long ridden
  *    (CR 802.23c). The card just swaps stats; the draw is the printed attribute.
  *  - Powerforge Synergist: NO LONGER an approximation. This entry used to read
  *    '"I spawn with two +1/+1 counters" has no DSL hook … the counters are
@@ -233,7 +233,6 @@ const formlessReshape: EffectDef = {
     for (const u of column?.length ? column : [t]) {
       g.suppress(u, 'Formless', { attrs: true });   // CR 712.1 — abilities are untouched
     }
-    g.checkDeaths();
   },
 };
 card('Formless', {
@@ -366,7 +365,6 @@ card('Invasive Reassignment', {
       if (!isEnt(t) || !g.entity(t.id)) return;
       const [p, d] = g.effStats(t);
       g.addTemp(t, d - p, p - d);
-      g.checkDeaths();
     },
   },
 });

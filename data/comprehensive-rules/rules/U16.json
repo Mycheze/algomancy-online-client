@@ -3070,11 +3070,15 @@
     "key": "effects.state.when.mid-resolution",
     "parent": "effects.state.when",
     "order": 1,
-    "text": "Deaths are also checked while an effect is still resolving, not only at safe points. Each time an effect puts counters on a unit, and after each part of an effect made of several parts, units that should be dead die at once, before the rest of the effect happens.",
+    "text": "No death is checked while an effect is resolving. A unit that the effect makes lethal, by damage, counters, a stat change or anything else, stays in play for the rest of that effect, and the effect can still act on it. An effect made of several parts, such as an ability with grafts, is one effect. Once the whole effect has resolved, every unit that should be dead dies, all together.",
     "examples": [
       {
-        "text": "Pestilent Titan attacks and its trigger puts a -1/-1 counter on each unit. A 1/1 token dies as soon as it gets its counter, before the next unit gets one.",
-        "test": "427-cr-continuous-effects.test.ts::cr:effects.state.when.mid-resolution — the Pestilent Titan trigger kills a 1/1 before the next unit gets its counter"
+        "text": "Pestilent Titan attacks and its trigger puts a -1/-1 counter on each unit. Every unit gets its counter first; the 1/1s then die together, once the trigger has resolved.",
+        "test": "427-cr-continuous-effects.test.ts::cr:effects.state.when.mid-resolution — the Pestilent Titan trigger puts every counter on first, and its 1/1s die together after it resolves"
+      },
+      {
+        "text": "A trigger with Overwhelm and Recall grafted on makes an opposing 4/2 a 1/-1, and then each player recalls a unit. The 1/-1 is still in play, so its controller may recall it, and it never dies.",
+        "test": "1242-graft-resolves-as-one-effect.test.ts::CR 713.3a / #390: with a choice to make, the recall question still offers the lethal unit, and the answer recalls it"
       }
     ],
     "see": [
@@ -3083,28 +3087,42 @@
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#7",
+          "quote": "Triggered/Activated Graft is SINGLE effect on the stack"
+        }
+      ],
       "ours": [],
       "owner": [
         {
-          "quote": "because `addCounters` runs `checkDeaths` and a lethal poison hit would otherwise",
-          "adopted": "2026-08-28",
-          "from": "questions-round27 Q2; register@72de434"
+          "quote": "it looks like the client isn't resolving a grafted effect as a single effect, but actually checking state based actions between parts. It shouldn't!",
+          "adopted": "2026-11-13",
+          "from": "owner, session 2026-11-13"
+        },
+        {
+          "quote": "A graft is one effect … Does that also hold inside a single effect? → Any effect: all die at end",
+          "adopted": "2026-11-13",
+          "from": "owner, session 2026-11-13"
         }
       ],
       "engine": [
-        "engine.ts:addCounters",
-        "engine.ts:checkDeaths"
+        "engine.ts:checkDeaths",
+        "engine.ts:resolveParts",
+        "engine.ts:itemDeaths"
       ],
       "tests": [
-        "427-cr-continuous-effects.test.ts"
+        "427-cr-continuous-effects.test.ts",
+        "1242-graft-resolves-as-one-effect.test.ts"
       ]
     },
-    "basis": "engine",
+    "basis": "mixed",
     "scope": "game",
-    "confidence": "medium",
-    "notes": "No printed, designer or owner source rules on whether an effect's own changes are checked part-way through it. The owner ruling of 2026-08-28 (“{Deadly} reaches every damage site, and…”) records the encoding (a counter placement runs the death check), not a rules call. The verifier's round-2 probe (u16-r2-probes.test.ts, Pestilent Titan) measured a token's death before the last counter was placed, and quoted engine.ts: 'this.checkDeaths();   // sequential within the composite; triggers wait for settle()'. The owner ruling of 2026-08-28 (“{Deadly} reaches every damage site, and…”) was read from digital-rules.md, outside the pack. See D-U16-16.",
-    "sourceHashes": {}
+    "confidence": "high",
+    "notes": "Rewritten 2026-11-13 on the owner's ruling (report #390, room NJJR): the engine used to check deaths after every part of a composite and after every counter placement, so a grafted Overwhelm killed a unit a grafted Recall in the same effect should have been able to recall. The owner ruled a graft is one effect with no check between its parts, and then, asked whether that also holds inside a single effect (Pestilent Titan), 'Any effect: all die at end'. RAQ Graft 101 point 8 is the designer's 'SINGLE effect on the stack'. Supersedes D-U16-16's engine-only reading.",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#7": "ca18f8dd6ecd05db3432489330fa44d1393b2d394619490e8117e6f41cc0554c"
+    }
   },
   {
     "key": "effects.state.no-damage-needed",

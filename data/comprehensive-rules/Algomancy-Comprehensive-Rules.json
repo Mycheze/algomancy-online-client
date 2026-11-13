@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:287dd7222c28f28d",
+ "generated_from": "sha256:c0de389cbd4d29de",
  "rules": [
   {
    "num": "100.1",
@@ -25333,15 +25333,16 @@
    "sectionTitle": "State Checks",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "713.3",
-   "text": "Deaths are also checked while an effect is still resolving, not only at safe points. Each time an effect puts counters on a unit, and after each part of an effect made of several parts, units that should be dead die at once, before the rest of the effect happens.",
+   "text": "No death is checked while an effect is resolving. A unit that the effect makes lethal, by damage, counters, a stat change or anything else, stays in play for the rest of that effect, and the effect can still act on it. An effect made of several parts, such as an ability with grafts, is one effect. Once the whole effect has resolved, every unit that should be dead dies, all together.",
    "see": [
     "713.3",
     "713.6"
    ],
    "examples": [
-    "Pestilent Titan attacks and its trigger puts a -1/-1 counter on each unit. A 1/1 token dies as soon as it gets its counter, before the next unit gets one."
+    "Pestilent Titan attacks and its trigger puts a -1/-1 counter on each unit. Every unit gets its counter first; the 1/1s then die together, once the trigger has resolved.",
+    "A trigger with Overwhelm and Recall grafted on makes an opposing 4/2 a 1/-1, and then each player recalls a unit. The 1/-1 is still in play, so its controller may recall it, and it never dies."
    ],
-   "basis": "engine",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [

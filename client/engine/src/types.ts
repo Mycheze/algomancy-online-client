@@ -1321,6 +1321,23 @@ export interface StackItem {
    */
   tokenMemo?: { copied: Record<string, string[]>; order: Record<string, string> };
   /**
+   * CR 713.3a (owner, 2026-11-13, report #390): the deaths this item's finished
+   * parts have DECIDED (a {Deadly} hit, the collapsed and Pure readings) and not
+   * yet disposed — nothing dies while an effect resolves, so they wait for the
+   * one check `resolveParts` runs once the whole item has resolved. Written when
+   * a part finishes, like `tokenMemo`, so a suspension carries them; absent =
+   * none. A unit that has left play by then (a later part recalled it) is skipped.
+   */
+  doomed?: { unit: EntityId; msg: string; data?: Record<string, unknown> }[];
+  /**
+   * CR 802.21b, 713.3a: the item's KILL DIFF — the units in play (id, controller)
+   * when it began to resolve, and the source's attributes then — kept only
+   * when those attributes carry a kill rider ({Reaping}, {Afflicting}); absent
+   * when they do not. One diff for the whole item, closed after its one death
+   * check, so a kill an earlier part caused is still this effect's kill.
+   */
+  killDiff?: { before: [EntityId, Seat][]; attrs: string[] };
+  /**
    * CR 303.10 — "…gains control of me" on a SPELL UNIT: the seat the body ENTERS
    * under. `afterParts` spawns it as this seat's unit and keeps `controller`
    * (the caster) as its OWNER, which is exactly CR 102.5's owner≠controller split.

@@ -6,7 +6,7 @@ Every place where the sources disagree, the register contradicts itself, or a ru
 
 None.
 
-## 2. Record and test fixes (68)
+## 2. Record and test fixes (69)
 
 ### D-U01-10 · Other · rule 102.4
 
@@ -620,6 +620,17 @@ Whether a unit stripped by a continuous effect (Transmogrifant, Monke) stops app
 
 **Resolution:** Settled by printed text and the owner (2026-10-16: "Everything (besides an attribute) is an ability."): Transmogrifant's "lose all attributes and abilities" takes every ability, statics included, and rule 712.1a states it. The engine now agrees (report #214, CT-256; F-U16-3 closed, 462 and 427). The one-pass reading of the mutual case is replaced by Caleb's answer, rule 712.5 (D-U16-5).
 
+### D-U16-16 · Engine only · rule 713.3a
+
+The sources are silent on whether deaths are checked part-way through an effect's resolution. The owner ruling of 2026-10-06 (“No action ends with a dead…”) makes the end of every action a safe point and says a suspended action is not at one; it does not say whether the effect's own changes are checked as they happen. The engine checks after each counter placement and after each part of a composite effect, so units an 'each unit' effect kills (Pestilent Titan) die one at a time, not together.
+
+- owner ruling, adopted 2026-10-06: "safe point — the engine's state-based check. The end of every action is a safe"
+- owner ruling, adopted 2026-08-28: "because `addCounters` runs `checkDeaths` and a lethal poison hit would otherwise"
+- card: Pestilent Titan: "When I attack or block, [Switch1] Put a -1/-1 counter on each unit. Each player gains a rot."
+- owner ruling, adopted 2026-11-13: "A graft is one effect … Does that also hold inside a single effect? → Any effect: all die at end"
+
+**Resolution:** Settled by the owner, 2026-11-13 (report #390): "Any effect: all die at end". No death is checked while an effect is resolving, between the parts of a graft or inside one part, and the units an 'each unit' effect kills (Pestilent Titan) die together once it has resolved. rule 713.3a states it, and the engine now does it.
+
 ### D-U17-15 · Sources disagree · rule 723.5b
 
 The RAQ write-up on Tides of the Cosmos (thread 1396955380000755795) was edited by _passer on 2026-08-14 to say "Having Rook would allow you to use Augments" (claim #4, recorded as outdated). Rook prints that it reaches cards "from hand and bin", and Tides plays cards off the top of the deck. No message by the designer says the edited line.
@@ -782,7 +793,7 @@ The owner ruling of 2026-08-30 (“nothing may exist only in the…”) still sa
 
 **Resolution:** Mark the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s closing count as answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) in the register ("its log-only count answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”)"); CT-236 tracks the stale sentence. The rules follow the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) (rule D7.4b). rule D7.4 states the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s standard; its engine-differs marker for F-U24-4 (CT-236) has been dropped, because the toast tier gives every such announcement a surface. D-U24-9 is this item from the rule's side: its count of nineteen against the inventory test's 21 is the same stale sentence. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]
 
-## 3. Engine-only and owner-only rules (82)
+## 3. Engine-only and owner-only rules (81)
 
 ### D-U01-13 · Engine only · rule 103.3a
 
@@ -1249,17 +1260,6 @@ The owner ruling of 2026-08-25 (“a COPY of a spell is…”) says a Virus appl
 - owner ruling, adopted 2026-08-25: "onto the ORIGINAL while it sat on the stack are **not** copied, so their"
 
 **Resolution:** The rule states only the {Modular} half, which has a designer source. The Virus half is left unstated as engine behaviour with no ruling. Question for the owner only if the judge's CR says what a copy does with a Virus on the original.
-
-### D-U16-16 · Engine only · rule 713.3a
-
-The sources are silent on whether deaths are checked part-way through an effect's resolution. The owner ruling of 2026-10-06 (“No action ends with a dead…”) makes the end of every action a safe point and says a suspended action is not at one; it does not say whether the effect's own changes are checked as they happen. The engine checks after each counter placement and after each part of a composite effect, so units an 'each unit' effect kills (Pestilent Titan) die one at a time, not together.
-
-- owner ruling, adopted 2026-10-06: "safe point — the engine's state-based check. The end of every action is a safe"
-- owner ruling, adopted 2026-08-28: "because `addCounters` runs `checkDeaths` and a lethal poison hit would otherwise"
-- file: client/engine/src/engine.ts: "this.checkDeaths();   // sequential within the composite; triggers wait for settle()"
-- card: Pestilent Titan: "When I attack or block, [Switch1] Put a -1/-1 counter on each unit. Each player gains a rot."
-
-**Resolution:** The rule states the engine's behaviour with basis engine. Question for the owner only if the judge's CR has an 'each unit' effect finish before any death is checked, so that units it kills die together (rule 713.6).
 
 ### D-U16-4 · Engine only · rule 709.8
 

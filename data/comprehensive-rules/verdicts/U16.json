@@ -3908,60 +3908,104 @@
   },
   {
     "key": "effects.state.when.mid-resolution",
-    "textHash": "2b215089ebb0e121",
+    "textHash": "6a8753f1a54d83f6",
     "verdict": "confirmed",
-    "round": 3,
-    "verifier": "U16-r3",
+    "round": 4,
+    "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:addCounters",
+        "loc": "client/engine/src/engine.ts:checkDeaths",
         "agrees": true,
-        "note": "ends with this.checkDeaths() after every counter placement"
+        "note": "while effectDepth > 0 it disposes nobody: decided deaths are deferred, lethal ones stay lethal; only the empty-column repair runs"
       },
       {
-        "loc": "client/engine/src/engine.ts:resolve composite part loop (~10427)",
+        "loc": "client/engine/src/engine.ts:resolveParts",
         "agrees": true,
-        "note": "checkDeaths() after each finished part: \"sequential within the composite; triggers wait for settle()\""
+        "note": "effectDepth++ around the whole item's parts (graft composite included), then itemDeaths once after every part"
       },
       {
-        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:titanPlague",
+        "loc": "client/engine/src/engine.ts:itemDeaths",
         "agrees": true,
-        "note": "loops units calling g.addCounters(u,-1) one at a time, so each lethal counter kills before the next unit is reached"
+        "note": "one checkDeaths(decided) for the finished item = one batch; nested items defer to the enclosing effect"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/427-cr-continuous-effects.test.ts",
+        "pattern": "cr:effects.state.when.mid-resolution",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/1242-graft-resolves-as-one-effect.test.ts",
+        "pattern": "(whole file, 7 tests)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/1242-graft-resolves-as-one-effect.test.ts",
+        "pattern": "CR 713.3a / #390: with a choice to make, the recall question still offers the lethal unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U16/u16-r3-probes.test.ts",
-        "title": "effects.state.when.mid-resolution: Pestilent Titan's trigger kills a 1/1 before the next unit gets its counter",
+        "file": "client/engine/test/zz-probe-U16-2.test.ts",
+        "test": "probe U16-2: lethal damage from part 1 does not kill before part 2 (Recall) acts on the unit",
         "passed": true,
-        "demonstrates": "yes: a died event precedes the last countersChanged event within one resolution"
+        "demonstrates": "yes: the 'by damage' leg — a 4/2 dealt 6 by part 1 is still in play for part 2 to recall it, no death event; control: same damage alone kills it at the end"
       }
     ],
     "source_checks": [
       {
-        "ref": "R237",
-        "supports": "partly",
-        "note": "The quote is an implementation note inside the Deadly/Poisonous ruling, stating addCounters runs checkDeaths; it does not rule on mid-resolution death checks generally and says nothing about multi-part effects. Basis \"engine\" is honest."
+        "ref": "RAQ 1355115946032889914#7",
+        "supports": "yes",
+        "note": "[Solved] Graft 101 by _passer, status covered; claim 7 (0-based) is point 8, 'SINGLE effect on the stack'. Supports the sentence that a grafted ability is one effect; it says nothing about death timing, which rests on the owner calls."
+      },
+      {
+        "ref": "owner: 'it looks like the client isn't resolving a grafted effect as a single effect ... It shouldn't!'",
+        "supports": "yes",
+        "note": "no state check between a graft composite's parts"
+      },
+      {
+        "ref": "owner: 'A graft is one effect … Does that also hold inside a single effect? → Any effect: all die at end'",
+        "supports": "yes",
+        "note": "generalises to every effect and to deaths inside one part: all die at the end"
       }
     ],
     "quote_spans": [
       {
+        "file": "client/ledgers/raq.ts",
+        "text": "8. Triggered/Activated Graft is SINGLE effect on the stack"
+      },
+      {
         "file": "client/engine/src/engine.ts",
-        "text": "this.checkDeaths();   // sequential within the composite; triggers wait for settle()"
+        "text": "if (this.effectDepth > 0) {"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "because `addCounters` runs `checkDeaths` and a lethal poison hit would otherwise"
+        "file": "client/engine/test/427-cr-continuous-effects.test.ts",
+        "text": "assert.ok(firstDeath > counters[counters.length - 1]!,"
       },
       {
-        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
-        "text": "for (const u of g.unitsIn(ctx.region)) g.addCounters(u, -1);"
+        "file": "client/engine/test/1242-graft-resolves-as-one-effect.test.ts",
+        "text": "assert.deepEqual(effStats(h, charger), [1, -1], 'as a 1/-1');"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "When I attack or block, [Switch1] Put a -1/-1 counter on each unit. Each player gains a rot."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Switch1] Target unit gains -1/-1 until regroup for each card in your hand."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Switch1] Each player recalls one of their units and loses 2 life."
       }
     ],
     "basis_ok": true,
-    "problem": "None in substance. Only source is an engine note in R237; the multi-part clause is engine-only (no ruling cites it). The illustrative Pestilent Titan example is measured true by probe.",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.stripping.column",

@@ -762,7 +762,7 @@ card('Rotling', {
 //    ride along by construction.)
 //  · KEEPS ITS DAMAGE. Same reason. Note this is a strict UPGRADE here —
 //    Scholar is a 0/2 and Beyond an 8/3 — so a damaged Scholar cannot die of
-//    the transform; the resolution's own checkDeaths() would catch it if a
+//    the transform; the item's one death check (CR 713.3a) would catch it if a
 //    future back face shrank the body.
 //  · KEEPS ITS MODS, and stays {Unstable} if it had any (CR 803.8e): the mods
 //    are still physically under the card. It also keeps its FORMATION SLOT,

@@ -7566,11 +7566,13 @@ order.
 
 <sub>Discrepancies: D-U08-7 (discrepancies.md)</sub>
 
-<a id="r713.3a"></a>**713.3a** Deaths are also checked while an effect is still resolving, not only at safe points. Each time an effect puts counters on a unit, and after each part of an effect made of several parts, units that should be dead die at once, before the rest of the effect happens. See rules 713.3, 713.6.
+<a id="r713.3a"></a>**713.3a** No death is checked while an effect is resolving. A unit that the effect makes lethal, by damage, counters, a stat change or anything else, stays in play for the rest of that effect, and the effect can still act on it. An effect made of several parts, such as an ability with grafts, is one effect. Once the whole effect has resolved, every unit that should be dead dies, all together. See rules 713.3, 713.6.
 
-> *Example: Pestilent Titan attacks and its trigger puts a -1/-1 counter on each unit. A 1/1 token dies as soon as it gets its counter, before the next unit gets one.*
+> *Example: Pestilent Titan attacks and its trigger puts a -1/-1 counter on each unit. Every unit gets its counter first; the 1/1s then die together, once the trigger has resolved.*
 
-<sub>Basis: Engine only · Verified: confirmed in round 3; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Owner ruling, adopted 2026-08-28 (quoted from the retired ruling register) · Engine: engine.ts:addCounters, engine.ts:checkDeaths · Tests: 427-cr-continuous-effects.test.ts · Example test: 427-cr-continuous-effects.test.ts::cr:effects.state.when.mid-resolution — the Pestilent Titan trigger kills a 1/1 before the next unit gets its counter · Key: effects.state.when.mid-resolution</sub>
+> *Example: A trigger with Overwhelm and Recall grafted on makes an opposing 4/2 a 1/-1, and then each player recalls a unit. The 1/-1 is still in play, so its controller may recall it, and it never dies.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 2 gate test files · Designer: RAQ 1355115946032889914#7 · Owner call · adopted 2026-11-13 · Engine: engine.ts:checkDeaths, engine.ts:resolveParts, engine.ts:itemDeaths · Tests: 427-cr-continuous-effects.test.ts, 1242-graft-resolves-as-one-effect.test.ts · Example tests: 427-cr-continuous-effects.test.ts::cr:effects.state.when.mid-resolution — the Pestilent Titan trigger puts every counter on first, and its 1/1s die together after it resolves, 1242-graft-resolves-as-one-effect.test.ts::CR 713.3a / #390: with a choice to make, the recall question still offers the lethal unit, and the answer recalls it · Key: effects.state.when.mid-resolution</sub>
 
 <sub>Discrepancies: D-U16-16 (discrepancies.md)</sub>
 
@@ -10917,8 +10919,8 @@ Generated from the records and the verdicts. Nothing here is a rule.
 | Printed | 455 |
 | Designer | 202 |
 | Owner call | 675 |
-| Engine only | 46 |
-| Mixed | 491 |
+| Engine only | 45 |
+| Mixed | 492 |
 
 ### Verification
 
@@ -10940,7 +10942,6 @@ Generated from the records and the verdicts. Nothing here is a rule.
 - [112.14d](#r112.14d) There is no limit to how much debt a player may have. A cost of gaining debt can always be paid, however much debt the player already has.
 - [406.4b](#r406.4b) A self-erasing spell that is negated or fails to resolve goes to the bin. Its "Erase me" never happened.
 - [603.1c](#r603.1c) Two side-blocking units may stand in the same side-block column, one in its front slot and one in its back slot.
-- [713.3a](#r713.3a) Deaths are also checked while an effect is still resolving, not only at safe points. Each time an effect puts counters on a unit, and after each part of an effect made of several parts, units that should be dead die at once, before the rest of the effect happens.
 - [723.4e](#r723.4e) Triggered and activated abilities, Viruses, units being cast and Ambushes on the stack are not legal hosts for a Virus.
 - [D2.3](#rD2.3) A player may turn on auto-pass. With it on, the client passes priority for the player only in a window where passing is the only thing they could do. Auto-pass never passes through an open decision.
 - [D3.1](#rD3.1) A game may be played with a chess clock, in which each player has a bank of time. The home screen offers three settings: no clock, 45 minutes and 60 minutes.
