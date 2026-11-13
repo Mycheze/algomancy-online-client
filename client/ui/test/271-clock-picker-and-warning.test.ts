@@ -55,6 +55,9 @@ const PAGE_FILES = ['waiting.ts', 'home.ts', 'clockpick.ts', 'deckpicker.ts', 'c
 const SOURCES: [string, string][] = [['main.ts', MAIN],
   ...PAGE_FILES.map(f => [`pages/${f}`, readFileSync(new URL(`../pages/${f}`, import.meta.url), 'utf8')] as [string, string])];
 const CLOCK = readFileSync(new URL('../pages/clockpick.ts', import.meta.url), 'utf8');
+// the home screen's buttons — the clock chips and Create room — are
+// pages/home.ts handleHomeButton since BL-63 (2026-11-13), not main.ts's
+const HOME = SOURCES.find(([f]) => f === 'pages/home.ts')![1];
 const ui = await client();
 const SEAT: Seat = 0;
 
@@ -161,8 +164,8 @@ test('BL-26 §3 no link built for the OTHER seat carries the clock setting', () 
 
   // positive control: SOMETHING builds the parameter, or the check above is
   // green because nothing anywhere sets a clock and there is nothing to leak
-  assert.match(MAIN, /`&clock=\$\{/,
-    'nothing in ui/main.ts builds a clock parameter at all — the picker is not reaching the '
+  assert.match(HOME, /`&clock=\$\{/,
+    'nothing in ui/pages/home.ts builds a clock parameter at all — the picker is not reaching the '
     + 'room it creates, and §3 is passing because there is nothing to leak');
 });
 
@@ -199,9 +202,9 @@ test('BL-26 §4 the home screen offers the owner\'s three banks, including no cl
   assert.ok(presets.some(p => p.ms === '0'),
     'no clock at all is not on offer, and BL-26 says "off is a real setting, not a very large '
     + 'number"');
-  assert.match(MAIN, /localStorage\.setItem\('algoClockMs'/,
+  assert.match(HOME, /localStorage\.setItem\('algoClockMs'/,
     'the choice is not persisted, so it is re-made on every visit');
-  assert.match(MAIN, /localStorage\.removeItem\('algoClockMs'\)/,
+  assert.match(HOME, /localStorage\.removeItem\('algoClockMs'\)/,
     '"Default" has to REMOVE the key, not write a number into it — a number cannot mean "45 '
     + 'for constructed and 60 for a draft", which is the answer');
 });
@@ -219,7 +222,7 @@ test('BL-26 §4 the default follows the MODE, and the mode is only known at the 
     'the per-mode defaults are not the owner\'s: constructed 45, live draft 60. (`shared` is '
     + 'the quick shared-pool game — it deals rather than drafts, so it takes the short one.)');
 
-  assert.match(MAIN, /`&clock=\$\{chosenClockMs\(mode\)\}`/,
+  assert.match(HOME, /`&clock=\$\{chosenClockMs\(mode\)\}`/,
     'the room-creating link no longer passes the mode, so every new room gets the same bank '
     + 'whichever New button was pressed — which is exactly the thing the answer distinguishes');
 });

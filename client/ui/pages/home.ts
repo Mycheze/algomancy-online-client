@@ -26,13 +26,11 @@
  * "does another page own #app right now?" checks — and calls paintHome() when
  * none does.
  *
- * What is still in main.ts: the home screen's buttons (handlePregameButton:
- * eltoggle, elrandom, clockpick, newgame, joincode, deckimport*, and the
- * home-mode / home-format / home-els / home-sheet / home-sheet-close switches,
- * which call the setters below), because they write main.ts state
- * (`ui.homeEls`, `ui.homeFixedTrio`, `uiError`) and open the room.
- * TODO(ds): view/html split: move handlePregameButton here once `uiError` and
- * the element pick have a home outside main.ts's UiState.
+ * The home screen's buttons (handleHomeButton: eltoggle, elrandom, clockpick,
+ * newgame, joincode, deckimport*, the cr- panel's, and the home-mode /
+ * home-format / home-els / home-sheet / home-sheet-close switches) are here
+ * too, since BL-63 (2026-11-13), with the element pick they write; main.ts
+ * lends them its `uiError` and its repaints (HomeButtonHost).
  *
  * The decisions behind the layout (what moved where, what was dropped) are in
  * var/records/ds-round-2026-11-03-home-decisions.md and the round's record
@@ -59,11 +57,13 @@ import {
 import { chosenDeck, elIcon as elIconOf, esc } from '../util.ts';
 import { caretIn, restoreCaret } from './caret.ts';
 import { TOOL_NAMES, toolsHtml } from './frame.ts';
-import { clockPickHtml, clockPickView, type ClockPickView } from './clockpick.ts';
+import {
+  CLOCK_DEFAULT_MS, chosenClockMs, clockPickHtml, clockPickView, setMatchClockChoice, type ClockPickView,
+} from './clockpick.ts';
 import {
   BEGINNER_HINT, bansHtml, cardsHtml, customRulesView, gameValuesHtml, modeHtml, poolLineHtml, type CustomRulesView,
 } from './customrules.ts';
-import { deckImportHtml, deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
+import { deckImportHtml, deckPickerHtml, deckPickerView, importDeck, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
 import { singleCardPickerHtml, singleCardPickerView } from './singlecard.ts';
 import { ccDeckSelectHtml, competitiveCardView, yourMatchesHtml, yourMatchesView, type CompetitiveCardView } from './match.ts';
 import { queueGlanceHtml, queueStripView } from './queue.ts';
@@ -173,13 +173,42 @@ export function closeHomeSheet(): boolean {
 /** the update log's "seen" advances when its sheet OPENS (docs/24), not when the home loads */
 function markSeen(): void { markUpdatesSeen(); }
 
+/* ── the element pick for a fixed draft ─────────────────────────────────
+ * Was main.ts `ui.homeEls` / `ui.homeFixedTrio` (UiState) until BL-63 moved the
+ * home's buttons here, 2026-11-13. Nothing but the home read or wrote either.
+ * One difference, unseen: main.ts resetUi() (a deal, a join) used to put both
+ * back to their boot values; it cannot reach the home, which is only drawn
+ * outside a room, and leaving a room reloads the page (goHome). */
+
+const ELS_KEY = 'algoEls';
+/** the persisted trio, filtered against the engine's element list so a stale
+ * or hand-edited localStorage entry can never smuggle in a non-element */
+const savedEls = (): string[] => {
+  try {
+    const raw = JSON.parse(localStorage.getItem(ELS_KEY) ?? '') as string[];
+    const clean = (Array.isArray(raw) ? raw : []).filter(el => (ALL_ELEMENTS as string[]).includes(el));
+    // BL-43: kept whole — a custom draft may fix two elements, or five
+    return clean.length ? [...new Set(clean)] : ['fire', 'water', 'earth'];
+  } catch { return ['fire', 'water', 'earth']; }
+};
+/** the draft trio being picked (persisted per browser) */
+let homeEls: string[] = savedEls();
+/** Elements is on "Pick now". Held in state because touching a chip re-renders
+ * the whole screen, which would otherwise snap the chips shut under the
+ * finger that opened them. */
+let homeFixedTrio = false;
+const saveEls = (): void => localStorage.setItem(ELS_KEY, JSON.stringify(homeEls));
+
+/** what paintHome draws of the pick (HomeState's `els` and `fixedOpen`) */
+export const homePick = (): { els: readonly string[]; fixedOpen: boolean } => ({ els: homeEls, fixedOpen: homeFixedTrio });
+
 /* ── the view ─────────────────────────────────────────────────────────── */
 
-/** what main.ts owns and hands in: the element pick and the last error */
+/** what the view is handed: the element pick (homePick()) and main.ts's last error */
 export interface HomeState {
-  /** the elements picked for a fixed draft (main.ts `ui.homeEls`) */
+  /** the elements picked for a fixed draft (`homeEls`) */
   els: readonly string[];
-  /** Elements is on "Pick now" (main.ts `ui.homeFixedTrio`) */
+  /** Elements is on "Pick now" (`homeFixedTrio`) */
   fixedOpen: boolean;
   /** main.ts `uiError`: a refused New game, shown above the Play card's buttons */
   error: string;
@@ -802,4 +831,149 @@ export function paintHome(app: HTMLElement, st: HomeState, rerender: () => void)
   // this is the only screen that shows it, and an idle tab on a board should
   // not be asking the server who is queueing every five seconds. Idempotent.
   mm.startCountsPoll();
+}
+
+/* ── the home screen's buttons ───────────────────────────────────────────
+ * Moved out of main.ts handlePregameButton by BL-63 (2026-11-13), the bodies
+ * as they were; only the names changed: `ui.homeEls`/`ui.homeFixedTrio` are
+ * this module's state above, main.ts's `uiError` and its repaints come in as
+ * the host. The waiting rooms' buttons (deckjoin, singlejoin, gohome,
+ * copylink) stayed in main.ts (handleRoomButton): they drive the connection. */
+
+/** what main.ts lends the home's buttons */
+export interface HomeButtonHost {
+  /** main.ts renderHome — the router, which comes back to paintHome */
+  rerender(): void;
+  /** main.ts `uiError`: the line drawn above Create room ('' clears it) */
+  setError(msg: string): void;
+  /** the deck import's repaint: main.ts render in a room, renderHome outside one */
+  readonly importRepaint: () => void;
+}
+
+/** A home-screen button: true when it was one (it repainted the home itself,
+ * navigated away, or fired a request whose reply does the painting), so the
+ * caller stops there. */
+export function handleHomeButton(b: string | undefined, btn: HTMLElement, host: HomeButtonHost): boolean {
+  const renderHome = host.rerender;
+  // BL-43: the custom rules' buttons (the Draft tab's rows, the Game values sheet)
+  const wasBeginner = crp.beginnerOn();
+  if (crp.handlePanelButton(b, btn)) {
+    // Beginner (the Mode row, or the preset) SUGGESTS the rulebook's pair, as
+    // a fixed pick the player can see and change — not a choice made for them
+    if ((b === 'cr-preset' && btn.dataset['preset'] === 'beginner') || (b === 'cr-beginner' && btn.dataset['on'] === '1')) {
+      homeEls = ['fire', 'wood'];
+      homeFixedTrio = true;
+      saveEls();
+    }
+    // …and Standard, from Beginner, is the standard game again: the elements
+    // go back to being chosen in the room
+    if (b === 'cr-beginner' && btn.dataset['on'] !== '1' && wasBeginner) homeFixedTrio = false;
+    renderHome();
+    return true;
+  }
+  // the new home (docs/24, 2026-11-03): the Play card's tabs and switches and
+  // the sheets. Each is home state (above) and a repaint.
+  if (b === 'home-mode') { setHomeMode(btn.dataset['mode']); renderHome(); return true; }
+  if (b === 'home-format') { setHomeFormat(btn.dataset['format']); renderHome(); return true; }
+  if (b === 'home-els') { homeFixedTrio = btn.dataset['pick'] === 'now'; renderHome(); return true; }
+  if (b === 'home-sheet') { openHomeSheet(btn.dataset['sheet']); renderHome(); return true; }
+  if (b === 'home-sheet-close') { closeHomeSheet(); renderHome(); return true; }
+  if (b === 'eltoggle') {
+    homeFixedTrio = true;
+    const el = btn.dataset['el']!;
+    if (homeEls.includes(el)) homeEls = homeEls.filter(x => x !== el);
+    else if (homeEls.length < crp.elementCount()) homeEls.push(el);
+    else { homeEls.shift(); homeEls.push(el); }   // full: rotate the oldest out
+    homeEls = homeEls.slice(-crp.elementCount());   // BL-43: a smaller set drops the oldest
+    saveEls();
+    renderHome();
+    return true;
+  }
+  if (b === 'elrandom') {
+    homeFixedTrio = true;
+    // every element the ENGINE knows about, so the die reaches all C(n,3)
+    // trios — 35 of them with Light & Dark in
+    homeEls = [];
+    while (homeEls.length < crp.elementCount()) {
+      const pick = ALL_ELEMENTS[Math.floor(Math.random() * ALL_ELEMENTS.length)]!;
+      if (!homeEls.includes(pick)) homeEls.push(pick);
+    }
+    saveEls();
+    renderHome();
+    return true;
+  }
+  if (b === 'clockpick' && btn.dataset['clockfor'] === 'competitive') {
+    // docs/22 §6.1: a Competitive match's clock is its own setting (a match
+    // bank, not a per-game one) — pages/clockpick.ts MATCH_CLOCK_KEY
+    setMatchClockChoice(btn.dataset['ms']);
+    renderHome();
+    return true;
+  }
+  if (b === 'clockpick') {
+    // BL-26: "Default" is the ABSENCE of the key, not a number written into
+    // it — that is what lets the mode decide, and what makes a player who
+    // never touched this picker get 45m for constructed and 60m for a draft.
+    const ms = btn.dataset['ms'];
+    if (ms === 'auto') localStorage.removeItem('algoClockMs');
+    else localStorage.setItem('algoClockMs', String(Number(ms ?? CLOCK_DEFAULT_MS)));
+    renderHome();
+    return true;
+  }
+  if (b === 'newgame') {
+    saveHomeName();
+    const m = btn.dataset['mode'];
+    const mode = m === 'draft' ? 'draft' : m === 'constructed' ? 'constructed' : 'shared';
+    // CR D8.2: a single card duel is a constructed room that brings a card, not a deck
+    const single = mode === 'constructed' && btn.dataset['single'] === '1';
+    if (single ? !sc.chosen() : mode === 'constructed' && !chosenDeck()) return true;   // button is disabled anyway
+    // a draft with NO els opens the lobby and chooses the trio there; passing
+    // els is the deliberate escape hatch that skips it
+    const fixed = mode === 'draft' && btn.dataset['els'] && homeEls.length === crp.elementCount() ? homeEls : null;
+    const els = fixed ? `&els=${encodeURIComponent(fixed.join(','))}` : '';
+    // BL-26: the chosen bank rides the CREATING join. ⚠ It is appended HERE
+    // and nowhere else — in particular NOT to the share link the waiting
+    // screen hands the opponent (see `shareBannerHtml` and the two lobby
+    // links). By then the room exists and the server ignores the field, so
+    // appending it would change nothing except what the joiner believes they
+    // are choosing.
+    // BL-26: the MODE is known here and nowhere earlier, which is the whole
+    // reason the default is resolved at this line rather than in the picker.
+    const clock = `&clock=${chosenClockMs(mode)}`;
+    // BL-43: custom rules ride a POST — the server resolves and checks them and
+    // keeps them with the reserved code. A standard game is the GET it always was.
+    const payload = mode === 'draft' ? crp.createPayload(fixed) : null;
+    const made = payload
+      ? fetch('/api/new', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) })
+      : fetch('/api/new');
+    made.then(async r => {
+      const j = await r.json() as { code?: string; error?: string };
+      if (!r.ok || !j.code) { host.setError(j.error ?? 'the server refused these rules'); renderHome(); return; }
+      host.setError('');
+      // report #356: a Competitive draft says so on the creating link
+      const rules = mode === 'draft' && btn.dataset['rules'] === 'competitive' ? '&rules=competitive' : '';
+      location.search = `?ws=1&room=${encodeURIComponent(j.code)}&seat=0&mode=${mode}${single ? '&single=1' : ''}${els}${clock}${rules}`;
+    }).catch(() => { host.setError('could not reach the server'); renderHome(); });
+    return true;
+  }
+  if (b === 'deckimporturl') {
+    const inp = document.getElementById('h-deckurl') as HTMLInputElement | null;
+    // an empty box is said, not ignored (importDeck)
+    importDeck({ url: inp?.value ?? '' }, host.importRepaint);
+    return true;
+  }
+  if (b === 'deckimporttext') {
+    const ta = document.getElementById('h-decktext') as HTMLTextAreaElement | null;
+    importDeck({ text: ta?.value ?? '' }, host.importRepaint);
+    return true;
+  }
+  if (b === 'joincode') {
+    saveHomeName();
+    const box = document.getElementById('h-code') as HTMLInputElement | null;
+    const target = joinCodeTarget(box?.value ?? '');
+    // an empty box: the Join sheet says so, and the box takes the typing
+    if (!target) { renderHome(); (document.getElementById('h-code') as HTMLInputElement | null)?.focus?.(); return true; }
+    location.search = target;
+    return true;
+  }
+  return false;
 }

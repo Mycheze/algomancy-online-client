@@ -99,10 +99,11 @@ matchmaking; the rest follow the same recipe:
 | `deckstats.ts` | `deckStatsHtml`, `statsStripHtml`, `sampleHandHtml` | a deck's numbers (BL-65): the full stats panel (the builder's Stats sheet; `ui/decks.ts` re-exports it for `meta.ts`), the builder's one-line strip (curve by element, the element split, units/spells, average cost) and the sample opening hand (the engine's constructed deal, `sampleOpeningHand`) |
 | `learn.ts` | `learnMenuView`, `learnMenuHtml` | the Learn to Play menu, a **sheet** (components/sheet.ts) since 2026-11-04 whose root keeps the layer's `learnscrim` id and class. The layer, clicks and keys in `ui/learnmenu.ts`, which closes on the sheet's `data-sheet-dismiss`. (The legal pages are a sheet too: `ui/legal.ts` `legalPageHtml`, test 1072.) |
 
-**Still in `main.ts`, on purpose:** `handlePregameButton` — the home and waiting-room buttons (`eltoggle`, `elrandom`,
-`clockpick`, `newgame`, `joincode`, `deckimporturl/text`, `deckjoin`, `singlejoin`, `gohome`, `copylink`). They write
-main.ts state (`ui.homeEls`, `ui.homeFixedTrio`, `uiError`, `NET`) and open the room. `TODO(ds): view/html split:` move
-them here once `uiError` and the element pick have a home outside main.ts's `UiState`. (The **kicked** notice, written
+**The home's buttons are `home.ts`'s** since BL-63 (2026-11-13): `handleHomeButton` (`eltoggle`, `elrandom`, `clockpick`,
+`newgame`, `joincode`, `deckimporturl/text`, the `cr-` rows, the `home-*` switches), with the element pick they write
+(`homePick()`; it was main.ts's `ui.homeEls`/`ui.homeFixedTrio`). main.ts lends them its `uiError` and its repaints as a
+`HomeButtonHost` (test 1239). **Still in `main.ts`, on purpose:** `handleRoomButton`, the waiting rooms' `deckjoin`,
+`singlejoin`, `gohome`, `copylink`: they drive the connection (`NET`). (The **kicked** notice, written
 inline in `NetBackend`'s message handler until 2026-11-12, is `connecting.ts` `kickedHtml` now: BL-63, test 1234.)
 
 ## Every non-game page and screen
@@ -118,7 +119,7 @@ import a pure renderer or read source are not listed. ui-shots states are `page_
 
 | page / screen | code now | CSS | driver tests | ui-shots states | tangle |
 |---|---|---|---|---|---|
-| **Home** | `pages/home.ts` homeView/homeHtml/paintHome; router `main.ts` renderHome; buttons `main.ts` handlePregameButton (incl. `home-mode`, `home-format`, `home-els`, `home-sheet`, `home-sheet-close`) | 06-home, the components (app shell, icon button, segmented, sheet), 18-draft-lobby (Custom rules), 33-single-card-duel, 07-lobby (picker), 47-competitive-match, board/13 (`.clockpick`), shared/10-element-chips | 366, 839, 1011 (and 610/634/732 start here); 960 and 1010 are DOM-free | home__signed-out, home__signed-in, home__constructed, home__competitive, home__pick-now, home__join-open, home__info-open, home__updates-open, home__customrules-open, home__bell-open, home__cc-your-matches *cc* — all `noScroll` (1012) | **easy** now (split done); the buttons are medium — they write `ui.homeEls`/`uiError` |
+| **Home** | `pages/home.ts` homeView/homeHtml/paintHome; router `main.ts` renderHome; buttons `pages/home.ts` handleHomeButton (incl. `home-mode`, `home-format`, `home-els`, `home-sheet`, `home-sheet-close`) | 06-home, the components (app shell, icon button, segmented, sheet), 18-draft-lobby (Custom rules), 33-single-card-duel, 07-lobby (picker), 47-competitive-match, board/13 (`.clockpick`), shared/10-element-chips | 366, 839, 1011 (and 610/634/732 start here); 960 and 1010 are DOM-free | home__signed-out, home__signed-in, home__constructed, home__competitive, home__pick-now, home__join-open, home__info-open, home__updates-open, home__customrules-open, home__bell-open, home__cc-your-matches *cc* — all `noScroll` (1012) | **easy** now (split done, the buttons too: BL-63) |
 | Deck picker (home, waiting room, queue) | `pages/deckpicker.ts` | 07-lobby (`.deckselect`, `.deckinfo`, `.deckimport`, `.deckpaste`, `.deckmsg`) | 366 (on home), 254 (waiting room) | home__*, waiting__constructed, queue__constructed | **easy** (split done) |
 | Clock picker | `pages/clockpick.ts` (`look: 'segmented'` is the home's Clock row) | board/13-playtest-round4-clocks-report (`.clockpick`) | 366 | home__signed-in, home__constructed | **easy** (split done) |
 | Custom rules panel (the home's Custom rules sheet) | `pages/customrules.ts` customRulesView/Html (`bare`: no fold, for the sheet); state + clicks + `wirePanel` in `customrulespanel.ts` | 18-draft-lobby (`.customrules`), 10-element-chips | 366, 298 | home__customrules-open | **easy (done)** |

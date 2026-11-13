@@ -10,7 +10,7 @@
  * renderWaiting() drops the board's baselines and the .board class, then hands
  * this module the connection (`NET`) and the last error. Its buttons
  * (deckjoin, singlejoin, gohome, copylink, lobby-*, cc-*, sc-*) are still
- * routed by main.ts handleButton / handlePregameButton.
+ * routed by main.ts handleButton / handleRoomButton.
  */
 import type { Seat } from '../../engine/src/types.ts';
 import { roomFriendsHtml } from '../inbox.ts';

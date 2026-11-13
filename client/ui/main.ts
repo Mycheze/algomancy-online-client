@@ -152,7 +152,9 @@ import * as crr from './crreview.ts';
 import { openStorybook } from './storybook-link.ts';
 import { installCrLayer } from './crlayer.ts';
 import * as lob from './lobby.ts';
-import * as crp from './customrulespanel.ts';
+// the home's Custom rules (pages/home.ts handles their buttons since BL-63);
+// still imported here, where it always was, so it is evaluated when it was
+import './customrulespanel.ts';
 import * as sc from './singlecard.ts';
 import * as pg from './postgame.ts';
 // docs/22 — a Competitive match: the home card, the waiting room, the between screen
@@ -189,12 +191,12 @@ import { artUrl, ICON_BASE } from './assets.ts';
 import * as admin from './pages/admin.ts';
 import * as jr from './pages/judgereview.ts';
 import { caretIn, type CaretSnap } from './pages/caret.ts';
-import { CLOCK_DEFAULT_MS, chosenClockMs, setMatchClockChoice } from './pages/clockpick.ts';
+import './pages/clockpick.ts';   // boot order, as before BL-63 (pages/home.ts uses it now)
 import { CONNECTING, connectingHtml, kickedHtml } from './pages/connecting.ts';
 import { seatBadgeHtml, seatBadgeTipHtml, type SeatBadge } from './pages/profile.ts';
 import { icon } from './components/icon.ts';
-import { importDeck } from './pages/deckpicker.ts';
-import { closeHomeSheet, joinCodeTarget, openHomeSheet, paintHome, saveHomeName, setHomeFormat, setHomeMode } from './pages/home.ts';
+import './pages/deckpicker.ts';   // boot order, as before BL-63 (pages/home.ts uses it now)
+import { handleHomeButton, homePick, paintHome, type HomeButtonHost } from './pages/home.ts';
 import { paintWaiting } from './pages/waiting.ts';
 import { paintQueue } from './pages/queue.ts';
 import { frameChromeView, setChromeSource } from './pages/frame.ts';
@@ -1368,12 +1370,6 @@ interface UiState {
   /** CT-408: the cast or activation a finger's tap held back; its button
    * (ui/tapgo.ts) is drawn on that token or resource */
   tapGo: TapGo | null;
-  /** home screen: the draft trio being picked (persisted per browser) */
-  homeEls: string[];
-  /** home screen: the "fix the trio now" drawer is open. Held in state
-   * because touching a chip re-renders the whole screen, which would
-   * otherwise snap the drawer shut under the finger that opened it. */
-  homeFixedTrio: boolean;
   /** constructed draw phase: hand indices picked to go to the bottom, in order */
   bottomPick: number[];
   /** which turn+seat bottomPick was built for (re-init on change) */
@@ -1413,16 +1409,6 @@ interface UiState {
    */
   attackSent: string;
 }
-/** the persisted trio, filtered against the engine's element list so a stale
- * or hand-edited localStorage entry can never smuggle in a non-element */
-const savedEls = (): string[] => {
-  try {
-    const raw = JSON.parse(localStorage.getItem('algoEls') ?? '') as string[];
-    const clean = (Array.isArray(raw) ? raw : []).filter(el => (ALL_ELEMENTS as string[]).includes(el));
-    // BL-43: kept whole — a custom draft may fix two elements, or five
-    return clean.length ? [...new Set(clean)] : ['fire', 'water', 'earth'];
-  } catch { return ['fire', 'water', 'earth']; }
-};
 const freshUi = (): UiState => ({
   carrying: null, columns: [], backOnly: [], send: [], spellTokens: [], modding: null, menu: null, orderPicked: [], orderFor: -1,
   counterCount: 1, counterFor: -1,
@@ -1434,8 +1420,7 @@ const freshUi = (): UiState => ({
   autoAt: -1, sentFor: -1, cancelling: false, cancelAt: -1,
   rampTo: null, rampAt: -1, rampDone: 0,
   prefillFor: '', confirmDone: null, confirmPass: null, confirmTarget: null, boardPick: null,
-  confirmRide: null, rideAnswered: false, confirmCounter: null, counterAnswered: false, homeEls: savedEls(),
-  homeFixedTrio: false,
+  confirmRide: null, rideAnswered: false, confirmCounter: null, counterAnswered: false,
   confirmDeploy: null, confirmHaste: null, acted: [null, null], confirmAct: null, tapGo: null,
   bottomPick: [], bottomFor: '', blockLine: null, blockLeft: 0,
   blockRefusal: null, blockSent: false, attackSent: '',
@@ -9434,7 +9419,7 @@ function renderHome(): void {
   // BL-01: …and the matchmaking queue
   if (mm.screen()) { paintQueue($app, () => { if (!inGame) renderHome(); }); return; }   // pages/queue.ts
   // none does: the home screen itself (pages/home.ts)
-  paintHome($app, { els: ui.homeEls, fixedOpen: ui.homeFixedTrio, error: uiError }, renderHome);
+  paintHome($app, { ...homePick(), error: uiError }, renderHome);
 }
 
 /** The waiting rooms (constructed, league, single card, draft trio, a
@@ -10349,139 +10334,28 @@ document.addEventListener('click', e => {
   handleAction(t, e as MouseEvent);
 });
 
-/** The home screen and the lobbies: element picker, deck import, room join,
- * the share link. Nothing here repaints the BOARD — each button repaints the
- * home screen itself, navigates away, or fires a request whose reply does the
- * painting — so the caller stops when one of these claims the click. */
 /** Back to the home screen from anywhere: the page reloads on the bare path,
  * which drops the room, the replay, the watch — whatever the query held. */
 function goHome(): void {
   location.href = location.pathname;
 }
 
-function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
-  // BL-43: the custom rules' buttons (the Draft tab's rows, the Game values sheet)
-  const wasBeginner = crp.beginnerOn();
-  if (crp.handlePanelButton(b, btn)) {
-    // Beginner (the Mode row, or the preset) SUGGESTS the rulebook's pair, as
-    // a fixed pick the player can see and change — not a choice made for them
-    if ((b === 'cr-preset' && btn.dataset['preset'] === 'beginner') || (b === 'cr-beginner' && btn.dataset['on'] === '1')) {
-      ui.homeEls = ['fire', 'wood'];
-      ui.homeFixedTrio = true;
-      localStorage.setItem('algoEls', JSON.stringify(ui.homeEls));
-    }
-    // …and Standard, from Beginner, is the standard game again: the elements
-    // go back to being chosen in the room
-    if (b === 'cr-beginner' && btn.dataset['on'] !== '1' && wasBeginner) ui.homeFixedTrio = false;
-    renderHome();
-    return true;
-  }
-  // the new home (docs/24, 2026-11-03): the Play card's tabs and switches and
-  // the sheets. Each is home state (pages/home.ts) and a repaint.
-  if (b === 'home-mode') { setHomeMode(btn.dataset['mode']); renderHome(); return true; }
-  if (b === 'home-format') { setHomeFormat(btn.dataset['format']); renderHome(); return true; }
-  if (b === 'home-els') { ui.homeFixedTrio = btn.dataset['pick'] === 'now'; renderHome(); return true; }
-  if (b === 'home-sheet') { openHomeSheet(btn.dataset['sheet']); renderHome(); return true; }
-  if (b === 'home-sheet-close') { closeHomeSheet(); renderHome(); return true; }
-  if (b === 'eltoggle') {
-    ui.homeFixedTrio = true;
-    const el = btn.dataset['el']!;
-    if (ui.homeEls.includes(el)) ui.homeEls = ui.homeEls.filter(x => x !== el);
-    else if (ui.homeEls.length < crp.elementCount()) ui.homeEls.push(el);
-    else { ui.homeEls.shift(); ui.homeEls.push(el); }   // full: rotate the oldest out
-    ui.homeEls = ui.homeEls.slice(-crp.elementCount());   // BL-43: a smaller set drops the oldest
-    localStorage.setItem('algoEls', JSON.stringify(ui.homeEls));
-    renderHome();
-    return true;
-  }
-  if (b === 'elrandom') {
-    ui.homeFixedTrio = true;
-    // every element the ENGINE knows about, so the die reaches all C(n,3)
-    // trios — 35 of them with Light & Dark in
-    ui.homeEls = [];
-    while (ui.homeEls.length < crp.elementCount()) {
-      const pick = ALL_ELEMENTS[Math.floor(Math.random() * ALL_ELEMENTS.length)]!;
-      if (!ui.homeEls.includes(pick)) ui.homeEls.push(pick);
-    }
-    localStorage.setItem('algoEls', JSON.stringify(ui.homeEls));
-    renderHome();
-    return true;
-  }
-  if (b === 'clockpick' && btn.dataset['clockfor'] === 'competitive') {
-    // docs/22 §6.1: a Competitive match's clock is its own setting (a match
-    // bank, not a per-game one) — pages/clockpick.ts MATCH_CLOCK_KEY
-    setMatchClockChoice(btn.dataset['ms']);
-    renderHome();
-    return true;
-  }
-  if (b === 'clockpick') {
-    // BL-26: "Default" is the ABSENCE of the key, not a number written into
-    // it — that is what lets the mode decide, and what makes a player who
-    // never touched this picker get 45m for constructed and 60m for a draft.
-    const ms = btn.dataset['ms'];
-    if (ms === 'auto') localStorage.removeItem('algoClockMs');
-    else localStorage.setItem('algoClockMs', String(Number(ms ?? CLOCK_DEFAULT_MS)));
-    renderHome();
-    return true;
-  }
-  if (b === 'newgame') {
-    saveHomeName();
-    const m = btn.dataset['mode'];
-    const mode = m === 'draft' ? 'draft' : m === 'constructed' ? 'constructed' : 'shared';
-    // CR D8.2: a single card duel is a constructed room that brings a card, not a deck
-    const single = mode === 'constructed' && btn.dataset['single'] === '1';
-    if (single ? !sc.chosen() : mode === 'constructed' && !savedDeck()) return true;   // button is disabled anyway
-    // a draft with NO els opens the lobby and chooses the trio there; passing
-    // els is the deliberate escape hatch that skips it
-    const fixed = mode === 'draft' && btn.dataset['els'] && ui.homeEls.length === crp.elementCount() ? ui.homeEls : null;
-    const els = fixed ? `&els=${encodeURIComponent(fixed.join(','))}` : '';
-    // BL-26: the chosen bank rides the CREATING join. ⚠ It is appended HERE
-    // and nowhere else — in particular NOT to the share link the waiting
-    // screen hands the opponent (see `shareBannerHtml` and the two lobby
-    // links). By then the room exists and the server ignores the field, so
-    // appending it would change nothing except what the joiner believes they
-    // are choosing.
-    // BL-26: the MODE is known here and nowhere earlier, which is the whole
-    // reason the default is resolved at this line rather than in the picker.
-    const clock = `&clock=${chosenClockMs(mode)}`;
-    // BL-43: custom rules ride a POST — the server resolves and checks them and
-    // keeps them with the reserved code. A standard game is the GET it always was.
-    const payload = mode === 'draft' ? crp.createPayload(fixed) : null;
-    const made = payload
-      ? fetch('/api/new', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) })
-      : fetch('/api/new');
-    made.then(async r => {
-      const j = await r.json() as { code?: string; error?: string };
-      if (!r.ok || !j.code) { uiError = j.error ?? 'the server refused these rules'; renderHome(); return; }
-      uiError = '';
-      // report #356: a Competitive draft says so on the creating link
-      const rules = mode === 'draft' && btn.dataset['rules'] === 'competitive' ? '&rules=competitive' : '';
-      location.search = `?ws=1&room=${encodeURIComponent(j.code)}&seat=0&mode=${mode}${single ? '&single=1' : ''}${els}${clock}${rules}`;
-    }).catch(() => { uiError = 'could not reach the server'; renderHome(); });
-    return true;
-  }
-  if (b === 'deckimporturl') {
-    const inp = document.getElementById('h-deckurl') as HTMLInputElement | null;
-    // an empty box is said, not ignored (importDeck)
-    importDeck({ url: inp?.value ?? '' }, NET ? render : renderHome);
-    return true;
-  }
-  if (b === 'deckimporttext') {
-    const ta = document.getElementById('h-decktext') as HTMLTextAreaElement | null;
-    importDeck({ text: ta?.value ?? '' }, NET ? render : renderHome);
-    return true;
-  }
+/** What the home screen's buttons (pages/home.ts handleHomeButton) borrow
+ * from here: the error line, which the board shares, and the repaints. */
+const HOME_HOST: HomeButtonHost = {
+  rerender: () => renderHome(),
+  setError: msg => { uiError = msg; },
+  get importRepaint() { return NET ? render : renderHome; },
+};
+
+/** The waiting rooms' buttons: bring the deck or the card, leave, copy the
+ * share link. (The home screen's are pages/home.ts handleHomeButton, since
+ * BL-63.) Nothing here repaints the BOARD — each one sends, navigates away or
+ * copies — so the caller stops when one of these claims the click. */
+
+function handleRoomButton(b: string | undefined, btn: HTMLElement): boolean {
   if (b === 'deckjoin') { NET?.sendJoin(true); return true; }
   if (b === 'singlejoin') { if (NET) { NET.singleArmed = true; NET.sendJoin(); } return true; }
-  if (b === 'joincode') {
-    saveHomeName();
-    const box = document.getElementById('h-code') as HTMLInputElement | null;
-    const target = joinCodeTarget(box?.value ?? '');
-    // an empty box: the Join sheet says so, and the box takes the typing
-    if (!target) { renderHome(); (document.getElementById('h-code') as HTMLInputElement | null)?.focus?.(); return true; }
-    location.search = target;
-    return true;
-  }
   if (b === 'gohome') { goHome(); return true; }
   if (b === 'copylink') {
     // both clipboard paths and no repaint — see copyText in ui/util.ts
@@ -10661,9 +10535,10 @@ function forgetSeen(what: 'card' | 'all' | 'restore', i = 0): void {
   saveSeenDrop();
 }
 
-/** Every board button by its data-btn name. The home screen and the lobbies
- * are handlePregameButton; the acct-/pg-/lobby- families dispatch to their
- * own modules before this table is consulted (handleButton). */
+/** Every board button by its data-btn name. The home screen's are
+ * handleHomeButton (pages/home.ts), the waiting rooms' handleRoomButton; the
+ * acct-/pg-/lobby- families dispatch to their own modules before this table is
+ * consulted (handleButton). */
 const BOARD_BTNS: Record<string, BtnHandler> = {
   settingsmenu: () => { settingsOpen = !settingsOpen; },
   // board round 8: a tap (or a click) on a player's name or the phase icons
@@ -11217,7 +11092,7 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
     rerender: renderWaiting,
   })) return;
   const b = btn.dataset['btn'];
-  if (handlePregameButton(b, btn)) return;
+  if (handleHomeButton(b, btn, HOME_HOST) || handleRoomButton(b, btn)) return;
   // a board button: the table's handler mutates, the repaint is shared — and a
   // name the table does not know still repaints (a stray data-btn closes a menu)
   // …except when this click put away a finger's held Cast or Activate button

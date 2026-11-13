@@ -152,10 +152,10 @@ test('962 §1b the purity check reads code, not strings, comments or properties 
 test('962 §2 main.ts keeps no second copy of what moved to ui/pages/', () => {
   for (const name of ['deckPickerHtml', 'wireDeckPicker', 'importDeck', 'ensureDefaultDecks', 'singleDuelHtml',
     'wireSingleDuel', 'clockPickHtml', 'constructedOptionsHtml', 'chosenClockMs', 'renderSingleWaiting', 'caretIn',
-    'restoreCaret']) {
+    'restoreCaret', 'handleHomeButton', 'handlePregameButton']) {
     assert.doesNotMatch(MAIN, new RegExp(`\\nfunction ${name}\\(`), `main.ts defines ${name}() again`);
   }
-  for (const name of ['HOME_TYPED', 'HOME_CARET', 'CLOCK_PRESETS', 'CLOCK_DEFAULT_BY_MODE', 'saveHomeName']) {
+  for (const name of ['HOME_TYPED', 'HOME_CARET', 'CLOCK_PRESETS', 'CLOCK_DEFAULT_BY_MODE', 'saveHomeName', 'savedEls']) {
     assert.doesNotMatch(MAIN, new RegExp(`\\nconst ${name}\\b`), `main.ts declares ${name} again`);
   }
   for (const name of ['deckMsg', 'defaultDeckList', 'homeOptionsOpen', 'singleDuelOpen']) {

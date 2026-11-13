@@ -1141,7 +1141,20 @@ const OPEN: Entry[] = [
       + 'template put back in main.ts (§2) and with the reason left unescaped (§1, §3). Left of line 8: '
       + 'handlePregameButton into pages/home.ts, and the league / challenge paint() splits — both blocked, as their '
       + 'TODO(ds) comments say, on module state (uiError and the element pick; the grid, time-code and tabletop state) '
-      + 'having a home outside the controller first.',
+      + 'having a home outside the controller first.\n\n'
+      + '2026-11-13 (steward, BL-63): line 8, its first part (handlePregameButton out of main.ts into pages/home.ts) is DONE. '
+      + 'The element pick (`ui.homeEls`, `ui.homeFixedTrio`, with savedEls) left main.ts\'s UiState for pages/home.ts module '
+      + 'state beside homeMode and the sheets (homePick()); nothing but the home read it. pages/home.ts handleHomeButton '
+      + 'holds the home\'s buttons, bodies moved as they were (the cr- rows, home-*, eltoggle, elrandom, clockpick, '
+      + 'newgame, deckimport*, joincode); main.ts lends `uiError` and its repaints as HOME_HOST (HomeButtonHost). The '
+      + 'waiting rooms\' deckjoin, singlejoin, gohome, copylink stay in main.ts as handleRoomButton: they drive NET. One '
+      + 'unseen difference: resetUi() (a deal, a join) used to reset the pick; it cannot reach the home, which is only '
+      + 'drawn outside a room, and leaving a room reloads the page. main.ts keeps bare imports of customrulespanel, '
+      + 'clockpick and deckpicker where they were, so boot order is unchanged. Guarded by '
+      + '1239-home-buttons-are-the-home-pages.test.ts, which went red with the host\'s setError emptied (§3) and with a '
+      + 'chip\'s save removed (§2); 271, 298 §8, 962 §2 and 1227 §3 now read pages/home.ts. Not looked at in a browser. '
+      + 'Left of line 8: the league / challenge paint() splits, still blocked on their module state (the grid, '
+      + 'time-code and tabletop state) having a home outside the controller.',
   },
   {
     id: 'BL-64',

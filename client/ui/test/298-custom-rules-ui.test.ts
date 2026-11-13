@@ -143,9 +143,11 @@ test('BL-43 ui §7 a custom row in the match history says it was not counted', (
 
 test('BL-43 ui §8 the draft prompt names the real pack size and no share link carries rules', () => {
   const main = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+  // the room-creating link is pages/home.ts handleHomeButton's since BL-63 (2026-11-13)
+  const home = readFileSync(new URL('../pages/home.ts', import.meta.url), 'utf8');
   assert.match(main, /leave exactly \$\{s\.draftDeal\?\.packSize \?\? 10\} cards/);
   assert.ok(!/leave exactly 10 cards/.test(main), 'no prompt still says 10');
-  const links = [...main.matchAll(/\?ws=1&room=[^`'"]*/g)].map(m => m[0]);
+  const links = [...(main + home).matchAll(/\?ws=1&room=[^`'"]*/g)].map(m => m[0]);
   assert.ok(links.length >= 3, `non-vacuous: ${links.length} room links found`);
   for (const link of links) assert.ok(!/rules|custom/.test(link), `a room link carries rules: ${link}`);
 });

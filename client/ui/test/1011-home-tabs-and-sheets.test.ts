@@ -1,7 +1,7 @@
 /* 1011 — THE NEW HOME'S TABS AND SHEETS, DRIVEN (client/docs/24-redesign/, 2026-11-03).
  *
  * The home screen is painted by the real ui/main.ts (no room in the URL) and
- * clicked through its real handler (handlePregameButton's home-* switches).
+ * clicked through its real handler (pages/home.ts handleHomeButton's home-* switches).
  *
  * §1 Draft | Constructed and Casual | Competitive are REMEMBERED (algoHomeMode,
  *    algoHomeFormat — legal.ts BROWSER_KEYS lists both); first visit: Draft
