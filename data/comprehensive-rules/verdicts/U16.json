@@ -4493,6 +4493,76 @@
     "problem": ""
   },
   {
+    "key": "effects.stripping.named-card.later-abilities",
+    "textHash": "e43d9261efed35e6",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U16-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.strippersOf",
+        "agrees": true,
+        "note": "a static with stripsLaterText pushes E.LATEST, so text of any age (augment, graft, grant) is older than the strip"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:E.stripReach",
+        "agrees": true,
+        "note": "radiator path: stripsLaterText reaches LATEST; every other static reaches only its own arrival stamp"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-light-a.ts:The Everywhere",
+        "agrees": true,
+        "note": "stripsLaterText: true is set only on The Everywhere"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/1242-everywhere-takes-later-abilities.test.ts",
+        "pattern": "(whole file, 5 tests)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U16-1.test.ts",
+        "test": "probe U16-1a: an ability GRANTED to the named card after the naming is lost",
+        "passed": true,
+        "demonstrates": "yes: Reforge the Dead's 'When I die, create a Robot 3.' granted after the naming makes 0 Robots on the named Eel, 1 without The Everywhere"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U16-1.test.ts",
+        "test": "probe U16-1b: a graft put on the named card after the naming is lost (its cause cannot be used)",
+        "passed": true,
+        "demonstrates": "weakly: a graft added after the naming cannot be used, but the host's own cause is stripped anyway, so this does not isolate the graft's timestamp"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: The Everywhere",
+        "supports": "yes",
+        "note": "verbatim; 'My last named card loses all abilities (As long as I am in its region)' is a condition on the card, and read literally covers text gained later"
+      },
+      {
+        "ref": "owner 2026-11-13",
+        "supports": "yes",
+        "note": "covers the augment case (report #386); grafts and grants rest on the printed literal reading. Tension: the RAQ timestamp ruling (1355845893219287132#1) is about Monke/Transmogrifant, not The Everywhere, so no designer source speaks to this card; the record states it as an exception, and the 1242 control shows Transmogrifant still keeps the RAQ rule. The last sentence ('Every other strip still takes only what a unit has when it applies') cites no source in this record; it restates effects.stripping.timestamp, which the RAQ threads support."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "My last named card loses all abilities. {i}(As long as I am in its region)."
+      },
+      {
+        "file": "client/engine/test/1242-everywhere-takes-later-abilities.test.ts",
+        "text": "CR 712.2 control: under Transmogrifant the same later augment still fires (the RAQ timestamp ruling stands)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "effects.stripping.one-clause",
     "textHash": "111434619f1901c7",
     "verdict": "confirmed",

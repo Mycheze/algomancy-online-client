@@ -789,6 +789,10 @@ card('The Everywhere', {
       affects: (g, self, t) =>
         t.kind === 'unit' && self.named !== undefined && g.nameOf(t) === self.named,
       suppressAbilities: true,
+      // CR 712.6b / report #386 (owner): the named card loses ALL abilities for
+      // as long as it shares my region — an augment or grant it gains after the
+      // naming is lost too. Not the Monke/Transmogrifant timestamp rule (CR 712.2).
+      stripsLaterText: true,
     }],
   },
 });

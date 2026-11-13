@@ -1156,6 +1156,7 @@
     {"num":"712.5","key":"effects.stripping.mutual","since":"First generation (draft)"},
     {"num":"712.6","key":"effects.stripping.named-card","since":"First generation (draft)"},
     {"num":"712.6a","key":"effects.stripping.named-card.itself","since":"First generation (draft)"},
+    {"num":"712.6b","key":"effects.stripping.named-card.later-abilities","since":"First generation (draft)"},
     {"num":"712.7","key":"effects.stripping.copied-text","since":"First generation (draft)"},
     {"num":"712.8","key":"effects.column-share","since":"First generation (draft)"},
     {"num":"712.8a","key":"effects.column-share.everything","since":"First generation (draft)"},

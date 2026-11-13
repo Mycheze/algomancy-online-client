@@ -1393,6 +1393,17 @@ export interface StaticMod {
   suppressAttrs?: boolean;
   suppressAbilities?: boolean;
   /**
+   * CR 712.6b: this strip takes text the target gains AFTER it applied, too —
+   * it is a condition on the target ("my last named card loses all abilities
+   * (as long as I am in its region)" — The Everywhere), not a strip scoped to
+   * the moment it applied. Without it a continuous strip takes only what
+   * arrived before it (CR 712.2: Monke, Transmogrifant, per the RAQ). Read by
+   * `E.strippersOf` and the radiator walk, which stamp such a strip as the
+   * latest thing on the target; the newer-wins order between two strippers
+   * (CR 712.5) still reads its real stamp. Owner, report #386.
+   */
+  stripsLaterText?: boolean;
+  /**
    * CR 712.4, the NARROW half of the suppression layer: while this static applies,
    * the ONE named ability it matches is switched off, and the rest of the
    * target's ability layer is untouched — "your wisps … do not sacrifice

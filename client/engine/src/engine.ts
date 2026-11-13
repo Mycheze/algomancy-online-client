@@ -2826,7 +2826,11 @@ export class E {
     if (half === 'attrs' && sup?.attrs) out.push(sup.attrsAt ?? E.LATEST);
     if (half === 'abilities' && sup?.abilities) out.push(sup.abilitiesAt ?? E.LATEST);
     for (const st of statics ?? this.staticsFor(e)) {
-      if (half === 'attrs' ? st.mod.suppressAttrs : st.mod.suppressAbilities) out.push(this.stampOf(st.srcId));
+      // CR 712.6b: a strip that is a condition on its target (The Everywhere)
+      // takes text gained after it as well, so it reads as the latest thing there
+      if (half === 'attrs' ? st.mod.suppressAttrs : st.mod.suppressAbilities) {
+        out.push(st.mod.stripsLaterText ? E.LATEST : this.stampOf(st.srcId));
+      }
     }
     return out;
   }
@@ -2919,8 +2923,9 @@ export class E {
     const c = cand;
     const n = c.length;
     // strips[x][y]: X would silence Y's text (another carrier, Y's anchor under X, Y's text older)
+    // (CR 712.6b: a stripper with `stripsLaterText` reaches text of any age)
     const strips = c.map(x => c.map(y => x.holderId !== y.holderId
-      && E.older(y.text, x.at) && x.mod.affects(this, x.anchor, y.anchor)));
+      && E.older(y.text, E.stripReach(x)) && x.mod.affects(this, x.anchor, y.anchor)));
     // newest first: the order Caleb's tie-break reads
     const order = c.map((_, i) => i).sort((i, j) => (E.older(c[i]!.at, c[j]!.at) ? 1 : E.older(c[j]!.at, c[i]!.at) ? -1 : i - j));
     const st: (0 | 1 | 2)[] = c.map(() => 0);                 // 0 undecided · 1 applies · 2 silenced
@@ -2945,7 +2950,13 @@ export class E {
   ): boolean {
     if (!active.length) return false;
     const t = this.textStamp(holder, anchor);
-    return active.some(x => x.holderId !== holder.id && E.older(t, x.at) && x.mod.affects(this, x.anchor, anchor));
+    return active.some(x => x.holderId !== holder.id && E.older(t, E.stripReach(x)) && x.mod.affects(this, x.anchor, anchor));
+  }
+  /** CR 712.2 / 712.6b: the newest text a continuous stripper takes — text older
+   * than its own arrival, or, for a strip that is a condition on its target
+   * (`stripsLaterText`, The Everywhere), text of any age */
+  private static stripReach(x: { mod: import('./cards/dsl.ts').StaticMod; at: Stamp }): Stamp {
+    return x.mod.stripsLaterText ? E.LATEST : x.at;
   }
 
   /** CR 712.1a, THE radiator filter every `anchored()` channel asks: does the text

@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1874 rules and 99 sections.
+- New: 1875 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -1086,6 +1086,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 712.5 `effects.stripping.mutual`
   - 712.6 `effects.stripping.named-card`
   - 712.6a `effects.stripping.named-card.itself`
+  - 712.6b `effects.stripping.named-card.later-abilities`
   - 712.7 `effects.stripping.copied-text`
   - 712.8 `effects.column-share`
   - 712.8a `effects.column-share.everything`

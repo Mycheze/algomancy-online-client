@@ -2159,7 +2159,8 @@
     "see": [
       "113.3",
       "113.3a",
-      "113.3b"
+      "113.3b",
+      "712.6b"
     ],
     "sources": {
       "printed": [],
@@ -2576,6 +2577,56 @@
     "scope": "game",
     "confidence": "medium",
     "notes": "Owner 2026-10-22 (CT-329, closed by design): the self-named strip keeps applying; the engine already did so and 586 pins it. The owner's own words were not in this pass's inputs, so no owner source is recorded: the rule rests on the printed text (no exception for itself) and the engine (code + 586). 712.5 (mutual strips) is silent on one source.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.stripping.named-card.later-abilities",
+    "parent": "effects.stripping.named-card",
+    "order": 2,
+    "text": "The card The Everywhere names also loses the abilities it gains after the naming: an augment or graft attached to it later, and an ability granted to it later, are lost for as long as it is in The Everywhere's region. This is an exception to rule effects.stripping.timestamp: The Everywhere's strip is a condition on the named card, not a strip of what the card had when it applied. Every other strip still takes only what a unit has when it applies.",
+    "examples": [
+      {
+        "text": "The Everywhere names Nimbus Eel. Later, Voltwrath Behemoth (\"[Augment] Whenever you play a spell, I deal 1 damage to any target\") is attached to a Nimbus Eel in that region. The Behemoth's ability does nothing on the Eel.",
+        "test": "1242-everywhere-takes-later-abilities.test.ts::CR 712.6b / report #386: Voltwrath Behemoth stacked on the named Nimbus Eel after the naming has its line struck"
+      },
+      {
+        "text": "The Everywhere names Nimbus Eel, then Flourishing Flora is attached to the Eel. Another ally spawns, and the Eel gets no counter.",
+        "test": "1242-everywhere-takes-later-abilities.test.ts::CR 712.6b / report #386: an augment put on the card The Everywhere named, AFTER it named it, is silenced too"
+      },
+      {
+        "text": "Aetherflux Golem (\"[Augment] I gain +2/+2\") attached to the named card after the naming gives it nothing until The Everywhere leaves the region.",
+        "test": "1242-everywhere-takes-later-abilities.test.ts::CR 712.6b: the later text comes back when The Everywhere leaves the region"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: The Everywhere",
+          "quote": "My last named card loses all abilities. {i}(As long as I am in its region)."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "An augment triggered on a unit that was named by The Everywhere — real, worth doing (owner marked report #386 a bug, 2026-11-13)",
+          "adopted": "2026-11-13",
+          "from": "owner, session 2026-11-13"
+        }
+      ],
+      "engine": [
+        "E.strippersOf",
+        "E.stripReach"
+      ],
+      "tests": [
+        "1242-everywhere-takes-later-abilities.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "medium",
+    "notes": "Report #386 (Karanda, BXYQ): Voltwrath Behemoth's augment kept firing on a Nimbus Eel The Everywhere had named, because the engine applied 712.2's timestamp rule (the RAQ ruling on Monke / Transmogrifant / Suppression Field) to The Everywhere too. The owner marked it a bug twice: The Everywhere names a CARD and makes that card lose all abilities for as long as it is in its region, a condition on the card. No designer source addresses The Everywhere and later-gained abilities (searched the RAQ and rules-questions exports, the rulings jsonl and the corpus, 2026-11-13). Engine: StaticMod.stripsLaterText on The Everywhere's static; strippersOf stamps it as the latest thing on the target, the radiator walk lets it reach text of any age, and 712.5's newer-wins order still reads its real stamp. The Transmogrifant control is test 1242's second case.",
     "sourceHashes": {}
   },
   {
