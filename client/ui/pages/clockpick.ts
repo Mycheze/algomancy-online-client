@@ -4,8 +4,9 @@
  * fold).
  *
  * Moved out of main.ts in the design-system round (2026-11-03) with the home
- * screen. main.ts still imports `chosenClockMs` and `CLOCK_DEFAULT_MS` for the
- * two buttons that use them (`newgame`, `clockpick`, in handlePregameButton).
+ * screen. pages/home.ts imports `chosenClockMs` and `CLOCK_DEFAULT_MS` for the
+ * two buttons that use them (`newgame`, `clockpick`, in handleHomeButton; they
+ * were main.ts's until BL-63, 2026-11-13).
  * The server keeps its own copy of the per-mode table (server/rooms.ts
  * MATCH_CLOCK_MS); engine test 279 locks the two together by reading this file. */
 import { segmented } from '../components/index.ts';

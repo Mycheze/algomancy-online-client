@@ -4,7 +4,7 @@
  *
  * The class was five buttons, each of which read a text box, found it empty
  * and returned without a word — the press looked broken:
- *   - the home Join sheet's Join (main.ts `joincode`)
+ *   - the home Join sheet's Join (pages/home.ts `joincode`)
  *   - the home Import sheet's Load and Use pasted list (`deckimporturl`,
  *     `deckimporttext` → pages/deckpicker.ts importDeck)
  *   - the Decks page's import sheet, the same two (decks.ts `deck-import-*`)
@@ -14,7 +14,7 @@
  *
  * §1 the Join sheet: joinCodeTarget and the line it draws
  * §2 importDeck: the line, and no request
- * §3 the handlers in main.ts, decks.ts and account.ts take the saying path
+ * §3 the handlers in pages/home.ts (main.ts's until BL-63), decks.ts and account.ts take the saying path
  * §4 census: no ui handler reads a box and returns silently on empty
  */
 import { test } from 'node:test';
@@ -76,12 +76,12 @@ const branch = (src: string, head: string, len = 900): string => {
 };
 
 test('1227 §3 the handlers take the path that says it', () => {
-  const main = read('main.ts');
-  const join = branch(main, "if (b === 'joincode') {", 500);
+  const home = read('pages/home.ts');   // handleHomeButton, main.ts's until BL-63 (2026-11-13)
+  const join = branch(home, "if (b === 'joincode') {", 500);
   assert.match(join, /joinCodeTarget\(/, 'Join asks joinCodeTarget');
   assert.match(join, /if \(!target\) \{ renderHome\(\);/, '…and repaints so the line shows');
   for (const b of ['deckimporturl', 'deckimporttext']) {
-    const body = branch(main, `if (b === '${b}') {`, 300);
+    const body = branch(home, `if (b === '${b}') {`, 300);
     assert.match(body, /\n\s+importDeck\(\{ (url|text): /, `${b}: importDeck is called whatever the box holds`);
   }
   const decks = branch(read('decks.ts'), "case 'deck-import-text': {", 700);
