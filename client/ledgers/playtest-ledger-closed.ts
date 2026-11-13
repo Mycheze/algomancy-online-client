@@ -5706,4 +5706,40 @@ export const CLOSED: LedgerEntry[] = [
     guards: ['1238-page-does-not-bounce.test.ts::§1 html has overscroll-behavior: none outside any media query'],
     note: "Real by reading, not reproduced (no phone on the box). No overscroll-behavior on html or body anywhere in the stylesheet, only on inner scrollers, so a phone's browser bounces the whole document on a vertical drag even when it fits. CT-563 filed: stop the root's overscroll without stopping a long page's scroll. Fixed 2026-11-12 (steward): html and body now carry overscroll-behavior: none, so a phone no longer drags or bounces the whole page, while a page longer than the screen still scrolls.",
   },
+  {
+    id: 389, room: "KYYD", date: "2026-11-13",
+    report: "Nyar, seat 0 (bug, medium): \"I was able to mod umbral decay to my Spellbind. It doesn't have a graft to be able to graft onto Spellbind. And also the Afflicting Attribute does not have an Augment so it also should not be able to be applied.\"",
+    status: 'by-design',
+    note: "Owner ruling: anything you can pay for may go on a Modular card. KYYD (Nyar v proud, constructed, played 2026-11-13 on 5e379f65, the current engine) fetched and replayed: 163 of 163 actions, no divergence, deterministic. [130] Nyar plays Spellbind and [131]-[137] choose its Modular mods: Fester, Fester, Oracle of the Flame and Umbral Decay, all from the bin; [138] is the pass after the cast. Umbral Decay prints no graft or augment symbol (\"{Battle} {Afflicting} Blight Spell — Put two -1/-1 counters on target unit\"). CR 724.2 (\"Any card in the player's hand or bin whose cost they can pay may be applied to a Modular card: a graft, an augment, a Virus, or a card that can do nothing on a spell\"), 724.2a (a mod that does nothing is still legal and still paid for) and 720.2a/720.1a (Modular is the exception to the symbol and timing rules) rest on the owner's ruling of 2026-08-23 (CT-19): \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont do anything at all since it requires being in play (which a spell never is).\" The engine did exactly that: Umbral Decay as a mod added nothing — Spellbind's resolution gave Nyar's one rot, the two Festers' rots and Oracle of the Flame's Fireball, no counters and no Afflicting rot from it — and it was erased with the modded (Unstable) Spellbind (CR 724.5). The Afflicting rot later in that stack came from a second Umbral Decay Nyar had cast on its own at Vaporweave Eidolon. The only designer words near this are Caleb's 2025-02-07 thinking aloud in rules-questions (\"basically you can't augment abilities onto spells. Just attributes … or, I could allow abilities and rule that they do nothing … we can start testing the rules this way\"), about augment abilities, before the owner's ruling, which settles the wider question. Guarded by 91-modular (\"CR 724.2: the {Modular} menu offers every card you can pay for\", \"CR 724.4b: an [Augment]-TEXT mod is accepted and does nothing\"). No defect.",
+  },
+  {
+    id: 390, room: "NJJR", date: "2026-11-13",
+    report: "Nyar, seat 0 (bug, gamebreaking): \"A single (combined) graft effect on the resolved. It had the parts: 1. Something irrelevant 2. Target unit gets -2/-2 3. Each player recalls a unit. The targeted Unit was 4/2 and then died before each player got to recall their units. The state based actions (like moving a unit to the bin because it dies) are only checked after an effect is completely resolved. between step 2 and 3 the unit should remain a 2/0 on the board and should be able to be recalled. This bug might disrupt any big graft effect resolution order!\"",
+    status: 'by-design',
+    note: "Algomancy checks deaths during an effect's resolution, not only after it (CR 713.3a); the designer says so. NJJR (Nyar v proud, constructed, played 2026-11-13 on 5e379f65, the current engine) fetched and replayed: 476 of 476 actions, no divergence, deterministic; --report rebuilds the board at 287 (turn 8, attack window, proud choosing Galerider Eel's recall). The effect was proud's Galerider Eel trigger with Overwhelm and Recall grafted on: the Eel's +4/+4 and flying, then Overwhelm's \"Target unit gains -1/-1 until regroup for each card in your hand\" at Nyar's Maelstrom Charger (4/2; -3/-3, not -2/-2), then Recall's \"Each player recalls one of their units and loses 2 life\". The Charger died between the second and third parts, and Nyar recalled Eldritch Reclaimer. CR 713.3a: \"after each part of an effect made of several parts, units that should be dead die at once, before the rest of the effect happens.\" Its record's basis is the engine's, but the designer settled it: calebgannon in rules-questions, 2025-04-19 (reply to \"the effect just swapped the health, game rules killed it?\"): \"algomancy has different rules for this than MTG does\" / \"we check stats for death for units that are interacted with during effect resolutions\" (also in generated_rulings, not outdated). The MTG rule the report describes is the one he contrasts it with. Guarded by 427-cr-continuous-effects (the Pestilent Titan trigger kills a 1/1 before the next unit gets its counter). No defect.",
+  },
+  {
+    id: 391, room: "NJJR", date: "2026-11-13",
+    report: "Nyar, seat 0, agreed fix: back to before proud's choice: Lonely Forager (proud's) (the start of this step) — takes back proud's choice and Nyar's pass. \"test\"",
+    status: 'agreed-fix',
+    note: "A judge trying the take-back tool, reason \"test\", agreed by proud. Turn 9 battle, counterattack after-window: took back proud's choice of Lonely Forager for Shoreline Specter's \"you may recall target ally\" [323] and Nyar's pass [324]; proud then chose Jelly instead [323] and play went on. NJJR replays FAITHFUL (476 of 476); --report triage none of (a)-(d). A legal choice taken back by agreement; no defect.",
+  },
+  {
+    id: 392, room: "NJJR", date: "2026-11-13",
+    report: "Nyar, seat 0, agreed fix: back to before proud's attack (the start of turn 10, battle (declare)) — takes back proud's attack. \"test\"",
+    status: 'agreed-fix',
+    note: "A judge trying the take-back tool, reason \"test\", agreed by proud. Took back proud's attack declaration of turn 10 [354], which had been no attack; proud declared again [354], then played Jelly at Auric Ascendant. NJJR replays FAITHFUL (476 of 476); --report triage none of (a)-(d). A legal declaration taken back by agreement; no defect.",
+  },
+  {
+    id: 393, room: "NJJR", date: "2026-11-13",
+    report: "Nyar, seat 0, agreed fix: back to before Nyar's blocks (the start of turn 12, battle (blocks)), then back to before proud's pass (the start of turn 12, battle (attackWindow)). \"test\"",
+    status: 'agreed-fix',
+    note: "A judge trying the take-back tool, reason \"test\", two agreed steps in one run. Fix 2 took back Nyar's blocks (Auric Ascendant, Maelstrom Charger, Auric Ascendant) [446] and proud's pass [447]; fix 3 then took back proud's pass [444] and Nyar's pass [445] in the attack window, and proud played Mirage Walker at Lonely Forager instead [444]-[445]. NJJR replays FAITHFUL (476 of 476); --report triage none of (a)-(d) for both. Legal blocks and passes taken back by agreement; no defect.",
+  },
+  {
+    id: 394, room: "NJJR", date: "2026-11-13",
+    report: "Nyar, seat 0, agreed fix: back to before proud's Mirage Walker (the start of this step) — takes back proud's Mirage Walker and proud's choice: Lonely Forager (proud's). \"test\"",
+    status: 'agreed-fix',
+    note: "A judge trying the take-back tool, reason \"test\", agreed by proud, straight after #393. Took back proud's Mirage Walker (Ambush) [444] and its target, Lonely Forager [445]; proud replayed the same two actions and Nyar answered with Celestial Purge at the Forager [446]-[447]. --report triage flags (b), the redo repeats every cut choice (2/2): expected for a test. NJJR replays FAITHFUL (476 of 476). No defect.",
+  },
 ];
