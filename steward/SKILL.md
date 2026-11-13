@@ -270,10 +270,15 @@ notes before editing. Then:
 - **The censuses** — tests that scan the whole repo, so no targeted run finds
   them. They turned most red gates of 2026-11-07/08 red (33 minutes each, plus
   a repair run). Run the one your change feeds:
-  **any edit in `engine/src/`** → `engine/test/409-comprehensive-rules` (CR
-  verdicts quote engine lines as spans; a line you rewrote makes them stale —
-  move each span to the line that now does it, then `npm --prefix client run
-  cr:check`; 2026-11-08, report #342, worked example `a4602db5`) and
+  **any edit to a file the CR quotes** — all of `engine/src/`, and many in
+  `ui/`, `server/`, `ledgers/`: `grep -rlF '<path from repo root>'
+  data/comprehensive-rules/rules data/comprehensive-rules/verdicts` for every
+  file you changed → `engine/test/409-comprehensive-rules` (the CR quotes code
+  lines as spans; a line you rewrote or moved makes them stale — move each span
+  to the line that now does it, then `npm --prefix client run cr:check`;
+  2026-11-08, report #342, worked example `a4602db5`; 2026-11-13, BL-63 moved
+  Create room out of `ui/main.ts`, two spans went stale, red gate, a repair
+  run); **any edit in `engine/src/`** also →
   `engine/test/800-cc-drift-guard` (~1 min; when it moves, §8a; report #344);
   a card's trigger, static or cost hook added, removed or reshaped →
   `engine/test/71-card-ledger` (a hand-kept tally; update it AND its table
