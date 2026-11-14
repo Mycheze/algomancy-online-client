@@ -1,9 +1,10 @@
 /* CUBE DRAFT EVENTS — the HTTP routes and the room-less socket channel (docs/25 §9).
  *
- * HTTP (bearer token; every route needs a signed-in account, 401 'log in first'):
+ * HTTP (bearer token; every route but the GET of one event needs a signed-in account, 401 'log in first'):
  *   POST /api/cube/new {config}            → {ok, code}
  *   GET  /api/cube/mine                    → {ok, events: CubeMine[]}
- *   GET  /api/cube/<code>                  → {ok, view: CubeView}   (a reload before the socket is up)
+ *   GET  /api/cube/<code>                  → {ok, view: CubeView}   (a reload before the socket is up;
+ *                                            signed out too: the public view, me null)
  *   POST /api/cube/<code>/join | /leave
  *   POST /api/cube/<code>/deck {main, side}  submit
  *   POST /api/cube/<code>/suggest          → {ok, main, side}       autoBuild of my pool
@@ -34,7 +35,19 @@ const CODE = /^[A-Z0-9]{1,12}$/;
 export async function cubeRoutes(req: IncomingMessage, res: ServerResponse, path: string): Promise<boolean> {
   if (!path.startsWith('/api/cube/') && path !== '/api/cube') return false;
   const acct = accountForToken(tokenOf(req));
-  if (!acct) return json(res, { ok: false, error: 'log in first' }, 401), true;
+  if (!acct) {
+    // Signed out, one thing answers: an event's view, as the socket's `sub` already gives it
+    // (`me` null, `joined` false — no draft, no pool, no deck). The Join box asks this to tell
+    // an event's code from a room's, and the event page then says "Sign in to join".
+    const pub = req.method === 'GET' ? /^\/api\/cube\/([A-Za-z0-9]{1,12})$/.exec(path) : null;
+    const pc = pub && pub[1] !== 'mine' ? pub[1]!.toUpperCase() : null;
+    if (pc !== null) {
+      const pe = getCube(pc);
+      if (!pe) return json(res, { ok: false, error: `No event with code ${pc}.` }, 404), true;
+      return json(res, { ok: true, view: viewFor(pe, null, Date.now()) }), true;
+    }
+    return json(res, { ok: false, error: 'log in first' }, 401), true;
+  }
   const me: Actor = { id: acct.id, username: acct.username };
   const now = Date.now();
 

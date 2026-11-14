@@ -77,6 +77,7 @@ export function fixtureEnv(varDir: string, now: string): Record<string, string> 
     // nothing in the fixture made a match; without it a match would be
     // written to the checkout's own var/matches
     ALGO_MATCHES_DIR: join(varDir, 'matches'),
+    ALGO_CUBE_DIR: join(varDir, 'cube'),
     ALGO_OG_CACHE_DIR: join(varDir, 'og-cache'),
     ALGO_TESTER_TOKEN: TESTER,
     // off, whatever the operator's shell exported (suite.test.ts says why)

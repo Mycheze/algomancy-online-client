@@ -181,9 +181,24 @@ function signupClaimHtml(signup: PostGameView['signup']): string {
 function matchButtonsHtml(o: GameOver): string {
   const m = o.match!;
   if (m.phase === 'over' || m.phase === 'void') {
+    // docs/25 §8: a cube event's match is over — there is no new match to make, and home is not
+    // where the player is going: one way out, back to the event (ui/cube.ts `cube-return`)
+    if (m.cube) return cubeReturnHtml(m.cube.event, true);
     return button({ label: 'New match', variant: 'primary', dataBtn: 'pg-newmatch', attrs: { 'data-bo': m.bestOf } });
   }
   return button({ label: `Continue to game ${m.game}`, variant: 'primary', dataBtn: 'pg-continue', attrs: { 'data-room': m.room } });
+}
+
+/** a cube match's way back to its event */
+function cubeReturnHtml(event: string, primary: boolean): string {
+  return button({ label: 'Back to the event', ...(primary ? { variant: 'primary' as const } : {}), dataBtn: 'cube-return', attrs: { 'data-code': event } });
+}
+
+/** the way home — for a cube match, the way back to its event (unless the match's own button already is) */
+function homeHtml(o: GameOver): string {
+  const m = o.match;
+  if (m?.cube) return m.phase === 'over' || m.phase === 'void' ? '' : cubeReturnHtml(m.cube.event, false);
+  return button({ label: 'Return to home', dataBtn: 'pg-home' });
 }
 
 /** the match's line: "Game 1 of 3 · you lead 1–0", or its result */
@@ -276,7 +291,7 @@ export function postGameHtml(v: PostGameView): string {
     <div class="pgbtns">
       ${o.match ? matchButtonsHtml(o) : rematchHtml(o)}
       ${disputeHtml(o)}
-      ${button({ label: 'Return to home', dataBtn: 'pg-home' })}
+      ${homeHtml(o)}
       ${button({ label: 'Find a game', dataBtn: 'pg-queue' })}
     </div>
     <button class="pgpeek" data-btn="pg-close">View the final board</button>

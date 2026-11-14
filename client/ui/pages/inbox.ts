@@ -42,6 +42,14 @@ export interface NoteCardView {
   html: string;
   action: 'league' | 'play' | null;
 }
+/** a cube event's note (cubenotes.ts cubeNoteLine): its sentence and the event it opens */
+export interface CubeNoteCardView {
+  /** the event's code */
+  event: string;
+  read: boolean;
+  /** trusted markup: cubeNoteLine's sentence */
+  html: string;
+}
 /** an open Competitive match (match.ts myMatchLine already applied) */
 export interface MatchCardView {
   room: string; seat: number;
@@ -64,6 +72,8 @@ export interface InboxListView {
   /** decks friends sent (absent = none) */
   decks?: DeckShareCardView[];
   notes: NoteCardView[];
+  /** cube events' notes (absent = none) */
+  cube?: CubeNoteCardView[];
 }
 
 export interface InboxLayerView {
@@ -154,6 +164,14 @@ function noteHtml(n: NoteCardView, pop: boolean): string {
   </div>`;
 }
 
+/** docs/25: a cube event's news; its one button opens the event */
+function cubeNoteHtml(n: CubeNoteCardView): string {
+  return `<div class="invitecard leaguenote${n.read ? '' : ' unread'}">
+    <div>${n.html}</div>
+    <div class="invbtns"><button data-inbox="cube" data-event="${esc(n.event)}">Open</button></div>
+  </div>`;
+}
+
 /** docs/22 §5.6: an open match, one button from anywhere */
 function matchCardHtml(m: MatchCardView): string {
   return `<div class="invitecard">
@@ -208,6 +226,7 @@ export function inboxListHtml(v: InboxListView): string {
     ...v.requests.map(requestHtml),
     ...(v.decks ?? []).map(deckShareHtml),
     ...(v.notes.length ? [`<div class="zonelabel">League</div>`, ...v.notes.map(n => noteHtml(n, false))] : []),
+    ...(v.cube?.length ? [`<div class="zonelabel">Cube draft</div>`, ...v.cube.map(cubeNoteHtml)] : []),
   ];
   return `<div class="inboxlist">
     <div class="zonelabel">Notifications</div>

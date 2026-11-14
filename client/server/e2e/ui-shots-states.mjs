@@ -244,5 +244,39 @@ export function SCENARIOS(fx) {
       { click: btn('cc-new'), settle: 1500 },
     ], check: '#app', pages: 1 });
   }
+
+  // ── docs/25: the cube pick screen. LAST of all: each state makes an event and starts its
+  //    draft (the player's "the draft is starting" bell line and the home card's events
+  //    would show on every later picture). The event is made from the page, over the API,
+  //    as a player would with the New-event sheet: me as host, the friend joined, Start.
+  //    ⚠ needs ALGO_CUBE_DIR in ui-fixture.ts fixtureEnv, or the events land in the
+  //    checkout's var/cube.
+  const cubeDraft = (config) => ({ eval: `(async () => {
+    const me = localStorage.getItem('algoToken');
+    const call = async (path, tok) => (await fetch(path, { method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + tok },
+      body: JSON.stringify(path.endsWith('/new') ? { config: ${JSON.stringify({ name: 'Friday cube', fillBots: true, ...config })} } : {}) })).json();
+    const made = await call('/api/cube/new', me);
+    if (!made.ok) return false;
+    if (!(await call('/api/cube/' + made.code + '/join', ${JSON.stringify(fx.tokens?.[fx.names?.friend] ?? '')})).ok) return false;
+    if (!(await call('/api/cube/' + made.code + '/start', me)).ok) return false;
+    location.search = '?cube=' + made.code;
+    return true;
+  })()`, settle: 2500 });
+  // a full table (eight seats, six bots) and a fifteen-card pack: the widest strip, the most tiles
+  add('cube', 'draft-pack', '/', { ...me, steps: [cubeDraft({ maxPlayers: 8, packs: 2, packSize: 15 })], check: '.cdpage', pages: 1 });
+  // the last ten seconds: a five-card pack's clock is 30 s; held 19 s, then a card chosen
+  // (the server answers a choice with a fresh view, so the clock on screen is the server's)
+  add('cube', 'draft-urgent', '/', { ...me, steps: [
+    cubeDraft({ maxPlayers: 8, packs: 6, packSize: 5 }),
+    { wait: 19_000 },
+    { click: btn('cd-card'), settle: 600 },
+  ], check: '.cdpage', pages: 1 });
+  // waiting for a pack: two seats, no bots — my pick goes to the friend, who holds theirs
+  add('cube', 'draft-waiting', '/', { ...me, steps: [
+    cubeDraft({ maxPlayers: 2, packs: 6, packSize: 5 }),
+    { click: btn('cd-card') },
+    { click: btn('cd-confirm'), settle: 1500 },
+  ], check: '.cdwaiting', pages: 1 });
   return S;
 }

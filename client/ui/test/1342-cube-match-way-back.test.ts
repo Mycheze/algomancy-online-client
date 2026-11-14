@@ -3,7 +3,7 @@
  * The server tags a cube match's summary (`match.cube = {event, pairing}`, server/match.ts
  * matchSummary); a Play or Watch from the event page also puts `cube=<CODE>` on the room link.
  *
- * §1 after the last game the post-game screen stays up; its Home and New match go to the event
+ * §1 after the last game the post-game screen stays up; its one way out goes to the event
  * §2 a match that ends while this page waits between games goes to the event at once
  * §3 the room's Leave (gohome) goes to the event
  * §4 a watch link that carries its event: the way back is the event; a room link without one is not a cube match
@@ -40,12 +40,10 @@ test('1342 §1 the post-game screen stays; its ways out go to the event', () => 
   const before = loc.search;
   const html = ui.push({ t: 'match', room: null, match: OVER_MATCH });
   assert.equal(loc.search, before, 'the result stays on screen: no jump away from it');
-  assert.match(html, /data-btn="pg-newmatch"/);
-  ui.click({ btn: 'pg-newmatch' });
-  assert.match(String(loc.href), /\?cube=QZXV$/, 'New match: the event, not the home card');
-  loc.href = 'http://x/';
-  ui.click({ btn: 'pg-home' });
-  assert.match(String(loc.href), /\?cube=QZXV$/, 'Return to home: the event');
+  // one way out, named for where it goes (1348 pins the screen's buttons)
+  assert.doesNotMatch(html, /data-btn="pg-newmatch"|data-btn="pg-home"/);
+  ui.click({ btn: 'cube-return' });
+  assert.match(String(loc.href), /\?cube=QZXV$/, 'Back to the event: the event, not the home card');
 });
 
 test('1342 §2 between games, the end goes to the event at once', () => {

@@ -35,6 +35,8 @@ import { esc } from './util.ts';
 import { playCue } from './audio.ts';
 import { alertTab } from './tabalert.ts';
 import { noteLine, type LeagueNote } from './leaguenotes.ts';
+import { cubeNoteLine } from './cubenotes.ts';
+import type { CubeNote } from '../server/cube-types.ts';
 import { matchLink, myMatchLine, type MyMatch } from './match.ts';
 import {
   inboxLayerHtml, inviteRowsHtml as inviteRowsPageHtml, roomFriendsBodyHtml, roomFriendsHtml as roomFriendsPanelHtml,
@@ -81,6 +83,8 @@ let requests: RequestView[] = [];
 let friends: RoomFriend[] = [];
 let notes: LeagueNote[] = [];
 let times: TimeAsk[] = [];
+/** docs/25: cube events' news (server/cube-store.ts cubeNotesFor), newest first */
+let cubeNotes: CubeNote[] = [];
 /** decks friends sent, until opened or dismissed (server/deckshare.ts) */
 let decks: DeckShareView[] = [];
 /** docs/22 §5.6: this account's open Competitive matches (/api/matches/mine) */
@@ -145,6 +149,7 @@ function saveSeen(): void {
 
 /** what the bell counts: everything waiting on an answer, and league news not yet read */
 const unread = (): number => invites.length + requests.length + times.length + decks.length + notes.filter(n => !n.read).length
+  + cubeNotes.filter(n => !n.read).length
   + dueMatches().length + resumeAsks().length;
 
 /** a league time, in the player's zone */
@@ -210,6 +215,7 @@ function listView(): InboxListView {
     requests,
     decks: decks.map(d => ({ id: d.id, from: d.from, deck: d.deck, name: d.name })),
     notes: notes.map(noteCard),
+    cube: cubeNotes.map(n => ({ event: n.event, read: n.read, html: cubeNoteLine(n) })),
   };
 }
 
@@ -328,9 +334,9 @@ function poll(): void {
   fetch(`/api/inbox${room ? `?room=${encodeURIComponent(room)}` : ''}`, { headers: deps.authHeaders() })
     .then(r => r.json())
     .then((r: { ok?: boolean; invites?: InviteView[]; requests?: RequestView[]; friends?: RoomFriend[];
-      league?: LeagueNote[]; times?: TimeAsk[]; decks?: DeckShareView[] }) => {
+      league?: LeagueNote[]; times?: TimeAsk[]; decks?: DeckShareView[]; cube?: CubeNote[] }) => {
       if (!r.ok) return;
-      take(r.invites ?? [], r.requests ?? [], r.friends ?? [], r.league ?? [], r.times ?? [], r.decks ?? []);
+      take(r.invites ?? [], r.requests ?? [], r.friends ?? [], r.league ?? [], r.times ?? [], r.decks ?? [], r.cube ?? []);
     })
     .catch(() => { /* offline: keep what we had */ })
     .finally(() => { inFlight = false; schedule(); });
@@ -360,8 +366,8 @@ function pollMatches(): void {
 
 /** fold a poll's answer in, and say so only if something changed */
 function take(nextInvites: InviteView[], nextRequests: RequestView[], nextFriends: RoomFriend[],
-  nextNotes: LeagueNote[], nextTimes: TimeAsk[], nextDecks: DeckShareView[] = []): void {
-  const before = JSON.stringify([invites, requests, friends, notes, times, decks, loaded]);
+  nextNotes: LeagueNote[], nextTimes: TimeAsk[], nextDecks: DeckShareView[] = [], nextCube: CubeNote[] = []): void {
+  const before = JSON.stringify([invites, requests, friends, notes, times, decks, cubeNotes, loaded]);
   const friendsBefore = loaded ? JSON.stringify(friends) : '';
   const leagueBefore = JSON.stringify([notes.map(n => n.id), times]);
   invites = nextInvites;
@@ -370,6 +376,7 @@ function take(nextInvites: InviteView[], nextRequests: RequestView[], nextFriend
   notes = nextNotes;
   times = nextTimes;
   decks = nextDecks;
+  cubeNotes = nextCube;
   // the things worth a chime: an invite, a time to answer, a match about to start
   const fresh: [string, string][] = [
     ...invites.map(i => [i.id, `${i.from} invited you`] as [string, string]),
@@ -392,17 +399,20 @@ function take(nextInvites: InviteView[], nextRequests: RequestView[], nextFriend
   loaded = true;
   saveSeen();
   if (JSON.stringify(friends) !== friendsBefore) friendsChanged?.();
-  if (JSON.stringify([invites, requests, friends, notes, times, decks, loaded]) === before) return;
+  if (JSON.stringify([invites, requests, friends, notes, times, decks, cubeNotes, loaded]) === before) return;
   paint();
   paintPanel();
 }
 
-/** every league note on the list is read: here, and on the server */
+/** every league and cube note on the list is read: here, and on the server
+ * (league notes by id, cube notes by time — their ids are per event) */
 function markRead(): void {
   const upTo = Math.max(0, ...notes.filter(n => !n.read).map(n => n.id));
-  if (!upTo) return;
-  notes = notes.map(n => ({ ...n, read: true }));
-  void post('/api/inbox/read', { upTo }).catch(() => undefined);
+  const cubeUpTo = Math.max(0, ...cubeNotes.filter(n => !n.read).map(n => n.at));
+  if (!upTo && !cubeUpTo) return;
+  if (upTo) notes = notes.map(n => ({ ...n, read: true }));
+  if (cubeUpTo) cubeNotes = cubeNotes.map(n => (n.at <= cubeUpTo ? { ...n, read: true } : n));
+  void post('/api/inbox/read', { ...(upTo ? { upTo } : {}), ...(cubeUpTo ? { cubeUpTo } : {}) }).catch(() => undefined);
 }
 
 /** poll now rather than at the next tick — after a click changed something */
@@ -430,6 +440,15 @@ function onClick(what: string, el: HTMLElement): void {
       paint();
       deps?.openLeague(el.dataset['season'] ?? '');
       return;
+    case 'cube': {
+      panelOpen = false;
+      paint();
+      const ev = el.dataset['event'] ?? '';
+      // a waiting room is a game page: the event is a navigation away, as the League page is
+      if (openCubeFn && !deps?.room()) openCubeFn(ev);
+      else location.search = `?cube=${encodeURIComponent(ev)}`;
+      return;
+    }
     case 'league-play':
       panelOpen = false;
       paint();
@@ -524,6 +543,13 @@ function onClick(what: string, el: HTMLElement): void {
 }
 
 let installed = false;
+
+/* ui/cube.ts hands its opener in (initCube) rather than being imported: it pulls in the pick
+ * screen and the builder, and decks.ts and pages/home.ts import this module — an import of
+ * cube.ts here is a cycle waiting to happen. Not handed in (a headless boot): a navigation. */
+let openCubeFn: ((code: string) => void) | null = null;
+/** the bell's cube lines open the event through this (ui/cube.ts openCube) */
+export function setCubeOpener(f: (code: string) => void): void { openCubeFn = f; }
 
 /** Mount the layer and start polling. Safe without a document (the headless
  * harness): nothing here is load-bearing for the game. */

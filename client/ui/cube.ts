@@ -25,6 +25,7 @@ import * as acct from './account.ts';
 import { playCue } from './audio.ts';
 import { alertTab } from './tabalert.ts';
 import { copyText } from './util.ts';
+import { setCubeOpener } from './inbox.ts';
 import type { CubeMatchView, CubeMine, CubeServerMsg, CubeView } from '../server/cube-types.ts';
 import {
   CUBE_TABS, PACKS_MAX, PLAYERS_MAX, PLAYERS_MIN, ROUNDS_MAX, PACK_MIN,
@@ -76,6 +77,8 @@ export const screen = (): 'cube' | null => (open ? 'cube' : null);
 export function initCube(opts: { app: HTMLElement; rerender: () => void }): void {
   $app = opts.app;
   rerenderHost = opts.rerender;
+  // the bell's cube lines open the event the way the home card does
+  setCubeOpener(c => openCube(c));
   const url = new URLSearchParams(location.search);
   // a reload on the builder's table: the page under it is this event's
   const table = cubeTableWanted();
@@ -511,6 +514,10 @@ export function handleButton(btn: HTMLElement): boolean {
       return true;
     case 'cube-draft-show': draftHidden = false; paint(); return true;
     case 'cube-back': openCube(null); return true;
+    // the post-game screen of a cube match: its one way out, back to the event
+    case 'cube-return':
+      if (!leaveFor(d['code'] || null)) location.href = location.pathname;
+      return true;
     case 'cube-open': openCube(d['code'] ?? null); return true;
     case 'cube-tab': {
       const v = d['v'] as CubeTab | undefined;
