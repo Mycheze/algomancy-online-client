@@ -51,6 +51,12 @@ export function matchTagOf(raw: unknown): RecordedMatchTag | undefined {
   return { id: link.id, game: link.game, ...(bestOf ? { bestOf } : {}) };
 }
 
+/** docs/25 §8: the cube event a saved room's match belongs to, if any */
+export function cubeTagOf(raw: unknown): string | undefined {
+  const link = sanitizeMatchLink(raw);
+  return link ? getMatch(link.id)?.cube?.event : undefined;
+}
+
 /** The saved-room fields we care about, beyond what stats.ts already reads. */
 interface SavedRoom extends GameRecord {
   /** CR D8.5: who conceded, on which turn — stamped by rooms.ts when a concede
@@ -196,6 +202,14 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
     ...((): { match?: RecordedMatchTag } => {
       const tag = matchTagOf(raw.match) ?? previous?.match;
       return tag ? { match: tag } : {};
+    })(),
+    // docs/25 §8: a game of a cube event's match is recorded and TAGGED with
+    // the event — counted by no fold (foldSeat, isRated, the card stats),
+    // like a custom game. Read off the match record; the
+    // previous row keeps it across a re-import made without the match loaded.
+    ...((): { cube?: string } => {
+      const c = cubeTagOf(raw.match) ?? previous?.cube;
+      return c ? { cube: c } : {};
     })(),
   };
   const isNew = stashHistory(game);

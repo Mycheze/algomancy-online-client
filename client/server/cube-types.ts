@@ -128,6 +128,53 @@ export interface CubeEvent {
   endedAt?: number;
   /** append-only log of host edits, for the record */
   edits: { at: number; what: string }[];
+  /** the event's seed (the draft's, and every pairing's) — set at creation */
+  seed?: number;
+  /** the bell's lines for this event's players (cube-store.ts notes) */
+  notes?: CubeNoteRow[];
+}
+
+// ── the bell ─────────────────────────────────────────────────────────────────
+
+/** 'starting' the draft is starting · 'round' a round was posted (your opponent, or a bye) ·
+ *  'match' exhibition found you an opponent · 'done' the event is over */
+export type CubeNoteKind = 'starting' | 'round' | 'match' | 'done';
+
+/** one stored note, in the event's file */
+export interface CubeNoteRow {
+  n: number;               // per event, increasing
+  to: string;              // account id
+  kind: CubeNoteKind;
+  at: number;
+  readAt?: number;
+  round?: number;
+  /** the opponent's name; null = a bye */
+  opponent?: string | null;
+}
+
+/** what /api/inbox sends under `cube` (newest first) */
+export interface CubeNote {
+  id: string;              // "<CODE>:<n>"
+  event: string;           // the event code
+  eventName: string;
+  kind: CubeNoteKind;
+  at: number;
+  read: boolean;
+  round?: number;
+  opponent?: string | null;
+}
+
+/** GET /api/cube/mine — one row per event I host or play in (not cancelled, not long done) */
+export interface CubeMine {
+  code: string;
+  name: string;
+  phase: CubePhase;
+  isHost: boolean;
+  players: number;
+  maxPlayers: number;
+  startAt: number | null;
+  /** my current match, if any (playing) */
+  myMatch: CubeMatchView | null;
 }
 
 // ── what one viewer sees ─────────────────────────────────────────────────────

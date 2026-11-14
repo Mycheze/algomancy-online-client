@@ -484,6 +484,12 @@ export interface RecordedGame {
    * matchRatingRow). Absent on every other game.
    */
   match?: RecordedMatchTag;
+  /**
+   * docs/25 §8 — a game of a CUBE EVENT, and the event's code. Recorded and
+   * tagged exactly like `custom`: in the match history, in no profile total,
+   * achievement, deck record, rating or card stat. Absent on every other game.
+   */
+  cube?: string;
 }
 
 /** see RecordedGame.match — `bestOf` is absent only when the match record was
@@ -930,6 +936,9 @@ function foldSeat(profile: Profile, game: RecordedGame, seat: Seat): void {
   if (game.custom) return;
   // CR D8.2e: and so does a single card duel — it rates the CARDS, not the players
   if (game.single) return;
+  // docs/25 §8: nor does a cube event's game — a drafted pool's games are not
+  // the player's record (the event keeps its own standings)
+  if (game.cube) return;
   const s = game.seats[seat]!;
   const oppId = game.users[seat === 0 ? 1 : 0];
   profile.games++;
@@ -1403,6 +1412,8 @@ export interface MatchRow {
   disputed?: { mine: boolean; theirs: boolean };
   /** docs/22 §2.6: present only for a game of a Competitive match — "Game 2 of 3" */
   match?: RecordedMatchTag;
+  /** docs/25 §8: present only for a game of a cube event — its code */
+  cube?: string;
 }
 
 /**
@@ -1469,6 +1480,7 @@ export function recentGames(userId: string, limit = 25): MatchRow[] {
           ? { disputed: { mine: g.disputed.includes(seat), theirs: g.disputed.includes(seat === 0 ? 1 : 0) } }
           : {}),
         ...(g.match ? { match: { ...g.match } } : {}),
+        ...(g.cube ? { cube: g.cube } : {}),
       };
     });
 }

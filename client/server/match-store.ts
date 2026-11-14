@@ -102,6 +102,10 @@ export interface Match {
    *  sideboarding, clock and initiative choice unchanged. Absent on every
    *  Competitive match and on every file written before it. */
   casual?: true;
+  /** docs/25 §8: a match of a CUBE EVENT — the event's code and the pairing it
+   *  plays. Unrated; its result is recorded into the event (cube.ts) by the
+   *  composed `ended` hook, and its games are tagged `cube` in the history. */
+  cube?: { event: string; pairing: string };
 }
 
 const matches = new Map<string, Match>();

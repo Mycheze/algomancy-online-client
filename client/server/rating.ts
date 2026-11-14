@@ -135,6 +135,8 @@ export interface RatableGame {
   /** docs/22 §2.6: a game of a Competitive match — the MATCH is rated, once
    * (matchRatingRow), never its games */
   match?: unknown;
+  /** docs/25 §8: a game of a cube event — never rated */
+  cube?: unknown;
 }
 
 /**
@@ -152,6 +154,9 @@ export function isRated(game: RatableGame): boolean {
   if (game.custom) return false;
   // CR D8.2e: nor a single card duel, which rates CARDS and has its own fold
   if (game.single) return false;
+  // docs/25 §8: nor a cube event's game (its matches are made unrated; this is
+  // the belt to that brace)
+  if (game.cube) return false;
   // docs/22 §2.6: nor a game of a Competitive match. A rated best of three is
   // ONE result (the owner's "a CC match moves it once"): its row comes from the
   // match record (matchRatingRow), and its games would count it two or three

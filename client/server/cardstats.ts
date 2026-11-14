@@ -47,6 +47,8 @@ export interface StatsGame {
   concession?: Concession;
   custom?: unknown;
   single?: unknown;
+  /** docs/25 §8: a cube event's game — counted by no card stat */
+  cube?: unknown;
   ledger: GameLedger;
 }
 
@@ -139,7 +141,7 @@ export const TURN_CAP = 12;
 /** Is this game a result the card stats may count? */
 export function eligible(g: StatsGame, f: CardStatsFilter): boolean {
   if (!g.finished || (g.winner !== 0 && g.winner !== 1)) return false;
-  if (g.custom || g.single) return false;
+  if (g.custom || g.single || g.cube) return false;
   if (concessionWeight(g) === 'walkover') return false;
   if (g.mode !== 'draft' && g.mode !== 'constructed') return false;   // 'shared' is a test table
   if (f.mode !== 'all' && g.mode !== f.mode) return false;

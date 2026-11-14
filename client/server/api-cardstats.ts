@@ -49,7 +49,7 @@ export function statsGames(): StatsGame[] {
   const dir = gamesDir();
   const out: StatsGame[] = [];
   for (const h of gameHistory()) {
-    if (!h.finished || h.custom || h.single) continue;   // cheap early outs; the fold re-checks
+    if (!h.finished || h.custom || h.single || h.cube) continue;   // cheap early outs; the fold re-checks
     const r = readLedger(dir, h.code);
     if (r) out.push({ ...h, ledger: r.ledger });
   }

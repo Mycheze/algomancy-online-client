@@ -133,7 +133,7 @@ The event code is a 4-letter code minted with `freshRoomCode()` + `reserveRoomCo
 
 ## 7. Tournament (`cube-tourney.ts`)
 Points 3 win / 1 draw / 0 loss. Tie-breaks (D: the MTG standard): points, OMW% (each opponent's match-win %
-floored at 1/3), GW% (floored 1/3), OGW% (floored 1/3), then seat order. A draw happens only by host edit.
+floored at 1/3), GW% (floored 1/3), OGW% (floored 1/3), then join order. A draw happens only by host edit.
 
 - **Swiss** — `swissRounds` rounds (host sets, default 3). Round 1 random. Later rounds: pair within points
   order avoiding rematches (backtracking; n ≤ 12, exhaustive is fine), float down when needed. Odd count:

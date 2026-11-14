@@ -100,9 +100,22 @@ export function matchEnded(m: Match, now = Date.now()): void {
  * sweep when it is between games or paused */
 export const leagueWeekClosed = (m: Match): boolean => !!m.league && leagueMatchSettled(m.league.match);
 
-/** main.ts, once at boot (a test calls it too): W3's hooks keep theirs */
-export function installLeagueMatchHooks(): void {
-  setMatchHooks({ ended: m => matchEnded(m) });
+/** main.ts, once at boot (a test calls it too): W3's hooks keep theirs.
+ *
+ * ⚠ ONE `ended`. setMatchHooks keeps one function per key, so another module
+ * setting its own `ended` would silently replace the league's. Whoever else
+ * needs it (docs/25: the cube events, `cubeMatchEnded`) is passed in here and
+ * called after the league, each in its own catch; each ignores a match that is
+ * not its own. */
+export function installLeagueMatchHooks(alsoEnded: ReadonlyArray<(m: Match) => void> = []): void {
+  setMatchHooks({
+    ended: m => {
+      try { matchEnded(m); } catch (err) { console.error(`[league] ended hook failed for ${m.id}:`, err); }
+      for (const f of alsoEnded) {
+        try { f(m); } catch (err) { console.error(`[match] an ended hook failed for ${m.id}:`, err); }
+      }
+    },
+  });
   setLeagueWeekClosed(leagueWeekClosed);
   setLeagueWeekEnd(m => m.league ? leagueMatchDeadline(m.league.match) : null);
 }

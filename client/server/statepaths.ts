@@ -112,6 +112,11 @@ export const challengesDir = (): string => process.env['ALGO_CHALLENGES_DIR'] ??
  * is an ordinary room file under gamesDir(); this holds what lasts between
  * them — the score, the sideboard configurations, the clocks, the pause. */
 export const matchesDir = (): string => process.env['ALGO_MATCHES_DIR'] ?? join(VAR_DIR, 'matches');
+/** cube draft events (docs/25, server/cube-store.ts): one JSON file per event,
+ * `<CODE>.json`, written atomically — its players, the pod draft as it stands,
+ * the drafted pools and submitted decks, the pairings and results, and the
+ * bell's notes. Each match it opens is an ordinary match under matchesDir(). */
+export const cubeDir = (): string => process.env['ALGO_CUBE_DIR'] ?? join(VAR_DIR, 'cube');
 /** the drawn link-preview pictures (a deck's fan, server/main.ts /og/deck/).
  * A cache: every file is rebuilt from the deck on a miss, so losing it costs
  * one Python run per deck and nothing else. */

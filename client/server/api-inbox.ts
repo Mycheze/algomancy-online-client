@@ -15,6 +15,7 @@ import { accountById, accountForToken, favoriteOf } from './accounts.ts';
 import { acceptInvite, declineInvite, invitesFor, sendInvite, sentFrom, touch, type RoomLookup } from './inbox.ts';
 import { clearDeckShare, deckSharesFor, sendDeck } from './deckshare.ts';
 import { markNotesRead, notesFor, timesAskedOf } from './league-store.ts';
+import { cubeNotesFor, markCubeNotesRead } from './cube-store.ts';
 import type { Element } from '../engine/src/types.ts';
 
 export interface InboxContext {
@@ -69,6 +70,9 @@ export async function inboxRoutes(
       times: timesAskedOf(me.id, Date.now()),
       // decks friends sent (deckshare.ts): the bell's View lines
       decks: deckSharesFor(me),
+      // cube events (docs/25): "the draft is starting", "round 2: you play
+      // Bo", "exhibition found you an opponent", "the event is over"
+      cube: cubeNotesFor(me.id, Date.now()),
     }), true;
   }
 
@@ -77,6 +81,9 @@ export async function inboxRoutes(
     const b = await readBody(req);
     const upTo = Number(b['upTo']);
     if (Number.isFinite(upTo)) markNotesRead(me.id, upTo, Date.now());
+    // the cube lines are read up to a TIME (their ids are per event)
+    const cubeUpTo = Number(b['cubeUpTo']);
+    if (Number.isFinite(cubeUpTo)) markCubeNotesRead(me.id, cubeUpTo, Date.now());
     return json(res, { ok: true }), true;
   }
 

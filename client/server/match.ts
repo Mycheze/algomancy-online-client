@@ -557,7 +557,7 @@ export function matchLobbyInfo(room: Room, seat: Seat): MatchLobbyInfo | undefin
 }
 
 /** the in-game chip and the post-game screen: public facts only */
-export function matchSummary(m: Match): { id: string; bestOf: 1 | 3; score: [number, number]; game: number; phase: Match['phase']; room: string; games: Pick<MatchGame, 'winner' | 'how'>[]; result?: Match['result']; voided?: Match['voided'] } {
+export function matchSummary(m: Match): { id: string; bestOf: 1 | 3; score: [number, number]; game: number; phase: Match['phase']; room: string; games: Pick<MatchGame, 'winner' | 'how'>[]; result?: Match['result']; voided?: Match['voided']; cube?: Match['cube'] } {
   return {
     id: m.id, bestOf: m.bestOf, score: matchScore(m), game: m.games.length + (m.phase === 'over' || m.phase === 'void' ? 0 : 1),
     phase: m.phase, room: m.room,
@@ -565,6 +565,8 @@ export function matchSummary(m: Match): { id: string; bestOf: 1 | 3; score: [num
     // sum); the match result lists them (BL-55)
     games: m.games.map(g => ({ winner: g.winner, how: g.how })),
     ...(m.result ? { result: { ...m.result } } : {}), ...(m.voided ? { voided: { ...m.voided } } : {}),
+    // docs/25 §8: a cube match's post-game Continue goes back to its event
+    ...(m.cube ? { cube: { ...m.cube } } : {}),
   };
 }
 

@@ -98,6 +98,8 @@ export function serverEnv(env: Record<string, string> = {}): NodeJS.ProcessEnv {
     ALGO_CHALLENGES_DIR: join(tmpdir(), `algo-challenges-${process.pid}-${Math.random().toString(36).slice(2)}`),
     // docs/22: a Competitive match a test makes is written to a throwaway too
     ALGO_MATCHES_DIR: join(tmpdir(), `algo-matches-${process.pid}-${Math.random().toString(36).slice(2)}`),
+    // docs/25: and a cube event, whose 1 s sweep writes its file on every pick
+    ALGO_CUBE_DIR: join(tmpdir(), `algo-cube-${process.pid}-${Math.random().toString(36).slice(2)}`),
     ...env, PORT: '0',
   };
 }

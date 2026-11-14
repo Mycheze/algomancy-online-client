@@ -51,7 +51,7 @@ import {
   type Room, type SegKey,
   seatVerdict,
   notePassAllCovered, passAllDue, passAllStale, sanitizeAutoPass, sanitizePassAll, setAutoPass, setPassAll, setReportHold, setWatchHold, watchHoldExpired,
-  closedNotice, codeTaken, sweepIdleRooms, sandboxCodesByAge, hiddenActionsFrom,
+  closedNotice, codeTaken, setCodeTakenAlso, sweepIdleRooms, sandboxCodesByAge, hiddenActionsFrom,
   answerFix, dropProposal, fixInfo, fixesRefusal, editTiming, proposalExpired, proposeFix, recordAmendment,
   rewindOptions, rewindRoom, type Proposal, fixRunContinues, noteFixRun, takeFixRun, takeStaleFixRuns, FIX_RUN_IDLE_MS,
   disputedSeats, disputesRefusal,
@@ -105,6 +105,9 @@ import { sweepChallenges } from './challenge-store.ts';
 import { challengeNow } from './challenges.ts';
 import { recordPlayed as leagueRecordPlayed, roomModeOf, tick as leagueTick, type LeagueFormat } from './league-store.ts';
 import { installLeagueMatchHooks, openLeagueMatch } from './league-match.ts';
+import { cubeRoutes, cubeSocketClosed, cubeSocketMessage, pushCube, pushMatched } from './api-cube.ts';
+import { cubeMatchEnded, reconcileCubes, setCubeHooks, sweepCubes } from './cube.ts';
+import { cubeCodeTaken, loadCubes } from './cube-store.ts';
 import { emit, since as eventsSince, BOOT_ID } from './hooks.ts';
 import { CODE_ALPHABET } from './link.ts';
 import { deckForPlay, savedDeckNow } from './collection.ts';
@@ -681,6 +684,10 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   if (await leagueRoutes(req, res, path, url, {
     botAllowed: botAllowed(req), openRoom: openLeagueRoom,
   })) return;
+
+  // cube draft events (docs/25): the event's ops; its live half is the
+  // room-less `{t:'cube'}` socket channel below (api-cube.ts)
+  if (await cubeRoutes(req, res, path)) return;
 
   // weekly challenges (docs/21-weekly-challenges.md): the calendar, the
   // boards, and run submission — every submitted run is replayed in a worker
@@ -2287,7 +2294,22 @@ setMatchHooks({
 // docs/22 §2.6/§6.2 (W4): a decided match reports to the league once and
 // re-folds the ratings (`ended`); a league week's close voids a league match
 // waiting between games or paused
-installLeagueMatchHooks();
+// docs/25 §8: and the cube events' `ended`, through the same ONE dispatcher
+// (a second setMatchHooks({ended}) would replace the league's)
+installLeagueMatchHooks([m => cubeMatchEnded(m)]);
+// docs/25: an event's code is never handed to a room (one code space), and
+// the controller's pushes go out through api-cube.ts's subscriber map
+setCodeTakenAlso(cubeCodeTaken);
+setCubeHooks({
+  eventCode: () => freshRoomCode(),
+  roomCode: () => { const c = freshRoomCode(); reserveRoomCode(c); return c; },
+  changed: (e, only) => pushCube(e, only),
+  matched: (e, user, match) => pushMatched(e, user, match),
+  winRates: () => {
+    try { return new Map(cardStats({ mode: 'all' }).cards.map(r => [r.card as string, r.gih])); }
+    catch (err) { console.error('[cube] no win rates for the bots:', err); return new Map(); }
+  },
+});
 
 /** Push the current rematch state to both seats. */
 function broadcastRematch(room: Room): void {
@@ -2711,6 +2733,14 @@ wss.on('connection', ws => {
       // carries the offer rather than a search
       send(ws, queueStateFor(account.id));
       return pushQueueAll();
+    }
+
+    /* docs/25 §9 — A CUBE EVENT'S CHANNEL. Above `join` for the queue's
+     * reason: the event page's socket is in no room. It never reaches
+     * `conns`, so nothing below can mistake it for a seat. */
+    if (msg.t === 'cube') {
+      cubeSocketMessage(ws, msg as unknown as Record<string, unknown>);
+      return;
     }
 
     if (msg.t === 'join') {
@@ -3382,6 +3412,7 @@ wss.on('connection', ws => {
      * and this is it. A player held by an offer counts as declining, so the
      * other side is released rather than left watching a countdown for
      * somebody who has closed the tab. */
+    cubeSocketClosed(ws);
     const wasQueued = queueUser.has(ws);
     const droppedOffer = leaveQueue(ws);
     if (droppedOffer) resolveOffer(droppedOffer, false);
@@ -3735,7 +3766,13 @@ function sweepChallengeWeeks(): void {
 function sweepCc(): void {
   try { sweepMatches(Date.now()); } catch (err) { console.error('[match] sweep failed:', err); }
 }
-const expiryTimer = setInterval(() => { sweepExpiry(); sweepPassAll(); sweepWatchHold(); sweepFixes(); sweepQueue(); sweepFinished(); sweepIdle(); sweepCc(); sweepLeague(); sweepChallengeWeeks(); }, EXPIRY_TICK_MS);
+/** docs/25: the cube events — scheduled starts, the pick clocks and the bots,
+ * break ends, exhibition pairing. After sweepCc, so a match it voided this
+ * tick has already returned its pairing. */
+function sweepCube(): void {
+  try { sweepCubes(Date.now()); } catch (err) { console.error('[cube] sweep failed:', err); }
+}
+const expiryTimer = setInterval(() => { sweepExpiry(); sweepPassAll(); sweepWatchHold(); sweepFixes(); sweepQueue(); sweepFinished(); sweepIdle(); sweepCc(); sweepCube(); sweepLeague(); sweepChallengeWeeks(); }, EXPIRY_TICK_MS);
 expiryTimer.unref();
 
 loadAccounts();
@@ -3743,8 +3780,11 @@ loadAccounts();
 // reconcile (a game decided just before a crash moves its match on; what
 // lapsed while the server was down is voided)
 loadMatches();
+// docs/25: the cube events after the matches (their reconcile reads match records)
+loadCubes();
 restoreRooms();
 reconcileMatches();
+reconcileCubes();
 // CT-197: the sandbox cap counts the sandboxes a restart brought back, oldest
 // first, so the next one opened evicts the oldest of them rather than none
 sandboxCodes.push(...sandboxCodesByAge());

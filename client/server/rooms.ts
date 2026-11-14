@@ -2673,6 +2673,10 @@ export function closedNotice(code: string): string | null {
   } catch { return null; }
 }
 
+let otherCodeTaken: (code: string) => boolean = () => false;
+/** docs/25 §3 — main.ts tells this module which codes a cube event holds */
+export function setCodeTakenAlso(fn: (code: string) => boolean): void { otherCodeTaken = fn; }
+
 /**
  * May a NEW room be given this code? Not if a room holds it, a reservation
  * holds it, or a saved game does. The last is the one that was missing: room
@@ -2683,6 +2687,9 @@ export function closedNotice(code: string): string | null {
  */
 export function codeTaken(code: string): boolean {
   if (rooms.has(code) || reserved.has(code)) return true;
+  // docs/25 §3: cube events share this code space (a code typed into Join is
+  // never ambiguous). Injected, so rooms.ts never imports the cube store.
+  if (otherCodeTaken(code)) return true;
   return FILE_CODE.test(code) && existsSync(join(GAMES_DIR, `${code}.json`));
 }
 
