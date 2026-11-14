@@ -25,14 +25,15 @@ import { rng } from './league.ts';
 
 export type Res = { ok: true } | { ok: false; error: string };
 
-function envMs(): number {
-  const v = Number(process.env.ALGO_CUBE_PICK_MS_PER_CARD);
-  return Number.isFinite(v) && v > 0 ? v : 6000;
+function envMs(name: string, fallback: number): number {
+  const v = Number(process.env[name]);
+  return Number.isFinite(v) && v > 0 ? v : fallback;
 }
 /** the pick clock per card in the pack (docs/25 §1: 6 s × cards) */
-export const PICK_MS_PER_CARD: number = envMs();
-/** a bot picks this long after its pack became current (instant feels broken beside a human) */
-export const BOT_DELAY_MS = 1000;
+export const PICK_MS_PER_CARD: number = envMs('ALGO_CUBE_PICK_MS_PER_CARD', 6000);
+/** a bot picks this long after its pack became current (instant feels broken beside a human);
+ *  env ALGO_CUBE_BOT_DELAY_MS overrides it for dev runs with sims (read once at load) */
+export const BOT_DELAY_MS: number = envMs('ALGO_CUBE_BOT_DELAY_MS', 1000);
 
 const AUTO_PACKS = 3;
 const MAX_AUTO_PACK = 15;

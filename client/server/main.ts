@@ -107,7 +107,7 @@ import { recordPlayed as leagueRecordPlayed, roomModeOf, tick as leagueTick, typ
 import { installLeagueMatchHooks, openLeagueMatch } from './league-match.ts';
 import { cubeRoutes, cubeSocketClosed, cubeSocketMessage, pushCube, pushMatched } from './api-cube.ts';
 import { cubeMatchEnded, reconcileCubes, setCubeHooks, sweepCubes } from './cube.ts';
-import { cubeCodeTaken, loadCubes } from './cube-store.ts';
+import { cubeCodeTaken, getCube, loadCubes } from './cube-store.ts';
 import { emit, since as eventsSince, BOOT_ID } from './hooks.ts';
 import { CODE_ALPHABET } from './link.ts';
 import { deckForPlay, savedDeckNow } from './collection.ts';
@@ -2288,6 +2288,10 @@ setMatchHooks({
       if (!r) continue;
       for (const ws of r.sockets) if (ws && !told.has(ws)) { told.add(ws); send(ws, msg); }
     }
+    // docs/25 §8: a cube match moving to its next game's room changes the event page's Play and
+    // Watch links (the view reads the match's current room) — push it
+    const ev = m.cube ? getCube(m.cube.event) : undefined;
+    if (ev) pushCube(ev);
   },
   concede: (room, seat) => landAction(room, seat, { type: 'concede', seat }),
 });

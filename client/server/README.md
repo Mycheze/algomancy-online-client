@@ -261,3 +261,34 @@ reason, and `package.json` still points `npm test` at the runner. Scripts run
 one at a time; the port race that used to flake the suite was between
 processes outside it, and `spawnServer()` in `e2e/test-util.ts` takes an
 OS-assigned port for that reason.
+
+### A cube event, alone: `e2e/cube-seed.ts`
+
+Not a test — a rig for playing a whole cube event (docs/25) on the dev server
+with nobody else around. Create the event in the browser, then:
+
+```bash
+node client/server/e2e/cube-seed.ts --base http://127.0.0.1:5177 --code ABCD [--sims 7] [--pick-ms 1500]
+```
+
+Up to eleven sims ("Sim Ada", "Sim Bram"…, password `sim-player-password`,
+the same accounts every run) join the lobby and play every other seat until
+the event is done or cancelled, one plain line per thing that happens: each
+picks the highlighted card after `--pick-ms` (or half its clock if that is
+sooner), submits the suggested deck, keeps Ready on in exhibition, and plays
+its matches. Sim against sim, the first name presses Play and a coin flip per
+game (`--seed`) says who concedes, so a Best of 3 goes through its
+between-games lobby. Against you, the sim joins once you press Play and waits
+— `--concede-to-humans <s>` makes it concede each game after `s` seconds, to
+click through rounds fast. A re-run with the same code picks up where the
+last one stopped. `--quiet-picks` drops the pick lines.
+
+`--host-too --host <name> --host-password <pw>` drives the host account as
+one more sim; with it, `--start` presses Start once everyone is in,
+`--end-after <n>` ends an exhibition after n decided matches (nothing else
+ends one), and `--create swiss|roundrobin|exhibition [--best-of 3]
+[--rounds 3] [--seats 8]` makes the event itself — the whole thing then runs
+unattended. Fast clocks for that: start the server with
+`ALGO_CUBE_PICK_MS_PER_CARD=300 ALGO_CUBE_BREAK_MS=3000`. The server allows
+ten new events an hour from one address; a restart clears it. It refuses to
+point at the deployed site.
