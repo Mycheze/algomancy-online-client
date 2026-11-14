@@ -160,3 +160,14 @@ test('1370 §7 a repaint puts the same pictures back, not new ones (keepArt)', (
   assert.equal(imgs[1]!.id > first[4]!, true, 'a picture that changed is the new element');
   assert.deepEqual([0, 2, 3, 4].map(i => imgs[i]!.id), [0, 2, 3, 4].map(i => first[i]!), 'and the rest are kept');
 });
+
+test('1370 §8 paintHome paints through keepArt — never a bare innerHTML that re-creates the pictures', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../pages/home.ts', import.meta.url), 'utf8');
+  const start = src.indexOf('export function paintHome(');
+  assert.ok(start > 0, 'paintHome is in pages/home.ts');
+  const body = src.slice(start, src.indexOf('\n}\n', start));
+  const paints = body.split('\n').filter(l => /\bapp\.innerHTML\s*=/.test(l));
+  assert.ok(paints.length > 0, 'non-vacuous: paintHome writes #app');
+  for (const l of paints) assert.match(l, /keepArt\(app,/, `a repaint outside keepArt flashes every picture: ${l.trim()}`);
+});
