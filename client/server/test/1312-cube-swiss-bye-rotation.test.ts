@@ -66,7 +66,7 @@ test('the bottom player already had a bye: it skips up to the lowest who has not
     ({ id, round: r, a, b, posted: true, result: { kind: 'win', winner: a, at: 1, by: 'play' } });
   const bye = (id: string, r: number, a: string): Pairing =>
     ({ id, round: r, a, b: null, posted: true, result: { kind: 'bye', at: 0, by: 'play' } });
-  // R1 u0>u1 u2>u3 u4 bye · R2 u0>u4 u1>u2 u3 bye · R3 u1>u4 u0>u3 u2 bye
+  // Rd1 u0>u1 u2>u3 u4 bye · Rd2 u0>u4 u1>u2 u3 bye · Rd3 u1>u4 u0>u3 u2 bye
   // points u0 9, u1 6, u2 6, u3 3, u4 3; u3/u4 tie on OMW (.833) and GW (.5); OGW u3 .875 > u4 .833
   const hist = [w('a', 1, 'u0', 'u1'), w('b', 1, 'u2', 'u3'), bye('c', 1, 'u4'),
     w('d', 2, 'u0', 'u4'), w('e', 2, 'u1', 'u2'), bye('f', 2, 'u3'),

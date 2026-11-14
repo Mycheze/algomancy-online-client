@@ -56,6 +56,19 @@ export interface PreviewCtx {
   searchCount(q: string): number | null;
   /** a comprehensive rule by number ("608.2b") */
   rule(num: string): RulePreview | null;
+  /** a cube draft event by code (docs/25) */
+  cube(code: string): CubePreview | null;
+}
+
+export interface CubePreview {
+  name: string;
+  host: string;
+  tournament: 'swiss' | 'roundrobin' | 'exhibition';
+  players: number;
+  maxPlayers: number;
+  /** still taking players */
+  open: boolean;
+  done: boolean;
 }
 
 export interface LeaguePreview {
@@ -171,6 +184,21 @@ export function previewFor(url: URL, ctx: PreviewCtx): Preview {
     }
     return make('play', 'Find a game of Algomancy',
       'Join the matchmaking queue and you\'ll be paired with the next player looking for a game, in live draft or constructed.');
+  }
+
+  // ── a cube draft event (docs/25) ──────────────────────────────────────
+  if (has('cube')) {
+    const how = 'Draft packs around the table, build a deck from what you drafted, then play it out.';
+    const c = val('cube') && val('cube') !== '1' ? ctx.cube(val('cube').toUpperCase()) : null;
+    if (!c) return make('play', 'Cube draft on Algomancy', `${how} Host a table of your own from the home page.`);
+    const kind = c.tournament === 'swiss' ? 'a Swiss tournament' : c.tournament === 'roundrobin' ? 'a round robin' : 'open play';
+    if (c.open) {
+      return make('play', `Join ${c.name}`,
+        `${c.host} is hosting a cube draft: ${c.players} of ${c.maxPlayers} seats taken. ${how} The games are ${kind}. Open the link to take a seat.`);
+    }
+    return make('play', c.name, c.done
+      ? `A cube draft hosted by ${c.host}, now finished. Open the link for the final standings.`
+      : `A cube draft hosted by ${c.host}, under way. Open the link for the standings, or to watch a game.`);
   }
 
   // ── the league ────────────────────────────────────────────────────────

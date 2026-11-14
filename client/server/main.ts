@@ -349,6 +349,15 @@ function previewCtx(req: import('node:http').IncomingMessage): PreviewCtx {
         announced: s.phase < 0, finished,
       };
     },
+    cube: code => {
+      const e = getCube(code);
+      if (!e || e.phase === 'cancelled') return null;
+      return {
+        name: e.config.name, host: e.players.find(p => p.user === e.host)?.name ?? accountById(e.host)?.username ?? "a player",
+        tournament: e.config.tournament, players: e.players.length, maxPlayers: e.config.maxPlayers,
+        open: e.phase === 'lobby' && e.players.length < e.config.maxPlayers, done: e.phase === 'done',
+      };
+    },
     challenge: () => {
       const def = currentChallenge(challengeNow());
       return def ? { title: def.title, blurb: def.blurb, closes: weekWindow(def).closes } : null;

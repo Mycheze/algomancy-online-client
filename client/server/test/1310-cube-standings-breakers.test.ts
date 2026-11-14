@@ -18,9 +18,9 @@ const draw = (round: number, a: string, b: string, games?: [number, number]): Pa
 const near = (x: number, y: number): boolean => Math.abs(x - y) < 1e-6;
 
 test('8 players, 3 rounds of Bo3: points, then OMW%, decide the order', () => {
-  // R1  a 2–1 b · c 2–0 d · e 2–1 f · g 2–0 h
-  // R2  a 2–0 c · e 2–1 g · b 2–1 d · f 1–1 h (draw)
-  // R3  e 2–1 a · c 2–0 g · f 2–0 b · h 2–1 d
+  // Rd1  a 2–1 b · c 2–0 d · e 2–1 f · g 2–0 h
+  // Rd2  a 2–0 c · e 2–1 g · b 2–1 d · f 1–1 h (draw)
+  // Rd3  e 2–1 a · c 2–0 g · f 2–0 b · h 2–1 d
   const ps = players(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']);
   const pr: Pairing[] = [
     win(1, 'a', 'b', 'a', [2, 1]), win(1, 'c', 'd', 'c', [2, 0]), win(1, 'e', 'f', 'e', [2, 1]), win(1, 'g', 'h', 'g', [2, 0]),
@@ -58,8 +58,8 @@ test('8 players, 3 rounds of Bo3: points, then OMW%, decide the order', () => {
 
 test('6 players, 2 rounds: GW% and then OGW% break ties that points and OMW% leave', () => {
   // join order w x y z u v
-  // R1  w 2–0 x · y 2–0 z · u 2–0 v
-  // R2  w 2–0 v · y 2–0 u · x 2–1 z
+  // Rd1  w 2–0 x · y 2–0 z · u 2–0 v
+  // Rd2  w 2–0 v · y 2–0 u · x 2–1 z
   const ps = players(['w', 'x', 'y', 'z', 'u', 'v']);
   const pr: Pairing[] = [
     win(1, 'w', 'x', 'w', [2, 0]), win(1, 'y', 'z', 'y', [2, 0]), win(1, 'u', 'v', 'u', [2, 0]),

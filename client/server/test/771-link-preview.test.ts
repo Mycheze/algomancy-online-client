@@ -34,7 +34,7 @@ const ORIGIN = 'https://algomancy.online';
 const NONE: PreviewCtx = {
   origin: ORIGIN,
   league: () => null, challenge: () => null, room: () => null, deck: () => null,
-  card: () => null, searchCount: () => null, rule: () => null,
+  card: () => null, searchCount: () => null, rule: () => null, cube: () => null,
 };
 const at = (search: string, ctx: Partial<PreviewCtx> = {}): Preview =>
   previewFor(new URL(`${ORIGIN}/${search}`), { ...NONE, ...ctx });
@@ -248,4 +248,17 @@ test('§6 a deck\'s picture: the cover in front, two more of its cards, several 
   // no cover: the deck's own best card leads
   assert.deepEqual(deckTrio(['Water', 'FireA', 'FireA'], null, f), ['FireA', 'Water']);
   assert.deepEqual(deckTrio(['NoArt'], 'NoArt', f), []);
+});
+
+test('§9 a cube draft link (docs/25): its name and seats while open, a plain line once under way', () => {
+  const ev = { name: 'Friday cube', host: 'Ann', tournament: 'swiss' as const, players: 3, maxPlayers: 8, open: true, done: false };
+  const open = at('?cube=abcd', { cube: c => (c === 'ABCD' ? ev : null) });
+  assert.equal(open.title, 'Join Friday cube');
+  assert.match(open.description, /Ann is hosting a cube draft: 3 of 8 seats taken/);
+  assert.match(open.description, /a Swiss tournament/);
+  const done = at('?cube=ABCD', { cube: () => ({ ...ev, open: false, done: true }) });
+  assert.equal(done.title, 'Friday cube');
+  assert.match(done.description, /finished/);
+  const unknown = at('?cube=ZZZZ');
+  assert.equal(unknown.title, 'Cube draft on Algomancy', 'an unknown code says what a cube draft is, never "no such event"');
 });
