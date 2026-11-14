@@ -9,6 +9,60 @@ import type { Entry } from './backlog.ts';
 
 export const CLOSED: Entry[] = [
   {
+    id: 'BL-76',
+    slug: 'fix-dialog-just-a-take-back',
+    title: 'Propose a fix: a "Not a bug, just taking something back" checkbox',
+    area: 'client',
+    size: 'S',
+    status: 'done',
+    evidence: {
+      commit: 'b323e90c',
+      guards: [
+        '1243-fix-take-back-ui.test.ts::1243 §1 ticked, the fix sends with no reason and says take-back; unticked, the reason is required',
+        '1243-fix-take-back.test.ts::1243 §1 a ticked take-back needs no reason; an unticked fix still does',
+        '1243-fix-take-back.test.ts::1243 §4 a run of take-backs files a take-back row, not a bug report',
+        '1243-fix-take-back-ui.test.ts::1243 §3 the admin reports page shows a take-back row as a take-back',
+      ],
+    },
+    track: 'qol',
+    said:
+      'I\'m not actually rejecting this. This is fine! But we have to realize that the players, now, are most often '
+      + 'using the Propose a fix feature to fix the game. It\'s a casual game among a chill community and there are no '
+      + 'stakes, so people generally are okay with some taksie backsies. Instead, we should add a checkbox below the '
+      + '"Reason" that just allows them to say "Not a bug! Just taking something back." That would help us sort reports '
+      + 'more easily and stop players from having to type "oops" or "aoiehf" in the reason box (owner, 2026-11-13, '
+      + 'answering the steward\'s triage of #390-#394, four take-backs in Nyar\'s game with proud)',
+    means:
+      'Every agreed fix is filed as a bug report (ui/amend.ts dialog hint: "The fix is shown in the log and filed as a '
+      + 'bug report"), and the dialog will not send until "What went wrong?" holds at least 3 characters (amend.ts '
+      + '`complete()`, reason.trim().length >= 3) — so a plain take-back gets a reason like "test", "oops" or "reading is '
+      + 'difficult", and each one arrives at triage looking like a bug. Add a checkbox under the "What went wrong?" box: '
+      + '"Not a bug! Just taking something back." Ticked, the reason box is not required, and the report row carries the '
+      + 'mark (server/report-fields.ts `fix`) so triage — the admin reports page and the steward — can sort it out as a '
+      + 'take-back without reading the reason. The opponent\'s Agree bar should still say what is being taken back.',
+    doneWhen: [
+      'The Propose a fix dialog has the checkbox under the reason box, and ticking it lets a player send with the reason left empty',
+      'A report filed from a ticked fix is marked as a take-back, and the admin reports page and the triage can tell it from a bug report at a glance',
+    ],
+    decided: [
+      'Players taking moves back by agreement is fine and wanted in this casual community (owner, 2026-11-13); the checkbox is for sorting, not for discouraging it.',
+    ],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/amend.ts',
+      'client/server/report-fields.ts',
+      'client/server/main.ts',
+      'client/server/admin.ts',
+    ],
+    notes: 'Filed by the steward\'s tidy of 2026-11-13 from the owner\'s note on the triage branch of #390-#394 (journal, '
+      + '2026-11-13T15:41Z); nothing filed it before. Whether a take-back report still needs a ledger entry each, or '
+      + 'triage can close ticked ones in bulk, is for whoever builds it to settle with the playtest ledger\'s test. '
+      + 'Built 2026-11-14 (b323e90c): each take-back row still gets its own ledger entry, as `agreed-fix` (the '
+      + 'steward\'s triage section says so) — 70-playtest-ledger keys on every row, and a bulk close would need a '
+      + 'second kind of entry for no gain. A run with one ordinary fix in it stays a bug report.',
+  },
+  {
     id: 'BL-17',
     slug: 'judge-badges',
     title: 'Judge badges — L1/L2/L3 trust levels for rules and bug reports',
