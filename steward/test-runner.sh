@@ -15,6 +15,9 @@
 #   git push benshomeserver.local:steward-test-origin.git <branch>:master       (from the laptop)
 #   STEWARD_TEST_REMOTE=~/steward-test-origin.git STEWARD_TEST_ROOT=~/steward-test-local steward/test-runner.sh
 set -uo pipefail
+# never Discord: run from inside a steward run (or a shell with the unit's env), these are the REAL
+# bot's — 2026-11-14's retro ran two scenarios and opened a log thread in #steward with stub lines
+unset STEWARD_DISCORD_TOKEN STEWARD_DISCORD_FORUM STEWARD_DISCORD_OWNER STEWARD_WEBHOOK
 export PATH="$HOME/.local/bin:$HOME/.local/node/bin:$PATH"   # the runner sets this itself; the harness's own node calls need it too
 MAIN="$HOME/algomancy-steward/repo"
 T="${STEWARD_TEST_ROOT:-$HOME/steward-test}"
