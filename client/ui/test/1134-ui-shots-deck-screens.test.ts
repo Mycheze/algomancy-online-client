@@ -102,9 +102,11 @@ test('1134 §5 the states that make a deck come after every state that lists dec
   const listsDecks = /deck-openpage|acct-tab|h-deck|ch-import|\?table=|\?queue/;
   const before = S.slice(0, first);
   assert.ok(before.some(s => listsDecks.test(JSON.stringify(s.steps ?? []) + s.url)), 'non-vacuous');
-  // only the waiting room and the Competitive block (which builds its own decks) come after
+  // only the waiting room, the Competitive block (which builds its own decks) and the cube
+  // pick screen (last of all: it starts a draft; no deck list on it) come after
   for (const s of S.slice(first)) {
     if (writes.some(([w]) => w === s)) continue;
-    assert.ok(s.page === 'waiting' || /cc|between|registration/.test(s.state), `${name(s)} runs after a deck was made`);
+    assert.ok(s.page === 'waiting' || /cc|between|registration/.test(s.state) || (s.page === 'cube' && /^draft-/.test(s.state)),
+      `${name(s)} runs after a deck was made`);
   }
 });
