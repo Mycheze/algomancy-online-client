@@ -759,7 +759,19 @@ const OPEN: Entry[] = [
       + 'lower-case "⚖ ask" and "▁ hide" (the game table is 1177\'s exemption) and tutorial.ts\'s toolbar legend ("☰ table, '
       + '↶ undo, ⚖ judge…"), which glosses each glyph rather than naming a label. Guarded by '
       + '1245-learn-words-match-their-buttons.test.ts (§2 a census of bold toolbar glyphs with a word after them in '
-      + 'lessons.ts, the glyphs read off main.ts).',
+      + 'lessons.ts, the glyphs read off main.ts).\n\n'
+      + '2026-11-14 (steward): every box over the page has finger-sized buttons on a touch screen '
+      + '(docs/23-ui-inventory/04 §L.11: "`html.touch .overlay button {min-height:36px}` covers the on-board help/judge '
+      + 'boxes but NOT the same help box off-board (`.helpscrim`), nor `.learnscrim`, `.lessonscrim`, `.crscrim`"). The '
+      + 'class was every modal scrim the stylesheet defines but the board\'s .overlay: .helpscrim (the rules reader off '
+      + 'the board), .lessonscrim (the lesson box; its "▁ hide" was ~22px), .crscrim, .amendscrim (Propose a fix), '
+      + '.reportscrim, .revealscrim, .chscrim (the challenge run) and .ui-sheet (every sheet, the Learn menu among them). '
+      + 'shared/37-touch.css floors a button in each at 36px under html.touch, as .overlay was; left out on purpose, in '
+      + 'every one: the icon button (already 48px, which the floor rule would have outranked) and the link-styled buttons '
+      + 'in a sentence (.ui-button--link, .linkbtn), the rules reader\'s exemption for its rule links. Guarded by the census '
+      + '1246-every-box-gets-the-touch-floor.test.ts (the scrims read off the stylesheet with 1209\'s detector; §2 no floor '
+      + 'outranks a rule that makes a button bigger). Left: §L.11\'s other lines (tab roles, the hover-only lesson '
+      + 'previews, the native confirms). Reasoned, not looked at (no browser): worth a tap through on an iPad.',
   },
   // ── the leftovers of the 2026-11-02/03 rounds (Competitive Constructed, the design
   //    system, the new home, board-r1), filed 2026-11-03. Owner, that night: "put all

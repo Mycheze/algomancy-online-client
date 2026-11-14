@@ -20,9 +20,22 @@ html.touch .touchonly { display: inline; }
 html.touch .mouseonly, html.touch .kh { display: none; }
 /* the tucked dock (BL-32), opened by a tap on its label (ui/touch.ts) */
 .handdock.tucked.open .zone { height: auto; overflow-x: auto; padding-bottom: var(--space-1); }
-/* ~40px is the smallest target a fingertip hits first time */
+/* ~40px is the smallest target a fingertip hits first time. Every box over the
+   page gets the floor, not only the board's .overlay (BL-10, 2026-11-14;
+   docs/23-ui-inventory/04 §L.11: the same help box was finger-sized on the
+   board and not off it, and the lesson box's "▁ hide" was ~22px). One line per
+   modal scrim — ui/test/1246 reads the scrims off this stylesheet. Not floored:
+   a link-styled button in a sentence, and the icon button, already 48px. */
 html.touch .actionbar button, html.touch .promptbar button, html.touch .menu button,
-html.touch .overlay button { min-height: 36px; }
+html.touch .overlay button:not(:where(.ui-icon-button, .ui-button--link, .linkbtn)),
+html.touch .helpscrim button:not(:where(.ui-icon-button, .ui-button--link, .linkbtn)),
+html.touch .lessonscrim button:not(:where(.ui-icon-button, .ui-button--link, .linkbtn)),
+html.touch .crscrim button:not(:where(.ui-icon-button, .ui-button--link, .linkbtn)),
+html.touch .amendscrim button:not(:where(.ui-icon-button, .ui-button--link, .linkbtn)),
+html.touch .reportscrim button:not(:where(.ui-icon-button, .ui-button--link, .linkbtn)),
+html.touch .revealscrim button:not(:where(.ui-icon-button, .ui-button--link, .linkbtn)),
+html.touch .chscrim button:not(:where(.ui-icon-button, .ui-button--link, .linkbtn)),
+html.touch .ui-sheet button:not(:where(.ui-icon-button, .ui-button--link, .linkbtn)) { min-height: 36px; }
 
 html.touch .menu { gap: var(--space-3); }
 html.touch .menu button { padding: 8px 14px; text-align: left; }
