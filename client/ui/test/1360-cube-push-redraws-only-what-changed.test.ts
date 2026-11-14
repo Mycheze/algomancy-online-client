@@ -165,6 +165,9 @@ test('§4 the urgent clock redraws the band once', () => {
   paintCubeDraft(F.app, { ...cube(draft({ pickNo: 6, pack: PACK.slice(7), suggest: PACK[8]!, deadline: NOW + 9_000, seats: seats(1),
     picks: [...DECK_LIST.slice(0, 3), PACK[5]!] })) }, acts);
   assert.equal(F.n.page, was.page, 'a new pack: still not the page');
+  // QA 2026-11-14: a pack that arrives alone (my table unchanged) left the title on the last pick —
+  // "Pack 1 · Pick 13" over pack 2's first pack. The title is patched with it
+  assert.match(F.html(), /<h1 class="frametitle">[\s\S]*?Pick 6[\s\S]*?<\/h1>/, 'the title follows the pack');
   const after = snap();
   for (let i = 0; i < 6; i++) tickCubeDraft();
   assert.equal(F.n.band, after.band, 'the beats draw nothing more');

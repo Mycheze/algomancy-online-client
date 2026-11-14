@@ -253,7 +253,9 @@ function patchBand(v: CubeDraftPageView): void {
   keepArt(el.parentElement ?? el, () => { el.outerHTML = noImgDrag(cubePackHtml(v)); }, '.cdpack img');
   const now = q('.cdpack .ttpoolresults');
   if (now && top) now.scrollTop = top;
-  drawn = drawKeys(v);
+  // the band holds the seats strip but not the title (.frametitle, outside it): the title stays
+  // owed until flush patches it, or a new pack round kept "Pack 1 · Pick 13" (QA 2026-11-14)
+  drawn = { ...drawKeys(v), title: drawn.title };
   ringed = { reserved: v.reserved, hint: packHint(v) };
 }
 
