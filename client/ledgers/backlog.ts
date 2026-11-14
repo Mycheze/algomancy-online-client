@@ -740,7 +740,16 @@ const OPEN: Entry[] = [
       + 'the rail\'s own section words), a rail flag its FlagDef.label ("Discard me", "Makes tokens", "Transforms"), '
       + '"help" is "Reference card". Values and the help sheet\'s syntax are untouched. Left on purpose: element names and '
       + 'mono/hybrid/colourless, lower-case like every element chip (1177\'s exemption), and the view names grid/list/text. '
-      + 'Guarded by 1241-card-browser-labels-are-words.test.ts. Reasoned, not looked at (no browser).',
+      + 'Guarded by 1241-card-browser-labels-are-words.test.ts. Reasoned, not looked at (no browser).\n\n'
+      + '2026-11-14 (steward): the Learn menu\'s element buttons are not painted by card stats (docs/23-ui-inventory/04 '
+      + '§L.2: "`.el-fire … .el-dark {background: var(--…)}` from Card Stats paints the Learn menu\'s element buttons"). '
+      + 'pages/learn.ts draws `learnel el-<element>` (2026-09-18); 34-cardstats.css wrote the seven `.el-*` fills bare '
+      + 'for its Elements bars (2026-09-27), so since then each Learn button was a block of its colour: the label 2.2:1 '
+      + 'on Metal, 3.0:1 on Water (10.5:1 on a plain button), the picked one orange on red; the accessible mode\'s ring '
+      + 'for the bars (shared/10-element-chips.css) landed on them too. Both are `.csbarfill.el-*` now, the only '
+      + 'element-class users being those bars and the Learn buttons; 1221 §7 accepts a ring on the fill\'s whole '
+      + 'selector. Guarded by the census 1244-element-classes-are-scoped.test.ts (no bare `.el-<element>` rule; the '
+      + 'menu rendered gets no background from a one-compound rule of its classes). Reasoned, not looked at (no browser).',
   },
   // ── the leftovers of the 2026-11-02/03 rounds (Competitive Constructed, the design
   //    system, the new home, board-r1), filed 2026-11-03. Owner, that night: "put all

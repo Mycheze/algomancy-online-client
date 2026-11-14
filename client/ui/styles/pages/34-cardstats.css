@@ -70,9 +70,13 @@
 .cssharecell { width: 150px; }
 .cssharecell small { color: var(--dim); margin-left: var(--space-2); }
 .csshare { display: inline-block; vertical-align: middle; width: 100px; height: 8px; border-radius: var(--radius-sm); background: var(--panel2); overflow: hidden; }
-.el-fire { background: var(--fire); } .el-water { background: var(--water); } .el-earth { background: var(--earth); }
-.el-wood { background: var(--wood); } .el-metal { background: var(--metal); } .el-light { background: var(--light); }
-.el-dark { background: var(--dark); }
+/* The Elements table's bars, one per element. Scoped to the bar: `.el-<element>`
+   alone is a name any page can use, and the Learn menu's element buttons carry it
+   (pages/learn.ts) — unscoped, these painted them solid, and "Metal" in white on
+   pale grey (2.2:1) could hardly be read (BL-10, docs/23-ui-inventory/04 §L.2; ui/test/1244). */
+.csbarfill.el-fire { background: var(--fire); } .csbarfill.el-water { background: var(--water); } .csbarfill.el-earth { background: var(--earth); }
+.csbarfill.el-wood { background: var(--wood); } .csbarfill.el-metal { background: var(--metal); } .csbarfill.el-light { background: var(--light); }
+.csbarfill.el-dark { background: var(--dark); }
 .cspairwrap { overflow-x: auto; }
 .cspairs { border-collapse: separate; border-spacing: 2px; font-size: var(--text-12); }
 .cspairs th img { width: 20px; height: 20px; display: block; margin: auto; }

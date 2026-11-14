@@ -59,13 +59,13 @@
 :root[data-colors="accessible"] .res,
 :root[data-colors="accessible"] .reschip,
 :root[data-colors="accessible"] .resplate,
-:root[data-colors="accessible"] .el-fire,
-:root[data-colors="accessible"] .el-water,
-:root[data-colors="accessible"] .el-earth,
-:root[data-colors="accessible"] .el-wood,
-:root[data-colors="accessible"] .el-metal,
-:root[data-colors="accessible"] .el-light,
-:root[data-colors="accessible"] .el-dark { box-shadow: inset 0 0 0 1px var(--color-text); }
+:root[data-colors="accessible"] .csbarfill.el-fire,
+:root[data-colors="accessible"] .csbarfill.el-water,
+:root[data-colors="accessible"] .csbarfill.el-earth,
+:root[data-colors="accessible"] .csbarfill.el-wood,
+:root[data-colors="accessible"] .csbarfill.el-metal,
+:root[data-colors="accessible"] .csbarfill.el-light,
+:root[data-colors="accessible"] .csbarfill.el-dark { box-shadow: inset 0 0 0 1px var(--color-text); }
 
 /* ACCESSIBLE COLOURS: an element shape with no word beside it shows the element's
    ICON (BL-51 (c)). A swatch (the profile's legend, a game's elements in the

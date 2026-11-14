@@ -265,8 +265,10 @@ test('1221 §7 accessible: every shape filled with an element colour has a light
     .filter(([sel, bodies]) => !sel.startsWith(A) && bodies.some(b => /background(-color)?\s*:[^;]*var\(--(fire|water|earth|wood|metal|light|dark)\)/.test(b)))
     .map(([sel]) => sel);
   assert.ok(fills.length >= 30, `only ${fills.length} element fills found — the census is reading nothing`);
-  const bare = fills.filter(sel => !(sel.match(/\.[\w-]+/g) ?? []).some(c => RING.test(body(`${A} ${c}`))));
+  // a fill is ringed through one of its classes, or through its own whole selector (card stats'
+  // `.csbarfill.el-fire`, scoped so the Learn menu's `el-fire` buttons are not painted — 1244)
+  const bare = fills.filter(sel => !RING.test(body(`${A} ${sel}`)) && !(sel.match(/\.[\w-]+/g) ?? []).some(c => RING.test(body(`${A} ${c}`))));
   assert.deepEqual(bare, [], 'an element-coloured shape with no ring in the accessible mode');
   // only in the mode: the standard look has no ring
-  for (const c of ['.pfswatch', '.elbarseg', '.acctel', '.reschip', '.el-earth']) assert.doesNotMatch(body(c), RING, `${c}: no ring without the mode`);
+  for (const c of ['.pfswatch', '.elbarseg', '.acctel', '.reschip', '.csbarfill.el-earth']) assert.doesNotMatch(body(c), RING, `${c}: no ring without the mode`);
 });
