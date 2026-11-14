@@ -46,7 +46,9 @@
  *
  * Two hosts, through `TableHost`: the constructed deck (ui/decks.ts — its
  * piles ARE the deck) and the weekly challenge (ui/challenge.ts — its piles
- * are a scratch table, and the deck is an ordered strip under it).
+ * are a scratch table, and the deck is an ordered strip under it). A cube
+ * event's deck (ui/cubebuild.ts, docs/25 §6) is a deck host with an `owned`
+ * pool: only the drafted cards, no more copies than were drafted.
  */
 import { allRows } from './cardindex.ts';
 import { cardPanelHtml, similarQuery } from './cardpanel.ts';
@@ -141,6 +143,17 @@ export interface TableHost {
   /** the host's own word for the note row (an import's answer), shown when
    * the table has none of its own (a refusal, "Tap where it goes.") */
   note?(): string | null;
+
+  // ── docs/25 §6 (2026-11-14): a cube event's drafted pool. Optional, and a
+  // host that sets neither draws and behaves exactly as before ────────────
+
+  /** A RESTRICTED POOL: only these cards, with the copies you have of each
+   * (a cube's drafted cards). The pool band shows only them, a tile's ceiling
+   * is the lower of this and `cap`, and place() refuses a new copy past it.
+   * Absent = every playable card */
+  owned?(): ReadonlyMap<string, number>;
+  /** a `tt-` button the table does not know: the host's own (toolsHtml's) */
+  button?(el: HTMLElement): void;
 }
 
 /** the toolbar's count pill (TableHost.pill) */
@@ -171,8 +184,9 @@ export type Arrange =
   | { op: 'resort'; by: ResortBy }
   | { op: 'undo' }
   | { op: 'redo' }
-  /** the deck replaced whole (the challenge's Import a deck), undoably */
-  | { op: 'set'; cards: string[] };
+  /** the deck replaced whole (the challenge's Import a deck), undoably —
+   * with `side`, the sideboard too (a cube's Suggest a deck) */
+  | { op: 'set'; cards: string[]; side?: string[] };
 
 /** Where it goes. A destination index counts AFTER the carried card has left
  * (ui/deckarrange.ts); absent = the end. `binder` is the pool: out of the deck. */
@@ -195,9 +209,12 @@ let host: TableHost | null = null;
 /** a `?table=` the page was loaded with, waiting for its host to exist */
 let wanted: string | null = null;
 type Resolve = (id: string) => TableHost | null;
+/** whose `?table=` a key is: `ch:<id>` the challenge's, `cube:<code>` a cube
+ * event's (its host is a 'deck' host with an owned pool), else a deck's */
+type ResolverKind = TableHost['kind'] | 'cube';
 /** how many times the waiting `?table=` has been asked for and not found */
 let misses = 0;
-const resolvers: Partial<Record<TableHost['kind'], Resolve>> = {};
+const resolvers: Partial<Record<ResolverKind, Resolve>> = {};
 /** the card (or pile) picked: its menu is up, and a finger carries it */
 let sel: { key: string; carry: Carry } | null = null;
 /** the menu is open for `sel` (Move… closes it and keeps `sel`) */
@@ -240,12 +257,16 @@ function commitRename(box: HTMLInputElement): void {
 export const screen = (): 'tabletop' | null => (host || (wanted && resolverFor(wanted)) ? 'tabletop' : null);
 
 const resolverFor = (key: string): Resolve | undefined =>
-  key.startsWith('ch:') ? resolvers.challenge : resolvers.deck;
+  key.startsWith('ch:') ? resolvers.challenge : key.startsWith('cube:') ? resolvers.cube : resolvers.deck;
+
+/** the id a resolver is asked for: the key without its kind's prefix */
+const resolverId = (key: string): string =>
+  key.startsWith('ch:') ? key.slice(3) : key.startsWith('cube:') ? key.slice(5) : key;
 
 /** a host's way back in from a reload (`?table=`), registered by main.ts.
  * Null = not yet (its data is still loading, and the host opens the table
  * itself when it lands) or not at all; asked twice with null, it is not at all. */
-export function registerTableResolver(kind: TableHost['kind'], fn: Resolve): void {
+export function registerTableResolver(kind: ResolverKind, fn: Resolve): void {
   resolvers[kind] = fn;
 }
 
@@ -305,7 +326,7 @@ export function place(h: TableHost, carry: Carry | null, to: Place): boolean {
     else if (e.op === 'delpile') piles = deletePile(piles, e.pile);
     else if (e.op === 'addpile') piles = newPileAt(piles, piles.length);
     else if (e.op === 'resort') piles = seedPiles(deckPiles ? cards : piles.flatMap(p => p.cards), e.by);
-    else if (e.op === 'set') cards = [...e.cards];
+    else if (e.op === 'set') { cards = [...e.cards]; if (e.side && side) side = [...e.side]; }
     else {
       const step = (e.op === 'undo' ? undoStep : redoStep)(histFor(h), snapNow(h));
       if (!step) return false;
@@ -330,6 +351,9 @@ export function place(h: TableHost, carry: Carry | null, to: Place): boolean {
     // cap, the same note for all: nothing moves
     const capped = capNote(h, carry, to);
     if (capped) { note = capped; paintPending = true; return false; }
+    // …and a NEW copy stops at what a restricted pool holds (a cube's drafted cards)
+    const short = ownedNote(h, carry, to);
+    if (short) { note = short; paintPending = true; return false; }
     // 1 — take it from where it was. A copy leaving the deck for good (the
     // pool, Maybe) leaves the deck list; one moving inside the table does not
     let piece: string | null = name;
@@ -520,6 +544,19 @@ function capNote(h: TableHost, carry: Exclude<Carry, { from: 'head' }>, to: Plac
   return full ? `Max ${h.cap} of ${name}.` : null;
 }
 
+/** copies of `name` on the table at all: the deck, the sideboard and Maybe */
+const usedCount = (h: TableHost, name: string): number => capCount(h, name) + count(h.maybe?.() ?? [], name);
+
+/** the refusal of a NEW copy (from the pool, or Add another) past what a
+ * restricted pool holds (TableHost.owned) — wherever it is put. A copy moving
+ * on the table adds nothing, so only the pool's are counted */
+function ownedNote(h: TableHost, carry: Exclude<Carry, { from: 'head' }>, to: Place): string | null {
+  if (!h.owned || carry.from !== 'binder' || to.at === 'binder') return null;
+  const have = h.owned().get(carry.name) ?? 0;
+  if (usedCount(h, carry.name) < have) return null;
+  return have ? `You have ${have} ${carry.name}.` : `${carry.name} is not in your pool.`;
+}
+
 /** what can be done to what is picked — its whole menu */
 function menuOf(h: TableHost, piles: DeckPile[]): TableMenu | null {
   const c = selected(h);
@@ -538,7 +575,8 @@ function menuOf(h: TableHost, piles: DeckPile[]): TableMenu | null {
   }
   const deck = h.kind === 'deck';
   const inDeck = c.from === 'pile' ? deck : c.from === 'strip';
-  const full = deck && h.cap !== undefined && capCount(h, c.name) >= h.cap;
+  const full = (deck && h.cap !== undefined && capCount(h, c.name) >= h.cap)
+    || (!!h.owned && usedCount(h, c.name) >= (h.owned().get(c.name) ?? 0));
   const items: TableMenuItem[] = [];
   items.push(it('tt-cut', inDeck || c.from === 'side' || c.from === 'maybe' ? 'Remove one' : 'Take off the table'));
   items.push(it('tt-more', 'Add another', { disabled: full }));
@@ -569,13 +607,19 @@ function poolView(h: TableHost): PoolView | null {
   const deck = new Map<string, number>(), sideN = new Map<string, number>();
   for (const n of h.cards()) deck.set(n, (deck.get(n) ?? 0) + 1);
   for (const n of h.side?.() ?? []) sideN.set(n, (sideN.get(n) ?? 0) + 1);
+  const owned = h.owned?.() ?? null;
   const rows = runSearch(query, {
-    pool: allRows().filter(r => r.playable),
+    pool: owned ? allRows().filter(r => owned.has(r.name)) : allRows().filter(r => r.playable),
     ctx: { copies: n => deck.get(n) ?? 0, maybe: n => count(h.maybe?.() ?? [], n) },
   }).rows;
   const cap = h.kind === 'deck' ? h.cap : undefined;
   const tiles = rows.slice(0, shown).map(r => {
     const inDeck = deck.get(r.name) ?? 0, inSide = sideN.get(r.name) ?? 0;
+    if (owned) {
+      const have = owned.get(r.name) ?? 0;
+      const most = Math.min(have, cap ?? have);
+      return { name: r.name, inDeck, inSide, atCap: inDeck + inSide >= most, over: inDeck + inSide > most, owned: have };
+    }
     return { name: r.name, inDeck, inSide, atCap: cap !== undefined && inDeck + inSide >= cap, over: cap !== undefined && inDeck + inSide > cap };
   });
   const targets: PoolTarget[] = ['deck', ...(h.side ? ['side' as const] : []), ...(h.maybe ? ['maybe' as const] : [])];
@@ -778,7 +822,7 @@ export function closeTabletop(): void {
 
 export function renderScreen(): void {
   if (!host && wanted) {
-    const got = resolverFor(wanted)?.(wanted.startsWith('ch:') ? wanted.slice(3) : wanted) ?? null;
+    const got = resolverFor(wanted)?.(resolverId(wanted)) ?? null;
     if (got) { openTabletop(got); return; }
     if (++misses > 1) { wanted = null; syncUrl(); rerenderHost(); return; }
     if ($app) paintFrame($app, builderLoadingHtml(frameChromeView()));
@@ -1016,7 +1060,7 @@ export function handleButton(el: HTMLElement): boolean {
     case 'tt-sheet-close': sheetOpen = null; paint(); return true;
     // ── the divider's tap route ──
     case 'tt-split': writeSplit(stepSplit(shownSplit(el.closest?.('.ttbuilder') ?? null) ?? readSplit(), Number(el.dataset['by'] ?? 0))); paneSeen = 0; paint(); return true;
-    default: return true;
+    default: h.button?.(el); return true;
   }
 }
 

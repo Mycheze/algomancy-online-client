@@ -1,1 +1,47 @@
-/* the cube draft pick screen (ui/pages/cubedraft.ts, docs/25) */
+/* the cube draft pick screen (ui/pages/cubedraft.ts, docs/25) — the builder's layout (52-builder.css) with the
+   pack in the pool band's place, and the cube builder's owned-copies badge on a pool tile. Tokens only (921). */
+
+/* the pack's cards are bigger than the builder's pool */
+.cdpage { --pw: 168px; }
+@media (max-width: 1100px) { .cdpage { --pw: 132px; } }
+
+/* the toolbar: where in the draft, which way the packs go, the clock */
+.cdwhere { white-space: nowrap; }
+.frametitle .cddir { margin-left: 0; white-space: nowrap; }
+.cdclock { min-width: 4ch; font-size: var(--text-26); font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+.cdclock.cdurgent { color: var(--color-danger); }
+
+/* the table strip, in the pack's bar: each seat, the packs waiting there as dots, me lit */
+.cdseats { flex: 1 1 auto; display: flex; align-items: center; gap: var(--space-2); margin: 0; padding: 0; list-style: none;
+  min-width: 0; overflow: hidden; }
+.cdseat { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border); border-radius: var(--radius-pill); font-size: var(--text-12); white-space: nowrap; }
+.cdseat.cdbot { color: var(--color-text-muted); }
+.cdseat.cdme { border-color: var(--color-accent); background: var(--color-accent-wash); color: var(--color-text); font-weight: 700; }
+.cdseatname { max-width: 10ch; overflow: hidden; text-overflow: ellipsis; }
+.cdwait { display: inline-flex; align-items: center; gap: 2px; min-width: 6px; color: var(--color-text-muted); font-size: var(--text-11); }
+.cddot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--color-accent); }
+.cdsep { color: var(--color-text-muted); font-size: var(--text-12); }
+
+/* the pack band's bar: the table strip, the count, Confirm at the end */
+.cdpackbar { flex-wrap: nowrap; }
+.cdpackbar .ttpoolcount { margin-left: auto; }
+.cdconfirm { flex: none; }
+.cdwaiting { flex-direction: column; align-items: center; justify-content: center; gap: var(--space-2); margin: var(--space-8) auto; text-align: center; }
+
+/* a pack card: chosen (ringed), the suggestion at ≤10 s (dashed), taken (fading out) */
+/* inside the card's edge: a tile is paint-contained (content-visibility), so an outline outside it is cut off */
+.cdtile.cdreserved > .ttart { outline: 4px solid var(--color-accent); outline-offset: -4px; }
+html:not(.touch) .cdtile.cdreserved:hover > .ttart { outline-width: 4px; outline-offset: -4px; }
+.cdtile.cdhint > .ttart { outline: 4px dashed var(--color-warning); outline-offset: -4px; }
+.cdtile.cdtaken > .ttart { opacity: .42; }
+
+/* the picks: shown, not editable — a pack card carried over them lights the felt */
+.cdpage .tttable.dropover { background: var(--color-accent-wash); }
+.cdpickshint { margin-left: var(--space-3); font-size: var(--text-12); }
+@media (max-width: 1100px) { .cdseatname { max-width: 6ch; } }
+
+/* the cube builder's pool (TableHost.owned): ×n says how many you drafted */
+.ttpoolown { position: absolute; left: 4px; bottom: 4px; min-width: 20px; padding: 0 var(--space-2); border-radius: var(--radius-pill);
+  background: var(--color-surface-raised); color: var(--color-text); font-size: var(--text-12); font-weight: 700; line-height: 20px;
+  text-align: center; pointer-events: none; }

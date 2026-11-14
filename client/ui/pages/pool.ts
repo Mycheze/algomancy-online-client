@@ -41,6 +41,10 @@ export interface PoolTile {
   atCap: boolean;
   /** over the cap: the count in red */
   over: boolean;
+  /** a restricted pool (a cube's drafted cards, TableHost.owned): the copies
+   * you have. Its ceiling is the lower of this and the cap; ×n shows when it
+   * is more than one. Absent = every card, as many as the cap allows */
+  owned?: number;
 }
 
 export interface PoolChip {
@@ -74,11 +78,13 @@ export interface PoolView {
 
 /** one card of the pool */
 function tileHtml(t: PoolTile, cap: number | undefined): string {
+  const most = t.owned !== undefined ? Math.min(t.owned, cap ?? t.owned) : cap;
   const count = t.inDeck
-    ? `<span class="ttpooln${t.over ? ' bad' : t.atCap ? ' cap' : ''}">${t.atCap && cap !== undefined ? `${t.inDeck}/${cap}` : t.inDeck}</span>` : '';
+    ? `<span class="ttpooln${t.over ? ' bad' : t.atCap ? ' cap' : ''}">${t.atCap && most !== undefined ? `${t.inDeck}/${most}` : t.inDeck}</span>` : '';
   const side = t.inSide ? `<span class="ttpools">S${t.inSide}</span>` : '';
+  const own = t.owned !== undefined && t.owned > 1 ? `<span class="ttpoolown" title="You have ${t.owned}">×${t.owned}</span>` : '';
   return `<div class="ttpooltile${t.atCap ? ' ttcap' : ''}" data-btn="tt-add" data-tt-src="binder|${esc(t.name)}" data-card="${esc(t.name)}" data-zoom>${
-    scanHtml(t.name, 'ttart')}${count}${side}</div>`;
+    scanHtml(t.name, 'ttart')}${count}${side}${own}</div>`;
 }
 
 /** the results: the grid and its Show more. `#tt-results`'s inside, repainted alone while typing */
