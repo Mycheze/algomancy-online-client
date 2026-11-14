@@ -101,3 +101,6 @@
 @import "pages/54-home-art.css";
 /* the judges' review of the rules bot's answers (ui/pages/judgereview.ts, BL-17, 2026-11-08) */
 @import "pages/55-judgereview.css";
+/* cube draft events (docs/25, 2026-11-14): the event page, then the pick screen; after the frame and the builder they lay out */
+@import "pages/56-cube.css";
+@import "pages/57-cube-draft.css";
