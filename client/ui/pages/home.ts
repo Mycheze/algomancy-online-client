@@ -218,7 +218,6 @@ let homeMore = false;
  * room is "Host a Cube draft". Module state, not remembered — Standard and
  * Beginner are the custom rules' own (customrulespanel.ts keeps them). */
 let homeCube = false;
-export const homeDraftExtras = (): { more: boolean; cube: boolean } => ({ more: homeMore, cube: homeCube });
 
 /** what paintHome draws of the pick (HomeState's `els` and `fixedOpen`) */
 export const homePick = (): { els: readonly string[]; fixedOpen: boolean } => ({ els: homeEls, fixedOpen: homeFixedTrio });
