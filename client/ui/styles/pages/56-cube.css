@@ -107,12 +107,6 @@
 .cubeswap { padding: var(--space-3) var(--space-5); }
 .cubeswap.on { border-color: var(--color-accent); color: var(--color-accent); }
 
-/* the home's way in (pages/home.ts cubeLinkHtml): a small link at the end of the Draft tab's line,
-   with my events' count; the line keeps its one row and its height */
-.homeplaysub--draft { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: var(--space-5); }
-.homeplaysub--draft .homecube { margin-left: auto; padding: 0; font-size: var(--text-13); white-space: nowrap; }
-.homecube .homecubecount { margin-left: var(--space-2); }
-.cubeglance { display: flex; flex-direction: column; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
 /* the Join sheet's "Your cube events" */
 .cubejoinrows { display: flex; flex-direction: column; gap: var(--space-4); }
 .cubejoinrow { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); font-size: var(--text-13); }

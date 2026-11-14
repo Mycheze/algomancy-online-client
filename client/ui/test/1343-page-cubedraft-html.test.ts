@@ -7,10 +7,12 @@
  *      off again once it is taken
  *   §3 ≤10 s: the clock is red and, nothing chosen, the suggestion is ringed; over 10 s
  *      neither; a chosen card wins over the suggestion
- *   §4 waiting for a pack: the band says so, no tiles, no Confirm, no clock — the picks stay
+ *   §4 waiting for a pack: the band says so (and only that), no tiles, no Confirm, the clock
+ *      empty — the picks stay
  *   §5 the table strip (in the pack's bar, waiting too): every seat in order, "You" lit, bots marked, the waiting packs as
  *      dots, the arrows the way the packs go
- *   §6 the picks: piles by cost, shown not edited (no tt- taps), the felt is the drop zone
+ *   §6 the picks: the BUILDER's deck table (owner 2026-11-14) — piles you can move and name, + Pile,
+ *      Re-sort, the Sideboard n/7 and Maybe in the rail; no pool band, the pack in its place
  *   §7 the view: the deadline counted by the server's time; the draft over shows its line
  */
 import { test } from 'node:test';
@@ -18,10 +20,14 @@ import assert from 'node:assert/strict';
 import '../../engine/src/cards/registry.ts';
 import { DECK_LIST } from '../../engine/src/cards/registry.ts';
 import type { CubeView } from '../../server/cube-types.ts';
-import { clockText, cubeDraftHtml, cubeDraftView, URGENT_MS, type CubeDraftPageView } from '../pages/cubedraft.ts';
+import { clockText, cubeDraftHtml as pageHtml, cubeDraftView, URGENT_MS, type CubeDraftPageView } from '../pages/cubedraft.ts';
+import { draftTable } from './cubedraft-fixture.ts';
 
 const PACK = DECK_LIST.slice(40, 46);
 const PICKS = DECK_LIST.slice(0, 5);
+const SIDE = DECK_LIST.slice(5, 6);
+/** the screen over the deck table of PICKS (the sideboard SIDE, Maybe empty) */
+const cubeDraftHtml = (v: CubeDraftPageView, picks: readonly string[] = PICKS): string => pageHtml(v, draftTable(picks, SIDE, []));
 
 const CUBE: CubeView = {
   now: 1_000_000, code: 'QWER', phase: 'drafting', host: { user: 'u1', name: 'Ann' }, isHost: false, me: 'u2', joined: true,
@@ -54,11 +60,13 @@ test('§1 the pack in the builder’s layout', () => {
   for (const n of PACK) assert.match(tileOf(html, n), /data-zoom/, `${n} zooms`);
   assert.match(html, /<section class="ttpool cdpack" data-cd-zone="pack"/);
   assert.match(html, /class="ttdivider"/);
-  assert.match(html, /data-btn="cd-split"[^>]*data-by="-1"/);
+  assert.match(html, /data-btn="tt-split"[^>]*data-by="-1"/);
   assert.match(html, /class="tttablewrap/);
   assert.match(html, /<span class="cdwhere">Pack 2 · Pick 5<\/span><small class="cddir">Passing right<\/small>/);
   assert.match(html, /<span class="cdclock" role="timer" aria-label="Time left">0:42<\/span>/);
-  assert.match(html, /data-btn="cube-close"/, 'the way back to the event');
+  assert.equal((html.match(/data-btn="tt-split"/g) ?? []).length, 2, 'the builder’s divider');
+  assert.match(html, /aria-label="Smaller pack"/);
+  assert.match(html, /data-btn="tt-close"[^>]*>[\s\S]*?Event/, 'the way back to the event');
 });
 
 test('§2 chosen, Confirm, taken', () => {
@@ -92,7 +100,8 @@ test('§4 waiting for the next pack', () => {
   assert.deepEqual(tiles(html), []);
   assert.match(html, /Waiting for the next pack/);
   assert.equal(confirm(html), '', 'no Confirm');
-  assert.equal(html.includes('cdclock'), false, 'no clock');
+  assert.match(html, /<span class="cdclock" role="timer" aria-label="Time left"><\/span>/, 'the clock empty');
+  assert.doesNotMatch(html, /shows here|reaches you/, 'no filler line under the wait');
   assert.match(html, /<b class="ttheadcount">5<\/b>/, 'the picks stay');
 });
 
@@ -110,15 +119,18 @@ test('§5 the table strip', () => {
   assert.match(left, /class="cdsep" aria-hidden="true">→</);
 });
 
-test('§6 the picks: piles, shown not edited, the drop zone', () => {
+test('§6 the picks: the builder’s deck table', () => {
   const html = cubeDraftHtml(viewOf());
-  assert.match(html, /<div class="tttable" data-scroll="cd-picks" data-cd-zone="picks">/);
+  assert.match(html, /<div class="tttable" data-scroll="tt-table" data-tt-zone="end" data-btn="tt-to">/, 'the builder’s felt');
   const cards = [...html.matchAll(/class="ttcard[^"]*"[^>]*data-card="([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual([...cards].sort(), [...PICKS].sort(), 'every pick on the table');
-  assert.equal(/data-btn="tt-/.test(html), false, 'no builder taps here');
-  assert.match(html, /<span class="ttheadlabel">Your picks<\/span><b class="ttheadcount">5<\/b>/);
-  assert.match(html, /Tap a card, then Confirm, or drag it here\./, 'what to do, where it lands');
-  assert.equal(cubeDraftHtml(viewOf({ pack: null })).includes('drag it here'), false, 'nothing to do while waiting');
+  assert.deepEqual([...cards].sort(), [...PICKS, ...SIDE].sort(), 'every pick on the table');
+  assert.match(html, /data-btn="tt-card"/, 'a card on the table takes the builder’s taps');
+  assert.match(html, /data-btn="tt-addpile"/, '+ Pile');
+  assert.match(html, /data-btn="tt-resort"/, 'Re-sort');
+  assert.match(html, /data-tt-zone="side"/, 'the Sideboard');
+  assert.match(html, /data-tt-zone="maybe"/, 'Maybe');
+  assert.match(html, /<span class="ttheadlabel">Main deck<\/span><b class="ttheadcount">5<\/b>/);
+  assert.doesNotMatch(html, /id="tt-q"|class="ttpool"(?! cdpack)/, 'no pool band: the pack is in its place');
 });
 
 test('§7 the view: the server’s clock; the draft over', () => {
@@ -127,7 +139,7 @@ test('§7 the view: the server’s clock; the draft over', () => {
   assert.equal(clockText(90_000), '1:30');
   assert.equal(clockText(9_001), '0:10', 'a part second shows as the next one up');
   assert.equal(clockText(-500), '0:00');
-  const over = cubeDraftHtml(cubeDraftView({ ...CUBE, draft: null, phase: 'building', myPool: PICKS }, { reserved: null, taken: null, serverNow: CUBE.now }));
+  const over = cubeDraftHtml(cubeDraftView({ ...CUBE, draft: null, phase: 'building', myPool: PICKS }, { reserved: null, taken: null, serverNow: CUBE.now }), PICKS);
   assert.match(over, /The draft is over/);
   assert.match(over, /<b class="ttheadcount">5<\/b>/, 'the pool shows as the picks');
 });

@@ -47,9 +47,25 @@ export interface CubePlayer {
   pool?: string[];
   /** the last submitted deck */
   deck?: { main: string[]; side: string[]; at: number };
+  /** how I laid my cards out on the deck table (the draft's picks, then the builder's) — the
+   *  builder opens on it (docs/25 §6); every card one I drafted, counting copies */
+  arrange?: CubeArrange;
   /** exhibition: willing to be paired now */
   ready?: boolean;
   readySince?: number;
+}
+
+/** a deck table's arrangement (POST /api/cube/<code>/arrange): the main deck's piles in order,
+ *  each pile's cards top first; the sideboard; the Maybe pile. `names` = each pile's header
+ *  (same length as `piles`; absent = by position). Cards with multiplicity. */
+export interface CubeArrange {
+  piles: string[][];
+  names?: string[];
+  side: string[];
+  maybe: string[];
+  /** who laid it out: the draft's table holds every pick (one missing is on its way, and lands
+   *  by cost); the builder's leaves the rest in the pool. Absent = the draft's */
+  from?: 'draft' | 'build';
 }
 
 // ── the draft ────────────────────────────────────────────────────────────────
@@ -235,6 +251,8 @@ export interface CubeView {
   /** building+: my drafted cards and my submitted deck */
   myPool: string[] | null;
   myDeck: { main: string[]; side: string[] } | null;
+  /** my last arrangement of the deck table (drafting+), null = never sent */
+  myArrange?: CubeArrange | null;
   round: number;
   breakUntil: number | null;
   /** host only: the computed next round during the break */

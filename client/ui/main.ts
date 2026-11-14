@@ -11097,7 +11097,7 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   if (meta.handleButton(btn)) return;
   if (lg.handleButton(btn)) return;
   if (chal.handleButton(btn)) return;
-  // docs/25: a cube event everything prefixed cube- (and the home card's nav-cube)
+  // docs/25: a cube event everything prefixed cube-
   if (cube.handleButton(btn)) return;
   // CR D8.2: and the single card picker everything prefixed sc- (home + waiting room)
   if (sc.handleButton(btn)) { if (NET) render(); else renderHome(); return; }

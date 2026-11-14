@@ -2,7 +2,7 @@
  *
  * The contract every page module here keeps (league.ts, queue.ts): screen() says whether
  * this page owns #app, renderScreen() paints it, handleButton() is offered every click
- * (everything here is `cube-`, plus the home card's `nav-cube`), and the state lives in
+ * (everything here is `cube-`), and the state lives in
  * this file. The URL is the page: `?cube=1` (my events) or `?cube=<CODE>` (one event),
  * written with replaceState. The drawing is pages/cube.ts; while I draft, the pick screen
  * is ui/cubedraft.ts's, and my deck is built on ui/cubebuild.ts's table.
@@ -26,10 +26,10 @@ import { playCue } from './audio.ts';
 import { alertTab } from './tabalert.ts';
 import { copyText } from './util.ts';
 import { pollInboxNow, setCubeOpener } from './inbox.ts';
-import type { CubeMatchView, CubeMine, CubeServerMsg, CubeView } from '../server/cube-types.ts';
+import type { CubeArrange, CubeMatchView, CubeMine, CubeServerMsg, CubeView } from '../server/cube-types.ts';
 import {
   CUBE_TABS, PACKS_MAX, PLAYERS_MAX, PLAYERS_MIN, ROUNDS_MAX, PACK_MIN,
-  cubeGlanceHtml, cubeJoinRowsHtml, cubeView, defaultForm, formConfig, formFromConfig, paintCube, untilText,
+  cubeJoinRowsHtml, cubeView, defaultForm, formConfig, formFromConfig, paintCube, untilText,
   type CubeForm, type CubeHooks, type CubeSheet, type CubeTab,
 } from './pages/cube.ts';
 import type { StatusTone } from './components/status.ts';
@@ -67,6 +67,9 @@ let banner: CubeMatchView | null = null;
 let draftHidden = false;
 /** the builder was asked for on a reload (`?table=cube:<code>`): open it once the view is in */
 let reopenBuilder: string | null = null;
+/** the event whose builder was opened for me (the draft just ended, or I came to the event with no
+ * deck in yet) — once per visit: after Back the event page stays */
+let autoBuilt: string | null = null;
 
 const say = (text: string, tone: StatusTone): void => { msg = text; msgTone = tone; loadMissed = false; };
 /** the line is the first load's failure, not something the player did: the view that lands takes it away */
@@ -91,15 +94,24 @@ export function initCube(opts: { app: HTMLElement; rerender: () => void }): void
   }
 }
 
-/** The home card's way in, the Join sheet's rows, a typed code. */
+/** The way in: the Join sheet's rows, a typed code, the bell. */
 export function openCube(c?: string | null): void {
   acct.leaveScreen();
   show(c ? c.trim().toUpperCase() : null);
   paint();
 }
 
+/** The home's "Host a Cube draft": my events, with the New event form open — signed out, the
+ * page's own line says to sign in first, and there is no form to open. */
+export function openCubeNew(): void {
+  acct.leaveScreen();
+  show(null);
+  if (acct.token()) { form = defaultForm(acct.currentUser()?.username ?? '', now()); sheet = { kind: 'new' }; }
+  paint();
+}
+
 function show(c: string | null): void {
-  if (code !== c) { view = null; tab = 'standings'; banner = null; draftHidden = false; }
+  if (code !== c) { view = null; tab = 'standings'; banner = null; draftHidden = false; autoBuilt = null; }
   open = true; code = c; sheet = null; arming = null; swapPick = null; msg = '';
   syncUrl();
   if (c) { load(); connect(); } else { closeSocket(); listFor = undefined; askList(); }
@@ -150,6 +162,7 @@ export const bellMoved = (was: Pick<CubeView, 'phase' | 'round'> | null, now: Pi
 function take(v: CubeView): void {
   if (!open || !code || v.code.toUpperCase() !== code) return;
   if (bellMoved(view && view.code === v.code ? view : null, v)) pollInboxNow();
+  const was = view && view.code === v.code ? view.phase : null;
   view = v;
   skew = v.now - Date.now();
   loading = false;
@@ -162,6 +175,12 @@ function take(v: CubeView): void {
   if (b?.open && b.code.toUpperCase() === code) openCubeBuilder(v, BUILD_ACTS);
   else if (reopenBuilder && reopenBuilder.toUpperCase() === code && v.myPool && (v.phase === 'building' || v.phase === 'playing')) {
     reopenBuilder = null;
+    openCubeBuilder(v, BUILD_ACTS);
+  } else if (v.phase === 'building' && v.joined && v.myPool && autoBuilt !== code && (was === 'drafting' || !v.myDeck)) {
+    // the draft is over (owner 2026-11-14: "you should first be dropped into deck building, not
+    // standings") — and coming back to the event with no deck in yet goes there too
+    autoBuilt = code;
+    stopCubeDraft();
     openCubeBuilder(v, BUILD_ACTS);
   }
   ensureTimer();
@@ -209,12 +228,6 @@ function askList(): void {
 }
 
 // ── the home card and the Join sheet ──────────────────────────────────
-
-/** the home's Cube draft card body: my events at a glance ('' with none) */
-export function homeGlanceHtml(): string {
-  askList();
-  return cubeGlanceHtml(list ?? []);
-}
 
 /** "Your cube events" in the Join sheet ('' with none) */
 export function joinRowsHtml(): string {
@@ -402,10 +415,43 @@ const HOOKS: CubeHooks = {
   repaint: () => paint(),
 };
 
+/* THE DECK TABLE'S LAYOUT, KEPT ON THE SERVER (POST …/arrange): every change of the draft's
+ * table or the builder's is sent, the last one ARRANGE_MS after the moves stop — one timer,
+ * set again by the next move (a debounce, never one that sets itself again), and sent at once
+ * when the page is going away. */
+const ARRANGE_MS = 700;
+let arrangeTimer: ReturnType<typeof setTimeout> | null = null;
+let arrangeNext: { code: string; body: CubeArrange } | null = null;
+
+function sendArrange(a: CubeArrange): void {
+  if (!code) return;
+  arrangeNext = { code, body: a };
+  if (arrangeTimer !== null) clearTimeout(arrangeTimer);
+  arrangeTimer = setTimeout(() => flushArrange(false), ARRANGE_MS);
+  (arrangeTimer as unknown as { unref?: () => void })?.unref?.();
+}
+
+function flushArrange(leaving: boolean): void {
+  if (arrangeTimer !== null) clearTimeout(arrangeTimer);
+  arrangeTimer = null;
+  const next = arrangeNext;
+  arrangeNext = null;
+  if (!next || !acct.token()) return;
+  try {
+    void fetch(eventPath(next.code, 'arrange'), {
+      method: 'POST', headers: acct.authHeaders(), body: JSON.stringify(next.body), ...(leaving ? { keepalive: true } : {}),
+    }).catch(() => { /* the next move sends it again */ });
+  } catch { /* no fetch here */ }
+}
+if (typeof addEventListener === 'function') addEventListener('pagehide', () => flushArrange(true));
+
 /** what the pick screen may do (ui/cubedraft.ts) */
 const DRAFT_ACTS: CubeActs = {
   reserve: card => send({ op: 'reserve', card }),
   pick: card => send({ op: 'pick', card }),
+  arrange: a => sendArrange(a),
+  // its Back ("Event"): the event page over the draft, until "Back to the draft"
+  back: () => { draftHidden = true; paint(true); },
 };
 
 /** what my deck's table may do (ui/cubebuild.ts) */
@@ -425,6 +471,7 @@ const BUILD_ACTS: CubeBuildActs = {
   },
   // the table has closed itself: the router paints this page again
   back: () => rerenderHost(),
+  arrange: a => sendArrange(a),
 };
 
 /** Paint the page — unless my deck's table is up over it (main.ts renderHome routes to the table
@@ -434,7 +481,7 @@ function paint(force = false): void {
   if (!force && cubeBuild()?.open) return;
   const v = view;
   if (v && v.phase === 'drafting' && v.joined && v.draft && !draftHidden) {
-    paintCubeDraft($app, v, DRAFT_ACTS, () => paint());
+    paintCubeDraft($app, v, DRAFT_ACTS);
     return;
   }
   stopCubeDraft();
@@ -514,7 +561,6 @@ function playLink(room: string, seat: unknown): string {
 
 export function handleButton(btn: HTMLElement): boolean {
   const b = btn.dataset['btn'] ?? '';
-  if (b === 'nav-cube') { openCube(null); return true; }
   if (!b.startsWith('cube-')) return false;
   const d = btn.dataset;
   // a two-press button pressed once and then something else: it disarms

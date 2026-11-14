@@ -46,8 +46,27 @@ export interface BuilderHead {
   tools: boolean;
 }
 
+/** a band drawn where the pool goes (TableHost.band — a cube draft's pack), with the divider under it */
+export interface BuilderBand {
+  /** trusted markup: one `.ttpool` section (the splitter measures it as the pool) */
+  html: string;
+  /** its share of the builder (the divider's --pool-f) */
+  split: number;
+  /** where the divider stores its share (ui/splitter.ts), not the builder's own key */
+  splitKey: string;
+  /** what it holds, for ▲ ▼'s names: "Smaller pack" */
+  what: string;
+}
+
 export interface BuilderView {
   title: string;
+  /** trusted markup for the toolbar's title instead of the name and the pill (a cube draft's
+   *  Pack · Pick); absent = the name */
+  titleHtml?: string;
+  /** a class after `ttpage` on the root (a cube draft's `cdpage`: report.ts names a page by its last) */
+  pageClass?: string;
+  /** a band instead of the pool; absent/null = the pool as `pool` says */
+  band?: BuilderBand | null;
   /** the title's own button (Deck info) */
   titleBtn?: string;
   backLabel: string;
@@ -121,9 +140,10 @@ function headHtml(h: BuilderHead): string {
 }
 
 /** the divider: ▲ (the pool smaller), the grip, ▼ (the pool bigger) */
-const SPLITTER = `<div class="ttdivider">${button({ label: '▲', variant: 'ghost', size: 'sm', dataBtn: 'tt-split', attrs: { 'data-by': '-1', 'aria-label': 'Smaller pool' } })}`
+const divider = (what: string): string => `<div class="ttdivider">${button({ label: '▲', variant: 'ghost', size: 'sm', dataBtn: 'tt-split', attrs: { 'data-by': '-1', 'aria-label': `Smaller ${what}` } })}`
   + '<span class="ttgripbar" data-tt-grip aria-hidden="true"></span>'
-  + `${button({ label: '▼', variant: 'ghost', size: 'sm', dataBtn: 'tt-split', attrs: { 'data-by': '1', 'aria-label': 'Bigger pool' } })}</div>`;
+  + `${button({ label: '▼', variant: 'ghost', size: 'sm', dataBtn: 'tt-split', attrs: { 'data-by': '1', 'aria-label': `Bigger ${what}` } })}</div>`;
+const SPLITTER = divider('pool');
 
 /** The builder. Pure. */
 export function builderHtml(v: BuilderView): string {
@@ -137,15 +157,18 @@ export function builderHtml(v: BuilderView): string {
     open: true, placement: 'side', width: v.sheet.width ?? 'md', title: v.sheet.title, bodyHtml: v.sheet.bodyHtml,
     footerHtml: v.sheet.footerHtml, dismissBtn: 'tt-sheet-close', className: 'ttsheet', attrs: { 'data-tt-sheet': v.sheet.kind },
   }) : '';
-  const main = `<div class="ttbuilder${v.pool ? '' : ' ttnopool'}" style="--pool-f:${v.split}">`
+  const band = v.band ?? null;
+  const main = (band
+    ? `<div class="ttbuilder" style="--pool-f:${band.split}" data-split-key="${esc(band.splitKey)}">`
+    : `<div class="ttbuilder${v.pool ? '' : ' ttnopool'}" style="--pool-f:${v.split}">`)
     + (v.note ? `<div class="ttnote" role="status">${esc(v.note)}</div>` : '')
-    + (v.pool ? poolHtml(v.pool) + SPLITTER : '')
+    + (band ? band.html + divider(band.what) : v.pool ? poolHtml(v.pool) + SPLITTER : '')
     + table
     + `</div>${sheetHtml}${v.hostSheetHtml}`;
   return frameHtml({
-    page: 'ttpage',
+    page: v.pageClass ? `ttpage ${v.pageClass}` : 'ttpage',
     title: v.title,
-    titleHtml: v.pill ? titleHtml(v) : `${titleHtml(v)}<span class="ttsummary">${v.stripHtml}</span>`,
+    titleHtml: v.titleHtml ?? (v.pill ? titleHtml(v) : `${titleHtml(v)}<span class="ttsummary">${v.stripHtml}</span>`),
     back: { dataBtn: 'tt-close', label: v.backLabel, icon: 'back' },
     toolsHtml: toolsHtml(v),
     chrome: v.chrome,

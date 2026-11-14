@@ -464,6 +464,52 @@ export function suggestDeck(e: CubeEvent, user: string): Op<{ main: string[]; si
   return { ok: true, ...autoBuild(p.pool, winRatesOf(e)) };
 }
 
+/** the most piles an arrangement may have, and a pile name's longest (ui/deckarrange.ts MAX_PILE_NAME) */
+const ARRANGE_PILES_MAX = 60;
+const PILE_NAME_MAX = 40;
+
+/** a list of card names, or null */
+const names = (v: unknown, most: number): string[] | null =>
+  Array.isArray(v) && v.length <= most && v.every(x => typeof x === 'string' && x.length > 0 && x.length <= 80) ? v as string[] : null;
+
+/**
+ * My deck table's arrangement (docs/25 §6, owner 2026-11-14: "the layout you set during the draft
+ * should automatically be there"): the main deck's piles, the sideboard, Maybe. Kept on my player
+ * record and handed back in my view; the builder opens on it. Every card must be one I hold — my
+ * picks while drafting, my drafted pool after — counting copies; a card not yet placed (a pick
+ * still on its way) may be missing. Saved, not pushed: the table that sent it already shows it.
+ */
+export function arrangeCards(e: CubeEvent, user: string, raw: unknown): Op {
+  const p = playerOf(e, user);
+  if (!p) return no('you are not in this event');
+  if (p.dropped) return no('you have left this event');
+  let held: string[] | undefined;
+  if (e.phase === 'drafting' && e.draft) {
+    const s = seatOf(e.draft, user);
+    held = s >= 0 ? e.draft.seats[s]!.picks : undefined;
+  } else if (e.phase === 'building' || e.phase === 'playing') held = p.pool;
+  if (!held) return no('there is no table to lay out now');
+  const b = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  const piles = Array.isArray(b['piles']) && b['piles'].length <= ARRANGE_PILES_MAX
+    ? b['piles'].map(x => names(x, 200)) : null;
+  const side = names(b['side'] ?? [], 200), maybe = names(b['maybe'] ?? [], 200);
+  const titles = b['names'] === undefined ? undefined
+    : Array.isArray(b['names']) && piles && b['names'].length === piles.length
+      && b['names'].every(x => typeof x === 'string' && x.length <= PILE_NAME_MAX) ? b['names'] as string[] : null;
+  const from = b['from'] === 'build' ? 'build' : b['from'] === undefined || b['from'] === 'draft' ? 'draft' : null;
+  if (!piles || piles.some(x => !x) || !side || !maybe || titles === null || !from) return no('that is not a table layout');
+  const have = new Map<string, number>();
+  for (const x of held) have.set(x, (have.get(x) ?? 0) + 1);
+  for (const x of [...(piles as string[][]).flat(), ...side, ...maybe]) {
+    const k = have.get(x) ?? 0;
+    if (k <= 0) return no(held.includes(x) ? `you have fewer copies of ${x}` : `you did not draft ${x}`);
+    have.set(x, k - 1);
+  }
+  p.arrange = { piles: (piles as string[][]).map(x => [...x]), ...(titles ? { names: [...titles] } : {}), side: [...side], maybe: [...maybe], from };
+  saveCube(e);
+  return OK;
+}
+
 /* ── THE TOURNAMENT ────────────────────────────────────────────────────── */
 
 /** every deck is in: the break before round 1 (round robin's whole schedule, exhibition's Ready) */
@@ -880,6 +926,10 @@ export function viewFor(e: CubeEvent, userId: string | null, now: number): CubeV
     draft,
     myPool: me?.pool ? [...me.pool] : null,
     myDeck: me?.deck ? { main: [...me.deck.main], side: [...me.deck.side] } : null,
+    myArrange: me?.arrange ? {
+      piles: me.arrange.piles.map(x => [...x]), ...(me.arrange.names ? { names: [...me.arrange.names] } : {}),
+      side: [...me.arrange.side], maybe: [...me.arrange.maybe], from: me.arrange.from ?? 'draft',
+    } : null,
     round: e.round,
     breakUntil: e.breakUntil ?? null,
     pending: isHost && e.breakUntil ? pendingOf(e).map(p => matchView(e, p)) : null,

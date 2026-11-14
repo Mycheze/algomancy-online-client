@@ -36,9 +36,9 @@ html:not(.touch) .cdtile.cdreserved:hover > .ttart { outline-width: 4px; outline
 .cdtile.cdhint > .ttart { outline: 4px dashed var(--color-warning); outline-offset: -4px; }
 .cdtile.cdtaken > .ttart { opacity: .42; }
 
-/* the picks: shown, not editable — a pack card carried over them lights the felt */
-.cdpage .tttable.dropover { background: var(--color-accent-wash); }
-.cdpickshint { margin-left: var(--space-3); font-size: var(--text-12); }
+/* the deck table under the pack: a pack card carried over its bare felt lights it (over a pile,
+   the Sideboard or Maybe, that pile lights, as in the builder) */
+.cdpage .tttablewrap.dropover .tttable { background: var(--color-accent-wash); }
 @media (max-width: 1100px) { .cdseatname { max-width: 6ch; } }
 
 /* the cube builder's pool (TableHost.owned): ×n says how many you drafted */

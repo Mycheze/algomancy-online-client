@@ -149,6 +149,39 @@ export function reconcilePiles(cards: readonly string[], piles: readonly DeckPil
   return out;
 }
 
+/** where a cost bucket sorts among the others: by mana value, then X, then the unknown */
+const costRank = (auto: string | undefined): number | null => {
+  if (!auto?.startsWith('cost:')) return null;
+  const k = auto.slice(5);
+  return k === 'X' ? 998 : /^\d+$/.test(k) ? Number(k) : 999;
+};
+
+/**
+ * One NEW copy of `name` onto the table where Re-sort by cost would put it — a cube draft's pick
+ * landing in the deck, the way MTGO lays a pick out: after its other copies when a pile holds one;
+ * else on the pile of its cost (`auto` cost:<n>); else on a new pile for that cost, set among the
+ * cost piles in cost order (after the last of them when it is the dearest, at the end with none).
+ * Nothing already placed moves. Pure.
+ */
+export function landByCost(piles: readonly DeckPile[], name: string): DeckPile[] {
+  const out = copyPiles(piles);
+  const holding = out.find(p => p.cards.includes(name));
+  if (holding) { holding.cards.splice(holding.cards.lastIndexOf(name) + 1, 0, name); return out; }
+  const sec = sectionOf(cardFacts(name), 'cost');
+  const auto = `cost:${sec.key}`;
+  const home = out.find(p => p.auto === auto);
+  if (home) { home.cards.push(name); return out; }
+  const rank = costRank(auto)!;
+  const pile: DeckPile = { id: freshId(out), name: freeName(out, pileName('cost', sec.key, sec.label)), cards: [name], auto };
+  let at = out.findIndex(p => { const r = costRank(p.auto); return r !== null && r > rank; });
+  if (at < 0) {
+    const last = out.map(p => costRank(p.auto) !== null).lastIndexOf(true);
+    at = last < 0 ? out.length : last + 1;
+  }
+  out.splice(at, 0, pile);
+  return out;
+}
+
 /** a pile a drag has just emptied goes, unless the user named it */
 const tidy = (piles: DeckPile[], id: string): DeckPile[] =>
   piles.filter(p => p.id !== id || p.cards.length > 0 || p.named);

@@ -13,15 +13,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import '../../engine/src/cards/registry.ts';
 import { DECK_LIST } from '../../engine/src/cards/registry.ts';
-import { cubeDraftHtml, packScrollKey, type CubeDraftPageView } from '../pages/cubedraft.ts';
+import { cubeDraftHtml as pageHtml, packScrollKey, type CubeDraftPageView } from '../pages/cubedraft.ts';
+import { draftTable, packView } from './cubedraft-fixture.ts';
 import { paintFrame } from '../pages/frame.ts';
 
 const PACK = DECK_LIST.slice(40, 53);
-const view = (packNo: number, pickNo: number, reserved: string | null = null): CubeDraftPageView => ({
-  event: 'Friday cube', packNo, pickNo, direction: 'left', seats: [], pack: PACK.slice(pickNo - 1), reserved, taken: null, suggest: null,
-  msLeft: 30_000, picks: [], split: 0.6, pw: 160, chrome: { signedIn: true, alerts: 0 },
-  table: { cw: 132, ch: 183, piles: [], newPiles: null, rail: null, scrollKey: 'cd-picks', zoneAttrs: { 'data-cd-zone': 'picks' } },
-});
+const view = (packNo: number, pickNo: number, reserved: string | null = null): CubeDraftPageView =>
+  packView({ packNo, pickNo, direction: 'left', pack: PACK.slice(pickNo - 1), reserved, split: 0.6, pw: 160 });
+const cubeDraftHtml = (v: CubeDraftPageView): string => pageHtml(v, draftTable(DECK_LIST.slice(0, 3)));
 
 test('§1 one key a pick', () => {
   assert.equal(packScrollKey(view(1, 3)), packScrollKey(view(1, 3, PACK[4]!)), 'a tap keeps the key');
@@ -52,10 +51,10 @@ test('§2 painted: kept within a pick, the top for the next', () => {
   const app = fakeApp();
   paintFrame(app, cubeDraftHtml(view(1, 3)));
   app.region(packScrollKey(view(1, 3)))!.scrollTop = 320;
-  app.region('cd-picks')!.scrollTop = 90;
+  app.region('tt-table')!.scrollTop = 90;
   paintFrame(app, cubeDraftHtml(view(1, 3, PACK[3]!)));
   assert.equal(app.region(packScrollKey(view(1, 3)))!.scrollTop, 320, 'a tap repaints the band where it was');
   paintFrame(app, cubeDraftHtml(view(1, 4)));
   assert.equal(app.region(packScrollKey(view(1, 4)))!.scrollTop, 0, 'the next pick opens at the top');
-  assert.equal(app.region('cd-picks')!.scrollTop, 90, 'the picks keep theirs');
+  assert.equal(app.region('tt-table')!.scrollTop, 90, 'the picks keep theirs');
 });

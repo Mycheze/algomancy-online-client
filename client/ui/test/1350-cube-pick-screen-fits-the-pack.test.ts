@@ -7,9 +7,12 @@
  *      at least a strip of the table — worked out here from the page's own measures, not packFit's
  *   §2 counting the columns with the thin scrollbar there (so a pack that fits never tips into a
  *      scrollbar and one column fewer), and a short pack takes one row
- *   §3 the screen draws it: the grid's --pw and the divider's --pool-f are the fit's, the divider
- *      stores under the pick screen's own key (not the builder's), and the player's stored share wins
- *   §4 the picks are piled by cost, as the builder's Re-sort piles a deck
+ *   §3 the screen draws it the FIRST time: the divider's --pool-f is the fit's (at most
+ *      FIRST_SPLIT_MAX: the deck table under it needs room), the whole pack shows in it, and the
+ *      divider stores under the pick screen's own key (not the builder's)
+ *   §4 THE BAND IS THE PLAYER'S (owner 2026-11-14: "the client was trying to resize or force you"):
+ *      a stored share always wins, whatever the pack, its size or the pick; only the tiles follow
+ *      the band (tileFit — bigger in a taller band, the whole pack shown, never past its bounds)
  *
  * Seeds: none. DOM-free: innerWidth/innerHeight and localStorage are set on globalThis.
  */
@@ -18,8 +21,8 @@ import assert from 'node:assert/strict';
 import '../../engine/src/cards/registry.ts';
 import { DECK_LIST } from '../../engine/src/cards/registry.ts';
 import type { CubeView } from '../../server/cube-types.ts';
-import { seedPiles } from '../deckarrange.ts';
-import { cubeDraftHtml, cubeDraftView, PACK_SPLIT_KEY, packFit } from '../pages/cubedraft.ts';
+import { bandPx, cubeDraftHtml, cubeDraftView, FIRST_SPLIT_MAX, PACK_SPLIT_KEY, packFit, tileFit } from '../pages/cubedraft.ts';
+import { draftTable } from './cubedraft-fixture.ts';
 import { SPLIT_KEY } from '../splitter.ts';
 
 /* the page's measures (frame toolbar 64 + 2, foot bar 40, divider 24; the pack bar 39; its results
@@ -76,23 +79,42 @@ const CUBE: CubeView = {
   draft: { packNo: 1, pickNo: 1, packs: 3, packSize: 15, direction: 'left', seats: [], pack: PACK, deadline: 1_090_000,
     reserved: null, suggest: null, picks: PICKS },
 };
-const html = (): string => cubeDraftHtml(cubeDraftView(CUBE, { reserved: null, taken: null, serverNow: CUBE.now }));
+const at = (over: Partial<NonNullable<CubeView['draft']>> = {}) =>
+  cubeDraftView({ ...CUBE, draft: { ...CUBE.draft!, ...over } }, { reserved: null, taken: null, serverNow: CUBE.now });
+const html = (over: Partial<NonNullable<CubeView['draft']>> = {}): string => cubeDraftHtml(at(over), draftTable(PICKS));
 
-test('§3 the screen draws the fit; the player’s share wins; its own key', () => {
+test('§3 the first time: the fit; its own key', () => {
   store.clear();
   store.set(SPLIT_KEY, '0.2');   // the builder's divider, dragged small: none of the pick screen's business
-  const fit = packFit(15, 1440, 900);
-  let page = html();
-  assert.match(page, new RegExp(`<div class="ttpoolgrid cdgrid" style="--pw:${fit.pw}px">`));
-  assert.match(page, new RegExp(`style="--pool-f:${fit.split}" data-split-key="${PACK_SPLIT_KEY}"`), 'the fit, not the builder’s 0.2');
-  store.set(PACK_SPLIT_KEY, '0.4');
-  page = html();
-  assert.match(page, /style="--pool-f:0.4" data-split-key="algoCubePackSplit"/, 'the player moved it: theirs');
+  const first = Math.min(FIRST_SPLIT_MAX, packFit(15, 1440, 900).split);
+  assert.ok(first <= FIRST_SPLIT_MAX && first > 0.4, 'the pack first, with room left for the deck table');
+  const page = html();
+  assert.match(page, new RegExp(`style="--pool-f:${first}" data-split-key="${PACK_SPLIT_KEY}"`), 'the fit, not the builder’s 0.2');
+  const pw = tileFit(15, 1440, bandPx(first, 900));
+  assert.match(page, new RegExp(`<div class="ttpoolgrid cdgrid" style="--pw:${pw}px">`));
+  const cols = colsOf(1440, pw, true), rows = Math.ceil(15 / cols);
+  assert.ok(BAR + PADV + rows * tileH(1440, cols, false) + (rows - 1) * GAP <= bandPx(first, 900), 'the whole pack shows in it');
   store.clear();
 });
 
-test('§4 the picks, piled by cost', () => {
-  const v = cubeDraftView(CUBE, { reserved: null, taken: null, serverNow: CUBE.now });
-  assert.deepEqual(v.table.piles.map(p => p.cards.map(c => c.name)), seedPiles(PICKS, 'cost').map(p => p.cards));
-  assert.ok(v.table.piles.length > 1, 'more than one pile');
+test('§4 the band is the player’s; the tiles follow it', () => {
+  store.clear();
+  store.set(PACK_SPLIT_KEY, '0.4');
+  for (const [pickNo, n] of [[1, 15], [2, 14], [9, 7], [15, 1]] as const) {
+    const v = at({ pickNo, pack: PACK.slice(0, n) });
+    assert.equal(v.split, 0.4, `pick ${pickNo} (${n} cards): still the player’s 0.4`);
+    assert.equal(v.pw, at().pw, 'the tiles keep their size through the round: fitted to the deal’s size');
+  }
+  assert.match(html(), /style="--pool-f:0.4" data-split-key="algoCubePackSplit"/);
+  for (const w of [1440, 1024]) {
+    const small = tileFit(15, w, 200), big = tileFit(15, w, 640);
+    assert.ok(big > small, `${w}: a taller band, bigger tiles (${small} → ${big})`);
+    assert.ok(small >= 72 && big <= 240, 'within their bounds');
+  }
+  // the whole pack shows in the band at the size chosen (the page's own measures)
+  const pw = tileFit(15, 1440, 640);
+  const cols = colsOf(1440, pw, true);
+  const rows = Math.ceil(15 / cols);
+  assert.ok(BAR + PADV + rows * tileH(1440, cols, false) + (rows - 1) * GAP <= 640, 'every card fits');
+  store.clear();
 });

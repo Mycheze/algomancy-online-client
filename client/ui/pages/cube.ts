@@ -754,14 +754,6 @@ function formFooterHtml(v: CubePageView, f: CubeForm, kind: 'new' | 'edit'): str
 
 // ── the home card and the Join sheet (docs/25 §10) ────────────────────
 
-/** The home's Cube draft card body: my events at a glance ('' with none). Pure, no buttons. */
-export function cubeGlanceHtml(rows: readonly CubeMine[]): string {
-  if (!rows.length) return '';
-  return `<ul class="cubeglance">${rows.slice(0, 3).map(r => `<li><b>${esc(r.name)}</b> <span class="dim">${esc(
-    r.myMatch && r.myMatch.status !== 'done' ? (r.myMatch.status === 'live' ? 'your match is on' : 'your match is ready') : PHASE_WORDS[r.phase])}</span></li>`).join('')}${
-    rows.length > 3 ? `<li class="dim">and ${rows.length - 3} more</li>` : ''}</ul>`;
-}
-
 /** The Join sheet's "Your cube events" rows, each with its Open; '' when none. Pure. */
 export function cubeJoinRowsHtml(rows: readonly CubeMine[]): string {
   if (!rows.length) return '';

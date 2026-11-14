@@ -8,6 +8,7 @@
  *   POST /api/cube/<code>/join | /leave
  *   POST /api/cube/<code>/deck {main, side}  submit
  *   POST /api/cube/<code>/suggest          → {ok, main, side}       autoBuild of my pool
+ *   POST /api/cube/<code>/arrange {piles, names?, side, maybe} → {ok}  my deck table's layout
  *   POST /api/cube/<code>/ready {on}       exhibition
  *   POST /api/cube/<code>/play {pairing?}  → {ok, room, pairing}    open or reuse my match room
  *   host: /start, /config {config}, /kick {user}, /pairings {swap: [u1, u2]}, /post,
@@ -24,7 +25,7 @@ import type { WebSocket } from 'ws';
 import { addrOf, json, rateLimited, readBody, str, tokenOf } from './api-util.ts';
 import { accountForToken } from './accounts.ts';
 import {
-  cancelCube, configCube, createCube, cubesFor, endCube, getCube, hostDrop, joinCube, kickPlayer, leaveCube,
+  arrangeCards, cancelCube, configCube, createCube, cubesFor, endCube, getCube, hostDrop, joinCube, kickPlayer, leaveCube,
   parseOutcome, pickCard, playMatch, postNow, reserveCard, setReady, setResult, startCube, submitDeck,
   suggestDeck, swapPairing, viewFor, type Actor, type Op,
 } from './cube.ts';
@@ -85,6 +86,11 @@ export async function cubeRoutes(req: IncomingMessage, res: ServerResponse, path
     case 'leave': return answer(leaveCube(e, me, now));
     case 'deck': return answer(submitDeck(e, me.id, b['main'], b['side'], now));
     case 'suggest': return answer(suggestDeck(e, me.id));
+    // the deck table's layout: saved, answered without a view (the table that sent it shows it already)
+    case 'arrange': {
+      const r = arrangeCards(e, me.id, b);
+      return r.ok ? json(res, { ok: true }) : json(res, { ok: false, error: r.error }, r.status), true;
+    }
     case 'ready': return answer(setReady(e, me.id, b['on'] !== false, now));
     case 'play': return answer(playMatch(e, me.id, typeof b['pairing'] === 'string' ? b['pairing'] : null, now));
     case 'start': return answer(startCube(e, me, now));

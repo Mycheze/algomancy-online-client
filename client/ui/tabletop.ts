@@ -68,7 +68,7 @@ import { installPressZoom } from './presszoom.ts';
 import { installSplitter, readSplit, shownSplit, stepSplit, writeSplit } from './splitter.ts';
 import { PEEK_MS, touchSeen } from './touch.ts';
 import { elIcon, esc } from './util.ts';
-import { builderLoadingHtml, builderView, paintBuilder, type BuilderSheet, type BuilderView } from './pages/builder.ts';
+import { builderLoadingHtml, builderView, paintBuilder, type BuilderBand, type BuilderSheet, type BuilderView } from './pages/builder.ts';
 import { facets, filterRailHtml, POOL_BTNS, syntaxHelpHtml } from './pages/cardfilters.ts';
 import { deckStatsHtml, sampleHandHtml, statsStripHtml } from './pages/deckstats.ts';
 import { frameChromeView, paintFrame } from './pages/frame.ts';
@@ -154,6 +154,22 @@ export interface TableHost {
   owned?(): ReadonlyMap<string, number>;
   /** a `tt-` button the table does not know: the host's own (toolsHtml's) */
   button?(el: HTMLElement): void;
+
+  // ── docs/25 §13 (2026-11-14): a cube DRAFT's pick screen is this table with
+  // the pack where the pool goes. Optional; a host that sets none draws as before ──
+
+  /** A BAND INSTEAD OF THE POOL: trusted markup (one `.ttpool` section) over the
+   *  divider, which stores its share under the band's own key. Set `pool: false`
+   *  with it: the table then offers no way back to a pool (no Remove one, Add
+   *  another or Find similar) */
+  band?(): BuilderBand;
+  /** trusted markup for the toolbar's title instead of the name and the pill */
+  titleHtml?(): string;
+  /** a class after `ttpage` on the root (the pick screen's `cdpage`) */
+  pageClass?: string;
+  /** false: the table is not written into the URL as `?table=` (a reload of
+   *  the pick screen comes back through its event, not through a resolver) */
+  inUrl?: boolean;
 }
 
 /** the toolbar's count pill (TableHost.pill) */
@@ -253,6 +269,9 @@ function commitRename(box: HTMLInputElement): void {
   box.dataset['ttDone'] = '1';
   if (!place(host, null, { at: 'arrange', edit: { op: 'rename', pile, name: box.value } })) paint();
 }
+
+/** the key of the table on screen, or null (a host that patches its own band asks whether it is still up) */
+export const tableOpen = (): string | null => host?.key ?? null;
 
 export const screen = (): 'tabletop' | null => (host || (wanted && resolverFor(wanted)) ? 'tabletop' : null);
 
@@ -465,7 +484,7 @@ function sizes(): { cw: number; ch: number } {
 function paneHeight(): number {
   if (paneSeen > 0) return paneSeen;
   const h = typeof innerHeight === 'number' ? innerHeight : 800;
-  return Math.max(260, Math.round((h - 150) * (1 - readSplit())) - 90);
+  return Math.max(260, Math.round((h - 150) * (1 - (host?.band ? host.band().split : readSplit()))) - 90);
 }
 
 /** what the pane really holds, measured after a paint (0 = not on screen) */
@@ -579,13 +598,15 @@ function menuOf(h: TableHost, piles: DeckPile[]): TableMenu | null {
   const full = (deck && h.cap !== undefined && capCount(h, c.name) >= h.cap)
     || (!!h.owned && usedCount(h, c.name) >= (h.owned().get(c.name) ?? 0));
   const items: TableMenuItem[] = [];
-  items.push(it('tt-cut', inDeck || c.from === 'side' || c.from === 'maybe' ? 'Remove one' : 'Take off the table'));
-  items.push(it('tt-more', 'Add another', { disabled: full }));
+  // a band instead of the pool (a cube draft): every card stays on the table, so none comes off it or is added
+  const banded = !!h.band && !poolOn(h);
+  if (!banded) items.push(it('tt-cut', inDeck || c.from === 'side' || c.from === 'maybe' ? 'Remove one' : 'Take off the table'));
+  if (!banded) items.push(it('tt-more', 'Add another', { disabled: full }));
   if (h.side && c.from !== 'side') items.push(it('tt-toside', 'To sideboard'));
   if (h.maybe && c.from !== 'maybe') items.push(it('tt-tomaybe', 'To Maybe'));
   if (!inDeck) items.push(it('tt-todeck', 'To deck'));
   items.push(it('tt-move', 'Move…'));
-  items.push(it('tt-similar', 'Find similar'));
+  if (!banded) items.push(it('tt-similar', 'Find similar'));
   items.push(it('tt-details', 'Details'));
   return { title: c.name, for: srcKey(c), items };
 }
@@ -718,6 +739,9 @@ function viewOf(h: TableHost): Omit<BuilderView, 'chrome'> {
   return {
     title: h.title(),
     ...(h.titleBtn ? { titleBtn: h.titleBtn } : {}),
+    ...(h.band ? { band: h.band() } : {}),
+    ...(h.titleHtml ? { titleHtml: h.titleHtml() } : {}),
+    ...(h.pageClass ? { pageClass: h.pageClass } : {}),
     backLabel: h.backLabel,
     pill: h.pill?.() ?? null,
     stripHtml: h.pill ? '' : h.strip?.() ?? '',
@@ -780,7 +804,7 @@ function syncUrl(): void {
   try {
     const url = new URL(location.href);
     url.searchParams.delete('table');
-    if (host) url.searchParams.set('table', host.key);
+    if (host && host.inUrl !== false) url.searchParams.set('table', host.key);
     history.replaceState(null, '', url.toString());
   } catch { /* file:// */ }
 }
@@ -888,6 +912,14 @@ export function handleButton(el: HTMLElement): boolean {
   if (!h) return true;
   const c = selected(h);
   const put = (to: Place): void => { const carry = c; putDown(); if (!carry || !place(h, carry, to)) paint(); };
+  if (b === 'tt-split' && h.band) {
+    // a band's divider stores its share under the band's own key (the cube pick screen's)
+    const band = h.band();
+    writeSplit(stepSplit(shownSplit(el.closest?.('.ttbuilder') ?? null) ?? band.split, Number(el.dataset['by'] ?? 0)), band.splitKey);
+    paneSeen = 0;
+    paint();
+    return true;
+  }
   switch (b) {
     case 'tt-close': closeTabletop(); return true;
     case 'tt-card': {

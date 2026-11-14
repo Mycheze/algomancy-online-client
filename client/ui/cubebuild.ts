@@ -7,7 +7,12 @@
  *  · the pool is ONLY your drafted cards (`owned`), and a tile's ceiling is the
  *    copies you drafted — place() refuses the second copy of a card you have
  *    one of, with a note, the same way it refuses a third at the copy cap;
- *  · it starts from the deck you last submitted, else empty; "Suggest"
+ *  · it opens on the table you laid out (owner 2026-11-14: *"When building, the
+ *    layout you set during the draft should automatically be there"*): the
+ *    draft's piles, Sideboard and Maybe — this tab's, else the server's
+ *    (`myArrange`, ui/cubearrange.ts) — with any pick not on it landed by cost;
+ *    once a deck is submitted, that deck, in those piles where it can be.
+ *    Every change is sent back to be kept (acts.arrange). "Suggest"
  *    fills it (the event's autoBuild, through acts.suggest) as one undoable step,
  *    in the piles Re-sort makes (by cost);
  *  · "Submit deck" sends it (acts.submit); the server's refusal, if
@@ -21,10 +26,12 @@
  * says which event's builder the page was loaded on, for the event page to
  * reopen it once its view lands.
  */
-import type { CubeView } from '../server/cube-types.ts';
+import type { CubeArrange, CubeView } from '../server/cube-types.ts';
 import { MATCH_COPY_CAP, SIDEBOARD_MAX, checkMatchDeck } from '../engine/src/matchdeck.ts';
 import { button } from './components/index.ts';
-import type { DeckPile } from './deckarrange.ts';
+import { arrangeOf, deckLayout, fitLayout, layoutFrom, type TableLayout } from './cubearrange.ts';
+import { draftLayout } from './cubedraft.ts';
+import { seedPiles, type DeckPile } from './deckarrange.ts';
 import * as tt from './tabletop.ts';
 
 export interface CubeBuildActs {
@@ -34,6 +41,8 @@ export interface CubeBuildActs {
   suggest(): Promise<{ main: string[]; side: string[] } | null>;
   /** Back: the event page */
   back(): void;
+  /** the table's layout changed: keep it (ui/cube.ts debounces the send) */
+  arrange?(a: CubeArrange): void;
 }
 
 /** a deck's least: checkDeck's 30 */
@@ -45,6 +54,8 @@ export interface Build {
   acts: CubeBuildActs;
   main: string[];
   side: string[];
+  /** the Maybe pile: on the table, not in the deck */
+  maybe: string[];
   piles: DeckPile[] | null;
   /** the note row: the server's answer, or what Suggest found */
   note: string | null;
@@ -127,6 +138,7 @@ export function cubeHost(b: Build): tt.TableHost {
     backLabel: 'Event',
     cards: () => b.main,
     side: () => b.side,
+    maybe: () => b.maybe,
     sideMax: SIDEBOARD_MAX,
     cap: MATCH_COPY_CAP,
     owned: () => tally(b.view.myPool ?? []),
@@ -162,8 +174,14 @@ export function cubeHost(b: Build): tt.TableHost {
     commit: next => {
       if (next.cards) b.main = next.cards;
       if (next.sideboard) b.side = next.sideboard;
+      if (next.maybe) b.maybe = next.maybe;
       if ('piles' in next) b.piles = next.piles ?? null;
+      // Maybe holds only what the deck and the sideboard leave of my pool (a Suggest may take a card from it)
+      const rest = tally(b.view.myPool ?? []);
+      for (const n of [...b.main, ...b.side]) rest.set(n, (rest.get(n) ?? 0) - 1);
+      b.maybe = b.maybe.filter(n => { const k = rest.get(n) ?? 0; rest.set(n, k - 1); return k > 0; });
       b.note = null;
+      b.acts.arrange?.(arrangeOf({ piles: b.piles ?? seedPiles(b.main, 'cost'), side: b.side, maybe: b.maybe }, 'build'));
       tt.tabletopChanged();
     },
     close: () => { b.open = false; b.acts.back(); },
@@ -171,12 +189,26 @@ export function cubeHost(b: Build): tt.TableHost {
   return h;
 }
 
-/** a fresh build of `view`'s pool: the submitted deck, else nothing */
+/** The table a build opens on: the submitted deck in the kept piles; else the kept table — the
+ * draft's (this tab's, else the server's) with every pick on it, or the builder's own, whose
+ * missing cards are in the pool. Null = nothing kept (the submitted deck as it is, else empty). */
+export function openingLayout(view: CubeView): TableLayout | null {
+  const pool = view.myPool ?? [];
+  const local = draftLayout(view.code);
+  const kept: CubeArrange | null = view.myArrange?.from === 'build' || !local ? view.myArrange ?? (local ? arrangeOf(local) : null) : arrangeOf(local);
+  if (!kept) return null;
+  if (view.myDeck) return deckLayout(view.myDeck, kept, pool);
+  return fitLayout(layoutFrom(kept), pool, kept.from !== 'build');
+}
+
+/** a fresh build of `view`'s pool, laid out as `openingLayout` says */
 export function newBuild(view: CubeView, acts: CubeBuildActs): Build {
+  const t = openingLayout(view);
   return {
     code: view.code, view, acts,
-    main: [...(view.myDeck?.main ?? [])], side: [...(view.myDeck?.side ?? [])],
-    piles: null, note: null, busy: false, open: false,
+    main: t ? t.piles.flatMap(p => p.cards) : [...(view.myDeck?.main ?? [])],
+    side: t ? [...t.side] : [...(view.myDeck?.side ?? [])], maybe: t ? [...t.maybe] : [],
+    piles: t ? t.piles : null, note: null, busy: false, open: false,
   };
 }
 

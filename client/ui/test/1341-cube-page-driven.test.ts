@@ -6,7 +6,7 @@
  * §3 `matched` puts up the banner (and asks for attention — the cue and the tab alert)
  * §4 the toolbar's tabs, and an op over HTTP (Join) carrying the token
  * §5 Play opens the match room as a seat, with the event on the link for the way back
- * §6 the draft goes up the same socket; Back from the pick screen is the event page, and back again
+ * §6 the draft goes up the same socket; Back from the pick screen (the table's tt-close) is the event page, and back again
  * §7 leaving the page unsubscribes and paints the home
  */
 import { test } from 'node:test';
@@ -80,7 +80,8 @@ test('1341 §6 the draft', () => {
   let html = ui.push({ t: 'cube', view: drafting });
   assert.match(html, /cdpage/, 'the pick screen (ui/cubedraft.ts) is what a drafter sees');
   ui.sent();
-  html = ui.click({ btn: 'cube-close' });
+  // the pick screen is the builder's table (docs/25 §13): its Back is the table's own
+  html = ui.click({ btn: 'tt-close' });
   assert.match(html, /data-btn="cube-draft-show"/, 'its Back is the event page, with the way back to the draft');
   assert.doesNotMatch(html, /cdpage/);
   html = ui.click({ btn: 'cube-draft-show' });

@@ -988,8 +988,7 @@ export function handleHomeButton(b: string | undefined, btn: HTMLElement, host: 
   if (b === 'home-cube-host') {
     // the cube page, straight onto its New event form; signed out it says to
     // sign in first (its list does), so there is no form to open
-    cube.openCube(null);
-    if (acct.token()) cube.handleButton({ dataset: { btn: 'cube-new' } } as unknown as HTMLElement);
+    cube.openCubeNew();
     return true;
   }
   if (b === 'eltoggle') {

@@ -8,11 +8,11 @@
  *      ONCE, however many beats follow; the server's clock is the view's `now`, not this one's
  *   §3 a tap chooses (reserve), a tap on the chosen card takes it (pick); Confirm takes the chosen
  *      card; after a take nothing more is taken until the pack moves on
- *   §4 a drag onto the picks takes the card (the click's own door); a drag off the picks does not;
- *      no drag while waiting
+ *   §4 a drag onto the deck table takes the card (the click's own door); a drag off the table does
+ *      not; no drag while waiting
  *   §5 the clock is one setInterval, and nothing in the module re-arms a setTimeout
  *
- * Seeds: none. The stand-in #app has no DOM: paintFrame writes its innerHTML.
+ * Seeds: none. The stand-in #app has no DOM: the tabletop (the pick screen is its host) writes its innerHTML.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -21,6 +21,7 @@ import '../../engine/src/cards/registry.ts';
 import { DECK_LIST } from '../../engine/src/cards/registry.ts';
 import type { CubeDraftView, CubeView } from '../../server/cube-types.ts';
 import { autoReserve, cubeDraftButton, cubeDraftDrag, paintCubeDraft, pickKey, stopCubeDraft, tickCubeDraft } from '../cubedraft.ts';
+import * as tt from '../tabletop.ts';
 
 const PACK = DECK_LIST.slice(60, 66);
 const NOW = 5_000_000;
@@ -43,7 +44,10 @@ function acts(): { calls: string[]; reserve(c: string): void; pick(c: string): v
   const calls: string[] = [];
   return { calls, reserve: c => { calls.push(`reserve ${c}`); }, pick: c => { calls.push(`pick ${c}`); } };
 }
-const app = (): HTMLElement => ({ innerHTML: '' }) as unknown as HTMLElement;
+const ROOT = { innerHTML: '' } as unknown as HTMLElement;
+tt.initTabletop({ app: ROOT, rerender: () => {} });
+/** the one #app (the tabletop paints into it), emptied */
+const app = (): HTMLElement => { stopCubeDraft(); ROOT.innerHTML = ''; return ROOT; };
 const tile = (card: string) => ({ dataset: { cdCard: card } as Record<string, string | undefined> });
 
 test('§1 autoReserve, pure', () => {
@@ -105,12 +109,15 @@ test('§4 the drag is the take', () => {
   const src = { ...tile(PACK[5]!), closest: () => null } as unknown as HTMLElement;
   const plan = cubeDraftDrag.plan(src);
   assert.ok(plan, 'a pack card may be picked up');
-  const picks = { dataset: { cdZone: 'picks' } } as unknown as Element;
-  const onPicks = { closest: (s: string) => (s === '[data-cd-zone="picks"]' ? picks : null) } as unknown as Element;
+  const wrap = { dataset: {} } as unknown as Element;
+  const pile = { dataset: { ttZone: 'pile|p1' } } as unknown as Element;
+  const felt = { dataset: { ttZone: 'end' } } as unknown as Element;
+  const over = (zone: Element) => ({ closest: (s: string) => (s === '.tttablewrap' ? wrap : s === '[data-tt-zone]' ? zone : null) }) as unknown as Element;
   const offPicks = { closest: () => null } as unknown as Element;
   assert.equal(plan!.zoneAt(offPicks), null, 'over the pack: nowhere');
-  assert.equal(plan!.zoneAt(onPicks), picks);
-  assert.equal(plan!.drop(picks, 0, 0), true);
+  assert.equal(plan!.zoneAt(over(pile)), pile, 'over a pile: that pile');
+  assert.equal(plan!.zoneAt(over(felt)), wrap, 'over the bare felt: the table');
+  assert.equal(plan!.drop(pile, 0, 0), true);
   assert.deepEqual(a.calls, [`pick ${PACK[5]}`]);
   assert.equal(cubeDraftDrag.plan(src), null, 'taken: no second drag');
   paintCubeDraft(app(), cube(draft({ pack: null, deadline: null })), a, () => {});

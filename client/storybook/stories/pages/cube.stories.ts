@@ -3,7 +3,7 @@
  * draft itself is the pick screen's story (pages/cubedraft.ts). The views are the page tests'
  * (ui/test/cube-fixture.ts), so a story and its test show the same event. */
 import { CHROME, overlay, page } from './_page.ts';
-import { cubeGlanceHtml, cubeHtml, cubeJoinRowsHtml, defaultForm, formPool, packMath, type CubeForm } from '../../../ui/pages/cube.ts';
+import { cubeHtml, cubeJoinRowsHtml, defaultForm, formPool, packMath, type CubeForm } from '../../../ui/pages/cube.ts';
 import { eventView, match, NOW, pageView, PLAYERS } from '../../../ui/test/cube-fixture.ts';
 import type { CubeMine } from '../../../server/cube-types.ts';
 
@@ -78,5 +78,4 @@ export const Done = { name: 'Finished', render: () => show({ event: eventView('d
 export const CalledOff = { name: 'Called off', render: () => show({ event: eventView('cancelled') }) };
 
 const card = (html: string): string => `<div style="max-width:320px;padding:12px;border:1px dashed var(--color-border)">${html}</div>`;
-export const HomeGlance = { name: 'Home card glance', render: () => card(cubeGlanceHtml(MINE)) };
 export const JoinRows = { name: 'Join sheet: Your cube events', render: () => card(cubeJoinRowsHtml(MINE)) };
