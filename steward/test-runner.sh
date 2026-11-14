@@ -232,7 +232,8 @@ EOF
   rm -f "$T/state/redgate/"*.json "$T/state/master-gate.json"; fi
 if run approved-land; then # a landed approved branch takes its stale red entry with it (2026-11-13, BL-63)
   it=steward-test-approved; git -C "$T/repo" push -q origin "origin/master:refs/heads/steward-approved/$it"
-  jq -cn --arg i "$it" '{branch:("origin/steward-approved/"+$i),item:$i,log:"(an earlier red gate)",tries:0}' > "$T/state/redgate/$it.json"
+  mkdir -p "$T/state/redgate"; jq -cn --arg i "$it" '{branch:("origin/steward-approved/"+$i),item:$i,log:"(an earlier red gate)",tries:0}' > "$T/state/redgate/$it.json"
+  [ -f "$T/state/redgate/$it.json" ] || bad "approved-land: could not write the red entry it starts from"
   tick skip >/dev/null
   grep "\"item\":\"$it\"" "$T/state/journal.jsonl" | tail -1 | grep -q '"outcome":"landed"' && [ ! -f "$T/state/redgate/$it.json" ] \
     && ok "an approved branch that lands takes its old repair entry with it" \
