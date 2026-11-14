@@ -358,14 +358,16 @@ try_deploy() {
 # origin/master as the base and the fetch updated that ref first, so the check compared master with
 # itself, never fired, and a push after a 33-minute gate on a master that moved meanwhile was refused:
 # seven times in five days a fix cleared to ship was staged for the owner instead.)
+# Returns 3 when the re-gate on the moved master is red; SHIP_GLOG is then that gate's log.
 ship_head() { # item
   local item="$1" pol try
+  SHIP_GLOG=""
   for try in 1 2 3; do
     g fetch -q origin master
     if ! g merge-base --is-ancestor origin/master HEAD; then
       log "$item: master moved to $(g rev-parse --short origin/master) — rebasing (try $try)"
       if ! g rebase -q origin/master >/dev/null 2>&1; then g rebase --abort; log "$item: master moved and the rebase conflicts"; return 2; fi
-      gate "$(slug "$item")-rebased" >/dev/null || return 3
+      SHIP_GLOG=$(gate "$(slug "$item")-rebased") || return 3
     fi
     pol=$(policy origin/master HEAD)
     if [ "$STEWARD_MODE" != live ]; then
@@ -446,6 +448,9 @@ land_approved() {
         g push -q origin "$ref:refs/archive/steward/$item" ":refs/heads/steward-approved/$item" || true
       fi
       mv -f "$STATE/handoffs/$item.md" "$STATE/handoffs/done/" 2>/dev/null
+      # an earlier tick's red entry (red only because master was) is stale now: without this the
+      # queue offered a repair of work already live (2026-11-13, BL-63: a run spent finding that out)
+      rm -f "$STATE/redgate/$item.json"
       journal "$item" landed sha="$(g rev-parse HEAD)"; notify "landed (approved): $item"
     else
       journal "$item" approved-conflict branch="$ref"
@@ -570,7 +575,19 @@ EOF
           branch=$(stage_head "$item"); final=gate-red
           redgate "$branch" "$item" "$glog" "$([ "$(jq -r .verdict <<<"$pol")" = ship ] && [ "$outcome" = ship ] && echo ship || echo stage)" "$start_sha"
         elif [ "$(jq -r .verdict <<<"$pol")" = ship ]; then
-          if ship_head "$item" >/dev/null; then final=shipped; else branch=$(stage_head "$item"); final=staged; reasons="${reasons:+$reasons; }could not land on a moved master"; fi
+          ship_head "$item" >/dev/null; local shrc=$?
+          if [ $shrc = 0 ]; then final=shipped
+          elif [ $shrc = 3 ]; then
+            # Green on the old master, red on the new one. Usually the NEW master is red on its own
+            # (2026-11-13: a human round broke the bot's corpus count mid-gate, and a fine triage was
+            # staged for the owner as "could not land on a moved master"). Gate that master (cached
+            # per sha) so the red entry knows: masterRed → re-gated without Claude once master is
+            # green; master green → the rebase really broke something → a repair. Never the owner.
+            glog="$SHIP_GLOG"; branch=$(stage_head "$item"); final=gate-red
+            local rsha nm; rsha=$(g rev-parse HEAD); nm=$(g rev-parse origin/master)
+            master_gate >/dev/null; clean_tree "$rsha"
+            redgate "$branch" "$item" "$glog" "$([ "$outcome" = ship ] && echo ship || echo stage)" "$nm"
+          else branch=$(stage_head "$item"); final=staged; reasons="${reasons:+$reasons; }could not land on a moved master"; fi
         else
           branch=$(stage_head "$item"); final=staged
         fi

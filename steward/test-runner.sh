@@ -205,6 +205,36 @@ EOF
     && ok "master moved during the gate → rebased, re-gated, and on top of the new master → dry-shipped" \
     || bad "moved → $r; moved=$([ -e "$T/moved" ] && echo yes || echo no); on top of the new master: $(git -C "$T/repo" merge-base --is-ancestor "$newm" refs/steward-dry/t-moved 2>/dev/null && echo yes || echo no)"
   git -C "$T/repo" update-ref -d refs/steward-dry/t-moved 2>/dev/null; fi
+if run moved && [ -n "${STEWARD_TEST_REMOTE:-}" ]; then # …and the NEW master is red on its own: never staged for the owner
+  # (2026-11-13: a human round broke master mid-gate; a fine triage was staged "could not land on a moved master")
+  rm -f "$T/moved" "$T/state/redgate/"*.json
+  cat > "$T/bin/move-master-red.sh" <<EOF
+#!/bin/sh
+# green on the old master; moves master once; red on anything that has the mover's file in it
+if [ ! -e "$T/moved" ] && [ "\$(git -C "$T/repo" log -1 --format=%s)" = "stub: ledger-only change" ]; then
+  touch "$T/moved"; git -C "$T/mover" fetch -q origin && git -C "$T/mover" checkout -q --detach origin/master \\
+    && echo "moved red \$(date +%s)" > "$T/mover/steward-test-moved.txt" && git -C "$T/mover" add steward-test-moved.txt \\
+    && git -C "$T/mover" commit -qm "someone else landed a red master during the gate" && git -C "$T/mover" push -q origin HEAD:refs/heads/master
+  exit 0
+fi
+[ -e "$T/repo/steward-test-moved.txt" ] && grep -q 'moved red' "$T/repo/steward-test-moved.txt" && exit 1
+exit 0
+EOF
+  chmod +x "$T/bin/move-master-red.sh"
+  r=$(tick ship "$T/bin/move-master-red.sh"); f="$T/state/redgate/$(jq -r .item <<<"$r").json"
+  [ -e "$T/moved" ] && [ "$(last_outcome "$r")" = dry-gate-red ] && [ "$(jq -r .masterRed "$f" 2>/dev/null)" = true ] \
+    && grep -q '"outcome":"master-red"' "$T/state/journal.jsonl" \
+    && ok "master moved to a RED master during the gate → gate-red, masterRed (re-gated once master is green), not staged" \
+    || bad "moved-red → $r; redgate: $(cat "$f" 2>/dev/null)"
+  rm -f "$T/state/redgate/"*.json "$T/state/master-gate.json"; fi
+if run approved-land; then # a landed approved branch takes its stale red entry with it (2026-11-13, BL-63)
+  it=steward-test-approved; git -C "$T/repo" push -q origin "origin/master:refs/heads/steward-approved/$it"
+  jq -cn --arg i "$it" '{branch:("origin/steward-approved/"+$i),item:$i,log:"(an earlier red gate)",tries:0}' > "$T/state/redgate/$it.json"
+  tick skip >/dev/null
+  grep "\"item\":\"$it\"" "$T/state/journal.jsonl" | tail -1 | grep -q '"outcome":"landed"' && [ ! -f "$T/state/redgate/$it.json" ] \
+    && ok "an approved branch that lands takes its old repair entry with it" \
+    || bad "approved-land: $(grep "\"item\":\"$it\"" "$T/state/journal.jsonl" | tail -1); redgate left: $(ls "$T/state/redgate/")"
+  git -C "$T/repo" push -q origin ":refs/heads/steward-approved/$it" 2>/dev/null; rm -f "$T/state/redgate/$it.json"; fi
 if run spin; then # the loop breaker: 4 runs in a day, nothing landed, no word from the owner → left for a day
   refill; q=$(cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs 2>/dev/null | grep -v '^triage\|^tidy' | head -1)
   it=$(awk '{print ($1=="report"||$1=="repair"||$1=="resume"||$1=="inbox"||$1=="retro") ? $2 : $1}' <<<"$q")
