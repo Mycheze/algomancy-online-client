@@ -71,7 +71,7 @@ import { elIcon, esc } from './util.ts';
 import { builderLoadingHtml, builderView, paintBuilder, type BuilderBand, type BuilderSheet, type BuilderView } from './pages/builder.ts';
 import { facets, filterRailHtml, POOL_BTNS, syntaxHelpHtml } from './pages/cardfilters.ts';
 import { deckStatsHtml, sampleHandHtml, statsStripHtml } from './pages/deckstats.ts';
-import { frameChromeView, paintFrame } from './pages/frame.ts';
+import { frameChromeView, keepArt, paintFrame } from './pages/frame.ts';
 import { poolChipsHtml, poolResultsHtml, type PoolChip, type PoolTarget, type PoolView } from './pages/pool.ts';
 import type { TableMenu, TableMenuItem, TableView } from './pages/table.ts';
 
@@ -784,7 +784,8 @@ function paintPool(): void {
   const results = $app.querySelector<HTMLElement>('#tt-results');
   const chips = $app.querySelector<HTMLElement>('#tt-chips');
   if (!v || !results || !chips) { paint(); return; }
-  results.innerHTML = noImgDrag(poolResultsHtml(v));
+  // a card still in the results keeps its picture element (pages/frame.ts keepArt)
+  keepArt(results, () => { results.innerHTML = noImgDrag(poolResultsHtml(v)); });
   results.dataset['scroll'] = v.scrollKey;
   results.scrollTop = 0;
   chips.innerHTML = noImgDrag(poolChipsHtml(v));

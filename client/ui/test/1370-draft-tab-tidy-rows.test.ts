@@ -15,11 +15,13 @@
  * §5 the Constructed tab is as it was
  * §6 the screenshot rig photographs the four Draft states (server/e2e/ui-shots-states.mjs)
  * §7 a repaint puts the same pictures back (owner 2026-11-14: "all the images on the screen flash
- *    for a frame"): pages/home.ts keepArt, which paintHome paints through
+ *    for a frame"): keepArt, which paintHome paints through — since 2026-11-14 the shared one in
+ *    pages/frame.ts that every page paints through (test/1375–1377)
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { homeHtml, keepArt, moreChanged, type HomeView } from '../pages/home.ts';
+import { homeHtml, moreChanged, type HomeView } from '../pages/home.ts';
+import { keepArt } from '../pages/frame.ts';
 import type { CustomRulesView } from '../pages/customrules.ts';
 import type { CustomRules } from '../customrules.ts';
 import { DEAL_DEFAULTS } from '../../engine/src/draftdeal.ts';
@@ -151,7 +153,7 @@ test('1370 §7 a repaint puts the same pictures back, not new ones (keepArt)', (
       return me;
     });
   };
-  const app = { querySelectorAll: (sel: string) => { assert.equal(sel, '.homeart img'); return imgs as unknown as NodeListOf<Element>; } };
+  const app = { querySelectorAll: (sel: string) => { assert.equal(sel, 'img'); return imgs as unknown as NodeListOf<Element>; } };
   paintOf(['back.jpg', 'draft.jpg', 'cons.jpg', 'side.jpg', 'side.jpg'])();
   const first = imgs.map(i => i.id);
   keepArt(app, paintOf(['back.jpg', 'draft.jpg', 'cons.jpg', 'side.jpg', 'side.jpg']));

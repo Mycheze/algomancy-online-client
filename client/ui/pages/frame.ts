@@ -202,10 +202,45 @@ export function restoreScrolls(app: { querySelector?: (s: string) => Scroller | 
   }
 }
 
-/** Put a page drawn in the frame on screen, every scrolling region where it was. */
+/** THE PICTURES SURVIVE A REPAINT (owner, 2026-11-14: "clicking something to swap it or make a
+ * choice makes all the images on the screen flash for a frame and it's jarring"; "Fix the painter
+ * entirely"). Every choice repaints a whole page through innerHTML, which makes a new <img> for
+ * each picture on it — and a new image, lazy and decoded off the main thread, is drawn empty for a
+ * frame even from the cache. So `paint` runs, and then each new <img> whose markup is exactly an
+ * old one's (same src, same attributes: same picture, same crop) is swapped for that old element
+ * before the browser draws anything. A picture whose markup changed — another card, or an old one
+ * an onerror has hidden — stays the new element. Twins (three copies of a card) pair up in order.
+ *
+ * `sel` picks the pictures, inside `root`, on both sides of the paint: a patch that replaces one
+ * region (`el.outerHTML = …`) passes the region's parent and the region's own pictures. The one
+ * place pictures are kept: paintFrame (every page in the frame), the home (paintHome) and the
+ * partial patches that redraw pictures (ui/cubedraft.ts patchBand, ui/tabletop.ts paintPool) all
+ * paint through here. Measured in Chrome (1440×900), pictures replaced per click before → after:
+ * deck shelf 6 → 0, Metagame 7 → 0, card stats 168 → 0, profile 14 → 0, the builder's 160 → 0;
+ * the cost, on the builder's 160, ~1 ms a paint (5.5 → 6.5 ms with layout). test/1375–1377. */
+export function keepArt(root: Pick<ParentNode, 'querySelectorAll'>, paint: () => void, sel = 'img'): void {
+  const was = Array.from(root.querySelectorAll?.(sel) ?? []);
+  paint();
+  if (!was.length) return;   // no pictures before: nothing to keep (and nothing to read back)
+  // a picture the paint did not touch is in both lists: it is where it was, and nobody's twin
+  const before = new Set(was);
+  const now = Array.from(root.querySelectorAll?.(sel) ?? []).filter(img => !before.delete(img));
+  const old = new Map<string, Element[]>();
+  for (const img of before) {
+    const twins = old.get(img.outerHTML);
+    if (twins) twins.push(img); else old.set(img.outerHTML, [img]);
+  }
+  for (const img of now) {
+    const same = old.get(img.outerHTML)?.shift();
+    if (same) img.replaceWith(same);
+  }
+}
+
+/** Put a page drawn in the frame on screen, every scrolling region where it was and every picture
+ * that did not change the element it was (keepArt). */
 export function paintFrame(app: HTMLElement, html: string): void {
   const kept = scrollsIn(app as unknown as Parameters<typeof scrollsIn>[0]);
   app.classList?.remove('board');   // ?: a test's stand-in #app may have no classList
-  app.innerHTML = html;
+  keepArt(app, () => { app.innerHTML = html; });
   restoreScrolls(app as unknown as Parameters<typeof restoreScrolls>[0], kept);
 }

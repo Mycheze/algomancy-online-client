@@ -68,7 +68,7 @@ import {
 } from '../components/index.ts';
 import { chosenDeck, elIcon as elIconOf, esc } from '../util.ts';
 import { caretIn, restoreCaret } from './caret.ts';
-import { TOOL_NAMES, toolsHtml } from './frame.ts';
+import { keepArt, TOOL_NAMES, toolsHtml } from './frame.ts';
 import {
   CLOCK_DEFAULT_MS, chosenClockMs, clockPickHtml, clockPickView, setMatchClockChoice, type ClockPickView,
 } from './clockpick.ts';
@@ -866,28 +866,6 @@ function patchHomeBadges(alerts: number, join: number): void {
   }
 }
 
-/** The pictures survive a repaint (owner, 2026-11-14: "clicking something to swap it or make a
- * choice makes all the images on the screen flash for a frame and it's jarring"). Every choice
- * repaints the whole page through innerHTML, which made a new <img> for each painting — the
- * backdrop, the Draft and Constructed tiles, the three cards beside Play — and a new image, lazy
- * and decoded off the main thread, is drawn empty for a frame even from the cache. So the old
- * element goes back in place of its new twin (same markup: same picture, same crop) before the
- * browser draws anything; a picture that did change is the new element. Measured in Chrome: 6 of
- * 6 replaced per click before, 0 after. test/1370 §7. */
-export const ART_IMGS = '.homeart img';
-export function keepArt(app: Pick<ParentNode, 'querySelectorAll'>, paint: () => void): void {
-  const old = new Map<string, Element[]>();
-  for (const img of Array.from(app.querySelectorAll?.(ART_IMGS) ?? [])) {
-    const twins = old.get(img.outerHTML);
-    if (twins) twins.push(img); else old.set(img.outerHTML, [img]);
-  }
-  paint();
-  for (const img of Array.from(app.querySelectorAll?.(ART_IMGS) ?? [])) {
-    const same = old.get(img.outerHTML)?.shift();
-    if (same) img.replaceWith(same);
-  }
-}
-
 /** Paint the home screen into `app` and wire it. `rerender` is main.ts's
  * renderHome — the router, which comes back here when no other page owns #app. */
 export function paintHome(app: HTMLElement, st: HomeState, rerender: () => void): void {
@@ -896,7 +874,7 @@ export function paintHome(app: HTMLElement, st: HomeState, rerender: () => void)
   const typed = HOME_TYPED.map(id => (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null)?.value);
   const pasteOpen = (document.querySelector('.homepage .deckpaste') as HTMLDetailsElement | null)?.open ?? false;
   const caret = caretIn(HOME_CARET);
-  keepArt(app, () => { app.innerHTML = homeHtml(homeView(st)); });
+  keepArt(app, () => { app.innerHTML = homeHtml(homeView(st)); });   // the pictures survive the repaint (pages/frame.ts)
   const justOpened = homeSheet !== paintedSheet ? homeSheet : null;
   paintedSheet = homeSheet;
   const codeInput = document.getElementById('h-code') as HTMLInputElement | null;

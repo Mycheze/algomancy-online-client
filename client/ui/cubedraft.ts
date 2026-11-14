@@ -51,6 +51,7 @@ import { playCue } from './audio.ts';
 import { arrangeOf, emptyLayout, fitLayout, layoutFrom, onTable, sameLayout, type TableLayout } from './cubearrange.ts';
 import { landByCost, reconcilePiles, seedPiles } from './deckarrange.ts';
 import { addDragProvider, dragActive, type DragProvider } from './drag.ts';
+import { keepArt } from './pages/frame.ts';
 import { noImgDrag } from './piletable.ts';
 import { installPressZoom } from './presszoom.ts';
 import * as tt from './tabletop.ts';
@@ -243,7 +244,8 @@ function patchBand(v: CubeDraftPageView): void {
   if (!el) { tt.tabletopChanged(); return; }
   const was = el.querySelector<HTMLElement>('.ttpoolresults');
   const top = was && was.dataset['scroll'] === packScrollKey(v) ? was.scrollTop : 0;
-  el.outerHTML = noImgDrag(cubePackHtml(v));
+  // the pack's pictures are the elements they were: a choice rings a card, it does not redraw the scans
+  keepArt(el.parentElement ?? el, () => { el.outerHTML = noImgDrag(cubePackHtml(v)); }, '.cdpack img');
   const now = q('.cdpack .ttpoolresults');
   if (now && top) now.scrollTop = top;
   drawn = drawKeys(v);
