@@ -182,7 +182,7 @@ export const BROWSER_KEYS: readonly StoredLine[] = [
   { covers: ['algoLearn'], what: 'your Learn to Play game and which lessons you have read, so you can pick up where you left off' },
   { covers: ['algoQueueMode', 'algoQueueRanked'], what: 'the format and the ranked/open choice you last used in the matchmaking queue, so it comes back the way you left it' },
   { covers: ['algoLeagueBanner'], what: 'whether you folded the league banner on the home page' },
-  { covers: ['algoDeckSort', 'algoBuilderSplit'], what: 'how you last sorted your decks, and how much of the deck builder the card pool takes up' },
+  { covers: ['algoDeckSort', 'algoBuilderSplit', 'algoCubePackSplit'], what: 'how you last sorted your decks, and how much of the deck builder (and of a cube draft\'s pick screen) the cards on top take up' },
   { covers: ['algoChallengeDecks'], what: 'the deck you are building for each weekly challenge, in its order' },
   { covers: ['algoChallengeTables'], what: 'the cards you set out on the table beside each weekly challenge deck, which are not in the deck' },
   { covers: ['algoChallengeRun'], what: 'the challenge run you are playing, so a reload carries on where you were' },
