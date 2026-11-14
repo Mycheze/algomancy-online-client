@@ -672,6 +672,17 @@ half-done, and fix the CAUSE so no future run hits it.
      `stage`, and say in the skill how to use it;
    - **the repo is in the way** — a flaky or slow test, a misleading error: a CT
      or BL with the evidence, not a fix tonight.
+
+   **Testing a runner change** (2026-11-14 retro, worked out the slow way): add
+   a scenario to `steward/test-runner.sh`, commit, then point it at a scratch
+   bare remote whose master is your commit — `git clone -q --bare . /tmp/s/o.git`,
+   delete its `refs/heads/steward-approved/*` (`update-ref -d`; they put landing
+   rows in every scenario), and move its master by FETCHING into it
+   (`git -C /tmp/s/o.git fetch -q <repo> "+<full sha>:refs/heads/master"`; a push
+   there is denied). Run `STEWARD_TEST_REMOTE=/tmp/s/o.git STEWARD_TEST_ROOT=/tmp/s/r
+   steward/test-runner.sh [scenario]` (~4 min for all). Mutation-check from a
+   `git worktree add` with the old file. Never `git commit -a` in a steward run:
+   it sweeps in the fetched report snapshot.
 4. Keep the skill short. **Replace before you add**; every new rule names the
    incident it comes from (date, item), the way the rules above do. Never more
    than 150 changed lines. A day with nothing worth changing is outcome
