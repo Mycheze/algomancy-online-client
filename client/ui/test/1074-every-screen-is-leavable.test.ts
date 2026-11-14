@@ -51,7 +51,8 @@ test('1074 §2 main.ts offers Home in exactly those cases, and it goes home', ()
 test('1074 §3 the ended-game bar always has a way home; the dead button is gone', () => {
   const bar = MAIN.slice(MAIN.indexOf("if (gameIsOver()) {\n    const winner"), MAIN.indexOf('// Playtest 2026-08-20: "when a decision is pending'));
   assert.ok(bar.length > 200, 'positive control: the ended-game bar is read');
-  assert.match(bar, /const home = '<button data-btn="gohome">Home<\/button>';/);
+  // (docs/25 §8: a cube match's says "Back to the event" — ui/cube.ts homeButtonHtml, test 1352)
+  assert.match(bar, /const home = cube\.homeButtonHtml\(NET\?\.match\?\.cube\?\.event\);/);
   assert.equal((bar.match(/\$\{home\}/g) ?? []).length, 2, 'both the net bar and the local one carry it');
   assert.doesNotMatch(MAIN, /data-btn="restart"/, '"New game" had no handler and must not come back as one');
 });

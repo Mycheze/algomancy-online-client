@@ -25,7 +25,7 @@ import * as acct from './account.ts';
 import { playCue } from './audio.ts';
 import { alertTab } from './tabalert.ts';
 import { copyText } from './util.ts';
-import { setCubeOpener } from './inbox.ts';
+import { pollInboxNow, setCubeOpener } from './inbox.ts';
 import type { CubeMatchView, CubeMine, CubeServerMsg, CubeView } from '../server/cube-types.ts';
 import {
   CUBE_TABS, PACKS_MAX, PLAYERS_MAX, PLAYERS_MIN, ROUNDS_MAX, PACK_MIN,
@@ -142,9 +142,14 @@ async function post(path: string, body: Record<string, unknown> = {}): Promise<R
 
 const eventPath = (c: string, op = ''): string => `/api/cube/${encodeURIComponent(c)}${op ? `/${op}` : ''}`;
 
+/** a view moved on to a new phase or round: the bell's cube lines did too (ui/inbox.ts) */
+export const bellMoved = (was: Pick<CubeView, 'phase' | 'round'> | null, now: Pick<CubeView, 'phase' | 'round'>): boolean =>
+  !!was && (was.phase !== now.phase || was.round !== now.round);
+
 /** take a view: the socket's push or an HTTP answer */
 function take(v: CubeView): void {
   if (!open || !code || v.code.toUpperCase() !== code) return;
+  if (bellMoved(view && view.code === v.code ? view : null, v)) pollInboxNow();
   view = v;
   skew = v.now - Date.now();
   loading = false;
@@ -251,6 +256,13 @@ export function backTo(matchEvent?: string | null): string | null {
   } catch { return null; }
 }
 
+/** The ended board's way out (main.ts's bar): Home, or for a cube match — played or
+ * watched — "Back to the event", the same words as the post-game screen and the ☰ menu.
+ * The same button either way (`gohome`); main.ts's handler sends it to the event. */
+export function homeButtonHtml(matchEvent?: string | null): string {
+  return `<button data-btn="gohome">${backTo(matchEvent) ? 'Back to the event' : 'Home'}</button>`;
+}
+
 /** the search that goes back: `?cube=<CODE>`, or '' (home) */
 export const backSearch = (matchEvent?: string | null): string => {
   const c = backTo(matchEvent);
@@ -337,6 +349,7 @@ function onMsg(m: CubeServerMsg | { t?: string }): void {
   if ('view' in m && m.view) { take(m.view); paint(); return; }
   if ('matched' in m && m.matched) {
     banner = m.matched;
+    pollInboxNow();
     playCue('decision');
     alertTab(m.matched.b ? 'Your match is ready' : 'You have a bye');
     paint();

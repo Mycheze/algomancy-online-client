@@ -109,6 +109,12 @@ export function concessionNote(o: GameOver): string {
   // test-mode or signed-out game is left, not conceded, and the note is noise
   if (!o.recorded || !c || c.weight === 'normal') return '';
   const who = c.seat === o.seat ? 'You' : esc(o.names[c.seat] ?? 'Your opponent');
+  // docs/25: a cube event's games are unrated — not a word about rating points
+  if (o.match?.cube) {
+    return c.weight === 'walkover'
+      ? `Walkover (${who} conceded on turn ${c.turn}): no stats or achievements for either player.`
+      : `Early concession (${who} conceded on turn ${c.turn}): left out of the fast-game achievements.`;
+  }
   if (c.weight === 'walkover') {
     return `Walkover — not counted (${who} conceded on turn ${c.turn}). `
       + 'Not a game: no stats, no achievements, no rated game for either player; '

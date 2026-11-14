@@ -36,6 +36,55 @@ import { esc } from '../util.ts';
 import { frameChromeView, frameHtml, type FrameChrome } from './frame.ts';
 import { tableHtml, type TableView } from './table.ts';
 
+/** the pick screen's own divider (ui/splitter.ts): not the builder's, whose pool wants less */
+export const PACK_SPLIT_KEY = 'algoCubePackSplit';
+
+/* THE PACK FIRST (owner, MTGO): the band opens tall enough to show the whole pack — in two
+ * rows (one, for a pack that fits a row), its tiles made smaller where a row would not
+ * hold half of it — and the picks take the rest. The numbers are the page's own
+ * (57-cube-draft.css, 52-builder.css, the frame): measured at 1440×900 and 1024×768. */
+/** the frame's toolbar and foot bar, the divider */
+const FRAME_H = 106, DIVIDER_H = 24;
+/** the pack's bar, its results' padding (top 2, bottom 12, sides 12) and gap, and a little slack
+ * so a rounding never puts a scrollbar on a pack that fits */
+const BAR_H = 39, PAD_V = 14, PAD_H = 24, GAP = 6, SLACK = 4;
+/** the results' thin scrollbar: the columns are counted as if it were there and the rows
+ * measured as if it were not, so neither state (with it, without it) tips into the other */
+const SCROLLBAR = 10;
+/** a pack card's widest (57-cube-draft.css --pw), the picks' least share */
+const TILE_W = 168, TILE_W_NARROW = 132, TABLE_MIN = 180;
+const SPLIT_LO = 0.12, SPLIT_HI = 0.75;
+
+export interface PackFit {
+  /** the tile's least width (the grid's --pw) */
+  pw: number;
+  cols: number;
+  rows: number;
+  /** the band's share of the pack and the picks together (the divider's --pool-f) */
+  split: number;
+}
+
+/** How the band shows a pack of `size` in a `w`×`h` window: every card at once. Pure. */
+export function packFit(size: number, w: number, h: number): PackFit {
+  const n = Math.max(1, size);
+  const width = w - PAD_H, narrow = width - SCROLLBAR;
+  const span = h - FRAME_H - DIVIDER_H;
+  const most = w <= 1100 ? TILE_W_NARROW : TILE_W;
+  const colsAt = (pw: number): number => Math.max(1, Math.floor((narrow + GAP) / (pw + GAP)));
+  const rows = n <= colsAt(most) ? 1 : 2;
+  const need = Math.ceil(n / rows);
+  let pw = need <= colsAt(most) ? most : Math.floor((narrow - (need - 1) * GAP) / need);
+  const band = (p: number): number => {
+    const cols = colsAt(p);
+    const tileH = ((width - (cols - 1) * GAP) / cols) * 1000 / 720;
+    return BAR_H + PAD_V + SLACK + rows * tileH + (rows - 1) * GAP;
+  };
+  // a short window: smaller tiles before the picks lose their last card's height
+  while (pw > 60 && band(pw) > span - TABLE_MIN) pw -= 4;
+  const split = Math.round(Math.max(SPLIT_LO, Math.min(SPLIT_HI, band(pw) / span)) * 1000) / 1000;
+  return { pw, cols: colsAt(pw), rows, split };
+}
+
 /** a clock at or under this is urgent: red, and the suggestion is chosen for you */
 export const URGENT_MS = 10_000;
 
@@ -65,8 +114,10 @@ export interface CubeDraftPageView {
   msLeft: number | null;
   picks: string[];
   table: TableView;
-  /** the pack's share of the screen (the builder's divider) */
+  /** the pack's share of the screen: the player's, else what shows the whole pack */
   split: number;
+  /** the pack's tiles' least width, so the whole pack shows (packFit) */
+  pw: number;
   chrome: FrameChrome;
 }
 
@@ -97,9 +148,11 @@ export function cubeDraftView(v: CubeView, local: CubeDraftLocal): CubeDraftPage
   const touch = typeof document !== 'undefined' && !!document.documentElement?.classList?.contains?.('touch');
   const cw = cardWidth({ touch, width: typeof innerWidth === 'number' ? innerWidth : 1200 });
   const ch = cardHeight(cw);
-  const split = readSplit();
+  const w = typeof innerWidth === 'number' ? innerWidth : 1200;
   const h = typeof innerHeight === 'number' ? innerHeight : 800;
-  const paneH = Math.max(260, Math.round((h - 150) * (1 - split)) - 90);
+  const fit = packFit(d?.packSize ?? d?.pack?.length ?? 15, w, h);
+  const split = readSplit(PACK_SPLIT_KEY) ?? fit.split;
+  const paneH = Math.max(120, Math.round((h - 130) * (1 - split)) - 60);
   const picks = d?.picks ?? v.myPool ?? [];
   return {
     event: v.config.name,
@@ -115,6 +168,7 @@ export function cubeDraftView(v: CubeView, local: CubeDraftLocal): CubeDraftPage
     picks,
     table: picksTable(picks, paneH, cw, ch),
     split,
+    pw: fit.pw,
     chrome: frameChromeView(),
   };
 }
@@ -140,6 +194,9 @@ function tileHtml(v: CubeDraftPageView, name: string, urgent: boolean): string {
     + ` aria-pressed="${name === v.reserved ? 'true' : 'false'}">${scanHtml(name, 'ttart')}</div>`;
 }
 
+/** the pack band's scroll key: one per pick, so a new pack is never shown scrolled */
+export const packScrollKey = (v: Pick<CubeDraftPageView, 'packNo' | 'pickNo'>): string => `cd-pack-${v.packNo ?? 0}-${v.pickNo ?? 0}`;
+
 /** the pack band: its bar (what to do, the count, Confirm) and the cards — or the wait */
 function packHtml(v: CubeDraftPageView): string {
   const urgent = v.msLeft !== null && v.msLeft <= URGENT_MS;
@@ -149,13 +206,14 @@ function packHtml(v: CubeDraftPageView): string {
         disabled: !v.reserved || !!v.taken })
     : '');
   const body = v.pack
-    ? `<div class="ttpoolgrid cdgrid">${v.pack.map(n => tileHtml(v, n, urgent)).join('')}</div>`
+    ? `<div class="ttpoolgrid cdgrid" style="--pw:${v.pw}px">${v.pack.map(n => tileHtml(v, n, urgent)).join('')}</div>`
     : emptyState({ bare: true, className: 'cdwaiting',
       title: v.packNo === null ? 'The draft is over' : 'Waiting for the next pack',
       text: v.packNo === null ? 'Your deck is next.' : 'It shows here the moment it reaches you.' });
   return `<section class="ttpool cdpack" data-cd-zone="pack" aria-label="The pack">`
     + `<div class="ttpoolbar cdpackbar">${bar}</div>`
-    + `<div class="ttpoolresults" data-scroll="cd-pack">${body}</div></section>`;
+    // the scroll is kept per pick: a new pack (or the next pick) opens at its top
+    + `<div class="ttpoolresults" data-scroll="${packScrollKey(v)}">${body}</div></section>`;
 }
 
 /** the divider: ▲ (the pack smaller), the grip, ▼ (the pack bigger) */
@@ -173,7 +231,7 @@ export function cubeDraftHtml(v: CubeDraftPageView): string {
     ? `<span class="cdclock${urgent ? ' cdurgent' : ''}" role="timer" aria-label="Time left">${clockText(v.msLeft)}</span>` : '';
   const head = `<div class="tthead" data-cd-zone="picks"><span class="ttheadlabel">Your picks</span><b class="ttheadcount">${v.picks.length}</b>${
     v.pack ? '<span class="dim cdpickshint">Tap a card, then Confirm, or drag it here.</span>' : ''}</div>`;
-  const main = `<div class="ttbuilder cdbuilder" style="--pool-f:${v.split}">${packHtml(v)}${DIVIDER}`
+  const main = `<div class="ttbuilder cdbuilder" style="--pool-f:${v.split}" data-split-key="${PACK_SPLIT_KEY}">${packHtml(v)}${DIVIDER}`
     + `${tableHtml({ ...v.table, headHtml: head })}</div>`;
   return frameHtml({
     page: 'ttpage cdpage',

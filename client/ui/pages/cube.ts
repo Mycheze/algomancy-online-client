@@ -267,7 +267,7 @@ export function cubeHtml(v: CubePageView): string {
       mainHtml: `${msg}${listHtml(v)}${sheetHtml(v)}`,
     });
   }
-  const tabs = e?.phase === 'playing' ? tabsFor(e) : [];
+  const tabs = e?.phase === 'playing' || e?.phase === 'done' ? tabsFor(e) : [];
   const tab = tabs.includes(v.tab) ? v.tab : 'standings';
   return frameHtml({
     page: 'cubepage', title: e?.config.name ?? 'Cube draft',
@@ -287,9 +287,11 @@ function loadingHtml(v: CubePageView): string {
     actionHtml: button({ label: 'Your events', dataBtn: 'cube-back' }) });
 }
 
-/** the playing tabs: Exhibition has no rounds, Round robin's is its schedule */
-function tabsFor(e: CubeView): CubeTab[] {
-  return CUBE_TABS.filter(k => k !== 'round' || e.config.tournament !== 'exhibition');
+/** the playing tabs: Exhibition has no rounds, Round robin's is its schedule. Finished, the
+ * standings and every match stay to browse (and Round robin's schedule); no live round, no players' states */
+export function tabsFor(e: CubeView): CubeTab[] {
+  return CUBE_TABS.filter(k => k !== 'round' || e.config.tournament !== 'exhibition')
+    .filter(k => e.phase !== 'done' || k === 'standings' || k === 'matches' || (k === 'round' && e.config.tournament === 'roundrobin'));
 }
 const TAB_LABEL = (e: CubeView, k: CubeTab): string =>
   k === 'round' ? (e.config.tournament === 'roundrobin' ? 'Schedule' : 'Round') : cap(k);
@@ -331,7 +333,7 @@ function eventHtml(v: CubePageView, e: CubeView, tab: CubeTab): string {
     case 'drafting': return draftingHtml(v, e);
     case 'building': return buildingHtml(v, e);
     case 'playing': return playingHtml(v, e, tab);
-    case 'done': return doneHtml(v, e);
+    case 'done': return doneHtml(v, e, tab);
     case 'cancelled':
       return emptyState({ title: 'Called off', text: 'The host called this event off.', actionHtml: button({ label: 'Your events', dataBtn: 'cube-back' }) });
   }
@@ -344,7 +346,8 @@ function factsHtml(v: CubePageView, e: CubeView): string {
     ? `<span class="cubeels">${c.source.elements.map(el => `<span class="cubeel">${elIcon(el, el)}${esc(cap(el))}</span>`).join('')}</span>`
     : `A pasted list`;
   const rows: [string, string][] = [
-    ['Cards', `${cards} <span class="dim">· ${e.poolSize} cards</span>`],
+    // the count on its own line under the elements: wrapped after them it began a line with "·"
+    ['Cards', `${cards}<span class="dim cubepoolsize">${e.poolSize} cards</span>`],
     ['Players', esc(`${c.minPlayers} to ${c.maxPlayers}${c.fillBots ? ', bots fill the table' : ''}`)],
     ['Tournament', esc(tournamentLine(c))],
     ['Games', esc(`${cap(c.rules)} · best of ${c.bestOf}`)],
@@ -517,6 +520,9 @@ const STANDINGS_COLUMNS = [
   { key: 'ogw', label: 'OGW', align: 'right' as const, title: 'your opponents’ share of games won' },
 ];
 const pct = (x: number): string => `${Math.round(x * 100)}%`;
+/** a player's three percentages: "—" until they have played a match (no result is not 33%) */
+export const tiebreaks = (r: Pick<StandingRow, 'w' | 'l' | 'd' | 'omw' | 'gw' | 'ogw'>): { omw: string; gw: string; ogw: string } =>
+  r.w + r.l + r.d === 0 ? { omw: '—', gw: '—', ogw: '—' } : { omw: pct(r.omw), gw: pct(r.gw), ogw: pct(r.ogw) };
 
 function standingsHtml(e: CubeView): string {
   return table({
@@ -525,7 +531,7 @@ function standingsHtml(e: CubeView): string {
       className: `${r.user === e.me ? 'me' : ''}${r.dropped ? ' out' : ''}`,
       cells: {
         rank: String(r.rank), player: { html: `${esc(r.name)}${r.dropped ? ' <span class="dim">dropped</span>' : ''}` },
-        pts: String(r.points), wld: `${r.w}–${r.l}–${r.d}`, omw: pct(r.omw), gw: pct(r.gw), ogw: pct(r.ogw),
+        pts: String(r.points), wld: `${r.w}–${r.l}–${r.d}`, ...tiebreaks(r),
       },
     })),
   });
@@ -542,7 +548,7 @@ function matchRowHtml(v: CubePageView, e: CubeView, m: CubeMatchView, showRound:
       className: 'cubewatch' }) : '';
   const play = mine && m.b && m.status !== 'done' && e.config.tournament === 'roundrobin'
     ? button({ label: m.status === 'live' ? 'Rejoin' : 'Play', size: 'sm', variant: 'primary', dataBtn: 'cube-play', attrs: { 'data-pairing': m.pairing } }) : '';
-  const edit = e.isHost && m.b ? button({ label: 'Result', size: 'sm', variant: 'ghost', dataBtn: 'cube-result-open', attrs: { 'data-pairing': m.pairing },
+  const edit = e.isHost && m.b && e.phase === 'playing' ? button({ label: 'Result', size: 'sm', variant: 'ghost', dataBtn: 'cube-result-open', attrs: { 'data-pairing': m.pairing },
     title: 'set or clear this match’s result' }) : '';
   const state = m.status === 'done' ? `<b>${esc(m.score ?? '')}</b>${m.winner ? ` <span class="dim">${esc(nameOf(e, m.winner))}</span>` : ''}` : esc(STATUS_WORDS[m.status]);
   return `<div class="cubematch${mine ? ' me' : ''}${m.status === 'live' ? ' live' : ''}">
@@ -601,15 +607,16 @@ function playingHtml(v: CubePageView, e: CubeView, tab: CubeTab): string {
   </div>`;
 }
 
-function doneHtml(v: CubePageView, e: CubeView): string {
+function doneHtml(v: CubePageView, e: CubeView, tab: CubeTab): string {
   const top = e.standings[0];
+  const body = tab === 'matches' ? matchesTabHtml(v, e) : tab === 'round' ? roundTabHtml(v, e) : standingsHtml(e);
   return `<div class="cubework cubework--play">
     <aside class="cubeside" data-scroll="cube-done-side">
       <div class="cubeyours"><h2 class="cubehead">Finished</h2>
         ${top ? `<p class="cubebig">🏆 ${esc(top.name)}</p><p class="dim">${top.points} points · ${top.w}–${top.l}–${top.d}</p>` : ''}</div>
       ${factsHtml(v, e)}
     </aside>
-    <section class="cubepane" data-scroll="cube-done">${standingsHtml(e)}</section>
+    <section class="cubepane" data-scroll="cube-done-${tab}">${body}</section>
   </div>`;
 }
 

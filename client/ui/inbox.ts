@@ -104,6 +104,8 @@ let pollFor: string | null = null;
 /** when the next poll is due (epoch ms), and whether one is out now */
 let dueAt = 0;
 let inFlight = false;
+/** a poll was asked for while one was on its way: its answer may predate what changed */
+let again = false;
 
 const POLL_MS = 8000;
 /** in a waiting room the panel's "invited" ticks should keep up */
@@ -339,7 +341,7 @@ function poll(): void {
       take(r.invites ?? [], r.requests ?? [], r.friends ?? [], r.league ?? [], r.times ?? [], r.decks ?? [], r.cube ?? []);
     })
     .catch(() => { /* offline: keep what we had */ })
-    .finally(() => { inFlight = false; schedule(); });
+    .finally(() => { inFlight = false; schedule(); if (again) { again = false; dueAt = 0; } });
   pollMatches();
 }
 
@@ -417,6 +419,15 @@ function markRead(): void {
 
 /** poll now rather than at the next tick — after a click changed something */
 const pollSoon = (): void => { dueAt = 0; tick(); };
+
+/** Something the bell shows has just changed (a cube round posted, a match found):
+ * ask now, not at the next scheduled poll. One fetch, through the steady tick's own
+ * door — no timer of its own; one already on its way is followed by another. */
+export function pollInboxNow(): void {
+  if (!deps) return;
+  if (inFlight) { again = true; return; }
+  pollSoon();
+}
 
 // ── clicks ────────────────────────────────────────────────────────────
 

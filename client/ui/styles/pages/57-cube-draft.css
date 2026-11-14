@@ -45,3 +45,6 @@ html:not(.touch) .cdtile.cdreserved:hover > .ttart { outline-width: 4px; outline
 .ttpoolown { position: absolute; left: 4px; bottom: 4px; min-width: 20px; padding: 0 var(--space-2); border-radius: var(--radius-pill);
   background: var(--color-surface-raised); color: var(--color-text); font-size: var(--text-12); font-weight: 700; line-height: 20px;
   text-align: center; pointer-events: none; }
+
+/* the cube builder's Suggest and Submit deck: one line each, at 1024 too */
+.cbtool { flex: none; white-space: nowrap; }

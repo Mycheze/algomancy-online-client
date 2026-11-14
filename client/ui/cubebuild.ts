@@ -7,9 +7,10 @@
  *  · the pool is ONLY your drafted cards (`owned`), and a tile's ceiling is the
  *    copies you drafted — place() refuses the second copy of a card you have
  *    one of, with a note, the same way it refuses a third at the copy cap;
- *  · it starts from the deck you last submitted, else empty; "Suggest a deck"
- *    fills it (the event's autoBuild, through acts.suggest) as one undoable step;
- *  · "Save and submit deck" sends it (acts.submit); the server's refusal, if
+ *  · it starts from the deck you last submitted, else empty; "Suggest"
+ *    fills it (the event's autoBuild, through acts.suggest) as one undoable step,
+ *    in the piles Re-sort makes (by cost);
+ *  · "Submit deck" sends it (acts.submit); the server's refusal, if
  *    any, shows in the builder's note row;
  *  · the deck lives in the EVENT, never in the account's deck shelf — this
  *    module imports nothing that writes the collection (test 1346 reads it).
@@ -84,9 +85,10 @@ export function cubeDeckProblems(main: readonly string[], side: readonly string[
 /** the toolbar's two buttons */
 function toolsHtml(b: Build): string {
   const submitted = !!b.view.myDeck && sameCards(b.main, b.view.myDeck.main) && sameCards(b.side, b.view.myDeck.side);
-  return button({ label: 'Suggest a deck', size: 'sm', dataBtn: 'tt-cube-suggest', disabled: b.busy })
+  return button({ label: 'Suggest', size: 'sm', dataBtn: 'tt-cube-suggest', disabled: b.busy, className: 'cbtool',
+    title: 'a deck from what you drafted' })
     + button({
-      label: submitted ? 'Submitted' : 'Save and submit deck', variant: 'primary', size: 'sm', dataBtn: 'tt-cube-submit',
+      label: submitted ? 'Submitted' : 'Submit deck', variant: 'primary', size: 'sm', dataBtn: 'tt-cube-submit', className: 'cbtool',
       disabled: b.busy || submitted,
     });
 }
@@ -101,7 +103,7 @@ async function suggest(h: tt.TableHost, b: Build): Promise<void> {
   if (cur !== b) return;
   if (!got) { b.note = 'No suggestion right now.'; tt.tabletopChanged(); return; }
   // one step through the one door, so Undo takes it back
-  if (!tt.place(h, null, { at: 'arrange', edit: { op: 'set', cards: got.main, side: got.side } })) tt.tabletopChanged();
+  if (!tt.place(h, null, { at: 'arrange', edit: { op: 'set', cards: got.main, side: got.side, sort: 'cost' } })) tt.tabletopChanged();
 }
 
 async function submit(b: Build): Promise<void> {

@@ -31,7 +31,7 @@ const view = (over: Partial<CubeDraftPageView> = {}): CubeDraftPageView => {
         cards: p.cards.map((name, k) => ({ name, src: `pick|${p.id}|${k}|${name}` })),
       })),
     },
-    split: 0.55, chrome: CHROME,
+    split: 0.55, pw: 132, chrome: CHROME,
     ...over,
   };
 };

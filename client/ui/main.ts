@@ -6586,8 +6586,8 @@ function promptHtml(): string {
     // …and ALWAYS a way home: a spectator gets no post-game screen at all, and
     // a board with no server behind it (a replay, ?demo) had a "New game"
     // button nothing answered (2026-11-04: every screen is leavable)
-    // (a cube match's gohome goes back to its event: handleButton, docs/25 §8)
-    const home = '<button data-btn="gohome">Home</button>';
+    // (a cube match's gohome goes back to its event, and says so: handleButton, docs/25 §8)
+    const home = cube.homeButtonHtml(NET?.match?.cube?.event);
     if (NET) return `<div class="promptbar"><span class="who">${winner === NET.seat && !asQuestion() && !NET.spectating ? 'You win! 🎉'
         : won === null ? 'Game over.' : `${esc(won)} wins.`}</span>
       ${postGame ? '<button data-btn="pg-reopen">Post-game summary</button>' : ''}${home}</div>`;

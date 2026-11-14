@@ -35,15 +35,19 @@ export const clampSplit = (f: number): number =>
 /** ▲ (by -1: the pool smaller) or ▼ (by 1: the pool bigger) */
 export const stepSplit = (f: number, by: number): number => clampSplit(f + by * SPLIT_STEP);
 
-export function readSplit(): number {
+/** the stored share; `key` another page's own divider (the cube pick screen's), which
+ * gives null when nothing is stored there, so that page can work out its own default */
+export function readSplit(): number;
+export function readSplit(key: string): number | null;
+export function readSplit(key?: string): number | null {
   try {
-    const v = localStorage.getItem(SPLIT_KEY);
-    return v === null ? SPLIT_DEFAULT : clampSplit(Number(v));
-  } catch { return SPLIT_DEFAULT; }
+    const v = localStorage.getItem(key ?? SPLIT_KEY);
+    return v === null ? (key ? null : SPLIT_DEFAULT) : clampSplit(Number(v));
+  } catch { return key ? null : SPLIT_DEFAULT; }
 }
 
-export function writeSplit(f: number): void {
-  try { localStorage.setItem(SPLIT_KEY, String(clampSplit(f))); } catch { /* private window */ }
+export function writeSplit(f: number, key: string = SPLIT_KEY): void {
+  try { localStorage.setItem(key, String(clampSplit(f))); } catch { /* private window */ }
 }
 
 /** the fraction a pointer at `y` makes, the share spanning top…top+height */
@@ -71,9 +75,13 @@ export function shownSplit(root: Element | null): number | null {
 }
 
 let installed = false;
+/** every page's repaint after a release (the builder's, the cube pick screen's): each checks it is on screen */
+const doneAll: (() => void)[] = [];
 
-/** Wire the grip's gesture once. `done` repaints after a release. */
+/** Wire the grip's gesture once. `done` repaints after a release. A divider whose
+ * builder root carries `data-split-key` stores its share there, not in the builder's. */
 export function installSplitter(done: () => void): void {
+  if (!doneAll.includes(done)) doneAll.push(done);
   if (installed || typeof document === 'undefined' || typeof document.addEventListener !== 'function') return;
   installed = true;
   document.addEventListener('pointerdown', e => {
@@ -90,7 +98,7 @@ export function installSplitter(done: () => void): void {
     const pool = p.pool.getBoundingClientRect(), table = p.table.getBoundingClientRect();
     const top = pool.top + (e.clientY - p.divider.getBoundingClientRect().top);
     const span = pool.height + table.height;
-    let f = shownSplit(root) ?? readSplit();
+    let f = shownSplit(root) ?? readSplit(root.dataset?.['splitKey'] || SPLIT_KEY) ?? SPLIT_DEFAULT;
     root.classList.add('ttsplitting');
     const move = (m: PointerEvent): void => {
       f = splitAt(m.clientY, top, span);
@@ -106,8 +114,8 @@ export function installSplitter(done: () => void): void {
       grip.removeEventListener('lostpointercapture', up);
       root.classList.remove('ttsplitting');
       // dragged past the pool's floor, store what is drawn: the next ▼ grows it
-      writeSplit(Math.max(f, shownSplit(root) ?? f));
-      done();
+      writeSplit(Math.max(f, shownSplit(root) ?? f), root.dataset?.['splitKey'] || SPLIT_KEY);
+      for (const d of doneAll) d();
     };
     grip.addEventListener('pointermove', move);
     grip.addEventListener('pointerup', up);

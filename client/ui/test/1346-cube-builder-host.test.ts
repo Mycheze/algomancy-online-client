@@ -1,6 +1,6 @@
 /* 1346 · A CUBE EVENT'S BUILDER (ui/cubebuild.ts, docs/25 §6) — the tabletop on my drafted pool.
  *
- *   §1 openCubeBuilder: the event's name, Back to the event, Suggest a deck and Save and submit deck,
+ *   §1 openCubeBuilder: the event's name, Back to the event, Suggest and Submit deck,
  *      the sideboard n/7, only the drafted cards in the pool; it starts from my submitted deck
  *   §2 Suggest a deck fills the main deck AND the sideboard as one step: Undo takes it back
  *   §3 Save and submit sends both boards; the server's refusal shows in the note row; taken, the
@@ -52,7 +52,7 @@ test('§1 the builder on my pool', () => {
   assert.equal(tt.screen(), 'tabletop');
   assert.match(html, /<span class="tttitletext">Friday cube<\/span>/);
   assert.match(html, /data-btn="tt-close"[\s\S]*?Event/);
-  assert.match(btnTag(html, 'tt-cube-suggest'), /Suggest a deck/);
+  assert.match(btnTag(html, 'tt-cube-suggest'), />Suggest$/);
   assert.match(btnTag(html, 'tt-cube-submit'), /Submitted/, 'the deck on the table is the submitted one');
   assert.match(html, /class="ttpilecount">1\/7</, 'the sideboard, 1/7');
   const tiles = [...html.matchAll(/data-tt-src="binder\|([^"]+)"/g)].map(m => m[1]!);

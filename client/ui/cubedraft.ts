@@ -24,9 +24,9 @@ import type { CubeDraftView, CubeView } from '../server/cube-types.ts';
 import { addDragProvider, dragActive, type DragProvider } from './drag.ts';
 import { noImgDrag } from './piletable.ts';
 import { installPressZoom } from './presszoom.ts';
-import { readSplit, stepSplit, writeSplit } from './splitter.ts';
+import { installSplitter, shownSplit, stepSplit, writeSplit } from './splitter.ts';
 import { PEEK_MS } from './touch.ts';
-import { clockText, cubeDraftHtml, cubeDraftView, URGENT_MS } from './pages/cubedraft.ts';
+import { clockText, cubeDraftHtml, cubeDraftView, PACK_SPLIT_KEY, URGENT_MS, type CubeDraftPageView } from './pages/cubedraft.ts';
 import { paintFrame } from './pages/frame.ts';
 
 export interface CubeActs { reserve(card: string): void; pick(card: string): void }
@@ -85,13 +85,17 @@ function chosen(d: CubeDraftView | null): string | null {
 
 const takenNow = (d: CubeDraftView | null): string | null => (d?.pack && took && took.key === pickKey(d) ? took.card : null);
 
+/** the split the screen was last drawn at (▲ ▼ step from what is drawn) */
+let drawnSplit: number | null = null;
+
 /** draw the screen as it is */
 function draw(): void {
   if (!cur) return;
   if (dragActive()) { pending = true; return; }
   pending = false;
   const d = cur.view.draft;
-  const v = cubeDraftView(cur.view, { reserved: chosen(d), taken: takenNow(d), serverNow: serverNow() });
+  const v: CubeDraftPageView = cubeDraftView(cur.view, { reserved: chosen(d), taken: takenNow(d), serverNow: serverNow() });
+  drawnSplit = v.split;
   wasUrgent = v.msLeft !== null && v.msLeft <= URGENT_MS;
   paintFrame(cur.app, noImgDrag(cubeDraftHtml(v)));
 }
@@ -133,10 +137,13 @@ export function cubeDraftButton(btn: string, el?: { dataset: Record<string, stri
       if (card) take(card);
       return true;
     }
-    case 'cd-split':
-      writeSplit(stepSplit(readSplit(), Number(el?.dataset['by'] ?? 0)));
+    case 'cd-split': {
+      // from what is drawn (the pack's own fit, until the player has moved it), into the pick screen's own key
+      const root = cur && typeof cur.app.querySelector === 'function' ? cur.app.querySelector('.cdbuilder') : null;
+      writeSplit(stepSplit(shownSplit(root) ?? drawnSplit ?? 0.5, Number(el?.dataset['by'] ?? 0)), PACK_SPLIT_KEY);
       draw();
       return true;
+    }
     default: return true;
   }
 }
@@ -193,6 +200,12 @@ function wire(app: HTMLElement): void {
     cubeDraftButton(btn.dataset['btn'] ?? '', btn);
   });
   installPressZoom();
+  // the divider's drag (ui/splitter.ts stores it under the screen's own key): the picks refit on the release
+  installSplitter(redrawAfterSplit);
+}
+
+function redrawAfterSplit(): void {
+  if (cur && typeof cur.app.querySelector === 'function' && cur.app.querySelector('.cdpage')) draw();
 }
 
 // ── the drag: a pack card onto the picks is a take ────────────────────

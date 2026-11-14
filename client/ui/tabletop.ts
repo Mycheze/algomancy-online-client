@@ -186,7 +186,7 @@ export type Arrange =
   | { op: 'redo' }
   /** the deck replaced whole (the challenge's Import a deck), undoably —
    * with `side`, the sideboard too (a cube's Suggest a deck) */
-  | { op: 'set'; cards: string[]; side?: string[] };
+  | { op: 'set'; cards: string[]; side?: string[]; sort?: 'cost' };
 
 /** Where it goes. A destination index counts AFTER the carried card has left
  * (ui/deckarrange.ts); absent = the end. `binder` is the pool: out of the deck. */
@@ -326,7 +326,8 @@ export function place(h: TableHost, carry: Carry | null, to: Place): boolean {
     else if (e.op === 'delpile') piles = deletePile(piles, e.pile);
     else if (e.op === 'addpile') piles = newPileAt(piles, piles.length);
     else if (e.op === 'resort') piles = seedPiles(deckPiles ? cards : piles.flatMap(p => p.cards), e.by);
-    else if (e.op === 'set') { cards = [...e.cards]; if (e.side && side) side = [...e.side]; }
+    // a deck replaced whole may ask to be laid out as Re-sort lays it (the cube's Suggest), not heaped in one "New" pile
+    else if (e.op === 'set') { cards = [...e.cards]; if (e.side && side) side = [...e.side]; if (deckPiles && e.sort) piles = seedPiles(cards, e.sort); }
     else {
       const step = (e.op === 'undo' ? undoStep : redoStep)(histFor(h), snapNow(h));
       if (!step) return false;

@@ -10,8 +10,9 @@ test('1339 the end, and the other ways an event page can stand', () => {
   const done = cubeHtml(pageView({ event: eventView('done') }));
   assert.match(done, /🏆 Ann/);
   assert.match(done, /<th[^>]*>Points<\/th>/);
-  assert.match(done, /data-scroll="cube-done"/);
-  assert.doesNotMatch(done, /data-btn="cube-tab"/, 'no tabs once it is over');
+  assert.match(done, /data-scroll="cube-done-standings"/);
+  // over, the standings and the matches stay to browse (test 1354)
+  assert.match(done, /data-btn="cube-tab"[^>]*data-v="matches"/);
   assert.equal(tagOf(done, 'cube-play'), '');
 
   const off = cubeHtml(pageView({ event: eventView('cancelled') }));
