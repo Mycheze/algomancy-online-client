@@ -7,7 +7,8 @@
  * The home screen is painted by the real ui/main.ts and clicked through its
  * real handler; the Create button's request is read off a stubbed fetch.
  *
- * §1 Beginner is one click on the Mode row: it sends exactly the Beginner
+ * §1 Beginner is one click on the Alternate modes row (the Mode row until
+ *    2026-11-14): it sends exactly the Beginner
  *    rules with Fire + Wood fixed, the Elements row shows the pair picked now,
  *    and the row says what Beginner is
  * §2 a ban on top of Beginner keeps it Beginner (derived from the rules, not
@@ -70,11 +71,15 @@ test('1042 §1 Beginner is one click and sends the Beginner rules with Fire and 
   const plain = await create(html);
   assert.equal(plain.method, 'GET', 'positive control: a standard game is a plain GET');
   html = ui.click({ btn: 'cr-beginner', on: '1' });
-  assert.equal(modeOn(html), '1', 'the Mode row reads Beginner');
+  assert.equal(modeOn(html), '1', 'Alternate modes reads Beginner');
   assert.match(html, /<span class="homemodehint">The rulebook’s Quick Start: 2 elements, packs of 5, simple cards only\.<\/span>/);
   assert.match(html, /data-btn="home-els"[^>]*aria-pressed="true"[^>]*data-pick="now"/, 'the elements are picked now');
   assert.match(html, /class="elchip fire on"/);
   assert.match(html, /class="elchip wood on"/);
+  // Cards, Banned and Game values are behind More settings (2026-11-14), which says they changed
+  assert.doesNotMatch(html, /crsimple/, 'positive control: More settings starts shut');
+  assert.match(html, /data-btn="home-more"[^>]*>[^]*?>3 changed<\/span><\/button>/, 'shut, it says three settings changed');
+  html = ui.click({ btn: 'home-more' });
   assert.match(html, /ui-toggle on crsimple"/, 'Simple cards only is on');
   assert.match(html, /<b>2 elements · Packs of 5<\/b>/, 'the Game values row says what changed');
   const sent = await create(html);

@@ -92,7 +92,20 @@
 /* each row is the setting-row component (components/setting-row.css, 2026-11-04) */
 .homefixed { display: inline-block; padding-top: var(--space-3); color: var(--color-text); font-size: var(--text-13); }
 
-/* Mode: Standard | Beginner, and what Beginner is beside it (as the clock's line is) */
+/* the Draft tab's rows above Alternate modes, in one fieldset: Cube draft
+   disables it, and it greys out (2026-11-14) */
+/* the Draft tab's name column fits "Alternate modes" on one line (the Constructed tab's is as it was) */
+.homerows:has(> .homerowsset) { --setting-row-label: 120px; }
+.homerowsset { display: flex; flex-direction: column; gap: inherit; min-width: 0; margin: 0; padding: 0; border: 0; }
+.homerowsset:disabled { opacity: .4; }
+/* More settings: a quiet disclosure, and how many of the settings behind it are changed */
+.homepage .homemore { display: inline-flex; align-items: center; gap: var(--space-3); color: var(--color-text-muted);
+  font-size: var(--text-13); font-weight: 600; text-decoration: none; }
+.homepage .homemore:hover:not(:disabled) { color: var(--color-accent); }
+.homemore > svg { width: 14px; height: 14px; flex: none; }
+.homemore .homemorecount { margin-left: var(--space-3); }
+.homemoregroup, .homemorerows { display: flex; flex-direction: column; gap: var(--space-4); }
+/* Alternate modes: Standard | Beginner | Cube draft, and what Beginner is beside it */
 .homemode { display: flex; align-items: center; gap: var(--space-5); }
 .homemodehint { color: var(--color-text-muted); font-size: var(--text-12); line-height: 1.4; }
 /* the custom rules on the Draft tab (pages/customrules.ts; their own pieces are
@@ -189,6 +202,7 @@
   .homeplayhead { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--space-4) var(--space-7); }
   .homeplaysub { grid-column: 1 / -1; }
   .homerows { gap: var(--space-4); }
+  .homemoregroup, .homemorerows { gap: var(--space-3); }
   .homeplayfoot { padding-top: var(--space-5); gap: var(--space-4); }
 }
 

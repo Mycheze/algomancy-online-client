@@ -16,8 +16,9 @@
  * §0 no DOM; the root is the app shell with `homepage` LAST (report.ts, 287)
  * §1 who you are: the name box only signed out; the account in the toolbar
  * §2 the toolbar's buttons, in the top bar
- * §3 Draft: Mode, the clock, the elements (room | now), the custom rules' rows
- *    (Cards, Banned, Game values — taken out of their sheet 2026-11-03), Create room
+ * §3 Draft: Rules, the clock, the elements (room | now), Alternate modes, More
+ *    settings over the custom rules' rows (Cards, Banned, Game values — taken out
+ *    of their sheet 2026-11-03, behind the disclosure 2026-11-14), Create room
  * §4 Constructed: Casual and Competitive, signed in and out
  * §5 the three cards beside Play open their pages; inner buttons survive
  * §6 the sheets: one at a time, from the view, each dismissable
@@ -146,12 +147,14 @@ test('960 §2 the toolbar: Decks Cards Metagame | account | Learn Test Rules Ale
     'signed out, Alerts says to sign in');
 });
 
-test('960 §3 Draft: Mode, clock, elements, the custom rules rows, Create room', () => {
+test('960 §3 Draft: rules, clock, elements, Alternate modes, More settings, Create room', () => {
   const html = homeHtml(view());
   const main = region(html, 'main');
-  // the rows, in order, each under its label
-  const labels = [...main.matchAll(/<div class="ui-setting-row__label">([^<]+)<\/div>/g)].map(m => m[1]);
-  assert.deepEqual(labels, ['Mode', 'Rules', 'Clock', 'Elements', 'Cards', 'Banned', 'Game values']);
+  // the rows, in order, each under its label — More settings shut, then open
+  const labelsOf = (m: string): (string | undefined)[] => [...m.matchAll(/<div class="ui-setting-row__label">([^<]+)<\/div>/g)].map(x => x[1]);
+  assert.deepEqual(labelsOf(main), ['Rules', 'Clock', 'Elements', 'Alternate modes']);
+  const more = region(homeHtml(view({ draft: { ...view().draft, more: true } })), 'main');
+  assert.deepEqual(labelsOf(more), ['Rules', 'Clock', 'Elements', 'Alternate modes', 'Cards', 'Banned', 'Game values']);
   // report #356: the rules set, on Draft too — Casual first and on, each option's tooltip says what it means
   assert.match(main, /data-btn="home-format" type="button" data-value="casual" aria-pressed="true" title="Casual: both players take the resource step, the haste step and deployment at the same time[^"]*" data-format="casual">Casual</);
   assert.match(main, /data-btn="home-format" type="button" data-value="competitive" aria-pressed="false" title="Competitive: the printed turn order\. The initiative player takes [^"]*" data-format="competitive">Competitive</);
@@ -162,18 +165,19 @@ test('960 §3 Draft: Mode, clock, elements, the custom rules rows, Create room',
     /data-mode="draft" data-els="1" data-rules="competitive">/, '…and with the elements picked now');
   assert.match(main, /data-btn="cr-beginner"[^>]*aria-pressed="true"[^>]*data-on="0">Standard</, 'first visit: Standard');
   assert.doesNotMatch(main, /homemodehint/, 'no Beginner line while Standard');
-  assert.match(main, /data-btn="cr-simple"/);
-  assert.match(main, /data-btn="cr-advanced"[^>]*>Card filter…</);
-  assert.match(main, /<input id="cr-ban" /);
-  assert.match(main, /<span id="cr-bansugg" class="crsugg"><!--SLOT:sugg--><\/span>/);
+  assert.doesNotMatch(main, /data-btn="cr-simple"|id="cr-ban"/, 'shut, More settings hides its rows');
+  assert.match(more, /data-btn="cr-simple"/);
+  assert.match(more, /data-btn="cr-advanced"[^>]*>Card filter…</);
+  assert.match(more, /<input id="cr-ban" /);
+  assert.match(more, /<span id="cr-bansugg" class="crsugg"><!--SLOT:sugg--><\/span>/);
   assert.match(main, /<div id="cr-pool" class="crpool"><!--SLOT:pool--><\/div>/);
   assert.doesNotMatch(main, /data-btn="cr-step"/, 'the numbers are in the Game values sheet only');
   assert.equal((main.match(/data-btn="clockpick"[^>]*data-clockfor="draft"/g) ?? []).length, 4, 'Default Off 45m 60m');
   assert.match(main, /class="ui-segmented__option on" data-btn="clockpick" type="button" data-value="auto"/);
   assert.match(main, /data-btn="home-els"[^>]*aria-pressed="true"[^>]*data-pick="room"/, 'first visit: choose in the room');
   assert.doesNotMatch(main, /data-btn="eltoggle"/, 'no chips until Pick now');
-  assert.match(buttonOf(main, 'home-sheet', 'data-sheet="rules"'), /Change…/);
-  assert.match(main, /<span class="dim">Standard values<\/span>/);
+  assert.match(buttonOf(more, 'home-sheet', 'data-sheet="rules"'), /Change…/);
+  assert.match(more, /<span class="dim">Standard values<\/span>/);
   assert.match(buttonOf(main, 'newgame', 'data-mode="draft"'), /^<button class="ui-button ui-button--action homecreate" data-btn="newgame" type="button" data-mode="draft">Create room</);
   assert.ok(main.indexOf('data-btn="home-sheet"') < main.lastIndexOf('data-sheet="join"'), 'positive control');
   assert.ok(main.indexOf('data-sheet="join"') < main.indexOf('data-btn="newgame"'), 'Join a room sits left of Create');
@@ -190,9 +194,9 @@ test('960 §3 Draft: Mode, clock, elements, the custom rules rows, Create room',
   assert.match(buttonOf(pick(['fire']), 'newgame'), / disabled data-mode="draft" data-els="1">Pick 3 elements \(1\/3\)</);
   assert.match(buttonOf(pick(['fire', 'wood', 'water'], { fixedError: 'no <trio>' }), 'newgame'), /title="no &lt;trio&gt;" disabled data-mode="draft" data-els="1">/);
   // custom rules: the values summary, the label, and the verdict on the room button
-  const custom = homeHtml(view({ draft: { ...view().draft, custom: true, rules: { ...RULES, values: ['Packs of <5>', 'Life 20'] } } }));
+  const custom = homeHtml(view({ draft: { ...view().draft, more: true, custom: true, rules: { ...RULES, values: ['Packs of <5>', 'Life 20'] } } }));
   assert.match(custom, /<b>Packs of &lt;5&gt; · Life 20<\/b>/);
-  // Beginner: the Mode row says what it is, beside the control
+  // Beginner: the Alternate modes row says what it is, beside the control
   const beg = homeHtml(view({ draft: { ...view().draft, rules: { ...RULES, beginner: true } } }));
   assert.match(beg, /data-btn="cr-beginner"[^>]*aria-pressed="true"[^>]*data-on="1">Beginner</);
   assert.match(beg, /<span class="homemodehint">The rulebook’s Quick Start: 2 elements, packs of 5, simple cards only\.<\/span>/);

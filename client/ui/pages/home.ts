@@ -6,14 +6,23 @@
  * info on the left, the update log on the right). The main area is two
  * columns: the PLAY card — Draft | Constructed, the room's settings as rows,
  * Join a room and Create room — and three lighter cards beside it, League,
- * Challenge and Matchmaking, each of which opens its page. The Draft tab's
- * line carries a small "Cube draft…" that opens the cube page (docs/25 §10).
+ * Challenge and Matchmaking, each of which opens its page.
+ *
+ * The Draft tab (owner, 2026-11-14: "That should greatly simplify the Draft Play
+ * area"): Rules, Clock, Elements, "Alternate modes" (Standard | Beginner |
+ * Cube draft), and last "More settings" — a disclosure over the rarely used
+ * Cards, Banned and Game values rows, which says how many of them are changed
+ * while it is shut, so a custom game is never hidden. Beginner is the old Mode
+ * row's Beginner; Cube draft greys every other row out (a disabled fieldset)
+ * and turns Create room into "Host a Cube draft", which opens the cube page on
+ * its New event form (docs/25 §10).
  *
  * Everything that used to be a fold or a band is a SHEET now (components/
  * sheet.ts): Join a room, the Game values (the custom rules' numbers), the deck
  * import, Single Card Duel, the client info and the update log. The rest of
  * the custom rules — Beginner, Simple cards only, the card filter, the bans —
- * are rows of the Draft tab itself (owner, 2026-11-03). Which sheet is open is this
+ * are rows of the Draft tab itself (owner, 2026-11-03; the last three behind
+ * More settings since 2026-11-14). Which sheet is open is this
  * module's state (`homeSheet`), so the home's frequent whole-page repaints
  * (the queue poll, a friend coming online) simply draw it open again.
  *
@@ -29,7 +38,8 @@
  *
  * The home screen's buttons (handleHomeButton: eltoggle, elrandom, clockpick,
  * newgame, joincode, deckimport*, the cr- panel's, and the home-mode /
- * home-format / home-els / home-sheet / home-sheet-close switches) are here
+ * home-format / home-els / home-sheet / home-sheet-close / home-more /
+ * home-cube / home-cube-host switches) are here
  * too, since BL-63 (2026-11-13), with the element pick they write; main.ts
  * lends them its `uiError` and its repaints (HomeButtonHost).
  *
@@ -63,7 +73,7 @@ import {
   CLOCK_DEFAULT_MS, chosenClockMs, clockPickHtml, clockPickView, setMatchClockChoice, type ClockPickView,
 } from './clockpick.ts';
 import {
-  BEGINNER_HINT, bansHtml, cardsHtml, customRulesView, gameValuesHtml, modeHtml, poolLineHtml, type CustomRulesView,
+  BEGINNER_HINT, bansHtml, cardsHtml, customRulesView, gameValuesHtml, poolLineHtml, type CustomRulesView,
 } from './customrules.ts';
 import { deckImportHtml, deckPickerHtml, deckPickerView, importDeck, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
 import { singleCardPickerHtml, singleCardPickerView } from './singlecard.ts';
@@ -201,6 +211,15 @@ let homeEls: string[] = savedEls();
 let homeFixedTrio = false;
 const saveEls = (): void => localStorage.setItem(ELS_KEY, JSON.stringify(homeEls));
 
+/** the Draft tab's More settings is open (Cards, Banned, Game values). Module
+ * state, not remembered: every visit starts with it shut. */
+let homeMore = false;
+/** Alternate modes is on Cube draft: the other rows are greyed out and Create
+ * room is "Host a Cube draft". Module state, not remembered — Standard and
+ * Beginner are the custom rules' own (customrulespanel.ts keeps them). */
+let homeCube = false;
+export const homeDraftExtras = (): { more: boolean; cube: boolean } => ({ more: homeMore, cube: homeCube });
+
 /** what paintHome draws of the pick (HomeState's `els` and `fixedOpen`) */
 export const homePick = (): { els: readonly string[]; fixedOpen: boolean } => ({ els: homeEls, fixedOpen: homeFixedTrio });
 
@@ -269,6 +288,10 @@ export interface HomeView {
     /** the custom rules as the Draft tab's rows and the Game values sheet draw
      * them (pages/customrules.ts customRulesView) */
     rules: CustomRulesView;
+    /** More settings is open: Cards, Banned and Game values are drawn (absent: shut) */
+    more?: boolean;
+    /** Alternate modes is on Cube draft (absent: off) */
+    cube?: boolean;
   };
   /** the clock picker for the tab that is showing — Competitive's is the
    * match clock (`mode: 'competitive'`, its own setting) */
@@ -301,7 +324,7 @@ export interface HomeView {
     join: number;
     /** update-log entries since it was last opened — Updates */
     updates: number;
-    /** my cube events (docs/25 §10) — the Draft tab's "Cube draft…"; absent or 0: no count */
+    /** my cube events (docs/25 §10) — on Alternate modes' Cube draft; absent or 0: no count */
     cube?: number;
   };
   slots: HomeSlots;
@@ -355,7 +378,7 @@ export function homeView(st: HomeState): HomeView {
     draft: {
       k, els: st.els, fixedOpen: st.fixedOpen, setCount: crp.setCount(),
       fixedError: fixedVerdict.error, customError: customVerdict.error, custom: !!customVerdict.rules,
-      rules: rulesView,
+      rules: rulesView, more: homeMore, cube: homeCube,
     },
     clock: clockPickView(mode === 'constructed' && homeIsMatch({ format: homeFormat(), competitive: ccView }) ? 'competitive' : mode),
     error: st.error,
@@ -450,22 +473,27 @@ function rulesRow(v: HomeView): string {
   }));
 }
 
-function draftRowsHtml(v: HomeView): { rows: string; go: string } {
-  const d = v.draft, k = d.k, r = d.rules;
-  const picked = d.els.length === k;
-  // Mode first: Beginner sets the elements, the cards and the values below it
-  const rules = v.format === 'competitive' ? { 'data-rules': 'competitive' } : {};
-  const rows = row('Mode', `<div class="homemode">${modeHtml(r)}${r.beginner ? `<span class="homemodehint">${esc(BEGINNER_HINT)}</span>` : ''}</div>`)
-    + rulesRow(v)
-    + row('Clock', clockPickHtml(v.clock, { look: 'segmented' }))
-    + row('Elements', segmented({
-      ariaLabel: 'Elements', size: 'sm',
-      options: [
-        { label: 'Choose in the room', value: 'room', on: !d.fixedOpen, dataBtn: 'home-els', attrs: { 'data-pick': 'room' } },
-        { label: 'Pick now', value: 'now', on: d.fixedOpen, dataBtn: 'home-els', attrs: { 'data-pick': 'now' } },
-      ],
-    }) + (d.fixedOpen ? elementPickHtml(d) : ''),
-    d.fixedOpen ? '' : `You both pick the ${k === 3 ? 'three' : k === 2 ? 'two' : k} elements in the room.`)
+/** how many of the settings behind More settings are off their standard:
+ * Simple cards only, the card filter, the bans (one setting, however many), and
+ * each game value that differs. Shut, the disclosure says so (owner 2026-11-03:
+ * "Simple cards only" must not be easy to miss). */
+export function moreChanged(r: CustomRulesView): number {
+  return (r.rules.simpleOnly ? 1 : 0) + (r.rules.query ? 1 : 0) + (r.rules.bans.length ? 1 : 0) + r.values.length;
+}
+
+/** More settings: the disclosure, and under it, when open, Cards, Banned and Game values */
+function moreHtml(d: HomeView['draft']): string {
+  const r = d.rules, open = !!d.more, n = moreChanged(r);
+  const toggle = button({
+    labelHtml: `<span>More settings</span>${icon(open ? 'chevron-down' : 'chevron-right')}${n > 0
+      ? chip({ label: `${n} changed`, tone: 'accent', shape: 'pill', className: 'homemorecount' }) : ''}`,
+    variant: 'link', className: 'homemore', dataBtn: 'home-more',
+    attrs: { 'aria-expanded': open ? 'true' : 'false', 'aria-controls': 'home-more-rows' },
+    title: n > 0 && r.summary.length ? r.summary.join(' · ') : undefined,
+  });
+  // one group, a little tighter than the rows around it: what opens reads as the toggle's
+  if (!open) return `<div class="homemoregroup"><div class="homemorerow">${toggle}</div></div>`;
+  return `<div class="homemoregroup"><div class="homemorerow">${toggle}</div><div class="homemorerows" id="home-more-rows">`
     + row('Cards', cardsHtml(r))
     + row('Banned', bansHtml(r))
     // the numbers alone live in a sheet (owner: the modal is "only reserved
@@ -473,7 +501,51 @@ function draftRowsHtml(v: HomeView): { rows: string; go: string } {
     + row('Game values', `<div class="homerules"><span class="homerulessum">${r.values.length
       ? `<b>${esc(r.values.join(' · '))}</b>` : '<span class="dim">Standard values</span>'}</span>
       ${button({ label: 'Change…', size: 'sm', ...opens('rules') })}</div>`)
-    + poolLineHtml(r);
+    + '</div></div>';
+}
+
+/** Alternate modes: Standard | Beginner (the custom rules' cr-beginner, as the
+ * Mode row was) | Cube draft (home-cube), with my cube events' count */
+function altModesHtml(v: HomeView): string {
+  const d = v.draft, r = d.rules, cubeOn = !!d.cube, n = v.badges.cube ?? 0;
+  const control = segmented({
+    ariaLabel: 'Alternate modes', size: 'sm',
+    options: [
+      { label: 'Standard', value: 'standard', on: !cubeOn && !r.beginner, dataBtn: 'cr-beginner', attrs: { 'data-on': '0' },
+        title: r.beginner ? 'back to the standard game' : 'the full game' },
+      { label: 'Beginner', value: 'beginner', on: !cubeOn && r.beginner, dataBtn: 'cr-beginner', attrs: { 'data-on': '1' },
+        title: 'the rulebook’s Quick Start: two elements (Fire + Wood suggested), simple cards only, packs of 5' },
+      // my cube events' count rides on the option, as text (a segmented option's label is text)
+      { label: n > 0 ? `Cube draft · ${n}` : 'Cube draft', value: 'cube', on: cubeOn, dataBtn: 'home-cube',
+        title: n > 0 ? `draft with a group, then play a tournament · ${n} of your events` : 'draft with a group, then play a tournament' },
+    ],
+  });
+  return row('Alternate modes', `<div class="homemode">${control}${!cubeOn && r.beginner ? `<span class="homemodehint">${esc(BEGINNER_HINT)}</span>` : ''}</div>`);
+}
+
+function draftRowsHtml(v: HomeView): { rows: string; go: string } {
+  const d = v.draft, k = d.k, r = d.rules;
+  const picked = d.els.length === k;
+  const rules = v.format === 'competitive' ? { 'data-rules': 'competitive' } : {};
+  // Cube draft: the rest is greyed out and inert, not hidden — a disabled
+  // fieldset disables every control inside it (buttons, the ban box, the chips).
+  // Two of them, because Alternate modes sits between Elements and More settings
+  // (owner, 2026-11-14: "More settings should be below the Alt modes")
+  const set = (html: string): string => `<fieldset class="homerowsset"${d.cube ? ' disabled' : ''}>${html}</fieldset>`;
+  const rows = set(rulesRow(v)
+    + row('Clock', clockPickHtml(v.clock, { look: 'segmented' }))
+    + row('Elements', segmented({
+      ariaLabel: 'Elements', size: 'sm',
+      options: [
+        { label: 'Choose in the room', value: 'room', on: !d.fixedOpen, dataBtn: 'home-els', attrs: { 'data-pick': 'room' } },
+        { label: 'Pick now', value: 'now', on: d.fixedOpen, dataBtn: 'home-els', attrs: { 'data-pick': 'now' } },
+      ],
+    }) + (d.fixedOpen ? elementPickHtml(d) : '')))
+    + altModesHtml(v)
+    + set(moreHtml(d) + poolLineHtml(r));
+  if (d.cube) {
+    return { rows, go: create('Host a Cube draft', { dataBtn: 'home-cube-host', title: 'draft with a group, then play a tournament' }) };
+  }
   const custom = d.custom ? 'Create custom room' : 'Create room';
   const go = d.fixedOpen
     ? create(picked ? `${custom} · ${d.els.map(cap).join(' + ')}` : `Pick ${k} elements (${d.els.length}/${k})`, {
@@ -538,17 +610,6 @@ function modeTilesHtml(v: HomeView): string {
   return `<div class="homemodes" role="group" aria-label="Game type">${tile('draft', 'Draft')}${tile('constructed', 'Constructed')}</div>`;
 }
 
-/** docs/25 §10: the way to the cube page — small, on the Draft tab's line (owner 2026-11-14:
- * "not a whole chip on the home page… a small thing from the Draft selection area") */
-function cubeLinkHtml(v: HomeView): string {
-  const n = v.badges.cube ?? 0;
-  return button({
-    labelHtml: `Cube draft…${n > 0 ? ` ${chip({ label: String(n), tone: 'accent', shape: 'pill', className: 'homecubecount' })}` : ''}`,
-    variant: 'link', size: 'sm', className: 'homecube', dataBtn: 'nav-cube',
-    title: 'Draft with a group, then play a tournament',
-  });
-}
-
 function playHtml(v: HomeView): string {
   const { rows, go } = v.mode === 'draft' ? draftRowsHtml(v) : constructedRowsHtml(v);
   const join = button({
@@ -560,9 +621,7 @@ function playHtml(v: HomeView): string {
     <div class="homeplayhead">
       <h1 id="home-play-h">Play</h1>
       ${modeTilesHtml(v)}
-      ${v.mode === 'draft'
-        ? `<p class="homeplaysub homeplaysub--draft"><span>Draft from shared packs, then play with what you drafted.</span>${cubeLinkHtml(v)}</p>`
-        : '<p class="homeplaysub">Bring a deck you built: 30 cards, at most 2 of each.</p>'}
+      ${v.mode === 'draft' ? '' : '<p class="homeplaysub">Bring a deck you built: 30 cards, at most 2 of each.</p>'}
     </div>
     <div class="homerows">${rows}</div>
     <div class="homeplayfoot">
@@ -808,6 +867,28 @@ function patchHomeBadges(alerts: number, join: number): void {
   }
 }
 
+/** The pictures survive a repaint (owner, 2026-11-14: "clicking something to swap it or make a
+ * choice makes all the images on the screen flash for a frame and it's jarring"). Every choice
+ * repaints the whole page through innerHTML, which made a new <img> for each painting — the
+ * backdrop, the Draft and Constructed tiles, the three cards beside Play — and a new image, lazy
+ * and decoded off the main thread, is drawn empty for a frame even from the cache. So the old
+ * element goes back in place of its new twin (same markup: same picture, same crop) before the
+ * browser draws anything; a picture that did change is the new element. Measured in Chrome: 6 of
+ * 6 replaced per click before, 0 after. test/1370 §7. */
+export const ART_IMGS = '.homeart img';
+export function keepArt(app: Pick<ParentNode, 'querySelectorAll'>, paint: () => void): void {
+  const old = new Map<string, Element[]>();
+  for (const img of Array.from(app.querySelectorAll?.(ART_IMGS) ?? [])) {
+    const twins = old.get(img.outerHTML);
+    if (twins) twins.push(img); else old.set(img.outerHTML, [img]);
+  }
+  paint();
+  for (const img of Array.from(app.querySelectorAll?.(ART_IMGS) ?? [])) {
+    const same = old.get(img.outerHTML)?.shift();
+    if (same) img.replaceWith(same);
+  }
+}
+
 /** Paint the home screen into `app` and wire it. `rerender` is main.ts's
  * renderHome — the router, which comes back here when no other page owns #app. */
 export function paintHome(app: HTMLElement, st: HomeState, rerender: () => void): void {
@@ -816,7 +897,7 @@ export function paintHome(app: HTMLElement, st: HomeState, rerender: () => void)
   const typed = HOME_TYPED.map(id => (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null)?.value);
   const pasteOpen = (document.querySelector('.homepage .deckpaste') as HTMLDetailsElement | null)?.open ?? false;
   const caret = caretIn(HOME_CARET);
-  app.innerHTML = homeHtml(homeView(st));
+  keepArt(app, () => { app.innerHTML = homeHtml(homeView(st)); });
   const justOpened = homeSheet !== paintedSheet ? homeSheet : null;
   paintedSheet = homeSheet;
   const codeInput = document.getElementById('h-code') as HTMLInputElement | null;
@@ -889,6 +970,8 @@ export function handleHomeButton(b: string | undefined, btn: HTMLElement, host: 
     // …and Standard, from Beginner, is the standard game again: the elements
     // go back to being chosen in the room
     if (b === 'cr-beginner' && btn.dataset['on'] !== '1' && wasBeginner) homeFixedTrio = false;
+    // Standard and Beginner share Alternate modes with Cube draft: either one leaves it
+    if (b === 'cr-beginner') homeCube = false;
     renderHome();
     return true;
   }
@@ -899,6 +982,16 @@ export function handleHomeButton(b: string | undefined, btn: HTMLElement, host: 
   if (b === 'home-els') { homeFixedTrio = btn.dataset['pick'] === 'now'; renderHome(); return true; }
   if (b === 'home-sheet') { openHomeSheet(btn.dataset['sheet']); renderHome(); return true; }
   if (b === 'home-sheet-close') { closeHomeSheet(); renderHome(); return true; }
+  // the Draft tab's More settings, and Alternate modes' Cube draft (owner, 2026-11-14)
+  if (b === 'home-more') { homeMore = !homeMore; renderHome(); return true; }
+  if (b === 'home-cube') { homeCube = true; renderHome(); return true; }
+  if (b === 'home-cube-host') {
+    // the cube page, straight onto its New event form; signed out it says to
+    // sign in first (its list does), so there is no form to open
+    cube.openCube(null);
+    if (acct.token()) cube.handleButton({ dataset: { btn: 'cube-new' } } as unknown as HTMLElement);
+    return true;
+  }
   if (b === 'eltoggle') {
     homeFixedTrio = true;
     const el = btn.dataset['el']!;

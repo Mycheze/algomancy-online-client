@@ -53,7 +53,8 @@ test('1011 §2 Elements: Pick now shows the chips, Choose in the room hides them
   assert.notEqual(fireOn(html), before, 'the chip did not toggle');
   html = ui.click({ btn: 'home-els', pick: 'room' });
   assert.doesNotMatch(html, /data-btn="eltoggle"|data-els="1"/);
-  assert.match(html, /You both pick the three elements in the room\./);
+  // owner 2026-11-14: "'Elements' don't need reminder text"
+  assert.doesNotMatch(html, /elements in the room/);
 });
 
 test('1011 §3 a sheet opens, survives a repaint, closes by its button or by Esc', () => {
@@ -68,7 +69,8 @@ test('1011 §3 a sheet opens, survives a repaint, closes by its button or by Esc
   assert.equal(sheetOpen(html), 'home-join', 'a repaint closed the sheet');
   html = ui.click({ btn: 'home-sheet-close' });
   assert.equal(sheetOpen(html), null, 'the ✕ / scrim closes it');
-  // Esc
+  // Esc — on the Game values sheet, whose button is behind More settings (2026-11-14)
+  ui.click({ btn: 'home-more' });
   ui.click({ btn: 'home-sheet', sheet: 'rules' });
   html = ui.key('Escape');
   assert.equal(sheetOpen(html), null, 'Esc does not close the sheet');

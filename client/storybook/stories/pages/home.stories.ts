@@ -108,7 +108,7 @@ export const PickNowCustom = {
     }));
   },
 };
-/** the Mode row on Beginner: its line, Fire + Wood picked now, simple cards on, the values summarised */
+/** Alternate modes on Beginner: its line, Fire + Wood picked now, simple cards on, the values summarised */
 export const Beginner = {
   name: 'Draft: Beginner (Fire + Wood, simple cards, packs of 5)',
   render: () => {
@@ -118,12 +118,28 @@ export const Beginner = {
     }));
   },
 };
-/** the Cards and Banned rows in use: two bans, the card filter open, a value changed, the pool line */
+/** the Cards and Banned rows in use (More settings open): two bans, the card filter open, a value changed, the pool line */
 export const BansAndFilter = {
   name: 'Draft: banned cards, a card filter, a changed value',
   render: () => {
     const v = signedIn();
+    return page(homeHtml({ ...v, draft: { ...v.draft, custom: true, more: true, rules: RULES_CARDS } }));
+  },
+};
+/** the same rules with More settings shut: it says how many are changed */
+export const MoreShutChanged = {
+  name: 'Draft: More settings shut over changed settings',
+  render: () => {
+    const v = signedIn();
     return page(homeHtml({ ...v, draft: { ...v.draft, custom: true, rules: RULES_CARDS } }));
+  },
+};
+/** Alternate modes on Cube draft: the other rows greyed out, Host a Cube draft */
+export const CubeDraft = {
+  name: 'Draft: Alternate modes on Cube draft',
+  render: () => {
+    const v = signedIn();
+    return page(homeHtml({ ...v, draft: { ...v.draft, cube: true }, badges: { ...v.badges, cube: 2 } }));
   },
 };
 /** typing a ban: the suggestions hang under the box */
@@ -131,7 +147,7 @@ export const BanTyping = {
   name: 'Draft: typing a ban (the suggestions)',
   render: () => {
     const v = view();
-    return page(homeHtml({ ...v, draft: { ...v.draft, rules: { ...RULES_STANDARD, banDraft: 'ign',
+    return page(homeHtml({ ...v, draft: { ...v.draft, more: true, rules: { ...RULES_STANDARD, banDraft: 'ign',
       suggestions: '<button data-btn="cr-ban" data-name="Ignis Sprite">Ignis Sprite</button><button data-btn="cr-ban" data-name="Ignite">Ignite</button>' } } }));
   },
 };

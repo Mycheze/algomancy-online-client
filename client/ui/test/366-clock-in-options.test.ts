@@ -59,7 +59,9 @@ test('366 the clock chips are the Play card Clock row, and Custom rules has none
   assert.match(clockRow(play), /data-clockpick="draft"/, 'the Draft tab draws the draft clock');
   assert.match(play, /<div class="ui-setting-row__label">Clock<\/div>/, 'under its own label');
 
-  // the Game values sheet (the custom rules' numbers, 2026-11-03): no clock
+  // the Game values sheet (the custom rules' numbers, 2026-11-03): no clock.
+  // Its button is behind More settings (2026-11-14), left open for the next test's row
+  ui.click({ btn: 'home-more' });
   html = ui.click({ btn: 'home-sheet', sheet: 'rules' });
   const sheet = block(html, /<div class="ui-sheet /, 'div');
   assert.match(sheet, /data-btn="cr-step"/, 'positive control: the Game values sheet opened');
