@@ -107,17 +107,12 @@
 .cubeswap { padding: var(--space-3) var(--space-5); }
 .cubeswap.on { border-color: var(--color-accent); color: var(--color-accent); }
 
-/* the home's Cube draft card (pages/home.ts): Matchmaking's size, the glance on its glass */
-.homeside--cube { flex: .55 1 0; }
-/* four cards in the column: Matchmaking and this one never shrink below their words, as League and
-   Challenge do not (54-home-art.css) — at 1024×768 the fourth card squeezed Matchmaking's glass and
-   cut its mode chips in half; League, which has the room, gives it */
-.homeside--queue, .homeside--cube { min-height: min-content; }
+/* the home's way in (pages/home.ts cubeLinkHtml): a small link at the end of the Draft tab's line,
+   with my events' count; the line keeps its one row and its height */
+.homeplaysub--draft { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: var(--space-5); }
+.homeplaysub--draft .homecube { margin-left: auto; padding: 0; font-size: var(--text-13); white-space: nowrap; }
+.homecube .homecubecount { margin-left: var(--space-2); }
 .cubeglance { display: flex; flex-direction: column; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
-/* a short window (the landscape iPad): the card has room for one event's line */
-@media (min-width: 760px) and (min-height: 600px) and (max-height: 819.98px) {
-  .homeside .cubeglance li + li { display: none; }
-}
 /* the Join sheet's "Your cube events" */
 .cubejoinrows { display: flex; flex-direction: column; gap: var(--space-4); }
 .cubejoinrow { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); font-size: var(--text-13); }

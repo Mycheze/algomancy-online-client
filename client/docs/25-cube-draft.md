@@ -225,3 +225,14 @@ Reserved test numbers **1300–1349**: 1300–1309 draft+bot, 1310–1319 tourne
 15. Casual matches also carry the 45-minute match clock.
 16. Dropping a player hands their opponent any undecided match; a host award or a drop closes that game at once.
 17. Every player must draft at least 30 cards (3 packs × at least 10), or the event can't start.
+
+
+## 13. Owner's playtest feedback (2026-11-14) — supersedes the matching items above
+- Entry: NOT a home card. A small "Cube draft" entry inside the Play card's Draft selection; the Join sheet keeps "Your cube events". (Replaces §10's fourth card and §12 item 12.)
+- Sounds: a new pack arrived, a pick made, 10 seconds left (cues `packnew`, `pick`, `tensec`).
+- No filler text on the pick screen ("The next pack shows here when it's ready" removed).
+- A push from another player's pick never rebuilds my pack or table, nor interrupts a press or drag; reserving shows at once.
+- The picks area during the draft IS the builder's deck table: rearrangeable main-deck piles, Sideboard and Maybe. A pick lands in the main deck by cost.
+- The divider behaves like the builder's: the user's size always wins.
+- The arrangement made during the draft is kept on the server and is what the builder opens on.
+- When the draft ends, each player is put straight into deck building, not the event page.

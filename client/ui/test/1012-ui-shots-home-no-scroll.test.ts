@@ -32,7 +32,9 @@ test('1012 §2 every home state is held to the window', () => {
   for (const want of ['signed-out', 'signed-in', 'constructed', 'competitive', 'pick-now', 'join-open', 'info-open',
     'updates-open', 'customrules-open', 'bell-open', 'cc-your-matches',
     // 2026-11-03 round 2: the custom rules on the Draft tab, and the match clock
-    'beginner', 'cards-rules', 'ban-typing', 'competitive-clock-off']) {
+    'beginner', 'cards-rules', 'ban-typing', 'competitive-clock-off',
+    // 2026-11-14: the Draft tab's "Cube draft…" with my events' count (docs/25 §10)
+    'cube-events']) {
     assert.ok(names.includes(want), `home__${want} is not photographed`);
   }
   assert.ok(!names.includes('folds-open'), 'the home has no folds any more');

@@ -1,7 +1,9 @@
 /* 1340 — THE WAY IN (docs/25 §10, decision 12), DOM-free.
  *
- * §1 the home's fourth card, "Cube draft": the whole card opens the cube page (nav-cube), its glass
- *    lists my events; with none it says what a cube is
+ * §1 the way in is SMALL (owner 2026-11-14: "I don't want it to be a whole chip on the home page.
+ *    Instead, it should be a small thing from the Draft selection area"): a "Cube draft…" link on the
+ *    Draft tab's line opens the cube page (nav-cube), with my events' count; no fourth card beside
+ *    Play, and none on the Constructed tab
  * §2 the Join sheet lists "Your cube events" with their buttons; the code box takes an event code
  * §3 the glance and the rows themselves
  */
@@ -26,9 +28,8 @@ function view(over: Partial<HomeView> = {}): HomeView {
     competitive: { signedIn: false, decks: null, bestOf: 3, pick: null }, singleCard: null,
     leagueLive: true, challengeLive: true, badges: { alerts: 0, join: 0, updates: 0 },
     slots: { league: '', challenge: '', queue: '', invites: '', yourMatches: '', leagueMatches: '', scpicker: '', info: '', updates: '',
-      cube: '<!--SLOT:cube-->', cubeEvents: '<!--SLOT:cubeEvents-->' },
+      cubeEvents: '<!--SLOT:cubeEvents-->' },
     art: { backdrop: ART, draft: ART, constructed: ART, league: ART, challenge: ART, queue: ART },
-    cubeArt: { src: 'cube.jpg', card: 'Prismite', focusY: 30 },
     ...over,
   };
 }
@@ -39,18 +40,22 @@ const MINE: CubeMine[] = [
     myMatch: { pairing: 'r2p1', round: 2, a: { user: 'u1', name: 'Ann' }, b: { user: 'u2', name: 'Bo' }, status: 'waiting', room: null, score: null, winner: null } },
 ];
 
-test('1340 §1 the home\'s Cube draft card', () => {
+test('1340 §1 the Draft tab\'s small way in', () => {
   const html = homeHtml(view());
-  const card = /<section class="homeside homeside--cube"[^>]*>[^]*?<\/section>/.exec(html)?.[0] ?? '';
-  assert.ok(card, 'a fourth card beside Play');
-  assert.match(card, /Cube draft/);
-  assert.match(card, /<!--SLOT:cube-->/, 'its glass is the cube glance');
-  assert.match(card, /<button class="homesideopen" data-btn="nav-cube" aria-label="[^"]+"><\/button>/, 'the whole card opens the page');
-  assert.match(card, /src="cube\.jpg"/, 'on its own painting');
-  assert.ok(html.indexOf('homeside--queue') < html.indexOf('homeside--cube'), 'after Matchmaking');
-  const none = homeHtml(view({ slots: { ...view().slots, cube: '' } }));
-  assert.match(none, /Draft with up to 12 players, then play a tournament\./);
-  assert.match(none, /data-btn="nav-cube"/, 'always open: New event lives there');
+  assert.doesNotMatch(html, /homeside--cube/, 'no fourth card beside Play');
+  assert.equal((html.match(/class="homeside /g) ?? []).length, 3, 'League, Challenge, Matchmaking — as before the cube');
+  const line = /<p class="homeplaysub homeplaysub--draft">[^]*?<\/p>/.exec(html)?.[0] ?? '';
+  assert.ok(line, 'the Draft tab\'s line');
+  assert.match(line, /Draft from shared packs, then play with what you drafted\./);
+  const link = /<button[^>]*data-btn="nav-cube"[^>]*>[^]*?<\/button>/.exec(line)?.[0] ?? '';
+  assert.ok(link, 'the link sits on that line');
+  assert.match(link, /class="ui-button ui-button--link ui-button--sm homecube"/, 'a small link, not a panel');
+  assert.match(link, />Cube draft…<\/button>$/, 'no count with no events');
+  assert.equal((html.match(/data-btn="nav-cube"/g) ?? []).length, 1, 'one way in');
+  const some = homeHtml(view({ badges: { ...view().badges, cube: 2 } }));
+  assert.match(/<button[^>]*data-btn="nav-cube"[^>]*>[^]*?<\/button>/.exec(some)?.[0] ?? '', /Cube draft… <span[^>]*homecubecount[^>]*>2<\/span>/, 'my events\' count');
+  const constructed = homeHtml(view({ mode: 'constructed' }));
+  assert.doesNotMatch(constructed, /nav-cube/, 'the Draft area only');
 });
 
 test('1340 §2 the Join sheet', () => {

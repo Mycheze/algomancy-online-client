@@ -58,6 +58,15 @@ const GAIN: Record<Cue, number> = {
   // twenty times a game.
   lifeup: 0.26,     // small bell, bent upward — you gained life
   lifedown: 0.30,   // low falling tone — you lost life
+  // The cube draft's three (docs/25), ours too and made the same way. No game
+  // is on while you pick, so the main channel is theirs; a pick comes every few
+  // seconds, so it is the lowest row in the table (a sine, like the life pair,
+  // is louder at a given peak than priority's click). A 'packnew' inside
+  // MIN_GAP_MS of your own 'pick' is one event to the ear and is dropped — the
+  // pack was already waiting, and you are looking at it.
+  pick: 0.18,       // a soft falling tick — you took a card
+  packnew: 0.24,    // two small bell notes, high then low — a pack is in front of you
+  tensec: 0.26,     // one soft pulsing tone — ten seconds left on this pick
 };
 const CUES = Object.keys(GAIN) as Cue[];
 

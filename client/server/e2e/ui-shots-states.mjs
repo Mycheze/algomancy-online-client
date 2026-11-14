@@ -246,8 +246,8 @@ export function SCENARIOS(fx) {
   }
 
   // ── docs/25: the cube pick screen. LAST of all: each state makes an event and starts its
-  //    draft (the player's "the draft is starting" bell line and the home card's events
-  //    would show on every later picture). The event is made from the page, over the API,
+  //    draft (the player's "the draft is starting" bell line and the Draft tab's count of
+  //    my events would show on every later picture). The event is made from the page, over the API,
   //    as a player would with the New-event sheet: me as host, the friend joined, Start.
   //    ⚠ needs ALGO_CUBE_DIR in ui-fixture.ts fixtureEnv, or the events land in the
   //    checkout's var/cube.
@@ -278,5 +278,8 @@ export function SCENARIOS(fx) {
     { click: btn('cd-card') },
     { click: btn('cd-confirm'), settle: 1500 },
   ], check: '.cdwaiting', pages: 1 });
+  // the home after them: the Draft tab's "Cube draft…" with my events' count (owner 2026-11-14:
+  // a small thing in the Draft area, not a card of its own)
+  home('cube-events', me);
   return S;
 }

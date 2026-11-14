@@ -5,8 +5,9 @@
  * · Rules · Alerts · Report), the main area, and a bottom bar (the client's
  * info on the left, the update log on the right). The main area is two
  * columns: the PLAY card — Draft | Constructed, the room's settings as rows,
- * Join a room and Create room — and lighter cards beside it, League,
- * Challenge, Matchmaking and Cube draft (docs/25 §10), each of which opens its page.
+ * Join a room and Create room — and three lighter cards beside it, League,
+ * Challenge and Matchmaking, each of which opens its page. The Draft tab's
+ * line carries a small "Cube draft…" that opens the cube page (docs/25 §10).
  *
  * Everything that used to be a fold or a band is a SHEET now (components/
  * sheet.ts): Join a room, the Game values (the custom rules' numbers), the deck
@@ -71,8 +72,6 @@ import { queueGlanceHtml, queueStripView } from './queue.ts';
 import { identityBarView, type IdentityBarView } from './signin.ts';
 
 const elIcon = (name: string): string => elIconOf(name, name);
-/** the Cube draft card's painting (docs/25 §10) */
-const CUBE_ART = 'Prismite';
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
 /* The home screen's typing boxes that no state remembers. The home screen is
@@ -233,8 +232,6 @@ export interface HomeSlots {
   yourMatches: string;
   /** league.ts joinRowsHtml — league matches to play now ('' when none) */
   leagueMatches: string;
-  /** cube.ts homeGlanceHtml — the Cube draft card's body: my events ('' with none) */
-  cube?: string;
   /** cube.ts joinRowsHtml — "Your cube events" in the Join sheet ('' when none) */
   cubeEvents?: string;
   /** pages/singlecard.ts singleCardPickerHtml — the Single Card Duel sheet's picker */
@@ -304,13 +301,13 @@ export interface HomeView {
     join: number;
     /** update-log entries since it was last opened — Updates */
     updates: number;
+    /** my cube events (docs/25 §10) — the Draft tab's "Cube draft…"; absent or 0: no count */
+    cube?: number;
   };
   slots: HomeSlots;
   /** the pictures (ui/homeart.ts), as URLs: the page's backdrop, the Draft
    * and Constructed tiles, and the three cards beside Play */
   art: Record<'backdrop' | 'draft' | 'constructed' | 'league' | 'challenge' | 'queue', ArtPick>;
-  /** the Cube draft card's painting (docs/25 §10); absent: the card is drawn without one */
-  cubeArt?: ArtPick;
 }
 
 /** Gather everything the home screen shows. The slot calls run in the order
@@ -340,9 +337,10 @@ export function homeView(st: HomeState): HomeView {
   const invites = inbox.inviteRowsHtml();
   const yourMatches = yourMatchesHtml(yourMatchesView());
   const leagueMatches = lg.joinRowsHtml();
-  // docs/25 §10: the Cube draft card and "Your cube events" (my events, cube.ts askList)
-  const cubeGlance = cube.homeGlanceHtml();
+  // docs/25 §10: "Your cube events" (my events, cube.ts askList) — one Open/Play per event,
+  // so its buttons are the Draft tab's count
   const cubeEvents = cube.joinRowsHtml();
+  const cubeCount = (cubeEvents.match(/data-btn="cube-open"/g) ?? []).length;
   const join = inbox.inviteCount() + mt.myMatchCount() + lg.joinCount() + cube.joinCount();
   // report #356: Best of's default follows the rules set until it is chosen
   // (Casual one game, Competitive three, docs/22 §6.1)
@@ -367,9 +365,9 @@ export function homeView(st: HomeState): HomeView {
     competitive: ccView,
     singleCard: sc.chosen(),
     leagueLive, challengeLive, leagueMissed, challengeMissed,
-    badges: { alerts: inbox.inboxUnread(), alertsOpen: inbox.inboxListOpen(), join, updates: updatesUnseen() },
+    badges: { alerts: inbox.inboxUnread(), alertsOpen: inbox.inboxListOpen(), join, updates: updatesUnseen(), cube: cubeCount },
     slots: {
-      league, challenge, queue, invites, yourMatches, leagueMatches, cube: cubeGlance, cubeEvents,
+      league, challenge, queue, invites, yourMatches, leagueMatches, cubeEvents,
       scpicker: singleCardPickerHtml(singleCardPickerView()),
       info: footHtml(),
       updates: updatesListHtml(),
@@ -382,7 +380,6 @@ export function homeView(st: HomeState): HomeView {
       challenge: artPick(challengeArtCard(chal.currentId() ?? '')),
       queue: artPick(QUEUE_ART),
     },
-    cubeArt: artPick(CUBE_ART),
   };
 }
 
@@ -541,6 +538,17 @@ function modeTilesHtml(v: HomeView): string {
   return `<div class="homemodes" role="group" aria-label="Game type">${tile('draft', 'Draft')}${tile('constructed', 'Constructed')}</div>`;
 }
 
+/** docs/25 §10: the way to the cube page — small, on the Draft tab's line (owner 2026-11-14:
+ * "not a whole chip on the home page… a small thing from the Draft selection area") */
+function cubeLinkHtml(v: HomeView): string {
+  const n = v.badges.cube ?? 0;
+  return button({
+    labelHtml: `Cube draft…${n > 0 ? ` ${chip({ label: String(n), tone: 'accent', shape: 'pill', className: 'homecubecount' })}` : ''}`,
+    variant: 'link', size: 'sm', className: 'homecube', dataBtn: 'nav-cube',
+    title: 'Draft with a group, then play a tournament',
+  });
+}
+
 function playHtml(v: HomeView): string {
   const { rows, go } = v.mode === 'draft' ? draftRowsHtml(v) : constructedRowsHtml(v);
   const join = button({
@@ -552,9 +560,9 @@ function playHtml(v: HomeView): string {
     <div class="homeplayhead">
       <h1 id="home-play-h">Play</h1>
       ${modeTilesHtml(v)}
-      <p class="homeplaysub">${v.mode === 'draft'
-        ? 'Draft from shared packs, then play with what you drafted.'
-        : 'Bring a deck you built: 30 cards, at most 2 of each.'}</p>
+      ${v.mode === 'draft'
+        ? `<p class="homeplaysub homeplaysub--draft"><span>Draft from shared packs, then play with what you drafted.</span>${cubeLinkHtml(v)}</p>`
+        : '<p class="homeplaysub">Bring a deck you built: 30 cards, at most 2 of each.</p>'}
     </div>
     <div class="homerows">${rows}</div>
     <div class="homeplayfoot">
@@ -575,10 +583,10 @@ function playHtml(v: HomeView): string {
 const artHtml = (a: ArtPick, cls: string): string =>
   `<span class="homeart ${cls}" aria-hidden="true"><img src="${esc(a.src)}" alt="" loading="lazy" style="object-position:50% ${a.focusY}%" onerror="this.remove()"></span>`;
 
-function sideCardHtml(p: { kind: string; title: string; iconName: 'league' | 'challenge' | 'matchmaking' | 'users'; dataBtn: string;
-  live: boolean; bodyHtml: string; empty: string; open: string; art?: ArtPick }): string {
+function sideCardHtml(p: { kind: string; title: string; iconName: 'league' | 'challenge' | 'matchmaking'; dataBtn: string;
+  live: boolean; bodyHtml: string; empty: string; open: string; art: ArtPick }): string {
   return `<section class="homeside homeside--${p.kind}${p.live ? '' : ' off'}" aria-label="${esc(p.title)}">
-    ${p.art ? artHtml(p.art, 'homesideart') : ''}
+    ${artHtml(p.art, 'homesideart')}
     <h2 class="homesidetitle">${icon(p.iconName)}<span>${esc(p.title)}</span>${p.live ? icon('chevron-right') : ''}</h2>
     <div class="homesidebody">${p.bodyHtml || `<p class="homesideempty">${esc(p.empty)}</p>`}</div>
     ${p.live ? `<button class="homesideopen" data-btn="${esc(p.dataBtn)}" aria-label="${esc(p.open)}"></button>` : ''}
@@ -604,9 +612,6 @@ function sideHtml(v: HomeView): string {
       art: v.art.challenge })}
     ${sideCardHtml({ kind: 'queue', title: 'Matchmaking', iconName: 'matchmaking', dataBtn: 'queue-open', live: true,
       bodyHtml: s.queue, empty: 'Find an opponent.', open: 'Open matchmaking', art: v.art.queue })}
-    ${sideCardHtml({ kind: 'cube', title: 'Cube draft', iconName: 'users', dataBtn: 'nav-cube', live: true,
-      bodyHtml: s.cube ?? '', empty: 'Draft with up to 12 players, then play a tournament.', open: 'Open cube draft events',
-      art: v.cubeArt })}
   </div>`;
 }
 

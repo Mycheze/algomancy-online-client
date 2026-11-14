@@ -23,13 +23,16 @@ import type { GameState, Seat } from '../engine/src/types.ts';
 
 /** every sound the client can make. One .ogg per cue in ui/sfx/. */
 export type Cue = 'gameover' | 'decision' | 'phase' | 'subphase' | 'priority' | 'error' | 'thump'
-  | 'lifeup' | 'lifedown';
+  | 'lifeup' | 'lifedown'
+  // the cube draft's pick screen (docs/25): fired by ui/cubedraft.ts, never by a game diff
+  | 'packnew' | 'pick' | 'tensec';
 
 /** Precedence, most important first. A diff plays the earliest match only.
- * 'error', 'thump' and the two life cues are never produced by diffSfx —
- * 'error' is fired directly by main.ts (a rejected action), 'thump' by the
- * idle timer (ui/audio.ts), and the life pair by lifeChanges() on its own
- * channel, which is the whole point of that channel. */
+ * 'error', 'thump', the two life cues and the three draft cues are never
+ * produced by diffSfx — 'error' is fired directly by main.ts (a rejected
+ * action), 'thump' by the idle timer (ui/audio.ts), the life pair by
+ * lifeChanges() on its own channel, which is the whole point of that channel,
+ * and 'packnew' / 'pick' / 'tensec' by the cube pick screen (ui/cubedraft.ts). */
 export const CUE_ORDER: Cue[] = ['gameover', 'decision', 'phase', 'subphase', 'priority'];
 
 /** The audible shape of a game state, as ONE viewer sees it. Everything here
