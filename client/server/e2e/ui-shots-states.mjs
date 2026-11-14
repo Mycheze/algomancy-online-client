@@ -38,7 +38,9 @@ const pick = (sel, re) => ({ eval: `(() => { const s = document.querySelector(${
  * window each, like the home — every one of their states is `noScroll` */
 export const FRAME_PAGES = ['cards', 'meta', 'cardstats', 'queue', 'rules', 'auth', 'profile', 'admin', 'waiting', 'match', 'league', 'challenge',
   // BL-65 (2026-11-04): the Decks page (root `deckpage`) and the builder (root `ttpage`)
-  'decks', 'builder'];
+  'decks', 'builder',
+  // docs/25 (2026-11-14): the cube draft page (root `cubepage`)
+  'cube'];
 
 /** the deck screens are laid out for an upright iPad too (BL-65) */
 const PORTRAIT = { also: ['portrait'] };
@@ -158,6 +160,10 @@ export function SCENARIOS(fx) {
   // ── the weekly challenge ──
   add('challenge', 'page', '/?challenge=1', me);
   add('challenge', 'signed-out', '/?challenge=1');
+  // docs/25: the cube draft page — my events and the New-event sheet (an event's own states need the fixture to hold one)
+  add('cube', 'events', '/?cube=1', me);
+  add('cube', 'new-event', '/?cube=1', { ...me, steps: [{ click: btn('cube-new') }] });
+  add('cube', 'signed-out', '/?cube=1');
   // "Build a deck": the builder's summary on the page (the tabletop is challenge__builder)
   add('challenge', 'building', '/?challenge=1', { ...me, steps: [{ click: '[data-btn="ch-build"]' }] });
   for (const t of ['leanest', 'purest', 'overall']) {

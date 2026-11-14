@@ -71,6 +71,8 @@ export interface MatchSummary {
    * and how it ended — absent from an older server */
   games?: MatchGameResult[];
   result?: MatchResult; voided?: { at: number; why: string };
+  /** docs/25 §8: a cube event's match — its way out goes back to the event */
+  cube?: { event: string; pairing: string };
 }
 
 export interface MatchGameResult { winner: Seat | null; how: 'played' | 'conceded' | 'time' | 'closed' }

@@ -1,1 +1,128 @@
 /* the cube draft event page (ui/pages/cube.ts, docs/25) */
+
+/* One window (the app frame, `fill`): a side column (the facts, Your match, the host's
+   buttons) and the main pane (the seats, the decks, a tab), each scrolling by itself. */
+.cubepage.apppage .ui-app-shell__main { gap: var(--space-5); }
+.cubework { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--space-6); }
+.cubework--play { grid-template-columns: 340px minmax(0, 1fr); }
+.cubepane, .cubeside { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-5); }
+.cubeside { padding: var(--space-6); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+.cubehead { margin: 0; font-size: var(--text-16); color: var(--color-text); display: flex; align-items: baseline; gap: var(--space-4); }
+.cubehead .dim { font-size: var(--text-13); font-weight: 400; }
+.cubesub { margin: var(--space-4) 0 0; font-size: var(--text-14); color: var(--color-text-muted); }
+.cubebig { margin: 0; font-size: var(--text-22); font-weight: 700; color: var(--color-text); }
+.cubeclock { font-variant-numeric: tabular-nums; }
+.cubeloading, .cubeoffline { margin: 0; }
+.cubeoffline { color: var(--color-warning); font-size: var(--text-12); }
+.cubemsg { flex: none; }
+.cubeactions { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+.cubehost { padding-top: var(--space-5); border-top: 1px solid var(--color-border); }
+
+/* the list of my events: one surface, a row per event */
+.cubelist { display: flex; flex-direction: column; }
+.cuberow { display: flex; align-items: center; gap: var(--space-5); width: 100%; padding: var(--space-5) var(--space-6);
+  background: none; border: 0; border-radius: 0; color: var(--color-text); text-align: left; }
+.cuberow + .cuberow { border-top: 1px solid var(--color-border); }
+.cuberow:hover { background: var(--color-surface-raised); border-color: transparent; }
+.cuberowname { font-size: var(--text-14); font-weight: 700; }
+.cuberowline { flex: 1; min-width: 0; color: var(--color-text-muted); font-size: var(--text-13); }
+.cuberowcode { color: var(--color-text-muted); font-size: var(--text-12); letter-spacing: .15em; font-weight: 700; }
+
+/* the facts */
+.cubefacts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-3) var(--space-5); margin: 0; font-size: var(--text-13); }
+.cubefacts dt { color: var(--color-text-muted); }
+.cubefacts dd { margin: 0; color: var(--color-text); }
+.cubeels { display: inline-flex; flex-wrap: wrap; gap: var(--space-3); }
+.cubeel { display: inline-flex; align-items: center; gap: var(--space-1); }
+.cubeel img { width: 16px; height: 16px; }
+.cubepacks { margin: 0; font-size: var(--text-13); color: var(--color-text); }
+.cubepacks.bad { color: var(--color-danger); }
+
+/* the share box */
+.cubeshare { display: flex; flex-direction: column; gap: var(--space-4); padding-top: var(--space-5); border-top: 1px solid var(--color-border); }
+.cubecode { display: flex; align-items: center; gap: var(--space-4); font-size: var(--text-13); }
+.cubecode b { font-size: var(--text-22); letter-spacing: .2em; color: var(--color-text); }
+.cubelink { display: flex; gap: var(--space-4); }
+.cubesharebox { flex: 1; min-width: 0; font-size: var(--text-12); }
+
+/* the seats */
+.cubeseats { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+.cubeseat { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3); min-height: 52px; padding: var(--space-4) var(--space-5);
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.cubeseat.me { border-color: var(--color-accent); }
+.cubeseat.empty { justify-content: center; color: var(--color-text-muted); border-style: dashed; background: none; }
+.cubeseatname { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* who has a deck in */
+.cubesubmits { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; background: var(--color-surface);
+  border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+.cubesubmits li { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4) var(--space-5); }
+.cubesubmits li + li { border-top: 1px solid var(--color-border); }
+.cubesubmits li .dim { margin-left: auto; font-size: var(--text-12); }
+.cubesubmits li.in .cubemark { color: var(--color-success); }
+.cubesubmits li.out { opacity: .6; }
+.cubemark { width: 1.2em; text-align: center; font-weight: 700; color: var(--color-text-muted); }
+
+/* Your match */
+.cubeyours { display: flex; flex-direction: column; gap: var(--space-4); }
+.cubeyours p { margin: 0; }
+.cubeplay { align-self: flex-start; padding: var(--space-5) var(--space-8); font-size: var(--text-16); font-weight: 700; }
+.cubescore { color: var(--color-accent); }
+.cubeready .cubereadyswitch { width: 100%; padding: var(--space-5); font-size: var(--text-16); }
+.cubebreak { display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: var(--space-5); border-bottom: 1px solid var(--color-border); }
+
+/* the match lists, the players: one surface, hairline rows */
+.cubematches, .cubeplayers, .cubepend { flex: none; }
+.cubematch, .cubeplayer { display: flex; align-items: center; gap: var(--space-5); padding: var(--space-4) var(--space-5); min-height: 48px; }
+.cubematch + .cubematch, .cubeplayer + .cubeplayer { border-top: 1px solid var(--color-border); }
+.cubematch.me, .cubeplayer.me { box-shadow: inset 3px 0 0 var(--color-accent); }
+.cubematch.live .cubematchstate { color: var(--color-success); }
+.cubematchround { width: 2.5em; font-size: var(--text-12); }
+.cubematchwho, .cubeplayername { flex: 1; min-width: 0; }
+.cubematchstate { font-size: var(--text-13); }
+.cubematchbtns { display: flex; gap: var(--space-3); margin-left: auto; }
+.cubestandings tr.me td { color: var(--color-accent); }
+.cubestandings tr.out td { opacity: .6; }
+
+/* a match was found for me */
+.cubebanner { flex: none; display: flex; align-items: center; gap: var(--space-4); }
+.cubebanner > :first-child { flex: 1; margin: 0; }
+
+/* the sheets: the form, the pairings */
+.cubesheet .ui-sheet__body { display: flex; flex-direction: column; gap: var(--space-5); }
+.cubeform { display: flex; flex-direction: column; gap: var(--space-4); }
+.cubeinput { width: 100%; max-width: 320px; }
+.cubelistbox { width: 100%; min-height: 140px; margin-top: var(--space-4); font-size: var(--text-13); }
+.cubeelpick { margin-top: var(--space-4); }
+.cubestep { display: inline-flex; align-items: center; gap: var(--space-3); margin-left: var(--space-4); }
+.cuberange { display: inline-flex; align-items: center; gap: var(--space-4); }
+.cuberange .cubestep { margin-left: 0; }
+.cubestepval { min-width: 2.5em; text-align: center; font-variant-numeric: tabular-nums; }
+.cubewhen { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); margin-top: var(--space-4); }
+.cubewhen .cubestep { margin-left: 0; }
+.cubemath { padding: var(--space-4) var(--space-5); background: var(--color-surface-sunken); border-radius: var(--radius-md); }
+.cubewhy { color: var(--color-text-muted); font-size: var(--text-12); }
+.cubeswap { padding: var(--space-3) var(--space-5); }
+.cubeswap.on { border-color: var(--color-accent); color: var(--color-accent); }
+
+/* the home's Cube draft card (pages/home.ts): Matchmaking's size, the glance on its glass */
+.homeside--cube { flex: .55 1 0; }
+.cubeglance { display: flex; flex-direction: column; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
+/* a short window (the landscape iPad): the card has room for one event's line */
+@media (min-width: 760px) and (min-height: 600px) and (max-height: 819.98px) {
+  .homeside .cubeglance li + li { display: none; }
+}
+/* the Join sheet's "Your cube events" */
+.cubejoinrows { display: flex; flex-direction: column; gap: var(--space-4); }
+.cubejoinrow { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); font-size: var(--text-13); }
+
+/* an upright iPad: the side column narrower */
+@media (max-width: 1100px) {
+  .cubework { grid-template-columns: minmax(0, 1fr) 300px; }
+  .cubework--play { grid-template-columns: 300px minmax(0, 1fr); }
+}
+/* below a tablet the shell lets go and the page scrolls: the regions do too */
+@media (max-width: 759.98px), (max-height: 599.98px) {
+  .cubework, .cubework--play { grid-template-columns: minmax(0, 1fr); }
+  .cubepane, .cubeside { overflow: visible; }
+}

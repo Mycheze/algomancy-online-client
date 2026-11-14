@@ -170,6 +170,7 @@ import * as scn from './scenario.ts';
 import * as learn from './learn.ts';
 // docs/21 — the weekly challenge: its page, and the run (a SoloServer like learn's)
 import * as chal from './challenge.ts';
+import * as cube from './cube.ts';   // docs/25: cube draft events
 import * as chrun from './challengerun.ts';
 import { DUMMY_DECK, challengeDeal, type ChallengeDef } from '../engine/src/challenge.ts';
 import { closeLesson, installLessonLayer, lessonTick } from './lessonlayer.ts';
@@ -818,6 +819,8 @@ class NetBackend implements Backend {
     if (m.t === 'match') {
       if (postGame) postGame = { ...postGame, ...(m.match ? { match: m.match } : {}) };
       if (this.waiting && !m.room && m.match) this.matchEnded = m.match;
+      // docs/25 §8: a cube match that is over goes back to its event (between games: now)
+      if (!m.room && m.match) cube.matchOver(m.match.cube?.event, !!this.waiting);
       render();
       return;
     }
@@ -6583,6 +6586,7 @@ function promptHtml(): string {
     // …and ALWAYS a way home: a spectator gets no post-game screen at all, and
     // a board with no server behind it (a replay, ?demo) had a "New game"
     // button nothing answered (2026-11-04: every screen is leavable)
+    // (a cube match's gohome goes back to its event: handleButton, docs/25 §8)
     const home = '<button data-btn="gohome">Home</button>';
     if (NET) return `<div class="promptbar"><span class="who">${winner === NET.seat && !asQuestion() && !NET.spectating ? 'You win! 🎉'
         : won === null ? 'Game over.' : `${esc(won)} wins.`}</span>
@@ -9435,6 +9439,8 @@ function renderHome(): void {
   if (meta.screen()) { meta.renderScreen(); return; }
   // …and the league page (docs/20-league.md), which is where a `?league` link lands
   if (lg.screen()) { lg.renderScreen(); return; }
+  // …and a cube draft event (docs/25), below the builder its decks are built on
+  if (cube.screen()) { cube.renderScreen(); return; }
   // …and the weekly challenge (docs/21), below the builder it builds with
   if (chal.screen()) { chal.renderScreen(); return; }
   // BL-16: …and the admin dashboard, which owns the page outright when open
@@ -11091,6 +11097,8 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   if (meta.handleButton(btn)) return;
   if (lg.handleButton(btn)) return;
   if (chal.handleButton(btn)) return;
+  // docs/25: a cube event everything prefixed cube- (and the home card's nav-cube)
+  if (cube.handleButton(btn)) return;
   // CR D8.2: and the single card picker everything prefixed sc- (home + waiting room)
   if (sc.handleButton(btn)) { if (NET) render(); else renderHome(); return; }
   // and the admin dashboard everything prefixed admin-
@@ -11100,6 +11108,11 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   // docs/22: and a Competitive match everything prefixed cc- (home card,
   // waiting room, between screen)
   if (mt.handleMatchButton(btn, matchActions())) return;
+  // docs/25 §8: a cube match's ways out (Leave / Home, the post-game Home and New match) go back to its event
+  {
+    const out = btn.dataset['btn'];
+    if ((out === 'gohome' || (postGame && (out === 'pg-home' || out === 'pg-newmatch'))) && cube.leaveFor(NET?.match?.cube?.event)) return;
+  }
   // and the post-game screen everything prefixed pg-
   if (postGame && pg.handlePostGameButton(btn, {
     over: postGame,
@@ -12099,10 +12112,13 @@ function boardMenuItems(): MenuItem[] {
   // #324: a game lost on time is over though its state is not (gameIsOver)
   const over = gameIsOver();
   const home = !NET || spectating || over || !!NET.frozen;
+  const toEvent = !!cube.backTo(NET?.match?.cube?.event);   // docs/25 §8
   return boardMenuEntries(h.state, NET ? NET.seat : null, { fixes: !!NET && amend.fixesOn(), reveals: revealCount(), bestOf3, spectating, home, over }).map(entry => ({
-    label: entry.label,
+    label: entry.kind === 'home' && toEvent ? '↩ Back to the event' : entry.label,
     confirm: entry.confirm,
-    go: entry.kind === 'log'
+    go: entry.kind === 'home' && toEvent
+      ? (): void => { cube.leaveFor(NET?.match?.cube?.event); }
+      : entry.kind === 'log'
       ? (): void => { logOpen = true; render(); }
       : entry.kind === 'erased'
         ? (): void => { erasedView = entry.seat; render(); }
@@ -12304,6 +12320,8 @@ cb.initCards({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 meta.initMeta({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 lg.initLeague({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 chal.initChallenge({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
+// docs/25 — a cube draft event, at ?cube=<CODE> (or ?cube=1, my events)
+cube.initCube({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 // BL-16: the operator dashboard, at ?admin=1. Nothing links to it and every
 // route it calls 404s to a non-admin, so this costs a signed-out browser one
 // refused fetch and nothing else.

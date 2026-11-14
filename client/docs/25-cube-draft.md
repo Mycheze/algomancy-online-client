@@ -221,3 +221,7 @@ Reserved test numbers **1300–1349**: 1300–1309 draft+bot, 1310–1319 tourne
 11. Cube games unrated, out of card stats and achievements.
 12. Entry: a "Cube draft" card on the home's right column; Join accepts event codes.
 13. No CR record yet for the cube deck rule (follow-up).
+14. The host can cancel an event in the lobby, mid-draft or while building (not only in the lobby).
+15. Casual matches also carry the 45-minute match clock.
+16. Dropping a player hands their opponent any undecided match; a host award or a drop closes that game at once.
+17. Every player must draft at least 30 cards (3 packs × at least 10), or the event can't start.

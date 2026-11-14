@@ -5,8 +5,8 @@
  * · Rules · Alerts · Report), the main area, and a bottom bar (the client's
  * info on the left, the update log on the right). The main area is two
  * columns: the PLAY card — Draft | Constructed, the room's settings as rows,
- * Join a room and Create room — and three lighter cards beside it, League,
- * Challenge and Matchmaking, each of which opens its page.
+ * Join a room and Create room — and lighter cards beside it, League,
+ * Challenge, Matchmaking and Cube draft (docs/25 §10), each of which opens its page.
  *
  * Everything that used to be a fold or a band is a SHEET now (components/
  * sheet.ts): Join a room, the Game values (the custom rules' numbers), the deck
@@ -41,6 +41,7 @@ import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
 import * as acct from '../account.ts';
 import * as chal from '../challenge.ts';
 import * as crp from '../customrulespanel.ts';
+import * as cube from '../cube.ts';
 import * as dk from '../decks.ts';
 import * as lg from '../league.ts';
 import * as mt from '../match.ts';
@@ -70,6 +71,8 @@ import { queueGlanceHtml, queueStripView } from './queue.ts';
 import { identityBarView, type IdentityBarView } from './signin.ts';
 
 const elIcon = (name: string): string => elIconOf(name, name);
+/** the Cube draft card's painting (docs/25 §10) */
+const CUBE_ART = 'Prismite';
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
 /* The home screen's typing boxes that no state remembers. The home screen is
@@ -230,6 +233,10 @@ export interface HomeSlots {
   yourMatches: string;
   /** league.ts joinRowsHtml — league matches to play now ('' when none) */
   leagueMatches: string;
+  /** cube.ts homeGlanceHtml — the Cube draft card's body: my events ('' with none) */
+  cube?: string;
+  /** cube.ts joinRowsHtml — "Your cube events" in the Join sheet ('' when none) */
+  cubeEvents?: string;
   /** pages/singlecard.ts singleCardPickerHtml — the Single Card Duel sheet's picker */
   scpicker: string;
   /** legal.ts footHtml — the client info sheet: buy links, the notice, credits, the legal pages */
@@ -302,6 +309,8 @@ export interface HomeView {
   /** the pictures (ui/homeart.ts), as URLs: the page's backdrop, the Draft
    * and Constructed tiles, and the three cards beside Play */
   art: Record<'backdrop' | 'draft' | 'constructed' | 'league' | 'challenge' | 'queue', ArtPick>;
+  /** the Cube draft card's painting (docs/25 §10); absent: the card is drawn without one */
+  cubeArt?: ArtPick;
 }
 
 /** Gather everything the home screen shows. The slot calls run in the order
@@ -331,7 +340,10 @@ export function homeView(st: HomeState): HomeView {
   const invites = inbox.inviteRowsHtml();
   const yourMatches = yourMatchesHtml(yourMatchesView());
   const leagueMatches = lg.joinRowsHtml();
-  const join = inbox.inviteCount() + mt.myMatchCount() + lg.joinCount();
+  // docs/25 §10: the Cube draft card and "Your cube events" (my events, cube.ts askList)
+  const cubeGlance = cube.homeGlanceHtml();
+  const cubeEvents = cube.joinRowsHtml();
+  const join = inbox.inviteCount() + mt.myMatchCount() + lg.joinCount() + cube.joinCount();
   // report #356: Best of's default follows the rules set until it is chosen
   // (Casual one game, Competitive three, docs/22 §6.1)
   const ccView = { ...competitiveCardView(signedIn, signedIn ? dk.competitiveDecks() : null), bestOf: mt.bestOfFor(homeFormat() === 'casual') };
@@ -357,7 +369,7 @@ export function homeView(st: HomeState): HomeView {
     leagueLive, challengeLive, leagueMissed, challengeMissed,
     badges: { alerts: inbox.inboxUnread(), alertsOpen: inbox.inboxListOpen(), join, updates: updatesUnseen() },
     slots: {
-      league, challenge, queue, invites, yourMatches, leagueMatches,
+      league, challenge, queue, invites, yourMatches, leagueMatches, cube: cubeGlance, cubeEvents,
       scpicker: singleCardPickerHtml(singleCardPickerView()),
       info: footHtml(),
       updates: updatesListHtml(),
@@ -370,6 +382,7 @@ export function homeView(st: HomeState): HomeView {
       challenge: artPick(challengeArtCard(chal.currentId() ?? '')),
       queue: artPick(QUEUE_ART),
     },
+    cubeArt: artPick(CUBE_ART),
   };
 }
 
@@ -562,10 +575,10 @@ function playHtml(v: HomeView): string {
 const artHtml = (a: ArtPick, cls: string): string =>
   `<span class="homeart ${cls}" aria-hidden="true"><img src="${esc(a.src)}" alt="" loading="lazy" style="object-position:50% ${a.focusY}%" onerror="this.remove()"></span>`;
 
-function sideCardHtml(p: { kind: string; title: string; iconName: 'league' | 'challenge' | 'matchmaking'; dataBtn: string;
-  live: boolean; bodyHtml: string; empty: string; open: string; art: ArtPick }): string {
+function sideCardHtml(p: { kind: string; title: string; iconName: 'league' | 'challenge' | 'matchmaking' | 'users'; dataBtn: string;
+  live: boolean; bodyHtml: string; empty: string; open: string; art?: ArtPick }): string {
   return `<section class="homeside homeside--${p.kind}${p.live ? '' : ' off'}" aria-label="${esc(p.title)}">
-    ${artHtml(p.art, 'homesideart')}
+    ${p.art ? artHtml(p.art, 'homesideart') : ''}
     <h2 class="homesidetitle">${icon(p.iconName)}<span>${esc(p.title)}</span>${p.live ? icon('chevron-right') : ''}</h2>
     <div class="homesidebody">${p.bodyHtml || `<p class="homesideempty">${esc(p.empty)}</p>`}</div>
     ${p.live ? `<button class="homesideopen" data-btn="${esc(p.dataBtn)}" aria-label="${esc(p.open)}"></button>` : ''}
@@ -591,6 +604,9 @@ function sideHtml(v: HomeView): string {
       art: v.art.challenge })}
     ${sideCardHtml({ kind: 'queue', title: 'Matchmaking', iconName: 'matchmaking', dataBtn: 'queue-open', live: true,
       bodyHtml: s.queue, empty: 'Find an opponent.', open: 'Open matchmaking', art: v.art.queue })}
+    ${sideCardHtml({ kind: 'cube', title: 'Cube draft', iconName: 'users', dataBtn: 'nav-cube', live: true,
+      bodyHtml: s.cube ?? '', empty: 'Draft with up to 12 players, then play a tournament.', open: 'Open cube draft events',
+      art: v.cubeArt })}
   </div>`;
 }
 
@@ -614,8 +630,8 @@ function joinBody(v: HomeView): string {
     html ? `<section class="homejoinsec"><div class="zonelabel">${esc(label)}</div>${html}</section>` : '';
   // yourMatchesHtml carries its own "Your matches" heading
   const waiting = sec('Invites', s.invites) + (s.yourMatches ? `<section class="homejoinsec">${s.yourMatches}</section>` : '')
-    + sec('League matches', s.leagueMatches);
-  return `<label class="homecodelabel" for="h-code">Room code</label>
+    + sec('League matches', s.leagueMatches) + sec('Your cube events', s.cubeEvents ?? '');
+  return `<label class="homecodelabel" for="h-code">Room or event code</label>
     <div class="joinrow homecode">
       <input id="h-code" placeholder="CODE" maxlength="8" autocapitalize="characters"
         spellcheck="false" style="text-transform:uppercase">
@@ -825,7 +841,7 @@ export function paintHome(app: HTMLElement, st: HomeState, rerender: () => void)
   inbox.onInboxChange(() => {
     if (!document.getElementById(SHEET_IDS.join) && !document.querySelector('#app > .homepage')) return;
     if (homeSheet === 'join') { homeRerender?.(); return; }
-    patchHomeBadges(inbox.inboxUnread(), inbox.inviteCount() + mt.myMatchCount() + lg.joinCount());
+    patchHomeBadges(inbox.inboxUnread(), inbox.inviteCount() + mt.myMatchCount() + lg.joinCount() + cube.joinCount());
   });
   // BL-01: the at-a-glance count. Started HERE rather than at boot because
   // this is the only screen that shows it, and an idle tab on a board should
@@ -972,7 +988,8 @@ export function handleHomeButton(b: string | undefined, btn: HTMLElement, host: 
     const target = joinCodeTarget(box?.value ?? '');
     // an empty box: the Join sheet says so, and the box takes the typing
     if (!target) { renderHome(); (document.getElementById('h-code') as HTMLInputElement | null)?.focus?.(); return true; }
-    location.search = target;
+    // docs/25 §3: events and rooms share one code space — an event's code opens the event
+    cube.tryEvent(box?.value ?? '', () => { location.search = target; });
     return true;
   }
   return false;
