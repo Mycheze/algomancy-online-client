@@ -275,7 +275,13 @@ const OPEN: Entry[] = [
     notes:
       'XL — do not start this in a down-time slot. It needs a design pass first. Depends on '
       + 'BL-01 mostly for the "server pushes you into a room" machinery, which the queue '
-      + 'builds and this one reuses per round.',
+      + 'builds and this one reuses per round. '
+      + 'PROGRESS 2026-11-14 (tidy): the pairing half now exists, inside cube events only: '
+      + 'server/cube-tourney.ts is a pure Swiss / round-robin / exhibition pairer with standings, '
+      + 'OMW%/GW%/OGW% tie-breaks floored at 1/3, byes and host edits, and server/cube.ts opens '
+      + 'ordinary match rooms per pairing and pushes players into them. A standalone tournament '
+      + '(no draft, players bring constructed decks) does not exist yet; building it should reuse '
+      + 'those two rather than write a second pairer.',
   },
   {
     id: 'BL-05',
@@ -330,6 +336,10 @@ const OPEN: Entry[] = [
       'client/server/trio.ts',
       'client/ui/lobby.ts',
       'client/engine/src/cards/registry.ts',
+      'client/docs/25-cube-draft.md',
+      'client/server/cube.ts',
+      'client/server/cube-types.ts',
+      'client/ui/cube.ts',
     ],
     notes:
       'Trap: the existing draft code is the LIVE draft (draftDeckList, draftCommit, packs '
@@ -344,7 +354,21 @@ const OPEN: Entry[] = [
       + '8), pick and pass, alternating direction. The manual also sizes the cube at 320 '
       + 'cards from one box, 640 for groups larger than 8. The owner said "4 packs of 10" '
       + 'and that is the default this entry builds; the manual\'s two are worth offering as '
-      + 'presets, and are part of why the pack structure has to be configurable at all.',
+      + 'presets, and are part of why the pack structure has to be configurable at all. '
+      + 'PROGRESS 2026-11-14 (tidy): built that day as "cube draft events", to the owner\'s new '
+      + 'spec of the same day, client/docs/25-cube-draft.md, which supersedes this entry where '
+      + 'they differ (its section 1 is his, section 13 his playtest feedback; section 12 lists '
+      + 'the calls made without him). Built: a host opens an event from a list or chosen elements, '
+      + 'players join by link or code, the pod drafts before any game (bots fill seats), each '
+      + 'builds from only their picks, a deck short of 30 is refused at submit, then a Swiss, '
+      + 'round-robin or exhibition tournament of ordinary rooms. Still missing against doneWhen, '
+      + 'so this stays open: (1) NO DECKBUILDING TIMER: the building phase has no deadline at all '
+      + '(server/cube-types.ts carries a deadline only for the pick clock; the host\'s "Start now" '
+      + 'drops whoever has not submitted); (2) NO SAVED CUBE LIST: a pasted list lives only in its '
+      + 'event, nothing in server/accounts.ts keeps it for the next one; (3) a cube too small for '
+      + 'the table is no longer a warning but, by the owner\'s new choice, three packs shrunk to '
+      + 'fit, refused below 30 cards a player (docs/25 sections 1 and 12.17); doneWhen line 3 is '
+      + 'met in that form.',
   },
   {
     id: 'BL-07',
@@ -1172,6 +1196,12 @@ const OPEN: Entry[] = [
       'client/ui/tutorial.ts',
       'client/ui/main.ts',
     ],
+    notes:
+      'PROGRESS 2026-11-14 (tidy): the first button-reached way in exists, for cube events only: '
+      + 'the event page\'s match list has a Watch button on every live match that is not yours '
+      + '(ui/pages/cube.ts), opening the room with watch=1. Ordinary games still have none, and the '
+      + 'interface guide (ui/tutorial.ts, "A room link with &watch=1 on the end") still tells players '
+      + 'to type it, so neither doneWhen line is met.',
   },
 ];
 
