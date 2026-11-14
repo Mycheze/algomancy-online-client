@@ -3675,6 +3675,10 @@ export interface Proposal {
   /** …and as the public log line reads it, which both seats see */
   pub?: string;
   reason: string;
+  /** BL-76 — the proposer ticked "Not a bug! Just taking something back."
+   * (owner, 2026-11-13): the reason may then be empty, and the report the
+   * fix files says it is a take-back. Absent: an ordinary fix. */
+  takeBack?: true;
   /** `actions.length` when it was made — an answer to a different board is refused */
   at: number;
   /** ms since the epoch */
@@ -3684,6 +3688,8 @@ export interface Proposal {
 /** what a seat is shown of the open proposal (and of nothing else) */
 export interface ProposalView {
   id: number; seat: Seat; kind: 'edit' | 'rewind'; what: string; reason: string;
+  /** BL-76: the proposer says it is a take-back, not a bug */
+  takeBack?: true;
   /** ms left to answer */
   left: number;
 }
@@ -3758,7 +3764,7 @@ export function fixInfo(room: Room, seat: Seat, now = Date.now()): { proposal?: 
   return {
     // CT-325: each seat reads the fix in its own words — never the record's,
     // which names the other seat's hidden actions
-    ...(p ? { proposal: { id: p.id, seat: p.seat, kind: p.kind, what: p.whats?.[seatSlot(seat)] ?? p.what, reason: p.reason, left: Math.max(0, p.expires - now) } } : {}),
+    ...(p ? { proposal: { id: p.id, seat: p.seat, kind: p.kind, what: p.whats?.[seatSlot(seat)] ?? p.what, reason: p.reason, ...(p.takeBack ? { takeBack: true as const } : {}), left: Math.max(0, p.expires - now) } } : {}),
     ...(cool > 0 ? { cooldown: cool } : {}),
   };
 }
@@ -3962,7 +3968,7 @@ export type FixOutcome = { ok: true } | { ok: false; why: string };
  * An edit is TRIED on a copy of the board first (the engine is pure), so the
  * other seat is never asked to agree to something that would then bounce.
  */
-export function proposeFix(room: Room, seat: Seat, req: { edit?: unknown; rewind?: unknown; reason?: unknown }, now = Date.now()): FixOutcome {
+export function proposeFix(room: Room, seat: Seat, req: { edit?: unknown; rewind?: unknown; reason?: unknown; takeBack?: unknown }, now = Date.now()): FixOutcome {
   const no = fixesRefusal(room);
   if (no !== null) return { ok: false, why: no };
   if (!room.sockets[0] || !room.sockets[1]) return { ok: false, why: 'your opponent is not here to agree' };
@@ -3970,8 +3976,11 @@ export function proposeFix(room: Room, seat: Seat, req: { edit?: unknown; rewind
   const cool = room.fixCooldown[seatSlot(seat)] - now;
   if (cool > 0) return { ok: false, why: `your last fix was declined — wait ${Math.ceil(cool / 1000)}s` };
   const reason = typeof req.reason === 'string' ? req.reason.trim().slice(0, FIX_REASON_MAX) : '';
-  if (reason.length < 3) return { ok: false, why: 'say what went wrong — it is filed as a bug report' };
-  let p: Omit<Proposal, 'id' | 'expires' | 'at' | 'seat' | 'reason'>;
+  // BL-76: a take-back is not a bug, and needs no "what went wrong" (owner,
+  // 2026-11-13: "stop players from having to type 'oops' or 'aoiehf'")
+  const takeBack = req.takeBack === true;
+  if (!takeBack && reason.length < 3) return { ok: false, why: 'say what went wrong — it is filed as a bug report' };
+  let p: Omit<Proposal, 'id' | 'expires' | 'at' | 'seat' | 'reason' | 'takeBack'>;
   if (req.rewind !== undefined) {
     const to = req.rewind;
     const plan = rewindPlans(room, seat).find(o => o.to === to);
@@ -3998,7 +4007,8 @@ export function proposeFix(room: Room, seat: Seat, req: { edit?: unknown; rewind
     p = { kind: 'edit', edit, what: amendText(room.state, seat, edit) };
   }
   settleClock(room);
-  room.proposal = { ...p, id: ++proposalSeq, seat, reason, at: room.actions.length, expires: now + FIX_PROPOSAL_MS };
+  room.proposal = { ...p, id: ++proposalSeq, seat, reason, ...(takeBack ? { takeBack: true as const } : {}),
+    at: room.actions.length, expires: now + FIX_PROPOSAL_MS };
   settleClock(room);   // both clocks stop from here
   return { ok: true };
 }
@@ -4184,6 +4194,7 @@ export function rewindRoom(room: Room, p: Proposal, by: Seat): { ok: true; amend
   room.proposal = null;
   const amendment: Amendment = {
     kind: 'rewind', at: to, seat: p.seat, by, what: p.what, reason: p.reason,
+    ...(p.takeBack ? { takeBack: true as const } : {}),
     when: new Date().toISOString(), removed: restore.slice(to),
   };
   room.amendments.push(amendment);

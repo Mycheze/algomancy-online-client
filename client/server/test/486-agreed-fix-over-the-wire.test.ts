@@ -354,3 +354,36 @@ test('§6 two fixes in a row file one report, and a restart in between does not 
   assert.equal(file.fixRun, undefined, 'the filed run is gone from the game file');
   assert.equal(file.amendments[row.fix.amendment].reason, 'I passed by mistake', 'the row points at its first fix in the file');
 });
+
+test('§7 BL-76 a take-back, ticked, goes over the wire with no reason and files a take-back row', async () => {
+  // after §6's restart: both seats back in the room
+  a.send({ t: 'join', room: ROOM, seat: 0, name: 'Ann' });
+  await a.next(m => m.t === 'joined', a.msgs.length - 1);
+  b.send({ t: 'join', room: ROOM, seat: 1, name: 'Bo' });
+  await b.next(m => m.t === 'joined', b.msgs.length - 1);
+  await driveToBattle(a, b);
+  await quiesce(a, b);
+  const filed = fixRows().length;
+  const P = a.view.priority as Seat;
+  const prop = seatClient(P), opp = seatClient(P === 0 ? 1 : 0);
+  const opts = await prop.ask({ t: 'amend', op: 'options' }, m => m.t === 'amendopts');
+  assert.ok(opts.rewinds && opts.rewinds.length, 'fixture: a rewind is on offer');
+  const markO = opp.msgs.length;
+  const up = await prop.ask({ t: 'amend', op: 'propose', rewind: opts.rewinds!.at(-1)!.to, reason: '', takeBack: true },
+    m => (m.t === 'amend' && m.how === 'proposed') || m.t === 'amenderr');
+  assert.equal(up.t, 'amend', `proposed with no reason, not refused (${up.msg ?? ''})`);
+  const seen = await opp.next(m => m.t === 'amend' && m.how === 'proposed', markO);
+  assert.equal(seen.fix.proposal.takeBack, true, 'the other seat is told it is a take-back');
+  const mark = prop.msgs.length;
+  opp.send({ t: 'amend', op: 'accept', id: up.fix.proposal.id });
+  await prop.next(m => m.t === 'amend' && m.how === 'applied', mark);
+  await quiesce(a, b);
+  // any game action ends the run and files it
+  const [mover, ms] = ([[a, 0], [b, 1]] as [Client, Seat][]).find(([c, s]) => greedy(c, s, new Set()) !== null)!;
+  mover.send({ t: 'action', action: greedy(mover, ms, new Set()) });
+  const rows = await eventually(() => fixRows().length > filed ? fixRows() : null, 'the move after the take-back to file its row');
+  const row = rows.at(-1);
+  assert.equal(row.fix.takeBack, true);
+  assert.equal(row.kind, 'other', 'not a bug report');
+  assert.match(row.note, /^\[Take-back\] back to .*Not a bug, just taking something back\.$/);
+});

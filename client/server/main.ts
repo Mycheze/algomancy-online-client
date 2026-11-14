@@ -124,7 +124,7 @@ import { concessionWeight } from './concession.ts';
 import { gameElements, gameSides, summarizeGame } from './stats.ts';
 import { gamesDir, issuesFile, reportRunsFile, verdictsFile } from './statepaths.ts';
 import { MAX_RUN_BYTES, RUNS_PER_HOUR, storeReportRun } from './report-run.ts';
-import { reportKind, reportSeverity, reportedBy, reporterLabel, type IssueRow } from './report-fields.ts';
+import { fixReportFields, reportKind, reportSeverity, reportedBy, reporterLabel, type IssueRow } from './report-fields.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const UI_DIR = join(HERE, '..', 'ui');
@@ -2327,7 +2327,7 @@ function carryOutFix(room: Room, p: Proposal, by: Seat): void {
     // which a proposal never reaches (editTiming). Landed means logged.
     if (room.actions.length !== at + 1) throw new IllegalAction('the fix did not land');
     recordAmendment(room, { kind: 'edit', at, seat: p.seat, by, what: p.what, reason: p.reason,
-      when: new Date().toISOString(), edit: p.edit! });
+      ...(p.takeBack ? { takeBack: true as const } : {}), when: new Date().toISOString(), edit: p.edit! });
   } else {
     const out = rewindRoom(room, p, by);
     if (!out.ok) throw new IllegalAction(out.why);
@@ -2374,28 +2374,17 @@ function flushFixRun(room: Room, keepDate = false): void {
 
 async function fileFixReport(room: Pick<Room, 'code' | 'users'>, run: { from: number; at: number; fixes: Amendment[] }): Promise<void> {
   const first = run.fixes[0]!;
-  const line = (f: Amendment): string => `${f.what}. What went wrong: ${f.reason}`;
+  // BL-76: the row's note, kind and `fix` — a run of take-backs is not a bug
+  const fields = fixReportFields(run);
   const entry: IssueRow = {
     ts: new Date().toISOString(),
     room: room.code,
-    seat: first.seat,
-    note: [`[Agreed fix] ${line(first)}`, ...run.fixes.slice(1).map(f => `[and then] ${line(f)}`)].join('\n').slice(0, 4000),
-    // the moment the first was proposed at — the broken board a replay should
-    // stop on (a rewind's board is no longer in the final log: replay-room.ts
-    // --report rebuilds it from the game file's `amendments`)
-    actionIndex: run.at,
-    kind: 'bug',
-    severity: null,
+    ...fields,
     by: reportedBy(accountById(room.users[first.seat])),
-    page: 'game',
-    fix: {
-      kind: first.kind, what: first.what, agreedBy: first.by, amendment: run.from,
-      ...(run.fixes.length > 1 ? { run: run.fixes.length } : {}),
-    },
   };
   try {
     await appendFile(ISSUES_FILE, JSON.stringify(entry) + '\n');
-    console.log(`[report] ${room.code} seat ${first.seat} @action ${run.at} by ${reporterLabel(entry.by)} [fix ×${run.fixes.length}]: ${entry.note.replace(/\s*\n\s*/g, ' ⏎ ')}`);
+    console.log(`[report] ${room.code} seat ${first.seat} @action ${run.at} by ${reporterLabel(entry.by)} [${entry.fix?.takeBack ? 'take-back' : 'fix'} ×${run.fixes.length}]: ${entry.note.replace(/\s*\n\s*/g, ' ⏎ ')}`);
   } catch (err) {
     console.error(`[fix] could not file the report for ${room.code}:`, err);
   }
@@ -3335,7 +3324,7 @@ wss.on('connection', ws => {
       const conn = conns.get(ws);
       if (!conn) return send(ws, { t: 'amenderr', msg: 'join a room first' });
       const room = conn.room;
-      const m = msg as unknown as { op?: unknown; id?: unknown; edit?: unknown; rewind?: unknown; reason?: unknown };
+      const m = msg as unknown as { op?: unknown; id?: unknown; edit?: unknown; rewind?: unknown; reason?: unknown; takeBack?: unknown };
       if (m.op === 'options') {
         const no = fixesRefusal(room);
         return send(ws, {
@@ -3344,7 +3333,7 @@ wss.on('connection', ws => {
         });
       }
       if (m.op === 'propose') {
-        const out = proposeFix(room, conn.seat, { edit: m.edit, rewind: m.rewind, reason: m.reason });
+        const out = proposeFix(room, conn.seat, { edit: m.edit, rewind: m.rewind, reason: m.reason, takeBack: m.takeBack });
         if (!out.ok) return send(ws, { t: 'amenderr', msg: out.why });
         console.log(`[fix] ${room.code}: seat ${conn.seat} proposes: ${room.proposal!.what}`);
         broadcastFix(room, 'proposed');

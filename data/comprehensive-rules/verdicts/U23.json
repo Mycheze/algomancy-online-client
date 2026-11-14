@@ -5173,7 +5173,7 @@
       },
       {
         "file": "client/server/rooms.ts",
-        "text": "if (reason.length < 3) return { ok: false, why: 'say what went wrong — it is filed as a bug report' };"
+        "text": "if (!takeBack && reason.length < 3) return { ok: false, why: 'say what went wrong — it is filed as a bug report' };"
       },
       {
         "file": "client/server/test/486-agreed-fix-over-the-wire.test.ts",

@@ -485,7 +485,10 @@ the ledger lacks, and `70-playtest-ledger` is red until each has an entry. For
 each new row: read it, find the room/page, check for duplicates and already-fixed,
 and add its ledger entry in `client/ledgers/playtest-ledger.ts` — `fixed` only
 with a real guard; `by-design`/`wontfix` with the evidence in `note`; otherwise
-`agreed-fix` with a CT or BL filed for it (with the evidence you gathered). Do
+`agreed-fix` with a CT or BL filed for it (with the evidence you gathered). A row
+with `fix.takeBack` (since 2026-11-14, BL-76) is the player ticking "Not a bug!
+Just taking something back.": status `agreed-fix`, note what was taken back —
+unless its reason names a real defect, which you then treat like any report. Do
 NOT fix anything in a triage run. The fetch may also have changed `verdicts.snapshot.jsonl` (the owner's card
 verdicts — a journal: a later row for the same scenario+room supersedes an
 earlier one, and a retraction is a `works` row; `264-verdict-loop` wants a CT for

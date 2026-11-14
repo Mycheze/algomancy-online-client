@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-14', kind: 'new', text: 'Propose a fix has a new box under the reason: "Not a bug! Just taking something back." Tick it to take back a misclick by agreement without typing a reason. Your opponent still sees exactly what is being taken back.' },
   { date: '2026-11-13', kind: 'fix', text: 'Nothing dies halfway through an effect any more. A graft and all its parts resolve as one effect, and a unit brought to 0 defense stays on the board until the whole effect is done, so a later part can still recall it.' },
   { date: '2026-11-13', kind: 'fix', text: 'The card The Everywhere names now also loses abilities it picks up afterwards, such as an augment put on it later, for as long as The Everywhere is in its region.' },
   { date: '2026-11-13', kind: 'fix', text: 'Your clock no longer ticks while auto-pass or a yield passes for you, the same as with Pass all. It only runs when the game is waiting on you to do something.' },

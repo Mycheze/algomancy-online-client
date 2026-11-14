@@ -144,8 +144,12 @@ export interface Amendment {
   by: Seat;
   /** the fix in one sentence (engine/src/amend.ts amendText, or the rewind's) */
   what: string;
-  /** what went wrong, in the proposer's words (required to propose) */
+  /** what went wrong, in the proposer's words (required to propose, unless
+   * it is a take-back — BL-76 — when it may be empty) */
   reason: string;
+  /** BL-76: the proposer ticked "Not a bug! Just taking something back."
+   * Absent on an ordinary fix and on every fix agreed before 2026-11-14. */
+  takeBack?: true;
   /** when it was agreed (ISO) */
   when: string;
   /** 'edit': the edit itself */

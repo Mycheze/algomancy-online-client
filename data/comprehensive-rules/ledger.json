@@ -1823,6 +1823,7 @@
     {"num":"D4.5d","key":"annexd.undo.agreed-fix.rewind","since":"First generation (draft)"},
     {"num":"D4.5e","key":"annexd.undo.agreed-fix.proposal","since":"First generation (draft)"},
     {"num":"D4.5f","key":"annexd.undo.agreed-fix.counts","since":"First generation (draft)"},
+    {"num":"D4.5g","key":"annexd.undo.agreed-fix.take-back","since":"First generation (draft)"},
     {"num":"D4.6","key":"annexd.undo.competitive","since":"First generation (draft)"},
     {"num":"D5","key":"annexd.recap","kind":"section","since":"First generation (draft)"},
     {"num":"D5.1","key":"annexd.recap.what","since":"First generation (draft)"},

@@ -217,7 +217,8 @@ try {
     const fresh = readFileSync(local(ISSUES_SNAPSHOT), 'utf8').split('\n').filter(l => l.trim())
       .slice(before ?? 0).map(l => JSON.parse(l));
     for (const r of fresh) {
-      const tag = r.kind ? `${r.kind}${r.severity ? '/' + r.severity : ''}` : 'untyped';
+      // BL-76: a take-back the player ticked as "not a bug" says so first
+      const tag = r.fix?.takeBack ? 'take-back' : r.kind ? `${r.kind}${r.severity ? '/' + r.severity : ''}` : 'untyped';
       // BL-17: who filed it, with their trust mark — the owner's own report
       // and a stranger's are not the same ticket. Rows from before the stamp
       // print "unrecorded"; a signed-out reporter prints "signed out".

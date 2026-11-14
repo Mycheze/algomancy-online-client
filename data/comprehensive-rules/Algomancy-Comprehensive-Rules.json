@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:675101dbe47677a4",
+ "generated_from": "sha256:41812721c99ad510",
  "rules": [
   {
    "num": "100.1",
@@ -39698,6 +39698,25 @@
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
+  },
+  {
+   "num": "D4.5g",
+   "key": "annexd.undo.agreed-fix.take-back",
+   "title": null,
+   "section": "D4",
+   "sectionTitle": "Undo",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D4.5",
+   "text": "Exception to rule D4.5e: the proposer may mark a fix \"Not a bug! Just taking something back.\" A fix so marked needs no reason; the other player is still shown what it changes, and that it is a take-back. A run whose every fix is so marked is filed as a take-back, not as a bug report; one unmarked fix in the run keeps it a bug report.",
+   "see": [],
+   "examples": [],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": null
   },
   {
    "num": "D4.6",

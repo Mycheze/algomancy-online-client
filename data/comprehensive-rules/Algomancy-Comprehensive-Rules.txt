@@ -6959,13 +6959,13 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 Basis
 
-1870 numbered rules.
+1871 numbered rules.
 
 | basis | rules |
 |---|---|
 | Printed | 455 |
 | Designer | 202 |
-| Owner call | 675 |
+| Owner call | 676 |
 | Engine only | 45 |
 | Mixed | 493 |
 
@@ -6978,7 +6978,7 @@ Verification
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 1 |
-| not verified | 4 |
+| not verified | 5 |
 | text changed | 17 |
 
 Engine-only rules (awaiting the owner's sign-off)
@@ -7592,7 +7592,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 First generation (draft)
 
-- New: 1875 rules and 99 sections.
+- New: 1876 rules and 99 sections.
 - Removed: 801.12c keywords.actions.rockfall.repeated: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by effects.copies.spells)
 - Removed: 901.8 formats.constructed.single-card: duplicate of Annex D8.2 (CT-389) (replaced by annexd.modes.single-card-duel)
 - Removed: 901.8a formats.constructed.single-card.copies: duplicate of Annex D8.2 (CT-389) (replaced by annexd.modes.single-card-duel)

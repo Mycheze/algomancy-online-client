@@ -61,6 +61,8 @@ export interface ReportRow {
   id: number; ledgerId: number | null; ts: string; room: string; seat: number | null; note: string;
   actionIndex: number | null; kind?: string; severity?: string | null;
   page?: string; by?: { name: string; owner?: boolean; judge?: number } | null;
+  /** BL-46: filed by an agreed fix; BL-76: `takeBack` — every fix in it was a take-back, not a bug */
+  fix?: { takeBack?: boolean };
   status: string | null; guards: string[]; ledgerNote: string | null;
   mark: 'real' | 'not' | null; markedBy: string | null;
 }
@@ -320,7 +322,7 @@ function reportsHtml(reports: ReportRow[], over: Overview | null, unmarkedOnly: 
       <td>${when(r.ts)}</td>
       <td>${r.room ? esc(r.room) : `<i>${esc(r.page ?? 'page')}</i>`}</td>
       <td>${r.by ? `${esc(r.by.name)} ${badgeChips(r.by)}`.trim() : '<i>signed out</i>'}</td>
-      <td>${esc(r.kind ?? '?')}${r.severity ? `/${esc(r.severity)}` : ''}</td>
+      <td>${r.fix?.takeBack ? '<span class="stchip" title="filed by an agreed fix the player ticked as not a bug, just taking something back">take-back</span>' : `${esc(r.kind ?? '?')}${r.severity ? `/${esc(r.severity)}` : ''}`}</td>
       <td class="notecell">${esc(r.note)}</td>
       <td>${statusChip(r)}</td>
       <td class="adminacts">

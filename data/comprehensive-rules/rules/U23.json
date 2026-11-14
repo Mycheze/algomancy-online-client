@@ -4572,6 +4572,58 @@
     "sourceHashes": {}
   },
   {
+    "key": "annexd.undo.agreed-fix.take-back",
+    "parent": "annexd.undo.agreed-fix",
+    "order": 7,
+    "text": "Exception to rule annexd.undo.agreed-fix.proposal: the proposer may mark a fix \"Not a bug! Just taking something back.\" A fix so marked needs no reason; the other player is still shown what it changes, and that it is a take-back. A run whose every fix is so marked is filed as a take-back, not as a bug report; one unmarked fix in the run keeps it a bug report.",
+    "examples": [
+      {
+        "text": null,
+        "test": "1243-fix-take-back.test.ts::1243 §1 a ticked take-back needs no reason; an unticked fix still does"
+      },
+      {
+        "text": null,
+        "test": "1243-fix-take-back.test.ts::1243 §2 the other seat is shown the take-back mark with the fix it names"
+      },
+      {
+        "text": null,
+        "test": "1243-fix-take-back.test.ts::1243 §4 a run of take-backs files a take-back row, not a bug report"
+      },
+      {
+        "text": null,
+        "test": "1243-fix-take-back.test.ts::1243 §4b one ordinary fix in the run keeps it a bug report"
+      },
+      {
+        "text": null,
+        "test": "1243-fix-take-back-ui.test.ts::1243 §1 ticked, the fix sends with no reason and says take-back; unticked, the reason is required"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "we should add a checkbox below the \"Reason\" that just allows them to say \"Not a bug! Just taking something back.\"",
+          "adopted": "2026-11-13",
+          "from": "owner, Discord 2026-11-13, on the steward's triage of #390-#394 (BL-76)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "1243-fix-take-back.test.ts",
+        "1243-fix-take-back-ui.test.ts",
+        "486-agreed-fix-over-the-wire.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "high",
+    "notes": "BL-76. The owner, 2026-11-13: players mostly use Propose a fix for take-backs by agreement, which is fine; the box is for sorting reports and to stop players typing 'oops' as a reason. Server: rooms.ts proposeFix (takeBack), report-fields.ts fixReportFields; client: ui/amend.ts.",
+    "sourceHashes": {}
+  },
+  {
     "key": "annexd.undo.competitive",
     "parent": "D4",
     "order": 6,

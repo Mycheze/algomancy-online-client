@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1875 rules and 99 sections.
+- New: 1876 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -1732,6 +1732,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D4.5d `annexd.undo.agreed-fix.rewind`
   - D4.5e `annexd.undo.agreed-fix.proposal`
   - D4.5f `annexd.undo.agreed-fix.counts`
+  - D4.5g `annexd.undo.agreed-fix.take-back`
   - D4.6 `annexd.undo.competitive`
   - D5.1 `annexd.recap.what`
   - D5.1a `annexd.recap.what.no-effect`

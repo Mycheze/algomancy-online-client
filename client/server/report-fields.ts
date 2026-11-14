@@ -134,8 +134,13 @@ export interface IssueRow {
    * one line per fix. `amendment` is the index of the first in the game
    * file's `amendments` — what `replay-room.ts --report` rebuilds the board
    * from (absent on older rows, which it matches by time instead).
+   *
+   * BL-76 (2026-11-14): `takeBack` — EVERY fix of the run was proposed with
+   * "Not a bug! Just taking something back." ticked. Such a row is filed as
+   * kind 'other', not 'bug', and its note says take-back on each line; a run
+   * with any ordinary fix in it stays a bug report. See fixReportFields.
    */
-  fix?: { kind: 'edit' | 'rewind'; what: string; agreedBy: number; amendment?: number; run?: number };
+  fix?: { kind: 'edit' | 'rewind'; what: string; agreedBy: number; amendment?: number; run?: number; takeBack?: true };
   /**
    * BL-48 — this row was filed by the post-game DISPUTE button, not by the
    * report form. The note is the player's required "what went wrong";
@@ -154,4 +159,57 @@ export interface IssueRow {
    * attachment was not kept. Absent on every other row.
    */
   solo?: SoloPointer;
+}
+
+/** BL-46/BL-76 — one agreed fix, as the report it files reads it (the
+ * structural half of server/types.ts `Amendment`; ledgers import this file) */
+export interface FiledFix {
+  kind: 'edit' | 'rewind';
+  what: string;
+  reason: string;
+  /** the proposer, and the seat that agreed */
+  seat: number;
+  by: number;
+  takeBack?: true;
+}
+
+/** the words a take-back's line says instead of "What went wrong" */
+export const TAKE_BACK_NOTE = 'Not a bug, just taking something back';
+
+/**
+ * The report row a RUN of agreed fixes files (main.ts fileFixReport adds the
+ * time, the room, the filer), one line per fix.
+ *
+ * BL-76 — the owner, 2026-11-13: players mostly use Propose a fix to take
+ * something back by agreement, "and there are no stakes, so people generally
+ * are okay with some taksie backsies" — so the dialog has a "Not a bug! Just
+ * taking something back." box. A run whose every fix was ticked is a
+ * TAKE-BACK, not a bug report: kind 'other', `fix.takeBack`, and each line
+ * says so in place of "What went wrong" (the reason, when one was typed
+ * anyway, follows it). One ordinary fix in the run keeps the row a bug.
+ */
+export function fixReportFields(run: { from: number; at: number; fixes: readonly FiledFix[] }):
+  Pick<IssueRow, 'seat' | 'note' | 'actionIndex' | 'kind' | 'severity' | 'page' | 'fix'> {
+  const first = run.fixes[0]!;
+  const takeBack = run.fixes.every(f => f.takeBack === true);
+  const line = (f: FiledFix): string => (f.takeBack === true
+    ? `${f.what}. ${TAKE_BACK_NOTE}${f.reason.trim() ? `: ${f.reason.trim()}` : '.'}`
+    : `${f.what}. What went wrong: ${f.reason}`);
+  return {
+    seat: first.seat,
+    note: [`[${takeBack ? 'Take-back' : 'Agreed fix'}] ${line(first)}`, ...run.fixes.slice(1).map(f => `[and then] ${line(f)}`)]
+      .join('\n').slice(0, 4000),
+    // the moment the first was proposed at — the broken board a replay should
+    // stop on (a rewind's board is no longer in the final log: replay-room.ts
+    // --report rebuilds it from the game file's `amendments`)
+    actionIndex: run.at,
+    kind: takeBack ? 'other' : 'bug',
+    severity: null,
+    page: 'game',
+    fix: {
+      kind: first.kind, what: first.what, agreedBy: first.by, amendment: run.from,
+      ...(run.fixes.length > 1 ? { run: run.fixes.length } : {}),
+      ...(takeBack ? { takeBack: true as const } : {}),
+    },
+  };
 }

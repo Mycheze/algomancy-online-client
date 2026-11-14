@@ -30,6 +30,8 @@ import type { AmendDest, AmendEdit, AmendSource, AmendUnitDest, EntityId, GameSt
 /** the open proposal as the server shows it (server/rooms.ts ProposalView) */
 export interface ProposalView {
   id: number; seat: Seat; kind: 'edit' | 'rewind'; what: string; reason: string;
+  /** BL-76: the proposer ticked "Not a bug! Just taking something back." */
+  takeBack?: boolean;
   /** ms left to answer, when it was sent */
   left: number;
 }
@@ -84,6 +86,9 @@ let deadline = 0;
 let open = false;
 let kind: Kind = 'life';
 let reason = '';
+/** BL-76 — "Not a bug! Just taking something back." (owner, 2026-11-13):
+ * ticked, the reason is not required and the report says take-back */
+let takeBack = false;
 let error = '';
 let busy = false;
 /** the field values, per kind — module state so a repaint keeps them */
@@ -229,7 +234,7 @@ function editOf(): AmendEdit | null {
 }
 
 const editsBlocked = (): boolean => editWhy !== null;
-const complete = (): boolean => reason.trim().length >= 3
+const complete = (): boolean => (takeBack || reason.trim().length >= 3)
   && (kind === 'rewind' ? rewindTo !== null && !!rewinds?.length : !editsBlocked() && editOf() !== null);
 
 function dialogHtml(): string {
@@ -238,7 +243,7 @@ function dialogHtml(): string {
   const cool = info?.cooldown ? Math.ceil(info.cooldown / 1000) : 0;
   return `<div class="amendscrim" id="amendscrim"><div class="overlaybox amendbox" role="dialog" aria-label="Propose a fix">
     <h3>🛠 Propose a fix <span class="betatag">beta</span></h3>
-    <div class="hint">For when the game got something wrong. ${esc(them)} has to agree. The fix is shown in the log and filed as a bug report.</div>
+    <div class="hint">For when the game got something wrong, or to take something back. ${esc(them)} has to agree. The fix is shown in the log and filed as a bug report, or as a take-back when you tick the box.</div>
     <div class="reportfield">
       <div class="reportlabel">The fix</div>
       <div class="reportchoices" role="radiogroup">${KINDS.map(([k, label, why]) => {
@@ -251,7 +256,8 @@ function dialogHtml(): string {
     </div>
     <div class="reportfield">
       <div class="reportlabel">What went wrong?</div>
-      <textarea id="amend-reason" rows="3" aria-label="What went wrong?" placeholder="e.g. my draw did not happen at the start of the turn" ${busy ? 'disabled' : ''}></textarea>
+      <textarea id="amend-reason" rows="3" aria-label="What went wrong?" placeholder="${takeBack ? 'optional' : 'e.g. my draw did not happen at the start of the turn'}" ${busy ? 'disabled' : ''}></textarea>
+      <label class="amendtakeback"><input type="checkbox" data-amend="takeback"${takeBack ? ' checked' : ''}${busy ? ' disabled' : ''}> Not a bug! Just taking something back.</label>
     </div>
     <div class="judgerow">
       <button data-amend="close">Cancel <span class="kh">(esc)</span></button>
@@ -272,7 +278,7 @@ function barHtml(): string {
       <span class="amendleft">${left}s</span> <button data-amend="cancel">Withdraw</button></div>`;
   }
   return `<div class="amendbar" role="alertdialog" aria-label="A fix is proposed">🛠 <b>${esc(nameOf(p.seat))} proposes a fix:</b> ${esc(p.what)}.
-    <span class="amendwhy">Why: ${esc(p.reason)}</span> <span class="amendleft">${left}s</span>
+    <span class="amendwhy">${p.takeBack ? `Not a bug, just taking it back${p.reason ? `: ${esc(p.reason)}` : '.'}` : `Why: ${esc(p.reason)}`}</span> <span class="amendleft">${left}s</span>
     <button class="primary" data-amend="accept">Agree</button> <button data-amend="decline">Decline</button></div>`;
 }
 
@@ -335,6 +341,7 @@ export function closeFix(): void {
 function send(): void {
   if (!ctx || busy || !complete()) return;
   const msg: Record<string, unknown> = { op: 'propose', reason: reason.trim() };
+  if (takeBack) msg['takeBack'] = true;
   if (kind === 'rewind') msg['rewind'] = rewindTo;
   else msg['edit'] = editOf();
   busy = true;
@@ -363,6 +370,9 @@ function onButton(what: string, el: HTMLElement): void {
       return;
     }
     case 'rewindto': rewindTo = Number(el.dataset['to']); paint(); return;
+    // the click's default is prevented (installAmend), so the box is drawn
+    // from this state on the repaint, never toggled by the browser
+    case 'takeback': if (!busy) { takeBack = !takeBack; paint(); } return;
     default: return;
   }
 }
@@ -383,6 +393,7 @@ export function setFixInfo(next: FixInfo | null, how?: string): void {
     setOpen(false);
     busy = false;
     reason = '';
+    takeBack = false;
   }
   if (had && !next?.proposal) {
     if (how === 'declined' && mine) showToast(`${nameOf((v!.seat === 0 ? 1 : 0) as Seat)} declined your fix`);

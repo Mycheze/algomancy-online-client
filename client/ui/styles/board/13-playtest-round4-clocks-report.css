@@ -57,6 +57,9 @@
 .amendbox select, .amendbox input { background: var(--panel2); color: var(--text); border: 1px solid var(--line);
   border-radius: 5px; padding: 5px 8px; font: inherit; max-width: 100%; }
 .amendbox input[type="number"] { width: 5.5em; }
+/* BL-76: "Not a bug! Just taking something back." under the reason box */
+.amendtakeback { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.amendbox .amendtakeback input { padding: 0; margin: 0; width: auto; }
 .amendrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .amendrewinds { flex-direction: column; }
 .amendrewinds button { text-align: left; }
