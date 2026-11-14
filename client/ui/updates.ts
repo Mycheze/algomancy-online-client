@@ -45,7 +45,9 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
-  { date: '2026-11-14', kind: 'new', text: 'Cube draft events: open a table for up to 12, draft packs around it with bots in the empty seats, build from what you drafted, then play a Swiss, round robin or open-play tournament. Find it on the home page.' },
+  { date: '2026-11-14', kind: 'new', text: 'Cube draft events: host a table of up to 12, draft packs around it with bots in the empty seats, build from what you drafted, then play a Swiss, round robin or open-play tournament. On the Draft tab, pick Cube draft under Alternate modes.' },
+  { date: '2026-11-14', kind: 'change', text: 'The Draft tab is simpler: Mode is now Alternate modes at the bottom, and Cards, Banned and Game values fold away under More settings, which says when any of them is changed.' },
+  { date: '2026-11-14', kind: 'fix', text: 'Pictures no longer flash when you click a choice on the home page, the deck pages, Metagame, your profile or card stats.' },
   { date: '2026-11-14', kind: 'fix', text: 'On a tablet, the buttons in every box that opens over the page are now finger-sized: the lessons, the rules away from the table, reports, Propose a fix and the rest. Before, only the boxes on the game table were.' },
   { date: '2026-11-14', kind: 'fix', text: 'The lessons now point at the toolbar buttons as they look: ? for the rules, ⚖ for the judge, 📝 to report. Learn to play says "Continue your Fire game", matching its Fire button.' },
   { date: '2026-11-14', kind: 'fix', text: 'The element buttons in Learn to play are ordinary buttons again. They had been filled with each element\'s colour by mistake, which made Metal and Water hard to read and the picked one harder still.' },
