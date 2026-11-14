@@ -214,7 +214,7 @@ export const LESSONS: readonly Lesson[] = [
     pages: [
       {
         title: 'Welcome to Algomancy',
-        body: `*This tutorial is a first version. If anything is confusing, wrong or missing, please tell us with the **📝 Report** button — feedback is very welcome.*
+        body: `*This tutorial is a first version. If anything is confusing, wrong or missing, please tell us with the **📝** button on the toolbar — feedback is very welcome.*
 
 This is a real game. You will learn it as it happens: a lesson like this one opens the first time something matters. Hide it (**▁ hide**, or Escape) to look at the board, and the 📘 pill brings it back.
 
@@ -860,9 +860,9 @@ You can **rewind to the start of this turn** and try again, or start a new game.
     ...FORMATS.pages,
     {
       title: 'Where next',
-      body: `- **? rules** (on the toolbar) has the whole rules reference and the rulebook.
+      body: `- **?** on the toolbar has the whole rules reference and the rulebook.
 - **Right-click** any card for its details and rulings.
-- **⚖ judge** answers rules questions, in a game or here.
+- **⚖** on the toolbar answers rules questions in a game, and so does the box under every lesson.
 - **Tips for this client** — the full interface guide — is on the Learn to play menu.
 
 Ready for a person? Start a live draft from the home screen.`,

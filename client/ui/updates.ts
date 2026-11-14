@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-14', kind: 'fix', text: 'The lessons now point at the toolbar buttons as they look: ? for the rules, ⚖ for the judge, 📝 to report. Learn to play says "Continue your Fire game", matching its Fire button.' },
   { date: '2026-11-14', kind: 'fix', text: 'The element buttons in Learn to play are ordinary buttons again. They had been filled with each element\'s colour by mistake, which made Metal and Water hard to read and the picked one harder still.' },
   { date: '2026-11-14', kind: 'new', text: 'Propose a fix has a new box under the reason: "Not a bug! Just taking something back." Tick it to take back a misclick by agreement without typing a reason. Your opponent still sees exactly what is being taken back.' },
   { date: '2026-11-13', kind: 'fix', text: 'Nothing dies halfway through an effect any more. A graft and all its parts resolve as one effect, and a unit brought to 0 defense stays on the board until the whole effect is done, so a later part can still recall it.' },

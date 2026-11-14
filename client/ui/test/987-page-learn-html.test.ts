@@ -27,7 +27,7 @@ test('987 §1 nothing saved: Start, the elements with the picked one on, every l
   const v = learnMenuView(null, 'water');
   assert.equal(v.saved, false);
   const html = learnMenuHtml(v);
-  assert.match(html, /class="ui-button ui-button--primary learngobtn" type="button" data-lmenu="start">Start the water game</);
+  assert.match(html, /class="ui-button ui-button--primary learngobtn" type="button" data-lmenu="start">Start the Water game</);
   assert.doesNotMatch(html, /data-lmenu="continue"/);
   assert.equal([...html.matchAll(/class="learnel /g)].length, LEARN_ELEMENTS.length);
   assert.match(html, /class="learnel el-water on" aria-pressed="true" data-lmenu="el" data-el="water"/);
@@ -36,8 +36,8 @@ test('987 §1 nothing saved: Start, the elements with the picked one on, every l
 
 test('987 §2 a saved game: Continue and Start over for its element, Start for another', () => {
   const html = learnMenuHtml(learnMenuView(saved('fire'), 'fire'));
-  assert.match(html, /data-lmenu="continue">Continue your fire game<\/button><button class="ui-button ui-button--secondary learngobtn" type="button" data-lmenu="fresh">Start over</);
-  assert.match(learnMenuHtml(learnMenuView(saved('fire'), 'earth')), /data-lmenu="start">Start the earth game</);
+  assert.match(html, /data-lmenu="continue">Continue your Fire game<\/button><button class="ui-button ui-button--secondary learngobtn" type="button" data-lmenu="fresh">Start over</);
+  assert.match(learnMenuHtml(learnMenuView(saved('fire'), 'earth')), /data-lmenu="start">Start the Earth game</);
 });
 
 test('987 §3 a lesson already shown is ticked; every routed data-lmenu is drawn', () => {
@@ -56,7 +56,7 @@ test('987 §4 BL-11: "Client tips only" is always offered, and a saved tips game
   assert.match(none, /Already know Algomancy\?/);
   const tipsGame = { ...saved('fire'), tips: true } as LearnProgress;
   assert.equal(learnMenuView(tipsGame, 'fire').savedTips, true);
-  assert.match(learnMenuHtml(learnMenuView(tipsGame, 'fire')), /data-lmenu="continue">Continue your fire tips game</);
+  assert.match(learnMenuHtml(learnMenuView(tipsGame, 'fire')), /data-lmenu="continue">Continue your Fire tips game</);
   assert.equal(learnMenuView(saved('fire'), 'fire').savedTips, false);
   assert.equal(learnMenuView(tipsGame, 'water').savedTips, false, 'another element has no saved game');
   assert.ok(lm(learnMenuHtml(learnMenuView(tipsGame, 'fire'))).includes('tips'));

@@ -683,7 +683,7 @@ function paint(): void {
        <aside class="crmargin" id="crmargin" aria-label="Comments"></aside>`;
   app.innerHTML = `<div class="crpage">
     <div class="crbar">
-      <button data-btn="cr-close" title="back to the lobby">← Close</button>
+      <button data-btn="cr-close" title="close the rules review">← Close</button>
       <button class="crtocbtn" data-btn="cr-toc">☰ Contents</button>
       <div class="crtitle">${title}</div>
       <div class="crtabs" id="crtabs">${tabsHtml()}</div>

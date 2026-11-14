@@ -749,7 +749,17 @@ const OPEN: Entry[] = [
       + 'for the bars (shared/10-element-chips.css) landed on them too. Both are `.csbarfill.el-*` now, the only '
       + 'element-class users being those bars and the Learn buttons; 1221 §7 accepts a ring on the fill\'s whole '
       + 'selector. Guarded by the census 1244-element-classes-are-scoped.test.ts (no bare `.el-<element>` rule; the '
-      + 'menu rendered gets no background from a one-compound rule of its classes). Reasoned, not looked at (no browser).',
+      + 'menu rendered gets no background from a one-compound rule of its classes). Reasoned, not looked at (no browser).\n\n'
+      + '2026-11-14 (steward): Learn and rules words name the buttons as they are drawn (docs/23-ui-inventory/04 §L.13 '
+      + '"Copy inconsistencies"). Three: the Learn menu said "Continue your fire game" / "Start the fire game" beside a '
+      + 'button reading Fire (pages/learn.ts, now the button\'s capitalised name); the lessons pointed at "**? rules** (on '
+      + 'the toolbar)", "**⚖ judge**" and "the **📝 Report** button" while the toolbar draws bare ?, ⚖ and 📝 (lessons.ts '
+      + 'welcome and Where next, now the glyph and "on the toolbar"); the rules review\'s ← Close had the title "back to the '
+      + 'lobby", a screen it never goes to (crreview.ts, now "close the rules review"). Left on purpose: the lesson box\'s '
+      + 'lower-case "⚖ ask" and "▁ hide" (the game table is 1177\'s exemption) and tutorial.ts\'s toolbar legend ("☰ table, '
+      + '↶ undo, ⚖ judge…"), which glosses each glyph rather than naming a label. Guarded by '
+      + '1245-learn-words-match-their-buttons.test.ts (§2 a census of bold toolbar glyphs with a word after them in '
+      + 'lessons.ts, the glyphs read off main.ts).',
   },
   // ── the leftovers of the 2026-11-02/03 rounds (Competitive Constructed, the design
   //    system, the new home, board-r1), filed 2026-11-03. Owner, that night: "put all

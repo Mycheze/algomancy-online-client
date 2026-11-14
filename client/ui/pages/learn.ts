@@ -46,8 +46,11 @@ export function learnMenuView(progress: LearnProgress | null, el: LearnElement):
  * the sheet's `data-sheet-dismiss`, which the layer closes on. */
 export function learnMenuHtml(v: LearnMenuView): string {
   const { el, saved, savedTips } = v;
+  // the element as its button says it: "Continue your Fire game" beside the Fire button
+  const cap = (e: string): string => `${e[0]!.toUpperCase()}${e.slice(1)}`;
+  const elName = cap(el);
   const els = v.elements.map(e =>
-    `<button class="learnel el-${e} ${e === el ? 'on' : ''}" aria-pressed="${e === el}" data-lmenu="el" data-el="${e}">${elIcon(e)}${e[0]!.toUpperCase()}${e.slice(1)}</button>`).join('');
+    `<button class="learnel el-${e} ${e === el ? 'on' : ''}" aria-pressed="${e === el}" data-lmenu="el" data-el="${e}">${elIcon(e)}${cap(e)}</button>`).join('');
   const lessons = v.lessons.map((l, i) =>
     `<li><button class="learnread" data-lmenu="read" data-i="${i}">${esc(l.n)}. ${esc(l.title)}</button>${l.seen ? ' <span class="learnseen">✓</span>' : ''}</li>`).join('');
   const go = (label: string, lmenu: string, variant: 'primary' | 'secondary' = 'primary'): string =>
@@ -59,8 +62,8 @@ export function learnMenuHtml(v: LearnMenuView): string {
     <div class="learnels">${els}</div>
     <div class="learngo">
       ${saved
-        ? `${go(`Continue your ${el} ${savedTips ? 'tips ' : ''}game`, 'continue')}${go('Start over', 'fresh', 'secondary')}`
-        : go(`Start the ${el} game`, 'start')}
+        ? `${go(`Continue your ${elName} ${savedTips ? 'tips ' : ''}game`, 'continue')}${go('Start over', 'fresh', 'secondary')}`
+        : go(`Start the ${elName} game`, 'start')}
     </div>
     <p class="learnblurb">Already know Algomancy? Play the same game with no rules lessons, only short tips on this client's controls.</p>
     <div class="learngo">${go('Client tips only', 'tips', 'secondary')}</div>
