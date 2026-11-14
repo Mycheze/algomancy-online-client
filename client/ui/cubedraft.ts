@@ -25,8 +25,9 @@
  * repainted whole for it, the pack's tiles rebuilt under the pointer between
  * its press and its release (so the click landed nowhere). Now each push is
  * compared with what is drawn: the seats strip, the title and the clock are
- * patched in place; the pack band is redrawn only when MY pack, my chosen card
- * or the clock's urgency changed; the table only when my picks did. And while
+ * patched in place; the pack band is redrawn only when MY pack (or its tiles'
+ * size) changed — a choice, or the clock's hint, only moves the ring on the
+ * tiles it concerns; the table only when my picks did. And while
  * a pointer is down on the screen, or a card is in the air, the band and the
  * table wait — the release, or the next beat after it, draws them.
  *
@@ -57,7 +58,7 @@ import { installPressZoom } from './presszoom.ts';
 import * as tt from './tabletop.ts';
 import { PEEK_MS } from './touch.ts';
 import {
-  clockText, cubeDraftClockHtml, cubeDraftTitleHtml, cubeDraftView, cubePackHtml, cubeSeatsHtml, PACK_SPLIT_KEY, packScrollKey,
+  clockText, confirmOff, cubeDraftClockHtml, cubeDraftTitleHtml, cubeDraftView, cubePackHtml, cubeSeatsHtml, PACK_SPLIT_KEY, packHint, packScrollKey,
   URGENT_MS, type CubeDraftPageView,
 } from './pages/cubedraft.ts';
 
@@ -88,11 +89,12 @@ export function autoReserve(d: CubeDraftView | null, serverNow: number, reserved
   return d.deadline - serverNow <= URGENT_MS ? d.suggest : null;
 }
 
-/** what is drawn of a page view: the band, the seats strip, the title — a push redraws a part only when its key moved */
-export function drawKeys(v: CubeDraftPageView): { band: string; seats: string; title: string } {
-  const urgent = v.msLeft !== null && v.msLeft <= URGENT_MS;
+/** what is drawn of a page view: the band, the ring in it (the chosen card, the clock's hint,
+ * Confirm), the seats strip, the title — a push redraws a part only when its key moved */
+export function drawKeys(v: CubeDraftPageView): { band: string; ring: string; seats: string; title: string } {
   return {
-    band: JSON.stringify([v.packNo, v.pickNo, v.pack, v.reserved, v.taken, urgent, urgent && !v.reserved ? v.suggest : null, v.pw, v.split]),
+    band: JSON.stringify([v.packNo, v.pickNo, v.pack, v.taken, v.pw, v.split]),
+    ring: JSON.stringify([v.reserved, packHint(v), confirmOff(v)]),
     seats: JSON.stringify([v.seats, v.direction]),
     title: JSON.stringify([v.event, v.packNo, v.pickNo, v.direction]),
   };
@@ -128,7 +130,9 @@ let tenFor: string | null = null;
 /** the table must be redrawn (my picks changed) once nothing is held */
 let tableDirty = false;
 /** what is on screen of the band, the seats strip and the title */
-let drawn = { band: '', seats: '', title: '' };
+let drawn = { band: '', ring: '', seats: '', title: '' };
+/** the chosen card and the hint as they are drawn: the tiles a new ring changes */
+let ringed: { reserved: string | null; hint: string | null } = { reserved: null, hint: null };
 /** a pointer is down on the screen: nothing it could be over is rebuilt until it lifts */
 let pressing = false;
 let pressedAt = 0;
@@ -212,6 +216,7 @@ function draftHost(code: string): tt.TableHost {
     band: () => {
       const v = pageView()!;
       drawn = drawKeys(v);
+      ringed = { reserved: v.reserved, hint: packHint(v) };
       return { html: cubePackHtml(v), split: v.split, splitKey: PACK_SPLIT_KEY, what: 'pack' };
     },
     titleHtml: () => { const v = pageView(); return v ? cubeDraftTitleHtml(v) : ''; },
@@ -249,6 +254,31 @@ function patchBand(v: CubeDraftPageView): void {
   const now = q('.cdpack .ttpoolresults');
   if (now && top) now.scrollTop = top;
   drawn = drawKeys(v);
+  ringed = { reserved: v.reserved, hint: packHint(v) };
+}
+
+/** a quoted attribute value in a selector */
+const attrQ = (s: string): string => `"${s.replace(/["\\]/g, '\\$&')}"`;
+
+/** THE RING, IN PLACE: a tap moves the chosen card's ring (and the hint's, and Confirm) on the tiles
+ * it concerns — nothing else in the band is touched, no tile replaced. False when the band is not
+ * there to patch (the caller draws it) */
+function patchRing(v: CubeDraftPageView): boolean {
+  const band = q('.cdpack');
+  if (!band || typeof band.querySelectorAll !== 'function') return false;
+  const hint = packHint(v);
+  const names = new Set([ringed.reserved, ringed.hint, v.reserved, hint].filter((n): n is string => !!n));
+  for (const name of names) {
+    for (const t of Array.from(band.querySelectorAll<HTMLElement>(`[data-cd-card=${attrQ(name)}]`))) {
+      t.classList.toggle('cdreserved', name === v.reserved);
+      t.classList.toggle('cdhint', name === hint);
+      t.setAttribute('aria-pressed', name === v.reserved ? 'true' : 'false');
+    }
+  }
+  const ok = band.querySelector<HTMLButtonElement>('.cdconfirm');
+  if (ok) ok.disabled = confirmOff(v);
+  ringed = { reserved: v.reserved, hint };
+  return true;
 }
 
 /** what a push or a beat changed, drawn — the table and the band wait while a pointer is down */
@@ -258,13 +288,21 @@ function flush(): void {
   if (tableDirty && !held) { tableDirty = false; tt.tabletopChanged(); return; }
   const v = pageView()!;
   const k = drawKeys(v);
-  if (k.band !== drawn.band && !held) patchBand(v);
-  else if (k.seats !== drawn.seats) {
-    // the seats strip, alone: another player's pick. Nothing under the pointer is touched
-    const strip = q('.cdseats');
-    if (strip) strip.outerHTML = cubeSeatsHtml(v);
-    else if (!held) patchBand(v);
-    drawn.seats = k.seats;
+  const bandMoved = k.band !== drawn.band;
+  if (bandMoved && !held) patchBand(v);
+  else {
+    // a choice: the ring moves on the tiles it concerns (no element replaced, so even under a press)
+    if (!bandMoved && k.ring !== drawn.ring) {
+      if (patchRing(v)) drawn.ring = k.ring;
+      else if (!held) patchBand(v);
+    }
+    if (k.seats !== drawn.seats) {
+      // the seats strip, alone: another player's pick. Nothing under the pointer is touched
+      const strip = q('.cdseats');
+      if (strip) strip.outerHTML = cubeSeatsHtml(v);
+      else if (!held) patchBand(v);
+      drawn.seats = k.seats;
+    }
   }
   if (k.title !== drawn.title) {
     const t = q('.frametitle');

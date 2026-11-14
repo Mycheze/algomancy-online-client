@@ -92,6 +92,10 @@
 
 /* the sheets: the form, the pairings */
 .cubesheet .ui-sheet__body { display: flex; flex-direction: column; gap: var(--space-5); }
+/* the host's result: the choices stacked, every name whole (a long one wraps, never cut) */
+.cuberesult.ui-segmented--full { flex-direction: column; border-radius: var(--radius-lg); }
+.cuberesult .ui-segmented__option { flex: none; min-height: var(--segmented-h); padding: var(--space-3) var(--space-6);
+  white-space: normal; overflow-wrap: anywhere; text-overflow: clip; border-radius: var(--radius-md); }
 .cubeform { display: flex; flex-direction: column; gap: var(--space-4); }
 .cubeinput { width: 100%; max-width: 320px; }
 .cubelistbox { width: 100%; min-height: 140px; margin-top: var(--space-4); font-size: var(--text-13); }

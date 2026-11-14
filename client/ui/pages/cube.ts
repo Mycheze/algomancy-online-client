@@ -620,8 +620,22 @@ function doneHtml(v: CubePageView, e: CubeView, tab: CubeTab): string {
   </div>`;
 }
 
+/**
+ * The banner, while its match is still mine to play: the event is not over or called off, and the view does
+ * not have the match decided (a result, the host's, a drop's) or out of my hands (a swap). A match
+ * the view does not list yet stays — the `matched` push can come before the view that posts it.
+ * Pure; ui/cube.ts clears its banner by it on every view, and the page draws only what it passes.
+ */
+export function liveBanner(m: CubeMatchView | null, e: CubeView | null): CubeMatchView | null {
+  if (!m || !e || e.phase === 'done' || e.phase === 'cancelled') return null;
+  const now = e.matches.find(x => x.pairing === m.pairing);
+  if (!now) return m;
+  if (now.status === 'done' || !e.me || (now.a.user !== e.me && now.b?.user !== e.me)) return null;
+  return now;
+}
+
 function bannerHtml(v: CubePageView): string {
-  const m = v.banner, e = v.event;
+  const e = v.event, m = liveBanner(v.banner, e);
   if (!m || !e) return '';
   const words = m.b ? `Your match is ready: <b>${esc(vsWords(m, e.me))}</b>` : `You have a bye${m.round ? ` in round ${m.round}` : ''}.`;
   return `<div class="cubebanner" role="status">${statusMessage({ tone: 'info', textHtml: words })}
@@ -655,9 +669,10 @@ function sheetHtml(v: CubePageView): string {
       const opt = (label: string, outcome: string, on: boolean): { label: string; value: string; on: boolean; dataBtn: string; attrs: Record<string, string> } =>
         ({ label, value: outcome, on, dataBtn: 'cube-result', attrs: { 'data-pairing': m.pairing, 'data-outcome': outcome } });
       const done = m.status === 'done';
-      return sheet({ ...base, id: 'cube-result', width: 'sm', title: `${m.a.name} vs ${m.b.name}`,
+      // the choices one under another, each its whole line: a row of four cut the names to "QA …"
+      return sheet({ ...base, id: 'cube-result', width: 'md', title: `${m.a.name} vs ${m.b.name}`,
         bodyHtml: `${m.status === 'live' ? '<p class="dim">This match is being played. Setting a result ends it.</p>' : ''}
-          ${segmented({ ariaLabel: 'Result', full: true, options: [
+          ${segmented({ ariaLabel: 'Result', full: true, className: 'cuberesult', options: [
             // a win is sent as the winner's account id (server/api-cube.ts /result)
             opt(`${m.a.name} wins`, m.a.user, done && m.winner === m.a.user), opt(`${m.b.name} wins`, m.b.user, done && m.winner === m.b.user),
             opt('Draw', 'draw', done && !m.winner && m.score !== 'Bye'), opt('No result', 'clear', !done),

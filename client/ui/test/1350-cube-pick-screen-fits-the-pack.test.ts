@@ -12,7 +12,8 @@
  *      divider stores under the pick screen's own key (not the builder's)
  *   §4 THE BAND IS THE PLAYER'S (owner 2026-11-14: "the client was trying to resize or force you"):
  *      a stored share always wins, whatever the pack, its size or the pick; only the tiles follow
- *      the band (tileFit — bigger in a taller band, the whole pack shown, never past its bounds)
+ *      the band (tileFit — bigger in a taller band, the whole pack shown, never past its bounds;
+ *      the tiles drawn at the fitted width, 1380)
  *
  * Seeds: none. DOM-free: innerWidth/innerHeight and localStorage are set on globalThis.
  */
@@ -30,6 +31,9 @@ import { SPLIT_KEY } from '../splitter.ts';
 const FRAME = 106, DIVIDER = 24, BAR = 39, PADV = 14, PADH = 24, GAP = 6, SCROLLBAR = 10;
 const tileH = (w: number, cols: number, scrollbar: boolean): number =>
   ((w - PADH - (scrollbar ? SCROLLBAR : 0) - (cols - 1) * GAP) / cols) * 1000 / 720;
+/** a pack tile's height as the pick screen draws it: at exactly the fitted width (1380: the grid's
+ * columns are --pw, not stretched to the row) */
+const drawnH = (pw: number): number => pw * 1000 / 720;
 /** the columns the grid makes for a least width at a window width */
 const colsOf = (w: number, pw: number, scrollbar: boolean): number => Math.floor((w - PADH - (scrollbar ? SCROLLBAR : 0) + GAP) / (pw + GAP));
 
@@ -93,7 +97,7 @@ test('§3 the first time: the fit; its own key', () => {
   const pw = tileFit(15, 1440, bandPx(first, 900));
   assert.match(page, new RegExp(`<div class="ttpoolgrid cdgrid" style="--pw:${pw}px">`));
   const cols = colsOf(1440, pw, true), rows = Math.ceil(15 / cols);
-  assert.ok(BAR + PADV + rows * tileH(1440, cols, false) + (rows - 1) * GAP <= bandPx(first, 900), 'the whole pack shows in it');
+  assert.ok(BAR + PADV + rows * drawnH(pw) + (rows - 1) * GAP <= bandPx(first, 900), 'the whole pack shows in it');
   store.clear();
 });
 
@@ -115,6 +119,6 @@ test('§4 the band is the player’s; the tiles follow it', () => {
   const pw = tileFit(15, 1440, 640);
   const cols = colsOf(1440, pw, true);
   const rows = Math.ceil(15 / cols);
-  assert.ok(BAR + PADV + rows * tileH(1440, cols, false) + (rows - 1) * GAP <= 640, 'every card fits');
+  assert.ok(BAR + PADV + rows * drawnH(pw) + (rows - 1) * GAP <= 640, 'every card fits');
   store.clear();
 });

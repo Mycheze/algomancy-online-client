@@ -29,7 +29,7 @@ import { pollInboxNow, setCubeOpener } from './inbox.ts';
 import type { CubeArrange, CubeMatchView, CubeMine, CubeServerMsg, CubeView } from '../server/cube-types.ts';
 import {
   CUBE_TABS, PACKS_MAX, PLAYERS_MAX, PLAYERS_MIN, ROUNDS_MAX, PACK_MIN,
-  cubeJoinRowsHtml, cubeView, defaultForm, formConfig, formFromConfig, paintCube, untilText,
+  cubeJoinRowsHtml, cubeView, defaultForm, formConfig, formFromConfig, liveBanner, paintCube, untilText,
   type CubeForm, type CubeHooks, type CubeSheet, type CubeTab,
 } from './pages/cube.ts';
 import type { StatusTone } from './components/status.ts';
@@ -170,6 +170,8 @@ function take(v: CubeView): void {
   // a pairings swap names players of the round on screen: a new round drops the pick
   if (swapPick && !v.pending?.some(m => m.a.user === swapPick || m.b?.user === swapPick)) swapPick = null;
   if (sheet?.kind === 'pairings' && !v.pending?.length) sheet = null;
+  // "Your match is ready" goes with its match: decided, given away, or the event over
+  banner = liveBanner(banner, v);
   // the builder open on this event follows the view (the pool, the submitted deck)
   const b = cubeBuild();
   if (b?.open && b.code.toUpperCase() === code) openCubeBuilder(v, BUILD_ACTS);

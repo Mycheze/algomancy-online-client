@@ -6,8 +6,8 @@
  *
  *   §1 another player's pick (only the seats strip's counts move): the seats strip is patched in
  *      place — the page is not painted, the band is not redrawn
- *   §2 a tap rings the card AT ONCE (the band, alone, before any answer); the server's echo of it
- *      redraws nothing
+ *   §2 a tap rings the card AT ONCE (before any answer) on its tile, in place — the band is not
+ *      rebuilt, no other tile touched (1381, QA 2026-11-14); the server's echo of it redraws nothing
  *   §3 while a pointer is down on the screen a push that changes my pack and my picks waits: no
  *      band, no table; the beat after the release draws it — once
  *   §4 the urgent clock redraws the band once (the hint), not every beat
@@ -29,12 +29,34 @@ const NOW = 9_000_000;
 /** a stand-in #app: the page's markup, and a count of every write — whole, or one region's */
 function fakeApp() {
   let html = '';
-  const n = { page: 0, band: 0, seats: 0, title: 0 };
-  const region = (re: RegExp, count: keyof typeof n) => {
+  const n = { page: 0, band: 0, seats: 0, title: 0, tile: 0 };
+  /** one tag found by `re`, rewritten in place (a tile's ring, Confirm's disabled) — every write counted as `tile` */
+  const tag = (re: RegExp) => {
+    const edit = (f: (t: string) => string): void => {
+      const m = re.exec(html);
+      if (m) { html = html.replace(m[0], f(m[0])); n.tile++; }
+    };
+    return {
+      classList: { toggle: (c: string, on: boolean) => edit(t => t.replace(/class="([^"]*)"/, (_, cls: string) => {
+        const list = cls.split(' ').filter(x => x && x !== c);
+        return `class="${(on ? [...list, c] : list).join(' ')}"`;
+      })) },
+      setAttribute: (a: string, v: string) => edit(t => t.replace(new RegExp(`${a}="[^"]*"`), `${a}="${v}"`)),
+      set disabled(on: boolean) { edit(t => t.replace(/ disabled(?=[ >])/, '').replace(/>$/, on ? ' disabled>' : '>')); },
+    };
+  };
+  const region = (re: RegExp, count: Exclude<keyof typeof n, 'tile'>) => {
     const m = re.exec(html);
     if (!m) return null;
     return {
-      dataset: {}, scrollTop: 0, querySelector: () => null,
+      dataset: {}, scrollTop: 0,
+      querySelector: (sel: string) => (sel === '.cdconfirm' ? tag(/<button[^>]*data-btn="cd-confirm"[^>]*>/) : null),
+      querySelectorAll: (sel: string) => {
+        const card = /^\[data-cd-card="(.*)"\]$/.exec(sel)?.[1];
+        if (!card) return [];
+        const at = new RegExp(`<div class="[^"]*" data-btn="cd-card" data-cd-card="${card.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*>`);
+        return at.test(html) ? [tag(at)] : [];
+      },
       set outerHTML(v: string) { html = html.replace(m[0], v); n[count]++; },
       set innerHTML(v: string) { html = html.replace(m[0], m[0].replace(m[1]!, v)); n[count]++; },
     };
@@ -94,11 +116,25 @@ test('§1 another player’s pick: the seats strip, in place', () => {
 
 test('§2 a tap rings at once; the echo redraws nothing', () => {
   const was = snap();
+  assert.match(F.html(), /data-btn="cd-confirm" type="button" disabled>/, 'Confirm is off with nothing chosen');
   cubeDraftButton('cd-card', { dataset: { cdCard: PACK[5]! } });
   assert.deepEqual(calls, [`reserve ${PACK[5]}`]);
-  assert.equal(F.n.band, was.band + 1, 'the band, alone');
+  // 1381: the ring moves on the tile, the band is not rebuilt (no tile element replaced)
+  assert.equal(F.n.band, was.band, 'the band is not redrawn');
+  assert.ok(F.n.tile > was.tile, 'the tile is ringed in place');
   assert.equal(F.n.page, was.page);
-  assert.match(F.html(), new RegExp(`cdreserved"[^>]*data-cd-card="${PACK[5]}"`), 'ringed before the server answers');
+  assert.match(F.html(), new RegExp(`cdreserved"[^>]*data-cd-card="${PACK[5]}"[^>]*aria-pressed="true"`), 'ringed before the server answers');
+  assert.match(F.html(), /data-btn="cd-confirm" type="button">/, 'Confirm is on');
+  // a second card chosen: the ring moves from the first to it, on those two tiles only
+  const before = F.html();
+  cubeDraftButton('cd-card', { dataset: { cdCard: PACK[3]! } });
+  assert.equal(F.n.band, was.band, 'still not redrawn');
+  assert.match(F.html(), new RegExp(`cdreserved"[^>]*data-cd-card="${PACK[3]}"`));
+  assert.doesNotMatch(F.html(), new RegExp(`cdreserved"[^>]*data-cd-card="${PACK[5]}"`), 'the first is unringed');
+  const tiles = (h: string) => [...h.matchAll(/<div class="[^"]*" data-btn="cd-card" data-cd-card="([^"]+)"[^>]*>/g)];
+  const changed = tiles(F.html()).filter((t, i) => t[0] !== tiles(before)[i]![0]).map(t => t[1]);
+  assert.deepEqual(changed.sort(), [PACK[3]!, PACK[5]!].sort(), 'no other tile is touched');
+  cubeDraftButton('cd-card', { dataset: { cdCard: PACK[5]! } });   // back to the first, as the steps below expect
   const echo = snap();
   paintCubeDraft(F.app, cube(draft({ seats: seats(1), reserved: PACK[5]! })), acts);
   assert.deepEqual(snap(), echo, 'the server’s echo of my choice changes nothing on screen');

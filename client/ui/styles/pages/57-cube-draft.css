@@ -4,6 +4,9 @@
 /* the pack's cards are bigger than the builder's pool */
 .cdpage { --pw: 168px; }
 @media (max-width: 1100px) { .cdpage { --pw: 132px; } }
+/* the pack's tiles are drawn at the width the band fits (pages/cubedraft.ts tileFit, the grid's
+   --pw), not stretched across the row: a short pack's row would grow taller than the band */
+.cdgrid { grid-template-columns: repeat(auto-fill, var(--pw)); }
 
 /* the toolbar: where in the draft, which way the packs go, the clock */
 .cdwhere { white-space: nowrap; }

@@ -29,8 +29,10 @@
  * divider is moved, its share is stored (PACK_SPLIT_KEY) and nothing changes
  * it again — not a repaint, not a new pack, not a smaller pack (the first
  * time is at most FIRST_SPLIT_MAX: the deck table needs room). The tiles fit
- * themselves to the band the player chose (`tileFit`), by the pack's size at
- * the deal, so they keep their size for the whole round.
+ * themselves to the band the player chose (`tileFit`: the largest that show the
+ * whole pack in it, in any number of rows), by the pack's size at the deal, so
+ * they keep their size for the whole round — and follow the divider and the
+ * window (the controller's beat redraws the band when its tile size moves).
  *
  * The clock is drawn here; ui/cubedraft.ts's one interval rewrites its text in
  * place (`.cdclock`). The seats strip, the title and the band are patched in
@@ -101,18 +103,19 @@ export function packFit(size: number, w: number, h: number): PackFit {
 }
 
 /**
- * The tiles for a pack of `size` in a band `bandPx` tall in a window `w` wide: the biggest that
- * show the whole pack there, never bigger than TILE_MAX nor smaller than TILE_MIN (a band
- * smaller than that scrolls). The band is the player's; only the tiles follow it. Pure.
+ * The tiles for a pack of `size` in a band `bandPx` tall in a window `w` wide: the LARGEST at which
+ * the whole pack shows there, in as many rows as that takes, never bigger than TILE_MAX (the card
+ * zoom's width) nor smaller than TILE_MIN (a band smaller than that scrolls). The tiles are drawn
+ * at exactly this width (57-cube-draft.css: the grid's columns are `--pw`, not stretched to the
+ * row), so what fits here is what shows. The band is the player's; only the tiles follow it. Pure.
  */
 export function tileFit(size: number, w: number, bandPx: number): number {
   const n = Math.max(1, size);
-  const width = w - PAD_H, narrow = width - SCROLLBAR;
+  const narrow = w - PAD_H - SCROLLBAR;
   const room = bandPx - BAR_H - PAD_V - SLACK;
-  for (let pw = TILE_MAX; pw > TILE_MIN; pw -= 2) {
-    const cols = colsFor(narrow, pw);
-    const rows = Math.ceil(n / cols);
-    if (rows * rowH(width, cols) + (rows - 1) * GAP <= room) return pw;
+  for (let pw = TILE_MAX; pw > TILE_MIN; pw--) {
+    const rows = Math.ceil(n / colsFor(narrow, pw));
+    if (rows * (pw * 1000 / 720) + (rows - 1) * GAP <= room) return pw;
   }
   return TILE_MIN;
 }
@@ -199,10 +202,17 @@ export function cubeSeatsHtml(v: Pick<CubeDraftPageView, 'seats' | 'direction'>)
   return `<ol class="cdseats" aria-label="The table">${v.seats.map(seat).join(arrow)}</ol>`;
 }
 
+/** the card ringed as the clock's suggestion: urgent, and nothing chosen */
+export const packHint = (v: Pick<CubeDraftPageView, 'msLeft' | 'reserved' | 'suggest'>): string | null =>
+  urgentOf(v) && !v.reserved ? v.suggest : null;
+
+/** Confirm is off: nothing chosen, or the card already taken */
+export const confirmOff = (v: Pick<CubeDraftPageView, 'reserved' | 'taken'>): boolean => !v.reserved || !!v.taken;
+
 /** one card of the pack */
-function tileHtml(v: CubeDraftPageView, name: string, urgent: boolean): string {
+function tileHtml(v: CubeDraftPageView, name: string, hint: string | null): string {
   const cls = `ttpooltile cdtile${name === v.reserved ? ' cdreserved' : ''}${name === v.taken ? ' cdtaken' : ''}${
-    urgent && !v.reserved && name === v.suggest ? ' cdhint' : ''}`;
+    name === hint ? ' cdhint' : ''}`;
   return `<div class="${cls}" data-btn="cd-card" data-cd-card="${esc(name)}" data-card="${esc(name)}" data-zoom`
     + ` aria-pressed="${name === v.reserved ? 'true' : 'false'}">${scanHtml(name, 'ttart')}</div>`;
 }
@@ -212,15 +222,15 @@ export const packScrollKey = (v: Pick<CubeDraftPageView, 'packNo' | 'pickNo'>): 
 
 /** THE BAND: its bar (the table strip, the count, Confirm) and the pack's cards — or the wait. Pure. */
 export function cubePackHtml(v: CubeDraftPageView): string {
-  const urgent = urgentOf(v);
+  const hint = packHint(v);
   const bar = cubeSeatsHtml(v) + (v.pack
     ? `<span class="ttpoolcount">${v.pack.length} card${v.pack.length === 1 ? '' : 's'}</span>`
       + button({ label: 'Confirm pick', variant: 'primary', size: 'sm', dataBtn: 'cd-confirm', className: 'cdconfirm',
-        disabled: !v.reserved || !!v.taken })
+        disabled: confirmOff(v) })
     : '');
   // the wait says only that (owner: no filler line under it)
   const body = v.pack
-    ? `<div class="ttpoolgrid cdgrid" style="--pw:${v.pw}px">${v.pack.map(n => tileHtml(v, n, urgent)).join('')}</div>`
+    ? `<div class="ttpoolgrid cdgrid" style="--pw:${v.pw}px">${v.pack.map(n => tileHtml(v, n, hint)).join('')}</div>`
     : emptyState({ bare: true, className: 'cdwaiting', text: v.packNo === null ? 'The draft is over' : 'Waiting for the next pack' });
   return `<section class="ttpool cdpack" data-cd-zone="pack" aria-label="The pack">`
     + `<div class="ttpoolbar cdpackbar">${bar}</div>`
