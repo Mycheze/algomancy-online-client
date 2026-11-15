@@ -11,6 +11,8 @@
  *       a same-day row leaves its date blank, and the text is escaped
  *   §5  the home screen shows it in its Updates sheet, opened from the bottom bar
  *       (docs/24, 2026-11-03; it was a band painted after .homepage until then)
+ *   §6  new since the last visit, marked by count
+ *   §7  no line twice: no two lines open with the same sentence
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -118,4 +120,21 @@ test('§6 new since the last visit: marked by count, across the fold, never on a
   assert.equal(marked(many.split('<details')[1]!), list.length - 1 - SHOWN_UPDATES);
   // a list that shrank (an entry deleted) never marks a negative count
   assert.equal(marked(updatesHtml(list, list.length + 5)), 0);
+});
+
+/** the first sentence, lower-cased: two lines that open the same way say the same thing */
+const opening = (text: string): string => text.split(/(?<=[.!?])\s/)[0]!.trim().toLowerCase();
+
+test('§7 no line twice: a hand-resolved merge must not keep both sides of a reworded line', () => {
+  // 2026-11-15: landing the League Time code branch by hand kept the reload
+  // line twice — the reworded one ("…while you are in a game, …") above and
+  // the stale one below — and every check above was green on it
+  assert.equal(opening('Pages reload now. It waits.'), opening('Pages reload NOW. It waits less.'), 'opening() went blind');
+  assert.notEqual(opening('Pages reload now.'), opening('Pages reload later.'));
+  const seen = new Map<string, number>();
+  for (const [i, u] of UPDATES.entries()) {
+    const k = opening(u.text);
+    assert.ok(!seen.has(k), `entries ${seen.get(k)} and ${i} open with the same sentence — one is a leftover: "${u.text.slice(0, 80)}…"`);
+    seen.set(k, i);
+  }
 });

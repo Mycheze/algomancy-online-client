@@ -47,7 +47,6 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 export const UPDATES: readonly Update[] = [
   { date: '2026-11-15', kind: 'change', text: 'A page left open across an update now reloads itself onto the new version, on any page. It waits while you are in a game, building a deck, playing a challenge or writing a report.' },
   { date: '2026-11-15', kind: 'change', text: 'The League\'s Time code tab now has a message box: write your message, Insert the time where your cursor is, and copy it all into Discord at once. Pick the day off a calendar; AM times show gold, PM dusk blue.' },
-  { date: '2026-11-15', kind: 'change', text: 'A page left open across an update now reloads itself onto the new version, on any page. It waits while you are building a deck, playing a challenge or writing a report.' },
   { date: '2026-11-15', kind: 'change', text: 'Games now carry on across a server update instead of being replayed from the start. After an update, moves made before it in the current step can no longer be undone.' },
   { date: '2026-11-15', kind: 'change', text: 'Rated, league and match games can now be watched only by a signed-in player who is not in the game and is on a different network to both players. Friend games are watched as before.' },
   { date: '2026-11-15', kind: 'change', text: 'Changing your password now signs you out on your other devices, and a device you have not used for 90 days is signed out.' },
