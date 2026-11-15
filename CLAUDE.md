@@ -150,7 +150,8 @@ no "was X until…", no "found while…", and no restating what the next line pl
 If a comment needs a paragraph, the code needs a better name or a smaller function.
 
 Two kinds of comment are load-bearing and stay word for word: a line a rules record
-quotes (`cr:check` fails without it) and a `CR <number>` citation.
+quotes (`cr:check` fails without it), and a `CR <number>` citation — the number stays, the
+words around it may be tightened.
 
 ## Working in this tree
 
