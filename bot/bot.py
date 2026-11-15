@@ -34,7 +34,6 @@ Where the rest of it is
                    testable with no token (test/test_embeds.py freezes all 36)
   core.py          the RAG brain, shared with the web app (app.py)
   gameserver.py    the client for the digital client's game server on :5000
-  pushserver.py    the loopback listener it pushes queue events back to
 
 Setup
 -----
@@ -66,7 +65,6 @@ import crnotes
 import draft
 import gameserver
 import paths
-import pushserver
 import store
 from core import answer_question, cards, retriever
 
@@ -122,26 +120,11 @@ class AlgoBot(commands.Bot):
     async def setup_hook(self):
         await load_cogs(self)
         await self.sync_tree()
-        await self.start_push_listener()
         # the open CR review notes the judge shows the model (crnotes.py); a
-        # no-op without ALGO_BOT_TOKEN, like the push listener above
+        # no-op without ALGO_BOT_TOKEN
         crnotes.NOTES.ensure_started()
 
-    async def start_push_listener(self):
-        """Take queue events from the game server, if this deploy wants them.
-
-        ⚠ Started here rather than in build_bot(): a test builds a bot and must
-        not bind a port for it. Without ALGO_BOT_TOKEN nothing starts at all —
-        the feature is absent rather than unprotected."""
-        cog = self.get_cog("QueueWatch")
-        if cog is None:
-            return
-        self._push_runner = await pushserver.start(cog.on_event)
-
     async def close(self):
-        runner = getattr(self, "_push_runner", None)
-        if runner is not None:
-            await runner.cleanup()
         await gameserver.client.close()
         await super().close()
 

@@ -209,8 +209,8 @@ Server → client:
 - `{ t: 'gameover', … }`, `{ t: 'rematch', … }`, `{ t: 'me', me }`,
   `{ t: 'recorded', me, unlocked }`, `{ t: 'queue', counts | matched }`
 
-`hooks.ts` pushes queue events to the Discord bot when `ALGO_BOT_PUSH_URL` and
-`ALGO_BOT_TOKEN` are set; `api-bot.ts` serves `/api/bot/*` and
+`hooks.ts` keeps a ring of queue events that the Discord bot polls through
+`/api/bot/events` when `ALGO_BOT_TOKEN` is set; `api-bot.ts` serves `/api/bot/*` and
 `api-cardsearch.ts` serves `/api/cardsearch` to it, token-gated. Unset, none
 of those routes exist. `main.ts` proxies `/api/cardinfo` and `/api/judge` to
 the rules bot's web app on :8000 for the in-game inspector and judge box.
@@ -253,8 +253,8 @@ node e2e/test-clock.ts   # any one script still runs on its own
 
 `e2e/suite.test.ts` is a `node:test` file with one case per script, each
 spawning the script against a throwaway `ALGO_GAMES_DIR`, `ALGO_ACCOUNTS_FILE`,
-`ALGO_ISSUES_FILE` and `ALGO_VERDICTS_FILE`, and with the bot token and push
-URL emptied so a fabricated match can never reach the live Discord bot. It is
+`ALGO_ISSUES_FILE` and `ALGO_VERDICTS_FILE`, and with the bot token emptied
+so a fabricated match can never reach the live Discord bot. It is
 safe to run on the deploy box. Its last two cases are a ledger: every
 test-shaped file under `e2e/` is either run or listed as not-a-test with a
 reason, and `package.json` still points `npm test` at the runner. Scripts run

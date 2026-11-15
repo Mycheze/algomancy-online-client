@@ -51,8 +51,8 @@ class Bounded(dict):
 
     Every in-memory map the bot keeps — thread histories, draft picks, who
     has been told about `&`, what the queue announcer posted — grew for the
-    life of a Restart=always process. None of it matters after a restart, so
-    none of it needs to outlive a few hundred entries either."""
+    life of a Restart=always process. None of it needs to outlive a few
+    hundred entries."""
 
     def __init__(self, cap: int):
         super().__init__()

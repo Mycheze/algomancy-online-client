@@ -167,6 +167,10 @@ class GameServer:
         """Who is waiting, by name. /api/queue gives numbers only, on purpose."""
         return await self._get("/api/bot/queue", private=True)
 
+    async def events(self, since):
+        """Queue events after `since`, with the server's bootId and `truncated`."""
+        return await self._get("/api/bot/events", private=True, since=since)
+
     async def profile(self, *, name=None, discord_id=None):
         params = {"name": name} if name else {"discord": discord_id}
         return await self._get("/api/bot/profile", private=True, **params)

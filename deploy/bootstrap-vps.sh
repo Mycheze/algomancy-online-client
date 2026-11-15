@@ -62,8 +62,8 @@ sed -i 's/^#\?PasswordAuthentication .*/PasswordAuthentication no/' /etc/ssh/ssh
 sed -i 's/^#\?KbdInteractiveAuthentication .*/KbdInteractiveAuthentication no/' /etc/ssh/sshd_config
 systemctl reload ssh || systemctl reload sshd || true
 
-# firewall: the game server (5000), the bot's web app (8000) and its push
-# listener (8765) are loopback-only behind Caddy; nothing else is reachable
+# firewall: the game server (5000) and the bot's web app (8000) are
+# loopback-only behind Caddy; nothing else is reachable
 ufw allow OpenSSH
 ufw allow 80/tcp
 ufw allow 443/tcp

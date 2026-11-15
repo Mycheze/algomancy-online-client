@@ -278,8 +278,7 @@ export interface Account {
    * A wrapper rather than a bare `discordId` so the next provider — or BL-17's
    * judge badges — does not add another top-level field.
    *
-   * Nothing writes this yet; the link flow is BL-39. The queue events in
-   * hooks.ts already read it so the shape is fixed before there are rows. */
+   * The queue events (hooks.ts) carry it to the bot. */
   linked?: { discord?: { id: string; username: string; linkedAt: string } };
 
   /**

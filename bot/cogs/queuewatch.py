@@ -1,8 +1,9 @@
 """
 cogs/queuewatch.py — "somebody is waiting for a game; come play".
 
-`/queuewatch #channel @role` marks a channel, and every queue join arrives from
-the game server (pushserver.py) and turns into one message there.
+`/queuewatch #channel @role` marks a channel, and every queue join the bot
+reads off the game server's event ring (`/api/bot/events`, polled every
+POLL_SECONDS) turns into one message there.
 
 ⚠ AN ANNOUNCEMENT IS EDITED WHEN THAT PERSON'S SEARCH ENDS — matched, left,
 or dropped — so a standing invitation never advertises a game that is over.
@@ -19,13 +20,17 @@ role like any other to the API, and `role.is_default()` is the only thing
 between "come play" and pinging a server.
 """
 
+import json
+import time
+import traceback
 from urllib.parse import quote
 
 import discord
 from discord import app_commands
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 import gameserver
+import paths
 import store
 import watchers
 
@@ -33,28 +38,128 @@ from .common import down_notice, fail, public_url, start
 
 MODE_LABEL = {"constructed": "constructed", "draft": "live draft"}
 
-# ⚠ WHAT WAS POSTED, SO IT CAN BE CORRECTED. userId -> [(channel_id, msg_id)].
-#
-# The first version posted and walked away, and the owner caught the obvious
-# consequence: "it sends the message, and then ANOTHER message when someone
-# joins that same game, which makes it look like there are 2 people without
-# games... despite them having found each other." Two people matching produced
-# two standing invitations to games that no longer existed.
-#
-# So every announcement is remembered until that player's search ENDS — matched
-# or abandoned — and then edited to say which. In memory on purpose: a restart
-# losing the map costs a few stale messages once, and persisting it would be a
-# file that has to stay true about Discord's state, which it cannot.
-POSTED: dict[str, list[tuple[int, int]]] = store.Bounded(1000)
+# How often the bot asks for new queue events. Reading an invitation, clicking
+# and loading the page takes far longer, and an offer stays open 10 s.
+POLL_SECONDS = 2.0
+
+
+def _load():
+    """(bootId, seq, posted) as last saved. `posted` is userId ->
+    [(channel_id, msg_id)]: every announcement, kept until that player's search
+    ends so it can be edited to say how. Anything unreadable starts afresh,
+    which resynchronises on the first poll."""
+    posted = store.Bounded(1000)
+    try:
+        data = json.loads(paths.queue_posted_file().read_text(encoding="utf-8"))
+        for user_id, msgs in data["posted"].items():
+            posted[str(user_id)] = [(int(c), int(m)) for c, m in msgs]
+        return data.get("bootId"), int(data.get("seq") or 0), posted
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return None, 0, store.Bounded(1000)
+
+
+def _ends(event):
+    """Whose search this event ends."""
+    kind = event.get("t")
+    if kind == "queue.leave":
+        return {str(event.get("userId") or "")}
+    if kind == "queue.match":
+        return {str(s.get("userId") or "") for s in event.get("seats") or []}
+    if kind == "queue.lapse":
+        return {str(u) for u in event.get("dropped") or []}
+    return set()
 
 
 class QueueWatch(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.boot, self.seq, self.posted = _load()
+        self._last_down = 0.0
+
+    # ── reading the server's events ───────────────────────────────────
+    @commands.Cog.listener()
+    async def on_ready(self):
+        # not in __init__: build_bot() never logs in. on_ready repeats on
+        # every reconnect, hence the guard.
+        if gameserver.client.token and not self.poll_loop.is_running():
+            self.poll_loop.start()
+
+    async def cog_unload(self):
+        if self.poll_loop.is_running():
+            self.poll_loop.cancel()
+
+    @tasks.loop(seconds=POLL_SECONDS)
+    async def poll_loop(self):
+        try:
+            await self.poll_once()
+        except Exception:
+            traceback.print_exc()        # an exception would end a tasks.loop
+
+    @poll_loop.before_loop
+    async def _ready(self):
+        await self.bot.wait_until_ready()
+
+    async def poll_once(self):
+        try:
+            body = await gameserver.client.events(self.seq)
+        except gameserver.GameServerDown as exc:
+            if time.monotonic() - self._last_down > 600:
+                print(f"[queuewatch] events unavailable: {exc}")
+                self._last_down = time.monotonic()
+            return
+        if body.get("bootId") != self.boot or body.get("truncated"):
+            await self._resync(body)
+            return
+        events = body.get("events") or []
+        # A join whose search ends later in the same answer (a catch-up after
+        # a restart) is not announced: that game is already over.
+        skip, ended = set(), set()
+        for i in range(len(events) - 1, -1, -1):
+            event = events[i].get("event") or {}
+            user_id = str(event.get("userId") or "")
+            if event.get("t") == "queue.join" and user_id in ended:
+                skip.add(i)
+                ended.discard(user_id)
+            ended |= _ends(event)
+        for i, envelope in enumerate(events):
+            if i not in skip:
+                try:
+                    await self.on_event(envelope)
+                except Exception:
+                    traceback.print_exc()   # one bad event must not wedge the cursor
+            self.seq = int(envelope.get("seq") or self.seq)
+        if events:
+            self._save()
+
+    async def _resync(self, body):
+        """The cursor does not describe this ring: the server restarted, or
+        more happened than the ring holds. That gap cannot be replayed, so
+        close the invitations of everybody no longer waiting. A new boot's
+        ring is read from its start (a truncated one comes back here again);
+        an old one's, from now."""
+        try:
+            waiting = {str(w.get("userId"))
+                       for w in (await gameserver.client.queue()).get("waiting") or []}
+        except gameserver.GameServerDown:
+            return                                  # the next poll tries again
+        for user_id in [u for u in self.posted if u not in waiting]:
+            await self._edit(user_id, "⏹️ That game is no longer open.")
+        new_boot = body.get("bootId") != self.boot
+        self.boot, self.seq = body.get("bootId"), 0 if new_boot else int(body.get("nextSeq") or 0)
+        self._save()
+
+    def _save(self):
+        """Temp + rename: a torn write must not lose the map (paths.py)."""
+        path = paths.queue_posted_file()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps({"version": 1, "bootId": self.boot, "seq": self.seq,
+                                   "posted": self.posted}), encoding="utf-8")
+        tmp.replace(path)
 
     # ── the announcement ──────────────────────────────────────────────
     async def on_event(self, envelope):
-        """One event from the game server. Called in the background."""
+        """One event from the game server, in ring order."""
         event = envelope.get("event") or {}
         kind = event.get("t")
         if kind == "queue.match":
@@ -94,7 +199,7 @@ class QueueWatch(commands.Cog):
                 watchers.remove_watch(channel_id)
                 print(f"[queuewatch] can't post in {channel_id} ({exc}); watch dropped")
                 continue
-            POSTED.setdefault(user_id, []).append((channel.id, msg.id))
+            self.posted.setdefault(user_id, []).append((channel.id, msg.id))
 
     # ── correcting what was posted ────────────────────────────────────
     async def _resolve_match(self, event):
@@ -114,9 +219,9 @@ class QueueWatch(commands.Cog):
     async def _edit(self, user_id, text):
         """Rewrite every announcement posted for this person, and forget them.
         A message that has since been deleted, or a channel the bot has lost,
-        is skipped: the point is that nothing stale stands, not that every
-        edit lands."""
-        for channel_id, msg_id in POSTED.pop(user_id, []):
+        is skipped quietly: the point is that nothing stale stands, not that
+        every edit lands."""
+        for channel_id, msg_id in self.posted.pop(user_id, []):
             channel = self.bot.get_channel(channel_id)
             if channel is None:
                 continue
@@ -124,6 +229,8 @@ class QueueWatch(commands.Cog):
                 await channel.get_partial_message(msg_id).edit(
                     content=text, view=None,
                     allowed_mentions=discord.AllowedMentions.none())
+            except discord.NotFound:
+                pass
             except discord.HTTPException as exc:
                 print(f"[queuewatch] couldn't edit {channel_id}/{msg_id} ({exc})")
 

@@ -215,6 +215,12 @@ def queue_watch_file() -> Path:
     return bot_state_dir() / "queue_watch.json"
 
 
+def queue_posted_file() -> Path:
+    """The queue announcer's cursor into the game server's event ring, and the
+    invitations it posted, so a restart can still correct them."""
+    return bot_state_dir() / "queue_posted.json"
+
+
 def league_channel_file() -> Path:
     """channel_id -> {guild_id, added_by} for the league's public posts
     (pairings, standings, the final) — cogs/league.py."""

@@ -347,11 +347,11 @@ champion" (seasons won), counted from `Account.league.seasons`.
    - `DISCORD_TOKEN=<test app>`
    - `ALGO_DEV_GUILD=778331995297808438`
    - `ALGO_GAME_SERVER=http://127.0.0.1:5177`
-   - `ALGO_BOT_TOKEN=<any>`, `ALGO_BOT_LISTEN=127.0.0.1:8766`
+   - `ALGO_BOT_TOKEN=<any>`
    - `ALGO_VAR_DIR=var/dev/bot`
    - `ALGO_LEAGUE_DM_REDIRECT=<Ben's Discord id>`
 3. `npm --prefix client run dev:league`, a new script: the dev server on
-   :5177, `var/dev/`, the bot token and push URL set, and **the league clock
+   :5177, `var/dev/`, the bot token set, and **the league clock
    in manual mode**.
 4. Run the bot with `.env.dev` and create a `#league-test` channel.
 

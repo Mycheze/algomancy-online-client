@@ -6,10 +6,10 @@
  *
  * ── THE OUTBOX, AND WHY NOT A PUSH ───────────────────────────────────────
  *
- * The queue's events reach the bot by a fire-and-forget push (hooks.ts), and
- * the bot has never read the catch-up ring, so anything sent while the bot is
- * restarting is simply gone. That is fine for "someone is queueing" and not
- * fine for "here are your opponents for the week". So every league message is
+ * The queue's events sit in a bounded in-memory ring (hooks.ts) that the bot
+ * polls, so a server restart or a long enough bot outage loses some. That is
+ * fine for "someone is queueing" and not fine for "here are your opponents for
+ * the week". So every league message is
  * a ROW here, written in the same atomic write as the change that caused it,
  * and it stays until the bot PULLS it (`/api/bot/league/outbox`) and ACKS it.
  * Neither side can lose one across a restart; a row the bot sent but never

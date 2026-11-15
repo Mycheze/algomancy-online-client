@@ -63,10 +63,8 @@ export interface BotCtx {
   /** this process's id and age, so the bot can tell a restart from a silence */
   bootId: string;
   startedAt: number;
-  /** the replay ring, for a bot catching up after its own restart */
-  events: (from: number, limit?: number) => {
-    events: unknown[]; nextSeq: number; dropped: number; truncated: boolean;
-  };
+  /** the queue-event ring the bot polls (hooks.ts) */
+  events: (from: number) => { events: unknown[]; nextSeq: number; truncated: boolean };
   /** the judge bot's engine calculator (simulate-worker.ts), and a nudge to
    * boot its worker before the first question needs it */
   simulate?: (spec: unknown, engine: string) => Promise<SimResult>;
@@ -243,17 +241,12 @@ export async function botRoutes(
     return true;
   }
 
-  /* Catch-up after the BOT restarted.
-   *
-   * The push in hooks.ts is the fast path; this is what makes a missed one
-   * recoverable. ⚠ `truncated` is the field that matters: answering an
-   * out-of-range `since` with an empty list is indistinguishable from "nothing
-   * happened", and the bot would go on believing it was up to date. */
+  /* The queue events, which the bot polls (cogs/queuewatch.py). A new
+   * `bootId` or `truncated: true` means its cursor no longer describes this
+   * ring, and it resynchronises from /api/bot/queue. */
   if (path === '/api/bot/events') {
     const from = Number(url.searchParams.get('since') ?? 0);
-    const limit = Math.max(1, Math.min(500, Number(url.searchParams.get('limit') ?? 200)));
-    const page = ctx.events(Number.isFinite(from) ? from : 0, limit);
-    json(res, { ok: true, bootId: ctx.bootId, ...page });
+    json(res, { ok: true, bootId: ctx.bootId, ...ctx.events(Number.isFinite(from) ? from : 0) });
     return true;
   }
 

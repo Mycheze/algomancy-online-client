@@ -6,10 +6,10 @@ a player should get. This cog does two things with it.
 
 1. DELIVERS THE OUTBOX. Every league message is a row on the server that stays
    there until this cog says it was sent (`/api/league/bot/outbox`, then
-   `/ack`). A loop pulls every 30 seconds. That is deliberate, and it is the
-   difference from queuewatch: the queue's push is fire-and-forget, and a push
-   that lands while the bot is restarting is gone — fine for "someone is
-   queueing", not fine for "here are your opponents this week". Pull + ack
+   `/ack`). A loop pulls every 30 seconds. That is the difference from
+   queuewatch, which reads a bounded in-memory ring that a server restart
+   empties — fine for "someone is queueing", not fine for "here are your
+   opponents this week". Pull + ack
    cannot lose a row across a restart on either side; at worst a row sent and
    not yet acked is sent twice.
 

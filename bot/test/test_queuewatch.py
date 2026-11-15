@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 test_queuewatch.py — the queue announcer: its config file, its cooldown, and
-the listener the game server pushes to.
+reading the game server's event ring.
 Run: `.venv/bin/python bot/test/test_queuewatch.py`. No Discord, no game server.
 
 §1 ⭐ THE CONFIG FILE IS THE FIRST REWRITABLE FILE THE PYTHON SIDE OWNS, and it
@@ -9,17 +9,14 @@ Run: `.venv/bin/python bot/test/test_queuewatch.py`. No Discord, no game server.
    the feature — so: it lands under ALGO_VAR_DIR, it is written atomically, and
    a corrupt one reads as empty instead of stopping the bot from booting.
 §2 the cooldown, driven by an injected clock so nothing sleeps
-§3 the listener: a wrong secret is a 404 (not a 403), no secret means no
-   listener at all, malformed JSON is refused, an unknown event is ignored
-§4 ⭐ THE HANDLER RETURNS BEFORE THE FAN-OUT FINISHES. The game server calls
-   this from inside its own queue-join path; a slow Discord call must never be
-   able to hold that request open.
 §5 the announcement's allowed-mentions, which is the difference between "come
    play" and pinging a server
-§6 ⭐ EVERY EVENT KIND GOES THROUGH on_event AGAINST A STUB BOT. §3-§5 proved
-   the wire and the text; the dispatch between them shipped once calling three
-   methods that did not exist, and nothing here noticed because nothing here
-   ever called on_event. Now it does, for all four kinds.
+§6 ⭐ EVERY EVENT KIND GOES THROUGH on_event AGAINST A STUB BOT. The dispatch
+   shipped once calling three methods that did not exist.
+§7 ⭐ THE POLL, ACROSS RESTARTS, against a stand-in for the server's ring
+   (client/server/hooks.ts): nothing that happened while the bot was down is
+   lost, a gap it cannot see resynchronises from the queue, and what it posted
+   survives it.
 """
 
 import sys as _sys
@@ -29,14 +26,14 @@ _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
 import _scratch_var  # noqa: F401,E402
 
 import asyncio  # noqa: E402
+import contextlib  # noqa: E402
+import io  # noqa: E402
 import json  # noqa: E402
 
 import discord  # noqa: E402
-from aiohttp import web  # noqa: E402
-from aiohttp.test_utils import TestClient, TestServer  # noqa: E402
 
+import gameserver  # noqa: E402
 import paths  # noqa: E402
-import pushserver  # noqa: E402
 import watchers  # noqa: E402
 
 PASS = 0
@@ -125,86 +122,6 @@ check("a suppressed announcement does not push the next one further away",
       and watchers.may_announce("u1", 1, now=T + watchers.JOIN_COOLDOWN + 1))
 
 
-# ── §3 + §4 the listener ──────────────────────────────────────────────
-async def listener_tests():
-    global PASS, FAILED
-    print("\n[§3 the listener refuses what it should]")
-    seen = []
-    gate = asyncio.Event()
-
-    async def on_event(envelope):
-        seen.append(envelope)
-        await gate.wait()          # §4 holds the fan-out open on purpose
-
-    app = pushserver.build_app(on_event, token="s3cret")
-    server = TestServer(app)
-    client = TestClient(server)
-    await client.start_server()
-    try:
-        body = {"bootId": "b", "events": [{"seq": 1, "event": {"t": "queue.join"}}]}
-
-        r = await client.post("/push/queue", json=body)
-        check(f"⭐ no header is a 404, not a 403 — the two ends agree that an "
-              f"unconfigured deploy admits nothing (got {r.status})", r.status == 404)
-        r = await client.post("/push/queue", json=body,
-                              headers={"X-Algo-Bot": "wrong"})
-        check(f"a wrong secret is a 404 too (got {r.status})", r.status == 404)
-        r = await client.post("/push/queue", data="not json",
-                              headers={"X-Algo-Bot": "s3cret",
-                                       "content-type": "application/json"})
-        check(f"malformed JSON is refused, not crashed on (got {r.status})",
-              r.status == 400)
-        r = await client.post("/push/queue", json={"events": "nope"},
-                              headers={"X-Algo-Bot": "s3cret"})
-        check("events must be a list", r.status == 400)
-
-        r = await client.get("/healthz")
-        check("healthz answers", r.status == 200)
-
-        print("\n[§4 ⭐ the handler returns before the fan-out finishes]")
-        check("nothing has been handled yet", seen == [])
-        r = await client.post("/push/queue", json=body,
-                              headers={"X-Algo-Bot": "s3cret"})
-        check(f"the push is accepted (got {r.status})", r.status == 200)
-        payload = await r.json()
-        check("…and says how many it took", payload.get("accepted") == 1)
-        # ⭐ The response arrived while on_event is still blocked on `gate`.
-        check("⭐ THE RESPONSE CAME BACK WHILE THE HANDLER IS STILL BLOCKED — "
-              "the game server calls this from inside its own queue-join path, "
-              "and a slow Discord call must not hold that open",
-              not gate.is_set())
-        gate.set()
-        await asyncio.sleep(0.05)
-        check("…and the event really was handled, afterwards", len(seen) == 1)
-
-        # an unknown event type must not 400: a newer server may send one
-        gate.set()
-        r = await client.post("/push/queue",
-                              json={"events": [{"seq": 2, "event": {"t": "who.knows"}}]},
-                              headers={"X-Algo-Bot": "s3cret"})
-        check("an unknown event type is accepted and ignored, so a newer game "
-              "server does not get a 400 from an older bot", r.status == 200)
-
-        # a handler that raises must not take the bot down
-        async def boom(envelope):
-            raise RuntimeError("nope")
-
-        app2 = pushserver.build_app(boom, token="s3cret")
-        s2 = TestServer(app2)
-        c2 = TestClient(s2)
-        await c2.start_server()
-        r = await c2.post("/push/queue", json=body, headers={"X-Algo-Bot": "s3cret"})
-        check("a handler that raises still answers 200", r.status == 200)
-        await asyncio.sleep(0.05)
-        check("…and the listener is still alive after it",
-              (await c2.get("/healthz")).status == 200)
-        await c2.close()
-    finally:
-        await client.close()
-
-
-asyncio.run(listener_tests())
-
 # ── §5 the announcement ───────────────────────────────────────────────
 print("\n[§5 what the announcement is allowed to ping]")
 from cogs.queuewatch import QueueWatch  # noqa: E402
@@ -276,7 +193,14 @@ class FakeChannel:
         return m
 
     def get_partial_message(self, mid):
-        return self.messages[mid]
+        return self.messages.get(mid) or Deleted()
+
+
+class Deleted:
+    """A message somebody deleted on Discord: editing it is a 404."""
+    async def edit(self, **kw):
+        raise discord.NotFound(type("R", (), {"status": 404, "reason": "Not Found"})(),
+                               "Unknown Message")
 
 
 class FakeBot:
@@ -291,7 +215,7 @@ async def dispatch_tests():
     chan = FakeChannel(111)
     cog = qw.QueueWatch(FakeBot(chan))
     watchers.set_watch(111, guild_id=999)
-    qw.POSTED.clear()
+    cog.posted.clear()
 
     def join(uid, name):
         watchers.reset_cooldowns()
@@ -302,7 +226,7 @@ async def dispatch_tests():
     await cog.on_event(join("u1", "Ben"))
     check("a join posts one announcement", len(chan.sent) == 1)
     check("⭐ …and remembers it, so it can be corrected later",
-          qw.POSTED.get("u1") == [(111, chan.sent and max(chan.messages))])
+          cog.posted.get("u1") == [(111, chan.sent and max(chan.messages))])
     first = chan.messages[max(chan.messages)]
 
     await cog.on_event(join("u2", "Rashi"))
@@ -314,7 +238,7 @@ async def dispatch_tests():
     check("…to say who is playing whom", "Ben vs Rashi" in first.edits[0]["content"]
           and "playing now" in first.edits[0]["content"])
     check("…and drops the Join button", first.edits[0]["view"] is None)
-    check("…and forgets both", "u1" not in qw.POSTED and "u2" not in qw.POSTED)
+    check("…and forgets both", "u1" not in cog.posted and "u2" not in cog.posted)
     check("…without sending anything new", len(chan.sent) == 2)
 
     await cog.on_event(join("u3", "Cass"))
@@ -331,7 +255,7 @@ async def dispatch_tests():
                                   "backInLine": [], "dropped": ["u4"]}})
     check("⭐ a decliner (who never emits leave) is caught on lapse.dropped",
           len(fourth.edits) == 1 and "no longer open" in fourth.edits[0]["content"])
-    check("nothing is left remembered", qw.POSTED == {})
+    check("nothing is left remembered", cog.posted == {})
 
     await cog.on_event({"event": {"t": "queue.match", "room": "X", "mode": "draft",
                                   "seats": [{"userId": "nobody", "username": "?"}]}})
@@ -342,6 +266,123 @@ async def dispatch_tests():
 
 
 asyncio.run(dispatch_tests())
+
+
+# ── §7 the poll ───────────────────────────────────────────────────────
+print("\n[§7 ⭐ the poll, across restarts]")
+
+
+class FakeRing:
+    """The game server's /api/bot/events and /api/bot/queue (hooks.ts since())."""
+    token = "t"
+
+    def __init__(self, boot, cap=500):
+        self.boot, self.cap, self.seq, self.ring, self.waiting = boot, cap, 0, [], set()
+
+    def emit(self, event, ends=()):
+        self.seq += 1
+        self.ring = (self.ring + [{"seq": self.seq, "bootId": self.boot, "event": event}])[-self.cap:]
+        if event["t"] == "queue.join":
+            self.waiting.add(event["userId"])
+        self.waiting -= set(ends)
+
+    async def events(self, since):
+        oldest = self.ring[0]["seq"] if self.ring else self.seq + 1
+        return {"ok": True, "bootId": self.boot, "nextSeq": self.seq, "truncated": since + 1 < oldest,
+                "events": [e for e in self.ring if e["seq"] > since]}
+
+    async def queue(self):
+        return {"ok": True, "waiting": [{"userId": u} for u in sorted(self.waiting)]}
+
+
+def join_ev(uid, name):
+    return {"t": "queue.join", "userId": uid, "username": name, "discordId": None,
+            "mode": "draft", "ranked": False, "rating": 1000, "counts": {"total": 1}}
+
+
+def leave_ev(uid, name):
+    return {"t": "queue.leave", "userId": uid, "username": name, "discordId": None,
+            "mode": "draft", "reason": "left", "counts": {"total": 0}}
+
+
+async def poll(cog):
+    watchers.reset_cooldowns()            # §2 covers the cooldown; here it would hide events
+    await cog.poll_once()
+
+
+async def poll_tests():
+    real = gameserver.client
+    paths.queue_posted_file().unlink(missing_ok=True)
+    chan = FakeChannel(111)
+    bot = FakeBot(chan)
+    watchers.set_watch(111, guild_id=999)
+    server = gameserver.client = FakeRing("boot-1")
+    try:
+        cog = qw.QueueWatch(bot)
+        await poll(cog)                                    # first start: resync
+        server.emit(join_ev("u1", "Ben"))
+        await poll(cog)
+        ben = chan.messages[max(chan.messages)]
+        # the bot is down while three things happen
+        server.emit(join_ev("u2", "Rashi"))
+        server.emit({"t": "queue.match", "room": "ABCD", "mode": "draft",
+                     "seats": [{"userId": "u1", "username": "Ben", "seat": 0, "rating": 1000},
+                               {"userId": "u2", "username": "Rashi", "seat": 1, "rating": 1000}]},
+                    ends=("u1", "u2"))
+        server.emit(join_ev("u3", "Cass"))
+        cog = qw.QueueWatch(bot)                           # restarted: only the file survives
+        await poll(cog)
+        check("⭐ AFTER A RESTART, WHAT HAPPENED WHILE THE BOT WAS DOWN IS DELIVERED: Ben's "
+              "invitation says he is playing, Rashi (whose game is already over) is not "
+              "announced, Cass (still waiting) is "
+              f"(edits {[e['content'] for e in ben.edits]}, sent {[s['content'][:20] for s in chan.sent]})",
+              len(ben.edits) == 1 and "Ben vs Rashi" in ben.edits[0]["content"]
+              and len(chan.sent) == 2 and "Cass" in chan.sent[1]["content"])
+        cass = chan.messages[max(chan.messages)]
+
+        # the server restarts: a new boot, an empty queue, then Dee joins
+        server = gameserver.client = FakeRing("boot-2")
+        server.emit(join_ev("u4", "Dee"))
+        await poll(cog)
+        await poll(cog)
+        restarted = ("no longer open" in (cass.edits or [{}])[-1].get("content", "")
+                     and len(chan.sent) == 3 and "Dee" in chan.sent[2]["content"])
+        dee = chan.messages[max(chan.messages)]
+        # the bot misses more than the ring holds, Dee's leave among it
+        server.emit(leave_ev("u4", "Dee"), ends=("u4",))
+        for i in range(600):
+            server.emit(join_ev(f"x{i}", f"Filler {i}"))
+        await poll(cog)
+        truncated = ("no longer open" in (dee.edits or [{}])[-1].get("content", "")
+                     and len(chan.sent) == 3 and cog.seq == server.seq)
+        check("⭐ A NEW BOOT OR A TRUNCATED ANSWER RESYNCHRONISES FROM THE QUEUE: invitations "
+              "of people no longer waiting are closed, a new boot's ring is read from its "
+              "start, and a gap is not replayed "
+              f"(after the server restart {restarted}, after the overflow {truncated})",
+              restarted and truncated)
+
+        # what was posted outlives the bot, and a message deleted since is let go
+        server.emit(join_ev("u5", "Gil"))
+        await poll(cog)
+        gil = max(chan.messages)
+        before = dict(cog.posted)
+        cog = qw.QueueWatch(bot)
+        survived = cog.posted == before and "u5" in cog.posted
+        del chan.messages[gil]
+        server.emit(leave_ev("u5", "Gil"), ends=("u5",))
+        said = io.StringIO()
+        with contextlib.redirect_stdout(said):
+            await poll(cog)
+        check("⭐ THE POSTED MAP SURVIVES A RESTART, and a message deleted on Discord since "
+              f"is forgotten quietly (survived {survived}, said {said.getvalue()!r})",
+              survived and "u5" not in cog.posted and "u5" not in qw._load()[2]
+              and said.getvalue() == "")
+    finally:
+        gameserver.client = real
+        watchers.remove_watch(111)
+
+
+asyncio.run(poll_tests())
 
 print(f"\n{PASS} checks passed" + (f", {FAILED} FAILED ❌" if FAILED else " ✅"))
 raise SystemExit(1 if FAILED else 0)

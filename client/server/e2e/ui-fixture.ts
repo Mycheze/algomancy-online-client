@@ -84,7 +84,7 @@ export function fixtureEnv(varDir: string, now: string): Record<string, string> 
     ALGO_OG_CACHE_DIR: join(varDir, 'og-cache'),
     ALGO_TESTER_TOKEN: TESTER,
     // off, whatever the operator's shell exported (suite.test.ts says why)
-    ALGO_BOT_TOKEN: '', ALGO_BOT_PUSH_URL: '', ALGO_PUBLIC_URL: '',
+    ALGO_BOT_TOKEN: '', ALGO_PUBLIC_URL: '',
     // the judge / card-info proxy goes nowhere: a bot app that happens to be
     // running on :8000 must not leak into a photograph
     ALGO_BOT_URL: 'http://127.0.0.1:9',

@@ -230,14 +230,10 @@ function runScript(file: string): Promise<{ code: number; out: string }> {
         // var/challenges/weeks.json on its own clock
         ALGO_CHALLENGES_DIR: join(scratch, 'challenges'),
         // ⚠ AND NOTHING THE OPERATOR'S SHELL EXPORTED. On the deploy box the
-        // shell may carry the real bot token and — worse — ALGO_BOT_PUSH_URL,
-        // which would have test-queue.ts's fabricated joins and matches
-        // POSTED AT THE LIVE DISCORD BOT. Every script that wants one of these
-        // passes it to spawnServer() explicitly; unset means off in main.ts,
-        // hooks.ts and api-bot.ts alike, and '' is the same as unset to all
-        // three (`?? ''`).
+        // shell may carry the real bot token. Every script that wants one of
+        // these passes it to spawnServer() explicitly; unset means off in
+        // main.ts and api-bot.ts alike, and '' is the same as unset (`?? ''`).
         ALGO_BOT_TOKEN: '',
-        ALGO_BOT_PUSH_URL: '',
         ALGO_TESTER_TOKEN: '',
         ALGO_PUBLIC_URL: '',
       },

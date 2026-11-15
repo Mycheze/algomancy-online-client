@@ -506,7 +506,7 @@ else:
            "ALGO_REPORT_MARKS_FILE": str(scratch / "report-marks.jsonl"),
            "ALGO_LEAGUE_FILE": str(scratch / "league.json"), "ALGO_CR_COMMENTS_FILE": str(scratch / "cr.jsonl"),
            "ALGO_CHALLENGES_DIR": str(scratch / "challenges"),
-           "ALGO_BOT_URL": DEAD, "ALGO_BOT_PUSH_URL": DEAD + "/push"}
+           "ALGO_BOT_URL": DEAD}
     proc = subprocess.Popen([NODE, "main.ts"], cwd=SERVER, env=env, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, text=True)
     port, lines = None, []

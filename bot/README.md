@@ -28,7 +28,6 @@ bot/
   app.py          the FastAPI web front-end; web/index.html is its one page
   ask.py          a dependency-free CLI for querying the corpus
   gameserver.py   the client for the game server on :5000
-  pushserver.py   the loopback listener the game server pushes queue events to
   watchers.py     the queue announcer's channel list and cooldowns
   test/           eight standalone test scripts and run_all.py
   pipeline/       the scripts that BUILD ../data/, run by hand
@@ -188,13 +187,12 @@ sides; unset means the integration is absent, not broken.
 - **Bot → game server (:5000)**, `gameserver.py`. `/search` runs the
   browser's query language through `GET /api/cardsearch`; `/profile`,
   `/rating`, `/queue` and `/link` use the token-gated `/api/bot/*`;
+  `/queuewatch` polls the queue events (`/api/bot/events?since=`) every
+  couple of seconds and turns them into channel announcements;
   `/leaderboard` reads the public `/api/players`. The bot holds no copy of
   anything the server owns. When :5000 is down, every command that needs it
   says so, names the game server rather than the bot, and says what still
   works.
-- **Game server → bot (:8765)**, `pushserver.py`. The server pushes queue
-  events; `/queuewatch` turns them into channel announcements. A replay ring
-  (`/api/bot/events?since=`) lets a restarted bot catch up.
 - **The older half, which must not break**: the game server proxies
   `/api/cardinfo` and `/api/judge` to `app.py` on :8000. That is the in-game
   card inspector and the "ask the judge" box. Those two response shapes and
@@ -214,9 +212,8 @@ variable. The ones that matter: `LLM_API_KEY` and `DISCORD_TOKEN`;
 `LLM_TIMEOUT` / `LLM_DEADLINE` (per attempt / whole answer, inside the game
 server's 60 s judge proxy) and the optional `LLM_FALLBACK_MODEL`. Every `LLM_*`
 name falls back to the `DEEPSEEK_*` name it replaced (`DEEPSEEK_API_KEY`,
-`DEEPSEEK_MODEL`, …), so an older `.env` still works; `ALGO_BOT_TOKEN`,
-`ALGO_GAME_SERVER` and `ALGO_BOT_LISTEN`
-for the integration; `ALGO_VAR_DIR` to move the runtime state, which the
+`DEEPSEEK_MODEL`, …), so an older `.env` still works; `ALGO_BOT_TOKEN`
+and `ALGO_GAME_SERVER` for the integration; `ALGO_VAR_DIR` to move the runtime state, which the
 tests use and a deployment does not.
 
 Answer generation is the only paid part. At the default model a question
