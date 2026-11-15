@@ -27,7 +27,7 @@ import {
 import { syncGamesDir } from './history.ts';
 import { gameElements } from './stats.ts';
 // paths are named once (CLAUDE.md): the saved games and the store live in var/
-import { accountsFile, gamesDir as savedGamesDir } from './statepaths.ts';
+import { accountsFile, gamesDir as savedGamesDir, historyBeside } from './statepaths.ts';
 
 const argv = process.argv.slice(2);
 const flag = (name: string): string | undefined => {
@@ -112,7 +112,9 @@ function fixUpGame(code: string, who: string | null): string[] {
 loadAccounts();
 if (dry) {
   const scratch = join(tmpdir(), `algo-accounts-dry-${process.pid}.json`);
-  try { copyFileSync(accountsFilePath(), scratch); } catch { /* no store yet */ }
+  for (const [from, to] of [[accountsFilePath(), scratch], [historyBeside(accountsFilePath()), historyBeside(scratch)]] as const) {
+    try { copyFileSync(from, to); } catch { /* no store yet */ }
+  }
   useAccountsFile(scratch);
 }
 

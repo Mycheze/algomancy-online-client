@@ -7,17 +7,17 @@
  * logged in the clear — scrypt with a per-user salt, compared in constant
  * time — because people reuse passwords even on a LAN toy.
  *
- * Storage is one JSON file (server/accounts/accounts.json) rewritten on every
- * change. At two users and a few hundred games that is free, and it means the
- * whole store can be read, diffed and hand-fixed with a text editor. It holds
- * accounts, sessions and the game history; the stat sheets and ratings are a
- * fold over that history, kept in memory and never written.
+ * Storage is two files. accounts.json (accounts, sessions) is small and is
+ * rewritten whole on every change, so it can be read, diffed and hand-fixed.
+ * The match history beside it (statepaths.ts historyFile) is append-only, one
+ * JSON line per write of a row, the last per code winning. The stat sheets and
+ * ratings are a fold over that history, kept in memory and never written.
  *
  * Sessions live in the same file so a server restart does not log everyone out
  * (this box restarts on every deploy — see deploy/algomancy-game.service).
  */
 import { createHash, randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
-import { chmodSync, existsSync } from 'node:fs';
+import { appendFileSync, chmodSync, closeSync, existsSync, ftruncateSync, openSync, statSync } from 'node:fs';
 import type { CardName, Element, GameMode, Seat } from '../engine/src/types.ts';
 import type { CollectionDeck } from './collection.ts';
 import type { DeckShare } from './deckshare.ts';
@@ -33,8 +33,8 @@ import {
 import { allMatches } from './match-store.ts';
 import type { PublicDeckView } from './publicdecks.ts';
 import type { TrioHistoryRow } from './trio.ts';
-import { accountsFile } from './statepaths.ts';
-import { arrayOfRecords, isRecord, readStoreFile, writeStoreFile } from './store-file.ts';
+import { accountsFile, historyBeside } from './statepaths.ts';
+import { arrayOfRecords, isRecord, readStoreFile, readStoreLines, writeStoreFile } from './store-file.ts';
 import { notePersist } from './store-health.ts';
 import { RULES_EDITOR } from './crreview.ts';
 import { canonicalCardName } from '../engine/src/cards/dsl.ts';
@@ -366,8 +366,8 @@ interface Store {
   /** written without `profile` (persist) */
   accounts: Account[];
   sessions: Session[];
-  /** every game played, newest last — the match history, and what every
-   * profile is folded from */
+  /** every game played, newest last — what every profile is folded from.
+   * Kept in the history file; an older build kept it here. */
   history: RecordedGame[];
 }
 
@@ -518,6 +518,11 @@ let historyAt = new Map<string, number>();
 let dataFile = DATA_FILE;
 /** set while the file on disk could not be loaded: nothing may be written over it */
 let loadFailed = false;
+/** codes whose row changed since the last append that landed */
+const unsaved = new Set<string>();
+/** the history file's length as last written: an append truncates to it
+ * first, so a failed one leaves no torn line under the next */
+let historyBytes = 0;
 
 /** password hashes and live sessions: owner-only */
 const FILE_MODE = 0o600;
@@ -536,6 +541,7 @@ export function loadAccounts(): void {
   let raw: Partial<Store> & { sessions?: unknown[] };
   try {
     raw = (readStoreFile(dataFile, isStoreShape) ?? {}) as typeof raw;
+    raw.history = loadHistory(raw.history ?? []);
   } catch (err) {
     loadFailed = true;
     store = { version: 1, accounts: [], sessions: [], history: [] };
@@ -567,14 +573,30 @@ export function loadAccounts(): void {
       friends: a.friends ?? [], incoming: a.incoming ?? [], outgoing: a.outgoing ?? [],
     })),
     sessions: sessions.filter(s => !sessionExpired(s, now)),
-    history: raw.history ?? [],
+    history: raw.history,
   };
+  unsaved.clear();
   historyAt = new Map(store.history.map((g, i) => [g.code, i]));
   foldProfiles();
   if (existsSync(dataFile)) {
     try { chmodSync(dataFile, FILE_MODE); } catch (err) { console.error('[accounts] could not chmod the store:', err); }
   }
   if (migrated) persist();
+}
+
+const isRow = (raw: unknown): boolean => isRecord(raw) && typeof raw['code'] === 'string' && Array.isArray(raw['users']);
+const historyLines = (rows: readonly RecordedGame[]): string => rows.map(g => `${JSON.stringify(g)}\n`).join('');
+
+/** The history file's rows, the last line per code winning. The load writes
+ * it whole, one line per row, when it is missing (from `legacy`, the array an
+ * older build kept in accounts.json) or holds far more lines than rows. */
+function loadHistory(legacy: RecordedGame[]): RecordedGame[] {
+  const file = historyBeside(dataFile);
+  const lines = readStoreLines(file, isRow) as RecordedGame[] | undefined;
+  const rows = [...new Map((lines ?? legacy).map(g => [g.code, g])).values()];
+  if (lines ? lines.length - rows.length > Math.max(rows.length, 500) : rows.length) writeStoreFile(file, historyLines(rows), FILE_MODE);
+  try { historyBytes = statSync(file).size; } catch { historyBytes = 0; }
+  return rows;
 }
 
 /** Point the store at a different file (tests only — keeps them off the real
@@ -586,24 +608,31 @@ export function useAccountsFile(path: string): () => void {
   return () => { dataFile = prev; loadAccounts(); };
 }
 
-/** Write the whole store (temp + rename, previous generation kept as .bak —
- * store-file.ts). There is no way to re-derive a password hash. Returns
- * whether the write landed; a failure is visible in storeHealth(). */
+/** Write the accounts and sessions whole (temp + rename + .bak, store-file.ts),
+ * then append each changed history row. Returns whether both landed; a failure
+ * is in storeHealth(), and a row that did not land goes with the next save. */
 function persist(): boolean {
   if (loadFailed) {
     notePersist('accounts', new Error(`${dataFile} did not load; refusing to write over it`));
     return false;
   }
+  let failed: unknown = null;
   try {
     const accounts = store.accounts.map(({ profile: _p, ...a }) => a);
-    writeStoreFile(dataFile, JSON.stringify({ ...store, accounts }, null, 1), FILE_MODE);
+    writeStoreFile(dataFile, JSON.stringify({ version: 1, accounts, sessions: store.sessions }, null, 1), FILE_MODE);
     lastSeenFlushAt = Date.now();
-    notePersist('accounts', null);
-    return true;
-  } catch (err) {
-    notePersist('accounts', err);
-    return false;
-  }
+  } catch (err) { failed = err; }
+  try {
+    const text = historyLines([...unsaved].map(code => historyGame(code)!));
+    if (text) {
+      const fd = openSync(historyBeside(dataFile), 'a', FILE_MODE);
+      try { ftruncateSync(fd, historyBytes); appendFileSync(fd, text); } finally { closeSync(fd); }
+      historyBytes += Buffer.byteLength(text);
+      unsaved.clear();
+    }
+  } catch (err) { failed ??= err; }
+  notePersist('accounts', failed);
+  return failed === null;
 }
 
 /** While the store cannot be written, a new account would exist only until the
@@ -805,7 +834,7 @@ function redeemSignupClaim(account: Account, ticket: string | undefined, now = D
   if (!game || game.users[claim.seat]) return 0;
   game.users[claim.seat] = account.id;
   game.signedUp = [...new Set([...(game.signedUp ?? []), claim.seat])].sort() as Seat[];
-  historyRev++;
+  stashHistory(game);
   rebuildProfiles();
   return 1;
 }
@@ -1235,10 +1264,12 @@ function matchRatingRows(): RatableGame[] {
     .filter((r): r is RatableGame => r !== null);
 }
 
-/** Add a game straight to the history without folding it (the seeder uses
- * this, then rebuilds — that way seeding is order-independent). */
+/** Add or replace a history row without folding it (the seeder uses this,
+ * then rebuilds — order-independent). A row changed in place must come back
+ * through here, or no save writes it. */
 export function stashHistory(game: RecordedGame): boolean {
   historyRev++;
+  unsaved.add(game.code);
   const i = historyAt.get(game.code);
   if (i !== undefined) { store.history[i] = game; return false; }
   historyAt.set(game.code, store.history.push(game) - 1);
@@ -1536,7 +1567,7 @@ export function markGameDisputed(code: string, seat: Seat): boolean {
   const seats = new Set<Seat>(g.disputed ?? []);
   seats.add(seat);
   g.disputed = [...seats].sort();
-  historyRev++;
+  stashHistory(g);
   persist();
   return true;
 }

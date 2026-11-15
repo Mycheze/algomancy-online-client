@@ -23,8 +23,15 @@ import { spawn, type ChildProcessByStdio } from 'node:child_process';
 import type { Readable } from 'node:stream';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { RecordedGame } from '../accounts.ts';
+import { historyBeside } from '../statepaths.ts';
+import { isRecord, readStoreLines } from '../store-file.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+
+/** a game's history row as it stands on disk beside an account store: the last line for its code */
+export const historyRowOnDisk = (accountsFile: string, code: string): RecordedGame | undefined =>
+  ((readStoreLines(historyBeside(accountsFile), isRecord, false) ?? []) as RecordedGame[]).filter(g => g.code === code).pop();
 
 /** Ask the server for a fresh room code, reserved and ready to be created. */
 export async function mintRoom(port: number): Promise<string> {

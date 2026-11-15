@@ -35,7 +35,8 @@ execFileSync('rsync', ['-a', '--delete', `${DEPLOY_HOST}:${DEPLOY_ROOT}/var/game
 
 console.log('sanitizing the account store on the box…');
 const script = readFileSync(new URL('./sanitize-accounts.mjs', import.meta.url));
-const text = execFileSync('ssh', [DEPLOY_HOST, 'node', '-', `${DEPLOY_ROOT}/var/accounts/accounts.json`],
+const text = execFileSync('ssh', [DEPLOY_HOST, 'node', '-', `${DEPLOY_ROOT}/var/accounts/accounts.json`,
+  `${DEPLOY_ROOT}/var/accounts/accounts.history.jsonl`],
   { input: script, maxBuffer: 256 << 20 }).toString('utf8');
 if (/"(salt|hash|token)"\s*:/.test(text)) fail('the sanitized store still names a secret field — refusing to write it');
 const store = JSON.parse(text);

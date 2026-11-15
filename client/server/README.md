@@ -219,7 +219,8 @@ the rules bot's web app on :8000 for the in-game inspector and judge box.
 
 `statepaths.ts` names every file this server writes, each a getter that reads
 its environment variable on every call so a test can point it at a scratch
-directory after import: `var/games/`, `var/accounts/accounts.json`,
+directory after import: `var/games/`, `var/accounts/accounts.json` and the
+match history beside it (`accounts.history.jsonl`, append-only),
 `var/issues.jsonl` (bug reports, stamped with room and action index),
 `var/verdicts.jsonl` (the scenario tester's verdicts), `var/report-marks.jsonl`
 (admin triage). None of it is committed and none of it can be rebuilt.

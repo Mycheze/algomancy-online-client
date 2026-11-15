@@ -1,5 +1,5 @@
-/* The card stats fold, printed. Read-only: it parses the account store for
- * its history rows and never loads accounts.ts (whose store writes).
+/* The card stats fold, printed. Read-only: it parses the account store and
+ * its history file and never loads accounts.ts (whose store writes).
  *
  *   node server/cardstats-cli.ts [--games DIR] [--accounts FILE]
  *        [--mode draft|constructed|all] [--from YYYY-MM-DD] [--to YYYY-MM-DD]
@@ -17,6 +17,8 @@ import { PROD_MIRROR_DIR } from '../engine/scripts/paths.mjs';
 import { readLedger } from './cardledger.ts';
 import { foldCardStats, type CardRow, type CardStatsFilter, type StatsGame, type Wr } from './cardstats.ts';
 import type { RecordedGame } from './accounts.ts';
+import { historyBeside } from './statepaths.ts';
+import { isRecord, readStoreLines } from './store-file.ts';
 
 const MIRROR = join(PROD_MIRROR_DIR, 'snapshot');
 const argv = process.argv.slice(2);
@@ -25,7 +27,10 @@ const flag = (name: string): boolean => argv.includes(name);
 
 const gamesDir = opt('--games') ?? join(MIRROR, 'games');
 const accountsFile = opt('--accounts') ?? join(MIRROR, 'accounts.json');
-const store = JSON.parse(readFileSync(accountsFile, 'utf8')) as { history: RecordedGame[]; accounts: { id: string; username: string }[] };
+const store = JSON.parse(readFileSync(accountsFile, 'utf8')) as { history?: RecordedGame[]; accounts: { id: string; username: string }[] };
+// the history file beside the store, last line per code winning; else an older store's own array
+const lines = readStoreLines(historyBeside(accountsFile), isRecord, false) as RecordedGame[] | undefined;
+const history = [...new Map((lines ?? store.history ?? []).map(g => [g.code, g])).values()];
 
 const userName = opt('--user');
 const me = userName ? store.accounts.find(a => a.username.toLowerCase() === userName.toLowerCase())?.id ?? '∅' : null;
@@ -40,7 +45,7 @@ const filter: CardStatsFilter = {
 
 const games: StatsGame[] = [];
 const audits: string[] = [];
-for (const h of store.history) {
+for (const h of history) {
   const r = readLedger(gamesDir, h.code);
   if (!r) { audits.push(`${h.code}  (no game file)`); continue; }
   games.push({ ...h, ledger: r.ledger });

@@ -12,7 +12,7 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { spawnServer } from './test-util.ts';
+import { historyRowOnDisk, spawnServer } from './test-util.ts';
 
 const SCRATCH = mkdtempSync(join(tmpdir(), 'algo-single-test-'));
 const GAMES = join(SCRATCH, 'games');
@@ -271,8 +271,7 @@ try {
   // restart: the room, its flag and its decks come back
   a.ws.close(); b.ws.close();
   await server.stop();
-  const history = JSON.parse(readFileSync(join(SCRATCH, 'accounts.json'), 'utf8')).history as { code: string; single?: string[] }[];
-  eq(history.find(g => g.code === code)?.single, [X, Z], 'the history row carries the pair, though nobody was signed in');
+  eq(historyRowOnDisk(join(SCRATCH, 'accounts.json'), code)?.single, [X, Z], 'the history row carries the pair, though nobody was signed in');
   server = await spawnServer();
   PORT = server.port;
   const back = new Client(); await back.open();

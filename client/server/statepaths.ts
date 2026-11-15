@@ -3,8 +3,8 @@
  * Everything this server writes and keeps — saved rooms, the account store,
  * playtest reports, the owner's card verdicts, the boot log — is RUNTIME STATE.
  * None of it is source, none of it is committed, and losing any of it loses
- * something no rebuild can recreate: accounts.json alone is every password
- * hash, every session token and everybody's stats.
+ * something no rebuild can recreate: the account store alone is every
+ * password hash, every session token and everybody's stats.
  *
  * It used to sit inside server/ next to the code, which made `git status` a
  * poor guide to what was safe to delete and made an 11 MB user-data file the
@@ -49,6 +49,11 @@ export const gamesDir = (): string => process.env['ALGO_GAMES_DIR'] ?? join(varD
 /** the account store: password hashes, session tokens, every player's stats */
 export const accountsFile = (): string =>
   process.env['ALGO_ACCOUNTS_FILE'] ?? join(varDir(), 'accounts', 'accounts.json');
+
+/** the match history, one JSON line per write of a row (accounts.ts) */
+export const historyFile = (): string => historyBeside(accountsFile());
+/** named after its account file, so every override of that file moves it too */
+export function historyBeside(accounts = accountsFile()): string { return accounts.replace(/(\.json)?$/, '.history.jsonl'); }
 
 /** playtest reports from the in-game 🐛 button, stamped with room + action */
 export const issuesFile = (): string => process.env['ALGO_ISSUES_FILE'] ?? join(varDir(), 'issues.jsonl');

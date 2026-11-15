@@ -259,3 +259,10 @@ tar -xzf ~/algomancy-backups/var-<stamp>.tar.gz -C /home/bena/Documents/Algomanc
 ```
 
 with all three services stopped first.
+
+The account store is two files in `var/accounts/`, restored together:
+`accounts.json` (accounts and sessions) and `accounts.history.jsonl` (the
+match history, one line per write of a game). To roll the game server back to
+a build that kept the history inside `accounts.json`, stop it and run
+`node client/server/export-legacy-store.ts` first: it writes the history back
+in and moves the `.jsonl` aside, so rolling forward again migrates it.

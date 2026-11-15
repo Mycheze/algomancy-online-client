@@ -41,7 +41,7 @@ const flag = (name: string): string | undefined => {
 const storeArg = flag('store');
 if (storeArg) process.env['ALGO_ACCOUNTS_FILE'] = storeArg;
 
-const { allAccounts, gameHistory, loadAccounts, rebuildProfiles, saveAccounts, accountsFilePath } =
+const { allAccounts, gameHistory, loadAccounts, rebuildProfiles, stashHistory, accountsFilePath } =
   await import('./accounts.ts');
 const { gamesDir } = await import('./statepaths.ts');
 
@@ -101,7 +101,7 @@ if (!write) {
 for (const h of chosen) {
   const g = gameHistory().find(x => x.code === h.code)!;
   g.users[h.seat] = null;
+  stashHistory(g);
 }
-rebuildProfiles();
-saveAccounts();
+rebuildProfiles();   // which saves
 console.log(`unbound ${chosen.length} seat(s) and rebuilt every profile`);

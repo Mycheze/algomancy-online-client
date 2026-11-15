@@ -18,6 +18,7 @@ import { mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'no
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { mintRoom, spawnServer } from './test-util.ts';
+import { historyBeside } from '../statepaths.ts';
 
 const SCRATCH = mkdtempSync(join(tmpdir(), 'algo-accounts-test-'));
 const STORE = join(SCRATCH, 'accounts.json');
@@ -468,7 +469,7 @@ console.log('\n[seeding: import saved games; BL-28 no name claims, the sign-up t
 {
   // a saved room in exactly the shape rooms.ts writes
   writeFileSync(join(SCRATCH, 'store-before.json'), readFileSync(STORE));
-  rmSync(STORE, { force: true }); rmSync(`${STORE}.bak`, { force: true });   // a fresh store, not a damaged one
+  for (const f of [STORE, historyBeside(STORE)]) { rmSync(f, { force: true }); rmSync(`${f}.bak`, { force: true }); }   // a fresh store, not a damaged one
   loadAccounts();
   eq(allAccounts().length, 0, 'starting from an empty store');
 
