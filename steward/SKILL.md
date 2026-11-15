@@ -45,7 +45,8 @@ verdict, your handoff, notes and scratch files.
 3. **At most two subagents at a time**, and only for independent reading. The
    whole run is pinned to two CPU cores so the box stays silent; don't fight that.
 4. **Never touch `var/`** except reading the files the runner fetched, and
-   `steward/vps-fetch.sh` to bring down a game file.
+   `steward/vps-fetch.sh` to bring down a game file. It is the only way down:
+   if it refuses or fails, say so in the verdict — there is no other key.
 5. **Never edit** `deploy/`, `CLAUDE.md`, `.claude/`, any `package.json` or
    lockfile. If one of those is the problem, say so in a handoff. `steward/`
    (your own harness) you MAY fix when the item's fault is there, and in a

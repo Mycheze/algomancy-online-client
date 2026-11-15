@@ -89,6 +89,9 @@ fenced() { # agent|gate [NAME=value …] cmd …
     r=$(readlink -f /etc/resolv.conf); [[ "$r" == /run/* ]] && b+=(--ro-bind-try "${r%/*}" "${r%/*}")
     b+=(--share-net --ro-bind "$REPO/.git/config" "$REPO/.git/config" --ro-bind-try "$REPO/.git/info" "$REPO/.git/info"
       --ro-bind-try "$REPO/.git/hooks" "$REPO/.git/hooks" --ro-bind "$STATE" "$STATE" --ro-bind "$LOGS" "$LOGS" --bind "$OUTBOX" "$OUTBOX")
+    # the read-only fetch key (steward/README.md): the VPS answers it with one allowed file and nothing else
+    [ -n "${STEWARD_FETCH_KEY:-}" ] && b+=(--ro-bind "$STEWARD_FETCH_KEY" "$STEWARD_FETCH_KEY"
+      --ro-bind "$STEWARD_FETCH_KEY.known_hosts" "$STEWARD_FETCH_KEY.known_hosts")
   # the gate: .git read-only but for worktrees/ (the replay tool's tests check a game out at its own commit)
   else mkdir -p "$REPO/.git/worktrees"; b+=(--ro-bind "$REPO/.git" "$REPO/.git" --bind "$REPO/.git/worktrees" "$REPO/.git/worktrees"); fi
   scrubbed "${e[@]}" TMPDIR=/tmp PYTHONPYCACHEPREFIX=/tmp/pyc DISABLE_AUTOUPDATER=1 bwrap "${b[@]}" -- "$@" 9>&-
@@ -662,6 +665,8 @@ work_one() {
   local rlog="$LOGS/run-$TS.jsonl" rc
   # the agent gets the one secret the claude binary authenticates with, and no other
   local -a auth=(); [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ] && auth=("CLAUDE_CODE_OAUTH_TOKEN=$CLAUDE_CODE_OAUTH_TOKEN")
+  # …and where the read-only fetch key is, when there is one (steward/vps-fetch.sh)
+  [ -n "${STEWARD_FETCH_KEY:-}" ] && auth+=("STEWARD_FETCH_KEY=$STEWARD_FETCH_KEY" ${STEWARD_FETCH_HOST:+"STEWARD_FETCH_HOST=$STEWARD_FETCH_HOST"})
   guard_before
   ( cd "$REPO" && fenced agent "${auth[@]}" GIT_SSH_COMMAND="$BIN/git-ssh-guard" STEWARD_STATE="$STATE" STEWARD_OUTBOX="$OUTBOX" \
       timeout "$cap" "$STEWARD_CLAUDE_BIN" -p "$prompt" --model "$STEWARD_MODEL" \

@@ -26,7 +26,7 @@ review is a few minutes of `steward/review.sh`.
 | `policy.mjs` | may a diff ship unseen? `node steward/policy.mjs <base> <head>` |
 | `hold.txt` | items the steward must leave alone (committed; edit freely) |
 | `review.sh` | **the owner's end**, on the laptop |
-| `vps-fetch.sh` | the agent's one read-only window onto the live server (game files) |
+| `vps-fetch.sh` | the agent's one read-only window onto the live server (game files); with `STEWARD_FETCH_KEY` it uses only the fetch key, answered by `deploy/steward-fetch.sh` |
 | `fetch-file.mjs` | downloads an image/PDF the owner sent — `discord.mjs` fetches every link in his messages on arrival; the agent runs it by hand for anything else (curl/wget stay denied) |
 | `retro.mjs` | the daily digest of the last day's runs, read off their own transcripts (denials, errors, loops, half-done) — the input to the `retro` item |
 | `claude-settings.json` | the agent's permissions: no push, ssh, rsync, curl, sudo, kill, full gate; Monitor/TaskStop for waiting on long commands (this Claude Code has no Grep tool: Bash grep). `git fetch` is not denied there (a denial threw away the whole command chain) — the runner's `GIT_SSH_COMMAND` guard fails it with a message. The runner adds `--add-dir` for `state/` and `logs/`. The skill lives in `steward/` because Claude Code write-protects `.claude/` whatever the settings allow (`.claude/skills/steward/SKILL.md` is a symlink; 2026-11-08) |
@@ -223,15 +223,27 @@ Done on 2026-11-03; kept here so it can be redone.
    ```bash
    sudo apt install -y bubblewrap && bwrap --ro-bind / / true && echo bwrap works
    STEWARD_SANDBOX=bwrap ~/algomancy-steward/repo/steward/test-runner.sh     # every scenario, fenced; "fence" alone is the proof
-   echo STEWARD_SANDBOX=bwrap >> ~/.config/algomancy-steward/env
+   # the read-only fetch key, kept OUTSIDE ~/.ssh (the fence hides ~/.ssh and checks that it does)
+   ssh-keygen -t ed25519 -N '' -C steward-fetch -f ~/algomancy-steward/fetch-key
+   ssh-keyscan -t ed25519 algomancy.online > ~/algomancy-steward/fetch-key.known_hosts
+   ssh-keygen -lf ~/algomancy-steward/fetch-key.known_hosts; ssh algomancy-vps ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub   # the same fingerprint
+   # once this change is deployed (the VPS checkout has deploy/steward-fetch.sh); again after any change to it
+   ssh algomancy-vps 'sudo install -m 755 -o root -g root ~/Documents/Algomancy/deploy/steward-fetch.sh /usr/local/bin/algomancy-steward-fetch'
+   echo "command=\"/usr/local/bin/algomancy-steward-fetch\",restrict $(cat ~/algomancy-steward/fetch-key.pub)" | ssh algomancy-vps 'cat >> ~/.ssh/authorized_keys'
+   K="-F /dev/null -i $HOME/algomancy-steward/fetch-key -o IdentitiesOnly=yes -o UserKnownHostsFile=$HOME/algomancy-steward/fetch-key.known_hosts"
+   ssh $K bena@algomancy.online var/issues.jsonl | tail -c 200      # a report row
+   ssh $K bena@algomancy.online var/accounts.json; ssh $K bena@algomancy.online   # both: steward-fetch: refusing
+   printf 'STEWARD_SANDBOX=bwrap\nSTEWARD_FETCH_KEY=%s/algomancy-steward/fetch-key\n' "$HOME" >> ~/.config/algomancy-steward/env
    ```
+   (`STEWARD_FETCH_HOST`, default `bena@algomancy.online`, if ssh to the VPS goes elsewhere.)
    Then `tail -f ~/algomancy-steward/logs/runner.log`. **A good tick** looks as
    before — `gate (master) EXIT 0`, `claude exited 0`, a normal verdict — and
    no `FENCE BROKEN`. **A failed one** says `FENCE BROKEN (agent|gate): bwrap: …`
    and `paused`, with the same line in the night log; a fence that runs but is
    too tight shows as `bwrap:` lines in `logs/run-*.err` or "Read-only file
    system" in `logs/run-*.jsonl`. **Rollback:** delete the `STEWARD_SANDBOX`
-   line and say **resume** in the night log. Known costs: claude no longer
+   line and say **resume** in the night log; the fetch key goes by deleting its
+   line from the VPS's `~/.ssh/authorized_keys`. Known costs: claude no longer
    updates itself inside the fence (`claude update` by hand), the gate's
    `/tmp` is RAM inside `MemoryMax=8G`, and the type-strip cache starts cold
    every gate.
@@ -278,6 +290,7 @@ Done on 2026-11-03; kept here so it can be redone.
   | `/tmp` | its own, empty | its own, empty |
   | processes, `/sys`, `/run/user` (the ssh agent, the session bus) | only its own · none · none | same |
   | network | yes (the Claude API) | **none** (loopback only) |
+  | the fetch key (below) | read, when set | — |
 
   The fence is checked at the start of every tick: a fence that cannot hide
   the config or `~/.ssh`, or cannot run node, git and claude, logs `FENCE
@@ -288,6 +301,15 @@ Done on 2026-11-03; kept here so it can be redone.
   deploy's build on the VPS) run master's code unfenced; and the guard
   (`fingerprint`) and the denied commands in `claude-settings.json` stay, as
   the second line.
+- **Game files come down through their own key.** `vps-fetch.sh` with
+  `STEWARD_FETCH_KEY` set uses only that key, which the VPS answers with
+  `deploy/steward-fetch.sh` (a forced command): one file from the allowed list
+  (games, challenge runs, the report journals) to stdout, nothing else — no
+  shell, no `accounts.json`, no `.env`, no link out of `var/`. The VPS runs a
+  root-owned copy in `/usr/local/bin`, not the checkout's, so no commit (the
+  steward's or one you approved) changes what the key can read until you
+  install it again; `deploy/` is protected besides. Unset, `vps-fetch.sh` uses
+  `scp` and `~/.ssh/config` as before — which inside the fence do not exist.
 - The worker keeps its state in `~/algomancy-steward/state`, outside the
   repo: `journal.jsonl` (append-only, one row per event, the agent's memory),
   `handoffs/`, `answers/`, `redgate/`, `outcomes/`, and the flags `paused`,

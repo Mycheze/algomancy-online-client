@@ -316,6 +316,11 @@ if run fence; then # STEWARD_SANDBOX=bwrap: the agent cannot reach the config, t
       || bad "fence: unfenced saw '${c:-nothing}'; fenced saw '${f:-nothing: it did not run}' → $(last_outcome "${r:-null}") $(grep 'FENCE BROKEN' "$T/logs/runner.log" | tail -1)"
     rm -f "$T/state/paused"; sed -i '/^STEWARD_TEST_CANARY=/d' "$T/env"
   fi
+  # …and the VPS's end of the fetch key sends an allowed file, and not accounts.json, even through a link
+  v="$T/vps/var"; rm -rf "$T/vps"; mkdir -p "$v/games" "$v/challenges"; echo '{"room":1}' > "$v/games/TEST.json"; echo secret > "$v/accounts.json"; ln -s ../accounts.json "$v/challenges/x.json"
+  fx() { SSH_ORIGINAL_COMMAND="$1" bash "$T/repo/deploy/steward-fetch.sh" "$T/vps" 2>/dev/null; }
+  [ "$(fx var/games/TEST.json)" = '{"room":1}' ] && [ -z "$(fx var/accounts.json)$(fx var/challenges/x.json)$(fx 'var/games/TEST.json; cat var/accounts.json')" ] \
+    && ok "the fetch key's forced command sends a game file, and nothing outside the list" || bad "steward-fetch.sh: $(fx var/accounts.json; fx var/challenges/x.json)"
 fi
 if run pause; then touch "$T/state/paused"; r=$(tick skip); [ -z "$r" ] && ok "paused → nothing runs" || bad "ran while paused: $r"; rm -f "$T/state/paused"; fi
 
