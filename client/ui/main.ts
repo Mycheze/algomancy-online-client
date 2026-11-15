@@ -141,6 +141,8 @@ import { questionById, questionUrl, stageQuestion } from './questions.ts';
 const QUESTION_ROOM = 'QUESTION';
 const asQuestion = (): boolean => replayActive() && NET?.room === QUESTION_ROOM;
 import { FakeSocket } from './fakesocket.ts';
+import * as Wire from '../shared/protocol.ts';
+import type { Building, ClientMsg, PlaybackFrame } from '../shared/protocol.ts';
 import { Harness } from '../engine/src/harness.ts';
 import * as dk from './decks.ts';
 import * as cb from './cards.ts';
@@ -228,94 +230,26 @@ let openSocket: (url: string) => WebSocket = url => new WebSocket(url);
  * empty placeholder that stands in before a game exists (see `NO_GAME`) */
 interface Backend { state: GameState; log: string[]; do(a: Action): void; }
 
-/** a formation the other seat is still building (server/rooms.ts
- * Formation): its columns by attacker column, its counterattack list and —
- * CR 606.4a — its LEFT side-blocks, `left[0]` the one just left of column 1 */
-interface Building { cols: EntityId[][]; send: EntityId[]; left?: EntityId[][] }
-
-/** one message off the socket. Named (it used to be inline on onMsg) because
- * CR D5.4 QUEUES the 'update' ones — see ui/pace.ts. */
-interface NetMsg {
-  t: string; seat?: Seat; view?: GameState; log?: string[]; legal?: Action[];
-  /** which server PROCESS answered — changes on every restart (see NetBackend.boot) */
-  boot?: string;
-  events?: EngineEvent[];
-  /** BL-21: the WHOLE event, not just its line. Since 2026-10-03 only a
-   * resource-step close carries it (the haste and deploy closes send `frames`),
-   * and nothing here reads it but the cast watch's honesty gate. */
-  reveal?: EngineEvent[];
-  peers?: [boolean, boolean]; msg?: string;
-  /** which hidden segment a reveal closes (server/main.ts sendReveal) */
-  step?: 'plan' | 'haste' | 'deploy';
-  /** 2026-10-03: the haste or deploy step that just closed, a board per step
-   * (server/view.ts playbackFrames) — played before this update lands */
-  frames?: { view: GameState; events: EngineEvent[]; kind: 'opp' | 'tail' }[];
-  /** set on the messages a playback is made of (never on the wire) */
+/** the wire (shared/protocol.ts), with the payloads this page reads named */
+type Waiting = { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; league?: true; drawn?: { mine: string; theirs: string }; match?: mt.MatchLobbyInfo };
+type ServerMsg = Wire.ServerMsg<{
+  me: acct.Me; gameOver: pg.GameOver; waiting: Waiting; clock: ClockSnap; scenario: scn.ScenarioInfo;
+  custom: lob.CustomRulesInfo; badge: SeatBadge; fix: amend.FixInfo; rewind: amend.RewindOption;
+  match: mt.MatchSummary; trio: lob.TrioReveal; queue: mm.QueueState;
+}>;
+type GameUpdate = Extract<ServerMsg, { t: 'update'; view: GameState }>;
+/** an update as CR D5.4's pacing queue holds it (ui/pace.ts), or a playback
+ * frame made from one. The fields below never ride the wire. */
+type QueuedUpdate = Omit<GameUpdate, 'peers'> & {
   playback?: Playback;
-  /** the update a server-sent playback ends on (never on the wire): applying
-   * it is what puts this seat back on the clock — not the first ordinary
-   * update applied, which may be an OLDER one the playback let out ahead of
-   * itself (2026-10-03 rig: that told the server "done" before frame 1) */
+  /** the update a server-sent playback ends on: applying it is what puts this
+   * seat back on the clock — not the first ordinary update applied, which may
+   * be an older one the playback let out ahead of itself */
   endsPlayback?: true;
-  /** the LAST message of any playback, a "watch again" included (never on
-   * the wire): while it is still queued the playback is still running, and
-   * an arrival must wait behind it. Frames alone could not say so — once the
-   * last frame was released only this was left, and the next arrival
-   * collapsed the queue onto it (2026-10-03: in Learn to Play the bot's own
-   * push, a moment after the frames, cut every playback off at frame 1). */
+  /** the LAST message of any playback, a "watch again" included: while it is
+   * still queued the playback is still running, and an arrival waits behind it */
   playbackTail?: true;
-  clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; league?: true; drawn?: { mine: string; theirs: string }; match?: mt.MatchLobbyInfo }; custom?: lob.CustomRulesInfo; names?: [string, string];
-  /** docs/22 §5.8: a Competitive match's public summary — every in-game push,
-   * `gameover`, and `{t:'match'}` (whose `room` is where the match went) */
-  match?: mt.MatchSummary; room?: string | null;
-  /** docs/22 §5.8 / CR D4.6: in a Competitive game, "you can undo now" */
-  ccUndo?: boolean;
-  /** present on every push of a single card duel */
-  single?: true;
-  trio?: lob.TrioReveal;
-  cols?: EntityId[][]; send?: EntityId[]; left?: EntityId[][]; building?: Building | null;
-  me?: acct.Me;
-  rematch?: [boolean, boolean];
-  /** CR D8.4: present only for a room the SERVER dealt with a scenario id */
-  scenario?: scn.ScenarioInfo;
-  /** CT-160: present only while the SERVER has STOPPED this game — a restart
-   * rebuilt it onto an engine that could not replay part of its log. The
-   * string is the reason, in the words to show the player. */
-  frozen?: string;
-  /** BL-29: how many people are watching this room (absent when nobody is) */
-  watchers?: number;
-  /** BL-17: each seat's judge/owner badge, on every game push (absent when
-   * neither player has one — server/main.ts seatBadges) */
-  badges?: [SeatBadge | null, SeatBadge | null];
-  /**
-   * CR D2.1 — THIS CONNECTION ACTS FOR BOTH SEATS.
-   *
-   * One screen, both hands, no redaction, and either seat may be played. The
-   * real server never sends it and cannot: a room has two sockets and each is
-   * one seat. It is sent by a server running INSIDE the page that is serving
-   * both halves — today that is the test harness, which is the only caller
-   * that has ever needed it.
-   *
-   * It replaces asking `!NET`. That question used to mean "the hotseat client",
-   * which was true only because the hotseat client was the one thing that was
-   * not a NetBackend; it was never what the code wanted to know. Per CR D2.1b,
-   * the engine knows that a decision belongs to a SEAT and that the seat not being
-   * asked may carry on deploying, and every branch that reads this is asking
-   * whether there is a second seat here to carry on WITH.
-   */
-  both?: boolean;
-  /** BL-46: present on every push of a room that takes agreed fixes (the open
-   * proposal rides a join and an `amend` message, never a paced update) */
-  fix?: amend.FixInfo | null;
-  /** BL-46: an `amend` message — what just happened to the proposal */
-  how?: string;
-  /** BL-46: a 'joined' sent after an agreed rewind cut the log */
-  rewound?: true;
-  /** BL-46: the answer to the fix dialog's `options` */
-  rewinds?: amend.RewindOption[]; editWhy?: string | null; why?: string;
-  /** BL-48: a `dispute` message — which seats have disputed this game */
-  disputed?: [boolean, boolean];
-}
+};
 
 /** Remote backend: sends intents over WS, renders from server-pushed redacted views.
  * The server is authoritative — do() never mutates local state; a server 'update'
@@ -346,7 +280,7 @@ class NetBackend implements Backend {
    * read as final (docs/23-ui-inventory/05 §18.19, pages/connecting.ts). */
   retrying = false;
   /** constructed lobby: non-null while the room waits for both decks */
-  waiting: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; league?: true; drawn?: { mine: string; theirs: string }; match?: mt.MatchLobbyInfo } | null = null;
+  waiting: Waiting | null = null;
   /**
    * docs/22 — A COMPETITIVE MATCH ROOM. Known from the link (`cc=1` on a match
    * link, `bo` + `ccdeck` on the creator's) or from the first push that says
@@ -407,7 +341,7 @@ class NetBackend implements Backend {
    * queue only ever holds updates the player cannot act on, and that an
    * un-holdable update FLUSHES everything ahead of it rather than jumping it.
    */
-  private paced: PaceQueue<NetMsg> = emptyPace();
+  private paced: PaceQueue<QueuedUpdate> = emptyPace();
   private paceTimer: ReturnType<typeof setTimeout> | null = null;
   /**
    * An intent of ours is on the wire, so the next update is (very probably)
@@ -454,7 +388,7 @@ class NetBackend implements Backend {
    * belt and braces on top of that, not the fence.
    */
   spectating = false;
-  /** CR D2.1: this connection acts for BOTH seats — see NetMsg.both. */
+  /** CR D2.1: this connection acts for BOTH seats — see `joined`'s `both`. */
   both = false;
   /** BL-29: how many people are watching this room (0 when nobody is) */
   watchers = 0;
@@ -490,8 +424,8 @@ class NetBackend implements Backend {
       if (this.spectating) this.sendWatch(); else this.sendJoin();
     };
     this.ws.onmessage = ev => {
-      let m: NetMsg;
-      try { m = JSON.parse(String(ev.data)) as NetMsg; } catch { return; }
+      let m: ServerMsg;
+      try { m = JSON.parse(String(ev.data)) as ServerMsg; } catch { return; }
       this.onMsg(m);
     };
     this.ws.onclose = () => {
@@ -518,7 +452,15 @@ class NetBackend implements Backend {
   sendWatch(): void {
     // docs/22 §2.6: a Competitive match room is watched only by a signed-in
     // account that is not one of its players — the token says who is asking
-    this.ws.send(JSON.stringify({ t: 'watch', room: this.room, ...(acct.token() ? { token: acct.token() } : {}) }));
+    const token = acct.token();
+    this.sendMsg({ t: 'watch', room: this.room, ...(token ? { token } : {}) });
+  }
+  /** every message to the room goes through here; `ifOpen` drops it, rather
+   * than sending, while the socket is not open */
+  sendMsg(msg: ClientMsg, ifOpen = false): boolean {
+    if (ifOpen && this.ws.readyState !== WebSocket.OPEN) return false;
+    Wire.sendMsg(this.ws, msg);
+    return true;
   }
   /** (re-)join — also called from the waiting screen once a deck is picked.
    * mode + trio only matter when this join creates the room; the selected
@@ -530,12 +472,14 @@ class NetBackend implements Backend {
   sendJoin(pick = false): void {
     const name = (localStorage.getItem('algoName') ?? '').trim();
     const deck = savedDeck();
-    this.ws.send(JSON.stringify({
+    const token = acct.token();
+    const card = sc.chosen();
+    this.sendMsg({
       t: 'join', room: this.room, seat: this.wantSeat, name,
       ...(pick ? { pick: true } : {}),
       // accounts: the session token binds this seat to an account server-side,
       // which is what makes the game count toward your stats
-      ...(acct.token() ? { token: acct.token() } : {}),
+      ...(token ? { token } : {}),
       mode: this.mode, els: this.els,
       ...(this.linkRules === 'competitive' && this.mode === 'draft' ? { rules: 'competitive' } : {}),
       // BL-26: rides the join exactly as `mode` and `els` do, and is ignored
@@ -564,14 +508,9 @@ class NetBackend implements Backend {
       ...(this.cc
         ? { ...(this.ccBestOf ? { cc: { bestOf: this.ccBestOf, ...(this.linkRules === 'casual' ? { casual: true } : {}) } } : {}), ...(this.ccDeck ? { deckId: this.ccDeck } : {}) }
         : this.single
-        ? (this.singleArmed && sc.chosen() ? { single: sc.chosen() } : {})
+        ? (this.singleArmed && card ? { single: card } : {})
         : deck ? { deck: deck.cards, ...(deck.id ? { deckId: deck.id } : {}) } : {}),
-    }));
-  }
-  /** docs/22 §5.8: a between-games request (`{t:'cc', op, …}`) or a match concede */
-  ccSend(msg: Record<string, unknown>): void {
-    if (this.ws.readyState !== WebSocket.OPEN) return;
-    this.ws.send(JSON.stringify(msg));
+    });
   }
   /**
    * CR D2.4 — automatic intents this client has sent that the server has not
@@ -610,7 +549,7 @@ class NetBackend implements Backend {
     // server recognises this as the same answer arriving late and drops it,
     // rather than landing it on a window this client has not been shown yet.
     const at = a.type === 'passPriority' && this.state ? { at: this.state.actionCount } : {};
-    this.ws.send(JSON.stringify({ t: 'action', action: a, ...at }));
+    this.sendMsg({ t: 'action', action: a, ...at });
   }
   /** [59] one intent per authoritative state — see UiState.sentFor */
   private latch(): void { ui.sentFor = this.state?.actionCount ?? -1; }
@@ -618,16 +557,17 @@ class NetBackend implements Backend {
   sendBuilding(cols: EntityId[][], send: EntityId[], left: EntityId[][] = []): void {
     // CR 606.4a: `left` only when there is one, so every other payload is the
     // one it always was
-    const payload = JSON.stringify({ t: 'building', cols, send, ...(left.length ? { left } : {}) });
+    const msg: ClientMsg = { t: 'building', cols, send, ...(left.length ? { left } : {}) };
+    const payload = JSON.stringify(msg);
     if (payload === this.sentBuilding || this.ws.readyState !== WebSocket.OPEN) return;
     this.sentBuilding = payload;
-    this.ws.send(payload);
+    this.sendMsg(msg);
   }
   undo(): void {
     this.latch(); this.mineInFlight = true;
     // CR D2.4a: an undo is always the player's own — a refusal of it is theirs
     this.autoOutstanding = 0;
-    this.ws.send(JSON.stringify({ t: 'undo' }));
+    this.sendMsg({ t: 'undo' });
   }
 
   // ── CR D5.4/CT-28: the drain ───────────────────────────────────────────
@@ -664,7 +604,7 @@ class NetBackend implements Backend {
    * that arrives meanwhile waits behind it like any other (onMsg). */
   watchAgain(): void {
     if (!lastPlayback || !this.state || this.paced.queue.length) return;
-    const back: NetMsg = { t: 'update', view: this.state, legal: this.legal, events: [] };
+    const back: QueuedUpdate = { t: 'update', view: this.state, legal: this.legal, events: [] };
     const steps = playbackSteps(back, lastPlayback.frames, lastPlayback.step, true);
     const gaps = playbackGaps(steps);
     // back to the board before the step first, in the same instant as frame 1
@@ -706,22 +646,16 @@ class NetBackend implements Backend {
       this.pumpPace();
     }, Math.max(0, at - Date.now()));
   }
-  /** draft lobby: change the method, submit, lock or unlock (server/trio.ts) */
-  lobby(msg: Record<string, unknown>): void {
-    this.ws.send(JSON.stringify({ t: 'lobby', ...msg }));
-  }
   /** BL-18: tell the server this seat's "nothing may act for me" switch, so
    * its `drainForced` stops stepping an empty board along on their behalf. */
   fullControl(on: boolean): void {
-    if (this.ws.readyState !== WebSocket.OPEN) return;
-    this.ws.send(JSON.stringify({ t: 'fullcontrol', on }));
+    this.sendMsg({ t: 'fullcontrol', on }, true);
   }
   /** CT-182: the 📝 Report dialog opened (or closed) on this screen — the
    * server's copy of a standing pass holds while it is open. Soft state, not
    * an action: nothing it does can reach the log or a replay. */
   reportHold(on: boolean): void {
-    if (this.ws.readyState !== WebSocket.OPEN) return;
-    this.ws.send(JSON.stringify({ t: 'reporthold', on }));
+    this.sendMsg({ t: 'reporthold', on }, true);
   }
   /**
    * Tell the server this seat's standing pass (Pass all / Pass through stack),
@@ -734,11 +668,12 @@ class NetBackend implements Backend {
    * forgets it on both sides, so `joined` resets the memory.
    */
   passAll(arm: { mode: PassMode; phase: Phase; items: readonly EntityId[]; opts: readonly string[] } | null): void {
-    const payload = JSON.stringify(arm ? { t: 'passall', on: true, ...arm } : { t: 'passall', on: false });
+    const msg: ClientMsg = arm ? { t: 'passall', on: true, ...arm } : { t: 'passall', on: false };
+    const payload = JSON.stringify(msg);
     const same = arm ? payload === this.sentPassAll : this.sentPassAll === '';
     if (same || this.ws.readyState !== WebSocket.OPEN) return;
     this.sentPassAll = arm ? payload : '';
-    this.ws.send(payload);
+    this.sendMsg(msg);
   }
   /**
    * Report #323 — tell the server this seat's auto-pass toggle and yields, so
@@ -750,28 +685,17 @@ class NetBackend implements Backend {
    * forgets it on both sides, so `joined` resets the memory.
    */
   autoPass(pref: boolean, yields: readonly EntityId[]): void {
-    const on = pref || yields.length > 0;
-    const payload = on ? JSON.stringify({ t: 'autopass', pref, yields: [...yields].sort((a, b) => a - b) }) : '';
+    const msg: ClientMsg = { t: 'autopass', pref, yields: [...yields].sort((a, b) => a - b) };
+    const payload = pref || yields.length > 0 ? JSON.stringify(msg) : '';
     if (payload === this.sentAutoPass || this.ws.readyState !== WebSocket.OPEN) return;
     this.sentAutoPass = payload;
-    this.ws.send(payload || JSON.stringify({ t: 'autopass', pref: false, yields: [] }));
-  }
-  /** post-game: ask for (or take back) a rematch */
-  rematch(msg: Record<string, unknown>): void {
-    this.ws.send(JSON.stringify({ t: 'rematch', ...msg }));
+    this.sendMsg(msg);
   }
   /** BL-48: dispute the game that just ended — false when the socket is not open */
   dispute(note: string): boolean {
-    if (this.ws.readyState !== WebSocket.OPEN) return false;
-    this.ws.send(JSON.stringify({ t: 'dispute', note }));
-    return true;
+    return this.sendMsg({ t: 'dispute', note }, true);
   }
-  /** BL-46: propose, answer or withdraw an agreed fix (ui/amend.ts) */
-  amend(msg: Record<string, unknown>): void {
-    if (this.ws.readyState !== WebSocket.OPEN) return;
-    this.ws.send(JSON.stringify({ t: 'amend', ...msg }));
-  }
-  private onMsg(m: NetMsg): void {
+  private onMsg(m: ServerMsg): void {
     this.retrying = false;   // the server answered: whatever uiError says next is its word
     // the rejoin was answered: only an 'error' BEFORE this is its refusal (below)
     if (m.t === 'joined' || m.t === 'watching') this.rejoining = false;
@@ -779,7 +703,7 @@ class NetBackend implements Backend {
     // rematch state as the two of you make up your minds
     if (m.t === 'gameover') {
       this.flushPace();   // CR D5.4b: nothing is left waiting behind the result
-      postGame = m as unknown as pg.GameOver;
+      postGame = m;
       // BL-28: a signed-out seat's sign-up ticket outlives a refresh of this
       // screen — remembered when it arrives, put back when a rejoin's payload
       // (which never carries one) comes in instead
@@ -795,7 +719,7 @@ class NetBackend implements Backend {
     }
     if (m.t === 'rematch') {
       if (postGame) {
-        postGame = { ...postGame, rematch: m.rematch ?? postGame.rematch, rematchRoom: (m as { room?: string }).room ?? null };
+        postGame = { ...postGame, rematch: m.rematch ?? postGame.rematch, rematchRoom: m.room ?? null };
         // both said yes: the server has already built the room
         if (postGame.rematchRoom) { pg.goToRematch(postGame.rematchRoom, postGame); return; }
         render();
@@ -815,8 +739,10 @@ class NetBackend implements Backend {
     // one of its rooms; `{t:'match'}` says where it went when a game ended
     // (the post-game screen's Continue) or that it is over while this page
     // waited between games.
-    if (m.match) this.match = m.match;
-    if (m.waiting?.match) { this.cc = true; mt.onLobby(m.waiting.match); }
+    if ('match' in m && m.match) this.match = m.match;
+    // a seat's lobby, before the deal
+    const lobby = (m.t === 'joined' || m.t === 'update') && m.waiting ? m.waiting : null;
+    if (lobby?.match) { this.cc = true; mt.onLobby(lobby.match); }
     if (m.t === 'match') {
       if (postGame) postGame = { ...postGame, ...(m.match ? { match: m.match } : {}) };
       if (this.waiting && !m.room && m.match) this.matchEnded = m.match;
@@ -838,8 +764,8 @@ class NetBackend implements Backend {
       render();
       return;
     }
-    if (m.clock) clockSnap = { ...m.clock, rx: Date.now() };
-    if (m.names) this.names = m.names;
+    if ('clock' in m && m.clock) clockSnap = { ...m.clock, rx: Date.now() };
+    if ('names' in m && m.names) this.names = m.names;
     // BL-46 — the agreed-fix channel. Not paced: a proposal is not game news
     // the table has to read in order, and its bar is answered in seconds.
     if (m.t === 'amend') { amend.setFixInfo(m.fix ?? null, m.how); render(); return; }
@@ -860,33 +786,34 @@ class NetBackend implements Backend {
     // is already in the room, whose opponent's seat just turned connected. Said
     // to a background tab (ui/tabalert.ts); the first join's own peers are not
     // an arrival, which is what `this.joined` rules out.
-    if (m.peers && this.joined && m.t !== 'watching' && !this.peers[other(this.seat)] && m.peers[other(this.seat)]) {
+    const peers = 'peers' in m ? m.peers : undefined;
+    if (peers && this.joined && m.t !== 'watching' && !this.peers[other(this.seat)] && peers[other(this.seat)]) {
       alertTab('Your opponent is here');
     }
-    if (m.peers) this.peers = m.peers;
+    if (peers) this.peers = peers;
     // BL-29: same reasoning as `peers` above — an audience arriving or leaving
     // is not game news and must not be held behind CR D5.4b's pacing gate. Read as
     // "the field is absent ⇒ nobody", because the server omits it rather than
     // sending a zero (see baseView).
-    if (m.t === 'update' || m.t === 'joined' || m.t === 'watching') this.watchers = m.watchers ?? 0;
+    if (m.t === 'update' || m.t === 'joined' || m.t === 'watching') this.watchers = ('watchers' in m ? m.watchers : undefined) ?? 0;
     // BL-17: the same "absent ⇒ nobody" reading, for the same reason
-    if (m.t === 'update' || m.t === 'joined' || m.t === 'watching') this.badges = m.badges ?? [null, null];
+    if (m.t === 'update' || m.t === 'joined' || m.t === 'watching') this.badges = ('badges' in m ? m.badges : undefined) ?? [null, null];
     // CT-160: a fact about the ROOM, not about the update it rode on — so it
     // is set here rather than in applyUpdate, which both 'joined' and 'update'
     // reach by different routes. Only ever set: a room does not un-freeze
     // while the player is sitting in it.
-    if (m.frozen) this.frozen = m.frozen;
+    if ('frozen' in m && m.frozen) this.frozen = m.frozen;
     // every scenario push carries the whole brief (the action index and
     // the opponent's presence move), so this is a set rather than a set-once.
-    if (m.scenario) scn.setScenario(m.scenario);
+    if ('scenario' in m && m.scenario) scn.setScenario(m.scenario);
     // BL-43: a custom room's rules ride every push (and the waiting payload before the deal)
-    if (m.custom) this.custom = m.custom;
-    else if (m.waiting?.custom) this.custom = m.waiting.custom;
+    if ('custom' in m && m.custom) this.custom = m.custom;
+    else if (lobby?.custom) this.custom = lobby.custom;
     // likewise the single-card flag
-    if (m.single || m.waiting?.single) this.single = true;
+    if (('single' in m && m.single) || lobby?.single) this.single = true;
     // …and a DRAW cleared both cards: this seat has to choose again, so a
     // reconnect must not quietly resubmit the card that just drew
-    if (m.waiting?.drawn && !m.waiting.have[this.seat]) this.singleArmed = false;
+    if (lobby?.drawn && !lobby.have[this.seat]) this.singleArmed = false;
     // BL-29: the spectator's whole payload — the unredacted board and the full
     // log, arriving on its own message type so nothing in the seat paths has
     // to grow a branch. `legal` is emptied HERE as well as being absent on the
@@ -1051,7 +978,7 @@ class NetBackend implements Backend {
   /** One queued authoritative update, folded in. Everything here used to run
    * inline in onMsg; the pacing queue (CR D5.4) only moved WHEN it runs, never what it does. The
    * caller renders — a flush folds several in and paints once. */
-  private applyUpdate(m: NetMsg): void {
+  private applyUpdate(m: QueuedUpdate): void {
     // 2026-10-03 — ONE FRAME OF A PLAYBACK: the board as one of the
     // opponent's moves (or one end-of-turn resolution) left it. Nothing to act
     // on (`legal` is empty for its whole length), and none of the bookkeeping
@@ -1092,7 +1019,7 @@ class NetBackend implements Backend {
     // decisions". A "watch again" never set this — that time is the player's.
     if (m.endsPlayback && this.serverPlayback) {
       this.serverPlayback = false;
-      if (this.ws?.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify({ t: 'playbackdone' }));
+      if (this.ws) this.sendMsg({ t: 'playbackdone' }, true);
     }
     // CT-179: an update with no view is a server bug (server/seatmsg.ts builds
     // every one, and a view-less one only ever meant the lobby, which never
@@ -1488,7 +1415,7 @@ interface Playback {
 let playbackNow: Playback | null = null;
 /** the last playback, kept for "watch again" until the turn moves on */
 let lastPlayback: {
-  frames: NonNullable<NetMsg['frames']>; step: 'haste' | 'deploy'; turn: number;
+  frames: PlaybackFrame[]; step: 'haste' | 'deploy'; turn: number;
   /** the board as it stood before the step closed — a "watch again" starts
    * there, or its first frame would be told against a board that already has it */
   before: GameState | null;
@@ -1497,10 +1424,10 @@ let lastPlayback: {
 /** A playback as pace-queue messages: one per frame (no legal actions, the
  * board is not the player's to touch), then `last` — the real update, or for
  * a "watch again" the board as it stood when the button was pressed. */
-function playbackSteps(last: NetMsg, frames: NonNullable<NetMsg['frames']>, step: 'haste' | 'deploy', replay: boolean): NetMsg[] {
+function playbackSteps(last: QueuedUpdate, frames: PlaybackFrame[], step: 'haste' | 'deploy', replay: boolean): QueuedUpdate[] {
   const n = frames.length;
   return [
-    ...frames.map((f, i): NetMsg => ({
+    ...frames.map((f, i): QueuedUpdate => ({
       t: 'update', view: f.view, events: f.events, legal: [],
       playback: { step, kind: f.kind, i: i + 1, n, caption: playbackCaption(f.events, f.view), ...(replay ? { replay: true as const } : {}) },
     })),
@@ -1513,14 +1440,14 @@ function playbackSteps(last: NetMsg, frames: NonNullable<NetMsg['frames']>, step
  * update a longer pause (report #193) — all of it ui/pace.ts playbackGapsOf,
  * where a test can reach it. Live, watch-again and Learn to Play all come
  * through here. */
-function playbackGaps(steps: readonly NetMsg[]): number[] {
+function playbackGaps(steps: readonly QueuedUpdate[]): number[] {
   return playbackGapsOf(steps.map(m => flashBatches(m.events ?? [])));
 }
 
 /** Report #198: where the playback waits for Space / Enter / Continue — the
  * end of the opponent's moves and the end of the end of turn (ui/pace.ts
  * playbackStopsOf). Live, watch-again and Learn to Play alike. */
-function playbackStops(steps: readonly NetMsg[]): number[] {
+function playbackStops(steps: readonly QueuedUpdate[]): number[] {
   return playbackStopsOf(steps.map(m => m.playback?.kind));
 }
 
@@ -10974,7 +10901,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   erasedclose: () => { erasedView = null; },
   concedeno: () => { concedeAsk = null; concedeMatchAsk = false; },
   // docs/22 §5.5: the match, through the socket (server/match.ts concedeMatch)
-  concedematchyes: () => { concedeAsk = null; concedeMatchAsk = false; NET?.ccSend({ t: 'concedeMatch' }); },
+  concedematchyes: () => { concedeAsk = null; concedeMatchAsk = false; NET?.sendMsg({ t: 'concedeMatch' }, true); },
   concedeyes: () => {
     const seat = concedeAsk;
     concedeAsk = null;
@@ -11066,7 +10993,7 @@ function matchActions(): mt.MatchActions {
   return {
     lobby: () => NET?.waiting?.match ?? null,
     seat: () => NET?.seat ?? 0,
-    send: msg => NET?.ccSend(msg),
+    send: msg => NET?.sendMsg(msg, true),
     // CT-518: `pick` — only this button registers a deck into a match room
     register: id => { if (NET) { NET.ccDeck = id; NET.sendJoin(true); } },
     decks: () => (acct.token() ? dk.competitiveDecks() : null),
@@ -11121,7 +11048,7 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   // and the post-game screen everything prefixed pg-
   if (postGame && pg.handlePostGameButton(btn, {
     over: postGame,
-    send: msg => NET!.rematch(msg),
+    send: msg => NET!.sendMsg(msg),
     rerender: render,
     dismiss: () => { postGameHidden = true; render(); },
     dispute: () => openDispute({ send: note => NET?.dispute(note) ?? false }),
@@ -11131,7 +11058,7 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   // and the draft lobby everything prefixed lobby-
   if (NET?.waiting?.trio && lob.handleLobbyButton(btn, {
     lobby: NET.waiting.trio,
-    send: msg => NET!.lobby(msg),
+    send: msg => NET!.sendMsg(msg),
     rerender: renderWaiting,
   })) return;
   const b = btn.dataset['btn'];
@@ -12383,7 +12310,7 @@ mt.installCountdown();
 // BL-46: the agreed-fix dialog and the bar the other seat answers on — a layer
 // of its own beside #app, like the report form (ui/amend.ts)
 amend.installAmend({
-  send: msg => NET?.amend(msg),
+  send: msg => NET?.sendMsg(msg, true),
   view: () => (NET && inGame && NET.joined && !NET.waiting ? { state: h.state, seat: NET.seat, names: NET.names } : null),
   openChanged: reportOpenChanged,
   proposalChanged: () => { if (autoPassTimer !== null) { cancelAutoPass(); ui.autoAt = -1; } },

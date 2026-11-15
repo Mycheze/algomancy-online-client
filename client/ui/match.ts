@@ -30,6 +30,7 @@
  */
 import { checkSwap, type MatchConfig } from '../engine/src/matchdeck.ts';
 import type { Seat } from '../engine/src/types.ts';
+import type { ClientMsg } from '../shared/protocol.ts';
 import type { DeckPile } from './deckarrange.ts';
 import { addDragProvider, type DragPlan, type DragProvider } from './drag.ts';
 import { installPressZoom } from './presszoom.ts';
@@ -310,7 +311,7 @@ export interface MatchActions {
   lobby(): MatchLobbyInfo | null;
   seat(): Seat;
   /** a `{t:'cc', …}` (or `{t:'concedeMatch'}`) on the room's socket */
-  send(msg: Record<string, unknown>): void;
+  send(msg: ClientMsg): void;
   /** game 1: register this deck (a join carrying its id) */
   register(deckId: string): void;
   decks(): CcDeck[] | null;

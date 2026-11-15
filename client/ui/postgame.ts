@@ -17,6 +17,7 @@
 import { esc } from './util.ts';
 import { gameElementsHtml } from './account.ts';
 import { matchLink, type MatchSummary } from './match.ts';
+import type { ClientMsg } from '../shared/protocol.ts';
 
 /** NB: the wire carries more fields than the client reads (e.g. a per-seat
  * `won` — this screen reads GameOver.winner instead) — only what the UI
@@ -149,8 +150,7 @@ export function elementsLine(o: Pick<GameOver, 'seat' | 'els' | 'sides'>): strin
 
 export interface PostGameActions {
   over: GameOver;
-  /** send a `{t:'rematch', …}` message */
-  send: (msg: Record<string, unknown>) => void;
+  send: (msg: ClientMsg) => void;
   rerender: () => void;
   /** hide the overlay without leaving the room */
   dismiss: () => void;
@@ -165,8 +165,8 @@ export function handlePostGameButton(btn: HTMLElement, a: PostGameActions): bool
     // BL-01: the queue lives on the home screen, so this is a navigation and
     // not a message. It was `disabled` from the day this screen was built.
     case 'pg-queue': location.href = `${location.pathname}?queue=1`; return true;
-    case 'pg-rematch': a.send({ want: true }); return true;
-    case 'pg-rematch-cancel': a.send({ want: false }); return true;
+    case 'pg-rematch': a.send({ t: 'rematch', want: true }); return true;
+    case 'pg-rematch-cancel': a.send({ t: 'rematch', want: false }); return true;
     case 'pg-goto-rematch': goToRematch(btn.dataset['room'] ?? '', a.over); return true;
     // docs/22 §5.5: on to the match's next game, same seat
     case 'pg-continue': if (btn.dataset['room']) location.search = matchLink(btn.dataset['room'], a.over.seat); return true;

@@ -1,7 +1,7 @@
 /* CUBE DRAFT EVENTS — every shared type (docs/25-cube-draft.md is the contract).
  *
- * The server's event record (`CubeEvent`), what one viewer is shown (`CubeView`), and the socket
- * messages. The UI imports this file TYPE-ONLY; nothing here may carry runtime code.
+ * The server's event record (`CubeEvent`) and what one viewer is shown (`CubeView`); the socket
+ * messages are in shared/protocol.ts. The UI imports this file TYPE-ONLY; nothing here may carry runtime code.
  *
  * Time is always epoch ms. The view carries absolute deadlines plus the server's `now`, and the client
  * counts down itself — the server never pushes per-second ticks.
@@ -263,17 +263,3 @@ export interface CubeView {
   myMatch: CubeMatchView | null;
   error?: string;
 }
-
-// ── the socket ───────────────────────────────────────────────────────────────
-
-export type CubeClientMsg =
-  | { t: 'cube'; op: 'sub'; code: string; token: string | null }
-  | { t: 'cube'; op: 'unsub' }
-  | { t: 'cube'; op: 'reserve'; card: string }
-  | { t: 'cube'; op: 'pick'; card: string };
-
-export type CubeServerMsg =
-  | { t: 'cube'; view: CubeView }
-  | { t: 'cube'; error: string }
-  /** a pairing including me was posted / exhibition found me an opponent */
-  | { t: 'cube'; matched: CubeMatchView };

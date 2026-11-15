@@ -146,9 +146,9 @@ test('§7 the title flashes the reason, and the three moments that want you rais
   assert.match(sound, /alertTab\('Your move'\)/, 'being asked to act no longer flashes the tab');
   assert.match(MAIN, /if \(this\.waiting\) alertTab\(/, 'the room filling up no longer flashes the tab');
   // the opponent arriving is read where `peers` is actually applied — onMsg copies
-  // m.peers before any branch runs, so a comparison further down sees no change
-  const peersAt = MAIN.indexOf('if (m.peers) this.peers = m.peers;');
-  assert.ok(peersAt > 0, 'onMsg no longer applies m.peers in one place — re-find where the opponent arrives');
+  // the peers before any branch runs, so a comparison further down sees no change
+  const peersAt = MAIN.indexOf('if (peers) this.peers = peers;');
+  assert.ok(peersAt > 0, 'onMsg no longer applies the peers in one place — re-find where the opponent arrives');
   assert.match(MAIN.slice(peersAt - 400, peersAt), /alertTab\('Your opponent is here'\)/,
     'the opponent connecting no longer flashes the tab');
 });

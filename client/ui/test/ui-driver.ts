@@ -700,7 +700,7 @@ export interface Client {
   join(state: GameState, seat: Seat, legal?: Action[]): string;
   /** a later authoritative state, the way a real action's echo arrives */
   update(state: GameState, legal?: Action[], extra?: Record<string, unknown>): string;
-  /** any raw NetMsg — for the shapes `join`/`update` do not cover */
+  /** any raw server message — for the shapes `join`/`update` do not cover */
   push(msg: Record<string, unknown>): string;
   /** click the element carrying these data attributes, through the client's
    * own listener and its own handler. Fails loudly if it is not on screen. */

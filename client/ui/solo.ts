@@ -46,6 +46,7 @@ import { lastSeen, SEEN_REFUSAL, seenBy, type Seen } from '../server/seen.ts';
 import { fallbackMove, type BotPolicy } from './bot.ts';
 // the socket half moved out when BL-38's replay viewer became its second user
 import { FakeSocket } from './fakesocket.ts';
+import type { ClientMsg, ServerMsg } from '../shared/protocol.ts';
 
 export const LEARNER: Seat = 0;
 export const BOT: Seat = 1;
@@ -258,7 +259,7 @@ export class SoloServer {
    * happened and `always` is not set. (An action that emits no line still moves
    * the state — a pass hands priority on — so the actor is always answered, as
    * the server always answers.) */
-  private takeUpdate(always = false): Record<string, unknown> | null {
+  private takeUpdate(always = false): ServerMsg | null {
     if (!always && !this.fresh.length && !this.revealed.length) return null;
     const held = new Set(this.held);
     const revealed = new Set(this.revealed);
@@ -268,12 +269,12 @@ export class SoloServer {
     const pb = this.playback && this.playback.step !== 'plan'
       ? playbackFrames({ seat: LEARNER, held: this.playback.held, tail, close: this.playback.close, redact: evs => this.redact(evs) })
       : null;
-    const msg: Record<string, unknown> = pb
-      ? { t: 'update', view: this.view(), legal: this.legal(), peers: [true, true], step: this.playback!.step, frames: pb.frames, events: pb.rest }
+    const msg: ServerMsg = pb
+      ? { t: 'update', view: this.view(), legal: this.legal(), peers: [true, true], step: this.playback!.step!, frames: pb.frames, events: pb.rest }
       : {
         t: 'update', view: this.view(), legal: this.legal(), peers: [true, true],
         events: this.redact([...this.revealed, ...tail]),
-        ...(this.revealed.length ? { reveal: this.redact(this.revealed), step: this.revealStep } : {}),
+        ...(this.revealed.length ? { reveal: this.redact(this.revealed), step: this.revealStep! } : {}),
       };
     this.fresh = []; this.revealed = []; this.revealStep = null; this.playback = null;
     return msg;
@@ -287,24 +288,32 @@ export class SoloServer {
     return this.sock;
   }
 
-  /** a message from the client (the NetBackend protocol's client half) */
+  /** A message from the client. Every kind is named here, answered or not,
+   * so a new one does not compile until this room says what it does. */
   receive(raw: string): void {
-    let m: { t?: string; action?: Action; on?: unknown };
-    try { m = JSON.parse(raw) as typeof m; } catch { return; }
-    if (m.t === 'join' || m.t === 'fullcontrol') this.fullControl = m.on === true;
-    if (m.t === 'fullcontrol') return;
-    if (m.t === 'join') {
-      this.settle();
-      this.fresh = []; this.revealed = []; this.revealStep = null; this.playback = null;
-      this.push({
-        t: 'joined', seat: LEARNER, view: this.view(), log: this.log(), legal: this.legal(),
-        peers: [true, true], names: this.deal.names,
-      });
-      return;
+    let m: ClientMsg;
+    try { m = JSON.parse(raw) as ClientMsg; } catch { return; }
+    switch (m.t) {
+      case 'join':
+        this.fullControl = m.on === true;
+        this.settle();
+        this.fresh = []; this.revealed = []; this.revealStep = null; this.playback = null;
+        this.push({
+          t: 'joined', seat: LEARNER, view: this.view(), log: this.log(), legal: this.legal(),
+          peers: [true, true], names: this.deal.names,
+        });
+        return;
+      case 'fullcontrol': this.fullControl = m.on === true; return;
+      case 'action': if (m.action) this.act(m.action); return;
+      case 'undo': return this.undo();
+      // unanswered, as the client expects of a bot: no audience, no lobby, no
+      // clock, no post-game, no fixes; the queue and cube have their own sockets
+      case 'watch': case 'queue': case 'cube': case 'cc': case 'concedeMatch': case 'rematch':
+      case 'dispute': case 'lobby': case 'building': case 'passall': case 'autopass':
+      case 'reporthold': case 'playbackdone': case 'amend':
+        return;
+      default: { const unhandled: never = m; return unhandled; }
     }
-    if (m.t === 'action' && m.action) return this.act(m.action);
-    if (m.t === 'undo') return this.undo();
-    // building / lobby / rematch: nothing to relay to a bot
   }
 
   /** The learner acts; they are told, then the bot answers in its own push —
@@ -358,6 +367,6 @@ export class SoloServer {
     this.hooks.onChange?.(this);
   }
 
-  private push(msg: Record<string, unknown>): void { this.sock?.deliver(msg); }
+  private push(msg: ServerMsg): void { this.sock?.deliver(msg); }
 }
 

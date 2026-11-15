@@ -260,5 +260,5 @@ test('§8b the server holds the clock when it sends a playback, and lets go when
   assert.match(src, /if \(msg\.t === 'playbackdone'\)[\s\S]{0,200}setWatchHold\(conn\.room, conn\.seat, null\)/, 'released when the client says it is done');
   assert.match(src, /function landAction[\s\S]{0,200}setWatchHold\(room, seat, null\)/, 'and when the seat acts');
   const ui = readFileSync(new URL('../../ui/main.ts', import.meta.url), 'utf8');
-  assert.match(ui, /this\.ws\.send\(JSON\.stringify\(\{ t: 'playbackdone' \}\)\)/, 'the client does say it is done');
+  assert.match(ui, /this\.sendMsg\(\{ t: 'playbackdone' \}/, 'the client does say it is done');
 });

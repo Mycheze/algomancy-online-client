@@ -28,6 +28,7 @@
  */
 import { playCue } from './audio.ts';
 import { alertTab } from './tabalert.ts';
+import { sendMsg, type Body, type ClientMsg, type ServerMsg } from '../shared/protocol.ts';
 
 // ── types off the wire ────────────────────────────────────────────────
 
@@ -68,6 +69,11 @@ export interface MatchOffer {
   accepted: boolean;
   expiresIn: number;
 }
+
+/** the queue as the server tells one player it (server/main.ts queueStateFor) */
+export interface QueueState { counts?: QueueCounts; searching: Searching | null; offer: MatchOffer | null }
+type QueueMsg = ServerMsg<{ queue: QueueState }>;
+type QueueAsk = Body<Extract<ClientMsg, { t: 'queue' }>, 't' | 'token'>;
 
 export interface QueueDeps {
   app: HTMLElement;
@@ -257,8 +263,8 @@ function connect(then: () => void): void {
   ws = sock;
   sock.addEventListener('open', () => then(), { once: true });
   sock.addEventListener('message', ev => {
-    let m: Record<string, unknown>;
-    try { m = JSON.parse(String(ev.data)) as Record<string, unknown>; } catch { return; }
+    let m: QueueMsg;
+    try { m = JSON.parse(String(ev.data)) as QueueMsg; } catch { return; }
     onMsg(m);
   });
   sock.addEventListener('close', () => {
@@ -274,18 +280,18 @@ function connect(then: () => void): void {
   });
 }
 
-function onMsg(m: Record<string, unknown>): void {
-  if (m['t'] === 'error') {
-    error = String(m['msg'] ?? 'something went wrong');
+function onMsg(m: QueueMsg): void {
+  if (m.t === 'error') {
+    error = String(m.msg ?? 'something went wrong');
     // a refusal is not a search: do not leave a spinner running behind it
     searching = null; offer = null;
     deps?.rerender();
     return;
   }
-  if (m['t'] !== 'queue') return;
+  if (m.t !== 'queue') return;
 
-  const matched = m['matched'] as { room: string; seat: number; mode: string } | undefined;
-  if (matched) {
+  if (m.matched) {
+    const matched = m.matched;
     // Into the game the way every other game start here goes: a full
     // navigation with the room in the query string. Nothing else in this
     // client transitions from the home screen into a board in place, and this
@@ -295,9 +301,9 @@ function onMsg(m: Record<string, unknown>): void {
     return;
   }
 
-  if (m['counts']) { counts = m['counts'] as QueueCounts; pollMisses = 0; }
-  searching = (m['searching'] as Searching | null) ?? null;
-  const next = (m['offer'] as MatchOffer | null) ?? null;
+  if (m.counts) { counts = m.counts; pollMisses = 0; }
+  searching = m.searching ?? null;
+  const next = m.offer ?? null;
   if (next && !offer) {
     playCue('decision');   // you are being asked something, and it expires
     alertTab('Match found!');   // …and the player may be in another tab
@@ -369,10 +375,10 @@ function ensureTick(): void {
   }
 }
 
-function sendQueue(body: Record<string, unknown>): void {
+function sendQueue(body: QueueAsk): void {
   const token = deps?.token();
   if (token) {
-    connect(() => ws?.send(JSON.stringify({ t: 'queue', token, ...body })));
+    connect(() => { if (ws) sendMsg(ws, { t: 'queue', token, ...body }); });
     return;
   }
   /* BL-42 — no account, and the format does not need one: make a real one
@@ -384,7 +390,7 @@ function sendQueue(body: Record<string, unknown>): void {
    * game, the post-game screen — sees an ordinary account, which is the whole
    * reason claiming it later is a rename rather than a migration. */
   const blocker = queueBlocker(
-    (body['mode'] as QueueMode | undefined) ?? pickMode, false, false);
+    ('mode' in body ? body.mode as QueueMode : undefined) ?? pickMode, false, false);
   if (blocker) { error = blocker; deps?.rerender(); return; }
   void (async () => {
     try {
@@ -396,7 +402,8 @@ function sendQueue(body: Record<string, unknown>): void {
         return;
       }
       deps?.onGuest(out.token);
-      connect(() => ws?.send(JSON.stringify({ t: 'queue', token: out.token, ...body })));
+      const minted = out.token;
+      connect(() => { if (ws) sendMsg(ws, { t: 'queue', token: minted, ...body }); });
     } catch {
       error = 'could not reach the server';
       deps?.rerender();

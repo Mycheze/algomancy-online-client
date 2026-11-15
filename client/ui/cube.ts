@@ -26,7 +26,8 @@ import { playCue } from './audio.ts';
 import { alertTab } from './tabalert.ts';
 import { copyText } from './util.ts';
 import { pollInboxNow, setCubeOpener } from './inbox.ts';
-import type { CubeArrange, CubeMatchView, CubeMine, CubeServerMsg, CubeView } from '../server/cube-types.ts';
+import type { CubeArrange, CubeMatchView, CubeMine, CubeView } from '../server/cube-types.ts';
+import { sendMsg, type ClientMsg, type ServerMsg } from '../shared/protocol.ts';
 import {
   CUBE_TABS, PACKS_MAX, PLAYERS_MAX, PLAYERS_MIN, ROUNDS_MAX, PACK_MIN,
   cubeJoinRowsHtml, cubeView, defaultForm, formConfig, formFromConfig, liveBanner, paintCube, untilText,
@@ -303,6 +304,7 @@ export function matchOver(matchEvent: string | null | undefined, betweenGames: b
 
 // ── the socket ────────────────────────────────────────────────────────
 
+type CubeMsg = ServerMsg<{ cubeView: CubeView; cubeMatch: CubeMatchView }>;
 let ws: WebSocket | null = null;
 /** the page wants a socket and has none: when to try again */
 let retryAt: number | null = null;
@@ -324,7 +326,7 @@ function connect(): void {
   sock.onopen = () => { if (ws === sock) { retries = 0; sub(); paint(); } };
   sock.onmessage = (ev: MessageEvent) => {
     if (ws !== sock) return;
-    let m: CubeServerMsg | { t?: string };
+    let m: CubeMsg;
     try { m = JSON.parse(String(ev.data)); } catch { return; }
     onMsg(m);
   };
@@ -335,11 +337,11 @@ function connect(): void {
 
 function sub(): void {
   if (!ws || ws.readyState !== 1 || !code) return;
-  ws.send(JSON.stringify({ t: 'cube', op: 'sub', code, token: acct.token() }));
+  sendMsg(ws, { t: 'cube', op: 'sub', code, token: acct.token() });
 }
 
-function send(body: Record<string, unknown>): void {
-  if (socketUp()) ws!.send(JSON.stringify({ t: 'cube', ...body }));
+function send(msg: ClientMsg): void {
+  if (socketUp()) sendMsg(ws!, msg);
   else { say('Reconnecting… try again in a moment.', 'error'); paint(); }
 }
 
@@ -355,11 +357,11 @@ function closeSocket(): void {
   const s = ws;
   ws = null; retryAt = null; retries = 0;
   if (!s) return;
-  try { if (s.readyState === 1) s.send(JSON.stringify({ t: 'cube', op: 'unsub' })); } catch { /* closing anyway */ }
+  try { if (s.readyState === 1) sendMsg(s, { t: 'cube', op: 'unsub' }); } catch { /* closing anyway */ }
   try { s.close(); } catch { /* already */ }
 }
 
-function onMsg(m: CubeServerMsg | { t?: string }): void {
+function onMsg(m: CubeMsg): void {
   if (m.t !== 'cube') return;
   if ('view' in m && m.view) { take(m.view); paint(); return; }
   if ('matched' in m && m.matched) {
@@ -449,8 +451,8 @@ if (typeof addEventListener === 'function') addEventListener('pagehide', () => f
 
 /** what the pick screen may do (ui/cubedraft.ts) */
 const DRAFT_ACTS: CubeActs = {
-  reserve: card => send({ op: 'reserve', card }),
-  pick: card => send({ op: 'pick', card }),
+  reserve: card => send({ t: 'cube', op: 'reserve', card }),
+  pick: card => send({ t: 'cube', op: 'pick', card }),
   arrange: a => sendArrange(a),
   // its Back ("Event"): the event page over the draft, until "Back to the draft"
   back: () => { draftHidden = true; paint(true); },

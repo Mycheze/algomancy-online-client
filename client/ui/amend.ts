@@ -25,6 +25,7 @@
  * opponent's hidden zones; a fix about your own hidden card shows it to them.
  */
 import { esc } from './util.ts';
+import type { ClientMsg } from '../shared/protocol.ts';
 import type { AmendDest, AmendEdit, AmendSource, AmendUnitDest, EntityId, GameState, Seat } from '../engine/src/types.ts';
 
 /** the open proposal as the server shows it (server/rooms.ts ProposalView) */
@@ -47,8 +48,8 @@ export type FixPreset =
   | { kind: 'unit'; id: EntityId };
 
 export interface AmendCtx {
-  /** put a `{ t: 'amend', … }` message on the wire */
-  send(msg: Record<string, unknown>): void;
+  /** put a message on the wire */
+  send(msg: ClientMsg): void;
   /** the board this seat is looking at, or null when there is no game */
   view(): { state: GameState; seat: Seat; names: [string, string] } | null;
   /** the dialog opened or closed — main.ts holds the standing auto-pass */
@@ -328,7 +329,7 @@ export function openFix(preset?: FixPreset): void {
   rewinds = null; editWhy = null; optionsWhy = null; error = ''; busy = false;
   rewindTo = null;   // CT-323: never a rewind the player did not pick
   setOpen(true);
-  ctx.send({ op: 'options' });
+  ctx.send({ t: 'amend', op: 'options' });
   paint();
 }
 
@@ -340,10 +341,11 @@ export function closeFix(): void {
 
 function send(): void {
   if (!ctx || busy || !complete()) return;
-  const msg: Record<string, unknown> = { op: 'propose', reason: reason.trim() };
-  if (takeBack) msg['takeBack'] = true;
-  if (kind === 'rewind') msg['rewind'] = rewindTo;
-  else msg['edit'] = editOf();
+  const msg: ClientMsg = {
+    t: 'amend', op: 'propose', reason: reason.trim(),
+    ...(takeBack ? { takeBack: true } : {}),
+    ...(kind === 'rewind' ? { rewind: rewindTo } : { edit: editOf() }),
+  };
   busy = true;
   error = '';
   ctx.send(msg);
@@ -353,7 +355,7 @@ function send(): void {
 function answer(op: 'accept' | 'decline' | 'cancel'): void {
   const p = info?.proposal;
   if (!ctx || !p) return;
-  ctx.send({ op, id: p.id });
+  ctx.send({ t: 'amend', op, id: p.id });
 }
 
 function onButton(what: string, el: HTMLElement): void {

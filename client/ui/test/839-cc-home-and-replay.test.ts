@@ -139,7 +139,7 @@ test('§5 a watch says who is watching', () => {
   const main = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
   const fn = main.slice(main.indexOf('  sendWatch(): void {'));
   const body = fn.slice(0, fn.indexOf('\n  }'));
-  assert.match(body, /t: 'watch', room: this\.room, \.\.\.\(acct\.token\(\) \? \{ token: acct\.token\(\) \} : \{\}\)/);
+  assert.match(body, /const token = acct\.token\(\);\s*this\.sendMsg\(\{ t: 'watch', room: this\.room, \.\.\.\(token \? \{ token \} : \{\}\) \}\)/);
 });
 
 test('§6 the match history says Game 2 of 3', async () => {

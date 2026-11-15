@@ -25,6 +25,8 @@
  *    and scanned
  * §5 ⭐ the rules review page's wire contract, ui/crtypes.ts (2026-10-10), is
  *    proved TYPES ONLY: no import, no value, no DOM name in code
+ * §6 ⭐ client/shared/, which both sides import, imports only the engine's
+ *    TYPES — nothing from ui/ or server/, no node module — and names no DOM
  *
  * Textual, on purpose: the point is to catch an import that WOULD compile.
  */
@@ -249,6 +251,30 @@ test('BL-41 §5 ⭐ ui/crtypes.ts imports nothing, declares only types, and name
     }
     for (const id of DOM) {
       assert.ok(!new RegExp(`\\b${id}\\b`).test(body), `ui/${f} names \`${id}\` in code — it compiles into server/, which is built without DOM`);
+    }
+  }
+});
+
+/* ══ §6 — client/shared/ leans on the engine's types and nothing else ═════ */
+
+test('BL-41 §6 ⭐ client/shared/ imports only engine types, and names no DOM', () => {
+  const SHARED = new URL('../../shared/', import.meta.url);
+  const DOM = [
+    'document', 'window', 'localStorage', 'sessionStorage', 'navigator',
+    'HTMLElement', 'HTMLInputElement', 'querySelector', 'addEventListener',
+    'createElement', 'innerHTML', 'textContent', 'requestAnimationFrame',
+  ];
+  const files = readdirSync(SHARED).filter(f => f.endsWith('.ts'));
+  assert.ok(files.length > 0, 'non-vacuous: client/shared/ was scanned');
+  for (const f of files) {
+    const body = code(readFileSync(new URL(f, SHARED), 'utf8'));
+    for (const m of body.matchAll(/^\s*(?:import|export)\s+(type\s+)?[^;]*?\sfrom\s+'([^']+)'/gm)) {
+      assert.ok(m[1] && m[2]!.startsWith('../engine/src/'),
+        `shared/${f} imports ${m[2]}${m[1] ? '' : ' at runtime'}. Both sides compile this directory, so it may `
+        + 'import the engine\'s types and nothing else: ui/ is the browser page, server/ is node');
+    }
+    for (const id of DOM) {
+      assert.ok(!new RegExp(`\\b${id}\\b`).test(body), `shared/${f} names \`${id}\` in code — server/ compiles it without DOM`);
     }
   }
 });

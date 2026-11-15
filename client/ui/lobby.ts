@@ -16,6 +16,7 @@
  * and the `lobby-` clicks.
  */
 import { ALL_ELEMENTS } from '../engine/src/apply.ts';
+import type { ClientMsg } from '../shared/protocol.ts';
 
 export interface TrioMethodInfo { id: string; label: string; blurb: string }
 
@@ -63,7 +64,7 @@ function syncLocals(lobby: TrioLobby): void {
 }
 
 /** what we would send right now */
-function submission(method: string): unknown {
+function submission(method: string): { element?: string; ranking?: string[] } {
   if (method === 'pick-one') return pick ? { element: pick } : {};
   if (method === 'rank') return { ranking };
   return {};
@@ -89,8 +90,7 @@ export function lobbyLocals(lobby: TrioLobby): { pick: string | null; ranking: r
 
 export interface LobbyActions {
   lobby: TrioLobby;
-  /** send a `{t:'lobby', …}` message */
-  send: (msg: Record<string, unknown>) => void;
+  send: (msg: ClientMsg) => void;
   rerender: () => void;
 }
 
@@ -107,7 +107,7 @@ export function handleLobbyButton(btn: HTMLElement, a: LobbyActions): boolean {
       // dropping ours here too, rather than letting a stale ranking linger
       // on screen until the next message arrives
       localFor = '';
-      a.send({ method: btn.dataset['method'] });
+      a.send({ t: 'lobby', method: btn.dataset['method'] });
       return true;
 
     case 'lobby-pick':
@@ -139,11 +139,11 @@ export function handleLobbyButton(btn: HTMLElement, a: LobbyActions): boolean {
 
     case 'lobby-lock':
       if (!ready(a.lobby.method)) return true;
-      a.send({ submission: submission(a.lobby.method), lock: true });
+      a.send({ t: 'lobby', submission: submission(a.lobby.method), lock: true });
       return true;
 
     case 'lobby-unlock':
-      a.send({ lock: false });
+      a.send({ t: 'lobby', lock: false });
       return true;
   }
   return false;

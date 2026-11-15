@@ -57,6 +57,7 @@ import type { DraftDeal } from '../engine/src/draftdeal.ts';
 import type { LessonDeal } from '../engine/src/lessondeal.ts';
 import { redactLog, spectatorView, viewFor } from '../server/view.ts';
 import { FakeSocket } from './fakesocket.ts';
+import type { ClientMsg } from '../shared/protocol.ts';
 
 /** The saved-game fields a replay needs. Every one optional but `seed` and
  * `actions`, because the file may be older than any of the others. */
@@ -288,8 +289,8 @@ export class ReplayServer {
    * ignores everything else: there is nothing to act on, and `spectating` on
    * the NetBackend means the client offers no affordance that would send one. */
   receive(data: string): void {
-    let m: { t?: string };
-    try { m = JSON.parse(data) as { t?: string }; } catch { return; }
+    let m: ClientMsg;
+    try { m = JSON.parse(data) as ClientMsg; } catch { return; }
     if (m.t === 'watch' || m.t === 'join') this.push();
   }
 
@@ -297,7 +298,7 @@ export class ReplayServer {
     this.sock?.deliver({
       t: 'watching',
       room: 'REPLAY',
-      view: this.view() as unknown as Record<string, unknown>,
+      view: this.view(),
       log: this.log(),
       names: this.names,
       peers: [true, true],

@@ -56,10 +56,10 @@ const REFUSED = /The server sent a game with nothing in it/;
 
 test('CT-179 §1 the builder makes a lobby message and a game message', () => {
   const h = new Harness(35600);
-  const lobby = seatMsg('joined', { room: 'QXZZ', seat: 0, waiting: { have: [true, false] } });
+  const lobby = seatMsg('joined', { room: 'QXZZ', seat: 0, waiting: { have: [true, false] }, peers: [true, false], names: ['A', 'B'] });
   assert.equal(lobby.t, 'joined');
   assert.deepEqual(lobby.waiting, { have: [true, false] });
-  const game = seatMsg('update', { view: viewFor(h.state, SEAT), legal: [] });
+  const game = seatMsg('update', { view: viewFor(h.state, SEAT), legal: [], peers: [true, true] });
   assert.equal(game.t, 'update');
   assert.ok(game.view, 'the game message lost its view');
 });
@@ -73,7 +73,7 @@ test('CT-179 §1 the builder refuses a message with neither a view nor a waiting
     /'update' must carry exactly one of view and waiting; this one carries neither/);
   // and the runtime refusal holds when the type is got round (an optional spread, an `as`)
   const view = undefined as unknown as ReturnType<typeof viewFor>;
-  assert.throws(() => seatMsg('update', { view }), /carries neither/);
+  assert.throws(() => seatMsg('update', { view, legal: [], peers: [true, true] }), /carries neither/);
 });
 
 test('CT-179 §1 the builder refuses a message with both a view and a waiting', () => {

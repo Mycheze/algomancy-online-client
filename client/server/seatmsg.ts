@@ -21,25 +21,19 @@
  * and its client branch already asks `if (m.view)`), `building`, `me`,
  * `gameover`, `error`, `rematch` — none of them is read as a board.
  */
-import type { GameState } from '../engine/src/types.ts';
+import type { Body, ServerMsg } from '../shared/protocol.ts';
 
-/** a seat message's body: every other field is free, but exactly one of
- * `view` and `waiting` is present */
-export type SeatBody =
-  | { view: GameState; waiting?: never; [k: string]: unknown }
-  | { waiting: object; view?: never; [k: string]: unknown };
-
-export type SeatMsg = { t: 'joined' | 'update' } & SeatBody;
+export type SeatMsg = Extract<ServerMsg, { t: 'joined' | 'update' }>;
 
 /** Build a `joined` or `update`. Throws on a body carrying both or neither of
  * `view` and `waiting` — a message the client cannot paint is a server bug,
  * and it is found here, by name, not on somebody's screen. */
-export function seatMsg(t: 'joined' | 'update', body: SeatBody): SeatMsg {
+export function seatMsg<T extends SeatMsg['t']>(t: T, body: Body<Extract<SeatMsg, { t: T }>>): Extract<SeatMsg, { t: T }> {
   const hasView = body.view !== undefined && body.view !== null;
   const hasWaiting = body.waiting !== undefined && body.waiting !== null;
   if (hasView === hasWaiting) {
     throw new Error(`a '${t}' must carry exactly one of view and waiting; this one carries `
       + `${hasView ? 'both' : 'neither'} (CT-179)`);
   }
-  return { t, ...body } as SeatMsg;
+  return { t, ...body } as unknown as Extract<SeatMsg, { t: T }>;
 }

@@ -30,6 +30,7 @@ import {
   suggestDeck, swapPairing, viewFor, type Actor, type Op,
 } from './cube.ts';
 import type { CubeEvent, CubeMatchView } from './cube-types.ts';
+import type { Received, ServerMsg } from '../shared/protocol.ts';
 
 const CODE = /^[A-Z0-9]{1,12}$/;
 
@@ -119,7 +120,7 @@ export async function cubeRoutes(req: IncomingMessage, res: ServerResponse, path
 const subs = new Map<WebSocket, { code: string; user: string | null }>();
 const byEvent = new Map<string, Set<WebSocket>>();
 
-const sendTo = (ws: WebSocket, obj: unknown): void => {
+const sendTo = (ws: WebSocket, obj: ServerMsg): void => {
   if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(obj));
 };
 
@@ -136,7 +137,7 @@ function unsub(ws: WebSocket): void {
 export const cubeSubscribed = (ws: WebSocket): boolean => subs.has(ws);
 
 /** main.ts, above `join`: one `{t:'cube', …}` message */
-export function cubeSocketMessage(ws: WebSocket, msg: Record<string, unknown>): void {
+export function cubeSocketMessage(ws: WebSocket, msg: Extract<Received, { t: 'cube' }>): void {
   const op = String(msg['op'] ?? '');
   const now = Date.now();
   if (op === 'sub') {
@@ -177,7 +178,7 @@ export function pushCube(e: CubeEvent, only?: string): void {
   const set = byEvent.get(e.code);
   if (!set) return;
   const now = Date.now();
-  const views = new Map<string | null, unknown>();
+  const views = new Map<string | null, ServerMsg>();
   for (const ws of set) {
     const s = subs.get(ws);
     if (!s || (only && s.user !== only)) continue;

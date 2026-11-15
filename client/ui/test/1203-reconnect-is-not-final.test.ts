@@ -44,7 +44,7 @@ test('1203 §2 the socket\'s close marks the backend retrying, the server\'s ans
   const closeBody = main.slice(close, main.indexOf('this.reconnectTimer = setTimeout', close));
   assert.match(closeBody, /uiError = `disconnected from the server[^`]*`;\s*this\.retrying = true;[^]*render\(\)/,
     'the drop is marked retrying before the screen is painted');
-  assert.match(main, /private onMsg\(m: NetMsg\): void \{\s*this\.retrying = false;/,
+  assert.match(main, /private onMsg\(m: ServerMsg\): void \{\s*this\.retrying = false;/,
     'any word from the server ends the retry, so its refusal is drawn as one');
   assert.match(main, /\nfunction renderConnecting\(\): void \{[^]*?connectingHtml\(\{[^}]*retrying: !!NET\?\.retrying/);
 });

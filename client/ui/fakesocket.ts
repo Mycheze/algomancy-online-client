@@ -23,6 +23,8 @@
  * for the same reason. `306 §7` and `319 §5` both read this file to check it.
  */
 
+import type { ServerMsg } from '../shared/protocol.ts';
+
 /** What the far end has to be able to do: take a client frame. */
 export interface FakeServer {
   receive(data: string): void;
@@ -46,7 +48,7 @@ export class FakeSocket {
   }
   send(data: string): void { queueMicrotask(() => this.server.receive(data)); }
   close(): void { /* nothing to close */ }
-  deliver(msg: Record<string, unknown>): void {
+  deliver(msg: ServerMsg): void {
     const data = JSON.stringify(msg);
     queueMicrotask(() => this.onmessage?.({ data }));
   }

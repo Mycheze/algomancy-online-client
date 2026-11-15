@@ -26,6 +26,7 @@
 import { packCycle } from '../engine/src/engine.ts';
 import type { Action, EarlierPick, EngineEvent, EntityId, GameState, Seat, StateFrame } from '../engine/src/types.ts';
 import { decisionBlocks, hiddenSegment, legalActions } from '../engine/src/apply.ts';
+import type { PlaybackFrame } from '../shared/protocol.ts';
 
 /** Placeholder card name for a hidden card (opponent hand / deck). The client
  * renders any card by this exact name as a face-down back. */
@@ -608,12 +609,7 @@ export interface HeldFrame { state: GameState; events: EngineEvent[] }
  * the board after each of its resolutions */
 export interface SegmentClose { before: GameState; events: EngineEvent[]; frames: StateFrame[] }
 /** what one seat is sent per step of the playback */
-export interface PlaybackFrame {
-  view: SeatView;
-  events: EngineEvent[];
-  /** an opponent's move, or one resolution of the closing action */
-  kind: 'opp' | 'tail';
-}
+export type { PlaybackFrame };
 
 export function playbackFrames(o: {
   seat: Seat;

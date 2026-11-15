@@ -37,6 +37,7 @@ import { other, playbackFrames, spectatorView, viewFor, redactEvent, redactLog, 
 import type { HeldFrame, SegmentClose } from './view.ts';
 import { playbackBudget, PLAYBACK_MAX_MS } from './playback-budget.ts';   // how long a seat watching a playback is off the clock
 import { seatMsg, type SeatMsg } from './seatmsg.ts';   // CT-179: every 'joined' and 'update' is built there
+import { parseClientMsg, type ServerMsg } from '../shared/protocol.ts';
 import { defaultDecks, importDeckPaste, importDeckUrl } from './decks.ts';
 import { metaList, minRankedGames, publicDeckCounts, sharedDeck } from './publicdecks.ts';
 import {
@@ -1429,7 +1430,7 @@ function dropBarredWatchers(room: Room): void {
   }
 }
 
-const send = (ws: WebSocket, obj: unknown): void => {
+const send = (ws: WebSocket, obj: ServerMsg): void => {
   if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(obj));
 };
 
@@ -1479,7 +1480,7 @@ function leaveQueue(ws: WebSocket): Offer | undefined {
 
 /** What one player is told about the queue: the counts everybody sees, plus
  * their own search if they have one, plus a live offer if they are in one. */
-function queueStateFor(userId: string | null): Record<string, unknown> {
+function queueStateFor(userId: string | null): ServerMsg {
   const counts = queueCounts();
   const mine = userId ? entryFor(userId) : undefined;
   const offer = userId ? offerFor(userId) : undefined;
@@ -1526,7 +1527,7 @@ function pushQueueAll(): void {
 }
 
 /** send() to whoever is connected on `seat`; a no-op for an empty chair. */
-function sendToSeat(room: Room, seat: Seat, obj: unknown): void {
+function sendToSeat(room: Room, seat: Seat, obj: ServerMsg): void {
   const sock = room.sockets[seat];
   if (sock) send(sock, obj);
   touchWatchers(room);
@@ -1557,7 +1558,7 @@ function touchWatchers(room: Room): void {
  * `spectatorView` for why this one door bypasses `viewFor`. */
 function pushWatchers(room: Room): void {
   if (!room.watchers.size) return;
-  const payload = roomWaiting(room)
+  const payload: ServerMsg = roomWaiting(room)
     ? { t: 'watching', room: room.code, boot: BOOT_ID, waiting: true, names: room.names, peers: peersOf(room) }
     : {
         t: 'watching', room: room.code, boot: BOOT_ID,
@@ -1717,7 +1718,7 @@ function baseView(room: Room, seat: Seat) {
     // chip reads them. Absent on every standard room.
     ...(room.custom ? { custom: customInfo(room.custom) } : {}),
     // a single card duel says so on every push (the in-game chip)
-    ...(room.single ? { single: true } : {}),
+    ...(room.single ? { single: true as const } : {}),
     // CR D2.1b/CT-32: `legalForSeat`, not `legalActions` — inside a hidden
     // simultaneous segment the OTHER seat's open decision must not empty this
     // seat's list. See rooms.ts for why the engine's global gate is right in
@@ -2368,7 +2369,7 @@ setMatchHooks({
   // where the match went: to both seats of the room the game was played in
   // (the post-game screen's Continue), and of the room it moved to
   moved: (m, from, next) => {
-    const msg = { t: 'match', match: matchSummary(m), room: next?.code ?? null };
+    const msg: ServerMsg = { t: 'match', match: matchSummary(m), room: next?.code ?? null };
     const told = new Set<WebSocket>();
     for (const r of [from, next]) {
       if (!r) continue;
@@ -2461,7 +2462,7 @@ function carryOutFix(room: Room, p: Proposal, by: Seat): void {
       room: room.code, seat: s, boot: BOOT_ID,
       ...baseView(room, s),
       log: visibleLog(room, s),
-      names: room.names, building: null, rewound: true,
+      names: room.names, building: null, rewound: true as const,
     })));
   }
   console.log(`[fix] ${room.code}: seat ${by} agreed to seat ${p.seat}'s fix: ${p.what}`);
@@ -2581,46 +2582,9 @@ wss.on('connection', (ws, req) => {
   // library close the connection.
   ws.on('error', err => console.warn('[ws] socket error:', err instanceof Error ? err.message : err));
   ws.on('message', raw => {
-    let msg: { t: string; room?: string; seat?: number; name?: string; mode?: string; els?: string[];
-      token?: string; deck?: unknown; deckId?: unknown; single?: unknown; pick?: unknown; action?: Action; cols?: unknown; send?: unknown; left?: unknown;
-      method?: unknown; submission?: unknown; lock?: unknown; want?: unknown;
-      /** BL-26: the creator's chosen bank, in ms (0/'off' = no clock). Read
-       *  only when this join CREATES the room; sanitizeClock takes it from
-       *  there. Absent from every older client, which gets the default. */
-      clock?: unknown;
-      /** report #356: a draft's creating join may say `'competitive'` (each
-       *  step in turn); read only when this join CREATES the room */
-      rules?: unknown;
-      /** BL-18: this seat's "nothing may act for me" switch, off the browser
-       *  that owns it. Never persisted; re-asserted on every join. */
-      on?: unknown;
-      /** BL-01: which of join / leave / accept / decline this queue message is */
-      q?: unknown;
-      /** BL-01: ranked (pair me near my rating) or open (anyone) */
-      ranked?: unknown; vs?: unknown;
-      /** the standing pass: the `actionCount` of the view an action answers,
-       *  and a `passall` arm's phase / stack ids / option keys (rooms.ts
-       *  sanitizePassAll; `mode` above is its 'all' | 'stack') */
-      at?: unknown; phase?: unknown; items?: unknown; opts?: unknown;
-      /** report #323: an `autopass` message — the toggle and the yields
-       *  (rooms.ts sanitizeAutoPass) */
-      pref?: unknown; yields?: unknown;
-      /** CT-182: a join made while this seat's report dialog is open */
-      hold?: unknown;
-      /** BL-48: a dispute's "what went wrong" */
-      note?: unknown;
-      /** docs/22: a Competitive match — `cc: {bestOf}` on the creating join, a
-       *  `side` beside `deck`, and the between-games `{t:'cc', op, …}` fields */
-      cc?: unknown; side?: unknown; op?: unknown; main?: unknown; ready?: unknown; initiative?: unknown };
-    try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
-    // ⚠ `JSON.parse("null")` SUCCEEDS. So do `[]`, `1` and `"x"`. The very next
-    // line reads `msg.t`, and on null that throws inside a 'message' listener,
-    // which is an uncaughtException — the whole process, every game, for a
-    // four-byte frame from anyone. The type annotation above cannot see it:
-    // JSON.parse returns `any`.
-    if (msg === null || typeof msg !== 'object' || Array.isArray(msg) || typeof msg.t !== 'string') {
-      return send(ws, { t: 'error', msg: 'bad message' });
-    }
+    // the tag is checked; every other field is `unknown` until its branch checks it
+    const msg = parseClientMsg(String(raw));
+    if ('refused' in msg) return send(ws, { t: 'error', msg: msg.refused });
 
     /* ── BL-29: WATCH A LIVE ROOM ──────────────────────────────────────
      *
@@ -2646,7 +2610,7 @@ wss.on('connection', (ws, req) => {
      * or stop anybody's bank.
      */
     if (msg.t === 'watch') {
-      const code = (msg.room ?? '').toUpperCase().trim();
+      const code = (typeof msg.room === 'string' ? msg.room : '').toUpperCase().trim();
       const addr = sockAddr.get(ws) ?? '?';
       if (limitReached(addr, CODE_MISS_BUCKET, CODE_MISS_LIMIT)) return ws.close(1008, 'too many unknown room codes');
       const room = code ? getRoom(code) : undefined;
@@ -2836,12 +2800,13 @@ wss.on('connection', (ws, req) => {
      * reason: the event page's socket is in no room. It never reaches
      * `conns`, so nothing below can mistake it for a seat. */
     if (msg.t === 'cube') {
-      cubeSocketMessage(ws, msg as unknown as Record<string, unknown>);
+      cubeSocketMessage(ws, msg);
       return;
     }
 
     if (msg.t === 'join') {
-      const code = (msg.room ?? '').toUpperCase().trim();
+      const token = typeof msg.token === 'string' ? msg.token : undefined;
+      const code = (typeof msg.room === 'string' ? msg.room : '').toUpperCase().trim();
       // CR D7.5/CT-148: the sentence itself is rooms.ts's joinRefusal(), so it is
       // a value a test can read rather than something only a real socket can
       // provoke. Nothing about the decision changed when it moved.
@@ -2872,7 +2837,7 @@ wss.on('connection', (ws, req) => {
       const single = existing ? !!existing.single : msg.mode === 'constructed' && msg.single !== undefined;
       let deckCards: CardName[] | null = null;
       const saved = !single && typeof msg.deckId === 'string'
-        ? savedDeckNow(accountForToken(msg.token)?.id ?? null, msg.deckId) : null;
+        ? savedDeckNow(accountForToken(token)?.id ?? null, msg.deckId) : null;
       if (single) {
         if (msg.single !== undefined) {
           const c = checkSingleCard(msg.single);
@@ -2915,7 +2880,7 @@ wss.on('connection', (ws, req) => {
       // report #356: Best of is apart from the rules set — a match may be Casual
       const ccCasual = ccCreate && (msg.cc as { casual?: unknown }).casual === true;
       if (ccCreate) {
-        const who = accountForToken(msg.token);
+        const who = accountForToken(token);
         if (!who) return send(ws, { t: 'error', msg: 'a Competitive match needs an account — sign in (or play as a guest) first' });
         const reg = registrationFor(who.id, msg.deckId, msg.deck, msg.side);
         if ('error' in reg) return send(ws, { t: 'error', msg: reg.error });
@@ -2966,8 +2931,8 @@ wss.on('connection', (ws, req) => {
       // accounts: the join carries the browser's session token. Resolved
       // BEFORE the seat is picked, because the seat decision needs to know
       // who is asking — see seatVerdict.
-      const account = accountForToken(msg.token);
-      const picked = seatVerdict(room, msg.seat, account?.id ?? null);
+      const account = accountForToken(token);
+      const picked = seatVerdict(room, typeof msg.seat === 'number' ? msg.seat : undefined, account?.id ?? null);
       if ('refuse' in picked) return send(ws, { t: 'error', msg: picked.refuse });
       const seat = picked.seat;
       // BL-18: …and this seat's own "nothing may act for me", which — unlike
@@ -3227,7 +3192,7 @@ wss.on('connection', (ws, req) => {
     if (msg.t === 'action') {
       const conn = conns.get(ws);
       if (!conn) return send(ws, { t: 'error', msg: 'join a room first' });
-      const action = msg.action;
+      const action = msg.action as Action | undefined;
       if (roomWaiting(conn.room)) return send(ws, { t: 'error', msg: 'the game has not started — waiting for both decks' });
       // CT-160: a stopped game, refused up front and by name. `applyToRoom`
       // enforces it regardless — this is here so the refusal arrives BEFORE
@@ -3501,7 +3466,9 @@ wss.on('connection', (ws, req) => {
       return send(ws, { t: 'amenderr', msg: 'unknown fix message' });
     }
 
-    send(ws, { t: 'error', msg: `unknown message ${msg.t}` });
+    // parseClientMsg refused every other tag, so this is unreachable
+    const unhandled: never = msg;
+    return unhandled;
   });
 
   ws.on('close', () => {

@@ -59,7 +59,7 @@ test('1074 §3 the ended-game bar always has a way home; the dead button is gone
 
 test('1074 §4 a refused rejoin is the refused screen, not a red line on a dead board', () => {
   assert.match(MAIN, /this\.ws\.onopen = \(\) => \{\s*this\.reconnectDelay = 1000;\s*this\.rejoining = this\.joined;/);
-  const onMsg = MAIN.slice(MAIN.indexOf('  private onMsg(m: NetMsg): void {'));
+  const onMsg = MAIN.slice(MAIN.indexOf('  private onMsg(m: ServerMsg): void {'));
   assert.match(onMsg.slice(0, 300), /if \(m\.t === 'joined' \|\| m\.t === 'watching'\) this\.rejoining = false;/,
     'the flag clears the moment the rejoin is answered — before any branch can return');
   assert.match(onMsg, /if \(m\.t === 'error' && this\.rejoining\) \{\s*this\.rejoining = false;\s*this\.joined = false;/);
