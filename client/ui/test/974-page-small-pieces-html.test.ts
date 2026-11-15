@@ -86,7 +86,7 @@ test('974 §4 the single card picker', () => {
   assert.match(none, /class="ui-button ui-button--icon" data-btn="sc-random" type="button" title="any card at random — any of the 528" aria-label="[^"]+">🎲</);
   assert.match(none, /<div id="sc-sugg" class="crsugg"><!--SLOT:sugg--><\/div>/);
   const picked = singleCardPickerHtml(pview({ card: 'Ignis Sprite', art: '<!--SLOT:art-->' }));
-  assert.match(picked, /<span class="scart" data-prev="Ignis Sprite"><!--SLOT:art--><\/span>/);
+  assert.match(picked, /<span class="scart" data-prev="Ignis Sprite" data-zoom><!--SLOT:art--><\/span>/);
   assert.match(picked, /<b>Ignis Sprite<\/b><span class="dim">× 30<\/span>/);
   assert.doesNotMatch(picked, /scwarn/);
   assert.match(singleCardPickerHtml(pview({ card: 'Some Spell', makesUnits: false })), /class="scwarn"[^>]*>makes no units/);

@@ -203,7 +203,7 @@ export function sampleHandHtml(cards: readonly string[] | null): string {
   const hand = cards ? `<div class="ttsamplecards">${cards.map(name => {
     const r = rowFor(name);
     const art = r ? artHtml(r, 'ttsampleart') : `<span class="ttsampleart cbnoart">${esc(name)}</span>`;
-    return `<span class="ttsamplecard" data-prev="${esc(name)}">${noImgDrag(art)}</span>`;
+    return `<span class="ttsamplecard" data-prev="${esc(name)}" data-zoom>${noImgDrag(art)}</span>`;
   }).join('')}</div>` : '';
   return `<div class="ttsample">${hand}${button({ label: cards ? 'Deal again' : 'Sample hand', size: 'sm', dataBtn: 'tt-hand' })}</div>`;
 }

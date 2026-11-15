@@ -10,6 +10,8 @@
 button, [data-btn], [data-act], .card, .rescard, .stackcard { touch-action: manipulation; }
 .card, .rescard, .stackcard { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .card img, .rescard img, .stackcard img, #cardzoom img { -webkit-user-drag: none; -webkit-touch-callout: none; }
+/* a held finger on any zoomable card is the press zoom's (ui/presszoom.ts), not iOS's save-image sheet */
+[data-zoom] img, img[data-zoom] { -webkit-touch-callout: none; }
 /* DRAG SOURCES (ui/drag.ts). A hand card may still swipe the dock sideways —
    an upward drag is the one the page keeps. The regions board never scrolls,
    so a card on it gives every direction to the drag. */

@@ -69,6 +69,8 @@ interface Press {
 /** the press-to-read state machine (see the header) */
 export function pressGesture(io: PressIO): {
   down(e: PressEvent): void; move(e: PressEvent): void; up(e: PressEvent): void; cancel(): void;
+  /** a finger is on a card: its long press is this gesture's, not the browser's menu */
+  fingerDown(): boolean;
 } {
   let p: Press | null = null;
   const stop = (): void => {
@@ -81,10 +83,12 @@ export function pressGesture(io: PressIO): {
       stop();
       if (!e.isPrimary || io.dragging()) return;
       const t = e.target as Element | null;
-      // a tile's + and » are buttons, not the card
-      if (t?.closest?.('button, input, select, textarea, a, summary')) return;
       const el = io.target(t);
       if (!el) return;
+      // a tile's + and » are controls inside the card, not the card; a card
+      // that IS a button, or sits in one (a ladder row), still zooms
+      const ctl = t?.closest?.('button, input, select, textarea, a, summary');
+      if (ctl && ctl !== el && el.contains(ctl)) return;
       const mouse = e.pointerType === 'mouse';
       if (mouse && e.button === 1) {
         e.preventDefault();
@@ -122,12 +126,13 @@ export function pressGesture(io: PressIO): {
       if (read) io.swallow();
     },
     cancel: stop,
+    fingerDown: () => p !== null && p.type !== 'mouse',
   };
 }
 
 let installed = false;
 
-/** wire the gesture to the document — once; the tabletop asks on open */
+/** wire the gesture to the document — once; main.ts asks at boot, so every page's `data-zoom` cards read */
 export function installPressZoom(): void {
   if (installed || typeof document === 'undefined' || typeof document.addEventListener !== 'function') return;
   installed = true;
@@ -151,7 +156,11 @@ export function installPressZoom(): void {
   document.addEventListener('pointermove', e => g.move(e), { capture: true, passive: true });
   document.addEventListener('pointerup', e => g.up(e), { capture: true, passive: true });
   document.addEventListener('pointercancel', () => g.cancel(), { capture: true, passive: true });
-  if (typeof addEventListener === 'function') addEventListener('blur', () => g.cancel());
+  if (typeof addEventListener === 'function') {
+    addEventListener('blur', () => g.cancel());
+    // Android turns a long press into a context menu (ui/touch.ts does the same for the peek)
+    addEventListener('contextmenu', e => { if (g.fingerDown()) { e.preventDefault(); e.stopPropagation(); } }, { capture: true });
+  }
   document.addEventListener('visibilitychange', () => g.cancel());
   // the middle button's own effects, for a press that began on a card only:
   // Firefox's autoscroll starts on the mousedown; X11's primary-selection

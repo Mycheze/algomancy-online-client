@@ -169,7 +169,7 @@ const art = (name: string): string => {
 };
 
 const thumb = (name: string): string =>
-  `<span class="csthumb">${art(name) ? `<img src="${esc(art(name))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : ''}</span>`;
+  `<span class="csthumb" data-zoom>${art(name) ? `<img src="${esc(art(name))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : ''}</span>`;
 
 const elIcons = (name: string): string =>
   (rowFor(name)?.factions ?? []).map(f => `<span class="acctel icon ${esc(f)}" title="${esc(f)}">${elIcon(f, f)}</span>`).join('');

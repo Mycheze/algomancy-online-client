@@ -129,6 +129,7 @@ import { disputeAnswered, installReport, isReportOpen, openDispute, openReport, 
 import { inboxListOpen, inboxUnread, installInbox } from './inbox.ts';
 import * as amend from './amend.ts';
 import { installTouch, peekEnd, tapRead, touchSeen } from './touch.ts';
+import { installPressZoom } from './presszoom.ts';
 import { dragActive, installDrag, type DragPlan } from './drag.ts';
 // BL-38 — the match replay viewer: a saved game driven through the same
 // socket seam Learn to Play uses, plus its own transport bar beside #app
@@ -12346,6 +12347,9 @@ installDrag({
   started: () => { peekEnd(); zoomOff(); resSumOff(); hideHoverTip(); setHoverArrows(null); },
   ended: () => { if (dragPaintPending) render(); },
 });
+// zoom in on a card (BL-77): a middle press, or a held button or finger, on
+// anything that wears `data-zoom` — on every page, not only the tabletops
+installPressZoom();
 // docs/22 §5.4: the Competitive sideboarding table drags too — its drop is
 // the tap's own move (ui/match.ts moveCopy)
 mt.installSideboardTable(matchActions);

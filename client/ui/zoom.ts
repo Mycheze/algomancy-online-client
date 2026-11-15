@@ -209,14 +209,33 @@ function tableTarget(el: Element | null): HTMLElement | null {
 /** a tile's copy: its scan alone (a tile's badges and outline are not the
  * card), grown out of the scan's own box */
 function scanCopy(c: HTMLElement): { copy: HTMLElement; r: Rect } {
-  const img = c.querySelector('img')!;
+  const img = scanOf(c)!;
   const face = inertCopy(img);
   face.removeAttribute('class');
   face.removeAttribute('loading');
   const copy = document.createElement('div');
   copy.className = 'zoomcopy presszoom';
   copy.appendChild(face);
-  return { copy, r: img.getBoundingClientRect() };
+  return { copy, r: cardInScan(img.getBoundingClientRect(), img.naturalWidth, img.naturalHeight) };
+}
+
+/** the scan a `data-zoom` element shows: itself when it is the `<img>`, else the first one inside */
+function scanOf(c: Element): HTMLImageElement | null {
+  return c.tagName === 'IMG' ? c as HTMLImageElement : c.querySelector('img');
+}
+
+/**
+ * The card-shaped box a scan's copy grows out of: the biggest box of the
+ * scan's own aspect that fits in the box the page draws it in, centred. A
+ * thumbnail cropped to a square or a banner (`object-fit: cover`) is still
+ * zoomed as the whole card, at the card's size; an uncropped scan is its own
+ * box. Unloaded (no natural size yet), the drawn box. Pure, for test/1482.
+ */
+export function cardInScan(r: Rect, naturalW: number, naturalH: number): Rect {
+  if (!(naturalW > 0 && naturalH > 0 && r.width > 0 && r.height > 0)) return r;
+  const aspect = naturalH / naturalW;
+  const width = Math.min(r.width, r.height / aspect), height = width * aspect;
+  return { left: r.left + (r.width - width) / 2, top: r.top + (r.height - height) / 2, width, height };
 }
 
 let layer: HTMLElement | null = null;
@@ -504,10 +523,10 @@ export function zoomPeekEnd(): void {
  */
 
 /** the card a press zoom may show: the `data-zoom` element under `el` that
- * has a scan to magnify (a card name with no art has none) */
+ * is a scan or has one to magnify (a card name with no art has none) */
 export function pressTarget(el: Element | null): HTMLElement | null {
   const c = el?.closest?.('[data-zoom]') as HTMLElement | null;
-  if (!c || c.closest('#cardzoom, #draglayer') || !c.querySelector('img')) return null;
+  if (!c || c.closest('#cardzoom, #draglayer') || !scanOf(c)) return null;
   return c;
 }
 

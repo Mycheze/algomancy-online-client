@@ -24,7 +24,7 @@ export function singleCardPickerHtml(v: SingleCardPickerView): string {
   const cur = v.card;
   return `<div class="scpick">
     <div class="scchosen">${cur
-      ? `<span class="scart" data-prev="${esc(cur)}">${v.art}</span>
+      ? `<span class="scart" data-prev="${esc(cur)}" data-zoom>${v.art}</span>
          <span class="scname"><b>${esc(cur)}</b><span class="dim">× ${v.copies}</span>${v.makesUnits ? ''
            : `<span class="scwarn" title="a deck of this card can never put a unit on the table">makes no units — a draw if theirs doesn’t either</span>`}</span>`
       : '<span class="dim">no card picked yet</span>'}</div>

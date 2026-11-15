@@ -1730,3 +1730,5 @@
 {"id":"#401","on":"2026-11-15","as":"fixed","to":["CT-566"]}
 {"id":"CT-567","on":"2026-11-15","as":"done","note":"handCachedHtml (ui/main.ts) gives each cached card beside the hand one chip reading \"Cache\", keeping cacheChip's class (glimpse/proph colour) and title (the window: this turn, or free), and draws no .handcachedlabel. The cache row and the cache dialog keep ⚡ turn / ✓ free. Option not taken: \"Cache ✓\" for a fulfilled prophecy."}
 {"id":"#407","on":"2026-11-15","as":"fixed","to":["CT-567"]}
+{"id":"BL-77","on":"2026-11-15","as":"done"}
+{"id":"#404","on":"2026-11-15","as":"fixed","to":["BL-77"]}

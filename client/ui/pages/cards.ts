@@ -113,7 +113,7 @@ function tileHtml(v: CardsView, r: CardRow, at = -1): string {
   // the two empty slots are where deckbuilding mode drew the copies and the
   // add/cut buttons (BL-65); kept as '' so the page is the same, byte for byte
   return `<div class="dktile cbtile${r.cls === 'card' ? '' : ' noncard'}${at === v.cursor ? ' sel' : ''}"
-      data-prev="${esc(r.name)}" data-btn="cards-focus" data-card="${esc(r.name)}">
+      data-prev="${esc(r.name)}" data-btn="cards-focus" data-card="${esc(r.name)}" data-zoom>
     ${artHtml(r, 'dkart')}
     ${''}
     ${r.cls === 'card' ? '' : `<span class="cbclass">${esc(r.cls)}</span>`}

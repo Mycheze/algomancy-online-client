@@ -97,7 +97,7 @@ function metaFrame(v: MetaView, page: string, mainHtml: string, o: { titleHtml?:
 
 function ladderRowHtml(c: CardStanding, rank: number | null): string {
   return `<div class="metarow ladderrow" data-prev="${esc(c.card)}">
-    <span class="metacover">${artFor(c.card)
+    <span class="metacover" data-zoom>${artFor(c.card)
       ? `<img src="${esc(artFor(c.card))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : ''}</span>
     <span class="metabody">
       <span class="metaname">${rank !== null ? `<span class="dim">#${rank}</span> ` : ''}${esc(c.card)}</span>
@@ -190,7 +190,7 @@ export function metaRowHtml(d: PublicDeck, minGames: number): string {
   // the row is one line high, so the snippet is PROSE, not markdown — see descSummary
   const snippet = d.description ? descSummary(d.description) : '';
   return `<button class="metarow" data-btn="meta-open" data-id="${esc(d.id)}">
-    <span class="metacover">${d.cover
+    <span class="metacover" data-zoom>${d.cover
       ? `<img src="${esc(artFor(d.cover))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`
       : ''}</span>
     <span class="metabody">
@@ -268,7 +268,7 @@ function deckTile(name: string, n: number): string {
   // it (see the .dkstack block in ui/style.css) rather than casing on a count.
   return `<div class="dktile${layers.length ? ' dkstack' : ''}"
       ${layers.length ? `style="--d:${layers.length}"` : ''}
-      data-prev="${esc(name)}" data-btn="meta-focus" data-card="${esc(name)}"
+      data-prev="${esc(name)}" data-btn="meta-focus" data-card="${esc(name)}" data-zoom
       ${n > 1 ? `aria-label="${esc(name)} ×${n}"` : ''}>
     ${layers.map(i => `<span class="dkghostwrap" style="--i:${i}" aria-hidden="true">${
     art('dkart')}</span>`).join('')}

@@ -403,7 +403,7 @@ function cardsColumn(v: ProfileView): string {
   const different = Object.values(v.me.profile.cards).filter(n => n > 0).length;
   const list = cards.length
     ? `<ol class="pfcards">${cards.map(c => `<li>
-        <span class="pfart"><img src="${esc(c.art)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"></span>
+        <span class="pfart" data-zoom><img src="${esc(c.art)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"></span>
         <span class="pfcardname">${esc(c.card)}</span><b>×${c.n}</b></li>`).join('')}</ol>`
     : '<p class="pfnone">Nothing yet.</p>';
   return `<div class="pfcol" data-scroll="acct-ov-2">
@@ -438,7 +438,7 @@ function peopleColumn(v: ProfileView): string {
     ? section('Published decks', `<div class="pfdecks">${v.decks.map(({ deck: d, cover }) => {
       const { wins, losses, games } = d.record;
       return `<button class="pfdeck" data-btn="meta-open" data-id="${esc(d.id)}">
-        <span class="pfart">${cover ? `<img src="${esc(cover)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : ''}</span>
+        <span class="pfart" data-zoom>${cover ? `<img src="${esc(cover)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : ''}</span>
         <span class="pfdeckname">${esc(d.name)}</span>
         <span class="pfdeckrec">${games ? `${wins}–${losses}` : 'no games'}</span></button>`;
     }).join('')}</div>`)

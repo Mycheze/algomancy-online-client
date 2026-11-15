@@ -41,9 +41,9 @@ const artUrl = (r: CardRow): string => scanUrl(r.image || r.name.replace(/ /g, '
  * `hasArt` is computed at extract time from what is on disk. Ask for a file
  * only when there is one, and print the name when there is not.
  */
-export function artHtml(r: CardRow, cls: string): string {
+export function artHtml(r: CardRow, cls: string, zoom = false): string {
   if (!r.hasArt) return `<div class="${cls} cbnoart">${esc(r.name)}</div>`;
-  return `<img class="${cls}" src="${esc(artUrl(r))}" alt="${esc(r.name)}" loading="lazy"
+  return `<img class="${cls}" src="${esc(artUrl(r))}" alt="${esc(r.name)}" loading="lazy"${zoom ? ' data-zoom' : ''}
     onerror="this.style.visibility='hidden'">`;
 }
 
@@ -176,7 +176,7 @@ export function cardPanelHtml(name: string, opts: PanelOpts): string {
   const stated = GLOSSARY.filter(g => boxSays.includes(plain(g.text))).map(g => g.term);
   return `<section class="cbdetail">
     <button class="cbclose" data-btn="${esc(opts.close)}" title="close" aria-label="Close">×</button>
-    ${artHtml(r, 'cbdetailart')}
+    ${artHtml(r, 'cbdetailart', true)}
     <h2>${esc(r.name)}</h2>
     <div class="cbdetailcost">${costHtml(r)}</div>
     <div class="cbdetailtype">${iconizeText(r.type)}${printsStats(r.kind) ? ` · ${r.power}/${r.toughness}` : ''}</div>

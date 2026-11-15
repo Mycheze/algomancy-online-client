@@ -71,7 +71,7 @@ export function figCardHtml(fc: FigCard): string {
   const r = rowFor(c.name);
   const img = c.back || !r ? `<div class="lfigimg lfigback"></div>` : artHtml(r, 'lfigimg');
   const cls = ['lfigcard', c.dim ? 'dim' : '', c.cross ? 'cross' : ''].filter(Boolean).join(' ');
-  return `<span class="${cls}"${r && !c.back ? ` data-lcard="${esc(r.name)}"` : ''}>${img}${
+  return `<span class="${cls}"${r && !c.back ? ` data-lcard="${esc(r.name)}" data-zoom` : ''}>${img}${
     c.badge ? `<b class="lbadge">${lessonInline(c.badge)}</b>` : ''}${
     c.label ? `<span class="lfiglabel">${lessonInline(c.label)}</span>` : ''}</span>`;
 }
@@ -89,7 +89,7 @@ export function figureHtml(f: Figure): string {
       break;
     case 'anatomy': {
       const r = rowFor(f.card);
-      inner = `<div class="lanat">${r ? artHtml(r, 'lanatimg') : ''}${Object.entries(f.parts).map(([id, [x, y]]) =>
+      inner = `<div class="lanat">${r ? artHtml(r, 'lanatimg', true) : ''}${Object.entries(f.parts).map(([id, [x, y]]) =>
         `<i class="lanchor" id="lanc-${esc(id)}" style="left:${x}%;top:${y}%"></i>`).join('')}</div>`;
       break;
     }
@@ -127,8 +127,8 @@ export function figureHtml(f: Figure): string {
       const host = rowFor(f.host);
       const mods = f.mods.map(n => rowFor(n)).filter(r => !!r);
       inner = `<div class="lmodwrap"><div class="lmodded" style="--mods:${mods.length}">
-        ${mods.map((m, i) => `<span class="lmod" style="--i:${i + 1}" data-lcard="${esc(m!.name)}">${artHtml(m!, 'lfigimg')}</span>`).reverse().join('')}
-        ${host ? `<span class="lmodhost" data-lcard="${esc(host.name)}">${artHtml(host, 'lfigimg')}</span>` : ''}
+        ${mods.map((m, i) => `<span class="lmod" style="--i:${i + 1}" data-lcard="${esc(m!.name)}" data-zoom>${artHtml(m!, 'lfigimg')}</span>`).reverse().join('')}
+        ${host ? `<span class="lmodhost" data-lcard="${esc(host.name)}" data-zoom>${artHtml(host, 'lfigimg')}</span>` : ''}
       </div>${f.reads ? `<div class="lreads"><div class="lreadslabel">It now reads</div>${mdToHtml(f.reads, { inline: lessonInline })}</div>` : ''}</div>`;
       break;
     }

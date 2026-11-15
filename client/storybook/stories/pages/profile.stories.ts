@@ -3,6 +3,7 @@
  * is pure, so each tab and each state is one object away. */
 import { type ProfileState, profileHtml, profileView } from '../../../ui/pages/profile.ts';
 import type { LeaderRow, Me } from '../../../ui/account.ts';
+import { artUrl } from '../../../ui/assets.ts';
 
 const ME: Me = {
   id: 'u1', username: 'Quillon', createdAt: '2026-09-01T00:00:00Z', favoriteElement: 'fire', favoritePicked: null,
@@ -57,8 +58,8 @@ const base: ProfileState = {
   leaders: LEADERS, leadersFailed: false, board: 'constructed',
   ladder: { mode: 'constructed', players: LEADERS, you: { ...LEADERS[1]!, rank: 2 }, rated: 14, publicAfter: 5 },
   prefs: { colours: 'standard', sound: true, motion: true, autoPass: false, bluffHaste: false },
-  // no art server in Storybook: the cover falls back to its hidden image
-  artFor: card => `../../ui/cards/${encodeURIComponent(card)}.webp`,
+  // a made-up card has no scan: the cover falls back to its hidden image
+  artFor: card => artUrl(`${card.replace(/ /g, '-')}.jpg`),
 };
 
 export default {

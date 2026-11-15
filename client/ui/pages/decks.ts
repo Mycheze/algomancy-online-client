@@ -339,7 +339,7 @@ const dots = (els: readonly string[]): string =>
 /** One deck box on the shelf. Pure. */
 export function deckBoxHtml(b: DeckBoxView): string {
   return `<button class="dkbox${b.on ? ' on' : ''}" type="button" data-btn="deck-open" data-id="${esc(b.id)}"${b.on ? ' aria-current="true"' : ''}>`
-    + `<span class="dkboxart">${b.art ? `<img src="${esc(b.art)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : ''}</span>`
+    + `<span class="dkboxart" data-zoom>${b.art ? `<img src="${esc(b.art)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : ''}</span>`
     + (b.cc ? chip({ label: 'Bo3 ready', tone: 'neutral', shape: 'pill', className: 'dkboxcc' }) : '')
     + `<span class="dkboxbody"><span class="dkboxname">${esc(b.name)}</span>`
     + `<span class="dkboxmeta">${dots(b.els)}<span class="dkboxcount${b.warn ? ' warn' : ''}"${b.warn && b.problems ? ` title="${esc(b.problems)}"` : ''}>${
@@ -377,7 +377,7 @@ export function deckPreviewHtml(v: DeckPreviewView, o: PreviewHtmlOpts = {}): st
     ? chip({ label: v.legalText, tone: 'success', shape: 'pill', className: 'dkprevlegal' })
     : `<span class="dkprevlegal dkprevlegal--${v.tone}">${esc(v.legalText)}</span>`;
   return `<section class="dkprev" aria-label="${esc(v.name)}">
-    <div class="dkprevbanner">${v.banner ? `<img src="${esc(v.banner)}" alt="" onerror="this.style.visibility='hidden'">` : ''}</div>
+    <div class="dkprevbanner" data-zoom>${v.banner ? `<img src="${esc(v.banner)}" alt="" onerror="this.style.visibility='hidden'">` : ''}</div>
     <div class="dkprevhead"><h2 class="dkprevname">${esc(v.name)}</h2>
       <div class="dkprevmeta">${esc(v.meta)}${v.author ? ` · ${esc(v.author)}` : ''}${
       v.url ? ` · <a href="${esc(v.url)}" target="_blank" rel="noopener">algomancer.cc</a>` : ''}</div></div>
@@ -628,7 +628,7 @@ const SYNTAX_HTML = `<div class="dksyntax">
 export function deckInfoHtml(v: DeckInfoView): string {
   const covers = v.covers.length
     ? `<div class="dkcoverbar">${button({ label: 'Random', size: 'sm', dataBtn: 'deck-cover-random' })}</div>
-      <div class="dkcovergrid">${v.covers.map(c => `<button class="dkcovertile${c.name === v.cover ? ' on' : ''}" aria-pressed="${c.name === v.cover}" type="button" data-btn="deck-cover" data-card="${esc(c.name)}" title="${esc(c.name)}">`
+      <div class="dkcovergrid">${v.covers.map(c => `<button class="dkcovertile${c.name === v.cover ? ' on' : ''}" aria-pressed="${c.name === v.cover}" type="button" data-btn="deck-cover" data-card="${esc(c.name)}" title="${esc(c.name)}" data-zoom>`
         + `<img src="${esc(c.art)}" alt="${esc(c.name)}" loading="lazy" onerror="this.style.visibility='hidden'"></button>`).join('')}</div>`
     : '<p class="dksheetnote">Put some cards in it first.</p>';
   const desc = v.editing
