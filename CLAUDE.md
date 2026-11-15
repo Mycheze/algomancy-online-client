@@ -139,6 +139,19 @@ That one command fans out to engine, ui, server and ledgers, and
   the scripts green — nothing ran them, and they constructed everything and
   clicked nothing. They click now.
 
+## Comments
+
+A comment says what the code cannot: an invariant, and why it holds. Present tense, one
+to three lines, and it cites the rule that decides it (`CR 608.2b`) when one does.
+
+The story goes in the commit message, not the file: what broke, when, who reported it,
+what was tried first, what the code used to do. So no dates, no ticket or report numbers,
+no "was X until…", no "found while…", and no restating what the next line plainly does.
+If a comment needs a paragraph, the code needs a better name or a smaller function.
+
+Two kinds of comment are load-bearing and stay word for word: a line a rules record
+quotes (`cr:check` fails without it) and a `CR <number>` citation.
+
 ## Working in this tree
 
 - **Other sessions edit this repo live.** Check `git worktree list` if the tree
