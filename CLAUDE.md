@@ -15,8 +15,8 @@ integration — a little HTTP.
 **The two halves talk, both ways, over loopback.** The game server proxies
 `/api/cardinfo` and `/api/judge` to `bot/app.py` on :8000 (the in-game card
 inspector and the judge box). The bot reads `/api/cardsearch`, `/api/bot/*` and
-`/api/players` off the game server on :5000, and the server pushes queue events
-to the bot on :8765. All of it is gated on `ALGO_BOT_TOKEN`; unset means the
+`/api/players` off the game server on :5000, and polls `/api/bot/events` there
+for queue events. All of it is gated on `ALGO_BOT_TOKEN`; unset means the
 integration is absent rather than broken, on both sides. See `.env.example`.
 
 ## Where things are
