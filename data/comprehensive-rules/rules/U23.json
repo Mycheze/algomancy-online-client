@@ -3320,16 +3320,19 @@
           "from": "register@72de434"
         }
       ],
-      "engine": [],
+      "engine": [
+        "client/server/rooms.ts:restoreRooms",
+        "client/server/rooms.ts:undoForSeat"
+      ],
       "tests": [
         "374-undo-locks-on-reveal.test.ts",
         "434-cr-digital-1.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "digital",
     "confidence": "high",
-    "notes": "",
+    "notes": "The owner quote supports the first sentence only (the seen-cards floor survives an undo). The second sentence is the server: restoreRooms builds the room with bases: [b], the one resume point from the file's live block, and undoForSeat refuses below room.bases[0].at, so nothing before the restart can be undone (374 CR D4.3f, 434 restart).",
     "sourceHashes": {}
   },
   {

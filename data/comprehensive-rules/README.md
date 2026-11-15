@@ -163,7 +163,7 @@ One JSON object per rule, in `rules/<section>.json`:
 | `sources.designer[]` | `{ ref: "RAQ <threadId>#<i>", quote }`, or `{ ref: "RQ <messageId>", quote }` for one of Caleb's messages in the flat rules-questions channel (see "Designer answers outside the RAQ threads") |
 | `sources.ours[]` | `{ ref, quote }` from our own text (the glossary) — never authority |
 | `sources.owner[]` | `{ quote, adopted, from }` — the owner's call, the date he adopted it (YYYY-MM-DD), and where it is written: `comment <id>` (a review comment, his own words), `questions-round27 Q2` (a question sheet), or `register@<sha>` for a call absorbed from the retired register (the register's write-up, verified against it; a sheet pointer may precede it: `questions-round27 Q2; register@72de434`) |
-| `sources.engine[]` | engine symbols (the verifier's citations) |
+| `sources.engine[]` | engine symbols (the verifier's citations): `file.ts:symbol` or a bare symbol, declared in `client/engine/src`. An Annex D rule may also name `client/server/<file>.ts:<symbol>` or `client/ui/<file>.ts:<symbol>`, declared in that file |
 | `sources.tests[]` | test files that demonstrate the rule |
 | `basis` | `printed` \| `designer` \| `owner` \| `engine` \| `mixed` |
 | `scope` | `game` (holds at a table) \| `digital` (true of this client only). Every `annexd.*` rule is digital; a digital rule in the main document carries a small "Digital client" tag, and Annex P lists them |

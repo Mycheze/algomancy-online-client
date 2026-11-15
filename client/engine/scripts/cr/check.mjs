@@ -40,6 +40,7 @@ import {
   validateDiscrepancy, validateFinding, validateOutline, validateRecord, validateVerdict,
 } from './schema.mjs';
 import { buildModel, loadInputs, outlineSlots, unitOfRow } from './render.mjs';
+import { symbolsIn } from './extract.mjs';
 
 /**
  * A verdict span quoted from a GENERATED file goes stale when that file is
@@ -196,6 +197,15 @@ export function check(inputs, ex, opts = {}) {
     }
     return fileCache.get(rel);
   };
+  /** the names a client/ui or client/server file declares (an Annex D rule may cite them) */
+  const declCache = new Map();
+  const declaredIn = (rel) => {
+    if (!declCache.has(rel)) {
+      const abs = join(repo, rel);
+      declCache.set(rel, !isAbsolute(rel) && existsSync(abs) ? symbolsIn(readFileSync(abs, 'utf8')) : null);
+    }
+    return declCache.get(rel);
+  };
 
   /** resolve a source ref and check a quote against it; `code` names the failure */
   const quoteIn = (where, ref, quote, code = 'quote-not-verbatim') => {
@@ -320,9 +330,19 @@ export function check(inputs, ex, opts = {}) {
       if (t !== null && !t.includes(norm(x.quote ?? ''))) P('owner-quote-not-in-register', `${w} owner[${i}]`, `not verbatim in the retired register at ${m[1]}: "${String(x.quote).slice(0, 90)}"`);
     }
     for (const e of arr('engine')) {
-      for (const tok of String(e).split(/\s*[/,]\s*/).filter(Boolean)) {
+      // a `client/ui/…` or `client/server/…` path is one token: its slashes are not separators
+      const whole = /^client\/(?:ui|server)\/[\w./-]+\.(?:ts|mjs|js):[\w.()]+$/.test(String(e).trim());
+      for (const tok of whole ? [String(e).trim()] : String(e).split(/\s*[/,]\s*/).filter(Boolean)) {
         let sym = tok;
         const m = /^([\w./-]+\.(?:ts|mjs|js)):(.+)$/.exec(tok);
+        if (m && /^client\/(?:ui|server)\//.test(m[1])) {
+          // Annex D only (contract 1b): its code quote may come from client/ui or client/server source
+          const names = declaredIn(m[1]), id = m[2].split('.').pop().replace(/\(\)$/, '');
+          if (!isAnnexD(r)) P('engine-symbol-missing', w, `${tok}: only an Annex D rule may cite client/ui or client/server code`);
+          else if (!names) P('engine-symbol-missing', w, `engine file ${m[1]} does not exist`);
+          else if (!names.has(id)) P('engine-symbol-missing', w, `symbol ${tok} is not declared in ${m[1]}`);
+          continue;
+        }
         if (m) {
           sym = m[2];
           const f = m[1].includes('/') ? m[1] : `client/engine/src/${m[1]}`;

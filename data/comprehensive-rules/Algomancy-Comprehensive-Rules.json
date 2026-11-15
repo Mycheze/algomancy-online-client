@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:1da4578f2a17bd08",
+ "generated_from": "sha256:6ecadc5e55c33653",
  "rules": [
   {
    "num": "100.1",
@@ -39497,13 +39497,13 @@
    "text": "The lock survives an undo. A server restart seals the open step: nothing played before the restart can be undone.",
    "see": [],
    "examples": [],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "digital",
    "engineDiffers": false,
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "stale"
+   "verdict": "confirmed"
   },
   {
    "num": "D4.3g",

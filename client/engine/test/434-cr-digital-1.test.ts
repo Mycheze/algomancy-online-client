@@ -958,7 +958,7 @@ test('cr:annexd.undo.seen-cards.measured — a glimpse, a draw and a look at a h
   assert.ok(look, 'looking at the opponent hand counts');
 });
 
-test('cr:annexd.undo.seen-cards.restart — the lock survives a server restart and an undo', async () => {
+test('cr:annexd.undo.seen-cards.restart — the lock survives an undo; a restart seals the open step', async () => {
   const { room, P } = deploying('U23S6', 23185);
   lilbotGlimpse(room, P);
   tick(room, { type: 'decide', seat: P, choice: 0 });

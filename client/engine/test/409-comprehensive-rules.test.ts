@@ -393,6 +393,7 @@ const PLANTS: Plant[] = [
   { name: 'a source hash for a rules-questions message the snapshot does not hold', code: 'rq-missing', plant: (i) => { B(i).sourceHashes['RQ 9999'] = 'q9'; } },
   { name: 'a rules-questions ref that is not a message id', code: 'schema', plant: (i) => { B(i).sources.designer![1]!.ref = 'RQ the automaton thread'; } },
   { name: 'an engine symbol that does not exist', code: 'engine-symbol-missing', plant: (i) => { A(i).sources.engine = ['engine.ts:assignCombatDamageTwice']; } },
+  { name: 'a game rule citing server code', code: 'engine-symbol-missing', plant: (i) => { A(i).sources.engine = ['client/server/rooms.ts:undoForSeat']; } },
   { name: 'an example bound to no test title', code: 'example-test-unresolved', plant: (i) => { A(i).examples[0]!.test = '02-combat.test.ts::no such title'; } },
   { name: 'an example bound to two test titles', code: 'example-test-unresolved', plant: (i) => { A(i).examples[0]!.test = '02-combat.test.ts::dup'; } },
   { name: 'a test file that does not exist', code: 'test-file-missing', plant: (i) => { A(i).sources.tests = ['999-nope.test.ts']; } },

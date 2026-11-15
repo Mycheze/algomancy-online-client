@@ -6365,42 +6365,82 @@
   },
   {
     "key": "annexd.undo.seen-cards.restart",
-    "textHash": "170f034b27f03380",
+    "textHash": "d3f434bb2975f562",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U23-r1",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/server/rooms.ts:rebuild (segSeen)",
+        "loc": "client/server/rooms.ts:undoForSeat",
         "agrees": true,
-        "note": ""
+        "note": "segment walk refuses i <= lastSeen(segSeen) with SEEN_REFUSAL and i < bases[0].at with 'nothing to undo'; segSeen is re-measured on the rebuild after an undo, so the lock survives it"
+      },
+      {
+        "loc": "client/server/rooms.ts:restoreRooms",
+        "agrees": true,
+        "note": "a restore starts from the file's live block alone (bases in memory only), so everything before the restart is below the floor"
       }
     ],
     "tests_run": [
       {
         "file": "client/server/test/374-undo-locks-on-reveal.test.ts",
-        "pattern": "R312 §4: the lock survives a restart",
+        "pattern": "CR D4.3f: the lock survives a restart",
         "passed": true,
-        "asserts_claim": true,
-        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 7/7 pass"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/374-undo-locks-on-reveal.test.ts",
+        "pattern": "CR D4.3a: a plain spawn after the glimpse",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/374-undo-locks-on-reveal.test.ts",
+        "pattern": "CR D4.3e: held until an undo asks",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "pattern": "cr:annexd.undo.seen-cards.restart",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/server/test/zz-probe-U23-1.test.ts",
+        "test": "probe U23-1: a restart seals the open step even with no glimpse — a spawn before it cannot be undone, and the refusal is not SEEN_REFUSAL",
+        "passed": true,
+        "demonstrates": "yes: with no glimpse at all, a spawn undoable before the restart is refused after it — the restart itself seals the step"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "R312",
+        "ref": "owner register@72de434 'again after a restart or an undo, so the floor survives both.'",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "owner call that the floor survives an undo and a restart; no printed or designer source speaks to digital undo"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "again after a restart or an undo, so the floor survives both."
+        "file": "client/server/test/374-undo-locks-on-reveal.test.ts",
+        "text": " *   §4  a restart seals the step: nothing played before it is taken back"
+      },
+      {
+        "file": "client/server/test/374-undo-locks-on-reveal.test.ts",
+        "text": "  assert.deepEqual(R.undoForSeat(room, P), { ok: true }, 'the spawn after the glimpse comes back');"
+      },
+      {
+        "file": "client/server/test/374-undo-locks-on-reveal.test.ts",
+        "text": "    'the next undo would take back the glimpse — refused');"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "   * restart seals the open step. */"
       }
     ],
     "basis_ok": true,
-    "problem": "374 §4 server test (read, not run).",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   }
 ]
