@@ -23,7 +23,7 @@ import { syncBuiltinESMExports } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { directLoopback } from '../api-bot.ts';
+import { directLoopback } from '../api-util.ts';
 import { spawnServer, type ServerHandle } from '../e2e/test-util.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -107,8 +107,10 @@ test('§3 ⭐ no ALGO_BOT_TOKEN: the route does not exist, header or not', async
 test('§4 the Caddyfile answers the route 404 at the edge', () => {
   const caddy = readFileSync(join(HERE, '..', '..', '..', 'deploy', 'Caddyfile'), 'utf8');
   const site = caddy.slice(caddy.indexOf('algomancy.online {'), caddy.indexOf('algomancyonline.com,'));
-  assert.match(site, /handle \/api\/bot\/simulate\* \{\s*respond "not found" 404\s*\}/);
-  assert.ok(site.indexOf('handle /api/bot/simulate*') < site.indexOf('reverse_proxy'), 'inside the public site');
+  // the bot-only matcher (1410 checks it covers every bot-token path)
+  assert.match(site, /@botonly path [^\n]*\/api\/bot\/\*/);
+  assert.match(site, /handle @botonly \{\s*respond "not found" 404\s*\}/);
+  assert.ok(site.indexOf('handle @botonly') < site.indexOf('reverse_proxy'), 'inside the public site');
 });
 
 /* ══ §5 ═════════════════════════════════════════════════════════════ */

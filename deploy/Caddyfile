@@ -59,11 +59,14 @@ algomancy.online {
 			ROBOTS 200
 	}
 
-	# the judge bot's engine calculator is for the bot on this box only: the
-	# app already 404s it to anything proxied (api-bot.ts directLoopback, which
-	# keys on the X-Forwarded-For this proxy adds); this answers it at the
-	# edge too, so it never reaches the app from outside at all
-	handle /api/bot/simulate* {
+	# every route behind the bot token is for callers on this box only: the
+	# app already 404s them to anything proxied (main.ts botAllowed, via
+	# api-util.ts directLoopback, which keys on the X-Forwarded-For this proxy
+	# adds); this answers them at the edge too, so they never reach the app
+	# from outside at all. client/server/test/1410-bot-gate-loopback.test.ts
+	# checks every bot-token path in the server is listed here.
+	@botonly path /api/bot/* /api/league/bot/* /api/cr/editor*
+	handle @botonly {
 		respond "not found" 404
 	}
 

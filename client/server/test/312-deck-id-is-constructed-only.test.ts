@@ -30,13 +30,12 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-/* ⚠ THROWAWAY STATE, AND IT IS THESE TWO VARIABLES, NOT `ALGO_VAR_DIR`.
+/* ⚠ THROWAWAY STATE.
  *
  * `createRoom` persists every room it touches, and `register` writes the
  * account store — both under var/, which is LIVE DATA (server/statepaths.ts).
- * statepaths reads `ALGO_GAMES_DIR` and `ALGO_ACCOUNTS_FILE`; `ALGO_VAR_DIR`
- * is the BOT's variable (bot/test/_scratch_var.py) and means nothing here, so
- * setting it looks like isolation and gives none. Set before the imports,
+ * statepaths reads `ALGO_GAMES_DIR` and `ALGO_ACCOUNTS_FILE`, and `ALGO_VAR_DIR`
+ * would move both too (test 1420). Set before the imports,
  * because rooms.ts captures its games directory at module scope. */
 const SCRATCH = mkdtempSync(join(tmpdir(), 'algo-deckid-test-'));
 process.env['ALGO_GAMES_DIR'] = join(SCRATCH, 'games');

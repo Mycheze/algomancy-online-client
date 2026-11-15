@@ -78,7 +78,7 @@ import { checkCustomRules, fixedElements, rulesSummary, sanitizeCustomRules, typ
 import { accountRoutes } from './api-accounts.ts';
 import { inboxRoutes } from './api-inbox.ts';
 import { seenRecently, type InviteRoom } from './inbox.ts';
-import { addrOf, rateLimited, tokenOf, readBody } from './api-util.ts';
+import { addrOf, directLoopback, limitReached, rateLimited, tokenOf, readBody } from './api-util.ts';
 import { deckRoutes } from './api-decks.ts';
 import { adminRoutes } from './api-admin.ts';
 import { storybookRoutes } from './storybook.ts';
@@ -113,6 +113,8 @@ import { CODE_ALPHABET } from './link.ts';
 import { deckForPlay, savedDeckNow } from './collection.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
 import { accountById, accountByName, accountForToken, gameHistory, issueSignupClaim, loadAccounts, privateView, seatBadge, setAdmin, setBadge, type SeatBadge } from './accounts.ts';
+import { loadLeague } from './league-store.ts';
+import { StoreLoadError } from './store-file.ts';
 // #190: the trio picker's history, draft rows only — a pure function so a test can hold it
 import { trioHistoryRows } from './accounts.ts';
 import { ratedMode, type RatedMode } from './rating.ts';
@@ -190,12 +192,22 @@ function sameToken(a: string, b: string): boolean {
   return diff === 0;
 }
 
-/** Is this request allowed to touch the tester at all? See TESTER_TOKEN. */
+/** Is this request allowed to touch the tester at all? See TESTER_TOKEN.
+ * The `?token=` fallback is for a human opening a scenario from the address
+ * bar; scripted routes use testerHeaderAllowed(). */
 function testerAllowed(req: import('node:http').IncomingMessage, url: URL): boolean {
   if (!TESTER_TOKEN) return false;
   const header = req.headers['x-algo-tester'];
   const given = (typeof header === 'string' ? header : url.searchParams.get('token')) ?? '';
   return sameToken(given, TESTER_TOKEN);
+}
+
+/** The tester token from the header only — for the admin bootstraps, which a
+ * script calls and a browser never does, so the token never sits in a URL. */
+function testerHeaderAllowed(req: import('node:http').IncomingMessage): boolean {
+  if (!TESTER_TOKEN) return false;
+  const header = req.headers['x-algo-tester'];
+  return sameToken(typeof header === 'string' ? header : '', TESTER_TOKEN);
 }
 
 // ── the Discord bot's gate ────────────────────────────────────────────
@@ -210,11 +222,20 @@ function testerAllowed(req: import('node:http').IncomingMessage, url: URL): bool
 // tester takes a query parameter because a human types its URL into a browser.
 // A bot never does, and a token in a query string is a token in every access
 // log between here and it. The inconsistency is deliberate; leave it.
+//
+// …and a DIRECT loopback peer (api-util.ts directLoopback). Every caller of
+// these routes runs on this box and talks to 127.0.0.1; anything through the
+// proxy is refused with the same 404, so a leaked token is no use from outside.
+// deploy/Caddyfile also answers these paths 404 at the edge.
 const BOT_TOKEN = process.env['ALGO_BOT_TOKEN'] ?? '';
+// .env and tester.env must carry the same token, and a mismatch is a silent
+// 404; this line at least says which side thinks the integration is on
+if (BOT_TOKEN) console.log('[bot] integration: on');
 
-/** Is this request allowed to touch the bot routes at all? See BOT_TOKEN. */
+/** Is this request allowed to touch the bot routes at all? See BOT_TOKEN.
+ * The one gate for every bot-token route; none may read the header itself. */
 function botAllowed(req: import('node:http').IncomingMessage): boolean {
-  if (!BOT_TOKEN) return false;
+  if (!BOT_TOKEN || !directLoopback(req)) return false;
   const header = req.headers['x-algo-bot'];
   return sameToken(typeof header === 'string' ? header : '', BOT_TOKEN);
 }
@@ -636,7 +657,11 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // everybody else, including the signed-out (api-replay.ts says why).
   // docs/22 §2.6: a game of a Competitive match still being played is not
   // served to its players (nor anybody but an admin) until the match is over
-  if (await replayRoutes(req, res, path, { liveRoom: code => !!getRoom(code), matchOpen: raw => !!matchStillOpen(raw) })) return;
+  if (await replayRoutes(req, res, path, {
+    liveRoom: code => !!getRoom(code),
+    playing: code => { const r = getRoom(code); return !!r && decidedWinner(r) === null; },
+    matchOpen: raw => !!matchStillOpen(raw),
+  })) return;
   // docs/22 §5.6 — the "Your matches" row: this account's open matches, so a
   // paused or running match is always one button away (no URL bar)
   if (path === '/api/matches/mine') {
@@ -885,13 +910,13 @@ async function handleRequest(req: import('node:http').IncomingMessage,
 
   // ── BL-17 (first slice): grant or clear a trust mark ─────────────
   //
-  // Behind the SAME gate as the scenario tester, for the same reason: this
+  // Behind the scenario tester's token (header only), for the same reason: this
   // is the owner's instrument, an unconfigured deploy must not admit the path
   // exists, and "only an admin can grant or revoke a badge" (BL-17) is
   // exactly what a secret only the box's operator holds gives. On the box:
   // deploy/badge.sh <name> [--owner] [--judge N] [--clear].
   if (path === '/api/admin/badge' && req.method === 'POST') {
-    if (!testerAllowed(req, url)) {
+    if (!testerHeaderAllowed(req)) {
       res.writeHead(404, { 'content-type': 'text/plain' });
       return res.end('not found');
     }
@@ -924,7 +949,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   //
   // On the box: deploy/admin.sh <name> [--revoke].
   if (path === '/api/admin/grant' && req.method === 'POST') {
-    if (!testerAllowed(req, url)) {
+    if (!testerHeaderAllowed(req)) {
       res.writeHead(404, { 'content-type': 'text/plain' });
       return res.end('not found');
     }
@@ -1244,7 +1269,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
       // bot's own limit, and only when there is one
       const lesson = typeof context === 'string' ? context.trim().slice(0, 4000) : '';
       // CT-470 the thread, BL-17 the asker's badge — both in judge-history.ts
-      const ask = judgeAskRequest({ question, history, lesson }, asker.badge, BOT_TOKEN);
+      const ask = judgeAskRequest({ question, history, lesson }, asker.badge, BOT_TOKEN, asker.id);
       const upstream = await fetch(`${BOT_URL}/api/ask`, {
         method: 'POST', headers: ask.headers, body: ask.body,
         signal: AbortSignal.timeout(60000),
@@ -1350,7 +1375,59 @@ const watching = new Map<WebSocket, Room>();
 /** how many unknown room codes each socket has asked to watch — see `watch` */
 const watchMisses = new WeakMap<WebSocket, number>();
 const WATCH_MISS_LIMIT = 20;
+/** Unknown room codes per ADDRESS, across `watch` and `join`: past the limit
+ * every lookup from that address is refused for the window, hit or miss, so
+ * the answer stops telling a live code from a dead one. */
+const CODE_MISS_BUCKET = 'room-code-miss';
+const CODE_MISS_LIMIT = 20;
+const CODE_MISS_WINDOW_MS = 10 * 60_000;
+const CODE_MISS_REFUSAL = 'too many unknown room codes from this address — wait a few minutes and try again';
 const conns = new WeakMap<WebSocket, Conn>();
+/** each socket's address, off its upgrade request (addrOf) */
+const sockAddr = new WeakMap<WebSocket, string>();
+/** each seat's address as of its latest join; in memory only */
+const seatAddrs = new WeakMap<Room, [string | null, string | null]>();
+/** the account each watcher signed in as, for the re-check when a seat binds */
+const watcherUser = new WeakMap<WebSocket, string | null>();
+
+/** A room whose result counts: rated (every queue room is), a league game,
+ * or a game of a Competitive match. */
+const roomCounts = (room: Room): boolean => !!room.rated || !!room.league || !!room.match;
+
+/**
+ * Why this socket may not watch this room, or null. The omniscient view of a
+ * game that counts goes only to a signed-in account that is neither seat and
+ * is not at either seat's address — a second tab, signed out or signed in as
+ * somebody else, must not be a way to read the opponent's hand. Once the game
+ * is decided (and its match, if any, is over) there is nothing left to hide.
+ */
+function watchRefusal(room: Room, ws: WebSocket, userId: string | null): string | null {
+  if (!roomCounts(room)) return null;
+  const openMatch = matchStillOpen(room.match);
+  if (decidedWinner(room) !== null && !openMatch) return null;
+  const addr = sockAddr.get(ws);
+  const known = seatAddrs.get(room);
+  const seatAt = (s: Seat): (string | null | undefined)[] =>
+    [known?.[s], room.sockets[s] ? sockAddr.get(room.sockets[s]!) : null];
+  const sameAddr = !!addr && [...seatAt(0), ...seatAt(1)].includes(addr);
+  const isSeat = !!userId && (room.users.includes(userId) || (!!openMatch && playsIn(openMatch, userId)));
+  if (userId && !isSeat && !sameAddr) return null;
+  return 'a rated, league or match game can be watched only by a signed-in player who is not in it, from a different network to both players';
+}
+
+/** Re-check every watcher after a seat binds: one already watching from that
+ * seat's address is dropped. */
+function dropBarredWatchers(room: Room): void {
+  for (const w of [...room.watchers]) {
+    const why = watchRefusal(room, w, watcherUser.get(w) ?? null);
+    if (!why) continue;
+    room.watchers.delete(w);
+    watching.delete(w);
+    send(w, { t: 'kicked', msg: why });
+    w.close();
+    console.log(`[ws] ${room.code}: a spectator was dropped (${room.watchers.size} watching)`);
+  }
+}
 
 const send = (ws: WebSocket, obj: unknown): void => {
   if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(obj));
@@ -2494,7 +2571,8 @@ const keepalive = setInterval(() => {
 }, KEEPALIVE_MS);
 keepalive.unref();
 
-wss.on('connection', ws => {
+wss.on('connection', (ws, req) => {
+  sockAddr.set(ws, addrOf(req));
   alive.set(ws, true);
   ws.on('pong', () => alive.set(ws, true));
   // without this, one malformed frame (say, invalid UTF-8 from a mangling
@@ -2569,11 +2647,14 @@ wss.on('connection', ws => {
      */
     if (msg.t === 'watch') {
       const code = (msg.room ?? '').toUpperCase().trim();
+      const addr = sockAddr.get(ws) ?? '?';
+      if (limitReached(addr, CODE_MISS_BUCKET, CODE_MISS_LIMIT)) return ws.close(1008, 'too many unknown room codes');
       const room = code ? getRoom(code) : undefined;
       if (!room) {
         // ⚠ this is the guess path for the whole 4-letter code space, and it
         // answers with both players' hands on a hit. Twenty misses and the
         // socket is closed; a person mistyping a code will not get near it.
+        rateLimited(addr, CODE_MISS_BUCKET, CODE_MISS_LIMIT, CODE_MISS_WINDOW_MS);
         const misses = (watchMisses.get(ws) ?? 0) + 1;
         watchMisses.set(ws, misses);
         if (misses > WATCH_MISS_LIMIT) return ws.close(1008, 'too many unknown room codes');
@@ -2588,14 +2669,17 @@ wss.on('connection', ws => {
       // SIGNED-IN account that is not one of its two players (a signed-out tab
       // could be either of them).
       const openMatch = matchStillOpen(room.match);
+      const who = accountForToken(typeof msg.token === 'string' ? msg.token : undefined);
       if (openMatch) {
-        const who = accountForToken(typeof msg.token === 'string' ? msg.token : undefined);
         if (!who || playsIn(openMatch, who.id)) {
           return send(ws, { t: 'error', msg: 'a Competitive match in progress can be watched only by a signed-in player who is not in it' });
         }
       }
+      const barred = watchRefusal(room, ws, who?.id ?? null);
+      if (barred) return send(ws, { t: 'error', msg: barred });
       room.watchers.add(ws);
       watching.set(ws, room);
+      watcherUser.set(ws, who?.id ?? null);
       pushWatchers(room);
       // and the players are told there is an audience — see Room.watchers
       forEachSeat(seat => pushView(room, seat));
@@ -2761,9 +2845,18 @@ wss.on('connection', ws => {
       // CR D7.5/CT-148: the sentence itself is rooms.ts's joinRefusal(), so it is
       // a value a test can read rather than something only a real socket can
       // provoke. Nothing about the decision changed when it moved.
+      // the same per-address brake as `watch`: "no such game" against "that
+      // seat is taken" is otherwise an unlimited oracle for live codes
+      const addr = sockAddr.get(ws) ?? '?';
+      if (code && limitReached(addr, CODE_MISS_BUCKET, CODE_MISS_LIMIT)) {
+        return send(ws, { t: 'error', msg: CODE_MISS_REFUSAL });
+      }
       const refusal = joinRefusal(code);
       if (refusal !== null) {
-        if (code) console.log(`[ws] join refused: no room ${code}`);
+        if (code) {
+          console.log(`[ws] join refused: no room ${code}`);
+          rateLimited(addr, CODE_MISS_BUCKET, CODE_MISS_LIMIT, CODE_MISS_WINDOW_MS);
+        }
         return send(ws, { t: 'error', msg: refusal });
       }
       // a deck riding on the join (constructed): validate it up front — the
@@ -2917,6 +3010,10 @@ wss.on('connection', ws => {
       // the "hijack erases the victim's stats" bug this replaced.
       if (account) setSeatUser(room, seat, account.id);
       room.sockets[seat] = ws;
+      const at = seatAddrs.get(room) ?? [null, null];
+      at[seat] = addr;
+      seatAddrs.set(room, at);
+      dropBarredWatchers(room);
       // BL-01: you are at a table now, so you are not looking for one. The
       // ordinary matched client navigates (which closes its queue socket);
       // this covers the odd case of a client that queues and then joins a
@@ -3788,7 +3885,17 @@ function sweepCube(): void {
 const expiryTimer = setInterval(() => { sweepExpiry(); sweepPassAll(); sweepWatchHold(); sweepFixes(); sweepQueue(); sweepFinished(); sweepIdle(); sweepCc(); sweepCube(); sweepLeague(); sweepChallengeWeeks(); }, EXPIRY_TICK_MS);
 expiryTimer.unref();
 
-loadAccounts();
+// The stores that are the only copy of what they hold load first, and one that
+// is present but unreadable stops the boot before anything below can write
+// over it (store-file.ts). The league is read lazily otherwise; read it here.
+try {
+  loadAccounts();
+  loadLeague();
+} catch (err) {
+  if (!(err instanceof StoreLoadError)) throw err;
+  console.error(`[boot] ${err.message}`);
+  process.exit(1);
+}
 // docs/22 §2.5 — boot order: the match store, then the rooms, then the
 // reconcile (a game decided just before a crash moves its match on; what
 // lapsed while the server was down is voided)

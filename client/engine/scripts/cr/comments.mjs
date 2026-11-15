@@ -32,7 +32,8 @@
  * RULES_EDITOR), never as anybody's account, through `POST /api/cr/editor`,
  * which only the bot token opens (api-crreview.ts). Over HTTP and not by
  * appending to the file, because the server validates the op and the file is
- * the server's. `--server <url>` sends the token from ALGO_BOT_TOKEN here;
+ * the server's. `--server <url>` sends the token from ALGO_BOT_TOKEN here, to
+ * a server on this machine (the door answers a direct loopback caller only);
  * `--box` runs curl ON the box, against its loopback game server, with the
  * box's own .env, so the token never leaves the box. `--dry-run` prints what
  * would be sent and sends nothing.

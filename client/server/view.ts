@@ -177,7 +177,12 @@ function pendingAskFor(v: SeatView, seat: Seat, frozenOpp?: GameState | null): P
  * seat-redacted broadcast is a change to THIS function and nothing else.
  */
 export function spectatorView(state: GameState): SeatView {
-  return structuredClone(state) as SeatView;
+  const v = structuredClone(state) as SeatView;
+  // omniscient about the present, never the future: the seed and RNG state
+  // would predict every shuffle to come, and the board needs neither
+  v.seed = 0;
+  v.rngState = 0;
+  return v;
 }
 
 /**

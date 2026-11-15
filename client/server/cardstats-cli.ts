@@ -13,12 +13,12 @@
  * being trusted. */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { PROD_MIRROR_DIR } from '../engine/scripts/paths.mjs';
 import { readLedger } from './cardledger.ts';
 import { foldCardStats, type CardRow, type CardStatsFilter, type StatsGame, type Wr } from './cardstats.ts';
 import type { RecordedGame } from './accounts.ts';
 
-const MIRROR = join(fileURLToPath(new URL('.', import.meta.url)), '..', '..', 'var', 'prod-mirror', 'snapshot');
+const MIRROR = join(PROD_MIRROR_DIR, 'snapshot');
 const argv = process.argv.slice(2);
 const opt = (name: string): string | undefined => { const i = argv.indexOf(name); return i >= 0 ? argv[i + 1] : undefined; };
 const flag = (name: string): boolean => argv.includes(name);

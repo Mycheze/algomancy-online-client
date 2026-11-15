@@ -152,7 +152,8 @@ export async function accountRoutes(
     const account = requireAuth();
     if (!account) return true;
     const b = await readBody(req);
-    return json(res, changePassword(account, str(b['oldPassword']), str(b['newPassword']))), true;
+    // the session that asked stays signed in; every other one of the account ends
+    return json(res, changePassword(account, str(b['oldPassword']), str(b['newPassword']), tokenOf(req))), true;
   }
 
   /* the favourite element, chosen: `{ element: 'dark' }` picks, anything

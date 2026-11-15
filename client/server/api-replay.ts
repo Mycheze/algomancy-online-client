@@ -197,7 +197,12 @@ const CODE = /^[A-Z0-9]{2,8}$/;
  */
 export async function replayRoutes(
   req: IncomingMessage, res: ServerResponse, path: string,
-  opts: { liveRoom: (code: string) => boolean; matchOpen?: (match: unknown) => boolean },
+  opts: {
+    liveRoom: (code: string) => boolean;
+    /** the room is in memory and has no decided winner yet */
+    playing: (code: string) => boolean;
+    matchOpen?: (match: unknown) => boolean;
+  },
 ): Promise<boolean> {
   if (!path.startsWith('/api/replay/')) return false;
   if (req.method !== 'GET') return notFound(res);
@@ -222,6 +227,10 @@ export async function replayRoutes(
   // player the opponent's deck before the next game. Refused — as "no such
   // game", the rule above — to everybody but an admin who is not a seat.
   if (opts.matchOpen?.((raw as { match?: unknown }).match) && !(admin && seat === null)) return notFound(res);
+  // A game still being played: the file holds the seed, both decks and the
+  // opponent's hidden moves, so its own players get "no such game" until it
+  // is decided. Same exception as above.
+  if (opts.playing(code) && !(admin && seat === null)) return notFound(res);
 
   json(res, {
     ok: true,

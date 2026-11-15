@@ -4,6 +4,7 @@
  * (bot/app.py Turn / AskRequest — 8 turns, 8000 characters), so a malformed
  * history is trimmed here rather than turning the whole question into a 422.
  * `role` is a closed choice: a "system" turn would be a second system prompt. */
+import { createHash } from 'node:crypto';
 
 export const MAX_TURNS = 8;
 export const MAX_TURN_CHARS = 8000;
@@ -29,7 +30,7 @@ export function cleanHistory(raw: unknown): Turn[] {
  * tells the bot the asker's BADGE — never a name or an id; the bot's log keeps
  * no asker — and only over the shared ALGO_BOT_TOKEN: the bot drops `asker`
  * from any request without it, so a caller of its public /api/ask cannot claim
- * a badge. Unbadged, or no token: the request is exactly what it was. */
+ * a badge. Unbadged, or no token: no `asker`. */
 
 export interface AskerBadge { owner?: true; judge?: 1 | 2 | 3 }
 
@@ -41,19 +42,28 @@ export function askerBadge(badge: { owner?: boolean; judge?: number } | null | u
   return null;
 }
 
-/** the headers and body the /api/judge proxy sends the bot's /api/ask */
+/** The bot's per-asker budget key for an account: opaque and stable, so the
+ * bot can count one account's questions without ever learning which it is. */
+export function askerKey(accountId: string, botToken: string): string {
+  return createHash('sha256').update(`${botToken}:${accountId}`).digest('hex').slice(0, 32);
+}
+
+/** the headers and body the /api/judge proxy sends the bot's /api/ask. The
+ * token rides on EVERY call when configured: the bot refuses an /api/ask from
+ * a public peer without it, and believes the badge and the key only with it. */
 export function judgeAskRequest(
   ask: { question: unknown; history: unknown; lesson: string },
   badge: { owner?: boolean; judge?: number } | null | undefined,
   botToken: string,
+  accountId?: string,
 ): { headers: Record<string, string>; body: string } {
   const asker = botToken ? askerBadge(badge) : null;
   return {
-    headers: { 'content-type': 'application/json', ...(asker ? { 'x-algo-bot': botToken } : {}) },
+    headers: { 'content-type': 'application/json', ...(botToken ? { 'x-algo-bot': botToken } : {}) },
     // CT-470: the judge box's own thread, so a follow-up is answered in it
     // (trimmed to the bot's ceilings; a lesson question stands alone)
     body: JSON.stringify({ question: String(ask.question ?? '').slice(0, 2000),
       history: ask.lesson ? [] : cleanHistory(ask.history), ...(ask.lesson ? { context: ask.lesson } : {}),
-      ...(asker ? { asker } : {}) }),
+      ...(asker ? { asker } : {}), ...(accountId ? { asker_key: askerKey(accountId, botToken) } : {}) }),
   };
 }

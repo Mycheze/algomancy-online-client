@@ -38,10 +38,23 @@ test('BL-17: a judge or the owner asking: the badge and the token go to the bot;
   for (const [badge, token, why] of [[undefined, 'tok', 'unbadged'], [null, 'tok', 'no badge'], [{ judge: 5 }, 'tok', 'no such level'],
     [{ judge: 3 }, '', 'no token on this server']] as const) {
     const r = judgeAskRequest(ask, badge, token);
-    assert.equal(r.headers['x-algo-bot'], undefined, `${why}: no token sent`);
+    assert.equal(r.headers['x-algo-bot'], token || undefined, `${why}: the token goes exactly when configured`);
     assert.equal(JSON.parse(r.body).asker, undefined, `${why}: no badge sent`);
     assert.equal(r.headers['content-type'], 'application/json');
   }
   const lesson = JSON.parse(judgeAskRequest({ ...ask, lesson: 'Lesson 2' }, { judge: 1 }, 'tok').body);
   assert.deepEqual([lesson.history, lesson.context, lesson.asker], [[], 'Lesson 2', { judge: 1 }], 'a lesson question stands alone');
+});
+
+/* The bot's own budget counts each account's questions by an opaque key: the
+ * same account always the same key, two accounts two keys, the id itself never sent. */
+test('the per-asker budget key: stable per account, distinct between accounts, never the id', () => {
+  const ask = { question: 'q', history: [], lesson: '' };
+  const key = (id: string, tok = 'tok'): string => JSON.parse(judgeAskRequest(ask, null, tok, id).body).asker_key;
+  const id = '6f1c2d3e-0000-4000-8000-000000000001';
+  assert.equal(key(id), key(id));
+  assert.notEqual(key(id), key('6f1c2d3e-0000-4000-8000-000000000002'));
+  assert.ok(!judgeAskRequest(ask, null, 'tok', id).body.includes(id), 'the account id is not in the request');
+  assert.ok(/^[0-9a-f]{32}$/.test(key(id)) && key(id, '') !== undefined, 'a key with or without a token');
+  assert.equal(JSON.parse(judgeAskRequest(ask, null, 'tok').body).asker_key, undefined, 'no account, no key');
 });

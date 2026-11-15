@@ -190,10 +190,13 @@ export function scratchVarDir(): string {
 
 /** Every statepaths.ts variable that names live data, pointed at the scratch
  * directory. (ALGO_REPORT_RUNS_FILE follows ALGO_ISSUES_FILE by itself; the
- * league, challenges and matches get their own throwaways in spawnServer.) */
+ * league, challenges and matches get their own throwaways in spawnServer.)
+ * ALGO_VAR_DIR covers every getter, including one added later; the per-file
+ * entries stay because gamesDir() below and callers read them by name. */
 export function scratchStateEnv(): Record<string, string> {
   const d = scratchVarDir();
   return {
+    ALGO_VAR_DIR: d,
     ALGO_GAMES_DIR: join(d, 'games'),
     ALGO_ACCOUNTS_FILE: join(d, 'accounts', 'accounts.json'),
     ALGO_ISSUES_FILE: join(d, 'issues.jsonl'),

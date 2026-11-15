@@ -91,7 +91,8 @@ which every `LLM_*` setting still falls back to — the `ALGO_*` integration
 settings — see `.env.example`) and, for the game server, at
 `client/server/tester.env` (see `tester.env.example`). Two values must agree
 across the two files: `ALGO_BOT_TOKEN` (a mismatch is not an error, every
-`/api/bot/*` route just answers 404) and `ALGO_PUBLIC_URL`
+`/api/bot/*` route just answers 404; the game server's journal says
+`[bot] integration: on` at boot when its copy is set) and `ALGO_PUBLIC_URL`
 (`https://algomancy.online` — the origin the bot's links point
 at, and the one Origin besides the request's own Host allowed to open a
 WebSocket).
@@ -152,6 +153,13 @@ same-origin framing under `/storybook/*`: `deploy/Caddyfile` does since
 2026-11-03, and a box whose `/etc/caddy/Caddyfile` predates that needs the
 `sudo cp deploy/Caddyfile … && sudo systemctl reload caddy` from step 3 once,
 or Storybook opens to an empty preview.
+
+The bot token's routes (`/api/bot/*`, `/api/league/bot/*`, `/api/cr/editor`)
+answer only a caller on the box talking to `127.0.0.1:5000` directly: the
+server 404s anything that came through Caddy, and the Caddyfile 404s those
+paths at the edge too. `ALGO_GAME_SERVER` must stay loopback. The tester
+token's admin routes (`deploy/admin.sh`, `deploy/badge.sh`) take it in the
+`x-algo-tester` header only.
 
 A client-only change is live on the next page load; `serveFile` sends
 `no-cache` and revalidates. An engine or server change also needs

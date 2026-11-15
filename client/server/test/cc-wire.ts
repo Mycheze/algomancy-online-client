@@ -21,8 +21,12 @@ export class Client {
   ws: WebSocket;
   msgs: Msg[] = [];
   private waiters: { pred: (m: Msg) => boolean; resolve: (m: Msg) => void }[] = [];
-  constructor(port: number) {
-    this.ws = new WebSocket(`ws://localhost:${port}`);
+  /** `from`: an X-Forwarded-For address, which the server honours off a
+   * loopback peer — how a test is a second network */
+  constructor(port: number, from?: string) {
+    this.ws = from
+      ? new WebSocket(`ws://localhost:${port}`, { headers: { 'x-forwarded-for': from } } as unknown as string[])
+      : new WebSocket(`ws://localhost:${port}`);
     this.ws.addEventListener('message', ev => {
       const m = JSON.parse(String((ev as MessageEvent).data)) as Msg;
       this.msgs.push(m);
@@ -82,7 +86,7 @@ export async function ccWire(tag: string) {
   restore();
   let server: ServerHandle = await spawnServer(env);
   const clients: Client[] = [];
-  const client = async (): Promise<Client> => { const c = new Client(server.port); clients.push(c); await c.open(); return c; };
+  const client = async (from?: string): Promise<Client> => { const c = new Client(server.port, from); clients.push(c); await c.open(); return c; };
   return {
     DIR, env, people, pool,
     get port() { return server.port; },

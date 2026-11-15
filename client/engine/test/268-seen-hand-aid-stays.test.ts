@@ -57,6 +57,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { GAMES_DIR } from '../scripts/paths.mjs';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { apply, IllegalAction, legalActions } from '../src/apply.ts';
@@ -160,7 +162,7 @@ test('CT-174 the only way the aid comes off the screen is the player dismissing 
 
 /* ══ §3 — nothing in a real game's states takes it away ════════════════ */
 
-const DQVZ = '/home/bena/Documents/Algomancy/var/games/DQVZ.json';
+const DQVZ = join(GAMES_DIR, 'DQVZ.json');
 
 test('CT-174 across every state of the reported game, the aid is never taken away', { skip: !existsSync(DQVZ) && 'var/games/DQVZ.json is not on this machine (var/ is gitignored)' }, (t) => {
   // THE REPORT'S OWN GAME. This is the measurement the ticket's premise needed

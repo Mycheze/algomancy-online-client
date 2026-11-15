@@ -23,23 +23,35 @@
  * module scope unless you are reproducing the import-time behaviour on purpose
  * (main.ts and rooms.ts do exactly that, and always have).
  */
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));   // <repo>/client/server
 
-/** every mutable thing the deployment owns; gitignored in full */
+/** the checkout's own var/, gitignored in full: varDir()'s DEFAULT, and the
+ * live data on the deploy box. Compare against it; never build a state path
+ * from it, or ALGO_VAR_DIR stops moving that path. */
 export const VAR_DIR = join(HERE, '..', '..', 'var');
 
+/** every mutable thing the deployment owns — the base every getter below
+ * defaults under, so ALGO_VAR_DIR moves them all and a per-file variable
+ * still wins for its one file. Same variable, default and meaning as
+ * bot/paths.py var_dir(): empty is unset, and a relative value is relative
+ * to the process's working directory. */
+export function varDir(): string {   // a function, not `const … =>`: it names no file (ui test 267)
+  const v = process.env['ALGO_VAR_DIR'];
+  return v ? resolve(v) : VAR_DIR;
+}
+
 /** saved rooms, one JSON per room code — replay with replay-room.ts */
-export const gamesDir = (): string => process.env['ALGO_GAMES_DIR'] ?? join(VAR_DIR, 'games');
+export const gamesDir = (): string => process.env['ALGO_GAMES_DIR'] ?? join(varDir(), 'games');
 
 /** the account store: password hashes, session tokens, every player's stats */
 export const accountsFile = (): string =>
-  process.env['ALGO_ACCOUNTS_FILE'] ?? join(VAR_DIR, 'accounts', 'accounts.json');
+  process.env['ALGO_ACCOUNTS_FILE'] ?? join(varDir(), 'accounts', 'accounts.json');
 
 /** playtest reports from the in-game 🐛 button, stamped with room + action */
-export const issuesFile = (): string => process.env['ALGO_ISSUES_FILE'] ?? join(VAR_DIR, 'issues.jsonl');
+export const issuesFile = (): string => process.env['ALGO_ISSUES_FILE'] ?? join(varDir(), 'issues.jsonl');
 
 /**
  * Report round 2026-10-23 — the RUN a report from a solo room was filed on (a
@@ -53,7 +65,7 @@ export const reportRunsFile = (): string =>
   process.env['ALGO_REPORT_RUNS_FILE'] ?? join(dirname(issuesFile()), 'report-runs.jsonl');
 
 /** the scenario tester's verdicts — the owner's judgements, and the only copy */
-export const verdictsFile = (): string => process.env['ALGO_VERDICTS_FILE'] ?? join(VAR_DIR, 'verdicts.jsonl');
+export const verdictsFile = (): string => process.env['ALGO_VERDICTS_FILE'] ?? join(varDir(), 'verdicts.jsonl');
 
 /**
  * BL-16 — the admin's TRIAGE MARKS on playtest reports, one JSON line each.
@@ -69,7 +81,7 @@ export const verdictsFile = (): string => process.env['ALGO_VERDICTS_FILE'] ?? j
  * mind a new line rather than an edit, and makes the file replayable.
  */
 export const reportMarksFile = (): string =>
-  process.env['ALGO_REPORT_MARKS_FILE'] ?? join(VAR_DIR, 'report-marks.jsonl');
+  process.env['ALGO_REPORT_MARKS_FILE'] ?? join(varDir(), 'report-marks.jsonl');
 
 /**
  * The league (docs/20-league.md): every season — its entrants, weekly
@@ -78,7 +90,7 @@ export const reportMarksFile = (): string =>
  * seasons of a few dozen players is small, and one file is one thing to back
  * up and one thing to restore.
  */
-export const leagueFile = (): string => process.env['ALGO_LEAGUE_FILE'] ?? join(VAR_DIR, 'league.json');
+export const leagueFile = (): string => process.env['ALGO_LEAGUE_FILE'] ?? join(varDir(), 'league.json');
 
 /**
  * The rules review page's comments (api-crreview.ts, crreview.ts): one JSON
@@ -86,7 +98,7 @@ export const leagueFile = (): string => process.env['ALGO_LEAGUE_FILE'] ?? join(
  * wins per comment — so a deleted comment's text stays in the file. Each row
  * carries the author's account id; the page is never sent it.
  */
-export const crCommentsFile = (): string => process.env['ALGO_CR_COMMENTS_FILE'] ?? join(VAR_DIR, 'cr-comments.jsonl');
+export const crCommentsFile = (): string => process.env['ALGO_CR_COMMENTS_FILE'] ?? join(varDir(), 'cr-comments.jsonl');
 
 /**
  * BL-17 — the judges' flags on the rules bot's answers (api-judge-review.ts):
@@ -96,7 +108,7 @@ export const crCommentsFile = (): string => process.env['ALGO_CR_COMMENTS_FILE']
  * the bot's log window, and after the bot's own log is gone. Each row carries
  * the judge's account id; the page is never sent it.
  */
-export const judgeFlagsFile = (): string => process.env['ALGO_JUDGE_FLAGS_FILE'] ?? join(VAR_DIR, 'judge-flags.jsonl');
+export const judgeFlagsFile = (): string => process.env['ALGO_JUDGE_FLAGS_FILE'] ?? join(varDir(), 'judge-flags.jsonl');
 
 /**
  * Weekly challenges (docs/21-weekly-challenges.md, challenge-store.ts): a
@@ -106,18 +118,18 @@ export const judgeFlagsFile = (): string => process.env['ALGO_JUDGE_FLAGS_FILE']
  * never recomputed. `weeks.json` is the frozen result of each closed week
  * (the top ten of each leaderboard), rewritten atomically.
  */
-export const challengesDir = (): string => process.env['ALGO_CHALLENGES_DIR'] ?? join(VAR_DIR, 'challenges');
+export const challengesDir = (): string => process.env['ALGO_CHALLENGES_DIR'] ?? join(varDir(), 'challenges');
 /** Competitive Constructed matches (docs/22 §2.2, server/match-store.ts): one
  * JSON file per match, `<id>.json`, written atomically. Each game of a match
  * is an ordinary room file under gamesDir(); this holds what lasts between
  * them — the score, the sideboard configurations, the clocks, the pause. */
-export const matchesDir = (): string => process.env['ALGO_MATCHES_DIR'] ?? join(VAR_DIR, 'matches');
+export const matchesDir = (): string => process.env['ALGO_MATCHES_DIR'] ?? join(varDir(), 'matches');
 /** cube draft events (docs/25, server/cube-store.ts): one JSON file per event,
  * `<CODE>.json`, written atomically — its players, the pod draft as it stands,
  * the drafted pools and submitted decks, the pairings and results, and the
  * bell's notes. Each match it opens is an ordinary match under matchesDir(). */
-export const cubeDir = (): string => process.env['ALGO_CUBE_DIR'] ?? join(VAR_DIR, 'cube');
+export const cubeDir = (): string => process.env['ALGO_CUBE_DIR'] ?? join(varDir(), 'cube');
 /** the drawn link-preview pictures (a deck's fan, server/main.ts /og/deck/).
  * A cache: every file is rebuilt from the deck on a miss, so losing it costs
  * one Python run per deck and nothing else. */
-export const ogCacheDir = (): string => process.env['ALGO_OG_CACHE_DIR'] ?? join(VAR_DIR, 'og-cache');
+export const ogCacheDir = (): string => process.env['ALGO_OG_CACHE_DIR'] ?? join(varDir(), 'og-cache');

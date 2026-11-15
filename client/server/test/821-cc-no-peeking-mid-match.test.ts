@@ -26,8 +26,8 @@ test('§1-§3 the replay and the omniscient watch are refused to the players unt
     assert.equal(await replay(code, ann.token), 404, 'Ann cannot open game 1 mid-match');
     assert.equal(await replay(code, bo.token), 404, 'nor can Bo');
     // §2 watching
-    const watch = async (room: string, token?: string) => {
-      const c = await w.client();
+    const watch = async (room: string, token?: string, from?: string) => {
+      const c = await w.client(from);
       return c.ask({ t: 'watch', room, ...(token ? { token } : {}) }, () => true);
     };
     for (const [who, token] of [['Ann', ann.token], ['Bo', bo.token], ['a signed-out tab', undefined]] as const) {
@@ -37,7 +37,7 @@ test('§1-§3 the replay and the omniscient watch are refused to the players unt
         assert.match(String(got.msg), /Competitive match in progress/);
       }
     }
-    const third = await watch(next, cy.token);
+    const third = await watch(next, cy.token, '198.51.100.7');   // not the players' network
     assert.notEqual(third.t, 'error', 'a signed-in stranger may watch');
     // §3 Ann concedes the match
     mk = a.msgs.length;

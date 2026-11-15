@@ -12,7 +12,9 @@
  * over unchanged, so main.ts's botAllowed() is testerAllowed()'s twin: no
  * ALGO_BOT_TOKEN in the environment and these paths do not exist; token set but
  * wrong on the request and they still do not exist. Not 403 — 404, the same
- * answer any other unserved path gets.
+ * answer any other unserved path gets. botAllowed() also requires a direct
+ * loopback peer (api-util.ts directLoopback): every caller is on this box, so
+ * the token is no use from outside even if it leaks.
  *
  * The reason it matters MORE here than it does for the tester: /api/queue is
  * unauthenticated and returns numbers only, with a paragraph in main.ts saying
@@ -34,12 +36,10 @@
  *
  * Two routes write — /api/bot/link/claim and /api/bot/unlink, which each
  * save the account store — and everything else is a read. /api/bot/simulate
- * (2026-11-01) computes and writes nothing; it is the one route with a second
- * gate, direct loopback only (see directLoopback below). (This header said
- * "nothing here writes" for a while after the link routes arrived.)
+ * computes and writes nothing.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { json, readBody } from './api-util.ts';
+import { directLoopback, json, readBody } from './api-util.ts';
 import {
   accountById, accountByName, allAccounts, publicView, saveAccounts,
 } from './accounts.ts';
@@ -51,26 +51,6 @@ import type { SimResult } from './simulate.ts';
 /** /api/bot/simulate's body cap (simulate.ts LIMITS.bodyBytes says the same;
  * not imported, so this module does not load the engine) */
 export const SIMULATE_BODY_BYTES = 16 * 1024;
-
-const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
-
-/**
- * Is this request from a process on THIS box, straight to the socket — not
- * through the reverse proxy?
- *
- * /api/bot/simulate runs the engine on request, so on top of the bot token it
- * answers only a direct loopback peer. Behind Caddy every request arrives
- * from loopback too, so loopback alone proves nothing; Caddy always adds
- * X-Forwarded-For (deploy/Caddyfile says so), and the bot on the same box
- * never does. Any forwarding header at all means "came through a proxy".
- * The Caddyfile also answers this path 404 at the edge — belt and braces.
- */
-export function directLoopback(req: Pick<IncomingMessage, 'headers'> & { socket: { remoteAddress?: string | undefined } }): boolean {
-  if (!LOOPBACK.has(req.socket.remoteAddress ?? '')) return false;
-  const h = req.headers;
-  return h['x-forwarded-for'] === undefined && h['forwarded'] === undefined
-    && h['x-real-ip'] === undefined && h['x-forwarded-host'] === undefined;
-}
 
 /** What main.ts lends these routes: the decision, and the live registries. */
 export interface BotCtx {
@@ -132,10 +112,8 @@ export async function botRoutes(
    * does. Pure: no room, no var/ file. Runs in a worker (simulate-worker.ts),
    * never on this thread.
    *
-   * ⚠ TWO GATES, both answered 404 like the token gate above: the token
-   * (already checked), AND a direct loopback peer with no forwarding header.
-   * This is the one bot route that spends real CPU per call, and the bot only
-   * ever calls it from this box. */
+   * The loopback check repeats botAllowed()'s on purpose: this is the one bot
+   * route that spends real CPU per call. */
   if (path === '/api/bot/simulate') {
     if (!directLoopback(req) || !ctx.simulate) {
       res.writeHead(404, { 'content-type': 'text/plain' });

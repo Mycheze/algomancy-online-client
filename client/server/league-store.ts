@@ -23,9 +23,9 @@
  * half an hour, and nothing else about it differs. `hold` stops an automatic
  * season at its next boundary until the organizer advances it by hand.
  */
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
 import { leagueFile } from './statepaths.ts';
+import { arrayOfRecords, isRecord, readStoreFile, writeStoreFile } from './store-file.ts';
+import { notePersist } from './store-health.ts';
 import { accountById, admins, setLeagueHonour, type Account, type LeagueHonour } from './accounts.ts';
 import {
   MIN_HOURS, calendarPhase, closedPhase, finalPhase, hoursIn, meetings, overlapScore, pairKey, pairWeek, phaseLabel,
@@ -133,18 +133,22 @@ let store: LeagueStore | null = null;
 let fileOverride: string | null = null;
 const filePath = (): string => fileOverride ?? leagueFile();
 
+const isLeagueShape = (raw: unknown): boolean =>
+  isRecord(raw) && (raw['version'] === undefined || raw['version'] === 1)
+  && arrayOfRecords(raw['seasons']) && arrayOfRecords(raw['outbox'])
+  && (raw['nextId'] === undefined || typeof raw['nextId'] === 'number');
+
+/** The store, read on first use. An absent file is an empty league; a present
+ * one that does not load throws StoreLoadError on every use, so nothing is
+ * ever written over it (store-file.ts). Boot calls loadLeague to surface that. */
 function db(): LeagueStore {
   if (store) return store;
-  try {
-    const raw = JSON.parse(readFileSync(filePath(), 'utf8')) as Partial<LeagueStore>;
-    store = { version: 1, seasons: raw.seasons ?? [], outbox: raw.outbox ?? [], nextId: raw.nextId ?? 1 };
-  } catch {
-    store = { version: 1, seasons: [], outbox: [], nextId: 1 };
-  }
+  const raw = readStoreFile(filePath(), isLeagueShape) as Partial<LeagueStore> | undefined;
+  store = { version: 1, seasons: raw?.seasons ?? [], outbox: raw?.outbox ?? [], nextId: raw?.nextId ?? 1 };
   return store;
 }
 
-/** Re-read the file (boot, and tests). */
+/** Re-read the file (boot, and tests). Throws StoreLoadError on a bad file. */
 export function loadLeague(): void { store = null; db(); }
 
 /** Tests only: point the store at a throwaway file. Returns a restore function. */
@@ -155,17 +159,17 @@ export function useLeagueFile(path: string): () => void {
   return () => { fileOverride = prev; loadLeague(); };
 }
 
-/** Temp file + rename, like accounts.ts: a crash mid-write must not leave half a season. */
+/** Temp file + rename, the previous generation kept as .bak (store-file.ts):
+ * a crash mid-write must not leave half a season. A failure is visible in
+ * storeHealth(). */
 function persist(now = Date.now()): void {
   const s = db();
   s.outbox = s.outbox.filter(r => !(r.sentAt || r.failed) || now - Date.parse(r.sentAt ?? r.createdAt) < OUTBOX_KEEP_MS);
   try {
-    const file = filePath();
-    mkdirSync(dirname(file), { recursive: true });
-    writeFileSync(`${file}.tmp`, JSON.stringify(s, null, 1));
-    renameSync(`${file}.tmp`, file);
+    writeStoreFile(filePath(), JSON.stringify(s, null, 1));
+    notePersist('league', null);
   } catch (err) {
-    console.error('[league] could not persist:', err);
+    notePersist('league', err);
   }
 }
 

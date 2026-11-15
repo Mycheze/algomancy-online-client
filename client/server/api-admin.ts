@@ -31,6 +31,7 @@ import {
 } from './admin.ts';
 import { adminChallenges } from './admin-challenges.ts';
 import { challengeNow } from './challenges.ts';
+import { storeHealth } from './store-health.ts';
 
 /** the 404 every refusal answers with — byte-identical to main.ts's own */
 function notFound(res: ServerResponse): true {
@@ -63,6 +64,8 @@ export async function adminRoutes(
       accounts: accountRows().length,
       games: gameRows().length,
       rooms: roomRows().length,
+      // whether each store's last write reached the disk
+      stores: storeHealth(),
       reports: {
         total: rows.length,
         unmarked: rows.filter(r => !m.has(r.ts)).length,

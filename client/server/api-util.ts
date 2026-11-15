@@ -77,6 +77,14 @@ export function rateLimited(addr: string, bucket: string, limit: number, windowM
   return b.n > limit;
 }
 
+/** Whether `addr` has already made `limit` calls in `bucket` this window,
+ * without counting this as one: for a brake that counts only failures but
+ * refuses every call once tripped. */
+export function limitReached(addr: string, bucket: string, limit: number): boolean {
+  const b = buckets.get(`${bucket}:${addr}`);
+  return !!b && Date.now() <= b.until && b.n >= limit;
+}
+
 /* ── the address a request came from ────────────────────────────────────
  *
  * Behind a reverse proxy every socket is the proxy's, so `remoteAddress`
@@ -101,4 +109,21 @@ export function addrOf(req: IncomingMessage): string {
   const raw = Array.isArray(fwd) ? fwd.join(',') : (fwd ?? '');
   const last = raw.split(',').map(s => s.trim()).filter(Boolean).pop();
   return last ?? peer;
+}
+
+/**
+ * Is this request from a process on THIS box, straight to the socket — not
+ * through the reverse proxy?
+ *
+ * Behind Caddy every request arrives from loopback too, so loopback alone
+ * proves nothing; Caddy always adds X-Forwarded-For, and a caller on the box
+ * talking to 127.0.0.1 never does. Any forwarding header means "proxied".
+ * main.ts's botAllowed() requires this, so the bot token is useless from
+ * outside even if it leaks.
+ */
+export function directLoopback(req: Pick<IncomingMessage, 'headers'> & { socket: { remoteAddress?: string | undefined } }): boolean {
+  if (!LOOPBACK.has(req.socket.remoteAddress ?? '')) return false;
+  const h = req.headers;
+  return h['x-forwarded-for'] === undefined && h['forwarded'] === undefined
+    && h['x-real-ip'] === undefined && h['x-forwarded-host'] === undefined;
 }

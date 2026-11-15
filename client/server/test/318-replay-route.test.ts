@@ -95,7 +95,7 @@ async function get(code: string, token: string | null): Promise<Answer> {
     end(b?: string) { payload = b ?? ''; return res; },
     setHeader() { /* unused */ },
   } as unknown as ServerResponse;
-  const handled = await replayRoutes(req, res, `/api/replay/${code}`, { liveRoom: () => false });
+  const handled = await replayRoutes(req, res, `/api/replay/${code}`, { liveRoom: () => false, playing: () => false });
   let body: unknown = payload;
   try { body = JSON.parse(payload); } catch { /* the 404 is text/plain */ }
   return { status: status || 200, body, handled };

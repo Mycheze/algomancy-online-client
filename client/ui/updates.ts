@@ -45,6 +45,9 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-15', kind: 'change', text: 'Rated, league and match games can now be watched only by a signed-in player who is not in the game and is on a different network to both players. Friend games are watched as before.' },
+  { date: '2026-11-15', kind: 'change', text: 'Changing your password now signs you out on your other devices, and a device you have not used for 90 days is signed out.' },
+  { date: '2026-11-15', kind: 'change', text: 'The rules judge on Discord now has the same daily question limit as the judge at the table.' },
   { date: '2026-11-15', kind: 'fix', text: 'If the rules review page cannot load the rules, it now says so in red with a Try again button, instead of a small grey line you could only get past by reloading the page.' },
   { date: '2026-11-15', kind: 'fix', text: 'When the judge cannot answer (it is busy, you reached the daily limit, or it could not be reached), the judge box at the table and in the lessons now says so in red, instead of looking like a ruling.' },
   { date: '2026-11-14', kind: 'new', text: 'Cube draft events: host a table of up to 12, draft packs around it with bots in the empty seats, build from what you drafted, then play a Swiss, round robin or open-play tournament. On the Draft tab, pick Cube draft under Alternate modes.' },

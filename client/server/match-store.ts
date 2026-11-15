@@ -21,6 +21,7 @@ import type { MatchConfig } from '../engine/src/matchdeck.ts';
 import type { DeckPile } from './collection.ts';
 import type { RoomLeague } from './rooms.ts';
 import { matchesDir } from './statepaths.ts';
+import { notePersist } from './store-health.ts';
 
 /** what a seat brought to game 1: the pool every later configuration must be
  * a rearrangement of (CR 901.9c), and the saved deck it came from. (A match
@@ -144,8 +145,9 @@ export function saveMatch(m: Match): void {
     const tmp = `${path}.tmp`;
     writeFileSync(tmp, JSON.stringify(m));
     renameSync(tmp, path);
+    notePersist('matches', null);
   } catch (err) {
-    console.error(`[match] could not persist ${m.id}:`, err);
+    notePersist('matches', err);
   }
 }
 

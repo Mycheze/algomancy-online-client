@@ -14,9 +14,8 @@
  * Sessions live in the same file so a server restart does not log everyone out
  * (this box restarts on every deploy — see deploy/algomancy-game.service).
  */
-import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { createHash, randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
+import { chmodSync, existsSync } from 'node:fs';
 import type { CardName, Element, GameMode, Seat } from '../engine/src/types.ts';
 import type { CollectionDeck } from './collection.ts';
 import type { DeckShare } from './deckshare.ts';
@@ -33,6 +32,8 @@ import { allMatches } from './match-store.ts';
 import type { PublicDeckView } from './publicdecks.ts';
 import type { TrioHistoryRow } from './trio.ts';
 import { accountsFile } from './statepaths.ts';
+import { arrayOfRecords, isRecord, readStoreFile, writeStoreFile } from './store-file.ts';
+import { notePersist } from './store-health.ts';
 import { RULES_EDITOR } from './crreview.ts';
 import { canonicalCardName } from '../engine/src/cards/dsl.ts';
 // CR D8.5: a conceded game weighs by the turn it was conceded on. The fold below
@@ -43,7 +44,6 @@ import { rulesSummary, type CustomRules } from '../ui/customrules.ts';
 // ALGO_ACCOUNTS_FILE keeps the tests (which spawn the real server) off the
 // real store — there is exactly one accounts file and it holds passwords
 const DATA_FILE = accountsFile();
-const DATA_DIR = dirname(DATA_FILE);
 
 // ── the shape of a player ─────────────────────────────────────────────
 
@@ -372,7 +372,8 @@ export interface Account {
   league?: AccountLeague;
 }
 
-interface Session { token: string; userId: string; createdAt: string; lastSeen: string }
+/** `tokenHash` is the SHA-256 of the bearer token; the token itself is never stored. */
+interface Session { tokenHash: string; userId: string; createdAt: string; lastSeen: string }
 
 interface Store {
   version: 1;
@@ -519,53 +520,100 @@ export const emptyProfile = (): Profile => ({
 
 let store: Store = { version: 1, accounts: [], sessions: [], history: [] };
 let dataFile = DATA_FILE;
-let dataDir = DATA_DIR;
+/** set while the file on disk could not be loaded: nothing may be written over it */
+let loadFailed = false;
 
-/** Load the store from disk. Safe to call twice (tests do). */
+/** password hashes and live sessions: owner-only */
+const FILE_MODE = 0o600;
+
+const isStoreShape = (raw: unknown): boolean =>
+  isRecord(raw) && (raw['version'] === undefined || raw['version'] === 1)
+  && arrayOfRecords(raw['accounts']) && arrayOfRecords(raw['sessions']) && arrayOfRecords(raw['history'])
+  && ((raw['accounts'] as Record<string, unknown>[] | undefined) ?? [])
+    .every(a => typeof a['id'] === 'string' && typeof a['key'] === 'string');
+
+/** Load the store from disk. Safe to call twice (tests do). An absent file is
+ * an empty store; a present one that does not load throws StoreLoadError and
+ * blocks every write until a load succeeds (store-file.ts). */
 export function loadAccounts(): void {
   historyRev++;
+  let raw: Partial<Store> & { sessions?: unknown[] };
   try {
-    const raw = JSON.parse(readFileSync(dataFile, 'utf8')) as Partial<Store>;
-    store = {
-      version: 1,
-      accounts: (raw.accounts ?? []).map(a => ({
-        ...a,
-        // additive fields: an account written by an older build must still load
-        profile: { ...emptyProfile(), ...a.profile },
-        achievements: a.achievements ?? {},
-        friends: a.friends ?? [], incoming: a.incoming ?? [], outgoing: a.outgoing ?? [],
-        recorded: a.recorded ?? [],
-      })) as Account[],
-      sessions: raw.sessions ?? [],
-      history: raw.history ?? [],
-    };
-  } catch {
+    raw = (readStoreFile(dataFile, isStoreShape) ?? {}) as typeof raw;
+  } catch (err) {
+    loadFailed = true;
     store = { version: 1, accounts: [], sessions: [], history: [] };
+    throw err;
   }
+  loadFailed = false;
+  let migrated = false;
+  const now = Date.now();
+  const sessions: Session[] = [];
+  for (const s of (raw.sessions ?? []) as (Partial<Session> & { token?: unknown })[]) {
+    // a session written before tokens were hashed: hash it in place, so its
+    // holder stays signed in and the plaintext leaves the file on this write
+    if (typeof s.tokenHash !== 'string' && typeof s.token === 'string') {
+      const { token, ...rest } = s;
+      sessions.push({ ...rest, tokenHash: tokenHash(token) } as Session);
+      migrated = true;
+    } else if (typeof s.tokenHash === 'string') sessions.push(s as Session);
+  }
+  store = {
+    version: 1,
+    accounts: (raw.accounts ?? []).map(a => ({
+      ...a,
+      // additive fields: an account written by an older build must still load
+      profile: { ...emptyProfile(), ...a.profile },
+      achievements: a.achievements ?? {},
+      friends: a.friends ?? [], incoming: a.incoming ?? [], outgoing: a.outgoing ?? [],
+      recorded: a.recorded ?? [],
+    })) as Account[],
+    sessions: sessions.filter(s => !sessionExpired(s, now)),
+    history: raw.history ?? [],
+  };
+  if (existsSync(dataFile)) {
+    try { chmodSync(dataFile, FILE_MODE); } catch (err) { console.error('[accounts] could not chmod the store:', err); }
+  }
+  if (migrated) persist();
 }
 
 /** Point the store at a different file (tests only — keeps them off the real
  * accounts file). Returns a restore function. */
 export function useAccountsFile(path: string): () => void {
-  const prev = { file: dataFile, dir: dataDir };
+  const prev = dataFile;
   dataFile = path;
-  dataDir = dirname(path);
   loadAccounts();
-  return () => { dataFile = prev.file; dataDir = prev.dir; loadAccounts(); };
+  return () => { dataFile = prev; loadAccounts(); };
 }
 
-/** Write through a temp file + rename: a crash mid-write must not leave a
- * half-written accounts file, because there is no backup and no way to
- * re-derive a password hash. */
-function persist(): void {
-  try {
-    mkdirSync(dataDir, { recursive: true });
-    const tmp = `${dataFile}.tmp`;
-    writeFileSync(tmp, JSON.stringify(store, null, 1));
-    renameSync(tmp, dataFile);
-  } catch (err) {
-    console.error('[accounts] could not persist:', err);
+/** Write the whole store (temp + rename, previous generation kept as .bak —
+ * store-file.ts). There is no way to re-derive a password hash. Returns
+ * whether the write landed; a failure is visible in storeHealth(). */
+function persist(): boolean {
+  if (loadFailed) {
+    notePersist('accounts', new Error(`${dataFile} did not load; refusing to write over it`));
+    return false;
   }
+  try {
+    writeStoreFile(dataFile, JSON.stringify(store, null, 1), FILE_MODE);
+    lastSeenFlushAt = Date.now();
+    notePersist('accounts', null);
+    return true;
+  } catch (err) {
+    notePersist('accounts', err);
+    return false;
+  }
+}
+
+/** While the store cannot be written, a new account would exist only until the
+ * next restart — so one whose first write fails is taken back out and refused.
+ * Each attempt is a fresh write, so a disk that recovers lets sign-ups through. */
+const UNSAVED = 'the server cannot save new accounts right now — try again in a few minutes';
+
+/** Take a just-created account back out, after its first write failed. */
+function dropUnsaved(id: string): void {
+  store.accounts = store.accounts.filter(a => a.id !== id);
+  store.sessions = store.sessions.filter(s => s.userId !== id);
 }
 
 /** where the store currently lives (the dry-run seeder copies it aside) */
@@ -668,7 +716,7 @@ export function registerGuest(): AuthResult {
   account.key = account.username.toLowerCase();
   store.accounts.push(account);
   const token = newSession(account.id);
-  persist();
+  if (!persist()) { dropUnsaved(account.id); return { ok: false, error: UNSAVED }; }
   console.log(`[accounts] guest ${account.username}`);
   return { ok: true, token, account };
 }
@@ -780,10 +828,11 @@ export function register(username: string, password: string, claim?: string): Au
   // name. It used to claim them all (claimSeats) — how Ben and Rashi walked
   // into their first login on the LAN box with their eight games in place,
   // and how, on a public deploy, a stranger's game landed in a real account.
-  // The one game it may take is the one the ticket names.
-  const claimed = redeemSignupClaim(account, claim);
+  // The one game it may take is the one the ticket names — redeemed only
+  // once the account itself is on disk.
   const token = newSession(account.id);
-  persist();
+  if (!persist()) { dropUnsaved(account.id); return { ok: false, error: UNSAVED }; }
+  const claimed = redeemSignupClaim(account, claim);   // persists what it claims
   console.log(`[accounts] registered ${account.username}`
     + (claimed ? ' (with the game just finished)' : ''));
   return { ok: true, token, account, claimed };
@@ -801,21 +850,29 @@ export function login(username: string, password: string): AuthResult {
   return { ok: true, token, account };
 }
 
-export function changePassword(account: Account, oldPassword: string, newPassword: string): { ok: boolean; error?: string } {
+/** Every other session of the account ends: a changed password is how
+ * somebody locks out a device that should not be signed in. `keepToken` is
+ * the caller's own session, which stays. */
+export function changePassword(
+  account: Account, oldPassword: string, newPassword: string, keepToken?: string | null,
+): { ok: boolean; error?: string } {
   if (!passwordMatches(account, oldPassword)) return { ok: false, error: 'that is not your current password' };
   const problem = passwordProblem(newPassword);
   if (problem) return { ok: false, error: problem };
   account.salt = randomBytes(16).toString('hex');
   account.hash = hashPassword(newPassword, account.salt);
+  const keep = keepToken ? tokenHash(keepToken) : null;
+  store.sessions = store.sessions.filter(s => s.userId !== account.id || s.tokenHash === keep);
   persist();
   return { ok: true };
 }
 
 // ── sessions ──────────────────────────────────────────────────────────
 
-/** Sessions never expire on their own — being logged out mid-draft would be
- * worse than the risk. They are dropped on logout, and capped so a login loop
- * cannot grow the file forever.
+/** A session ends on logout, on a password change (every other one of that
+ * account), or after SESSION_IDLE_MS unused; and they are capped so a login
+ * loop cannot grow the file forever. The file holds only each token's SHA-256,
+ * so a copy of it signs nobody in.
  *
  * ⚠ CAPPED PER USER, NOT GLOBALLY. The cap used to be 200 across everybody,
  * oldest first — so two hundred anonymous guest sign-ups evicted every real
@@ -823,11 +880,26 @@ export function changePassword(account: Account, oldPassword: string, newPasswor
  * person keeps their newest ten; the global ceiling is only a backstop. */
 const SESSIONS_PER_USER = 10;
 const SESSION_CAP = 5000;
+export const SESSION_IDLE_MS = 90 * 24 * 3_600_000;
+/** lastSeen rides on ordinary writes; with none for this long, a sign-in
+ * check writes the store itself — so the file's lastSeen is at most a day old
+ * and a busy server still writes for sessions at most once a day */
+const LAST_SEEN_FLUSH_MS = 24 * 3_600_000;
+let lastSeenFlushAt = Date.now();
+
+function tokenHash(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
+}
+
+const sessionExpired = (s: Session, now: number): boolean => {
+  const seen = Date.parse(s.lastSeen || s.createdAt);
+  return Number.isFinite(seen) && now - seen > SESSION_IDLE_MS;
+};
 
 function newSession(userId: string): string {
   const token = randomBytes(24).toString('hex');
   const now = new Date().toISOString();
-  store.sessions.push({ token, userId, createdAt: now, lastSeen: now });
+  store.sessions.push({ tokenHash: tokenHash(token), userId, createdAt: now, lastSeen: now });
   let mine = store.sessions.filter(s => s.userId === userId).length;
   if (mine > SESSIONS_PER_USER) {
     store.sessions = store.sessions.filter(s => s.userId !== userId || --mine < SESSIONS_PER_USER);
@@ -836,19 +908,26 @@ function newSession(userId: string): string {
   return token;
 }
 
-/** The account a token belongs to, or undefined. Touches lastSeen but does
- * NOT persist for that alone — a read on every websocket message must not
- * write the accounts file. */
-export function accountForToken(token: string | null | undefined): Account | undefined {
+/** The account a token belongs to, or undefined. Touches lastSeen but
+ * persists for that at most once a day (LAST_SEEN_FLUSH_MS) — a read on every
+ * websocket message must not write the accounts file. An idle session ends
+ * here, in memory; the next write drops it from the file. */
+export function accountForToken(token: string | null | undefined, now = Date.now()): Account | undefined {
   if (!token) return undefined;
-  const s = store.sessions.find(x => x.token === token);
-  if (!s) return undefined;
-  s.lastSeen = new Date().toISOString();
+  const h = tokenHash(token);
+  const i = store.sessions.findIndex(x => x.tokenHash === h);
+  if (i < 0) return undefined;
+  const s = store.sessions[i]!;
+  if (sessionExpired(s, now)) { store.sessions.splice(i, 1); return undefined; }
+  s.lastSeen = new Date(now).toISOString();
+  // set after the write, and whether or not it landed: a failing disk is not retried per request
+  if (now - lastSeenFlushAt > LAST_SEEN_FLUSH_MS) { persist(); lastSeenFlushAt = now; }
   return accountById(s.userId);
 }
 
 export function logout(token: string): void {
-  const i = store.sessions.findIndex(s => s.token === token);
+  const h = tokenHash(token);
+  const i = store.sessions.findIndex(s => s.tokenHash === h);
   if (i >= 0) { store.sessions.splice(i, 1); persist(); }
 }
 

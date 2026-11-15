@@ -25,8 +25,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 /* ⚠ THROWAWAY STATE before any import: accounts.ts captures its store path at
- * module scope, and var/ is live data (see 312's header for why it is these
- * variables and not ALGO_VAR_DIR). */
+ * module scope, and var/ is live data (see 312's header). */
 const SCRATCH = mkdtempSync(join(tmpdir(), 'algo-533-'));
 process.env['ALGO_ACCOUNTS_FILE'] = join(SCRATCH, 'accounts.json');
 process.env['ALGO_GAMES_DIR'] = join(SCRATCH, 'games');

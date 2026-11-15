@@ -114,7 +114,8 @@ function drain(): void {
     body: JSON.stringify({ bootId: BOOT_ID, events: batch }),
     signal: AbortSignal.timeout(PUSH_TIMEOUT_MS),
   })
-    .then(() => { failures = 0; })
+    // a refusal (a 404 is a token mismatch) is a failure too, not a delivery
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); failures = 0; })
     .catch(() => {
       // The events are NOT put back: they are in the ring, and the bot's
       // catch-up path is `since=`. Re-queueing them would mean a bot that is
@@ -123,7 +124,7 @@ function drain(): void {
       if (failures >= BREAKER_FAILURES) {
         breakerUntil = Date.now() + BREAKER_COOLDOWN_MS;
         failures = 0;
-        console.log('[hooks] bot unreachable; pausing pushes for 60s');
+        console.log('[hooks] bot unreachable or refusing; pausing pushes for 60s');
       }
     })
     .finally(() => { inFlight = false; if (pending.length) drain(); });

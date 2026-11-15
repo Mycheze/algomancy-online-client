@@ -114,8 +114,8 @@ export const STORED_ACCOUNT: readonly StoredLine[] = [
 
 /** `interface Session` — what keeps you signed in. */
 export const STORED_SESSION: readonly StoredLine[] = [
-  { covers: ['token', 'userId'], what: 'A random session token and whose it is. The token also sits in your browser, and the pair of them is the whole of "you are logged in".' },
-  { covers: ['createdAt', 'lastSeen'], what: 'When you signed in, and when that session was last used.' },
+  { covers: ['tokenHash', 'userId'], what: 'A fingerprint of a random session token, and whose it is. The token itself is only in your browser; the server keeps a one-way hash of it, which cannot sign anybody in.' },
+  { covers: ['createdAt', 'lastSeen'], what: 'When you signed in, and when that session was last used. A session unused for 90 days ends, and changing your password ends all your other sessions.' },
 ];
 
 /** `interface RecordedGame` — the match history. */
@@ -143,7 +143,7 @@ export const STORED_GAME: readonly StoredLine[] = [
  * games are a separate file per room, and the Report button writes a third file.
  */
 export const STORED_FILES: readonly StoredLine[] = [
-  { covers: ['accountsFile'], what: 'One JSON file holding every account, every session and the whole match history — the three lists above.' },
+  { covers: ['accountsFile'], what: 'One JSON file holding every account, every session and the whole match history — the three lists above — and, beside it, the version of that file from just before its last change, as a backup.' },
   { covers: ['gamesDir'], what: 'Every game is saved whole: the shuffle seed and the complete list of actions both players took, which is enough to replay it move for move — and, as it is played, which cards entered and left each hand, so the Card Stats page can count them without replaying games onto rules that have since changed. That is how a bug gets diagnosed and how your stats are recomputed after a rules fix. It is also, unavoidably, a full record of how you played. If you dispute a game, what you wrote is saved with it. Card Stats only ever shows totals across at least five games, or your own games to you.' },
   { covers: ['issuesFile'], what: 'Anything you send with the in-game Report button: the kind you picked (bug, interface issue, feature request, other), the severity if you gave one, your note, the room and your seat if you were in a game, how far into it you were, which page you sent it from otherwise, and — if you were signed in when you sent it — your account name and id, with any trust mark on the account, so the report can be weighed and answered. The "Dispute game" button after a game files one here too, with what you wrote and how far the game went. Only what you chose and typed, and the game you sent it from — it does not scrape anything else.' },
   { covers: ['reportRunsFile'], what: 'If you send a report from a weekly challenge run or from Learn to Play, the game you sent it from: the deal, your deck in its order and every move both sides made up to that moment, so the moment you reported can be replayed. It is kept beside the report and shown to nobody else.' },

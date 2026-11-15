@@ -63,6 +63,9 @@ export const NAMES = {
 export function fixtureEnv(varDir: string, now: string): Record<string, string> {
   const opts = [process.env['NODE_OPTIONS'] ?? '', `--import=${pathToFileURL(PRELOAD).href}`].filter(Boolean).join(' ');
   return {
+    // the base, so a store added later lands here too; the flat accounts.json
+    // below is the one path that differs from the default layout
+    ALGO_VAR_DIR: varDir,
     ALGO_ACCOUNTS_FILE: join(varDir, 'accounts.json'),
     ALGO_GAMES_DIR: join(varDir, 'games'),
     ALGO_ISSUES_FILE: join(varDir, 'issues.jsonl'),
