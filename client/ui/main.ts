@@ -237,7 +237,7 @@ type ServerMsg = Wire.ServerMsg<{
   me: acct.Me; gameOver: pg.GameOver; waiting: Waiting; clock: ClockSnap; scenario: scn.ScenarioInfo;
   custom: lob.CustomRulesInfo; badge: SeatBadge; fix: amend.FixInfo; rewind: amend.RewindOption;
   match: mt.MatchSummary; trio: lob.TrioReveal; queue: mm.QueueState;
-}>;
+}> & { clock?: ClockSnap };   // a clock may ride any message, and is read off all of them
 type GameUpdate = Extract<ServerMsg, { t: 'update'; view: GameState }>;
 /** an update as CR D5.4's pacing queue holds it (ui/pace.ts), or a playback
  * frame made from one. The fields below never ride the wire. */
@@ -765,7 +765,7 @@ class NetBackend implements Backend {
       render();
       return;
     }
-    if ('clock' in m && m.clock) clockSnap = { ...m.clock, rx: Date.now() };
+    if (m.clock) clockSnap = { ...m.clock, rx: Date.now() };
     if ('names' in m && m.names) this.names = m.names;
     // BL-46 — the agreed-fix channel. Not paced: a proposal is not game news
     // the table has to read in order, and its bar is answered in seconds.
